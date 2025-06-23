@@ -9,19 +9,24 @@ interface QueuedAction {
 }
 
 class OfflineSync {
-  private readonly STORAGE_KEY = 'theset-offline-queue';
+  private readonly STORAGE_KEY = 'MySetlist-offline-queue';
   private queue: QueuedAction[] = [];
 
   constructor() {
-    this.loadQueue();
-    this.setupEventListeners();
+    // Only initialize in browser environment
+    if (typeof window !== 'undefined') {
+      this.loadQueue();
+      this.setupEventListeners();
+    }
   }
 
   private loadQueue() {
     try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
-      if (stored) {
-        this.queue = JSON.parse(stored);
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const stored = localStorage.getItem(this.STORAGE_KEY);
+        if (stored) {
+          this.queue = JSON.parse(stored);
+        }
       }
     } catch (error) {
       console.error('Failed to load offline queue:', error);
@@ -30,16 +35,20 @@ class OfflineSync {
 
   private saveQueue() {
     try {
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.queue));
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.queue));
+      }
     } catch (error) {
       console.error('Failed to save offline queue:', error);
     }
   }
 
   private setupEventListeners() {
-    window.addEventListener('online', () => {
-      this.syncQueue();
-    });
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', () => {
+        this.syncQueue();
+      });
+    }
   }
 
   // Add action to queue
@@ -56,7 +65,7 @@ class OfflineSync {
     this.saveQueue();
 
     // Try to sync if online
-    if (navigator.onLine) {
+    if (typeof window !== 'undefined' && navigator.onLine) {
       this.syncQueue();
     }
 
@@ -65,7 +74,7 @@ class OfflineSync {
 
   // Sync queued actions
   public async syncQueue() {
-    if (!navigator.onLine || this.queue.length === 0) {
+    if (typeof window === 'undefined' || !navigator.onLine || this.queue.length === 0) {
       return;
     }
 
@@ -85,7 +94,7 @@ class OfflineSync {
     }
 
     // Register background sync if available
-    if ('serviceWorker' in navigator && 'sync' in ServiceWorkerRegistration.prototype) {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator && 'sync' in ServiceWorkerRegistration.prototype) {
       const registration = await navigator.serviceWorker.ready;
       
       if (this.queue.some(item => item.type === 'vote')) {

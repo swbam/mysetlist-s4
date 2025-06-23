@@ -39,13 +39,13 @@ const RootLayout = async ({ children, params }: RootLayoutProperties) => {
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="TheSet" />
+        <meta name="apple-mobile-web-app-title" content="MySetlist" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
       </head>
       <body>
         <DesignSystemProvider>
-          <AnalyticsSetupProvider />
           <AuthProvider>
+            <AnalyticsSetupProvider />
             <RealtimeProvider>
               <PWAProvider>
                 <PageTransitionProvider>
