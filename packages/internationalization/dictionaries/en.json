@@ -1,0 +1,192 @@
+{
+  "web": {
+    "global": {
+      "primaryCta": "Find Shows",
+      "secondaryCta": "Join TheSet"
+    },
+    "header": {
+      "home": "Home",
+      "artists": "Artists",
+      "shows": "Shows",
+      "venues": "Venues",
+      "product": {
+        "title": "Discover",
+        "description": "Find your next favorite artist or show.",
+        "pricing": "Premium"
+      },
+      "blog": "Blog",
+      "docs": "Help",
+      "contact": "Contact",
+      "signIn": "Sign in",
+      "signUp": "Join TheSet"
+    },
+    "home": {
+      "meta": {
+        "title": "Never Miss a Beat with TheSet",
+        "description": "Discover upcoming concerts, track your favorite artists, and vote on setlists in real-time. Join the community that's reshaping the live music experience."
+      },
+      "hero": {
+        "announcement": "Check out tonight's shows"
+      },
+      "cases": {
+        "title": "Trending Artists & Shows This Week"
+      },
+      "features": {
+        "title": "Your Ultimate Concert Companion",
+        "description": "Experience live music like never before with real-time setlist updates and community engagement.",
+        "items": [
+          {
+            "title": "Live Setlist Voting",
+            "description": "Vote on songs in real-time during concerts and see what other fans are loving most."
+          },
+          {
+            "title": "Artist Discovery",
+            "description": "Find new artists based on your music taste and see who's playing near you."
+          },
+          {
+            "title": "Venue Maps & Info",
+            "description": "Interactive venue maps, parking info, and insider tips from the community."
+          },
+          {
+            "title": "Concert History",
+            "description": "Track every show you've been to and build your personal concert timeline."
+          }
+        ]
+      },
+      "stats": {
+        "title": "The Live Music Community",
+        "description": "Join millions of music fans tracking concerts, sharing experiences, and discovering new artists every day.",
+        "items": [
+          {
+            "title": "Active music fans",
+            "metric": "2500000",
+            "delta": "15",
+            "type": "unit"
+          },
+          {
+            "title": "Artists tracked",
+            "metric": "150000",
+            "delta": "8",
+            "type": "unit"
+          },
+          {
+            "title": "Setlists documented",
+            "metric": "500000",
+            "delta": "12",
+            "type": "unit"
+          },
+          {
+            "title": "Shows this month",
+            "metric": "25000",
+            "delta": "20",
+            "type": "unit"
+          }
+        ]
+      },
+      "testimonials": {
+        "title": "What Music Fans Are Saying",
+        "items": [
+          {
+            "title": "Never miss a moment",
+            "description": "TheSet helped me discover an amazing opening band that became my new favorite. The real-time setlist updates are incredible!",
+            "author": {
+              "name": "Sarah Chen",
+              "image": "https://github.com/haydenbleasel.png"
+            }
+          },
+          {
+            "title": "Concert game changer",
+            "description": "Being able to vote on songs and see what others are loving during the show adds a whole new dimension to live music.",
+            "author": {
+              "name": "Marcus Johnson",
+              "image": "https://github.com/leerob.png"
+            }
+          },
+          {
+            "title": "Perfect for superfans",
+            "description": "I've tracked every show I've been to for the past 5 years. The concert timeline feature is exactly what I needed!",
+            "author": {
+              "name": "Alex Rivera",
+              "image": "https://github.com/shadcn.png"
+            }
+          },
+          {
+            "title": "Venue info on point",
+            "description": "The venue maps and parking tips saved me so much stress. Plus finding out about the secret entrance was clutch!",
+            "author": {
+              "name": "Jamie Park",
+              "image": "https://github.com/pontusab.png"
+            }
+          }
+        ]
+      },
+      "faq": {
+        "title": "Everything You Need to Know",
+        "description": "Got questions about TheSet? We've got answers. Learn how to make the most of your concert experience and join the community.",
+        "cta": "Still have questions? Contact us",
+        "items": [
+          {
+            "question": "What is TheSet?",
+            "answer": "TheSet is a real-time concert companion app that lets you track setlists, vote on songs, discover new artists, and connect with other music fans during live shows."
+          },
+          {
+            "question": "How does live voting work?",
+            "answer": "During concerts, fans can vote on their favorite songs in real-time. Results are displayed instantly, creating a shared experience and showing which songs are resonating most with the crowd."
+          },
+          {
+            "question": "Can I track past concerts?",
+            "answer": "Absolutely! Build your personal concert timeline by adding shows you've attended. You can view setlists, add photos, and relive your favorite concert memories."
+          },
+          {
+            "question": "Is TheSet free to use?",
+            "answer": "Basic features including setlist viewing and artist discovery are free. Premium features like unlimited voting, exclusive content, and advanced analytics are available with a subscription."
+          },
+          {
+            "question": "How accurate are the setlists?",
+            "answer": "Our setlists are crowd-sourced and verified by multiple attendees in real-time, making them highly accurate. The community helps ensure quality through voting and corrections."
+          }
+        ]
+      },
+      "cta": {
+        "title": "Ready to Experience Live Music Differently?",
+        "description": "Join millions of music fans who never miss a beat. Track shows, vote on setlists, and become part of the most passionate concert community. Your next great show is waiting."
+      }
+    },
+    "blog": {
+      "meta": {
+        "title": "Blog",
+        "description": "Thoughts, ideas, and opinions."
+      }
+    },
+    "contact": {
+      "meta": {
+        "title": "Let's Talk About Your Business",
+        "description": "Schedule a consultation with our team to discuss how we can help streamline your operations and drive growth for your business."
+      },
+      "hero": {
+        "benefits": [
+          {
+            "title": "Personalized Consultation",
+            "description": "Get tailored solutions and expert advice specific to your business needs."
+          },
+          {
+            "title": "Seamless Integration",
+            "description": "We seamlessly integrate with your existing systems to ensure a smooth transition and minimal disruption."
+          },
+          {
+            "title": "Expert Guidance",
+            "description": "Our team of experts will guide you through the process, ensuring you get the most out of our platform."
+          }
+        ],
+        "form": {
+          "title": "Book a meeting",
+          "date": "Date",
+          "firstName": "First name",
+          "lastName": "Last name",
+          "resume": "Upload resume",
+          "cta": "Book the meeting"
+        }
+      }
+    }
+  }
+}

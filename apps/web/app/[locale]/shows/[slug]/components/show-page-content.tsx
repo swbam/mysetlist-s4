@@ -1,0 +1,97 @@
+'use client';
+
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
+import { ShowHeader } from './show-header';
+import { AttendanceTracker } from './attendance-tracker';
+import { TicketInfo } from './ticket-info';
+import { VenueDetails } from './venue-details';
+import { SetlistSection } from './setlist-section';
+import { SupportingActs } from './supporting-acts';
+import { ShowComments } from './show-comments';
+import { ShareButtons } from './share-buttons';
+import { useRealtimeUpdates } from '../hooks/use-realtime-updates';
+
+type ShowPageContentProps = {
+  show: any;
+};
+
+export function ShowPageContent({ show }: ShowPageContentProps) {
+  const actualSetlists = show.setlists?.filter((s: any) => s.type === 'actual') || [];
+  const predictedSetlists = show.setlists?.filter((s: any) => s.type === 'predicted') || [];
+  const hasSetlists = actualSetlists.length > 0 || predictedSetlists.length > 0;
+  
+  // Enable real-time updates for ongoing shows
+  useRealtimeUpdates(show.id, show.status === 'ongoing');
+  
+  return (
+    <div className="grid gap-8 lg:grid-cols-3">
+      {/* Main Content */}
+      <div className="lg:col-span-2 space-y-8">
+        <ShowHeader show={show} />
+        
+        <div className="flex flex-wrap gap-4">
+          <AttendanceTracker 
+            showId={show.id}
+            initialCount={show.attendanceCount}
+            initialIsAttending={show.isAttending}
+          />
+          <ShareButtons 
+            url={`/shows/${show.slug}`}
+            title={`${show.headliner_artist.name} at ${show.venue?.name || 'TBA'}`}
+          />
+        </div>
+        
+        {show.description && (
+          <div className="prose prose-neutral dark:prose-invert max-w-none">
+            <p>{show.description}</p>
+          </div>
+        )}
+        
+        {/* Supporting Acts */}
+        {show.show_artists && show.show_artists.length > 1 && (
+          <SupportingActs artists={show.show_artists} />
+        )}
+        
+        {/* Setlists */}
+        <Tabs defaultValue={hasSetlists ? "setlists" : "discussion"} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="setlists">
+              Setlists {hasSetlists && `(${show.setlists?.length || 0})`}
+            </TabsTrigger>
+            <TabsTrigger value="discussion">
+              Discussion
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="setlists" className="mt-6">
+            <SetlistSection 
+              show={show}
+              actualSetlists={actualSetlists}
+              predictedSetlists={predictedSetlists}
+              currentUser={show.currentUser}
+            />
+          </TabsContent>
+          
+          <TabsContent value="discussion" className="mt-6">
+            <ShowComments showId={show.id} />
+          </TabsContent>
+        </Tabs>
+      </div>
+      
+      {/* Sidebar */}
+      <div className="space-y-6">
+        <TicketInfo 
+          ticketUrl={show.ticket_url}
+          minPrice={show.min_price}
+          maxPrice={show.max_price}
+          currency={show.currency}
+          status={show.status}
+        />
+        
+        {show.venue && (
+          <VenueDetails venue={show.venue} />
+        )}
+      </div>
+    </div>
+  );
+}
