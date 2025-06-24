@@ -12,13 +12,15 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd
 SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDY5MjMxNiwiZXhwIjoyMDY2MjY4MzE2fQ.ZMorLC_eZke3bvBAF0zyzqUONxpomfTN2RpE_mLjz18
 SUPABASE_JWT_SECRET=8yUxq3AqzLiPV9mdG5jZk38ZonG5nXVUVgq6zlQKCKHcdLcee3Ssg62/8cATrxBC2uvBqFXAIQUjHLMz3Q45rg==
 
-# Application URLs (REQUIRED - Update NEXT_PUBLIC_APP_URL to your production domain)
+# Application URLs (REQUIRED - Update URLs to your production domain)
 NEXT_PUBLIC_APP_URL=https://mysetlist-sonnet.vercel.app
+NEXT_PUBLIC_WEB_URL=https://mysetlist-sonnet.vercel.app
 NEXT_PUBLIC_APP_ENV=production
 
 # External Music APIs (REQUIRED for core functionality)
 SPOTIFY_CLIENT_ID=2946864dc822469b9c672292ead45f43
 SPOTIFY_CLIENT_SECRET=feaf0fc901124b839b11e02f97d18a8d
+NEXT_PUBLIC_SPOTIFY_CLIENT_ID=2946864dc822469b9c672292ead45f43
 TICKETMASTER_API_KEY=k8GrSAkbFaN0w7qDxGl7ohr8LwdAQm9b
 SETLISTFM_API_KEY=xkutflW-aRy_Df9rF4OkJyCsHBYN88V37EBL
 
@@ -30,10 +32,16 @@ BASEHUB_TOKEN=bshb_pk_lk7rivauai7m3ihf1eehzsl7efd4ay64waxualooakqgeaz1mklo48gisj
 
 # Email Service (OPTIONAL - Add if using Resend)
 RESEND_API_KEY=your_resend_api_key
+RESEND_TOKEN=your_resend_api_key
 RESEND_FROM=noreply@your-domain.com
+EMAIL_FROM=noreply@your-domain.com
 
 # Maps (OPTIONAL - Add if using Mapbox)
 NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_mapbox_token
+
+# Redis Caching & Rate Limiting (OPTIONAL - Add if using Upstash Redis)
+UPSTASH_REDIS_REST_URL=your_upstash_redis_url
+UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_token
 
 # Analytics (OPTIONAL - Add if using these services)
 NEXT_PUBLIC_POSTHOG_KEY=your_posthog_key
@@ -74,7 +82,7 @@ LANGUINE_PROJECT_ID=your_languine_project_id
 | Variable | Description | Example Value | Notes |
 |----------|-------------|---------------|-------|
 | `NEXT_PUBLIC_APP_URL` | Main application URL | `https://mysetlist.vercel.app` | Your Vercel deployment URL |
-| `NEXT_PUBLIC_WEB_URL` | Web app URL | `https://mysetlist.vercel.app` | Usually same as APP_URL |
+| `NEXT_PUBLIC_WEB_URL` | Web app URL | `https://mysetlist.vercel.app` | **REQUIRED** - Usually same as APP_URL |
 | `NEXT_PUBLIC_APP_ENV` | Environment identifier | `production` | Set to `production` for Vercel |
 
 #### Email Service
@@ -82,7 +90,7 @@ LANGUINE_PROJECT_ID=your_languine_project_id
 | Variable | Description | Example Value | Where to Get |
 |----------|-------------|---------------|--------------|
 | `RESEND_API_KEY` | Resend API key | `re_abc123...` | [Resend Dashboard](https://resend.com/api-keys) |
-| `RESEND_TOKEN` | Resend token | `re_abc123...` | Usually same as API key |
+| `RESEND_TOKEN` | Resend token | `re_abc123...` | **REQUIRED** - Usually same as RESEND_API_KEY |
 | `RESEND_FROM` | From email address | `noreply@yourdomain.com` | Must be verified in Resend |
 | `EMAIL_FROM` | Alternative from email | `noreply@yourdomain.com` | Same as RESEND_FROM |
 
@@ -100,17 +108,31 @@ LANGUINE_PROJECT_ID=your_languine_project_id
 |----------|-------------|---------------|--------------|
 | `SPOTIFY_CLIENT_ID` | Spotify app client ID | `abc123def456...` | [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) |
 | `SPOTIFY_CLIENT_SECRET` | Spotify app secret | `xyz789abc123...` | Spotify Developer Dashboard |
-| `NEXT_PUBLIC_SPOTIFY_CLIENT_ID` | Public Spotify client ID | `abc123def456...` | Same as SPOTIFY_CLIENT_ID |
+| `NEXT_PUBLIC_SPOTIFY_CLIENT_ID` | Public Spotify client ID | `abc123def456...` | **REQUIRED** - Same as SPOTIFY_CLIENT_ID |
 | `TICKETMASTER_API_KEY` | Ticketmaster Discovery API | `k8GrSAkbFaN0w7qD...` | [Ticketmaster Developer Portal](https://developer.ticketmaster.com/) |
 | `SETLISTFM_API_KEY` | Setlist.fm API key | `xkutflW-aRy_Df9r...` | [Setlist.fm API](https://api.setlist.fm/docs/1.0/index.html) |
 
 ### 🟢 OPTIONAL Variables
+
+#### Additional Application URLs
+
+| Variable | Description | Example Value | Notes |
+|----------|-------------|---------------|-------|
+| `NEXT_PUBLIC_API_URL` | API server URL | `https://api.mysetlist.vercel.app` | Set if using separate API domain |
+| `NEXT_PUBLIC_DOCS_URL` | Documentation URL | `https://docs.mysetlist.vercel.app` | Set if using separate docs domain |
 
 #### Maps & Geolocation
 
 | Variable | Description | Example Value | Where to Get |
 |----------|-------------|---------------|--------------|
 | `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Mapbox maps token | `pk.eyJ1IjoibXl1c2Vy...` | [Mapbox Account](https://account.mapbox.com/access-tokens/) |
+
+#### Redis Caching & Rate Limiting
+
+| Variable | Description | Example Value | Where to Get |
+|----------|-------------|---------------|--------------|
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST API URL | `https://abc123.upstash.io` | [Upstash Console](https://console.upstash.com/) |
+| `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST API token | `AXXXeyJhbGciOiJIUzI1...` | Upstash Console → Database → REST API |
 
 #### Content Management
 
@@ -185,7 +207,18 @@ LANGUINE_PROJECT_ID=your_languine_project_id
 1. Register at [Setlist.fm API](https://api.setlist.fm/docs/1.0/index.html)
 2. Generate an API key
 
-### 4. Set Up Analytics (Optional)
+### 4. Set Up Redis Caching (Optional)
+
+#### Upstash Redis
+1. Sign up at [Upstash](https://console.upstash.com/)
+2. Create a new Redis database
+3. Navigate to Database → Details to get your REST URL
+4. Navigate to Database → REST API to get your token
+5. Copy the URL and token values
+
+**Note**: Redis is optional. The application will work without it, but you'll lose caching and rate limiting features.
+
+### 5. Set Up Analytics (Optional)
 
 #### PostHog
 1. Sign up at [PostHog](https://app.posthog.com/)
@@ -196,7 +229,7 @@ LANGUINE_PROJECT_ID=your_languine_project_id
 1. Set up a property in [Google Analytics](https://analytics.google.com/)
 2. Copy the Measurement ID (starts with "G-")
 
-### 5. Configure Monitoring (Optional)
+### 6. Configure Monitoring (Optional)
 
 #### Sentry
 1. Create account at [Sentry](https://sentry.io/)
@@ -207,7 +240,7 @@ LANGUINE_PROJECT_ID=your_languine_project_id
 1. Sign up at [Better Stack](https://betterstack.com/)
 2. Create monitoring and get API key
 
-### 6. Generate Security Keys
+### 7. Generate Security Keys
 
 ```bash
 # Generate a secure random string for CRON_SECRET

@@ -16,16 +16,22 @@ export abstract class BaseAPIClient {
   protected baseURL: string;
   protected apiKey?: string;
   protected rateLimit?: { requests: number; window: number };
-  protected cache: Redis;
+  protected cache: Redis | null;
 
   constructor(config: APIClientConfig) {
     this.baseURL = config.baseURL;
     this.apiKey = config.apiKey;
     this.rateLimit = config.rateLimit;
-    this.cache = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL!,
-      token: process.env.UPSTASH_REDIS_REST_TOKEN!,
-    });
+    
+    // Only initialize Redis if environment variables are available
+    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+      this.cache = new Redis({
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
+      });
+    } else {
+      this.cache = null;
+    }
   }
 
   protected async makeRequest<T>(
@@ -34,8 +40,8 @@ export abstract class BaseAPIClient {
     cacheKey?: string,
     cacheTtl?: number
   ): Promise<T> {
-    // Check cache first if key provided
-    if (cacheKey) {
+    // Check cache first if key provided and cache is available
+    if (cacheKey && this.cache) {
       try {
         const cached = await this.cache.get(cacheKey);
         if (cached) {
@@ -71,8 +77,8 @@ export abstract class BaseAPIClient {
 
     const data = await response.json() as T;
 
-    // Cache if key provided
-    if (cacheKey && cacheTtl) {
+    // Cache if key provided and cache is available
+    if (cacheKey && cacheTtl && this.cache) {
       try {
         await this.cache.setex(cacheKey, cacheTtl, JSON.stringify(data));
       } catch (error) {
@@ -87,7 +93,7 @@ export abstract class BaseAPIClient {
   protected abstract getAuthHeaders(): Record<string, string>;
 
   private async checkRateLimit(): Promise<void> {
-    if (!this.rateLimit) return;
+    if (!this.rateLimit || !this.cache) return;
 
     const key = `rate_limit:${this.constructor.name}`;
     const current = await this.cache.incr(key);

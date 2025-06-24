@@ -9,31 +9,24 @@ export const env = createEnv({
     database(),
   ],
   server: {
-    // Supabase
-    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+    // Supabase - JWT secret is optional for basic functionality
     SUPABASE_JWT_SECRET: z.string().min(1).optional(),
     
-    // External APIs
+    // External APIs - all optional for core functionality
     SPOTIFY_CLIENT_ID: z.string().min(1).optional(),
     SPOTIFY_CLIENT_SECRET: z.string().min(1).optional(),
     TICKETMASTER_API_KEY: z.string().min(1).optional(),
     SETLISTFM_API_KEY: z.string().min(1).optional(),
     
-    // Cron
+    // Cron - optional for basic functionality
     CRON_SECRET: z.string().min(1).optional(),
   },
   client: {
-    // Supabase
-    NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
-    
-    // App
-    NEXT_PUBLIC_APP_URL: z.string().url(),
+    // App environment defaults to development if not set
     NEXT_PUBLIC_APP_ENV: z.enum(['development', 'staging', 'production']).default('development'),
   },
   runtimeEnv: {
     // Server
-    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
     SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET,
     SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID,
     SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
@@ -42,9 +35,6 @@ export const env = createEnv({
     CRON_SECRET: process.env.CRON_SECRET,
     
     // Client
-    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV,
   },
 });

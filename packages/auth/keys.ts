@@ -6,12 +6,12 @@ export const keys = () =>
     server: {
       DATABASE_URL: z.string().url(),
       SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
-      SPOTIFY_CLIENT_SECRET: z.string().min(1),
+      SPOTIFY_CLIENT_SECRET: z.string().min(1).optional(),
     },
     client: {
       NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
       NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
-      NEXT_PUBLIC_SPOTIFY_CLIENT_ID: z.string().min(1),
+      NEXT_PUBLIC_SPOTIFY_CLIENT_ID: z.string().min(1).optional(),
     },
     runtimeEnv: {
       DATABASE_URL: process.env.DATABASE_URL || 'postgresql://postgres.yzwkimtdaabyjbpykquu:Bambseth1590@aws-0-us-east-1.pooler.supabase.com:6543/postgres',

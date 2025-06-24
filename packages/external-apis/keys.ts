@@ -4,12 +4,12 @@ import { z } from 'zod';
 export const keys = () =>
   createEnv({
     server: {
-      SPOTIFY_CLIENT_SECRET: z.string().min(1),
-      TICKETMASTER_API_KEY: z.string().min(1),
-      SETLIST_FM_API_KEY: z.string().min(1),
+      SPOTIFY_CLIENT_SECRET: z.string().min(1).optional(),
+      TICKETMASTER_API_KEY: z.string().min(1).optional(),
+      SETLIST_FM_API_KEY: z.string().min(1).optional(),
     },
     client: {
-      NEXT_PUBLIC_SPOTIFY_CLIENT_ID: z.string().min(1),
+      NEXT_PUBLIC_SPOTIFY_CLIENT_ID: z.string().min(1).optional(),
     },
     runtimeEnv: {
       SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET || 'feaf0fc901124b839b11e02f97d18a8d',
