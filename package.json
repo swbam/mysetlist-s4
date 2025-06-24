@@ -13,6 +13,7 @@
     "lint": "ultracite lint",
     "format": "ultracite format",
     "test": "turbo test",
+    "typecheck": "turbo typecheck",
     "analyze": "turbo analyze",
     "translate": "turbo translate",
     "boundaries": "turbo boundaries",
@@ -27,7 +28,8 @@
     "deploy:prod": "./scripts/deploy.sh production",
     "edge:secrets": "./scripts/setup-edge-function-secrets.sh",
     "vercel": "vercel",
-    "vercel:prod": "vercel --prod"
+    "vercel:prod": "vercel --prod",
+    "all": "pnpm install && pnpm db:generate && pnpm build && pnpm test"
   },
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.0",

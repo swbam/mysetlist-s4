@@ -4,8 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/co
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Progress } from '@repo/design-system/components/ui/progress';
 import { VoteButton } from '@repo/design-system/components/ui/vote-button';
-import { Clock, Music, Sparkles, Play, CheckCircle } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Clock, Music, Sparkles, Play, CheckCircle, Wifi, WifiOff } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { createClient } from '@/lib/supabase/client';
 
 type SetlistViewerProps = {
   showId: string;
@@ -42,6 +43,9 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeSetlist, setActiveSetlist] = useState<string>('predicted');
+  const [isConnected, setIsConnected] = useState(false);
+  const supabase = createClient();
+  const subscriptionRef = useRef<any>(null);
 
   // Fetch setlists for the show
   useEffect(() => {
@@ -62,6 +66,111 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
     fetchSetlists();
   }, [showId]);
 
+  // Set up real-time subscriptions
+  useEffect(() => {
+    if (!showId) return;
+
+    const setupRealtimeSubscription = async () => {
+      try {
+        // Subscribe to votes changes for this show
+        const channel = supabase
+          .channel(`setlist-${showId}`)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'votes',
+              filter: `setlist_song_id=in.(${setlists.flatMap(s => s.songs.map(song => song.id)).join(',')})`,
+            },
+            (payload) => {
+              console.log('Vote update received:', payload);
+              handleRealtimeVoteUpdate(payload);
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'setlist_songs',
+            },
+            (payload) => {
+              console.log('Setlist song update received:', payload);
+              handleRealtimeSetlistUpdate(payload);
+            }
+          )
+          .subscribe((status) => {
+            console.log('Subscription status:', status);
+            setIsConnected(status === 'SUBSCRIBED');
+            
+            if (status === 'SUBSCRIBED') {
+              console.log('🎵 Live Updates Connected - You\'ll see vote updates in real-time!');
+            } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+              setIsConnected(false);
+              console.log('Connection Lost - Real-time updates temporarily unavailable');
+            }
+          });
+
+        subscriptionRef.current = channel;
+      } catch (error) {
+        console.error('Failed to set up real-time subscription:', error);
+        setIsConnected(false);
+      }
+    };
+
+    if (setlists.length > 0) {
+      setupRealtimeSubscription();
+    }
+
+    return () => {
+      if (subscriptionRef.current) {
+        subscriptionRef.current.unsubscribe();
+      }
+    };
+  }, [showId, setlists]);
+
+  const handleRealtimeVoteUpdate = (payload: any) => {
+    // Refetch vote counts when votes change
+    // In a production app, you'd want to be more granular here
+    setTimeout(() => {
+      fetch(`/api/setlists/${showId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.setlists) {
+            setSetlists(data.setlists);
+          }
+        })
+        .catch(console.error);
+    }, 100);
+  };
+
+  const handleRealtimeSetlistUpdate = (payload: any) => {
+    // Handle setlist song updates (like when a song is marked as played)
+    if (payload.eventType === 'UPDATE') {
+      setSetlists(prev => prev.map(setlist => ({
+        ...setlist,
+        songs: setlist.songs.map(song => 
+          song.id === payload.new.id 
+            ? {
+                ...song,
+                isPlayed: payload.new.is_played,
+                playTime: payload.new.play_time ? new Date(payload.new.play_time) : undefined,
+              }
+            : song
+        ),
+      })));
+
+      // Log when a song is played
+      if (payload.new.is_played && !payload.old.is_played) {
+        const song = setlists.flatMap(s => s.songs).find(s => s.id === payload.new.id);
+        if (song) {
+          console.log(`🎵 Now Playing: ${song.song.title} by ${song.song.artist}`);
+        }
+      }
+    }
+  };
+
   const currentSetlist = setlists.find(s => s.type === activeSetlist);
 
   const handleVote = async (setlistSongId: string, voteType: 'up' | 'down' | null) => {
@@ -80,7 +189,7 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
       if (response.ok) {
         const result = await response.json();
         
-        // Update local state with new vote counts
+        // Optimistically update local state
         setSetlists(prev => prev.map(setlist => ({
           ...setlist,
           songs: setlist.songs.map(song => 
@@ -144,6 +253,14 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
           <CardTitle className="flex items-center gap-2">
             <Music className="h-5 w-5" />
             {currentSetlist.name}
+            {/* Real-time connection indicator */}
+            <div className="flex items-center gap-1" title={isConnected ? "Live updates connected" : "No live updates"}>
+              {isConnected ? (
+                <Wifi className="h-4 w-4 text-green-500" />
+              ) : (
+                <WifiOff className="h-4 w-4 text-muted-foreground" />
+              )}
+            </div>
           </CardTitle>
           <Badge variant="outline" className="gap-1">
             <Clock className="h-3 w-3" />

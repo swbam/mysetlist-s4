@@ -243,4 +243,48 @@ SELECT * FROM cron_job_status;
 
 ---
 
+## Recent Fixes - Vercel Cron Job Issues
+
+### Issue Fixed
+The Vercel deployment was failing due to incorrect cron job configurations. The project was configured to use Vercel's cron feature, but the actual cron jobs should be handled by Supabase's `pg_cron` extension.
+
+### Changes Made
+
+#### 1. Removed Vercel Cron Configurations
+- **File**: `apps/web/vercel.json`
+  - Removed `crons` array that referenced `/api/cron/*` endpoints
+  - These cron jobs are now handled by Supabase's `pg_cron` extension
+
+- **File**: `apps/api/vercel.json`
+  - Removed `crons` array that referenced `/cron/keep-alive` endpoint
+
+#### 2. Updated Supabase Cron Job Configuration
+- **File**: `supabase/migrations/20240126_setup_cron_jobs.sql`
+  - Updated cron job URLs to point to the correct Next.js API routes
+  - Changed from `POST` requests to Edge Functions to `GET` requests to Next.js API routes
+  - Added `app_settings` table to store configuration values (app URL, cron secret)
+
+#### 3. Current Cron Job Setup
+The following cron jobs are now properly configured to run via Supabase's `pg_cron` extension:
+
+1. **Email Processing** - Runs every 5 minutes
+   - Endpoint: `{app_url}/api/cron/email-processing`
+
+2. **Daily Reminders** - Runs daily at 10 AM UTC
+   - Endpoint: `{app_url}/api/cron/daily-reminders`
+
+3. **Weekly Digest** - Runs Sundays at 9 AM UTC
+   - Endpoint: `{app_url}/api/cron/weekly-digest`
+
+The migration automatically configures the `app_settings` table with the correct app URL and cron secret.
+
+### Testing
+Both build processes now work correctly:
+- `pnpm build --filter=web` ✅
+- `pnpm build --filter=api` ✅
+
+The deployment should now proceed without cron-related errors.
+
+---
+
 Happy deploying! 🎉

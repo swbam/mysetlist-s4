@@ -20,10 +20,18 @@ import {
   Star,
   Search,
   Filter,
-  MoreHorizontal
+  MoreHorizontal,
+  Music2,
+  Users,
+  Building,
+  Download,
+  RotateCcw,
+  TrendingUp
 } from 'lucide-react';
 import { format } from 'date-fns';
 import ContentActions from './components/content-actions';
+import { SyncPopularArtistsButton } from './components/sync-popular-artists-button';
+import { Separator } from '@repo/design-system/components/ui/separator';
 
 // Force dynamic rendering due to user-specific data fetching
 export const dynamic = 'force-dynamic';
@@ -63,6 +71,178 @@ export default async function ContentPage({ params }: { params: Promise<{ locale
   
   return (
     <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Content Management</h1>
+        <p className="text-muted-foreground">
+          Manage and sync content from external sources
+        </p>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {/* Popular Artists Sync */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Popular Artists
+            </CardTitle>
+            <CardDescription>
+              Sync popular artists from Spotify to populate the database
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <div className="text-sm">
+                <strong>Genres:</strong> Rock, Pop, Hip-Hop, Electronic, Indie, Country, Jazz, Classical
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Syncs ~50 popular artists with their top tracks and metadata
+              </div>
+            </div>
+            <SyncPopularArtistsButton />
+          </CardContent>
+        </Card>
+
+        {/* Artist Sync */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Music2 className="h-5 w-5" />
+              Artist Data
+            </CardTitle>
+            <CardDescription>
+              Sync individual artist information from Spotify
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+              Update artist profiles, images, and popularity metrics
+            </div>
+            <Button variant="outline" className="w-full">
+              <RotateCcw className="h-4 w-4 mr-2" />
+              Sync Artists
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Shows & Venues */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Shows & Events
+            </CardTitle>
+            <CardDescription>
+              Import upcoming shows and venue information
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+              Sync with Ticketmaster and other event sources
+            </div>
+            <Button variant="outline" className="w-full">
+              <Download className="h-4 w-4 mr-2" />
+              Import Shows
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Historical Setlists */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building className="h-5 w-5" />
+              Historical Setlists
+            </CardTitle>
+            <CardDescription>
+              Import setlist data from Setlist.fm
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+              Populate historical concert setlists for popular artists
+            </div>
+            <Button variant="outline" className="w-full">
+              <Download className="h-4 w-4 mr-2" />
+              Import Setlists
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* User Content */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              User Content
+            </CardTitle>
+            <CardDescription>
+              Manage user-generated content and reviews
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Badge variant="secondary">42 Pending</Badge>
+              <Badge variant="outline">128 Flagged</Badge>
+            </div>
+            <Button variant="outline" className="w-full">
+              Review Content
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Data Quality */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Music2 className="h-5 w-5" />
+              Data Quality
+            </CardTitle>
+            <CardDescription>
+              Check and improve data completeness
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2 text-sm">
+              <div>Artists missing images: <Badge variant="outline">23</Badge></div>
+              <div>Shows without setlists: <Badge variant="outline">156</Badge></div>
+            </div>
+            <Button variant="outline" className="w-full">
+              Run Quality Check
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Separator />
+
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Recent Sync Activity</h2>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div>
+              <div className="font-medium">Popular Artists Sync</div>
+              <div className="text-sm text-muted-foreground">45 artists synced successfully</div>
+            </div>
+            <div className="text-sm text-muted-foreground">2 hours ago</div>
+          </div>
+          <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div>
+              <div className="font-medium">Venue Data Update</div>
+              <div className="text-sm text-muted-foreground">123 venues updated from Ticketmaster</div>
+            </div>
+            <div className="text-sm text-muted-foreground">1 day ago</div>
+          </div>
+          <div className="flex items-center justify-between p-3 border rounded-lg">
+            <div>
+              <div className="font-medium">Setlist Import</div>
+              <div className="text-sm text-muted-foreground">89 historical setlists imported</div>
+            </div>
+            <div className="text-sm text-muted-foreground">3 days ago</div>
+          </div>
+        </div>
+      </div>
+
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold">Content Management</h1>

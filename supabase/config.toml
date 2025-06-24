@@ -82,6 +82,21 @@ redirect_uri = "http://localhost:54321/auth/v1/callback"
 # The maximum file size allowed (e.g. "5MB", "500KB").
 file_size_limit = "50MiB"
 
-[functions]
-# Path to the directory containing your Edge Functions
-functions_path = "./functions"
+# Edge Functions configuration
+[functions.email-processor]
+verify_jwt = false
+
+[functions.send-email]
+verify_jwt = false
+
+[functions.spotify-sync]
+verify_jwt = false
+
+[functions.setlist-fm-sync]
+verify_jwt = false
+
+[functions.musicbrainz-sync]
+verify_jwt = false
+
+[functions.daily-artist-sync]
+verify_jwt = false

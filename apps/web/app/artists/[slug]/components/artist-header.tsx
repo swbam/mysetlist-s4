@@ -1,175 +1,175 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import Image from 'next/image';
-import { Badge } from '@repo/design-system/components/ui/badge';
+import { useState } from 'react';
 import { Button } from '@repo/design-system/components/ui/button';
-import { Card } from '@repo/design-system/components/ui/card';
-import { CheckCircle2, Music, Users, Calendar } from 'lucide-react';
-import { followArtist, unfollowArtist, checkIfFollowing } from '../actions';
-import { useToast } from '@repo/design-system/hooks/use-toast';
-import { formatNumber } from '@/lib/utils';
-import { useEffect } from 'react';
-import { FollowerCount } from './follower-count';
-import { useTracking } from '@/lib/analytics/tracking';
+import { Badge } from '@repo/design-system/components/ui/badge';
+import { Card, CardContent } from '@repo/design-system/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/design-system/components/ui/avatar';
+import { Heart, Music, Users, Calendar, MapPin, ExternalLink, Verified } from 'lucide-react';
+import { useAuth } from '../../../providers/auth-provider';
+import Link from 'next/link';
 
 interface ArtistHeaderProps {
   artist: {
     id: string;
     name: string;
-    imageUrl: string | null;
-    genres: string | null;
-    followers: number | null;
-    followerCount: number | null;
-    monthlyListeners: number | null;
+    slug: string;
+    imageUrl?: string;
+    smallImageUrl?: string;
+    genres: string;
+    popularity: number;
+    followers: number;
+    monthlyListeners?: number;
     verified: boolean;
-    popularity: number | null;
+    bio?: string;
+    externalUrls?: string;
+    followerCount: number;
+    _count?: {
+      shows: number;
+      setlists: number;
+    };
   };
+  isFollowing?: boolean;
+  onFollow?: () => void;
 }
 
-export function ArtistHeader({ artist }: ArtistHeaderProps) {
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  const { toast } = useToast();
-  const { track } = useTracking();
-
-  useEffect(() => {
-    checkIfFollowing(artist.id).then(setIsFollowing);
-  }, [artist.id]);
-
-  const handleFollowToggle = () => {
-    startTransition(async () => {
-      try {
-        if (isFollowing) {
-          await unfollowArtist(artist.id);
-          setIsFollowing(false);
-          
-          // Track unfollow event
-          track('artist_unfollow', {
-            artistId: artist.id,
-            artistName: artist.name,
-            category: 'engagement',
-          });
-          
-          toast({
-            title: 'Unfollowed',
-            description: `You are no longer following ${artist.name}`,
-          });
-        } else {
-          const result = await followArtist(artist.id);
-          if (result.success) {
-            setIsFollowing(true);
-            
-            // Track follow event
-            track('artist_follow', {
-              artistId: artist.id,
-              artistName: artist.name,
-              category: 'engagement',
-            });
-            
-            toast({
-              title: 'Following',
-              description: `You are now following ${artist.name}`,
-            });
-          } else if (result.error) {
-            toast({
-              title: 'Error',
-              description: result.error,
-              variant: 'destructive',
-            });
-          }
-        }
-      } catch (error) {
-        toast({
-          title: 'Error',
-          description: 'Please sign in to follow artists',
-          variant: 'destructive',
-        });
-      }
-    });
-  };
+export function ArtistHeader({ artist, isFollowing = false, onFollow }: ArtistHeaderProps) {
+  const { user } = useAuth();
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
 
   const genres = artist.genres ? JSON.parse(artist.genres) : [];
+  const externalUrls = artist.externalUrls ? JSON.parse(artist.externalUrls) : {};
+
+  const formatFollowers = (count: number) => {
+    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
+    return count.toString();
+  };
+
+  const handleFollow = async () => {
+    if (!user || !onFollow) return;
+    
+    setIsFollowLoading(true);
+    try {
+      await onFollow();
+    } catch (error) {
+      console.error('Failed to follow/unfollow artist:', error);
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
 
   return (
-    <div className="relative">
-      {/* Background gradient */}
-      <div className="absolute inset-0 h-96 bg-gradient-to-b from-primary/10 to-background" />
-      
-      <div className="container relative mx-auto px-4 py-8">
-        <div className="flex flex-col items-center gap-6 md:flex-row md:items-end">
-          {/* Artist image */}
-          <div className="relative h-48 w-48 overflow-hidden rounded-full shadow-2xl md:h-64 md:w-64">
-            {artist.imageUrl ? (
-              <Image
-                src={artist.imageUrl}
-                alt={artist.name}
-                fill
-                className="object-cover"
-                priority
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-muted">
-                <Music className="h-16 w-16 text-muted-foreground" />
-              </div>
-            )}
+    <div className="w-full">
+      {/* Hero Banner */}
+      <div className="relative h-64 lg:h-80 bg-gradient-to-br from-primary/20 via-background to-secondary/20 overflow-hidden">
+        {artist.imageUrl && (
+          <div className="absolute inset-0 bg-black/20">
+            <img
+              src={artist.imageUrl}
+              alt={artist.name}
+              className="w-full h-full object-cover opacity-30 blur-sm"
+            />
           </div>
+        )}
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+        
+        <div className="container mx-auto px-4 h-full flex items-end pb-8">
+          <div className="flex flex-col lg:flex-row gap-6 items-start lg:items-end w-full">
+            {/* Artist Avatar */}
+            <Avatar className="h-32 w-32 lg:h-40 lg:w-40 border-4 border-background shadow-2xl">
+              <AvatarImage src={artist.imageUrl} alt={artist.name} />
+              <AvatarFallback className="text-2xl lg:text-3xl">
+                <Music className="h-12 w-12 lg:h-16 lg:w-16" />
+              </AvatarFallback>
+            </Avatar>
 
-          {/* Artist info */}
-          <div className="flex-1 text-center md:text-left">
-            <div className="flex items-center justify-center gap-2 md:justify-start">
-              <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
-                {artist.name}
-              </h1>
-              {artist.verified && (
-                <CheckCircle2 className="h-8 w-8 text-primary" />
-              )}
-            </div>
+            {/* Artist Info */}
+            <div className="flex-1">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h1 className="text-3xl lg:text-5xl font-bold text-foreground">
+                      {artist.name}
+                    </h1>
+                    {artist.verified && (
+                      <Verified className="h-6 w-6 lg:h-8 lg:w-8 text-blue-500 fill-current" />
+                    )}
+                  </div>
+                  
+                  {/* Genres */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {genres.slice(0, 4).map((genre: string) => (
+                      <Badge key={genre} variant="secondary" className="capitalize">
+                        {genre}
+                      </Badge>
+                    ))}
+                  </div>
 
-            {/* Genres */}
-            {genres.length > 0 && (
-              <div className="mt-2 flex flex-wrap justify-center gap-2 md:justify-start">
-                {genres.slice(0, 4).map((genre: string) => (
-                  <Badge key={genre} variant="secondary">
-                    {genre}
-                  </Badge>
-                ))}
+                  {/* Stats */}
+                  <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Users className="h-4 w-4" />
+                      {formatFollowers(artist.followers)} followers
+                    </div>
+                    {artist.monthlyListeners && (
+                      <div className="flex items-center gap-1">
+                        <Music className="h-4 w-4" />
+                        {formatFollowers(artist.monthlyListeners)} monthly listeners
+                      </div>
+                    )}
+                    {artist._count?.shows && (
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        {artist._count.shows} shows
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <Heart className="h-4 w-4" />
+                      {formatFollowers(artist.followerCount)} fans
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  {user && (
+                    <Button
+                      onClick={handleFollow}
+                      disabled={isFollowLoading}
+                      variant={isFollowing ? 'default' : 'outline'}
+                      size="lg"
+                    >
+                      <Heart className={`h-4 w-4 mr-2 ${isFollowing ? 'fill-current' : ''}`} />
+                      {isFollowing ? 'Following' : 'Follow'}
+                    </Button>
+                  )}
+                  
+                  {externalUrls.spotify && (
+                    <Button variant="outline" size="lg" asChild>
+                      <Link href={externalUrls.spotify} target="_blank">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Spotify
+                      </Link>
+                    </Button>
+                  )}
+                </div>
               </div>
-            )}
-
-            {/* Stats */}
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-6 text-sm text-muted-foreground md:justify-start">
-              {artist.monthlyListeners && (
-                <div className="flex items-center gap-1">
-                  <Users className="h-4 w-4" />
-                  <span>{formatNumber(artist.monthlyListeners)} monthly listeners</span>
-                </div>
-              )}
-              {artist.followerCount !== null && (
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  <FollowerCount 
-                    initialCount={artist.followerCount} 
-                    artistId={artist.id} 
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Follow button */}
-            <div className="mt-6">
-              <Button
-                onClick={handleFollowToggle}
-                disabled={isPending}
-                size="lg"
-                variant={isFollowing ? 'outline' : 'default'}
-              >
-                {isFollowing ? 'Following' : 'Follow'}
-              </Button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Bio */}
+      {artist.bio && (
+        <Card className="mt-6">
+          <CardContent className="p-6">
+            <h3 className="font-semibold mb-3">About</h3>
+            <p className="text-muted-foreground leading-relaxed">{artist.bio}</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

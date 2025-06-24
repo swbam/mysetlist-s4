@@ -8,6 +8,41 @@ create extension if not exists pg_net;
 grant usage on schema cron to postgres;
 grant all privileges on all tables in schema cron to postgres;
 
+-- Create app_settings table if it doesn't exist
+create table if not exists app_settings (
+  key text primary key,
+  value text not null,
+  created_at timestamp with time zone default now(),
+  updated_at timestamp with time zone default now()
+);
+
+-- Insert or update app settings
+insert into app_settings (key, value) 
+values 
+  ('app_url', 'https://mysetlist-sonnet.vercel.app'),
+  ('cron_secret', coalesce(current_setting('app.settings.cron_secret', true), 'default_secret'))
+on conflict (key) 
+do update set 
+  value = excluded.value,
+  updated_at = now();
+
+-- Function to get app settings
+create or replace function get_app_setting(setting_key text)
+returns text
+language plpgsql
+security definer
+as $$
+declare
+  setting_value text;
+begin
+  select value into setting_value 
+  from app_settings 
+  where key = setting_key;
+  
+  return setting_value;
+end;
+$$;
+
 -- Daily sync job (runs every day at 2 AM UTC)
 select cron.schedule(
   'daily-sync',
@@ -51,15 +86,10 @@ select cron.schedule(
   'weekly-email-digest',
   '0 9 * * 0', -- Cron expression: Sunday at 9 AM UTC
   $$
-  select net.http_post(
-    url := current_setting('app.settings.supabase_url')::text || '/functions/v1/send-weekly-digest',
+  select net.http_get(
+    url := (select get_app_setting('app_url')) || '/api/cron/weekly-digest',
     headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || current_setting('app.settings.supabase_service_role_key')::text,
-      'x-cron-secret', current_setting('app.settings.cron_secret')::text
-    ),
-    body := jsonb_build_object(
-      'type', 'weekly_digest'
+      'Authorization', 'Bearer ' || (select get_app_setting('cron_secret'))
     )
   );
   $$
@@ -70,15 +100,10 @@ select cron.schedule(
   'daily-reminders',
   '0 10 * * *', -- Cron expression: daily at 10 AM UTC
   $$
-  select net.http_post(
-    url := current_setting('app.settings.supabase_url')::text || '/functions/v1/send-daily-reminders',
+  select net.http_get(
+    url := (select get_app_setting('app_url')) || '/api/cron/daily-reminders',
     headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || current_setting('app.settings.supabase_service_role_key')::text,
-      'x-cron-secret', current_setting('app.settings.cron_secret')::text
-    ),
-    body := jsonb_build_object(
-      'type', 'daily_reminder'
+      'Authorization', 'Bearer ' || (select get_app_setting('cron_secret'))
     )
   );
   $$
@@ -89,15 +114,10 @@ select cron.schedule(
   'process-email-queue',
   '*/5 * * * *', -- Cron expression: every 5 minutes
   $$
-  select net.http_post(
-    url := current_setting('app.settings.supabase_url')::text || '/functions/v1/process-email-queue',
+  select net.http_get(
+    url := (select get_app_setting('app_url')) || '/api/cron/email-processing',
     headers := jsonb_build_object(
-      'Content-Type', 'application/json',
-      'Authorization', 'Bearer ' || current_setting('app.settings.supabase_service_role_key')::text,
-      'x-cron-secret', current_setting('app.settings.cron_secret')::text
-    ),
-    body := jsonb_build_object(
-      'batch_size', 50
+      'Authorization', 'Bearer ' || (select get_app_setting('cron_secret'))
     )
   );
   $$

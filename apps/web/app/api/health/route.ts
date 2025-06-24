@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@repo/database';
 import { sql } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 
 export async function GET(request: NextRequest) {
+  const startTime = Date.now();
+  
   try {
+    logger.debug('Health check started', {
+      action: 'health-check',
+      timestamp: new Date().toISOString(),
+    });
+
     // Check database connection
     const dbCheck = await db
       .select({ count: sql<number>`1` })
@@ -18,8 +26,9 @@ export async function GET(request: NextRequest) {
 
     // Get current timestamp
     const timestamp = new Date().toISOString();
+    const duration = Date.now() - startTime;
 
-    return NextResponse.json({
+    const response = {
       status: 'healthy',
       timestamp,
       checks: {
@@ -27,9 +36,23 @@ export async function GET(request: NextRequest) {
         environment: envCheck,
       },
       version: process.env.npm_package_version || 'unknown',
+    };
+
+    logger.info('Health check completed successfully', {
+      action: 'health-check',
+      duration,
+      checks: response.checks,
     });
+
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Health check failed:', error);
+    const duration = Date.now() - startTime;
+    
+    logger.error('Health check failed', error, {
+      action: 'health-check-error',
+      duration,
+    });
+    
     return NextResponse.json(
       {
         status: 'unhealthy',

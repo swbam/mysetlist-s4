@@ -3,7 +3,7 @@ import { Button } from '@repo/design-system/components/ui/button';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Music, MapPin, Calendar, Users } from 'lucide-react';
 import Link from 'next/link';
-import { SearchBar } from '../../components/search-bar';
+import { SearchBar } from '../../../components/search-bar';
 
 export const Hero = async () => (
   <div className="w-full bg-gradient-to-br from-primary/5 via-background to-secondary/5">
@@ -36,13 +36,16 @@ export const Hero = async () => (
           </p>
         </div>
 
-        <div className="flex flex-col gap-4 lg:flex-row lg:gap-6">
-          <SearchBar />
+        <div className="flex flex-col gap-4 lg:flex-row lg:gap-6 w-full max-w-2xl">
+          <SearchBar 
+            variant="hero"
+            placeholder="Search artists, shows, venues, or songs..."
+          />
         </div>
 
         <div className="flex flex-col gap-4 lg:flex-row lg:gap-6">
           <Button size="lg" asChild>
-            <Link href="/auth/signup">
+            <Link href="/auth/sign-up">
               <Music className="h-4 w-4 mr-2" />
               Join the Community
             </Link>

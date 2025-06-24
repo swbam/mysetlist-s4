@@ -1,369 +1,176 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@repo/database';
-import { artists, shows, venues, showArtists, showStatusEnum } from '@repo/database';
-import { or, ilike, eq, desc, gte, and, sql } from 'drizzle-orm';
-import { ticketmaster } from '@repo/external-apis';
+import { artists, shows, venues, songs } from '@repo/database';
+import { ilike, or, sql, eq } from 'drizzle-orm';
 
 interface SearchResult {
   id: string;
-  type: 'artist' | 'show' | 'venue';
+  type: 'artist' | 'show' | 'venue' | 'song';
   title: string;
-  subtitle?: string;
-  meta?: string;
-  imageUrl?: string;
+  subtitle: string;
+  imageUrl?: string | null;
   slug: string;
-  spotifyId?: string;
-}
-
-// Helper function to create slug
-function createSlug(name: string): string {
-  return name.toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
-// Helper function to convert Ticketmaster attraction to artist
-async function createArtistFromTicketmaster(attraction: any) {
-  const artistData = {
-    // For now, store Ticketmaster ID in external URLs since ticketmasterId field doesn't exist yet
-    spotifyId: null, // We'll set this when we sync with Spotify later
-    name: attraction.name,
-    slug: createSlug(attraction.name),
-    imageUrl: attraction.images?.[0]?.url || null,
-    smallImageUrl: attraction.images?.find((img: any) => img.ratio === '4_3')?.url || attraction.images?.[1]?.url || null,
-    genres: JSON.stringify(attraction.classifications?.map((c: any) => c.genre.name).filter(Boolean) || []),
-    popularity: attraction.upcomingEvents?._total || 0,
-    followers: 0, // Default for now
-    externalUrls: JSON.stringify({ 
-      ticketmaster: attraction.url,
-      ticketmasterId: attraction.id // Store for reference
-    }),
-    lastSyncedAt: new Date(),
-    verified: (attraction.upcomingEvents?._total || 0) > 0, // Verified if they have upcoming shows
-  };
-
-  try {
-    // Check if artist already exists by name first
-    const existingArtist = await db.query.artists.findFirst({
-      where: eq(artists.name, attraction.name),
-    });
-
-    if (existingArtist) {
-      // Update existing artist with Ticketmaster data
-      const [updatedArtist] = await db
-        .update(artists)
-        .set({
-          ...artistData,
-          updatedAt: new Date(),
-        })
-        .where(eq(artists.id, existingArtist.id))
-        .returning();
-
-      if (updatedArtist) {
-        await syncArtistShows(updatedArtist.id, attraction.name, attraction.id);
-      }
-      return updatedArtist;
-    }
-
-    const [newArtist] = await db
-      .insert(artists)
-      .values(artistData)
-      .returning();
-
-    // After creating artist, sync their shows from Ticketmaster
-    if (newArtist) {
-      await syncArtistShows(newArtist.id, attraction.name, attraction.id);
-    }
-
-    return newArtist;
-  } catch (error) {
-    console.error('Error creating artist:', error);
-    return null;
-  }
-}
-
-// Sync artist shows from Ticketmaster
-async function syncArtistShows(artistId: string, artistName: string, ticketmasterArtistId: string) {
-  try {
-    const events = await ticketmaster.getUpcomingEvents(artistName, {
-      size: 20,
-      sort: 'date,asc'
-    });
-
-    for (const event of events) {
-      if (event._embedded?.venues?.[0]) {
-        const ticketmasterVenue = event._embedded.venues[0];
-        
-        // Create venue if it doesn't exist (check by name since no ticketmasterId field yet)
-        let venue = await db.query.venues.findFirst({
-          where: and(
-            eq(venues.name, ticketmasterVenue.name),
-            eq(venues.city, ticketmasterVenue.city.name)
-          ),
-        });
-
-        if (!venue) {
-          const venueData = {
-            name: ticketmasterVenue.name,
-            slug: createSlug(ticketmasterVenue.name),
-            address: ticketmasterVenue.address?.line1 || null,
-            city: ticketmasterVenue.city.name,
-            state: ticketmasterVenue.state?.name || null,
-            country: ticketmasterVenue.country.name,
-            postalCode: null, // Not provided by Ticketmaster
-            latitude: ticketmasterVenue.location?.latitude ? parseFloat(ticketmasterVenue.location.latitude) : null,
-            longitude: ticketmasterVenue.location?.longitude ? parseFloat(ticketmasterVenue.location.longitude) : null,
-            capacity: null, // Not provided by Ticketmaster
-            website: ticketmasterVenue.url,
-            timezone: ticketmasterVenue.timezone || 'UTC',
-          };
-
-          const [newVenue] = await db
-            .insert(venues)
-            .values(venueData)
-            .returning();
-          
-          venue = newVenue;
-        }
-
-        // Create show
-        const showData = {
-          ticketmasterId: event.id,
-          name: event.name,
-          slug: createSlug(event.name),
-          date: event.dates.start.localDate,
-          startTime: event.dates.start.localTime || null,
-          venueId: venue?.id || null,
-          headlinerArtistId: artistId,
-          description: null,
-          ticketUrl: event.url,
-          status: 'upcoming' as const, // Use const assertion for proper typing
-        };
-
-        const [show] = await db
-          .insert(shows)
-          .values(showData)
-          .onConflictDoUpdate({
-            target: shows.ticketmasterId,
-            set: {
-              ...showData,
-              updatedAt: new Date(),
-            },
-          })
-          .returning();
-
-        // Link artist to show
-        if (show) {
-          await db
-            .insert(showArtists)
-            .values({
-              showId: show.id,
-              artistId: artistId,
-              orderIndex: 0, // 0 = headliner
-              isHeadliner: true,
-            })
-            .onConflictDoNothing();
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error syncing artist shows:', error);
-  }
+  [key: string]: any;
 }
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const q = searchParams.get('q');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 50);
+    const query = searchParams.get('q');
+    const type = searchParams.get('type') as 'artist' | 'show' | 'venue' | 'song' | 'all' | null;
+    const limit = parseInt(searchParams.get('limit') || '20');
 
-    if (!q || q.length < 2) {
-      return NextResponse.json({ artists: [], shows: [], venues: [] });
+    if (!query || query.length < 2) {
+      return NextResponse.json({ results: [] });
     }
 
-    const query = q.toLowerCase();
-    
-    // Initialize result arrays
-    const artistResults: any[] = [];
-    const showResults: any[] = [];
-    const venueResults: any[] = [];
+    const results: SearchResult[] = [];
 
-    // Search local database first for fast results
-    try {
-      // Search artists in database
-      const dbArtists = await db
+    // Search artists
+    if (!type || type === 'artist' || type === 'all') {
+      const artistResults = await db
         .select({
-          artist: artists,
-          showCount: sql<number>`(
-            SELECT COUNT(DISTINCT sa.show_id)
-            FROM show_artists sa
-            WHERE sa.artist_id = ${artists.id}
-          )`,
-          followerCount: sql<number>`(
-            SELECT COUNT(*)
-            FROM user_follows_artists ufa
-            WHERE ufa.artist_id = ${artists.id}
-          )`
+          id: artists.slug,
+          type: sql<string>`'artist'`,
+          title: artists.name,
+          subtitle: sql<string>`COALESCE(${artists.bio}, '')`,
+          imageUrl: artists.imageUrl,
+          slug: artists.slug,
+          popularity: artists.popularity,
+          followers: artists.followers,
         })
         .from(artists)
-        .where(ilike(artists.name, `%${query}%`))
-        .limit(10);
-
-      for (const { artist, showCount, followerCount } of dbArtists) {
-        const genres = artist.genres ? JSON.parse(artist.genres as string) : [];
-        artistResults.push({
-          id: artist.id,
-          name: artist.name,
-          slug: artist.slug,
-          imageUrl: artist.imageUrl || undefined,
-          genres: genres,
-          popularity: artist.popularity || 0,
-          showCount: showCount || 0,
-          followerCount: followerCount || 0,
-          isFollowing: false, // Will be updated on client-side
-        });
-      }
-
-      // Search shows in database
-      const dbShows = await db
-        .select({
-          show: shows,
-          artist: artists,
-          venue: venues,
-        })
-        .from(shows)
-        .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
-        .leftJoin(venues, eq(shows.venueId, venues.id))
         .where(
-          and(
-            or(
-              ilike(shows.name, `%${query}%`),
-              ilike(artists.name, `%${query}%`)
-            ),
-            gte(shows.date, new Date().toISOString())
+          or(
+            ilike(artists.name, `%${query}%`),
+            sql`${artists.genres}::text ILIKE ${'%' + query + '%'}`
           )
         )
-        .orderBy(shows.date)
-        .limit(10);
+        .orderBy(sql`${artists.popularity} DESC NULLS LAST`)
+        .limit(type === 'artist' ? limit : Math.floor(limit / 4));
 
-      for (const { show, artist, venue } of dbShows) {
-        if (venue) {
-          showResults.push({
-            id: show.id,
-            date: show.date,
-            status: show.ticketUrl ? 'on_sale' : 'upcoming',
-            ticketmasterUrl: show.ticketUrl,
-            artist: {
-              name: artist.name,
-              slug: artist.slug,
-            },
-            venue: {
-              name: venue.name,
-              slug: venue.slug,
-              city: venue.city,
-              state: venue.state || '',
-            },
-          });
-        }
-      }
+      results.push(...artistResults.map(artist => ({
+        ...artist,
+        type: 'artist' as const,
+        subtitle: `${artist.followers || 0} followers`,
+      })));
+    }
 
-      // Search venues in database
-      const dbVenues = await db
+    // Search shows
+    if (!type || type === 'show' || type === 'all') {
+      const showResults = await db
         .select({
-          venue: venues,
-          showCount: sql<number>`(
-            SELECT COUNT(*)
-            FROM shows s
-            WHERE s.venue_id = ${venues.id}
-          )`
+          id: shows.slug,
+          type: sql<string>`'show'`,
+          title: shows.name,
+          subtitle: sql<string>`${artists.name} || CASE WHEN ${venues.name} IS NOT NULL THEN ' • ' || ${venues.name} ELSE '' END`,
+          imageUrl: artists.imageUrl,
+          slug: shows.slug,
+          date: shows.date,
+          status: shows.status,
+        })
+        .from(shows)
+        .leftJoin(artists, eq(shows.headlinerArtistId, artists.id))
+        .leftJoin(venues, eq(shows.venueId, venues.id))
+        .where(
+          or(
+            ilike(shows.name, `%${query}%`),
+            ilike(artists.name, `%${query}%`)
+          )
+        )
+        .orderBy(sql`${shows.date} DESC NULLS LAST`)
+        .limit(type === 'show' ? limit : Math.floor(limit / 4));
+
+      results.push(...showResults.map(show => ({
+        ...show,
+        type: 'show' as const,
+        subtitle: `${show.subtitle} • ${new Date(show.date).toLocaleDateString()}`,
+      })));
+    }
+
+    // Search venues
+    if (!type || type === 'venue' || type === 'all') {
+      const venueResults = await db
+        .select({
+          id: venues.slug,
+          type: sql<string>`'venue'`,
+          title: venues.name,
+          subtitle: sql<string>`${venues.city} || CASE WHEN ${venues.state} IS NOT NULL THEN ', ' || ${venues.state} ELSE '' END || CASE WHEN ${venues.country} IS NOT NULL THEN ', ' || ${venues.country} ELSE '' END`,
+          imageUrl: venues.imageUrl,
+          slug: venues.slug,
+          capacity: venues.capacity,
         })
         .from(venues)
         .where(
           or(
             ilike(venues.name, `%${query}%`),
-            ilike(venues.city, `%${query}%`)
+            ilike(venues.city, `%${query}%`),
+            ilike(venues.address, `%${query}%`)
           )
         )
-        .limit(10);
+        .orderBy(sql`${venues.capacity} DESC NULLS LAST`)
+        .limit(type === 'venue' ? limit : Math.floor(limit / 4));
 
-      for (const { venue, showCount } of dbVenues) {
-        venueResults.push({
-          id: venue.id,
-          name: venue.name,
-          slug: venue.slug,
-          city: venue.city,
-          state: venue.state || '',
-          capacity: venue.capacity,
-          showCount: showCount || 0,
-        });
-      }
-    } catch (dbError) {
-      console.error('Database search error:', dbError);
+      results.push(...venueResults.map(venue => ({
+        ...venue,
+        type: 'venue' as const,
+      })));
     }
 
-    // If we don't have many artist results, search Ticketmaster for new artists
-    if (artistResults.length < 3) {
-      try {
-        const ticketmasterResults = await ticketmaster.searchAttractions({
-          keyword: q,
-          size: 10,
-          classificationName: ['Music']
-        });
+    // Search songs
+    if (!type || type === 'song' || type === 'all') {
+      const songResults = await db
+        .select({
+          id: songs.id,
+          type: sql<string>`'song'`,
+          title: songs.title,
+          subtitle: sql<string>`${songs.artist} || CASE WHEN ${songs.album} IS NOT NULL THEN ' • ' || ${songs.album} ELSE '' END`,
+          imageUrl: songs.albumArtUrl,
+          slug: sql<string>`${songs.id}`,
+          popularity: songs.popularity,
+          duration: songs.durationMs,
+        })
+        .from(songs)
+        .where(
+          or(
+            ilike(songs.title, `%${query}%`),
+            ilike(songs.artist, `%${query}%`),
+            ilike(songs.album, `%${query}%`)
+          )
+        )
+        .orderBy(sql`${songs.popularity} DESC NULLS LAST`)
+        .limit(type === 'song' ? limit : Math.floor(limit / 4));
 
-        if (ticketmasterResults._embedded?.attractions) {
-          for (const attraction of ticketmasterResults._embedded.attractions.slice(0, 5)) {
-            // Check if we already have this artist by name
-            const existingIndex = artistResults.findIndex(a => 
-              a.name.toLowerCase() === attraction.name.toLowerCase()
-            );
-
-            if (existingIndex === -1) {
-              // Create new artist and sync their data
-              const newArtist = await createArtistFromTicketmaster(attraction);
-              
-              if (newArtist) {
-                const genres = newArtist.genres ? JSON.parse(newArtist.genres as string) : [];
-                artistResults.push({
-                  id: newArtist.id,
-                  name: newArtist.name,
-                  slug: newArtist.slug,
-                  imageUrl: newArtist.imageUrl || undefined,
-                  genres: genres,
-                  popularity: newArtist.popularity || 0,
-                  showCount: 0, // Will be populated after sync
-                  followerCount: 0,
-                  isFollowing: false,
-                });
-              }
-            }
-          }
-        }
-      } catch (ticketmasterError) {
-        console.error('Ticketmaster search error:', ticketmasterError);
-      }
+      results.push(...songResults.map(song => ({
+        ...song,
+        type: 'song' as const,
+      })));
     }
 
-    // Sort results by relevance
-    const sortedArtists = artistResults.sort((a, b) => {
-      // Exact matches first
-      const aExact = a.name.toLowerCase() === q.toLowerCase();
-      const bExact = b.name.toLowerCase() === q.toLowerCase();
-      if (aExact && !bExact) return -1;
-      if (bExact && !aExact) return 1;
+    // Sort results by relevance (exact matches first, then partial matches)
+    const sortedResults = results.sort((a, b) => {
+      const aExact = a.title.toLowerCase().includes(query.toLowerCase()) ? 1 : 0;
+      const bExact = b.title.toLowerCase().includes(query.toLowerCase()) ? 1 : 0;
       
-      // Then by popularity/followers
-      return (b.followerCount + b.showCount) - (a.followerCount + a.showCount);
+      if (aExact !== bExact) {
+        return bExact - aExact; // Exact matches first
+      }
+      
+      // Then by type priority (artists first, then shows, venues, songs)
+      const typePriority: Record<string, number> = { artist: 4, show: 3, venue: 2, song: 1 };
+      return (typePriority[b.type] || 0) - (typePriority[a.type] || 0);
     });
 
-    return NextResponse.json({
-      artists: sortedArtists.slice(0, limit),
-      shows: showResults.slice(0, limit),
-      venues: venueResults.slice(0, limit),
+    return NextResponse.json({ 
+      results: sortedResults.slice(0, limit),
+      total: sortedResults.length,
+      query,
     });
   } catch (error) {
-    console.error('Search API error:', error);
+    console.error('Search failed:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Search failed', details: errorMessage },
       { status: 500 }
     );
   }
