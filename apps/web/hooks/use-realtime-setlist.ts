@@ -1,188 +1,170 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { useAuth } from '@/app/providers/auth-provider';
-
-interface VoteUpdate {
-  songId: string;
-  upvotes: number;
-  downvotes: number;
-  netVotes: number;
-  userVote?: 'up' | 'down' | null;
-}
+import { useEffect, useState, useCallback } from 'react';
+import { createClient } from '@/lib/supabase/client';
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 interface SetlistSong {
   id: string;
-  upvotes: number;
-  downvotes: number;
-  netVotes: number;
-  userVote?: 'up' | 'down' | null;
-  [key: string]: any;
+  setlist_id: string;
+  song_id: string;
+  position: number;
+  notes?: string;
+  is_cover: boolean;
+  is_debut: boolean;
+  created_at: string;
+  song?: {
+    id: string;
+    title: string;
+    artist_id: string;
+  };
 }
 
-interface UseRealtimeSetlistProps {
-  setlistId: string;
-  initialSongs: SetlistSong[];
+interface UseRealtimeSetlistOptions {
+  setlistId?: string;
+  showId?: string;
+  onSongAdded?: (song: SetlistSong) => void;
+  onSongRemoved?: (songId: string) => void;
+  onSongUpdated?: (song: SetlistSong) => void;
+  onSetlistReordered?: (songs: SetlistSong[]) => void;
 }
 
-export function useRealtimeSetlist({ setlistId, initialSongs }: UseRealtimeSetlistProps) {
-  const { user } = useAuth();
-  const [songs, setSongs] = useState<SetlistSong[]>(initialSongs);
-  const [isConnected, setIsConnected] = useState(false);
-  const [connectionError, setConnectionError] = useState<string | null>(null);
-  const eventSourceRef = useRef<EventSource | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const reconnectAttemptsRef = useRef(0);
-  const maxReconnectAttempts = 5;
+export function useRealtimeSetlist({ 
+  setlistId,
+  showId,
+  onSongAdded,
+  onSongRemoved,
+  onSongUpdated,
+  onSetlistReordered
+}: UseRealtimeSetlistOptions) {
+  const [songs, setSongs] = useState<SetlistSong[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const supabase = createClient();
 
-  const connect = useCallback(() => {
-    if (!user || !setlistId) return;
+  // Fetch current setlist songs
+  const fetchSetlistSongs = useCallback(async () => {
+    if (!setlistId && !showId) return;
 
     try {
-      // Close existing connection
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
+      setIsLoading(true);
+      let query = supabase
+        .from('setlist_songs')
+        .select(`
+          *,
+          song:songs(id, title, artist_id)
+        `)
+        .order('position', { ascending: true });
+
+      if (setlistId) {
+        query = query.eq('setlist_id', setlistId);
+      } else if (showId) {
+        // Get setlist for the show first
+        const { data: setlistData } = await supabase
+          .from('setlists')
+          .select('id')
+          .eq('show_id', showId)
+          .single();
+        
+        if (setlistData) {
+          query = query.eq('setlist_id', setlistData.id);
+        }
       }
 
-      // Create new EventSource connection
-      const eventSource = new EventSource(
-        `/api/votes/realtime?setlistId=${encodeURIComponent(setlistId)}`
-      );
+      const { data, error } = await query;
 
-      eventSource.onopen = () => {
-        setIsConnected(true);
-        setConnectionError(null);
-        reconnectAttemptsRef.current = 0;
-        console.log('Real-time connection established');
-      };
-
-      eventSource.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-
-          switch (data.type) {
-            case 'connected':
-              console.log('Connected to setlist:', data.setlistId);
-              break;
-
-            case 'vote_update':
-              // Update vote counts for specific song
-              setSongs(prev => prev.map(song => {
-                if (song.id === data.payload.setlist_song_id) {
-                  return {
-                    ...song,
-                    upvotes: data.payload.upvotes || song.upvotes,
-                    downvotes: data.payload.downvotes || song.downvotes,
-                    netVotes: (data.payload.upvotes || song.upvotes) - (data.payload.downvotes || song.downvotes),
-                    userVote: data.payload.user_id === user.id ? data.payload.vote_type : song.userVote
-                  };
-                }
-                return song;
-              }));
-              break;
-
-            case 'setlist_update':
-              // Handle setlist changes (songs added/removed/reordered)
-              console.log('Setlist updated:', data.payload);
-              // You could refetch the full setlist here if needed
-              break;
-
-            case 'ping':
-              // Keep-alive ping, no action needed
-              break;
-
-            default:
-              console.log('Unknown message type:', data.type);
-          }
-        } catch (error) {
-          console.error('Error parsing SSE message:', error);
-        }
-      };
-
-      eventSource.onerror = () => {
-        setIsConnected(false);
-        
-        if (reconnectAttemptsRef.current < maxReconnectAttempts) {
-          reconnectAttemptsRef.current++;
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
-          
-          setConnectionError(`Connection lost. Reconnecting in ${delay / 1000}s... (${reconnectAttemptsRef.current}/${maxReconnectAttempts})`);
-          
-          reconnectTimeoutRef.current = setTimeout(() => {
-            connect();
-          }, delay);
-        } else {
-          setConnectionError('Unable to establish real-time connection. Please refresh the page.');
-        }
-      };
-
-      eventSourceRef.current = eventSource;
+      if (!error && data) {
+        setSongs(data);
+      }
     } catch (error) {
-      console.error('Error creating EventSource:', error);
-      setConnectionError('Failed to connect to real-time updates');
+      console.error('Error fetching setlist songs:', error);
+    } finally {
+      setIsLoading(false);
     }
-  }, [user, setlistId]);
+  }, [setlistId, showId, supabase]);
 
-  // Connect when component mounts or dependencies change
   useEffect(() => {
-    connect();
+    // Initial fetch
+    fetchSetlistSongs();
+
+    if (!setlistId && !showId) return;
+
+    // Build the filter based on what we have
+    let filter = '';
+    if (setlistId) {
+      filter = `setlist_id=eq.${setlistId}`;
+    } else if (showId) {
+      filter = `setlist_id=in.(select id from setlists where show_id=eq.${showId})`;
+    }
+
+    // Subscribe to setlist changes
+    const channel = supabase
+      .channel(`setlist-songs-${setlistId || showId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'setlist_songs',
+          filter,
+        },
+        async (payload: RealtimePostgresChangesPayload<SetlistSong>) => {
+          if (payload.eventType === 'INSERT' && payload.new) {
+            // Fetch the full song data
+            const { data: songData } = await supabase
+              .from('songs')
+              .select('id, title, artist_id')
+              .eq('id', payload.new.song_id)
+              .single();
+
+            const newSong = { ...payload.new, song: songData || undefined };
+            
+            setSongs(prev => {
+              const updated = [...prev, newSong as SetlistSong].sort((a, b) => a.position - b.position);
+              onSongAdded?.(newSong as SetlistSong);
+              return updated;
+            });
+          } else if (payload.eventType === 'DELETE' && payload.old) {
+            setSongs(prev => {
+              const updated = prev.filter(song => song.id !== payload.old.id);
+              if (payload.old.id) {
+                onSongRemoved?.(payload.old.id);
+              }
+              return updated;
+            });
+          } else if (payload.eventType === 'UPDATE' && payload.new) {
+            setSongs(prev => {
+              const updated = prev.map(song => 
+                song.id === payload.new.id 
+                  ? { ...song, ...payload.new }
+                  : song
+              ).sort((a, b) => a.position - b.position);
+              
+              const updatedSong = updated.find(s => s.id === payload.new.id);
+              if (updatedSong) {
+                onSongUpdated?.(updatedSong);
+              }
+              
+              // Check if positions changed (reordering)
+              const positionChanged = prev.find(s => s.id === payload.new.id)?.position !== payload.new.position;
+              if (positionChanged) {
+                onSetlistReordered?.(updated);
+              }
+              
+              return updated;
+            });
+          }
+        }
+      )
+      .subscribe();
 
     return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close();
-      }
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
+      supabase.removeChannel(channel);
     };
-  }, [connect]);
-
-  // Optimistically update votes locally before server confirms
-  const optimisticVote = useCallback((songId: string, voteType: 'up' | 'down' | null) => {
-    setSongs(prev => prev.map(song => {
-      if (song.id === songId) {
-        const currentVote = song.userVote;
-        let newUpvotes = song.upvotes;
-        let newDownvotes = song.downvotes;
-
-        // Remove previous vote
-        if (currentVote === 'up') {
-          newUpvotes--;
-        } else if (currentVote === 'down') {
-          newDownvotes--;
-        }
-
-        // Add new vote
-        if (voteType === 'up') {
-          newUpvotes++;
-        } else if (voteType === 'down') {
-          newDownvotes++;
-        }
-
-        return {
-          ...song,
-          upvotes: Math.max(0, newUpvotes),
-          downvotes: Math.max(0, newDownvotes),
-          netVotes: newUpvotes - newDownvotes,
-          userVote: voteType
-        };
-      }
-      return song;
-    }));
-  }, []);
-
-  // Manual reconnect function
-  const reconnect = useCallback(() => {
-    reconnectAttemptsRef.current = 0;
-    setConnectionError(null);
-    connect();
-  }, [connect]);
+  }, [setlistId, showId, supabase, fetchSetlistSongs, onSongAdded, onSongRemoved, onSongUpdated, onSetlistReordered]);
 
   return {
     songs,
-    isConnected,
-    connectionError,
-    optimisticVote,
-    reconnect
+    isLoading,
+    refetch: fetchSetlistSongs,
   };
 }

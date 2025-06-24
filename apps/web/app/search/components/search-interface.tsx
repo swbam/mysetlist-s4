@@ -1,355 +1,456 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Input } from '@repo/design-system/components/ui/input';
 import { Button } from '@repo/design-system/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { 
-  Search, 
-  Filter, 
-  MapPin, 
-  Calendar, 
-  Music, 
-  Users, 
-  Heart,
-  Clock,
-  Star,
-  Loader2
-} from 'lucide-react';
-import Link from 'next/link';
-import { useDebounce } from '@/hooks/use-debounce';
+import { Search, Music, MapPin, Calendar, Users, ExternalLink, Heart } from 'lucide-react';
 import { format } from 'date-fns';
+import Link from 'next/link';
+import Image from 'next/image';
+import { toast } from 'sonner';
+import { cn } from '@repo/design-system/lib/utils';
 
-interface SearchResult {
+type Artist = {
   id: string;
-  type: 'artist' | 'venue' | 'show' | 'song';
-  title: string;
-  subtitle?: string;
-  description?: string;
-  imageUrl?: string;
-  metadata?: {
-    followers?: number;
-    capacity?: number;
-    date?: string;
-    genre?: string[];
-    location?: string;
-    rating?: number;
-  };
+  name: string;
   slug: string;
-}
+  imageUrl?: string;
+  genres: string[];
+  popularity: number;
+  showCount: number;
+  followerCount: number;
+  isFollowing: boolean;
+};
 
-const SEARCH_CATEGORIES = [
-  { id: 'all', label: 'All', icon: Search },
-  { id: 'artists', label: 'Artists', icon: Users },
-  { id: 'venues', label: 'Venues', icon: MapPin },
-  { id: 'shows', label: 'Shows', icon: Calendar },
-  { id: 'songs', label: 'Songs', icon: Music },
-] as const;
+type Show = {
+  id: string;
+  date: Date;
+  status: string;
+  ticketmasterUrl?: string;
+  artist: {
+    name: string;
+    slug: string;
+  };
+  venue: {
+    name: string;
+    slug: string;
+    city: string;
+    state: string;
+  };
+};
+
+type Venue = {
+  id: string;
+  name: string;
+  slug: string;
+  city: string;
+  state: string;
+  capacity?: number;
+  showCount: number;
+};
+
+type SearchResults = {
+  artists: Artist[];
+  shows: Show[];
+  venues: Venue[];
+};
 
 export function SearchInterface() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  
+  const router = useRouter();
   const [query, setQuery] = useState(searchParams.get('q') || '');
-  const [category, setCategory] = useState(searchParams.get('category') || 'all');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [filters, setFilters] = useState({
-    location: searchParams.get('location') || '',
-    genre: searchParams.get('genre') || '',
-    dateRange: searchParams.get('dateRange') || '',
-  });
+  const [results, setResults] = useState<SearchResults | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('artists');
+  const [followingArtists, setFollowingArtists] = useState<Set<string>>(new Set());
 
-  const debouncedQuery = useDebounce(query, 300);
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q && q !== query) {
+      setQuery(q);
+      performSearch(q);
+    }
+  }, [searchParams]);
 
-  // Perform search
-  const performSearch = useCallback(async (searchQuery: string, searchCategory: string) => {
+  // Check if user is following artists
+  useEffect(() => {
+    const checkFollowingStatus = async () => {
+      if (!results?.artists.length) return;
+      
+      try {
+        const response = await fetch('/api/user/following');
+        if (response.ok) {
+          const data = await response.json();
+          setFollowingArtists(new Set(data.artistIds));
+        }
+      } catch (error) {
+        console.error('Failed to fetch following status:', error);
+      }
+    };
+
+    checkFollowingStatus();
+  }, [results]);
+
+  const performSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) {
-      setResults([]);
+      setResults(null);
       return;
     }
 
-    setIsLoading(true);
+    setLoading(true);
     try {
-      const params = new URLSearchParams({
-        q: searchQuery,
-        category: searchCategory,
-        ...Object.fromEntries(Object.entries(filters).filter(([, value]) => value))
+      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+      if (response.ok) {
+        const data = await response.json();
+        setResults(data);
+        
+        // Update URL without triggering reload
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.set('q', searchQuery);
+        router.replace(newUrl.toString());
+      }
+    } catch (error) {
+      console.error('Search failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    performSearch(query);
+  };
+
+  const handleFollow = async (artistId: string, currentlyFollowing: boolean) => {
+    try {
+      const response = await fetch('/api/follow', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          artistId,
+          following: !currentlyFollowing,
+        }),
       });
 
-      const response = await fetch(`/api/search?${params}`);
-      const data = await response.json();
-      
-      setResults(data.results || []);
+      if (response.ok) {
+        if (currentlyFollowing) {
+          setFollowingArtists(prev => {
+            const next = new Set(prev);
+            next.delete(artistId);
+            return next;
+          });
+          toast.success('Unfollowed artist');
+        } else {
+          setFollowingArtists(prev => new Set(prev).add(artistId));
+          toast.success('Following artist');
+        }
+      } else if (response.status === 401) {
+        toast.error('Please sign in to follow artists');
+        router.push('/auth/sign-in');
+      }
     } catch (error) {
-      console.error('Search error:', error);
-      setResults([]);
-    } finally {
-      setIsLoading(false);
+      toast.error('Failed to update follow status');
     }
-  }, [filters]);
-
-  // Update URL when search changes
-  useEffect(() => {
-    const params = new URLSearchParams();
-    if (query) params.set('q', query);
-    if (category !== 'all') params.set('category', category);
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value) params.set(key, value);
-    });
-
-    const newUrl = `/search${params.toString() ? '?' + params.toString() : ''}`;
-    router.replace(newUrl, { scroll: false });
-  }, [query, category, filters, router]);
-
-  // Search when debounced query changes
-  useEffect(() => {
-    performSearch(debouncedQuery, category);
-  }, [debouncedQuery, category, performSearch]);
-
-  // Filter results by category
-  const filteredResults = useMemo(() => {
-    if (category === 'all') return results;
-    return results.filter(result => result.type === category.slice(0, -1)); // Remove 's' from category
-  }, [results, category]);
-
-  const resultsByCategory = useMemo(() => {
-    return SEARCH_CATEGORIES.slice(1).reduce((acc, cat) => {
-      const categoryType = cat.id.slice(0, -1) as SearchResult['type'];
-      acc[categoryType] = results.filter(result => result.type === categoryType);
-      return acc;
-    }, {} as Record<SearchResult['type'], SearchResult[]>);
-  }, [results]);
-
-  const renderSearchResult = (result: SearchResult) => {
-    const Icon = SEARCH_CATEGORIES.find(cat => result.type === cat.id.slice(0, -1))?.icon || Search;
-    
-    return (
-      <Card key={result.id} className="hover:shadow-md transition-shadow">
-        <CardContent className="p-4">
-          <Link href={`/${result.type}s/${result.slug}`} className="block">
-            <div className="flex items-start gap-4">
-              {result.imageUrl ? (
-                <img 
-                  src={result.imageUrl} 
-                  alt={result.title}
-                  className="w-16 h-16 rounded-lg object-cover"
-                />
-              ) : (
-                <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
-                  <Icon className="h-6 w-6 text-muted-foreground" />
-                </div>
-              )}
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-semibold text-lg truncate">{result.title}</h3>
-                  <Badge variant="outline" className="text-xs">
-                    {result.type}
-                  </Badge>
-                </div>
-                
-                {result.subtitle && (
-                  <p className="text-muted-foreground text-sm mb-2">{result.subtitle}</p>
-                )}
-                
-                {result.description && (
-                  <p className="text-sm text-muted-foreground line-clamp-2">{result.description}</p>
-                )}
-                
-                {result.metadata && (
-                  <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                    {result.metadata.followers && (
-                      <div className="flex items-center gap-1">
-                        <Heart className="h-3 w-3" />
-                        {result.metadata.followers.toLocaleString()} followers
-                      </div>
-                    )}
-                    {result.metadata.capacity && (
-                      <div className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {result.metadata.capacity.toLocaleString()} capacity
-                      </div>
-                    )}
-                    {result.metadata.date && (
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {format(new Date(result.metadata.date), 'MMM d, yyyy')}
-                      </div>
-                    )}
-                    {result.metadata.location && (
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        {result.metadata.location}
-                      </div>
-                    )}
-                    {result.metadata.rating && (
-                      <div className="flex items-center gap-1">
-                        <Star className="h-3 w-3 fill-current text-yellow-500" />
-                        {result.metadata.rating.toFixed(1)}
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {result.metadata?.genre && result.metadata.genre.length > 0 && (
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {result.metadata.genre.slice(0, 3).map((genre) => (
-                      <Badge key={genre} variant="secondary" className="text-xs">
-                        {genre}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </Link>
-        </CardContent>
-      </Card>
-    );
   };
+
+  const resultCounts = results ? {
+    artists: results.artists.length,
+    shows: results.shows.length,
+    venues: results.venues.length,
+  } : { artists: 0, shows: 0, venues: 0 };
 
   return (
     <div className="space-y-6">
-      {/* Search Input */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-        <Input
-          placeholder="Search for artists, venues, shows, or songs..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="pl-10 pr-4 h-12 text-lg"
-        />
-      </div>
+      {/* Search Form */}
+      <form onSubmit={handleSearch} className="flex gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search for artists, shows, or venues..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="pl-10 text-lg py-6"
+          />
+        </div>
+        <Button type="submit" disabled={loading} className="px-8 py-6">
+          {loading ? 'Searching...' : 'Search'}
+        </Button>
+      </form>
 
-      {/* Quick Filters */}
-      {query && (
-        <div className="flex flex-wrap gap-2">
-          <Input
-            placeholder="Location..."
-            value={filters.location}
-            onChange={(e) => setFilters(prev => ({ ...prev, location: e.target.value }))}
-            className="w-auto"
-          />
-          <Input
-            placeholder="Genre..."
-            value={filters.genre}
-            onChange={(e) => setFilters(prev => ({ ...prev, genre: e.target.value }))}
-            className="w-auto"
-          />
-          <Button 
-            variant="outline" 
-            onClick={() => setFilters({ location: '', genre: '', dateRange: '' })}
-            disabled={!Object.values(filters).some(Boolean)}
-          >
-            <Filter className="h-4 w-4 mr-2" />
-            Clear Filters
-          </Button>
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-8">
+          <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-muted-foreground">Searching Ticketmaster...</p>
         </div>
       )}
 
       {/* Results */}
-      {query ? (
-        <Tabs value={category} onValueChange={setCategory}>
-          <TabsList className="grid w-full grid-cols-5">
-            {SEARCH_CATEGORIES.map((cat) => {
-              const count = cat.id === 'all' 
-                ? results.length 
-                : resultsByCategory[cat.id.slice(0, -1) as SearchResult['type']]?.length || 0;
-              
-              return (
-                <TabsTrigger key={cat.id} value={cat.id} className="flex items-center gap-2">
-                  <cat.icon className="h-4 w-4" />
-                  {cat.label}
-                  {count > 0 && (
-                    <Badge variant="secondary" className="ml-1 text-xs">
-                      {count}
-                    </Badge>
-                  )}
-                </TabsTrigger>
-              );
-            })}
+      {results && !loading && (
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="artists" className="gap-2">
+              <Music className="h-4 w-4" />
+              Artists ({resultCounts.artists})
+            </TabsTrigger>
+            <TabsTrigger value="shows" className="gap-2">
+              <Calendar className="h-4 w-4" />
+              Shows ({resultCounts.shows})
+            </TabsTrigger>
+            <TabsTrigger value="venues" className="gap-2">
+              <MapPin className="h-4 w-4" />
+              Venues ({resultCounts.venues})
+            </TabsTrigger>
           </TabsList>
 
-          <div className="mt-6">
-            {isLoading ? (
-              <div className="flex items-center justify-center py-12">
-                <Loader2 className="h-8 w-8 animate-spin" />
-              </div>
+          <TabsContent value="artists" className="mt-6">
+            {results.artists.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No artists found</h3>
+                  <p className="text-muted-foreground">
+                    Try searching for a different artist name.
+                  </p>
+                </CardContent>
+              </Card>
             ) : (
-              <TabsContent value="all" className="space-y-4">
-                {results.length === 0 ? (
-                  <div className="text-center py-12">
-                    <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium mb-2">No results found</h3>
-                    <p className="text-muted-foreground">
-                      Try adjusting your search terms or filters
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {results.map(renderSearchResult)}
-                  </div>
-                )}
-              </TabsContent>
+              <div className="grid gap-4">
+                {results.artists.map((artist) => (
+                  <Card key={artist.id} className="overflow-hidden">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4">
+                        {artist.imageUrl && (
+                          <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
+                            <Image
+                              src={artist.imageUrl}
+                              alt={artist.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <Link 
+                            href={`/artists/${artist.slug}`}
+                            className="text-xl font-bold hover:text-primary transition-colors"
+                          >
+                            {artist.name}
+                          </Link>
+                          <div className="flex items-center gap-2 mt-1">
+                            {artist.genres.slice(0, 3).map((genre) => (
+                              <Badge key={genre} variant="secondary" className="text-xs">
+                                {genre}
+                              </Badge>
+                            ))}
+                          </div>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              <span>{artist.showCount} shows</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Users className="h-4 w-4" />
+                              <span>{artist.followerCount.toLocaleString()} followers</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant={followingArtists.has(artist.id) ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handleFollow(artist.id, followingArtists.has(artist.id))}
+                            className="gap-2"
+                          >
+                            <Heart className={cn(
+                              "h-4 w-4",
+                              followingArtists.has(artist.id) && "fill-current"
+                            )} />
+                            {followingArtists.has(artist.id) ? 'Following' : 'Follow'}
+                          </Button>
+                          <Button asChild>
+                            <Link href={`/artists/${artist.slug}`}>
+                              View Artist
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             )}
+          </TabsContent>
 
-            {SEARCH_CATEGORIES.slice(1).map((cat) => {
-              const categoryType = cat.id.slice(0, -1) as SearchResult['type'];
-              const categoryResults = resultsByCategory[categoryType] || [];
-              
-              return (
-                <TabsContent key={cat.id} value={cat.id} className="space-y-4">
-                  {isLoading ? (
-                    <div className="flex items-center justify-center py-12">
-                      <Loader2 className="h-8 w-8 animate-spin" />
-                    </div>
-                  ) : categoryResults.length === 0 ? (
-                    <div className="text-center py-12">
-                      <cat.icon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <h3 className="text-lg font-medium mb-2">No {cat.label.toLowerCase()} found</h3>
-                      <p className="text-muted-foreground">
-                        Try different search terms
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {categoryResults.map(renderSearchResult)}
-                    </div>
-                  )}
-                </TabsContent>
-              );
-            })}
-          </div>
+          <TabsContent value="shows" className="mt-6">
+            {results.shows.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No shows found</h3>
+                  <p className="text-muted-foreground">
+                    No upcoming shows match your search.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {results.shows.map((show) => (
+                  <Card key={show.id}>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Link 
+                            href={`/artists/${show.artist.slug}`}
+                            className="text-xl font-bold hover:text-primary transition-colors"
+                          >
+                            {show.artist.name}
+                          </Link>
+                          <div className="flex items-center gap-2 mt-1">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <Link 
+                              href={`/venues/${show.venue.slug}`}
+                              className="text-muted-foreground hover:text-primary transition-colors"
+                            >
+                              {show.venue.name} • {show.venue.city}, {show.venue.state}
+                            </Link>
+                          </div>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-muted-foreground">
+                              {format(new Date(show.date), 'PPP p')}
+                            </span>
+                            <Badge variant={show.status === 'on_sale' ? 'default' : 'secondary'}>
+                              {show.status.replace('_', ' ')}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          {show.ticketmasterUrl && (
+                            <Button variant="outline" asChild>
+                              <a 
+                                href={show.ticketmasterUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="gap-2"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                                Tickets
+                              </a>
+                            </Button>
+                          )}
+                          <Button asChild>
+                            <Link href={`/setlists/${show.id}`}>
+                              View Setlist
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="venues" className="mt-6">
+            {results.venues.length === 0 ? (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No venues found</h3>
+                  <p className="text-muted-foreground">
+                    No venues match your search criteria.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {results.venues.map((venue) => (
+                  <Card key={venue.id}>
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Link 
+                            href={`/venues/${venue.slug}`}
+                            className="text-xl font-bold hover:text-primary transition-colors"
+                          >
+                            {venue.name}
+                          </Link>
+                          <div className="flex items-center gap-2 mt-1">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-muted-foreground">
+                              {venue.city}, {venue.state}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Calendar className="h-4 w-4" />
+                              <span>{venue.showCount} shows</span>
+                            </div>
+                            {venue.capacity && (
+                              <div className="flex items-center gap-1">
+                                <Users className="h-4 w-4" />
+                                <span>Capacity: {venue.capacity.toLocaleString()}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <Button asChild>
+                          <Link href={`/venues/${venue.slug}`}>
+                            View Venue
+                          </Link>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
-      ) : (
-        // Empty state
-        <div className="text-center py-12">
-          <Search className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-xl font-medium mb-2">Start searching</h3>
-          <p className="text-muted-foreground mb-6">
-            Find your favorite artists, discover new venues, or explore upcoming shows
-          </p>
-          <div className="grid gap-4 md:grid-cols-4 max-w-2xl mx-auto">
-            {SEARCH_CATEGORIES.slice(1).map((cat) => (
-              <Button
-                key={cat.id}
-                variant="outline"
-                className="h-16 flex-col"
-                onClick={() => {
-                  setCategory(cat.id);
-                  setQuery('*');
-                }}
-              >
-                <cat.icon className="h-6 w-6 mb-2" />
-                Browse {cat.label}
-              </Button>
-            ))}
-          </div>
-        </div>
+      )}
+
+      {/* Search Tips */}
+      {!results && !loading && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Search className="h-5 w-5" />
+              Search Tips
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div>
+              <h4 className="font-semibold mb-2">Finding Artists</h4>
+              <p className="text-sm text-muted-foreground">
+                Search for artist names like "Taylor Swift", "The Beatles", or "Ed Sheeran". 
+                We'll find them on Ticketmaster and add their shows to our database.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Live Data</h4>
+              <p className="text-sm text-muted-foreground">
+                All artist and show data comes directly from Ticketmaster, so you'll always 
+                see the most up-to-date concert information.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-2">Community Powered</h4>
+              <p className="text-sm text-muted-foreground">
+                Once shows are added, the community creates and votes on setlists together. 
+                No effort required from artists!
+              </p>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

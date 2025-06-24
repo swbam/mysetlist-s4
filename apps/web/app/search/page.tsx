@@ -14,16 +14,18 @@ export const metadata: Metadata = createMetadata({
 const SearchPage = () => {
   return (
     <div className="container mx-auto py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Search</h1>
-        <p className="text-muted-foreground">
-          Find artists, venues, shows, and songs on MySetlist
-        </p>
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-4">Search MySetlist</h1>
+          <p className="text-lg text-muted-foreground">
+            Discover artists, find upcoming shows, and explore venues
+          </p>
+        </div>
+
+        <Suspense fallback={<div>Loading search...</div>}>
+          <SearchInterface />
+        </Suspense>
       </div>
-      
-      <Suspense fallback={<div>Loading search...</div>}>
-        <SearchInterface />
-      </Suspense>
     </div>
   );
 };

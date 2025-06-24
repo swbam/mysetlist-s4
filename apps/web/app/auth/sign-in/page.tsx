@@ -41,7 +41,7 @@ export default function SignInPage() {
 
     try {
       await signInWithEmail(data.email, data.password);
-      router.push('/dashboard');
+      router.push('/');
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
     } finally {
