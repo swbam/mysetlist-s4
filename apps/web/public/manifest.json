@@ -1,6 +1,6 @@
 {
-  "name": "TheSet - Live Music Community",
-  "short_name": "TheSet",
+  "name": "MySetlist - Live Music Community",
+  "short_name": "MySetlist",
   "description": "Connect with live music events, build setlists, and join the community",
   "start_url": "/",
   "scope": "/",

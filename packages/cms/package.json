@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "basehub dev",
+    "dev": "echo 'CMS dev skipped - basehub not needed for MySetlist'",
     "build": "echo 'CMS build skipped'",
-    "analyze": "basehub",
+    "analyze": "echo 'CMS analyze skipped'",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },

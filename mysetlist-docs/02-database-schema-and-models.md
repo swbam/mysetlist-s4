@@ -1,4 +1,4 @@
-# TheSet - Database Schema and Models with Next-Forge
+# MySetlist - Database Schema and Models with Next-Forge
 
 ## Table of Contents
 1. [Database Architecture Overview](#database-architecture-overview)
@@ -12,7 +12,7 @@
 
 ## Database Architecture Overview
 
-TheSet leverages Next-Forge's database package structure with Supabase as the backend, combining Drizzle ORM for type-safe queries with PostgreSQL's advanced features.
+MySetlist leverages Next-Forge's database package structure with Supabase as the backend, combining Drizzle ORM for type-safe queries with PostgreSQL's advanced features.
 
 ### Technology Stack
 - **Supabase**: Hosted PostgreSQL with extensions
@@ -677,4 +677,4 @@ CREATE TRIGGER setlist_song_vote_count_trigger
   FOR EACH ROW EXECUTE FUNCTION update_setlist_song_votes();
 ```
 
-This database schema provides a solid foundation for the TheSet application using Next-Forge's package structure with Supabase integration. The schema is designed for scalability, performance, and real-time features while maintaining type safety through Drizzle ORM.
+This database schema provides a solid foundation for the MySetlist application using Next-Forge's package structure with Supabase integration. The schema is designed for scalability, performance, and real-time features while maintaining type safety through Drizzle ORM.

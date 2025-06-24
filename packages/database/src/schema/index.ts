@@ -5,4 +5,6 @@ export * from './venue-reviews';
 export * from './shows';
 export * from './setlists';
 export * from './email-preferences';
+export * from './attendance';
+export * from './comments';
 export * from './relations';

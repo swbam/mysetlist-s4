@@ -2,7 +2,7 @@
   "web": {
     "global": {
       "primaryCta": "Find Shows",
-      "secondaryCta": "Join TheSet"
+      "secondaryCta": "Join MySetlist"
     },
     "header": {
       "home": "Home",
@@ -18,11 +18,11 @@
       "docs": "Help",
       "contact": "Contact",
       "signIn": "Sign in",
-      "signUp": "Join TheSet"
+      "signUp": "Join MySetlist"
     },
     "home": {
       "meta": {
-        "title": "Never Miss a Beat with TheSet",
+        "title": "Never Miss a Beat with MySetlist",
         "description": "Discover upcoming concerts, track your favorite artists, and vote on setlists in real-time. Join the community that's reshaping the live music experience."
       },
       "hero": {
@@ -88,7 +88,7 @@
         "items": [
           {
             "title": "Never miss a moment",
-            "description": "TheSet helped me discover an amazing opening band that became my new favorite. The real-time setlist updates are incredible!",
+            "description": "MySetlist helped me discover an amazing opening band that became my new favorite. The real-time setlist updates are incredible!",
             "author": {
               "name": "Sarah Chen",
               "image": "https://github.com/haydenbleasel.png"
@@ -122,12 +122,12 @@
       },
       "faq": {
         "title": "Everything You Need to Know",
-        "description": "Got questions about TheSet? We've got answers. Learn how to make the most of your concert experience and join the community.",
+        "description": "Got questions about MySetlist? We've got answers. Learn how to make the most of your concert experience and join the community.",
         "cta": "Still have questions? Contact us",
         "items": [
           {
-            "question": "What is TheSet?",
-            "answer": "TheSet is a real-time concert companion app that lets you track setlists, vote on songs, discover new artists, and connect with other music fans during live shows."
+            "question": "What is MySetlist?",
+            "answer": "MySetlist is a real-time concert companion app that lets you track setlists, vote on songs, discover new artists, and connect with other music fans during live shows."
           },
           {
             "question": "How does live voting work?",
@@ -138,7 +138,7 @@
             "answer": "Absolutely! Build your personal concert timeline by adding shows you've attended. You can view setlists, add photos, and relive your favorite concert memories."
           },
           {
-            "question": "Is TheSet free to use?",
+            "question": "Is MySetlist free to use?",
             "answer": "Basic features including setlist viewing and artist discovery are free. Premium features like unlimited voting, exclusive content, and advanced analytics are available with a subscription."
           },
           {

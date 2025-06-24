@@ -4,8 +4,10 @@ import {
   text, 
   integer, 
   doublePrecision, 
-  timestamp 
+  timestamp,
+  pgEnum
 } from 'drizzle-orm/pg-core';
+import { users } from './users';
 
 export const venues = pgTable('venues', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -26,6 +28,19 @@ export const venues = pgTable('venues', {
   imageUrl: text('image_url'),
   description: text('description'),
   amenities: text('amenities'), // JSON array
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export const venueTipCategoryEnum = pgEnum('venue_tip_category', ['parking', 'food', 'access', 'sound', 'view', 'general']);
+
+export const venueTips = pgTable('venue_tips', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  venueId: uuid('venue_id').references(() => venues.id, { onDelete: 'cascade' }).notNull(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  content: text('content').notNull(),
+  category: venueTipCategoryEnum('category').notNull(),
+  upvotes: integer('upvotes').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

@@ -104,7 +104,7 @@ export async function sendContactEmail({
 export async function sendWelcomeEmail({
   to,
   name,
-  appUrl = 'https://theset.app',
+  appUrl = 'https://MySetlist.app',
 }: {
   to: EmailAddress[];
   name: string;
@@ -114,7 +114,7 @@ export async function sendWelcomeEmail({
   
   return sendEmail({
     to,
-    subject: 'Welcome to TheSet! 🎵',
+    subject: 'Welcome to MySetlist! 🎵',
     html,
   });
 }
@@ -125,7 +125,7 @@ export async function sendShowReminderEmail({
   userName,
   show,
   daysUntilShow,
-  appUrl = 'https://theset.app',
+  appUrl = 'https://MySetlist.app',
 }: {
   to: EmailAddress[];
   userName: string;
@@ -151,7 +151,7 @@ export async function sendNewShowNotificationEmail({
   to,
   userName,
   show,
-  appUrl = 'https://theset.app',
+  appUrl = 'https://MySetlist.app',
 }: {
   to: EmailAddress[];
   userName: string;
@@ -175,7 +175,7 @@ export async function sendSetlistUpdateEmail({
   newSongs,
   totalSongs,
   updateType = 'updated',
-  appUrl = 'https://theset.app',
+  appUrl = 'https://MySetlist.app',
 }: {
   to: EmailAddress[];
   userName: string;
@@ -223,7 +223,7 @@ export async function sendWeeklyDigestEmail({
   upcomingShows,
   newSetlists,
   totalFollowedArtists,
-  appUrl = 'https://theset.app',
+  appUrl = 'https://MySetlist.app',
 }: {
   to: EmailAddress[];
   userName: string;
@@ -257,7 +257,7 @@ export async function sendPasswordResetEmail({
   name,
   resetUrl,
   expirationHours = 24,
-  appUrl = 'https://theset.app',
+  appUrl = 'https://MySetlist.app',
 }: {
   to: EmailAddress[];
   name: string;
@@ -269,7 +269,7 @@ export async function sendPasswordResetEmail({
   
   return sendEmail({
     to,
-    subject: 'Reset your TheSet password',
+    subject: 'Reset your MySetlist password',
     html,
   });
 }
@@ -280,7 +280,7 @@ export async function sendEmailVerificationEmail({
   name,
   verificationUrl,
   expirationHours = 24,
-  appUrl = 'https://theset.app',
+  appUrl = 'https://MySetlist.app',
 }: {
   to: EmailAddress[];
   name: string;
@@ -292,7 +292,7 @@ export async function sendEmailVerificationEmail({
   
   return sendEmail({
     to,
-    subject: 'Verify your TheSet email address',
+    subject: 'Verify your MySetlist email address',
     html,
   });
 }

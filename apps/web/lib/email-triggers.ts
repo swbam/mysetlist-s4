@@ -10,7 +10,7 @@ import { eq, and, inArray } from 'drizzle-orm';
 import { 
   sendWelcomeEmailAction,
   queueEmail 
-} from '../app/[locale]/actions/email-notifications';
+} from '../app/actions/email-notifications';
 
 // Trigger welcome email when user signs up
 export async function triggerWelcomeEmail(userId: string) {
@@ -269,7 +269,7 @@ export async function triggerEmailVerification(userId: string, verificationToken
       return;
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://theset.app';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://MySetlist.app';
     const verificationUrl = `${appUrl}/auth/verify?token=${verificationToken}`;
 
     await queueEmail({
@@ -306,7 +306,7 @@ export async function triggerPasswordReset(userId: string, resetToken: string) {
       return;
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://theset.app';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://MySetlist.app';
     const resetUrl = `${appUrl}/auth/reset-password?token=${resetToken}`;
 
     await queueEmail({

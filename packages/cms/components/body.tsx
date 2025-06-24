@@ -1,3 +1,2 @@
-import { RichText } from 'basehub/react-rich-text';
-
-export const Body = RichText;
+// Stubbed CMS Body component - basehub not needed for MySetlist
+export const Body = () => null;

@@ -1,10 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "node scripts/skip-ci.js",
+  "buildCommand": "cd ../.. && pnpm build --filter=web",
+  "installCommand": "cd ../.. && pnpm install",
   "crons": [
     {
       "path": "/api/cron/email-processing",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 12 * * *"
     },
     {
       "path": "/api/cron/daily-reminders", 

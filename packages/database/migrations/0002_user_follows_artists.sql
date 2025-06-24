@@ -12,16 +12,17 @@ CREATE INDEX idx_user_follows_artists_user_id ON user_follows_artists(user_id);
 CREATE INDEX idx_user_follows_artists_artist_id ON user_follows_artists(artist_id);
 
 -- Add follower count to artists table if not exists
-ALTER TABLE artists ADD COLUMN IF NOT EXISTS follower_count INTEGER DEFAULT 0;
+-- Note: Using camelCase to match Drizzle schema
+ALTER TABLE artists ADD COLUMN IF NOT EXISTS "followerCount" INTEGER DEFAULT 0;
 
 -- Create function to update follower count
 CREATE OR REPLACE FUNCTION update_artist_follower_count()
 RETURNS TRIGGER AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
-    UPDATE artists SET follower_count = follower_count + 1 WHERE id = NEW.artist_id;
+    UPDATE artists SET "followerCount" = "followerCount" + 1 WHERE id = NEW.artist_id;
   ELSIF TG_OP = 'DELETE' THEN
-    UPDATE artists SET follower_count = follower_count - 1 WHERE id = OLD.artist_id;
+    UPDATE artists SET "followerCount" = "followerCount" - 1 WHERE id = OLD.artist_id;
   END IF;
   RETURN NULL;
 END;

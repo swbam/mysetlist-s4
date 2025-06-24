@@ -28,7 +28,7 @@ export const EmailVerificationTemplate = ({
   <Tailwind>
     <Html>
       <Head />
-      <Preview>Verify your TheSet email address</Preview>
+      <Preview>Verify your MySetlist email address</Preview>
       <Body className="bg-zinc-50 font-sans">
         <Container className="mx-auto py-12">
           <Section className="mt-8 rounded-md bg-zinc-200 p-px">
@@ -40,7 +40,7 @@ export const EmailVerificationTemplate = ({
                 Hi {name},
               </Text>
               <Text className="text-zinc-700">
-                Welcome to TheSet! To complete your account setup and start discovering amazing live music,
+                Welcome to MySetlist! To complete your account setup and start discovering amazing live music,
                 please verify your email address by clicking the button below.
               </Text>
               
@@ -101,7 +101,7 @@ export const EmailVerificationTemplate = ({
               <Hr className="my-4" />
               
               <Text className="text-zinc-400 text-xs">
-                This email was sent to you because you created an account on TheSet.
+                This email was sent to you because you created an account on MySetlist.
                 If you did not create this account, please disregard this email.
               </Text>
             </Section>
@@ -114,8 +114,8 @@ export const EmailVerificationTemplate = ({
 
 EmailVerificationTemplate.PreviewProps = {
   name: 'Alex',
-  verificationUrl: 'https://theset.app/auth/verify?token=abc123def456',
-  appUrl: 'https://theset.app',
+  verificationUrl: 'https://MySetlist.app/auth/verify?token=abc123def456',
+  appUrl: 'https://MySetlist.app',
   expirationHours: 24,
 };
 

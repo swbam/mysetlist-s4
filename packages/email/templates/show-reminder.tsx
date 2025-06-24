@@ -128,7 +128,7 @@ ShowReminderTemplate.PreviewProps = {
     time: '8:00 PM',
     ticketUrl: 'https://example.com/tickets',
   },
-  appUrl: 'https://theset.app',
+  appUrl: 'https://MySetlist.app',
   daysUntilShow: 1,
 };
 

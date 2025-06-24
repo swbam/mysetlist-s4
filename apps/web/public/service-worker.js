@@ -1,6 +1,6 @@
 // Service Worker Version
 const CACHE_VERSION = 'v1';
-const CACHE_NAME = `theset-${CACHE_VERSION}`;
+const CACHE_NAME = `MySetlist-${CACHE_VERSION}`;
 const OFFLINE_URL = '/offline';
 
 // Assets to cache on install
@@ -8,8 +8,8 @@ const STATIC_CACHE_URLS = [
   '/',
   '/offline',
   '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
+  '/icons/icon-192x192.svg',
+  '/icons/icon-512x512.svg',
 ];
 
 // API routes to cache

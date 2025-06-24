@@ -28,7 +28,7 @@ export const PasswordResetTemplate = ({
   <Tailwind>
     <Html>
       <Head />
-      <Preview>Reset your TheSet password</Preview>
+      <Preview>Reset your MySetlist password</Preview>
       <Body className="bg-zinc-50 font-sans">
         <Container className="mx-auto py-12">
           <Section className="mt-8 rounded-md bg-zinc-200 p-px">
@@ -40,7 +40,7 @@ export const PasswordResetTemplate = ({
                 Hi {name},
               </Text>
               <Text className="text-zinc-700">
-                We received a request to reset your password for your TheSet account.
+                We received a request to reset your password for your MySetlist account.
                 If you didn't make this request, you can safely ignore this email.
               </Text>
               
@@ -88,7 +88,7 @@ export const PasswordResetTemplate = ({
               <Hr className="my-4" />
               
               <Text className="text-zinc-400 text-xs">
-                This email was sent to you because a password reset was requested for your TheSet account.
+                This email was sent to you because a password reset was requested for your MySetlist account.
                 If you did not request this reset, please disregard this email.
               </Text>
             </Section>
@@ -101,8 +101,8 @@ export const PasswordResetTemplate = ({
 
 PasswordResetTemplate.PreviewProps = {
   name: 'Alex',
-  resetUrl: 'https://theset.app/auth/reset-password?token=abc123def456',
-  appUrl: 'https://theset.app',
+  resetUrl: 'https://MySetlist.app/auth/reset-password?token=abc123def456',
+  appUrl: 'https://MySetlist.app',
   expirationHours: 24,
 };
 

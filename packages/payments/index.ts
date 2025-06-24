@@ -1,2 +1,2 @@
-// Payment functionality removed - no payment processing needed for TheSet app
+// Payment functionality removed - no payment processing needed for MySetlist app
 export {};

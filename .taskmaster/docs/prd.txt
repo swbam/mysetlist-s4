@@ -1,0 +1,182 @@
+# MySetlist Concert Setlist Voting App - Product Requirements Document
+
+## Project Overview
+
+MySetlist is a comprehensive concert setlist platform that allows users to discover, track, and share live music experiences. Built on the Next-Forge starter template, it leverages modern web technologies to create a seamless experience for music fans to explore concert history, vote on setlists, and connect with the live music community.
+
+### Core Vision
+- **Discover**: Find upcoming shows, venues, and artist histories
+- **Track**: Follow favorite artists and get notified of new shows  
+- **Share**: Contribute setlists and vote on accuracy
+- **Connect**: Build a community around live music experiences
+
+## Technical Requirements
+
+### Next-Forge Foundation
+- Build on Next-Forge "web" app (not mobile)
+- Maintain monorepo structure with shared packages
+- Use Next.js 14 with App Router and Server Components
+- TypeScript throughout with strict type checking
+- Tailwind CSS with Shadcn/ui components
+
+### Authentication System Migration
+- **REMOVE** all Clerk authentication code completely
+- **REPLACE** with Supabase Auth using packages/auth structure
+- Implement Spotify OAuth as primary authentication method
+- Add email/password authentication as secondary option
+- Add Google OAuth as additional social login option
+- Maintain Next-Forge auth package patterns but with Supabase backend
+
+### Payment System Removal
+- **REMOVE** all Stripe payment integration code
+- **REMOVE** subscription/billing related components
+- **REMOVE** payment-related database tables and schemas
+- Keep packages/payments as stub for future use if needed
+
+### Database & Backend
+- Use Supabase as primary database (PostgreSQL)
+- Implement comprehensive schema using Drizzle ORM in packages/database
+- Enable PostGIS extension for location-based venue queries
+- Set up Row Level Security policies for data protection
+- Configure real-time subscriptions for live setlist updates
+
+### External API Integrations
+- **Spotify API**: Artist data, popularity metrics, user music preferences
+- **Ticketmaster API**: Venue and show information discovery
+- **Setlist.fm API**: Historical setlist data for bootstrapping content
+- **Mapbox API**: Location services and venue mapping
+
+## Core Features to Implement
+
+### 1. User Management & Authentication
+- Supabase authentication with Spotify OAuth integration
+- User profile creation with music preferences from Spotify
+- Following system for artists and other users
+- User dashboard with personalized content
+- Account settings and preferences management
+
+### 2. Artist Discovery & Management
+- Comprehensive artist profiles with Spotify integration
+- Artist search and discovery functionality
+- Show history and upcoming events display
+- Real-time popularity metrics and trending calculations
+- Artist following and notification system
+
+### 3. Venue System
+- Detailed venue profiles with location mapping
+- Location-based venue discovery using PostGIS
+- Venue search with geographic filtering
+- Venue capacity, amenities, and contact information
+- Historical show data and venue statistics
+
+### 4. Show & Event Management
+- Show creation and management interface
+- Integration with Ticketmaster for show discovery
+- Show details with date, time, venue, and artist information
+- Ticket information and external links
+- Show search and filtering capabilities
+
+### 5. Setlist Management System
+- Community-driven setlist creation interface
+- Song addition with metadata integration
+- Setlist voting system for accuracy verification
+- Real-time setlist updates during live shows
+- Setlist history and statistics
+
+### 6. Search & Discovery
+- Full-text search across artists, shows, venues, and songs
+- Advanced filtering by location, date, genre, and popularity
+- Trending content discovery algorithms
+- Personalized recommendations based on user preferences
+- Search result ranking and relevance scoring
+
+### 7. Real-time Features
+- Live setlist updates during ongoing shows
+- Real-time voting and comment updates
+- WebSocket connections for instant updates
+- Push notifications for followed artists' new shows
+- Live activity feeds and updates
+
+### 8. Social Features
+- User profiles with concert history and statistics
+- Comment system for shows and setlists
+- Sharing functionality for social media integration
+- User interaction tracking and engagement metrics
+- Community moderation tools
+
+## Technical Implementation Details
+
+### Database Schema Requirements
+- Users: authentication, profiles, preferences, Spotify integration
+- Artists: comprehensive data with Spotify sync, popularity tracking
+- Venues: location data with PostGIS, capacity, amenities
+- Shows: event details, ticket info, external API integration
+- Setlists: song lists, voting, real-time updates, community verification
+- Songs: metadata, popularity, artist relationships
+- Analytics: user engagement, platform metrics, trending calculations
+
+### API Architecture
+- Next.js API routes for internal operations
+- Server actions for form submissions and mutations
+- External API integration endpoints (Spotify, Ticketmaster, Setlist.fm)
+- Webhook handlers for real-time data sync
+- Rate limiting and error handling for external APIs
+
+### Security Implementation
+- Row Level Security policies for all database tables
+- Input validation and sanitization for all user inputs
+- API rate limiting and abuse prevention
+- Secure OAuth flow implementation
+- Data encryption for sensitive information
+
+### Performance Requirements
+- Server-side rendering for SEO optimization
+- Client-side caching for frequently accessed data
+- Database query optimization with proper indexing
+- Image optimization and CDN integration
+- Progressive Web App capabilities for mobile experience
+
+## Phase Implementation Strategy
+
+### Phase 1: Foundation (Weeks 1-2)
+- Remove Clerk authentication and implement Supabase Auth
+- Remove Stripe payment integration completely
+- Set up core database schema with Drizzle and Supabase
+- Implement basic authentication flows (Spotify OAuth, email/password)
+- Create foundational UI components and layouts
+
+### Phase 2: Core Features (Weeks 3-6)
+- Artist management system with Spotify integration
+- Venue system with location-based features
+- Show creation and management
+- Basic setlist functionality
+- User profiles and following system
+
+### Phase 3: Advanced Features (Weeks 7-10)
+- External API integrations (Ticketmaster, Setlist.fm)
+- Real-time setlist updates and voting system
+- Advanced search and discovery features
+- Social features and community tools
+- Analytics and trending algorithms
+
+### Phase 4: Polish & Production (Weeks 11-12)
+- Performance optimization and caching
+- Security hardening and testing
+- Mobile PWA implementation
+- Production deployment and monitoring
+- Documentation and user guides
+
+## Success Metrics
+- User registration and retention rates
+- Setlist accuracy and community engagement
+- Search functionality usage and satisfaction
+- Real-time feature adoption during live shows
+- Overall platform performance and reliability
+
+## Deployment Requirements
+- Use Vercel for frontend hosting and serverless functions
+- Supabase for database and authentication hosting
+- Configure environment variables for all API integrations
+- Set up monitoring and error tracking
+- Implement automated deployment pipelines
+- Use MCP servers for deployment and function management

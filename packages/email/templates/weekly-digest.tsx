@@ -239,7 +239,7 @@ WeeklyDigestTemplate.PreviewProps = {
       date: 'Nov 12, 2024',
     },
   ],
-  appUrl: 'https://theset.app',
+  appUrl: 'https://MySetlist.app',
   totalFollowedArtists: 8,
 };
 

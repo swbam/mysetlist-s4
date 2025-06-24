@@ -7,7 +7,7 @@ import { useAnalytics } from '@/lib/analytics/tracking';
 import Link from 'next/link';
 import { X } from 'lucide-react';
 
-const CONSENT_COOKIE_NAME = 'theset-cookie-consent';
+const CONSENT_COOKIE_NAME = 'MySetlist-cookie-consent';
 const CONSENT_COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year
 
 interface CookiePreferences {
@@ -118,7 +118,7 @@ export function CookieConsent() {
         </div>
         
         <p className="text-sm text-muted-foreground mb-4">
-          We use cookies to enhance your experience on TheSet. By continuing to use our site, 
+          We use cookies to enhance your experience on MySetlist. By continuing to use our site, 
           you agree to our use of cookies. You can manage your preferences below.
         </p>
         

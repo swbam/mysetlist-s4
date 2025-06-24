@@ -1,1 +1,2 @@
-export { Toolbar } from 'basehub/next-toolbar';
+// Stubbed CMS Toolbar component - basehub not needed for MySetlist
+export const Toolbar = () => null;

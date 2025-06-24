@@ -1,6 +1,5 @@
 import { env } from '@/env';
 import { authMiddleware } from '@repo/auth/middleware';
-import { internationalizationMiddleware } from '@repo/internationalization/middleware';
 import { parseError } from '@repo/observability/error';
 import { secure } from '@repo/security';
 import {
@@ -18,7 +17,7 @@ import { updateSession } from './middleware/auth';
 export const config = {
   // matcher tells Next.js which routes to run the middleware on. This runs the
   // middleware on all routes except for static assets and Posthog ingest
-  matcher: ['/((?!_next/static|_next/image|ingest|favicon.ico).*)'],
+  matcher: ['/((?!_next/static|_next/image|ingest|favicon.ico|robots.txt|sitemap.xml|manifest.json|service-worker.js|icons).*)'],
 };
 
 // FLAGS_SECRET is not configured, use default nosecone options
@@ -32,12 +31,6 @@ const middleware: NextMiddleware = async (request: NextRequest) => {
   const authResponse = await authMiddleware(request);
   if (authResponse.status !== 200) {
     return authResponse;
-  }
-
-  // Apply internationalization middleware
-  const i18nResponse = internationalizationMiddleware(request);
-  if (i18nResponse) {
-    return i18nResponse;
   }
 
   // Apply security headers

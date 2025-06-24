@@ -6,6 +6,9 @@
   "scripts": {
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
+    "migrate:supabase": "tsx src/migrate-direct.ts",
+    "migrate:deploy": "tsx src/migrate-direct.ts",
+    "migrate:test": "tsx src/test-migrations.ts",
     "push": "drizzle-kit push",
     "studio": "drizzle-kit studio",
     "seed": "tsx src/seed.ts",

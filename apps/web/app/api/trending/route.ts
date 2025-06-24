@@ -1,0 +1,84 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { 
+  getDailyTrending, 
+  getWeeklyTrending, 
+  getMonthlyTrending,
+  getTrendingContent,
+  TrendingConfig 
+} from '@/lib/trending';
+
+export async function GET(request: NextRequest) {
+  try {
+    const searchParams = request.nextUrl.searchParams;
+    const period = searchParams.get('period') || 'week';
+    const limit = parseInt(searchParams.get('limit') || '20');
+    const type = searchParams.get('type') as 'shows' | 'artists' | 'combined' | null;
+    
+    // Custom config if provided
+    const customConfig = searchParams.get('config');
+    let config: TrendingConfig | undefined;
+    
+    if (customConfig) {
+      try {
+        config = JSON.parse(customConfig);
+      } catch (e) {
+        return NextResponse.json(
+          { error: 'Invalid config parameter' },
+          { status: 400 }
+        );
+      }
+    }
+    
+    let data;
+    
+    switch (period) {
+      case 'day':
+        data = await getDailyTrending(limit);
+        break;
+      case 'week':
+        data = await getWeeklyTrending(limit);
+        break;
+      case 'month':
+        data = await getMonthlyTrending(limit);
+        break;
+      case 'custom':
+        if (!config) {
+          return NextResponse.json(
+            { error: 'Custom period requires config parameter' },
+            { status: 400 }
+          );
+        }
+        data = await getTrendingContent(config);
+        break;
+      default:
+        return NextResponse.json(
+          { error: 'Invalid period. Use: day, week, month, or custom' },
+          { status: 400 }
+        );
+    }
+    
+    // Filter by type if specified
+    let response;
+    if (type && type !== 'combined') {
+      response = data[type];
+    } else if (type === 'combined' || !type) {
+      response = data.combined;
+    } else {
+      response = data;
+    }
+    
+    return NextResponse.json({
+      period,
+      limit,
+      type: type || 'combined',
+      data: response,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Error fetching trending content:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch trending content' },
+      { status: 500 }
+    );
+  }
+}

@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useTracking } from '@/lib/analytics/tracking';
-import { useAuth } from '@/app/[locale]/providers/auth-provider';
+import { useAuth } from '@/app/providers/auth-provider';
 
 // Auto-track page views
 export function usePageTracking() {

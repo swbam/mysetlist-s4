@@ -1,0 +1,11 @@
+# Task ID: 6
+# Title: Set Up Email Service
+# Status: pending
+# Dependencies: None
+# Priority: medium
+# Description: Configure Resend for transactional emails
+# Details:
+Set up Resend account, configure API keys, test email templates for welcome emails, show reminders, and notifications.
+
+# Test Strategy:
+

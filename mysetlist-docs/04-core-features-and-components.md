@@ -1,4 +1,4 @@
-# TheSet - Core Features & Components Architecture
+# MySetlist - Core Features & Components Architecture
 
 ## Table of Contents
 1. [Component Architecture Overview](#component-architecture-overview)
@@ -12,7 +12,7 @@
 
 ## Component Architecture Overview
 
-TheSet builds upon Next-Forge's UI package structure, extending it with music-specific components while maintaining consistency with the design system. The architecture follows atomic design principles with shared components in the UI package and feature-specific components in the web app.
+MySetlist builds upon Next-Forge's UI package structure, extending it with music-specific components while maintaining consistency with the design system. The architecture follows atomic design principles with shared components in the UI package and feature-specific components in the web app.
 
 ### Component Hierarchy
 ```
@@ -408,7 +408,7 @@ export async function generateMetadata({ params }: ArtistPageProps): Promise<Met
   }
 
   return {
-    title: `${artist.name} - Concert Setlists | TheSet`,
+    title: `${artist.name} - Concert Setlists | MySetlist`,
     description: `View ${artist.name}'s concert setlists, show history, and upcoming tour dates. Follow to get notified of new shows.`,
     openGraph: {
       title: artist.name,
@@ -976,4 +976,4 @@ export function useOfflineStatus() {
 }
 ```
 
-This architecture provides a solid foundation for TheSet's core features while maintaining the Next-Forge structure and patterns. The components are designed to be reusable, performant, and provide excellent user experience across desktop and mobile devices.
+This architecture provides a solid foundation for MySetlist's core features while maintaining the Next-Forge structure and patterns. The components are designed to be reusable, performant, and provide excellent user experience across desktop and mobile devices.

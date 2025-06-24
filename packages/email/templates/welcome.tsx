@@ -21,23 +21,23 @@ export const WelcomeTemplate = ({ name, appUrl }: WelcomeTemplateProps) => (
   <Tailwind>
     <Html>
       <Head />
-      <Preview>Welcome to TheSet! 🎵</Preview>
+      <Preview>Welcome to MySetlist! 🎵</Preview>
       <Body className="bg-zinc-50 font-sans">
         <Container className="mx-auto py-12">
           <Section className="mt-8 rounded-md bg-zinc-200 p-px">
             <Section className="rounded-[5px] bg-white p-8">
               <Text className="mt-0 mb-4 font-semibold text-2xl text-zinc-950">
-                Welcome to TheSet! 🎵
+                Welcome to MySetlist! 🎵
               </Text>
               <Text className="text-zinc-700">
                 Hi {name},
               </Text>
               <Text className="text-zinc-700">
-                Welcome to TheSet, your ultimate destination for discovering live music and setlists!
+                Welcome to MySetlist, your ultimate destination for discovering live music and setlists!
                 We're excited to have you join our community of music lovers.
               </Text>
               <Text className="text-zinc-700">
-                Here's what you can do with TheSet:
+                Here's what you can do with MySetlist:
               </Text>
               <Section className="pl-4">
                 <Text className="text-zinc-700 mt-2 mb-1">• Follow your favorite artists</Text>
@@ -64,7 +64,7 @@ export const WelcomeTemplate = ({ name, appUrl }: WelcomeTemplateProps) => (
               </Text>
               <Hr className="my-4" />
               <Text className="text-zinc-400 text-xs">
-                You're receiving this email because you just signed up for TheSet.
+                You're receiving this email because you just signed up for MySetlist.
                 You can manage your email preferences{' '}
                 <Link href={`${appUrl}/settings`} className="text-zinc-600 underline">
                   here
@@ -80,7 +80,7 @@ export const WelcomeTemplate = ({ name, appUrl }: WelcomeTemplateProps) => (
 
 WelcomeTemplate.PreviewProps = {
   name: 'Alex',
-  appUrl: 'https://theset.app',
+  appUrl: 'https://MySetlist.app',
 };
 
 export default WelcomeTemplate;

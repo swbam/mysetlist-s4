@@ -68,6 +68,22 @@ export function SongVoteButtons({
       try {
         if (onVote) {
           await onVote(songId, newVote);
+        } else {
+          // Default vote handler
+          const response = await fetch('/api/songs/votes', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              songId,
+              voteType: newVote,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to vote');
+          }
         }
         
         toast.success(

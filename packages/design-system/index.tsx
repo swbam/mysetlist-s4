@@ -27,3 +27,11 @@ export const DesignSystemProvider = ({
     </AuthProvider>
   </ThemeProvider>
 );
+
+// Music-specific components
+export { ArtistCard } from './components/ui/artist-card';
+export { VenueCard } from './components/ui/venue-card';
+export { SetlistSong } from './components/ui/setlist-song';
+
+// Music design tokens
+export { musicTokens, type MusicTokens } from './lib/design-tokens';

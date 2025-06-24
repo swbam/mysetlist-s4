@@ -1,1 +1,2 @@
-export { CodeBlock } from 'basehub/react-code-block';
+// Stubbed CMS CodeBlock component - basehub not needed for MySetlist
+export const CodeBlock = () => null;

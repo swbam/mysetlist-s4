@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { keys } from './keys';
 
@@ -34,11 +34,23 @@ export async function createClient() {
 }
 
 export async function createServiceClient() {
+  const cookieStore = await cookies();
+  
   return createServerClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.SUPABASE_SERVICE_ROLE_KEY,
     {
-      cookies: {},
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          // Service client doesn't need to set cookies
+        },
+        remove(name: string, options: CookieOptions) {
+          // Service client doesn't need to remove cookies
+        },
+      },
       auth: {
         autoRefreshToken: false,
         persistSession: false
@@ -59,4 +71,4 @@ export async function getSession() {
   return session;
 }
 
-export { Session, User } from '@supabase/supabase-js';
+export type { Session, User } from '@supabase/supabase-js';

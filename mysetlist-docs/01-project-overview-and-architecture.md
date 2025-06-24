@@ -1,4 +1,4 @@
-# TheSet Concert Setlist App - Project Overview & Architecture
+# MySetlist Concert Setlist App - Project Overview & Architecture
 
 ## Table of Contents
 1. [Project Overview](#project-overview)
@@ -11,7 +11,7 @@
 
 ## Project Overview
 
-TheSet is a comprehensive concert setlist platform that allows users to discover, track, and share live music experiences. Built on the Next-Forge starter template, it leverages modern web technologies to create a seamless experience for music fans to explore concert history, vote on setlists, and connect with the live music community.
+MySetlist is a comprehensive concert setlist platform that allows users to discover, track, and share live music experiences. Built on the Next-Forge starter template, it leverages modern web technologies to create a seamless experience for music fans to explore concert history, vote on setlists, and connect with the live music community.
 
 ### Core Vision
 - **Discover**: Find upcoming shows, venues, and artist histories
@@ -93,7 +93,7 @@ next-forge structure:
 ### Monorepo Structure (Modified Next-Forge)
 
 ```
-theset-nextfor/
+MySetlist-nextfor/
 ├── apps/
 │   └── web/                           # Main Next.js application
 │       ├── app/                       # App Router structure
@@ -230,4 +230,4 @@ theset-nextfor/
 - **Performance**: Page load times, search response times
 - **Growth**: User acquisition, content creation rates
 
-This overview provides the foundation for building TheSet using Next-Forge. The following documentation files will detail specific implementation aspects including database schema, component architecture, API integrations, and deployment strategies.
+This overview provides the foundation for building MySetlist using Next-Forge. The following documentation files will detail specific implementation aspects including database schema, component architecture, API integrations, and deployment strategies.

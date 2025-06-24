@@ -1,6 +1,6 @@
 'use client';
 
-import { useRealtimeConnection } from '@/app/[locale]/providers/realtime-provider';
+import { useRealtimeConnection } from '@/app/providers/realtime-provider';
 import { cn } from '@repo/design-system/lib/utils';
 import { Wifi, WifiOff, AlertCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@repo/design-system/components/ui/tooltip';

@@ -1,1 +1,2 @@
-export { Pump as Feed } from 'basehub/react-pump';
+// Stubbed CMS Feed component - basehub not needed for MySetlist
+export const Feed = () => null;

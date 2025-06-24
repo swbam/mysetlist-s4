@@ -1,1 +1,2 @@
-export { BaseHubImage as Image } from 'basehub/next-image';
+// Stubbed CMS Image component - basehub not needed for MySetlist
+export const Image = () => null;

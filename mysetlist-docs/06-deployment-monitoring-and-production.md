@@ -1,4 +1,4 @@
-# TheSet - Deployment, Monitoring & Production
+# MySetlist - Deployment, Monitoring & Production
 
 ## Table of Contents
 1. [Deployment Architecture](#deployment-architecture)
@@ -14,7 +14,7 @@
 
 ## Deployment Architecture
 
-TheSet leverages Next-Forge's production-ready deployment strategy with Vercel for frontend hosting, Supabase for backend services, and additional monitoring tools for production reliability.
+MySetlist leverages Next-Forge's production-ready deployment strategy with Vercel for frontend hosting, Supabase for backend services, and additional monitoring tools for production reliability.
 
 ### Production Infrastructure
 ```
@@ -215,7 +215,7 @@ module.exports = nextConfig;
 ```bash
 # .env.example
 # App Configuration
-NEXT_PUBLIC_APP_URL=https://theset.app
+NEXT_PUBLIC_APP_URL=https://MySetlist.app
 NEXT_PUBLIC_APP_ENV=production
 
 # Supabase
@@ -249,7 +249,7 @@ NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
 // lib/config.ts
 const config = {
   app: {
-    name: 'TheSet',
+    name: 'MySetlist',
     url: process.env.NEXT_PUBLIC_APP_URL!,
     env: process.env.NEXT_PUBLIC_APP_ENV as 'development' | 'staging' | 'production',
   },
@@ -364,7 +364,7 @@ const execAsync = promisify(exec);
 
 async function backupDatabase() {
   const timestamp = new Date().toISOString().split('T')[0];
-  const backupName = `theset-backup-${timestamp}.sql`;
+  const backupName = `MySetlist-backup-${timestamp}.sql`;
   
   try {
     console.log('🔄 Starting database backup...');
@@ -427,7 +427,7 @@ Sentry.init({
 
   integrations: [
     new Sentry.BrowserTracing({
-      tracingOrigins: ['localhost', 'theset.app'],
+      tracingOrigins: ['localhost', 'MySetlist.app'],
     }),
   ],
 });
@@ -957,4 +957,4 @@ export async function GET() {
 }
 ```
 
-This comprehensive deployment and monitoring setup ensures TheSet runs reliably in production with proper error handling, performance monitoring, and disaster recovery capabilities.
+This comprehensive deployment and monitoring setup ensures MySetlist runs reliably in production with proper error handling, performance monitoring, and disaster recovery capabilities.

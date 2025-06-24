@@ -1,0 +1,11 @@
+# Task ID: 1
+# Title: Deploy Supabase Edge Functions
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Deploy the existing sync functions to Supabase Edge Functions for API data synchronization
+# Details:
+Deploy sync-artists, sync-shows, sync-setlists, and scheduled-sync functions to Supabase. These functions are already written in the supabase/functions directory.
+
+# Test Strategy:
+

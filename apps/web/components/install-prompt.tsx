@@ -49,7 +49,7 @@ export function InstallPrompt() {
           <Smartphone className="h-8 w-8 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-lg font-semibold">Install TheSet App</h3>
+          <h3 className="text-lg font-semibold">Install MySetlist App</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             Get the full app experience with offline access, notifications, and faster performance.
           </p>

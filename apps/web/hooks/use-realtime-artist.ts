@@ -30,7 +30,7 @@ export function useRealtimeArtist({
     try {
       setIsLoading(true);
       const { count, error } = await supabase
-        .from('artist_followers')
+        .from('user_follows_artists')
         .select('*', { count: 'exact', head: true })
         .eq('artist_id', artistId);
 
@@ -57,7 +57,7 @@ export function useRealtimeArtist({
         {
           event: '*',
           schema: 'public',
-          table: 'artist_followers',
+          table: 'user_follows_artists',
           filter: `artist_id=eq.${artistId}`,
         },
         (payload: RealtimePostgresChangesPayload<ArtistFollower>) => {

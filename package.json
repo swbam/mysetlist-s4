@@ -22,7 +22,12 @@
     "db:generate": "cd packages/database && pnpm generate",
     "db:migrate": "cd packages/database && pnpm migrate",
     "db:studio": "cd packages/database && pnpm studio",
-    "clean": "git clean -xdf node_modules"
+    "clean": "git clean -xdf node_modules",
+    "deploy": "./scripts/deploy.sh",
+    "deploy:prod": "./scripts/deploy.sh production",
+    "edge:secrets": "./scripts/setup-edge-function-secrets.sh",
+    "vercel": "vercel",
+    "vercel:prod": "vercel --prod"
   },
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.0",

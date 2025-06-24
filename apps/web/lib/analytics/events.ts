@@ -1,4 +1,4 @@
-// Analytics event types for TheSet app
+// Analytics event types for MySetlist app
 
 export const ANALYTICS_EVENTS = {
   // User Authentication Events

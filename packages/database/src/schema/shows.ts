@@ -49,7 +49,7 @@ export const shows = pgTable('shows', {
   isVerified: boolean('is_verified').default(false),
   
   // External integrations
-  ticketmasterId: text('ticketmaster_id'),
+  ticketmasterId: text('ticketmaster_id').unique(),
   setlistFmId: text('setlistfm_id'),
   
   createdAt: timestamp('created_at').defaultNow().notNull(),

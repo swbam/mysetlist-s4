@@ -1,0 +1,11 @@
+# Task ID: 4
+# Title: Implement Spotify OAuth Flow
+# Status: pending
+# Dependencies: 2 (Not found)
+# Priority: high
+# Description: Complete the Spotify OAuth integration for user authentication
+# Details:
+Configure Spotify OAuth in Supabase dashboard, update callback URLs, and test the authentication flow with proper scopes for user data access.
+
+# Test Strategy:
+
