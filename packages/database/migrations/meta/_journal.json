@@ -8,6 +8,13 @@
       "when": 1750783312852,
       "tag": "0000_abandoned_polaris",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1750882939271,
+      "tag": "0001_slim_lester",
+      "breakpoints": true
     }
   ]
 }

@@ -1,5 +1,4 @@
-import { db } from '@/lib/db';
-import { artistStats, shows, showArtists, userFollowsArtists } from '@mysetlist/database/schema';
+import { db, artistStats, userFollowsArtists } from '@repo/database';
 import { eq, count, sql } from 'drizzle-orm';
 import { Calendar, Music, Users, TrendingUp } from 'lucide-react';
 

@@ -85,7 +85,10 @@ export async function GET(request: NextRequest) {
   try {
     console.log(`🔍 Comprehensive search for: "${query}" with filters:`, filters);
     
-    const supabase = createClient();
+    // Use service role for database access
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const ticketmasterClient = new TicketmasterClient({});
     
     let artists: SearchResult[] = [];

@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         const { data: existing } = await supabase
           .from('artists')
           .select('id')
-          .or(`spotify_id.eq.${spotifyArtist.id},name.ilike.${spotifyArtist.name}`)
+          .ilike('name', spotifyArtist.name)
           .limit(1);
 
         if (existing && existing.length > 0) {
@@ -48,18 +48,20 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        // Insert new artist
+        // Insert new artist (match database schema)
         const { data: result, error: insertError } = await supabase
           .from('artists')
           .insert({
             name: spotifyArtist.name,
             slug: slug,
-            spotify_id: spotifyArtist.id,
             image_url: spotifyArtist.images[0]?.url || null,
-            genres: spotifyArtist.genres,
+            genres: spotifyArtist.genres.join(', '), // Convert array to text
             popularity: spotifyArtist.popularity,
             followers: spotifyArtist.followers.total,
-            spotify_url: spotifyArtist.external_urls.spotify,
+            external_ids: {
+              spotify_id: spotifyArtist.id,
+              spotify_url: spotifyArtist.external_urls.spotify
+            },
             bio: `${spotifyArtist.name} is a ${spotifyArtist.genres.join(', ')} artist with ${spotifyArtist.followers.total.toLocaleString()} followers on Spotify.`,
             verified: spotifyArtist.popularity > 70,
           })

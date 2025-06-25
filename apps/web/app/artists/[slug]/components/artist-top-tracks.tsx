@@ -33,15 +33,41 @@ export function ArtistTopTracks({ artistId, spotifyId }: ArtistTopTracksProps) {
   const [playingTrack, setPlayingTrack] = useState<string | null>(null);
 
   useEffect(() => {
-    if (spotifyId) {
-      getArtistTopTracks(spotifyId)
-        .then(setTracks)
-        .catch(console.error)
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
-  }, [spotifyId]);
+    const fetchTracks = async () => {
+      try {
+        setLoading(true);
+        
+        if (spotifyId) {
+          // Try to fetch from Spotify via server action first
+          const spotifyTracks = await getArtistTopTracks(spotifyId);
+          if (spotifyTracks && spotifyTracks.length > 0) {
+            setTracks(spotifyTracks);
+            return;
+          }
+        }
+        
+        // Fallback to API route with mock data
+        const response = await fetch(`/api/artists/${artistId}/top-tracks`);
+        if (response.ok) {
+          const data = await response.json();
+          const apiTracks = data.tracks.map((track: any) => ({
+            ...track,
+            album: {
+              name: track.album || 'Unknown Album',
+              images: track.album_images || []
+            }
+          }));
+          setTracks(apiTracks);
+        }
+      } catch (error) {
+        console.error('Error fetching tracks:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTracks();
+  }, [artistId, spotifyId]);
 
   const formatDuration = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
@@ -49,7 +75,7 @@ export function ArtistTopTracks({ artistId, spotifyId }: ArtistTopTracksProps) {
     return `${minutes}:${seconds.padStart(2, '0')}`;
   };
 
-  if (!spotifyId || (!loading && tracks.length === 0)) {
+  if (!loading && tracks.length === 0) {
     return null;
   }
 

@@ -1,7 +1,7 @@
-import { Button } from '@mysetlist/design-system';
-import { Badge } from '@mysetlist/design-system';
-import { Card, CardContent } from '@mysetlist/design-system';
-import { Avatar, AvatarFallback, AvatarImage } from '@mysetlist/design-system';
+import { Button } from '@repo/design-system';
+import { Badge } from '@repo/design-system';
+import { Card, CardContent } from '@repo/design-system';
+import { Avatar, AvatarFallback, AvatarImage } from '@repo/design-system';
 import { Music, Users, Calendar, ExternalLink, Verified } from 'lucide-react';
 import Link from 'next/link';
 import { FollowButton } from './follow-button';
