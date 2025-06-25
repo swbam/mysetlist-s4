@@ -1,15 +1,12 @@
 import { Suspense } from 'react';
 import { SearchInterface } from './components/search-interface';
-import { createMetadata } from '@repo/seo/metadata';
+import { createSearchMetadata } from '@/lib/seo-metadata';
 import type { Metadata } from 'next';
 
 // Force dynamic rendering due to useSearchParams in SearchInterface component
 export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = createMetadata({
-  title: 'Search Artists, Shows & Venues - MySetlist',
-  description: 'Discover new artists, find upcoming shows, and explore venues on MySetlist.',
-});
+export const metadata: Metadata = createSearchMetadata();
 
 const SearchPage = () => {
   return (

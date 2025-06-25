@@ -1,0 +1,101 @@
+import { createPageMetadata } from '@/lib/seo-metadata';
+import type { Metadata } from 'next';
+import { getUser } from '@repo/auth/server';
+import { redirect } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
+import { Button } from '@repo/design-system/components/ui/button';
+import { Headphones, Music, Plus } from 'lucide-react';
+import Link from 'next/link';
+
+export const metadata: Metadata = createPageMetadata({
+  title: 'My Playlists | MySetlist',
+  description: 'Manage your saved setlists and create custom playlists from your favorite concerts.',
+});
+
+const PlaylistsPage = async () => {
+  const user = await getUser();
+
+  if (!user) {
+    redirect('/auth/sign-in?redirect=/playlists');
+  }
+
+  return (
+    <div className="container mx-auto py-8">
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">My Playlists</h1>
+            <p className="text-muted-foreground">
+              Save and organize your favorite setlists
+            </p>
+          </div>
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Create Playlist
+          </Button>
+        </div>
+
+        {/* Empty State */}
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-16">
+            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+              <Headphones className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">No playlists yet</h3>
+            <p className="text-muted-foreground text-center mb-6 max-w-md">
+              Start building your music collection by saving setlists from your favorite shows
+            </p>
+            <div className="flex gap-4">
+              <Button asChild>
+                <Link href="/shows">
+                  <Music className="h-4 w-4 mr-2" />
+                  Browse Shows
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/artists">
+                  <Music className="h-4 w-4 mr-2" />
+                  Find Artists
+                </Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Coming Soon Features */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Music className="h-5 w-5" />
+                Saved Setlists
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-sm">
+                Coming soon: Save setlists from concerts you've attended or want to attend
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Headphones className="h-5 w-5" />
+                Custom Playlists
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-sm">
+                Coming soon: Create custom playlists from songs across multiple setlists
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default PlaylistsPage;

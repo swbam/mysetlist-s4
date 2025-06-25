@@ -7,6 +7,7 @@ import { VenueDetails } from './venue-details';
 import { SetlistSection } from './setlist-section';
 import { SupportingActs } from './supporting-acts';
 import { ShareButtons } from './share-buttons';
+import { AttendeeList } from './attendee-list';
 import { useRealtimeUpdates } from '../hooks/use-realtime-updates';
 
 type ShowPageContentProps = {
@@ -72,6 +73,11 @@ export function ShowPageContent({ show }: ShowPageContentProps) {
         {show.venue && (
           <VenueDetails venue={show.venue} />
         )}
+        
+        <AttendeeList 
+          showId={show.id}
+          currentUser={show.currentUser}
+        />
       </div>
     </div>
   );

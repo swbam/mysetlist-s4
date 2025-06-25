@@ -37,6 +37,7 @@ export const getVenueShows = unstable_cache(
           name: artists.name,
           slug: artists.slug,
           imageUrl: artists.imageUrl,
+          genres: artists.genres,
         },
       })
       .from(shows)

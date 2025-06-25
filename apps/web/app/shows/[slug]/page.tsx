@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
-import { createMetadata } from '@repo/seo/metadata';
+import { createShowMetadata } from '@/lib/seo-metadata';
 import type { Metadata } from 'next';
 import { format } from 'date-fns';
+import { BreadcrumbNavigation } from '@/components/breadcrumb-navigation';
 import { getShowDetails } from './actions';
 import { ShowPageContent } from './components/show-page-content';
 
@@ -19,27 +20,20 @@ export const generateMetadata = async ({
   const show = await getShowDetails(slug);
   
   if (!show) {
-    return createMetadata({
-      title: 'Show Not Found - MySetlist',
-      description: 'The show you are looking for could not be found.',
+    return createShowMetadata({
+      headliner: 'Show Not Found',
+      date: new Date(),
+      slug: 'not-found',
     });
   }
   
-  const showDate = format(new Date(show.date), 'MMMM d, yyyy');
-  
-  return createMetadata({
-    title: `${show.headliner_artist.name} at ${show.venue?.name || 'TBA'} - ${showDate} | MySetlist`,
-    description: `Get tickets and setlist for ${show.headliner_artist.name} performing at ${show.venue?.name || 'TBA'} on ${showDate}. View attendance, venue details, and more.`,
-    openGraph: {
-      images: [
-        {
-          url: show.headliner_artist.image_url || '',
-          width: 1200,
-          height: 630,
-          alt: show.headliner_artist.name,
-        },
-      ],
-    },
+  return createShowMetadata({
+    headliner: show.headliner_artist.name,
+    venue: show.venue?.name,
+    city: show.venue?.city,
+    date: new Date(show.date),
+    slug: show.slug,
+    image: show.headliner_artist.image_url,
   });
 };
 
@@ -50,10 +44,23 @@ const ShowPage = async ({ params }: ShowPageProps) => {
   if (!show) {
     notFound();
   }
+
+  const breadcrumbItems = [
+    { label: 'Shows', href: '/shows' },
+    { 
+      label: show.headliner_artist.name, 
+      href: `/artists/${show.headliner_artist.slug}` 
+    },
+    { 
+      label: format(new Date(show.date), 'MMM d, yyyy'), 
+      isCurrentPage: true 
+    },
+  ];
   
   return (
     <div className="flex flex-col gap-8 py-8 md:py-16">
       <div className="container mx-auto">
+        <BreadcrumbNavigation items={breadcrumbItems} className="mb-6" />
         <ShowPageContent show={show} />
       </div>
     </div>

@@ -13,15 +13,17 @@ import { motion, AnimatePresence } from 'framer-motion';
 type AttendanceTrackerProps = {
   showId: string;
   initialCount: number;
-  initialIsAttending: boolean;
+  initialIsAttending?: boolean;
   showStatus?: 'upcoming' | 'ongoing' | 'completed';
+  onAttendanceChange?: () => void;
 };
 
 export function AttendanceTracker({ 
   showId, 
   initialCount, 
-  initialIsAttending,
-  showStatus = 'upcoming'
+  initialIsAttending = false,
+  showStatus = 'upcoming',
+  onAttendanceChange
 }: AttendanceTrackerProps) {
   const router = useRouter();
   const [isAttending, setIsAttending] = useState(initialIsAttending);
@@ -59,6 +61,8 @@ export function AttendanceTracker({
             : "Removed from attendance list"
         );
         
+        // Call callback if provided (for AttendeeList)
+        onAttendanceChange?.();
         router.refresh();
       } catch (error: any) {
         // Revert optimistic update on error

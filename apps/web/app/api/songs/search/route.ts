@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { db, songs } from '@repo/database';
+import { ilike, or } from 'drizzle-orm';
+import { SpotifyClient } from '@repo/external-apis';
 
 // Song search API with Spotify integration
 export async function GET(request: NextRequest) {
@@ -12,57 +15,100 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ songs: [] });
     }
 
-    // Get Spotify access token
-    const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${Buffer.from(
-          `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
-        ).toString('base64')}`,
-      },
-      body: 'grant_type=client_credentials',
-    });
+    // Search in database first
+    const dbSongs = await db
+      .select()
+      .from(songs)
+      .where(
+        or(
+          ilike(songs.title, `%${query}%`),
+          ilike(songs.artist, `%${query}%`),
+          ilike(songs.album, `%${query}%`)
+        )
+      )
+      .limit(Math.min(limit, 10));
 
-    if (!tokenResponse.ok) {
-      throw new Error('Failed to get Spotify access token');
+    // If we have enough results from database, return them
+    if (dbSongs.length >= limit) {
+      const formattedSongs = dbSongs.map(song => ({
+        id: song.id,
+        spotify_id: song.spotifyId,
+        title: song.title,
+        artist: song.artist,
+        album: song.album,
+        album_art_url: song.albumArtUrl,
+        duration_ms: song.durationMs,
+        is_explicit: song.isExplicit,
+        preview_url: song.previewUrl,
+        popularity: song.popularity,
+        source: 'database'
+      }));
+      
+      return NextResponse.json({ songs: formattedSongs });
     }
 
-    const { access_token } = await tokenResponse.json();
+    // Search Spotify for additional results
+    try {
+      const spotifyClient = new SpotifyClient({});
+      await spotifyClient.authenticate();
+      
+      const spotifyResults = await spotifyClient.searchTracks(query, limit - dbSongs.length);
+      
+      // Transform Spotify data to our format
+      const spotifySongs = spotifyResults.tracks.items.map((track: any) => ({
+        id: track.id, // Use Spotify ID as temp ID
+        spotify_id: track.id,
+        title: track.name,
+        artist: track.artists.map((a: any) => a.name).join(', '),
+        album: track.album.name,
+        album_art_url: track.album.images[0]?.url || null,
+        duration_ms: track.duration_ms,
+        is_explicit: track.explicit,
+        preview_url: track.preview_url,
+        external_urls: track.external_urls,
+        popularity: track.popularity,
+        source: 'spotify'
+      }));
 
-    // Search Spotify for songs
-    const searchQuery = encodeURIComponent(query);
-    const spotifyResponse = await fetch(
-      `https://api.spotify.com/v1/search?q=${searchQuery}&type=track&limit=${limit}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${access_token}`,
-        },
-      }
-    );
+      // Format database songs to match Spotify format
+      const formattedDbSongs = dbSongs.map(song => ({
+        id: song.id,
+        spotify_id: song.spotifyId,
+        title: song.title,
+        artist: song.artist,
+        album: song.album,
+        album_art_url: song.albumArtUrl,
+        duration_ms: song.durationMs,
+        is_explicit: song.isExplicit,
+        preview_url: song.previewUrl,
+        popularity: song.popularity,
+        source: 'database'
+      }));
 
-    if (!spotifyResponse.ok) {
-      throw new Error('Failed to search Spotify');
+      // Combine results, database first
+      const combinedSongs = [...formattedDbSongs, ...spotifySongs];
+
+      return NextResponse.json({ songs: combinedSongs });
+    } catch (spotifyError) {
+      console.warn('Spotify search failed, returning database results only:', spotifyError);
+      
+      // Fallback to database results only
+      const formattedSongs = dbSongs.map(song => ({
+        id: song.id,
+        spotify_id: song.spotifyId,
+        title: song.title,
+        artist: song.artist,
+        album: song.album,
+        album_art_url: song.albumArtUrl,
+        duration_ms: song.durationMs,
+        is_explicit: song.isExplicit,
+        preview_url: song.previewUrl,
+        popularity: song.popularity,
+        source: 'database'
+      }));
+      
+      return NextResponse.json({ songs: formattedSongs });
     }
-
-    const spotifyData = await spotifyResponse.json();
-    
-    // Transform Spotify data to our format
-    const songs = spotifyData.tracks.items.map((track: any) => ({
-      id: track.id, // Use Spotify ID as temp ID
-      spotify_id: track.id,
-      title: track.name,
-      artist: track.artists.map((a: any) => a.name).join(', '),
-      album: track.album.name,
-      album_art_url: track.album.images[0]?.url || null,
-      duration_ms: track.duration_ms,
-      is_explicit: track.explicit,
-      preview_url: track.preview_url,
-      external_urls: track.external_urls,
-      popularity: track.popularity,
-    }));
-
-    return NextResponse.json({ songs });
   } catch (error) {
     console.error('Song search error:', error);
     return NextResponse.json(

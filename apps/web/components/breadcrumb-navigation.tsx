@@ -1,0 +1,59 @@
+'use client';
+
+import Link from 'next/link';
+import { ChevronRight, Home } from 'lucide-react';
+import { cn } from '@repo/design-system/lib/utils';
+
+export interface BreadcrumbItem {
+  label: string;
+  href?: string;
+  isCurrentPage?: boolean;
+}
+
+interface BreadcrumbNavigationProps {
+  items: BreadcrumbItem[];
+  className?: string;
+}
+
+export function BreadcrumbNavigation({ items, className }: BreadcrumbNavigationProps) {
+  return (
+    <nav aria-label="Breadcrumb" className={cn("flex items-center space-x-2 text-sm text-muted-foreground", className)}>
+      {/* Home link */}
+      <Link
+        href="/"
+        className="flex items-center hover:text-foreground transition-colors"
+        aria-label="Home"
+      >
+        <Home className="h-4 w-4" />
+      </Link>
+      
+      {items.length > 0 && <ChevronRight className="h-4 w-4" />}
+      
+      {items.map((item, index) => (
+        <div key={index} className="flex items-center space-x-2">
+          {item.href && !item.isCurrentPage ? (
+            <Link
+              href={item.href}
+              className="hover:text-foreground transition-colors"
+            >
+              {item.label}
+            </Link>
+          ) : (
+            <span
+              className={cn(
+                item.isCurrentPage && "text-foreground font-medium"
+              )}
+              aria-current={item.isCurrentPage ? "page" : undefined}
+            >
+              {item.label}
+            </span>
+          )}
+          
+          {index < items.length - 1 && (
+            <ChevronRight className="h-4 w-4" />
+          )}
+        </div>
+      ))}
+    </nav>
+  );
+}

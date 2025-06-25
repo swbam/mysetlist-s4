@@ -26,7 +26,11 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => [
     lastModified: new Date(),
   },
   {
-    url: new URL('/setlists', url).href,
+    url: new URL('/search', url).href,
+    lastModified: new Date(),
+  },
+  {
+    url: new URL('/trending', url).href,
     lastModified: new Date(),
   },
   {

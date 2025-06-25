@@ -16,6 +16,7 @@ import { cn } from '@repo/design-system/lib/utils';
 import { voteSong } from '../actions';
 import { toast } from 'sonner';
 import { VoteButton } from '@/components/voting/vote-button';
+import { MobileVoteButton } from '@/components/mobile/mobile-vote-button';
 import { useAuth } from '@/app/providers/auth-provider';
 
 type SongItemProps = {
@@ -134,22 +135,44 @@ export function SongItem({ item, index, isEditing, canVote, onDelete }: SongItem
       <div className="flex items-center gap-2">
         {/* Voting */}
         {canVote && !isEditing && (
-          <VoteButton
-            setlistSongId={item.id}
-            currentVote={userVote}
-            upvotes={upvotes}
-            downvotes={downvotes}
-            onVote={async (voteType) => {
-              if (voteType === 'up') {
-                await handleVote('up');
-              } else if (voteType === 'down') {
-                await handleVote('down');
-              }
-            }}
-            variant="compact"
-            size="sm"
-            disabled={isPending}
-          />
+          <>
+            {/* Desktop Vote Button */}
+            <div className="hidden md:block">
+              <VoteButton
+                setlistSongId={item.id}
+                currentVote={userVote}
+                upvotes={upvotes}
+                downvotes={downvotes}
+                onVote={async (voteType) => {
+                  if (voteType === 'up') {
+                    await handleVote('up');
+                  } else if (voteType === 'down') {
+                    await handleVote('down');
+                  }
+                }}
+                variant="compact"
+                size="sm"
+                disabled={isPending}
+              />
+            </div>
+            
+            {/* Mobile Vote Button */}
+            <div className="block md:hidden">
+              <MobileVoteButton
+                songId={item.id}
+                onVote={async (songId, voteType) => {
+                  if (voteType === 'up') {
+                    await handleVote('up');
+                  } else if (voteType === 'down') {
+                    await handleVote('down');
+                  }
+                }}
+                compact={true}
+                disabled={isPending}
+                hapticFeedback={true}
+              />
+            </div>
+          </>
         )}
         
         {/* Spotify Link */}

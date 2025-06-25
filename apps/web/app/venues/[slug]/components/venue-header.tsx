@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { MapPin, Calendar, Star, Users } from 'lucide-react';
+import { MapPin, Calendar, Star, Users, Phone, Globe, Mail, Clock } from 'lucide-react';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Card } from '@repo/design-system/components/ui/card';
 
@@ -17,6 +17,9 @@ interface VenueHeaderProps {
     capacity: number | null;
     venueType: string | null;
     description: string | null;
+    phoneNumber?: string | null;
+    website?: string | null;
+    timezone?: string;
   };
   avgRating: number | null;
   reviewCount: number;
@@ -138,13 +141,45 @@ export function VenueHeader({ venue, avgRating, reviewCount, upcomingShowCount }
 
       {/* Venue Type and Description */}
       <div className="flex flex-col gap-4">
-        {venue.venueType && (
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-4">
+          {venue.venueType && (
             <Badge variant="secondary" className="text-sm">
               {venueTypeLabels[venue.venueType] || venue.venueType}
             </Badge>
+          )}
+          
+          {/* Quick Contact Info */}
+          <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+            {venue.phoneNumber && (
+              <a 
+                href={`tel:${venue.phoneNumber}`}
+                className="flex items-center gap-1 hover:text-primary transition-colors"
+              >
+                <Phone className="w-3 h-3" />
+                {venue.phoneNumber}
+              </a>
+            )}
+            
+            {venue.website && (
+              <a 
+                href={venue.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 hover:text-primary transition-colors"
+              >
+                <Globe className="w-3 h-3" />
+                Website
+              </a>
+            )}
+            
+            {venue.timezone && (
+              <div className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {venue.timezone.split('/').pop()?.replace('_', ' ')}
+              </div>
+            )}
           </div>
-        )}
+        </div>
         
         {venue.description && (
           <p className="text-muted-foreground leading-relaxed">

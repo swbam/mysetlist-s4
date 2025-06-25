@@ -3,11 +3,12 @@
 import { format } from 'date-fns';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Calendar, Clock, MapPin } from 'lucide-react';
+import { Calendar, Clock, MapPin, Share2 } from 'lucide-react';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { cn } from '@repo/design-system/lib/utils';
 import { LiveIndicator } from '@/components/live-indicator';
 import { useRealtimeShow } from '@/hooks/use-realtime-show';
+import { ShareButtons } from './share-buttons';
 
 type ShowHeaderProps = {
   show: {
@@ -98,7 +99,7 @@ export function ShowHeader({ show }: ShowHeaderProps) {
               </Link>
             </h1>
             
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               {showStatus === 'ongoing' ? (
                 <LiveIndicator size="md" />
               ) : (
@@ -122,6 +123,19 @@ export function ShowHeader({ show }: ShowHeaderProps) {
                 </Badge>
               )}
             </div>
+          </div>
+          
+          {/* Social Sharing */}
+          <div className="flex justify-end mb-4">
+            <ShareButtons
+              url={`/shows/${show.slug}`}
+              title={`${show.headliner_artist.name} at ${show.venue?.name || 'TBA'}`}
+              description={`Get tickets and setlist for ${show.headliner_artist.name} performing at ${show.venue?.name || 'TBA'} on ${formattedDate}`}
+              imageUrl={show.headliner_artist.image_url}
+              artistName={show.headliner_artist.name}
+              venueName={show.venue?.name}
+              showDate={formattedDate}
+            />
           </div>
           
           <div className="space-y-2 text-muted-foreground">

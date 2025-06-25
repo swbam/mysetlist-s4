@@ -75,9 +75,15 @@ export interface TicketmasterVenue {
 
 export class TicketmasterClient extends BaseAPIClient {
   constructor(config: Omit<APIClientConfig, 'baseURL'>) {
+    const apiKey = process.env.TICKETMASTER_API_KEY;
+    if (!apiKey) {
+      throw new Error('Ticketmaster API key not configured');
+    }
+    
     super({
       ...config,
-      baseURL: 'https://app.ticketmaster.com/discovery/v2',
+      baseURL: 'https://app.ticketmaster.com/discovery/v2/',
+      apiKey,
       rateLimit: { requests: 5000, window: 24 * 3600 }, // 5000 requests per day
       cache: { defaultTTL: 1800 }, // 30 minutes default cache
     });
@@ -87,6 +93,61 @@ export class TicketmasterClient extends BaseAPIClient {
     // Ticketmaster uses API key in URL params, not headers
     return {};
   }
+
+  protected async makeRequest<T>(
+    endpoint: string,
+    options: RequestInit = {},
+    cacheKey?: string,
+    cacheTtl?: number
+  ): Promise<T> {
+    // Add API key to URL params for Ticketmaster
+    const url = new URL(endpoint, this.baseURL);
+    url.searchParams.append('apikey', this.apiKey!);
+    
+    // Check cache first if key provided and cache is available
+    if (cacheKey && this.cache) {
+      try {
+        const cached = await this.cache.get(cacheKey);
+        if (cached) {
+          return JSON.parse(cached as string) as T;
+        }
+      } catch (error) {
+        // Cache miss or error, continue with API call
+      }
+    }
+
+    // Check rate limits
+    if (this.rateLimit) {
+      await this.checkRateLimit();
+    }
+
+    const response = await fetch(url.toString(), {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ticketmaster API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json() as T;
+
+    // Cache if key provided and cache is available
+    if (cacheKey && cacheTtl && this.cache) {
+      try {
+        await this.cache.setex(cacheKey, cacheTtl, JSON.stringify(data));
+      } catch (error) {
+        // Cache error, don't fail the request
+        console.warn('Failed to cache response:', error);
+      }
+    }
+
+    return data;
+  }
+
 
   async searchEvents(options: {
     keyword?: string;
@@ -110,7 +171,7 @@ export class TicketmasterClient extends BaseAPIClient {
     });
 
     return this.makeRequest(
-      `/events.json?${params}`,
+      `events.json?${params.toString()}`,
       {},
       `ticketmaster:events:${params.toString()}`,
       900 // 15 minutes cache
@@ -119,7 +180,7 @@ export class TicketmasterClient extends BaseAPIClient {
 
   async getEvent(eventId: string): Promise<TicketmasterEvent> {
     return this.makeRequest<TicketmasterEvent>(
-      `/events/${eventId}.json`,
+      `events/${eventId}.json`,
       {},
       `ticketmaster:event:${eventId}`,
       1800
@@ -144,7 +205,7 @@ export class TicketmasterClient extends BaseAPIClient {
     });
 
     return this.makeRequest(
-      `/venues.json?${params}`,
+      `venues.json?${params}`,
       {},
       `ticketmaster:venues:${params.toString()}`,
       3600
@@ -153,7 +214,7 @@ export class TicketmasterClient extends BaseAPIClient {
 
   async getVenue(venueId: string): Promise<TicketmasterVenue> {
     return this.makeRequest<TicketmasterVenue>(
-      `/venues/${venueId}.json`,
+      `venues/${venueId}.json`,
       {},
       `ticketmaster:venue:${venueId}`,
       3600
@@ -166,15 +227,8 @@ export class TicketmasterClient extends BaseAPIClient {
     page?: number;
     sort?: string;
     classificationName?: string;
-  }): Promise<any> {
+  }): Promise<{ _embedded?: { attractions: any[] }; page: any }> {
     const params = new URLSearchParams();
-    
-    // Add API key to params
-    const apiKey = process.env.TICKETMASTER_API_KEY;
-    if (!apiKey) {
-      throw new Error('Ticketmaster API key not configured');
-    }
-    params.append('apikey', apiKey);
     
     Object.entries(options).forEach(([key, value]) => {
       if (value !== undefined) {
@@ -182,26 +236,17 @@ export class TicketmasterClient extends BaseAPIClient {
       }
     });
 
-    // Construct the full URL manually since Ticketmaster API expects params in URL
-    const fullUrl = `${this.baseURL}/attractions.json?${params.toString()}`;
-    
-    const response = await fetch(fullUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Ticketmaster API request failed: ${response.status} ${response.statusText}`);
-    }
-
-    return response.json();
+    return this.makeRequest(
+      `attractions.json?${params.toString()}`,
+      {},
+      `ticketmaster:attractions:${params.toString()}`,
+      1800
+    );
   }
 
   async getAttraction(attractionId: string): Promise<any> {
     return this.makeRequest(
-      `/attractions/${attractionId}.json`,
+      `attractions/${attractionId}.json`,
       {},
       `ticketmaster:attraction:${attractionId}`,
       3600

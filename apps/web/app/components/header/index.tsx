@@ -49,8 +49,8 @@ export const Header = () => {
       description: '',
     },
     {
-      title: 'Blog',
-      href: '/blog',
+      title: 'Trending',
+      href: '/trending',
       description: '',
     },
   ];

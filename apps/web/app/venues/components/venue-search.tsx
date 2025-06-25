@@ -2,8 +2,9 @@
 
 import { Input } from '@repo/design-system/components/ui/input';
 import { Badge } from '@repo/design-system/components/ui/badge';
+import { Button } from '@repo/design-system/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/design-system/components/ui/select';
-import { Search, Music2, Grid3X3, Map } from 'lucide-react';
+import { Search, Music2, Grid3X3, Map, MapPin, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Toggle } from '@repo/design-system/components/ui/toggle';
@@ -35,6 +36,10 @@ export const VenueSearch = ({ onViewChange, currentView = 'grid' }: VenueSearchP
   );
   const [capacity, setCapacity] = useState(searchParams.get('capacity') || 'all');
   const [viewMode, setViewMode] = useState<'grid' | 'map'>(currentView);
+  const [isLocating, setIsLocating] = useState(false);
+  const [hasLocation, setHasLocation] = useState(
+    !!(searchParams.get('lat') && searchParams.get('lng'))
+  );
 
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
@@ -74,6 +79,53 @@ export const VenueSearch = ({ onViewChange, currentView = 'grid' }: VenueSearchP
     onViewChange?.(view);
   };
 
+  const handleUseLocation = async () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by this browser.');
+      return;
+    }
+
+    setIsLocating(true);
+
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes
+        });
+      });
+
+      const { latitude, longitude } = position.coords;
+      
+      // Update URL with location params
+      const params = new URLSearchParams(searchParams);
+      params.set('lat', latitude.toString());
+      params.set('lng', longitude.toString());
+      
+      const newUrl = `${pathname}?${params.toString()}`;
+      router.push(newUrl);
+      
+      setHasLocation(true);
+    } catch (error) {
+      console.error('Error getting location:', error);
+      alert('Unable to get your location. Please try again or search manually.');
+    } finally {
+      setIsLocating(false);
+    }
+  };
+
+  const clearLocation = () => {
+    const params = new URLSearchParams(searchParams);
+    params.delete('lat');
+    params.delete('lng');
+    
+    const newUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
+    router.push(newUrl);
+    
+    setHasLocation(false);
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col sm:flex-row gap-2">
@@ -100,6 +152,34 @@ export const VenueSearch = ({ onViewChange, currentView = 'grid' }: VenueSearchP
               <SelectItem value="xlarge">20,000+</SelectItem>
             </SelectContent>
           </Select>
+          
+          {/* Location Button */}
+          {hasLocation ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={clearLocation}
+              className="text-primary border-primary"
+            >
+              <MapPin className="h-4 w-4 mr-1" />
+              Near Me ✓
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleUseLocation}
+              disabled={isLocating}
+            >
+              {isLocating ? (
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+              ) : (
+                <MapPin className="h-4 w-4 mr-1" />
+              )}
+              {isLocating ? 'Locating...' : 'Near Me'}
+            </Button>
+          )}
+          
           <div className="flex gap-1 border rounded-md p-1">
             <Toggle
               size="sm"

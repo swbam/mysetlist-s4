@@ -13,7 +13,8 @@ import {
   ThumbsUp,
   ThumbsDown,
   MoreVertical,
-  CheckCircle
+  CheckCircle,
+  ArrowUpDown
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
 import { Badge } from '@repo/design-system/components/ui/badge';
@@ -32,6 +33,7 @@ import { toast } from 'sonner';
 import { voteSong, lockSetlist, removeSongFromSetlist } from '../actions';
 import { AddSongDialog } from './add-song-dialog';
 import { SongItem } from './song-item';
+import { ReorderableSetlist } from './reorderable-setlist';
 
 type SetlistViewerProps = {
   setlist: any;
@@ -43,6 +45,7 @@ type SetlistViewerProps = {
 export function SetlistViewer({ setlist, show, currentUser, type }: SetlistViewerProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [showAddSong, setShowAddSong] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
   const [isPending, startTransition] = useTransition();
   
   const isOwner = currentUser?.id === setlist.created_by;
@@ -147,6 +150,10 @@ export function SetlistViewer({ setlist, show, currentUser, type }: SetlistViewe
                     <Music2 className="h-4 w-4 mr-2" />
                     Add Songs
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setIsReordering(!isReordering)}>
+                    <ArrowUpDown className="h-4 w-4 mr-2" />
+                    {isReordering ? 'Stop Reordering' : 'Reorder Songs'}
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     onClick={handleLockSetlist}
@@ -163,18 +170,28 @@ export function SetlistViewer({ setlist, show, currentUser, type }: SetlistViewe
         
         <CardContent>
           {setlist.setlist_songs && setlist.setlist_songs.length > 0 ? (
-            <div className="space-y-2">
-              {setlist.setlist_songs.map((item: any, index: number) => (
-                <SongItem
-                  key={item.id}
-                  item={item}
-                  index={index}
-                  isEditing={isEditing}
-                  canVote={!!currentUser && !setlist.is_locked}
-                  onDelete={() => handleDeleteSong(item.id)}
-                />
-              ))}
-            </div>
+            isReordering ? (
+              <ReorderableSetlist
+                setlist={setlist}
+                show={show}
+                currentUser={currentUser}
+                onReorder={() => setIsReordering(false)}
+                onCancel={() => setIsReordering(false)}
+              />
+            ) : (
+              <div className="space-y-2">
+                {setlist.setlist_songs.map((item: any, index: number) => (
+                  <SongItem
+                    key={item.id}
+                    item={item}
+                    index={index}
+                    isEditing={isEditing}
+                    canVote={!!currentUser && !setlist.is_locked}
+                    onDelete={() => handleDeleteSong(item.id)}
+                  />
+                ))}
+              </div>
+            )
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Music2 className="h-8 w-8 mx-auto mb-2 opacity-50" />

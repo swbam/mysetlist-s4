@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { createMetadata } from '@repo/seo/metadata';
+import { createVenueMetadata } from '@/lib/seo-metadata';
 import type { Metadata } from 'next';
 import { getVenueBySlug, getVenueShows, getVenueReviews, getVenuePhotos, getVenueInsiderTips, getNearbyVenues } from './actions';
 import { VenueHeader } from './components/venue-header';
@@ -7,6 +7,7 @@ import { VenueMap } from './components/venue-map';
 import { VenueDetails } from './components/venue-details';
 import { UpcomingShows } from './components/upcoming-shows';
 import { PastShows } from './components/past-shows';
+import { BreadcrumbNavigation } from '@/components/breadcrumb-navigation';
 import { VenueReviews } from './components/venue-reviews';
 import { VenuePhotos } from './components/venue-photos';
 import { InsiderTips } from './components/insider-tips';
@@ -27,18 +28,24 @@ export const generateMetadata = async ({
   const venue = await getVenueBySlug(slug);
   
   if (!venue) {
-    return createMetadata({
-      title: 'Venue Not Found',
+    return createVenueMetadata({
+      name: 'Venue Not Found',
+      city: 'Unknown',
+      slug: 'not-found',
       description: 'The venue you are looking for does not exist.',
     });
   }
 
-  return createMetadata({
-    title: `${venue.name} - ${venue.city}, ${venue.state || venue.country}`,
-    description: venue.description || `Concert venue in ${venue.city}. Get insider tips, parking info, and plan your perfect show experience at ${venue.name}.`,
-    openGraph: {
-      images: venue.imageUrl ? [venue.imageUrl] : undefined,
-    },
+  return createVenueMetadata({
+    name: venue.name,
+    city: venue.city,
+    state: venue.state,
+    country: venue.country,
+    description: venue.description,
+    imageUrl: venue.imageUrl,
+    slug: venue.slug,
+    upcomingShowCount: venue.upcomingShowCount,
+    capacity: venue.capacity,
   });
 };
 
@@ -64,9 +71,15 @@ const VenuePage = async ({ params }: VenuePageProps) => {
     ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length 
     : null;
 
+  const breadcrumbItems = [
+    { label: 'Venues', href: '/venues' },
+    { label: venue.name, isCurrentPage: true },
+  ];
+
   return (
     <div className="flex flex-col gap-8 py-8 md:py-16">
       <div className="container mx-auto">
+        <BreadcrumbNavigation items={breadcrumbItems} className="mb-6" />
         <div className="flex flex-col gap-8">
           {/* Venue Header */}
           <VenueHeader 

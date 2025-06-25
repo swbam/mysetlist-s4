@@ -14,7 +14,15 @@ import {
   Accessibility,
   Music,
   Shield,
-  CreditCard
+  CreditCard,
+  Navigation,
+  Train,
+  Bus,
+  Users,
+  Volume2,
+  Eye,
+  Info,
+  Banknote
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -47,23 +55,54 @@ export function VenueDetails({ venue }: VenueDetailsProps) {
     'live-music': Music,
     security: Shield,
     'cashless': CreditCard,
+    'coat-check': Users,
+    'merch': Banknote,
+    'atm': CreditCard,
+    'outdoor-area': Globe,
   };
 
   const amenityLabels: Record<string, string> = {
     wifi: 'Free WiFi',
-    parking: 'Parking',
-    food: 'Food Available',
+    parking: 'Parking Available',
+    food: 'Food & Concessions',
     bar: 'Full Bar',
-    accessible: 'Accessible',
-    'live-music': 'Live Music',
-    security: 'Security',
-    'cashless': 'Cashless Venue',
+    accessible: 'Wheelchair Accessible',
+    'live-music': 'Live Music Venue',
+    security: '24/7 Security',
+    'cashless': 'Cashless Only',
+    'coat-check': 'Coat Check',
+    'merch': 'Merchandise Stand',
+    'atm': 'ATM Available',
+    'outdoor-area': 'Outdoor Area',
   };
 
   const formatTimezone = (tz: string) => {
     // Convert timezone to readable format
-    const offset = new Date().toLocaleString('en-US', { timeZone: tz, timeZoneName: 'short' }).split(' ').pop();
-    return offset || tz;
+    try {
+      const offset = new Date().toLocaleString('en-US', { 
+        timeZone: tz, 
+        timeZoneName: 'short' 
+      }).split(' ').pop();
+      return offset || tz;
+    } catch {
+      return tz;
+    }
+  };
+
+  const getDirectionsUrl = () => {
+    if (venue.address) {
+      const address = `${venue.address}, ${venue.city}, ${venue.state || venue.country}`;
+      return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
+    }
+    return null;
+  };
+
+  const getTransitUrl = () => {
+    if (venue.address) {
+      const address = `${venue.address}, ${venue.city}, ${venue.state || venue.country}`;
+      return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}&travelmode=transit`;
+    }
+    return null;
   };
 
   return (
@@ -149,14 +188,148 @@ export function VenueDetails({ venue }: VenueDetailsProps) {
           </div>
         )}
 
-        {/* Quick Tips */}
+        {/* Transportation Options */}
         <div className="pt-4 border-t">
-          <h3 className="text-sm font-medium mb-2">Quick Tips</h3>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Arrive early for better parking options</li>
-            <li>• Check venue website for bag policies</li>
-            <li>• Most venues are cashless - bring cards</li>
-          </ul>
+          <h3 className="text-sm font-medium mb-3">Getting There</h3>
+          <div className="space-y-3">
+            {getDirectionsUrl() && (
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Navigation className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <Link
+                    href={getDirectionsUrl()!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    Get Driving Directions
+                  </Link>
+                  <p className="text-xs text-muted-foreground">
+                    Google Maps driving directions
+                  </p>
+                </div>
+              </div>
+            )}
+            
+            {getTransitUrl() && (
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <Train className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <Link
+                    href={getTransitUrl()!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    Public Transit Options
+                  </Link>
+                  <p className="text-xs text-muted-foreground">
+                    Bus, train, and transit directions
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Car className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Parking Information</p>
+                <p className="text-xs text-muted-foreground">
+                  {amenitiesList.includes('parking') 
+                    ? 'Parking available - check venue for rates' 
+                    : 'Limited parking - consider public transit'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Accessibility Information */}
+        <div className="pt-4 border-t">
+          <h3 className="text-sm font-medium mb-3">Accessibility & Info</h3>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Accessibility className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Accessibility</p>
+                <p className="text-xs text-muted-foreground">
+                  {amenitiesList.includes('accessible') 
+                    ? 'Wheelchair accessible with ADA compliance' 
+                    : 'Contact venue for accessibility information'
+                  }
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Volume2 className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Sound & Acoustics</p>
+                <p className="text-xs text-muted-foreground">
+                  Professional sound system - check reviews for details
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <Eye className="w-4 h-4 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Sightlines</p>
+                <p className="text-xs text-muted-foreground">
+                  Venue layout designed for optimal viewing - see reviews
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Important Policies */}
+        <div className="pt-4 border-t">
+          <h3 className="text-sm font-medium mb-3">Important Policies</h3>
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Info className="w-3 h-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                {amenitiesList.includes('cashless') 
+                  ? 'Cashless venue - cards and mobile payments only' 
+                  : 'Cash and cards accepted'
+                }
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Info className="w-3 h-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                Bag policy enforced - check venue website before arrival
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Info className="w-3 h-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
+                Arrive early for security screening and best parking
+              </span>
+            </div>
+            {amenitiesList.includes('security') && (
+              <div className="flex items-center gap-2">
+                <Shield className="w-3 h-3 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">
+                  Professional security staff on-site
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </Card>

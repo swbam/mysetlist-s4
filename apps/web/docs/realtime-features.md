@@ -15,7 +15,6 @@ The MySetlist app now includes comprehensive real-time features powered by Supab
 
 2. **Real-time Hooks**
    - `useRealtimeArtist` - Artist follower counts
-   - `useRealtimeShow` - Show attendance and status
    - `useRealtimeSetlist` - Live setlist updates
    - `useRealtimeVotes` - Song voting
    - `useRealtimeShows` - New shows feed
@@ -68,58 +67,9 @@ During live shows:
 
 ## Implementation Guide
 
-### Using Real-time Hooks
 
-```typescript
-// Example: Real-time attendance tracking
-import { useRealtimeShow } from '@/hooks/use-realtime-show';
 
-function ShowComponent({ showId }) {
-  const { attendanceCount, showStatus } = useRealtimeShow({
-    showId,
-    initialAttendanceCount: 100,
-    onAttendanceChange: (count) => {
-      console.log('New attendance:', count);
-    }
-  });
 
-  return (
-    <div>
-      <p>{attendanceCount} attending</p>
-      <p>Status: {showStatus}</p>
-    </div>
-  );
-}
-```
-
-### Optimistic Updates
-
-```typescript
-import { useOptimisticUpdate } from '@/hooks/use-optimistic-update';
-
-function AttendanceButton({ showId, initialAttending }) {
-  const { value: isAttending, update, isPending } = useOptimisticUpdate(
-    initialAttending,
-    {
-      onUpdate: async (newValue) => {
-        return await toggleAttendance(showId, newValue);
-      },
-      onError: (error) => {
-        toast.error('Failed to update attendance');
-      }
-    }
-  );
-
-  return (
-    <Button 
-      onClick={() => update(!isAttending)}
-      disabled={isPending}
-    >
-      {isAttending ? 'I was there' : 'I'm going'}
-    </Button>
-  );
-}
-```
 
 ### Connection Status
 

@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { createMetadata } from '@repo/seo/metadata';
+import { createArtistMetadata } from '@/lib/seo-metadata';
 import type { Metadata } from 'next';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system';
 import { getUser } from '@repo/auth/server';
@@ -10,6 +10,7 @@ import { ArtistTopTracks } from './components/artist-top-tracks';
 import { ArtistStats } from './components/artist-stats';
 import { ArtistBio } from './components/artist-bio';
 import { SimilarArtists } from './components/similar-artists';
+import { BreadcrumbNavigation } from '@/components/breadcrumb-navigation';
 import { getArtist, getArtistShows, getArtistStats, getSimilarArtists } from './actions';
 
 
@@ -27,16 +28,20 @@ export const generateMetadata = async ({
   const artist = await getArtist(slug);
 
   if (!artist) {
-    return createMetadata({
-      title: 'Artist Not Found - MySetlist',
-      description: 'The requested artist could not be found.',
+    return createArtistMetadata({
+      name: 'Artist Not Found',
+      bio: 'The requested artist could not be found.',
+      slug: 'not-found',
     });
   }
 
-  return createMetadata({
-    title: `${artist.name} - MySetlist`,
-    description: artist.bio || `Discover upcoming shows and setlists for ${artist.name}`,
-    image: artist.imageUrl || undefined,
+  return createArtistMetadata({
+    name: artist.name,
+    bio: artist.bio,
+    imageUrl: artist.imageUrl,
+    slug: artist.slug,
+    showCount: artist.showCount,
+    followerCount: artist.followerCount,
   });
 };
 
@@ -59,8 +64,16 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
     getSimilarArtists(artist.id, artist.genres),
   ]);
 
+  const breadcrumbItems = [
+    { label: 'Artists', href: '/artists' },
+    { label: artist.name, isCurrentPage: true },
+  ];
+
   return (
     <div className="container mx-auto py-8">
+      {/* Breadcrumb Navigation */}
+      <BreadcrumbNavigation items={breadcrumbItems} className="mb-6" />
+      
       {/* Artist Header */}
       <ArtistHeader artist={artist} />
 
