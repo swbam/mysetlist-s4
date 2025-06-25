@@ -1,14 +1,12 @@
 'use client';
 
 import { Input } from '@repo/design-system/components/ui/input';
-import { Button } from '@repo/design-system/components/ui/button';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/design-system/components/ui/select';
-import { Search, MapPin, Music2, Grid3X3, Map, Loader2, X } from 'lucide-react';
+import { Search, Music2, Grid3X3, Map } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { Toggle } from '@repo/design-system/components/ui/toggle';
-import { useVenueGeolocation } from '@/hooks/use-venue-geolocation';
 
 const venueTypes = [
   { value: 'arena', label: 'Arena' },
@@ -30,7 +28,6 @@ export const VenueSearch = ({ onViewChange, currentView = 'grid' }: VenueSearchP
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { position, loading: locationLoading, updateLocation, clearLocation, hasLocation } = useVenueGeolocation();
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [selectedTypes, setSelectedTypes] = useState<string[]>(
@@ -72,14 +69,6 @@ export const VenueSearch = ({ onViewChange, currentView = 'grid' }: VenueSearchP
     );
   };
 
-  const handleNearMe = async () => {
-    if (hasLocation) {
-      clearLocation();
-    } else {
-      await updateLocation();
-    }
-  };
-
   const handleViewChange = (view: 'grid' | 'map') => {
     setViewMode(view);
     onViewChange?.(view);
@@ -111,20 +100,6 @@ export const VenueSearch = ({ onViewChange, currentView = 'grid' }: VenueSearchP
               <SelectItem value="xlarge">20,000+</SelectItem>
             </SelectContent>
           </Select>
-          <Button 
-            onClick={handleNearMe} 
-            variant={hasLocation ? "default" : "outline"}
-            disabled={locationLoading}
-          >
-            {locationLoading ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : hasLocation ? (
-              <X className="h-4 w-4 mr-2" />
-            ) : (
-              <MapPin className="h-4 w-4 mr-2" />
-            )}
-            {hasLocation ? 'Clear' : 'Near Me'}
-          </Button>
           <div className="flex gap-1 border rounded-md p-1">
             <Toggle
               size="sm"

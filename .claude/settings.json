@@ -1,0 +1,40 @@
+{
+  "allowedTools": [
+    "Edit",
+    "MultiEdit", 
+    "Write",
+    "Read",
+    "Bash",
+    "Glob",
+    "Grep",
+    "LS",
+    "TodoRead",
+    "TodoWrite",
+    "Task",
+    "mcp__github__*",
+    "mcp__memory__*",
+    "mcp__desktop-commander__*",
+    "mcp__supabase__*"
+  ],
+  "tools": {
+    "bash": {
+      "allowedCommands": [
+        "npm run *",
+        "pnpm *", 
+        "git *",
+        "ls",
+        "cd",
+        "pwd",
+        "cat",
+        "echo",
+        "grep",
+        "find",
+        "tree"
+      ]
+    }
+  },
+  "workspaceSettings": {
+    "autoSave": true,
+    "formatOnSave": true
+  }
+}

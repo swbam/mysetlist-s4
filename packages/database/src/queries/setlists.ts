@@ -95,8 +95,9 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
 
 export async function createSetlist(showId: string, setlistData: {
   name: string;
-  type: 'predicted' | 'actual' | 'user';
-  userId?: string;
+  type: 'predicted' | 'actual';
+  artistId: string;
+  createdBy?: string;
 }) {
   // Get the next order index for the show
   const maxOrderIndex = await db
@@ -110,10 +111,11 @@ export async function createSetlist(showId: string, setlistData: {
     .insert(setlists)
     .values({
       showId,
+      artistId: setlistData.artistId,
       name: setlistData.name,
       type: setlistData.type,
       orderIndex,
-      userId: setlistData.userId,
+      createdBy: setlistData.createdBy,
       isLocked: false,
     })
     .returning();

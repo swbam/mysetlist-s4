@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Progress } from '@repo/design-system/components/ui/progress';
-import { VoteButton } from '@repo/design-system/components/ui/vote-button';
+import { VoteButton } from '@repo/design-system';
 import { Clock, Music, Sparkles, Play, CheckCircle, Wifi, WifiOff } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';

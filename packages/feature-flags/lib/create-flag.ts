@@ -1,4 +1,3 @@
-import { analytics } from '@repo/analytics/posthog/server';
 import { getUser } from '@repo/auth/server';
 import { flag } from 'flags/next';
 
@@ -13,12 +12,8 @@ export const createFlag = (key: string) =>
         return this.defaultValue as boolean;
       }
 
-      if (!analytics) {
-        return this.defaultValue as boolean;
-      }
-      
-      const isEnabled = await analytics.isFeatureEnabled(key, user.id);
-
-      return isEnabled ?? (this.defaultValue as boolean);
+      // Feature flags now default to the defaultValue without analytics
+      // This can be extended with a different feature flag service if needed
+      return this.defaultValue as boolean;
     },
   });

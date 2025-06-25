@@ -1,31 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/auth';
-import { db } from '@repo/database';
-import { userFollowsArtists, artists } from '@repo/database/src/schema';
-import { eq, and } from 'drizzle-orm';
+import { getUserFromRequest } from '@repo/auth/server';
+import { db, userFollowsArtists, artists } from '@repo/database';
+import { and, eq } from 'drizzle-orm';
 
 export async function GET(
-  req: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await getCurrentUser();
+    const user = await getUserFromRequest(request);
     if (!user) {
-      return NextResponse.json({ following: false });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const artistId = params.id;
+
+    // Check if the user is following this artist
     const follow = await db
       .select()
       .from(userFollowsArtists)
       .where(
         and(
           eq(userFollowsArtists.userId, user.id),
-          eq(userFollowsArtists.artistId, params.id)
+          eq(userFollowsArtists.artistId, artistId)
         )
       )
       .limit(1);
 
-    return NextResponse.json({ following: follow.length > 0 });
+    return NextResponse.json({ isFollowing: follow.length > 0 });
   } catch (error) {
     console.error('Error checking follow status:', error);
     return NextResponse.json(
@@ -36,21 +38,18 @@ export async function GET(
 }
 
 export async function POST(
-  req: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await getCurrentUser();
+    const user = await getUserFromRequest(request);
     if (!user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const artistId = params.id;
 
-    // Check if artist exists
+    // Verify the artist exists
     const artist = await db
       .select()
       .from(artists)
@@ -58,10 +57,7 @@ export async function POST(
       .limit(1);
 
     if (artist.length === 0) {
-      return NextResponse.json(
-        { error: 'Artist not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
     }
 
     // Check if already following
@@ -77,19 +73,19 @@ export async function POST(
       .limit(1);
 
     if (existingFollow.length > 0) {
-      return NextResponse.json(
-        { error: 'Already following this artist' },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: 'Already following this artist' });
     }
 
-    // Create follow relationship
+    // Create the follow relationship
     await db.insert(userFollowsArtists).values({
       userId: user.id,
-      artistId: artistId,
+      artistId,
     });
 
-    return NextResponse.json({ success: true, following: true });
+    // Track the activity (you can add this to a separate activity tracking system later)
+    // For now, the follow relationship itself serves as the activity record
+
+    return NextResponse.json({ message: 'Successfully followed artist' });
   } catch (error) {
     console.error('Error following artist:', error);
     return NextResponse.json(
@@ -100,21 +96,18 @@ export async function POST(
 }
 
 export async function DELETE(
-  req: NextRequest,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const user = await getCurrentUser();
+    const user = await getUserFromRequest(request);
     if (!user) {
-      return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const artistId = params.id;
 
-    // Delete follow relationship
+    // Delete the follow relationship
     const result = await db
       .delete(userFollowsArtists)
       .where(
@@ -122,17 +115,9 @@ export async function DELETE(
           eq(userFollowsArtists.userId, user.id),
           eq(userFollowsArtists.artistId, artistId)
         )
-      )
-      .returning();
-
-    if (result.length === 0) {
-      return NextResponse.json(
-        { error: 'Not following this artist' },
-        { status: 400 }
       );
-    }
 
-    return NextResponse.json({ success: true, following: false });
+    return NextResponse.json({ message: 'Successfully unfollowed artist' });
   } catch (error) {
     console.error('Error unfollowing artist:', error);
     return NextResponse.json(

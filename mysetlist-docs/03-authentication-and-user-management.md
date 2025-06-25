@@ -25,16 +25,15 @@ Supabase Auth Check
 │     User        │     User        │
 └─────────────────┴─────────────────┘
        ↓                   ↓
-Create Profile      Update Last Login
+Create User Record  Update Last Login
        ↓                   ↓
-Spotify Connect     Session Creation
+Session Creation    Session Creation
        ↓                   ↓
     Dashboard          Dashboard
 ```
 
 ### Authentication Methods
 - **Email/Password**: Traditional authentication
-- **Spotify OAuth**: Primary music platform integration
 - **Google OAuth**: Alternative social login
 - **Magic Links**: Passwordless email authentication
 
@@ -393,124 +392,6 @@ function hasRole(user: AuthUser, requiredRole: string): boolean {
 }
 ```
 
-## Spotify Integration
-
-### Spotify OAuth Configuration
-```typescript
-// packages/auth/src/providers/spotify.ts
-import { SpotifyApi } from '@spotify/web-api-ts-sdk';
-
-export class SpotifyAuthProvider {
-  private spotify: SpotifyApi;
-
-  constructor(accessToken: string) {
-    this.spotify = SpotifyApi.withAccessToken(
-      process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID!,
-      {
-        access_token: accessToken,
-        token_type: 'Bearer',
-        expires_in: 3600,
-        refresh_token: '',
-      }
-    );
-  }
-
-  async getUserProfile() {
-    return await this.spotify.currentUser.profile();
-  }
-
-  async getTopArtists(timeRange: 'short_term' | 'medium_term' | 'long_term' = 'medium_term') {
-    return await this.spotify.currentUser.topItems('artists', timeRange, 20);
-  }
-
-  async getTopTracks(timeRange: 'short_term' | 'medium_term' | 'long_term' = 'medium_term') {
-    return await this.spotify.currentUser.topItems('tracks', timeRange, 20);
-  }
-
-  async searchArtists(query: string, limit = 20) {
-    const results = await this.spotify.search(query, ['artist'], 'US', limit);
-    return results.artists;
-  }
-
-  async getArtist(artistId: string) {
-    return await this.spotify.artists.get(artistId);
-  }
-
-  async getArtistTopTracks(artistId: string) {
-    return await this.spotify.artists.topTracks(artistId, 'US');
-  }
-}
-```
-
-### Spotify Connection Component
-```typescript
-// packages/auth/src/components/spotify-connect.tsx
-'use client';
-
-import { useState } from 'react';
-import { useAuth } from '../hooks/use-auth';
-import { Button } from '@repo/ui/components/button';
-import { Card } from '@repo/ui/components/card';
-import { Music } from 'lucide-react';
-
-export function SpotifyConnect() {
-  const { user, signInWithSpotify } = useAuth();
-  const [isConnecting, setIsConnecting] = useState(false);
-
-  const handleConnect = async () => {
-    setIsConnecting(true);
-    try {
-      await signInWithSpotify();
-    } catch (error) {
-      console.error('Spotify connection failed:', error);
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const isSpotifyConnected = user?.appMetadata?.provider === 'spotify';
-
-  if (isSpotifyConnected) {
-    return (
-      <Card className="p-4">
-        <div className="flex items-center gap-3">
-          <Music className="h-5 w-5 text-green-500" />
-          <div>
-            <p className="font-medium">Spotify Connected</p>
-            <p className="text-sm text-muted-foreground">
-              Your Spotify account is linked
-            </p>
-          </div>
-        </div>
-      </Card>
-    );
-  }
-
-  return (
-    <Card className="p-4">
-      <div className="space-y-3">
-        <div className="flex items-center gap-3">
-          <Music className="h-5 w-5" />
-          <div>
-            <p className="font-medium">Connect Spotify</p>
-            <p className="text-sm text-muted-foreground">
-              Get personalized artist recommendations and sync your music taste
-            </p>
-          </div>
-        </div>
-        <Button
-          onClick={handleConnect}
-          disabled={isConnecting}
-          className="w-full"
-          variant="outline"
-        >
-          {isConnecting ? 'Connecting...' : 'Connect Spotify Account'}
-        </Button>
-      </div>
-    </Card>
-  );
-}
-```
 
 ## Session Management
 
@@ -631,7 +512,7 @@ export async function middleware(request: NextRequest) {
   await supabase.auth.getUser();
 
   // Protected routes
-  const protectedPaths = ['/dashboard', '/profile', '/admin'];
+  const protectedPaths = ['/dashboard', '/admin'];
   const authPaths = ['/auth/signin', '/auth/signup'];
   
   const { pathname } = request.nextUrl;
@@ -667,7 +548,6 @@ export const config = {
 ```sql
 -- Enable RLS on user-related tables
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_profiles ENABLE ROW LEVEL SECURITY;
 
 -- Users can read their own data
 CREATE POLICY "Users can view own profile" ON users
@@ -675,20 +555,6 @@ CREATE POLICY "Users can view own profile" ON users
 
 CREATE POLICY "Users can update own profile" ON users
   FOR UPDATE USING (auth.uid() = id);
-
--- Profile access policies
-CREATE POLICY "Users can view own profile details" ON user_profiles
-  FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can update own profile details" ON user_profiles
-  FOR UPDATE USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own profile" ON user_profiles
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- Public profiles are viewable by all
-CREATE POLICY "Public profiles are viewable" ON user_profiles
-  FOR SELECT USING (is_public = true);
 ```
 
 ### Input Validation
@@ -713,80 +579,6 @@ export const signUpSchema = z.object({
   displayName: z.string().min(2, 'Display name must be at least 2 characters'),
 });
 
-export const profileUpdateSchema = z.object({
-  displayName: z.string().min(2).max(50).optional(),
-  bio: z.string().max(500).optional(),
-  location: z.string().max(100).optional(),
-  website: z.string().url().optional(),
-  favoriteGenres: z.array(z.string()).max(10).optional(),
-});
 ```
 
-## User Profile Features
-
-### Profile Management Hook
-```typescript
-// packages/auth/src/hooks/use-user-profile.ts
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useAuth } from './use-auth';
-import { db } from '@repo/database';
-import { userProfiles } from '@repo/database/schema';
-import { eq } from 'drizzle-orm';
-
-export function useUserProfile() {
-  const { user } = useAuth();
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-    } else {
-      setProfile(null);
-      setLoading(false);
-    }
-  }, [user]);
-
-  const fetchProfile = async () => {
-    if (!user) return;
-    
-    try {
-      const result = await db.query.userProfiles.findFirst({
-        where: eq(userProfiles.userId, user.id),
-      });
-      setProfile(result);
-    } catch (error) {
-      console.error('Failed to fetch profile:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const updateProfile = async (updates: Partial<UserProfile>) => {
-    if (!user) return;
-
-    try {
-      await db
-        .update(userProfiles)
-        .set({ ...updates, updatedAt: new Date() })
-        .where(eq(userProfiles.userId, user.id));
-      
-      await fetchProfile();
-    } catch (error) {
-      console.error('Failed to update profile:', error);
-      throw error;
-    }
-  };
-
-  return {
-    profile,
-    loading,
-    updateProfile,
-    refetch: fetchProfile,
-  };
-}
-```
-
-This authentication system provides a robust foundation for MySetlist using Next-Forge's package structure with Supabase integration. It supports multiple authentication methods, secure session management, and integrates seamlessly with Spotify for music-related features.
+This authentication system provides a robust foundation for MySetlist using Next-Forge's package structure with Supabase integration. It supports multiple authentication methods and secure session management for basic user authentication.

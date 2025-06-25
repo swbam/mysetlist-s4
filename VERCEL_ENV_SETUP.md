@@ -36,8 +36,6 @@ RESEND_TOKEN=your_resend_api_key
 RESEND_FROM=noreply@your-domain.com
 EMAIL_FROM=noreply@your-domain.com
 
-# Maps (OPTIONAL - Add if using Mapbox)
-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_mapbox_token
 
 # Redis Caching & Rate Limiting (OPTIONAL - Add if using Upstash Redis)
 UPSTASH_REDIS_REST_URL=your_upstash_redis_url
@@ -121,11 +119,6 @@ LANGUINE_PROJECT_ID=your_languine_project_id
 | `NEXT_PUBLIC_API_URL` | API server URL | `https://api.mysetlist.vercel.app` | Set if using separate API domain |
 | `NEXT_PUBLIC_DOCS_URL` | Documentation URL | `https://docs.mysetlist.vercel.app` | Set if using separate docs domain |
 
-#### Maps & Geolocation
-
-| Variable | Description | Example Value | Where to Get |
-|----------|-------------|---------------|--------------|
-| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Mapbox maps token | `pk.eyJ1IjoibXl1c2Vy...` | [Mapbox Account](https://account.mapbox.com/access-tokens/) |
 
 #### Redis Caching & Rate Limiting
 

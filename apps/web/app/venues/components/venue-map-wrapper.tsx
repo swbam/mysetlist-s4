@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { VenueSearch } from './venue-search';
 import { VenueMapView } from './venue-map-view';
-import { useSearchParams } from 'next/navigation';
 
 interface VenueMapWrapperProps {
   children: React.ReactNode;
@@ -19,10 +18,6 @@ interface VenueMapWrapperProps {
 
 export function VenueMapWrapper({ children, venues = [] }: VenueMapWrapperProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
-  const searchParams = useSearchParams();
-
-  // Extract venue data from children if available
-  // This is a temporary solution - in production, you'd pass venues from server component
   
   return (
     <>

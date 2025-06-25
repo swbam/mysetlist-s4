@@ -6,5 +6,5 @@ export * from './shows';
 export * from './setlists';
 export * from './email-preferences';
 export * from './attendance';
-export * from './comments';
+export * from './user-follows-artists';
 export * from './relations';

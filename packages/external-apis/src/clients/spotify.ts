@@ -68,12 +68,19 @@ export class SpotifyClient extends BaseAPIClient {
   }
 
   async authenticate(): Promise<void> {
+    const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
+    const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+
+    if (!clientId || !clientSecret) {
+      throw new Error('Spotify credentials not configured');
+    }
+
     const response = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': `Basic ${Buffer.from(
-          `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+          `${clientId}:${clientSecret}`
         ).toString('base64')}`,
       },
       body: 'grant_type=client_credentials',
@@ -182,6 +189,21 @@ export class SpotifyClient extends BaseAPIClient {
       {},
       `spotify:audio-features:${ids}`,
       3600
+    );
+  }
+
+  async searchTracks(query: string, limit = 20): Promise<{ tracks: { items: SpotifyTrack[]; total: number } }> {
+    const params = new URLSearchParams({
+      q: query,
+      type: 'track',
+      limit: limit.toString(),
+    });
+
+    return this.makeRequest<{ tracks: { items: SpotifyTrack[]; total: number } }>(
+      `/search?${params}`,
+      {},
+      `spotify:search:tracks:${query}:${limit}`,
+      1800 // 30 minutes cache
     );
   }
 } 

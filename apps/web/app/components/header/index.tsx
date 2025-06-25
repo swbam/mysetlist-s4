@@ -19,8 +19,6 @@ import Image from 'next/image';
 import Logo from './logo.svg';
 import { UserMenu } from './user-menu';
 import { RealtimeStatus } from '@/components/realtime-status';
-import { InstallButton } from '@/components/install-button';
-import { SyncStatus } from '@/components/sync-status';
 import { SearchBar } from '../search-bar';
 
 export const Header = () => {
@@ -143,12 +141,6 @@ export const Header = () => {
           </div>
           <div className="hidden md:inline">
             <RealtimeStatus />
-          </div>
-          <div className="hidden md:inline">
-            <InstallButton />
-          </div>
-          <div className="hidden md:inline">
-            <SyncStatus />
           </div>
           <UserMenu />
         </div>

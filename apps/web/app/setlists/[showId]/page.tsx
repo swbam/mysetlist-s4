@@ -1,8 +1,8 @@
 import { createMetadata } from '@repo/seo/metadata';
 import type { Metadata } from 'next';
-import { SetlistViewer } from './components/setlist-viewer';
+import { EnhancedSetlistViewer } from './components/enhanced-setlist-viewer';
 import { ShowInfo } from './components/show-info';
-import { VoteStats } from './components/vote-stats';
+import { RealtimeActivityFeed } from '@/components/realtime-activity-feed';
 import { db } from '@repo/database';
 import { shows, artists, venues, setlists, setlistSongs, songs } from '@repo/database/src/schema';
 import { eq } from 'drizzle-orm';
@@ -87,12 +87,13 @@ const SetlistPage = async ({ params }: SetlistPageProps) => {
       <div className="container mx-auto">
         <ShowInfo showId={showId} show={show[0]} />
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <SetlistViewer showId={showId} />
+            <EnhancedSetlistViewer showId={showId} />
           </div>
-          <div>
-            <VoteStats showId={showId} />
+          
+          <div className="lg:col-span-1">
+            <RealtimeActivityFeed showId={showId} />
           </div>
         </div>
       </div>

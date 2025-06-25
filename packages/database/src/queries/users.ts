@@ -1,16 +1,11 @@
 import { db } from '../client';
-import { users, userFollowsArtists, userShowAttendance, emailPreferences } from '../schema';
+import { users, userShowAttendance, emailPreferences } from '../schema';
 import { eq, sql, desc, and, or, gte, lte } from 'drizzle-orm';
 
 export async function getUserById(userId: string) {
   const result = await db
     .select({
       user: users,
-      followedArtistCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM user_follows_artists ufa
-        WHERE ufa.user_id = ${users.id}
-      )`,
       attendingShowCount: sql<number>`(
         SELECT COUNT(*)
         FROM user_show_attendance usa
@@ -44,17 +39,12 @@ export async function getUserByEmail(email: string) {
 export async function createUser(userData: {
   id: string;
   email: string;
-  name?: string;
-  avatarUrl?: string;
 }) {
   const [user] = await db
     .insert(users)
     .values({
       id: userData.id,
       email: userData.email,
-      name: userData.name,
-      displayName: userData.name,
-      avatarUrl: userData.avatarUrl,
     })
     .returning();
 
@@ -82,9 +72,7 @@ export async function createUser(userData: {
 }
 
 export async function updateUser(userId: string, userData: {
-  name?: string;
-  displayName?: string;
-  avatarUrl?: string;
+  email?: string;
 }) {
   const [updatedUser] = await db
     .update(users)
@@ -101,11 +89,6 @@ export async function updateUser(userId: string, userData: {
 export async function getUserStats(userId: string) {
   const stats = await db
     .select({
-      followedArtists: sql<number>`(
-        SELECT COUNT(*)
-        FROM user_follows_artists
-        WHERE user_id = ${userId}
-      )`,
       attendedShows: sql<number>`(
         SELECT COUNT(*)
         FROM user_show_attendance
@@ -123,11 +106,6 @@ export async function getUserStats(userId: string) {
         FROM votes
         WHERE user_id = ${userId}
       )`,
-      comments: sql<number>`(
-        SELECT COUNT(*)
-        FROM show_comments
-        WHERE user_id = ${userId}
-      )`,
       reviews: sql<number>`(
         SELECT COUNT(*)
         FROM venue_reviews
@@ -139,11 +117,9 @@ export async function getUserStats(userId: string) {
     .limit(1);
 
   return stats[0] || {
-    followedArtists: 0,
     attendedShows: 0,
     interestedShows: 0,
     totalVotes: 0,
-    comments: 0,
     reviews: 0,
   };
 }

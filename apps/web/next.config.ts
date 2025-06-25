@@ -33,7 +33,7 @@ let nextConfig: NextConfig = {
       }
     ],
   },
-  // Add headers for PWA and security
+  // Add headers for security
   async headers() {
     return [
       {
@@ -50,24 +50,6 @@ let nextConfig: NextConfig = {
           {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
-          },
-        ],
-      },
-      {
-        source: '/manifest.json',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=3600',
-          },
-        ],
-      },
-      {
-        source: '/service-worker.js',
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=0, must-revalidate',
           },
         ],
       },

@@ -6,8 +6,8 @@ import { CTA } from './components/cta';
 import { FAQ } from './components/faq';
 import { Features } from './components/features';
 import { Hero } from './components/hero';
-import { Stats } from './components/stats';
 import { Testimonials } from './components/testimonials';
+import { Trending } from './components/trending';
 
 export const generateMetadata = async (): Promise<Metadata> => {
   return createMetadata({
@@ -27,9 +27,9 @@ const Home = async () => {
         </div>
       )}
       <Hero />
+      <Trending />
       <Cases />
       <Features />
-      <Stats />
       <Testimonials />
       <FAQ />
       <CTA />

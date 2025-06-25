@@ -22,7 +22,7 @@ export function RealtimeStatus() {
     disconnected: {
       icon: WifiOff,
       className: 'text-gray-400',
-      label: 'Offline',
+      label: 'Disconnected',
     },
     error: {
       icon: AlertCircle,

@@ -8,7 +8,7 @@
 5. [Setlist Voting System](#setlist-voting-system)
 6. [Search & Discovery Features](#search--discovery-features)
 7. [Real-time Updates](#real-time-updates)
-8. [Mobile & PWA Features](#mobile--pwa-features)
+8. [Mobile Responsive Features](#mobile-responsive-features)
 
 ## Component Architecture Overview
 
@@ -390,7 +390,6 @@ export function SearchBox({
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ArtistHeader } from './components/artist-header';
-import { ArtistStats } from './components/artist-stats';
 import { RecentShows } from './components/recent-shows';
 import { UpcomingShows } from './components/upcoming-shows';
 import { TopTracks } from './components/top-tracks';
@@ -436,7 +435,6 @@ export default async function ArtistPage({ params }: ArtistPageProps) {
         </div>
         
         <div className="space-y-8">
-          <ArtistStats artist={artist} />
           <TopTracks artistId={artist.id} />
         </div>
       </div>
@@ -562,33 +560,22 @@ export default async function ShowPage({ params }: ShowPageProps) {
 }
 ```
 
-### Venue Search with Location
+### Venue Search
+**Note**: Map functionality to be implemented in future versions.
+
 ```typescript
 // apps/web/components/venue/venue-search.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
-import { MapPin } from 'lucide-react';
+import { useState } from 'react';
 import { SearchBox } from '@repo/ui/components/search/search-box';
 import { VenueCard } from '@repo/ui/components/music/venue-card';
-import { Button } from '@repo/ui/components/button';
-import { useGeolocation } from '../../hooks/use-geolocation';
 
 export function VenueSearch() {
   const [venues, setVenues] = useState([]);
-  const [location, setLocation] = useState(null);
-  const { coordinates, loading: locationLoading, requestLocation } = useGeolocation();
 
   const searchVenues = async (query: string) => {
-    const searchParams = new URLSearchParams({
-      q: query,
-      ...(location && {
-        lat: location.lat.toString(),
-        lng: location.lng.toString(),
-        radius: '50', // 50km radius
-      }),
-    });
-
+    const searchParams = new URLSearchParams({ q: query });
     const response = await fetch(`/api/venues/search?${searchParams}`);
     return response.json();
   };
@@ -598,44 +585,13 @@ export function VenueSearch() {
     window.location.href = `/venues/${venue.slug}`;
   };
 
-  const handleLocationRequest = async () => {
-    const coords = await requestLocation();
-    if (coords) {
-      setLocation(coords);
-    }
-  };
-
-  useEffect(() => {
-    if (coordinates) {
-      setLocation(coordinates);
-    }
-  }, [coordinates]);
-
   return (
     <div className="space-y-6">
-      <div className="flex gap-4">
-        <div className="flex-1">
-          <SearchBox
-            placeholder="Search venues by name or location..."
-            onSearch={searchVenues}
-            onSelect={handleVenueSelect}
-          />
-        </div>
-        <Button
-          variant="outline"
-          onClick={handleLocationRequest}
-          disabled={locationLoading}
-        >
-          <MapPin className="h-4 w-4 mr-2" />
-          {locationLoading ? 'Getting location...' : 'Near me'}
-        </Button>
-      </div>
-
-      {location && (
-        <p className="text-sm text-muted-foreground">
-          Showing venues within 50km of your location
-        </p>
-      )}
+      <SearchBox
+        placeholder="Search venues by name or location..."
+        onSearch={searchVenues}
+        onSelect={handleVenueSelect}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {venues.map((venue) => (
@@ -929,51 +885,39 @@ export function useRealtimeSubscription(
 }
 ```
 
-## Mobile & PWA Features
+## Mobile Responsive Features
 
-### PWA Configuration
+### Responsive Design System
+The application uses a mobile-first responsive design approach with Tailwind CSS breakpoints:
+
 ```typescript
-// apps/web/next.config.js
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  disable: process.env.NODE_ENV === 'development',
-  register: true,
-  skipWaiting: true,
-});
-
-module.exports = withPWA({
-  // ... other Next.js config
-});
+// Responsive design patterns used throughout components
+const responsiveClasses = {
+  container: 'container mx-auto px-4 md:px-6 lg:px-8',
+  grid: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+  navigation: 'hidden md:flex', // Desktop-only navigation
+  mobileMenu: 'flex md:hidden', // Mobile-only menu
+  searchBar: 'w-full md:max-w-md lg:max-w-lg',
+};
 ```
 
-### Offline Support
+### Touch-Optimized Interactions
+Components are optimized for touch interfaces with appropriate sizing and spacing:
+
 ```typescript
-// apps/web/lib/offline.ts
-'use client';
-
-import { useState, useEffect } from 'react';
-
-export function useOfflineStatus() {
-  const [isOffline, setIsOffline] = useState(false);
-
-  useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    // Check initial status
-    setIsOffline(!navigator.onLine);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
-  return isOffline;
-}
+// Touch-friendly button sizing and spacing
+const touchOptimized = {
+  buttons: 'min-h-[44px] min-w-[44px] touch-manipulation',
+  links: 'block py-3 px-4 touch-manipulation',
+  cards: 'rounded-lg shadow-sm hover:shadow-md transition-shadow',
+};
 ```
 
-This architecture provides a solid foundation for MySetlist's core features while maintaining the Next-Forge structure and patterns. The components are designed to be reusable, performant, and provide excellent user experience across desktop and mobile devices.
+### Mobile Navigation Patterns
+The header component includes a responsive navigation system that adapts to different screen sizes:
+
+- **Desktop**: Full horizontal navigation with all menu items visible
+- **Tablet**: Condensed navigation with dropdowns for secondary items  
+- **Mobile**: Hamburger menu with slide-out navigation drawer
+
+This architecture provides a solid foundation for MySetlist's core features while maintaining the Next-Forge structure and patterns. The components are designed to be reusable, performant, and provide excellent user experience across desktop and mobile devices with a focus on responsive web design rather than PWA functionality.

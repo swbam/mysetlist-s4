@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from '@repo/database';
-import { artists, shows, showArtists, artistStats, userFollowsArtists, venues } from '@repo/database/src/schema';
+import { artists, shows, showArtists, artistStats, venues } from '@repo/database/src/schema';
 import { eq, and, or, desc, gte, lt, sql } from 'drizzle-orm';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
@@ -71,71 +71,6 @@ export async function getSimilarArtists(artistId: string, genres: string | null)
   return similar;
 }
 
-export async function followArtist(artistId: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user?.id) {
-    throw new Error('You must be logged in to follow artists');
-  }
-  
-  
-  try {
-    await db.insert(userFollowsArtists).values({
-      userId: user.id,
-      artistId,
-    });
-    
-    revalidatePath(`/artists`);
-    
-    return { success: true };
-  } catch (error) {
-    // If unique constraint error, user already follows
-    if (error instanceof Error && error.message.includes('unique')) {
-      return { success: false, error: 'You already follow this artist' };
-    }
-    throw error;
-  }
-}
-
-export async function unfollowArtist(artistId: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user?.id) {
-    throw new Error('You must be logged in to unfollow artists');
-  }
-  
-  
-  await db
-    .delete(userFollowsArtists)
-    .where(
-      and(
-        eq(userFollowsArtists.userId, user.id),
-        eq(userFollowsArtists.artistId, artistId)
-      )
-    );
-  
-  revalidatePath(`/artists`);
-  
-  return { success: true };
-}
-
-export async function checkIfFollowing(artistId: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user?.id) {
-    return false;
-  }
-  
-  
-  const follow = await db.query.userFollowsArtists.findFirst({
-    where: and(
-      eq(userFollowsArtists.userId, user.id),
-      eq(userFollowsArtists.artistId, artistId)
-    ),
-  });
-  
-  return !!follow;
-}
 
 export async function getArtistTopTracks(spotifyId: string) {
   try {

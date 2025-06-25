@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Music } from 'lucide-react';
+import { Plus, Music, Vote } from 'lucide-react';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
 import { SetlistViewer } from './setlist-viewer';
@@ -9,6 +9,7 @@ import { CreateSetlistDialog } from './create-setlist-dialog';
 import { EmptyState } from './empty-state';
 import { RealtimeSetlistViewer } from './realtime-setlist-viewer';
 import { LiveIndicator } from '@/components/live-indicator';
+import Link from 'next/link';
 
 type SetlistSectionProps = {
   show: any;
@@ -45,15 +46,25 @@ export function SetlistSection({
           {isLive && <LiveIndicator size="sm" />}
         </h2>
         
-        {canCreateSetlist && (
-          <Button
-            onClick={() => setShowCreateDialog(true)}
-            className="gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Create Setlist
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {hasAnySetlists && (
+            <Link href={`/setlists/${show.id}`}>
+              <Button variant="outline" className="gap-2">
+                <Vote className="h-4 w-4" />
+                Vote on Songs
+              </Button>
+            </Link>
+          )}
+          {canCreateSetlist && (
+            <Button
+              onClick={() => setShowCreateDialog(true)}
+              className="gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              Create Setlist
+            </Button>
+          )}
+        </div>
       </div>
       
       {/* Live Setlist for ongoing shows */}

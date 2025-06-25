@@ -10,7 +10,7 @@ interface SocialStatus {
 }
 
 interface UseSocialInteractionsOptions {
-  targetType: 'show' | 'artist' | 'venue' | 'comment' | 'setlist';
+  targetType: 'show' | 'artist' | 'venue' | 'setlist';
   targetId: string;
   onLike?: () => void;
   onUnlike?: () => void;
@@ -138,7 +138,7 @@ export function useSocialInteractions({
 
 // Hook for multiple items
 export function useSocialInteractionsBatch(
-  targetType: 'show' | 'artist' | 'venue' | 'comment' | 'setlist',
+  targetType: 'show' | 'artist' | 'venue' | 'setlist',
   targetIds: string[]
 ) {
   const { user } = useAuth();

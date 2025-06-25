@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Card } from '@repo/design-system/components/ui/card';
-import { useAnalytics } from '@/lib/analytics/tracking';
 import Link from 'next/link';
 import { X } from 'lucide-react';
 
@@ -25,7 +24,6 @@ export function CookieConsent() {
     marketing: true,
   });
   
-  const posthog = useAnalytics();
   
   useEffect(() => {
     // Check if consent has been given
@@ -62,12 +60,6 @@ export function CookieConsent() {
   };
   
   const applyConsent = (preferences: CookiePreferences) => {
-    if (!preferences.analytics && posthog) {
-      posthog.opt_out_capturing();
-    } else if (preferences.analytics && posthog) {
-      posthog.opt_in_capturing();
-    }
-    
     // Emit custom event for other analytics tools
     if (typeof window !== 'undefined') {
       window.dispatchEvent(

@@ -3,10 +3,8 @@ import { getUser } from '@repo/auth/server';
 import { db } from '@repo/database';
 import { 
   users,
-  userFollowsArtists,
   userShowAttendance,
   votes,
-  showComments,
   venueReviews,
   emailPreferences,
   artists,
@@ -56,16 +54,6 @@ async function collectUserData(userId: string) {
     .from(emailPreferences)
     .where(eq(emailPreferences.userId, userId));
 
-  // Get followed artists
-  const followedArtists = await db
-    .select({
-      artistId: userFollowsArtists.artistId,
-      artistName: artists.name,
-      followedAt: userFollowsArtists.createdAt,
-    })
-    .from(userFollowsArtists)
-    .innerJoin(artists, eq(userFollowsArtists.artistId, artists.id))
-    .where(eq(userFollowsArtists.userId, userId));
 
   // Get show attendance
   const showAttendance = await db
@@ -94,16 +82,6 @@ async function collectUserData(userId: string) {
     .from(votes)
     .where(eq(votes.userId, userId));
 
-  // Get comments
-  const comments = await db
-    .select({
-      id: showComments.id,
-      showId: showComments.showId,
-      content: showComments.content,
-      createdAt: showComments.createdAt,
-    })
-    .from(showComments)
-    .where(eq(showComments.userId, userId));
 
   // Get venue reviews
   const reviews = await db
@@ -124,19 +102,12 @@ async function collectUserData(userId: string) {
     profile: {
       id: userProfile.id,
       email: userProfile.email,
-      displayName: userProfile.displayName,
-      avatarUrl: userProfile.avatarUrl,
       createdAt: userProfile.createdAt,
       updatedAt: userProfile.updatedAt,
     },
     preferences: {
       email: emailPrefs || null,
     },
-    followedArtists: followedArtists.map(f => ({
-      artistId: f.artistId,
-      artistName: f.artistName,
-      followedAt: f.followedAt,
-    })),
     showAttendance: showAttendance.map(a => ({
       showId: a.showId,
       showName: a.showName,
@@ -150,12 +121,6 @@ async function collectUserData(userId: string) {
       setlistSongId: v.setlistSongId,
       voteType: v.voteType,
       votedAt: v.createdAt,
-    })),
-    comments: comments.map(c => ({
-      id: c.id,
-      showId: c.showId,
-      content: c.content,
-      postedAt: c.createdAt,
     })),
     venueReviews: reviews.map(r => ({
       id: r.id,

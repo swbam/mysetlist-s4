@@ -1,5 +1,5 @@
 import { db } from '../client';
-import { artists, userFollowsArtists, shows, showArtists } from '../schema';
+import { artists, shows, showArtists, userFollowsArtists } from '../schema';
 import { eq, sql, desc, asc, and, ilike, gte } from 'drizzle-orm';
 
 export async function getArtistById(artistId: string) {
@@ -10,11 +10,6 @@ export async function getArtistById(artistId: string) {
         SELECT COUNT(DISTINCT sa.show_id)
         FROM show_artists sa
         WHERE sa.artist_id = ${artists.id}
-      )`,
-      followerCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM user_follows_artists ufa
-        WHERE ufa.artist_id = ${artists.id}
       )`,
       upcomingShowCount: sql<number>`(
         SELECT COUNT(DISTINCT s.id)
@@ -40,17 +35,17 @@ export async function getArtistBySlug(slug: string) {
         FROM show_artists sa
         WHERE sa.artist_id = ${artists.id}
       )`,
-      followerCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM user_follows_artists ufa
-        WHERE ufa.artist_id = ${artists.id}
-      )`,
       upcomingShowCount: sql<number>`(
         SELECT COUNT(DISTINCT s.id)
         FROM shows s
         JOIN show_artists sa ON sa.show_id = s.id
         WHERE sa.artist_id = ${artists.id}
         AND s.date >= CURRENT_DATE
+      )`,
+      followerCount: sql<number>`(
+        SELECT COUNT(*)
+        FROM user_follows_artists ufa
+        WHERE ufa.artist_id = ${artists.id}
       )`
     })
     .from(artists)

@@ -1,168 +1,158 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
-interface SongVote {
-  id: string;
-  song_id: string;
-  user_id: string;
-  vote_type: 'up' | 'down';
-  created_at: string;
-}
-
-interface VoteCount {
+type VoteUpdate = {
+  setlistSongId: string;
   upvotes: number;
   downvotes: number;
-  userVote: 'up' | 'down' | null;
-}
+  netVotes: number;
+  userVote?: 'up' | 'down' | null;
+};
 
 interface UseRealtimeVotesOptions {
-  songId: string;
+  setlistSongIds: string[];
   userId?: string;
-  onVoteChange?: (votes: VoteCount) => void;
+  onVoteUpdate?: (update: VoteUpdate) => void;
 }
 
 export function useRealtimeVotes({ 
-  songId, 
+  setlistSongIds, 
   userId,
-  onVoteChange 
+  onVoteUpdate 
 }: UseRealtimeVotesOptions) {
-  const [votes, setVotes] = useState<VoteCount>({
-    upvotes: 0,
-    downvotes: 0,
-    userVote: null,
-  });
-  const [isLoading, setIsLoading] = useState(false);
+  const [voteCounts, setVoteCounts] = useState<Record<string, VoteUpdate>>({});
+  const [isSubscribed, setIsSubscribed] = useState(false);
   const supabase = createClient();
-
-  // Fetch current vote counts
-  const fetchVoteCounts = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      
-      // Get vote counts
-      const { data: votesData, error: votesError } = await supabase
-        .from('song_votes')
-        .select('vote_type')
-        .eq('song_id', songId);
-
-      if (!votesError && votesData) {
-        const upvotes = votesData.filter(v => v.vote_type === 'up').length;
-        const downvotes = votesData.filter(v => v.vote_type === 'down').length;
-
-        // Get user's vote if userId is provided
-        let userVote: 'up' | 'down' | null = null;
-        if (userId) {
-          const { data: userVoteData } = await supabase
-            .from('song_votes')
-            .select('vote_type')
-            .eq('song_id', songId)
-            .eq('user_id', userId)
-            .single();
-
-          if (userVoteData) {
-            userVote = userVoteData.vote_type;
-          }
-        }
-
-        const newVotes = { upvotes, downvotes, userVote };
-        setVotes(newVotes);
-        onVoteChange?.(newVotes);
-      }
-    } catch (error) {
-      console.error('Error fetching vote counts:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [songId, userId, supabase, onVoteChange]);
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
-    // Initial fetch
-    fetchVoteCounts();
+    if (setlistSongIds.length === 0) return;
 
-    // Subscribe to vote changes
-    const channel = supabase
-      .channel(`song-votes-${songId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'song_votes',
-          filter: `song_id=eq.${songId}`,
-        },
-        (payload: RealtimePostgresChangesPayload<SongVote>) => {
-          if (payload.eventType === 'INSERT' && payload.new) {
-            setVotes(prev => {
-              const newVotes = { ...prev };
-              if (payload.new.vote_type === 'up') {
-                newVotes.upvotes += 1;
-              } else {
-                newVotes.downvotes += 1;
-              }
-              
-              if (userId && payload.new.user_id === userId) {
-                newVotes.userVote = payload.new.vote_type;
-              }
-              
-              onVoteChange?.(newVotes);
-              return newVotes;
-            });
-          } else if (payload.eventType === 'DELETE' && payload.old) {
-            setVotes(prev => {
-              const newVotes = { ...prev };
-              if (payload.old.vote_type === 'up') {
-                newVotes.upvotes = Math.max(0, newVotes.upvotes - 1);
-              } else {
-                newVotes.downvotes = Math.max(0, newVotes.downvotes - 1);
-              }
-              
-              if (userId && payload.old.user_id === userId) {
-                newVotes.userVote = null;
-              }
-              
-              onVoteChange?.(newVotes);
-              return newVotes;
-            });
-          } else if (payload.eventType === 'UPDATE' && payload.new && payload.old) {
-            setVotes(prev => {
-              const newVotes = { ...prev };
-              
-              // Handle vote type change
-              if (payload.old.vote_type === 'up') {
-                newVotes.upvotes = Math.max(0, newVotes.upvotes - 1);
-              } else {
-                newVotes.downvotes = Math.max(0, newVotes.downvotes - 1);
-              }
-              
-              if (payload.new.vote_type === 'up') {
-                newVotes.upvotes += 1;
-              } else {
-                newVotes.downvotes += 1;
-              }
-              
-              if (userId && payload.new.user_id === userId) {
-                newVotes.userVote = payload.new.vote_type;
-              }
-              
-              onVoteChange?.(newVotes);
-              return newVotes;
-            });
+    const setupSubscription = async () => {
+      // Clean up existing subscription
+      if (channelRef.current) {
+        await supabase.removeChannel(channelRef.current);
+      }
+
+      // Create new subscription
+      const channel = supabase
+        .channel(`votes-${setlistSongIds.join('-')}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'votes',
+            filter: `setlist_song_id=in.(${setlistSongIds.join(',')})`,
+          },
+          async (payload: RealtimePostgresChangesPayload<any>) => {
+            // When a vote changes, fetch the updated counts
+            const setlistSongId = payload.new?.setlist_song_id || payload.old?.setlist_song_id;
+            if (setlistSongId) {
+              await fetchVoteCounts(setlistSongId);
+            }
+          }
+        )
+        .subscribe((status) => {
+          setIsSubscribed(status === 'SUBSCRIBED');
+        });
+
+      channelRef.current = channel;
+    };
+
+    // Fetch initial vote counts
+    const fetchInitialCounts = async () => {
+      for (const songId of setlistSongIds) {
+        await fetchVoteCounts(songId);
+      }
+    };
+
+    const fetchVoteCounts = async (setlistSongId: string) => {
+      try {
+        // Fetch vote counts from the API
+        const response = await fetch(`/api/votes/${setlistSongId}/count`);
+        if (response.ok) {
+          const data = await response.json();
+          const update: VoteUpdate = {
+            setlistSongId,
+            upvotes: data.upvotes,
+            downvotes: data.downvotes,
+            netVotes: data.netVotes,
+            userVote: data.userVote,
+          };
+          
+          setVoteCounts(prev => ({
+            ...prev,
+            [setlistSongId]: update,
+          }));
+          
+          if (onVoteUpdate) {
+            onVoteUpdate(update);
           }
         }
-      )
-      .subscribe();
+      } catch (error) {
+        console.error('Failed to fetch vote counts:', error);
+      }
+    };
+
+    setupSubscription();
+    fetchInitialCounts();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+      }
     };
-  }, [songId, userId, supabase, fetchVoteCounts, onVoteChange]);
+  }, [setlistSongIds.join(','), userId, supabase]);
+
+  const vote = async (setlistSongId: string, voteType: 'up' | 'down' | null) => {
+    try {
+      const response = await fetch('/api/votes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          setlistSongId,
+          voteType,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Update local state immediately
+        const update: VoteUpdate = {
+          setlistSongId,
+          upvotes: result.upvotes,
+          downvotes: result.downvotes,
+          netVotes: result.netVotes,
+          userVote: result.userVote,
+        };
+        
+        setVoteCounts(prev => ({
+          ...prev,
+          [setlistSongId]: update,
+        }));
+        
+        if (onVoteUpdate) {
+          onVoteUpdate(update);
+        }
+        
+        return result;
+      }
+    } catch (error) {
+      console.error('Failed to vote:', error);
+      throw error;
+    }
+  };
 
   return {
-    votes,
-    isLoading,
-    refetch: fetchVoteCounts,
+    voteCounts,
+    isSubscribed,
+    vote,
   };
 }

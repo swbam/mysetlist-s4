@@ -9,7 +9,6 @@ import { toggleAttendance } from '../actions';
 import { useRouter } from 'next/navigation';
 import { useRealtimeShow } from '@/hooks/use-realtime-show';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTracking } from '@/lib/analytics/tracking';
 
 type AttendanceTrackerProps = {
   showId: string;
@@ -28,7 +27,6 @@ export function AttendanceTracker({
   const [isAttending, setIsAttending] = useState(initialIsAttending);
   const [optimisticCount, setOptimisticCount] = useState(initialCount);
   const [isPending, startTransition] = useTransition();
-  const { track } = useTracking();
   
   // Use real-time updates
   const { attendanceCount } = useRealtimeShow({
@@ -54,11 +52,6 @@ export function AttendanceTracker({
         const result = await toggleAttendance(showId);
         setIsAttending(result.attending);
         
-        // Track attendance event
-        track(result.attending ? 'show_attend' : 'show_unattend', {
-          showId,
-          category: 'engagement',
-        });
         
         toast.success(
           result.attending 

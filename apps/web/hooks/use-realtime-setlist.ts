@@ -1,170 +1,267 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
-interface SetlistSong {
+type SetlistSong = {
   id: string;
-  setlist_id: string;
-  song_id: string;
+  songId: string;
   position: number;
-  notes?: string;
-  is_cover: boolean;
-  is_debut: boolean;
-  created_at: string;
-  song?: {
+  song: {
     id: string;
     title: string;
-    artist_id: string;
+    artist: string;
+    durationMs?: number;
+    albumArtUrl?: string;
   };
-}
+  notes?: string;
+  isPlayed?: boolean;
+  playTime?: Date;
+  upvotes: number;
+  downvotes: number;
+  netVotes: number;
+  userVote?: 'up' | 'down' | null;
+};
+
+type Setlist = {
+  id: string;
+  name: string;
+  type: 'predicted' | 'actual';
+  songs: SetlistSong[];
+};
+
+type RealtimeEvent = {
+  type: 'vote_update' | 'song_played' | 'setlist_update' | 'connection_change';
+  data?: any;
+  timestamp: Date;
+};
 
 interface UseRealtimeSetlistOptions {
-  setlistId?: string;
-  showId?: string;
-  onSongAdded?: (song: SetlistSong) => void;
-  onSongRemoved?: (songId: string) => void;
-  onSongUpdated?: (song: SetlistSong) => void;
-  onSetlistReordered?: (songs: SetlistSong[]) => void;
+  showId: string;
+  onEvent?: (event: RealtimeEvent) => void;
+}
+
+interface UseRealtimeSetlistReturn {
+  setlists: Setlist[];
+  loading: boolean;
+  connectionStatus: 'connecting' | 'connected' | 'disconnected' | 'error';
+  isConnected: boolean;
+  lastUpdate: Date | null;
+  refetch: () => Promise<void>;
 }
 
 export function useRealtimeSetlist({ 
-  setlistId,
-  showId,
-  onSongAdded,
-  onSongRemoved,
-  onSongUpdated,
-  onSetlistReordered
-}: UseRealtimeSetlistOptions) {
-  const [songs, setSongs] = useState<SetlistSong[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  showId, 
+  onEvent 
+}: UseRealtimeSetlistOptions): UseRealtimeSetlistReturn {
+  const [setlists, setSetlists] = useState<Setlist[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected');
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  
   const supabase = createClient();
+  const channelRef = useRef<RealtimeChannel | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectAttemptsRef = useRef(0);
 
-  // Fetch current setlist songs
-  const fetchSetlistSongs = useCallback(async () => {
-    if (!setlistId && !showId) return;
+  const isConnected = connectionStatus === 'connected';
 
+  // Emit events if handler provided
+  const emitEvent = useCallback((event: RealtimeEvent) => {
+    if (onEvent) {
+      onEvent(event);
+    }
+  }, [onEvent]);
+
+  // Fetch setlists data
+  const fetchSetlists = useCallback(async () => {
     try {
-      setIsLoading(true);
-      let query = supabase
-        .from('setlist_songs')
-        .select(`
-          *,
-          song:songs(id, title, artist_id)
-        `)
-        .order('position', { ascending: true });
-
-      if (setlistId) {
-        query = query.eq('setlist_id', setlistId);
-      } else if (showId) {
-        // Get setlist for the show first
-        const { data: setlistData } = await supabase
-          .from('setlists')
-          .select('id')
-          .eq('show_id', showId)
-          .single();
-        
-        if (setlistData) {
-          query = query.eq('setlist_id', setlistData.id);
-        }
-      }
-
-      const { data, error } = await query;
-
-      if (!error && data) {
-        setSongs(data);
+      const response = await fetch(`/api/setlists/${showId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setSetlists(data.setlists || []);
+        setLastUpdate(new Date());
+        return data.setlists || [];
       }
     } catch (error) {
-      console.error('Error fetching setlist songs:', error);
+      console.error('Failed to fetch setlists:', error);
+      emitEvent({ type: 'connection_change', data: { error }, timestamp: new Date() });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  }, [setlistId, showId, supabase]);
+    return [];
+  }, [showId, emitEvent]);
 
-  useEffect(() => {
-    // Initial fetch
-    fetchSetlistSongs();
+  // Handle vote updates
+  const handleVoteUpdate = useCallback((payload: RealtimePostgresChangesPayload<any>) => {
+    // Refetch to get accurate vote counts
+    fetchSetlists().then(() => {
+      emitEvent({ 
+        type: 'vote_update', 
+        data: payload,
+        timestamp: new Date() 
+      });
+    });
+  }, [fetchSetlists, emitEvent]);
 
-    if (!setlistId && !showId) return;
+  // Handle setlist song updates
+  const handleSetlistSongUpdate = useCallback((payload: RealtimePostgresChangesPayload<any>) => {
+    if (payload.eventType === 'UPDATE') {
+      setSetlists(prev => prev.map(setlist => ({
+        ...setlist,
+        songs: setlist.songs.map(song => 
+          song.id === payload.new.id 
+            ? {
+                ...song,
+                isPlayed: payload.new.is_played,
+                playTime: payload.new.play_time ? new Date(payload.new.play_time) : undefined,
+                notes: payload.new.notes,
+              }
+            : song
+        ),
+      })));
+      
+      setLastUpdate(new Date());
 
-    // Build the filter based on what we have
-    let filter = '';
-    if (setlistId) {
-      filter = `setlist_id=eq.${setlistId}`;
-    } else if (showId) {
-      filter = `setlist_id=in.(select id from setlists where show_id=eq.${showId})`;
+      // Check if a song was just marked as played
+      if (payload.new.is_played && !payload.old.is_played) {
+        emitEvent({ 
+          type: 'song_played', 
+          data: {
+            songId: payload.new.id,
+            playTime: payload.new.play_time,
+          },
+          timestamp: new Date() 
+        });
+      } else {
+        emitEvent({ 
+          type: 'setlist_update', 
+          data: payload,
+          timestamp: new Date() 
+        });
+      }
+    }
+  }, [emitEvent]);
+
+  // Setup real-time subscription with reconnection logic
+  const setupSubscription = useCallback(async () => {
+    if (!showId || setlists.length === 0) return;
+
+    // Clean up existing subscription
+    if (channelRef.current) {
+      await supabase.removeChannel(channelRef.current);
+      channelRef.current = null;
     }
 
-    // Subscribe to setlist changes
-    const channel = supabase
-      .channel(`setlist-songs-${setlistId || showId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'setlist_songs',
-          filter,
-        },
-        async (payload: RealtimePostgresChangesPayload<SetlistSong>) => {
-          if (payload.eventType === 'INSERT' && payload.new) {
-            // Fetch the full song data
-            const { data: songData } = await supabase
-              .from('songs')
-              .select('id, title, artist_id')
-              .eq('id', payload.new.song_id)
-              .single();
+    setConnectionStatus('connecting');
 
-            const newSong = { ...payload.new, song: songData || undefined };
-            
-            setSongs(prev => {
-              const updated = [...prev, newSong as SetlistSong].sort((a, b) => a.position - b.position);
-              onSongAdded?.(newSong as SetlistSong);
-              return updated;
-            });
-          } else if (payload.eventType === 'DELETE' && payload.old) {
-            setSongs(prev => {
-              const updated = prev.filter(song => song.id !== payload.old.id);
-              if (payload.old.id) {
-                onSongRemoved?.(payload.old.id);
-              }
-              return updated;
-            });
-          } else if (payload.eventType === 'UPDATE' && payload.new) {
-            setSongs(prev => {
-              const updated = prev.map(song => 
-                song.id === payload.new.id 
-                  ? { ...song, ...payload.new }
-                  : song
-              ).sort((a, b) => a.position - b.position);
-              
-              const updatedSong = updated.find(s => s.id === payload.new.id);
-              if (updatedSong) {
-                onSongUpdated?.(updatedSong);
-              }
-              
-              // Check if positions changed (reordering)
-              const positionChanged = prev.find(s => s.id === payload.new.id)?.position !== payload.new.position;
-              if (positionChanged) {
-                onSetlistReordered?.(updated);
-              }
-              
-              return updated;
-            });
+    try {
+      const setlistIds = setlists.map(s => s.id);
+      const setlistSongIds = setlists.flatMap(s => s.songs.map(song => song.id));
+
+      const channel = supabase
+        .channel(`setlist-${showId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'votes',
+            filter: `setlist_song_id=in.(${setlistSongIds.join(',')})`,
+          },
+          handleVoteUpdate
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'setlist_songs',
+            filter: `setlist_id=in.(${setlistIds.join(',')})`,
+          },
+          handleSetlistSongUpdate
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'setlists',
+            filter: `show_id=eq.${showId}`,
+          },
+          () => {
+            // Refetch when setlist structure changes
+            fetchSetlists();
           }
-        }
-      )
-      .subscribe();
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            setConnectionStatus('connected');
+            reconnectAttemptsRef.current = 0;
+            emitEvent({ 
+              type: 'connection_change', 
+              data: { status: 'connected' },
+              timestamp: new Date() 
+            });
+          } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+            setConnectionStatus('error');
+            handleReconnect();
+          } else if (status === 'TIMED_OUT') {
+            setConnectionStatus('disconnected');
+            handleReconnect();
+          }
+        });
+
+      channelRef.current = channel;
+    } catch (error) {
+      console.error('Failed to setup real-time subscription:', error);
+      setConnectionStatus('error');
+      handleReconnect();
+    }
+  }, [showId, setlists, supabase, handleVoteUpdate, handleSetlistSongUpdate, fetchSetlists, emitEvent]);
+
+  // Reconnection logic with exponential backoff
+  const handleReconnect = useCallback(() => {
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+    }
+
+    const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
+    reconnectAttemptsRef.current += 1;
+
+    reconnectTimeoutRef.current = setTimeout(() => {
+      setupSubscription();
+    }, delay);
+  }, [setupSubscription]);
+
+  // Initial data fetch
+  useEffect(() => {
+    fetchSetlists();
+  }, [fetchSetlists]);
+
+  // Setup subscription when setlists are loaded
+  useEffect(() => {
+    if (setlists.length > 0) {
+      setupSubscription();
+    }
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+      }
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
     };
-  }, [setlistId, showId, supabase, fetchSetlistSongs, onSongAdded, onSongRemoved, onSongUpdated, onSetlistReordered]);
+  }, [setlists.length, setupSubscription, supabase]);
 
   return {
-    songs,
-    isLoading,
-    refetch: fetchSetlistSongs,
+    setlists,
+    loading,
+    connectionStatus,
+    isConnected,
+    lastUpdate,
+    refetch: fetchSetlists,
   };
 }

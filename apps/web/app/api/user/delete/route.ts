@@ -4,10 +4,8 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { db } from '@repo/database';
 import { 
   users,
-  userFollowsArtists,
   userShowAttendance,
   votes,
-  showComments,
   venueReviews,
   emailPreferences,
   emailQueue,
@@ -55,8 +53,6 @@ export async function DELETE(request: NextRequest) {
         // Delete votes
         await tx.delete(votes).where(eq(votes.userId, user.id));
 
-        // Delete comments
-        await tx.delete(showComments).where(eq(showComments.userId, user.id));
 
         // Delete venue reviews
         await tx.delete(venueReviews).where(eq(venueReviews.userId, user.id));
@@ -64,8 +60,6 @@ export async function DELETE(request: NextRequest) {
         // Delete show attendance
         await tx.delete(userShowAttendance).where(eq(userShowAttendance.userId, user.id));
 
-        // Delete artist follows
-        await tx.delete(userFollowsArtists).where(eq(userFollowsArtists.userId, user.id));
 
         // Delete email data
         await tx.delete(emailQueue).where(eq(emailQueue.userId, user.id));

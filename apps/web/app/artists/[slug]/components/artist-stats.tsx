@@ -1,74 +1,68 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Calendar, Music2, Mic2, TrendingUp } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { db } from '@/lib/db';
+import { artistStats, shows, showArtists, userFollowsArtists } from '@mysetlist/database/schema';
+import { eq, count, sql } from 'drizzle-orm';
+import { Calendar, Music, Users, TrendingUp } from 'lucide-react';
 
 interface ArtistStatsProps {
-  stats: {
-    totalShows: number | null;
-    totalSetlists: number | null;
-    avgSetlistLength: number | null;
-    mostPlayedSong: string | null;
-    lastShowDate: string | null;
-  } | null;
+  artistId: string;
 }
 
-export function ArtistStats({ stats }: ArtistStatsProps) {
-  if (!stats) {
-    return null;
-  }
+export async function ArtistStats({ artistId }: ArtistStatsProps) {
+  // Get stats from the artistStats table
+  const stats = await db
+    .select()
+    .from(artistStats)
+    .where(eq(artistStats.artistId, artistId))
+    .limit(1);
 
-  const statItems = [
-    {
-      label: 'Total Shows',
-      value: stats.totalShows || 0,
-      icon: Calendar,
-    },
-    {
-      label: 'Total Setlists',
-      value: stats.totalSetlists || 0,
-      icon: Music2,
-    },
-    {
-      label: 'Avg Songs/Show',
-      value: stats.avgSetlistLength ? Math.round(stats.avgSetlistLength) : 'N/A',
-      icon: Mic2,
-    },
-  ];
+  const artistStatsData = stats[0];
+
+  // Get follower count
+  const followerResult = await db
+    .select({ count: count() })
+    .from(userFollowsArtists)
+    .where(eq(userFollowsArtists.artistId, artistId));
+
+  const followerCount = followerResult[0]?.count || 0;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Statistics</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {statItems.map((item) => (
-            <div key={item.label} className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="rounded-full bg-primary/10 p-2">
-                  <item.icon className="h-4 w-4 text-primary" />
-                </div>
-                <span className="text-sm text-muted-foreground">{item.label}</span>
-              </div>
-              <span className="font-semibold">{item.value}</span>
-            </div>
-          ))}
-
-          {stats.mostPlayedSong && (
-            <div className="pt-4 border-t">
-              <p className="text-sm text-muted-foreground mb-1">Most Played Song</p>
-              <p className="font-medium">{stats.mostPlayedSong}</p>
-            </div>
-          )}
-
-          {stats.lastShowDate && (
-            <div className="pt-4 border-t">
-              <p className="text-sm text-muted-foreground mb-1">Last Show</p>
-              <p className="font-medium">{formatDate(stats.lastShowDate)}</p>
-            </div>
-          )}
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="bg-card rounded-lg p-4 border">
+        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+          <Users className="h-4 w-4" />
+          <span className="text-sm">Followers</span>
         </div>
-      </CardContent>
-    </Card>
+        <p className="text-2xl font-bold">{followerCount}</p>
+      </div>
+
+      <div className="bg-card rounded-lg p-4 border">
+        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+          <Calendar className="h-4 w-4" />
+          <span className="text-sm">Total Shows</span>
+        </div>
+        <p className="text-2xl font-bold">{artistStatsData?.totalShows || 0}</p>
+      </div>
+
+      <div className="bg-card rounded-lg p-4 border">
+        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+          <Music className="h-4 w-4" />
+          <span className="text-sm">Total Songs</span>
+        </div>
+        <p className="text-2xl font-bold">{artistStatsData?.totalSongs || 0}</p>
+      </div>
+
+      <div className="bg-card rounded-lg p-4 border">
+        <div className="flex items-center gap-2 text-muted-foreground mb-2">
+          <TrendingUp className="h-4 w-4" />
+          <span className="text-sm">Avg Songs/Show</span>
+        </div>
+        <p className="text-2xl font-bold">
+          {artistStatsData?.avgSongsPerShow ? 
+            Number(artistStatsData.avgSongsPerShow).toFixed(1) : 
+            '0'
+          }
+        </p>
+      </div>
+    </div>
   );
 }

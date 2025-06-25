@@ -8,11 +8,7 @@ import { Footer } from './components/footer';
 import { Header } from './components/header';
 import { AuthProvider } from './providers/auth-provider';
 import { RealtimeProvider } from './providers/realtime-provider';
-import { PWAProvider } from '@/components/pwa-provider';
-import { InstallPrompt } from '@/components/install-prompt';
-import { OfflineIndicator } from '@/components/offline-indicator';
 import { PageTransitionProvider } from '@/components/page-transition-provider';
-import { AnalyticsSetupProvider } from '@/components/analytics-provider';
 
 // Force dynamic rendering for the entire app
 export const dynamic = 'force-dynamic';
@@ -29,29 +25,18 @@ const RootLayout = async ({ children }: RootLayoutProperties) => {
       suppressHydrationWarning
     >
       <head>
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#000000" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="MySetlist" />
-        <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
       </head>
       <body>
         <DesignSystemProvider>
           <AuthProvider>
-            <AnalyticsSetupProvider />
             <RealtimeProvider>
-              <PWAProvider>
-                <PageTransitionProvider>
-                  <OfflineIndicator />
-                  <Header />
-                  {children}
-                  <Footer />
-                  <InstallPrompt />
-                  <Toaster />
-                </PageTransitionProvider>
-              </PWAProvider>
+              <PageTransitionProvider>
+                <Header />
+                {children}
+                <Footer />
+                <Toaster />
+              </PageTransitionProvider>
             </RealtimeProvider>
           </AuthProvider>
         </DesignSystemProvider>

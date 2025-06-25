@@ -1,13 +1,12 @@
-'use client';
-
-import { useState } from 'react';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@repo/design-system/components/ui/avatar';
-import { Heart, Music, Users, Calendar, MapPin, ExternalLink, Verified } from 'lucide-react';
-import { useAuth } from '../../../providers/auth-provider';
+import { Button } from '@mysetlist/design-system';
+import { Badge } from '@mysetlist/design-system';
+import { Card, CardContent } from '@mysetlist/design-system';
+import { Avatar, AvatarFallback, AvatarImage } from '@mysetlist/design-system';
+import { Music, Users, Calendar, ExternalLink, Verified } from 'lucide-react';
 import Link from 'next/link';
+import { FollowButton } from './follow-button';
+import { FollowerCount } from './follower-count';
+import { Suspense } from 'react';
 
 interface ArtistHeaderProps {
   artist: {
@@ -23,19 +22,14 @@ interface ArtistHeaderProps {
     verified: boolean;
     bio?: string;
     externalUrls?: string;
-    followerCount: number;
     _count?: {
       shows: number;
       setlists: number;
     };
   };
-  isFollowing?: boolean;
-  onFollow?: () => void;
 }
 
-export function ArtistHeader({ artist, isFollowing = false, onFollow }: ArtistHeaderProps) {
-  const { user } = useAuth();
-  const [isFollowLoading, setIsFollowLoading] = useState(false);
+export function ArtistHeader({ artist }: ArtistHeaderProps) {
 
   const genres = artist.genres ? JSON.parse(artist.genres) : [];
   const externalUrls = artist.externalUrls ? JSON.parse(artist.externalUrls) : {};
@@ -46,18 +40,6 @@ export function ArtistHeader({ artist, isFollowing = false, onFollow }: ArtistHe
     return count.toString();
   };
 
-  const handleFollow = async () => {
-    if (!user || !onFollow) return;
-    
-    setIsFollowLoading(true);
-    try {
-      await onFollow();
-    } catch (error) {
-      console.error('Failed to follow/unfollow artist:', error);
-    } finally {
-      setIsFollowLoading(false);
-    }
-  };
 
   return (
     <div className="w-full">
@@ -111,7 +93,9 @@ export function ArtistHeader({ artist, isFollowing = false, onFollow }: ArtistHe
                   <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
                     <div className="flex items-center gap-1">
                       <Users className="h-4 w-4" />
-                      {formatFollowers(artist.followers)} followers
+                      <Suspense fallback={<span>Loading...</span>}>
+                        <FollowerCount artistId={artist.id} />
+                      </Suspense>
                     </div>
                     {artist.monthlyListeners && (
                       <div className="flex items-center gap-1">
@@ -125,27 +109,12 @@ export function ArtistHeader({ artist, isFollowing = false, onFollow }: ArtistHe
                         {artist._count.shows} shows
                       </div>
                     )}
-                    <div className="flex items-center gap-1">
-                      <Heart className="h-4 w-4" />
-                      {formatFollowers(artist.followerCount)} fans
-                    </div>
                   </div>
                 </div>
 
                 {/* Action Buttons */}
                 <div className="flex gap-3">
-                  {user && (
-                    <Button
-                      onClick={handleFollow}
-                      disabled={isFollowLoading}
-                      variant={isFollowing ? 'default' : 'outline'}
-                      size="lg"
-                    >
-                      <Heart className={`h-4 w-4 mr-2 ${isFollowing ? 'fill-current' : ''}`} />
-                      {isFollowing ? 'Following' : 'Follow'}
-                    </Button>
-                  )}
-                  
+                  <FollowButton artistId={artist.id} artistName={artist.name} />
                   {externalUrls.spotify && (
                     <Button variant="outline" size="lg" asChild>
                       <Link href={externalUrls.spotify} target="_blank">

@@ -9,7 +9,6 @@ import { Skeleton } from '@repo/design-system/components/ui/skeleton';
 import { 
   TrendingUp, 
   Users, 
-  MessageCircle, 
   Heart, 
   Music, 
   Calendar, 
@@ -20,7 +19,7 @@ import {
 
 interface ActivityItem {
   id: string;
-  type: 'vote' | 'comment' | 'follow' | 'attendance' | 'setlist_create' | 'show_create';
+  type: 'vote' | 'follow' | 'attendance' | 'setlist_create' | 'show_create';
   user: {
     id: string;
     displayName: string;
@@ -35,7 +34,6 @@ interface ActivityItem {
   createdAt: string;
   metadata?: {
     voteType?: 'up' | 'down';
-    commentText?: string;
     songCount?: number;
   };
 }
@@ -67,7 +65,6 @@ export function RecentActivity() {
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'vote': return <Vote className="h-3 w-3" />;
-      case 'comment': return <MessageCircle className="h-3 w-3" />;
       case 'follow': return <UserPlus className="h-3 w-3" />;
       case 'attendance': return <Users className="h-3 w-3" />;
       case 'setlist_create': return <Music className="h-3 w-3" />;
@@ -79,7 +76,6 @@ export function RecentActivity() {
   const getActivityColor = (type: string) => {
     switch (type) {
       case 'vote': return 'text-green-500';
-      case 'comment': return 'text-blue-500';
       case 'follow': return 'text-purple-500';
       case 'attendance': return 'text-orange-500';
       case 'setlist_create': return 'text-pink-500';
@@ -94,8 +90,6 @@ export function RecentActivity() {
     switch (type) {
       case 'vote':
         return `${metadata?.voteType === 'up' ? 'upvoted' : 'downvoted'} ${target.name}`;
-      case 'comment':
-        return `commented on ${target.name}`;
       case 'follow':
         return `started following ${target.name}`;
       case 'attendance':
@@ -202,11 +196,6 @@ export function RecentActivity() {
               {getActivityText(activity)}
             </p>
             
-            {activity.metadata?.commentText && (
-              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                "{activity.metadata.commentText}"
-              </p>
-            )}
             
             <div className="flex items-center justify-between mt-2">
               <Link

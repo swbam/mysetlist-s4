@@ -1,8 +1,6 @@
 import { relations } from 'drizzle-orm';
 import {
   users,
-  userProfiles,
-  userFollowsArtists,
   artists,
   artistStats,
   venues,
@@ -16,29 +14,17 @@ import {
   setlistSongs,
   votes,
   userShowAttendance,
-  showComments,
+  userFollowsArtists,
 } from './index';
 
-export const usersRelations = relations(users, ({ many, one }) => ({
+export const usersRelations = relations(users, ({ many }) => ({
   votes: many(votes),
   createdSetlists: many(setlists),
-  profile: one(userProfiles, {
-    fields: [users.id],
-    references: [userProfiles.userId],
-  }),
-  followedArtists: many(userFollowsArtists),
   venueReviews: many(venueReviews),
   venuePhotos: many(venuePhotos),
   venueInsiderTips: many(venueInsiderTips),
   showAttendances: many(userShowAttendance),
-  showComments: many(showComments),
-}));
-
-export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
-  user: one(users, {
-    fields: [userProfiles.userId],
-    references: [users.id],
-  }),
+  followedArtists: many(userFollowsArtists),
 }));
 
 export const artistsRelations = relations(artists, ({ many, one }) => ({
@@ -78,7 +64,6 @@ export const showsRelations = relations(shows, ({ many, one }) => ({
   setlists: many(setlists),
   supportingArtists: many(showArtists),
   attendances: many(userShowAttendance),
-  comments: many(showComments),
 }));
 
 export const showArtistsRelations = relations(showArtists, ({ one }) => ({
@@ -135,16 +120,6 @@ export const votesRelations = relations(votes, ({ one }) => ({
   }),
 }));
 
-export const userFollowsArtistsRelations = relations(userFollowsArtists, ({ one }) => ({
-  user: one(users, {
-    fields: [userFollowsArtists.userId],
-    references: [users.id],
-  }),
-  artist: one(artists, {
-    fields: [userFollowsArtists.artistId],
-    references: [artists.id],
-  }),
-}));
 
 export const venueReviewsRelations = relations(venueReviews, ({ one }) => ({
   venue: one(venues, {
@@ -190,13 +165,14 @@ export const userShowAttendanceRelations = relations(userShowAttendance, ({ one 
   }),
 }));
 
-export const showCommentsRelations = relations(showComments, ({ one }) => ({
+export const userFollowsArtistsRelations = relations(userFollowsArtists, ({ one }) => ({
   user: one(users, {
-    fields: [showComments.userId],
+    fields: [userFollowsArtists.userId],
     references: [users.id],
   }),
-  show: one(shows, {
-    fields: [showComments.showId],
-    references: [shows.id],
+  artist: one(artists, {
+    fields: [userFollowsArtists.artistId],
+    references: [artists.id],
   }),
 }));
+

@@ -84,8 +84,14 @@ export class TicketmasterClient extends BaseAPIClient {
   }
 
   protected getAuthHeaders(): Record<string, string> {
+    const apiKey = process.env.TICKETMASTER_API_KEY;
+    
+    if (!apiKey) {
+      throw new Error('Ticketmaster API key not configured');
+    }
+    
     return {
-      'apikey': process.env.TICKETMASTER_API_KEY!,
+      'apikey': apiKey,
     };
   }
 

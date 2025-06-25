@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@repo/design-system/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback } from '@repo/design-system/components/ui/avatar';
-import { User, Settings, LogOut, Loader2 } from 'lucide-react';
+import { Settings, LogOut, Loader2, Heart } from 'lucide-react';
 import { useAuth } from '../../providers/auth-provider';
 
 export function UserMenu() {
@@ -81,9 +81,9 @@ export function UserMenu() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/profile" className="cursor-pointer">
-            <User className="mr-2 h-4 w-4" />
-            Profile
+          <Link href="/profile/following" className="cursor-pointer">
+            <Heart className="mr-2 h-4 w-4" />
+            Following
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

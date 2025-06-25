@@ -69,8 +69,14 @@ export class SetlistFmClient extends BaseAPIClient {
   }
 
   protected getAuthHeaders(): Record<string, string> {
+    const apiKey = process.env.SETLIST_FM_API_KEY;
+    
+    if (!apiKey) {
+      throw new Error('Setlist.fm API key not configured');
+    }
+    
     return {
-      'x-api-key': process.env.SETLISTFM_API_KEY!,
+      'x-api-key': apiKey,
       'Accept': 'application/json',
     };
   }

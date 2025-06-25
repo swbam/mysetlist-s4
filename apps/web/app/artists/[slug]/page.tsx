@@ -1,23 +1,20 @@
-import { db } from '@repo/database';
-import { artists, shows, venues, artistStats, userFollowsArtists } from '@repo/database/src/schema';
+import { db, artists, shows, venues, artistStats, userFollowsArtists } from '@repo/database';
 import { eq, and } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import { createMetadata } from '@repo/seo/metadata';
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
+import { Badge } from '@repo/design-system';
+import { Button } from '@repo/design-system';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system';
 import { Music, MapPin, Calendar, Users, ExternalLink, Heart } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
+import { getUser } from '@repo/auth/server';
 import { FollowButton } from './components/follow-button';
 import { FollowerCount } from './components/follower-count';
-import { getUser } from '@repo/auth/server';
 
-// Force dynamic rendering due to user authentication checks
-export const dynamic = 'force-dynamic';
 
 type ArtistPageProps = {
   params: Promise<{
@@ -134,35 +131,17 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
               )}
             </div>
             
-            {user && (
+            {userId && (
               <FollowButton
                 artistId={artist.id}
                 artistName={artist.name}
-                initialFollowing={isFollowing}
               />
             )}
           </div>
 
-          {/* Artist Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold">
-                <FollowerCount initialCount={artist.followerCount || 0} artistId={artist.id} />
-              </div>
-              <div className="text-sm text-muted-foreground">App Followers</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">{stats?.totalShows || 0}</div>
-              <div className="text-sm text-muted-foreground">Shows</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">{artist.popularity || 0}</div>
-              <div className="text-sm text-muted-foreground">Popularity</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">{stats?.totalSetlists || 0}</div>
-              <div className="text-sm text-muted-foreground">Setlists</div>
-            </div>
+          {/* Followers */}
+          <div className="mb-6">
+            <FollowerCount artistId={artist.id} />
           </div>
 
           {/* Genres */}
@@ -280,33 +259,6 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
                 </div>
               )}
 
-              {stats && (
-                <div>
-                  <h4 className="font-semibold mb-2">Statistics</h4>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Total Shows:</span>
-                      <span className="ml-2 font-medium">{stats.totalShows}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Total Setlists:</span>
-                      <span className="ml-2 font-medium">{stats.totalSetlists}</span>
-                    </div>
-                    {stats.avgSetlistLength && (
-                      <div>
-                        <span className="text-muted-foreground">Avg. Setlist Length:</span>
-                        <span className="ml-2 font-medium">{Math.round(stats.avgSetlistLength)} songs</span>
-                      </div>
-                    )}
-                    {stats.mostPlayedSong && (
-                      <div>
-                        <span className="text-muted-foreground">Most Played Song:</span>
-                        <span className="ml-2 font-medium">{stats.mostPlayedSong}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
         </TabsContent>

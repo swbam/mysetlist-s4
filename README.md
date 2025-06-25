@@ -10,7 +10,7 @@ A comprehensive concert setlist platform that allows users to discover, track, a
 - **Setlist Voting** - Vote on setlist accuracy and contribute to the community
 - **Real-time Updates** - Live voting and setlist updates during concerts
 - **User Profiles** - Track your concert history and music preferences
-- **Progressive Web App** - Install on mobile devices with offline support
+- **Mobile Responsive** - Optimized for all device sizes
 
 ### Advanced Features
 - **Real-time Collaboration** - See other users' votes and comments in real-time
@@ -26,7 +26,7 @@ A comprehensive concert setlist platform that allows users to discover, track, a
 - **UI Components**: Shadcn/ui, Radix UI
 - **External APIs**: Spotify, Ticketmaster, Setlist.fm
 - **Deployment**: Vercel (Frontend), Supabase (Backend)
-- **PWA**: Service Workers, Web App Manifest
+- **Performance**: Fast loading, optimized images, efficient caching
 
 ## Getting Started 🚀
 
@@ -128,11 +128,11 @@ The app uses Supabase Edge Functions for external API integrations:
 - Integration with external APIs for discovering new content
 - Smart caching for performance
 
-### Progressive Web App
-- Service Worker for offline functionality
-- Background sync for offline actions
-- Push notifications for show reminders
-- App installation prompts
+### Mobile Experience
+- Responsive design for all screen sizes
+- Touch-friendly interfaces and interactions
+- Fast loading and optimized performance
+- Native-like navigation patterns
 
 ### Authentication
 - Supabase Auth with multiple providers

@@ -65,10 +65,6 @@ async function handleLike(supabase: any, userId: string, targetType: string, tar
     
     if (error) throw error;
     
-    // Update like count (if applicable)
-    if (targetType === 'comment') {
-      await supabase.rpc('increment_comment_likes', { comment_id: targetId });
-    }
     
     return NextResponse.json({ success: true, liked: true });
   } catch (error) {
@@ -87,10 +83,6 @@ async function handleUnlike(supabase: any, userId: string, targetType: string, t
     
     if (error) throw error;
     
-    // Update like count (if applicable)
-    if (targetType === 'comment') {
-      await supabase.rpc('decrement_comment_likes', { comment_id: targetId });
-    }
     
     return NextResponse.json({ success: true, liked: false });
   } catch (error) {

@@ -11,13 +11,13 @@
 
 ## Project Overview
 
-MySetlist is a comprehensive concert setlist platform that allows users to discover, track, and share live music experiences. Built on the Next-Forge starter template, it leverages modern web technologies to create a seamless experience for music fans to explore concert history, vote on setlists, and connect with the live music community.
+MySetlist is a comprehensive concert setlist platform that allows users to discover, track, and share live music experiences. Built on the Next-Forge starter template, it leverages modern web technologies to create a seamless experience for music fans to explore concert history and vote on setlists.
 
 ### Core Vision
-- **Discover**: Find upcoming shows, venues, and artist histories
+- **Discover**: Find upcoming shows, venues, and artist histories from real setlist.fm setlists.
 - **Track**: Follow favorite artists and get notified of new shows
-- **Share**: Contribute setlists and vote on accuracy
-- **Connect**: Build a community around live music experiences
+- **Share**: Artists can share show links on social media to promote voting on the setlist 
+- **Vote**: Add songs to a setlist from the dropdown on each show page. Vote on songs already on the list 
 
 ### Target Users
 - **Music Fans**: Discover new shows and track favorite artists
@@ -77,10 +77,9 @@ next-forge structure:
 - **Social Logins**: Google, Apple integration via Supabase
 
 ### External APIs
-- **Spotify API**: Artist data, popularity metrics
+- **Spotify API**: Artist data and music information
 - **Ticketmaster API**: Venue and show information
 - **Setlist.fm API**: Historical setlist data
-- **Mapbox**: Location services and venue mapping
 
 ### Deployment & Infrastructure
 - **Vercel**: Frontend hosting and serverless functions
@@ -98,7 +97,7 @@ MySetlist-nextfor/
 │   └── web/                           # Main Next.js application
 │       ├── app/                       # App Router structure
 │       │   ├── (auth)/               # Authentication routes
-│       │   ├── (dashboard)/          # User dashboard
+│       │   ├── profile/              # User profile
 │       │   ├── artists/              # Artist pages
 │       │   ├── shows/                # Show pages
 │       │   ├── venues/               # Venue pages
@@ -144,34 +143,32 @@ MySetlist-nextfor/
 ### Core Features
 1. **User Management**
    - Supabase authentication with Spotify integration
-   - User profiles with music preferences
-   - Following system for artists and users
+   - Basic user accounts and following system for artists
 
 2. **Artist Discovery**
    - Comprehensive artist profiles with Spotify integration
    - Show history and upcoming events
-   - Real-time popularity metrics
+   - Real-time follower counts and updates
 
 3. **Show & Venue Management**
    - Detailed show information with setlists
-   - Venue profiles with location mapping
+   - Venue profiles with location information
    - Historical show data and statistics
 
 4. **Setlist System**
-   - Community-driven setlist creation
+   - User-driven setlist creation
    - Voting system for accuracy verification
    - Song metadata integration
 
 5. **Search & Discovery**
-   - Full-text search across artists, shows, venues
-   - Location-based venue discovery
-   - Trending and recommendation systems
+   - Search for artists, click an artist then see all their upcoming shows on their artist page
+   - Venue discovery and search functionality
+   - Trending shows on homepage using sync system and cron jobs
 
 ### Advanced Features
 - **Real-time Updates**: Live setlist updates during shows
-- **Analytics Dashboard**: User engagement and platform metrics
-- **Mobile PWA**: Offline-capable mobile experience
-- **Social Features**: Comments, sharing, user interactions
+- **Email Notifications**: Artist and show notifications
+- **Mobile Responsive**: Optimized for mobile devices
 
 ## Development Phases
 
@@ -191,7 +188,7 @@ MySetlist-nextfor/
 - External API integrations (Spotify, Ticketmaster)
 - Real-time updates and notifications
 - Advanced search and filtering
-- Mobile responsiveness and PWA features
+- Mobile responsiveness
 
 ### Phase 4: Polish & Deploy (Week 11-12)
 - Performance optimization
@@ -224,10 +221,6 @@ MySetlist-nextfor/
 - **Type Safety**: Maintain strict TypeScript throughout
 - **Performance First**: Optimize for speed and user experience
 
-### Success Metrics
-- **User Engagement**: Active users, session duration
-- **Content Quality**: Setlist accuracy, user contributions
-- **Performance**: Page load times, search response times
-- **Growth**: User acquisition, content creation rates
+
 
 This overview provides the foundation for building MySetlist using Next-Forge. The following documentation files will detail specific implementation aspects including database schema, component architecture, API integrations, and deployment strategies.

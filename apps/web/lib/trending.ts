@@ -7,7 +7,6 @@ export interface TrendingItem {
   name: string;
   score: number;
   votes: number;
-  comments: number;
   attendees: number;
   recent_activity: number;
   image_url?: string;
@@ -20,7 +19,6 @@ export interface TrendingItem {
 export interface TrendingConfig {
   timeWindow: number; // hours
   weightVotes: number;
-  weightComments: number;
   weightAttendees: number;
   weightRecency: number;
   limit: number;
@@ -28,23 +26,20 @@ export interface TrendingConfig {
 
 const DEFAULT_CONFIG: TrendingConfig = {
   timeWindow: 168, // 7 days
-  weightVotes: 0.4,
-  weightComments: 0.3,
-  weightAttendees: 0.2,
-  weightRecency: 0.1,
+  weightVotes: 0.5,
+  weightAttendees: 0.3,
+  weightRecency: 0.2,
   limit: 20,
 };
 
 export async function calculateTrendingScore(
   votes: number,
-  comments: number,
   attendees: number,
   createdAt: Date,
   config: TrendingConfig = DEFAULT_CONFIG
 ): Promise<number> {
   // Normalize values
   const normalizedVotes = Math.log10(votes + 1);
-  const normalizedComments = Math.log10(comments + 1);
   const normalizedAttendees = Math.log10(attendees + 1);
   
   // Calculate recency score (0-1, where 1 is most recent)
@@ -54,7 +49,6 @@ export async function calculateTrendingScore(
   // Calculate weighted score
   const score = 
     normalizedVotes * config.weightVotes +
-    normalizedComments * config.weightComments +
     normalizedAttendees * config.weightAttendees +
     recencyScore * config.weightRecency;
   
@@ -80,7 +74,6 @@ export async function getTrendingShows(
       artists!inner(id, name, slug, image_url),
       venues!inner(id, name, city),
       show_votes(count),
-      show_comments(count),
       show_attendees(count)
     `)
     .gte('created_at', cutoffDate.toISOString())
@@ -95,12 +88,10 @@ export async function getTrendingShows(
   const trendingShows = await Promise.all(
     shows.map(async (show) => {
       const votes = show.show_votes?.[0]?.count || 0;
-      const comments = show.show_comments?.[0]?.count || 0;
       const attendees = show.show_attendees?.[0]?.count || 0;
       
       const score = await calculateTrendingScore(
         votes,
-        comments,
         attendees,
         new Date(show.created_at),
         config
@@ -112,9 +103,8 @@ export async function getTrendingShows(
         name: `${show.artists.name} at ${show.venues.name}`,
         score,
         votes,
-        comments,
         attendees,
-        recent_activity: votes + comments + attendees,
+        recent_activity: votes + attendees,
         image_url: show.artists.image_url,
         slug: show.slug,
         artist_name: show.artists.name,
@@ -151,7 +141,6 @@ export async function getTrendingArtists(
         id,
         created_at,
         show_votes(count),
-        show_comments(count),
         show_attendees(count)
       ),
       user_follows_artists(count)
@@ -169,10 +158,6 @@ export async function getTrendingArtists(
       (sum, show) => sum + (show.show_votes?.[0]?.count || 0),
       0
     );
-    const totalComments = artist.shows.reduce(
-      (sum, show) => sum + (show.show_comments?.[0]?.count || 0),
-      0
-    );
     const totalAttendees = artist.shows.reduce(
       (sum, show) => sum + (show.show_attendees?.[0]?.count || 0),
       0
@@ -187,7 +172,6 @@ export async function getTrendingArtists(
     return {
       ...artist,
       totalVotes,
-      totalComments,
       totalAttendees: totalAttendees + followers, // Include followers in attendees
       mostRecentShowDate: new Date(mostRecentShow.created_at),
     };
@@ -198,7 +182,6 @@ export async function getTrendingArtists(
     artistActivity.map(async (artist) => {
       const score = await calculateTrendingScore(
         artist.totalVotes,
-        artist.totalComments,
         artist.totalAttendees,
         artist.mostRecentShowDate,
         config
@@ -210,9 +193,8 @@ export async function getTrendingArtists(
         name: artist.name,
         score,
         votes: artist.totalVotes,
-        comments: artist.totalComments,
         attendees: artist.totalAttendees,
-        recent_activity: artist.totalVotes + artist.totalComments + artist.totalAttendees,
+        recent_activity: artist.totalVotes + artist.totalAttendees,
         image_url: artist.image_url,
         slug: artist.slug,
       };

@@ -1,32 +1,21 @@
-'use client';
-
-import { formatNumber } from '@/lib/utils';
-import { useRealtimeArtist } from '@/hooks/use-realtime-artist';
-import { motion, AnimatePresence } from 'framer-motion';
+import { db, userFollowsArtists } from '@repo/database';
+import { eq, count } from 'drizzle-orm';
 
 interface FollowerCountProps {
-  initialCount: number;
   artistId: string;
 }
 
-export function FollowerCount({ initialCount, artistId }: FollowerCountProps) {
-  const { followerCount } = useRealtimeArtist({
-    artistId,
-    initialFollowerCount: initialCount,
-  });
+export async function FollowerCount({ artistId }: FollowerCountProps) {
+  const result = await db
+    .select({ count: count() })
+    .from(userFollowsArtists)
+    .where(eq(userFollowsArtists.artistId, artistId));
+
+  const followerCount = result[0]?.count || 0;
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.span 
-        key={followerCount}
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 10 }}
-        transition={{ duration: 0.2 }}
-        className="inline-block"
-      >
-        {formatNumber(followerCount)} followers
-      </motion.span>
-    </AnimatePresence>
+    <span className="text-sm text-muted-foreground">
+      {followerCount} {followerCount === 1 ? 'follower' : 'followers'}
+    </span>
   );
 }

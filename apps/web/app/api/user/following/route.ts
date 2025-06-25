@@ -1,30 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@repo/database';
-import { userFollowsArtists } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { getUser } from '@repo/auth/server';
+import { getUserFromRequest } from '@repo/auth/server';
+import { db, userFollowsArtists, artists, artistStats } from '@repo/database';
+import { eq, desc, sql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getUser();
-    
+    const user = await getUserFromRequest(request);
     if (!user) {
-      return NextResponse.json({ artistIds: [] });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get all artists the user is following
-    const following = await db
+    // Get all artists the user is following with their stats
+    const followedArtists = await db
       .select({
-        artistId: userFollowsArtists.artistId
+        id: artists.id,
+        name: artists.name,
+        slug: artists.slug,
+        logoUrl: artists.imageUrl,
+        followedAt: userFollowsArtists.createdAt,
+        totalShows: artistStats.totalShows,
+        totalSetlists: artistStats.totalSetlists,
+        totalSongs: sql<number>`0`, // Placeholder - would need to calculate from actual song data
+        avgSongsPerShow: artistStats.avgSetlistLength,
       })
       .from(userFollowsArtists)
-      .where(eq(userFollowsArtists.userId, user.id));
+      .innerJoin(artists, eq(userFollowsArtists.artistId, artists.id))
+      .leftJoin(artistStats, eq(artists.id, artistStats.artistId))
+      .where(eq(userFollowsArtists.userId, user.id))
+      .orderBy(desc(userFollowsArtists.createdAt));
 
-    const artistIds = following.map(f => f.artistId);
-
-    return NextResponse.json({ artistIds });
+    return NextResponse.json({ artists: followedArtists });
   } catch (error) {
-    console.error('Error fetching following status:', error);
-    return NextResponse.json({ artistIds: [] });
+    console.error('Error fetching followed artists:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch followed artists' },
+      { status: 500 }
+    );
   }
 }

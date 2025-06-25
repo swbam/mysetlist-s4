@@ -1,13 +1,11 @@
 'use client';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
 import { ShowHeader } from './show-header';
 import { AttendanceTracker } from './attendance-tracker';
 import { TicketInfo } from './ticket-info';
 import { VenueDetails } from './venue-details';
 import { SetlistSection } from './setlist-section';
 import { SupportingActs } from './supporting-acts';
-import { ShowComments } from './show-comments';
 import { ShareButtons } from './share-buttons';
 import { useRealtimeUpdates } from '../hooks/use-realtime-updates';
 
@@ -53,29 +51,12 @@ export function ShowPageContent({ show }: ShowPageContentProps) {
         )}
         
         {/* Setlists */}
-        <Tabs defaultValue={hasSetlists ? "setlists" : "discussion"} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="setlists">
-              Setlists {hasSetlists && `(${show.setlists?.length || 0})`}
-            </TabsTrigger>
-            <TabsTrigger value="discussion">
-              Discussion
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="setlists" className="mt-6">
-            <SetlistSection 
-              show={show}
-              actualSetlists={actualSetlists}
-              predictedSetlists={predictedSetlists}
-              currentUser={show.currentUser}
-            />
-          </TabsContent>
-          
-          <TabsContent value="discussion" className="mt-6">
-            <ShowComments showId={show.id} />
-          </TabsContent>
-        </Tabs>
+        <SetlistSection 
+          show={show}
+          actualSetlists={actualSetlists}
+          predictedSetlists={predictedSetlists}
+          currentUser={show.currentUser}
+        />
       </div>
       
       {/* Sidebar */}

@@ -9,7 +9,6 @@ import { Alert, AlertDescription } from '@repo/design-system/components/ui/alert
 import { toast } from '@repo/design-system/components/ui/use-toast';
 import { Download, Shield, Eye, EyeOff, UserX } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
-import { useTracking } from '@/lib/analytics/tracking';
 
 interface PrivacySettingsProps {
   userId: string;
@@ -29,7 +28,6 @@ export function PrivacySettings({ userId, email, currentSettings }: PrivacySetti
   });
   
   const [isLoading, setIsLoading] = useState(false);
-  const { track } = useTracking();
   const supabase = createClient();
   
   const updateSettings = async () => {
@@ -67,12 +65,6 @@ export function PrivacySettings({ userId, email, currentSettings }: PrivacySetti
           new CustomEvent('cookieConsentUpdated', { detail: consent })
         );
       }
-      
-      track('NOTIFICATION_SETTINGS_UPDATE', {
-        category: 'privacy',
-        allowAnalytics: settings.allowAnalytics,
-        allowMarketing: settings.allowMarketing,
-      });
       
       toast('Privacy settings updated successfully', { type: 'success' });
     } catch (error) {
@@ -122,10 +114,6 @@ export function PrivacySettings({ userId, email, currentSettings }: PrivacySetti
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      track('PROFILE_DATA_EXPORT', {
-        category: 'privacy',
-      });
-      
       toast('Your data has been exported successfully', { type: 'success' });
     } catch (error) {
       console.error('Error exporting data:', error);
@@ -146,10 +134,6 @@ export function PrivacySettings({ userId, email, currentSettings }: PrivacySetti
       const { error } = await supabase.rpc('delete_user_account', { p_user_id: userId });
       
       if (error) throw error;
-      
-      track('ACCOUNT_DELETED', {
-        category: 'privacy',
-      });
       
       toast('Your account has been deleted', { type: 'success' });
       window.location.href = '/';

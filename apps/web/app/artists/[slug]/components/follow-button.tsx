@@ -1,92 +1,94 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from '@repo/design-system';
 import { Heart } from 'lucide-react';
-import { cn } from '@repo/design-system/lib/utils';
+import { useAuth } from '@/app/providers/auth-provider';
 import { toast } from 'sonner';
 
 interface FollowButtonProps {
   artistId: string;
   artistName: string;
-  initialFollowing?: boolean;
 }
 
-export function FollowButton({ artistId, artistName, initialFollowing = false }: FollowButtonProps) {
-  const router = useRouter();
-  const [isFollowing, setIsFollowing] = useState(initialFollowing);
+export function FollowButton({ artistId, artistName }: FollowButtonProps) {
+  const { user } = useAuth();
+  const isSignedIn = !!user;
+  const [isFollowing, setIsFollowing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Check current follow status
-    checkFollowStatus();
-  }, [artistId]);
+    if (isSignedIn) {
+      checkFollowStatus();
+    }
+  }, [isSignedIn, artistId]);
 
   const checkFollowStatus = async () => {
     try {
       const response = await fetch(`/api/artists/${artistId}/follow`);
       if (response.ok) {
         const data = await response.json();
-        setIsFollowing(data.following);
+        setIsFollowing(data.isFollowing);
       }
     } catch (error) {
       console.error('Error checking follow status:', error);
     }
   };
 
-  const handleFollow = async () => {
+  const handleFollowToggle = async () => {
+    if (!isSignedIn) {
+      toast.error('Please sign in to follow artists');
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await fetch(`/api/artists/${artistId}/follow`, {
         method: isFollowing ? 'DELETE' : 'POST',
       });
 
-      if (response.status === 401) {
-        toast.error('Please sign in to follow artists');
-        router.push('/auth/sign-in');
-        return;
+      if (response.ok) {
+        setIsFollowing(!isFollowing);
+        toast.success(
+          isFollowing 
+            ? `Unfollowed ${artistName}` 
+            : `Now following ${artistName}`
+        );
+      } else {
+        throw new Error('Failed to update follow status');
       }
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update follow status');
-      }
-
-      const data = await response.json();
-      setIsFollowing(data.following);
-      
-      toast.success(
-        data.following 
-          ? `You are now following ${artistName}` 
-          : `You have unfollowed ${artistName}`
-      );
-
-      // Refresh the page to update follower count
-      router.refresh();
     } catch (error) {
-      console.error('Failed to follow/unfollow artist:', error);
-      toast.error(error instanceof Error ? error.message : 'Something went wrong');
+      console.error('Error toggling follow:', error);
+      toast.error('Failed to update follow status');
     } finally {
       setIsLoading(false);
     }
   };
 
+  if (!isSignedIn) {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => toast.error('Please sign in to follow artists')}
+      >
+        <Heart className="h-4 w-4 mr-2" />
+        Follow
+      </Button>
+    );
+  }
+
   return (
     <Button
-      onClick={handleFollow}
+      variant={isFollowing ? 'default' : 'outline'}
+      size="sm"
+      onClick={handleFollowToggle}
       disabled={isLoading}
-      variant={isFollowing ? "default" : "outline"}
-      className={cn(
-        "gap-2",
-        isFollowing && "bg-pink-600 hover:bg-pink-700"
-      )}
     >
-      <Heart className={cn(
-        "h-4 w-4",
-        isFollowing && "fill-current"
-      )} />
-      {isFollowing ? 'Following' : 'Follow'}
+      <Heart 
+        className={`h-4 w-4 mr-2 ${isFollowing ? 'fill-current' : ''}`} 
+      />
+      {isLoading ? 'Loading...' : isFollowing ? 'Following' : 'Follow'}
     </Button>
   );
-} 
+}

@@ -6,6 +6,7 @@ import { Button } from '@repo/design-system/components/ui/button';
 import { Calendar, MapPin, Users, Share2, Heart } from 'lucide-react';
 import { format } from 'date-fns';
 import { useState } from 'react';
+import { LiveShowIndicator } from '@/components/live-show-indicator';
 
 type ShowInfoProps = {
   showId: string;
@@ -49,9 +50,10 @@ export const ShowInfo = ({ showId, show }: ShowInfoProps) => {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-3xl font-bold">{artistName}</h1>
-              <Badge variant={isLive ? 'destructive' : 'secondary'}>
-                {isLive ? '🔴 LIVE NOW' : 'Upcoming'}
-              </Badge>
+              <LiveShowIndicator 
+                showDate={showDate} 
+                showStatus={show.shows.status === 'ongoing' ? 'live' : show.shows.status} 
+              />
             </div>
             <p className="text-lg text-muted-foreground mb-4">{show.shows.name}</p>
             
