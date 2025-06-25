@@ -1,7 +1,6 @@
 'use server';
 
-import { db } from '@repo/database';
-import { artists, shows, showArtists, artistStats, venues } from '@repo/database/src/schema';
+import { db, artists, shows, showArtists, artistStats, venues } from '@repo/database';
 import { eq, and, or, desc, gte, lt, sql } from 'drizzle-orm';
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';

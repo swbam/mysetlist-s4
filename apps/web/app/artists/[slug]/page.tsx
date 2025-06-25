@@ -8,6 +8,7 @@ import { UpcomingShows } from './components/upcoming-shows';
 import { PastShows } from './components/past-shows';
 import { ArtistTopTracks } from './components/artist-top-tracks';
 import { ArtistStats } from './components/artist-stats';
+import { ArtistBio } from './components/artist-bio';
 import { SimilarArtists } from './components/similar-artists';
 import { getArtist, getArtistShows, getArtistStats, getSimilarArtists } from './actions';
 
@@ -91,6 +92,9 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
 
         <TabsContent value="about" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {artist.bio && (
+              <ArtistBio bio={artist.bio} />
+            )}
             <SimilarArtists artistId={artist.id} genres={artist.genres} />
           </div>
         </TabsContent>
