@@ -1,427 +1,291 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { format } from 'date-fns';
-import { 
-  Sparkles, 
-  Calendar, 
-  MapPin, 
-  Music, 
-  Building2,
-  RefreshCw,
-  Info,
-  ChevronRight,
-  Heart,
-  ExternalLink,
-  TrendingUp
-} from 'lucide-react';
+import { Suspense } from 'react';
+import { DiscoverFilters } from './components/discover-filters';
+import { PersonalizedRecommendations } from '@/components/discovery/personalized-recommendations';
+import { LiveTrending } from '@/components/trending/live-trending';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
 import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { Alert, AlertDescription } from '@repo/design-system/components/ui/alert';
-import { useAuth } from '@/app/providers/auth-provider';
-import type { RecommendedItem } from '@/lib/recommendations';
+import { 
+  Compass, 
+  TrendingUp, 
+  Sparkles, 
+  MapPin, 
+  Music, 
+  Calendar,
+  Filter,
+  Users
+} from 'lucide-react';
+import { createMetadata } from '@repo/seo/metadata';
+import type { Metadata } from 'next';
+import Link from 'next/link';
 
-interface RecommendationsData {
-  shows: RecommendedItem[];
-  artists: RecommendedItem[];
-  venues: RecommendedItem[];
-}
+export const metadata: Metadata = createMetadata({
+  title: 'Discover Music - MySetlist',
+  description: 'Discover new artists, find local shows, explore trends, and get personalized recommendations on MySetlist.',
+});
 
-export default function DiscoverPage() {
-  const { user } = useAuth();
-  const router = useRouter();
-  const [recommendations, setRecommendations] = useState<RecommendationsData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
-
-  useEffect(() => {
-    if (!user) {
-      router.push('/auth/sign-in?redirect=/discover');
-      return;
-    }
-
-    fetchRecommendations();
-  }, [user, router]);
-
-  const fetchRecommendations = async () => {
-    try {
-      setError(null);
-      const response = await fetch('/api/recommendations?type=all');
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch recommendations');
-      }
-
-      const data = await response.json();
-      setRecommendations(data.data);
-    } catch (err) {
-      setError('Unable to load recommendations. Please try again later.');
-      console.error('Error fetching recommendations:', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  const handleRefresh = () => {
-    setRefreshing(true);
-    fetchRecommendations();
-  };
-
-  if (!user) {
-    return null;
-  }
-
-  if (loading) {
-    return <DiscoverLoading />;
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
-  if (!recommendations) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <EmptyState />
-      </div>
-    );
-  }
-
+function DiscoverSkeleton() {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-4xl font-bold mb-4 flex items-center gap-2">
-              <Sparkles className="w-8 h-8" />
-              Discover
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Personalized recommendations based on your music taste
-            </p>
-          </div>
-          
-          <Button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            variant="outline"
-            size="sm"
-          >
-            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
-      </div>
-
-      <Tabs defaultValue="shows" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 max-w-[400px]">
-          <TabsTrigger value="shows" className="flex items-center gap-2">
-            <Calendar className="w-4 h-4" />
-            Shows
-          </TabsTrigger>
-          <TabsTrigger value="artists" className="flex items-center gap-2">
-            <Music className="w-4 h-4" />
-            Artists
-          </TabsTrigger>
-          <TabsTrigger value="venues" className="flex items-center gap-2">
-            <Building2 className="w-4 h-4" />
-            Venues
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="shows" className="mt-6">
-          <RecommendedShows shows={recommendations.shows} />
-        </TabsContent>
-
-        <TabsContent value="artists" className="mt-6">
-          <RecommendedArtists artists={recommendations.artists} />
-        </TabsContent>
-
-        <TabsContent value="venues" className="mt-6">
-          <RecommendedVenues venues={recommendations.venues} />
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-}
-
-function RecommendedShows({ shows }: { shows: RecommendedItem[] }) {
-  if (shows.length === 0) {
-    return (
-      <Alert>
-        <Info className="w-4 h-4" />
-        <AlertDescription>
-          No show recommendations available yet. Follow some artists or attend shows to get personalized recommendations!
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {shows.map((show) => (
-        <Card key={show.id} className="hover:shadow-lg transition-shadow h-full">
-          <Link href={`/shows/${show.slug}`}>
-            <CardHeader className="p-4 pb-2">
-              <div className="flex items-start justify-between">
-                <CardTitle className="text-lg line-clamp-2">
-                  {show.metadata?.artist_name}
-                </CardTitle>
-                <Badge variant="outline" className="text-xs">
-                  {Math.round(show.score * 100)}% match
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">{show.reason}</p>
-            </CardHeader>
-            <CardContent className="p-4 pt-2">
-              {show.image_url && (
-                <div className="relative w-full h-40 mb-3 rounded-md overflow-hidden">
-                  <Image
-                    src={show.image_url}
-                    alt={show.metadata?.artist_name || ''}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
-                  {show.metadata?.venue_name}
-                </p>
-                {show.metadata?.show_date && (
-                  <p className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    {format(new Date(show.metadata.show_date), 'EEEE, MMMM d')}
-                  </p>
-                )}
-              </div>
-
-              <div className="mt-3 flex items-center text-primary">
-                <span className="text-sm font-medium">View details</span>
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </div>
-            </CardContent>
-          </Link>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
-function RecommendedArtists({ artists }: { artists: RecommendedItem[] }) {
-  if (artists.length === 0) {
-    return (
-      <Alert>
-        <Info className="w-4 h-4" />
-        <AlertDescription>
-          No artist recommendations available yet. Start following artists to discover similar ones!
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {artists.map((artist) => (
-        <Card key={artist.id} className="hover:shadow-lg transition-shadow h-full">
-          <Link href={`/artists/${artist.slug}`}>
-            <CardHeader className="p-4 pb-2">
-              <div className="flex items-start justify-between">
-                <CardTitle className="text-lg line-clamp-1">{artist.name}</CardTitle>
-                <Badge variant="outline" className="text-xs">
-                  {Math.round(artist.score * 100)}% match
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground line-clamp-2">{artist.reason}</p>
-            </CardHeader>
-            <CardContent className="p-4 pt-2">
-              {artist.image_url && (
-                <div className="relative w-full h-40 mb-3 rounded-md overflow-hidden">
-                  <Image
-                    src={artist.image_url}
-                    alt={artist.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-
-              {artist.metadata?.genres && artist.metadata.genres.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {artist.metadata.genres.slice(0, 3).map((genre: string) => (
-                    <Badge key={genre} variant="secondary" className="text-xs">
-                      {genre}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              {artist.metadata?.followers && (
-                <p className="text-sm text-muted-foreground">
-                  {artist.metadata.followers.toLocaleString()} followers
-                </p>
-              )}
-
-              <div className="mt-3 flex items-center text-primary">
-                <span className="text-sm font-medium">View artist</span>
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </div>
-            </CardContent>
-          </Link>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
-function RecommendedVenues({ venues }: { venues: RecommendedItem[] }) {
-  if (venues.length === 0) {
-    return (
-      <Alert>
-        <Info className="w-4 h-4" />
-        <AlertDescription>
-          No venue recommendations available yet. Attend some shows to get venue suggestions!
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {venues.map((venue) => (
-        <Card key={venue.id} className="hover:shadow-lg transition-shadow h-full">
-          <Link href={`/venues/${venue.slug}`}>
-            <CardHeader className="p-4 pb-2">
-              <div className="flex items-start justify-between">
-                <CardTitle className="text-lg line-clamp-1">{venue.name}</CardTitle>
-                <Badge variant="outline" className="text-xs">
-                  {Math.round(venue.score * 100)}% match
-                </Badge>
-              </div>
-              <p className="text-sm text-muted-foreground">{venue.reason}</p>
-            </CardHeader>
-            <CardContent className="p-4 pt-2">
-              {venue.image_url && (
-                <div className="relative w-full h-40 mb-3 rounded-md overflow-hidden">
-                  <Image
-                    src={venue.image_url}
-                    alt={venue.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-
-              <div className="space-y-2 text-sm text-muted-foreground">
-                <p className="flex items-center gap-1">
-                  <MapPin className="w-3 h-3" />
-                  {venue.metadata?.city}
-                </p>
-                {venue.metadata?.capacity && (
-                  <p>Capacity: {venue.metadata.capacity.toLocaleString()}</p>
-                )}
-                {venue.metadata?.show_count && (
-                  <p>{venue.metadata.show_count} upcoming shows</p>
-                )}
-              </div>
-
-              <div className="mt-3 flex items-center text-primary">
-                <span className="text-sm font-medium">View venue</span>
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </div>
-            </CardContent>
-          </Link>
-        </Card>
-      ))}
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <Card className="max-w-2xl mx-auto">
-      <CardContent className="p-8 text-center">
-        <Sparkles className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-        <h2 className="text-2xl font-semibold mb-2">Welcome to Discover!</h2>
-        <p className="text-muted-foreground mb-6">
-          We'll show you personalized recommendations once you start using MySetlist.
-        </p>
-        <div className="space-y-4 text-left max-w-md mx-auto">
-          <div className="flex items-start gap-3">
-            <Music className="w-5 h-5 text-primary mt-0.5" />
-            <div>
-              <p className="font-medium">Follow Artists</p>
-              <p className="text-sm text-muted-foreground">
-                Follow your favorite artists to discover similar ones
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <Calendar className="w-5 h-5 text-primary mt-0.5" />
-            <div>
-              <p className="font-medium">Attend Shows</p>
-              <p className="text-sm text-muted-foreground">
-                Mark shows you're attending to get venue recommendations
-              </p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <Building2 className="w-5 h-5 text-primary mt-0.5" />
-            <div>
-              <p className="font-medium">Vote on Setlists</p>
-              <p className="text-sm text-muted-foreground">
-                Vote for songs to help us understand your preferences
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="mt-6">
-          <Button asChild>
-            <Link href="/artists">Explore Artists</Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function DiscoverLoading() {
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <Skeleton className="h-10 w-48 mb-4" />
-      <Skeleton className="h-6 w-96 mb-8" />
-      
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {[...Array(6)].map((_, i) => (
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {Array.from({ length: 4 }).map((_, i) => (
           <Card key={i}>
-            <CardHeader className="p-4 pb-2">
-              <Skeleton className="h-5 w-3/4 mb-2" />
-              <Skeleton className="h-4 w-full" />
+            <CardHeader>
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-8 w-16" />
             </CardHeader>
-            <CardContent className="p-4 pt-2">
-              <Skeleton className="w-full h-40 mb-3 rounded-md" />
-              <Skeleton className="h-4 w-2/3 mb-2" />
-              <Skeleton className="h-4 w-1/2" />
-            </CardContent>
           </Card>
         ))}
       </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <Skeleton className="h-96 w-full" />
+        </div>
+        <div>
+          <Skeleton className="h-96 w-full" />
+        </div>
+      </div>
     </div>
   );
 }
+
+export default function DiscoverPage() {
+  return (
+    <div className="container mx-auto py-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Compass className="h-8 w-8 text-primary" />
+            <h1 className="text-4xl font-bold">Discover Music</h1>
+          </div>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Find new artists, explore local shows, discover trends, and get personalized recommendations 
+            tailored to your music taste
+          </p>
+        </div>
+
+        <Suspense fallback={<DiscoverSkeleton />}>
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active Artists</CardTitle>
+                <Music className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">2,847</div>
+                <p className="text-xs text-muted-foreground">
+                  +12% from last month
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Upcoming Shows</CardTitle>
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">15,432</div>
+                <p className="text-xs text-muted-foreground">
+                  Next 30 days
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Cities Covered</CardTitle>
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">892</div>
+                <p className="text-xs text-muted-foreground">
+                  Worldwide venues
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Community</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">48.2K</div>
+                <p className="text-xs text-muted-foreground">
+                  Active users
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Main Discovery Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div className="lg:col-span-2 space-y-6">
+              <Tabs defaultValue="recommendations" className="w-full">
+                <TabsList className="grid w-full grid-cols-3">
+                  <TabsTrigger value="recommendations" className="gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    For You
+                  </TabsTrigger>
+                  <TabsTrigger value="trending" className="gap-2">
+                    <TrendingUp className="h-4 w-4" />
+                    Trending
+                  </TabsTrigger>
+                  <TabsTrigger value="explore" className="gap-2">
+                    <Filter className="h-4 w-4" />
+                    Explore
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="recommendations" className="space-y-6">
+                  <PersonalizedRecommendations 
+                    category="all" 
+                    limit={9} 
+                  />
+                </TabsContent>
+                
+                <TabsContent value="trending" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <LiveTrending 
+                      timeframe="24h" 
+                      type="artist" 
+                      limit={5}
+                    />
+                    <LiveTrending 
+                      timeframe="24h" 
+                      type="show" 
+                      limit={5}
+                    />
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="explore" className="space-y-6">
+                  <DiscoverFilters />
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            {/* Sidebar */}
+            <div className="space-y-6">
+              <LiveTrending 
+                timeframe="1h" 
+                type="all" 
+                limit={8}
+                autoRefresh={true}
+              />
+
+              {/* Quick Actions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Quick Discover</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Link href="/search?dateFrom=2024-07-01&dateTo=2024-12-31">
+                    <Button variant="outline" className="w-full justify-start gap-2">
+                      <Calendar className="h-4 w-4" />
+                      This Weekend's Shows
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/search?location=nearby">
+                    <Button variant="outline" className="w-full justify-start gap-2">
+                      <MapPin className="h-4 w-4" />
+                      Shows Near Me
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/trending">
+                    <Button variant="outline" className="w-full justify-start gap-2">
+                      <TrendingUp className="h-4 w-4" />
+                      What's Trending
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/artists">
+                    <Button variant="outline" className="w-full justify-start gap-2">
+                      <Music className="h-4 w-4" />
+                      Browse All Artists
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Popular Genres */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Popular Genres</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      'Rock', 'Pop', 'Hip-Hop', 'Electronic', 'Jazz', 'Country',
+                      'Alternative', 'Metal', 'R&B', 'Indie'
+                    ].map((genre) => (
+                      <Link key={genre} href={`/search?genre=${encodeURIComponent(genre)}`}>
+                        <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors">
+                          {genre}
+                        </Badge>
+                      </Link>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Featured Sections */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="bg-gradient-to-br from-primary/5 to-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-5 w-5" />
+                  Get Better Recommendations
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Follow artists and mark shows as attended to improve your personalized recommendations.
+                </p>
+                <div className="flex gap-2">
+                  <Link href="/artists">
+                    <Button size="sm">Follow Artists</Button>
+                  </Link>
+                  <Link href="/profile">
+                    <Button variant="outline" size="sm">View Profile</Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-green-50 to-emerald-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Join the Community
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Connect with other music fans, share setlists, and discover concerts together.
+                </p>
+                <div className="flex gap-2">
+                  <Link href="/auth/sign-up">
+                    <Button size="sm">Sign Up</Button>
+                  </Link>
+                  <Link href="/auth/sign-in">
+                    <Button variant="outline" size="sm">Sign In</Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </Suspense>
+      </div>
+    </div>
+  );
+}
+

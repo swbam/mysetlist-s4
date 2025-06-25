@@ -11,6 +11,9 @@ import { SetlistUpdateTemplate } from './templates/setlist-update';
 import { WeeklyDigestTemplate } from './templates/weekly-digest';
 import { PasswordResetTemplate } from './templates/password-reset';
 import { EmailVerificationTemplate } from './templates/email-verification';
+import { ArtistFollowNotificationTemplate } from './templates/artist-follow-notification';
+import { VoteMilestoneTemplate } from './templates/vote-milestone';
+import { LiveShowAlertTemplate } from './templates/live-show-alert';
 
 // Types
 export type EmailAddress = {
@@ -365,6 +368,114 @@ export async function sendBatchEmails<T extends Record<string, any>>({
     totalFailed: results.filter(r => !r.success).length,
     results,
   };
+}
+
+// Artist follow notification email
+export async function sendArtistFollowNotificationEmail({
+  to,
+  userName,
+  artist,
+  followerName,
+  isFirstFollow = false,
+  appUrl = 'https://MySetlist.app',
+}: {
+  to: EmailAddress[];
+  userName: string;
+  artist: { id: string; name: string; genre?: string; upcomingShows: number; recentActivity?: string };
+  followerName: string;
+  isFirstFollow?: boolean;
+  appUrl?: string;
+}) {
+  const html = await render(ArtistFollowNotificationTemplate({ 
+    userName, 
+    artist, 
+    followerName, 
+    isFirstFollow, 
+    appUrl 
+  }));
+  
+  return sendEmail({
+    to,
+    subject: isFirstFollow 
+      ? `🎉 Your first follower: ${followerName}!`
+      : `🎵 New follower: ${followerName}`,
+    html,
+  });
+}
+
+// Vote milestone notification email
+export async function sendVoteMilestoneEmail({
+  to,
+  userName,
+  show,
+  song,
+  milestone,
+  totalVotes,
+  appUrl = 'https://MySetlist.app',
+}: {
+  to: EmailAddress[];
+  userName: string;
+  show: Show;
+  song: { title: string; artist?: string; votes: number; position: number };
+  milestone: number;
+  totalVotes: number;
+  appUrl?: string;
+}) {
+  const html = await render(VoteMilestoneTemplate({ 
+    userName, 
+    show, 
+    song, 
+    milestone, 
+    totalVotes, 
+    appUrl 
+  }));
+  
+  return sendEmail({
+    to,
+    subject: `🎵 "${song.title}" just hit ${milestone} votes!`,
+    html,
+  });
+}
+
+// Live show alert email
+export async function sendLiveShowAlertEmail({
+  to,
+  userName,
+  show,
+  alertType,
+  appUrl = 'https://MySetlist.app',
+}: {
+  to: EmailAddress[];
+  userName: string;
+  show: Show & { setlistStatus: 'empty' | 'partial' | 'live' | 'complete'; estimatedDuration?: string };
+  alertType: 'starting-soon' | 'live-now' | 'setlist-live';
+  appUrl?: string;
+}) {
+  const html = await render(LiveShowAlertTemplate({ 
+    userName, 
+    show, 
+    alertType, 
+    appUrl 
+  }));
+  
+  const getSubject = () => {
+    switch (alertType) {
+      case 'starting-soon':
+        return `⏰ ${show.artistName} starts in 30 minutes!`;
+      case 'live-now':
+        return `🔴 LIVE: ${show.artistName} just took the stage!`;
+      case 'setlist-live':
+        return `📝 Live setlist: ${show.artistName} at ${show.venue}`;
+      default:
+        return `🎵 Live update: ${show.artistName}`;
+    }
+  };
+  
+  return sendEmail({
+    to,
+    subject: getSubject(),
+    html,
+  });
 }
 
 // Unsubscribe token generation and validation

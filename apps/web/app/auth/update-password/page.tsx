@@ -1,21 +1,29 @@
 'use client';
 
 export const dynamic = 'force-dynamic';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Input } from '@repo/design-system/components/ui/input';
 import { Label } from '@repo/design-system/components/ui/label';
 import { Alert, AlertDescription } from '@repo/design-system/components/ui/alert';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Shield, ArrowLeft, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../providers/auth-provider';
+import Link from 'next/link';
 
 const updatePasswordSchema = z.object({
-  password: z.string().min(6, 'Password must be at least 6 characters'),
-  confirmPassword: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+    ),
+  confirmPassword: z.string().min(8, 'Password must be at least 8 characters'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ['confirmPassword'],
@@ -25,9 +33,12 @@ type UpdatePasswordForm = z.infer<typeof updatePasswordSchema>;
 
 export default function UpdatePasswordPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { updatePassword, session } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [isFromReset, setIsFromReset] = useState(false);
 
   const {
     register,
@@ -36,6 +47,11 @@ export default function UpdatePasswordPage() {
   } = useForm<UpdatePasswordForm>({
     resolver: zodResolver(updatePasswordSchema),
   });
+
+  useEffect(() => {
+    const fromReset = searchParams.get('from') === 'reset';
+    setIsFromReset(fromReset);
+  }, [searchParams]);
 
   // Redirect if not authenticated
   if (!session) {
@@ -49,7 +65,12 @@ export default function UpdatePasswordPage() {
 
     try {
       await updatePassword(data.password);
-      router.push('/');
+      setSuccess(true);
+      
+      // Show success message briefly, then redirect
+      setTimeout(() => {
+        router.push('/profile');
+      }, 2000);
     } catch (err: any) {
       setError(err.message || 'Something went wrong');
     } finally {
@@ -57,76 +78,129 @@ export default function UpdatePasswordPage() {
     }
   };
 
+  if (success) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-8">
+          <Card>
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-4">
+                <CheckCircle className="h-12 w-12 text-green-500" />
+              </div>
+              <CardTitle className="text-2xl">Password Updated!</CardTitle>
+              <CardDescription>
+                Your password has been successfully updated. You will be redirected to your profile.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button asChild className="w-full">
+                <Link href="/profile">Go to Profile</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-bold tracking-tight">
-            Update your password
-          </h2>
-          <p className="mt-2 text-center text-sm text-muted-foreground">
-            Enter your new password below
-          </p>
+        <div className="text-center">
+          <Button variant="ghost" size="sm" asChild className="mb-4">
+            <Link href={isFromReset ? "/auth/sign-in" : "/settings"}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              {isFromReset ? "Back to Sign In" : "Back to Settings"}
+            </Link>
+          </Button>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="password">New Password</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                {...register('password')}
-                className="mt-1"
-              />
-              {errors.password && (
-                <p className="mt-1 text-sm text-destructive">
-                  {errors.password.message}
-                </p>
-              )}
+        <Card>
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-4">
+              <Shield className="h-12 w-12 text-blue-500" />
             </div>
+            <CardTitle className="text-2xl">
+              {isFromReset ? "Reset Your Password" : "Update Your Password"}
+            </CardTitle>
+            <CardDescription>
+              {isFromReset 
+                ? "Enter a new password for your account"
+                : "Choose a new secure password for your account"
+              }
+            </CardDescription>
+          </CardHeader>
 
-            <div>
-              <Label htmlFor="confirmPassword">Confirm New Password</Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                {...register('confirmPassword')}
-                className="mt-1"
-              />
-              {errors.confirmPassword && (
-                <p className="mt-1 text-sm text-destructive">
-                  {errors.confirmPassword.message}
-                </p>
+          <CardContent>
+            <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
-            </div>
-          </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Updating password...
-              </>
-            ) : (
-              'Update password'
-            )}
-          </Button>
-        </form>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="password">New Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    {...register('password')}
+                    className="mt-1"
+                  />
+                  {errors.password && (
+                    <p className="mt-1 text-sm text-destructive">
+                      {errors.password.message}
+                    </p>
+                  )}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Must be at least 8 characters with uppercase, lowercase, and number
+                  </p>
+                </div>
+
+                <div>
+                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    {...register('confirmPassword')}
+                    className="mt-1"
+                  />
+                  {errors.confirmPassword && (
+                    <p className="mt-1 text-sm text-destructive">
+                      {errors.confirmPassword.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Updating password...
+                  </>
+                ) : (
+                  'Update Password'
+                )}
+              </Button>
+            </form>
+
+            <div className="mt-4 text-center text-sm text-muted-foreground">
+              <Link href="/auth/sign-in" className="font-medium text-primary hover:underline">
+                Back to Sign In
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

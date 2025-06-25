@@ -84,15 +84,8 @@ export class TicketmasterClient extends BaseAPIClient {
   }
 
   protected getAuthHeaders(): Record<string, string> {
-    const apiKey = process.env.TICKETMASTER_API_KEY;
-    
-    if (!apiKey) {
-      throw new Error('Ticketmaster API key not configured');
-    }
-    
-    return {
-      'apikey': apiKey,
-    };
+    // Ticketmaster uses API key in URL params, not headers
+    return {};
   }
 
   async searchEvents(options: {
@@ -176,18 +169,34 @@ export class TicketmasterClient extends BaseAPIClient {
   }): Promise<any> {
     const params = new URLSearchParams();
     
+    // Add API key to params
+    const apiKey = process.env.TICKETMASTER_API_KEY;
+    if (!apiKey) {
+      throw new Error('Ticketmaster API key not configured');
+    }
+    params.append('apikey', apiKey);
+    
     Object.entries(options).forEach(([key, value]) => {
       if (value !== undefined) {
         params.append(key, value.toString());
       }
     });
 
-    return this.makeRequest(
-      `/attractions.json?${params}`,
-      {},
-      `ticketmaster:attractions:${params.toString()}`,
-      3600
-    );
+    // Construct the full URL manually since Ticketmaster API expects params in URL
+    const fullUrl = `${this.baseURL}/attractions.json?${params.toString()}`;
+    
+    const response = await fetch(fullUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ticketmaster API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
   }
 
   async getAttraction(attractionId: string): Promise<any> {

@@ -4,10 +4,14 @@ import { TrendingArtists } from './components/trending-artists';
 import { TrendingShows } from './components/trending-shows';
 import { TrendingVenues } from './components/trending-venues';
 import { RecentActivity } from './components/recent-activity';
+import { LiveTrending } from '@/components/trending/live-trending';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import { TrendingUp, Clock, MapPin, Users } from 'lucide-react';
+import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from '@repo/design-system/components/ui/badge';
+import { TrendingUp, Clock, MapPin, Users, Flame, Activity, Eye } from 'lucide-react';
 import { Skeleton } from '@repo/design-system/components/ui/skeleton';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Trending - MySetlist',
@@ -81,7 +85,7 @@ export default function TrendingPage() {
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-4">
-          <TrendingUp className="h-8 w-8 text-orange-500" />
+          <Flame className="h-8 w-8 text-orange-500" />
           <h1 className="text-4xl font-bold">Trending</h1>
         </div>
         <p className="text-xl text-muted-foreground">
@@ -91,6 +95,28 @@ export default function TrendingPage() {
 
       <Suspense fallback={<TrendingPageSkeleton />}>
         <div className="space-y-8">
+          {/* Live Trending Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <LiveTrending 
+              timeframe="1h" 
+              type="all" 
+              limit={5}
+              autoRefresh={true}
+            />
+            <LiveTrending 
+              timeframe="6h" 
+              type="all" 
+              limit={5}
+              autoRefresh={false}
+            />
+            <LiveTrending 
+              timeframe="24h" 
+              type="all" 
+              limit={5}
+              autoRefresh={false}
+            />
+          </div>
+
           {/* Quick Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
@@ -121,13 +147,13 @@ export default function TrendingPage() {
             
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Popular Venues</CardTitle>
-                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium">Search Volume</CardTitle>
+                <Eye className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">89</div>
+                <div className="text-2xl font-bold">28.4K</div>
                 <p className="text-xs text-muted-foreground">
-                  +8% from last week
+                  +31% from last week
                 </p>
               </CardContent>
             </Card>
@@ -149,12 +175,33 @@ export default function TrendingPage() {
           {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-6">
-              <Tabs defaultValue="artists" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+              <Tabs defaultValue="all" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="all">All Trending</TabsTrigger>
                   <TabsTrigger value="artists">Artists</TabsTrigger>
                   <TabsTrigger value="shows">Shows</TabsTrigger>
                   <TabsTrigger value="venues">Venues</TabsTrigger>
                 </TabsList>
+                
+                <TabsContent value="all" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <LiveTrending 
+                      timeframe="24h" 
+                      type="artist" 
+                      limit={8}
+                    />
+                    <LiveTrending 
+                      timeframe="24h" 
+                      type="show" 
+                      limit={8}
+                    />
+                  </div>
+                  <LiveTrending 
+                    timeframe="24h" 
+                    type="venue" 
+                    limit={6}
+                  />
+                </TabsContent>
                 
                 <TabsContent value="artists" className="space-y-4">
                   <Card>
@@ -214,7 +261,7 @@ export default function TrendingPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Clock className="h-5 w-5" />
+                    <Activity className="h-5 w-5" />
                     Recent Activity
                   </CardTitle>
                   <CardDescription>
@@ -223,6 +270,53 @@ export default function TrendingPage() {
                 </CardHeader>
                 <CardContent>
                   <RecentActivity />
+                </CardContent>
+              </Card>
+
+              {/* Trending Actions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Explore Trending</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <Link href="/search">
+                    <Button variant="outline" className="w-full justify-start gap-2">
+                      <TrendingUp className="h-4 w-4" />
+                      Advanced Search
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/discover">
+                    <Button variant="outline" className="w-full justify-start gap-2">
+                      <Flame className="h-4 w-4" />
+                      Discover Music
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/artists">
+                    <Button variant="outline" className="w-full justify-start gap-2">
+                      <Users className="h-4 w-4" />
+                      Browse Artists
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Trending Categories */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Trending Categories</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {['Pop', 'Rock', 'Hip-Hop', 'Electronic', 'Country', 'Jazz'].map((genre) => (
+                      <Link key={genre} href={`/search?genre=${encodeURIComponent(genre)}`}>
+                        <Badge variant="outline" className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors">
+                          {genre}
+                        </Badge>
+                      </Link>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
             </div>

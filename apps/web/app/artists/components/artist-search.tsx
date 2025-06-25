@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Loader2 } from 'lucide-react';
 import { Input } from '@repo/design-system/components/ui/input';
@@ -82,15 +83,20 @@ export function ArtistSearch() {
         setIsSyncing(null);
       }
     } else {
-      // Artist already in database, navigate directly
+      // Artist already in database, navigate directly  
+      // artist.id is actually the slug for database artists
       router.push(`/artists/${artist.id}`);
     }
   };
 
   // Trigger search when debounced query changes
-  if (debouncedQuery) {
-    searchArtists(debouncedQuery);
-  }
+  React.useEffect(() => {
+    if (debouncedQuery) {
+      searchArtists(debouncedQuery);
+    } else {
+      setResults([]);
+    }
+  }, [debouncedQuery]);
 
   return (
     <div className="w-full max-w-3xl mx-auto space-y-6">

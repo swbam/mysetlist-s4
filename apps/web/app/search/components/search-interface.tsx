@@ -1,80 +1,125 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Input } from '@repo/design-system/components/ui/input';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import { Search, Music, MapPin, Calendar, Users, ExternalLink, Heart } from 'lucide-react';
+import { Skeleton } from '@repo/design-system/components/ui/skeleton';
+import { Search, Music, MapPin, Calendar, Users, ExternalLink, Heart, TrendingUp, Filter, Star } from 'lucide-react';
 import { format } from 'date-fns';
 import Link from 'next/link';
 import Image from 'next/image';
 import { toast } from 'sonner';
 import { cn } from '@repo/design-system/lib/utils';
+import { SearchAutocomplete } from '@/components/search/search-autocomplete';
+import { SearchFilters } from '@/components/search/search-filters';
+import { SearchResultCard } from '@/components/search/search-result-card';
 
-type Artist = {
+interface SearchFiltersType {
+  dateFrom?: Date;
+  dateTo?: Date;
+  location?: string;
+  genre?: string;
+  priceMin?: number;
+  priceMax?: number;
+  radius?: number;
+  sortBy?: 'relevance' | 'date' | 'popularity' | 'alphabetical';
+}
+
+interface SearchSuggestion {
   id: string;
-  name: string;
-  slug: string;
+  type: 'artist' | 'show' | 'venue' | 'genre' | 'location' | 'recent' | 'trending';
+  title: string;
+  subtitle?: string;
   imageUrl?: string;
-  genres: string[];
-  popularity: number;
-  showCount: number;
-  followerCount: number;
-  isFollowing: boolean;
-};
-
-type Show = {
-  id: string;
-  date: Date;
-  status: string;
-  ticketmasterUrl?: string;
-  artist: {
-    name: string;
-    slug: string;
+  metadata?: {
+    popularity?: number;
+    upcomingShows?: number;
+    followerCount?: number;
+    capacity?: number;
+    showDate?: string;
   };
-  venue: {
+}
+
+type SearchResult = {
+  id: string;
+  type: 'artist' | 'show' | 'venue';
+  title: string;
+  subtitle: string;
+  imageUrl?: string | null;
+  slug: string;
+  verified?: boolean;
+  popularity?: number;
+  genres?: string[];
+  showCount?: number;
+  followerCount?: number;
+  date?: string;
+  venue?: {
     name: string;
-    slug: string;
     city: string;
     state: string;
   };
-};
-
-type Venue = {
-  id: string;
-  name: string;
-  slug: string;
-  city: string;
-  state: string;
+  artist?: {
+    name: string;
+    slug: string;
+  };
   capacity?: number;
-  showCount: number;
+  price?: {
+    min: number;
+    max: number;
+    currency: string;
+  };
 };
 
-type SearchResults = {
-  artists: Artist[];
-  shows: Show[];
-  venues: Venue[];
+type ComprehensiveSearchResults = {
+  artists: SearchResult[];
+  shows: SearchResult[];
+  venues: SearchResult[];
+  total: number;
+  query: string;
+  filters: SearchFiltersType;
+  suggestions?: string[];
 };
 
 export function SearchInterface() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [query, setQuery] = useState(searchParams.get('q') || '');
-  const [results, setResults] = useState<SearchResults | null>(null);
+  const [results, setResults] = useState<ComprehensiveSearchResults | null>(null);
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('artists');
+  const [activeTab, setActiveTab] = useState('all');
   const [followingArtists, setFollowingArtists] = useState<Set<string>>(new Set());
+  const [filters, setFilters] = useState<SearchFiltersType>({
+    sortBy: 'relevance',
+  });
 
+  // Initialize filters from URL params
+  useEffect(() => {
+    const urlFilters: SearchFiltersType = {
+      dateFrom: searchParams.get('dateFrom') ? new Date(searchParams.get('dateFrom')!) : undefined,
+      dateTo: searchParams.get('dateTo') ? new Date(searchParams.get('dateTo')!) : undefined,
+      location: searchParams.get('location') || undefined,
+      genre: searchParams.get('genre') || undefined,
+      priceMin: searchParams.get('priceMin') ? parseInt(searchParams.get('priceMin')!) : undefined,
+      priceMax: searchParams.get('priceMax') ? parseInt(searchParams.get('priceMax')!) : undefined,
+      radius: searchParams.get('radius') ? parseInt(searchParams.get('radius')!) : undefined,
+      sortBy: (searchParams.get('sortBy') as SearchFiltersType['sortBy']) || 'relevance',
+    };
+    setFilters(urlFilters);
+  }, [searchParams]);
+
+  // Perform search when query or filters change
   useEffect(() => {
     const q = searchParams.get('q');
     if (q && q !== query) {
       setQuery(q);
-      performSearch(q);
     }
-  }, [searchParams]);
+    if (q) {
+      performSearch(q, filters);
+    }
+  }, [searchParams, filters]);
 
   // Check if user is following artists
   useEffect(() => {
@@ -95,7 +140,39 @@ export function SearchInterface() {
     checkFollowingStatus();
   }, [results]);
 
-  const performSearch = async (searchQuery: string) => {
+  const buildSearchUrl = useCallback((searchQuery: string, searchFilters: SearchFiltersType) => {
+    const params = new URLSearchParams();
+    params.set('q', searchQuery);
+    
+    if (searchFilters.dateFrom) {
+      params.set('dateFrom', searchFilters.dateFrom.toISOString().split('T')[0]);
+    }
+    if (searchFilters.dateTo) {
+      params.set('dateTo', searchFilters.dateTo.toISOString().split('T')[0]);
+    }
+    if (searchFilters.location) {
+      params.set('location', searchFilters.location);
+    }
+    if (searchFilters.genre) {
+      params.set('genre', searchFilters.genre);
+    }
+    if (searchFilters.priceMin !== undefined) {
+      params.set('priceMin', searchFilters.priceMin.toString());
+    }
+    if (searchFilters.priceMax !== undefined) {
+      params.set('priceMax', searchFilters.priceMax.toString());
+    }
+    if (searchFilters.radius !== undefined) {
+      params.set('radius', searchFilters.radius.toString());
+    }
+    if (searchFilters.sortBy && searchFilters.sortBy !== 'relevance') {
+      params.set('sortBy', searchFilters.sortBy);
+    }
+    
+    return `/api/search?${params.toString()}`;
+  }, []);
+
+  const performSearch = async (searchQuery: string, searchFilters: SearchFiltersType = filters) => {
     if (!searchQuery.trim()) {
       setResults(null);
       return;
@@ -103,37 +180,76 @@ export function SearchInterface() {
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+      const url = buildSearchUrl(searchQuery, searchFilters);
+      const response = await fetch(url);
+      
       if (response.ok) {
         const data = await response.json();
         setResults(data);
         
-        // Update URL without triggering reload
+        // Update URL with search params
         const newUrl = new URL(window.location.href);
-        newUrl.searchParams.set('q', searchQuery);
+        const params = new URLSearchParams();
+        params.set('q', searchQuery);
+        
+        Object.entries(searchFilters).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            if (value instanceof Date) {
+              params.set(key, value.toISOString().split('T')[0]);
+            } else {
+              params.set(key, value.toString());
+            }
+          }
+        });
+        
+        newUrl.search = params.toString();
         router.replace(newUrl.toString());
       }
     } catch (error) {
       console.error('Search failed:', error);
+      toast.error('Search failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    performSearch(query);
+  const handleSearch = () => {
+    performSearch(query, filters);
+  };
+
+  const handleSuggestionSelect = (suggestion: SearchSuggestion) => {
+    if (suggestion.type === 'genre') {
+      setFilters(prev => ({ ...prev, genre: suggestion.title }));
+    } else if (suggestion.type === 'location') {
+      setFilters(prev => ({ ...prev, location: suggestion.title }));
+    }
+    // Auto-search when suggestion is selected
+    performSearch(suggestion.title, filters);
+  };
+
+  const handleFiltersChange = (newFilters: SearchFiltersType) => {
+    setFilters(newFilters);
+    if (query) {
+      performSearch(query, newFilters);
+    }
+  };
+
+  const handleClearFilters = () => {
+    const clearedFilters: SearchFiltersType = { sortBy: 'relevance' };
+    setFilters(clearedFilters);
+    if (query) {
+      performSearch(query, clearedFilters);
+    }
   };
 
   const handleFollow = async (artistId: string, currentlyFollowing: boolean) => {
     try {
-      const response = await fetch('/api/follow', {
+      const response = await fetch(`/api/artists/${artistId}/follow`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          artistId,
           following: !currentlyFollowing,
         }),
       });
@@ -160,29 +276,32 @@ export function SearchInterface() {
   };
 
   const resultCounts = results ? {
+    all: results.total,
     artists: results.artists.length,
     shows: results.shows.length,
     venues: results.venues.length,
-  } : { artists: 0, shows: 0, venues: 0 };
+  } : { all: 0, artists: 0, shows: 0, venues: 0 };
 
   return (
     <div className="space-y-6">
-      {/* Search Form */}
-      <form onSubmit={handleSearch} className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search for artists, shows, or venues..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            className="pl-10 text-lg py-6"
-          />
-        </div>
-        <Button type="submit" disabled={loading} className="px-8 py-6">
-          {loading ? 'Searching...' : 'Search'}
-        </Button>
-      </form>
+      {/* Enhanced Search Form */}
+      <div className="space-y-4">
+        <SearchAutocomplete
+          value={query}
+          onChange={setQuery}
+          onSelect={handleSuggestionSelect}
+          onSearch={handleSearch}
+          placeholder="Search artists, shows, venues..."
+          disabled={loading}
+        />
+        
+        {/* Advanced Filters */}
+        <SearchFilters
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          onClearFilters={handleClearFilters}
+        />
+      </div>
 
       {/* Loading State */}
       {loading && (
@@ -192,10 +311,43 @@ export function SearchInterface() {
         </div>
       )}
 
-      {/* Results */}
+      {/* Search Results Summary */}
+      {results && !loading && (
+        <div className="flex items-center justify-between py-4 border-b">
+          <div>
+            <h2 className="text-2xl font-bold">
+              {results.total} results for "{results.query}"
+            </h2>
+            {results.suggestions && results.suggestions.length > 0 && (
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-sm text-muted-foreground">Suggestions:</span>
+                {results.suggestions.map((suggestion, index) => (
+                  <Button
+                    key={index}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setQuery(suggestion);
+                      performSearch(suggestion, filters);
+                    }}
+                  >
+                    {suggestion}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Results Tabs */}
       {results && !loading && (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="all" className="gap-2">
+              <Search className="h-4 w-4" />
+              All ({resultCounts.all})
+            </TabsTrigger>
             <TabsTrigger value="artists" className="gap-2">
               <Music className="h-4 w-4" />
               Artists ({resultCounts.artists})
@@ -210,6 +362,83 @@ export function SearchInterface() {
             </TabsTrigger>
           </TabsList>
 
+          {/* All Results Tab */}
+          <TabsContent value="all" className="mt-6">
+            <div className="space-y-6">
+              {results.artists.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Music className="h-5 w-5" />
+                    Artists
+                  </h3>
+                  <div className="grid gap-4">
+                    {results.artists.slice(0, 3).map((artist) => (
+                      <SearchResultCard key={artist.id} result={artist} onFollow={handleFollow} isFollowing={followingArtists.has(artist.id)} />
+                    ))}
+                    {results.artists.length > 3 && (
+                      <Button variant="outline" onClick={() => setActiveTab('artists')}>
+                        View all {results.artists.length} artists
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {results.shows.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Shows
+                  </h3>
+                  <div className="grid gap-4">
+                    {results.shows.slice(0, 3).map((show) => (
+                      <SearchResultCard key={show.id} result={show} />
+                    ))}
+                    {results.shows.length > 3 && (
+                      <Button variant="outline" onClick={() => setActiveTab('shows')}>
+                        View all {results.shows.length} shows
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {results.venues.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <MapPin className="h-5 w-5" />
+                    Venues
+                  </h3>
+                  <div className="grid gap-4">
+                    {results.venues.slice(0, 3).map((venue) => (
+                      <SearchResultCard key={venue.id} result={venue} />
+                    ))}
+                    {results.venues.length > 3 && (
+                      <Button variant="outline" onClick={() => setActiveTab('venues')}>
+                        View all {results.venues.length} venues
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {results.total === 0 && (
+                <Card>
+                  <CardContent className="p-8 text-center">
+                    <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No results found</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Try adjusting your search terms or filters.
+                    </p>
+                    <Button variant="outline" onClick={handleClearFilters}>
+                      Clear all filters
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </TabsContent>
+
           <TabsContent value="artists" className="mt-6">
             {results.artists.length === 0 ? (
               <Card>
@@ -217,73 +446,20 @@ export function SearchInterface() {
                   <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No artists found</h3>
                   <p className="text-muted-foreground">
-                    Try searching for a different artist name.
+                    Try searching for a different artist name or adjusting your filters.
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-4">
                 {results.artists.map((artist) => (
-                  <Card key={artist.id} className="overflow-hidden">
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-4">
-                        {artist.imageUrl && (
-                          <div className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0">
-                            <Image
-                              src={artist.imageUrl}
-                              alt={artist.name}
-                              fill
-                              className="object-cover"
-                            />
-                          </div>
-                        )}
-                        <div className="flex-1">
-                          <Link 
-                            href={`/artists/${artist.slug}`}
-                            className="text-xl font-bold hover:text-primary transition-colors"
-                          >
-                            {artist.name}
-                          </Link>
-                          <div className="flex items-center gap-2 mt-1">
-                            {artist.genres.slice(0, 3).map((genre) => (
-                              <Badge key={genre} variant="secondary" className="text-xs">
-                                {genre}
-                              </Badge>
-                            ))}
-                          </div>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              <span>{artist.showCount} shows</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Users className="h-4 w-4" />
-                              <span>{artist.followerCount.toLocaleString()} followers</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant={followingArtists.has(artist.id) ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => handleFollow(artist.id, followingArtists.has(artist.id))}
-                            className="gap-2"
-                          >
-                            <Heart className={cn(
-                              "h-4 w-4",
-                              followingArtists.has(artist.id) && "fill-current"
-                            )} />
-                            {followingArtists.has(artist.id) ? 'Following' : 'Follow'}
-                          </Button>
-                          <Button asChild>
-                            <Link href={`/artists/${artist.slug}`}>
-                              View Artist
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <SearchResultCard 
+                    key={artist.id} 
+                    result={artist} 
+                    onFollow={handleFollow} 
+                    isFollowing={followingArtists.has(artist.id)}
+                    showType={false}
+                  />
                 ))}
               </div>
             )}
@@ -296,65 +472,18 @@ export function SearchInterface() {
                   <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No shows found</h3>
                   <p className="text-muted-foreground">
-                    No upcoming shows match your search.
+                    No upcoming shows match your search criteria. Try adjusting your filters.
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-4">
                 {results.shows.map((show) => (
-                  <Card key={show.id}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Link 
-                            href={`/artists/${show.artist.slug}`}
-                            className="text-xl font-bold hover:text-primary transition-colors"
-                          >
-                            {show.artist.name}
-                          </Link>
-                          <div className="flex items-center gap-2 mt-1">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <Link 
-                              href={`/venues/${show.venue.slug}`}
-                              className="text-muted-foreground hover:text-primary transition-colors"
-                            >
-                              {show.venue.name} • {show.venue.city}, {show.venue.state}
-                            </Link>
-                          </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">
-                              {format(new Date(show.date), 'PPP p')}
-                            </span>
-                            <Badge variant={show.status === 'on_sale' ? 'default' : 'secondary'}>
-                              {show.status.replace('_', ' ')}
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          {show.ticketmasterUrl && (
-                            <Button variant="outline" asChild>
-                              <a 
-                                href={show.ticketmasterUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="gap-2"
-                              >
-                                <ExternalLink className="h-4 w-4" />
-                                Tickets
-                              </a>
-                            </Button>
-                          )}
-                          <Button asChild>
-                            <Link href={`/setlists/${show.id}`}>
-                              View Setlist
-                            </Link>
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <SearchResultCard 
+                    key={show.id} 
+                    result={show} 
+                    showType={false}
+                  />
                 ))}
               </div>
             )}
@@ -367,50 +496,18 @@ export function SearchInterface() {
                   <MapPin className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No venues found</h3>
                   <p className="text-muted-foreground">
-                    No venues match your search criteria.
+                    No venues match your search criteria. Try adjusting your location filters.
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-4">
                 {results.venues.map((venue) => (
-                  <Card key={venue.id}>
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <Link 
-                            href={`/venues/${venue.slug}`}
-                            className="text-xl font-bold hover:text-primary transition-colors"
-                          >
-                            {venue.name}
-                          </Link>
-                          <div className="flex items-center gap-2 mt-1">
-                            <MapPin className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">
-                              {venue.city}, {venue.state}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-4 w-4" />
-                              <span>{venue.showCount} shows</span>
-                            </div>
-                            {venue.capacity && (
-                              <div className="flex items-center gap-1">
-                                <Users className="h-4 w-4" />
-                                <span>Capacity: {venue.capacity.toLocaleString()}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                        <Button asChild>
-                          <Link href={`/venues/${venue.slug}`}>
-                            View Venue
-                          </Link>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <SearchResultCard 
+                    key={venue.id} 
+                    result={venue} 
+                    showType={false}
+                  />
                 ))}
               </div>
             )}
@@ -418,39 +515,87 @@ export function SearchInterface() {
         </Tabs>
       )}
 
-      {/* Search Tips */}
-      {!results && !loading && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Search className="h-5 w-5" />
-              Search Tips
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <h4 className="font-semibold mb-2">Finding Artists</h4>
-              <p className="text-sm text-muted-foreground">
-                Search for artist names like "Taylor Swift", "The Beatles", or "Ed Sheeran". 
-                We'll find them on Ticketmaster and add their shows to our database.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-2">Live Data</h4>
-              <p className="text-sm text-muted-foreground">
-                All artist and show data comes directly from Ticketmaster, so you'll always 
-                see the most up-to-date concert information.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold mb-2">Community Powered</h4>
-              <p className="text-sm text-muted-foreground">
-                Once shows are added, the community creates and votes on setlists together. 
-                No effort required from artists!
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Search Tips & Getting Started */}
+      {!results && !loading && !query && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="h-5 w-5" />
+                Search Tips
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <h4 className="font-semibold mb-2">Finding Artists</h4>
+                <p className="text-sm text-muted-foreground">
+                  Search for artist names like "Taylor Swift", "The Beatles", or "Ed Sheeran". 
+                  We'll find them on Ticketmaster and add their shows to our database.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Advanced Filters</h4>
+                <p className="text-sm text-muted-foreground">
+                  Use filters to narrow down by date range, location, genre, and price range.
+                  Perfect for finding shows in your area.
+                </p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-2">Live Data</h4>
+                <p className="text-sm text-muted-foreground">
+                  All artist and show data comes directly from Ticketmaster, so you'll always 
+                  see the most up-to-date concert information.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Popular Searches
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {['Taylor Swift', 'Coldplay', 'Ed Sheeran', 'BTS', 'Billie Eilish', 'Drake', 'Ariana Grande', 'Post Malone'].map((artist) => (
+                  <Button
+                    key={artist}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setQuery(artist);
+                      performSearch(artist, filters);
+                    }}
+                  >
+                    {artist}
+                  </Button>
+                ))}
+              </div>
+              <div className="mt-4">
+                <h4 className="font-semibold mb-2">Popular Genres</h4>
+                <div className="flex flex-wrap gap-2">
+                  {['Rock', 'Pop', 'Hip-Hop', 'Electronic', 'Country', 'Jazz'].map((genre) => (
+                    <Button
+                      key={genre}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setFilters(prev => ({ ...prev, genre }));
+                        if (query) {
+                          performSearch(query, { ...filters, genre });
+                        }
+                      }}
+                    >
+                      {genre}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );

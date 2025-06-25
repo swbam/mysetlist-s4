@@ -15,7 +15,7 @@ import { Badge } from '@repo/design-system/components/ui/badge';
 import { cn } from '@repo/design-system/lib/utils';
 import { voteSong } from '../actions';
 import { toast } from 'sonner';
-import { useRealtimeVotes } from '@/hooks/use-realtime-votes';
+import { VoteButton } from '@/components/voting/vote-button';
 import { useAuth } from '@/app/providers/auth-provider';
 
 type SongItemProps = {
@@ -30,16 +30,11 @@ export function SongItem({ item, index, isEditing, canVote, onDelete }: SongItem
   const { session } = useAuth();
   const [isPending, startTransition] = useTransition();
   
-  // Use real-time voting hook
-  const { votes } = useRealtimeVotes({
-    songId: item.id,
-    userId: session?.user?.id,
-    onVoteChange: (newVotes) => {
-      // Update will be handled by the hook
-    }
-  });
-  
-  const netVotes = votes.upvotes - votes.downvotes;
+  // Get vote data from props (should be provided by parent)
+  const upvotes = item.upvotes || 0;
+  const downvotes = item.downvotes || 0;
+  const netVotes = upvotes - downvotes;
+  const userVote = item.userVote || null;
   
   const song = item.song;
   const position = index + 1;
@@ -139,39 +134,22 @@ export function SongItem({ item, index, isEditing, canVote, onDelete }: SongItem
       <div className="flex items-center gap-2">
         {/* Voting */}
         {canVote && !isEditing && (
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "h-8 w-8",
-                votes.userVote === 'up' && "text-green-600"
-              )}
-              onClick={() => handleVote('up')}
-              disabled={isPending}
-            >
-              <ThumbsUp className="h-3 w-3" />
-            </Button>
-            <span className={cn(
-              "text-sm font-medium min-w-[2ch] text-center",
-              netVotes > 0 && "text-green-600",
-              netVotes < 0 && "text-red-600"
-            )}>
-              {netVotes > 0 && '+'}{netVotes}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className={cn(
-                "h-8 w-8",
-                votes.userVote === 'down' && "text-red-600"
-              )}
-              onClick={() => handleVote('down')}
-              disabled={isPending}
-            >
-              <ThumbsDown className="h-3 w-3" />
-            </Button>
-          </div>
+          <VoteButton
+            setlistSongId={item.id}
+            currentVote={userVote}
+            upvotes={upvotes}
+            downvotes={downvotes}
+            onVote={async (voteType) => {
+              if (voteType === 'up') {
+                await handleVote('up');
+              } else if (voteType === 'down') {
+                await handleVote('down');
+              }
+            }}
+            variant="compact"
+            size="sm"
+            disabled={isPending}
+          />
         )}
         
         {/* Spotify Link */}

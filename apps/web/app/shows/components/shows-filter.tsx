@@ -16,7 +16,7 @@ export const ShowsFilter = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   
-  const [city, setCity] = useState(searchParams.get('city') || '');
+  const [city, setCity] = useState(searchParams.get('city') || 'all');
   const [dateFrom, setDateFrom] = useState<Date | undefined>(
     searchParams.get('dateFrom') ? new Date(searchParams.get('dateFrom')!) : undefined
   );
@@ -34,7 +34,7 @@ export const ShowsFilter = () => {
   const applyFilters = () => {
     const params = new URLSearchParams();
     
-    if (city) params.set('city', city);
+    if (city && city !== 'all') params.set('city', city);
     if (dateFrom) params.set('dateFrom', format(dateFrom, 'yyyy-MM-dd'));
     if (dateTo) params.set('dateTo', format(dateTo, 'yyyy-MM-dd'));
     if (orderBy !== 'date') params.set('orderBy', orderBy);
@@ -43,7 +43,7 @@ export const ShowsFilter = () => {
   };
 
   const clearFilters = () => {
-    setCity('');
+    setCity('all');
     setDateFrom(undefined);
     setDateTo(undefined);
     setOrderBy('date');
@@ -66,7 +66,7 @@ export const ShowsFilter = () => {
     setDateTo(addDays(now, 30));
   };
 
-  const hasActiveFilters = city || dateFrom || dateTo || orderBy !== 'date';
+  const hasActiveFilters = (city && city !== 'all') || dateFrom || dateTo || orderBy !== 'date';
 
   return (
     <div className="flex flex-col gap-4 p-4 border rounded-lg bg-card">
@@ -77,7 +77,7 @@ export const ShowsFilter = () => {
             <SelectValue placeholder="All cities" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All cities</SelectItem>
+            <SelectItem value="all">All cities</SelectItem>
             {availableCities.map(cityName => (
               <SelectItem key={cityName} value={cityName}>
                 {cityName}
@@ -130,24 +130,9 @@ export const ShowsFilter = () => {
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="date">
-              <div className="flex items-center">
-                <Clock className="mr-2 h-4 w-4" />
-                Date
-              </div>
-            </SelectItem>
-            <SelectItem value="trending">
-              <div className="flex items-center">
-                <TrendingUp className="mr-2 h-4 w-4" />
-                Trending
-              </div>
-            </SelectItem>
-            <SelectItem value="popularity">
-              <div className="flex items-center">
-                <TrendingUp className="mr-2 h-4 w-4" />
-                Popularity
-              </div>
-            </SelectItem>
+            <SelectItem value="date">Date</SelectItem>
+            <SelectItem value="trending">Trending</SelectItem>
+            <SelectItem value="popularity">Popularity</SelectItem>
           </SelectContent>
         </Select>
         

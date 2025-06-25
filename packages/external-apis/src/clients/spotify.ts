@@ -68,7 +68,7 @@ export class SpotifyClient extends BaseAPIClient {
   }
 
   async authenticate(): Promise<void> {
-    const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
+    const clientId = process.env.SPOTIFY_CLIENT_ID || process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
     const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
 
     if (!clientId || !clientSecret) {
@@ -87,7 +87,8 @@ export class SpotifyClient extends BaseAPIClient {
     });
 
     if (!response.ok) {
-      throw new Error('Spotify authentication failed');
+      const errorText = await response.text();
+      throw new Error(`Spotify authentication failed: ${response.status} ${errorText}`);
     }
 
     const data = await response.json() as SpotifyTokenResponse;

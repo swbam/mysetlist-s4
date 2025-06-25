@@ -1,5 +1,5 @@
-import { db, artists, shows, venues, artistStats, userFollowsArtists } from '@repo/database';
-import { eq, and } from 'drizzle-orm';
+import { db, artists, shows, venues, artistStats, userFollowsArtists, showArtists } from '@repo/database';
+import { eq, and, gte, sql } from 'drizzle-orm';
 import { notFound } from 'next/navigation';
 import { createMetadata } from '@repo/seo/metadata';
 import type { Metadata } from 'next';
@@ -14,6 +14,8 @@ import Link from 'next/link';
 import { getUser } from '@repo/auth/server';
 import { FollowButton } from './components/follow-button';
 import { FollowerCount } from './components/follower-count';
+import { SimilarArtists } from './components/similar-artists';
+import { ArtistTopTracks } from './components/artist-top-tracks';
 
 
 type ArtistPageProps = {
@@ -72,17 +74,40 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
 
   const { artist, stats } = artistQuery[0];
 
-  // Fetch upcoming shows
-  const upcomingShows = await db
+  // Fetch upcoming shows where artist is headliner
+  const headlinerShows = await db
     .select({
       show: shows,
       venue: venues,
+      isHeadliner: sql<boolean>`true`.as('isHeadliner'),
     })
     .from(shows)
     .leftJoin(venues, eq(shows.venueId, venues.id))
-    .where(eq(shows.headlinerArtistId, artist.id))
-    .orderBy(shows.date)
-    .limit(10);
+    .where(and(
+      eq(shows.headlinerArtistId, artist.id),
+      gte(shows.date, new Date().toISOString().split('T')[0])
+    ));
+
+  // Fetch upcoming shows where artist is supporting act
+  const supportingShows = await db
+    .select({
+      show: shows,
+      venue: venues,
+      isHeadliner: sql<boolean>`false`.as('isHeadliner'),
+    })
+    .from(shows)
+    .leftJoin(venues, eq(shows.venueId, venues.id))
+    .innerJoin(showArtists, eq(shows.id, showArtists.showId))
+    .where(and(
+      eq(showArtists.artistId, artist.id),
+      eq(showArtists.isHeadliner, false),
+      gte(shows.date, new Date().toISOString().split('T')[0])
+    ));
+
+  // Combine and sort all shows
+  const upcomingShows = [...headlinerShows, ...supportingShows]
+    .sort((a, b) => new Date(a.show.date).getTime() - new Date(b.show.date).getTime())
+    .slice(0, 10);
 
   // Check if user follows this artist
   let isFollowing = false;
@@ -131,7 +156,7 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
               )}
             </div>
             
-            {userId && (
+            {user && (
               <FollowButton
                 artistId={artist.id}
                 artistName={artist.name}
@@ -174,12 +199,19 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
 
         <TabsContent value="shows" className="space-y-4">
           {upcomingShows.length > 0 ? (
-            upcomingShows.map(({ show, venue }) => (
+            upcomingShows.map(({ show, venue, isHeadliner }) => (
               <Card key={show.id}>
                 <CardContent className="p-6">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                      <h3 className="font-semibold text-lg mb-1">{show.name}</h3>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold text-lg">{show.name}</h3>
+                        {!isHeadliner && (
+                          <Badge variant="outline" className="text-xs">
+                            Supporting Act
+                          </Badge>
+                        )}
+                      </div>
                       <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <MapPin className="h-4 w-4" />
@@ -222,45 +254,51 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
         </TabsContent>
 
         <TabsContent value="setlists" className="space-y-4">
-          <div className="text-center py-12">
-            <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Recent setlists coming soon</h3>
-            <p className="text-muted-foreground">
-              We're working on displaying recent setlists for {artist.name}.
-            </p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <ArtistTopTracks artistId={artist.id} spotifyId={artist.spotifyId} />
+            <div className="text-center py-12">
+              <Music className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Recent setlists coming soon</h3>
+              <p className="text-muted-foreground">
+                We're working on displaying recent setlists for {artist.name}.
+              </p>
+            </div>
           </div>
         </TabsContent>
 
         <TabsContent value="about" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Artist Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {artist.bio && (
-                <div>
-                  <h4 className="font-semibold mb-2">Biography</h4>
-                  <p className="text-muted-foreground leading-relaxed">
-                    {artist.bio}
-                  </p>
-                </div>
-              )}
-              
-              {genres.length > 0 && (
-                <div>
-                  <h4 className="font-semibold mb-2">Genres</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {genres.map((genre: string) => (
-                      <Badge key={genre} variant="secondary">
-                        {genre}
-                      </Badge>
-                    ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Artist Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {artist.bio && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Biography</h4>
+                    <p className="text-muted-foreground leading-relaxed">
+                      {artist.bio}
+                    </p>
                   </div>
-                </div>
-              )}
-
-            </CardContent>
-          </Card>
+                )}
+                
+                {genres.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold mb-2">Genres</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {genres.map((genre: string) => (
+                        <Badge key={genre} variant="secondary">
+                          {genre}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+            
+            <SimilarArtists artistId={artist.id} genres={artist.genres} />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

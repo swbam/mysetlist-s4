@@ -4,6 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
+type VoteData = {
+  upvotes: number;
+  downvotes: number;
+  netVotes: number;
+  userVote?: 'up' | 'down' | null;
+};
+
 type VoteUpdate = {
   setlistSongId: string;
   upvotes: number;
@@ -13,23 +20,37 @@ type VoteUpdate = {
 };
 
 interface UseRealtimeVotesOptions {
-  setlistSongIds: string[];
+  songId?: string;
+  setlistSongIds?: string[];
   userId?: string;
   onVoteUpdate?: (update: VoteUpdate) => void;
+  onVoteChange?: (votes: VoteData) => void;
 }
 
 export function useRealtimeVotes({ 
+  songId,
   setlistSongIds, 
   userId,
-  onVoteUpdate 
+  onVoteUpdate,
+  onVoteChange
 }: UseRealtimeVotesOptions) {
   const [voteCounts, setVoteCounts] = useState<Record<string, VoteUpdate>>({});
   const [isSubscribed, setIsSubscribed] = useState(false);
   const supabase = createClient();
   const channelRef = useRef<RealtimeChannel | null>(null);
 
+  // For single song interface
+  const [votes, setVotes] = useState<VoteData>({
+    upvotes: 0,
+    downvotes: 0,
+    netVotes: 0,
+    userVote: null,
+  });
+
+  const effectiveSongIds = songId ? [songId] : (setlistSongIds || []);
+
   useEffect(() => {
-    if (setlistSongIds.length === 0) return;
+    if (effectiveSongIds.length === 0) return;
 
     const setupSubscription = async () => {
       // Clean up existing subscription
@@ -39,14 +60,14 @@ export function useRealtimeVotes({
 
       // Create new subscription
       const channel = supabase
-        .channel(`votes-${setlistSongIds.join('-')}`)
+        .channel(`votes-${effectiveSongIds.join('-')}`)
         .on(
           'postgres_changes',
           {
             event: '*',
             schema: 'public',
             table: 'votes',
-            filter: `setlist_song_id=in.(${setlistSongIds.join(',')})`,
+            filter: `setlist_song_id=in.(${effectiveSongIds.join(',')})`,
           },
           async (payload: RealtimePostgresChangesPayload<any>) => {
             // When a vote changes, fetch the updated counts
@@ -65,8 +86,8 @@ export function useRealtimeVotes({
 
     // Fetch initial vote counts
     const fetchInitialCounts = async () => {
-      for (const songId of setlistSongIds) {
-        await fetchVoteCounts(songId);
+      for (const id of effectiveSongIds) {
+        await fetchVoteCounts(id);
       }
     };
 
@@ -88,6 +109,21 @@ export function useRealtimeVotes({
             ...prev,
             [setlistSongId]: update,
           }));
+
+          // For single song interface
+          if (songId === setlistSongId) {
+            const voteData: VoteData = {
+              upvotes: data.upvotes,
+              downvotes: data.downvotes,
+              netVotes: data.netVotes,
+              userVote: data.userVote,
+            };
+            setVotes(voteData);
+            
+            if (onVoteChange) {
+              onVoteChange(voteData);
+            }
+          }
           
           if (onVoteUpdate) {
             onVoteUpdate(update);
@@ -106,7 +142,7 @@ export function useRealtimeVotes({
         supabase.removeChannel(channelRef.current);
       }
     };
-  }, [setlistSongIds.join(','), userId, supabase]);
+  }, [effectiveSongIds.join(','), userId, supabase]);
 
   const vote = async (setlistSongId: string, voteType: 'up' | 'down' | null) => {
     try {
@@ -154,5 +190,6 @@ export function useRealtimeVotes({
     voteCounts,
     isSubscribed,
     vote,
+    votes, // For single song interface
   };
 }

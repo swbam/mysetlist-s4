@@ -32,7 +32,7 @@ interface SearchBarProps {
 }
 
 export function SearchBar({ 
-  placeholder = 'Search artists, shows, venues, songs...', 
+  placeholder = 'Search artists...', 
   className,
   variant = 'default'
 }: SearchBarProps) {
@@ -47,7 +47,7 @@ export function SearchBar({
   const debouncedQuery = useDebounce(query, 300);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const performSearch = useCallback(async (searchQuery: string, type: string = 'all') => {
+  const performSearch = useCallback(async (searchQuery: string) => {
     if (searchQuery.length < 2) {
       setResults([]);
       setIsOpen(false);
@@ -58,13 +58,7 @@ export function SearchBar({
     setError(null);
 
     try {
-      const params = new URLSearchParams({
-        q: searchQuery,
-        type,
-        limit: '20',
-      });
-
-      const response = await fetch(`/api/search?${params}`);
+      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&limit=10`);
       
       if (!response.ok) {
         throw new Error('Search failed');
@@ -84,12 +78,12 @@ export function SearchBar({
 
   useEffect(() => {
     if (debouncedQuery) {
-      performSearch(debouncedQuery, selectedType);
+      performSearch(debouncedQuery);
     } else {
       setResults([]);
       setIsOpen(false);
     }
-  }, [debouncedQuery, selectedType, performSearch]);
+  }, [debouncedQuery, performSearch]);
 
   const handleSelect = (result: SearchResult) => {
     let path = '';
@@ -146,18 +140,7 @@ export function SearchBar({
   };
 
   const formatSubtitle = (result: SearchResult) => {
-    switch (result.type) {
-      case 'artist':
-        return `${result.followers || 0} followers`;
-      case 'show':
-        return result.subtitle;
-      case 'venue':
-        return result.subtitle;
-      case 'song':
-        return result.subtitle;
-      default:
-        return result.subtitle;
-    }
+    return result.subtitle || '';
   };
 
   // Group results by type for better organization

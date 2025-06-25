@@ -1,177 +1,414 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@repo/database';
-import { artists, shows, venues, songs } from '@repo/database';
-import { ilike, or, sql, eq } from 'drizzle-orm';
+import { TicketmasterClient, SpotifyClient } from '@repo/external-apis';
+import { createClient } from '@supabase/supabase-js';
+
+interface SearchFilters {
+  dateFrom?: string;
+  dateTo?: string;
+  location?: string;
+  genre?: string;
+  priceMin?: number;
+  priceMax?: number;
+  radius?: number;
+  sortBy?: 'relevance' | 'date' | 'popularity' | 'alphabetical';
+}
 
 interface SearchResult {
   id: string;
-  type: 'artist' | 'show' | 'venue' | 'song';
+  type: 'artist' | 'show' | 'venue';
   title: string;
   subtitle: string;
   imageUrl?: string | null;
   slug: string;
-  [key: string]: any;
+  verified?: boolean;
+  popularity?: number;
+  genres?: string[];
+  showCount?: number;
+  followerCount?: number;
+  date?: string;
+  venue?: {
+    name: string;
+    city: string;
+    state: string;
+  };
+  artist?: {
+    name: string;
+    slug: string;
+  };
+  capacity?: number;
+  price?: {
+    min: number;
+    max: number;
+    currency: string;
+  };
+}
+
+interface ComprehensiveSearchResponse {
+  artists: SearchResult[];
+  shows: SearchResult[];
+  venues: SearchResult[];
+  total: number;
+  query: string;
+  filters: SearchFilters;
+  suggestions?: string[];
 }
 
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const query = searchParams.get('q');
+  const limit = parseInt(searchParams.get('limit') || '10');
+  const category = searchParams.get('category') || 'all';
+  
+  // Extract filters
+  const filters: SearchFilters = {
+    dateFrom: searchParams.get('dateFrom') || undefined,
+    dateTo: searchParams.get('dateTo') || undefined,
+    location: searchParams.get('location') || undefined,
+    genre: searchParams.get('genre') || undefined,
+    priceMin: searchParams.get('priceMin') ? parseInt(searchParams.get('priceMin')!) : undefined,
+    priceMax: searchParams.get('priceMax') ? parseInt(searchParams.get('priceMax')!) : undefined,
+    radius: searchParams.get('radius') ? parseInt(searchParams.get('radius')!) : undefined,
+    sortBy: (searchParams.get('sortBy') as SearchFilters['sortBy']) || 'relevance',
+  };
+
+  if (!query || query.length < 2) {
+    return NextResponse.json({ 
+      artists: [], 
+      shows: [], 
+      venues: [], 
+      total: 0, 
+      query: '', 
+      filters 
+    });
+  }
+
   try {
-    const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q');
-    const type = searchParams.get('type') as 'artist' | 'show' | 'venue' | 'song' | 'all' | null;
-    const limit = parseInt(searchParams.get('limit') || '20');
+    console.log(`🔍 Comprehensive search for: "${query}" with filters:`, filters);
+    
+    const supabase = createClient();
+    const ticketmasterClient = new TicketmasterClient({});
+    
+    let artists: SearchResult[] = [];
+    let shows: SearchResult[] = [];
+    let venues: SearchResult[] = [];
 
-    if (!query || query.length < 2) {
-      return NextResponse.json({ results: [] });
-    }
+    // Search artists (from both local DB and Ticketmaster)
+    if (category === 'all' || category === 'artists') {
+      try {
+        // Search local artists first
+        let artistQuery = supabase
+          .from('artists')
+          .select('id, name, slug, image_url, popularity, genres, followers, external_ids')
+          .ilike('name', `%${query}%`)
+          .limit(limit);
 
-    const results: SearchResult[] = [];
+        if (filters.genre) {
+          artistQuery = artistQuery.ilike('genres', `%${filters.genre}%`);
+        }
 
-    // Search artists
-    if (!type || type === 'artist' || type === 'all') {
-      const artistResults = await db
-        .select({
-          id: artists.slug,
-          type: sql<string>`'artist'`,
-          title: artists.name,
-          subtitle: sql<string>`COALESCE(${artists.bio}, '')`,
-          imageUrl: artists.imageUrl,
-          slug: artists.slug,
-          popularity: artists.popularity,
-          followers: artists.followers,
-        })
-        .from(artists)
-        .where(
-          or(
-            ilike(artists.name, `%${query}%`),
-            sql`${artists.genres}::text ILIKE ${'%' + query + '%'}`
-          )
-        )
-        .orderBy(sql`${artists.popularity} DESC NULLS LAST`)
-        .limit(type === 'artist' ? limit : Math.floor(limit / 4));
+        const { data: localArtists } = await artistQuery;
 
-      results.push(...artistResults.map(artist => ({
-        ...artist,
-        type: 'artist' as const,
-        subtitle: `${artist.followers || 0} followers`,
-      })));
+        if (localArtists) {
+          artists = localArtists.map(artist => ({
+            id: artist.id,
+            type: 'artist' as const,
+            title: artist.name,
+            subtitle: artist.genres || 'Artist',
+            imageUrl: artist.image_url,
+            slug: artist.slug,
+            verified: true,
+            popularity: artist.popularity || 50,
+            genres: artist.genres ? [artist.genres] : [],
+            followerCount: artist.followers || 0,
+          }));
+        }
+
+        // If we need more results, search Ticketmaster
+        if (artists.length < limit) {
+          const tmResponse = await ticketmasterClient.searchAttractions({
+            keyword: query,
+            size: limit - artists.length,
+            classificationName: 'Music',
+            sort: filters.sortBy === 'relevance' ? 'relevance,desc' : 'name,asc',
+            genreId: filters.genre || undefined,
+          });
+
+          if (tmResponse._embedded?.attractions) {
+            const tmArtists = tmResponse._embedded.attractions.map(attraction => ({
+              id: attraction.id,
+              type: 'artist' as const,
+              title: attraction.name,
+              subtitle: attraction.classifications?.[0]?.genre?.name || 'Artist',
+              imageUrl: attraction.images?.[0]?.url || null,
+              slug: generateSlug(attraction.name),
+              verified: false,
+              genres: attraction.classifications?.map(c => c.genre?.name).filter(Boolean) || [],
+            }));
+            
+            artists = [...artists, ...tmArtists];
+          }
+        }
+      } catch (error) {
+        console.error('Artist search error:', error);
+      }
     }
 
     // Search shows
-    if (!type || type === 'show' || type === 'all') {
-      const showResults = await db
-        .select({
-          id: shows.slug,
-          type: sql<string>`'show'`,
-          title: shows.name,
-          subtitle: sql<string>`${artists.name} || CASE WHEN ${venues.name} IS NOT NULL THEN ' • ' || ${venues.name} ELSE '' END`,
-          imageUrl: artists.imageUrl,
-          slug: shows.slug,
-          date: shows.date,
-          status: shows.status,
-        })
-        .from(shows)
-        .leftJoin(artists, eq(shows.headlinerArtistId, artists.id))
-        .leftJoin(venues, eq(shows.venueId, venues.id))
-        .where(
-          or(
-            ilike(shows.name, `%${query}%`),
-            ilike(artists.name, `%${query}%`)
-          )
-        )
-        .orderBy(sql`${shows.date} DESC NULLS LAST`)
-        .limit(type === 'show' ? limit : Math.floor(limit / 4));
+    if (category === 'all' || category === 'shows') {
+      try {
+        let showQuery = supabase
+          .from('shows')
+          .select(`
+            id,
+            slug,
+            name,
+            date,
+            status,
+            ticketmaster_url,
+            artist:artists(name, slug),
+            venue:venues(name, slug, city, state)
+          `)
+          .or(`name.ilike.%${query}%,artists.name.ilike.%${query}%`)
+          .eq('status', 'confirmed')
+          .limit(limit);
 
-      results.push(...showResults.map(show => ({
-        ...show,
-        type: 'show' as const,
-        subtitle: `${show.subtitle} • ${new Date(show.date).toLocaleDateString()}`,
-      })));
+        if (filters.dateFrom) {
+          showQuery = showQuery.gte('date', filters.dateFrom);
+        }
+        if (filters.dateTo) {
+          showQuery = showQuery.lte('date', filters.dateTo);
+        }
+        if (filters.location) {
+          showQuery = showQuery.or(`venues.city.ilike.%${filters.location}%,venues.state.ilike.%${filters.location}%`);
+        }
+
+        const { data: localShows } = await showQuery;
+
+        if (localShows) {
+          shows = localShows.map(show => ({
+            id: show.id,
+            type: 'show' as const,
+            title: show.name || `${show.artist?.name} Concert`,
+            subtitle: `${show.venue?.name} • ${show.venue?.city}, ${show.venue?.state}`,
+            slug: show.slug,
+            verified: true,
+            date: show.date,
+            venue: show.venue ? {
+              name: show.venue.name,
+              city: show.venue.city,
+              state: show.venue.state,
+            } : undefined,
+            artist: show.artist ? {
+              name: show.artist.name,
+              slug: show.artist.slug,
+            } : undefined,
+          }));
+        }
+
+        // Search Ticketmaster for additional shows
+        if (shows.length < limit) {
+          try {
+            const tmEventsResponse = await ticketmasterClient.searchEvents({
+              keyword: query,
+              size: limit - shows.length,
+              classificationName: 'Music',
+              sort: filters.sortBy === 'date' ? 'date,asc' : 'relevance,desc',
+              startDateTime: filters.dateFrom ? `${filters.dateFrom}T00:00:00Z` : undefined,
+              endDateTime: filters.dateTo ? `${filters.dateTo}T23:59:59Z` : undefined,
+              city: filters.location || undefined,
+              radius: filters.radius || undefined,
+            });
+
+            if (tmEventsResponse._embedded?.events) {
+              const tmShows = tmEventsResponse._embedded.events.map(event => ({
+                id: event.id,
+                type: 'show' as const,
+                title: event.name,
+                subtitle: `${event._embedded?.venues?.[0]?.name} • ${event._embedded?.venues?.[0]?.city?.name}`,
+                slug: generateSlug(event.name),
+                verified: false,
+                date: event.dates?.start?.localDate,
+                imageUrl: event.images?.[0]?.url,
+                venue: event._embedded?.venues?.[0] ? {
+                  name: event._embedded.venues[0].name,
+                  city: event._embedded.venues[0].city?.name || '',
+                  state: event._embedded.venues[0].state?.stateCode || '',
+                } : undefined,
+                price: event.priceRanges?.[0] ? {
+                  min: event.priceRanges[0].min,
+                  max: event.priceRanges[0].max,
+                  currency: event.priceRanges[0].currency,
+                } : undefined,
+              }));
+              
+              shows = [...shows, ...tmShows];
+            }
+          } catch (tmError) {
+            console.error('Ticketmaster events search error:', tmError);
+          }
+        }
+      } catch (error) {
+        console.error('Shows search error:', error);
+      }
     }
 
     // Search venues
-    if (!type || type === 'venue' || type === 'all') {
-      const venueResults = await db
-        .select({
-          id: venues.slug,
-          type: sql<string>`'venue'`,
-          title: venues.name,
-          subtitle: sql<string>`${venues.city} || CASE WHEN ${venues.state} IS NOT NULL THEN ', ' || ${venues.state} ELSE '' END || CASE WHEN ${venues.country} IS NOT NULL THEN ', ' || ${venues.country} ELSE '' END`,
-          imageUrl: venues.imageUrl,
-          slug: venues.slug,
-          capacity: venues.capacity,
-        })
-        .from(venues)
-        .where(
-          or(
-            ilike(venues.name, `%${query}%`),
-            ilike(venues.city, `%${query}%`),
-            ilike(venues.address, `%${query}%`)
-          )
-        )
-        .orderBy(sql`${venues.capacity} DESC NULLS LAST`)
-        .limit(type === 'venue' ? limit : Math.floor(limit / 4));
+    if (category === 'all' || category === 'venues') {
+      try {
+        let venueQuery = supabase
+          .from('venues')
+          .select('id, name, slug, city, state, capacity, show_count')
+          .or(`name.ilike.%${query}%,city.ilike.%${query}%`)
+          .limit(limit);
 
-      results.push(...venueResults.map(venue => ({
-        ...venue,
-        type: 'venue' as const,
-      })));
-    }
+        if (filters.location) {
+          venueQuery = venueQuery.or(`city.ilike.%${filters.location}%,state.ilike.%${filters.location}%`);
+        }
 
-    // Search songs
-    if (!type || type === 'song' || type === 'all') {
-      const songResults = await db
-        .select({
-          id: songs.id,
-          type: sql<string>`'song'`,
-          title: songs.title,
-          subtitle: sql<string>`${songs.artist} || CASE WHEN ${songs.album} IS NOT NULL THEN ' • ' || ${songs.album} ELSE '' END`,
-          imageUrl: songs.albumArtUrl,
-          slug: sql<string>`${songs.id}`,
-          popularity: songs.popularity,
-          duration: songs.durationMs,
-        })
-        .from(songs)
-        .where(
-          or(
-            ilike(songs.title, `%${query}%`),
-            ilike(songs.artist, `%${query}%`),
-            ilike(songs.album, `%${query}%`)
-          )
-        )
-        .orderBy(sql`${songs.popularity} DESC NULLS LAST`)
-        .limit(type === 'song' ? limit : Math.floor(limit / 4));
+        const { data: localVenues } = await venueQuery;
 
-      results.push(...songResults.map(song => ({
-        ...song,
-        type: 'song' as const,
-      })));
-    }
+        if (localVenues) {
+          venues = localVenues.map(venue => ({
+            id: venue.id,
+            type: 'venue' as const,
+            title: venue.name,
+            subtitle: `${venue.city}, ${venue.state}`,
+            slug: venue.slug,
+            verified: true,
+            capacity: venue.capacity,
+            showCount: venue.show_count,
+          }));
+        }
 
-    // Sort results by relevance (exact matches first, then partial matches)
-    const sortedResults = results.sort((a, b) => {
-      const aExact = a.title.toLowerCase().includes(query.toLowerCase()) ? 1 : 0;
-      const bExact = b.title.toLowerCase().includes(query.toLowerCase()) ? 1 : 0;
-      
-      if (aExact !== bExact) {
-        return bExact - aExact; // Exact matches first
+        // Search Ticketmaster for additional venues
+        if (venues.length < limit) {
+          try {
+            const tmVenuesResponse = await ticketmasterClient.searchVenues({
+              keyword: query,
+              size: limit - venues.length,
+              sort: 'name,asc',
+              city: filters.location || undefined,
+            });
+
+            if (tmVenuesResponse._embedded?.venues) {
+              const tmVenues = tmVenuesResponse._embedded.venues.map(venue => ({
+                id: venue.id,
+                type: 'venue' as const,
+                title: venue.name,
+                subtitle: `${venue.city?.name}, ${venue.state?.stateCode}`,
+                slug: generateSlug(venue.name),
+                verified: false,
+                capacity: venue.capacity || undefined,
+              }));
+              
+              venues = [...venues, ...tmVenues];
+            }
+          } catch (tmError) {
+            console.error('Ticketmaster venues search error:', tmError);
+          }
+        }
+      } catch (error) {
+        console.error('Venues search error:', error);
       }
-      
-      // Then by type priority (artists first, then shows, venues, songs)
-      const typePriority: Record<string, number> = { artist: 4, show: 3, venue: 2, song: 1 };
-      return (typePriority[b.type] || 0) - (typePriority[a.type] || 0);
-    });
+    }
 
-    return NextResponse.json({ 
-      results: sortedResults.slice(0, limit),
-      total: sortedResults.length,
+    // Apply sorting
+    const sortResults = (results: SearchResult[]) => {
+      switch (filters.sortBy) {
+        case 'alphabetical':
+          return results.sort((a, b) => a.title.localeCompare(b.title));
+        case 'popularity':
+          return results.sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
+        case 'date':
+          return results.sort((a, b) => {
+            if (!a.date && !b.date) return 0;
+            if (!a.date) return 1;
+            if (!b.date) return -1;
+            return new Date(a.date).getTime() - new Date(b.date).getTime();
+          });
+        default:
+          return results; // relevance is default from search
+      }
+    };
+
+    artists = sortResults(artists).slice(0, limit);
+    shows = sortResults(shows).slice(0, limit);
+    venues = sortResults(venues).slice(0, limit);
+
+    // Generate search suggestions
+    const suggestions = generateSearchSuggestions(query, artists, shows, venues);
+
+    const response: ComprehensiveSearchResponse = {
+      artists,
+      shows,
+      venues,
+      total: artists.length + shows.length + venues.length,
       query,
-    });
+      filters,
+      suggestions,
+    };
+
+    console.log(`✅ Found ${response.total} results for "${query}"`);
+    
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Search failed:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json(
-      { error: 'Search failed', details: errorMessage },
-      { status: 500 }
-    );
+    console.error('Comprehensive search failed:', error);
+    return NextResponse.json({ 
+      artists: [],
+      shows: [],
+      venues: [],
+      total: 0,
+      query,
+      filters,
+      error: 'Search failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
+}
+
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
+function generateSearchSuggestions(
+  query: string, 
+  artists: SearchResult[], 
+  shows: SearchResult[], 
+  venues: SearchResult[]
+): string[] {
+  const suggestions: string[] = [];
+  
+  // Add similar artist names
+  artists.forEach(artist => {
+    if (artist.title.toLowerCase() !== query.toLowerCase()) {
+      suggestions.push(artist.title);
+    }
+    // Add genres as suggestions
+    artist.genres?.forEach(genre => {
+      if (genre.toLowerCase().includes(query.toLowerCase()) && !suggestions.includes(genre)) {
+        suggestions.push(genre);
+      }
+    });
+  });
+  
+  // Add venue cities as location suggestions
+  venues.forEach(venue => {
+    const location = venue.subtitle;
+    if (location && !suggestions.includes(location)) {
+      suggestions.push(location);
+    }
+  });
+  
+  // Add show-based suggestions
+  shows.forEach(show => {
+    if (show.venue?.city && !suggestions.some(s => s.includes(show.venue!.city))) {
+      suggestions.push(`${show.venue.city}, ${show.venue.state}`);
+    }
+  });
+  
+  // Return unique suggestions, limited to 5
+  return [...new Set(suggestions)].slice(0, 5);
 }

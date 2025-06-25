@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@arcjet/next": "1.0.0-beta.7",
+    "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-icons": "^1.3.2",
     "@repo/cms": "workspace:*",

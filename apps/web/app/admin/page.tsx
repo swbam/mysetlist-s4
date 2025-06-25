@@ -184,6 +184,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
           value={totalShows?.toLocaleString() ?? 0}
           description={`+${newShowsToday ?? 0} today`}
           icon={Calendar}
+          href={`/${locale}/admin/shows`}
         />
         <StatsCard
           title="Total Artists"
@@ -195,6 +196,7 @@ export default async function AdminDashboard({ params }: { params: Promise<{ loc
           title="Total Venues"
           value={totalVenues?.toLocaleString() ?? 0}
           icon={MapPin}
+          href={`/${locale}/admin/venues`}
         />
       </div>
       

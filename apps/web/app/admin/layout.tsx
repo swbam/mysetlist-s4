@@ -11,7 +11,9 @@ import {
   FileText,
   AlertCircle,
   Activity,
-  Monitor
+  Monitor,
+  Calendar,
+  MapPin
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -46,6 +48,8 @@ export default async function AdminLayout({ children, params }: AdminLayoutProps
   const navigation = [
     { name: 'Dashboard', href: `/${locale}/admin`, icon: Home },
     { name: 'Users', href: `/${locale}/admin/users`, icon: Users, adminOnly: true },
+    { name: 'Shows', href: `/${locale}/admin/shows`, icon: Calendar },
+    { name: 'Venues', href: `/${locale}/admin/venues`, icon: MapPin },
     { name: 'Moderation', href: `/${locale}/admin/moderation`, icon: Shield },
     { name: 'Reports', href: `/${locale}/admin/reports`, icon: Flag },
     { name: 'Monitoring', href: `/${locale}/admin/monitoring`, icon: Monitor, adminOnly: true },

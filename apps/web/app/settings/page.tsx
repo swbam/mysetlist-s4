@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@repo/design-system/components/ui/alert
 import { Shield, Bell, Eye, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { EmailNotificationSettings } from './components/email-notification-settings';
+import { DeleteAccountDialog } from './components/delete-account-dialog';
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -62,9 +63,7 @@ export default function SettingsPage() {
                     This action cannot be undone. All your data will be permanently deleted.
                   </AlertDescription>
                 </Alert>
-                <Button variant="destructive" className="mt-4">
-                  Delete Account
-                </Button>
+                <DeleteAccountDialog />
               </CardContent>
             </Card>
           </TabsContent>
