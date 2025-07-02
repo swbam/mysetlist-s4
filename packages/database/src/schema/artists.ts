@@ -11,6 +11,7 @@ import {
 export const artists = pgTable('artists', {
   id: uuid('id').primaryKey().defaultRandom(),
   spotifyId: text('spotify_id').unique(),
+  ticketmasterId: text('ticketmaster_id').unique(),
   name: text('name').notNull(),
   slug: text('slug').unique().notNull(),
   imageUrl: text('image_url'),
