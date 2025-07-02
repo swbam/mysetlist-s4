@@ -7,9 +7,9 @@
 		"baseUrl": ".",
 		"jsx": "preserve",
 		"lib": ["DOM", "DOM.Iterable", "ES2015", "ES2022"],
-		"moduleResolution": "bundler",
+		"moduleResolution": "node",
 		"module": "ESNext",
-		"types": ["react", "react-dom", "next", "node"],
+		"moduleDetection": "force",
 		"paths": {
 			"@/*": ["./*"],
 			"@repo/*": ["../../packages/*"]
