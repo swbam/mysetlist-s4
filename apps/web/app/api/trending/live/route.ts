@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/server';
 
 interface LiveTrendingItem {
   id: string;
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get('type') as 'artist' | 'show' | 'venue' | 'all';
 
   try {
-    const supabase = createClient();
+    const supabase = await createServiceClient();
     
     // Calculate timeframe cutoff
     const cutoffDate = new Date();
@@ -42,154 +42,94 @@ export async function GET(request: NextRequest) {
 
     const trending: LiveTrendingItem[] = [];
 
-    // Get trending artists
+    // -----------------------------
+    // Artists
+    // -----------------------------
     if (type === 'all' || type === 'artist') {
       const { data: artists } = await supabase
         .from('artists')
-        .select(`
-          id,
-          name,
-          slug,
-          image_url,
-          popularity,
-          followers,
-          created_at,
-          updated_at
-        `)
-        .order('popularity', { ascending: false })
+        .select('id, name, slug, image_url, trending_score, followers, popularity')
+        .order('trending_score', { ascending: false })
         .limit(type === 'artist' ? limit : Math.ceil(limit / 3));
 
-      if (artists) {
-        artists.forEach(artist => {
-          // Calculate trending metrics (simulated for now - in production you'd track real metrics)
-          const baseScore = artist.popularity || 0;
-          const recentActivity = Math.floor(Math.random() * 100);
-          const searchVolume = Math.floor(Math.random() * 500);
-          const viewCount = Math.floor(Math.random() * 1000);
-          
-          const score = calculateTrendingScore({
-            basePopularity: baseScore,
-            recentActivity,
-            searchVolume,
-            viewCount,
-            timeframe
-          });
-
-          trending.push({
-            id: artist.id,
-            type: 'artist',
-            name: artist.name,
-            slug: artist.slug,
-            imageUrl: artist.image_url,
-            score,
-            metrics: {
-              searches: searchVolume,
-              views: viewCount,
-              interactions: recentActivity,
-              growth: Math.floor(Math.random() * 50) - 10, // -10% to +40% growth
-            },
-            timeframe,
-          });
+      (artists ?? []).forEach((artist) => {
+        trending.push({
+          id: artist.id,
+          type: 'artist',
+          name: artist.name,
+          slug: artist.slug,
+          imageUrl: artist.image_url,
+          score: artist.trending_score ?? 0,
+          metrics: {
+            searches: 0,
+            views: 0,
+            interactions: artist.followers ?? 0,
+            growth: 0,
+          },
+          timeframe,
         });
-      }
+      });
     }
 
-    // Get trending shows
+    // -----------------------------
+    // Shows (upcoming)
+    // -----------------------------
     if (type === 'all' || type === 'show') {
       const { data: shows } = await supabase
         .from('shows')
-        .select(`
-          id,
-          slug,
-          name,
-          date,
-          status,
-          created_at,
-          artist:artists(name, slug),
-          venue:venues(name, city, state)
-        `)
-        .eq('status', 'confirmed')
-        .gte('date', new Date().toISOString())
-        .order('created_at', { ascending: false })
+        .select('id, slug, name, trending_score')
+        .order('trending_score', { ascending: false })
+        .lt('date', new Date().toISOString())
         .limit(type === 'show' ? limit : Math.ceil(limit / 3));
 
-      if (shows) {
-        shows.forEach(show => {
-          const recentActivity = Math.floor(Math.random() * 200);
-          const searchVolume = Math.floor(Math.random() * 300);
-          const viewCount = Math.floor(Math.random() * 800);
-          
-          const score = calculateTrendingScore({
-            basePopularity: 50,
-            recentActivity,
-            searchVolume,
-            viewCount,
-            timeframe,
-            isUpcoming: true
-          });
-
-          trending.push({
-            id: show.id,
-            type: 'show',
-            name: show.name || `${show.artist?.name} Concert`,
-            slug: show.slug,
-            score,
-            metrics: {
-              searches: searchVolume,
-              views: viewCount,
-              interactions: recentActivity,
-              growth: Math.floor(Math.random() * 60) - 5, // -5% to +55% growth
-            },
-            timeframe,
-          });
+      (shows ?? []).forEach((show) => {
+        trending.push({
+          id: show.id,
+          type: 'show',
+          name: show.name,
+          slug: show.slug,
+          score: show.trending_score ?? 0,
+          metrics: {
+            searches: 0,
+            views: 0,
+            interactions: 0,
+            growth: 0,
+          },
+          timeframe,
         });
-      }
+      });
     }
 
-    // Get trending venues
+    // -----------------------------
+    // Venues (rank by show_count)
+    // -----------------------------
     if (type === 'all' || type === 'venue') {
       const { data: venues } = await supabase
         .from('venues')
-        .select('id, name, slug, city, state, capacity, show_count')
+        .select('id, name, slug, show_count')
         .order('show_count', { ascending: false })
         .limit(type === 'venue' ? limit : Math.ceil(limit / 3));
 
-      if (venues) {
-        venues.forEach(venue => {
-          const recentActivity = Math.floor(Math.random() * 80);
-          const searchVolume = Math.floor(Math.random() * 200);
-          const viewCount = Math.floor(Math.random() * 400);
-          
-          const score = calculateTrendingScore({
-            basePopularity: (venue.show_count || 0) * 2,
-            recentActivity,
-            searchVolume,
-            viewCount,
-            timeframe
-          });
-
-          trending.push({
-            id: venue.id,
-            type: 'venue',
-            name: venue.name,
-            slug: venue.slug,
-            score,
-            metrics: {
-              searches: searchVolume,
-              views: viewCount,
-              interactions: recentActivity,
-              growth: Math.floor(Math.random() * 30) - 5, // -5% to +25% growth
-            },
-            timeframe,
-          });
+      (venues ?? []).forEach((venue) => {
+        trending.push({
+          id: venue.id,
+          type: 'venue',
+          name: venue.name,
+          slug: venue.slug,
+          score: (venue.show_count ?? 0),
+          metrics: {
+            searches: 0,
+            views: 0,
+            interactions: 0,
+            growth: 0,
+          },
+          timeframe,
         });
-      }
+      });
     }
 
     // Sort by score and return top results
-    const sortedTrending = trending
-      .sort((a, b) => b.score - a.score)
-      .slice(0, limit);
+    const sortedTrending = trending.sort((a, b) => b.score - a.score).slice(0, limit);
 
     return NextResponse.json({
       timeframe,

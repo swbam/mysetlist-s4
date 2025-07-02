@@ -1,0 +1,442 @@
+# MySetlist - Next-Forge Project Configuration
+
+## 🎯 PROJECT OVERVIEW
+**MySetlist** is a Concert Setlist Voting Web App built on the **Next-Forge "web" starter** template. Fans vote on songs for upcoming concerts. This is a production-grade Turborepo monorepo for Next.js applications.
+
+**Key Project Context:**
+- Codebase contains partial implementations—**never rebuild, always extend**
+- `/mysetlist-docs` is the single source of truth for specs, requirements, and user flows
+- **Remove all Clerk and Stripe code** - migrate to Supabase-first architecture
+- New third-party services are forbidden unless explicitly required by `/mysetlist-docs`
+
+## 🛠 TECH STACK & REQUIREMENTS
+- **Framework**: Next-Forge (web only) - Next.js 15 with App Router
+- **Monorepo**: Turborepo with multiple apps and packages
+- **Auth & Database**: Supabase (Email + Spotify OAuth) - **NO CLERK**
+- **Deploy/Jobs**: Supabase MCP (functions + cron)
+- **Styling**: Tailwind CSS with shadcn/ui components (use existing design tokens)
+- **Testing**: Jest, React Testing Library, Cypress, Lighthouse
+- **CI/CD**: GitHub Actions → Vercel Preview → Supabase
+
+## 📋 DEVELOPMENT WORKFLOW
+**Four Parallel Sub-Agents** (branches open as Draft PRs immediately):
+
+| Agent    | Focus                                 | PR Size | Branch Prefix |
+|----------|---------------------------------------|---------|---------------|
+| Auth     | Supabase Auth, Spotify OAuth, sessions| ≤250 LOC| `auth/`       |
+| Data/API | DB schema, RPCs, Next API routes      | ≤200 LOC| `data/`       |
+| Front-End| Pages, components, Tailwind UI        | ≤300 LOC| `fe/`         |
+| QA/CI    | Tests, GitHub Actions, perf & a11y    | ≤250 LOC| `qa/`         |
+
+**Coordination Rules:**
+- Daily UTC stand-up comment: *Done / In-Progress / Blocked / Next*
+- Every PR reviewed by two other agents (GitHub CODEOWNERS)
+- Resolve merge conflicts **before** requesting final review
+
+## Environment Files Context
+Note: .env files are protected by Cursor's globalIgnore for security. When working with environment variables:
+
+### Environment Files Structure
+- `.env.local` - Local development environment variables (gitignored)
+- `.env.production` - Production environment variables (for reference)
+- `.env.example` - Template file for new developers (committed to git)
+- `./creds` - Directory containing secrets to load into `.env.local`
+- App-specific `.env` files in monorepo packages
+
+### Working with Environment Variables
+When the user asks about environment variables:
+- Provide code snippets they can copy into their .env files
+- Give clear instructions on which file to modify
+- Use placeholder values with descriptive comments
+- Reference the existing environment structure from their previous messages
+- **Prioritize Supabase variables** - this is a Supabase-first architecture
+- **Exclude Clerk and Stripe** - these are being removed from the codebase
+
+## Tech Stack
+- **Framework**: Next.js 15 with App Router
+- **Monorepo**: Turborepo with multiple apps and packages
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **Analytics**: PostHog
+- **External APIs**: Spotify, Ticketmaster, SetlistFM
+
+## Monorepo Structure
+```
+apps/
+├── app/          # Main SaaS application
+├── web/          # Marketing website  
+├── docs/         # Documentation site
+└── api/          # API microservice
+
+packages/
+├── ui/           # Shared UI components (shadcn/ui based)
+├── database/     # Supabase schema and utilities
+├── auth/         # Authentication utilities
+├── email/        # Email templates and sending
+└── config/       # Shared configuration
+```
+
+## Environment Variables Structure
+
+### Environment Files Location
+```
+.env.local              # Local development (gitignored)
+.env.production        # Production values (for reference)
+.env.example          # Template file (committed to git)
+```
+
+### Core Services Configuration (Supabase-First Architecture)
+- **Database**: `DATABASE_URL`, `DIRECT_URL` (Supabase PostgreSQL)
+- **Authentication**: `SUPABASE_*` variables for auth, JWT, and Spotify OAuth
+- **Functions**: Supabase Edge Functions and RPC calls
+- **Music APIs**: 
+  - `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET` (for OAuth integration)
+  - `TICKETMASTER_API_KEY`, `SETLISTFM_API_KEY`
+- **Analytics**: `NEXT_PUBLIC_POSTHOG_*` for user tracking
+- **Security**: `CRON_SECRET` for job authentication
+- **Supabase MCP**: Variables for functions, cron jobs, and deployment
+
+### 🚫 REMOVED SERVICES (Do not reference or suggest)
+- **Clerk**: All `CLERK_*` variables are being removed
+- **Stripe**: All `STRIPE_*` variables are being removed
+- Any other services not explicitly mentioned in `/mysetlist-docs`
+
+### URL Configuration Pattern
+```bash
+# Development URLs
+NEXT_PUBLIC_APP_URL=http://localhost:3000    # Main app
+NEXT_PUBLIC_WEB_URL=http://localhost:3001    # Marketing site
+NEXT_PUBLIC_API_URL=http://localhost:3002    # API service
+NEXT_PUBLIC_DOCS_URL=http://localhost:3004   # Documentation
+
+# Production URLs  
+NEXT_PUBLIC_APP_URL=https://mysetlist-sonnet.vercel.app
+NEXT_PUBLIC_WEB_URL=https://mysetlist-sonnet.vercel.app
+NEXT_PUBLIC_API_URL=https://mysetlist-sonnet.vercel.app/api
+NEXT_PUBLIC_DOCS_URL=https://docs.mysetlist-sonnet.vercel.app
+```
+
+### Environment Variable Categories
+
+#### 🔐 **Secrets (Never expose in client)**
+- `DATABASE_URL`, `DIRECT_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_JWT_SECRET`
+- `SPOTIFY_CLIENT_SECRET`, `TICKETMASTER_API_KEY`, `SETLISTFM_API_KEY`
+- `CRON_SECRET`, `SUPABASE_MCP_*` variables
+- Any secrets loaded from `./creds` directory
+
+#### 🌍 **Public Variables (NEXT_PUBLIC_ prefix)**
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `NEXT_PUBLIC_SPOTIFY_CLIENT_ID`, `NEXT_PUBLIC_POSTHOG_*`
+- `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_*_URL`
+
+#### ⚙️ **Required Supabase Integration**
+- **Auth**: `SUPABASE_*` variables for email and Spotify OAuth
+- **Database**: Connection strings and direct access
+- **Functions**: Edge function deployment and execution
+- **MCP**: Supabase MCP server configuration
+
+#### 🚫 **Removed Integrations (Do NOT suggest)**
+- ~~**Payments**: `STRIPE_*` variables~~ (being removed)
+- ~~**Auth Alternative**: `CLERK_*` variables~~ (being removed)
+- Any other services not in `/mysetlist-docs`
+
+### Environment Variable Validation
+The project uses t3-env for runtime validation. Check `packages/*/env.ts` files for:
+- Required vs optional variables
+- Type validation and parsing
+- Environment-specific requirements
+
+## 🎯 PROJECT CONSTRAINTS & REQUIREMENTS
+
+### 📋 PRE-DEVELOPMENT CHECKLIST (blockers if unchecked)
+- [ ] Read every file in `/mysetlist-docs`
+- [ ] Review the entire Next-Forge starter + its docs
+- [ ] Map existing pages, components, utilities, DB schema, API routes
+- [ ] Verify secrets in `./creds` and load into `.env.local`
+- [ ] Confirm Supabase MCP & other MCP servers are reachable
+
+### 🚫 CONSTRAINTS & MUST-NOTS
+- **Do NOT** build from scratch if code exists partially - **always extend existing code**
+- **Do NOT** touch Next-Forge mobile paths
+- **Do NOT** leak credentials or commit plain-text secrets
+- **Do NOT** add unapproved services (only what's in `/mysetlist-docs`)
+- **Do NOT** reference or suggest Clerk or Stripe (these are being removed)
+
+### ✅ QUALITY GATES (CI blocks merge on failure)
+- [ ] All `/mysetlist-docs` requirements satisfied
+- [ ] Supabase Auth works (email + Spotify OAuth)
+- [ ] No Clerk/Stripe remnants in repo or logs
+- [ ] Next-Forge conventions followed
+- [ ] Lighthouse ≥ 90, Largest Contentful Paint < 2.5s
+- [ ] Full test suite green; coverage report ≥ 90%
+- [ ] `next build` completes with zero errors/warnings
+- [ ] Type-safe TS + Zod, ESLint, Prettier compliance
+
+### 🏗 IMPLEMENTATION PHASES
+1. **Analysis & Planning**: Complete checklist, create architecture map, list gaps
+2. **Infrastructure**: Strip Clerk + Stripe, configure Supabase Auth & env secrets
+3. **Feature Development**: Finish partially built features, build new features per docs
+4. **Testing & Optimization**: Unit, integration, E2E, performance, and a11y tests
+
+## Code Guidelines
+
+### Environment Variable Management
+
+#### Reading Environment Variables
+```typescript
+// Use t3-env for type-safe environment variables
+import { env } from '@/lib/env'
+
+// Server-side access (secrets allowed)
+const apiKey = env.SPOTIFY_CLIENT_SECRET
+const dbUrl = env.DATABASE_URL
+
+// Client-side access (NEXT_PUBLIC_ only)
+const publicKey = env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID
+const appUrl = env.NEXT_PUBLIC_APP_URL
+```
+
+#### Adding New Environment Variables
+1. Add to appropriate `.env.*` files
+2. Update the corresponding `env.ts` validation schema
+3. Document in `.env.example` with placeholder values
+4. Update this .cursorrules file if it's a new service integration
+
+#### Environment Variable Best Practices
+- Use descriptive placeholder values in `.env.example`
+- Group related variables with comments
+- Use consistent naming patterns (service_VARIABLE_TYPE)
+- Always validate required variables at startup
+- Prefix client-side variables with `NEXT_PUBLIC_`
+
+#### Working with .env Files
+When editing environment files:
+- Maintain existing structure and grouping
+- Add comments for new service integrations
+- Use placeholder values that indicate the expected format
+- Update both development and production templates
+- Never commit actual secrets to version control
+
+### Next-Forge Environment Patterns
+
+#### Package-Level Environment Variables
+Each package in the monorepo may have its own environment requirements:
+```typescript
+// packages/auth/env.ts
+export const authEnv = createEnv({
+  server: {
+    SUPABASE_SERVICE_ROLE_KEY: z.string(),
+    SUPABASE_JWT_SECRET: z.string(),
+  },
+  client: {
+    NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
+  }
+})
+```
+
+#### App-Level Environment Composition
+Apps compose environment variables from their dependencies:
+```typescript
+// apps/app/env.ts
+import { authEnv } from '@/packages/auth/env'
+import { databaseEnv } from '@/packages/database/env'
+
+export const env = createEnv({
+  extends: [authEnv, databaseEnv],
+  // app-specific variables
+})
+```
+
+#### Service Integration Pattern
+When adding new services, follow this pattern:
+1. Create service-specific environment validation
+2. Add to both local and production environment files
+3. Create optional feature flags if service is not core
+4. Document service setup in comments
+
+#### Environment Variable Naming Conventions
+- `SERVICE_VARIABLE_TYPE` (e.g., `SPOTIFY_CLIENT_SECRET`)
+- `NEXT_PUBLIC_SERVICE_VARIABLE` for client-side
+- `SERVICE_API_KEY` for API authentication
+- `SERVICE_WEBHOOK_SECRET` for webhook validation
+```typescript
+// Use Supabase client
+import { createClient } from '@/lib/supabase/server'
+import { createBrowserClient } from '@/lib/supabase/client'
+
+// Server components
+const supabase = createClient()
+
+// Client components  
+const supabase = createBrowserClient()
+```
+
+### Music API Integration
+```typescript
+// Spotify API calls should include proper error handling
+// Ticketmaster API has rate limits - implement caching
+// SetlistFM API requires User-Agent header
+```
+
+### Component Development
+- Use shadcn/ui components from `@/packages/ui`
+- Follow next-forge component patterns
+- Implement proper TypeScript interfaces
+- Use Tailwind CSS for styling
+
+### Authentication Patterns
+```typescript
+// Check authentication status
+import { getUser } from '@/lib/auth/server'
+
+export default async function ProtectedPage() {
+  const user = await getUser()
+  if (!user) redirect('/auth/signin')
+  
+  // Component logic
+}
+```
+
+## Development Workflow (MySetlist Specific)
+
+### 📁 Key Directories & Files
+- `/mysetlist-docs` - **Single source of truth** for specs and requirements
+- `./creds` - Secrets directory to load into `.env.local`
+- `apps/web/` - Main Next.js application (focus area)
+- `packages/database/` - Supabase schema and migrations
+- `packages/auth/` - Supabase authentication utilities
+- Existing partial implementations - **extend, don't rebuild**
+
+### 🔄 Sub-Agent Coordination
+When working on features, consider the parallel development approach:
+
+**Auth Agent Focus:**
+- Supabase Auth implementation (email + Spotify OAuth)
+- Session management and user state
+- Removing Clerk authentication remnants
+- User authentication flows and middleware
+
+**Data/API Agent Focus:**
+- Supabase database schema for voting system
+- RPC functions and edge functions
+- Next.js API routes for vote management
+- External API integrations (Spotify, Ticketmaster, SetlistFM)
+
+**Front-End Agent Focus:**
+- Pages and components for voting interface
+- Tailwind CSS styling with existing design tokens
+- User experience flows for setlist voting
+- Integration with authentication and data layers
+
+**QA/CI Agent Focus:**
+- Test coverage ≥90% for new code
+- GitHub Actions CI/CD pipeline
+- Performance testing (Lighthouse ≥90)
+- Accessibility compliance (a11y score ≥90)
+
+### Package Management (Next-Forge Specific)
+- Use `pnpm` for package management
+- Run `pnpm build` to build all packages
+- Use `pnpm dev` to start development servers
+- Each package should be developed independently
+- Focus on `apps/web` - avoid mobile paths
+
+### Database Schema (Supabase)
+- Migrations in `packages/database/migrations/`
+- Use Supabase CLI for schema changes
+- Types generated automatically via Supabase MCP
+- Focus on voting, concerts, and user data structures
+
+### API Development
+- RESTful APIs in `apps/api/` or Next.js API routes
+- External API integrations in dedicated utility files
+- Implement proper error handling and rate limiting
+
+## Music Domain Knowledge
+
+### Setlist Structure
+- Artists have multiple concerts/shows
+- Each show has a setlist with ordered songs
+- Songs can have encore indicators
+- Venues have location and capacity information
+
+### API Integrations
+- **Spotify**: Track metadata, audio features, artist info
+- **Ticketmaster**: Concert events, venue details, ticket info  
+- **SetlistFM**: Historical setlist data, fan-contributed content
+
+### Data Relationships
+```sql
+-- Core entities
+users -> user_setlists -> setlist_songs -> songs
+concerts -> venues
+artists -> albums -> tracks
+```
+
+## Security & Performance
+
+### API Security
+- Validate all external API responses
+- Rate limit user-facing endpoints
+- Sanitize user input for setlist creation
+- Use environment variables for all secrets
+
+### Performance Optimization
+- Cache external API responses
+- Implement ISR for static content
+- Use proper Next.js image optimization
+- Lazy load heavy components
+
+### Error Handling
+- Graceful fallbacks for API failures
+- User-friendly error messages
+- Proper logging for debugging
+- Retry logic for transient failures
+
+## Deployment
+
+### Vercel Configuration
+- Automatic deployments from main branch
+- Environment variables managed in Vercel dashboard
+- Edge functions for API routes when beneficial
+- Preview deployments for pull requests
+
+### Environment Management
+- Development: Use `.env.local` with development services
+- Production: Use Vercel environment variables
+- Never commit real environment variables to git
+- Use `.env.example` for documentation
+
+## 🎯 SUCCESS CRITERIA & DELIVERABLES
+
+### Definition of Done
+☑ All features in `/mysetlist-docs` implemented and verified  
+☑ Supabase auth & functions operate in prod-like (preview) environment  
+☑ Zero Clerk/Stripe code remains in codebase  
+☑ Main branch builds and deploys to Supabase + Vercel  
+☑ Release `v1.0.0` tagged with changelog & architecture PDF  
+
+### Final Deliverables
+1. **Merged, production-ready `main` branch**
+2. **Tagged release `v1.0.0`** with changelog & architecture PDF
+3. **README** with setup, scripts, contribution guide
+4. **Working Supabase Auth** (email + Spotify OAuth)
+5. **Functional voting system** per `/mysetlist-docs` specifications
+
+### Performance Requirements
+- **Lighthouse Score**: ≥90 overall
+- **Largest Contentful Paint**: <2.5 seconds
+- **Test Coverage**: ≥90% for all new code
+- **Build Process**: Zero errors/warnings on `next build`
+- **Accessibility**: a11y score ≥90
+
+### Architecture Requirements
+- **Supabase-First**: All data operations through Supabase
+- **Next-Forge Conventions**: Follow established patterns
+- **Type Safety**: TypeScript + Zod validation throughout
+- **No Deprecated Code**: Remove all Clerk and Stripe references
+- **MCP Integration**: Use Supabase MCP for functions and cron jobs
+
+Remember: `/mysetlist-docs` is the single source of truth for all requirements. When in doubt, refer to the documentation directory for specifications, user flows, and feature requirements.

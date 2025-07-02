@@ -102,6 +102,17 @@ export function SearchResultCard({
     }
   };
 
+  const handleClick = () => {
+    // Fire sync request for artist data; ignore errors
+    if (result.type === 'artist') {
+      fetch('/api/sync/artist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ artistId: result.id }),
+      }).catch(() => {});
+    }
+  };
+
   return (
     <Card className={cn(
       "overflow-hidden transition-all duration-200 hover:shadow-md hover:scale-[1.02]",
@@ -131,6 +142,7 @@ export function SearchResultCard({
             <div className="flex items-center gap-2 mb-1">
               <Link 
                 href={getResultLink()}
+                onClick={handleClick}
                 className="text-xl font-bold hover:text-primary transition-colors truncate"
               >
                 {result.title}
@@ -257,7 +269,7 @@ export function SearchResultCard({
               </Link>
             )}
 
-            <Link href={getResultLink()}>
+            <Link href={getResultLink()} onClick={handleClick}>
               <Button size="sm" className="gap-2">
                 <ExternalLink className="h-4 w-4" />
                 {result.type === 'artist' ? 'View Artist' : 

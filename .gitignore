@@ -59,15 +59,14 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# local env files
-.env*.local
 
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
+
+
 
 ### Node ###
 # Logs
@@ -139,12 +138,7 @@ web_modules/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
+
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -258,13 +252,13 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows,node,nextjs,vercel,turbo,storybookjs,react
 
 # Sentry Config File
-.env.sentry-build-plugin
+
 
 # BaseHub
 .basehub
 
 # AI Rules
-.cursorrules
+
 .github/copilot-instructions.md
 
 # Database
@@ -276,12 +270,9 @@ packages/database/generated
 # Sentry
 .sentryclirc
 # Supabase
-supabase/.env.local
-supabase/.temp
-supabase/.branches
+
 
 dev-debug.log
-# Environment variables
 # Editor directories and files
 .idea
 .vscode
