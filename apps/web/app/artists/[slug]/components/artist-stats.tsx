@@ -1,4 +1,5 @@
 import { db } from '@repo/database';
+import { sql } from 'drizzle-orm';
 import { Calendar, Music, Users, TrendingUp } from 'lucide-react';
 
 interface ArtistStatsProps {
@@ -8,9 +9,9 @@ interface ArtistStatsProps {
 export async function ArtistStats({ artistId }: ArtistStatsProps) {
   // Fetch artist stats (total shows, avg setlist length) via raw SQL
   const statsRes = await db.execute(
-    `SELECT total_shows, avg_setlist_length
+    sql`SELECT total_shows, avg_setlist_length
      FROM artist_stats
-     WHERE artist_id = '${artistId}'
+     WHERE artist_id = ${artistId}
      LIMIT 1`
   ) as unknown as { rows: { total_shows: number | null; avg_setlist_length: number | null }[] };
 
@@ -18,17 +19,17 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
 
   // Fetch follower count
   const followersRes = await db.execute(
-    `SELECT COUNT(*)::int AS cnt FROM user_follows_artists WHERE artist_id = '${artistId}'`
+    sql`SELECT COUNT(*)::int AS cnt FROM user_follows_artists WHERE artist_id = ${artistId}`
   ) as unknown as { rows: { cnt: number }[] };
 
   const followerCount = followersRes.rows[0]?.cnt ?? 0;
 
   // Get total unique songs across all setlists for this artist via raw SQL
   const songCountRes = await db.execute(
-    `SELECT COUNT(DISTINCT ss.song_id)::int AS cnt
+    sql`SELECT COUNT(DISTINCT ss.song_id)::int AS cnt
        FROM setlist_songs ss
        JOIN setlists s ON ss.setlist_id = s.id
-       WHERE s.artist_id = '${artistId}'`
+       WHERE s.artist_id = ${artistId}`
   ) as unknown as { rows: { cnt: number }[] };
 
   const totalSongs = songCountRes.rows?.[0]?.cnt ?? 0;
