@@ -1,5 +1,5 @@
-import { db, artistStats, userFollowsArtists } from '@repo/database';
-import { eq, count, sql } from 'drizzle-orm';
+import { db, artistStats, userFollowsArtists, setlistSongs, setlists } from '@repo/database';
+import { eq, count, sql, distinct } from 'drizzle-orm';
 import { Calendar, Music, Users, TrendingUp } from 'lucide-react';
 
 interface ArtistStatsProps {
@@ -24,6 +24,15 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
 
   const followerCount = followerResult[0]?.count || 0;
 
+  // Get total unique songs played in artist setlists
+  const songsResult = await db
+    .select({ total: count(distinct(setlistSongs.songId)) })
+    .from(setlistSongs)
+    .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
+    .where(eq(setlists.artistId, artistId));
+
+  const totalSongs = songsResult[0]?.total || 0;
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
       <div className="bg-card rounded-lg p-4 border">
@@ -47,7 +56,7 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
           <Music className="h-4 w-4" />
           <span className="text-sm">Total Songs</span>
         </div>
-        <p className="text-2xl font-bold">{artistStatsData?.totalSongs || 0}</p>
+        <p className="text-2xl font-bold">{totalSongs}</p>
       </div>
 
       <div className="bg-card rounded-lg p-4 border">
@@ -56,8 +65,8 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
           <span className="text-sm">Avg Songs/Show</span>
         </div>
         <p className="text-2xl font-bold">
-          {artistStatsData?.avgSongsPerShow ? 
-            Number(artistStatsData.avgSongsPerShow).toFixed(1) : 
+          {artistStatsData?.avgSetlistLength ? 
+            Number(artistStatsData.avgSetlistLength).toFixed(1) : 
             '0'
           }
         </p>
