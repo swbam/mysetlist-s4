@@ -23,6 +23,8 @@ interface SearchResult {
   slug?: string;
   date?: string;
   verified?: boolean;
+  source: 'database' | 'ticketmaster';
+  externalId?: string;
 }
 
 interface SearchBarProps {
@@ -41,6 +43,7 @@ export function SearchBar({
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [searched, setSearched] = useState(false);
   const [selectedType] = useState<'artist'>('artist');
   const [error, setError] = useState<string | null>(null);
   
@@ -72,8 +75,11 @@ export function SearchBar({
         title: a.name,
         imageUrl: a.imageUrl,
         slug: a.slug ?? a.id,
+        source: a.source,
+        externalId: a.externalId,
       })) as SearchResult[];
       setResults(mapped);
+      setSearched(true);
       setIsOpen(true);
     } catch (err) {
       console.error('Search failed:', err);
@@ -93,28 +99,26 @@ export function SearchBar({
     }
   }, [debouncedQuery, performSearch]);
 
-  const handleSelect = (result: SearchResult) => {
-    let path = '';
-    
-    switch (result.type) {
-      case 'artist':
-        path = `/artists/${result.slug || result.id}`;
-        break;
-      case 'show':
-        path = `/shows/${result.id}`;
-        break;
-      case 'venue':
-        path = `/venues/${result.slug || result.id}`;
-        break;
-      case 'song':
-        // Navigate to first show that has this song (if available)
-        path = `/search?q=${encodeURIComponent(result.title)}&type=song`;
-        break;
-      default:
-        path = `/search?q=${encodeURIComponent(query)}`;
+  const handleSelect = async (result: SearchResult) => {
+    if (result.source === 'ticketmaster') {
+      // import first
+      try {
+        const resp = await fetch('/api/artists/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ artistName: result.title }),
+        });
+        const data = await resp.json();
+        if (resp.ok && data.artist?.slug) {
+          router.push(`/artists/${data.artist.slug}`);
+        }
+      } catch (_) {
+        console.error('sync failed');
+      }
+    } else {
+      router.push(`/artists/${result.slug || result.id}`);
     }
 
-    router.push(path);
     setQuery('');
     setResults([]);
     setIsOpen(false);
@@ -197,6 +201,7 @@ export function SearchBar({
             isLoading={isLoading} 
             query={query} 
             onSelect={handleSelect} 
+            searched={searched}
           />
         </PopoverContent>
       </Popover>
@@ -234,6 +239,7 @@ export function SearchBar({
           isLoading={isLoading} 
           query={query} 
           onSelect={handleSelect} 
+          searched={searched}
         />
       </PopoverContent>
     </Popover>
@@ -244,12 +250,14 @@ function SearchResults({
   results, 
   isLoading, 
   query, 
-  onSelect 
+  onSelect, 
+  searched
 }: {
   results: SearchResult[];
   isLoading: boolean;
   query: string;
   onSelect: (result: SearchResult) => void;
+  searched: boolean;
 }) {
   const getResultIcon = (type: string) => {
     switch (type) {
@@ -307,7 +315,7 @@ function SearchResults({
         {isLoading && (
           <CommandEmpty>Searching...</CommandEmpty>
         )}
-        {!isLoading && results.length === 0 && query.length >= 2 && (
+        {!isLoading && results.length === 0 && searched && (
           <CommandEmpty>
             <div className="text-center py-4">
               <Search className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
