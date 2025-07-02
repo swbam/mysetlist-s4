@@ -17,6 +17,6 @@ export const db = drizzle(queryClient, { schema });
 // Re-export the Drizzle SQL template tag so downstream packages can
 // reference the *same* instance/version and avoid private-property
 // mismatches between multiple installations.
-export { sql } from 'drizzle-orm';
+export { sql, ilike, or } from 'drizzle-orm';
 
 export type Database = typeof db;
