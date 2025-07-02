@@ -5,11 +5,12 @@
 	],
 	"compilerOptions": {
 		"baseUrl": ".",
-		"jsx": "preserve",
+		"jsx": "react-jsx",
 		"lib": ["DOM", "DOM.Iterable", "ES2015", "ES2022"],
-		"moduleResolution": "node",
+		"moduleResolution": "bundler",
 		"module": "ESNext",
 		"moduleDetection": "force",
+		"types": ["react", "react-dom", "next", "node"],
 		"paths": {
 			"@/*": ["./*"],
 			"@repo/*": ["../../packages/*"]
