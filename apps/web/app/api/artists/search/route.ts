@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db, artists } from '@repo/database';
-import { ilike, or } from 'drizzle-orm';
+import { ilike, or, sql } from 'drizzle-orm';
 import { TicketmasterClient } from '@repo/external-apis';
 
 export async function GET(request: NextRequest) {
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       .where(
         or(
           ilike(artists.name, `%${query}%`),
-          ilike(artists.genres, `%${query}%`)
+          ilike(sql`coalesce(${artists.genres}, '')`, `%${query}%`)
         )
       )
       .limit(10);
