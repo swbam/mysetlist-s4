@@ -67,11 +67,11 @@ export function SearchBar({
       const data = await response.json();
       const artists = data.artists || [];
       const mapped = artists.map((a: any) => ({
-        id: a.slug || a.id,
+        id: a.slug ?? a.id,
         type: 'artist',
         title: a.name,
         imageUrl: a.imageUrl,
-        slug: a.id, // slug in search API
+        slug: a.slug ?? a.id,
       })) as SearchResult[];
       setResults(mapped);
       setIsOpen(true);
@@ -131,9 +131,8 @@ export function SearchBar({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       clearSearch();
-    } else if (e.key === 'Enter' && query.length >= 2) {
-      router.push(`/search?q=${encodeURIComponent(query)}`);
-      setIsOpen(false);
+    } else if (e.key === 'Enter' && results.length) {
+      handleSelect(results[0]);
     }
   };
 
