@@ -18,6 +18,7 @@ import { Badge } from '@repo/design-system/components/ui/badge';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@repo/design-system/lib/utils';
+import { useRouter } from 'next/navigation';
 
 interface SearchResult {
   id: string;
@@ -68,6 +69,7 @@ export function MobileSearch({
   
   const inputRef = useRef<HTMLInputElement>(null);
   const debouncedQuery = useDebounce(query, 300);
+  const router = useRouter();
 
   // Handle search
   useEffect(() => {
@@ -81,7 +83,26 @@ export function MobileSearch({
   const performSearch = async (searchQuery: string) => {
     setIsLoading(true);
     try {
-      const searchResults = onSearch ? await onSearch(searchQuery) : [];
+      let searchResults: SearchResult[] = [];
+
+      if (onSearch) {
+        // allow parent override
+        searchResults = await onSearch(searchQuery);
+      } else {
+        const res = await fetch(`/api/artists/search?q=${encodeURIComponent(searchQuery)}`);
+        if (res.ok) {
+          const data = await res.json();
+          searchResults = (data.artists || []).map((a: any) => ({
+            id: a.slug ?? a.id,
+            type: 'artist',
+            title: a.name,
+            imageUrl: a.imageUrl,
+            subtitle: a.genres?.[0],
+            trending: false,
+          }));
+        }
+      }
+
       setResults(searchResults);
     } catch (error) {
       console.error('Search failed:', error);
@@ -106,12 +127,13 @@ export function MobileSearch({
   };
 
   const handleResultSelect = (result: SearchResult) => {
-    onResultSelect?.(result);
-    
-    // Add to recent searches
-    const updatedRecent = [result.title, ...recentSearches.filter(s => s !== result.title)].slice(0, 5);
-    // In a real app, you'd persist this to localStorage or user preferences
-    
+    if (onResultSelect) {
+      onResultSelect(result);
+    } else if (result.type === 'artist') {
+      router.push(`/artists/${result.id}`);
+    }
+
+    // Note: persist recent searches can be implemented later
     handleClose();
   };
 
