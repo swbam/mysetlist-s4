@@ -3,7 +3,6 @@ import { createVenueMetadata } from '@/lib/seo-metadata';
 import type { Metadata } from 'next';
 import { getVenueBySlug, getVenueShows, getVenueReviews, getVenuePhotos, getVenueInsiderTips, getNearbyVenues } from './actions';
 import { VenueHeader } from './components/venue-header';
-import { VenueMap } from './components/venue-map';
 import { VenueDetails } from './components/venue-details';
 import { UpcomingShows } from './components/upcoming-shows';
 import { PastShows } from './components/past-shows';
@@ -89,18 +88,8 @@ const VenuePage = async ({ params }: VenuePageProps) => {
             upcomingShowCount={upcomingShows.length}
           />
 
-          {/* Map and Details Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <VenueMap 
-                venue={venue}
-                nearbyVenues={nearbyVenues}
-              />
-            </div>
-            <div>
-              <VenueDetails venue={venue} />
-            </div>
-          </div>
+          {/* Venue Details */}
+          <VenueDetails venue={venue} />
 
           {/* Main Content Tabs */}
           <Tabs defaultValue="upcoming" className="space-y-6">

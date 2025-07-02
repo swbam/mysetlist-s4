@@ -77,38 +77,8 @@ if (SENTRY_DSN) {
       return breadcrumb;
     },
     
-    // Enhanced integrations
-    integrations: [
-      new Sentry.BrowserTracing({
-        // Track navigation timing
-        tracingOrigins: [
-          'localhost',
-          'mysetlist.com',
-          /^\//,
-        ],
-        
-        // Custom route names for better grouping
-        routingInstrumentation: Sentry.nextRouterInstrumentation,
-      }),
-      
-      // Session replay with enhanced settings
-      new Sentry.Replay({
-        // Only record sessions with errors in production
-        sessionSampleRate: environment === 'production' ? 0.1 : 1.0,
-        errorSampleRate: 1.0,
-        
-        // Enhanced privacy settings
-        maskAllText: environment === 'production',
-        maskAllInputs: true,
-        blockAllMedia: true,
-        
-        // Capture network details for debugging
-        networkDetailAllowUrls: [
-          /^\/api\//,
-          /supabase\.co/,
-        ],
-      }),
-    ],
+    // Disable heavy browser-only integrations during server builds to avoid errors
+    integrations: [],
     
     // Enhanced error grouping
     fingerprint: ['{{ default }}', '{{ type }}', '{{ value }}'],
