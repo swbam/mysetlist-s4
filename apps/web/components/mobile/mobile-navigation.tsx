@@ -6,7 +6,6 @@ import {
   Menu, 
   X, 
   Home, 
-  Search, 
   Music, 
   Calendar, 
   MapPin, 
@@ -34,12 +33,6 @@ const navigationItems = [
     href: '/',
     icon: Home,
     description: 'Discover trending shows'
-  },
-  {
-    title: 'Search',
-    href: '/search',
-    icon: Search,
-    description: 'Find artists, shows & venues'
   },
   {
     title: 'Artists',

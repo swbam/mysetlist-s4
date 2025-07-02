@@ -29,11 +29,6 @@ export const Header = () => {
       description: '',
     },
     {
-      title: 'Search',
-      href: '/search',
-      description: '',
-    },
-    {
       title: 'Artists',
       href: '/artists',
       description: '',
