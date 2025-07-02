@@ -17,7 +17,7 @@ interface Artist {
 
 export default function TopArtistsSlider() {
 	const [artists, setArtists] = useState<Artist[]>([]);
-	const [sliderRef] = useKeenSlider<HTMLDivElement>({
+	const sliderOptions = {
 		mode: 'free-snap',
 		slides: {
 			perView: 3.5,
@@ -31,7 +31,10 @@ export default function TopArtistsSlider() {
 				slides: { perView: 5.5, spacing: 24 },
 			},
 		},
-	} as KeenSliderPlugin);
+	};
+
+	// @ts-ignore generic picked from local declaration
+	const [sliderRef] = useKeenSlider<HTMLDivElement>(sliderOptions);
 
 	useEffect(() => {
 		(async () => {
