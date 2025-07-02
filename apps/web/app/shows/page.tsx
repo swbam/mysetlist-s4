@@ -2,9 +2,8 @@ import { createMetadata } from '@repo/seo/metadata';
 import type { Metadata } from 'next';
 import { ShowsFilter } from './components/shows-filter';
 import { ShowsList } from './components/shows-list';
-import { ShowsMap } from './components/shows-map';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import { List, Map } from 'lucide-react';
+import { List } from 'lucide-react';
 
 // Force dynamic rendering due to useSearchParams in ShowsFilter component
 export const dynamic = 'force-dynamic';
@@ -33,21 +32,14 @@ const ShowsPage = async () => {
           <ShowsFilter />
           
           <Tabs defaultValue="list" className="w-full">
-            <TabsList className="grid w-full max-w-[400px] grid-cols-2">
+            <TabsList className="w-full max-w-[200px]">
               <TabsTrigger value="list" className="gap-2">
                 <List className="h-4 w-4" />
                 List View
               </TabsTrigger>
-              <TabsTrigger value="map" className="gap-2">
-                <Map className="h-4 w-4" />
-                Map View
-              </TabsTrigger>
             </TabsList>
             <TabsContent value="list" className="mt-6">
               <ShowsList />
-            </TabsContent>
-            <TabsContent value="map" className="mt-6">
-              <ShowsMap />
             </TabsContent>
           </Tabs>
         </div>

@@ -97,16 +97,8 @@ export const fetchShows = cache(async (params: FetchShowsParams = {}): Promise<{
           genres,
           verified
         ),
-        venue:venues(
-          id,
-          name,
-          slug,
-          city,
-          state,
-          country,
-          capacity
-        ),
-        supportingArtists:show_artists(
+        venue:venues!shows_venue_id_fkey(*),
+        supportingArtists:show_artists!show_artists_show_id_fkey(
           id,
           artistId:artist_id,
           orderIndex:order_index,

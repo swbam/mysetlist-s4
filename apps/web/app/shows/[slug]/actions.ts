@@ -13,7 +13,7 @@ export async function getShowDetails(slug: string) {
       *,
       headliner_artist:artists!shows_headliner_artist_id_fkey(*),
       venue:venues(*),
-      show_artists(
+      show_artists!show_artists_show_id_fkey(
         *,
         artist:artists(*)
       ),
