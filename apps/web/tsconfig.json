@@ -10,6 +10,7 @@
 		"moduleResolution": "bundler",
 		"module": "ESNext",
 		"moduleDetection": "force",
+		"types": ["react", "react-dom", "next", "node"],
 		"paths": {
 			"@/*": ["./*"],
 			"@repo/*": ["../../packages/*"]
