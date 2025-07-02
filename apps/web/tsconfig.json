@@ -1,12 +1,15 @@
 {
 	"extends": [
-		"@repo/typescript-config/nextjs.json",
-		"@repo/cms/typescript-config.json"
+		"../../packages/typescript-config/nextjs.json",
+		"../../packages/cms/typescript-config.json"
 	],
 	"compilerOptions": {
 		"baseUrl": ".",
 		"jsx": "preserve",
 		"lib": ["DOM", "DOM.Iterable", "ES2015", "ES2022"],
+		"moduleResolution": "bundler",
+		"module": "ESNext",
+		"types": ["react", "react-dom", "next", "node"],
 		"paths": {
 			"@/*": ["./*"],
 			"@repo/*": ["../../packages/*"]
