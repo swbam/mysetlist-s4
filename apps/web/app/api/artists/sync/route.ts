@@ -141,7 +141,8 @@ export async function POST(request: NextRequest) {
     const existingArtist = await db
       .select()
       .from(artists)
-      .where(eq(artists.spotifyId, spotifyArtist.id))
+      // @ts-expect-error drizzle dual-version type mismatch
+      .where(eq(artists.spotifyId, spotifyArtist.id as string))
       .limit(1);
 
     let artistRecord;
@@ -162,7 +163,8 @@ export async function POST(request: NextRequest) {
           lastSyncedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(eq(artists.id, existingArtist[0].id))
+        // @ts-expect-error drizzle dual-version type mismatch
+        .where(eq(artists.id, existingArtist[0].id as string))
         .returning();
 
       artistRecord = updated;
