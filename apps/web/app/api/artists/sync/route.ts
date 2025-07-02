@@ -187,39 +187,20 @@ export async function POST(request: NextRequest) {
       artistRecord = created;
     }
 
-    // Sync top tracks
+    // Fire-and-forget background jobs
     try {
-      const topTracks = await spotify.getArtistTopTracks(spotifyArtist.id);
-      
-      for (const track of topTracks.tracks || []) {
-        await db
-          .insert(songs)
-          .values({
-            spotifyId: track.id,
-            title: track.name,
-            artist: track.artists[0]?.name || spotifyArtist.name,
-            album: track.album?.name,
-            albumArtUrl: track.album?.images?.[0]?.url,
-            releaseDate: track.album?.release_date ? new Date(track.album.release_date) : null,
-            durationMs: track.duration_ms,
-            popularity: track.popularity || 0,
-            previewUrl: track.preview_url,
-            isExplicit: track.explicit || false,
-            isPlayable: track.is_playable !== false,
-          })
-          .onConflictDoUpdate({
-            target: songs.spotifyId,
-            set: {
-              title: track.name,
-              popularity: track.popularity || 0,
-              isPlayable: track.is_playable !== false,
-              updatedAt: new Date(),
-            },
-          });
+      const supabaseAdmin = await import('@/lib/supabase/server');
+      await supabaseAdmin.createClient().functions.invoke('sync-song-catalog', {
+        body: { spotifyId: spotifyArtist.id, artistId: artistRecord.id },
+      });
+
+      if (artistRecord.ticketmasterId) {
+        await supabaseAdmin.createClient().functions.invoke('sync-artist-shows', {
+          body: { ticketmasterId: artistRecord.ticketmasterId, artistId: artistRecord.id },
+        });
       }
-    } catch (error) {
-      console.error('Failed to sync top tracks:', error);
-      // Continue without failing the entire sync
+    } catch (err) {
+      console.error('Failed to enqueue background jobs', err);
     }
 
     return NextResponse.json({

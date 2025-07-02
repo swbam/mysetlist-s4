@@ -24,6 +24,7 @@ export const artists = pgTable('artists', {
   bio: text('bio'),
   externalUrls: text('external_urls'), // JSON object
   lastSyncedAt: timestamp('last_synced_at'),
+  songCatalogSyncedAt: timestamp('song_catalog_synced_at'),
   trendingScore: doublePrecision('trending_score').default(0),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

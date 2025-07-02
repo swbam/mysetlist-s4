@@ -66,7 +66,7 @@ export function ArtistSearch() {
         const response = await fetch('/api/artists/sync', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ externalId: artist.externalId, name: artist.name }),
+          body: JSON.stringify({ artistName: artist.name }),
         });
 
         const data = await response.json();
@@ -147,19 +147,14 @@ export function ArtistSearch() {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    {artist.source === 'ticketmaster' && (
-                      <Badge variant="outline" className="text-xs">
-                        External
-                      </Badge>
-                    )}
                     {isSyncing === artist.id ? (
                       <Button size="sm" disabled>
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Syncing...
                       </Button>
                     ) : (
-                      <Button size="sm" variant={artist.source === 'database' ? 'default' : 'secondary'}>
-                        {artist.source === 'database' ? 'View' : 'Import'}
+                      <Button size="sm" variant="default">
+                        View
                       </Button>
                     )}
                   </div>
