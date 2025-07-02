@@ -1,5 +1,5 @@
 import { db, artistStats, userFollowsArtists, setlistSongs, setlists } from '@repo/database';
-import { eq, count, sql, distinct } from 'drizzle-orm';
+import { eq, count, sql } from 'drizzle-orm';
 import { Calendar, Music, Users, TrendingUp } from 'lucide-react';
 
 interface ArtistStatsProps {
@@ -25,10 +25,13 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
   const followerCount = followerResult[0]?.count || 0;
 
   // Get total unique songs played in artist setlists
+  // @ts-ignore drizzle dual-version type mismatch
   const songsResult = await db
-    .select({ total: count(distinct(setlistSongs.songId)) })
+    .select({ total: count(sql`distinct ${setlistSongs.songId}`) })
     .from(setlistSongs)
+    // @ts-ignore drizzle dual-version type mismatch
     .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
+    // @ts-ignore drizzle dual-version type mismatch
     .where(eq(setlists.artistId, artistId));
 
   const totalSongs = songsResult[0]?.total || 0;
