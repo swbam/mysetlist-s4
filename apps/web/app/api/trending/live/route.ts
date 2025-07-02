@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
     if (type === 'all' || type === 'artist') {
       const { data: artists } = await supabase
         .from('artists')
-        .select('id, name, slug, image_url, trending_score, followers, popularity')
+        .select('id, name, slug, image_url, trending_score, followers, popularity, follower_count')
         .order('trending_score', { ascending: false })
         .limit(type === 'artist' ? limit : Math.ceil(limit / 3));
 
@@ -62,9 +62,9 @@ export async function GET(request: NextRequest) {
           score: artist.trending_score ?? 0,
           metrics: {
             searches: 0,
-            views: 0,
-            interactions: artist.followers ?? 0,
-            growth: 0,
+            views: artist.popularity ?? 0,
+            interactions: artist.followers ?? artist.follower_count ?? 0,
+            growth: artist.trending_score ?? 0,
           },
           timeframe,
         });
@@ -77,9 +77,10 @@ export async function GET(request: NextRequest) {
     if (type === 'all' || type === 'show') {
       const { data: shows } = await supabase
         .from('shows')
-        .select('id, slug, name, trending_score')
+        .select('id, slug, name, trending_score, view_count, vote_count, date')
         .order('trending_score', { ascending: false })
-        .lt('date', new Date().toISOString())
+        // Upcoming shows only
+        .gte('date', new Date().toISOString().split('T')[0])
         .limit(type === 'show' ? limit : Math.ceil(limit / 3));
 
       (shows ?? []).forEach((show) => {
@@ -90,10 +91,10 @@ export async function GET(request: NextRequest) {
           slug: show.slug,
           score: show.trending_score ?? 0,
           metrics: {
-            searches: 0,
-            views: 0,
-            interactions: 0,
-            growth: 0,
+            searches: show.view_count ?? 0,
+            views: show.view_count ?? 0,
+            interactions: show.vote_count ?? 0,
+            growth: show.trending_score ?? 0,
           },
           timeframe,
         });
@@ -106,7 +107,7 @@ export async function GET(request: NextRequest) {
     if (type === 'all' || type === 'venue') {
       const { data: venues } = await supabase
         .from('venues')
-        .select('id, name, slug, show_count')
+        .select('id, name, slug, show_count, capacity')
         .order('show_count', { ascending: false })
         .limit(type === 'venue' ? limit : Math.ceil(limit / 3));
 
@@ -118,10 +119,10 @@ export async function GET(request: NextRequest) {
           slug: venue.slug,
           score: (venue.show_count ?? 0),
           metrics: {
-            searches: 0,
-            views: 0,
-            interactions: 0,
-            growth: 0,
+            searches: venue.show_count ?? 0,
+            views: venue.capacity ?? 0,
+            interactions: venue.show_count ?? 0,
+            growth: venue.show_count ?? 0,
           },
           timeframe,
         });

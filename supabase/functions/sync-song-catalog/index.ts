@@ -94,9 +94,36 @@ Deno.serve(async (req: Request) => {
     }
 
     // update artist timestamp
-    await supabase.from('artists').update({ song_catalog_synced_at: new Date().toISOString() }).eq('id', payload.artistId);
+    await supabase.from('artists')
+      .update({ song_catalog_synced_at: new Date().toISOString() })
+      .eq('id', payload.artistId);
 
-    return new Response(JSON.stringify({ success: true, imported: rows.length }), { headers: { 'Content-Type': 'application/json' } });
+    // ------------------------------------------------------------------
+    // Update artist_stats.total_songs (create row if missing)
+    // ------------------------------------------------------------------
+    const { data: statRow } = await supabase
+      .from('artist_stats')
+      .select('id, total_songs')
+      .eq('artist_id', payload.artistId)
+      .maybeSingle();
+
+    const newTotal = (statRow?.total_songs ?? 0) + rows.length;
+
+    if (statRow?.id) {
+      await supabase
+        .from('artist_stats')
+        .update({ total_songs: newTotal, updated_at: new Date().toISOString() })
+        .eq('id', statRow.id);
+    } else {
+      await supabase
+        .from('artist_stats')
+        .insert({ artist_id: payload.artistId, total_songs: newTotal });
+    }
+
+    return new Response(
+      JSON.stringify({ success: true, imported: rows.length, totalSongs: newTotal }),
+      { headers: { 'Content-Type': 'application/json' } }
+    );
   } catch (e) {
     console.error('sync-song-catalog error', e);
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });

@@ -9,6 +9,7 @@ import { cn } from '@repo/design-system/lib/utils';
 import { LiveIndicator } from '@/components/live-indicator';
 import { useRealtimeShow } from '@/hooks/use-realtime-show';
 import { ShareButtons } from './share-buttons';
+import { Button } from '@repo/design-system/components/ui/button';
 
 type ShowHeaderProps = {
   show: {
@@ -36,6 +37,7 @@ type ShowHeaderProps = {
     };
     is_featured?: boolean;
     is_verified?: boolean;
+    ticket_url?: string | null;
   };
 };
 
@@ -72,113 +74,40 @@ export function ShowHeader({ show }: ShowHeaderProps) {
     return parts.join(', ');
   };
   
+  const bg = show.headliner_artist.image_url ?? undefined;
+  
   return (
-    <div className="flex flex-col gap-6">
-      {/* Artist Image & Info */}
-      <div className="flex flex-col sm:flex-row gap-6 items-start">
-        {show.headliner_artist.image_url && (
-          <div className="relative w-full sm:w-32 h-48 sm:h-32 rounded-lg overflow-hidden bg-muted">
-            <Image
-              src={show.headliner_artist.image_url}
-              alt={show.headliner_artist.name}
-              fill
-              className="object-cover"
-              priority
-            />
-          </div>
-        )}
-        
-        <div className="flex-1">
-          <div className="flex items-start justify-between gap-4 mb-2">
-            <h1 className="text-3xl md:text-4xl font-bold">
-              <Link 
-                href={`/artists/${show.headliner_artist.slug}`}
-                className="hover:underline"
-              >
-                {show.headliner_artist.name}
+    <section className="relative h-72 md:h-96 w-full overflow-hidden rounded-xl">
+      {bg ? (
+        <img
+          src={bg}
+          alt={show.headliner_artist.name}
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-muted/20" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/90" />
+      <div className="absolute bottom-8 left-8 text-white max-w-lg">
+        <h1 className="text-3xl md:text-5xl font-extrabold mb-2">
+          {show.headliner_artist.name}
+        </h1>
+        <p className="text-sm md:text-base text-muted-foreground">
+          {show.venue?.name ? `${show.venue.name} · ` : ''}{format(new Date(show.date), 'MMM d, yyyy')}
+        </p>
+        <div className="mt-4 flex gap-3">
+          <Button size="sm" asChild>
+            <Link href="#setlists">Vote Setlist</Link>
+          </Button>
+          {show.ticket_url && (
+            <Button variant="outline" size="sm" asChild>
+              <Link href={show.ticket_url} target="_blank" rel="noopener">
+                Buy Tickets
               </Link>
-            </h1>
-            
-            <div className="flex gap-2 flex-wrap">
-              {showStatus === 'ongoing' ? (
-                <LiveIndicator size="md" />
-              ) : (
-                <Badge 
-                  variant="outline" 
-                  className={cn("capitalize", getStatusColor(showStatus))}
-                >
-                  {showStatus}
-                </Badge>
-              )}
-              
-              {show.is_featured && (
-                <Badge variant="default" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20">
-                  Featured
-                </Badge>
-              )}
-              
-              {show.is_verified && (
-                <Badge variant="default" className="bg-blue-500/10 text-blue-500 border-blue-500/20">
-                  Verified
-                </Badge>
-              )}
-            </div>
-          </div>
-          
-          {/* Social Sharing */}
-          <div className="flex justify-end mb-4">
-            <ShareButtons
-              url={`/shows/${show.slug}`}
-              title={`${show.headliner_artist.name} at ${show.venue?.name || 'TBA'}`}
-              description={`Get tickets and setlist for ${show.headliner_artist.name} performing at ${show.venue?.name || 'TBA'} on ${formattedDate}`}
-              imageUrl={show.headliner_artist.image_url}
-              artistName={show.headliner_artist.name}
-              venueName={show.venue?.name}
-              showDate={formattedDate}
-            />
-          </div>
-          
-          <div className="space-y-2 text-muted-foreground">
-            {/* Date */}
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              <span>{formattedDate}</span>
-            </div>
-            
-            {/* Time */}
-            {(show.doors_time || show.start_time) && (
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                <span>
-                  {show.doors_time && `Doors: ${show.doors_time}`}
-                  {show.doors_time && show.start_time && ' • '}
-                  {show.start_time && `Show: ${show.start_time}`}
-                </span>
-              </div>
-            )}
-            
-            {/* Venue */}
-            <div className="flex items-center gap-2">
-              <MapPin className="h-4 w-4" />
-              <span>
-                {show.venue ? (
-                  <>
-                    <Link 
-                      href={`/venues/${show.venue.slug}`}
-                      className="hover:underline font-medium text-foreground"
-                    >
-                      {show.venue.name}
-                    </Link>
-                    <span className="text-muted-foreground"> • {getVenueLocation()}</span>
-                  </>
-                ) : (
-                  'Venue TBA'
-                )}
-              </span>
-            </div>
-          </div>
+            </Button>
+          )}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

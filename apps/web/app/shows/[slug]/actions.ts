@@ -33,80 +33,12 @@ export async function getShowDetails(slug: string) {
     return null;
   }
   
-  // Get attendance count
-  const { count: attendanceCount } = await supabase
-    .from('show_attendances')
-    .select('*', { count: 'exact', head: true })
-    .eq('show_id', show.id);
-    
-  // Check if current user is attending
   const user = await getCurrentUser();
-  let isAttending = false;
-  
-  if (user) {
-    const { data: attendance } = await supabase
-      .from('show_attendances')
-      .select('id')
-      .eq('show_id', show.id)
-      .eq('user_id', user.id)
-      .single();
-      
-    isAttending = !!attendance;
-  }
   
   return {
     ...show,
-    attendanceCount: attendanceCount || 0,
-    isAttending,
     currentUser: user
   };
-}
-
-export async function toggleAttendance(showId: string) {
-  const supabase = await createClient();
-  const user = await getCurrentUser();
-  
-  if (!user) {
-    throw new Error('You must be logged in to mark attendance');
-  }
-  
-  // Check if already attending
-  const { data: existing } = await supabase
-    .from('show_attendances')
-    .select('id')
-    .eq('show_id', showId)
-    .eq('user_id', user.id)
-    .single();
-    
-  if (existing) {
-    // Remove attendance
-    const { error } = await supabase
-      .from('show_attendances')
-      .delete()
-      .eq('id', existing.id);
-      
-    if (error) throw error;
-    
-    // Update show attendee count
-    await supabase.rpc('decrement_attendee_count', { show_id: showId });
-    
-    return { attending: false };
-  } else {
-    // Add attendance
-    const { error } = await supabase
-      .from('show_attendances')
-      .insert({
-        show_id: showId,
-        user_id: user.id
-      });
-      
-    if (error) throw error;
-    
-    // Update show attendee count
-    await supabase.rpc('increment_attendee_count', { show_id: showId });
-    
-    return { attending: true };
-  }
 }
 
 export async function createSetlist(

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@repo/database';
-import { artists, songs } from '@repo/database';
+import { artists } from '@repo/database';
 import { eq } from 'drizzle-orm';
 import { env } from '@/env';
+import { createServiceClient } from '@/lib/supabase/server';
 
 // Simple Spotify client without external dependencies
 class SpotifyClient {
@@ -19,7 +20,7 @@ class SpotifyClient {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': `Basic ${Buffer.from(
-          `${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
+          `${env.SPOTIFY_CLIENT_ID!}:${env.SPOTIFY_CLIENT_SECRET!}`
         ).toString('base64')}`,
       },
       body: 'grant_type=client_credentials',
@@ -140,7 +141,8 @@ export async function POST(request: NextRequest) {
     const existingArtist = await db
       .select()
       .from(artists)
-      .where(eq(artists.spotifyId, spotifyArtist.id))
+      // @ts-expect-error drizzle dual-version type mismatch
+      .where(eq(artists.spotifyId, spotifyArtist.id as string))
       .limit(1);
 
     let artistRecord;
@@ -161,7 +163,8 @@ export async function POST(request: NextRequest) {
           lastSyncedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(eq(artists.id, existingArtist[0].id))
+        // @ts-expect-error drizzle dual-version type mismatch
+        .where(eq(artists.id, existingArtist[0].id as string))
         .returning();
 
       artistRecord = updated;
@@ -189,13 +192,13 @@ export async function POST(request: NextRequest) {
 
     // Fire-and-forget background jobs
     try {
-      const supabaseAdmin = await import('@/lib/supabase/server');
-      await supabaseAdmin.createClient().functions.invoke('sync-song-catalog', {
+      const supabaseAdmin = await createServiceClient();
+      await supabaseAdmin.functions.invoke('sync-song-catalog', {
         body: { spotifyId: spotifyArtist.id, artistId: artistRecord.id },
       });
 
       if (artistRecord.ticketmasterId) {
-        await supabaseAdmin.createClient().functions.invoke('sync-artist-shows', {
+        await supabaseAdmin.functions.invoke('sync-artist-shows', {
           body: { ticketmasterId: artistRecord.ticketmasterId, artistId: artistRecord.id },
         });
       }

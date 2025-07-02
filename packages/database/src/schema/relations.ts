@@ -13,7 +13,6 @@ import {
   songs,
   setlistSongs,
   votes,
-  userShowAttendance,
   userFollowsArtists,
 } from './index';
 
@@ -23,7 +22,6 @@ export const usersRelations = relations(users, ({ many }) => ({
   venueReviews: many(venueReviews),
   venuePhotos: many(venuePhotos),
   venueInsiderTips: many(venueInsiderTips),
-  showAttendances: many(userShowAttendance),
   followedArtists: many(userFollowsArtists),
 }));
 
@@ -63,7 +61,6 @@ export const showsRelations = relations(shows, ({ many, one }) => ({
   }),
   setlists: many(setlists),
   supportingArtists: many(showArtists),
-  attendances: many(userShowAttendance),
 }));
 
 export const showArtistsRelations = relations(showArtists, ({ one }) => ({
@@ -120,7 +117,6 @@ export const votesRelations = relations(votes, ({ one }) => ({
   }),
 }));
 
-
 export const venueReviewsRelations = relations(venueReviews, ({ one }) => ({
   venue: one(venues, {
     fields: [venueReviews.venueId],
@@ -151,17 +147,6 @@ export const venueInsiderTipsRelations = relations(venueInsiderTips, ({ one }) =
   user: one(users, {
     fields: [venueInsiderTips.userId],
     references: [users.id],
-  }),
-}));
-
-export const userShowAttendanceRelations = relations(userShowAttendance, ({ one }) => ({
-  user: one(users, {
-    fields: [userShowAttendance.userId],
-    references: [users.id],
-  }),
-  show: one(shows, {
-    fields: [userShowAttendance.showId],
-    references: [shows.id],
   }),
 }));
 

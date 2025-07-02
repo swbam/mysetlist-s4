@@ -1,5 +1,4 @@
-import { db, artistStats, userFollowsArtists } from '@repo/database';
-import { eq, count, sql } from 'drizzle-orm';
+import { db, sql } from '@repo/database';
 import { Calendar, Music, Users, TrendingUp } from 'lucide-react';
 
 interface ArtistStatsProps {
@@ -7,22 +6,32 @@ interface ArtistStatsProps {
 }
 
 export async function ArtistStats({ artistId }: ArtistStatsProps) {
-  // Get stats from the artistStats table
-  const stats = await db
-    .select()
-    .from(artistStats)
-    .where(eq(artistStats.artistId, artistId))
-    .limit(1);
+  // Fetch artist stats (total shows, avg setlist length) via raw SQL
+  const statsRes = await db.execute(
+    sql`SELECT total_shows, avg_setlist_length
+     FROM artist_stats
+     WHERE artist_id = ${artistId}
+     LIMIT 1`
+  ) as unknown as { rows: { total_shows: number | null; avg_setlist_length: number | null }[] };
 
-  const artistStatsData = stats[0];
+  const artistStatsData = statsRes.rows[0] ?? { total_shows: 0, avg_setlist_length: null };
 
-  // Get follower count
-  const followerResult = await db
-    .select({ count: count() })
-    .from(userFollowsArtists)
-    .where(eq(userFollowsArtists.artistId, artistId));
+  // Fetch follower count
+  const followersRes = await db.execute(
+    sql`SELECT COUNT(*)::int AS cnt FROM user_follows_artists WHERE artist_id = ${artistId}`
+  ) as unknown as { rows: { cnt: number }[] };
 
-  const followerCount = followerResult[0]?.count || 0;
+  const followerCount = followersRes.rows[0]?.cnt ?? 0;
+
+  // Get total unique songs across all setlists for this artist via raw SQL
+  const songCountRes = await db.execute(
+    sql`SELECT COUNT(DISTINCT ss.song_id)::int AS cnt
+       FROM setlist_songs ss
+       JOIN setlists s ON ss.setlist_id = s.id
+       WHERE s.artist_id = ${artistId}`
+  ) as unknown as { rows: { cnt: number }[] };
+
+  const totalSongs = songCountRes.rows?.[0]?.cnt ?? 0;
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -39,7 +48,7 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
           <Calendar className="h-4 w-4" />
           <span className="text-sm">Total Shows</span>
         </div>
-        <p className="text-2xl font-bold">{artistStatsData?.totalShows || 0}</p>
+        <p className="text-2xl font-bold">{artistStatsData.total_shows ?? 0}</p>
       </div>
 
       <div className="bg-card rounded-lg p-4 border">
@@ -47,7 +56,7 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
           <Music className="h-4 w-4" />
           <span className="text-sm">Total Songs</span>
         </div>
-        <p className="text-2xl font-bold">{artistStatsData?.totalSongs || 0}</p>
+        <p className="text-2xl font-bold">{totalSongs}</p>
       </div>
 
       <div className="bg-card rounded-lg p-4 border">
@@ -56,8 +65,8 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
           <span className="text-sm">Avg Songs/Show</span>
         </div>
         <p className="text-2xl font-bold">
-          {artistStatsData?.avgSongsPerShow ? 
-            Number(artistStatsData.avgSongsPerShow).toFixed(1) : 
+          {artistStatsData.avg_setlist_length ? 
+            Number(artistStatsData.avg_setlist_length).toFixed(1) : 
             '0'
           }
         </p>
