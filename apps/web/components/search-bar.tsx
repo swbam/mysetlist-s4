@@ -41,7 +41,7 @@ export function SearchBar({
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState<'all' | 'artist' | 'show' | 'venue' | 'song'>('all');
+  const [selectedType] = useState<'artist'>('artist');
   const [error, setError] = useState<string | null>(null);
   
   const debouncedQuery = useDebounce(query, 300);
@@ -58,14 +58,22 @@ export function SearchBar({
     setError(null);
 
     try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&limit=10`);
+      const response = await fetch(`/api/artists/search?q=${encodeURIComponent(searchQuery)}`);
       
       if (!response.ok) {
         throw new Error('Search failed');
       }
 
       const data = await response.json();
-      setResults(data.results || []);
+      const artists = data.artists || [];
+      const mapped = artists.map((a: any) => ({
+        id: a.slug || a.id,
+        type: 'artist',
+        title: a.name,
+        imageUrl: a.imageUrl,
+        slug: a.id, // slug in search API
+      })) as SearchResult[];
+      setResults(mapped);
       setIsOpen(true);
     } catch (err) {
       console.error('Search failed:', err);
@@ -152,6 +160,9 @@ export function SearchBar({
     groups[type].push(result);
     return groups;
   }, {} as Record<string, SearchResult[]>);
+
+  const typeOrder = ['artist'];
+  const typeLabels = { artist: 'Artists' } as const;
 
   if (variant === 'hero') {
     return (
@@ -288,13 +299,8 @@ function SearchResults({
     return acc;
   }, {} as Record<string, SearchResult[]>);
 
-  const typeOrder = ['artist', 'show', 'venue', 'song'];
-  const typeLabels = {
-    artist: 'Artists',
-    show: 'Shows',
-    venue: 'Venues',
-    song: 'Songs',
-  };
+  const typeOrder = ['artist'];
+  const typeLabels = { artist: 'Artists' } as const;
 
   return (
     <Command shouldFilter={false}>
