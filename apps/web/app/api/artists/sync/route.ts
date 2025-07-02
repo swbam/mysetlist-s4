@@ -3,6 +3,7 @@ import { db } from '@repo/database';
 import { artists, songs } from '@repo/database';
 import { eq } from 'drizzle-orm';
 import { env } from '@/env';
+import { createServiceClient } from '@/lib/supabase/server';
 
 // Simple Spotify client without external dependencies
 class SpotifyClient {
@@ -189,13 +190,13 @@ export async function POST(request: NextRequest) {
 
     // Fire-and-forget background jobs
     try {
-      const supabaseAdmin = await import('@/lib/supabase/server');
-      await supabaseAdmin.createClient().functions.invoke('sync-song-catalog', {
+      const supabaseAdmin = await createServiceClient();
+      await supabaseAdmin.functions.invoke('sync-song-catalog', {
         body: { spotifyId: spotifyArtist.id, artistId: artistRecord.id },
       });
 
       if (artistRecord.ticketmasterId) {
-        await supabaseAdmin.createClient().functions.invoke('sync-artist-shows', {
+        await supabaseAdmin.functions.invoke('sync-artist-shows', {
           body: { ticketmasterId: artistRecord.ticketmasterId, artistId: artistRecord.id },
         });
       }
