@@ -24,7 +24,9 @@ export async function GET(request: NextRequest) {
       .where(
         or(
           ilike(artists.name, `%${query}%`),
-          ilike(sql`coalesce(${artists.genres}, '')`, `%${query}%`)
+          // Fall back to empty string when genres is null
+          // @ts-ignore drizzle type mismatch workaround
+          sql`coalesce(${artists.genres}, '') ILIKE ${'%' + query + '%'}`
         )
       )
       .limit(10);
