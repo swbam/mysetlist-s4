@@ -1,5 +1,4 @@
-import { db } from '@repo/database';
-import { sql } from 'drizzle-orm';
+import { db, sql } from '@repo/database';
 import { Calendar, Music, Users, TrendingUp } from 'lucide-react';
 
 interface ArtistStatsProps {
