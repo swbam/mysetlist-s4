@@ -150,6 +150,11 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Ensure mobile horizontal padding */
+  .container {
+    @apply px-4 md:px-6 lg:px-8;
+  }
 }
 
 /* This layer is by next-forge */
