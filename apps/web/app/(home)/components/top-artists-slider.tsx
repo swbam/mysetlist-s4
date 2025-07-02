@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@repo/design-system/components/ui/avatar';
 import { getTrendingArtists } from '@/lib/trending';
-import { KeenSliderPlugin, useKeenSlider } from 'keen-slider/react';
+// @ts-ignore – local declaration in /types
+import { useKeenSlider } from 'keen-slider/react';
 import 'keen-slider/keen-slider.min.css';
 
 interface Artist {
@@ -34,8 +35,16 @@ export default function TopArtistsSlider() {
 
 	useEffect(() => {
 		(async () => {
-			const data = await getTrendingArtists({ limit: 12 });
-			setArtists(data.map(a => ({ id: a.id, name: a.name, slug: a.slug, image_url: a.image_url })));
+			const data = await getTrendingArtists();
+			const top12 = data.slice(0, 12).filter(a => a.slug);
+			setArtists(
+				top12.map(a => ({
+					id: a.id as string,
+					name: a.name,
+					slug: a.slug!,
+					image_url: a.image_url ?? null,
+				}))
+			);
 		})();
 	}, []);
 
