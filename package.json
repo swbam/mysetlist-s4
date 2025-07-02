@@ -29,7 +29,8 @@
     "edge:secrets": "./scripts/setup-edge-function-secrets.sh",
     "vercel": "vercel",
     "vercel:prod": "vercel --prod",
-    "all": "pnpm install && pnpm build && pnpm test"
+    "all": "pnpm install && pnpm build && pnpm test",
+    "updateit": "supabase db repair && supabase db push && supabase functions deploy scheduled-sync && vercel env pull .env.production"
   },
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.0",
