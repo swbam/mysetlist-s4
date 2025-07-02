@@ -1,4 +1,4 @@
-import { db, artistStats, userFollowsArtists, setlistSongs, setlists } from '@repo/database';
+import { db, artistStats, userFollowsArtists } from '@repo/database';
 import { eq, count, sql } from 'drizzle-orm';
 import { Calendar, Music, Users, TrendingUp } from 'lucide-react';
 
@@ -24,17 +24,16 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
 
   const followerCount = followerResult[0]?.count || 0;
 
-  // Get total unique songs played in artist setlists
+  // Get total unique songs across all setlists for this artist via raw SQL to avoid cross-version type issues
   // @ts-ignore drizzle dual-version type mismatch
-  const songsResult = await db
-    .select({ total: count(sql`distinct ${setlistSongs.songId}`) })
-    .from(setlistSongs)
-    // @ts-ignore drizzle dual-version type mismatch
-    .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
-    // @ts-ignore drizzle dual-version type mismatch
-    .where(eq(setlists.artistId, artistId));
+  const songCountRes = await db.execute(
+    sql`SELECT COUNT(DISTINCT ss.song_id)::int AS count
+        FROM setlist_songs ss
+        JOIN setlists s ON ss.setlist_id = s.id
+        WHERE s.artist_id = ${artistId}`
+  ) as unknown as { rows: { count: number }[] };
 
-  const totalSongs = songsResult[0]?.total || 0;
+  const totalSongs = songCountRes.rows?.[0]?.count ?? 0;
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
