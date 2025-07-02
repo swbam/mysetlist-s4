@@ -1,6 +1,5 @@
 import { createMetadata } from '@repo/seo/metadata';
 import type { Metadata } from 'next';
-import { VenuePageWrapper } from './components/venue-page-wrapper';
 import { VenueGridServer } from './components/venue-grid-server';
 import { VenueGridClient } from './components/venue-grid-client';
 import { getVenues } from './actions';
@@ -68,12 +67,10 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
             </p>
           </div>
           
-          <VenuePageWrapper venues={venues}>
-            <VenueGridClient venues={venues.map(venue => ({
-              ...venue,
-              avgRating: venue.avgRating ?? undefined
-            }))} />
-          </VenuePageWrapper>
+          <VenueGridClient venues={venues.map(venue => ({
+            ...venue,
+            avgRating: venue.avgRating ?? undefined
+          }))} />
         </div>
       </div>
     </div>
