@@ -400,8 +400,8 @@ importers:
         specifier: ^2.24.2
         version: 2.24.3
       '@liveblocks/node':
-        specifier: ^2.24.2
-        version: 2.24.3
+        specifier: ^3.0.0
+        version: 3.0.0(@types/json-schema@7.0.15)
       '@liveblocks/react':
         specifier: ^2.24.2
         version: 2.24.3(react@19.1.0)
@@ -2361,8 +2361,13 @@ packages:
   '@liveblocks/core@2.24.3':
     resolution: {integrity: sha512-a0OL6VJ9jBexIcv7dAB+d0IPENZ8knFBxD/OzHUakQFVHNztriXVEQtZ84SYIxMGf0LayZO9UgA0gR9Qx0inIQ==}
 
-  '@liveblocks/node@2.24.3':
-    resolution: {integrity: sha512-BLQop7nFTDDOOzWA4ywOgGVNILXUCm1XP4jmhli7mKcOovj7OaZHnCDwS7EETLNJEsYlORfDmbUgEm++ftSz0Q==}
+  '@liveblocks/core@3.0.0':
+    resolution: {integrity: sha512-JKKNbIUa0Z49lPwybutaXspyUiaHeXTdMAE37kXDmnzJI9E0+P0jG5LZBd0JzRMTWAsnMCU4go4Z0MrHWvBFSg==}
+    peerDependencies:
+      '@types/json-schema': ^7
+
+  '@liveblocks/node@3.0.0':
+    resolution: {integrity: sha512-3zX1vwMfUJM7yHkS1Yew9ks97DP6O6BpGSdmSXq8ih9PerxqYVDaWwnCyHSFto/O2/uEmTfThPmv+OSLHqxG9w==}
 
   '@liveblocks/react@2.24.3':
     resolution: {integrity: sha512-XFjoQpt/NSSqe4y4PZHQHab7ff9OwZ6trcmXxMFIGxpX8dEcYVFSwdR4Q+uIBE9ymktiJMgVrw8gg7StTo8iCw==}
@@ -4517,6 +4522,9 @@ packages:
 
   '@types/node@22.15.21':
     resolution: {integrity: sha512-EV/37Td6c+MgKAbkcLG6vqZ2zEYHD7bvSrzqqs2RIhbA6w3x+Dqz8MZM3sP6kGTeLrdoOgKZe+Xja7tUB2DNkQ==}
+
+  '@types/node@22.16.0':
+    resolution: {integrity: sha512-B2egV9wALML1JCpv3VQoQ+yesQKAmNMBIAY7OteVrikcOcAkWm+dGL6qpeCktPjAv6N1JLnhbNiqS35UpFyBsQ==}
 
   '@types/node@24.0.10':
     resolution: {integrity: sha512-ENHwaH+JIRTDIEEbDK6QSQntAYGtbvdDXnMXnZaZ6k13Du1dPMmprkEHIL7ok2Wl2aZevetwTAb5S+7yIF+enA==}
@@ -10057,13 +10065,18 @@ snapshots:
 
   '@liveblocks/core@2.24.3': {}
 
-  '@liveblocks/node@2.24.3':
+  '@liveblocks/core@3.0.0(@types/json-schema@7.0.15)':
     dependencies:
-      '@liveblocks/core': 2.24.3
+      '@types/json-schema': 7.0.15
+
+  '@liveblocks/node@3.0.0(@types/json-schema@7.0.15)':
+    dependencies:
+      '@liveblocks/core': 3.0.0(@types/json-schema@7.0.15)
       '@stablelib/base64': 1.0.1
       fast-sha256: 1.3.0
       node-fetch: 2.7.0
     transitivePeerDependencies:
+      - '@types/json-schema'
       - encoding
 
   '@liveblocks/react@2.24.3(react@19.1.0)':
@@ -10123,7 +10136,7 @@ snapshots:
 
   '@neondatabase/serverless@1.0.0':
     dependencies:
-      '@types/node': 22.15.21
+      '@types/node': 22.16.0
       '@types/pg': 8.11.6
     optional: true
 
@@ -10280,7 +10293,7 @@ snapshots:
       '@octokit/request-error': 2.1.0
       '@octokit/types': 6.41.0
       is-plain-object: 5.0.0
-      node-fetch: 2.6.7
+      node-fetch: 2.7.0
       universal-user-agent: 6.0.1
     transitivePeerDependencies:
       - encoding
@@ -12638,6 +12651,11 @@ snapshots:
   '@types/node@22.15.21':
     dependencies:
       undici-types: 6.21.0
+
+  '@types/node@22.16.0':
+    dependencies:
+      undici-types: 6.21.0
+    optional: true
 
   '@types/node@24.0.10':
     dependencies:
