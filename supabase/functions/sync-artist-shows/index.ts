@@ -39,15 +39,65 @@ Deno.serve(async (req: Request) => {
       const dateStr = event.dates.start.dateTime || event.dates.start.localDate;
       const date = new Date(dateStr);
       const slug = `${body.artistId}-${event.id}`;
-      const { error } = await supabase.from('shows').upsert({
-        headliner_artist_id: body.artistId,
-        name: event.name,
-        slug,
-        date: date.toISOString().split('T')[0],
-        status: date > new Date() ? 'upcoming' : 'completed',
-        ticket_url: event.url,
-        ticketmaster_id: event.id,
-      }, { onConflict: 'slug' });
+
+      // 1. Resolve or create venue -----------------------------------------
+      let venueId: string | null = null;
+      const tmVenue = event._embedded?.venues?.[0];
+      if (tmVenue) {
+        try {
+          const venueSlug = tmVenue.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+          // Check existing
+          const { data: existingVenue } = await supabase
+            .from('venues')
+            .select('id')
+            .eq('slug', venueSlug)
+            .maybeSingle();
+
+          if (existingVenue?.id) {
+            venueId = existingVenue.id;
+          } else {
+            // Insert minimal venue record
+            const { data: newVenue, error: venueErr } = await supabase
+              .from('venues')
+              .insert({
+                name: tmVenue.name,
+                slug: venueSlug,
+                city: tmVenue.city?.name ?? 'Unknown',
+                state: tmVenue.state?.name ?? null,
+                country: tmVenue.country?.name ?? 'Unknown',
+                timezone: tmVenue.timezone ?? 'UTC',
+                address: tmVenue.address?.line1 ?? null,
+                postal_code: tmVenue.postalCode ?? null,
+                latitude: parseFloat(tmVenue.location?.latitude ?? '0'),
+                longitude: parseFloat(tmVenue.location?.longitude ?? '0'),
+                capacity: tmVenue.capacity ?? null,
+                website: tmVenue.url ?? null,
+              })
+              .select('id')
+              .single();
+
+            if (!venueErr && newVenue) venueId = newVenue.id;
+          }
+        } catch (vErr) {
+          console.error('Venue upsert failed', vErr);
+        }
+      }
+
+      // 2. Upsert show -------------------------------------------------------
+      const { error } = await supabase
+        .from('shows')
+        .upsert({
+          headliner_artist_id: body.artistId,
+          name: event.name,
+          slug,
+          date: date.toISOString().split('T')[0],
+          status: date > new Date() ? 'upcoming' : 'completed',
+          ticket_url: event.url,
+          ticketmaster_id: event.id,
+          venue_id: venueId,
+        }, { onConflict: 'slug' });
+
       if (!error) inserted++;
     }
     return new Response(JSON.stringify({ success: true, processed: events.length, inserted }), { headers: { 'Content-Type': 'application/json' } });

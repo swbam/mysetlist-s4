@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@repo/database';
-import { artists, songs } from '@repo/database';
+import { artists } from '@repo/database';
 import { eq } from 'drizzle-orm';
 import { env } from '@/env';
 import { createServiceClient } from '@/lib/supabase/server';
@@ -20,7 +20,7 @@ class SpotifyClient {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Authorization': `Basic ${Buffer.from(
-          `${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
+          `${env.SPOTIFY_CLIENT_ID!}:${env.SPOTIFY_CLIENT_SECRET!}`
         ).toString('base64')}`,
       },
       body: 'grant_type=client_credentials',
