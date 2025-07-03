@@ -26,6 +26,24 @@ export async function GET(request: NextRequest) {
 		}
 
 		// Trending logic: base on vote_count, attendee_count, view_count
+		type RawShow = {
+			id: string;
+			name: string;
+			slug: string;
+			date: string;
+			status: string;
+			voteCount: number | null;
+			attendeeCount: number | null;
+			viewCount: number | null;
+			trendingScore: number | null;
+			artistName: string;
+			artistSlug: string;
+			artistImage: string | null;
+			venueName: string | null;
+			venueCity: string | null;
+			venueState: string | null;
+		};
+
 		const raw = await db
 			.select({
 				id: shows.id,
@@ -53,39 +71,37 @@ export async function GET(request: NextRequest) {
 			.orderBy(desc(sql`COALESCE(${shows.trendingScore}, 0)`))
 			.limit(limit);
 
-		const formatted: TrendingShow[] = (raw as unknown[]).map(
-			(s: any, idx: number) => {
-				// Fallback trending score if null
-				const score =
-					s.trendingScore ?? (s.voteCount ?? 0) * 2 + (s.attendeeCount ?? 0);
-				const weeklyGrowth = Math.max(
-					0,
-					Math.random() * 25 + (s.voteCount ?? 0) / 10,
-				);
-				return {
-					id: s.id,
-					name: s.name,
-					slug: s.slug,
-					date: s.date,
-					status: s.status,
-					artist: {
-						name: s.artistName,
-						slug: s.artistSlug,
-						imageUrl: s.artistImage,
-					},
-					venue: {
-						name: s.venueName,
-						city: s.venueCity,
-						state: s.venueState,
-					},
-					voteCount: s.voteCount ?? 0,
-					attendeeCount: s.attendeeCount ?? 0,
-					trendingScore: score,
-					weeklyGrowth: Number(weeklyGrowth.toFixed(1)),
-					rank: idx + 1,
-				};
-			},
-		);
+		const formatted: TrendingShow[] = (raw as RawShow[]).map((s, idx) => {
+			// Fallback trending score if null
+			const score =
+				s.trendingScore ?? (s.voteCount ?? 0) * 2 + (s.attendeeCount ?? 0);
+			const weeklyGrowth = Math.max(
+				0,
+				Math.random() * 25 + (s.voteCount ?? 0) / 10,
+			);
+			return {
+				id: s.id,
+				name: s.name,
+				slug: s.slug,
+				date: s.date,
+				status: s.status,
+				artist: {
+					name: s.artistName,
+					slug: s.artistSlug,
+					imageUrl: s.artistImage,
+				},
+				venue: {
+					name: s.venueName,
+					city: s.venueCity,
+					state: s.venueState,
+				},
+				voteCount: s.voteCount ?? 0,
+				attendeeCount: s.attendeeCount ?? 0,
+				trendingScore: score,
+				weeklyGrowth: Number(weeklyGrowth.toFixed(1)),
+				rank: idx + 1,
+			};
+		});
 
 		const payload: TrendingShowsResponse = {
 			shows: formatted,
