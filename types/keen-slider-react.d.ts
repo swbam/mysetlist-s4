@@ -1,14 +1,26 @@
-declare module 'keen-slider/react' {
-  import * as React from 'react';
-  export interface KeenSliderOptions {
-    mode?: 'free' | 'free-snap' | 'snap';
-    slides?: {
-      perView?: number;
-      spacing?: number;
-    };
-    breakpoints?: Record<string, KeenSliderOptions>;
-  }
-  export function useKeenSlider<T extends HTMLElement = HTMLElement>(
-    options?: KeenSliderOptions
-  ): [React.RefObject<T>];
+declare module "keen-slider/react" {
+	import { ForwardRefExoticComponent, RefAttributes } from "react";
+
+	export interface KeenSliderInstance {
+		update(): void;
+		destroy(): void;
+	}
+
+	export interface KeenSliderOptions {
+		slides?: {
+			perView?: number;
+			spacing?: number;
+		};
+		mode?: "free" | "free-snap" | "snap";
+		breakpoints?: Record<string, KeenSliderOptions>;
+	}
+
+	// React hook signature
+	export function useKeenSlider<T extends HTMLElement = HTMLElement>(
+		options?: KeenSliderOptions,
+	): [(node: T | null) => void, KeenSliderInstance | null];
+
+	// This lib also exports a plain CSS class util but we only need hook typings.
+	const _default: Record<string, never>;
+	export default _default;
 }
