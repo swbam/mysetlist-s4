@@ -1,8 +1,6 @@
-// @ts-nocheck
 "use client";
 import { SearchBar } from "@/components/search-bar";
 import { Button } from "@repo/design-system/components/ui/button";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { motion } from "framer-motion";
 import Link from "next/link";
 import React from "react";
