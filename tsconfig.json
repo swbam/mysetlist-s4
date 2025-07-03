@@ -20,5 +20,11 @@
 		"jsx": "preserve",
 		"typeRoots": ["./types", "./node_modules/@types"]
 	},
-	"exclude": ["apps", "packages", "node_modules"]
+	"exclude": [
+		"apps",
+		"packages",
+		"node_modules",
+		"supabase/functions",
+		"scripts/**/*.ts"
+	]
 }
