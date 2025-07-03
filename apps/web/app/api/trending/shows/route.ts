@@ -1,7 +1,7 @@
+import { TrendingShow, TrendingShowsResponse } from "@/types/api";
 import { db } from "@repo/database";
 import { artists, shows, venues } from "@repo/database";
 import { desc, gte, sql } from "drizzle-orm";
-// @ts-nocheck
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
 		}
 
 		// Trending logic: base on vote_count, attendee_count, view_count
-		const trendingShows = await db
+		const raw = await db
 			.select({
 				id: shows.id,
 				name: shows.name,
@@ -53,45 +53,47 @@ export async function GET(request: NextRequest) {
 			.orderBy(desc(sql`COALESCE(${shows.trendingScore}, 0)`))
 			.limit(limit);
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const formatted = trendingShows.map((s: any, idx: number) => {
-			// Fallback trending score if null
-			const score =
-				s.trendingScore ?? (s.voteCount ?? 0) * 2 + (s.attendeeCount ?? 0);
-			const weeklyGrowth = Math.max(
-				0,
-				Math.random() * 25 + (s.voteCount ?? 0) / 10,
-			);
-			return {
-				id: s.id,
-				name: s.name,
-				slug: s.slug,
-				date: s.date,
-				status: s.status,
-				artist: {
-					name: s.artistName,
-					slug: s.artistSlug,
-					imageUrl: s.artistImage,
-				},
-				venue: {
-					name: s.venueName,
-					city: s.venueCity,
-					state: s.venueState,
-				},
-				voteCount: s.voteCount ?? 0,
-				attendeeCount: s.attendeeCount ?? 0,
-				trendingScore: score,
-				weeklyGrowth: Number(weeklyGrowth.toFixed(1)),
-				rank: idx + 1,
-			};
-		});
+		const formatted: TrendingShow[] = (raw as unknown[]).map(
+			(s: any, idx: number) => {
+				// Fallback trending score if null
+				const score =
+					s.trendingScore ?? (s.voteCount ?? 0) * 2 + (s.attendeeCount ?? 0);
+				const weeklyGrowth = Math.max(
+					0,
+					Math.random() * 25 + (s.voteCount ?? 0) / 10,
+				);
+				return {
+					id: s.id,
+					name: s.name,
+					slug: s.slug,
+					date: s.date,
+					status: s.status,
+					artist: {
+						name: s.artistName,
+						slug: s.artistSlug,
+						imageUrl: s.artistImage,
+					},
+					venue: {
+						name: s.venueName,
+						city: s.venueCity,
+						state: s.venueState,
+					},
+					voteCount: s.voteCount ?? 0,
+					attendeeCount: s.attendeeCount ?? 0,
+					trendingScore: score,
+					weeklyGrowth: Number(weeklyGrowth.toFixed(1)),
+					rank: idx + 1,
+				};
+			},
+		);
 
-		return NextResponse.json({
+		const payload: TrendingShowsResponse = {
 			shows: formatted,
 			timeframe,
 			total: formatted.length,
 			generatedAt: new Date().toISOString(),
-		});
+		};
+		return NextResponse.json(payload);
 	} catch (error) {
 		console.error("Trending shows API error:", error);
 		return NextResponse.json(

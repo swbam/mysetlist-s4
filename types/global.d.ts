@@ -50,3 +50,8 @@ declare module "next/image" {
 declare module "react" {
 	export * from "react";
 }
+
+// drizzle-orm provides types but Deno edge bundler may complain; expose minimal re-export
+declare module "drizzle-orm" {
+	export * from "@repo/database";
+}
