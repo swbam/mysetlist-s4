@@ -18,8 +18,8 @@ export interface TrendingShow {
 	slug: string;
 	date: string;
 	status: string;
-	artist: { name: string; slug: string; imageUrl?: string };
-	venue: { name: string; city: string; state?: string };
+	artist: { name: string; slug: string; imageUrl?: string | null };
+	venue: { name: string | null; city: string | null; state?: string | null };
 	voteCount: number;
 	attendeeCount: number;
 	trendingScore: number;
