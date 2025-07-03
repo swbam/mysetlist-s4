@@ -32,9 +32,9 @@ export interface TrendingVenue {
 	name: string;
 	slug: string;
 	city: string | null;
-	state?: string;
+	state?: string | null;
 	country: string;
-	capacity?: number;
+	capacity?: number | null;
 	upcomingShows: number;
 	totalShows: number;
 	trendingScore: number;
