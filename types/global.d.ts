@@ -2,6 +2,11 @@
 
 import type React from "react";
 
+/// <reference types="react" />
+/// <reference types="next" />
+/// <reference types="next/types/global" />
+/// <reference types="framer-motion" />
+
 declare global {
 	// Ensure JSX namespace is available when Biome/TS parses isolated files
 	namespace JSX {
