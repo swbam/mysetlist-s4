@@ -1,5 +1,4 @@
-// @ts-nocheck
-
+import { TrendingVenue, TrendingVenuesResponse } from "@/types/api";
 import { db } from "@repo/database";
 import { shows, venues } from "@repo/database";
 import { desc, sql } from "drizzle-orm";
@@ -25,7 +24,20 @@ export async function GET(request: NextRequest) {
 				break;
 		}
 
-		const trendingVenues = await db
+		type RawVenue = {
+			id: string;
+			name: string;
+			slug: string;
+			city: string | null;
+			state: string | null;
+			country: string;
+			capacity: number | null;
+			upcomingShows: number;
+			totalShows: number;
+			calculatedTrendingScore: number | null;
+		};
+
+		const raw = (await db
 			.select({
 				id: venues.id,
 				name: venues.name,
@@ -50,10 +62,9 @@ export async function GET(request: NextRequest) {
 			.leftJoin(shows, sql`${shows.venueId} = ${venues.id}`)
 			.groupBy(venues.id)
 			.orderBy(desc(sql`calculatedTrendingScore`))
-			.limit(limit);
+			.limit(limit)) as RawVenue[];
 
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const formatted = trendingVenues.map((v: any, idx: number) => {
+		const formatted: TrendingVenue[] = raw.map((v, idx) => {
 			const score = v.calculatedTrendingScore ?? 0;
 			const weeklyGrowth = Math.max(
 				0,
@@ -75,12 +86,13 @@ export async function GET(request: NextRequest) {
 			};
 		});
 
-		return NextResponse.json({
+		const payload: TrendingVenuesResponse = {
 			venues: formatted,
 			timeframe,
 			total: formatted.length,
 			generatedAt: new Date().toISOString(),
-		});
+		};
+		return NextResponse.json(payload);
 	} catch (error) {
 		console.error("Trending venues API error:", error);
 		return NextResponse.json(

@@ -31,7 +31,7 @@ export interface TrendingVenue {
 	id: string;
 	name: string;
 	slug: string;
-	city: string;
+	city: string | null;
 	state?: string;
 	country: string;
 	capacity?: number;
