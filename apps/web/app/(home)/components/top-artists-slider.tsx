@@ -10,7 +10,7 @@ import {
 	CarouselPrevious,
 } from "@repo/design-system/components/ui/carousel";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 type Artist = Pick<TrendingItem, "id" | "name" | "slug" | "image_url">;
 
@@ -36,7 +36,7 @@ export default function TopArtistsSlider() {
 				</h2>
 				<Carousel setApi={setApi} opts={{ align: "start", loop: true }}>
 					<CarouselContent>
-						{artists.map((artist) => (
+						{artists.map((artist: Artist) => (
 							<CarouselItem
 								key={artist.id}
 								className="basis-1/2 md:basis-1/4 lg:basis-1/6"
