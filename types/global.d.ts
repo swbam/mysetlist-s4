@@ -26,14 +26,25 @@ declare module "framer-motion";
 
 declare module "next/link" {
 	import * as React from "react";
-	const Link: React.ComponentType<any>;
-	export default Link;
+	export interface LinkProps
+		extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+		href: string | URL;
+		prefetch?: boolean;
+	}
+	const Link: React.FC<LinkProps>;
 }
 
 declare module "next/image" {
 	import * as React from "react";
-	const Image: React.ComponentType<any>;
-	export default Image;
+	type Layout = "fill" | "fixed" | "intrinsic" | "responsive" | undefined;
+	export interface ImageProps
+		extends React.ImgHTMLAttributes<HTMLImageElement> {
+		src: string | StaticImport;
+		width?: number;
+		height?: number;
+		layout?: Layout;
+	}
+	const Image: React.FC<ImageProps>;
 }
 
 declare module "react" {
