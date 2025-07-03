@@ -5,9 +5,9 @@ import { Cases } from "./components/cases";
 import { CTA } from "./components/cta";
 import { FAQ } from "./components/faq";
 import { Features } from "./components/features";
-import { Hero } from "./components/hero";
+import Hero from "./components/hero";
 import { Testimonials } from "./components/testimonials";
-import { TopArtistsSlider } from "./components/top-artists-slider";
+import TopArtistsSlider from "./components/top-artists-slider";
 import { TrendingShowsSlider } from "./components/trending-shows-slider";
 
 export const generateMetadata = async (): Promise<Metadata> => {
