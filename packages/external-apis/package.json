@@ -1,30 +1,30 @@
 {
-  "name": "@repo/external-apis",
-  "version": "0.0.0",
-  "main": "./index.ts",
-  "types": "./index.ts",
-  "scripts": {
-    "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "sync:initial": "tsx src/cli.ts initial",
-    "sync:daily": "tsx src/cli.ts daily",
-    "sync:artist": "tsx src/cli.ts artist",
-    "sync:location": "tsx src/cli.ts location"
-  },
-  "dependencies": {
-    "@repo/database": "workspace:*",
-    "@t3-oss/env-nextjs": "^0.13.4",
-    "@upstash/redis": "^1.28.0",
-    "axios": "^1.6.0",
-    "commander": "^11.1.0",
-    "drizzle-orm": "^0.29.0",
-    "server-only": "^0.0.1",
-    "zod": "^3.25.28"
-  },
-  "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "@types/node": "24.0.10",
-    "tsx": "^4.7.0",
-    "typescript": "^5.8.3"
-  }
+	"name": "@repo/external-apis",
+	"version": "0.0.0",
+	"main": "./index.ts",
+	"types": "./index.ts",
+	"scripts": {
+		"clean": "git clean -xdf .cache .turbo dist node_modules",
+		"typecheck": "tsc --noEmit --emitDeclarationOnly false",
+		"sync:initial": "tsx src/cli.ts initial",
+		"sync:daily": "tsx src/cli.ts daily",
+		"sync:artist": "tsx src/cli.ts artist",
+		"sync:location": "tsx src/cli.ts location"
+	},
+	"dependencies": {
+		"@repo/database": "workspace:*",
+		"@t3-oss/env-nextjs": "^0.13.4",
+		"@upstash/redis": "^1.28.0",
+		"axios": "^1.6.0",
+		"commander": "^11.1.0",
+		"drizzle-orm": "^0.29.3",
+		"server-only": "^0.0.1",
+		"zod": "^3.25.28"
+	},
+	"devDependencies": {
+		"@repo/typescript-config": "workspace:*",
+		"@types/node": "24.0.10",
+		"tsx": "^4.7.0",
+		"typescript": "^5.8.3"
+	}
 }

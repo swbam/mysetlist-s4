@@ -1,18 +1,30 @@
 // Global type declarations used across packages
 
-import type React from "react";
-
 /// <reference types="react" />
 /// <reference types="next" />
 /// <reference types="next/types/global" />
 /// <reference types="framer-motion" />
 
+// React compatibility for mixed versions
+declare module "react" {
+	namespace JSX {
+		interface IntrinsicElements {
+			[elemName: string]: React.DetailedHTMLProps<
+				React.HTMLAttributes<HTMLElement>,
+				HTMLElement
+			>;
+		}
+	}
+}
+
 declare global {
 	// Ensure JSX namespace is available when Biome/TS parses isolated files
 	namespace JSX {
 		interface IntrinsicElements {
-			// eslint-disable-next-line @typescript-eslint/no-explicit-any
-			[elemName: string]: unknown;
+			[elemName: string]: React.DetailedHTMLProps<
+				React.HTMLAttributes<HTMLElement>,
+				HTMLElement
+			>;
 		}
 	}
 }
@@ -22,7 +34,9 @@ declare module "*.svg" {
 	export default content;
 }
 
-declare module "framer-motion";
+declare module "framer-motion" {
+	export * from "framer-motion";
+}
 
 declare module "next/link" {
 	import * as React from "react";
@@ -32,6 +46,7 @@ declare module "next/link" {
 		prefetch?: boolean;
 	}
 	const Link: React.FC<LinkProps>;
+	export default Link;
 }
 
 declare module "next/image" {
@@ -45,13 +60,20 @@ declare module "next/image" {
 		layout?: Layout;
 	}
 	const Image: React.FC<ImageProps>;
-}
-
-declare module "react" {
-	export * from "react";
+	export default Image;
 }
 
 // drizzle-orm provides types but Deno edge bundler may complain; expose minimal re-export
 declare module "drizzle-orm" {
-	export * from "@repo/database";
+	export * from "drizzle-orm";
+}
+
+// Deno global for edge functions
+declare global {
+	namespace Deno {
+		interface Env {
+			get(key: string): string | undefined;
+		}
+		const env: Env;
+	}
 }
