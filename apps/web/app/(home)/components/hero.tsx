@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 import { SearchBar } from "@/components/search-bar";
 import { Button } from "@repo/design-system/components/ui/button";

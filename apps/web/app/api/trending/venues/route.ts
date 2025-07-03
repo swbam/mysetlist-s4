@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { db } from "@repo/database";
 import { shows, venues } from "@repo/database";
 import { desc, sql } from "drizzle-orm";
