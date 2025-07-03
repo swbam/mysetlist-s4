@@ -10,10 +10,15 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
  * scheduled-sync job (or on-demand).
  */
 
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabaseUrl = Deno.env.get("SUPABASE_URL");
+const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+if (!supabaseUrl || !serviceKey) {
+	throw new Error(
+		"Missing Supabase env vars: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY",
+	);
+}
+
 const supabase = createClient(supabaseUrl, serviceKey, {
 	auth: { persistSession: false },
 });
