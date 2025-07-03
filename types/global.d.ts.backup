@@ -5,12 +5,8 @@
 /// <reference types="next/types/global" />
 /// <reference types="framer-motion" />
 
-// React namespace augmentation for version compatibility
+// React compatibility for mixed versions
 declare module "react" {
-	namespace React {
-		type ReactNode = import("react").ReactNode;
-	}
-
 	namespace JSX {
 		interface IntrinsicElements {
 			[elemName: string]: React.DetailedHTMLProps<
@@ -30,16 +26,6 @@ declare global {
 				HTMLElement
 			>;
 		}
-	}
-
-	// React namespace for global access
-	namespace React {
-		type ReactNode = import("react").ReactNode;
-		type FC<P = Record<string, unknown>> = import("react").FC<P>;
-		type Component<
-			P = Record<string, unknown>,
-			S = Record<string, unknown>,
-		> = import("react").Component<P, S>;
 	}
 }
 
@@ -65,8 +51,6 @@ declare module "next/link" {
 
 declare module "next/image" {
 	import * as React from "react";
-	import type { StaticImport } from "next/dist/shared/lib/get-img-props";
-
 	type Layout = "fill" | "fixed" | "intrinsic" | "responsive" | undefined;
 	export interface ImageProps
 		extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -74,15 +58,12 @@ declare module "next/image" {
 		width?: number;
 		height?: number;
 		layout?: Layout;
-		priority?: boolean;
-		placeholder?: "blur" | "empty";
-		blurDataURL?: string;
 	}
 	const Image: React.FC<ImageProps>;
 	export default Image;
 }
 
-// drizzle-orm type compatibility
+// drizzle-orm provides types but Deno edge bundler may complain; expose minimal re-export
 declare module "drizzle-orm" {
 	export * from "drizzle-orm";
 }

@@ -290,8 +290,8 @@ export default async function ShowsManagementPage({
 											<div className="flex items-center gap-3">
 												{show.artist?.image_url ? (
 													<img
-														src={show.artist.image_url}
-														alt={show.artist.name}
+														src={Array.isArray(show.artist) ? show.artist[0]?. : show.artist?.image_url}
+														alt={Array.isArray(show.artist) ? show.artist[0]?. : show.artist?.name}
 														className="h-10 w-10 rounded-full object-cover"
 													/>
 												) : (

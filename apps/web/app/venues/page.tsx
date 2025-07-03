@@ -16,7 +16,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
 };
 
 interface VenuesPageProps {
-	searchParams?: {
+	searchParams?: Promise<{
 		q?: string;
 		types?: string;
 		capacity?: string;
@@ -45,13 +45,14 @@ function VenueGridSkeleton() {
 	);
 }
 
-const VenuesPage = async ({ searchParams = {} }: VenuesPageProps) => {
+const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
+    const resolvedSearchParams = await searchParams || {};
 	const venues = await getVenues({
-		search: searchParams.q,
-		types: searchParams.types?.split(",").filter(Boolean),
-		capacity: searchParams.capacity,
-		userLat: searchParams.lat ? parseFloat(searchParams.lat) : undefined,
-		userLng: searchParams.lng ? parseFloat(searchParams.lng) : undefined,
+		search: resolvedSearchParams.q,
+		types: resolvedSearchParams.types?.split(",").filter(Boolean),
+		capacity: resolvedSearchParams.capacity,
+		userLat: resolvedSearchParams.lat ? parseFloat(resolvedSearchParams.lat) : undefined,
+		userLng: resolvedSearchParams.lng ? parseFloat(resolvedSearchParams.lng) : undefined,
 	});
 
 	return (
