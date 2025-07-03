@@ -69,16 +69,16 @@ Deno.serve(async (req: Request) => {
 			.select("id, popularity, followers, follower_count");
 
 		if (artists) {
-			for (const a of artists) {
+			for (const artist of artists) {
 				const score = calcArtistScore(
-					a.popularity ?? 0,
-					a.followers ?? 0,
-					a.follower_count ?? 0,
+					artist.popularity ?? 0,
+					artist.followers ?? 0,
+					artist.follower_count ?? 0,
 				);
 				await supabase
 					.from("artists")
 					.update({ trending_score: score })
-					.eq("id", a.id);
+					.eq("id", artist.id);
 			}
 		}
 
@@ -88,16 +88,16 @@ Deno.serve(async (req: Request) => {
 			.select("id, view_count, vote_count, attendee_count");
 
 		if (shows) {
-			for (const s of shows) {
+			for (const show of shows) {
 				const score = calcShowScore(
-					s.view_count ?? 0,
-					s.vote_count ?? 0,
-					s.attendee_count ?? 0,
+					show.view_count ?? 0,
+					show.vote_count ?? 0,
+					show.attendee_count ?? 0,
 				);
 				await supabase
 					.from("shows")
 					.update({ trending_score: score })
-					.eq("id", s.id);
+					.eq("id", show.id);
 			}
 		}
 
@@ -109,25 +109,29 @@ Deno.serve(async (req: Request) => {
 			.group("venue_id");
 
 		const showCountMap: Record<string, number> = {};
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		(venueAgg ?? []).forEach((v: any) => {
-			if (v.venue_id) showCountMap[v.venue_id] = v.count;
-		});
+		if (venueAgg) {
+			for (const record of venueAgg as { venue_id: string; count: number }[]) {
+				if (record.venue_id) showCountMap[record.venue_id] = record.count;
+			}
+		}
 
 		const { data: venues } = await supabase
 			.from("venues")
 			.select("id, capacity");
 
 		if (venues) {
-			for (const v of venues) {
-				const score = calcVenueScore(showCountMap[v.id] ?? 0, v.capacity);
+			for (const venue of venues) {
+				const score = calcVenueScore(
+					showCountMap[venue.id] ?? 0,
+					venue.capacity,
+				);
 				await supabase
 					.from("venues")
 					.update({
-						show_count: showCountMap[v.id] ?? 0,
+						show_count: showCountMap[venue.id] ?? 0,
 						trending_score: score,
 					})
-					.eq("id", v.id);
+					.eq("id", venue.id);
 			}
 		}
 
