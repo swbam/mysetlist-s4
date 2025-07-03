@@ -1,58 +1,63 @@
 {
-  "name": "next-forge",
-  "version": "5.0.2",
-  "bin": {
-    "next-forge": "dist/index.js"
-  },
-  "files": [
-    "dist/index.js"
-  ],
-  "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "lint": "ultracite lint",
-    "format": "ultracite format",
-    "test": "turbo test",
-    "typecheck": "turbo typecheck",
-    "analyze": "turbo analyze",
-    "translate": "turbo translate",
-    "boundaries": "turbo boundaries",
-    "bump-deps": "npx npm-check-updates --deep -u -x react-day-picker",
-    "bump-ui": "npx shadcn@latest add --all --overwrite -c packages/design-system",
-    "db:push": "cd packages/database && pnpm push",
-    "db:generate": "cd packages/database && pnpm generate",
-    "db:migrate": "cd packages/database && pnpm migrate",
-    "db:studio": "cd packages/database && pnpm studio",
-    "clean": "git clean -xdf node_modules",
-    "deploy": "./scripts/deploy.sh",
-    "deploy:prod": "./scripts/deploy.sh production",
-    "edge:secrets": "./scripts/setup-edge-function-secrets.sh",
-    "vercel": "vercel",
-    "vercel:prod": "vercel --prod",
-    "all": "pnpm install && pnpm build && pnpm test",
-    "updateit": "supabase db repair && supabase db push && supabase functions deploy scheduled-sync && vercel env pull .env.production"
-  },
-  "devDependencies": {
-    "@auto-it/first-time-contributor": "^11.3.0",
-    "@biomejs/biome": "1.9.4",
-    "@repo/typescript-config": "workspace:*",
-    "@turbo/gen": "^2.5.3",
-    "@types/node": "^24.0.10",
-    "tsup": "^8.5.0",
-    "turbo": "^2.5.3",
-    "typescript": "^5.8.3",
-    "ultracite": "^4.2.5",
-    "vitest": "^3.1.4"
-  },
-  "engines": {
-    "node": ">=18"
-  },
-  "packageManager": "pnpm@10.11.0",
-  "dependencies": {
-    "@clack/prompts": "^0.11.0",
-    "commander": "^14.0.0",
-    "framer-motion": "^11.0.0",
-    "keen-slider": "^6.8.6"
-  },
-  "type": "module"
+	"name": "next-forge",
+	"version": "5.0.2",
+	"bin": {
+		"next-forge": "dist/index.js"
+	},
+	"files": ["dist/index.js"],
+	"scripts": {
+		"build": "turbo build",
+		"dev": "turbo dev",
+		"lint": "ultracite lint",
+		"format": "ultracite format",
+		"test": "turbo test",
+		"typecheck": "turbo typecheck",
+		"analyze": "turbo analyze",
+		"translate": "turbo translate",
+		"boundaries": "turbo boundaries",
+		"bump-deps": "npx npm-check-updates --deep -u -x react-day-picker",
+		"bump-ui": "npx shadcn@latest add --all --overwrite -c packages/design-system",
+		"db:push": "cd packages/database && pnpm push",
+		"db:generate": "cd packages/database && pnpm generate",
+		"db:migrate": "cd packages/database && pnpm migrate",
+		"db:studio": "cd packages/database && pnpm studio",
+		"clean": "git clean -xdf node_modules",
+		"deploy": "./scripts/deploy.sh",
+		"deploy:prod": "./scripts/deploy.sh production",
+		"edge:secrets": "./scripts/setup-edge-function-secrets.sh",
+		"vercel": "vercel",
+		"vercel:prod": "vercel --prod",
+		"all": "pnpm install && pnpm build && pnpm test",
+		"updateit": "supabase db repair && supabase db push && supabase functions deploy scheduled-sync && vercel env pull .env.production"
+	},
+	"devDependencies": {
+		"@auto-it/first-time-contributor": "^11.3.0",
+		"@biomejs/biome": "1.9.4",
+		"@repo/typescript-config": "workspace:*",
+		"@types/react": "^18.2.35",
+		"@types/react-dom": "^18.2.14",
+		"@types/node": "^20.11.19",
+		"@types/next": "^13.4.25",
+		"@types/lucide-react": "^0.0.5",
+		"@types/framer-motion": "^10.13.1",
+		"@types/drizzle-orm": "0.0.1",
+		"@turbo/gen": "^2.5.3",
+		"@types/node": "^24.0.10",
+		"tsup": "^8.5.0",
+		"turbo": "^2.5.3",
+		"typescript": "^5.8.3",
+		"ultracite": "^4.2.5",
+		"vitest": "^3.1.4"
+	},
+	"engines": {
+		"node": ">=18"
+	},
+	"packageManager": "pnpm@10.11.0",
+	"dependencies": {
+		"@clack/prompts": "^0.11.0",
+		"commander": "^14.0.0",
+		"framer-motion": "^11.0.0",
+		"keen-slider": "^6.8.6"
+	},
+	"type": "module"
 }

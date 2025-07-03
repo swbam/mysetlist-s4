@@ -2,11 +2,16 @@
 // @ts-nocheck
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabaseUrl = Deno.env.get("SUPABASE_URL");
+const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+if (!supabaseUrl || !supabaseKey) {
+	throw new Error("SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY env vars not set");
+}
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const TICKETMASTER_API_KEY = Deno.env.get("TICKETMASTER_API_KEY");
+const TICKETMASTER_API_KEY = Deno.env.get("TICKETMASTER_API_KEY") ?? "";
 
 interface Payload {
 	ticketmasterId: string;
