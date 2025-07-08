@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# Script to set up .env.local file for MySetlist
+
+cat > .env.local << 'EOF'
+# =================================================================
+# MySetlist - Local Development Environment Variables
+# =================================================================
+
+# Application Configuration
+NODE_ENV=development
+NEXT_PUBLIC_APP_ENV=development
+
+# Application URLs (Local Development)
+NEXT_PUBLIC_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_WEB_URL=http://localhost:3001
+NEXT_PUBLIC_API_URL=http://localhost:3002
+NEXT_PUBLIC_DOCS_URL=http://localhost:3004
+
+# =================================================================
+# Database & Authentication (Supabase)
+# =================================================================
+DATABASE_URL="postgresql://postgres.yzwkimtdaabyjbpykquu:Bambseth1590@aws-0-us-east-1.pooler.supabase.com:6543/postgres"
+DIRECT_URL="postgresql://postgres.yzwkimtdaabyjbpykquu:Bambseth1590@aws-0-us-east-1.pooler.supabase.com:5432/postgres"
+
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://yzwkimtdaabyjbpykquu.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2OTIzMTYsImV4cCI6MjA2NjI2ODMxNn0.8pKUt_PL7q9XmNACDKVrkyqBfK8jmUDx6ARNybrmIVM
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDY5MjMxNiwiZXhwIjoyMDY2MjY4MzE2fQ.ZMorLC_eZke3bvBAF0zyzqUONxpomfTN2RpE_mLjz18
+SUPABASE_JWT_SECRET=8yUxq3AqzLiPV9mdG5jZk38ZonG5nXVUVgq6zlQKCKHcdLcee3Ssg62/8cATrxBC2uvBqFXAIQUjHLMz3Q45rg==
+
+# =================================================================
+# External Music APIs
+# =================================================================
+
+# Spotify Integration
+SPOTIFY_CLIENT_ID=2946864dc822469b9c672292ead45f43
+SPOTIFY_CLIENT_SECRET=feaf0fc901124b839b11e02f97d18a8d
+NEXT_PUBLIC_SPOTIFY_CLIENT_ID=2946864dc822469b9c672292ead45f43
+
+# Ticketmaster Events API
+TICKETMASTER_API_KEY=k8GrSAkbFaN0w7qDxGl7ohr8LwdAQm9b
+
+# SetlistFM API
+SETLISTFM_API_KEY=xkutflW-aRy_Df9rF4OkJyCsHBYN88V37EBL
+
+# =================================================================
+# Analytics & Monitoring
+# =================================================================
+
+# PostHog Analytics
+NEXT_PUBLIC_POSTHOG_KEY=phc_NuCfMIwb8GUzJWAW7FZKsqpviEoH10ZDgc4IcjJfNIi
+NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
+
+# Google Analytics (Optional)
+NEXT_PUBLIC_GA_MEASUREMENT_ID=""
+
+# =================================================================
+# Security & Jobs
+# =================================================================
+
+# Cron Job Authentication
+CRON_SECRET=6155002300
+
+# =================================================================
+# Development Tools
+# =================================================================
+
+# Development Logging
+NEXT_PUBLIC_LOG_LEVEL=debug
+EOF
+
+echo "✅ .env.local file created successfully!"
+echo "Run 'chmod +x scripts/setup-env.sh && ./scripts/setup-env.sh' to set up your environment" 

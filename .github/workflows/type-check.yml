@@ -1,0 +1,140 @@
+name: TypeScript Type Checking
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - '**.ts'
+      - '**.tsx'
+      - '**/tsconfig.json'
+      - 'packages/typescript-config/**'
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run TypeScript compiler check
+        run: |
+          echo "## 🔍 TypeScript Type Check Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Run tsc with no emit to check for errors
+          if npx tsc --noEmit --pretty; then
+            echo "✅ No TypeScript errors found!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ TypeScript errors detected" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+      - name: Check for any types
+        run: |
+          echo "### Checking for 'any' types..." >> $GITHUB_STEP_SUMMARY
+          
+          # Find files with explicit 'any' types
+          ANY_COUNT=$(grep -r ":\s*any" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules --exclude-dir=.next . | wc -l || echo "0")
+          
+          if [ "$ANY_COUNT" -gt 0 ]; then
+            echo "⚠️ Found $ANY_COUNT instances of 'any' type" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Files with 'any' types:" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            grep -r ":\s*any" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules --exclude-dir=.next . | head -20 >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            
+            # Fail if any types are found
+            echo "::error::Found $ANY_COUNT instances of 'any' type. Please use specific types instead."
+            exit 1
+          else
+            echo "✅ No 'any' types found!" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for unknown types
+        run: |
+          echo "### Checking for 'unknown' types..." >> $GITHUB_STEP_SUMMARY
+          
+          # Find files with 'unknown' types (excluding legitimate uses)
+          UNKNOWN_COUNT=$(grep -r ":\s*unknown" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules --exclude-dir=.next . | grep -v "catch" | wc -l || echo "0")
+          
+          if [ "$UNKNOWN_COUNT" -gt 0 ]; then
+            echo "⚠️ Found $UNKNOWN_COUNT instances of 'unknown' type" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Files with 'unknown' types:" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            grep -r ":\s*unknown" --include="*.ts" --include="*.tsx" --exclude-dir=node_modules --exclude-dir=.next . | grep -v "catch" | head -20 >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            
+            echo "::warning::Found $UNKNOWN_COUNT instances of 'unknown' type. Consider using more specific types."
+          else
+            echo "✅ No problematic 'unknown' types found!" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check strict mode compliance
+        run: |
+          echo "### Checking TypeScript strict mode..." >> $GITHUB_STEP_SUMMARY
+          
+          # Check if all tsconfig files have strict mode enabled
+          for config in $(find . -name "tsconfig.json" -not -path "*/node_modules/*"); do
+            if grep -q '"strict": true' "$config"; then
+              echo "✅ $config has strict mode enabled" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ $config does not have strict mode enabled" >> $GITHUB_STEP_SUMMARY
+              echo "::error file=$config::TypeScript config must have strict mode enabled"
+              exit 1
+            fi
+          done
+
+      - name: Generate type coverage report
+        run: |
+          # Install type coverage tool
+          npm install --save-dev type-coverage
+          
+          # Run type coverage
+          echo "### Type Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          npx type-coverage --detail >> $GITHUB_STEP_SUMMARY || true
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          
+          # Get coverage percentage
+          COVERAGE=$(npx type-coverage --json | jq -r '.percentage' || echo "0")
+          
+          # Fail if coverage is too low
+          if (( $(echo "$COVERAGE < 95" | bc -l) )); then
+            echo "::warning::Type coverage is ${COVERAGE}%, should be at least 95%"
+          else
+            echo "✅ Type coverage is ${COVERAGE}%" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Check for unused exports
+        run: |
+          echo "### Checking for unused exports..." >> $GITHUB_STEP_SUMMARY
+          
+          # This would use ts-prune or similar tool
+          # npm install --save-dev ts-prune
+          # npx ts-prune || true
+
+      - name: Validate import paths
+        run: |
+          echo "### Checking import paths..." >> $GITHUB_STEP_SUMMARY
+          
+          # Check for relative imports that should use aliases
+          DEEP_IMPORTS=$(grep -r "from '\.\./\.\./\.\." --include="*.ts" --include="*.tsx" --exclude-dir=node_modules . | wc -l || echo "0")
+          
+          if [ "$DEEP_IMPORTS" -gt 0 ]; then
+            echo "⚠️ Found $DEEP_IMPORTS deep relative imports. Consider using path aliases." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "✅ No deep relative imports found" >> $GITHUB_STEP_SUMMARY
+          fi

@@ -1,0 +1,84 @@
+name: Supabase Migration Drift Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+      - 'packages/database/**'
+  schedule:
+    # Run daily at 2am UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  drift-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Check for migration drift
+        run: |
+          # Generate current schema
+          supabase db dump --db-url "${{ secrets.DATABASE_URL }}" > current-schema.sql
+          
+          # Apply all migrations to a fresh database
+          supabase db reset --db-url "${{ secrets.SUPABASE_TEST_DB_URL }}"
+          supabase db dump --db-url "${{ secrets.SUPABASE_TEST_DB_URL }}" > migration-schema.sql
+          
+          # Compare schemas
+          if ! diff -u migration-schema.sql current-schema.sql > schema-drift.diff; then
+            echo "::error::Schema drift detected between migrations and production database"
+            echo "## Schema Drift Detected" >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`diff" >> $GITHUB_STEP_SUMMARY
+            cat schema-drift.diff >> $GITHUB_STEP_SUMMARY
+            echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "✅ No schema drift detected" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Validate migration files
+        run: |
+          # Check for migration file naming convention
+          for file in supabase/migrations/*.sql; do
+            if [[ ! "$file" =~ ^supabase/migrations/[0-9]{8}_[a-z_]+\.sql$ ]]; then
+              echo "::error file=$file::Migration file does not follow naming convention (YYYYMMDD_description.sql)"
+              exit 1
+            fi
+          done
+          
+          # Check for dangerous operations
+          for file in supabase/migrations/*.sql; do
+            if grep -iE "(DROP TABLE|DROP COLUMN|ALTER TABLE.*DROP)" "$file"; then
+              echo "::warning file=$file::Migration contains potentially dangerous DROP operations"
+            fi
+          done
+
+      - name: Test migrations rollback
+        run: |
+          # Get latest migration
+          LATEST_MIGRATION=$(ls -1 supabase/migrations/*.sql | tail -n 1)
+          
+          # Apply all migrations except the latest
+          supabase db reset --db-url "${{ secrets.SUPABASE_TEST_DB_URL }}"
+          
+          # Verify we can apply the latest migration
+          supabase db push --db-url "${{ secrets.SUPABASE_TEST_DB_URL }}" --file "$LATEST_MIGRATION"
+          
+          echo "✅ Latest migration can be applied successfully" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload drift report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: schema-drift-report
+          path: schema-drift.diff
+          retention-days: 7

@@ -1,0 +1,108 @@
+'use client';
+
+import { useRealtimeShow } from '@/hooks/use-realtime-show';
+import { Button } from '@repo/design-system/components/ui/button';
+import { format } from 'date-fns';
+import Link from 'next/link';
+
+type ShowHeaderProps = {
+  show: {
+    id: string;
+    name: string;
+    slug: string;
+    date: string;
+    start_time?: string;
+    doors_time?: string;
+    status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+    headliner_artist: {
+      id: string;
+      name: string;
+      slug: string;
+      image_url?: string;
+      verified?: boolean;
+    };
+    venue?: {
+      id: string;
+      name: string;
+      slug: string;
+      city: string;
+      state?: string;
+      country: string;
+    };
+    is_featured?: boolean;
+    is_verified?: boolean;
+    ticket_url?: string | null;
+  };
+};
+
+export function ShowHeader({ show }: ShowHeaderProps) {
+  const showDate = new Date(show.date);
+  const formattedDate = format(showDate, 'EEEE, MMMM d, yyyy');
+
+  // Use real-time show status
+  const { showStatus } = useRealtimeShow({
+    showId: show.id,
+    initialStatus: show.status as 'upcoming' | 'ongoing' | 'completed',
+  });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'upcoming':
+        return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
+      case 'ongoing':
+        return 'bg-green-500/10 text-green-500 border-green-500/20 animate-pulse';
+      case 'completed':
+        return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
+      case 'cancelled':
+        return 'bg-red-500/10 text-red-500 border-red-500/20';
+      default:
+        return '';
+    }
+  };
+
+  const getVenueLocation = () => {
+    if (!show.venue) return 'Venue TBA';
+    const parts = [show.venue.city];
+    if (show.venue.state) parts.push(show.venue.state);
+    parts.push(show.venue.country);
+    return parts.join(', ');
+  };
+
+  const bg = show.headliner_artist.image_url ?? undefined;
+
+  return (
+    <section className="relative h-72 w-full overflow-hidden rounded-xl md:h-96">
+      {bg ? (
+        <img
+          src={bg}
+          alt={show.headliner_artist.name}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <div className="absolute inset-0 bg-muted/20" />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 to-black/90" />
+      <div className="absolute bottom-8 left-8 max-w-lg text-white">
+        <h1 className="mb-2 font-extrabold text-3xl md:text-5xl">
+          {show.headliner_artist.name}
+        </h1>
+        <p className="text-muted-foreground text-sm md:text-base">
+          {show.venue?.name ? `${show.venue.name} · ` : ''}
+          {format(new Date(show.date), 'MMM d, yyyy')}
+        </p>
+        <div className="mt-4 flex gap-3">
+          <Button size="sm" asChild>
+            <Link href="#setlists">Vote Setlist</Link>
+          </Button>
+          {show.ticket_url && (
+            <Button variant="outline" size="sm" asChild>
+              <Link href={show.ticket_url} target="_blank" rel="noopener">
+                Buy Tickets
+              </Link>
+            </Button>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}

@@ -1,0 +1,229 @@
+'use client';
+
+import {
+  Carousel,
+  type CarouselApi,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from '@repo/design-system/components/ui/carousel';
+import { cn } from '@repo/design-system/lib/utils';
+import { motion } from 'framer-motion';
+import { ChevronRight } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+
+interface ContentSliderProps {
+  title: string;
+  subtitle?: string;
+  viewAllLink?: string;
+  viewAllText?: string;
+  autoPlay?: boolean;
+  autoPlayInterval?: number;
+  className?: string;
+  children: React.ReactNode;
+  itemsPerView?: {
+    mobile?: number;
+    tablet?: number;
+    desktop?: number;
+  };
+  loop?: boolean;
+  showDots?: boolean;
+  gradientOverlay?: boolean;
+}
+
+export function ContentSlider({
+  title,
+  subtitle,
+  viewAllLink,
+  viewAllText = 'View All',
+  autoPlay = false,
+  autoPlayInterval = 4000,
+  className,
+  children,
+  itemsPerView = {
+    mobile: 1.5,
+    tablet: 3,
+    desktop: 4,
+  },
+  loop = true,
+  showDots = false,
+  gradientOverlay = true,
+}: ContentSliderProps) {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+  const [count, setCount] = useState(0);
+  const intervalRef = useRef<NodeJS.Timeout>();
+
+  useEffect(() => {
+    if (!api) return;
+
+    setCount(api.scrollSnapList().length);
+    setCurrent(api.selectedScrollSnap());
+
+    api.on('select', () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+  }, [api]);
+
+  // Auto-play functionality
+  useEffect(() => {
+    if (!api || !autoPlay) return;
+
+    const startAutoPlay = () => {
+      intervalRef.current = setInterval(() => {
+        if (api.canScrollNext()) {
+          api.scrollNext();
+        } else if (loop) {
+          api.scrollTo(0);
+        }
+      }, autoPlayInterval);
+    };
+
+    const stopAutoPlay = () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+
+    // Start auto-play
+    startAutoPlay();
+
+    // Pause on hover
+    const container = api.containerNode();
+    container.addEventListener('mouseenter', stopAutoPlay);
+    container.addEventListener('mouseleave', startAutoPlay);
+
+    return () => {
+      stopAutoPlay();
+      container.removeEventListener('mouseenter', stopAutoPlay);
+      container.removeEventListener('mouseleave', startAutoPlay);
+    };
+  }, [api, autoPlay, autoPlayInterval, loop]);
+
+  const getBasisClass = () => {
+    const { mobile = 1.5, tablet = 3, desktop = 4 } = itemsPerView;
+    const mobileClass = `basis-${Math.floor(100 / mobile)}/${Math.ceil(mobile)}`;
+    const tabletClass = `md:basis-1/${tablet}`;
+    const desktopClass = `lg:basis-1/${desktop}`;
+    return `${mobileClass} ${tabletClass} ${desktopClass}`;
+  };
+
+  return (
+    <section className={cn('relative py-16 md:py-24', className)}>
+      {/* Background gradient effect */}
+      {gradientOverlay && (
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
+      )}
+
+      <div className="container relative mx-auto px-4">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-8 flex items-end justify-between"
+        >
+          <div>
+            <h2 className="mb-2 bg-gradient-to-r from-white to-white/80 bg-clip-text font-bold text-3xl text-transparent tracking-tight md:text-4xl">
+              {title}
+            </h2>
+            {subtitle && (
+              <p className="text-lg text-muted-foreground">{subtitle}</p>
+            )}
+          </div>
+          {viewAllLink && (
+            <motion.a
+              href={viewAllLink}
+              className="group flex items-center gap-2 font-medium text-primary transition-colors hover:text-primary/80"
+              whileHover={{ x: 5 }}
+              transition={{ type: 'spring', stiffness: 300 }}
+            >
+              {viewAllText}
+              <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </motion.a>
+          )}
+        </motion.div>
+
+        {/* Carousel */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="relative"
+        >
+          <Carousel
+            setApi={setApi}
+            opts={{ loop, align: 'start' }}
+            className="w-full"
+          >
+            <CarouselContent className="-ml-2 md:-ml-4">
+              {children}
+            </CarouselContent>
+
+            {/* Custom navigation buttons */}
+            <div className="-left-4 md:-left-6 -translate-y-1/2 absolute top-1/2">
+              <CarouselPrevious className="h-12 w-12 border-border/50 bg-background/80 shadow-lg backdrop-blur-sm transition-all hover:bg-background hover:shadow-xl" />
+            </div>
+            <div className="-right-4 md:-right-6 -translate-y-1/2 absolute top-1/2">
+              <CarouselNext className="h-12 w-12 border-border/50 bg-background/80 shadow-lg backdrop-blur-sm transition-all hover:bg-background hover:shadow-xl" />
+            </div>
+          </Carousel>
+
+          {/* Dots indicator */}
+          {showDots && count > 0 && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="mt-6 flex items-center justify-center gap-2"
+            >
+              {Array.from({ length: count }).map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => api?.scrollTo(index)}
+                  className={cn(
+                    'h-2 w-2 rounded-full transition-all duration-300',
+                    index === current
+                      ? 'w-8 bg-primary'
+                      : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                  )}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </motion.div>
+          )}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// Export a wrapper for carousel items with consistent styling
+export function ContentSliderItem({
+  children,
+  className,
+  basis,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  basis?: string;
+}) {
+  return (
+    <CarouselItem
+      className={cn(
+        'pl-2 md:pl-4',
+        basis || 'basis-2/3 md:basis-1/3 lg:basis-1/4',
+        className
+      )}
+    >
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        transition={{ type: 'spring', stiffness: 300 }}
+        className="h-full"
+      >
+        {children}
+      </motion.div>
+    </CarouselItem>
+  );
+}

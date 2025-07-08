@@ -1,0 +1,29 @@
+import { createClient } from '@/lib/supabase/server';
+import { NextResponse } from 'next/server';
+
+export async function POST() {
+  try {
+    const supabase = await createClient();
+
+    // Refresh the session to get a new Spotify token
+    const { data, error } = await supabase.auth.refreshSession();
+
+    if (error || !data.session) {
+      return NextResponse.json(
+        { error: 'Failed to refresh session' },
+        { status: 401 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      provider_token: data.session.provider_token,
+    });
+  } catch (error) {
+    console.error('Error refreshing Spotify token:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}

@@ -1,0 +1,78 @@
+version: 2
+updates:
+  # Enable version updates for npm
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    open-pull-requests-limit: 10
+    groups:
+      # Group all development dependencies
+      dev-dependencies:
+        patterns:
+          - "*"
+        dependency-type: "development"
+      # Group all production dependencies
+      production-dependencies:
+        patterns:
+          - "*"
+        dependency-type: "production"
+      # Group all Next.js related updates
+      nextjs:
+        patterns:
+          - "next"
+          - "@next/*"
+          - "eslint-config-next"
+      # Group all Supabase updates
+      supabase:
+        patterns:
+          - "@supabase/*"
+          - "supabase"
+      # Group all testing related updates
+      testing:
+        patterns:
+          - "jest"
+          - "@testing-library/*"
+          - "cypress"
+          - "@types/jest"
+    ignore:
+      # Don't update major versions automatically
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    labels:
+      - "dependencies"
+      - "automated"
+    assignees:
+      - "seth"
+    reviewers:
+      - "seth"
+
+  # Enable security updates for npm
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "02:00"
+    open-pull-requests-limit: 20
+    labels:
+      - "security"
+      - "dependencies"
+      - "automated"
+    assignees:
+      - "seth"
+    priority: 1
+
+  # Keep GitHub Actions up to date
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
+    labels:
+      - "ci/cd"
+      - "automated"
+    assignees:
+      - "seth"

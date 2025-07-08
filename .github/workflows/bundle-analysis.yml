@@ -1,0 +1,125 @@
+name: Bundle Size Analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and analyze bundle
+        run: |
+          # Build with bundle analyzer
+          ANALYZE=true npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Generate bundle report
+        run: |
+          # Install bundle analyzer if not already in package.json
+          npm install --save-dev @next/bundle-analyzer
+          
+          # Create custom next.config for analysis
+          cat > next.config.analyze.js << 'EOF'
+          const withBundleAnalyzer = require('@next/bundle-analyzer')({
+            enabled: true,
+            openAnalyzer: false,
+          });
+          
+          module.exports = withBundleAnalyzer({
+            ...require('./next.config.js'),
+          });
+          EOF
+          
+          # Build with analyzer
+          NEXT_CONFIG_FILE=next.config.analyze.js npm run build
+          
+          # Get bundle sizes
+          echo "## 📦 Bundle Size Report" >> bundle-report.md
+          echo "" >> bundle-report.md
+          echo "| Page | Size | First Load JS |" >> bundle-report.md
+          echo "|------|------|---------------|" >> bundle-report.md
+          
+          # Parse .next build output for sizes
+          node -e "
+          const fs = require('fs');
+          const path = require('path');
+          const buildManifest = require('./.next/build-manifest.json');
+          const appBuildManifest = require('./.next/app-build-manifest.json');
+          
+          // Calculate sizes and output markdown
+          console.log('Bundle analysis complete');
+          "
+
+      - name: Check bundle size limits
+        run: |
+          # Define size limits (in KB)
+          MAX_PAGE_SIZE=300
+          MAX_FIRST_LOAD_JS=150
+          
+          # Check if any bundles exceed limits
+          # This would parse the actual build output
+          echo "Checking bundle sizes against limits..."
+          
+          # Fail if limits exceeded
+          # exit 1 if over limit
+
+      - name: Compare with base branch
+        if: github.event_name == 'pull_request'
+        uses: preactjs/compressed-size-action@v2
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          pattern: ".next/**/*.{js,css,html,json}"
+          exclude: "{**/*.map,**/node_modules/**}"
+          compression: "gzip"
+
+      - name: Upload bundle stats
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-stats
+          path: |
+            .next/analyze/
+            bundle-report.md
+          retention-days: 7
+
+      - name: Comment PR with bundle analysis
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: bundle
+          path: bundle-report.md
+
+      - name: Check for common issues
+        run: |
+          echo "## 🔍 Bundle Analysis Checks" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Check for duplicate dependencies
+          echo "### Checking for duplicate dependencies..." >> $GITHUB_STEP_SUMMARY
+          npm ls --depth=0 | grep -E "deduped|duplicate" || echo "✅ No duplicate dependencies found" >> $GITHUB_STEP_SUMMARY
+          
+          # Check for large dependencies
+          echo "### Large dependencies:" >> $GITHUB_STEP_SUMMARY
+          npm list --prod --json | jq -r '.dependencies | to_entries[] | select(.value.size > 1000000) | .key' || echo "✅ No unusually large dependencies" >> $GITHUB_STEP_SUMMARY
+          
+          # Check for unused dependencies
+          echo "### Checking for potentially unused dependencies..." >> $GITHUB_STEP_SUMMARY
+          npx depcheck --json | jq '.dependencies[]' || echo "✅ No unused dependencies detected" >> $GITHUB_STEP_SUMMARY

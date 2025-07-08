@@ -1,0 +1,28 @@
+{
+  "extends": [
+    "../../packages/typescript-config/nextjs.json",
+    "../../packages/cms/typescript-config.json"
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "jsx": "preserve",
+    "lib": ["DOM", "DOM.Iterable", "ES2015", "ES2022"],
+    "moduleResolution": "bundler",
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "paths": {
+      "@/*": ["./*"],
+      "@repo/*": ["../../packages/*"]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "next.config.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "__tests__"
+  ]
+}

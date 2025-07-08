@@ -1,0 +1,34 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1750783312852,
+      "tag": "0000_abandoned_polaris",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1750882939271,
+      "tag": "0001_slim_lester",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1751473297054,
+      "tag": "0002_optimal_blackheart",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1751473412366,
+      "tag": "0003_low_echo",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,0 +1,95 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "globalDependencies": ["**/.env.*local", "tsconfig.json"],
+  "ui": "tui",
+  "envMode": "loose",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**",
+        ".basehub/**",
+        "**/generated/**",
+        "storybook-static/**",
+        ".react-email/**",
+        "dist/**",
+        "build/**"
+      ],
+      "cache": true,
+      "env": ["NODE_ENV", "NEXT_PUBLIC_*", "DATABASE_URL", "ANALYZE"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "cache": true,
+      "inputs": [
+        "src/**",
+        "app/**",
+        "lib/**",
+        "components/**",
+        "*.config.*",
+        "**/*.test.*",
+        "**/*.spec.*"
+      ]
+    },
+    "lint": {
+      "outputs": [],
+      "cache": true,
+      "inputs": [
+        "**/*.ts",
+        "**/*.tsx",
+        "**/*.js",
+        "**/*.jsx",
+        "**/*.mjs",
+        "**/*.cjs",
+        ".eslintrc.*",
+        ".biome.json"
+      ]
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "outputs": ["*.tsbuildinfo"],
+      "cache": true,
+      "inputs": ["**/*.ts", "**/*.tsx", "**/tsconfig.json"]
+    },
+    "analyze": {
+      "dependsOn": ["build"],
+      "outputs": [".next/analyze/**"],
+      "cache": false,
+      "env": ["ANALYZE"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": []
+    },
+    "start": {
+      "dependsOn": ["build"],
+      "cache": false
+    },
+    "translate": {
+      "dependsOn": ["^translate"],
+      "cache": false
+    },
+    "clean": {
+      "cache": false
+    },
+    "//#clean": {
+      "cache": false
+    },
+    "db:generate": {
+      "cache": false,
+      "inputs": ["packages/database/src/schema/**"],
+      "outputs": ["packages/database/migrations/**"]
+    },
+    "db:push": {
+      "cache": false,
+      "dependsOn": ["db:generate"]
+    },
+    "db:migrate": {
+      "cache": false,
+      "dependsOn": ["db:generate"]
+    }
+  }
+}
