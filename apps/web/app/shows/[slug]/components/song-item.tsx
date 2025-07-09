@@ -11,6 +11,7 @@ import Image from 'next/image';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { voteSong } from '../actions';
+import { useRealtimeVotes } from '@/hooks/use-realtime-votes';
 
 type SongItemProps = {
   item: {
@@ -46,11 +47,17 @@ export function SongItem({
   const { session } = useAuth();
   const [isPending, startTransition] = useTransition();
 
-  // Get vote data from props (should be provided by parent)
-  const upvotes = item.upvotes || 0;
-  const downvotes = item.downvotes || 0;
+  // Use real-time votes hook
+  const { votes } = useRealtimeVotes({
+    songId: item.id,
+    userId: session?.user?.id,
+  });
+
+  // Use real-time data if available, otherwise fall back to props
+  const upvotes = votes.upvotes || item.upvotes || 0;
+  const downvotes = votes.downvotes || item.downvotes || 0;
   const netVotes = upvotes - downvotes;
-  const userVote = item.userVote || null;
+  const userVote = votes.userVote || item.userVote || null;
 
   const song = item.song;
   const position = index + 1;

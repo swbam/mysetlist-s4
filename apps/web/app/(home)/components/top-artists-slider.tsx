@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { Music, Sparkles, TrendingUp, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import React from 'react';
 
 interface TrendingArtist {
   id: string;
@@ -29,14 +30,15 @@ interface TopArtistsSliderProps {
   artists: TrendingArtist[];
 }
 
-export default function TopArtistsSlider({ artists }: TopArtistsSliderProps) {
-  if (!artists || artists.length === 0) return null;
+// Memoize the format function to prevent recreating on every render
+const formatFollowers = (num: number) => {
+  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+  if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
+  return num.toString();
+};
 
-  const formatFollowers = (num: number) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
-    return num.toString();
-  };
+const TopArtistsSlider = React.memo(function TopArtistsSlider({ artists }: TopArtistsSliderProps) {
+  if (!artists || artists.length === 0) return null;
 
   return (
     <ContentSlider
@@ -69,6 +71,7 @@ export default function TopArtistsSlider({ artists }: TopArtistsSliderProps) {
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
                         priority={index < 6}
+                        loading={index < 6 ? 'eager' : 'lazy'}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     </>
@@ -146,4 +149,6 @@ export default function TopArtistsSlider({ artists }: TopArtistsSliderProps) {
       ))}
     </ContentSlider>
   );
-}
+});
+
+export default TopArtistsSlider;

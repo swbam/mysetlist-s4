@@ -1,8 +1,10 @@
 'use client';
 
 import { Star } from 'lucide-react';
+import React from 'react';
 
-export const Testimonials = () => (
+export default function Testimonials() {
+  return (
   <div className="w-full py-20 lg:py-40">
     <div className="container mx-auto">
       <div className="flex flex-col gap-10">
@@ -70,4 +72,5 @@ export const Testimonials = () => (
       </div>
     </div>
   </div>
-);
+  );
+}

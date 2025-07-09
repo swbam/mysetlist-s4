@@ -267,12 +267,12 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
     loadOfflineActions();
   }, [getCachedData]);
 
-  // Auto-register service worker
-  useEffect(() => {
-    if (state.isSupported && !state.isRegistered) {
-      register();
-    }
-  }, [state.isSupported, state.isRegistered, register]);
+  // Auto-register service worker - DISABLED to prevent conflicts
+  // useEffect(() => {
+  //   if (state.isSupported && !state.isRegistered) {
+  //     register();
+  //   }
+  // }, [state.isSupported, state.isRegistered, register]);
 
   return {
     ...state,

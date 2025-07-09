@@ -34,9 +34,8 @@ import { TrendingArtists } from './components/trending-artists';
 import { TrendingShows } from './components/trending-shows';
 import { TrendingVenues } from './components/trending-venues';
 
-// Force dynamic rendering since trending data should be real-time
+// Force dynamic rendering due to server-side auth check
 export const dynamic = 'force-dynamic';
-export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: 'Trending - MySetlist',

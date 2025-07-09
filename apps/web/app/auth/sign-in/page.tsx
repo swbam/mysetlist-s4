@@ -11,15 +11,18 @@ import { signIn, signInWithProvider } from '../actions';
 
 export const dynamic = 'force-dynamic';
 
-export default function SignInPage({
-  searchParams,
-}: {
-  searchParams: { 
-    message?: string; 
+interface SignInPageProps {
+  searchParams: Promise<{
+    message?: string;
     error?: string;
     returnUrl?: string;
-  };
-}) {
+  }>;
+}
+
+export default async function SignInPage({
+  searchParams,
+}: SignInPageProps) {
+  const params = await searchParams;
   const handleSpotifySignIn = async () => {
     'use server';
     await signInWithProvider('spotify');
@@ -44,22 +47,22 @@ export default function SignInPage({
         </div>
 
         <form className="mt-8 space-y-6" action={signIn}>
-          {searchParams?.error && (
+          {params?.error && (
             <Alert variant="destructive">
-              <AlertDescription>{searchParams.error}</AlertDescription>
+              <AlertDescription>{params.error}</AlertDescription>
             </Alert>
           )}
           
-          {searchParams?.message && (
+          {params?.message && (
             <Alert className="border-green-200 bg-green-50 text-green-800">
-              <AlertDescription>{searchParams.message}</AlertDescription>
+              <AlertDescription>{params.message}</AlertDescription>
             </Alert>
           )}
 
           <input 
             type="hidden" 
             name="redirectTo" 
-            value={searchParams?.returnUrl || '/'} 
+            value={params?.returnUrl || '/'} 
           />
 
           <div className="space-y-4">

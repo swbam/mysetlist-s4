@@ -33,12 +33,13 @@ import {
   Music2,
   User,
 } from 'lucide-react';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { toast } from 'sonner';
 import { lockSetlist, removeSongFromSetlist } from '../actions';
 import { AnonymousAddSongDialog } from './anonymous-add-song-dialog';
 import { ReorderableSetlist } from './reorderable-setlist';
 import { SongItem } from './song-item';
+import { createClient } from '@/lib/supabase/client';
 
 type SetlistViewerProps = {
   setlist: any;
@@ -58,14 +59,67 @@ export function SetlistViewer({
   const [showAddSong, setShowAddSong] = useState(false);
   const [isReordering, setIsReordering] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [setlistData, setSetlistData] = useState(setlist);
 
-  const isOwner = currentUser?.id === setlist.created_by;
-  const canEdit = isOwner && !setlist.is_locked;
-  const totalSongs = setlist.setlist_songs?.length || 0;
+  const isOwner = currentUser?.id === setlistData.created_by;
+  const canEdit = isOwner && !setlistData.is_locked;
+  const totalSongs = setlistData.setlist_songs?.length || 0;
   const totalDuration =
-    setlist.setlist_songs?.reduce((acc: number, item: any) => {
+    setlistData.setlist_songs?.reduce((acc: number, item: any) => {
       return acc + (item.song?.duration_ms || 0);
     }, 0) || 0;
+
+  // Set up real-time subscription for votes
+  useEffect(() => {
+    const supabase = createClient();
+    
+    // Subscribe to vote changes for this setlist
+    const channel = supabase
+      .channel(`setlist-votes-${setlist.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'votes',
+          filter: `setlist_song_id=in.(${setlistData.setlist_songs?.map((s: any) => s.id).join(',')})`,
+        },
+        async () => {
+          // Refresh setlist data when votes change
+          const { data, error } = await supabase
+            .from('setlists')
+            .select(`
+              *,
+              setlist_songs(
+                *,
+                song:songs(*),
+                votes(*)
+              )
+            `)
+            .eq('id', setlist.id)
+            .single();
+
+          if (!error && data) {
+            // Process vote counts for each song
+            const processedData = {
+              ...data,
+              setlist_songs: data.setlist_songs?.map((item: any) => ({
+                ...item,
+                upvotes: item.votes?.filter((v: any) => v.vote_type === 'up').length || 0,
+                downvotes: item.votes?.filter((v: any) => v.vote_type === 'down').length || 0,
+                userVote: item.votes?.find((v: any) => v.user_id === currentUser?.id)?.vote_type || null,
+              })),
+            };
+            setSetlistData(processedData);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [setlist.id, currentUser?.id, setlistData.setlist_songs]);
 
   const formatDuration = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
@@ -77,7 +131,7 @@ export function SetlistViewer({
   const handleLockSetlist = () => {
     startTransition(async () => {
       try {
-        await lockSetlist(setlist.id);
+        await lockSetlist(setlistData.id);
         toast.success('Setlist locked successfully');
       } catch (error) {
         toast.error('Failed to lock setlist');
@@ -103,17 +157,17 @@ export function SetlistViewer({
           <div className="flex items-start justify-between">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <CardTitle>{setlist.name || 'Main Set'}</CardTitle>
+                <CardTitle>{setlistData.name || 'Main Set'}</CardTitle>
                 <Badge variant={type === 'actual' ? 'default' : 'secondary'}>
                   {type}
                 </Badge>
-                {setlist.is_locked && (
+                {setlistData.is_locked && (
                   <Badge variant="outline" className="gap-1">
                     <Lock className="h-3 w-3" />
                     Locked
                   </Badge>
                 )}
-                {setlist.accuracy_score > 90 && (
+                {setlistData.accuracy_score > 90 && (
                   <Badge
                     variant="outline"
                     className="gap-1 border-green-600 text-green-600"
@@ -135,25 +189,25 @@ export function SetlistViewer({
                 </div>
                 <div className="flex items-center gap-2">
                   <Avatar className="h-4 w-4">
-                    <AvatarImage src={setlist.creator?.avatar_url} />
+                    <AvatarImage src={setlistData.creator?.avatar_url} />
                     <AvatarFallback>
                       <User className="h-3 w-3" />
                     </AvatarFallback>
                   </Avatar>
-                  <span>{setlist.creator?.display_name || 'Anonymous'}</span>
+                  <span>{setlistData.creator?.display_name || 'Anonymous'}</span>
                 </div>
                 <span>•</span>
                 <span>
-                  {formatDistanceToNow(new Date(setlist.created_at))} ago
+                  {formatDistanceToNow(new Date(setlistData.created_at))} ago
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
               {/* Add Song button for anonymous users */}
-              {!session && !setlist.is_locked && (
+              {!session && !setlistData.is_locked && (
                 <AnonymousAddSongButton
-                  setlistId={setlist.id}
+                  setlistId={setlistData.id}
                   isAuthenticated={false}
                   onClick={() => setShowAddSong(true)}
                 />
@@ -197,10 +251,10 @@ export function SetlistViewer({
         </CardHeader>
 
         <CardContent>
-          {setlist.setlist_songs && setlist.setlist_songs.length > 0 ? (
+          {setlistData.setlist_songs && setlistData.setlist_songs.length > 0 ? (
             isReordering ? (
               <ReorderableSetlist
-                setlist={setlist}
+                setlist={setlistData}
                 show={show}
                 currentUser={currentUser}
                 onReorder={() => setIsReordering(false)}
@@ -208,13 +262,13 @@ export function SetlistViewer({
               />
             ) : (
               <div className="space-y-2">
-                {setlist.setlist_songs.map((item: any, index: number) => (
+                {setlistData.setlist_songs.map((item: any, index: number) => (
                   <SongItem
                     key={item.id}
                     item={item}
                     index={index}
                     isEditing={isEditing}
-                    canVote={!setlist.is_locked}
+                    canVote={!setlistData.is_locked}
                     onDelete={() => handleDeleteSong(item.id)}
                   />
                 ))}
@@ -224,9 +278,9 @@ export function SetlistViewer({
             <div className="py-8 text-center text-muted-foreground">
               <Music2 className="mx-auto mb-2 h-8 w-8 opacity-50" />
               <p>No songs added yet</p>
-              {(canEdit || !session) && !setlist.is_locked && (
+              {(canEdit || !session) && !setlistData.is_locked && (
                 <AnonymousAddSongButton
-                  setlistId={setlist.id}
+                  setlistId={setlistData.id}
                   isAuthenticated={!!session}
                   onClick={() => setShowAddSong(true)}
                 />
@@ -239,7 +293,7 @@ export function SetlistViewer({
       {/* Add Song Dialog */}
       {showAddSong && (
         <AnonymousAddSongDialog
-          setlistId={setlist.id}
+          setlistId={setlistData.id}
           artistId={show.headliner_artist.id}
           open={showAddSong}
           onOpenChange={setShowAddSong}

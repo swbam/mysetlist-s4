@@ -12,12 +12,13 @@ import { motion } from 'framer-motion';
 import { Calendar, MapPin, TrendingUp, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import React from 'react';
 
 interface TrendingShowsCarouselProps {
   shows: TrendingShow[];
 }
 
-export default function TrendingShowsCarousel({
+const TrendingShowsCarousel = React.memo(function TrendingShowsCarousel({
   shows,
 }: TrendingShowsCarouselProps) {
   return (
@@ -122,4 +123,6 @@ export default function TrendingShowsCarousel({
       ))}
     </ContentSlider>
   );
-}
+});
+
+export default TrendingShowsCarousel;

@@ -4,8 +4,9 @@ import { Button } from '@repo/design-system/components/ui/button';
 import { motion } from 'framer-motion';
 import { ChevronRight, Music, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
+import React from 'react';
 
-export default function HomeHero() {
+const HomeHero = React.memo(function HomeHero() {
   return (
     <section className="relative overflow-hidden pt-32 pb-40">
       {/* Animated gradient background with subtle mesh pattern */}
@@ -15,7 +16,7 @@ export default function HomeHero() {
         transition={{ duration: 1.2 }}
         className="-z-10 absolute inset-0"
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0D0D0D] via-[#1A1A1A] to-[#101010]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-100px,rgba(120,0,255,0.1),transparent)]" />
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:radial-gradient(white,transparent_70%)]" />
       </motion.div>
@@ -151,4 +152,6 @@ export default function HomeHero() {
       </div>
     </section>
   );
-}
+});
+
+export default HomeHero;

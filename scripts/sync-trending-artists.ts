@@ -6,7 +6,7 @@
 
 import 'dotenv/config';
 import { TicketmasterClient } from '../packages/external-apis/src/clients/ticketmaster';
-import { spotify } from '../packages/external-apis/src/spotify';
+import { SpotifyClient } from '../packages/external-apis/src/clients/spotify';
 
 // API configuration - these should be in your .env file
 const requiredEnvVars = [

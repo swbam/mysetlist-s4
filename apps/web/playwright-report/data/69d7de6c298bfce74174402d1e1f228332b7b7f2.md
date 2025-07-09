@@ -1,0 +1,402 @@
+# Page snapshot
+
+```yaml
+- link "Skip to main content":
+  - /url: "#main-content"
+- banner:
+  - navigation "Main":
+    - list:
+      - listitem:
+        - link "Home":
+          - /url: /
+      - listitem:
+        - link "Artists":
+          - /url: /artists
+      - listitem:
+        - link "Shows":
+          - /url: /shows
+      - listitem:
+        - link "Venues":
+          - /url: /venues
+      - listitem:
+        - link "Trending":
+          - /url: /trending
+  - link "Logo MySetlist":
+    - /url: /
+    - img "Logo"
+    - paragraph: MySetlist
+  - searchbox "Search artists..."
+  - link "Contact":
+    - /url: /contact
+  - link "Sign in":
+    - /url: /auth/sign-in
+  - link "Sign up":
+    - /url: /auth/sign-up
+  - button "Toggle theme":
+    - img
+    - img
+    - text: Toggle theme
+  - text: Live updates active
+  - link "Sign in":
+    - /url: /auth/sign-in
+  - link "Sign up":
+    - /url: /auth/sign-up
+- main:
+  - text: "Trending Now: 1,247 Active Shows"
+  - heading "Crowd-Curated Setlists" [level=1]
+  - paragraph: Vote on the songs you want to hear at upcoming concerts and see what other fans are predicting.
+  - textbox "Search artists..."
+  - text: "Popular:"
+  - link "Taylor Swift":
+    - /url: /artists/taylor-swift
+  - link "The Weeknd":
+    - /url: /artists/the-weeknd
+  - link "Drake":
+    - /url: /artists/drake
+  - link "Olivia Rodrigo":
+    - /url: /artists/olivia-rodrigo
+  - link "Start Voting":
+    - /url: /artists
+  - link "Discover Music":
+    - /url: /discover
+  - text: 10K+ Active Artists 50M+ Votes Cast 100K+ Music Fans
+  - heading "Trending Artists" [level=2]
+  - paragraph: Vote for your favorite artists and shape their setlists
+  - link "Discover More Artists":
+    - /url: /artists
+  - region:
+    - group:
+      - link "Taylor Swift 84.0M fans Taylor Swift [":
+        - /url: /artists/taylor-swift
+        - img "Taylor Swift"
+        - text: 84.0M fans
+        - heading "Taylor Swift" [level=3]
+        - paragraph: "["
+    - group:
+      - link "Bad Bunny 73.0M fans Bad Bunny [":
+        - /url: /artists/bad-bunny
+        - img "Bad Bunny"
+        - text: 73.0M fans
+        - heading "Bad Bunny" [level=3]
+        - paragraph: "["
+    - group:
+      - link "Billie Eilish 110.0M fans Billie Eilish [":
+        - /url: /artists/billie-eilish
+        - img "Billie Eilish"
+        - text: 110.0M fans
+        - heading "Billie Eilish" [level=3]
+        - paragraph: "["
+    - group:
+      - link "Arctic Monkeys 25.0M fans Arctic Monkeys [":
+        - /url: /artists/arctic-monkeys
+        - img "Arctic Monkeys"
+        - text: 25.0M fans
+        - heading "Arctic Monkeys" [level=3]
+        - paragraph: "["
+    - group:
+      - link "The 1975 12.0M fans The 1975 [":
+        - /url: /artists/the-1975
+        - img "The 1975"
+        - text: 12.0M fans
+        - heading "The 1975" [level=3]
+        - paragraph: "["
+    - group:
+      - link "Tame Impala 15.0M fans Tame Impala [":
+        - /url: /artists/tame-impala
+        - img "Tame Impala"
+        - text: 15.0M fans
+        - heading "Tame Impala" [level=3]
+        - paragraph: "["
+    - group:
+      - link "Lorde 16.0M fans Lorde [":
+        - /url: /artists/lorde
+        - img "Lorde"
+        - text: 16.0M fans
+        - heading "Lorde" [level=3]
+        - paragraph: "["
+    - group:
+      - link "Phoebe Bridgers 8.0M fans Phoebe Bridgers [":
+        - /url: /artists/phoebe-bridgers
+        - img "Phoebe Bridgers"
+        - text: 8.0M fans
+        - heading "Phoebe Bridgers" [level=3]
+        - paragraph: "["
+    - group:
+      - link "boygenius 2.5M fans boygenius [":
+        - /url: /artists/boygenius
+        - img "boygenius"
+        - text: 2.5M fans
+        - heading "boygenius" [level=3]
+        - paragraph: "["
+    - group:
+      - link "Drake 143.0M fans Drake [":
+        - /url: /artists/drake
+        - img "Drake"
+        - text: 143.0M fans
+        - heading "Drake" [level=3]
+        - paragraph: "["
+    - group:
+      - link "The Weeknd 105.0M fans The Weeknd [":
+        - /url: /artists/the-weeknd
+        - img "The Weeknd"
+        - text: 105.0M fans
+        - heading "The Weeknd" [level=3]
+        - paragraph: "["
+    - group:
+      - link "Ed Sheeran 89.0M fans Ed Sheeran [":
+        - /url: /artists/ed-sheeran
+        - img "Ed Sheeran"
+        - text: 89.0M fans
+        - heading "Ed Sheeran" [level=3]
+        - paragraph: "["
+    - button "Previous slide"
+    - button "Next slide"
+  - heading "Trending Shows" [level=2]
+  - paragraph: Discover the hottest concerts happening now
+  - link "Explore All Shows":
+    - /url: /shows
+  - region:
+    - group:
+      - 'link "Arctic Monkeys at Madison Square Garden Trending #1 Jul 10 Arctic Monkeys at Madison Square Garden by Arctic Monkeys Madison Square Garden, New York, NY 2026 attending"':
+        - /url: /shows/arctic-monkeys-madison-square-garden-2025-07-11
+        - img "Arctic Monkeys at Madison Square Garden"
+        - text: "Trending #1 Jul 10"
+        - heading "Arctic Monkeys at Madison Square Garden" [level=3]
+        - paragraph: by Arctic Monkeys
+        - text: Madison Square Garden, New York, NY 2026 attending
+    - group:
+      - 'link "Billie Eilish at The Fillmore Trending #2 Jul 28 Billie Eilish at The Fillmore by Billie Eilish The Fillmore, San Francisco, CA 129 attending"':
+        - /url: /shows/billie-eilish-the-fillmore-2025-07-29
+        - img "Billie Eilish at The Fillmore"
+        - text: "Trending #2 Jul 28"
+        - heading "Billie Eilish at The Fillmore" [level=3]
+        - paragraph: by Billie Eilish
+        - text: The Fillmore, San Francisco, CA 129 attending
+    - group:
+      - 'link "Japanese Breakfast at Red Rocks Amphitheatre Trending #3 Jul 29 Japanese Breakfast at Red Rocks Amphitheatre by Japanese Breakfast Red Rocks Amphitheatre, Morrison, CO 6308 attending"':
+        - /url: /shows/japanese-breakfast-red-rocks-amphitheatre-2025-07-30
+        - img "Japanese Breakfast at Red Rocks Amphitheatre"
+        - text: "Trending #3 Jul 29"
+        - heading "Japanese Breakfast at Red Rocks Amphitheatre" [level=3]
+        - paragraph: by Japanese Breakfast
+        - text: Red Rocks Amphitheatre, Morrison, CO 6308 attending
+    - group:
+      - 'link "Arctic Monkeys at The Fillmore Trending #4 Jul 31 Arctic Monkeys at The Fillmore by Arctic Monkeys The Fillmore, San Francisco, CA 774 attending"':
+        - /url: /shows/arctic-monkeys-the-fillmore-2025-08-01
+        - img "Arctic Monkeys at The Fillmore"
+        - text: "Trending #4 Jul 31"
+        - heading "Arctic Monkeys at The Fillmore" [level=3]
+        - paragraph: by Arctic Monkeys
+        - text: The Fillmore, San Francisco, CA 774 attending
+    - group:
+      - 'link "Tame Impala at The Troubadour Trending #5 Aug 01 Tame Impala at The Troubadour by Tame Impala The Troubadour, West Hollywood, CA 434 attending"':
+        - /url: /shows/tame-impala-the-troubadour-2025-08-02
+        - img "Tame Impala at The Troubadour"
+        - text: "Trending #5 Aug 01"
+        - heading "Tame Impala at The Troubadour" [level=3]
+        - paragraph: by Tame Impala
+        - text: The Troubadour, West Hollywood, CA 434 attending
+    - group:
+      - 'link "Lorde at Madison Square Garden Trending #6 Sep 25 Lorde at Madison Square Garden by Lorde Madison Square Garden, New York, NY 5309 attending"':
+        - /url: /shows/lorde-madison-square-garden-2025-09-26
+        - img "Lorde at Madison Square Garden"
+        - text: "Trending #6 Sep 25"
+        - heading "Lorde at Madison Square Garden" [level=3]
+        - paragraph: by Lorde
+        - text: Madison Square Garden, New York, NY 5309 attending
+    - group:
+      - 'link "Arctic Monkeys at 9:30 Club Trending #7 Sep 10 Arctic Monkeys at 9:30 Club by Arctic Monkeys 9:30 Club, Washington, DC 773 attending"':
+        - /url: /shows/arctic-monkeys-930-club-2025-09-11
+        - img "Arctic Monkeys at 9:30 Club"
+        - text: "Trending #7 Sep 10"
+        - heading "Arctic Monkeys at 9:30 Club" [level=3]
+        - paragraph: by Arctic Monkeys
+        - text: 9:30 Club, Washington, DC 773 attending
+    - group:
+      - 'link "Bad Bunny at The Troubadour Trending #8 Aug 08 Bad Bunny at The Troubadour by Bad Bunny The Troubadour, West Hollywood, CA 224 attending"':
+        - /url: /shows/bad-bunny-the-troubadour-2025-08-09
+        - img "Bad Bunny at The Troubadour"
+        - text: "Trending #8 Aug 08"
+        - heading "Bad Bunny at The Troubadour" [level=3]
+        - paragraph: by Bad Bunny
+        - text: The Troubadour, West Hollywood, CA 224 attending
+    - group:
+      - 'link "The 1975 at The Fillmore Trending #9 Sep 08 The 1975 at The Fillmore by The 1975 The Fillmore, San Francisco, CA 666 attending"':
+        - /url: /shows/the-1975-the-fillmore-2025-09-09
+        - img "The 1975 at The Fillmore"
+        - text: "Trending #9 Sep 08"
+        - heading "The 1975 at The Fillmore" [level=3]
+        - paragraph: by The 1975
+        - text: The Fillmore, San Francisco, CA 666 attending
+    - group:
+      - 'link "Phoebe Bridgers at The Fillmore Trending #10 Aug 20 Phoebe Bridgers at The Fillmore by Phoebe Bridgers The Fillmore, San Francisco, CA 1159 attending"':
+        - /url: /shows/phoebe-bridgers-the-fillmore-2025-08-21
+        - img "Phoebe Bridgers at The Fillmore"
+        - text: "Trending #10 Aug 20"
+        - heading "Phoebe Bridgers at The Fillmore" [level=3]
+        - paragraph: by Phoebe Bridgers
+        - text: The Fillmore, San Francisco, CA 1159 attending
+    - group:
+      - 'link "Lorde at 9:30 Club Trending #11 Sep 01 Lorde at 9:30 Club by Lorde 9:30 Club, Washington, DC 817 attending"':
+        - /url: /shows/lorde-930-club-2025-09-02
+        - img "Lorde at 9:30 Club"
+        - text: "Trending #11 Sep 01"
+        - heading "Lorde at 9:30 Club" [level=3]
+        - paragraph: by Lorde
+        - text: 9:30 Club, Washington, DC 817 attending
+    - group:
+      - 'link "Phoebe Bridgers at The Troubadour Trending #12 Aug 29 Phoebe Bridgers at The Troubadour by Phoebe Bridgers The Troubadour, West Hollywood, CA 307 attending"':
+        - /url: /shows/phoebe-bridgers-the-troubadour-2025-08-30
+        - img "Phoebe Bridgers at The Troubadour"
+        - text: "Trending #12 Aug 29"
+        - heading "Phoebe Bridgers at The Troubadour" [level=3]
+        - paragraph: by Phoebe Bridgers
+        - text: The Troubadour, West Hollywood, CA 307 attending
+    - button "Previous slide"
+    - button "Next slide"
+  - button "Go to slide 1"
+  - button "Go to slide 2"
+  - button "Go to slide 3"
+  - button "Go to slide 4"
+  - button "Go to slide 5"
+  - button "Go to slide 6"
+  - button "Go to slide 7"
+  - button "Go to slide 8"
+  - button "Go to slide 9"
+  - button "Go to slide 10"
+  - button "Go to slide 11"
+  - button "Go to slide 12"
+  - heading "Featured This Week" [level=2]
+  - paragraph: The most anticipated shows and hottest votes from the MySetlist community
+  - img "Taylor Swift | The Eras Tour"
+  - text: Most Voted Show This Week
+  - heading "Taylor Swift | The Eras Tour" [level=3]
+  - text: SoFi Stadium, Los Angeles 8/4/2024 70,000 attending
+  - link "View Setlist Predictions":
+    - /url: /shows/1
+  - text: 125Kvotes cast
+  - heading "Top Voted Songs" [level=3]
+  - text: Live Results 1
+  - paragraph: Anti-Hero
+  - paragraph: Taylor Swift
+  - paragraph: 89%
+  - paragraph: 45.2K votes
+  - text: "2"
+  - paragraph: Blank Space
+  - paragraph: Taylor Swift
+  - paragraph: 83%
+  - paragraph: 42.1K votes
+  - text: "3"
+  - paragraph: Shake It Off
+  - paragraph: Taylor Swift
+  - paragraph: 76%
+  - paragraph: 38.5K votes
+  - text: "4"
+  - paragraph: Love Story
+  - paragraph: Taylor Swift
+  - paragraph: 69%
+  - paragraph: 35.2K votes
+  - link "Vote for More Songs":
+    - /url: /voting
+  - heading "Upcoming Shows to Watch" [level=3]
+  - link "View All":
+    - /url: /shows
+  - link "The Weeknd Madison Square Garden 7/19/2024 Vote Now →":
+    - /url: /artists/the-weeknd
+    - heading "The Weeknd" [level=4]
+    - paragraph: Madison Square Garden
+    - text: 7/19/2024 Vote Now →
+  - link "Drake United Center 7/21/2024 Vote Now →":
+    - /url: /artists/drake
+    - heading "Drake" [level=4]
+    - paragraph: United Center
+    - text: 7/21/2024 Vote Now →
+  - link "Olivia Rodrigo The Forum 89 left 7/24/2024 Vote Now →":
+    - /url: /artists/olivia-rodrigo
+    - heading "Olivia Rodrigo" [level=4]
+    - paragraph: The Forum
+    - text: 89 left 7/24/2024 Vote Now →
+  - heading "Everything you need for live music" [level=2]
+  - paragraph: Discover concerts, track setlists, vote on songs, and connect with music fans worldwide
+  - heading "Artist Discovery" [level=3]
+  - paragraph: Find your favorite artists and discover new ones through our Spotify integration
+  - heading "Show Tracking" [level=3]
+  - paragraph: Never miss a concert with our comprehensive show tracking and notifications
+  - heading "Setlist Voting" [level=3]
+  - paragraph: Vote on which songs you want to hear at upcoming shows
+  - heading "Real-time Updates" [level=3]
+  - paragraph: Get instant updates on setlists, votes, and show changes as they happen
+  - heading "What music fans are saying" [level=2]
+  - paragraph: "\"MySetlist changed how I experience live music. Being able to vote on setlists and track my favorite artists' shows is incredible!\""
+  - paragraph: Sarah M.
+  - paragraph: Music Enthusiast
+  - paragraph: "\"Finally, a platform where fans can influence the shows they attend. The real-time updates during concerts are amazing!\""
+  - paragraph: Alex R.
+  - paragraph: Concert Regular
+  - paragraph: "\"The artist discovery feature helped me find so many new bands. The Spotify integration makes it seamless!\""
+  - paragraph: Jamie L.
+  - paragraph: Music Explorer
+  - heading "Frequently Asked Questions" [level=2]
+  - paragraph: Everything you need to know about MySetlist
+  - heading "How do I vote on setlists?" [level=3]:
+    - button "How do I vote on setlists?"
+  - heading "Can I track artists I discover on Spotify?" [level=3]:
+    - button "Can I track artists I discover on Spotify?"
+  - heading "How accurate are the setlist predictions?" [level=3]:
+    - button "How accurate are the setlist predictions?"
+  - heading "Do I get notified about new shows?" [level=3]:
+    - button "Do I get notified about new shows?"
+  - text: Get Started
+  - heading "Join the music community" [level=3]
+  - paragraph: Start discovering concerts, voting on setlists, and connecting with fellow music fans today
+  - button "Get Started"
+  - button "Learn More"
+- contentinfo:
+  - heading "MySetlist" [level=3]
+  - paragraph: Vote for your dream setlist and connect with fellow music fans.
+  - heading "Product" [level=4]
+  - list:
+    - listitem:
+      - link "Artists":
+        - /url: /artists
+    - listitem:
+      - link "Shows":
+        - /url: /shows
+    - listitem:
+      - link "Venues":
+        - /url: /venues
+    - listitem:
+      - link "Setlists":
+        - /url: /setlists
+  - heading "Company" [level=4]
+  - list:
+    - listitem:
+      - link "About":
+        - /url: /about
+    - listitem:
+      - link "Contact":
+        - /url: /contact
+    - listitem:
+      - link "Privacy":
+        - /url: /privacy
+    - listitem:
+      - link "Terms":
+        - /url: /terms
+  - heading "Connect" [level=4]
+  - list:
+    - listitem:
+      - link "Twitter":
+        - /url: https://twitter.com
+    - listitem:
+      - link "Instagram":
+        - /url: https://instagram.com
+    - listitem:
+      - link "Facebook":
+        - /url: https://facebook.com
+  - paragraph: © 2025 MySetlist. All rights reserved.
+- region "Notifications alt+T"
+- region "Notifications alt+T"
+- alert
+- button "Open Next.js Dev Tools":
+  - img
+```

@@ -4,6 +4,9 @@ import { artists, shows, venues } from '@repo/database';
 import { desc, gte, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
+// Force dynamic rendering for API route
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -109,12 +112,34 @@ export async function GET(request: NextRequest) {
       total: formatted.length,
       generatedAt: new Date().toISOString(),
     };
-    return NextResponse.json(payload);
+    
+    const response = NextResponse.json(payload);
+    
+    // Add cache headers
+    response.headers.set(
+      'Cache-Control',
+      'public, s-maxage=300, stale-while-revalidate=600'
+    );
+    
+    return response;
   } catch (error) {
     console.error('Trending shows API error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch trending shows' },
-      { status: 500 }
-    );
+    
+    // Return empty array with fallback data instead of error
+    const fallbackPayload: TrendingShowsResponse = {
+      shows: [],
+      timeframe: request.nextUrl.searchParams.get('timeframe') || 'week',
+      total: 0,
+      generatedAt: new Date().toISOString(),
+      fallback: true,
+      error: 'Unable to load trending shows at this time',
+    };
+    
+    return NextResponse.json(fallbackPayload, { 
+      status: 200, // Return 200 to prevent UI crashes
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
+      }
+    });
   }
 }

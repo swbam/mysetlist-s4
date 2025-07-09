@@ -1,3 +1,5 @@
+FIRST: THE MAIN ISSUE IS THE APP LOADS AND THEN GOES TO A BLACK SCREEN. REVIEW THE CODEBASE AND THE OUTLINE BELOW AND FIX THIS FIRST, THEN MOVE ON TO GETTING THE APP 100% COMPLETED. 
+
  i gave an ai coder these instructions to ffinish building my concert 
     setlist voting web app, but I dont think they implemented everything and 
     the app is probably not 100%. I need you to ultrathink and review the 

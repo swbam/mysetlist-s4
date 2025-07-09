@@ -47,15 +47,11 @@ interface AnalyticsData {
   isPositive: boolean;
 }
 
-export default async function AnalyticsPage({
-  params,
-}: { params: Promise<{ locale: string }> }) {
+export default async function AnalyticsPage() {
   const supabase = await createClient();
-  const { locale } = await params;
 
   const today = new Date();
   const yesterday = subDays(today, 1);
-  const weekAgo = subDays(today, 7);
   const monthAgo = subDays(today, 30);
 
   // Get current period data

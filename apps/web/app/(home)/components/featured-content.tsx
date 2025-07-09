@@ -19,8 +19,9 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import React from 'react';
 
-export function FeaturedContent() {
+const FeaturedContent = React.memo(function FeaturedContent() {
   // This would normally come from props/API
   const featuredShow = {
     id: '1',
@@ -306,4 +307,6 @@ export function FeaturedContent() {
       </div>
     </section>
   );
-}
+});
+
+export default FeaturedContent;

@@ -14,17 +14,13 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import type React from 'react';
-
-interface AdminLayoutProps {
-  children: React.ReactNode;
-  params: Promise<{ locale: string }>;
-}
-
 export default async function AdminLayout({
   children,
   params,
-}: AdminLayoutProps) {
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
   const supabase = await createClient();
   const { locale } = await params;
 

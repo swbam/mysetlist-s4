@@ -1,6 +1,8 @@
 import { Calendar, Music, Vote, Zap } from 'lucide-react';
+import React from 'react';
 
-export const Features = () => (
+const Features = React.memo(function Features() {
+  return (
   <div className="w-full py-20 lg:py-40">
     <div className="container mx-auto">
       <div className="flex flex-col gap-10">
@@ -60,4 +62,7 @@ export const Features = () => (
       </div>
     </div>
   </div>
-);
+  );
+});
+
+export default Features;

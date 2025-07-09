@@ -5,6 +5,11 @@ import { AlertCircle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import React from 'react';
 
+// Re-export all navigation error boundary components
+export { PageErrorBoundary, withPageErrorBoundary } from './page-error-boundary';
+export { RouteErrorBoundary, withRouteErrorBoundary } from './route-error-boundary';
+export { SafeLink, useSafeNavigation } from './safe-link';
+
 interface Props {
   children: React.ReactNode;
   fallback?: React.ReactNode;

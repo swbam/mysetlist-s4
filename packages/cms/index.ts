@@ -60,7 +60,7 @@ export type LegalPost = LegalPostMeta & {
 export const blog = {
   postsQuery: {},
   latestPostQuery: {},
-  postQuery: (slug: string) => ({}),
+  postQuery: (_slug: string) => ({}),
 
   getPosts: async (): Promise<PostMeta[]> => {
     return [];
@@ -70,7 +70,7 @@ export const blog = {
     return null;
   },
 
-  getPost: async (slug: string) => {
+  getPost: async (_slug: string) => {
     return null;
   },
 };
@@ -78,7 +78,7 @@ export const blog = {
 export const legal = {
   postsQuery: {},
   latestPostQuery: {},
-  postQuery: (slug: string) => ({}),
+  postQuery: (_slug: string) => ({}),
 
   getPosts: async (): Promise<LegalPost[]> => {
     return [];
@@ -88,7 +88,7 @@ export const legal = {
     return null;
   },
 
-  getPost: async (slug: string) => {
+  getPost: async (_slug: string) => {
     return null;
   },
 };

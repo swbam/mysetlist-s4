@@ -109,9 +109,7 @@ export default function UserManagementEnhanced() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `${process.env['NEXT_PUBLIC_API_URL']}/admin/users`
-      );
+      const response = await fetch('/api/admin/users');
       if (response.ok) {
         const data = await response.json();
         setUsers(data.users || []);
@@ -128,9 +126,7 @@ export default function UserManagementEnhanced() {
 
   const fetchUserStats = async (userId: string) => {
     try {
-      const response = await fetch(
-        `${process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3002'}/admin/users/${userId}/stats`
-      );
+      const response = await fetch(`/api/admin/users/${userId}/stats`);
       if (response.ok) {
         const stats = await response.json();
         setUserStats(stats);
@@ -146,12 +142,10 @@ export default function UserManagementEnhanced() {
     data?: any
   ) => {
     try {
-      const response = await fetch(
-        `${process.env['NEXT_PUBLIC_API_URL']}/admin/users/actions`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+      const response = await fetch('/api/admin/users/actions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
             action,
             userId,
             ...data,

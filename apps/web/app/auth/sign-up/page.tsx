@@ -12,11 +12,12 @@ import { signInWithProvider, signUp } from '../actions';
 
 export const dynamic = 'force-dynamic';
 
-export default function SignUpPage({
+export default async function SignUpPage({
   searchParams,
 }: {
-  searchParams: { message?: string; error?: string };
+  searchParams: Promise<{ message?: string; error?: string }>;
 }) {
+  const params = await searchParams;
   const handleSpotifySignIn = async () => {
     'use server';
     await signInWithProvider('spotify');
@@ -41,15 +42,15 @@ export default function SignUpPage({
         </div>
 
         <form className="mt-8 space-y-6" action={signUp}>
-          {searchParams?.error && (
+          {params?.error && (
             <Alert variant="destructive">
-              <AlertDescription>{searchParams.error}</AlertDescription>
+              <AlertDescription>{params.error}</AlertDescription>
             </Alert>
           )}
           
-          {searchParams?.message && (
+          {params?.message && (
             <Alert className="border-green-200 bg-green-50 text-green-800">
-              <AlertDescription>{searchParams.message}</AlertDescription>
+              <AlertDescription>{params.message}</AlertDescription>
             </Alert>
           )}
 

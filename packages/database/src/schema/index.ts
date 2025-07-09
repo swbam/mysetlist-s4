@@ -10,6 +10,7 @@ export * from './user-follows-artists';
 export * from './attendance';
 export * from './relations';
 export * from './admin';
+export * from './search';
 
 // Re-export artistSongs from artists file to avoid circular dependency
 export { artistSongs } from './artists';

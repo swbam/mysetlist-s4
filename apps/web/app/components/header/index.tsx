@@ -13,16 +13,18 @@ import {
 } from '@repo/design-system/components/ui/navigation-menu';
 import { MoveRight } from 'lucide-react';
 import Link from 'next/link';
+import React from 'react';
 
 import { MobileNavigation } from '@/components/mobile/mobile-navigation';
-import { NavigationErrorBoundary } from '@/components/navigation/navigation-error-boundary';
+import { MobileSearch } from '@/components/mobile/mobile-search';
+import { NavigationErrorBoundary, SafeLink } from '@/components/navigation/navigation-error-boundary';
 import { RealtimeStatus } from '@/components/realtime-status';
 import Image from 'next/image';
 import { SearchBar } from '../search-bar';
 import Logo from './logo.svg';
 import { UserMenu } from './user-menu';
 
-const HeaderContent = () => {
+const HeaderContent = React.memo(() => {
   const { user } = useAuth();
 
   const navigationItems = [
@@ -74,7 +76,7 @@ const HeaderContent = () => {
                     <>
                       <NavigationMenuLink asChild>
                         <Button variant="ghost" asChild>
-                          <Link
+                          <SafeLink
                             href={item.href}
                             target={
                               item.href.startsWith('http')
@@ -86,9 +88,10 @@ const HeaderContent = () => {
                                 ? 'noopener noreferrer'
                                 : undefined
                             }
+                            prefetch={!item.href.startsWith('http')}
                           >
                             {item.title}
-                          </Link>
+                          </SafeLink>
                         </Button>
                       </NavigationMenuLink>
                     </>
@@ -107,17 +110,19 @@ const HeaderContent = () => {
                               </p>
                             </div>
                             <Button size="sm" className="mt-10" asChild>
-                              <Link href="/contact">Get Started</Link>
+                              <SafeLink href="/contact">Get Started</SafeLink>
                             </Button>
                           </div>
                           <div className="flex h-full flex-col justify-end text-sm">
                             {item.href && (
-                              <NavigationMenuLink
-                                href={item.href}
-                                className="flex flex-row items-center justify-between rounded px-4 py-2 hover:bg-muted"
-                              >
-                                <span>Go to {item.title}</span>
-                                <MoveRight className="h-4 w-4 text-muted-foreground" />
+                              <NavigationMenuLink asChild>
+                                <SafeLink
+                                  href={item.href}
+                                  className="flex flex-row items-center justify-between rounded px-4 py-2 hover:bg-muted"
+                                >
+                                  <span>Go to {item.title}</span>
+                                  <MoveRight className="h-4 w-4 text-muted-foreground" />
+                                </SafeLink>
                               </NavigationMenuLink>
                             )}
                           </div>
@@ -131,7 +136,7 @@ const HeaderContent = () => {
           </NavigationMenu>
         </div>
         <div className="flex items-center gap-2 lg:justify-center">
-          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <SafeLink href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity" prefetch>
             <Image
               src={Logo}
               alt="Logo"
@@ -140,22 +145,25 @@ const HeaderContent = () => {
               className="dark:invert"
             />
             <p className="whitespace-nowrap font-semibold">MySetlist</p>
-          </Link>
+          </SafeLink>
         </div>
         <div className="flex w-full justify-end gap-4">
           <div className="hidden max-w-md flex-1 lg:block">
             <SearchBar />
           </div>
+          <div className="flex-1 max-w-md lg:hidden">
+            <MobileSearch />
+          </div>
           <Button variant="ghost" className="hidden md:inline" asChild>
-            <Link href="/contact">Contact</Link>
+            <SafeLink href="/contact">Contact</SafeLink>
           </Button>
           {!user && (
             <>
               <Button variant="ghost" className="hidden md:inline" size="sm" asChild>
-                <Link href="/auth/sign-in">Sign in</Link>
+                <SafeLink href="/auth/sign-in">Sign in</SafeLink>
               </Button>
               <Button className="hidden md:inline" size="sm" asChild>
-                <Link href="/auth/sign-up">Sign up</Link>
+                <SafeLink href="/auth/sign-up">Sign up</SafeLink>
               </Button>
             </>
           )}
@@ -172,7 +180,9 @@ const HeaderContent = () => {
       </div>
     </header>
   );
-};
+});
+
+HeaderContent.displayName = 'HeaderContent';
 
 export const Header = () => {
   return (

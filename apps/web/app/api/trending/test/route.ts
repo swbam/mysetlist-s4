@@ -67,32 +67,76 @@ export async function GET() {
 
     // Test API endpoints
     const endpoints = [
-      '/api/trending/shows',
-      '/api/trending/artists',
-      '/api/trending/venues',
-      '/api/trending/live',
+      { path: '/api/trending', name: 'Main Trending' },
+      { path: '/api/trending/artists', name: 'Trending Artists' },
+      { path: '/api/trending/shows', name: 'Trending Shows' },
+      { path: '/api/trending/venues', name: 'Trending Venues' },
+      { path: '/api/trending/live', name: 'Live Trending' },
+      { path: '/api/trending/live?timeframe=1h&type=artist', name: 'Live Artists (1h)' },
+      { path: '/api/activity/recent', name: 'Recent Activity' },
     ];
 
     results.endpoints = {};
 
     for (const endpoint of endpoints) {
+      const startTime = Date.now();
+      
       try {
-        const url = `${process.env['NEXT_PUBLIC_WEB_URL'] || 'http://localhost:3001'}${endpoint}?limit=1`;
-        const response = await fetch(url);
-        results.endpoints[endpoint] = {
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        const url = `${baseUrl}${endpoint.path}${endpoint.path.includes('?') ? '&' : '?'}limit=1`;
+        
+        const response = await fetch(url, {
+          headers: {
+            'Accept': 'application/json',
+            'Cache-Control': 'no-cache',
+          },
+        });
+        
+        const responseTime = Date.now() - startTime;
+        let data = null;
+        
+        if (response.ok) {
+          data = await response.json();
+        }
+        
+        results.endpoints[endpoint.name] = {
           status: response.status,
           ok: response.ok,
+          responseTime,
+          hasData: data ? (data.artists?.length || data.shows?.length || data.venues?.length || data.trending?.length || data.activities?.length || 0) > 0 : false,
+          fallback: data?.fallback || false,
+          error: data?.error || null,
         };
+        
       } catch (error) {
-        results.endpoints[endpoint] = {
+        const responseTime = Date.now() - startTime;
+        results.endpoints[endpoint.name] = {
           status: 'error',
+          ok: false,
+          responseTime,
           error: error instanceof Error ? error.message : 'Unknown error',
         };
       }
     }
 
+    // Calculate summary stats
+    const endpointResults = Object.values(results.endpoints);
+    const workingEndpoints = endpointResults.filter(r => r.ok).length;
+    const totalEndpoints = endpointResults.length;
+    const avgResponseTime = endpointResults.reduce((sum, r) => sum + r.responseTime, 0) / totalEndpoints;
+    
+    const summary = {
+      status: workingEndpoints === totalEndpoints ? 'healthy' : 'issues',
+      workingEndpoints,
+      totalEndpoints,
+      avgResponseTime: Math.round(avgResponseTime),
+      hasData: endpointResults.some(r => r.hasData),
+      usingFallback: endpointResults.some(r => r.fallback),
+    };
+
     return NextResponse.json({
       success: true,
+      summary,
       results,
       timestamp: new Date().toISOString(),
     });

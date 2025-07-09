@@ -246,6 +246,16 @@ export function VenueGridSkeleton({ count = 3 }: { count?: number }) {
   );
 }
 
+export function VenueListSkeleton({ count = 5 }: { count?: number }) {
+  return (
+    <div className="space-y-4">
+      {Array.from({ length: count }).map((_, i) => (
+        <VenueCardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
+
 export function TrendingListSkeleton({ count = 5 }: { count?: number }) {
   return (
     <div className="space-y-4">

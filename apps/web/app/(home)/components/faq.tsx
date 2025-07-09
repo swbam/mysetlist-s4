@@ -4,6 +4,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@repo/design-system/components/ui/accordion';
+import React from 'react';
 
 const faqs = [
   {
@@ -28,7 +29,8 @@ const faqs = [
   },
 ];
 
-export const FAQ = () => (
+export default function FAQ() {
+  return (
   <div className="w-full py-20 lg:py-40">
     <div className="container mx-auto">
       <div className="flex flex-col gap-10">
@@ -53,4 +55,5 @@ export const FAQ = () => (
       </div>
     </div>
   </div>
-);
+  );
+}

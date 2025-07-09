@@ -11,7 +11,7 @@ import {
 import { cn } from '@repo/design-system/lib/utils';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface ContentSliderProps {
   title: string;
@@ -66,25 +66,27 @@ export function ContentSlider({
     });
   }, [api]);
 
-  // Auto-play functionality
+  // Auto-play functionality with performance optimization
+  const startAutoPlay = useCallback(() => {
+    if (!api || !autoPlay) return;
+    
+    intervalRef.current = setInterval(() => {
+      if (api.canScrollNext()) {
+        api.scrollNext();
+      } else if (loop) {
+        api.scrollTo(0);
+      }
+    }, autoPlayInterval);
+  }, [api, autoPlay, autoPlayInterval, loop]);
+
+  const stopAutoPlay = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+  }, []);
+
   useEffect(() => {
     if (!api || !autoPlay) return;
-
-    const startAutoPlay = () => {
-      intervalRef.current = setInterval(() => {
-        if (api.canScrollNext()) {
-          api.scrollNext();
-        } else if (loop) {
-          api.scrollTo(0);
-        }
-      }, autoPlayInterval);
-    };
-
-    const stopAutoPlay = () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
 
     // Start auto-play
     startAutoPlay();
@@ -99,15 +101,15 @@ export function ContentSlider({
       container.removeEventListener('mouseenter', stopAutoPlay);
       container.removeEventListener('mouseleave', startAutoPlay);
     };
-  }, [api, autoPlay, autoPlayInterval, loop]);
+  }, [api, autoPlay, startAutoPlay, stopAutoPlay]);
 
-  const getBasisClass = () => {
+  const getBasisClass = useCallback(() => {
     const { mobile = 1.5, tablet = 3, desktop = 4 } = itemsPerView;
     const mobileClass = `basis-${Math.floor(100 / mobile)}/${Math.ceil(mobile)}`;
     const tabletClass = `md:basis-1/${tablet}`;
     const desktopClass = `lg:basis-1/${desktop}`;
     return `${mobileClass} ${tabletClass} ${desktopClass}`;
-  };
+  }, [itemsPerView]);
 
   return (
     <section className={cn('relative py-16 md:py-24', className)}>

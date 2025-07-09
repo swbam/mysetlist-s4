@@ -17,4 +17,4 @@ export const noseconeOptions: NoseconeOptions = {
 };
 
 export const noseconeOptionsWithToolbar: NoseconeOptions =
-  withVercelToolbar(noseconeOptions);
+  withVercelToolbar(noseconeOptions) as NoseconeOptions;

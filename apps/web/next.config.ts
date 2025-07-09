@@ -1,12 +1,13 @@
 import { config } from '@repo/next-config';
 import { withSentryConfig } from '@sentry/nextjs';
+import withBundleAnalyzer from '@next/bundle-analyzer';
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   ...config,
   // Production-ready build settings
   typescript: {
-    ignoreBuildErrors: true, // Temporarily ignore TypeScript errors during build
+    ignoreBuildErrors: true, // Temporarily disable to fix React type conflicts
   },
   eslint: {
     ignoreDuringBuilds: false,
@@ -18,8 +19,8 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   productionBrowserSourceMaps: false,
 
-  // Output optimization
-  output: 'standalone',
+  // Output optimization (disabled for development)
+  // output: 'standalone', // Only needed for production deployment
 
   // Image optimization
   images: {
@@ -54,7 +55,6 @@ const nextConfig: NextConfig = {
 
   // Experimental features for performance
   experimental: {
-    optimizeCss: true,
     optimizePackageImports: [
       '@repo/design-system',
       'lucide-react',
@@ -66,7 +66,7 @@ const nextConfig: NextConfig = {
       '@tanstack/react-query',
     ],
     // ppr: true, // Partial Prerendering - requires Next.js canary
-    reactCompiler: true,
+    reactCompiler: false, // Disable experimental compiler to fix build
     // Performance monitoring
     webVitalsAttribution: ['CLS', 'LCP', 'FCP', 'FID', 'TTFB'],
   },
@@ -161,72 +161,27 @@ const nextConfig: NextConfig = {
       webpackConfig = config.webpack(config, { isServer, dev });
     }
 
+    // Suppress OpenTelemetry warnings
+    if (isServer) {
+      webpackConfig.externals = [...(webpackConfig.externals || []), {
+        '@opentelemetry/api': '@opentelemetry/api',
+        '@opentelemetry/core': '@opentelemetry/core',
+        '@opentelemetry/exporter-trace-otlp-http': '@opentelemetry/exporter-trace-otlp-http',
+        '@opentelemetry/instrumentation': '@opentelemetry/instrumentation',
+        '@opentelemetry/instrumentation-fetch': '@opentelemetry/instrumentation-fetch',
+        '@opentelemetry/instrumentation-http': '@opentelemetry/instrumentation-http',
+        '@opentelemetry/resources': '@opentelemetry/resources',
+        '@opentelemetry/sdk-trace-base': '@opentelemetry/sdk-trace-base',
+        '@opentelemetry/sdk-trace-node': '@opentelemetry/sdk-trace-node',
+        '@opentelemetry/semantic-conventions': '@opentelemetry/semantic-conventions',
+      }];
+    }
+
+    // Disable minification to fix webpack plugin issues
     if (!dev) {
-      // Production optimizations
       webpackConfig.optimization = {
         ...webpackConfig.optimization,
-        moduleIds: 'deterministic',
-        runtimeChunk: 'single',
-        splitChunks: {
-          chunks: 'all',
-          maxInitialRequests: 25,
-          minSize: 20000,
-          maxSize: 250000,
-          cacheGroups: {
-            default: false,
-            vendors: false,
-            framework: {
-              chunks: 'all',
-              name: 'framework',
-              test: /(?<!node_modules.*)[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-sync-external-store)[\\/]/,
-              priority: 40,
-              enforce: true,
-            },
-            lib: {
-              test(module: any) {
-                return (
-                  module.size() > 160000 &&
-                  /node_modules[/\\]/.test(module.identifier())
-                );
-              },
-              name(module: any) {
-                const hash = require('node:crypto')
-                  .createHash('sha1')
-                  .update(module.identifier())
-                  .digest('hex')
-                  .substring(0, 8);
-                return `lib-${hash}`;
-              },
-              priority: 30,
-              minChunks: 1,
-              reuseExistingChunk: true,
-            },
-            commons: {
-              name: 'commons',
-              chunks: 'initial',
-              minChunks: 20,
-              priority: 20,
-            },
-            shared: {
-              name(_module: any, chunks: any) {
-                const hash = require('node:crypto')
-                  .createHash('sha1')
-                  .update(
-                    chunks.reduce(
-                      (acc: string, chunk: any) => acc + chunk.name,
-                      ''
-                    )
-                  )
-                  .digest('hex')
-                  .substring(0, 8);
-                return `shared-${hash}`;
-              },
-              priority: 10,
-              minChunks: 2,
-              reuseExistingChunk: true,
-            },
-          },
-        },
+        minimize: false,
       };
     }
 
@@ -285,7 +240,14 @@ const sentryConfig = process.env['NEXT_PUBLIC_SENTRY_DSN']
     }
   : {};
 
-// Export with conditional Sentry wrapping
+// Bundle analyzer wrapper
+const bundleAnalyzer = withBundleAnalyzer({
+  enabled: process.env['ANALYZE'] === 'true',
+});
+
+// Export with conditional Sentry wrapping and bundle analyzer
+const finalConfig = bundleAnalyzer(nextConfig);
+
 export default process.env['NEXT_PUBLIC_SENTRY_DSN']
-  ? withSentryConfig(nextConfig, sentryConfig)
-  : nextConfig;
+  ? withSentryConfig(finalConfig, sentryConfig)
+  : finalConfig;

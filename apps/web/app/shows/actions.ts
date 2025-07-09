@@ -1,6 +1,6 @@
 'use server';
 
-import { supabase } from '@repo/database';
+import { createClient } from '@/lib/supabase/server';
 import { cache } from 'react';
 
 export type ShowWithDetails = {
@@ -87,6 +87,8 @@ export const fetchShows = cache(
     } = params;
 
     try {
+      const supabase = await createClient();
+      
       // Build the query
       let query = supabase.from('shows').select(
         `
@@ -219,6 +221,8 @@ export const fetchShows = cache(
 
 export const fetchCities = cache(async (): Promise<string[]> => {
   try {
+    const supabase = await createClient();
+    
     const { data, error } = await supabase
       .from('venues')
       .select('city')

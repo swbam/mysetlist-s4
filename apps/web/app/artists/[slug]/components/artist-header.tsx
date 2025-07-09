@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { FollowButton } from './follow-button';
 import { FollowerCount } from './follower-count';
+import { SyncShowsButton } from './sync-shows-button';
 
 interface ArtistHeaderProps {
   artist: {
@@ -120,6 +121,7 @@ export function ArtistHeader({ artist }: ArtistHeaderProps) {
                 {/* Action Buttons */}
                 <div className="flex gap-3">
                   <FollowButton artistId={artist.id} artistName={artist.name} />
+                  <SyncShowsButton artistId={artist.id} artistName={artist.name} />
                   {externalUrls.spotify && (
                     <Button variant="outline" size="lg" asChild>
                       <Link href={externalUrls.spotify} target="_blank">

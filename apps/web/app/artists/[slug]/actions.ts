@@ -80,6 +80,12 @@ const _getArtistShows = async (artistId: string, type: 'upcoming' | 'past') => {
       .orderBy(type === 'upcoming' ? shows.date : desc(shows.date))
       .limit(type === 'upcoming' ? 10 : 20);
 
+    // If no shows found, return empty array
+    if (!artistShows || artistShows.length === 0) {
+      console.log(`No ${type} shows found for artist ${artistId}`);
+      return [];
+    }
+
     return artistShows;
   } catch (error) {
     console.error('Error fetching artist shows:', error);

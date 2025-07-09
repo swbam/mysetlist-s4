@@ -3,7 +3,8 @@
  * Check if all required environment variables are set for sync operations
  */
 
-import 'dotenv/config';
+import { config } from 'dotenv';
+config({ path: ['.env.local', '.env'] });
 
 const requiredVars = {
   // Spotify

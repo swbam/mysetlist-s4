@@ -251,6 +251,7 @@ export function MobileNavigation({
                             href={item.href}
                             onClick={handleLinkClick}
                             className="group flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-muted"
+                            prefetch
                           >
                             <Icon className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-foreground" />
                             <div className="flex-1">
@@ -271,6 +272,7 @@ export function MobileNavigation({
                           href="/my-artists"
                           onClick={handleLinkClick}
                           className="group flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-muted"
+                          prefetch
                         >
                           <Heart className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-foreground" />
                           <div className="flex-1">

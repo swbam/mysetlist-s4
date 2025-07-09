@@ -1,0 +1,98 @@
+{
+  "timestamp": "2025-07-08T22:31:22.731Z",
+  "metrics": {
+    "apiCalls": 16,
+    "dbQueries": 7,
+    "totalTime": 9033,
+    "errors": 1,
+    "rateLimitHits": 0,
+    "totalExecutionTime": 14234,
+    "avgApiCallTime": 564.5625,
+    "callsPerSecond": 1.1240691302515105,
+    "errorRate": 6.25
+  },
+  "dbResults": {
+    "success": false,
+    "error": "Unexpected end of JSON input"
+  },
+  "syncResults": [
+    {
+      "artist": "Taylor Swift",
+      "spotifyId": "06HL4z0CvFAxyc27GXpf02",
+      "popularity": 99,
+      "followers": 139650438,
+      "spotifyTime": 341,
+      "tmTime": 1805,
+      "tmEvents": 44,
+      "setlistTime": 266,
+      "setlistCount": 30,
+      "dbTime": 165,
+      "totalTime": 2650,
+      "success": true
+    },
+    {
+      "artist": "Ed Sheeran",
+      "spotifyId": "6eUKZXaKkcviH0Ku9w2n3V",
+      "popularity": 92,
+      "followers": 121073034,
+      "spotifyTime": 226,
+      "tmTime": 1594,
+      "tmEvents": 8,
+      "setlistTime": 128,
+      "setlistCount": 30,
+      "dbTime": 93,
+      "totalTime": 2047,
+      "success": true
+    },
+    {
+      "artist": "Billie Eilish",
+      "spotifyId": "6qqNVTkY8uBg9cP3Jd7DAH",
+      "popularity": 95,
+      "followers": 114038000,
+      "spotifyTime": 304,
+      "tmTime": 695,
+      "tmEvents": 35,
+      "setlistTime": 119,
+      "setlistCount": 25,
+      "dbTime": 94,
+      "totalTime": 1217,
+      "success": true
+    },
+    {
+      "artist": "Post Malone",
+      "spotifyId": "246dkjvS1zLTtiykXe5h60",
+      "popularity": 91,
+      "followers": 47189967,
+      "spotifyTime": 223,
+      "tmTime": 684,
+      "tmEvents": 18,
+      "setlistTime": 116,
+      "setlistCount": 30,
+      "dbTime": 183,
+      "totalTime": 1219,
+      "success": true
+    },
+    {
+      "artist": "The Weeknd",
+      "spotifyId": "1Xyo4u8uXC1ZmMpatF05PJ",
+      "popularity": 97,
+      "followers": 107421578,
+      "spotifyTime": 231,
+      "tmTime": 675,
+      "tmEvents": 36,
+      "setlistTime": 133,
+      "setlistCount": 30,
+      "dbTime": 171,
+      "totalTime": 1303,
+      "success": true
+    }
+  ],
+  "isProductionReady": false,
+  "recommendations": [
+    "Implement caching layer",
+    "Add retry logic",
+    "Queue system for batch operations",
+    "Rate limit monitoring",
+    "Error alerting system"
+  ]
+}

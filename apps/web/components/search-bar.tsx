@@ -24,7 +24,7 @@ import {
 import { cn } from '@repo/design-system/lib/utils';
 import { Calendar, Disc, MapPin, Music, Search, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 interface SearchResult {
   id: string;
@@ -235,7 +235,7 @@ export function SearchBar({
             </div>
           </div>
         </PopoverTrigger>
-        <PopoverContent className="w-[90vw] p-0 md:w-[600px]" align="start">
+        <PopoverContent className="w-[90vw] max-w-[600px] p-0 md:w-[600px]" align="start">
           <SearchResults
             results={results}
             isLoading={isLoading}
@@ -437,3 +437,5 @@ function SearchResults({
     </Command>
   );
 }
+
+SearchBar.displayName = 'SearchBar';

@@ -7,6 +7,9 @@ import {
 } from '@/lib/trending';
 import { type NextRequest, NextResponse } from 'next/server';
 
+// Force dynamic rendering for API route
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -71,13 +74,21 @@ export async function GET(request: NextRequest) {
       response = data;
     }
 
-    return NextResponse.json({
+    const jsonResponse = NextResponse.json({
       period,
       limit,
       type: type || 'combined',
       data: response,
       timestamp: new Date().toISOString(),
     });
+
+    // Add cache headers
+    jsonResponse.headers.set(
+      'Cache-Control',
+      'public, s-maxage=300, stale-while-revalidate=600'
+    );
+
+    return jsonResponse;
   } catch (error) {
     console.error('Error fetching trending content:', error);
     return NextResponse.json(

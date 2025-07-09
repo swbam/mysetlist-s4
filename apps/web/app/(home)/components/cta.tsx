@@ -1,7 +1,9 @@
 import { Button } from '@repo/design-system/components/ui/button';
 import { ArrowRight, Music } from 'lucide-react';
+import React from 'react';
 
-export const CTA = () => (
+export default function CTA() {
+  return (
   <div className="w-full py-20 lg:py-40">
     <div className="container mx-auto">
       <div className="flex flex-col items-center justify-center gap-8 rounded-md bg-muted p-8 py-20 text-center lg:p-24">
@@ -30,4 +32,5 @@ export const CTA = () => (
       </div>
     </div>
   </div>
-);
+  );
+}

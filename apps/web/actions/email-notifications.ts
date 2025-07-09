@@ -555,7 +555,7 @@ export async function processQueuedEmails() {
             });
             result = {
               success: showReminderResult.success,
-              error: showReminderResult.error ? showReminderResult.error.message : undefined
+              ...(showReminderResult.error?.message && { error: showReminderResult.error.message })
             };
             break;
             

@@ -19,6 +19,9 @@ interface LiveTrendingItem {
   timeframe: '1h' | '6h' | '24h';
 }
 
+// Add ISR support with cache headers
+export const revalidate = 60; // Revalidate every minute for live data
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const timeframe =
@@ -269,13 +272,21 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       trending: sortedTrending,
       timeframe,
       type: type || 'all',
       total: sortedTrending.length,
       generatedAt: new Date().toISOString(),
     });
+
+    // Add cache headers for better performance
+    response.headers.set(
+      'Cache-Control',
+      'public, s-maxage=60, stale-while-revalidate=300'
+    );
+
+    return response;
   } catch (error) {
     console.error('Error fetching live trending:', error);
 

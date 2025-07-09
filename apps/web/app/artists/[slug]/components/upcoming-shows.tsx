@@ -108,7 +108,7 @@ export function UpcomingShows({
           <div className="py-8 text-center">
             <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
             <p className="mb-4 text-muted-foreground">
-              Check back later for new tour dates
+              Check back later for new tour dates or sync shows from Ticketmaster
             </p>
             {artistId && (
               <Button
@@ -121,7 +121,7 @@ export function UpcomingShows({
                 <RefreshCw
                   className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
                 />
-                Check for New Shows
+                Sync Shows from Ticketmaster
               </Button>
             )}
           </div>

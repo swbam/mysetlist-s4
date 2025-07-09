@@ -1,4 +1,43 @@
+import { db } from '@repo/database';
+import {
+  artists,
+  setlistSongs,
+  setlists,
+  shows,
+  songs,
+  userFollowsArtists,
+  userProfiles,
+  users,
+  userShowAttendance,
+  venues,
+  votes,
+} from '@repo/database';
+import { desc, eq, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
+
+// Force dynamic rendering for API route
+export const dynamic = 'force-dynamic';
+
+interface ActivityItem {
+  id: string;
+  type: 'vote' | 'follow' | 'attendance' | 'setlist_create';
+  user: {
+    id: string;
+    displayName: string;
+    avatarUrl?: string;
+  };
+  target: {
+    id: string;
+    name: string;
+    slug: string;
+    type: 'artist' | 'show' | 'venue' | 'setlist';
+  };
+  createdAt: string;
+  metadata?: {
+    voteType?: 'up' | 'down';
+    songCount?: number;
+  };
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -8,34 +47,218 @@ export async function GET(request: NextRequest) {
 
     console.log('Recent activity API called with limit:', limit);
 
-    // For now, we'll create mock data that matches the expected format
-    // In production, this would query actual activity tables
-    const mockActivities = generateMockActivities(limit);
+    const activities: ActivityItem[] = [];
 
-    // Later, this would be replaced with actual database queries like:
-    /*
+    // Fetch recent votes
     const recentVotes = await db
       .select({
         id: votes.id,
-        type: sql<string>`'vote'`,
         userId: votes.userId,
-        targetId: votes.artistId,
-        targetType: sql<string>`'artist'`,
-        createdAt: votes.createdAt,
+        userName: users.name,
+        userAvatar: userProfiles.avatarUrl,
         voteType: votes.voteType,
+        createdAt: votes.createdAt,
+        songId: songs.id,
+        songTitle: songs.title,
+        songArtist: songs.artist,
+        setlistId: setlists.id,
+        showId: shows.id,
+        showSlug: shows.slug,
+        showName: shows.name,
+        artistName: artists.name,
       })
       .from(votes)
       .innerJoin(users, eq(votes.userId, users.id))
-      .innerJoin(artists, eq(votes.artistId, artists.id))
+      .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+      .innerJoin(setlistSongs, eq(votes.setlistSongId, setlistSongs.id))
+      .innerJoin(songs, eq(setlistSongs.songId, songs.id))
+      .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
+      .innerJoin(shows, eq(setlists.showId, shows.id))
+      .leftJoin(artists, eq(shows.headlinerArtistId, artists.id))
       .orderBy(desc(votes.createdAt))
-      .limit(limit);
-    */
+      .limit(Math.ceil(limit / 3));
 
-    return NextResponse.json(
+    recentVotes.forEach((vote) => {
+      activities.push({
+        id: `vote-${vote.id}`,
+        type: 'vote',
+        user: {
+          id: vote.userId,
+          displayName: vote.userName || 'Anonymous',
+          avatarUrl: vote.userAvatar || undefined,
+        },
+        target: {
+          id: vote.showId,
+          name: `${vote.songTitle} at ${vote.artistName || vote.showName}`,
+          slug: vote.showSlug,
+          type: 'show',
+        },
+        createdAt: vote.createdAt.toISOString(),
+        metadata: {
+          voteType: vote.voteType as 'up' | 'down',
+        },
+      });
+    });
+
+    // Fetch recent follows
+    const recentFollows = await db
+      .select({
+        id: userFollowsArtists.id,
+        userId: userFollowsArtists.userId,
+        userName: users.name,
+        userAvatar: userProfiles.avatarUrl,
+        artistId: artists.id,
+        artistName: artists.name,
+        artistSlug: artists.slug,
+        createdAt: userFollowsArtists.createdAt,
+      })
+      .from(userFollowsArtists)
+      .innerJoin(users, eq(userFollowsArtists.userId, users.id))
+      .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+      .innerJoin(artists, eq(userFollowsArtists.artistId, artists.id))
+      .orderBy(desc(userFollowsArtists.createdAt))
+      .limit(Math.ceil(limit / 3));
+
+    recentFollows.forEach((follow) => {
+      activities.push({
+        id: `follow-${follow.id}`,
+        type: 'follow',
+        user: {
+          id: follow.userId,
+          displayName: follow.userName || 'Anonymous',
+          avatarUrl: follow.userAvatar || undefined,
+        },
+        target: {
+          id: follow.artistId,
+          name: follow.artistName,
+          slug: follow.artistSlug,
+          type: 'artist',
+        },
+        createdAt: follow.createdAt.toISOString(),
+      });
+    });
+
+    // Fetch recent attendance updates
+    const recentAttendance = await db
+      .select({
+        id: userShowAttendance.id,
+        userId: userShowAttendance.userId,
+        userName: users.name,
+        userAvatar: userProfiles.avatarUrl,
+        showId: shows.id,
+        showName: shows.name,
+        showSlug: shows.slug,
+        artistName: artists.name,
+        venueName: venues.name,
+        createdAt: userShowAttendance.createdAt,
+        status: userShowAttendance.status,
+      })
+      .from(userShowAttendance)
+      .innerJoin(users, eq(userShowAttendance.userId, users.id))
+      .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+      .innerJoin(shows, eq(userShowAttendance.showId, shows.id))
+      .leftJoin(artists, eq(shows.headlinerArtistId, artists.id))
+      .leftJoin(venues, eq(shows.venueId, venues.id))
+      .where(eq(userShowAttendance.status, 'going'))
+      .orderBy(desc(userShowAttendance.createdAt))
+      .limit(Math.ceil(limit / 3));
+
+    recentAttendance.forEach((attendance) => {
+      const showName = attendance.artistName
+        ? `${attendance.artistName} at ${attendance.venueName || 'TBA'}`
+        : attendance.showName;
+
+      activities.push({
+        id: `attendance-${attendance.id}`,
+        type: 'attendance',
+        user: {
+          id: attendance.userId,
+          displayName: attendance.userName || 'Anonymous',
+          avatarUrl: attendance.userAvatar || undefined,
+        },
+        target: {
+          id: attendance.showId,
+          name: showName,
+          slug: attendance.showSlug,
+          type: 'show',
+        },
+        createdAt: attendance.createdAt.toISOString(),
+      });
+    });
+
+    // Fetch recent setlist creations
+    const recentSetlists = await db
+      .select({
+        id: setlists.id,
+        userId: setlists.createdBy,
+        userName: users.name,
+        userAvatar: userProfiles.avatarUrl,
+        showId: shows.id,
+        showName: shows.name,
+        showSlug: shows.slug,
+        artistName: artists.name,
+        createdAt: setlists.createdAt,
+        songCount: sql<number>`COUNT(${setlistSongs.id})::int`.as('songCount'),
+      })
+      .from(setlists)
+      .innerJoin(users, eq(setlists.createdBy, users.id))
+      .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
+      .innerJoin(shows, eq(setlists.showId, shows.id))
+      .leftJoin(artists, eq(shows.headlinerArtistId, artists.id))
+      .leftJoin(setlistSongs, eq(setlists.id, setlistSongs.setlistId))
+      .where(eq(setlists.type, 'predicted'))
+      .groupBy(
+        setlists.id,
+        setlists.createdBy,
+        users.name,
+        userProfiles.avatarUrl,
+        shows.id,
+        shows.name,
+        shows.slug,
+        artists.name,
+        setlists.createdAt
+      )
+      .orderBy(desc(setlists.createdAt))
+      .limit(Math.floor(limit / 4));
+
+    recentSetlists.forEach((setlist) => {
+      if (setlist.userId) {
+        activities.push({
+          id: `setlist-${setlist.id}`,
+          type: 'setlist_create',
+          user: {
+            id: setlist.userId,
+            displayName: setlist.userName || 'Anonymous',
+            avatarUrl: setlist.userAvatar || undefined,
+          },
+          target: {
+            id: setlist.showId,
+            name: setlist.artistName || setlist.showName,
+            slug: setlist.showSlug,
+            type: 'show',
+          },
+          createdAt: setlist.createdAt.toISOString(),
+          metadata: {
+            songCount: setlist.songCount || 0,
+          },
+        });
+      }
+    });
+
+    // Sort all activities by createdAt descending
+    activities.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    // Apply limit
+    const limitedActivities = activities.slice(0, limit);
+
+    const response = NextResponse.json(
       {
-        activities: mockActivities,
-        total: mockActivities.length,
-        hasMore: false, // Would be determined by actual query
+        activities: limitedActivities,
+        total: limitedActivities.length,
+        hasMore: activities.length > limit,
         generatedAt: new Date().toISOString(),
       },
       {
@@ -44,139 +267,62 @@ export async function GET(request: NextRequest) {
         },
       }
     );
+
+    return response;
   } catch (error) {
     console.error('Recent activity API error:', error);
+
+    // Return mock data as fallback
+    const mockActivities = generateMockActivities(limit);
+
     return NextResponse.json(
       {
-        error: 'Failed to fetch recent activity',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        activities: mockActivities,
+        total: mockActivities.length,
+        hasMore: false,
+        generatedAt: new Date().toISOString(),
+        fallback: true,
+        error: 'Using fallback data',
       },
-      { status: 500 }
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        },
+      }
     );
   }
 }
 
-function generateMockActivities(count: number) {
-  const activityTypes = [
-    'vote',
-    'follow',
-    'attendance',
-    'setlist_create',
-    'show_create',
-  ] as const;
-  const targetTypes = ['artist', 'show', 'venue', 'setlist'] as const;
-
+// Keep the mock data generator as fallback
+function generateMockActivities(count: number): ActivityItem[] {
+  const activityTypes = ['vote', 'follow', 'attendance', 'setlist_create'] as const;
+  
   const mockUsers = [
-    {
-      id: '1',
-      displayName: 'Alex Johnson',
-      avatarUrl: 'https://i.pravatar.cc/150?u=alex',
-    },
-    {
-      id: '2',
-      displayName: 'Maria Garcia',
-      avatarUrl: 'https://i.pravatar.cc/150?u=maria',
-    },
-    {
-      id: '3',
-      displayName: 'James Chen',
-      avatarUrl: 'https://i.pravatar.cc/150?u=james',
-    },
-    {
-      id: '4',
-      displayName: 'Sarah Miller',
-      avatarUrl: 'https://i.pravatar.cc/150?u=sarah',
-    },
-    {
-      id: '5',
-      displayName: 'David Kim',
-      avatarUrl: 'https://i.pravatar.cc/150?u=david',
-    },
-    { id: '6', displayName: 'Emma Wilson', avatarUrl: null },
-    {
-      id: '7',
-      displayName: 'Michael Brown',
-      avatarUrl: 'https://i.pravatar.cc/150?u=michael',
-    },
-    { id: '8', displayName: 'Lisa Anderson', avatarUrl: null },
+    { id: '1', displayName: 'Alex Johnson', avatarUrl: 'https://i.pravatar.cc/150?u=alex' },
+    { id: '2', displayName: 'Maria Garcia', avatarUrl: 'https://i.pravatar.cc/150?u=maria' },
+    { id: '3', displayName: 'James Chen', avatarUrl: 'https://i.pravatar.cc/150?u=james' },
+    { id: '4', displayName: 'Sarah Miller', avatarUrl: 'https://i.pravatar.cc/150?u=sarah' },
   ];
 
   const mockTargets = [
-    {
-      id: '1',
-      name: 'The Weeknd',
-      slug: 'the-weeknd',
-      type: 'artist' as const,
-    },
-    {
-      id: '2',
-      name: 'Taylor Swift',
-      slug: 'taylor-swift',
-      type: 'artist' as const,
-    },
-    { id: '3', name: 'Drake', slug: 'drake', type: 'artist' as const },
-    {
-      id: '4',
-      name: 'Madison Square Garden Show',
-      slug: 'msg-2024-03-15',
-      type: 'show' as const,
-    },
-    {
-      id: '5',
-      name: 'Hollywood Bowl',
-      slug: 'hollywood-bowl',
-      type: 'venue' as const,
-    },
-    {
-      id: '6',
-      name: 'Summer Tour 2024 Setlist',
-      slug: 'summer-tour-2024',
-      type: 'setlist' as const,
-    },
-    {
-      id: '7',
-      name: 'Coachella 2024',
-      slug: 'coachella-2024',
-      type: 'show' as const,
-    },
-    {
-      id: '8',
-      name: 'Red Rocks Amphitheatre',
-      slug: 'red-rocks',
-      type: 'venue' as const,
-    },
+    { id: '1', name: 'The Weeknd', slug: 'the-weeknd', type: 'artist' as const },
+    { id: '2', name: 'Taylor Swift', slug: 'taylor-swift', type: 'artist' as const },
+    { id: '3', name: 'Madison Square Garden Show', slug: 'msg-2024', type: 'show' as const },
+    { id: '4', name: 'Hollywood Bowl', slug: 'hollywood-bowl', type: 'venue' as const },
   ];
 
-  const activities = [];
+  const activities: ActivityItem[] = [];
   const now = new Date();
 
   for (let i = 0; i < count; i++) {
-    const activityType =
-      activityTypes[Math.floor(Math.random() * activityTypes.length)];
+    const activityType = activityTypes[Math.floor(Math.random() * activityTypes.length)];
     const user = mockUsers[Math.floor(Math.random() * mockUsers.length)];
-
-    // Select appropriate target based on activity type
-    let validTargets = mockTargets;
-    if (activityType === 'vote' || activityType === 'follow') {
-      validTargets = mockTargets.filter((t) => t.type === 'artist');
-    } else if (activityType === 'attendance') {
-      validTargets = mockTargets.filter((t) => t.type === 'show');
-    } else if (activityType === 'setlist_create') {
-      validTargets = mockTargets.filter(
-        (t) => t.type === 'show' || t.type === 'setlist'
-      );
-    }
-
-    const target =
-      validTargets[Math.floor(Math.random() * validTargets.length)] ||
-      mockTargets[0];
-
-    // Generate timestamp within the last 24 hours
-    const minutesAgo = Math.floor(Math.random() * 1440); // Up to 24 hours
+    const target = mockTargets[Math.floor(Math.random() * mockTargets.length)];
+    const minutesAgo = Math.floor(Math.random() * 1440);
     const createdAt = new Date(now.getTime() - minutesAgo * 60 * 1000);
 
-    const activity = {
-      id: `activity-${i + 1}-${Date.now()}`,
+    activities.push({
+      id: `mock-${i}-${Date.now()}`,
       type: activityType,
       user: {
         id: user.id,
@@ -190,24 +336,15 @@ function generateMockActivities(count: number) {
         type: target.type,
       },
       createdAt: createdAt.toISOString(),
-      metadata:
-        activityType === 'vote'
-          ? {
-              voteType:
-                Math.random() > 0.7 ? ('down' as const) : ('up' as const),
-            }
-          : activityType === 'setlist_create'
-            ? { songCount: Math.floor(Math.random() * 15) + 10 }
-            : undefined,
-    };
-
-    activities.push(activity);
+      metadata: activityType === 'vote' 
+        ? { voteType: Math.random() > 0.7 ? 'down' : 'up' }
+        : activityType === 'setlist_create'
+        ? { songCount: Math.floor(Math.random() * 15) + 10 }
+        : undefined,
+    });
   }
 
-  // Sort by createdAt descending (most recent first)
-  activities.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  return activities.sort((a, b) => 
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
-
-  return activities;
 }

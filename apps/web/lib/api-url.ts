@@ -1,7 +1,8 @@
 export function getApiUrl(path: string): string {
-  const apiUrl = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3002';
+  // Use current app URL for API calls (no separate API app)
+  const apiUrl = process.env['NEXT_PUBLIC_APP_URL'] || '';
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `${apiUrl}${cleanPath}`;
+  return `${apiUrl}/api${cleanPath}`;
 }
 
 export function apiUrl(path: string): string {
