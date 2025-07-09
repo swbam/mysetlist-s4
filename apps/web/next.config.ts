@@ -64,11 +64,18 @@ const nextConfig: NextConfig = {
       'date-fns',
       'react-hook-form',
       '@tanstack/react-query',
+      '@supabase/supabase-js',
+      'zod',
+      'clsx',
+      'tailwind-merge',
     ],
     // ppr: true, // Partial Prerendering - requires Next.js canary
     reactCompiler: false, // Disable experimental compiler to fix build
     // Performance monitoring
     webVitalsAttribution: ['CLS', 'LCP', 'FCP', 'FID', 'TTFB'],
+    // Enable more aggressive optimizations
+    turbo: {},
+    optimizeCss: true,
   },
 
   // Server external packages (moved from experimental)
@@ -177,11 +184,13 @@ const nextConfig: NextConfig = {
       }];
     }
 
-    // Disable minification to fix webpack plugin issues
+    // Production optimizations - enable minification for smaller bundles
     if (!dev) {
       webpackConfig.optimization = {
         ...webpackConfig.optimization,
-        minimize: false,
+        minimize: true, // Re-enable minification for production
+        sideEffects: false, // Enable tree shaking
+        usedExports: true, // Mark used exports for tree shaking
       };
     }
 

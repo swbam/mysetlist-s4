@@ -16,6 +16,48 @@ vi.mock('next/link', () => ({
   },
 }))
 
+// Mock Next.js cookies and headers for API route testing
+vi.mock('next/headers', () => ({
+  cookies: vi.fn(() => ({
+    get: vi.fn(),
+    set: vi.fn(),
+    delete: vi.fn(),
+    has: vi.fn(),
+    getAll: vi.fn(),
+    toString: vi.fn(),
+  })),
+  headers: vi.fn(() => ({
+    get: vi.fn(),
+    set: vi.fn(),
+    delete: vi.fn(),
+    has: vi.fn(),
+    entries: vi.fn(),
+    forEach: vi.fn(),
+    keys: vi.fn(),
+    values: vi.fn(),
+  })),
+}))
+
+// Mock Next.js server request/response 
+vi.mock('next/server', () => ({
+  NextRequest: vi.fn().mockImplementation((url: string, options?: any) => ({
+    url,
+    method: options?.method || 'GET',
+    headers: new Headers(options?.headers || {}),
+    body: options?.body,
+    json: vi.fn().mockResolvedValue({}),
+    text: vi.fn().mockResolvedValue(''),
+  })),
+  NextResponse: {
+    json: vi.fn().mockImplementation((data: any, options?: any) => ({
+      json: vi.fn().mockResolvedValue(data),
+      status: options?.status || 200,
+      headers: new Headers(options?.headers || {}),
+    })),
+    next: vi.fn(),
+  },
+}))
+
 // Mock environment variables to prevent server-side access in client tests
 vi.mock('@repo/auth/keys', () => ({
   keys: () => ({
