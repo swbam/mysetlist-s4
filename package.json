@@ -43,7 +43,20 @@
     "seed:mock": "tsx scripts/seed-mock-data.ts",
     "seed:mock:clear": "tsx scripts/seed-mock-data.ts --clear",
     "seed:comprehensive": "tsx scripts/seed-comprehensive-data.ts",
-    "seed:all": "pnpm seed:mock && pnpm sync:artists"
+    "seed:all": "pnpm seed:mock && pnpm sync:artists",
+    "final": "echo '🚀 MySetlist Ultimate Deployment' && tsx scripts/final-deployment.ts --parallel --yes",
+    "final:prod": "echo '🌍 Production Deployment' && tsx scripts/final-deployment.ts --prod --parallel --yes",
+    "final:staging": "echo '🧪 Staging Deployment' && tsx scripts/final-deployment.ts --staging --parallel --yes",
+    "final:validate": "echo '🔍 Validation Mode' && tsx scripts/final-deployment.ts --validate-only --verbose",
+    "final:rollback": "echo '🔄 Rollback Mode' && tsx scripts/final-deployment.ts --rollback --yes",
+    "final:quick": "echo '⚡ Quick Deployment' && tsx scripts/final-deployment.ts --quick --skip-tests --yes",
+    "final:force": "echo '💪 Force Deployment' && tsx scripts/final-deployment.ts --force --yes",
+    "final:verbose": "echo '📊 Verbose Deployment' && tsx scripts/final-deployment.ts --verbose --parallel --yes",
+    "final:secure": "echo '🔒 Secure Deployment' && tsx scripts/final-deployment.ts --parallel --yes --skip-tests",
+    "final:full": "echo '🎯 Full Deployment Pipeline' && pnpm check:env && pnpm db:generate && pnpm typecheck && tsx scripts/final-deployment.ts --prod --parallel --yes --verbose",
+    "final:emergency": "echo '🚨 Emergency Deployment' && tsx scripts/final-deployment.ts --prod --force --skip-tests --yes",
+    "final:ci": "echo '🤖 CI/CD Deployment' && tsx scripts/final-deployment.ts --prod --parallel --yes --verbose",
+    "final:test": "echo '🧪 Test Deployment' && tsx scripts/final-deployment.ts --validate-only --verbose && tsx scripts/final-deployment.ts --dry-run --verbose"
   },
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.0",

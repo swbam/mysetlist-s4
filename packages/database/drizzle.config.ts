@@ -1,8 +1,32 @@
 import type { Config } from 'drizzle-kit';
+import { config } from 'dotenv';
+import { resolve } from 'path';
+import { existsSync } from 'fs';
 
-if (!process.env['DATABASE_URL']) {
+// Load environment variables from multiple possible locations
+const envPaths = [
+  resolve(__dirname, '../../.env.local'),
+  resolve(__dirname, '../../apps/web/.env.local'),
+  resolve(__dirname, '.env.local'),
+  resolve(__dirname, '.env'),
+];
+
+// Load environment variables from all available paths
+for (const envPath of envPaths) {
+  if (existsSync(envPath)) {
+    config({ path: envPath, override: false });
+  }
+}
+
+// Get DATABASE_URL from environment
+const DATABASE_URL = process.env['DATABASE_URL'] || process.env['POSTGRES_URL'];
+
+if (!DATABASE_URL) {
+  console.error('Environment paths checked:', envPaths.map(p => ({ path: p, exists: existsSync(p) })));
+  console.error('Available DATABASE_URL:', !!process.env['DATABASE_URL']);
+  console.error('Available POSTGRES_URL:', !!process.env['POSTGRES_URL']);
   throw new Error(
-    'DATABASE_URL environment variable is required for database migrations'
+    'DATABASE_URL environment variable is required for database migrations. Please check your .env.local file.'
   );
 }
 
@@ -11,7 +35,7 @@ export default {
   out: './migrations',
   driver: 'pg',
   dbCredentials: {
-    connectionString: process.env['DATABASE_URL'],
+    connectionString: DATABASE_URL,
   },
   verbose: true,
   strict: false, // disable interactive prompts to allow non-interactive CI migrations

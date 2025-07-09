@@ -101,15 +101,5 @@ verify_jwt = false
 [functions.daily-artist-sync]
 verify_jwt = false
 
-#----------------------------------------------------------
-# Cron Jobs
-#----------------------------------------------------------
-[[cron.jobs]]
-name = "update-trending-hourly"
-schedule = "0 * * * *"            # every hour at minute 0
-command = "supabase functions invoke update-trending --no-verify-jwt"
-
-[[cron.jobs]]
-name = "update-trending-daily"
-schedule = "0 3 * * *"            # every day at 03:00 UTC
-command = "supabase functions invoke update-trending --no-verify-jwt"
+# Note: Cron jobs are now handled by Vercel cron jobs in apps/web/app/api/cron/
+# See vercel.json for cron job configuration
