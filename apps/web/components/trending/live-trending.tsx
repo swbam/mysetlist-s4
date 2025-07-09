@@ -28,7 +28,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface LiveTrendingItem {
   id: string;
@@ -54,7 +54,93 @@ interface LiveTrendingProps {
   className?: string;
 }
 
-export function LiveTrending({
+// Memoized trending item component for better performance
+const TrendingItem = React.memo(function TrendingItem({
+  item,
+  index,
+  getIcon,
+  getLink,
+  getGrowthColor,
+  getGrowthIcon,
+}: {
+  item: LiveTrendingItem;
+  index: number;
+  getIcon: (type: LiveTrendingItem['type']) => React.ReactNode;
+  getLink: (item: LiveTrendingItem) => string;
+  getGrowthColor: (growth: number) => string;
+  getGrowthIcon: (growth: number) => typeof TrendingUp;
+}) {
+  const GrowthIcon = getGrowthIcon(item.metrics.growth);
+
+  return (
+    <div className="flex items-center gap-4 rounded-lg border p-3 transition-all duration-200 hover:scale-[1.02] hover:shadow-md">
+      {/* Rank */}
+      <div className="w-8 font-bold text-2xl text-muted-foreground">
+        {index + 1}
+      </div>
+
+      {/* Avatar/Icon */}
+      <Avatar className="h-12 w-12">
+        {item.imageUrl ? (
+          <AvatarImage src={item.imageUrl} alt={item.name} />
+        ) : (
+          <AvatarFallback>{getIcon(item.type)}</AvatarFallback>
+        )}
+      </Avatar>
+
+      {/* Content */}
+      <div className="min-w-0 flex-1">
+        <div className="mb-1 flex items-center gap-2">
+          <Link
+            href={getLink(item)}
+            className="truncate font-semibold hover:underline"
+          >
+            {item.name}
+          </Link>
+          <Badge variant="outline" className="text-xs">
+            {item.type}
+          </Badge>
+        </div>
+
+        <div className="flex items-center gap-3 text-muted-foreground text-xs">
+          <span className="flex items-center gap-1">
+            <Search className="h-3 w-3" />
+            {item.metrics.searches}
+          </span>
+          <span className="flex items-center gap-1">
+            <Eye className="h-3 w-3" />
+            {item.metrics.views}
+          </span>
+          <span className="flex items-center gap-1">
+            <Activity className="h-3 w-3" />
+            {item.metrics.interactions}
+          </span>
+        </div>
+      </div>
+
+      {/* Score & Growth */}
+      <div className="text-right">
+        <div className="flex items-center gap-1 font-medium text-sm">
+          <GrowthIcon
+            className={cn(
+              'h-3 w-3',
+              getGrowthColor(item.metrics.growth)
+            )}
+          />
+          <span className={getGrowthColor(item.metrics.growth)}>
+            {item.metrics.growth > 0 ? '+' : ''}
+            {item.metrics.growth.toFixed(1)}%
+          </span>
+        </div>
+        <div className="text-muted-foreground text-xs">
+          Score: {item.score.toFixed(0)}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+export const LiveTrending = React.memo(function LiveTrending({
   timeframe = '24h',
   type = 'all',
   limit = 10,
@@ -67,7 +153,7 @@ export function LiveTrending({
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchTrending = async (refresh = false) => {
+  const fetchTrending = useCallback(async (refresh = false) => {
     if (refresh) {
       setIsRefreshing(true);
     } else {
@@ -95,11 +181,11 @@ export function LiveTrending({
       setLoading(false);
       setIsRefreshing(false);
     }
-  };
+  }, [timeframe, type, limit]);
 
   useEffect(() => {
     fetchTrending();
-  }, [timeframe, type, limit]);
+  }, [fetchTrending]);
 
   // Auto-refresh every 5 minutes
   useEffect(() => {
@@ -113,9 +199,9 @@ export function LiveTrending({
     ); // 5 minutes
 
     return () => clearInterval(interval);
-  }, [autoRefresh, timeframe, type, limit]);
+  }, [autoRefresh, fetchTrending]);
 
-  const getIcon = (itemType: LiveTrendingItem['type']) => {
+  const getIcon = useCallback((itemType: LiveTrendingItem['type']) => {
     switch (itemType) {
       case 'artist':
         return <Music className="h-4 w-4" />;
@@ -124,9 +210,9 @@ export function LiveTrending({
       case 'venue':
         return <MapPin className="h-4 w-4" />;
     }
-  };
+  }, []);
 
-  const getLink = (item: LiveTrendingItem) => {
+  const getLink = useCallback((item: LiveTrendingItem) => {
     switch (item.type) {
       case 'artist':
         return `/artists/${item.slug}`;
@@ -135,18 +221,18 @@ export function LiveTrending({
       case 'venue':
         return `/venues/${item.slug}`;
     }
-  };
+  }, []);
 
-  const getGrowthColor = (growth: number) => {
+  const getGrowthColor = useCallback((growth: number) => {
     if (growth > 20) return 'text-red-500';
     if (growth > 10) return 'text-orange-500';
     if (growth > 0) return 'text-green-500';
     return 'text-gray-500';
-  };
+  }, []);
 
-  const getGrowthIcon = (growth: number) => {
+  const getGrowthIcon = useCallback((growth: number) => {
     return growth >= 0 ? TrendingUp : TrendingDown;
-  };
+  }, []);
 
   const formatTimeframe = (tf: string) => {
     switch (tf) {
@@ -248,81 +334,19 @@ export function LiveTrending({
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {trending.map((item, index) => {
-            const GrowthIcon = getGrowthIcon(item.metrics.growth);
-
-            return (
-              <div
-                key={item.id}
-                className="flex items-center gap-4 rounded-lg border p-3 transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
-              >
-                {/* Rank */}
-                <div className="w-8 font-bold text-2xl text-muted-foreground">
-                  {index + 1}
-                </div>
-
-                {/* Avatar/Icon */}
-                <Avatar className="h-12 w-12">
-                  {item.imageUrl ? (
-                    <AvatarImage src={item.imageUrl} alt={item.name} />
-                  ) : (
-                    <AvatarFallback>{getIcon(item.type)}</AvatarFallback>
-                  )}
-                </Avatar>
-
-                {/* Content */}
-                <div className="min-w-0 flex-1">
-                  <div className="mb-1 flex items-center gap-2">
-                    <Link
-                      href={getLink(item)}
-                      className="truncate font-semibold hover:underline"
-                    >
-                      {item.name}
-                    </Link>
-                    <Badge variant="outline" className="text-xs">
-                      {item.type}
-                    </Badge>
-                  </div>
-
-                  <div className="flex items-center gap-3 text-muted-foreground text-xs">
-                    <span className="flex items-center gap-1">
-                      <Search className="h-3 w-3" />
-                      {item.metrics.searches}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Eye className="h-3 w-3" />
-                      {item.metrics.views}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Activity className="h-3 w-3" />
-                      {item.metrics.interactions}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Score & Growth */}
-                <div className="text-right">
-                  <div className="flex items-center gap-1 font-medium text-sm">
-                    <GrowthIcon
-                      className={cn(
-                        'h-3 w-3',
-                        getGrowthColor(item.metrics.growth)
-                      )}
-                    />
-                    <span className={getGrowthColor(item.metrics.growth)}>
-                      {item.metrics.growth > 0 ? '+' : ''}
-                      {item.metrics.growth.toFixed(1)}%
-                    </span>
-                  </div>
-                  <div className="text-muted-foreground text-xs">
-                    Score: {item.score.toFixed(0)}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {trending.map((item, index) => (
+            <TrendingItem
+              key={item.id}
+              item={item}
+              index={index}
+              getIcon={getIcon}
+              getLink={getLink}
+              getGrowthColor={getGrowthColor}
+              getGrowthIcon={getGrowthIcon}
+            />
+          ))}
         </div>
       </CardContent>
     </Card>
   );
-}
+});

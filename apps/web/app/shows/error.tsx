@@ -1,10 +1,11 @@
 'use client';
 
 import { Button } from '@repo/design-system/components/ui/button';
-import { AlertCircle } from 'lucide-react';
+import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect } from 'react';
 
-export default function ShowError({
+export default function ShowsError({
   error,
   reset,
 }: {
@@ -13,21 +14,45 @@ export default function ShowError({
 }) {
   useEffect(() => {
     // Log the error to an error reporting service
-    console.error('Show page error:', error);
+    console.error('Shows page error:', error);
   }, [error]);
 
   return (
-    <div className="container mx-auto flex min-h-[60vh] flex-col items-center justify-center gap-4 py-16">
-      <AlertCircle className="h-16 w-16 text-destructive" />
-      <h1 className="font-bold text-4xl">Something went wrong!</h1>
-      <p className="max-w-md text-center text-muted-foreground">
-        We encountered an error while loading this show page. Please try again.
-      </p>
-      <div className="flex gap-4">
-        <Button onClick={reset}>Try Again</Button>
-        <Button variant="outline" asChild>
-          <a href="/shows">Browse Shows</a>
-        </Button>
+    <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4">
+      <div className="max-w-md text-center">
+        <div className="mb-8 flex justify-center">
+          <div className="rounded-full bg-destructive/10 p-6">
+            <AlertTriangle className="h-12 w-12 text-destructive" />
+          </div>
+        </div>
+        
+        <h1 className="mb-4 text-2xl font-bold">Unable to Load Shows</h1>
+        
+        <p className="mb-8 text-muted-foreground">
+          We're having trouble loading the shows right now. This might be a temporary issue.
+        </p>
+
+        {process.env.NODE_ENV === 'development' && error.message && (
+          <div className="mb-6 rounded-lg bg-muted p-4 text-left">
+            <p className="font-mono text-sm text-muted-foreground">
+              {error.message}
+            </p>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
+          <Button onClick={reset} className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Try Again
+          </Button>
+          
+          <Button variant="outline" asChild>
+            <Link href="/" className="gap-2">
+              <Home className="h-4 w-4" />
+              Go Home
+            </Link>
+          </Button>
+        </div>
       </div>
     </div>
   );

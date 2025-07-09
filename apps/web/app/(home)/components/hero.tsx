@@ -4,7 +4,7 @@ import { Button } from '@repo/design-system/components/ui/button';
 import { motion } from 'framer-motion';
 import { ChevronRight, Music, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 const HomeHero = React.memo(function HomeHero() {
   return (

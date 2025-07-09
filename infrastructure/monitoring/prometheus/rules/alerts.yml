@@ -1,0 +1,254 @@
+groups:
+  - name: mysetlist_critical
+    interval: 30s
+    rules:
+      # Service availability
+      - alert: ServiceDown
+        expr: up{job=~"blackbox-http"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Service {{ $labels.instance }} is down"
+          description: "{{ $labels.instance }} has been down for more than 2 minutes."
+          runbook_url: "https://wiki.mysetlist.app/runbooks/service-down"
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5.."}[5m])) by (service)
+            /
+            sum(rate(http_requests_total[5m])) by (service)
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "High error rate on {{ $labels.service }}"
+          description: "Error rate is {{ $value | humanizePercentage }} for {{ $labels.service }}"
+          dashboard: "https://grafana.mysetlist.app/d/errors"
+
+      # Database connection pool exhaustion
+      - alert: DatabaseConnectionPoolExhausted
+        expr: |
+          (
+            pg_stat_database_numbackends{datname="mysetlist"}
+            /
+            pg_settings_max_connections
+          ) > 0.9
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Database connection pool near exhaustion"
+          description: "Database connection usage is at {{ $value | humanizePercentage }}"
+          runbook_url: "https://wiki.mysetlist.app/runbooks/db-connections"
+
+      # Disk space critical
+      - alert: DiskSpaceCritical
+        expr: |
+          (
+            node_filesystem_avail_bytes{mountpoint="/"}
+            /
+            node_filesystem_size_bytes{mountpoint="/"}
+          ) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          team: platform
+        annotations:
+          summary: "Critical disk space on {{ $labels.instance }}"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining"
+
+  - name: mysetlist_warning
+    interval: 60s
+    rules:
+      # High response time
+      - alert: HighResponseTime
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service)
+          ) > 3
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High response time on {{ $labels.service }}"
+          description: "95th percentile response time is {{ $value }}s"
+          dashboard: "https://grafana.mysetlist.app/d/performance"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: |
+          (
+            1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)
+          ) > 0.85
+        for: 10m
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value | humanizePercentage }}"
+
+      # SSL certificate expiring
+      - alert: SSLCertificateExpiringSoon
+        expr: |
+          probe_ssl_earliest_cert_expiry{job="blackbox-http"} - time() < 7 * 24 * 3600
+        for: 1h
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "SSL certificate expiring soon for {{ $labels.instance }}"
+          description: "Certificate expires in {{ $value | humanizeDuration }}"
+
+      # Database slow queries
+      - alert: DatabaseSlowQueries
+        expr: |
+          rate(pg_stat_statements_mean_exec_time_seconds[5m]) > 1
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Slow database queries detected"
+          description: "Average query execution time is {{ $value }}s"
+          dashboard: "https://grafana.mysetlist.app/d/postgres"
+
+      # High API rate limit hits
+      - alert: HighRateLimitHits
+        expr: |
+          sum(rate(api_rate_limit_exceeded_total[5m])) by (endpoint) > 10
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High rate limit hits on {{ $labels.endpoint }}"
+          description: "{{ $value }} rate limit hits per second"
+
+      # Backup failure
+      - alert: BackupFailed
+        expr: |
+          time() - backup_last_success_timestamp > 25 * 3600
+        for: 1h
+        labels:
+          severity: warning
+          team: platform
+        annotations:
+          summary: "Database backup has not succeeded in 24 hours"
+          description: "Last successful backup was {{ $value | humanizeDuration }} ago"
+
+  - name: mysetlist_performance
+    interval: 60s
+    rules:
+      # Core Web Vitals - LCP
+      - alert: HighLargestContentfulPaint
+        expr: |
+          histogram_quantile(0.75,
+            sum(rate(web_vitals_lcp_seconds_bucket[5m])) by (le, page)
+          ) > 2.5
+        for: 15m
+        labels:
+          severity: warning
+          team: frontend
+        annotations:
+          summary: "High LCP on {{ $labels.page }}"
+          description: "75th percentile LCP is {{ $value }}s (target: <2.5s)"
+          dashboard: "https://grafana.mysetlist.app/d/web-vitals"
+
+      # Core Web Vitals - FID
+      - alert: HighFirstInputDelay
+        expr: |
+          histogram_quantile(0.75,
+            sum(rate(web_vitals_fid_milliseconds_bucket[5m])) by (le, page)
+          ) > 100
+        for: 15m
+        labels:
+          severity: warning
+          team: frontend
+        annotations:
+          summary: "High FID on {{ $labels.page }}"
+          description: "75th percentile FID is {{ $value }}ms (target: <100ms)"
+
+      # Core Web Vitals - CLS
+      - alert: HighCumulativeLayoutShift
+        expr: |
+          histogram_quantile(0.75,
+            sum(rate(web_vitals_cls_score_bucket[5m])) by (le, page)
+          ) > 0.1
+        for: 15m
+        labels:
+          severity: warning
+          team: frontend
+        annotations:
+          summary: "High CLS on {{ $labels.page }}"
+          description: "75th percentile CLS is {{ $value }} (target: <0.1)"
+
+      # Cache hit rate
+      - alert: LowCacheHitRate
+        expr: |
+          (
+            sum(rate(cache_hits_total[5m])) by (cache_name)
+            /
+            sum(rate(cache_requests_total[5m])) by (cache_name)
+          ) < 0.8
+        for: 15m
+        labels:
+          severity: info
+          team: backend
+        annotations:
+          summary: "Low cache hit rate for {{ $labels.cache_name }}"
+          description: "Cache hit rate is {{ $value | humanizePercentage }}"
+
+  - name: mysetlist_business
+    interval: 5m
+    rules:
+      # Voting system anomaly
+      - alert: VotingAnomalyDetected
+        expr: |
+          abs(
+            rate(votes_total[5m]) - 
+            avg_over_time(rate(votes_total[1h])[1d:1h])
+          ) > 3 * stddev_over_time(rate(votes_total[1h])[1d:1h])
+        for: 10m
+        labels:
+          severity: warning
+          team: product
+        annotations:
+          summary: "Unusual voting activity detected"
+          description: "Voting rate deviates significantly from normal patterns"
+          dashboard: "https://grafana.mysetlist.app/d/voting"
+
+      # User registration spike
+      - alert: UserRegistrationSpike
+        expr: |
+          rate(user_registrations_total[5m]) > 
+          5 * avg_over_time(rate(user_registrations_total[5m])[1h:5m])
+        for: 10m
+        labels:
+          severity: info
+          team: product
+        annotations:
+          summary: "User registration spike detected"
+          description: "Registration rate is {{ $value }} per second"
+
+      # Search functionality degraded
+      - alert: SearchPerformanceDegraded
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(search_request_duration_seconds_bucket[5m])) by (le)
+          ) > 2
+        for: 10m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "Search performance degraded"
+          description: "95th percentile search latency is {{ $value }}s"

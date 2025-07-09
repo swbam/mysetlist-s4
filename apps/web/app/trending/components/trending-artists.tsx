@@ -10,7 +10,7 @@ import { Button } from '@repo/design-system/components/ui/button';
 import { Skeleton } from '@repo/design-system/components/ui/skeleton';
 import { ExternalLink, Music, TrendingUp, Users } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 interface TrendingArtist {
   id: string;
@@ -24,6 +24,92 @@ interface TrendingArtist {
   recentShows: number;
   weeklyGrowth: number;
 }
+
+// Memoized artist row component for better performance
+const ArtistRow = React.memo(function ArtistRow({
+  artist,
+  index,
+  formatFollowers,
+  getGrowthBadge,
+}: {
+  artist: TrendingArtist;
+  index: number;
+  formatFollowers: (count: number) => string;
+  getGrowthBadge: (growth: number) => { variant: 'default' | 'secondary' | 'outline'; text: string; color: string };
+}) {
+  const growthBadge = getGrowthBadge(artist.weeklyGrowth);
+
+  return (
+    <div className="flex items-center gap-4 rounded-lg border p-4 transition-shadow hover:shadow-md">
+      {/* Rank */}
+      <div className="w-8 font-bold text-muted-foreground text-xl">
+        {index + 1}
+      </div>
+
+      {/* Artist Avatar */}
+      <Avatar className="h-12 w-12">
+        <AvatarImage src={artist.imageUrl} alt={artist.name} />
+        <AvatarFallback>
+          <Music className="h-6 w-6" />
+        </AvatarFallback>
+      </Avatar>
+
+      {/* Artist Info */}
+      <div className="min-w-0 flex-1">
+        <div className="mb-1 flex items-center gap-2">
+          <Link
+            href={`/artists/${artist.slug}`}
+            className="truncate font-semibold hover:underline"
+          >
+            {artist.name}
+          </Link>
+          <Badge variant={growthBadge.variant} className="text-xs">
+            {growthBadge.text}
+          </Badge>
+        </div>
+
+        <div className="flex items-center gap-4 text-muted-foreground text-sm">
+          <span className="flex items-center gap-1">
+            <Users className="h-3 w-3" />
+            {formatFollowers(artist.followers)} followers
+          </span>
+          <span className="flex items-center gap-1">
+            <Music className="h-3 w-3" />
+            {artist.recentShows} recent shows
+          </span>
+        </div>
+
+        {/* Genres */}
+        <div className="mt-2 flex flex-wrap gap-1">
+          {artist.genres.slice(0, 3).map((genre) => (
+            <Badge key={genre} variant="outline" className="text-xs">
+              {genre}
+            </Badge>
+          ))}
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="text-right">
+        <div className="flex items-center gap-1 font-medium text-sm">
+          <TrendingUp className={`h-3 w-3 ${growthBadge.color}`} />
+          {artist.weeklyGrowth > 0 ? '+' : ''}
+          {artist.weeklyGrowth.toFixed(1)}%
+        </div>
+        <div className="text-muted-foreground text-xs">
+          Score: {artist.trendingScore.toFixed(0)}
+        </div>
+      </div>
+
+      {/* External Link */}
+      <Link href={`/artists/${artist.slug}`}>
+        <Button variant="ghost" size="sm">
+          <ExternalLink className="h-4 w-4" />
+        </Button>
+      </Link>
+    </div>
+  );
+});
 
 export function TrendingArtists() {
   const [artists, setArtists] = useState<TrendingArtist[]>([]);
@@ -49,13 +135,13 @@ export function TrendingArtists() {
     }
   };
 
-  const formatFollowers = (count: number) => {
+  const formatFollowers = useCallback((count: number) => {
     if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
     if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
     return count.toString();
-  };
+  }, []);
 
-  const getGrowthBadge = (growth: number) => {
+  const getGrowthBadge = useCallback((growth: number) => {
     if (growth > 20)
       return {
         variant: 'default' as const,
@@ -79,7 +165,7 @@ export function TrendingArtists() {
       text: 'Stable',
       color: 'text-gray-500',
     };
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -129,83 +215,15 @@ export function TrendingArtists() {
 
   return (
     <div className="space-y-3">
-      {artists.map((artist, index) => {
-        const growthBadge = getGrowthBadge(artist.weeklyGrowth);
-
-        return (
-          <div
-            key={artist.id}
-            className="flex items-center gap-4 rounded-lg border p-4 transition-shadow hover:shadow-md"
-          >
-            {/* Rank */}
-            <div className="w-8 font-bold text-muted-foreground text-xl">
-              {index + 1}
-            </div>
-
-            {/* Artist Avatar */}
-            <Avatar className="h-12 w-12">
-              <AvatarImage src={artist.imageUrl} alt={artist.name} />
-              <AvatarFallback>
-                <Music className="h-6 w-6" />
-              </AvatarFallback>
-            </Avatar>
-
-            {/* Artist Info */}
-            <div className="min-w-0 flex-1">
-              <div className="mb-1 flex items-center gap-2">
-                <Link
-                  href={`/artists/${artist.slug}`}
-                  className="truncate font-semibold hover:underline"
-                >
-                  {artist.name}
-                </Link>
-                <Badge variant={growthBadge.variant} className="text-xs">
-                  {growthBadge.text}
-                </Badge>
-              </div>
-
-              <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                <span className="flex items-center gap-1">
-                  <Users className="h-3 w-3" />
-                  {formatFollowers(artist.followers)} followers
-                </span>
-                <span className="flex items-center gap-1">
-                  <Music className="h-3 w-3" />
-                  {artist.recentShows} recent shows
-                </span>
-              </div>
-
-              {/* Genres */}
-              <div className="mt-2 flex flex-wrap gap-1">
-                {artist.genres.slice(0, 3).map((genre) => (
-                  <Badge key={genre} variant="outline" className="text-xs">
-                    {genre}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-
-            {/* Stats */}
-            <div className="text-right">
-              <div className="flex items-center gap-1 font-medium text-sm">
-                <TrendingUp className={`h-3 w-3 ${growthBadge.color}`} />
-                {artist.weeklyGrowth > 0 ? '+' : ''}
-                {artist.weeklyGrowth.toFixed(1)}%
-              </div>
-              <div className="text-muted-foreground text-xs">
-                Score: {artist.trendingScore.toFixed(0)}
-              </div>
-            </div>
-
-            {/* External Link */}
-            <Link href={`/artists/${artist.slug}`}>
-              <Button variant="ghost" size="sm">
-                <ExternalLink className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        );
-      })}
+      {artists.map((artist, index) => (
+        <ArtistRow
+          key={artist.id}
+          artist={artist}
+          index={index}
+          formatFollowers={formatFollowers}
+          getGrowthBadge={getGrowthBadge}
+        />
+      ))}
     </div>
   );
 }

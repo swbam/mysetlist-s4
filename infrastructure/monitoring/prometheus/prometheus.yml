@@ -1,0 +1,114 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'mysetlist-monitor'
+    environment: 'production'
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+# Load rules once and periodically evaluate them
+rule_files:
+  - "rules/*.yml"
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Node Exporter for system metrics
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'mysetlist-app'
+
+  # PostgreSQL Exporter
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+
+  # Blackbox Exporter for endpoint monitoring
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - https://mysetlist.app
+          - https://mysetlist.app/api/health
+          - https://mysetlist.app/api/health/db
+          - https://mysetlist.app/trending
+          - https://mysetlist.app/artists
+          - https://mysetlist.app/shows
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+
+  # Vercel Function metrics (via custom exporter)
+  - job_name: 'vercel-functions'
+    scrape_interval: 60s
+    static_configs:
+      - targets: ['vercel-exporter:9200']
+    metric_relabel_configs:
+      - source_labels: [function]
+        target_label: function_name
+      - source_labels: [region]
+        target_label: vercel_region
+
+  # Application metrics (via OpenTelemetry)
+  - job_name: 'mysetlist-app'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['mysetlist.app:9464']
+    scheme: https
+    tls_config:
+      insecure_skip_verify: false
+
+  # Grafana metrics
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['grafana:3000']
+
+  # Loki metrics
+  - job_name: 'loki'
+    static_configs:
+      - targets: ['loki:3100']
+
+  # Uptime Kuma metrics
+  - job_name: 'uptime-kuma'
+    static_configs:
+      - targets: ['uptime-kuma:3001']
+    metrics_path: /metrics
+
+# Service discovery for dynamic targets
+# Kubernetes service discovery (if using K8s)
+# - job_name: 'kubernetes-pods'
+#   kubernetes_sd_configs:
+#     - role: pod
+#   relabel_configs:
+#     - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+#       action: keep
+#       regex: true
+#     - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+#       action: replace
+#       target_label: __metrics_path__
+#       regex: (.+)
+#     - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+#       action: replace
+#       regex: ([^:]+)(?::\d+)?;(\d+)
+#       replacement: $1:$2
+#       target_label: __address__

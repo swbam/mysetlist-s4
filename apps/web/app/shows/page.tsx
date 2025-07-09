@@ -13,7 +13,7 @@ import { Suspense } from 'react';
 import { ShowsFilter } from './components/shows-filter';
 import { ShowsList } from './components/shows-list';
 
-// Force dynamic rendering and disable static generation
+// Force dynamic rendering to ensure data is fresh
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 

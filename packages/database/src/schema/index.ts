@@ -11,6 +11,9 @@ export * from './attendance';
 export * from './relations';
 export * from './admin';
 export * from './search';
+export * from './analytics';
+export * from './email-enhanced';
+export * from './data-pipeline';
 
 // Re-export artistSongs from artists file to avoid circular dependency
 export { artistSongs } from './artists';

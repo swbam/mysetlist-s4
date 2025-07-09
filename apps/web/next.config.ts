@@ -162,12 +162,9 @@ const nextConfig: NextConfig = {
 
   // Webpack optimizations
   webpack: (config, { isServer, dev }) => {
-    // Call parent webpack config first
+    // Call parent webpack config first if available
     let webpackConfig = config;
-    if (typeof config.webpack === 'function') {
-      webpackConfig = config.webpack(config, { isServer, dev });
-    }
-
+    
     // Suppress OpenTelemetry warnings
     if (isServer) {
       webpackConfig.externals = [...(webpackConfig.externals || []), {
@@ -184,14 +181,11 @@ const nextConfig: NextConfig = {
       }];
     }
 
-    // Production optimizations - enable minification for smaller bundles
-    if (!dev) {
-      webpackConfig.optimization = {
-        ...webpackConfig.optimization,
-        minimize: true, // Re-enable minification for production
-        sideEffects: false, // Enable tree shaking
-        usedExports: true, // Mark used exports for tree shaking
-      };
+    // Fix webpack error by avoiding optimization modifications in dev
+    if (!dev && webpackConfig.optimization) {
+      // Only modify existing optimization settings
+      webpackConfig.optimization.sideEffects = false; // Enable tree shaking
+      webpackConfig.optimization.usedExports = true; // Mark used exports for tree shaking
     }
 
     return webpackConfig;

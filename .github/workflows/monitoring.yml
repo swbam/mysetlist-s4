@@ -1,0 +1,210 @@
+name: Production Monitoring
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+env:
+  ALERT_THRESHOLD_RESPONSE_TIME: 3000  # 3 seconds
+  ALERT_THRESHOLD_ERROR_RATE: 0.05     # 5%
+  ALERT_THRESHOLD_UPTIME: 0.99         # 99%
+
+jobs:
+  # Uptime monitoring
+  uptime-check:
+    name: Uptime Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check production endpoints
+        id: uptime
+        run: |
+          ENDPOINTS=(
+            "https://mysetlist.app"
+            "https://mysetlist.app/api/health"
+            "https://mysetlist.app/api/health/db"
+            "https://mysetlist.app/trending"
+            "https://mysetlist.app/artists"
+            "https://mysetlist.app/shows"
+          )
+          
+          FAILED_ENDPOINTS=()
+          
+          for endpoint in "${ENDPOINTS[@]}"; do
+            echo "Checking $endpoint..."
+            
+            RESPONSE_TIME=$(curl -o /dev/null -s -w '%{time_total}' "$endpoint" || echo "999")
+            HTTP_CODE=$(curl -o /dev/null -s -w '%{http_code}' "$endpoint" || echo "0")
+            
+            if [[ "$HTTP_CODE" != "200" ]]; then
+              FAILED_ENDPOINTS+=("$endpoint (HTTP $HTTP_CODE)")
+            elif (( $(echo "$RESPONSE_TIME > 3" | bc -l) )); then
+              FAILED_ENDPOINTS+=("$endpoint (Response time: ${RESPONSE_TIME}s)")
+            fi
+          done
+          
+          if [[ ${#FAILED_ENDPOINTS[@]} -gt 0 ]]; then
+            echo "failed=true" >> $GITHUB_OUTPUT
+            echo "Failed endpoints: ${FAILED_ENDPOINTS[*]}"
+          else
+            echo "failed=false" >> $GITHUB_OUTPUT
+            echo "All endpoints are healthy"
+          fi
+      
+      - name: Send alert if failed
+        if: steps.uptime.outputs.failed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Create GitHub issue
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Production Uptime Alert',
+              body: 'Production endpoints are failing health checks. Please investigate immediately.',
+              labels: ['production', 'critical', 'monitoring']
+            });
+  
+  # Performance monitoring
+  performance-check:
+    name: Performance Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Lighthouse performance check
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            https://mysetlist.app
+            https://mysetlist.app/trending
+            https://mysetlist.app/artists
+          uploadArtifacts: false
+          temporaryPublicStorage: false
+      
+      - name: Check Core Web Vitals
+        run: |
+          # Use Chrome UX Report API
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d '{
+              "url": "https://mysetlist.app",
+              "formFactor": "PHONE",
+              "metrics": ["largest_contentful_paint", "first_input_delay", "cumulative_layout_shift"]
+            }' \
+            "https://chromeuxreport.googleapis.com/v1/records:queryRecord?key=${{ secrets.GOOGLE_API_KEY }}"
+  
+  # Error rate monitoring
+  error-monitoring:
+    name: Error Rate Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Sentry error rates
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        run: |
+          # Get error stats from last hour
+          STATS=$(curl -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
+            "https://sentry.io/api/0/organizations/$SENTRY_ORG/stats/?project=$SENTRY_PROJECT&interval=1h&stat=received")
+          
+          # Calculate error rate
+          # Add error rate calculation logic
+      
+      - name: Check application logs
+        run: |
+          # Check Vercel logs for errors
+          # Add log analysis logic
+  
+  # Database monitoring
+  database-health:
+    name: Database Health
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check database metrics
+        run: |
+          # Check connection pool usage
+          curl -H "Authorization: Bearer ${{ secrets.MONITORING_TOKEN }}" \
+            "https://mysetlist.app/api/admin/system-health" | jq '.database'
+          
+          # Check slow queries
+          # Add database performance checks
+  
+  # Security monitoring
+  security-check:
+    name: Security Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check SSL certificate
+        run: |
+          echo | openssl s_client -servername mysetlist.app -connect mysetlist.app:443 2>/dev/null | openssl x509 -noout -dates
+      
+      - name: Check security headers
+        run: |
+          HEADERS=$(curl -s -I https://mysetlist.app)
+          
+          # Check for required security headers
+          REQUIRED_HEADERS=(
+            "X-Content-Type-Options: nosniff"
+            "X-Frame-Options: DENY"
+            "X-XSS-Protection: 1; mode=block"
+            "Strict-Transport-Security"
+            "Content-Security-Policy"
+          )
+          
+          for header in "${REQUIRED_HEADERS[@]}"; do
+            if ! echo "$HEADERS" | grep -i "$header" > /dev/null; then
+              echo "Missing security header: $header"
+              exit 1
+            fi
+          done
+  
+  # Synthetic monitoring
+  synthetic-tests:
+    name: Synthetic User Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run synthetic user journey
+        run: |
+          # Simulate critical user journeys
+          npx playwright test tests/synthetic/
+        env:
+          PLAYWRIGHT_BASE_URL: https://mysetlist.app
+  
+  # Alert aggregation
+  alert-summary:
+    name: Alert Summary
+    runs-on: ubuntu-latest
+    needs: [uptime-check, performance-check, error-monitoring, database-health, security-check]
+    if: failure()
+    steps:
+      - name: Send comprehensive alert
+        run: |
+          # Aggregate all monitoring results
+          MESSAGE="🚨 Production Monitoring Alert
+          
+          Status Summary:
+          - Uptime: ${{ needs.uptime-check.result }}
+          - Performance: ${{ needs.performance-check.result }}
+          - Errors: ${{ needs.error-monitoring.result }}
+          - Database: ${{ needs.database-health.result }}
+          - Security: ${{ needs.security-check.result }}
+          
+          Please check the monitoring dashboard for details."
+          
+          # Send to multiple channels
+          if [[ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]]; then
+            curl -X POST -H 'Content-type: application/json' \
+              --data "{\"text\":\"$MESSAGE\"}" \
+              "${{ secrets.SLACK_WEBHOOK_URL }}"
+          fi
+          
+          # Send email alert
+          # Add email notification logic
+          
+          # Create PagerDuty incident if critical
+          # Add PagerDuty integration
