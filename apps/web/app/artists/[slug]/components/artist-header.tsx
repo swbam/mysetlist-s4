@@ -4,7 +4,7 @@ import { Card, CardContent } from '@repo/design-system';
 import { Avatar, AvatarFallback, AvatarImage } from '@repo/design-system';
 import { Calendar, ExternalLink, Music, Users, Verified } from 'lucide-react';
 import Link from 'next/link';
-import { Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { FollowButton } from './follow-button';
 import { FollowerCount } from './follower-count';
 import { SyncShowsButton } from './sync-shows-button';
@@ -30,15 +30,33 @@ interface ArtistHeaderProps {
   };
 }
 
-export function ArtistHeader({ artist }: ArtistHeaderProps) {
-  const genres = artist.genres ? JSON.parse(artist.genres) : [];
-  const externalUrls = artist.externalUrls
-    ? JSON.parse(artist.externalUrls)
-    : {};
+export const ArtistHeader = React.memo(function ArtistHeader({ artist }: ArtistHeaderProps) {
+  // Enhanced error handling for JSON parsing
+  const genres = React.useMemo(() => {
+    try {
+      return artist.genres ? JSON.parse(artist.genres) : [];
+    } catch (error) {
+      console.warn('Failed to parse artist genres:', error);
+      return [];
+    }
+  }, [artist.genres]);
+
+  const externalUrls = React.useMemo(() => {
+    try {
+      return artist.externalUrls ? JSON.parse(artist.externalUrls) : {};
+    } catch (error) {
+      console.warn('Failed to parse external URLs:', error);
+      return {};
+    }
+  }, [artist.externalUrls]);
 
   const formatFollowers = (count: number) => {
-    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M`;
+    }
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}K`;
+    }
     return count.toString();
   };
 
@@ -121,7 +139,10 @@ export function ArtistHeader({ artist }: ArtistHeaderProps) {
                 {/* Action Buttons */}
                 <div className="flex gap-3">
                   <FollowButton artistId={artist.id} artistName={artist.name} />
-                  <SyncShowsButton artistId={artist.id} artistName={artist.name} />
+                  <SyncShowsButton
+                    artistId={artist.id}
+                    artistName={artist.name}
+                  />
                   {externalUrls.spotify && (
                     <Button variant="outline" size="lg" asChild>
                       <Link href={externalUrls.spotify} target="_blank">
@@ -150,4 +171,4 @@ export function ArtistHeader({ artist }: ArtistHeaderProps) {
       )}
     </div>
   );
-}
+});

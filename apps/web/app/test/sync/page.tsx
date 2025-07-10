@@ -1,4 +1,4 @@
-import { ArtistSyncTest } from '@/components/artist-sync-test';
+import { ArtistSyncTest } from '~/components/artist-sync-test';
 
 export default function SyncTestPage() {
   return (

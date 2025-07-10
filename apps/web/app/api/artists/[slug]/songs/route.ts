@@ -34,16 +34,34 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
     }
 
-    // Check if we have synced songs in our database
+    // Enhanced database query with setlist integration
     const artistSongs = await db
-      .select()
+      .select({
+        song: songs,
+        timesPlayed: sql<number>`(
+          SELECT COUNT(*)::int 
+          FROM setlist_songs ss 
+          JOIN setlists s ON ss.setlist_id = s.id 
+          WHERE ss.song_id = ${songs.id} AND s.artist_id = ${artist[0].id}
+        )`,
+        lastPlayed: sql<string>`(
+          SELECT MAX(s.created_at)
+          FROM setlist_songs ss 
+          JOIN setlists s ON ss.setlist_id = s.id 
+          WHERE ss.song_id = ${songs.id} AND s.artist_id = ${artist[0].id}
+        )`,
+        avgRating: sql<number>`(
+          SELECT COALESCE(AVG(v.rating), 0)::int
+          FROM setlist_songs ss 
+          JOIN setlists s ON ss.setlist_id = s.id
+          JOIN votes v ON v.setlist_id = s.id
+          WHERE ss.song_id = ${songs.id} AND s.artist_id = ${artist[0].id}
+        )`,
+      })
       .from(songs)
       .where(
         and(
-          // Use artistId foreign key if available, fallback to name matching
-          artist[0].id
-            ? eq(songs.artist, artist[0].name)
-            : eq(songs.artist, artist[0].name),
+          eq(songs.artist, artist[0].name),
           query ? sql`LOWER(${songs.title}) LIKE ${`%${query}%`}` : undefined
         )
       )
@@ -51,11 +69,19 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       .limit(limit)
       .offset(offset);
 
-    // If we have songs in the database, return them
+    // If we have songs in the database, return them with enhanced data
     if (artistSongs.length > 0) {
+      const enhancedSongs = artistSongs.map(({ song, timesPlayed, lastPlayed, avgRating }) => ({
+        ...song,
+        timesPlayed: timesPlayed || 0,
+        lastPlayed: lastPlayed || null,
+        avgRating: avgRating || 0,
+        isPopular: (timesPlayed || 0) >= 3, // Consider songs played 3+ times as popular
+      }));
+
       return NextResponse.json({
-        songs: artistSongs,
-        total: artistSongs.length,
+        songs: enhancedSongs,
+        total: enhancedSongs.length,
         artist: {
           id: artist[0].id,
           name: artist[0].name,
@@ -82,7 +108,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           id: `spotify_${track.id}`,
           spotifyId: track.id,
           title: track.name,
-          artist: artist[0].name,
+          artist: artist[0]?.name || 'Unknown Artist',
           album: track.album.name,
           albumArtUrl: track.album.images[0]?.url || null,
           releaseDate: track.album.release_date,
@@ -113,11 +139,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           },
           source: 'spotify',
         });
-      } catch (spotifyError) {
-        console.warn(
-          'Spotify API error, falling back to mock data:',
-          spotifyError
-        );
+      } catch (_spotifyError) {
         // Fall through to mock data
       }
     }
@@ -136,8 +158,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       },
       source: 'mock',
     });
-  } catch (error) {
-    console.error('Error fetching artist songs:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch artist songs' },
       { status: 500 }

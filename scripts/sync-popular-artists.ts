@@ -3,8 +3,6 @@
 import { env } from '../apps/web/env';
 
 async function syncPopularArtists() {
-  console.log('🎵 Starting sync of popular artists...');
-
   try {
     const response = await fetch(
       `${env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/artists/sync`,
@@ -19,26 +17,14 @@ async function syncPopularArtists() {
 
     const result = await response.json();
 
-    console.log('✅ Sync completed successfully!');
-    console.log(`📊 Results:`);
-    console.log(
-      `- Synced: ${result.syncedCount}/${result.totalAttempted} artists`
-    );
-    console.log(`- Errors: ${result.errors?.length || 0}`);
-
     if (result.errors?.length > 0) {
-      console.log('\n❌ Errors encountered:');
-      result.errors.forEach((error: string) => console.log(`  - ${error}`));
+      result.errors.forEach((_error: string) => );
     }
 
     if (result.syncedArtists?.length > 0) {
-      console.log('\n🎤 Successfully synced artists:');
-      result.syncedArtists.forEach((artist: any) => {
-        console.log(`  - ${artist.name} (${artist.followers} followers)`);
-      });
+      result.syncedArtists.forEach((_artist: any) => {});
     }
-  } catch (error) {
-    console.error('❌ Sync failed:', error);
+  } catch (_error) {
     process.exit(1);
   }
 }

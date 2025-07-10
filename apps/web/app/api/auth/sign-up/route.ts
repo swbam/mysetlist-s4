@@ -1,11 +1,11 @@
+import { type NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import {
   authRateLimitMiddleware,
   signUpRateLimiter,
-} from '@/lib/auth-rate-limit';
-import { validateCSRFToken } from '@/lib/csrf';
-import { createClient } from '@/lib/supabase/server';
-import { type NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
+} from '~/lib/auth-rate-limit';
+import { validateCSRFToken } from '~/lib/csrf';
+import { createClient } from '~/lib/supabase/server';
 
 const signUpSchema = z.object({
   email: z.string().email(),
@@ -65,31 +65,15 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
-      // Log failed attempt
-      console.warn('Failed sign-up attempt:', {
-        email,
-        error: error.message,
-        ip: request.headers.get('x-forwarded-for') || 'unknown',
-        timestamp: new Date().toISOString(),
-      });
-
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
-
-    // Log successful sign-up
-    console.info('Successful sign-up:', {
-      userId: data.user?.id,
-      email: data.user?.email,
-      timestamp: new Date().toISOString(),
-    });
 
     return NextResponse.json({
       user: data.user,
       session: data.session,
       message: 'Please check your email to verify your account',
     });
-  } catch (error) {
-    console.error('Sign-up error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -88,22 +88,22 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
           totals: {
-            artists: artistCount.rows[0]?.count || 0,
-            venues: venueCount.rows[0]?.count || 0,
-            shows: showCount.rows[0]?.count || 0,
-            songs: songCount.rows[0]?.count || 0,
-            setlists: setlistCount.rows[0]?.count || 0,
-            votes: voteCount.rows[0]?.count || 0,
-            activeUsers: activeUsersCount.rows[0]?.count || 0,
+            artists: artistCount[0]?.['count'] || 0,
+            venues: venueCount[0]?.['count'] || 0,
+            shows: showCount[0]?.['count'] || 0,
+            songs: songCount[0]?.['count'] || 0,
+            setlists: setlistCount[0]?.['count'] || 0,
+            votes: voteCount[0]?.['count'] || 0,
+            activeUsers: activeUsersCount[0]?.['count'] || 0,
           },
-          distribution: dataDistribution.rows.reduce(
+          distribution: dataDistribution.reduce(
             (acc, row) => {
-              acc[row.metric] = row.value;
+              acc[row['metric'] as string] = row['value'] as number;
               return acc;
             },
             {} as Record<string, number>
           ),
-          recentActivity: recentActivity.rows,
+          recentActivity: recentActivity,
           timestamp: new Date().toISOString(),
         });
       }
@@ -127,9 +127,9 @@ export async function GET(request: NextRequest) {
             WHERE sh.id IS NULL
           `);
 
-          if (Number(orphanedSetlists.rows[0]?.count) > 0) {
+          if (Number(orphanedSetlists[0]?.['count']) > 0) {
             issues.push(
-              `${orphanedSetlists.rows[0]?.count} orphaned setlists found`
+              `${orphanedSetlists[0]?.['count']} orphaned setlists found`
             );
           }
 
@@ -140,8 +140,8 @@ export async function GET(request: NextRequest) {
             WHERE ss.id IS NULL
           `);
 
-          if (Number(orphanedVotes.rows[0]?.count) > 0) {
-            issues.push(`${orphanedVotes.rows[0]?.count} orphaned votes found`);
+          if (Number(orphanedVotes[0]?.['count']) > 0) {
+            issues.push(`${orphanedVotes[0]?.['count']} orphaned votes found`);
           }
 
           return NextResponse.json({
@@ -178,7 +178,7 @@ export async function GET(request: NextRequest) {
         `);
 
         return NextResponse.json({
-          tableSizes: tableSizes.rows,
+          tableSizes: tableSizes,
           timestamp: new Date().toISOString(),
         });
       }
@@ -192,8 +192,7 @@ export async function GET(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Error executing database operation:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Database operation failed' },
       { status: 500 }
@@ -285,7 +284,7 @@ export async function POST(request: NextRequest) {
           RETURNING id
         `);
         results.push(
-          `Removed ${orphanedSetlistSongs.rowCount} orphaned setlist songs`
+          `Removed ${orphanedSetlistSongs.length} orphaned setlist songs`
         );
 
         // Remove orphaned votes
@@ -294,7 +293,7 @@ export async function POST(request: NextRequest) {
           WHERE setlist_song_id NOT IN (SELECT id FROM setlist_songs)
           RETURNING id
         `);
-        results.push(`Removed ${orphanedVotes.rowCount} orphaned votes`);
+        results.push(`Removed ${orphanedVotes.length} orphaned votes`);
 
         // Remove orphaned setlists
         const orphanedSetlists = await db.execute(sql`
@@ -302,7 +301,7 @@ export async function POST(request: NextRequest) {
           WHERE show_id NOT IN (SELECT id FROM shows)
           RETURNING id
         `);
-        results.push(`Removed ${orphanedSetlists.rowCount} orphaned setlists`);
+        results.push(`Removed ${orphanedSetlists.length} orphaned setlists`);
 
         return NextResponse.json({
           message: 'Cleanup completed',
@@ -334,9 +333,7 @@ export async function POST(request: NextRequest) {
         for (const index of indexes) {
           try {
             await db.execute(sql.raw(`REINDEX INDEX CONCURRENTLY ${index}`));
-          } catch (error) {
-            console.warn(`Failed to reindex ${index}:`, error);
-          }
+          } catch (_error) {}
         }
 
         return NextResponse.json({
@@ -348,7 +345,7 @@ export async function POST(request: NextRequest) {
 
       case 'seed_sample_data': {
         // Seed sample data for development/testing
-        if (process.env['NODE_ENV'] === 'production') {
+        if (process.env.NODE_ENV === 'production') {
           return NextResponse.json(
             { error: 'Sample data seeding not allowed in production' },
             { status: 403 }
@@ -387,8 +384,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Error executing database operation:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Database operation failed' },
       { status: 500 }

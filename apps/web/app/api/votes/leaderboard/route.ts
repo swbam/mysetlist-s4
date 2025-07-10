@@ -1,6 +1,6 @@
 import { db } from '@repo/database';
 import { setlistSongs, setlists, songs, users, votes } from '@repo/database';
-import { desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -16,8 +16,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Build conditions for setlist songs query
+    const conditions = [eq(setlists.showId, showId)];
+    
+    if (setlistId) {
+      conditions.push(eq(setlistSongs.setlistId, setlistId));
+    }
+
     // Get all setlist songs for this show (optionally filtered by setlist)
-    let setlistSongsQuery = db
+    const setlistSongsQuery = db
       .select({
         id: setlistSongs.id,
         setlistId: setlistSongs.setlistId,
@@ -35,13 +42,7 @@ export async function GET(request: NextRequest) {
       .from(setlistSongs)
       .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
       .innerJoin(songs, eq(setlistSongs.songId, songs.id))
-      .where(eq(setlists.showId, showId));
-
-    if (setlistId) {
-      setlistSongsQuery = setlistSongsQuery.where(
-        eq(setlistSongs.setlistId, setlistId)
-      );
-    }
+      .where(conditions.length > 1 ? and(...conditions) : conditions[0]);
 
     const setlistSongsData = await setlistSongsQuery;
 
@@ -66,9 +67,7 @@ export async function GET(request: NextRequest) {
         createdAt: votes.createdAt,
         user: {
           id: users.id,
-          username: users.username,
           displayName: users.displayName,
-          avatarUrl: users.avatarUrl,
           createdAt: users.createdAt,
         },
       })
@@ -82,9 +81,7 @@ export async function GET(request: NextRequest) {
       string,
       {
         id: string;
-        username: string;
         displayName?: string;
-        avatarUrl?: string;
         totalVotes: number;
         upvotes: number;
         downvotes: number;
@@ -101,13 +98,11 @@ export async function GET(request: NextRequest) {
       if (!voterStats.has(userId)) {
         voterStats.set(userId, {
           id: userId,
-          username: vote.user?.username || 'Anonymous',
-          displayName: vote.user?.displayName,
-          avatarUrl: vote.user?.avatarUrl,
+          displayName: vote.user?.displayName || 'Anonymous',
           totalVotes: 0,
           upvotes: 0,
           downvotes: 0,
-          joinedDate: vote.user?.createdAt?.toISOString(),
+          ...(vote.user?.createdAt && { joinedDate: vote.user.createdAt.toISOString() }),
           recentVotes: 0,
         });
       }
@@ -158,13 +153,15 @@ export async function GET(request: NextRequest) {
         netVotes: songData.netVotes,
         upvotes: songData.upvotes,
         downvotes: songData.downvotes,
-        totalVotes: songData.upvotes + songData.downvotes,
+        totalVotes: (songData.upvotes || 0) + (songData.downvotes || 0),
         rank: index + 1,
       }))
       .sort((a, b) => {
         // Primary sort: net votes (descending)
-        if (b.netVotes !== a.netVotes) {
-          return b.netVotes - a.netVotes;
+        const bNetVotes = b.netVotes || 0;
+        const aNetVotes = a.netVotes || 0;
+        if (bNetVotes !== aNetVotes) {
+          return bNetVotes - aNetVotes;
         }
         // Secondary sort: total votes (descending)
         return b.totalVotes - a.totalVotes;
@@ -186,7 +183,7 @@ export async function GET(request: NextRequest) {
         netVotes: songData.netVotes,
         upvotes: songData.upvotes,
         downvotes: songData.downvotes,
-        totalVotes: songData.upvotes + songData.downvotes,
+        totalVotes: (songData.upvotes || 0) + (songData.downvotes || 0),
         rank: 0, // Will be set after sorting
       }))
       .filter((song) => song.totalVotes > 0)
@@ -196,8 +193,12 @@ export async function GET(request: NextRequest) {
           return b.totalVotes - a.totalVotes;
         }
         // Secondary sort: closer to 50/50 split = more controversial
-        const aBalance = Math.abs(a.upvotes - a.downvotes) / a.totalVotes;
-        const bBalance = Math.abs(b.upvotes - b.downvotes) / b.totalVotes;
+        const aUpvotes = a.upvotes || 0;
+        const aDownvotes = a.downvotes || 0;
+        const bUpvotes = b.upvotes || 0;
+        const bDownvotes = b.downvotes || 0;
+        const aBalance = Math.abs(aUpvotes - aDownvotes) / a.totalVotes;
+        const bBalance = Math.abs(bUpvotes - bDownvotes) / b.totalVotes;
         return aBalance - bBalance;
       })
       .slice(0, 10)
@@ -238,8 +239,7 @@ export async function GET(request: NextRequest) {
       mostDebated,
       risingStars,
     });
-  } catch (error) {
-    console.error('Vote leaderboard API error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

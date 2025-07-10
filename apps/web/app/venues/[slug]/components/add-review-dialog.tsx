@@ -103,7 +103,7 @@ export function AddReviewDialog({ venueId }: AddReviewDialogProps) {
           variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Something went wrong',

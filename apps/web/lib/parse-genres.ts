@@ -1,9 +1,12 @@
 export function parseGenres(
   input: string | string[] | null | undefined
 ): string[] {
-  if (!input) return [];
-  if (Array.isArray(input))
+  if (!input) {
+    return [];
+  }
+  if (Array.isArray(input)) {
     return input.filter((g): g is string => typeof g === 'string');
+  }
   try {
     const parsed = JSON.parse(input);
     return Array.isArray(parsed)

@@ -18,7 +18,7 @@ export function ArtistBio({ bio }: ArtistBioProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const shouldTruncate = bio.length > 300;
   const displayBio =
-    shouldTruncate && !isExpanded ? bio.slice(0, 300) + '...' : bio;
+    shouldTruncate && !isExpanded ? `${bio.slice(0, 300)}...` : bio;
 
   return (
     <Card>

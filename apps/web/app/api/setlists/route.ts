@@ -44,8 +44,7 @@ export async function POST(request: NextRequest) {
       .returning();
 
     return NextResponse.json(newSetlist[0]);
-  } catch (error) {
-    console.error('Create setlist error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to create setlist' },
       { status: 500 }

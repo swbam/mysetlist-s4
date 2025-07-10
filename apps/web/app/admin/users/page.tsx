@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
@@ -26,16 +25,14 @@ import {
 } from '@repo/design-system/components/ui/table';
 import { format } from 'date-fns';
 import { AlertTriangle, Ban, Download, Filter, Search } from 'lucide-react';
+import { createClient } from '~/lib/supabase/server';
 import UserActionsDialog from './components/user-actions-dialog';
 
 // Force dynamic rendering due to user-specific data fetching
 export const dynamic = 'force-dynamic';
 
-export default async function UsersPage({
-  params,
-}: { params: Promise<{ locale: string }> }) {
+export default async function UsersPage() {
   const supabase = await createClient();
-  const { locale } = await params;
 
   // Fetch users with additional info
   const { data: users } = await supabase
@@ -218,7 +215,6 @@ export default async function UsersPage({
                       <UserActionsDialog
                         user={user}
                         isBanned={isBanned}
-                        locale={locale}
                       />
                     </TableCell>
                   </TableRow>

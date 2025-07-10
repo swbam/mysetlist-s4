@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/api/supabase/server';
 import type { NextRequest } from 'next/server';
+import { createClient } from '~/lib/api/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,7 +30,6 @@ export async function GET(request: NextRequest) {
       .eq('setlists.type', 'predicted'); // Only lock predicted setlists
 
     if (showsError) {
-      console.error('Error fetching shows to lock:', showsError);
       return Response.json({ error: 'Failed to fetch shows' }, { status: 500 });
     }
 
@@ -50,7 +49,6 @@ export async function GET(request: NextRequest) {
         .select('id, name');
 
       if (lockError) {
-        console.error(`Error locking setlists for show ${show.id}:`, lockError);
         continue;
       }
 
@@ -109,8 +107,7 @@ export async function GET(request: NextRequest) {
       lockedCount: lockedSetlists.length,
       lockedSetlists: lockedSetlists.map((s) => ({ id: s.id, name: s.name })),
     });
-  } catch (error) {
-    console.error('Auto-lock cron job failed:', error);
+  } catch (_error) {
     return Response.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

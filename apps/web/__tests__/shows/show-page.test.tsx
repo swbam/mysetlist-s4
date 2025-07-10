@@ -9,41 +9,42 @@
  * - Lock mechanism
  */
 
-import { AttendeeList } from '@/app/shows/[slug]/components/attendee-list';
-import { ReorderableSetlist } from '@/app/shows/[slug]/components/reorderable-setlist';
-import { SetlistSection } from '@/app/shows/[slug]/components/setlist-section';
-import { ShowHeader } from '@/app/shows/[slug]/components/show-header';
-import { ShowPageContent } from '@/app/shows/[slug]/components/show-page-content';
-import { VoteButton } from '@/components/voting/vote-button';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { vi } from 'vitest';
+import { AttendeeList } from '~/app/shows/[slug]/components/attendee-list';
+import { ReorderableSetlist } from '~/app/shows/[slug]/components/reorderable-setlist';
+import { SetlistSection } from '~/app/shows/[slug]/components/setlist-section';
+import { ShowHeader } from '~/app/shows/[slug]/components/show-header';
+import { ShowPageContent } from '~/app/shows/[slug]/components/show-page-content';
+import { VoteButton } from '~/components/voting/vote-button';
 
 // Mock next/navigation
-jest.mock('next/navigation', () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({
-    push: jest.fn(),
-    refresh: jest.fn(),
+    push: vi.fn(),
+    refresh: vi.fn(),
   }),
   useSearchParams: () => new URLSearchParams(),
 }));
 
 // Mock supabase client
-jest.mock('@/lib/supabase/client', () => ({
+vi.mock('~/lib/supabase/client', () => ({
   createClient: () => ({
-    channel: jest.fn().mockReturnValue({
-      on: jest.fn().mockReturnThis(),
-      subscribe: jest.fn(),
+    channel: vi.fn().mockReturnValue({
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn(),
     }),
-    removeChannel: jest.fn(),
-    from: jest.fn().mockReturnValue({
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValue({ data: null, error: null }),
+    removeChannel: vi.fn(),
+    from: vi.fn().mockReturnValue({
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: null, error: null }),
     }),
   }),
 }));
 
 // Mock auth provider
-jest.mock('@/app/providers/auth-provider', () => ({
+vi.mock('~/app/providers/auth-provider', () => ({
   useAuth: () => ({
     session: {
       user: {
@@ -55,7 +56,7 @@ jest.mock('@/app/providers/auth-provider', () => ({
 }));
 
 // Mock framer-motion
-jest.mock('framer-motion', () => ({
+vi.mock('framer-motion', () => ({
   motion: {
     div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
     span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
@@ -64,14 +65,14 @@ jest.mock('framer-motion', () => ({
 }));
 
 // Mock drag and drop
-jest.mock('@hello-pangea/dnd', () => ({
+vi.mock('@hello-pangea/dnd', () => ({
   DragDropContext: ({ children }: any) => (
     <div data-testid="drag-drop-context">{children}</div>
   ),
   Droppable: ({ children }: any) => (
     <div data-testid="droppable">
       {children({
-        provided: { innerRef: jest.fn(), droppableProps: {} },
+        provided: { innerRef: vi.fn(), droppableProps: {} },
         snapshot: {},
       })}
     </div>
@@ -80,7 +81,7 @@ jest.mock('@hello-pangea/dnd', () => ({
     <div data-testid="draggable">
       {children({
         provided: {
-          innerRef: jest.fn(),
+          innerRef: vi.fn(),
           draggableProps: {},
           dragHandleProps: {},
         },

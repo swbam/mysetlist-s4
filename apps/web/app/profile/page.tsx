@@ -72,7 +72,9 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!user?.id) return;
+      if (!user?.id) {
+        return;
+      }
 
       try {
         const response = await fetch(`/api/user/profile/${user.id}`);
@@ -82,8 +84,7 @@ export default function ProfilePage() {
           setRecentActivity(data.recentActivity || []);
           setFollowedArtists(data.followedArtists || []);
         }
-      } catch (error) {
-        console.error('Failed to fetch profile:', error);
+      } catch (_error) {
       } finally {
         setLoading(false);
       }
@@ -120,11 +121,11 @@ export default function ProfilePage() {
       <ProtectedRoute>
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-6">
-            <div className="h-32 rounded-lg bg-muted"></div>
+            <div className="h-32 rounded-lg bg-muted" />
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              <div className="h-64 rounded-lg bg-muted"></div>
-              <div className="h-64 rounded-lg bg-muted"></div>
-              <div className="h-64 rounded-lg bg-muted"></div>
+              <div className="h-64 rounded-lg bg-muted" />
+              <div className="h-64 rounded-lg bg-muted" />
+              <div className="h-64 rounded-lg bg-muted" />
             </div>
           </div>
         </div>

@@ -11,10 +11,8 @@ import {
 import { and, eq } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
-    console.log('🎵 Adding Dispatch shows and setlists...');
-
     // First check if Dispatch exists
     const dispatchArtist = await db
       .select()
@@ -33,7 +31,6 @@ export async function POST(request: NextRequest) {
     }
 
     const dispatch = dispatchArtist[0];
-    console.log(`✅ Found Dispatch: ${dispatch.name} (${dispatch.id})`);
 
     // Get Madison Square Garden venue
     const msgVenue = await db
@@ -50,7 +47,6 @@ export async function POST(request: NextRequest) {
     }
 
     const msg = msgVenue[0];
-    console.log(`✅ Found venue: ${msg.name}`);
 
     // Create Dispatch songs if they don't exist
     const dispatchSongs = [
@@ -75,6 +71,8 @@ export async function POST(request: NextRequest) {
     const createdSongs = [];
     for (let i = 0; i < dispatchSongs.length; i++) {
       const songTitle = dispatchSongs[i];
+      
+      if (!songTitle) continue;
 
       // Check if song exists
       const existingSong = await db
@@ -135,7 +133,6 @@ export async function POST(request: NextRequest) {
         .limit(1);
 
       if (existingShow[0]) {
-        console.log(`⏭️  Show already exists: ${showData.name}`);
         createdShows.push(existingShow[0]);
         continue;
       }
@@ -144,17 +141,17 @@ export async function POST(request: NextRequest) {
       const newShow = await db
         .insert(shows)
         .values({
-          headlinerArtistId: dispatch.id,
-          venueId: msg.id,
-          name: showData.name,
-          slug: showData.slug,
+          headlinerArtistId: dispatch.id!,
+          venueId: msg.id!,
+          name: showData.name!,
+          slug: showData.slug!,
           date:
             showData.date instanceof Date
-              ? showData.date.toISOString().split('T')[0]
-              : showData.date,
+              ? showData.date.toISOString().split('T')[0]!
+              : showData.date!,
           startTime: '20:00:00',
           doorsTime: '19:00:00',
-          status: showData.status,
+          status: showData.status!,
           viewCount: Math.floor(Math.random() * 1000),
           voteCount: 0,
           trendingScore: showData.status === 'upcoming' ? 85 : 60,
@@ -167,14 +164,13 @@ export async function POST(request: NextRequest) {
         })
         .returning();
 
-      const show = newShow[0];
+      const show = newShow[0]!;
       createdShows.push(show);
-      console.log(`✅ Created show: ${show.name}`);
 
       // Create show_artists relationship
       await db.insert(showArtists).values({
         showId: show.id,
-        artistId: dispatch.id,
+        artistId: dispatch.id!,
         orderIndex: 0,
         setLength: 90,
         isHeadliner: true,
@@ -196,8 +192,7 @@ export async function POST(request: NextRequest) {
         })
         .returning();
 
-      const setlist = newSetlist[0];
-      console.log(`✅ Created setlist for show`);
+      const setlist = newSetlist[0]!;
 
       // Add songs to the setlist (random selection)
       const shuffledSongs = [...createdSongs]
@@ -205,7 +200,7 @@ export async function POST(request: NextRequest) {
         .slice(0, 12);
 
       for (let i = 0; i < shuffledSongs.length; i++) {
-        const song = shuffledSongs[i];
+        const song = shuffledSongs[i]!;
         await db.insert(setlistSongs).values({
           setlistId: setlist.id,
           songId: song.id,
@@ -217,8 +212,6 @@ export async function POST(request: NextRequest) {
           updatedAt: new Date(),
         });
       }
-
-      console.log(`✅ Added ${shuffledSongs.length} songs to setlist`);
     }
 
     // Return summary
@@ -231,8 +224,7 @@ export async function POST(request: NextRequest) {
         message: 'Successfully added Dispatch shows and setlists!',
       },
     });
-  } catch (error) {
-    console.error('❌ Error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to seed Dispatch data' },
       { status: 500 }

@@ -1,5 +1,5 @@
-import { trackView } from '@/lib/analytics/track-views';
 import { type NextRequest, NextResponse } from 'next/server';
+import { trackView } from '~/lib/analytics/track-views';
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,8 +29,7 @@ export async function POST(request: NextRequest) {
       tracked: { type, id },
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    console.error('Track view error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to track view' },
       { status: 500 }

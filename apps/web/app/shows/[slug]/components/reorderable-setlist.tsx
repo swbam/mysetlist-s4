@@ -33,7 +33,9 @@ export function ReorderableSetlist({
   const [isPending, startTransition] = useTransition();
 
   const handleDragEnd = (result: DropResult) => {
-    if (!result.destination) return;
+    if (!result.destination) {
+      return;
+    }
 
     const items = Array.from(songs);
     const [reorderedItem] = items.splice(result.source.index, 1);
@@ -63,9 +65,8 @@ export function ReorderableSetlist({
         toast.success('Setlist reordered successfully');
         setHasChanges(false);
         onReorder?.(songs);
-      } catch (error) {
+      } catch (_error) {
         toast.error('Failed to reorder setlist');
-        console.error('Reorder failed:', error);
       }
     });
   };

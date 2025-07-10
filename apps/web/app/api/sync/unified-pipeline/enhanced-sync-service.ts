@@ -1,37 +1,30 @@
-import { env } from '@/env';
 import { db } from '@repo/database';
-import {
-  artists,
-  shows,
-  venues,
-  songs,
-  setlists,
-  setlistSongs,
-  showArtists,
-  artistStats,
-} from '@repo/database';
-import { eq, and, gte, sql } from 'drizzle-orm';
-import { CacheClient, RedisRateLimiter, cacheKeys } from '@/lib/cache/redis';
-import { SyncProgressTracker } from '@/lib/sync-progress-tracker';
+import { artists, shows, songs, venues } from '@repo/database';
+import { eq, sql } from 'drizzle-orm';
+import { CacheClient, RedisRateLimiter, cacheKeys } from '~/lib/cache/redis';
+// import { SyncProgressTracker } from '~/lib/sync-progress-tracker';
 
 // Enhanced sync service with performance optimizations
 export class EnhancedSyncService {
   private cache = CacheClient.getInstance();
   private rateLimiter = new RedisRateLimiter();
-  private progressTracker: SyncProgressTracker;
+  // private progressTracker: SyncProgressTracker;
 
   constructor() {
-    this.progressTracker = new SyncProgressTracker();
+    // this.progressTracker = new SyncProgressTracker();
   }
 
   // Orchestrate full artist sync with all data sources
-  async syncArtistComplete(artistId: string, options?: {
-    force?: boolean;
-    includeShows?: boolean;
-    includeSongs?: boolean;
-  }) {
+  async syncArtistComplete(
+    artistId: string,
+    options?: {
+      force?: boolean;
+      includeShows?: boolean;
+      includeSongs?: boolean;
+    }
+  ) {
     const syncKey = `sync:artist:${artistId}`;
-    
+
     // Check if sync is already in progress
     const inProgress = await this.cache.get(`${syncKey}:lock`);
     if (inProgress && !options?.force) {
@@ -46,53 +39,57 @@ export class EnhancedSyncService {
 
     try {
       // Initialize progress tracking
-      await this.progressTracker.initializeSync(artistId, {
-        totalSteps: 5,
-        steps: [
-          'fetch_artist_details',
-          'sync_spotify_data',
-          'sync_shows',
-          'sync_songs',
-          'calculate_stats',
-        ],
-      });
+      // // await this.progressTracker.initializeSync(artistId, {
+      //   totalSteps: 5,
+      //   steps: [
+      //     'fetch_artist_details',
+      //     'sync_spotify_data',
+      //     'sync_shows',
+      //     'sync_songs',
+      //     'calculate_stats',
+      //   ],
+      // });
 
       // Step 1: Fetch and update artist details
-      await this.progressTracker.updateProgress(artistId, 'fetch_artist_details', 'in_progress');
+      // await this.progressTracker.updateProgress(
+      //   artistId,
+      //   'fetch_artist_details',
+      //   'in_progress'
+      // );
       const artistData = await this.syncArtistDetails(artistId);
-      await this.progressTracker.updateProgress(artistId, 'fetch_artist_details', 'completed');
+      // await this.progressTracker.updateProgress(...args);
 
       // Step 2: Sync Spotify data
       if (artistData.spotifyId) {
-        await this.progressTracker.updateProgress(artistId, 'sync_spotify_data', 'in_progress');
+        // await this.progressTracker.updateProgress(artistId, 'sync_spotify_data', 'in_progress');
         await this.syncSpotifyArtistData(artistData.spotifyId, artistId);
-        await this.progressTracker.updateProgress(artistId, 'sync_spotify_data', 'completed');
+        // await this.progressTracker.updateProgress(artistId, 'sync_spotify_data', 'completed');
       }
 
       // Step 3: Sync shows (parallel with Ticketmaster and SetlistFM)
       if (options?.includeShows !== false) {
-        await this.progressTracker.updateProgress(artistId, 'sync_shows', 'in_progress');
+        // await this.progressTracker.updateProgress(artistId, 'sync_shows', 'in_progress');
         await this.syncArtistShows(artistId, artistData.name);
-        await this.progressTracker.updateProgress(artistId, 'sync_shows', 'completed');
+        // await this.progressTracker.updateProgress(artistId, 'sync_shows', 'completed');
       }
 
       // Step 4: Sync songs
       if (options?.includeSongs !== false) {
-        await this.progressTracker.updateProgress(artistId, 'sync_songs', 'in_progress');
-        await this.syncArtistSongs(artistId, artistData.spotifyId);
-        await this.progressTracker.updateProgress(artistId, 'sync_songs', 'completed');
+        // await this.progressTracker.updateProgress(artistId, 'sync_songs', 'in_progress');
+        await this.syncArtistSongs(artistId, artistData.spotifyId || undefined);
+        // await this.progressTracker.updateProgress(artistId, 'sync_songs', 'completed');
       }
 
       // Step 5: Calculate and update statistics
-      await this.progressTracker.updateProgress(artistId, 'calculate_stats', 'in_progress');
+      // await this.progressTracker.updateProgress(artistId, 'calculate_stats', 'in_progress');
       await this.calculateArtistStats(artistId);
-      await this.progressTracker.updateProgress(artistId, 'calculate_stats', 'completed');
+      // await this.progressTracker.updateProgress(artistId, 'calculate_stats', 'completed');
 
       // Clear caches
       await this.invalidateArtistCaches(artistId);
 
       // Complete sync
-      await this.progressTracker.completeSync(artistId);
+      // await this.progressTracker.completeSync(artistId);
 
       return {
         status: 'completed',
@@ -100,7 +97,7 @@ export class EnhancedSyncService {
         syncedAt: new Date().toISOString(),
       };
     } catch (error) {
-      await this.progressTracker.failSync(artistId, error instanceof Error ? error.message : 'Unknown error');
+      // await this.progressTracker.failSync(artistId, error instanceof Error ? error.message : 'Unknown error');
       throw error;
     } finally {
       // Release lock
@@ -125,7 +122,7 @@ export class EnhancedSyncService {
 
   // Enhanced Spotify sync with retry logic
   private async syncSpotifyArtistData(spotifyId: string, artistId: string) {
-    const { allowed, remaining } = await this.rateLimiter.checkLimit(
+    const { allowed } = await this.rateLimiter.checkLimit(
       'spotify:artist',
       50,
       3600 // 50 requests per hour
@@ -136,7 +133,7 @@ export class EnhancedSyncService {
     }
 
     const spotifyData = await this.fetchSpotifyArtist(spotifyId);
-    
+
     if (spotifyData) {
       await db
         .update(artists)
@@ -170,13 +167,15 @@ export class EnhancedSyncService {
 
   // Sync artist songs with efficient batching
   private async syncArtistSongs(artistId: string, spotifyId?: string) {
-    if (!spotifyId) return;
+    if (!spotifyId) {
+      return;
+    }
 
     const topTracks = await this.fetchSpotifyTopTracks(spotifyId);
-    
+
     if (topTracks.length > 0) {
       // Batch upsert songs
-      const songData = topTracks.map(track => ({
+      const songData = topTracks.map((track) => ({
         id: track.id,
         artistId,
         name: track.name,
@@ -230,10 +229,10 @@ export class EnhancedSyncService {
   // Batch operations for better performance
   private async batchUpsertShows(showData: any[], artistId: string) {
     const BATCH_SIZE = 50;
-    
+
     for (let i = 0; i < showData.length; i += BATCH_SIZE) {
       const batch = showData.slice(i, i + BATCH_SIZE);
-      
+
       await db.transaction(async (tx) => {
         for (const show of batch) {
           // Upsert venue first
@@ -242,12 +241,14 @@ export class EnhancedSyncService {
             .values({
               id: show.venueId,
               name: show.venueName,
+              slug: show.venueName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
               city: show.city,
               state: show.state,
               country: show.country,
               latitude: show.latitude,
               longitude: show.longitude,
-            })
+              timezone: 'UTC',
+            } as any)
             .onConflictDoUpdate({
               target: venues.id,
               set: {
@@ -263,13 +264,14 @@ export class EnhancedSyncService {
             .values({
               id: show.id,
               name: show.name,
+              slug: show.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
               date: show.date,
-              venueId: venue.id,
+              venueId: venue?.id,
               headlinerArtistId: artistId,
               status: show.status,
-              ticketmasterEventId: show.ticketmasterEventId,
-              setlistFmEventId: show.setlistFmEventId,
-            })
+              ticketmasterId: show.ticketmasterEventId,
+              setlistFmId: show.setlistFmEventId,
+            } as any)
             .onConflictDoUpdate({
               target: shows.id,
               set: {
@@ -284,10 +286,10 @@ export class EnhancedSyncService {
 
   private async batchUpsertSongs(songData: any[]) {
     const BATCH_SIZE = 100;
-    
+
     for (let i = 0; i < songData.length; i += BATCH_SIZE) {
       const batch = songData.slice(i, i + BATCH_SIZE);
-      
+
       await db
         .insert(songs)
         .values(batch)
@@ -302,31 +304,34 @@ export class EnhancedSyncService {
   }
 
   // External API calls with error handling
-  private async fetchSpotifyArtist(spotifyId: string): Promise<any> {
+  private async fetchSpotifyArtist(_spotifyId: string): Promise<any> {
     // Implementation would call Spotify API
     // Placeholder for now
     return null;
   }
 
-  private async fetchSpotifyTopTracks(spotifyId: string): Promise<any[]> {
+  private async fetchSpotifyTopTracks(_spotifyId: string): Promise<any[]> {
     // Implementation would call Spotify API
     // Placeholder for now
     return [];
   }
 
-  private async fetchTicketmasterShows(artistName: string): Promise<any[]> {
+  private async fetchTicketmasterShows(_artistName: string): Promise<any[]> {
     // Implementation would call Ticketmaster API
     // Placeholder for now
     return [];
   }
 
-  private async fetchSetlistFmShows(artistId: string): Promise<any[]> {
+  private async fetchSetlistFmShows(_artistId: string): Promise<any[]> {
     // Implementation would call SetlistFM API
     // Placeholder for now
     return [];
   }
 
-  private mergeShowData(ticketmasterShows: any[], setlistFmShows: any[]): any[] {
+  private mergeShowData(
+    _ticketmasterShows: any[],
+    _setlistFmShows: any[]
+  ): any[] {
     // Implementation would merge and deduplicate shows
     // Placeholder for now
     return [];
@@ -337,8 +342,8 @@ export class EnhancedSyncService {
     await Promise.all([
       this.cache.del(cacheKeys.artist(artistId)),
       this.cache.del(`artist:stats:${artistId}`),
-      this.cache.invalidatePattern(`search:artists:*`),
-      this.cache.invalidatePattern(`trending:*`),
+      this.cache.invalidatePattern('search:artists:*'),
+      this.cache.invalidatePattern('trending:*'),
     ]);
   }
 }

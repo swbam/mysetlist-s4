@@ -1,6 +1,5 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import {
   Avatar,
   AvatarFallback,
@@ -26,6 +25,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { cn } from '~/lib/utils';
 import { useAuth } from '../../app/providers/auth-provider';
 import { UserDisplay } from './user-avatar';
 
@@ -105,18 +105,25 @@ export function ActivityFeed({
   const fetchActivities = async () => {
     try {
       const params = new URLSearchParams();
-      if (userId) params.set('userId', userId);
-      if (artistId) params.set('artistId', artistId);
-      if (showId) params.set('showId', showId);
-      if (limit) params.set('limit', limit.toString());
+      if (userId) {
+        params.set('userId', userId);
+      }
+      if (artistId) {
+        params.set('artistId', artistId);
+      }
+      if (showId) {
+        params.set('showId', showId);
+      }
+      if (limit) {
+        params.set('limit', limit.toString());
+      }
 
       const response = await fetch(`/api/activity-feed?${params}`);
       if (response.ok) {
         const data = await response.json();
         setActivities(data.activities || []);
       }
-    } catch (error) {
-      console.error('Failed to fetch activities:', error);
+    } catch (_error) {
     } finally {
       setLoading(false);
     }
@@ -133,12 +140,18 @@ export function ActivityFeed({
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (diffInSeconds < 60) return 'Just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400)
+    if (diffInSeconds < 60) {
+      return 'Just now';
+    }
+    if (diffInSeconds < 3600) {
+      return `${Math.floor(diffInSeconds / 60)}m ago`;
+    }
+    if (diffInSeconds < 86400) {
       return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    if (diffInSeconds < 604800)
+    }
+    if (diffInSeconds < 604800) {
       return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    }
 
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -293,10 +306,10 @@ export function ActivityFeed({
           <div className="space-y-4">
             {Array.from({ length: 5 }).map((_, i) => (
               <div key={i} className="flex animate-pulse items-start gap-3">
-                <div className="h-8 w-8 rounded-full bg-muted"></div>
+                <div className="h-8 w-8 rounded-full bg-muted" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 w-3/4 rounded bg-muted"></div>
-                  <div className="h-3 w-1/2 rounded bg-muted"></div>
+                  <div className="h-4 w-3/4 rounded bg-muted" />
+                  <div className="h-3 w-1/2 rounded bg-muted" />
                 </div>
               </div>
             ))}

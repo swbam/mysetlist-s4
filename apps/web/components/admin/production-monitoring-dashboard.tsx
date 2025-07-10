@@ -1,23 +1,29 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { usePerformanceMonitor } from '@/hooks/use-performance-monitor';
-import { ProductionMonitoringService } from '@/lib/production-monitoring';
-import { 
-  Activity, 
-  AlertTriangle, 
-  CheckCircle, 
-  Clock, 
-  Database, 
-  Globe, 
-  Server, 
-  TrendingUp, 
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Database,
+  Globe,
+  Server,
+  TrendingUp,
   Users,
-  Zap
+  Zap,
 } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '~/components/ui/card';
+import { usePerformanceMonitor } from '~/hooks/use-performance-monitor';
 
 interface MetricCardProps {
   title: string;
@@ -28,44 +34,59 @@ interface MetricCardProps {
   icon: React.ReactNode;
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, unit, status, trend, icon }) => {
+const MetricCard: React.FC<MetricCardProps> = ({
+  title,
+  value,
+  unit,
+  status,
+  trend,
+  icon,
+}) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'good': return 'text-green-500';
-      case 'warning': return 'text-yellow-500';
-      case 'critical': return 'text-red-500';
-      default: return 'text-gray-500';
+      case 'good':
+        return 'text-green-500';
+      case 'warning':
+        return 'text-yellow-500';
+      case 'critical':
+        return 'text-red-500';
+      default:
+        return 'text-gray-500';
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'good': return 'bg-green-500';
-      case 'warning': return 'bg-yellow-500';
-      case 'critical': return 'bg-red-500';
-      default: return 'bg-gray-500';
+      case 'good':
+        return 'bg-green-500';
+      case 'warning':
+        return 'bg-yellow-500';
+      case 'critical':
+        return 'bg-red-500';
+      default:
+        return 'bg-gray-500';
     }
   };
 
   return (
     <Card className="relative">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <div className={getStatusColor(status)}>
-          {icon}
-        </div>
+        <CardTitle className="font-medium text-sm">{title}</CardTitle>
+        <div className={getStatusColor(status)}>{icon}</div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">
+        <div className="font-bold text-2xl">
           {value}
-          {unit && <span className="text-sm font-normal ml-1">{unit}</span>}
+          {unit && <span className="ml-1 font-normal text-sm">{unit}</span>}
         </div>
-        <div className="flex items-center space-x-2 mt-2">
+        <div className="mt-2 flex items-center space-x-2">
           <Badge className={`${getStatusBadge(status)} text-white`}>
             {status.toUpperCase()}
           </Badge>
           {trend && (
-            <span className={`text-xs ${trend === 'up' ? 'text-green-500' : trend === 'down' ? 'text-red-500' : 'text-gray-500'}`}>
+            <span
+              className={`text-xs ${trend === 'up' ? 'text-green-500' : trend === 'down' ? 'text-red-500' : 'text-gray-500'}`}
+            >
               {trend === 'up' ? '↗' : trend === 'down' ? '↘' : '→'}
             </span>
           )}
@@ -87,28 +108,34 @@ interface AlertBannerProps {
 }
 
 const AlertBanner: React.FC<AlertBannerProps> = ({ alerts, onDismiss }) => {
-  if (alerts.length === 0) return null;
+  if (alerts.length === 0) {
+    return null;
+  }
 
   return (
-    <div className="space-y-2 mb-6">
+    <div className="mb-6 space-y-2">
       {alerts.map((alert) => (
         <div
           key={alert.id}
-          className={`p-4 rounded-lg border-l-4 ${
-            alert.severity === 'critical' 
-              ? 'bg-red-50 border-red-500' 
-              : 'bg-yellow-50 border-yellow-500'
+          className={`rounded-lg border-l-4 p-4 ${
+            alert.severity === 'critical'
+              ? 'border-red-500 bg-red-50'
+              : 'border-yellow-500 bg-yellow-50'
           }`}
         >
           <div className="flex items-start justify-between">
             <div className="flex items-start space-x-3">
-              <AlertTriangle className={`w-5 h-5 mt-0.5 ${
-                alert.severity === 'critical' ? 'text-red-500' : 'text-yellow-500'
-              }`} />
+              <AlertTriangle
+                className={`mt-0.5 h-5 w-5 ${
+                  alert.severity === 'critical'
+                    ? 'text-red-500'
+                    : 'text-yellow-500'
+                }`}
+              />
               <div>
                 <h3 className="font-semibold text-sm">{alert.type}</h3>
-                <p className="text-sm text-gray-600">{alert.message}</p>
-                <p className="text-xs text-gray-500 mt-1">{alert.timestamp}</p>
+                <p className="text-gray-600 text-sm">{alert.message}</p>
+                <p className="mt-1 text-gray-500 text-xs">{alert.timestamp}</p>
               </div>
             </div>
             <Button
@@ -136,9 +163,13 @@ interface PerformanceChartProps {
   unit: string;
 }
 
-const PerformanceChart: React.FC<PerformanceChartProps> = ({ data, title, unit }) => {
-  const maxValue = Math.max(...data.map(d => d.value));
-  const minValue = Math.min(...data.map(d => d.value));
+const PerformanceChart: React.FC<PerformanceChartProps> = ({
+  data,
+  title,
+  unit,
+}) => {
+  const maxValue = Math.max(...data.map((d) => d.value));
+  const minValue = Math.min(...data.map((d) => d.value));
 
   return (
     <Card>
@@ -147,12 +178,13 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ data, title, unit }
         <CardDescription>Last 24 hours</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="h-32 relative">
+        <div className="relative h-32">
           <svg width="100%" height="100%" viewBox="0 0 400 100">
             {data.map((point, index) => {
               const x = (index / (data.length - 1)) * 380 + 10;
-              const y = 90 - ((point.value - minValue) / (maxValue - minValue)) * 80;
-              
+              const y =
+                90 - ((point.value - minValue) / (maxValue - minValue)) * 80;
+
               return (
                 <circle
                   key={index}
@@ -164,14 +196,18 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ data, title, unit }
                 />
               );
             })}
-            
+
             {data.length > 1 && (
               <polyline
-                points={data.map((point, index) => {
-                  const x = (index / (data.length - 1)) * 380 + 10;
-                  const y = 90 - ((point.value - minValue) / (maxValue - minValue)) * 80;
-                  return `${x},${y}`;
-                }).join(' ')}
+                points={data
+                  .map((point, index) => {
+                    const x = (index / (data.length - 1)) * 380 + 10;
+                    const y =
+                      90 -
+                      ((point.value - minValue) / (maxValue - minValue)) * 80;
+                    return `${x},${y}`;
+                  })
+                  .join(' ')}
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
@@ -180,9 +216,15 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({ data, title, unit }
             )}
           </svg>
         </div>
-        <div className="flex justify-between text-sm text-gray-500 mt-2">
-          <span>Min: {minValue.toFixed(1)}{unit}</span>
-          <span>Max: {maxValue.toFixed(1)}{unit}</span>
+        <div className="mt-2 flex justify-between text-gray-500 text-sm">
+          <span>
+            Min: {minValue.toFixed(1)}
+            {unit}
+          </span>
+          <span>
+            Max: {maxValue.toFixed(1)}
+            {unit}
+          </span>
         </div>
       </CardContent>
     </Card>
@@ -208,12 +250,11 @@ export const ProductionMonitoringDashboard: React.FC = () => {
       try {
         const response = await fetch('/api/admin/monitoring');
         const data = await response.json();
-        
+
         setMetrics(data.metrics || {});
         setAlerts(data.alerts || []);
         setLastUpdate(new Date());
-      } catch (error) {
-        console.error('Failed to fetch monitoring data:', error);
+      } catch (_error) {
       } finally {
         setIsLoading(false);
       }
@@ -226,7 +267,7 @@ export const ProductionMonitoringDashboard: React.FC = () => {
   }, []);
 
   const handleAlertDismiss = (alertId: string) => {
-    setAlerts(alerts.filter(alert => alert.id !== alertId));
+    setAlerts(alerts.filter((alert) => alert.id !== alertId));
   };
 
   const getPerformanceStatus = (metric: string, value: number) => {
@@ -238,10 +279,16 @@ export const ProductionMonitoringDashboard: React.FC = () => {
     };
 
     const threshold = thresholds[metric as keyof typeof thresholds];
-    if (!threshold) return 'good';
+    if (!threshold) {
+      return 'good';
+    }
 
-    if (value <= threshold.good) return 'good';
-    if (value <= threshold.warning) return 'warning';
+    if (value <= threshold.good) {
+      return 'good';
+    }
+    if (value <= threshold.warning) {
+      return 'warning';
+    }
     return 'critical';
   };
 
@@ -250,41 +297,41 @@ export const ProductionMonitoringDashboard: React.FC = () => {
       title: 'System Status',
       value: metrics.systemStatus || 'Healthy',
       status: metrics.systemStatus === 'Healthy' ? 'good' : 'warning',
-      icon: <CheckCircle className="w-4 h-4" />,
+      icon: <CheckCircle className="h-4 w-4" />,
     },
     {
       title: 'Uptime',
       value: metrics.uptime || '99.9',
       unit: '%',
       status: (metrics.uptime || 99.9) >= 99.9 ? 'good' : 'warning',
-      icon: <Activity className="w-4 h-4" />,
+      icon: <Activity className="h-4 w-4" />,
     },
     {
       title: 'Response Time',
       value: metrics.averageResponseTime || 150,
       unit: 'ms',
       status: getPerformanceStatus('ttfb', metrics.averageResponseTime || 150),
-      icon: <Clock className="w-4 h-4" />,
+      icon: <Clock className="h-4 w-4" />,
     },
     {
       title: 'Error Rate',
       value: metrics.errorRate || 0.05,
       unit: '%',
       status: (metrics.errorRate || 0.05) < 0.1 ? 'good' : 'critical',
-      icon: <AlertTriangle className="w-4 h-4" />,
+      icon: <AlertTriangle className="h-4 w-4" />,
     },
     {
       title: 'Active Users',
       value: metrics.activeUsers || 1234,
       status: 'good',
-      icon: <Users className="w-4 h-4" />,
+      icon: <Users className="h-4 w-4" />,
     },
     {
       title: 'Database Queries',
       value: metrics.databaseQueries || 45,
       unit: 'q/s',
       status: (metrics.databaseQueries || 45) < 100 ? 'good' : 'warning',
-      icon: <Database className="w-4 h-4" />,
+      icon: <Database className="h-4 w-4" />,
     },
   ];
 
@@ -294,27 +341,27 @@ export const ProductionMonitoringDashboard: React.FC = () => {
       value: Math.round(performanceMetrics.lcp || 0),
       unit: 'ms',
       status: getPerformanceStatus('lcp', performanceMetrics.lcp || 0),
-      icon: <TrendingUp className="w-4 h-4" />,
+      icon: <TrendingUp className="h-4 w-4" />,
     },
     {
       title: 'First Contentful Paint',
       value: Math.round(performanceMetrics.fcp || 0),
       unit: 'ms',
       status: getPerformanceStatus('fcp', performanceMetrics.fcp || 0),
-      icon: <Zap className="w-4 h-4" />,
+      icon: <Zap className="h-4 w-4" />,
     },
     {
       title: 'Cumulative Layout Shift',
       value: (performanceMetrics.cls || 0).toFixed(3),
       status: getPerformanceStatus('cls', performanceMetrics.cls || 0),
-      icon: <Globe className="w-4 h-4" />,
+      icon: <Globe className="h-4 w-4" />,
     },
     {
       title: 'Time to First Byte',
       value: Math.round(performanceMetrics.ttfb || 0),
       unit: 'ms',
       status: getPerformanceStatus('ttfb', performanceMetrics.ttfb || 0),
-      icon: <Server className="w-4 h-4" />,
+      icon: <Server className="h-4 w-4" />,
     },
   ];
 
@@ -326,9 +373,9 @@ export const ProductionMonitoringDashboard: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex h-64 items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-blue-500 border-b-2" />
           <p className="mt-4 text-gray-600">Loading monitoring data...</p>
         </div>
       </div>
@@ -338,10 +385,10 @@ export const ProductionMonitoringDashboard: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Production Monitoring</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="font-bold text-3xl">Production Monitoring</h1>
+          <p className="mt-1 text-gray-600">
             Last updated: {lastUpdate.toLocaleTimeString()}
           </p>
         </div>
@@ -353,7 +400,7 @@ export const ProductionMonitoringDashboard: React.FC = () => {
           >
             Refresh
           </Button>
-          <Badge variant={isMonitoring ? "default" : "secondary"}>
+          <Badge variant={isMonitoring ? 'default' : 'secondary'}>
             {isMonitoring ? 'Monitoring Active' : 'Monitoring Inactive'}
           </Badge>
         </div>
@@ -364,8 +411,8 @@ export const ProductionMonitoringDashboard: React.FC = () => {
 
       {/* System Metrics */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">System Health</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <h2 className="mb-4 font-semibold text-xl">System Health</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {systemMetrics.map((metric, index) => (
             <MetricCard
               key={index}
@@ -381,8 +428,8 @@ export const ProductionMonitoringDashboard: React.FC = () => {
 
       {/* Performance Metrics */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Performance Metrics</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <h2 className="mb-4 font-semibold text-xl">Performance Metrics</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {performanceMetricsData.map((metric, index) => (
             <MetricCard
               key={index}
@@ -398,49 +445,47 @@ export const ProductionMonitoringDashboard: React.FC = () => {
 
       {/* Performance Charts */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Performance Trends</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <h2 className="mb-4 font-semibold text-xl">Performance Trends</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <PerformanceChart
             data={mockChartData}
             title="Response Time"
             unit="ms"
           />
-          <PerformanceChart
-            data={mockChartData}
-            title="Error Rate"
-            unit="%"
-          />
+          <PerformanceChart data={mockChartData} title="Error Rate" unit="%" />
         </div>
       </div>
 
       {/* Resource Usage */}
       <div>
-        <h2 className="text-xl font-semibold mb-4">Resource Usage</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <h2 className="mb-4 font-semibold text-xl">Resource Usage</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <MetricCard
             title="Memory Usage"
-            value={Math.round((performanceMetrics.jsHeapUsed || 0) / 1024 / 1024)}
+            value={Math.round(
+              (performanceMetrics.jsHeapUsed || 0) / 1024 / 1024
+            )}
             unit="MB"
             status="good"
-            icon={<Server className="w-4 h-4" />}
+            icon={<Server className="h-4 w-4" />}
           />
           <MetricCard
             title="Network Type"
             value={performanceMetrics.connectionType || 'Unknown'}
             status="good"
-            icon={<Globe className="w-4 h-4" />}
+            icon={<Globe className="h-4 w-4" />}
           />
           <MetricCard
             title="Effective Type"
             value={performanceMetrics.effectiveType || 'Unknown'}
             status="good"
-            icon={<Activity className="w-4 h-4" />}
+            icon={<Activity className="h-4 w-4" />}
           />
         </div>
       </div>
 
       {/* Footer */}
-      <div className="text-center text-sm text-gray-500 pt-6 border-t">
+      <div className="border-t pt-6 text-center text-gray-500 text-sm">
         <p>MySetlist Production Monitoring Dashboard</p>
         <p>Powered by SUB-AGENT 6 Production Deployment Strategy</p>
       </div>

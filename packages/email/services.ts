@@ -78,7 +78,6 @@ async function sendEmail({
 
     return { success: true, data: result };
   } catch (error) {
-    console.error('Email sending failed:', error);
     return { success: false, error: error as Error };
   }
 }

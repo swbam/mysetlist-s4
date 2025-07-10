@@ -1,5 +1,5 @@
-import { getCSRFToken } from '@/lib/csrf';
 import { NextResponse } from 'next/server';
+import { getCSRFToken } from '~/lib/csrf';
 
 export async function GET() {
   try {
@@ -9,8 +9,7 @@ export async function GET() {
       token,
       message: 'CSRF token generated successfully',
     });
-  } catch (error) {
-    console.error('CSRF token generation error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to generate CSRF token' },
       { status: 500 }

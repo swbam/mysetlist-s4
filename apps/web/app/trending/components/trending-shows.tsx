@@ -52,12 +52,13 @@ export function TrendingShows() {
   const fetchTrendingShows = async () => {
     try {
       const response = await fetch('/api/trending/shows');
-      if (!response.ok) throw new Error('Failed to fetch trending shows');
+      if (!response.ok) {
+        throw new Error('Failed to fetch trending shows');
+      }
 
       const data = await response.json();
       setShows(data.shows || []);
-    } catch (err) {
-      console.error('Error fetching trending shows:', err);
+    } catch (_err) {
       setError('Failed to load trending shows');
     } finally {
       setLoading(false);
@@ -103,24 +104,27 @@ export function TrendingShows() {
   };
 
   const getGrowthBadge = (growth: number) => {
-    if (growth > 20)
+    if (growth > 20) {
       return {
         variant: 'default' as const,
         text: 'Hot',
         color: 'text-red-500',
       };
-    if (growth > 10)
+    }
+    if (growth > 10) {
       return {
         variant: 'secondary' as const,
         text: 'Rising',
         color: 'text-orange-500',
       };
-    if (growth > 0)
+    }
+    if (growth > 0) {
       return {
         variant: 'outline' as const,
         text: 'Growing',
         color: 'text-green-500',
       };
+    }
     return {
       variant: 'outline' as const,
       text: 'Stable',

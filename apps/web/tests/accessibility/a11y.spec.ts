@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 // Helper function to check accessibility
-async function checkAccessibility(page: any, pageName: string) {
+async function checkAccessibility(page: any, _pageName: string) {
   const accessibilityScanResults = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
     .analyze();

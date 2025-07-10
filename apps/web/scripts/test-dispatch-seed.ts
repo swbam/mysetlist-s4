@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import * as path from 'path';
+import * as path from 'node:path';
 import * as dotenv from 'dotenv';
 import postgres from 'postgres';
 
@@ -9,12 +9,10 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
 async function addDispatch() {
-  console.log('🎵 Adding Dispatch to the database...');
-
   // Use direct postgres client
-  const sql = postgres(process.env['DATABASE_URL']!, {
+  const sql = postgres(process.env.DATABASE_URL!, {
     max: 1,
-    ssl: process.env['NODE_ENV'] === 'production' ? 'require' : false,
+    ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
   });
 
   try {
@@ -24,7 +22,6 @@ async function addDispatch() {
     `;
 
     if (existing.length > 0) {
-      console.log('✅ Dispatch already exists in the database');
       await sql.end();
       return;
     }
@@ -84,8 +81,6 @@ async function addDispatch() {
       `;
     }
 
-    console.log('✅ Dispatch successfully added to the database!');
-
     // Show summary
     const summary = await sql`
       SELECT 
@@ -99,19 +94,10 @@ async function addDispatch() {
       LEFT JOIN artist_stats s ON a.id = s.artist_id
       WHERE a.slug = 'dispatch'
     `;
-
-    console.log('\n📊 Dispatch Summary:');
-    const dispatch = summary[0];
-    console.log(`- Name: ${dispatch.name}`);
-    console.log(`- Spotify ID: ${dispatch.spotify_id}`);
-    console.log(`- Ticketmaster ID: ${dispatch.ticketmaster_id}`);
-    console.log(`- Genres: ${dispatch.genres}`);
-    console.log(`- Total Shows: ${dispatch.total_shows || 0}`);
-    console.log(`- Songs in catalog: ${dispatch.song_count || 0}`);
+    const _dispatch = summary[0];
 
     await sql.end();
-  } catch (error) {
-    console.error('❌ Failed to add Dispatch:', error);
+  } catch (_error) {
     await sql.end();
     process.exit(1);
   }

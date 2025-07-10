@@ -30,7 +30,9 @@ export function LayoutProvider({ children }: LayoutProviderProps) {
 
   // Close mobile menu on route change
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+      return;
+    }
 
     const handleRouteChange = () => {
       setMobileMenuOpen(false);

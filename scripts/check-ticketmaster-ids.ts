@@ -14,13 +14,7 @@ async function checkTicketmasterIds() {
     .from(artists)
     .where(isNotNull(artists.ticketmasterId))
     .limit(10);
-
-  console.log('Artists with Ticketmaster IDs:');
-  artistsWithTm.forEach((a) => {
-    console.log(`- ${a.name}: ${a.ticketmasterId} (ID: ${a.id})`);
-  });
-
-  console.log(`\nTotal artists with Ticketmaster IDs: ${artistsWithTm.length}`);
+  artistsWithTm.forEach((_a) => {});
 }
 
 checkTicketmasterIds().catch(console.error);

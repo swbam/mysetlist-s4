@@ -27,16 +27,19 @@ function getMetricRating(
   value: number
 ): 'good' | 'needs-improvement' | 'poor' {
   const threshold = thresholds[name];
-  if (value <= threshold.good) return 'good';
-  if (value <= threshold.poor) return 'needs-improvement';
+  if (value <= threshold.good) {
+    return 'good';
+  }
+  if (value <= threshold.poor) {
+    return 'needs-improvement';
+  }
   return 'poor';
 }
 
 // Send metrics to analytics endpoint
 async function sendToAnalytics(metric: Metric) {
   // Only send in production
-  if (process.env['NODE_ENV'] !== 'production') {
-    console.log('Web Vitals:', metric);
+  if (process.env.NODE_ENV !== 'production') {
     return;
   }
 
@@ -132,18 +135,13 @@ export const performanceUtils = {
         }
 
         const entries = performance.getEntriesByName(name, 'measure');
-        const lastEntry = entries[entries.length - 1];
+        const lastEntry = entries.at(-1);
 
-        if (lastEntry && process.env['NODE_ENV'] === 'development') {
-          console.log(
-            `Performance [${name}]:`,
-            Math.round(lastEntry.duration),
-            'ms'
-          );
+        if (lastEntry && process.env.NODE_ENV === 'development') {
         }
 
         return lastEntry?.duration;
-      } catch (e) {
+      } catch (_e) {
         // Ignore errors from missing marks
       }
     }
@@ -174,12 +172,11 @@ export const performanceUtils = {
 
   // Track custom metrics
   trackMetric(name: string, value: number, unit = 'ms') {
-    if (process.env['NODE_ENV'] === 'development') {
-      console.log(`Metric [${name}]:`, value, unit);
+    if (process.env.NODE_ENV === 'development') {
     }
 
     // Send to analytics in production
-    if (process.env['NODE_ENV'] === 'production' && navigator.sendBeacon) {
+    if (process.env.NODE_ENV === 'production' && navigator.sendBeacon) {
       const data = {
         name,
         value,
@@ -198,7 +195,9 @@ export const performanceUtils = {
 
 // Resource hints for critical resources
 export function addResourceHints() {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined') {
+    return;
+  }
 
   const head = document.head;
 

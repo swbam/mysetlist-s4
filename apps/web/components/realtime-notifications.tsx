@@ -95,7 +95,9 @@ export function RealtimeNotifications({
   };
 
   useEffect(() => {
-    if (autoHideDuration <= 0) return;
+    if (autoHideDuration <= 0) {
+      return;
+    }
 
     const timers = visibleNotifications.map((notification) => {
       return setTimeout(() => {

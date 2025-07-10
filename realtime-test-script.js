@@ -13,9 +13,6 @@ const SUPABASE_ANON_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key';
 
 if (!SUPABASE_URL.includes('supabase.co')) {
-  console.error(
-    '❌ Please set SUPABASE_URL and SUPABASE_ANON_KEY environment variables'
-  );
   process.exit(1);
 }
 
@@ -28,10 +25,9 @@ class RealtimeTestRunner {
     this.startTime = Date.now();
   }
 
-  log(message, type = 'info') {
-    const timestamp = new Date().toISOString();
-    const symbols = { info: 'ℹ️', success: '✅', error: '❌', warning: '⚠️' };
-    console.log(`${symbols[type]} [${timestamp}] ${message}`);
+  log(_message, _type = 'info') {
+    const _timestamp = new Date().toISOString();
+    const _symbols = { info: 'ℹ️', success: '✅', error: '❌', warning: '⚠️' };
   }
 
   addResult(testName, success, details = '') {
@@ -168,8 +164,7 @@ class RealtimeTestRunner {
               const { error: voteError } = await supabase.from('votes').upsert(
                 {
                   setlist_song_id: testSongId,
-                  user_id:
-                    'test-user-' + Math.random().toString(36).substr(2, 9),
+                  user_id: `test-user-${Math.random().toString(36).substr(2, 9)}`,
                   vote_type: 'up',
                   created_at: new Date().toISOString(),
                 },
@@ -307,7 +302,7 @@ class RealtimeTestRunner {
 
             // Track test presence
             await channel.track({
-              user_id: 'test-user-' + Math.random().toString(36).substr(2, 9),
+              user_id: `test-user-${Math.random().toString(36).substr(2, 9)}`,
               username: 'test-user',
               last_seen: new Date().toISOString(),
             });
@@ -336,32 +331,12 @@ class RealtimeTestRunner {
     const totalTests = this.testResults.length;
     const passedTests = this.testResults.filter((r) => r.success).length;
     const failedTests = totalTests - passedTests;
-
-    console.log('\n' + '='.repeat(60));
-    console.log('🧪 REAL-TIME FEATURES TEST REPORT');
-    console.log('='.repeat(60));
-
-    console.log(`📊 Total Tests: ${totalTests}`);
-    console.log(`✅ Passed: ${passedTests}`);
-    console.log(`❌ Failed: ${failedTests}`);
-    console.log(
-      `📈 Success Rate: ${((passedTests / totalTests) * 100).toFixed(1)}%`
-    );
-    console.log(
-      `⏱️ Total Time: ${((Date.now() - this.startTime) / 1000).toFixed(1)}s`
-    );
-
-    console.log('\n📋 Test Details:');
-    this.testResults.forEach((result, index) => {
-      const status = result.success ? '✅' : '❌';
-      const time = (result.timestamp / 1000).toFixed(1);
-      console.log(`${index + 1}. ${status} ${result.test} (${time}s)`);
+    this.testResults.forEach((result, _index) => {
+      const _status = result.success ? '✅' : '❌';
+      const _time = (result.timestamp / 1000).toFixed(1);
       if (result.details) {
-        console.log(`   └─ ${result.details}`);
       }
     });
-
-    console.log('\n' + '='.repeat(60));
 
     return {
       totalTests,
@@ -414,8 +389,7 @@ if (require.main === module) {
       const exitCode = report.failedTests > 0 ? 1 : 0;
       process.exit(exitCode);
     })
-    .catch((error) => {
-      console.error('❌ Test runner failed:', error);
+    .catch((_error) => {
       process.exit(1);
     });
 }

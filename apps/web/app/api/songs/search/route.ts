@@ -8,7 +8,6 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const query = searchParams.get('q');
-    const artistId = searchParams.get('artistId');
     const limit = Number.parseInt(searchParams.get('limit') || '20');
 
     if (!query || query.length < 2) {
@@ -92,12 +91,7 @@ export async function GET(request: NextRequest) {
       const combinedSongs = [...formattedDbSongs, ...spotifySongs];
 
       return NextResponse.json({ songs: combinedSongs });
-    } catch (spotifyError) {
-      console.warn(
-        'Spotify search failed, returning database results only:',
-        spotifyError
-      );
-
+    } catch (_spotifyError) {
       // Fallback to database results only
       const formattedSongs = dbSongs.map((song) => ({
         id: song.id,
@@ -115,8 +109,7 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({ songs: formattedSongs });
     }
-  } catch (error) {
-    console.error('Song search error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to search songs' },
       { status: 500 }

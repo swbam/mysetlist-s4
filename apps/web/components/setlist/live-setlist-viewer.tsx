@@ -1,9 +1,5 @@
 'use client';
 
-import { useAuth } from '@/app/providers/auth-provider';
-import { useRealtimeConnection } from '@/app/providers/realtime-provider';
-import { RealtimeVoteButton } from '@/components/voting/realtime-vote-button';
-import { useRealtimeSetlist } from '@/hooks/use-realtime-setlist';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Card } from '@repo/design-system/components/ui/card';
@@ -22,6 +18,10 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '~/app/providers/auth-provider';
+import { useRealtimeConnection } from '~/app/providers/realtime-provider';
+import { RealtimeVoteButton } from '~/components/voting/realtime-vote-button';
+import { useRealtimeSetlist } from '~/hooks/use-realtime-setlist';
 
 interface LiveSetlistViewerProps {
   showId: string;
@@ -128,7 +128,7 @@ export function LiveSetlistViewer({
           audio.play().catch(() => {
             // Ignore audio play errors (user interaction required)
           });
-        } catch (error) {
+        } catch (_error) {
           // Ignore audio errors
         }
       }
@@ -169,7 +169,7 @@ export function LiveSetlistViewer({
   }, []);
 
   // Handle setlist structure updates
-  const handleSetlistUpdate = useCallback((data: any) => {
+  const handleSetlistUpdate = useCallback((_data: any) => {
     toast.info('Setlist updated', {
       description: 'New songs added to the setlist',
       duration: 2000,
@@ -178,10 +178,11 @@ export function LiveSetlistViewer({
 
   // Get currently playing song
   const currentSong = useMemo(() => {
-    if (!isLive) return null;
+    if (!isLive) {
+      return null;
+    }
     return (
-      songs.find((song) => song.is_played && song.play_time) ||
-      songs[songs.length - 1]
+      songs.find((song) => song.is_played && song.play_time) || songs.at(-1)
     ); // Fallback to last song
   }, [songs, isLive]);
 
@@ -205,7 +206,7 @@ export function LiveSetlistViewer({
             <div className="h-6 w-32 animate-pulse rounded bg-muted" />
             <div className="h-4 w-16 animate-pulse rounded bg-muted" />
           </div>
-          {[...Array(5)].map((_, i) => (
+          {[...new Array(5)].map((_, i) => (
             <div key={i} className="h-16 animate-pulse rounded-lg bg-muted" />
           ))}
         </div>

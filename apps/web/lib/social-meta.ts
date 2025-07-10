@@ -148,7 +148,7 @@ export function generateArtistMeta({
   followerCount?: number;
 }): Metadata {
   const description = bio
-    ? bio.slice(0, 160) + '...'
+    ? `${bio.slice(0, 160)}...`
     : `Discover ${artistName} on MySetlist. View upcoming shows, past setlists, and vote on your favorite songs.`;
 
   const enhancedDescription = followerCount

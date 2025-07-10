@@ -128,7 +128,9 @@ export function GDPRCookieConsent() {
     }));
   };
 
-  if (!showBanner) return null;
+  if (!showBanner) {
+    return null;
+  }
 
   return (
     <>

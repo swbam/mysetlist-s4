@@ -72,40 +72,40 @@ export const env = createEnv({
 
   runtimeEnv: {
     // Server
-    NEXTAUTH_URL: process.env['NEXTAUTH_URL'],
-    NEXTAUTH_SECRET: process.env['NEXTAUTH_SECRET'],
-    TICKETMASTER_API_KEY: process.env['TICKETMASTER_API_KEY'],
-    SETLISTFM_API_KEY: process.env['SETLISTFM_API_KEY'],
-    CRON_SECRET: process.env['CRON_SECRET'],
-    RESEND_API_KEY: process.env['RESEND_API_KEY'],
-    EMAIL_SYSTEM_TOKEN: process.env['EMAIL_SYSTEM_TOKEN'],
-    ADMIN_USER_IDS: process.env['ADMIN_USER_IDS'],
-    TICKETMASTER_WEBHOOK_SECRET: process.env['TICKETMASTER_WEBHOOK_SECRET'],
-    POSTHOG_API_KEY: process.env['POSTHOG_API_KEY'],
-    FLAGSMITH_ENVIRONMENT_KEY: process.env['FLAGSMITH_ENVIRONMENT_KEY'],
-    REDIS_URL: process.env['REDIS_URL'],
-    UPSTASH_REDIS_REST_URL: process.env['UPSTASH_REDIS_REST_URL'],
-    UPSTASH_REDIS_REST_TOKEN: process.env['UPSTASH_REDIS_REST_TOKEN'],
-    EDGE_CONFIG: process.env['EDGE_CONFIG'],
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+    TICKETMASTER_API_KEY: process.env.TICKETMASTER_API_KEY,
+    SETLISTFM_API_KEY: process.env.SETLISTFM_API_KEY,
+    CRON_SECRET: process.env.CRON_SECRET,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    EMAIL_SYSTEM_TOKEN: process.env.EMAIL_SYSTEM_TOKEN,
+    ADMIN_USER_IDS: process.env.ADMIN_USER_IDS,
+    TICKETMASTER_WEBHOOK_SECRET: process.env.TICKETMASTER_WEBHOOK_SECRET,
+    POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
+    FLAGSMITH_ENVIRONMENT_KEY: process.env.FLAGSMITH_ENVIRONMENT_KEY,
+    REDIS_URL: process.env.REDIS_URL,
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
+    EDGE_CONFIG: process.env.EDGE_CONFIG,
 
     // Client
-    NEXT_PUBLIC_DOCS_URL: process.env['NEXT_PUBLIC_DOCS_URL'],
-    NEXT_PUBLIC_POSTHOG_KEY: process.env['NEXT_PUBLIC_POSTHOG_KEY'],
-    NEXT_PUBLIC_POSTHOG_HOST: process.env['NEXT_PUBLIC_POSTHOG_HOST'],
+    NEXT_PUBLIC_DOCS_URL: process.env.NEXT_PUBLIC_DOCS_URL,
+    NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+    NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     NEXT_PUBLIC_FLAGSMITH_ENVIRONMENT_KEY:
-      process.env['NEXT_PUBLIC_FLAGSMITH_ENVIRONMENT_KEY'],
-    NEXT_PUBLIC_ENABLE_ANALYTICS: process.env['NEXT_PUBLIC_ENABLE_ANALYTICS'],
+      process.env.NEXT_PUBLIC_FLAGSMITH_ENVIRONMENT_KEY,
+    NEXT_PUBLIC_ENABLE_ANALYTICS: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS,
     NEXT_PUBLIC_ENABLE_PERFORMANCE_MONITORING:
-      process.env['NEXT_PUBLIC_ENABLE_PERFORMANCE_MONITORING'],
-    NEXT_PUBLIC_ASSET_PREFIX: process.env['NEXT_PUBLIC_ASSET_PREFIX'],
+      process.env.NEXT_PUBLIC_ENABLE_PERFORMANCE_MONITORING,
+    NEXT_PUBLIC_ASSET_PREFIX: process.env.NEXT_PUBLIC_ASSET_PREFIX,
   },
 
-  skipValidation: !!process.env['SKIP_ENV_VALIDATION'],
+  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 });
 
 // Server-side environment checks (only access on server-side)
-export const isDevelopment = process.env['NODE_ENV'] === 'development';
-export const isProduction = process.env['NODE_ENV'] === 'production';
+export const isDevelopment = process.env.NODE_ENV === 'development';
+export const isProduction = process.env.NODE_ENV === 'production';
 
 // Client-safe performance configurations (only using client-side variables)
 export const performanceConfig = {

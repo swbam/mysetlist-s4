@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Setlist not found' }, { status: 404 });
     }
 
-    if (setlist[0].createdBy !== user.id && setlist[0].isLocked) {
+    if (setlist[0]!.createdBy !== user.id && setlist[0]!.isLocked) {
       return NextResponse.json(
         { error: 'Cannot modify this setlist' },
         { status: 403 }
@@ -73,8 +73,7 @@ export async function POST(request: NextRequest) {
       success: true,
       setlistSong: newSetlistSong[0],
     });
-  } catch (error) {
-    console.error('Add song to setlist error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to add song to setlist' },
       { status: 500 }
@@ -125,12 +124,12 @@ export async function DELETE(request: NextRequest) {
         isLocked: setlists.isLocked,
       })
       .from(setlists)
-      .where(eq(setlists.id, setlistSong[0].setlistId))
+      .where(eq(setlists.id, setlistSong[0]!.setlistId))
       .limit(1);
 
     if (
       setlist.length === 0 ||
-      (setlist[0].createdBy !== user.id && setlist[0].isLocked)
+      (setlist[0]!.createdBy !== user.id && setlist[0]!.isLocked)
     ) {
       return NextResponse.json(
         { error: 'Cannot modify this setlist' },
@@ -142,8 +141,7 @@ export async function DELETE(request: NextRequest) {
     await db.delete(setlistSongs).where(eq(setlistSongs.id, setlistSongId));
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Remove song from setlist error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to remove song from setlist' },
       { status: 500 }

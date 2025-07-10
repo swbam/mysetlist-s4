@@ -1,6 +1,5 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
   DropdownMenu,
@@ -23,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 interface ContentActionsProps {
   type: 'artist' | 'venue' | 'show';
@@ -51,7 +51,9 @@ export default function ContentActions({
         .update({ [field]: !item[field] })
         .eq('id', item.id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Log action
       await supabase.from('moderation_logs').insert({
@@ -67,7 +69,7 @@ export default function ContentActions({
       });
 
       router.refresh();
-    } catch (error) {
+    } catch (_error) {
       toast('Error', {
         description: 'Failed to update verification status.',
         type: 'error',
@@ -78,7 +80,9 @@ export default function ContentActions({
   };
 
   const handleFeature = async () => {
-    if (type !== 'show') return;
+    if (type !== 'show') {
+      return;
+    }
 
     setLoading(true);
     try {
@@ -87,7 +91,9 @@ export default function ContentActions({
         .update({ is_featured: !item.is_featured })
         .eq('id', item.id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Log action
       await supabase.from('moderation_logs').insert({
@@ -103,7 +109,7 @@ export default function ContentActions({
       });
 
       router.refresh();
-    } catch (error) {
+    } catch (_error) {
       toast('Error', {
         description: 'Failed to update feature status.',
         type: 'error',
@@ -114,7 +120,9 @@ export default function ContentActions({
   };
 
   const handleSync = async () => {
-    if (type !== 'artist') return;
+    if (type !== 'artist') {
+      return;
+    }
 
     setLoading(true);
     try {
@@ -135,7 +143,7 @@ export default function ContentActions({
       });
 
       router.refresh();
-    } catch (error) {
+    } catch (_error) {
       toast('Error', {
         description: 'Failed to sync artist data.',
         type: 'error',

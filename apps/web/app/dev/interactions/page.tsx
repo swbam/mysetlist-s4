@@ -1,10 +1,5 @@
 'use client';
 
-import { FollowButton } from '@/components/auth/follow-button';
-import { InteractionChecklist } from '@/components/dev/interaction-checklist';
-import { MobileVoteButton } from '@/components/mobile/mobile-vote-button';
-import { SetlistManager } from '@/components/setlist/setlist-manager';
-import { RealtimeVoteButton } from '@/components/voting/realtime-vote-button';
 import {
   Card,
   CardContent,
@@ -17,6 +12,11 @@ import {
   TabsList,
   TabsTrigger,
 } from '@repo/design-system/components/ui/tabs';
+import { FollowButton } from '~/components/auth/follow-button';
+import { InteractionChecklist } from '~/components/dev/interaction-checklist';
+import { MobileVoteButton } from '~/components/mobile/mobile-vote-button';
+import { SetlistManager } from '~/components/setlist/setlist-manager';
+import { RealtimeVoteButton } from '~/components/voting/realtime-vote-button';
 
 export default function InteractionsDevPage() {
   return (
@@ -167,10 +167,7 @@ export default function InteractionsDevPage() {
               <div>
                 <h3 className="mb-3 font-medium">With Count</h3>
                 <div className="space-y-2">
-                  <FollowButton
-                    artistId="test-artist-4"
-                    artistName="BTS"
-                  />
+                  <FollowButton artistId="test-artist-4" artistName="BTS" />
                   <FollowButton
                     artistId="test-artist-5"
                     artistName="Indie Artist"

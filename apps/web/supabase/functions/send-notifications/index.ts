@@ -55,7 +55,6 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Notification error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -92,7 +91,9 @@ async function sendNewShowNotifications(
 
   const { data: followers, error } = await query;
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   let emailsSent = 0;
 
@@ -124,9 +125,7 @@ async function sendNewShowNotifications(
       if (response.ok) {
         emailsSent++;
       }
-    } catch (error) {
-      console.error(`Failed to send email to ${follower.users.email}:`, error);
-    }
+    } catch (_error) {}
   }
 
   return emailsSent;
@@ -168,7 +167,9 @@ async function sendShowReminders(
 
   const { data: attendees, error } = await query;
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   let emailsSent = 0;
 
@@ -202,12 +203,7 @@ async function sendShowReminders(
       if (response.ok) {
         emailsSent++;
       }
-    } catch (error) {
-      console.error(
-        `Failed to send reminder to ${attendee.users.email}:`,
-        error
-      );
-    }
+    } catch (_error) {}
   }
 
   return emailsSent;

@@ -60,8 +60,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Vote error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to process vote' },
       { status: 500 }

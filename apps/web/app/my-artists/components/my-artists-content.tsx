@@ -1,6 +1,5 @@
 'use client';
 
-import { useAuth } from '@/app/providers/auth-provider';
 import {
   Alert,
   AlertDescription,
@@ -16,6 +15,7 @@ import {
 import { AlertCircle, Loader2, Music, RefreshCw } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { useAuth } from '~/app/providers/auth-provider';
 
 interface SpotifyArtist {
   id: string;
@@ -66,8 +66,7 @@ export function MyArtistsContent({ userId }: MyArtistsContentProps) {
       const data = await response.json();
       setTopArtists(data.topArtists || []);
       setFollowedArtists(data.followedArtists || []);
-    } catch (err) {
-      console.error('Error fetching Spotify data:', err);
+    } catch (_err) {
       setError('Failed to load your Spotify artists. Please try again.');
     } finally {
       setIsLoading(false);
@@ -97,8 +96,7 @@ export function MyArtistsContent({ userId }: MyArtistsContentProps) {
       // Redirect to artist page after sync
       const data = await response.json();
       window.location.href = `/artists/${data.slug}`;
-    } catch (err) {
-      console.error('Error syncing artist:', err);
+    } catch (_err) {
       setError('Failed to sync artist. Please try again.');
     } finally {
       setIsSyncing(false);
@@ -108,8 +106,7 @@ export function MyArtistsContent({ userId }: MyArtistsContentProps) {
   const handleReconnectSpotify = async () => {
     try {
       await signInWithSpotify();
-    } catch (err) {
-      console.error('Error reconnecting to Spotify:', err);
+    } catch (_err) {
       setError('Failed to reconnect to Spotify. Please try again.');
     }
   };

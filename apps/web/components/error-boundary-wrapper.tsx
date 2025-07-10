@@ -40,8 +40,6 @@ export class ErrorBoundaryWrapper extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: any) {
-    console.error('Error caught by boundary:', error, errorInfo);
-
     this.setState({
       error,
       errorInfo: errorInfo.componentStack,
@@ -89,23 +87,22 @@ export class ErrorBoundaryWrapper extends Component<
                 again.
               </p>
 
-              {process.env['NODE_ENV'] === 'development' &&
-                this.state.error && (
-                  <details className="text-left text-xs">
-                    <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-                      Error Details (Development)
-                    </summary>
-                    <pre className="mt-2 overflow-auto rounded bg-muted p-2 text-xs">
-                      {this.state.error.message}
-                      {this.state.errorInfo && (
-                        <>
-                          {'\n\nComponent Stack:'}
-                          {this.state.errorInfo}
-                        </>
-                      )}
-                    </pre>
-                  </details>
-                )}
+              {process.env.NODE_ENV === 'development' && this.state.error && (
+                <details className="text-left text-xs">
+                  <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                    Error Details (Development)
+                  </summary>
+                  <pre className="mt-2 overflow-auto rounded bg-muted p-2 text-xs">
+                    {this.state.error.message}
+                    {this.state.errorInfo && (
+                      <>
+                        {'\n\nComponent Stack:'}
+                        {this.state.errorInfo}
+                      </>
+                    )}
+                  </pre>
+                </details>
+              )}
 
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
                 <Button onClick={this.retry} className="gap-2">
@@ -147,10 +144,8 @@ export function withErrorBoundary<P extends object>(
 export function PageErrorBoundary({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundaryWrapper
-      onError={(error, errorInfo) => {
-        console.error('Page Error:', error, errorInfo);
-      }}
-      fallback={(error, retry) => (
+      onError={(_error, _errorInfo) => {}}
+      fallback={(_error, retry) => (
         <div className="container mx-auto px-4 py-16">
           <div className="text-center">
             <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
@@ -191,7 +186,7 @@ export function ComponentErrorBoundary({
 }) {
   return (
     <ErrorBoundaryWrapper
-      fallback={(error, retry) => (
+      fallback={(_error, retry) => (
         <Card className="border-red-200 dark:border-red-800">
           <CardContent className="p-6 text-center">
             <AlertTriangle className="mx-auto mb-4 h-8 w-8 text-red-600 dark:text-red-400" />

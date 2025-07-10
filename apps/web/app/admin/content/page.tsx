@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
@@ -40,6 +39,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
+import { createClient } from '~/lib/supabase/server';
 import ContentActions from './components/content-actions';
 import { SyncPopularArtistsButton } from './components/sync-popular-artists-button';
 

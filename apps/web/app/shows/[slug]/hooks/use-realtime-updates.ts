@@ -1,15 +1,17 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 export function useRealtimeUpdates(showId: string, isLive: boolean) {
   const router = useRouter();
   const supabase = createClient();
 
   useEffect(() => {
-    if (!isLive) return;
+    if (!isLive) {
+      return;
+    }
 
     // Subscribe to setlist updates
     const setlistChannel = supabase
@@ -22,8 +24,7 @@ export function useRealtimeUpdates(showId: string, isLive: boolean) {
           table: 'setlist_songs',
           filter: `setlist_id=in.(select id from setlists where show_id=eq.${showId})`,
         },
-        (payload) => {
-          console.log('Setlist update:', payload);
+        (_payload) => {
           router.refresh();
         }
       )
@@ -40,8 +41,7 @@ export function useRealtimeUpdates(showId: string, isLive: boolean) {
           table: 'show_attendances',
           filter: `show_id=eq.${showId}`,
         },
-        (payload) => {
-          console.log('Attendance update:', payload);
+        (_payload) => {
           router.refresh();
         }
       )

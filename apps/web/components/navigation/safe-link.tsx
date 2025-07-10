@@ -44,7 +44,11 @@ export const SafeLink: React.FC<SafeLinkProps> = ({
         }
 
         // Don't prevent default for external links
-        if (href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+        if (
+          href.startsWith('http') ||
+          href.startsWith('mailto:') ||
+          href.startsWith('tel:')
+        ) {
           return;
         }
 
@@ -61,14 +65,14 @@ export const SafeLink: React.FC<SafeLinkProps> = ({
         // For internal navigation, use router with error handling
         if (!isNavigating) {
           setIsNavigating(true);
-          
+
           // Use a timeout to prevent infinite loading states
           const timeoutId = setTimeout(() => {
             setIsNavigating(false);
           }, 5000);
 
           // Attempt navigation
-          const navigationPromise = replace 
+          const navigationPromise = replace
             ? router.replace(href, { scroll })
             : router.push(href, { scroll });
 
@@ -80,9 +84,7 @@ export const SafeLink: React.FC<SafeLinkProps> = ({
             .catch((error) => {
               clearTimeout(timeoutId);
               setIsNavigating(false);
-              
-              console.error('Navigation error:', error);
-              
+
               if (onError) {
                 onError(error);
               } else {
@@ -95,12 +97,10 @@ export const SafeLink: React.FC<SafeLinkProps> = ({
           e.preventDefault();
         }
       } catch (error) {
-        console.error('SafeLink click error:', error);
-        
         if (onError) {
           onError(error as Error);
         }
-        
+
         // Fallback to native navigation
         if (!href.startsWith('http')) {
           window.location.href = href;
@@ -111,7 +111,11 @@ export const SafeLink: React.FC<SafeLinkProps> = ({
   );
 
   // For external links, use regular Link behavior
-  if (href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:')) {
+  if (
+    href.startsWith('http') ||
+    href.startsWith('mailto:') ||
+    href.startsWith('tel:')
+  ) {
     return (
       <Link
         href={href}
@@ -148,18 +152,19 @@ export function useSafeNavigation() {
 
   const safeNavigate = React.useCallback(
     async (href: string, options?: { replace?: boolean; scroll?: boolean }) => {
-      if (isNavigating) return;
+      if (isNavigating) {
+        return;
+      }
 
       setIsNavigating(true);
-      
+
       try {
-        const navigationPromise = options?.replace 
+        const navigationPromise = options?.replace
           ? router.replace(href, { scroll: options.scroll })
           : router.push(href, { scroll: options.scroll });
 
         await navigationPromise;
-      } catch (error) {
-        console.error('Safe navigation error:', error);
+      } catch (_error) {
         // Fallback to native navigation
         window.location.href = href;
       } finally {

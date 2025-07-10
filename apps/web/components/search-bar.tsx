@@ -1,6 +1,5 @@
 'use client';
 
-import { useDebounce } from '@/hooks/use-debounce';
 import {
   Avatar,
   AvatarFallback,
@@ -24,7 +23,9 @@ import {
 import { cn } from '@repo/design-system/lib/utils';
 import { Calendar, Disc, MapPin, Music, Search, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useDebounce } from '~/hooks/use-debounce';
 
 interface SearchResult {
   id: string;
@@ -57,7 +58,7 @@ export function SearchBar({
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [searched, setSearched] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [_error, setError] = useState<string | null>(null);
 
   const debouncedQuery = useDebounce(query, 300);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -84,7 +85,7 @@ export function SearchBar({
 
       const data = await response.json();
       const artists = data.suggestions || [];
-      
+
       // Map to our SearchResult format
       const mapped = artists.map((artist: any) => ({
         id: artist.id,
@@ -94,14 +95,13 @@ export function SearchBar({
         imageUrl: artist.imageUrl,
         slug: artist.href?.replace('/artists/', '') || artist.id,
         verified: artist.verified,
-        requiresSync: artist.requiresSync
+        requiresSync: artist.requiresSync,
       })) as SearchResult[];
-      
+
       setResults(mapped);
       setSearched(true);
       setIsOpen(true);
-    } catch (err) {
-      console.error('Artist search failed:', err);
+    } catch (_err) {
       setError('Artist search failed. Please try again.');
       setResults([]);
     } finally {
@@ -126,9 +126,9 @@ export function SearchBar({
         const resp = await fetch('/api/artists/sync', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             artistName: result.title,
-            artistId: result.id 
+            artistId: result.id,
           }),
         });
         const data = await resp.json();
@@ -137,8 +137,7 @@ export function SearchBar({
         } else {
           throw new Error('Sync failed');
         }
-      } catch (error) {
-        console.error('Artist sync failed:', error);
+      } catch (_error) {
         setError('Failed to import artist data. Please try again.');
         setIsLoading(false);
         return;
@@ -170,7 +169,7 @@ export function SearchBar({
     }
   };
 
-  const getTypeIcon = (type: string) => {
+  const _getTypeIcon = (type: string) => {
     switch (type) {
       case 'artist':
         return '🎤';
@@ -185,12 +184,12 @@ export function SearchBar({
     }
   };
 
-  const formatSubtitle = (result: SearchResult) => {
+  const _formatSubtitle = (result: SearchResult) => {
     return result.subtitle || '';
   };
 
   // Group results by type for better organization
-  const groupedResults = results.reduce(
+  const _groupedResults = results.reduce(
     (groups, result) => {
       const type = result.type;
       if (!groups[type]) {
@@ -202,8 +201,8 @@ export function SearchBar({
     {} as Record<string, SearchResult[]>
   );
 
-  const typeOrder = ['artist'];
-  const typeLabels = { artist: 'Artists' } as const;
+  const _typeOrder = ['artist'];
+  const _typeLabels = { artist: 'Artists' } as const;
 
   if (variant === 'hero') {
     return (
@@ -235,7 +234,10 @@ export function SearchBar({
             </div>
           </div>
         </PopoverTrigger>
-        <PopoverContent className="w-[90vw] max-w-[600px] p-0 md:w-[600px]" align="start">
+        <PopoverContent
+          className="w-[90vw] max-w-[600px] p-0 md:w-[600px]"
+          align="start"
+        >
           <SearchResults
             results={results}
             isLoading={isLoading}
@@ -350,7 +352,7 @@ function SearchResults({
   );
 
   const typeOrder = ['artist'];
-  const typeLabels = { artist: 'Artists' } as const;
+  const _typeLabels = { artist: 'Artists' } as const;
 
   return (
     <Command shouldFilter={false}>
@@ -372,7 +374,9 @@ function SearchResults({
 
         {typeOrder.map((type) => {
           const typeResults = groupedResults[type];
-          if (!typeResults?.length) return null;
+          if (!typeResults?.length) {
+            return null;
+          }
 
           return (
             <CommandGroup

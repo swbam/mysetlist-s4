@@ -5,10 +5,10 @@
  * Executes all navigation tests and provides detailed reporting
  */
 
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import { existsSync, writeFileSync } from 'fs';
-import path from 'path';
+import { exec } from 'node:child_process';
+import { existsSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
+import { promisify } from 'node:util';
 
 const execAsync = promisify(exec);
 
@@ -31,13 +31,10 @@ interface TestSuite {
 
 class NavigationTestRunner {
   private results: TestSuite[] = [];
-  private startTime: number = 0;
-  private endTime: number = 0;
+  private startTime = 0;
+  private endTime = 0;
 
   async runAllTests(): Promise<void> {
-    console.log('🚀 Starting Comprehensive Navigation Test Suite');
-    console.log('═'.repeat(60));
-    
     this.startTime = Date.now();
 
     // Run different test suites
@@ -50,14 +47,12 @@ class NavigationTestRunner {
     await this.runAccessibilityTests();
 
     this.endTime = Date.now();
-    
+
     this.generateReport();
     this.checkCriticalFailures();
   }
 
   private async runMiddlewareTests(): Promise<void> {
-    console.log('\n🔧 Running Middleware Tests...');
-    
     const suite: TestSuite = {
       name: 'Middleware Tests',
       tests: [],
@@ -70,7 +65,9 @@ class NavigationTestRunner {
     const startTime = Date.now();
 
     // Test 1: Middleware file exists
-    const middlewareExists = existsSync(path.join(process.cwd(), 'middleware.ts'));
+    const middlewareExists = existsSync(
+      path.join(process.cwd(), 'middleware.ts')
+    );
     suite.tests.push({
       name: 'Middleware file exists',
       status: middlewareExists ? 'passed' : 'failed',
@@ -99,14 +96,14 @@ class NavigationTestRunner {
     try {
       const response = await fetch('http://localhost:3000/');
       const hasSecurityHeaders = response.headers.has('X-Content-Type-Options');
-      
+
       suite.tests.push({
         name: 'Security headers present',
         status: hasSecurityHeaders ? 'passed' : 'failed',
         duration: 0,
         error: hasSecurityHeaders ? undefined : 'Security headers not found',
       });
-    } catch (error) {
+    } catch (_error) {
       suite.tests.push({
         name: 'Security headers present',
         status: 'failed',
@@ -121,8 +118,6 @@ class NavigationTestRunner {
   }
 
   private async runRouteTests(): Promise<void> {
-    console.log('\n🛤️  Running Route Tests...');
-    
     const suite: TestSuite = {
       name: 'Route Tests',
       tests: [],
@@ -148,7 +143,7 @@ class NavigationTestRunner {
       try {
         const response = await fetch(`http://localhost:3000${route}`);
         const isSuccess = response.status === 200;
-        
+
         suite.tests.push({
           name: `Route ${route} accessible`,
           status: isSuccess ? 'passed' : 'failed',
@@ -171,8 +166,6 @@ class NavigationTestRunner {
   }
 
   private async runNavigationTests(): Promise<void> {
-    console.log('\n🧭 Running Navigation Tests...');
-    
     const suite: TestSuite = {
       name: 'Navigation Tests',
       tests: [],
@@ -186,9 +179,11 @@ class NavigationTestRunner {
 
     try {
       // Run Playwright tests if available
-      const { stdout } = await execAsync('npx playwright test __tests__/navigation/comprehensive-navigation.test.ts --reporter=json');
+      const { stdout } = await execAsync(
+        'npx playwright test __tests__/navigation/comprehensive-navigation.test.ts --reporter=json'
+      );
       const playwrightResults = JSON.parse(stdout);
-      
+
       // Parse Playwright results
       if (playwrightResults.suites) {
         playwrightResults.suites.forEach((pwSuite: any) => {
@@ -202,12 +197,13 @@ class NavigationTestRunner {
           });
         });
       }
-    } catch (error) {
+    } catch (_error) {
       suite.tests.push({
         name: 'Navigation Playwright tests',
         status: 'failed',
         duration: 0,
-        error: 'Playwright tests could not run - may need to install Playwright',
+        error:
+          'Playwright tests could not run - may need to install Playwright',
       });
     }
 
@@ -217,8 +213,6 @@ class NavigationTestRunner {
   }
 
   private async runMobileTests(): Promise<void> {
-    console.log('\n📱 Running Mobile Tests...');
-    
     const suite: TestSuite = {
       name: 'Mobile Tests',
       tests: [],
@@ -232,9 +226,11 @@ class NavigationTestRunner {
 
     try {
       // Run mobile-specific tests
-      const { stdout } = await execAsync('npx playwright test __tests__/mobile/mobile-navigation.test.ts --reporter=json');
+      const { stdout } = await execAsync(
+        'npx playwright test __tests__/mobile/mobile-navigation.test.ts --reporter=json'
+      );
       const mobileResults = JSON.parse(stdout);
-      
+
       if (mobileResults.suites) {
         mobileResults.suites.forEach((pwSuite: any) => {
           pwSuite.specs.forEach((spec: any) => {
@@ -247,7 +243,7 @@ class NavigationTestRunner {
           });
         });
       }
-    } catch (error) {
+    } catch (_error) {
       suite.tests.push({
         name: 'Mobile navigation tests',
         status: 'failed',
@@ -262,8 +258,6 @@ class NavigationTestRunner {
   }
 
   private async runPerformanceTests(): Promise<void> {
-    console.log('\n⚡ Running Performance Tests...');
-    
     const suite: TestSuite = {
       name: 'Performance Tests',
       tests: [],
@@ -277,23 +271,23 @@ class NavigationTestRunner {
 
     // Test page load performance
     const routes = ['/', '/artists', '/shows', '/venues', '/trending'];
-    
+
     for (const route of routes) {
       try {
         const testStart = Date.now();
-        const response = await fetch(`http://localhost:3000${route}`);
+        const _response = await fetch(`http://localhost:3000${route}`);
         const testEnd = Date.now();
-        
+
         const loadTime = testEnd - testStart;
         const isPerformant = loadTime < 2000; // 2 second threshold
-        
+
         suite.tests.push({
           name: `${route} loads under 2s`,
           status: isPerformant ? 'passed' : 'failed',
           duration: loadTime,
           error: isPerformant ? undefined : `Load time: ${loadTime}ms`,
         });
-      } catch (error) {
+      } catch (_error) {
         suite.tests.push({
           name: `${route} loads under 2s`,
           status: 'failed',
@@ -309,8 +303,6 @@ class NavigationTestRunner {
   }
 
   private async runErrorBoundaryTests(): Promise<void> {
-    console.log('\n🛡️  Running Error Boundary Tests...');
-    
     const suite: TestSuite = {
       name: 'Error Boundary Tests',
       tests: [],
@@ -344,14 +336,14 @@ class NavigationTestRunner {
     try {
       const response = await fetch('http://localhost:3000/non-existent-route');
       const is404 = response.status === 404;
-      
+
       suite.tests.push({
         name: '404 errors handled properly',
         status: is404 ? 'passed' : 'failed',
         duration: 0,
         error: is404 ? undefined : `Expected 404, got ${response.status}`,
       });
-    } catch (error) {
+    } catch (_error) {
       suite.tests.push({
         name: '404 errors handled properly',
         status: 'failed',
@@ -366,8 +358,6 @@ class NavigationTestRunner {
   }
 
   private async runAccessibilityTests(): Promise<void> {
-    console.log('\n♿ Running Accessibility Tests...');
-    
     const suite: TestSuite = {
       name: 'Accessibility Tests',
       tests: [],
@@ -381,9 +371,11 @@ class NavigationTestRunner {
 
     try {
       // Run accessibility tests if axe-core is available
-      const { stdout } = await execAsync('npx playwright test tests/accessibility/a11y.spec.ts --reporter=json');
+      const { stdout } = await execAsync(
+        'npx playwright test tests/accessibility/a11y.spec.ts --reporter=json'
+      );
       const a11yResults = JSON.parse(stdout);
-      
+
       if (a11yResults.suites) {
         a11yResults.suites.forEach((pwSuite: any) => {
           pwSuite.specs.forEach((spec: any) => {
@@ -396,7 +388,7 @@ class NavigationTestRunner {
           });
         });
       }
-    } catch (error) {
+    } catch (_error) {
       suite.tests.push({
         name: 'Accessibility tests',
         status: 'skipped',
@@ -411,17 +403,31 @@ class NavigationTestRunner {
   }
 
   private updateSuiteCounts(suite: TestSuite): void {
-    suite.passedCount = suite.tests.filter(t => t.status === 'passed').length;
-    suite.failedCount = suite.tests.filter(t => t.status === 'failed').length;
-    suite.skippedCount = suite.tests.filter(t => t.status === 'skipped').length;
+    suite.passedCount = suite.tests.filter((t) => t.status === 'passed').length;
+    suite.failedCount = suite.tests.filter((t) => t.status === 'failed').length;
+    suite.skippedCount = suite.tests.filter(
+      (t) => t.status === 'skipped'
+    ).length;
   }
 
   private generateReport(): void {
     const totalDuration = this.endTime - this.startTime;
-    const totalTests = this.results.reduce((sum, suite) => sum + suite.tests.length, 0);
-    const totalPassed = this.results.reduce((sum, suite) => sum + suite.passedCount, 0);
-    const totalFailed = this.results.reduce((sum, suite) => sum + suite.failedCount, 0);
-    const totalSkipped = this.results.reduce((sum, suite) => sum + suite.skippedCount, 0);
+    const totalTests = this.results.reduce(
+      (sum, suite) => sum + suite.tests.length,
+      0
+    );
+    const totalPassed = this.results.reduce(
+      (sum, suite) => sum + suite.passedCount,
+      0
+    );
+    const totalFailed = this.results.reduce(
+      (sum, suite) => sum + suite.failedCount,
+      0
+    );
+    const totalSkipped = this.results.reduce(
+      (sum, suite) => sum + suite.skippedCount,
+      0
+    );
 
     const report = `
 🧭 NAVIGATION TEST REPORT
@@ -435,14 +441,18 @@ class NavigationTestRunner {
 • ⏱️  Duration: ${(totalDuration / 1000).toFixed(2)}s
 
 📋 Test Suite Results:
-${this.results.map(suite => `
+${this.results
+  .map(
+    (suite) => `
 • ${suite.name}:
   - Tests: ${suite.tests.length}
   - Passed: ${suite.passedCount}
   - Failed: ${suite.failedCount}
   - Skipped: ${suite.skippedCount}
   - Duration: ${(suite.duration / 1000).toFixed(2)}s
-`).join('')}
+`
+  )
+  .join('')}
 
 ${this.getFailureDetails()}
 
@@ -451,66 +461,69 @@ ${this.getRecommendations()}
 ${this.getPerformanceMetrics()}
     `.trim();
 
-    console.log(report);
-    
     // Save report to file
     writeFileSync('navigation-test-report.txt', report);
-    console.log('\n📄 Report saved to navigation-test-report.txt');
   }
 
   private getFailureDetails(): string {
     const failures = this.results
-      .flatMap(suite => suite.tests)
-      .filter(test => test.status === 'failed');
+      .flatMap((suite) => suite.tests)
+      .filter((test) => test.status === 'failed');
 
     if (failures.length === 0) {
       return '✅ No failures detected!';
     }
 
     return `❌ Failure Details:
-${failures.map(test => `
+${failures
+  .map(
+    (test) => `
 • ${test.name}:
   Error: ${test.error}
-`).join('')}`;
+`
+  )
+  .join('')}`;
   }
 
   private getRecommendations(): string {
     const recommendations: string[] = [];
-    
-    const failedSuites = this.results.filter(suite => suite.failedCount > 0);
-    
-    if (failedSuites.some(s => s.name === 'Middleware Tests')) {
+
+    const failedSuites = this.results.filter((suite) => suite.failedCount > 0);
+
+    if (failedSuites.some((s) => s.name === 'Middleware Tests')) {
       recommendations.push('• Fix middleware configuration immediately');
     }
-    
-    if (failedSuites.some(s => s.name === 'Route Tests')) {
+
+    if (failedSuites.some((s) => s.name === 'Route Tests')) {
       recommendations.push('• Investigate route accessibility issues');
     }
-    
-    if (failedSuites.some(s => s.name === 'Performance Tests')) {
+
+    if (failedSuites.some((s) => s.name === 'Performance Tests')) {
       recommendations.push('• Optimize slow-loading routes');
     }
-    
-    if (failedSuites.some(s => s.name === 'Error Boundary Tests')) {
+
+    if (failedSuites.some((s) => s.name === 'Error Boundary Tests')) {
       recommendations.push('• Implement missing error boundaries');
     }
 
-    return recommendations.length > 0 
+    return recommendations.length > 0
       ? `💡 Recommendations:\n${recommendations.join('\n')}`
       : '✅ All systems operating within expected parameters';
   }
 
   private getPerformanceMetrics(): string {
-    const performanceTests = this.results
-      .find(suite => suite.name === 'Performance Tests')
-      ?.tests || [];
+    const performanceTests =
+      this.results.find((suite) => suite.name === 'Performance Tests')?.tests ||
+      [];
 
     if (performanceTests.length === 0) {
       return '';
     }
 
-    const avgLoadTime = performanceTests.reduce((sum, test) => sum + test.duration, 0) / performanceTests.length;
-    const slowestTest = performanceTests.reduce((slow, test) => 
+    const avgLoadTime =
+      performanceTests.reduce((sum, test) => sum + test.duration, 0) /
+      performanceTests.length;
+    const slowestTest = performanceTests.reduce((slow, test) =>
       test.duration > slow.duration ? test : slow
     );
 
@@ -522,16 +535,13 @@ ${failures.map(test => `
 
   private checkCriticalFailures(): void {
     const criticalSuites = ['Middleware Tests', 'Route Tests'];
-    const criticalFailures = this.results.filter(suite => 
-      criticalSuites.includes(suite.name) && suite.failedCount > 0
+    const criticalFailures = this.results.filter(
+      (suite) => criticalSuites.includes(suite.name) && suite.failedCount > 0
     );
 
     if (criticalFailures.length > 0) {
-      console.log('\n🚨 CRITICAL FAILURES DETECTED!');
-      console.log('The navigation system has critical issues that must be addressed immediately.');
       process.exit(1);
     } else {
-      console.log('\n🎉 All critical navigation tests passed!');
       process.exit(0);
     }
   }

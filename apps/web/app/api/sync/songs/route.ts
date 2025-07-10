@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
     const sampleSongs = [
       {
         title: 'Greatest Hit #1',
-        artist: artistData.name,
+        artist: artistData!.name,
         album: 'Best Of Collection',
         albumType: 'album' as const,
         releaseDate: '2023-01-01',
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       },
       {
         title: 'Fan Favorite',
-        artist: artistData.name,
+        artist: artistData!.name,
         album: 'Live Sessions',
         albumType: 'album' as const,
         releaseDate: '2023-06-15',
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       },
       {
         title: 'Acoustic Dreams',
-        artist: artistData.name,
+        artist: artistData!.name,
         album: 'Unplugged',
         albumType: 'album' as const,
         releaseDate: '2023-09-20',
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       },
       {
         title: 'Electric Nights',
-        artist: artistData.name,
+        artist: artistData!.name,
         album: 'Dance Collection',
         albumType: 'album' as const,
         releaseDate: '2024-01-10',
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
       },
       {
         title: 'Summer Vibes',
-        artist: artistData.name,
+        artist: artistData!.name,
         album: 'Seasonal Hits',
         albumType: 'single' as const,
         releaseDate: '2024-07-01',
@@ -142,7 +142,6 @@ export async function POST(request: NextRequest) {
       songs: insertedSongs,
     });
   } catch (error) {
-    console.error('Songs sync error:', error);
     return NextResponse.json(
       {
         error: 'Songs sync failed',

@@ -111,7 +111,9 @@ Deno.serve(async (req: Request) => {
     const showCountMap: Record<string, number> = {};
     if (venueAgg) {
       for (const record of venueAgg as { venue_id: string; count: number }[]) {
-        if (record.venue_id) showCountMap[record.venue_id] = record.count;
+        if (record.venue_id) {
+          showCountMap[record.venue_id] = record.count;
+        }
       }
     }
 
@@ -139,7 +141,6 @@ Deno.serve(async (req: Request) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (e) {
-    console.error('update-trending error', e);
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 });

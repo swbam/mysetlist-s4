@@ -20,7 +20,8 @@ export async function checkDatabaseConnection() {
       details: {
         DATABASE_URL: !!process.env.DATABASE_URL,
         NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-        NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        NEXT_PUBLIC_SUPABASE_ANON_KEY:
+          !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       },
     };
     return checks;
@@ -33,9 +34,7 @@ export async function checkDatabaseConnection() {
 
     // Check 3: Can execute a query
     if (dbModule.db && dbModule.sql) {
-      const result = await dbModule.db.execute(
-        dbModule.sql`SELECT 1 as test`
-      );
+      const _result = await dbModule.db.execute(dbModule.sql`SELECT 1 as test`);
       checks.canConnectToDb = true;
     } else {
       checks.error = {

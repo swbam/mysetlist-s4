@@ -47,6 +47,8 @@ export interface TrendingArtistsResponse {
   timeframe: string;
   total: number;
   generatedAt: string;
+  fallback?: boolean;
+  error?: string;
 }
 
 export interface TrendingShowsResponse {
@@ -54,6 +56,8 @@ export interface TrendingShowsResponse {
   timeframe: string;
   total: number;
   generatedAt: string;
+  fallback?: boolean;
+  error?: string;
 }
 
 export interface TrendingVenuesResponse {
@@ -61,4 +65,6 @@ export interface TrendingVenuesResponse {
   timeframe: string;
   total: number;
   generatedAt: string;
+  fallback?: boolean;
+  error?: string;
 }

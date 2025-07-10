@@ -1,4 +1,3 @@
-import { createPageMetadata } from '@/lib/seo-metadata';
 import { getUser } from '@repo/auth/server';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
@@ -11,6 +10,7 @@ import { Bell, BellOff, Settings } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { createPageMetadata } from '~/lib/seo-metadata';
 
 export const metadata: Metadata = createPageMetadata({
   title: 'Notifications | MySetlist',

@@ -1,6 +1,6 @@
 import { db } from '@repo/database';
 import { artists, shows } from '@repo/database';
-import { and, eq, gte, isNull, lte } from 'drizzle-orm';
+import { and, eq, isNull, lte } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
 const CRON_SECRET = process.env['CRON_SECRET'];
@@ -13,8 +13,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log('Starting daily sync cron job...');
-    
     const results = {
       artistsSynced: 0,
       showsSynced: 0,
@@ -23,13 +21,13 @@ export async function GET(request: NextRequest) {
 
     // 1. Sync popular artists that haven't been synced in 24 hours
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    
+
     const staleArtists = await db
       .select()
       .from(artists)
       .where(
         and(
-          isNull(artists.lastSyncedAt),
+          isNull(artists.lastSyncedAt)
           // Or last synced more than 24 hours ago
         )
       )
@@ -73,28 +71,19 @@ export async function GET(request: NextRequest) {
 
     // 2. Update upcoming show statuses
     const today = new Date().toISOString().split('T')[0]!;
-    
+
     // Mark past shows as 'completed'
     await db
       .update(shows)
-      .set({ 
+      .set({
         status: 'completed',
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
-      .where(
-        and(
-          lte(shows.date, today),
-          eq(shows.status, 'upcoming')
-        )
-      );
+      .where(and(lte(shows.date, today), eq(shows.status, 'upcoming')));
 
     // 3. Clean up old data (optional)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    // You can add cleanup logic here if needed
-    
-    console.log('Daily sync completed:', results);
 
     return NextResponse.json({
       success: true,
@@ -103,7 +92,6 @@ export async function GET(request: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error('Daily sync cron error:', error);
     return NextResponse.json(
       {
         error: 'Daily sync failed',

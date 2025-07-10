@@ -15,7 +15,7 @@ describe('Navigation Flow', () => {
 
     // Navigate back home
     cy.get('[data-cy=nav-home]').click();
-    cy.url().should('eq', Cypress.config().baseUrl + '/');
+    cy.url().should('eq', `${Cypress.config().baseUrl}/`);
     cy.get('[data-cy=homepage]').should('be.visible');
   });
 
@@ -71,7 +71,7 @@ describe('Navigation Flow', () => {
 
     // Click back home
     cy.get('[data-cy=back-home]').click();
-    cy.url().should('eq', Cypress.config().baseUrl + '/');
+    cy.url().should('eq', `${Cypress.config().baseUrl}/`);
   });
 
   it('should maintain scroll position on navigation', () => {

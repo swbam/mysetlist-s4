@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 import { cookies } from 'next/headers';
 
 const SESSION_COOKIE_NAME = 'anonymous-session';
@@ -30,7 +30,7 @@ export async function getAnonymousSessionId(): Promise<string> {
   const newSessionId = randomUUID();
   cookieStore.set(SESSION_COOKIE_NAME, newSessionId, {
     httpOnly: true,
-    secure: process.env['NODE_ENV'] === 'production',
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
     maxAge: SESSION_DURATION,
@@ -91,7 +91,7 @@ export async function updateAnonymousActions(
 
   cookieStore.set(ACTIONS_COOKIE_NAME, JSON.stringify(actions), {
     httpOnly: true,
-    secure: process.env['NODE_ENV'] === 'production',
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
     maxAge: SESSION_DURATION,

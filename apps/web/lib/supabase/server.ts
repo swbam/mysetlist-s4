@@ -5,8 +5,8 @@ export async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env['NEXT_PUBLIC_SUPABASE_URL']!,
-    process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
@@ -15,7 +15,7 @@ export async function createClient() {
         set(name: string, value: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value, ...options });
-          } catch (error) {
+          } catch (_error) {
             // The `set` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
             // user sessions.
@@ -24,7 +24,7 @@ export async function createClient() {
         remove(name: string, options: CookieOptions) {
           try {
             cookieStore.set({ name, value: '', ...options });
-          } catch (error) {
+          } catch (_error) {
             // The `delete` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
             // user sessions.
@@ -48,8 +48,8 @@ export async function createServiceClient() {
 
   // Service client for server-side operations that bypass RLS
   return createServerClient(
-    process.env['NEXT_PUBLIC_SUPABASE_URL']!,
-    process.env['SUPABASE_SERVICE_ROLE_KEY']!,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
       auth: {
         autoRefreshToken: false,
@@ -59,10 +59,10 @@ export async function createServiceClient() {
         get(name: string) {
           return cookieStore.get(name)?.value;
         },
-        set(name: string, value: string, options: CookieOptions) {
+        set(_name: string, _value: string, _options: CookieOptions) {
           // Service client doesn't need to set cookies
         },
-        remove(name: string, options: CookieOptions) {
+        remove(_name: string, _options: CookieOptions) {
           // Service client doesn't need to remove cookies
         },
       },

@@ -32,9 +32,7 @@ export function CachedIndicator({ cacheKey, className }: CachedIndicatorProps) {
               setCachedAt(new Date(date));
             }
           }
-        } catch (error) {
-          console.error('Error checking cache:', error);
-        }
+        } catch (_error) {}
       }
     };
 

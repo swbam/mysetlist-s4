@@ -1,6 +1,5 @@
 'use client';
 
-import { useAuth } from '@/app/providers/auth-provider';
 import { ModeToggle } from '@repo/design-system/components/mode-toggle';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
@@ -12,14 +11,17 @@ import {
   NavigationMenuTrigger,
 } from '@repo/design-system/components/ui/navigation-menu';
 import { MoveRight } from 'lucide-react';
-import Link from 'next/link';
 import React from 'react';
+import { useAuth } from '~/app/providers/auth-provider';
 
-import { MobileNavigation } from '@/components/mobile/mobile-navigation';
-import { MobileSearch } from '@/components/mobile/mobile-search';
-import { NavigationErrorBoundary, SafeLink } from '@/components/navigation/navigation-error-boundary';
-import { RealtimeStatus } from '@/components/realtime-status';
 import Image from 'next/image';
+import { MobileNavigation } from '~/components/mobile/mobile-navigation';
+import { MobileSearch } from '~/components/mobile/mobile-search';
+import {
+  NavigationErrorBoundary,
+  SafeLink,
+} from '~/components/navigation/navigation-error-boundary';
+import { RealtimeStatus } from '~/components/realtime-status';
 import { SearchBar } from '../search-bar';
 import Logo from './logo.svg';
 import { UserMenu } from './user-menu';
@@ -136,7 +138,11 @@ const HeaderContent = React.memo(() => {
           </NavigationMenu>
         </div>
         <div className="flex items-center gap-2 lg:justify-center">
-          <SafeLink href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity" prefetch>
+          <SafeLink
+            href="/"
+            className="flex items-center gap-2 transition-opacity hover:opacity-80"
+            prefetch
+          >
             <Image
               src={Logo}
               alt="Logo"
@@ -151,7 +157,7 @@ const HeaderContent = React.memo(() => {
           <div className="hidden max-w-md flex-1 lg:block">
             <SearchBar />
           </div>
-          <div className="flex-1 max-w-md lg:hidden">
+          <div className="max-w-md flex-1 lg:hidden">
             <MobileSearch />
           </div>
           <Button variant="ghost" className="hidden md:inline" asChild>
@@ -159,7 +165,12 @@ const HeaderContent = React.memo(() => {
           </Button>
           {!user && (
             <>
-              <Button variant="ghost" className="hidden md:inline" size="sm" asChild>
+              <Button
+                variant="ghost"
+                className="hidden md:inline"
+                size="sm"
+                asChild
+              >
                 <SafeLink href="/auth/sign-in">Sign in</SafeLink>
               </Button>
               <Button className="hidden md:inline" size="sm" asChild>

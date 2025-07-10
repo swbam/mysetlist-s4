@@ -1,17 +1,17 @@
-#!/usr/bin/env node
+#!/usr/bin/env node'use strict';'use strict';
 
 /**
  * API HEALTH CHECK AND VALIDATION
  * SUB-AGENT 2: Database & API Integration Testing
- * 
+ *
  * Quick health check for all API endpoints and database connectivity
  */
 
-const https = require('https');
-const http = require('http');
-const { URL } = require('url');
+const https = require('node:https');
+const http = require('node:http');
+const { URL } = require('node:url');
 
-const colors = {
+const _colors = {
   red: '\x1b[31m',
   green: '\x1b[32m',
   yellow: '\x1b[33m',
@@ -19,12 +19,10 @@ const colors = {
   magenta: '\x1b[35m',
   cyan: '\x1b[36m',
   reset: '\x1b[0m',
-  bright: '\x1b[1m'
+  bright: '\x1b[1m',
 };
 
-function log(message, color = 'reset') {
-  console.log(colors[color] + message + colors.reset);
-}
+function log(_message, _color = 'reset') {}
 
 class APIHealthChecker {
   constructor() {
@@ -34,14 +32,17 @@ class APIHealthChecker {
 
   async checkHealth() {
     log('🏥 API HEALTH CHECK - SUB-AGENT 2', 'bright');
-    log('=' .repeat(60), 'blue');
+    log('='.repeat(60), 'blue');
 
     // Core API endpoints to test
     const endpoints = [
       { name: 'Health Check', path: '/api/health' },
       { name: 'Database Status', path: '/api/database' },
       { name: 'Trending Data', path: '/api/trending?period=week&limit=5' },
-      { name: 'External APIs Test', path: '/api/sync/external-apis?action=test' },
+      {
+        name: 'External APIs Test',
+        path: '/api/sync/external-apis?action=test',
+      },
       { name: 'Artist Search', path: '/api/artists/search?q=taylor' },
       { name: 'Shows API', path: '/api/shows' },
       { name: 'Venues API', path: '/api/venues' },
@@ -73,11 +74,11 @@ class APIHealthChecker {
 
   async testEndpoint(name, path, method = 'GET', body = null) {
     const startTime = Date.now();
-    
+
     try {
       const response = await this.makeRequest(path, method, body);
       const duration = Date.now() - startTime;
-      
+
       const result = {
         name,
         path,
@@ -86,19 +87,21 @@ class APIHealthChecker {
         status: response.status,
         duration,
         error: response.status >= 400 ? `HTTP ${response.status}` : null,
-        data: response.data
+        data: response.data,
       };
-      
+
       this.results.push(result);
-      
+
       const statusIcon = result.success ? '✅' : '❌';
       const statusColor = result.success ? 'green' : 'red';
-      
-      log(`  ${statusIcon} ${name}: ${response.status} (${duration}ms)`, statusColor);
-      
+
+      log(
+        `  ${statusIcon} ${name}: ${response.status} (${duration}ms)`,
+        statusColor
+      );
     } catch (error) {
       const duration = Date.now() - startTime;
-      
+
       this.results.push({
         name,
         path,
@@ -106,9 +109,9 @@ class APIHealthChecker {
         success: false,
         status: 0,
         duration,
-        error: error.message
+        error: error.message,
       });
-      
+
       log(`  ❌ ${name}: ${error.message} (${duration}ms)`, 'red');
     }
   }
@@ -117,15 +120,26 @@ class APIHealthChecker {
     log('\n🌐 Testing external API connections...\n');
 
     // Test Spotify API
-    await this.testEndpoint('Spotify Test', '/api/sync/external-apis?action=test', 'POST', 
-      JSON.stringify({ artist: 'Taylor Swift' }));
+    await this.testEndpoint(
+      'Spotify Test',
+      '/api/sync/external-apis?action=test',
+      'POST',
+      JSON.stringify({ artist: 'Taylor Swift' })
+    );
 
     // Test specific sync endpoints
-    await this.testEndpoint('Artist Sync', '/api/artists/sync', 'POST', 
-      JSON.stringify({ artistName: 'Test Artist' }));
+    await this.testEndpoint(
+      'Artist Sync',
+      '/api/artists/sync',
+      'POST',
+      JSON.stringify({ artistName: 'Test Artist' })
+    );
 
     await this.testEndpoint('Trending Shows', '/api/trending/shows?limit=3');
-    await this.testEndpoint('Trending Artists', '/api/trending/artists?limit=3');
+    await this.testEndpoint(
+      'Trending Artists',
+      '/api/trending/artists?limit=3'
+    );
     await this.testEndpoint('Trending Venues', '/api/trending/venues?limit=3');
   }
 
@@ -134,10 +148,10 @@ class APIHealthChecker {
 
     // Test database connection
     await this.testEndpoint('Database Connection', '/api/database');
-    
+
     // Test basic CRUD operations
     await this.testEndpoint('Test Database', '/api/test-db');
-    
+
     // Test logger
     await this.testEndpoint('Logger Test', '/api/test-logger');
   }
@@ -152,9 +166,9 @@ class APIHealthChecker {
         method: method,
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': 'SUB-AGENT-2-Health-Check/1.0'
+          'User-Agent': 'SUB-AGENT-2-Health-Check/1.0',
         },
-        timeout: 30000 // 30 second timeout
+        timeout: 30000, // 30 second timeout
       };
 
       if (body) {
@@ -162,27 +176,27 @@ class APIHealthChecker {
       }
 
       const client = url.protocol === 'https:' ? https : http;
-      
+
       const req = client.request(options, (res) => {
         let data = '';
-        
+
         res.on('data', (chunk) => {
           data += chunk;
         });
-        
+
         res.on('end', () => {
           try {
             const parsedData = data ? JSON.parse(data) : null;
             resolve({
               status: res.statusCode,
               headers: res.headers,
-              data: parsedData
+              data: parsedData,
             });
-          } catch (error) {
+          } catch (_error) {
             resolve({
               status: res.statusCode,
               headers: res.headers,
-              data: data // Return raw data if JSON parsing fails
+              data: data, // Return raw data if JSON parsing fails
             });
           }
         });
@@ -200,24 +214,30 @@ class APIHealthChecker {
       if (body) {
         req.write(body);
       }
-      
+
       req.end();
     });
   }
 
   generateHealthReport() {
     log('\n📊 HEALTH REPORT\n', 'bright');
-    log('=' .repeat(60), 'blue');
+    log('='.repeat(60), 'blue');
 
     const total = this.results.length;
-    const successful = this.results.filter(r => r.success).length;
-    const failed = this.results.filter(r => !r.success).length;
+    const successful = this.results.filter((r) => r.success).length;
+    const failed = this.results.filter((r) => !r.success).length;
     const totalDuration = this.results.reduce((sum, r) => sum + r.duration, 0);
 
-    log(`\n🏥 OVERALL HEALTH:`);
+    log('\n🏥 OVERALL HEALTH:');
     log(`  Total Endpoints: ${total}`);
-    log(`  Successful: ${successful} (${((successful / total) * 100).toFixed(1)}%)`, 'green');
-    log(`  Failed: ${failed} (${((failed / total) * 100).toFixed(1)}%)`, failed > 0 ? 'red' : 'green');
+    log(
+      `  Successful: ${successful} (${((successful / total) * 100).toFixed(1)}%)`,
+      'green'
+    );
+    log(
+      `  Failed: ${failed} (${((failed / total) * 100).toFixed(1)}%)`,
+      failed > 0 ? 'red' : 'green'
+    );
     log(`  Total Duration: ${totalDuration}ms`);
     log(`  Average Response Time: ${(totalDuration / total).toFixed(2)}ms`);
 
@@ -225,7 +245,7 @@ class APIHealthChecker {
     const healthScore = (successful / total) * 100;
     let healthStatus = '';
     let healthColor = '';
-    
+
     if (healthScore >= 90) {
       healthStatus = 'EXCELLENT';
       healthColor = 'green';
@@ -240,26 +260,32 @@ class APIHealthChecker {
       healthColor = 'red';
     }
 
-    log(`\n🎯 HEALTH SCORE: ${healthScore.toFixed(1)}% (${healthStatus})`, healthColor);
+    log(
+      `\n🎯 HEALTH SCORE: ${healthScore.toFixed(1)}% (${healthStatus})`,
+      healthColor
+    );
 
     // Failed endpoints
-    const failedEndpoints = this.results.filter(r => !r.success);
+    const failedEndpoints = this.results.filter((r) => !r.success);
     if (failedEndpoints.length > 0) {
-      log(`\n❌ FAILED ENDPOINTS:`);
-      failedEndpoints.forEach(endpoint => {
-        log(`  - ${endpoint.name}: ${endpoint.error || 'Unknown error'}`, 'red');
+      log('\n❌ FAILED ENDPOINTS:');
+      failedEndpoints.forEach((endpoint) => {
+        log(
+          `  - ${endpoint.name}: ${endpoint.error || 'Unknown error'}`,
+          'red'
+        );
       });
     }
 
     // Performance insights
-    log(`\n⚡ PERFORMANCE INSIGHTS:`);
+    log('\n⚡ PERFORMANCE INSIGHTS:');
     const slowEndpoints = this.results
-      .filter(r => r.success && r.duration > 1000)
+      .filter((r) => r.success && r.duration > 1000)
       .sort((a, b) => b.duration - a.duration);
-    
+
     if (slowEndpoints.length > 0) {
       log('  Slow endpoints (>1s):');
-      slowEndpoints.forEach(endpoint => {
+      slowEndpoints.forEach((endpoint) => {
         log(`    - ${endpoint.name}: ${endpoint.duration}ms`, 'yellow');
       });
     } else {
@@ -267,54 +293,75 @@ class APIHealthChecker {
     }
 
     // API Status by category
-    log(`\n📋 API STATUS BY CATEGORY:`);
-    
+    log('\n📋 API STATUS BY CATEGORY:');
+
     const categories = {
-      'Core APIs': this.results.filter(r => ['Health Check', 'Database Status', 'Trending Data'].includes(r.name)),
-      'External APIs': this.results.filter(r => ['Spotify Test', 'Artist Sync', 'Trending Shows'].includes(r.name)),
-      'Search APIs': this.results.filter(r => ['Artist Search', 'Search API'].includes(r.name)),
-      'Data APIs': this.results.filter(r => ['Shows API', 'Venues API', 'Songs API', 'Setlists API'].includes(r.name)),
-      'User APIs': this.results.filter(r => ['User API', 'Votes API', 'Analytics API'].includes(r.name)),
+      'Core APIs': this.results.filter((r) =>
+        ['Health Check', 'Database Status', 'Trending Data'].includes(r.name)
+      ),
+      'External APIs': this.results.filter((r) =>
+        ['Spotify Test', 'Artist Sync', 'Trending Shows'].includes(r.name)
+      ),
+      'Search APIs': this.results.filter((r) =>
+        ['Artist Search', 'Search API'].includes(r.name)
+      ),
+      'Data APIs': this.results.filter((r) =>
+        ['Shows API', 'Venues API', 'Songs API', 'Setlists API'].includes(
+          r.name
+        )
+      ),
+      'User APIs': this.results.filter((r) =>
+        ['User API', 'Votes API', 'Analytics API'].includes(r.name)
+      ),
     };
 
     Object.entries(categories).forEach(([category, endpoints]) => {
       if (endpoints.length > 0) {
-        const categorySuccess = endpoints.filter(e => e.success).length;
+        const categorySuccess = endpoints.filter((e) => e.success).length;
         const categoryTotal = endpoints.length;
-        const categoryScore = ((categorySuccess / categoryTotal) * 100).toFixed(1);
-        const categoryColor = categorySuccess === categoryTotal ? 'green' : 'yellow';
-        
-        log(`  ${category}: ${categorySuccess}/${categoryTotal} (${categoryScore}%)`, categoryColor);
+        const categoryScore = ((categorySuccess / categoryTotal) * 100).toFixed(
+          1
+        );
+        const categoryColor =
+          categorySuccess === categoryTotal ? 'green' : 'yellow';
+
+        log(
+          `  ${category}: ${categorySuccess}/${categoryTotal} (${categoryScore}%)`,
+          categoryColor
+        );
       }
     });
 
     // Recommendations
-    log(`\n💡 RECOMMENDATIONS:`);
-    
+    log('\n💡 RECOMMENDATIONS:');
+
     if (healthScore < 70) {
-      log('  - Critical: Fix failed endpoints before production deployment', 'red');
+      log(
+        '  - Critical: Fix failed endpoints before production deployment',
+        'red'
+      );
     }
-    
+
     if (slowEndpoints.length > 0) {
       log('  - Optimize slow endpoints for better performance', 'yellow');
     }
-    
-    if (failedEndpoints.some(e => e.name.includes('External'))) {
+
+    if (failedEndpoints.some((e) => e.name.includes('External'))) {
       log('  - Check external API credentials and rate limits', 'yellow');
     }
-    
+
     if (healthScore >= 90) {
       log('  - System is healthy and ready for production! 🎉', 'green');
     }
 
-    log('\n' + '=' .repeat(60), 'blue');
+    log(`\n${'='.repeat(60)}`, 'blue');
   }
 }
 
 // Main execution
 async function runHealthCheck() {
   const checker = new APIHealthChecker();
-  
+
   try {
     await checker.checkHealth();
   } catch (error) {

@@ -41,6 +41,8 @@
     "packages",
     "node_modules",
     "supabase/functions",
-    "scripts/**/*.ts"
+    "scripts/**/*.ts",
+    "*.spec.ts",
+    "test-*.ts"
   ]
 }

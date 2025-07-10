@@ -1,8 +1,8 @@
 'use server';
 
-import { getCurrentUser } from '@/lib/auth';
-import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { getCurrentUser } from '~/lib/auth';
+import { createClient } from '~/lib/supabase/server';
 
 export async function getShowDetails(slug: string) {
   const supabase = await createClient();
@@ -29,10 +29,6 @@ export async function getShowDetails(slug: string) {
     .single();
 
   if (error) {
-    console.warn(
-      'Primary show fetch failed, attempting simplified fetch:',
-      error.message
-    );
     const fallback = await supabase
       .from('shows')
       .select('*')
@@ -40,7 +36,6 @@ export async function getShowDetails(slug: string) {
       .single();
 
     if (fallback.error) {
-      console.error('Fallback show fetch also failed:', fallback.error);
       return null;
     }
 
@@ -80,7 +75,9 @@ export async function createSetlist(
     .select()
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   revalidatePath('/shows/[slug]', 'page');
 
@@ -132,7 +129,9 @@ export async function addSongToSetlist(
     `)
     .single();
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   revalidatePath('/shows/[slug]', 'page');
 
@@ -171,7 +170,9 @@ export async function removeSongFromSetlist(setlistSongId: string) {
     .delete()
     .eq('id', setlistSongId);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   // Reorder remaining songs
   await supabase.rpc('reorder_setlist_after_delete', {
@@ -211,7 +212,9 @@ export async function reorderSetlistSongs(
     updates: updates,
   });
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   revalidatePath('/shows/[slug]', 'page');
 
@@ -237,7 +240,9 @@ export async function searchSongs(query: string, artistId?: string) {
 
   const { data, error } = await queryBuilder;
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   return data || [];
 }
@@ -264,25 +269,23 @@ export async function voteSong(setlistSongId: string, voteType: 'up' | 'down') {
       await supabase.from('votes').delete().eq('id', existingVote.id);
 
       return { removed: true };
-    } else {
-      // Update vote type
-      await supabase
-        .from('votes')
-        .update({ vote_type: voteType })
-        .eq('id', existingVote.id);
-
-      return { updated: true };
     }
-  } else {
-    // Create new vote
-    await supabase.from('votes').insert({
-      setlist_song_id: setlistSongId,
-      user_id: user.id,
-      vote_type: voteType,
-    });
+    // Update vote type
+    await supabase
+      .from('votes')
+      .update({ vote_type: voteType })
+      .eq('id', existingVote.id);
 
-    return { created: true };
+    return { updated: true };
   }
+  // Create new vote
+  await supabase.from('votes').insert({
+    setlist_song_id: setlistSongId,
+    user_id: user.id,
+    vote_type: voteType,
+  });
+
+  return { created: true };
 }
 
 export async function lockSetlist(setlistId: string) {
@@ -310,7 +313,9 @@ export async function lockSetlist(setlistId: string) {
     .update({ is_locked: true })
     .eq('id', setlistId);
 
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 
   revalidatePath('/shows/[slug]', 'page');
 
@@ -340,22 +345,25 @@ export async function toggleAttendance(showId: string) {
       .delete()
       .eq('id', existing.id);
 
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
 
     revalidatePath('/shows/[slug]', 'page');
 
     return { attending: false };
-  } else {
-    // Add attendance
-    const { error } = await supabase.from('show_attendance').insert({
-      show_id: showId,
-      user_id: user.id,
-    });
-
-    if (error) throw error;
-
-    revalidatePath('/shows/[slug]', 'page');
-
-    return { attending: true };
   }
+  // Add attendance
+  const { error } = await supabase.from('show_attendance').insert({
+    show_id: showId,
+    user_id: user.id,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  revalidatePath('/shows/[slug]', 'page');
+
+  return { attending: true };
 }

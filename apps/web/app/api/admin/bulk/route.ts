@@ -1,6 +1,6 @@
-import { createClient } from '@/lib/api/supabase/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createClient } from '~/lib/api/supabase/server';
 
 // Force dynamic rendering for API routes
 export const dynamic = 'force-dynamic';
@@ -65,18 +65,6 @@ interface UserData {
   role: 'admin' | 'moderator' | 'user';
 }
 
-interface VenueData {
-  id: string;
-  name: string;
-  city: string;
-  state: string;
-}
-
-interface ArtistData {
-  id: string;
-  name: string;
-}
-
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -114,7 +102,7 @@ export async function POST(request: NextRequest) {
       case 'approve_content':
         return await approveContent(supabase, items, user.id);
 
-      case 'reject_content':
+      case 'reject_content': {
         if (!options?.reason) {
           return NextResponse.json(
             { error: 'Reason is required for rejection' },
@@ -122,6 +110,7 @@ export async function POST(request: NextRequest) {
           );
         }
         return await rejectContent(supabase, items, options, user.id);
+      }
 
       case 'ban_users':
         return await banUsers(supabase, items, options || {}, user.id);
@@ -129,7 +118,7 @@ export async function POST(request: NextRequest) {
       case 'verify_venues':
         return await verifyVenues(supabase, items, user.id);
 
-      case 'update_show_status':
+      case 'update_show_status': {
         if (!options?.status) {
           return NextResponse.json(
             { error: 'Status is required for update' },
@@ -137,6 +126,7 @@ export async function POST(request: NextRequest) {
           );
         }
         return await updateShowStatus(supabase, items, options, user.id);
+      }
 
       case 'delete_content':
         return await deleteContent(supabase, items, options || {}, user.id);
@@ -145,7 +135,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
   } catch (error) {
-    console.error('Bulk admin operation error:', error);
     return NextResponse.json(
       { error: 'Operation failed', details: (error as Error).message },
       { status: 500 }
@@ -173,7 +162,9 @@ async function approveContent(
         })
         .eq('id', item.id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Log moderation action
       await logModerationAction(supabase, {
@@ -223,7 +214,9 @@ async function rejectContent(
         })
         .eq('id', item.id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Log moderation action
       await logModerationAction(supabase, {
@@ -280,7 +273,9 @@ async function banUsers(
         expires_at: banExpiry,
       });
 
-      if (banError) throw banError;
+      if (banError) {
+        throw banError;
+      }
 
       // Update user warning count
       const { error: rpcError } = await supabase.rpc(
@@ -290,7 +285,9 @@ async function banUsers(
         }
       );
 
-      if (rpcError) throw rpcError;
+      if (rpcError) {
+        throw rpcError;
+      }
 
       // Log moderation action
       await logModerationAction(supabase, {
@@ -336,7 +333,9 @@ async function verifyVenues(
         })
         .eq('id', item.id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Log moderation action
       await logModerationAction(supabase, {
@@ -387,7 +386,9 @@ async function updateShowStatus(
         })
         .eq('id', item.id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Log moderation action
       await logModerationAction(supabase, {
@@ -434,7 +435,9 @@ async function deleteContent(
           .from(tableName)
           .delete()
           .eq('id', item.id);
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
       } else {
         // Soft delete by updating deleted_at timestamp
         const { error } = await supabase
@@ -444,7 +447,9 @@ async function deleteContent(
             deleted_by: userId,
           })
           .eq('id', item.id);
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
       }
 
       // Log moderation action
@@ -506,6 +511,5 @@ async function logModerationAction(
   });
 
   if (error) {
-    console.error('Failed to log moderation action:', error);
   }
 }

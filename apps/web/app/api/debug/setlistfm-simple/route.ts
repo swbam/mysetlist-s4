@@ -5,8 +5,6 @@ export async function GET(request: NextRequest) {
   const query = searchParams.get('q') || 'Taylor Swift';
 
   try {
-    console.log(`🔍 Testing Setlist.fm API with query: "${query}"`);
-
     // Check if API key is configured
     const apiKey = process.env['SETLISTFM_API_KEY'];
     if (!apiKey) {
@@ -18,11 +16,6 @@ export async function GET(request: NextRequest) {
         { status: 500 }
       );
     }
-
-    console.log(`✅ API Key found: ${apiKey.substring(0, 8)}...`);
-
-    // Test artist search directly
-    console.log('🔍 Testing artist search...');
     const artistUrl = `https://api.setlist.fm/rest/1.0/search/artists?artistName=${encodeURIComponent(query)}`;
     const artistResponse = await fetch(artistUrl, {
       headers: {
@@ -40,10 +33,6 @@ export async function GET(request: NextRequest) {
     }
 
     const artistData = await artistResponse.json();
-    console.log('✅ Artist search successful!');
-
-    // Test setlist search
-    console.log('🔍 Testing setlist search...');
     const setlistUrl = `https://api.setlist.fm/rest/1.0/search/setlists?artistName=${encodeURIComponent(query)}&p=1`;
     const setlistResponse = await fetch(setlistUrl, {
       headers: {
@@ -61,7 +50,6 @@ export async function GET(request: NextRequest) {
     }
 
     const setlistData = await setlistResponse.json();
-    console.log('✅ Setlist search successful!');
 
     return NextResponse.json({
       success: true,
@@ -105,8 +93,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Setlist.fm test failed:', error);
-
     return NextResponse.json(
       {
         error: 'Setlist.fm API test failed',

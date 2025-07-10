@@ -7,7 +7,7 @@ type RouteParams = {
   params: Promise<{ slug: string }>;
 };
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { slug } = await params;
 
@@ -37,11 +37,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           total: topTracks.tracks.length,
           source: 'spotify',
         });
-      } catch (spotifyError) {
-        console.warn(
-          'Spotify API error, falling back to mock data:',
-          spotifyError
-        );
+      } catch (_spotifyError) {
         // Fall through to mock data
       }
     }
@@ -175,8 +171,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       total: mockTracks.length,
       source: 'mock',
     });
-  } catch (error) {
-    console.error('Error fetching top tracks:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch top tracks' },
       { status: 500 }

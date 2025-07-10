@@ -34,11 +34,15 @@ const interactionTests: InteractionTest[] = [
       try {
         // Test search API
         const searchRes = await fetch('/api/search/suggestions?q=test');
-        if (!searchRes.ok) return false;
+        if (!searchRes.ok) {
+          return false;
+        }
 
         // Test artist page data
         const artistRes = await fetch('/api/artists/test-artist');
-        if (!artistRes.ok) return false;
+        if (!artistRes.ok) {
+          return false;
+        }
 
         return true;
       } catch {
@@ -278,8 +282,7 @@ export function InteractionChecklist() {
       try {
         const result = await test.test();
         setResults((prev) => ({ ...prev, [test.id]: result }));
-      } catch (error) {
-        console.error(`Test ${test.id} failed:`, error);
+      } catch (_error) {
         setResults((prev) => ({ ...prev, [test.id]: false }));
       }
       // Small delay between tests
@@ -301,9 +304,15 @@ export function InteractionChecklist() {
   };
 
   const getTestStatus = (testId: string) => {
-    if (currentTest === testId) return 'testing';
-    if (results[testId] === true) return 'pass';
-    if (results[testId] === false) return 'fail';
+    if (currentTest === testId) {
+      return 'testing';
+    }
+    if (results[testId] === true) {
+      return 'pass';
+    }
+    if (results[testId] === false) {
+      return 'fail';
+    }
     return 'pending';
   };
 

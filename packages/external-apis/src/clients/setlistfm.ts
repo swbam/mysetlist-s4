@@ -69,7 +69,7 @@ export class SetlistFmClient extends BaseAPIClient {
   }
 
   protected getAuthHeaders(): Record<string, string> {
-    const apiKey = process.env['SETLISTFM_API_KEY'];
+    const apiKey = process.env.SETLISTFM_API_KEY;
 
     if (!apiKey) {
       throw new Error('Setlist.fm API key not configured');
@@ -121,7 +121,6 @@ export class SetlistFmClient extends BaseAPIClient {
       );
     } catch (error: any) {
       if (error.status === 404) {
-        console.warn(`Setlist not found: ${setlistId}`);
         return null;
       }
       throw error;
@@ -146,7 +145,6 @@ export class SetlistFmClient extends BaseAPIClient {
       );
     } catch (error: any) {
       if (error.status === 404) {
-        console.warn(`Artist not found: ${artistMbid}`);
         return {
           setlist: [],
           total: 0,

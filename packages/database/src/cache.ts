@@ -104,8 +104,7 @@ export async function withCache<T>(
     const cached = cache.get(cacheKey);
     if (cached !== undefined) {
       // Track cache hit for monitoring
-      if (process.env['NODE_ENV'] === 'development') {
-        console.log(`Cache hit: ${queryType}`);
+      if (process.env.NODE_ENV === 'development') {
       }
       return cached;
     }
@@ -123,8 +122,7 @@ export async function withCache<T>(
     }
 
     // Track cache miss for monitoring
-    if (process.env['NODE_ENV'] === 'development') {
-      console.log(`Cache miss: ${queryType}`);
+    if (process.env.NODE_ENV === 'development') {
     }
 
     return result;
@@ -132,10 +130,6 @@ export async function withCache<T>(
     // On error, try to return stale data if available
     const staleData = cache.get(cacheKey, { allowStale: true });
     if (staleData !== undefined) {
-      console.error(
-        `Query error, returning stale data for ${queryType}:`,
-        error
-      );
       return staleData;
     }
     throw error;

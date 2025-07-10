@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/api/supabase/server';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createClient } from '~/lib/api/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { action, userId, reason, newRole, duration } = body;
+    const { action, userId, reason } = body;
 
     if (!action || !userId) {
       return NextResponse.json(
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const logDetails: any = { target_user_id: userId };
 
     switch (action) {
-      case 'ban':
+      case 'ban': {
         // Ban user
         result = await supabase
           .from('users')
@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
 
         logDetails.reason = reason;
         break;
+      }
 
       case 'unban':
         // Unban user
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
           .eq('id', userId);
         break;
 
-      case 'warn':
+      case 'warn': {
         // Issue warning to user
         const { data: currentUser } = await supabase
           .from('users')
@@ -91,8 +92,9 @@ export async function POST(request: NextRequest) {
         logDetails.warning_count = newWarningCount;
         logDetails.reason = reason;
         break;
+      }
 
-      case 'promote_moderator':
+      case 'promote_moderator': {
         // Promote user to moderator
         result = await supabase
           .from('users')
@@ -104,8 +106,9 @@ export async function POST(request: NextRequest) {
         logDetails.old_role = 'user';
         logDetails.new_role = 'moderator';
         break;
+      }
 
-      case 'promote_admin':
+      case 'promote_admin': {
         // Promote user to admin (only super admins can do this)
         result = await supabase
           .from('users')
@@ -116,8 +119,9 @@ export async function POST(request: NextRequest) {
         logAction = 'role_change';
         logDetails.new_role = 'admin';
         break;
+      }
 
-      case 'demote_user':
+      case 'demote_user': {
         // Demote moderator/admin to regular user
         const { data: targetUser } = await supabase
           .from('users')
@@ -134,6 +138,7 @@ export async function POST(request: NextRequest) {
         logDetails.old_role = targetUser?.role;
         logDetails.new_role = 'user';
         break;
+      }
 
       case 'verify_email':
         // Manually verify user's email
@@ -197,7 +202,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (result?.error) {
-      console.error(`Error performing ${action}:`, result.error);
       return NextResponse.json(
         { error: `Failed to ${action} user` },
         { status: 500 }
@@ -227,8 +231,7 @@ export async function POST(request: NextRequest) {
       success: true,
       message: `User ${action} completed successfully`,
     });
-  } catch (error) {
-    console.error('Error in user action API:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -10,8 +10,10 @@
     "moduleResolution": "bundler",
     "module": "ESNext",
     "moduleDetection": "force",
+    "experimentalDecorators": false,
+    "emitDecoratorMetadata": false,
     "paths": {
-      "@/*": ["./*"],
+      "~/*": ["./*"],
       "@repo/*": ["../../packages/*"]
     }
   },
@@ -22,7 +24,5 @@
     "**/*.tsx",
     ".next/types/**/*.ts"
   ],
-  "exclude": [
-    "__tests__"
-  ]
+  "exclude": ["__tests__"]
 }

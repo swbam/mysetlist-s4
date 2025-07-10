@@ -1,4 +1,4 @@
-import { createServiceClient } from '@/lib/supabase/server';
+import { createServiceClient } from '~/lib/supabase/server';
 
 export interface TrendingItem {
   id: string;
@@ -89,7 +89,6 @@ export async function getTrendingShows(
       .limit(config.limit);
 
     if (error || !shows) {
-      console.warn('No shows found for trending:', error);
       return [];
     }
 
@@ -117,8 +116,7 @@ export async function getTrendingShows(
     });
 
     return trendingShows;
-  } catch (error) {
-    console.error('Error fetching trending shows:', error);
+  } catch (_error) {
     return [];
   }
 }
@@ -149,7 +147,6 @@ export async function getTrendingArtists(
       .limit(config.limit);
 
     if (error || !artists) {
-      console.warn('No artists found for trending:', error);
       return [];
     }
 
@@ -173,8 +170,7 @@ export async function getTrendingArtists(
     });
 
     return trendingArtists;
-  } catch (error) {
-    console.error('Error fetching trending artists:', error);
+  } catch (_error) {
     return [];
   }
 }

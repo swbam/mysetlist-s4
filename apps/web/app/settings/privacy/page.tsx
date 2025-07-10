@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import { createClient } from '~/lib/supabase/server';
 import { PrivacySettings } from './components/privacy-settings';
 
 // Force dynamic rendering due to user-specific data fetching

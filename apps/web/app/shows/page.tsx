@@ -1,5 +1,3 @@
-import { ErrorBoundaryWrapper } from '@/components/error-boundary-wrapper';
-import { ShowListSkeleton } from '@/components/loading-states';
 import {
   Tabs,
   TabsContent,
@@ -10,6 +8,8 @@ import { createMetadata } from '@repo/seo/metadata';
 import { List } from 'lucide-react';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { ErrorBoundaryWrapper } from '~/components/error-boundary-wrapper';
+import { ShowListSkeleton } from '~/components/loading-states';
 import { ShowsFilter } from './components/shows-filter';
 import { ShowsList } from './components/shows-list';
 

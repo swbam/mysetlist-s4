@@ -76,7 +76,7 @@ export function ShareButtons({
       setCopied(true);
       toast.success('Link copied to clipboard');
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to copy link');
     }
   };
@@ -89,7 +89,7 @@ export function ShareButtons({
           text: description,
           url: fullUrl,
         });
-      } catch (error) {
+      } catch (_error) {
         // User cancelled or error occurred
       }
     }
@@ -99,7 +99,7 @@ export function ShareButtons({
     try {
       await navigator.clipboard.writeText(embedCode);
       toast.success('Embed code copied to clipboard');
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to copy embed code');
     }
   };

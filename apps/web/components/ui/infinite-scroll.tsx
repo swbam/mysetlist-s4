@@ -1,8 +1,8 @@
 'use client';
 
-import { LoadingSpinner } from '@/components/loading-states';
 import { cn } from '@repo/design-system/lib/utils';
 import React, { useEffect, useRef, useCallback } from 'react';
+import { LoadingSpinner } from '~/components/loading-states';
 
 interface InfiniteScrollProps {
   children: React.ReactNode;
@@ -42,7 +42,9 @@ export function InfiniteScroll({
 
   useEffect(() => {
     const loader = loaderRef.current;
-    if (!loader) return;
+    if (!loader) {
+      return;
+    }
 
     // Create intersection observer
     observerRef.current = new IntersectionObserver(handleIntersection, {
@@ -107,7 +109,9 @@ export function useInfiniteScroll<T>({
   const [error, setError] = React.useState<string | null>(null);
 
   const loadMoreData = useCallback(async () => {
-    if (isLoading || !hasMore) return;
+    if (isLoading || !hasMore) {
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -128,7 +132,6 @@ export function useInfiniteScroll<T>({
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load more data');
-      console.error('Failed to load more data:', err);
     } finally {
       setIsLoading(false);
     }

@@ -35,8 +35,6 @@ serve(async (req) => {
       artistName,
     } = (await req.json()) as SyncRequest;
 
-    console.log(`Starting ${type} sync...`);
-
     // Get Spotify access token
     const spotifyToken = await getSpotifyToken(
       spotifyClientId,
@@ -87,7 +85,6 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Sync error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -151,7 +148,9 @@ async function syncDailyShows(
           { onConflict: 'slug' }
         );
 
-        if (!venueError) venueCount++;
+        if (!venueError) {
+          venueCount++;
+        }
       }
 
       // Process artist
@@ -178,7 +177,9 @@ async function syncDailyShows(
           { onConflict: 'slug' }
         );
 
-        if (!artistError) artistCount++;
+        if (!artistError) {
+          artistCount++;
+        }
       }
 
       // Process show
@@ -202,7 +203,9 @@ async function syncDailyShows(
         { onConflict: 'slug' }
       );
 
-      if (!showError) showCount++;
+      if (!showError) {
+        showCount++;
+      }
     }
   }
 
@@ -215,8 +218,8 @@ async function syncWeeklyShows(
   spotifyToken: string
 ) {
   // Similar to daily but with 30 days range
-  const startDate = new Date().toISOString().split('T')[0];
-  const endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  const _startDate = new Date().toISOString().split('T')[0];
+  const _endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     .toISOString()
     .split('T')[0];
 
@@ -232,12 +235,18 @@ async function syncLocationShows(
 ) {
   let url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${ticketmasterKey}&classificationName=Music&size=200`;
 
-  if (location.city) url += `&city=${encodeURIComponent(location.city)}`;
-  if (location.state) url += `&stateCode=${location.state}`;
-  if (location.country) url += `&countryCode=${location.country}`;
+  if (location.city) {
+    url += `&city=${encodeURIComponent(location.city)}`;
+  }
+  if (location.state) {
+    url += `&stateCode=${location.state}`;
+  }
+  if (location.country) {
+    url += `&countryCode=${location.country}`;
+  }
 
   const response = await fetch(url);
-  const data = await response.json();
+  const _data = await response.json();
 
   // Process events similar to daily sync
   return syncDailyShows(supabase, ticketmasterKey, spotifyToken);
@@ -252,7 +261,7 @@ async function syncArtistShows(
   const url = `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${ticketmasterKey}&keyword=${encodeURIComponent(artistName)}&classificationName=Music&size=200`;
 
   const response = await fetch(url);
-  const data = await response.json();
+  const _data = await response.json();
 
   // Process events similar to daily sync
   return syncDailyShows(supabase, ticketmasterKey, spotifyToken);
@@ -274,7 +283,9 @@ async function getArtistId(
   supabase: any,
   name: string
 ): Promise<string | null> {
-  if (!name) return null;
+  if (!name) {
+    return null;
+  }
 
   const { data } = await supabase
     .from('artists')
@@ -286,7 +297,9 @@ async function getArtistId(
 }
 
 async function getVenueId(supabase: any, name: string): Promise<string | null> {
-  if (!name) return null;
+  if (!name) {
+    return null;
+  }
 
   const { data } = await supabase
     .from('venues')

@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 
 interface TestResult {
   name: string;
@@ -42,7 +42,6 @@ class TestReporter {
   // Parse Jest results
   parseJestResults(jestResultsPath: string) {
     if (!existsSync(jestResultsPath)) {
-      console.warn('Jest results not found');
       return;
     }
 
@@ -68,9 +67,13 @@ class TestReporter {
 
         testSuite.tests.push(result);
 
-        if (result.status === 'passed') testSuite.passed++;
-        else if (result.status === 'failed') testSuite.failed++;
-        else testSuite.skipped++;
+        if (result.status === 'passed') {
+          testSuite.passed++;
+        } else if (result.status === 'failed') {
+          testSuite.failed++;
+        } else {
+          testSuite.skipped++;
+        }
       });
 
       this.report.suites.push(testSuite);
@@ -80,7 +83,6 @@ class TestReporter {
   // Parse Cypress results
   parseCypressResults(cypressResultsPath: string) {
     if (!existsSync(cypressResultsPath)) {
-      console.warn('Cypress results not found');
       return;
     }
 
@@ -100,7 +102,7 @@ class TestReporter {
         };
 
         const result: TestResult = {
-          name: spec.title[spec.title.length - 1],
+          name: spec.title.at(-1),
           status: spec.state as 'passed' | 'failed' | 'skipped',
           duration: spec.duration,
           error: spec.err?.message,
@@ -108,9 +110,13 @@ class TestReporter {
 
         testSuite.tests.push(result);
 
-        if (result.status === 'passed') testSuite.passed++;
-        else if (result.status === 'failed') testSuite.failed++;
-        else testSuite.skipped++;
+        if (result.status === 'passed') {
+          testSuite.passed++;
+        } else if (result.status === 'failed') {
+          testSuite.failed++;
+        } else {
+          testSuite.skipped++;
+        }
 
         this.report.suites.push(testSuite);
       });
@@ -140,13 +146,13 @@ class TestReporter {
     const passRate =
       totalTests > 0 ? ((totalPassed / totalTests) * 100).toFixed(2) : '0';
 
-    let markdown = `# Test Report\n\n`;
+    let markdown = '# Test Report\n\n';
     markdown += `**Generated:** ${new Date(this.report.timestamp).toLocaleString()}\n\n`;
 
     // Summary
-    markdown += `## Summary\n\n`;
-    markdown += `| Metric | Value |\n`;
-    markdown += `|--------|-------|\n`;
+    markdown += '## Summary\n\n';
+    markdown += '| Metric | Value |\n';
+    markdown += '|--------|-------|\n';
     markdown += `| Total Tests | ${totalTests} |\n`;
     markdown += `| Passed | ✅ ${totalPassed} |\n`;
     markdown += `| Failed | ❌ ${totalFailed} |\n`;
@@ -155,7 +161,7 @@ class TestReporter {
     markdown += `| Duration | ${(totalDuration / 1000).toFixed(2)}s |\n\n`;
 
     // Test Suites
-    markdown += `## Test Suites\n\n`;
+    markdown += '## Test Suites\n\n';
 
     this.report.suites.forEach((suite) => {
       const suitePassRate =
@@ -167,7 +173,7 @@ class TestReporter {
       markdown += `**Pass Rate:** ${suitePassRate}% | **Duration:** ${(suite.duration / 1000).toFixed(2)}s\n\n`;
 
       if (suite.failed > 0) {
-        markdown += `#### Failed Tests:\n`;
+        markdown += '#### Failed Tests:\n';
         suite.tests
           .filter((test) => test.status === 'failed')
           .forEach((test) => {
@@ -196,7 +202,7 @@ class TestReporter {
     if (totalFailed > 0) {
       summary += `❌ ${totalFailed} tests failed\n`;
     } else {
-      summary += `✅ All tests passed!\n`;
+      summary += '✅ All tests passed!\n';
     }
 
     summary += `📊 ${totalPassed}/${totalTests} tests passed (${totalSkipped} skipped)\n`;
@@ -216,7 +222,7 @@ class TestReporter {
     // Generate reports
     const markdownReport = this.generateMarkdownReport();
     const jsonReport = this.generateJSONReport();
-    const githubSummary = this.generateGitHubSummary();
+    const _githubSummary = this.generateGitHubSummary();
 
     // Write reports
     writeFileSync('test-report.md', markdownReport);
@@ -224,14 +230,10 @@ class TestReporter {
 
     // Output for GitHub Actions
     if (process.env.GITHUB_ACTIONS) {
-      console.log(`::notice::${githubSummary}`);
-
       if (this.report.totalFailed > 0) {
-        console.log(`::error::${this.report.totalFailed} tests failed`);
         process.exit(1);
       }
     } else {
-      console.log(markdownReport);
     }
   }
 }

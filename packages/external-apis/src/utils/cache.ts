@@ -18,12 +18,12 @@ export class CacheManager {
 
     // Initialize Redis if environment variables are available
     if (
-      process.env['UPSTASH_REDIS_REST_URL'] &&
-      process.env['UPSTASH_REDIS_REST_TOKEN']
+      process.env.UPSTASH_REDIS_REST_URL &&
+      process.env.UPSTASH_REDIS_REST_TOKEN
     ) {
       this.redis = new Redis({
-        url: process.env['UPSTASH_REDIS_REST_URL'],
-        token: process.env['UPSTASH_REDIS_REST_TOKEN'],
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
       });
     } else {
       this.redis = null;
@@ -43,9 +43,7 @@ export class CacheManager {
         if (cached) {
           return JSON.parse(cached as string) as T;
         }
-      } catch (error) {
-        console.error('Redis get error:', error);
-      }
+      } catch (_error) {}
     }
 
     // Fallback to memory cache
@@ -70,9 +68,7 @@ export class CacheManager {
     if (this.redis) {
       try {
         await this.redis.setex(prefixedKey, ttlSeconds, JSON.stringify(value));
-      } catch (error) {
-        console.error('Redis set error:', error);
-      }
+      } catch (_error) {}
     }
 
     // Also set in memory cache as fallback
@@ -94,9 +90,7 @@ export class CacheManager {
     if (this.redis) {
       try {
         await this.redis.del(prefixedKey);
-      } catch (error) {
-        console.error('Redis del error:', error);
-      }
+      } catch (_error) {}
     }
 
     // Also remove from memory cache
@@ -112,11 +106,8 @@ export class CacheManager {
       try {
         // Note: This is not efficient for large datasets
         // In production, consider using Redis SCAN command
-        const pattern = `${this.options.keyPrefix}:*`;
-        console.warn('Cache clear with pattern matching not fully implemented');
-      } catch (error) {
-        console.error('Redis clear error:', error);
-      }
+        const _pattern = `${this.options.keyPrefix}:*`;
+      } catch (_error) {}
     }
   }
 

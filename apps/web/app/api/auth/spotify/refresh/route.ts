@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { createClient } from '~/lib/supabase/server';
 
 export async function POST() {
   try {
@@ -19,8 +19,7 @@ export async function POST() {
       success: true,
       provider_token: data.session.provider_token,
     });
-  } catch (error) {
-    console.error('Error refreshing Spotify token:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

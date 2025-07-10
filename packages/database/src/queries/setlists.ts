@@ -41,7 +41,7 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
   if (userId) {
     const setlistSongIds = setlistData
       .filter((row) => row.setlistSong)
-      .map((row) => row.setlistSong!.id);
+      .map((row) => row.setlistSong?.id);
 
     if (setlistSongIds.length > 0) {
       const voteData = await db
@@ -68,23 +68,23 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
   const songs = setlistData
     .filter((row) => row.setlistSong && row.song)
     .map((row) => ({
-      id: row.setlistSong!.id,
-      songId: row.song!.id,
-      position: row.setlistSong!.position,
+      id: row.setlistSong?.id,
+      songId: row.song?.id,
+      position: row.setlistSong?.position,
       song: {
-        id: row.song!.id,
-        title: row.song!.title,
-        artist: row.song!.artist,
-        durationMs: row.song!.durationMs,
-        albumArtUrl: row.song!.albumArtUrl,
+        id: row.song?.id,
+        title: row.song?.title,
+        artist: row.song?.artist,
+        durationMs: row.song?.durationMs,
+        albumArtUrl: row.song?.albumArtUrl,
       },
-      notes: row.setlistSong!.notes,
-      isPlayed: row.setlistSong!.isPlayed,
-      playTime: row.setlistSong!.playTime,
-      upvotes: row.setlistSong!.upvotes,
-      downvotes: row.setlistSong!.downvotes,
-      netVotes: row.setlistSong!.netVotes,
-      userVote: userVotes[row.setlistSong!.id] || null,
+      notes: row.setlistSong?.notes,
+      isPlayed: row.setlistSong?.isPlayed,
+      playTime: row.setlistSong?.playTime,
+      upvotes: row.setlistSong?.upvotes,
+      downvotes: row.setlistSong?.downvotes,
+      netVotes: row.setlistSong?.netVotes,
+      userVote: userVotes[row.setlistSong?.id] || null,
     }));
 
   return {

@@ -30,7 +30,9 @@ export function useOptimisticVoting({
 
   // Fetch initial vote state
   useEffect(() => {
-    if (!setlistSongId) return;
+    if (!setlistSongId) {
+      return;
+    }
 
     const fetchVotes = async () => {
       try {
@@ -45,9 +47,7 @@ export function useOptimisticVoting({
             userVote: data.userVote || null,
           });
         }
-      } catch (error) {
-        console.error('Failed to fetch votes:', error);
-      }
+      } catch (_error) {}
     };
 
     fetchVotes();
@@ -60,7 +60,9 @@ export function useOptimisticVoting({
         return;
       }
 
-      if (isVoting) return;
+      if (isVoting) {
+        return;
+      }
 
       setIsVoting(true);
       setIsOptimistic(true);
@@ -164,9 +166,7 @@ export function useOptimisticVoting({
             userVote: data.userVote || null,
           });
         }
-      } catch (error) {
-        console.error('Failed to refresh votes:', error);
-      }
+      } catch (_error) {}
     },
   };
 }

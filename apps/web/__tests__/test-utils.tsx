@@ -25,7 +25,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 // Mock Supabase client
-vi.mock('@/lib/supabase/client', () => ({
+vi.mock('~/lib/supabase/client', () => ({
   createClient: () => ({
     auth: {
       getSession: vi
@@ -167,6 +167,29 @@ export const createTestSong = (overrides = {}) => ({
   duration: 180000,
   ...overrides,
 });
+
+// Mock Supabase for vote button tests
+export const mockSupabase = () => {
+  global.fetch = vi.fn();
+  return {
+    auth: {
+      getUser: vi.fn().mockResolvedValue({
+        data: { user: { id: 'test-user' } },
+        error: null,
+      }),
+    },
+    from: vi.fn(() => ({
+      select: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockReturnThis(),
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn(),
+      limit: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+    })),
+  };
+};
 
 // Re-export everything
 export * from '@testing-library/react';

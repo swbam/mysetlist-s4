@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/api/supabase/server';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createClient } from '~/lib/api/supabase/server';
 
 interface HealthCheck {
   service: string;
@@ -153,7 +153,7 @@ async function getSystemMetrics() {
   };
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const supabase = await createClient();
 
@@ -224,9 +224,7 @@ export async function GET(request: NextRequest) {
           }
         );
       }
-    } catch (error) {
-      console.error('Failed to store health check results:', error);
-    }
+    } catch (_error) {}
 
     const healthReport = {
       overall: {
@@ -268,8 +266,7 @@ export async function GET(request: NextRequest) {
     };
 
     return NextResponse.json(healthReport);
-  } catch (error) {
-    console.error('Error in system health check:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to perform health check' },
       { status: 500 }

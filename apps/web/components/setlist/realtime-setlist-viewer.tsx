@@ -1,6 +1,5 @@
 'use client';
 
-import { useAuth } from '@/app/providers/auth-provider';
 import {
   Alert,
   AlertDescription,
@@ -16,6 +15,7 @@ import { cn } from '@repo/design-system/lib/utils';
 import { Music2, TrendingUp, Wifi, WifiOff } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
+import { useAuth } from '~/app/providers/auth-provider';
 import { VoteButton } from '../voting/vote-button';
 import { VoteSummary } from '../voting/vote-summary';
 
@@ -99,8 +99,7 @@ export function RealtimeSetlistViewer({
       );
 
       setTotalVotes(votes);
-    } catch (error) {
-      console.error('Failed to fetch setlists:', error);
+    } catch (_error) {
       setIsConnected(false);
     }
   };
@@ -109,63 +108,68 @@ export function RealtimeSetlistViewer({
     setlistSongId: string,
     voteType: 'up' | 'down' | null
   ) => {
-    try {
-      const response = await fetch('/api/votes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          setlistSongId,
-          voteType,
-        }),
-      });
+    const response = await fetch('/api/votes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        setlistSongId,
+        voteType,
+      }),
+    });
 
-      if (!response.ok) {
-        throw new Error('Failed to vote');
-      }
-
-      // Optimistically update local state
-      setSetlists((currentSetlists) =>
-        currentSetlists.map((setlist) => ({
-          ...setlist,
-          songs: setlist.songs?.map((song: any) => {
-            if (song.id === setlistSongId) {
-              const currentVote = song.userVote;
-              let upvotes = song.upvotes;
-              let downvotes = song.downvotes;
-
-              // Remove previous vote
-              if (currentVote === 'up') upvotes--;
-              if (currentVote === 'down') downvotes--;
-
-              // Add new vote
-              if (voteType === 'up') upvotes++;
-              if (voteType === 'down') downvotes++;
-
-              return {
-                ...song,
-                upvotes,
-                downvotes,
-                netVotes: upvotes - downvotes,
-                userVote: voteType,
-              };
-            }
-            return song;
-          }),
-        }))
-      );
-
-      // Refresh data to ensure consistency
-      setTimeout(fetchSetlists, 1000);
-    } catch (error) {
-      console.error('Vote error:', error);
-      throw error;
+    if (!response.ok) {
+      throw new Error('Failed to vote');
     }
+
+    // Optimistically update local state
+    setSetlists((currentSetlists) =>
+      currentSetlists.map((setlist) => ({
+        ...setlist,
+        songs: setlist.songs?.map((song: any) => {
+          if (song.id === setlistSongId) {
+            const currentVote = song.userVote;
+            let upvotes = song.upvotes;
+            let downvotes = song.downvotes;
+
+            // Remove previous vote
+            if (currentVote === 'up') {
+              upvotes--;
+            }
+            if (currentVote === 'down') {
+              downvotes--;
+            }
+
+            // Add new vote
+            if (voteType === 'up') {
+              upvotes++;
+            }
+            if (voteType === 'down') {
+              downvotes++;
+            }
+
+            return {
+              ...song,
+              upvotes,
+              downvotes,
+              netVotes: upvotes - downvotes,
+              userVote: voteType,
+            };
+          }
+          return song;
+        }),
+      }))
+    );
+
+    // Refresh data to ensure consistency
+    setTimeout(fetchSetlists, 1000);
   };
 
   const formatDuration = (ms?: number) => {
-    if (!ms) return '';
+    if (!ms) {
+      return '';
+    }
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -176,8 +180,12 @@ export function RealtimeSetlistViewer({
     const now = new Date();
     const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (diff < 60) return `${diff}s ago`;
-    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    if (diff < 60) {
+      return `${diff}s ago`;
+    }
+    if (diff < 3600) {
+      return `${Math.floor(diff / 60)}m ago`;
+    }
     return `${Math.floor(diff / 3600)}h ago`;
   };
 

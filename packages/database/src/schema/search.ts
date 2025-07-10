@@ -10,8 +10,8 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
-import { users } from './users';
 import { artists } from './artists';
+import { users } from './users';
 
 // Search analytics table
 export const searchAnalytics = pgTable('search_analytics', {

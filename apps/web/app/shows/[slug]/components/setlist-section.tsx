@@ -1,7 +1,5 @@
 'use client';
 
-import { LiveIndicator } from '@/components/live-indicator';
-import { RealtimeSetlistViewer } from '@/components/setlist/realtime-setlist-viewer';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
   Tabs,
@@ -12,6 +10,8 @@ import {
 import { Music, Plus, Vote } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { LiveIndicator } from '~/components/live-indicator';
+import { RealtimeSetlistViewer } from '~/components/setlist/realtime-setlist-viewer';
 import { CreateSetlistDialog } from './create-setlist-dialog';
 import { EmptyState } from './empty-state';
 import { SetlistViewer } from './setlist-viewer';
@@ -31,7 +31,7 @@ export function SetlistSection({
   currentUser,
 }: SetlistSectionProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [setlistType, setSetlistType] = useState<'predicted' | 'actual'>(
+  const [_setlistType, _setSetlistType] = useState<'predicted' | 'actual'>(
     'predicted'
   );
 

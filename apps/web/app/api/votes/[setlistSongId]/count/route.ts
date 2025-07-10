@@ -10,7 +10,7 @@ type RouteParams = {
   }>;
 };
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { setlistSongId } = await params;
     const user = await getUser();
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         .limit(1);
 
       if (userVoteRecord.length > 0) {
-        userVote = userVoteRecord[0].voteType;
+        userVote = userVoteRecord[0]?.voteType || null;
       }
     }
 
@@ -57,8 +57,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       netVotes,
       userVote,
     });
-  } catch (error) {
-    console.error('Vote count API error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

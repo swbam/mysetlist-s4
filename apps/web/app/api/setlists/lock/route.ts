@@ -34,7 +34,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Setlist not found' }, { status: 404 });
     }
 
-    if (setlist[0].createdBy !== user.id) {
+    if (setlist[0]!.createdBy !== user.id) {
       return NextResponse.json(
         { error: 'Cannot modify this setlist' },
         { status: 403 }
@@ -48,8 +48,7 @@ export async function PUT(request: NextRequest) {
       .where(eq(setlists.id, setlistId));
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Lock setlist error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to update setlist lock status' },
       { status: 500 }

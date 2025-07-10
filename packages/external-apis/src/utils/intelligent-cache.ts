@@ -58,7 +58,9 @@ export class IntelligentCache {
     const cached = this.inMemoryCache.get(key);
     const metaCached = this.inMemoryCache.get(`${key}:meta`);
 
-    if (!cached || !metaCached) return false;
+    if (!cached || !metaCached) {
+      return false;
+    }
 
     const now = Date.now();
     const timeUntilExpiry = cached.expiry - now;

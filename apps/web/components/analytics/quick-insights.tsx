@@ -1,6 +1,5 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
@@ -19,6 +18,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 interface QuickInsight {
   id: string;
@@ -52,7 +52,7 @@ export function QuickInsights({
       const supabase = createClient();
       const now = new Date();
       const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const _oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
       // Get recent activity
       const [
@@ -171,8 +171,7 @@ export function QuickInsights({
       }
 
       return insights.slice(0, limit);
-    } catch (error) {
-      console.error('Error generating insights:', error);
+    } catch (_error) {
       return [];
     }
   };

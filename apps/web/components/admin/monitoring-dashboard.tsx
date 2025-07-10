@@ -71,7 +71,7 @@ interface SecurityEvent {
 }
 
 export default function MonitoringDashboard() {
-  const [systemHealth, setSystemHealth] = useState<SystemHealth>({
+  const [systemHealth, _setSystemHealth] = useState<SystemHealth>({
     status: 'healthy',
     uptime: 99.9,
     responseTime: 245,
@@ -79,7 +79,7 @@ export default function MonitoringDashboard() {
     lastChecked: new Date().toISOString(),
   });
 
-  const [databaseMetrics, setDatabaseMetrics] = useState<DatabaseMetrics>({
+  const [databaseMetrics, _setDatabaseMetrics] = useState<DatabaseMetrics>({
     connectionPool: { active: 12, idle: 8, total: 20 },
     queries: { slow: 3, failed: 1, total: 15420 },
     size: { users: 1250, shows: 890, artists: 450, venues: 120 },
@@ -99,15 +99,12 @@ export default function MonitoringDashboard() {
     setIsLoading(true);
     try {
       // In a real implementation, these would be separate API calls
-      const [healthResponse, dbResponse, securityResponse] = await Promise.all([
-        fetch(`${process.env['NEXT_PUBLIC_API_URL']}/admin/monitoring/health`),
-        fetch(
-          `${process.env['NEXT_PUBLIC_API_URL']}/admin/monitoring/database`
-        ),
-        fetch(
-          `${process.env['NEXT_PUBLIC_API_URL']}/admin/monitoring/security`
-        ),
-      ]);
+      const [_healthResponse, _dbResponse, _securityResponse] =
+        await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/monitoring/health`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/monitoring/database`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/monitoring/security`),
+        ]);
 
       // For now, using mock data
       // const healthData = await healthResponse.json();
@@ -146,8 +143,7 @@ export default function MonitoringDashboard() {
           resolved: true,
         },
       ]);
-    } catch (error) {
-      console.error('Failed to fetch monitoring data:', error);
+    } catch (_error) {
     } finally {
       setIsLoading(false);
     }

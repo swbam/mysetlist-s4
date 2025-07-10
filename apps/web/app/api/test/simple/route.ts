@@ -7,15 +7,15 @@ export async function GET() {
     environment: process.env.NODE_ENV,
     apis: {
       spotify: {
-        clientId: !!process.env.SPOTIFY_CLIENT_ID,
-        clientSecret: !!process.env.SPOTIFY_CLIENT_SECRET,
+        clientId: !!process.env['SPOTIFY_CLIENT_ID'],
+        clientSecret: !!process.env['SPOTIFY_CLIENT_SECRET'],
       },
       ticketmaster: {
-        apiKey: !!process.env.TICKETMASTER_API_KEY,
+        apiKey: !!process.env['TICKETMASTER_API_KEY'],
       },
       setlistfm: {
-        apiKey: !!process.env.SETLISTFM_API_KEY,
-      }
-    }
+        apiKey: !!process.env['SETLISTFM_API_KEY'],
+      },
+    },
   });
 }

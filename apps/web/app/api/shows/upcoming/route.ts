@@ -1,13 +1,12 @@
 import { getUserFromRequest } from '@repo/auth/server';
 import {
-  artistStats,
   artists,
   db,
   shows,
   userFollowsArtists,
   venues,
 } from '@repo/database';
-import { and, asc, desc, eq, gte, sql } from 'drizzle-orm';
+import { and, asc, eq, exists, gte, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -16,11 +15,11 @@ export async function GET(request: NextRequest) {
     const limit = Number.parseInt(searchParams.get('limit') || '20');
     const offset = Number.parseInt(searchParams.get('offset') || '0');
     const filter = searchParams.get('filter') || 'all'; // all, following, nearby
-    const sortBy = searchParams.get('sortBy') || 'date'; // date, popularity, trending
 
     const user = await getUserFromRequest(request);
 
-    let query = db
+    // Build the query with all clauses at once to avoid TypeScript issues
+    const upcomingShows = await db
       .select({
         id: shows.id,
         name: shows.name,
@@ -56,54 +55,35 @@ export async function GET(request: NextRequest) {
       .from(shows)
       .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
       .leftJoin(venues, eq(shows.venueId, venues.id))
-      .where(gte(shows.date, new Date()));
-
-    // Apply filters
-    if (filter === 'following' && user) {
-      query = query.where(
-        and(
-          gte(shows.date, new Date()),
-          exists(
-            db
-              .select()
-              .from(userFollowsArtists)
-              .where(
-                and(
-                  eq(userFollowsArtists.artistId, artists.id),
-                  eq(userFollowsArtists.userId, user.id)
-                )
+      .where(
+        filter === 'following' && user
+          ? and(
+              gte(shows.date, new Date().toISOString().substring(0, 10)),
+              exists(
+                db
+                  .select()
+                  .from(userFollowsArtists)
+                  .where(
+                    and(
+                      eq(userFollowsArtists.artistId, artists.id),
+                      eq(userFollowsArtists.userId, user.id)
+                    )
+                  )
               )
-          )
-        )
-      );
-    }
-
-    // Apply sorting
-    switch (sortBy) {
-      case 'popularity':
-        query = query
-          .leftJoin(artistStats, eq(artists.id, artistStats.artistId))
-          .orderBy(desc(artistStats.followerCount), asc(shows.date));
-        break;
-      case 'trending':
-        query = query
-          .leftJoin(artistStats, eq(artists.id, artistStats.artistId))
-          .orderBy(desc(artistStats.trendingScore), asc(shows.date));
-        break;
-      default:
-        query = query.orderBy(asc(shows.date));
-    }
-
-    // Apply pagination
-    query = query.limit(limit).offset(offset);
-
-    const upcomingShows = await query;
+            )
+          : gte(shows.date, new Date().toISOString().substring(0, 10))
+      )
+      .orderBy(asc(shows.date))
+      .limit(limit)
+      .offset(offset);
 
     // Get total count for pagination
-    const [{ count }] = await db
+    const countResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(shows)
-      .where(gte(shows.date, new Date()));
+      .where(gte(shows.date, new Date().toISOString().substring(0, 10)));
+    
+    const count = countResult[0]?.count || 0;
 
     return NextResponse.json({
       shows: upcomingShows,
@@ -114,8 +94,7 @@ export async function GET(request: NextRequest) {
         hasMore: offset + limit < count,
       },
     });
-  } catch (error) {
-    console.error('Error fetching upcoming shows:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch upcoming shows' },
       { status: 500 }
@@ -123,6 +102,3 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function exists(subquery: any) {
-  return sql`EXISTS (${subquery})`;
-}

@@ -1,6 +1,5 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import {
   Avatar,
   AvatarFallback,
@@ -35,17 +34,16 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 interface ModerationItemProps {
   type: 'setlist' | 'review' | 'photo' | 'tip';
   item: any;
-  locale: string;
 }
 
 export default function ModerationItem({
   type,
   item,
-  locale,
 }: ModerationItemProps) {
   const [loading, setLoading] = useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
@@ -99,7 +97,7 @@ export default function ModerationItem({
         return (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              {[...Array(5)].map((_, i) => (
+              {[...new Array(5)].map((_, i) => (
                 <Star
                   key={i}
                   className={`h-4 w-4 ${
@@ -160,7 +158,9 @@ export default function ModerationItem({
         })
         .eq('id', item.id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Log action
       await supabase.from('moderation_logs').insert({
@@ -176,7 +176,7 @@ export default function ModerationItem({
       });
 
       router.refresh();
-    } catch (error) {
+    } catch (_error) {
       toast('Error', {
         description: 'Failed to approve content. Please try again.',
         type: 'error',
@@ -208,7 +208,9 @@ export default function ModerationItem({
         })
         .eq('id', item.id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Log action
       await supabase.from('moderation_logs').insert({
@@ -225,7 +227,7 @@ export default function ModerationItem({
 
       setRejectDialogOpen(false);
       router.refresh();
-    } catch (error) {
+    } catch (_error) {
       toast('Error', {
         description: 'Failed to reject content. Please try again.',
         type: 'error',

@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/server';
+import { createHash } from 'node:crypto';
 import { db } from '@repo/database';
 import { apiKeys } from '@repo/database';
-import { eq, and, gte } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
-import crypto from 'crypto';
+import { type NextRequest, NextResponse } from 'next/server';
+import { createServiceClient } from '~/lib/supabase/server';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 interface CreateApiKeyRequest {
   name: string;
@@ -23,32 +23,25 @@ function generateApiKey(): { key: string; hash: string } {
   const prefix = 'msl_';
   const randomPart = nanoid(32);
   const key = `${prefix}${randomPart}`;
-  
+
   // Hash the key for storage
-  const hash = crypto
-    .createHash('sha256')
-    .update(key)
-    .digest('hex');
-  
+  const hash = createHash('sha256').update(key).digest('hex');
+
   return { key, hash };
 }
 
-// Validate API key format
-function isValidApiKeyFormat(key: string): boolean {
-  return /^msl_[a-zA-Z0-9_-]{32}$/.test(key);
-}
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     // Check authentication
     const supabase = await createServiceClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Get user's API keys
@@ -63,20 +56,14 @@ export async function GET(request: NextRequest) {
         rateLimit: apiKeys.rateLimit,
       })
       .from(apiKeys)
-      .where(
-        and(
-          eq(apiKeys.userId, user.id),
-          eq(apiKeys.isActive, true)
-        )
-      )
+      .where(and(eq(apiKeys.userId, user.id), eq(apiKeys.isActive, true)))
       .orderBy(apiKeys.createdAt);
 
     return NextResponse.json({
       keys,
       count: keys.length,
     });
-  } catch (error) {
-    console.error('Failed to fetch API keys:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch API keys' },
       { status: 500 }
@@ -88,13 +75,13 @@ export async function POST(request: NextRequest) {
   try {
     // Check authentication
     const supabase = await createServiceClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body: CreateApiKeyRequest = await request.json();
@@ -111,12 +98,7 @@ export async function POST(request: NextRequest) {
     const existingKeys = await db
       .select({ id: apiKeys.id })
       .from(apiKeys)
-      .where(
-        and(
-          eq(apiKeys.userId, user.id),
-          eq(apiKeys.isActive, true)
-        )
-      );
+      .where(and(eq(apiKeys.userId, user.id), eq(apiKeys.isActive, true)));
 
     if (existingKeys.length >= 10) {
       return NextResponse.json(
@@ -159,10 +141,10 @@ export async function POST(request: NextRequest) {
         ...apiKey,
         key, // Only returned once on creation
       },
-      message: 'API key created successfully. Store this key securely - it will not be shown again.',
+      message:
+        'API key created successfully. Store this key securely - it will not be shown again.',
     });
-  } catch (error) {
-    console.error('Failed to create API key:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to create API key' },
       { status: 500 }
@@ -174,13 +156,13 @@ export async function DELETE(request: NextRequest) {
   try {
     // Check authentication
     const supabase = await createServiceClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const searchParams = request.nextUrl.searchParams;
@@ -210,18 +192,14 @@ export async function DELETE(request: NextRequest) {
       .returning({ id: apiKeys.id });
 
     if (!deleted) {
-      return NextResponse.json(
-        { error: 'API key not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'API key not found' }, { status: 404 });
     }
 
     return NextResponse.json({
       message: 'API key revoked successfully',
       id: deleted.id,
     });
-  } catch (error) {
-    console.error('Failed to revoke API key:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to revoke API key' },
       { status: 500 }
@@ -229,45 +207,3 @@ export async function DELETE(request: NextRequest) {
   }
 }
 
-// Validate API key middleware
-export async function validateApiKey(
-  key: string
-): Promise<{ valid: boolean; userId?: string; scopes?: string[]; keyId?: string }> {
-  if (!isValidApiKeyFormat(key)) {
-    return { valid: false };
-  }
-
-  const hash = crypto
-    .createHash('sha256')
-    .update(key)
-    .digest('hex');
-
-  const [apiKey] = await db
-    .select()
-    .from(apiKeys)
-    .where(
-      and(
-        eq(apiKeys.keyHash, hash),
-        eq(apiKeys.isActive, true),
-        gte(apiKeys.expiresAt, new Date())
-      )
-    )
-    .limit(1);
-
-  if (!apiKey) {
-    return { valid: false };
-  }
-
-  // Update last used timestamp
-  await db
-    .update(apiKeys)
-    .set({ lastUsedAt: new Date() })
-    .where(eq(apiKeys.id, apiKey.id));
-
-  return {
-    valid: true,
-    userId: apiKey.userId,
-    scopes: apiKey.scopes,
-    keyId: apiKey.id,
-  };
-}

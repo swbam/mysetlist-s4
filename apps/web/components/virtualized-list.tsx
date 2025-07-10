@@ -149,49 +149,57 @@ export function VirtualizedList<T>({
   // Handle keyboard navigation
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (!containerRef.current) return;
+      if (!containerRef.current) {
+        return;
+      }
 
       const container = containerRef.current;
       const itemHeightValue =
         typeof itemHeight === 'function' ? estimatedItemHeight : itemHeight;
 
       switch (e.key) {
-        case 'ArrowDown':
+        case 'ArrowDown': {
           e.preventDefault();
           container.scrollTop = Math.min(
             container.scrollTop + itemHeightValue,
             itemMetrics.totalHeight - containerHeight
           );
           break;
-        case 'ArrowUp':
+        }
+        case 'ArrowUp': {
           e.preventDefault();
           container.scrollTop = Math.max(
             container.scrollTop - itemHeightValue,
             0
           );
           break;
-        case 'PageDown':
+        }
+        case 'PageDown': {
           e.preventDefault();
           container.scrollTop = Math.min(
             container.scrollTop + containerHeight * 0.8,
             itemMetrics.totalHeight - containerHeight
           );
           break;
-        case 'PageUp':
+        }
+        case 'PageUp': {
           e.preventDefault();
           container.scrollTop = Math.max(
             container.scrollTop - containerHeight * 0.8,
             0
           );
           break;
-        case 'Home':
+        }
+        case 'Home': {
           e.preventDefault();
           container.scrollTop = 0;
           break;
-        case 'End':
+        }
+        case 'End': {
           e.preventDefault();
           container.scrollTop = itemMetrics.totalHeight - containerHeight;
           break;
+        }
       }
     },
     [itemHeight, estimatedItemHeight, itemMetrics.totalHeight, containerHeight]
@@ -202,7 +210,9 @@ export function VirtualizedList<T>({
     const result = [];
 
     for (let i = visibleRange.start; i < visibleRange.end; i++) {
-      if (i >= items.length) break;
+      if (i >= items.length) {
+        break;
+      }
 
       const item = items[i];
       const top = itemMetrics.positions[i];
@@ -257,7 +267,6 @@ export function VirtualizedList<T>({
       style={{ height: containerHeight }}
       onScroll={handleScroll}
       onKeyDown={handleKeyDown}
-      tabIndex={0}
       role="grid"
       aria-rowcount={items.length}
       aria-label="Virtualized list"
@@ -320,7 +329,7 @@ export function ArtistList({
     <VirtualizedList
       items={artists}
       itemHeight={80}
-      renderItem={(artist, index) => (
+      renderItem={(artist, _index) => (
         <div className="border-b p-4 transition-colors hover:bg-muted/50">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-full bg-muted" />
@@ -344,7 +353,7 @@ export function ShowList({
     <VirtualizedList
       items={shows}
       itemHeight={120}
-      renderItem={(show, index) => (
+      renderItem={(show, _index) => (
         <div className="border-b p-4 transition-colors hover:bg-muted/50">
           <div className="flex items-start gap-3">
             <div className="h-16 w-16 rounded bg-muted" />

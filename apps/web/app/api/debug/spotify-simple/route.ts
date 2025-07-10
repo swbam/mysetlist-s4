@@ -5,8 +5,6 @@ export async function GET(request: NextRequest) {
   const query = searchParams.get('q') || 'Taylor Swift';
 
   try {
-    console.log(`🔍 Testing Spotify API with query: "${query}"`);
-
     // Check if credentials are configured
     const clientId = process.env['SPOTIFY_CLIENT_ID'];
     const clientSecret = process.env['SPOTIFY_CLIENT_SECRET'];
@@ -21,13 +19,6 @@ export async function GET(request: NextRequest) {
         { status: 500 }
       );
     }
-
-    console.log(
-      `✅ Credentials found: ${clientId.substring(0, 8)}... / ${clientSecret.substring(0, 8)}...`
-    );
-
-    // Authenticate with Spotify
-    console.log('🔐 Authenticating with Spotify...');
     const authResponse = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
@@ -45,10 +36,6 @@ export async function GET(request: NextRequest) {
     }
 
     const authData = await authResponse.json();
-    console.log('✅ Spotify authentication successful!');
-
-    // Test artist search
-    console.log('🔍 Testing artist search...');
     const searchUrl = `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist&limit=10`;
     const searchResponse = await fetch(searchUrl, {
       headers: {
@@ -64,13 +51,11 @@ export async function GET(request: NextRequest) {
     }
 
     const searchData = await searchResponse.json();
-    console.log('✅ Artist search successful!');
 
     // Test getting artist details if we found artists
     let artistDetails = null;
     if (searchData.artists.items.length > 0) {
       const firstArtist = searchData.artists.items[0];
-      console.log(`🔍 Testing artist details for: ${firstArtist.name}`);
 
       const artistResponse = await fetch(
         `https://api.spotify.com/v1/artists/${firstArtist.id}`,
@@ -83,7 +68,6 @@ export async function GET(request: NextRequest) {
 
       if (artistResponse.ok) {
         artistDetails = await artistResponse.json();
-        console.log('✅ Artist details successful!');
       }
     }
 
@@ -118,8 +102,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Spotify test failed:', error);
-
     return NextResponse.json(
       {
         error: 'Spotify API test failed',
@@ -127,8 +109,7 @@ export async function GET(request: NextRequest) {
         stack: error instanceof Error ? error.stack : undefined,
         query,
         apiConfigured: !!(
-          process.env['SPOTIFY_CLIENT_ID'] &&
-          process.env['SPOTIFY_CLIENT_SECRET']
+          process.env['SPOTIFY_CLIENT_ID'] && process.env['SPOTIFY_CLIENT_SECRET']
         ),
         baseUrl: 'https://api.spotify.com/v1/',
       },

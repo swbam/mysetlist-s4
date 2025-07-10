@@ -72,7 +72,9 @@ export function VoteStatistics({
   const fetchStats = async () => {
     try {
       const params = new URLSearchParams({ showId });
-      if (setlistId) params.set('setlistId', setlistId);
+      if (setlistId) {
+        params.set('setlistId', setlistId);
+      }
 
       const response = await fetch(`/api/votes/statistics?${params}`);
       if (response.ok) {
@@ -80,8 +82,7 @@ export function VoteStatistics({
         setStats(data);
         setLastUpdate(new Date());
       }
-    } catch (error) {
-      console.error('Failed to fetch vote statistics:', error);
+    } catch (_error) {
     } finally {
       setLoading(false);
     }
@@ -107,7 +108,7 @@ export function VoteStatistics({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
+            {[...new Array(3)].map((_, i) => (
               <div key={i} className="h-20 animate-pulse rounded-lg bg-muted" />
             ))}
           </div>

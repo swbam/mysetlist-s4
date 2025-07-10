@@ -38,7 +38,9 @@ export function TicketInfo({
   };
 
   const getPriceRange = () => {
-    if (!minPrice && !maxPrice) return null;
+    if (!minPrice && !maxPrice) {
+      return null;
+    }
     if (minPrice && maxPrice && minPrice === maxPrice) {
       return formatPrice(minPrice);
     }

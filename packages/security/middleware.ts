@@ -16,5 +16,6 @@ export const noseconeOptions: NoseconeOptions = {
   contentSecurityPolicy: false,
 };
 
-export const noseconeOptionsWithToolbar: NoseconeOptions =
-  withVercelToolbar(noseconeOptions) as NoseconeOptions;
+export const noseconeOptionsWithToolbar: NoseconeOptions = withVercelToolbar(
+  noseconeOptions
+) as NoseconeOptions;

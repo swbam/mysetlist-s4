@@ -93,7 +93,7 @@ export class DatabaseOptimizer {
           // Fail fast - if any query fails, stop immediately
           const batchResults = await Promise.all(
             batch.map((query) =>
-              this.executeOptimizedQuery(query, {
+              DatabaseOptimizer.executeOptimizedQuery(query, {
                 queryName: `batch_query_${i}`,
               })
             )
@@ -102,10 +102,9 @@ export class DatabaseOptimizer {
         } else {
           // Continue on error - collect all successful results
           const batchPromises = batch.map((query) =>
-            this.executeOptimizedQuery(query, {
+            DatabaseOptimizer.executeOptimizedQuery(query, {
               queryName: `batch_query_${i}`,
-            }).catch((error) => {
-              console.warn('Batch query failed:', error);
+            }).catch((_error) => {
               return null;
             })
           );
@@ -267,8 +266,7 @@ export class DatabaseOptimizer {
         slowQueries: slowQueries.rows as any[],
         recommendations,
       };
-    } catch (error) {
-      console.warn('Slow query analysis failed:', error);
+    } catch (_error) {
       return {
         slowQueries: [],
         recommendations: ['pg_stat_statements extension may not be enabled'],
@@ -439,8 +437,7 @@ export class DatabaseOptimizer {
         tuplesUsed: row.tuples_used,
         efficiency: row.efficiency,
       }));
-    } catch (error) {
-      console.warn('Index statistics query failed:', error);
+    } catch (_error) {
       return [];
     }
   }

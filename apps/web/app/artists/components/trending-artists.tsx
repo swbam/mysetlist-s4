@@ -1,4 +1,3 @@
-import { parseGenres } from '@/lib/parse-genres';
 import { db } from '@repo/database';
 import { artists, showArtists, shows } from '@repo/database/src/schema';
 import {
@@ -11,6 +10,7 @@ import { Card } from '@repo/design-system/components/ui/card';
 import { desc, eq, sql } from 'drizzle-orm';
 import { Calendar, TrendingUp, Users } from 'lucide-react';
 import Link from 'next/link';
+import { parseGenres } from '~/lib/parse-genres';
 
 async function getTrendingArtists() {
   const thirtyDaysAgo = new Date();

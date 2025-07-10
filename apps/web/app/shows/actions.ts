@@ -1,7 +1,7 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { cache } from 'react';
+import { createClient } from '~/lib/supabase/server';
 
 export type ShowWithDetails = {
   id: string;
@@ -88,7 +88,7 @@ export const fetchShows = cache(
 
     try {
       const supabase = await createClient();
-      
+
       // Build the query
       let query = supabase.from('shows').select(
         `
@@ -154,7 +154,6 @@ export const fetchShows = cache(
         case 'popularity':
           query = query.order('view_count', { ascending: false });
           break;
-        case 'date':
         default:
           query = query.order('date', { ascending: true });
           break;
@@ -166,7 +165,6 @@ export const fetchShows = cache(
       const { data, error, count } = await query;
 
       if (error) {
-        console.error('Error fetching shows:', error);
         throw new Error('Failed to fetch shows');
       }
 
@@ -209,8 +207,7 @@ export const fetchShows = cache(
         shows,
         totalCount: count || 0,
       };
-    } catch (error) {
-      console.error('Error in fetchShows:', error);
+    } catch (_error) {
       return {
         shows: [],
         totalCount: 0,
@@ -222,22 +219,20 @@ export const fetchShows = cache(
 export const fetchCities = cache(async (): Promise<string[]> => {
   try {
     const supabase = await createClient();
-    
+
     const { data, error } = await supabase
       .from('venues')
       .select('city')
       .order('city');
 
     if (error) {
-      console.error('Error fetching cities:', error);
       return [];
     }
 
     // Get unique cities
     const uniqueCities = [...new Set(data?.map((v) => v.city) || [])];
     return uniqueCities;
-  } catch (error) {
-    console.error('Error in fetchCities:', error);
+  } catch (_error) {
     return [];
   }
 });

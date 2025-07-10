@@ -75,13 +75,15 @@ export function VenueSearch({
 
   const buildSearchUrl = (query: string) => {
     const params = new URLSearchParams();
-    if (query) params.set('q', query);
+    if (query) {
+      params.set('q', query);
+    }
     params.set('type', 'venue');
     params.set('limit', '20');
     return `/api/search?${params.toString()}`;
   };
 
-  const buildVenuesUrl = (pageNum: number, reset = false) => {
+  const buildVenuesUrl = (pageNum: number, _reset = false) => {
     const params = new URLSearchParams();
     params.set('page', pageNum.toString());
     params.set('limit', '20');
@@ -101,7 +103,9 @@ export function VenueSearch({
   };
 
   const handleSearch = async (query: string) => {
-    if (query.length < 2) return [];
+    if (query.length < 2) {
+      return [];
+    }
 
     try {
       const response = await fetch(buildSearchUrl(query));
@@ -118,9 +122,7 @@ export function VenueSearch({
           ) || []
         );
       }
-    } catch (error) {
-      console.error('Venue search failed:', error);
-    }
+    } catch (_error) {}
 
     return [];
   };
@@ -148,8 +150,7 @@ export function VenueSearch({
       } else {
         throw new Error('Failed to fetch venues');
       }
-    } catch (error) {
-      console.error('Failed to fetch venues:', error);
+    } catch (_error) {
       toast.error('Failed to load venues');
     } finally {
       setLoading(false);

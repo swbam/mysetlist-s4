@@ -63,7 +63,9 @@ export function ThemeProvider({
 
   // Apply theme to document
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
 
     const root = window.document.documentElement;
 
@@ -196,8 +198,12 @@ export function ThemeToggle({
   };
 
   const getThemeText = () => {
-    if (theme === 'system') return 'System';
-    if (resolvedTheme === 'dark') return 'Dark';
+    if (theme === 'system') {
+      return 'System';
+    }
+    if (resolvedTheme === 'dark') {
+      return 'Dark';
+    }
     return 'Light';
   };
 

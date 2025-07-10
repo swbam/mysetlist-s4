@@ -1,14 +1,14 @@
 'use client';
 
+import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 import {
   addBodyClass,
   removeBodyClass,
   safeAppendToHead,
   safeDocument,
   safeGetElementById,
-} from '@/lib/navigation/dom-utils';
-import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+} from '~/lib/navigation/dom-utils';
 
 export function usePageTransition() {
   const pathname = usePathname();

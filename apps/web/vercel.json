@@ -4,50 +4,20 @@
   "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "regions": ["iad1", "sfo1", "lhr1"],
   "functions": {
-    "apps/web/app/api/cron/**": {
+    "app/api/sync/**": {
       "maxDuration": 300
     },
-    "apps/web/app/api/sync/**": {
-      "maxDuration": 300
-    },
-    "apps/web/app/api/admin/**": {
+    "app/api/admin/**": {
       "maxDuration": 60
     },
-    "apps/web/app/api/search/**": {
+    "app/api/search/**": {
       "maxDuration": 30
     },
-    "apps/web/app/api/trending/**": {
+    "app/api/trending/**": {
       "maxDuration": 30
     }
   },
-  "crons": [
-    {
-      "path": "/api/cron/email-processing",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/hourly-update", 
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/cron/daily-sync",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/weekly-digest",
-      "schedule": "0 8 * * 1"
-    },
-    {
-      "path": "/api/cron/health-check",
-      "schedule": "*/10 * * * *"
-    },
-    {
-      "path": "/api/cron/trending-update",
-      "schedule": "0 */6 * * *"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -57,7 +27,7 @@
           "value": "DENY"
         },
         {
-          "key": "X-Content-Type-Options", 
+          "key": "X-Content-Type-Options",
           "value": "nosniff"
         },
         {

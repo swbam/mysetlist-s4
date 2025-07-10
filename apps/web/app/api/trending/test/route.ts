@@ -72,7 +72,10 @@ export async function GET() {
       { path: '/api/trending/shows', name: 'Trending Shows' },
       { path: '/api/trending/venues', name: 'Trending Venues' },
       { path: '/api/trending/live', name: 'Live Trending' },
-      { path: '/api/trending/live?timeframe=1h&type=artist', name: 'Live Artists (1h)' },
+      {
+        path: '/api/trending/live?timeframe=1h&type=artist',
+        name: 'Live Artists (1h)',
+      },
       { path: '/api/activity/recent', name: 'Recent Activity' },
     ];
 
@@ -80,34 +83,41 @@ export async function GET() {
 
     for (const endpoint of endpoints) {
       const startTime = Date.now();
-      
+
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        const baseUrl =
+          process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000';
         const url = `${baseUrl}${endpoint.path}${endpoint.path.includes('?') ? '&' : '?'}limit=1`;
-        
+
         const response = await fetch(url, {
           headers: {
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'Cache-Control': 'no-cache',
           },
         });
-        
+
         const responseTime = Date.now() - startTime;
         let data = null;
-        
+
         if (response.ok) {
           data = await response.json();
         }
-        
+
         results.endpoints[endpoint.name] = {
           status: response.status,
           ok: response.ok,
           responseTime,
-          hasData: data ? (data.artists?.length || data.shows?.length || data.venues?.length || data.trending?.length || data.activities?.length || 0) > 0 : false,
+          hasData: data
+            ? (data.artists?.length ||
+                data.shows?.length ||
+                data.venues?.length ||
+                data.trending?.length ||
+                data.activities?.length ||
+                0) > 0
+            : false,
           fallback: data?.fallback || false,
           error: data?.error || null,
         };
-        
       } catch (error) {
         const responseTime = Date.now() - startTime;
         results.endpoints[endpoint.name] = {
@@ -120,18 +130,25 @@ export async function GET() {
     }
 
     // Calculate summary stats
-    const endpointResults = Object.values(results.endpoints);
-    const workingEndpoints = endpointResults.filter(r => r.ok).length;
+    const endpointResults = Object.values(results.endpoints) as Array<{
+      ok: boolean;
+      responseTime: number;
+      hasData?: boolean;
+      fallback?: boolean;
+    }>;
+    const workingEndpoints = endpointResults.filter((r) => r.ok).length;
     const totalEndpoints = endpointResults.length;
-    const avgResponseTime = endpointResults.reduce((sum, r) => sum + r.responseTime, 0) / totalEndpoints;
-    
+    const avgResponseTime =
+      endpointResults.reduce((sum, r) => sum + r.responseTime, 0) /
+      totalEndpoints;
+
     const summary = {
       status: workingEndpoints === totalEndpoints ? 'healthy' : 'issues',
       workingEndpoints,
       totalEndpoints,
       avgResponseTime: Math.round(avgResponseTime),
-      hasData: endpointResults.some(r => r.hasData),
-      usingFallback: endpointResults.some(r => r.fallback),
+      hasData: endpointResults.some((r) => r.hasData),
+      usingFallback: endpointResults.some((r) => r.fallback),
     };
 
     return NextResponse.json({
@@ -141,7 +158,6 @@ export async function GET() {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Trending test error:', error);
     return NextResponse.json(
       {
         success: false,

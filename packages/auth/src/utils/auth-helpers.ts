@@ -29,8 +29,7 @@ export async function getServerSession() {
       accessToken,
       refreshToken,
     };
-  } catch (error) {
-    console.error('Error getting server session:', error);
+  } catch (_error) {
     return null;
   }
 }
@@ -82,7 +81,7 @@ export function getRedirectUrl(path = '/'): string {
   const baseUrl =
     typeof window !== 'undefined'
       ? window.location.origin
-      : process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001';
+      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
 
   return `${baseUrl}${path}`;
 }

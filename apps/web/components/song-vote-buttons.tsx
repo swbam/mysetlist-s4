@@ -1,6 +1,5 @@
 'use client';
 
-import { useRealtimeVotes } from '@/hooks/use-realtime-votes';
 import { Button } from '@repo/design-system/components/ui/button';
 import { cn } from '@repo/design-system/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -8,6 +7,7 @@ import { ThumbsDown, ThumbsUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { toast } from 'sonner';
+import { useRealtimeVotes } from '~/hooks/use-realtime-votes';
 
 interface SongVoteButtonsProps {
   songId: string;
@@ -93,7 +93,7 @@ export function SongVoteButtons({
             ? 'Vote removed'
             : `${newVote === 'up' ? 'Upvoted' : 'Downvoted'} song`
         );
-      } catch (error) {
+      } catch (_error) {
         // Revert optimistic update
         setOptimisticVote(votes.userVote);
         toast.error('Failed to update vote');

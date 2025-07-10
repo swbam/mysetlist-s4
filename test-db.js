@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = 'https://yzwkimtdaabyjbpykquu.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2OTIzMTYsImV4cCI6MjA2NjI2ODMxNn0.8pKUt_PL7q9XmNACDKVrkyqBfK8jmUDx6ARNybrmIVM';
+const supabaseKey =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2OTIzMTYsImV4cCI6MjA2NjI2ODMxNn0.8pKUt_PL7q9XmNACDKVrkyqBfK8jmUDx6ARNybrmIVM';
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -14,12 +15,7 @@ async function testDatabase() {
       .limit(10);
 
     if (artistsError) {
-      console.error('Artists error:', artistsError);
-    } else {
-      console.log('Artists found:', artists?.length || 0);
-      if (artists && artists.length > 0) {
-        console.log('Sample artist:', artists[0]);
-      }
+    } else if (artists && artists.length > 0) {
     }
 
     // Check shows table
@@ -29,12 +25,7 @@ async function testDatabase() {
       .limit(5);
 
     if (showsError) {
-      console.error('Shows error:', showsError);
-    } else {
-      console.log('Shows found:', shows?.length || 0);
-      if (shows && shows.length > 0) {
-        console.log('Sample show:', shows[0]);
-      }
+    } else if (shows && shows.length > 0) {
     }
 
     // Check venues table
@@ -44,12 +35,7 @@ async function testDatabase() {
       .limit(5);
 
     if (venuesError) {
-      console.error('Venues error:', venuesError);
-    } else {
-      console.log('Venues found:', venues?.length || 0);
-      if (venues && venues.length > 0) {
-        console.log('Sample venue:', venues[0]);
-      }
+    } else if (venues && venues.length > 0) {
     }
 
     // Check songs table
@@ -59,12 +45,7 @@ async function testDatabase() {
       .limit(5);
 
     if (songsError) {
-      console.error('Songs error:', songsError);
-    } else {
-      console.log('Songs found:', songs?.length || 0);
-      if (songs && songs.length > 0) {
-        console.log('Sample song:', songs[0]);
-      }
+    } else if (songs && songs.length > 0) {
     }
 
     // Check setlists table
@@ -74,17 +55,9 @@ async function testDatabase() {
       .limit(5);
 
     if (setlistsError) {
-      console.error('Setlists error:', setlistsError);
-    } else {
-      console.log('Setlists found:', setlists?.length || 0);
-      if (setlists && setlists.length > 0) {
-        console.log('Sample setlist:', setlists[0]);
-      }
+    } else if (setlists && setlists.length > 0) {
     }
-
-  } catch (error) {
-    console.error('Database test error:', error);
-  }
+  } catch (_error) {}
 }
 
 testDatabase();

@@ -1,7 +1,5 @@
 'use client';
 
-import { useRealtimeConnection } from '@/app/providers/realtime-provider';
-import { useOptimisticVoting } from '@/hooks/use-optimistic-voting';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
   Tooltip,
@@ -19,8 +17,10 @@ import {
   WifiOff,
   Zap,
 } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, memo } from 'react';
 import { toast } from 'sonner';
+import { useRealtimeConnection } from '~/app/providers/realtime-provider';
+import { useOptimisticVoting } from '~/hooks/use-optimistic-voting';
 
 interface RealtimeVoteButtonProps {
   setlistSongId: string;
@@ -54,7 +54,7 @@ const countVariants = {
   },
 };
 
-export function RealtimeVoteButton({
+const RealtimeVoteButtonComponent = function RealtimeVoteButton({
   setlistSongId,
   showId,
   userId,
@@ -96,7 +96,7 @@ export function RealtimeVoteButton({
         });
       }
     },
-    onVoteError: (error) => {
+    onVoteError: (_error) => {
       // Haptic feedback for errors on mobile
       if (hapticFeedback && 'vibrate' in navigator) {
         navigator.vibrate([50, 100, 50]); // Error vibration pattern
@@ -131,7 +131,9 @@ export function RealtimeVoteButton({
   );
 
   const handleVote = async (voteType: 'up' | 'down') => {
-    if (isVoting || disabled) return;
+    if (isVoting || disabled) {
+      return;
+    }
 
     if (!userId) {
       toast.error('Please sign in to vote');
@@ -158,7 +160,9 @@ export function RealtimeVoteButton({
     size === 'sm' ? 'h-3 w-3' : size === 'lg' ? 'h-5 w-5' : 'h-4 w-4';
 
   const ConnectionIndicator = () => {
-    if (!showConnection) return null;
+    if (!showConnection) {
+      return null;
+    }
 
     const Icon = isConnected ? Wifi : WifiOff;
     const iconClass = isConnected ? 'text-green-500' : 'text-red-500';
@@ -178,7 +182,9 @@ export function RealtimeVoteButton({
   };
 
   const VoteLimitTooltip = () => {
-    if (!showLimits || !voteLimits) return null;
+    if (!showLimits || !voteLimits) {
+      return null;
+    }
 
     return (
       <div className="space-y-1 text-xs">
@@ -525,4 +531,21 @@ export function RealtimeVoteButton({
       </div>
     </TooltipProvider>
   );
-}
+};
+
+// Memoized export with custom comparison for better performance
+export const RealtimeVoteButton = memo(RealtimeVoteButtonComponent, (prevProps, nextProps) => {
+  // Custom comparison to prevent unnecessary re-renders
+  return (
+    prevProps.setlistSongId === nextProps.setlistSongId &&
+    prevProps.showId === nextProps.showId &&
+    prevProps.userId === nextProps.userId &&
+    prevProps.disabled === nextProps.disabled &&
+    prevProps.size === nextProps.size &&
+    prevProps.variant === nextProps.variant &&
+    prevProps.showLimits === nextProps.showLimits &&
+    prevProps.showConnection === nextProps.showConnection &&
+    prevProps.hapticFeedback === nextProps.hapticFeedback &&
+    prevProps.className === nextProps.className
+  );
+});

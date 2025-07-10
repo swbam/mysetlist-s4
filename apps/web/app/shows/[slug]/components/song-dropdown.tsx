@@ -1,6 +1,5 @@
 'use client';
 
-import { useDebounce } from '@/hooks/use-debounce';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
@@ -15,6 +14,7 @@ import { Input } from '@repo/design-system/components/ui/input';
 import { ChevronDown, Loader2, Music, Plus, Search } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useDebounce } from '~/hooks/use-debounce';
 
 type SongDropdownProps = {
   show: any;
@@ -53,7 +53,9 @@ export function SongDropdown({
 
   const fetchSongs = useCallback(
     async (query = '') => {
-      if (!show.headliner_artist?.slug) return;
+      if (!show.headliner_artist?.slug) {
+        return;
+      }
 
       setLoading(true);
       try {
@@ -71,11 +73,9 @@ export function SongDropdown({
           const data = await response.json();
           setSongs(data.songs || []);
         } else {
-          console.error('Failed to fetch songs');
           setSongs([]);
         }
-      } catch (error) {
-        console.error('Failed to fetch songs:', error);
+      } catch (_error) {
         setSongs([]);
       } finally {
         setLoading(false);
@@ -140,7 +140,6 @@ export function SongDropdown({
       onSongAdded();
       setSearchQuery(''); // Clear search after successful add
     } catch (error) {
-      console.error('Error adding song:', error);
       toast.error(
         error instanceof Error ? error.message : 'Failed to add song'
       );

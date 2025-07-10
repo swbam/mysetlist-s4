@@ -120,7 +120,9 @@ export const VenueGrid = () => {
   };
 
   const formatCapacity = (capacity: number) => {
-    if (capacity >= 1000) return `${(capacity / 1000).toFixed(1)}K`;
+    if (capacity >= 1000) {
+      return `${(capacity / 1000).toFixed(1)}K`;
+    }
     return capacity.toString();
   };
 

@@ -1,11 +1,23 @@
 'use client';
 
 import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { AlertTriangle, ArrowLeft, Home, RefreshCw, Settings, Zap } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@repo/design-system/components/ui/card';
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Home,
+  RefreshCw,
+  Settings,
+  Zap,
+} from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 interface Props {
   children: React.ReactNode;
@@ -23,7 +35,10 @@ interface State {
   isRetrying: boolean;
 }
 
-export class EnhancedNavigationErrorBoundary extends React.Component<Props, State> {
+export class EnhancedNavigationErrorBoundary extends React.Component<
+  Props,
+  State
+> {
   private retryTimeouts: NodeJS.Timeout[] = [];
 
   constructor(props: Props) {
@@ -46,20 +61,21 @@ export class EnhancedNavigationErrorBoundary extends React.Component<Props, Stat
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Enhanced Navigation Error Boundary caught an error:', error, errorInfo);
-    
     this.setState({ errorInfo });
-    
+
     // Call custom error handler
     if (this.props.onError) {
       this.props.onError(error, errorInfo);
     }
-    
+
     // Auto-retry if enabled
-    if (this.props.enableAutoRetry && this.state.retryCount < (this.props.maxRetries || 3)) {
+    if (
+      this.props.enableAutoRetry &&
+      this.state.retryCount < (this.props.maxRetries || 3)
+    ) {
       this.scheduleAutoRetry();
     }
-    
+
     // Report to error tracking service
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'exception', {
@@ -71,14 +87,14 @@ export class EnhancedNavigationErrorBoundary extends React.Component<Props, Stat
 
   componentWillUnmount() {
     // Clear any pending retries
-    this.retryTimeouts.forEach(timeout => clearTimeout(timeout));
+    this.retryTimeouts.forEach((timeout) => clearTimeout(timeout));
   }
 
   private scheduleAutoRetry = () => {
-    const delay = Math.min(1000 * Math.pow(2, this.state.retryCount), 10000); // Exponential backoff
-    
+    const delay = Math.min(1000 * 2 ** this.state.retryCount, 10000); // Exponential backoff
+
     const timeout = setTimeout(() => {
-      this.setState(prevState => ({
+      this.setState((prevState) => ({
         hasError: false,
         error: null,
         errorInfo: null,
@@ -86,13 +102,13 @@ export class EnhancedNavigationErrorBoundary extends React.Component<Props, Stat
         isRetrying: false,
       }));
     }, delay);
-    
+
     this.retryTimeouts.push(timeout);
     this.setState({ isRetrying: true });
   };
 
   private handleManualRetry = () => {
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       hasError: false,
       error: null,
       errorInfo: null,
@@ -115,19 +131,19 @@ export class EnhancedNavigationErrorBoundary extends React.Component<Props, Stat
 
   private handleClearCache = () => {
     if ('caches' in window) {
-      caches.keys().then(names => {
-        names.forEach(name => {
+      caches.keys().then((names) => {
+        names.forEach((name) => {
           caches.delete(name);
         });
       });
     }
-    
+
     // Clear localStorage
     if (typeof window !== 'undefined') {
       localStorage.clear();
       sessionStorage.clear();
     }
-    
+
     // Reload after clearing cache
     this.handleReload();
   };
@@ -151,10 +167,11 @@ export class EnhancedNavigationErrorBoundary extends React.Component<Props, Stat
               </div>
               <CardTitle className="text-2xl">Navigation Error</CardTitle>
               <CardDescription>
-                Something went wrong while navigating. We're working to get you back on track.
+                Something went wrong while navigating. We're working to get you
+                back on track.
               </CardDescription>
             </CardHeader>
-            
+
             <CardContent className="space-y-6">
               {/* Auto-retry indicator */}
               {isRetrying && (
@@ -172,7 +189,9 @@ export class EnhancedNavigationErrorBoundary extends React.Component<Props, Stat
                   className="w-full"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
-                  {retryCount > 0 ? `Retry (${retryCount}/${maxRetries})` : 'Try Again'}
+                  {retryCount > 0
+                    ? `Retry (${retryCount}/${maxRetries})`
+                    : 'Try Again'}
                 </Button>
 
                 <Button
@@ -243,20 +262,28 @@ export class EnhancedNavigationErrorBoundary extends React.Component<Props, Stat
                   <div className="mt-4 space-y-3">
                     <div className="rounded-md bg-muted p-4">
                       <h4 className="font-medium text-sm">Error Message:</h4>
-                      <pre className="mt-2 overflow-auto text-xs">{error.message}</pre>
+                      <pre className="mt-2 overflow-auto text-xs">
+                        {error.message}
+                      </pre>
                     </div>
-                    
+
                     {error.stack && (
                       <div className="rounded-md bg-muted p-4">
                         <h4 className="font-medium text-sm">Stack Trace:</h4>
-                        <pre className="mt-2 overflow-auto text-xs">{error.stack}</pre>
+                        <pre className="mt-2 overflow-auto text-xs">
+                          {error.stack}
+                        </pre>
                       </div>
                     )}
-                    
+
                     {errorInfo && (
                       <div className="rounded-md bg-muted p-4">
-                        <h4 className="font-medium text-sm">Component Stack:</h4>
-                        <pre className="mt-2 overflow-auto text-xs">{errorInfo.componentStack}</pre>
+                        <h4 className="font-medium text-sm">
+                          Component Stack:
+                        </h4>
+                        <pre className="mt-2 overflow-auto text-xs">
+                          {errorInfo.componentStack}
+                        </pre>
                       </div>
                     )}
                   </div>
@@ -284,14 +311,13 @@ export class EnhancedNavigationErrorBoundary extends React.Component<Props, Stat
 // Hook for using the error boundary in functional components
 export function useEnhancedErrorBoundary() {
   const [error, setError] = useState<Error | null>(null);
-  
+
   const resetError = () => setError(null);
-  
-  const reportError = (error: Error, errorInfo?: React.ErrorInfo) => {
+
+  const reportError = (error: Error, _errorInfo?: React.ErrorInfo) => {
     setError(error);
-    console.error('Manual error report:', error, errorInfo);
   };
-  
+
   return { error, resetError, reportError };
 }
 

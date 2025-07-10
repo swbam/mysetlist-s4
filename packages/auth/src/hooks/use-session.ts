@@ -39,16 +39,13 @@ export function useSession() {
   }, [session, refreshSession]);
 
   const extendSession = useCallback(async () => {
-    try {
-      await refreshSession();
-    } catch (error) {
-      console.error('Failed to extend session:', error);
-      throw error;
-    }
+    await refreshSession();
   }, [refreshSession]);
 
   const getSessionInfo = useCallback(() => {
-    if (!session) return null;
+    if (!session) {
+      return null;
+    }
 
     const now = Date.now() / 1000;
     const timeLeft = session.expiresAt - now;

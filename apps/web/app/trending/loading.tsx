@@ -1,15 +1,15 @@
 import {
-  ArtistGridSkeleton,
-  ShowListSkeleton,
-  TrendingListSkeleton,
-} from '@/components/loading-states';
-import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from '@repo/design-system/components/ui/tabs';
 import { BarChart, Calendar, Music, TrendingUp } from 'lucide-react';
+import {
+  ArtistGridSkeleton,
+  ShowListSkeleton,
+  TrendingListSkeleton,
+} from '~/components/loading-states';
 
 export default function TrendingLoading() {
   return (

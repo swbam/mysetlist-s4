@@ -78,5 +78,5 @@ export function getLocationOrigin(): string {
     return safeWindow.location.origin;
   }
   // Fallback for SSR - you might want to use an environment variable here
-  return process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000';
+  return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 }

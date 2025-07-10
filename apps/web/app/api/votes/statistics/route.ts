@@ -1,6 +1,6 @@
 import { db } from '@repo/database';
 import { setlistSongs, setlists, songs, users, votes } from '@repo/database';
-import { desc, eq, sql } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -16,8 +16,15 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Build conditions for setlist songs query
+    const conditions = [eq(setlists.showId, showId)];
+    
+    if (setlistId) {
+      conditions.push(eq(setlistSongs.setlistId, setlistId));
+    }
+
     // Get all setlist songs for this show (optionally filtered by setlist)
-    let setlistSongsQuery = db
+    const setlistSongsQuery = db
       .select({
         id: setlistSongs.id,
         setlistId: setlistSongs.setlistId,
@@ -33,13 +40,7 @@ export async function GET(request: NextRequest) {
       .from(setlistSongs)
       .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
       .innerJoin(songs, eq(setlistSongs.songId, songs.id))
-      .where(eq(setlists.showId, showId));
-
-    if (setlistId) {
-      setlistSongsQuery = setlistSongsQuery.where(
-        eq(setlistSongs.setlistId, setlistId)
-      );
-    }
+      .where(conditions.length > 1 ? and(...conditions) : conditions[0]);
 
     const setlistSongsData = await setlistSongsQuery;
 
@@ -70,7 +71,6 @@ export async function GET(request: NextRequest) {
         createdAt: votes.createdAt,
         updatedAt: votes.updatedAt,
         user: {
-          username: users.username,
           displayName: users.displayName,
         },
       })
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
     // Calculate average net votes
     const averageNetVotes =
       setlistSongsData.length > 0
-        ? setlistSongsData.reduce((acc, song) => acc + song.netVotes, 0) /
+        ? setlistSongsData.reduce((acc, song) => acc + (song.netVotes || 0), 0) /
           setlistSongsData.length
         : 0;
 
@@ -101,13 +101,15 @@ export async function GET(request: NextRequest) {
         netVotes: songData.netVotes,
         upvotes: songData.upvotes,
         downvotes: songData.downvotes,
-        totalVotes: songData.upvotes + songData.downvotes,
+        totalVotes: (songData.upvotes || 0) + (songData.downvotes || 0),
         rank: index + 1,
       }))
       .sort((a, b) => {
         // Primary sort: net votes (descending)
-        if (b.netVotes !== a.netVotes) {
-          return b.netVotes - a.netVotes;
+        const bNetVotes = b.netVotes || 0;
+        const aNetVotes = a.netVotes || 0;
+        if (bNetVotes !== aNetVotes) {
+          return bNetVotes - aNetVotes;
         }
         // Secondary sort: total votes (descending)
         return b.totalVotes - a.totalVotes;
@@ -134,7 +136,7 @@ export async function GET(request: NextRequest) {
           songTitle: songData?.song.title || 'Unknown Song',
           voteType: vote.voteType,
           timestamp: vote.createdAt.toISOString(),
-          username: vote.user?.displayName || vote.user?.username,
+          username: vote.user?.displayName || 'Anonymous',
         };
       });
 
@@ -147,7 +149,7 @@ export async function GET(request: NextRequest) {
     ).length;
 
     // Calculate peak and quiet times (simplified - based on hour of day)
-    const votesByHour = Array(24).fill(0);
+    const votesByHour = new Array(24).fill(0);
     allVotes.forEach((vote) => {
       const hour = vote.createdAt.getHours();
       votesByHour[hour]++;
@@ -172,8 +174,7 @@ export async function GET(request: NextRequest) {
       recentActivity,
       votingTrends,
     });
-  } catch (error) {
-    console.error('Vote statistics API error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

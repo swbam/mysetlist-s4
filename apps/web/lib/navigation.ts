@@ -190,7 +190,7 @@ export function getNavigationSections(): NavigationSection[] {
  */
 export function getCanonicalUrl(pathname: string, baseUrl?: string): string {
   const base =
-    baseUrl || process.env['NEXT_PUBLIC_SITE_URL'] || 'https://mysetlist.com';
+    baseUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://mysetlist.com';
   return new URL(pathname, base).href;
 }
 
@@ -200,6 +200,6 @@ export function getCanonicalUrl(pathname: string, baseUrl?: string): string {
 export function isExternalLink(href: string): boolean {
   return (
     href.startsWith('http') &&
-    !href.includes(process.env['NEXT_PUBLIC_SITE_URL'] || 'mysetlist.com')
+    !href.includes(process.env.NEXT_PUBLIC_SITE_URL || 'mysetlist.com')
   );
 }

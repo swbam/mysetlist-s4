@@ -42,8 +42,21 @@ export async function GET(request: NextRequest) {
         startDate = new Date(0); // All time
     }
 
+    // Build conditions for vote history query
+    const conditions = [eq(votes.userId, targetUserId)];
+    
+    // Apply show filter if provided
+    if (showId) {
+      conditions.push(eq(shows.id, showId));
+    }
+
+    // Apply date filter if not all time
+    if (period !== 'all') {
+      conditions.push(gte(votes.createdAt, startDate));
+    }
+
     // Build vote history query
-    let voteQuery = db
+    const voteQuery = db
       .select({
         id: votes.id,
         voteType: votes.voteType,
@@ -69,17 +82,7 @@ export async function GET(request: NextRequest) {
       .innerJoin(songs, eq(setlistSongs.songId, songs.id))
       .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
       .innerJoin(shows, eq(setlists.showId, shows.id))
-      .where(eq(votes.userId, targetUserId));
-
-    // Apply show filter if provided
-    if (showId) {
-      voteQuery = voteQuery.where(eq(shows.id, showId));
-    }
-
-    // Apply date filter if not all time
-    if (period !== 'all') {
-      voteQuery = voteQuery.where(gte(votes.createdAt, startDate));
-    }
+      .where(conditions.length > 1 ? and(...conditions) : conditions[0]);
 
     // Add pagination
     const offset = (page - 1) * limit;
@@ -105,7 +108,7 @@ export async function GET(request: NextRequest) {
       createdAt: vote.createdAt.toISOString(),
       updatedAt: vote.updatedAt.toISOString(),
       showName: vote.show.name,
-      showDate: vote.show.date.toISOString(),
+      showDate: vote.show.date,
       setlistSongId: vote.setlistSongId,
       currentNetVotes: vote.currentVotes.netVotes,
     }));
@@ -115,25 +118,43 @@ export async function GET(request: NextRequest) {
     let dailyData = null;
 
     if (page === 1) {
-      // Get all votes for pattern analysis (within the time period)
-      let allVotesQuery = db
-        .select({
-          voteType: votes.voteType,
-          createdAt: votes.createdAt,
-        })
-        .from(votes)
-        .where(eq(votes.userId, targetUserId));
-
+      // Build conditions for pattern analysis query
+      const patternConditions = [eq(votes.userId, targetUserId)];
+      
       if (showId) {
-        allVotesQuery = allVotesQuery
-          .innerJoin(setlistSongs, eq(votes.setlistSongId, setlistSongs.id))
-          .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
-          .innerJoin(shows, eq(setlists.showId, shows.id))
-          .where(and(eq(votes.userId, targetUserId), eq(shows.id, showId)));
+        patternConditions.push(eq(shows.id, showId));
       }
 
       if (period !== 'all') {
-        allVotesQuery = allVotesQuery.where(gte(votes.createdAt, startDate));
+        patternConditions.push(gte(votes.createdAt, startDate));
+      }
+
+      // Get all votes for pattern analysis (within the time period)
+      let allVotesQuery;
+      
+      if (showId) {
+        allVotesQuery = db
+          .select({
+            voteType: votes.voteType,
+            createdAt: votes.createdAt,
+          })
+          .from(votes)
+          .innerJoin(setlistSongs, eq(votes.setlistSongId, setlistSongs.id))
+          .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
+          .innerJoin(shows, eq(setlists.showId, shows.id))
+          .where(
+            patternConditions.length > 1 ? and(...patternConditions) : patternConditions[0]
+          );
+      } else {
+        allVotesQuery = db
+          .select({
+            voteType: votes.voteType,
+            createdAt: votes.createdAt,
+          })
+          .from(votes)
+          .where(
+            patternConditions.length > 1 ? and(...patternConditions) : patternConditions[0]
+          );
       }
 
       const allVotes = await allVotesQuery;
@@ -207,8 +228,7 @@ export async function GET(request: NextRequest) {
               1,
               Math.ceil(
                 (now.getTime() -
-                  (allVotes[allVotes.length - 1]?.createdAt.getTime() ||
-                    now.getTime())) /
+                  (allVotes.at(-1)?.createdAt.getTime() || now.getTime())) /
                   (1000 * 60 * 60 * 24)
               )
             )
@@ -253,8 +273,7 @@ export async function GET(request: NextRequest) {
       page,
       period,
     });
-  } catch (error) {
-    console.error('Vote history API error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

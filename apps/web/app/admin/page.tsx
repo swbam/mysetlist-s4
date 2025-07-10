@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server';
 import {
   Card,
   CardContent,
@@ -18,6 +17,7 @@ import {
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
+import { createClient } from '~/lib/supabase/server';
 
 // Force dynamic rendering due to user-specific data fetching
 export const dynamic = 'force-dynamic';
@@ -142,7 +142,9 @@ export default async function AdminDashboard({
   const weekAgoStats = platformStats?.[platformStats.length - 1];
 
   const calculateTrend = (current: number, previous: number) => {
-    if (!previous || previous === 0) return 0;
+    if (!previous || previous === 0) {
+      return 0;
+    }
     return Math.round(((current - previous) / previous) * 100);
   };
 

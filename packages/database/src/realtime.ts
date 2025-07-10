@@ -83,11 +83,7 @@ export class RealtimeManager {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log(`✅ Subscribed to setlist updates for show ${showId}`);
         } else if (status === 'CHANNEL_ERROR') {
-          console.error(
-            `❌ Failed to subscribe to setlist updates for show ${showId}`
-          );
         }
       });
 
@@ -150,13 +146,7 @@ export class RealtimeManager {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log(
-            `✅ Subscribed to vote updates for setlist song ${setlistSongId}`
-          );
         } else if (status === 'CHANNEL_ERROR') {
-          console.error(
-            `❌ Failed to subscribe to vote updates for setlist song ${setlistSongId}`
-          );
         }
       });
 
@@ -190,9 +180,7 @@ export class RealtimeManager {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log(`✅ Subscribed to show updates for ${showId}`);
         } else if (status === 'CHANNEL_ERROR') {
-          console.error(`❌ Failed to subscribe to show updates for ${showId}`);
         }
       });
 
@@ -226,11 +214,7 @@ export class RealtimeManager {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log(`✅ Subscribed to attendance updates for show ${showId}`);
         } else if (status === 'CHANNEL_ERROR') {
-          console.error(
-            `❌ Failed to subscribe to attendance updates for show ${showId}`
-          );
         }
       });
 
@@ -264,13 +248,7 @@ export class RealtimeManager {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log(
-            `✅ Subscribed to follower updates for artist ${artistId}`
-          );
         } else if (status === 'CHANNEL_ERROR') {
-          console.error(
-            `❌ Failed to subscribe to follower updates for artist ${artistId}`
-          );
         }
       });
 
@@ -313,9 +291,7 @@ export class RealtimeManager {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log(`✅ Subscribed to trending updates`);
         } else if (status === 'CHANNEL_ERROR') {
-          console.error(`❌ Failed to subscribe to trending updates`);
         }
       });
 
@@ -359,11 +335,7 @@ export class RealtimeManager {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log(`✅ Subscribed to setlist votes for ${setlistId}`);
         } else if (status === 'CHANNEL_ERROR') {
-          console.error(
-            `❌ Failed to subscribe to setlist votes for ${setlistId}`
-          );
         }
       });
 
@@ -420,9 +392,7 @@ export class RealtimeManager {
       )
       .subscribe((status) => {
         if (status === 'SUBSCRIBED') {
-          console.log(`✅ Subscribed to global activity feed`);
         } else if (status === 'CHANNEL_ERROR') {
-          console.error(`❌ Failed to subscribe to global activity feed`);
         }
       });
 
@@ -438,7 +408,6 @@ export class RealtimeManager {
     if (channel) {
       supabase.removeChannel(channel);
       this.channels.delete(channelName);
-      console.log(`🔌 Unsubscribed from ${channelName}`);
     }
   }
 
@@ -449,7 +418,6 @@ export class RealtimeManager {
     this.channels.forEach((_, channelName) => {
       this.unsubscribe(channelName);
     });
-    console.log(`🔌 Unsubscribed from all realtime channels`);
   }
 
   /**

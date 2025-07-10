@@ -20,10 +20,10 @@ export default function TestAuthPage() {
     return (
       <div className="container mx-auto max-w-4xl px-4 py-8">
         <div className="animate-pulse space-y-6">
-          <div className="h-32 rounded-lg bg-muted"></div>
+          <div className="h-32 rounded-lg bg-muted" />
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div className="h-64 rounded-lg bg-muted"></div>
-            <div className="h-64 rounded-lg bg-muted"></div>
+            <div className="h-64 rounded-lg bg-muted" />
+            <div className="h-64 rounded-lg bg-muted" />
           </div>
         </div>
       </div>
@@ -70,7 +70,9 @@ export default function TestAuthPage() {
             <div className="flex items-center justify-between">
               <span className="font-medium text-sm">User Role:</span>
               <Badge variant="outline">
-                {user?.app_metadata?.role || user?.user_metadata?.role || 'user'}
+                {user?.app_metadata?.role ||
+                  user?.user_metadata?.role ||
+                  'user'}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
@@ -121,14 +123,15 @@ export default function TestAuthPage() {
                 </div>
 
                 {/* User Metadata */}
-                {user.user_metadata && Object.keys(user.user_metadata).length > 0 && (
-                  <div className="border-t pt-4">
-                    <h4 className="mb-2 font-medium">User Metadata:</h4>
-                    <pre className="overflow-auto rounded bg-muted p-2 text-xs">
-                      {JSON.stringify(user.user_metadata, null, 2)}
-                    </pre>
-                  </div>
-                )}
+                {user.user_metadata &&
+                  Object.keys(user.user_metadata).length > 0 && (
+                    <div className="border-t pt-4">
+                      <h4 className="mb-2 font-medium">User Metadata:</h4>
+                      <pre className="overflow-auto rounded bg-muted p-2 text-xs">
+                        {JSON.stringify(user.user_metadata, null, 2)}
+                      </pre>
+                    </div>
+                  )}
 
                 {/* App Metadata */}
                 {user.app_metadata &&

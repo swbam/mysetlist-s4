@@ -143,7 +143,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Trending update cron error:', error);
     return NextResponse.json(
       {
         error: 'Trending update failed',

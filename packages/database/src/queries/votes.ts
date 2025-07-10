@@ -49,7 +49,9 @@ export async function getUserVote(userId: string, setlistSongId: string) {
 }
 
 export async function getUserVotes(userId: string, setlistSongIds: string[]) {
-  if (setlistSongIds.length === 0) return {};
+  if (setlistSongIds.length === 0) {
+    return {};
+  }
 
   const userVotes = await db
     .select({
@@ -371,7 +373,9 @@ export async function getVotingTrends(options?: {
 }
 
 export async function bulkUpdateVoteCounts(setlistSongIds: string[]) {
-  if (setlistSongIds.length === 0) return [];
+  if (setlistSongIds.length === 0) {
+    return [];
+  }
 
   // Calculate vote counts for all songs
   const voteCounts = await db

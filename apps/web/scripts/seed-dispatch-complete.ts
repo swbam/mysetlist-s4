@@ -15,12 +15,7 @@ import { eq, sql } from 'drizzle-orm';
 import { db } from './db-client';
 
 async function main() {
-  console.log('🎵 Starting comprehensive Dispatch data population...\n');
-
   try {
-    // Step 1: Create or update Dispatch artist
-    console.log('1️⃣ Creating Dispatch artist...');
-
     const [dispatchArtist] = await db
       .insert(artists)
       .values({
@@ -66,11 +61,6 @@ async function main() {
         },
       })
       .returning();
-
-    console.log('✅ Dispatch artist created/updated successfully!');
-
-    // Step 2: Create venues for shows
-    console.log('\n2️⃣ Creating venues...');
 
     const venueData = [
       {
@@ -158,13 +148,11 @@ async function main() {
       },
     ];
 
-    const createdVenues = await db
+    const _createdVenues = await db
       .insert(venues)
       .values(venueData)
       .onConflictDoNothing()
       .returning();
-
-    console.log(`✅ Created ${createdVenues.length} venues`);
 
     // Get all venues for shows
     const allVenues = await db
@@ -173,9 +161,6 @@ async function main() {
       .where(
         sql`slug IN ('red-rocks-amphitheatre', 'house-of-blues-boston', 'the-fillmore-sf', '930-club', 'bowery-ballroom')`
       );
-
-    // Step 3: Create shows for Dispatch
-    console.log('\n3️⃣ Creating shows for Dispatch...');
 
     const today = new Date();
     const showsData = [
@@ -301,8 +286,6 @@ async function main() {
       .onConflictDoNothing()
       .returning();
 
-    console.log(`✅ Created ${createdShows.length} shows`);
-
     // Create show_artists entries
     for (const show of createdShows) {
       await db
@@ -316,9 +299,6 @@ async function main() {
         })
         .onConflictDoNothing();
     }
-
-    // Step 4: Create Dispatch songs
-    console.log('\n4️⃣ Creating Dispatch song catalog...');
 
     const dispatchSongs = [
       {
@@ -516,22 +496,17 @@ async function main() {
       },
     ];
 
-    const createdSongs = await db
+    const _createdSongs = await db
       .insert(songs)
       .values(dispatchSongs)
       .onConflictDoNothing()
       .returning();
-
-    console.log(`✅ Created ${createdSongs.length} songs`);
 
     // Get all songs for setlists
     const allSongs = await db
       .select()
       .from(songs)
       .where(eq(songs.artist, 'Dispatch'));
-
-    // Step 5: Create setlists and votes
-    console.log('\n5️⃣ Creating setlists and votes...');
 
     // Create a test user for votes
     const [testUser] = await db
@@ -544,8 +519,8 @@ async function main() {
       .onConflictDoNothing()
       .returning();
 
-    let setlistCount = 0;
-    let voteCount = 0;
+    let _setlistCount = 0;
+    let _voteCount = 0;
 
     for (const show of createdShows) {
       // Create 1-3 setlists per show
@@ -572,7 +547,7 @@ async function main() {
           })
           .returning();
 
-        setlistCount++;
+        _setlistCount++;
 
         // Add 15-20 songs to each setlist
         const shuffledSongs = [...allSongs].sort(() => Math.random() - 0.5);
@@ -615,17 +590,11 @@ async function main() {
               })
               .onConflictDoNothing();
 
-            voteCount++;
+            _voteCount++;
           }
         }
       }
     }
-
-    console.log(`✅ Created ${setlistCount} setlists with songs`);
-    console.log(`✅ Created ${voteCount} votes`);
-
-    // Step 6: Update vote counts and trending scores
-    console.log('\n6️⃣ Updating aggregated data...');
 
     // Update net votes for all setlist songs
     await db.execute(sql`
@@ -663,29 +632,7 @@ async function main() {
         last_show_date = EXCLUDED.last_show_date,
         updated_at = NOW()
     `);
-
-    console.log('✅ Updated all aggregated data');
-
-    // Step 7: Final summary
-    console.log('\n🎉 Dispatch data population completed successfully!');
-    console.log('\n📊 Summary:');
-    console.log(
-      `- Artist: Dispatch (${dispatchArtist.followers.toLocaleString()} Spotify followers)`
-    );
-    console.log(`- Venues: ${allVenues.length} venues created`);
-    console.log(`- Shows: ${createdShows.length} shows (upcoming and past)`);
-    console.log(`- Songs: ${createdSongs.length} songs in catalog`);
-    console.log(`- Setlists: ${setlistCount} setlists with full song lists`);
-    console.log(`- Votes: ${voteCount} sample votes`);
-
-    console.log('\n✨ You can now test:');
-    console.log('- Search for "Dispatch" in the search bar');
-    console.log('- Visit /artists/dispatch to see the artist page');
-    console.log('- Check individual show pages for setlists');
-    console.log('- View trending data on the trending page');
-    console.log('- Test voting functionality on predicted setlists');
-  } catch (error) {
-    console.error('❌ Error populating data:', error);
+  } catch (_error) {
     process.exit(1);
   }
 }
@@ -694,8 +641,7 @@ async function main() {
 if (require.main === module) {
   main()
     .then(() => process.exit(0))
-    .catch((error) => {
-      console.error(error);
+    .catch((_error) => {
       process.exit(1);
     });
 }

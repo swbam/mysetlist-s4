@@ -5,11 +5,11 @@ export async function GET() {
     status: 'checking',
     timestamp: new Date().toISOString(),
     environment: {
-      NODE_ENV: process.env.NODE_ENV,
-      hasDbUrl: !!process.env.DATABASE_URL,
-      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-      hasSupabaseAnon: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      hasSupabaseService: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      NODE_ENV: process.env['NODE_ENV'],
+      hasDbUrl: !!process.env['DATABASE_URL'],
+      hasSupabaseUrl: !!process.env['NEXT_PUBLIC_SUPABASE_URL'],
+      hasSupabaseAnon: !!process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'],
+      hasSupabaseService: !!process.env['SUPABASE_SERVICE_ROLE_KEY'],
     },
     database: {
       connected: false,
@@ -22,9 +22,9 @@ export async function GET() {
     // Try to import the database module first
     const dbModule = await import('@repo/database');
     diagnostics.importedKeys = Object.keys(dbModule).sort();
-    
+
     const { db, sql } = dbModule;
-    
+
     if (!db) {
       diagnostics.database.error = 'Database instance is null';
       diagnostics.status = 'error';
@@ -32,7 +32,7 @@ export async function GET() {
     }
 
     // Log db properties for debugging
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env['NODE_ENV'] === 'development') {
       diagnostics.dbDebug = {
         type: typeof db,
         hasExecute: 'execute' in db,
@@ -64,22 +64,25 @@ export async function GET() {
       code: error.code,
       detail: error.detail,
       hint: error.hint,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+      stack: process.env['NODE_ENV'] === 'development' ? error.stack : undefined,
     };
 
     // Check for specific error types
     if (error.message?.includes('DATABASE_URL')) {
       diagnostics.database.error.type = 'configuration';
-      diagnostics.database.error.suggestion = 'Please set DATABASE_URL in your .env.local file';
+      diagnostics.database.error.suggestion =
+        'Please set DATABASE_URL in your .env.local file';
     } else if (error.code === 'ECONNREFUSED') {
       diagnostics.database.error.type = 'connection';
-      diagnostics.database.error.suggestion = 'Database server is not reachable';
+      diagnostics.database.error.suggestion =
+        'Database server is not reachable';
     } else if (error.code === '28P01') {
       diagnostics.database.error.type = 'authentication';
       diagnostics.database.error.suggestion = 'Invalid database credentials';
     } else if (error.message?.includes('Symbol(drizzle:')) {
       diagnostics.database.error.type = 'drizzle-initialization';
-      diagnostics.database.error.suggestion = 'Drizzle ORM initialization failed';
+      diagnostics.database.error.suggestion =
+        'Drizzle ORM initialization failed';
     }
 
     return NextResponse.json(diagnostics, { status: 500 });

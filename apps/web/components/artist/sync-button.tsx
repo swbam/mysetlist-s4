@@ -1,9 +1,9 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import { AlertCircle, Check, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { Button } from '~/components/ui/button';
 
 interface SyncButtonProps {
   artistId: string;
@@ -105,7 +105,9 @@ export function ArtistSyncButton({
   };
 
   const getLastSyncText = () => {
-    if (!lastSyncedAt) return 'Never synced';
+    if (!lastSyncedAt) {
+      return 'Never synced';
+    }
 
     const now = new Date();
     const syncDate = new Date(lastSyncedAt);
@@ -115,11 +117,11 @@ export function ArtistSyncButton({
 
     if (diffDays > 0) {
       return `Last synced ${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    } else if (diffHours > 0) {
-      return `Last synced ${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    } else {
-      return 'Recently synced';
     }
+    if (diffHours > 0) {
+      return `Last synced ${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    }
+    return 'Recently synced';
   };
 
   return (

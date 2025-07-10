@@ -9,7 +9,9 @@ export function useTrackView(
   id: string | undefined
 ) {
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      return;
+    }
 
     // Track the view after a short delay to ensure page has loaded
     const timeout = setTimeout(async () => {
@@ -21,10 +23,7 @@ export function useTrackView(
           },
           body: JSON.stringify({ type, id }),
         });
-      } catch (error) {
-        // Silently fail - analytics shouldn't break the app
-        console.debug('Failed to track view:', error);
-      }
+      } catch (_error) {}
     }, 1000);
 
     return () => clearTimeout(timeout);

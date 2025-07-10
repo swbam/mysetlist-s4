@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { promises as fs } from 'fs';
-import path from 'path';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
 
 const DIRECTORIES_TO_UPDATE = [
   'apps/web/components',
@@ -55,13 +55,8 @@ async function updateFetchCalls(filePath: string) {
 
     if (updated) {
       await fs.writeFile(filePath, content);
-      console.log(
-        `  ✅ Updated fetch calls in ${path.relative(process.cwd(), filePath)}`
-      );
     }
-  } catch (error) {
-    console.error(`  ❌ Error updating ${filePath}:`, error);
-  }
+  } catch (_error) {}
 }
 
 async function processDirectory(dir: string) {
@@ -72,7 +67,9 @@ async function processDirectory(dir: string) {
 
     if (entry.isDirectory()) {
       // Skip test directories
-      if (entry.name === '__tests__' || entry.name === 'test') continue;
+      if (entry.name === '__tests__' || entry.name === 'test') {
+        continue;
+      }
       await processDirectory(fullPath);
     } else if (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx')) {
       await updateFetchCalls(fullPath);
@@ -81,8 +78,6 @@ async function processDirectory(dir: string) {
 }
 
 async function createApiUrlHelper() {
-  console.log('\n📝 Creating API URL helper...');
-
   const helperContent = `export function getApiUrl(path: string): string {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
   const cleanPath = path.startsWith('/') ? path : \`/\${path}\`;
@@ -96,27 +91,17 @@ export function apiUrl(path: string): string {
 
   const helperPath = path.join(process.cwd(), 'apps/web/lib/api-url.ts');
   await fs.writeFile(helperPath, helperContent);
-  console.log('  ✅ Created API URL helper at apps/web/lib/api-url.ts');
 }
 
 async function main() {
-  console.log('🔄 Updating client-side fetch calls...\n');
-
   // Create API URL helper
   await createApiUrlHelper();
 
   // Update fetch calls in all directories
   for (const dir of DIRECTORIES_TO_UPDATE) {
     const fullPath = path.join(process.cwd(), dir);
-    console.log(`\n📂 Processing ${dir}...`);
     await processDirectory(fullPath);
   }
-
-  console.log('\n✨ Client fetch updates complete!');
-  console.log('\nNext steps:');
-  console.log('1. Import { apiUrl } from "@/lib/api-url" where needed');
-  console.log('2. Use apiUrl("/admin/users") instead of hardcoded URLs');
-  console.log('3. Test that API calls work correctly');
 }
 
 main().catch(console.error);

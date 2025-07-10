@@ -33,7 +33,6 @@ export function AuthCallback() {
         const { data, error } = await supabase.auth.getSession();
 
         if (error) {
-          console.error('Auth callback error:', error);
           setState('error');
           setMessage(error.message);
           return;
@@ -71,8 +70,7 @@ export function AuthCallback() {
             }, 3000);
           }
         }
-      } catch (err) {
-        console.error('Unexpected error during auth callback:', err);
+      } catch (_err) {
         setState('error');
         setMessage('An unexpected error occurred. Please try again.');
 

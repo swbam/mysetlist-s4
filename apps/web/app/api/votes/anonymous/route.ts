@@ -1,17 +1,17 @@
+import { db } from '@repo/database';
+import { setlistSongs } from '@repo/database';
+import { eq } from 'drizzle-orm';
+import { type NextRequest, NextResponse } from 'next/server';
 import {
   canPerformAnonymousAction,
   getAnonymousLimitsStatus,
   getAnonymousSessionId,
   incrementAnonymousAction,
-} from '@/lib/anonymous-limits';
-import { db } from '@repo/database';
-import { setlistSongs } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+} from '~/lib/anonymous-limits';
 
 export async function POST(request: NextRequest) {
   try {
-    const { setlistSongId, voteType, sessionId } = await request.json();
+    const { setlistSongId, voteType, sessionId: _sessionId } = await request.json();
 
     if (!setlistSongId) {
       return NextResponse.json(
@@ -71,8 +71,7 @@ export async function POST(request: NextRequest) {
         resetTime,
       },
     });
-  } catch (error) {
-    console.error('Anonymous vote API error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -118,8 +117,7 @@ export async function GET(request: NextRequest) {
       limits: status.usage.votes,
       resetTime: status.resetTime,
     });
-  } catch (error) {
-    console.error('Get anonymous votes API error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

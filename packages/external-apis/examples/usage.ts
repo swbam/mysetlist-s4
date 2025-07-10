@@ -17,16 +17,8 @@ async function spotifyExample() {
   const searchResult = await spotify.searchArtists('Taylor Swift', 1);
   const artist = searchResult.artists.items[0];
 
-  console.log('Artist:', artist.name);
-  console.log('Genres:', artist.genres);
-  console.log('Popularity:', artist.popularity);
-
   // Get top tracks
-  const topTracks = await spotify.getArtistTopTracks(artist.id);
-  console.log(
-    'Top tracks:',
-    topTracks.tracks.map((t) => t.name)
-  );
+  const _topTracks = await spotify.getArtistTopTracks(artist.id);
 }
 
 // Example 2: Using Ticketmaster client
@@ -40,14 +32,7 @@ async function ticketmasterExample() {
   });
 
   if (events._embedded?.events) {
-    events._embedded.events.forEach((event) => {
-      console.log(`${event.name} - ${event.dates.start.localDate}`);
-      console.log(`Venue: ${event._embedded?.venues?.[0]?.name}`);
-      console.log(
-        `Price: $${event.priceRanges?.[0]?.min} - $${event.priceRanges?.[0]?.max}`
-      );
-      console.log('---');
-    });
+    events._embedded.events.forEach((_event) => {});
   }
 }
 
@@ -60,16 +45,9 @@ async function setlistfmExample() {
   });
 
   setlists.setlist.forEach((setlist) => {
-    console.log(
-      `${setlist.eventDate} - ${setlist.venue.name}, ${setlist.venue.city.name}`
-    );
-    setlist.sets.set.forEach((set, index) => {
-      console.log(`Set ${index + 1}:`);
-      set.song.forEach((song) => {
-        console.log(`  - ${song.name}`);
-      });
+    setlist.sets.set.forEach((set, _index) => {
+      set.song.forEach((_song) => {});
     });
-    console.log('---');
   });
 }
 
@@ -118,22 +96,15 @@ async function schedulerExample() {
 // Run examples
 async function main() {
   try {
-    console.log('=== Spotify Example ===');
     await spotifyExample();
-
-    console.log('\n=== Ticketmaster Example ===');
     await ticketmasterExample();
-
-    console.log('\n=== Setlist.fm Example ===');
     await setlistfmExample();
 
     // Uncomment to run sync examples (will modify database)
     // console.log('\n=== Sync Examples ===');
     // await syncExample();
     // await schedulerExample();
-  } catch (error) {
-    console.error('Error:', error);
-  }
+  } catch (_error) {}
 }
 
 // Run if called directly

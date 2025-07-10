@@ -1,6 +1,5 @@
 'use client';
 
-import { ThemeToggle } from '@/components/ui/theme-provider';
 import { useAuth } from '@repo/auth';
 import { Button } from '@repo/design-system';
 import { SearchBox } from '@repo/design-system';
@@ -32,6 +31,7 @@ import {
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { ThemeToggle } from '~/components/ui/theme-provider';
 
 interface ResponsiveHeaderProps {
   className?: string;
@@ -49,7 +49,9 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
 
   // Handle swipe gestures for mobile menu
   useEffect(() => {
-    if (!isMobileMenuOpen || !mobileMenuRef.current) return;
+    if (!isMobileMenuOpen || !mobileMenuRef.current) {
+      return;
+    }
 
     const handleTouchStart = (e: TouchEvent) => {
       touchStartX.current = e.changedTouches[0].screenX;
@@ -105,7 +107,9 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
   };
 
   const handleSearch = async (query: string) => {
-    if (query.length < 2) return [];
+    if (query.length < 2) {
+      return [];
+    }
 
     try {
       const response = await fetch(
@@ -115,9 +119,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
         const data = await response.json();
         return data.suggestions || [];
       }
-    } catch (error) {
-      console.error('Search failed:', error);
-    }
+    } catch (_error) {}
 
     return [];
   };
@@ -151,9 +153,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
     try {
       await signOut();
       router.push('/');
-    } catch (error) {
-      console.error('Sign out failed:', error);
-    }
+    } catch (_error) {}
   };
 
   return (

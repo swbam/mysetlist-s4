@@ -1,9 +1,9 @@
 'use client';
 
 import { Progress } from '@repo/design-system/components/ui/progress';
-import type { SyncProgress } from '@/lib/sync/progress-tracker';
 import { CheckCircle2, Clock, Loader2, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import type { SyncProgress } from '~/lib/sync/progress-tracker';
 
 interface SyncProgressDisplayProps {
   artistId: string;
@@ -35,7 +35,7 @@ export function SyncProgressDisplay({
         } else if (response.status === 404) {
           setError('No sync in progress');
         }
-      } catch (err) {
+      } catch (_err) {
         setError('Failed to fetch progress');
       }
     };

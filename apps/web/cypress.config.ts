@@ -16,11 +16,10 @@ export default defineConfig({
     env: {
       API_URL: 'http://localhost:3001/api',
     },
-    setupNodeEvents(on, config) {
+    setupNodeEvents(on, _config) {
       // implement node event listeners here
       on('task', {
-        log(message) {
-          console.log(message);
+        log(_message) {
           return null;
         },
       });

@@ -87,9 +87,7 @@ export function SetlistManager({
         const data = await response.json();
         setSetlists(data.setlists || []);
       }
-    } catch (error) {
-      console.error('Failed to fetch setlists:', error);
-    }
+    } catch (_error) {}
   };
 
   const createNewSetlist = async (type: 'predicted' | 'actual') => {
@@ -118,8 +116,7 @@ export function SetlistManager({
       );
 
       return newSetlist;
-    } catch (error) {
-      console.error('Create setlist error:', error);
+    } catch (_error) {
       toast.error('Failed to create setlist');
     }
   };

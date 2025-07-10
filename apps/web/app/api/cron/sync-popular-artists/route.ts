@@ -8,9 +8,9 @@ import { type NextRequest, NextResponse } from 'next/server';
  * Cron job to sync popular artists data
  * Runs daily to keep artist catalogs, shows, and setlists up to date
  */
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   // Verify cron secret
-  const headersList = headers();
+  const headersList = await headers();
   const cronSecret = headersList.get('x-cron-secret');
 
   if (process.env['CRON_SECRET'] && cronSecret !== process.env['CRON_SECRET']) {
@@ -104,7 +104,6 @@ export async function GET(request: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error('Cron sync failed:', error);
     return NextResponse.json(
       {
         error: 'Cron sync failed',

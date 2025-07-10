@@ -22,18 +22,14 @@ import {
 import { and, eq, gte, inArray, isNotNull, isNull, lt, lte } from 'drizzle-orm';
 
 // Generic email notification function
-export async function sendEmailNotification(params: {
+export async function sendEmailNotification(_params: {
   to: string;
   subject: string;
   content: string;
 }) {
   try {
-    // This is a fallback for simple text emails
-    // In production, use the specific template functions from @repo/email
-    console.log('Sending email:', params);
     return { success: true };
   } catch (error) {
-    console.error('Email sending error:', error);
     return { success: false, error };
   }
 }
@@ -81,7 +77,9 @@ export async function sendDailyShowReminders() {
     >();
 
     for (const record of upcomingShows) {
-      if (!record.attendees?.userId) continue;
+      if (!record.attendees?.userId) {
+        continue;
+      }
 
       const user = await db
         .select()
@@ -94,7 +92,7 @@ export async function sendDailyShowReminders() {
         if (!showAttendees.has(showId)) {
           showAttendees.set(showId, []);
         }
-        showAttendees.get(showId)!.push({
+        showAttendees.get(showId)?.push({
           userId: user[0].id,
           userName: user[0].displayName || 'there',
           userEmail: user[0].email,
@@ -108,7 +106,9 @@ export async function sendDailyShowReminders() {
     // Send reminders for each show
     for (const [showId, attendees] of showAttendees) {
       const showData = upcomingShows.find((s) => s.show.id === showId);
-      if (!showData) continue;
+      if (!showData) {
+        continue;
+      }
 
       const daysUntilShow = showData.show.date === todayStr ? 0 : 1;
 
@@ -163,7 +163,6 @@ export async function sendDailyShowReminders() {
       showsNotified: totalShowsNotified,
     };
   } catch (error) {
-    console.error('Daily show reminders error:', error);
     return {
       success: false,
       usersNotified: 0,
@@ -206,7 +205,9 @@ export async function sendWeeklyDigests() {
     let totalUsersNotified = 0;
 
     for (const record of usersWithDigest) {
-      if (!record.user.email) continue;
+      if (!record.user.email) {
+        continue;
+      }
 
       // Get user's followed artists
       const followedArtists = await db
@@ -217,7 +218,9 @@ export async function sendWeeklyDigests() {
         .innerJoin(artists, eq(artists.id, userFollowsArtists.artistId))
         .where(eq(userFollowsArtists.userId, record.user.id));
 
-      if (!followedArtists.length) continue;
+      if (!followedArtists.length) {
+        continue;
+      }
 
       const artistIds = followedArtists.map((f) => f.artist.id);
 
@@ -278,7 +281,6 @@ export async function sendWeeklyDigests() {
       usersNotified: totalUsersNotified,
     };
   } catch (error) {
-    console.error('Weekly digest error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -353,7 +355,6 @@ export async function sendVoteNotification(params: {
 
     return { success: true };
   } catch (error) {
-    console.error('Vote notification error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -401,7 +402,9 @@ export async function sendNewShowNotification(params: {
     const emailsToSend: EmailAddress[] = [];
 
     for (const follower of followers) {
-      if (!follower.user.email) continue;
+      if (!follower.user.email) {
+        continue;
+      }
 
       // Check if new show notifications are enabled (default true if no prefs)
       if (!follower.prefs || follower.prefs.newShowNotifications) {
@@ -421,11 +424,11 @@ export async function sendNewShowNotification(params: {
           email: e.email,
           userName: e.name || 'there',
           show: {
-            id: showData[0]!.show.id,
-            name: showData[0]!.show.name,
-            artistName: showData[0]!.artist.name,
+            id: showData[0]?.show.id,
+            name: showData[0]?.show.name,
+            artistName: showData[0]?.artist.name,
             venue: 'Venue TBA',
-            date: new Date(showData[0]!.show.date).toLocaleDateString(),
+            date: new Date(showData[0]?.show.date || new Date()).toLocaleDateString(),
             announcedAt: new Date().toISOString(),
           },
         })),
@@ -446,7 +449,6 @@ export async function sendNewShowNotification(params: {
 
     return { success: true, usersNotified: 0 };
   } catch (error) {
-    console.error('New show notification error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -480,7 +482,6 @@ export async function sendWelcomeEmailAction(userId: string) {
 
     return { success: true };
   } catch (error) {
-    console.error('Welcome email error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -498,15 +499,13 @@ export async function sendWeeklyDigest() {
 }
 
 export async function processEmailQueue() {
-  // In production, this would process queued emails from a database table
-  console.log('Processing email queue');
   return { success: true };
 }
 
 export async function processQueuedEmails() {
   try {
     const now = new Date();
-    
+
     // Get queued emails that are scheduled to be sent
     const queuedEmails = await db
       .select({
@@ -531,48 +530,59 @@ export async function processQueuedEmails() {
 
     for (const record of queuedEmails) {
       processed++;
-      
+
       try {
         // Parse email data
-        const emailData = record.queue.emailData 
-          ? JSON.parse(record.queue.emailData) 
+        const emailData = record.queue.emailData
+          ? JSON.parse(record.queue.emailData)
           : {};
 
         // Send email based on type
         let result: { success: boolean; error?: string };
-        
+
         switch (record.queue.emailType) {
           case 'welcome':
             result = await sendWelcomeEmailAction(record.queue.userId);
             break;
-            
-          case 'show_reminder':
+
+          case 'show_reminder': {
             const showReminderResult = await sendShowReminderEmail({
-              to: [{ email: record.user.email!, name: record.user.displayName || 'there' }],
+              to: [
+                {
+                  email: record.user.email!,
+                  name: record.user.displayName || 'there',
+                },
+              ],
               userName: record.user.displayName || 'there',
               show: emailData.show,
               daysUntilShow: emailData.daysUntilShow,
             });
             result = {
               success: showReminderResult.success,
-              ...(showReminderResult.error?.message && { error: showReminderResult.error.message })
+              ...(showReminderResult.error?.message && {
+                error: showReminderResult.error.message,
+              }),
             };
             break;
-            
+          }
+
           case 'new_show':
             result = await sendNewShowNotification({
               artistId: emailData.artistId,
               showId: emailData.showId,
             });
             break;
-            
+
           case 'weekly_digest':
             // This is handled by a separate cron job
             result = { success: true };
             break;
-            
+
           default:
-            result = { success: false, error: `Unknown email type: ${record.queue.emailType}` };
+            result = {
+              success: false,
+              error: `Unknown email type: ${record.queue.emailType}`,
+            };
         }
 
         if (result.success) {
@@ -584,7 +594,7 @@ export async function processQueuedEmails() {
               updatedAt: new Date(),
             })
             .where(eq(emailQueue.id, record.queue.id));
-            
+
           // Log successful send
           await db.insert(emailLogs).values({
             userId: record.queue.userId,
@@ -594,7 +604,7 @@ export async function processQueuedEmails() {
             status: 'sent',
             sentAt: new Date(),
           });
-          
+
           successful++;
         } else {
           // Update attempts and error
@@ -603,31 +613,31 @@ export async function processQueuedEmails() {
             .set({
               attempts: record.queue.attempts + 1,
               lastError: result.error || 'Unknown error',
-              failedAt: record.queue.attempts + 1 >= record.queue.maxAttempts 
-                ? new Date() 
-                : null,
+              failedAt:
+                record.queue.attempts + 1 >= record.queue.maxAttempts
+                  ? new Date()
+                  : null,
               updatedAt: new Date(),
             })
             .where(eq(emailQueue.id, record.queue.id));
-            
+
           failed++;
         }
       } catch (error) {
-        console.error(`Failed to process queued email ${record.queue.id}:`, error);
-        
         // Update attempts and error
         await db
           .update(emailQueue)
           .set({
             attempts: record.queue.attempts + 1,
             lastError: error instanceof Error ? error.message : 'Unknown error',
-            failedAt: record.queue.attempts + 1 >= record.queue.maxAttempts 
-              ? new Date() 
-              : null,
+            failedAt:
+              record.queue.attempts + 1 >= record.queue.maxAttempts
+                ? new Date()
+                : null,
             updatedAt: new Date(),
           })
           .where(eq(emailQueue.id, record.queue.id));
-          
+
         failed++;
       }
     }
@@ -639,7 +649,6 @@ export async function processQueuedEmails() {
       failed,
     };
   } catch (error) {
-    console.error('Failed to process email queue:', error);
     return {
       success: false,
       processed: 0,
@@ -668,43 +677,48 @@ export async function getUserEmailPreferences() {
 }
 
 // Update user email preferences
-export async function updateEmailPreferences(data: any) {
-  // This would update in database
-  console.log('Updating email preferences:', data);
+export async function updateEmailPreferences(_data: any) {
   return { success: true };
 }
 
 // Queue email for later sending
 export async function queueEmail(params: {
   userId: string;
-  emailType: 'welcome' | 'show_reminder' | 'new_show' | 'setlist_update' | 'weekly_digest' | 'password_reset' | 'email_verification';
+  emailType:
+    | 'welcome'
+    | 'show_reminder'
+    | 'new_show'
+    | 'setlist_update'
+    | 'weekly_digest'
+    | 'password_reset'
+    | 'email_verification';
   emailData: any;
   scheduledFor: Date;
 }) {
   try {
-    const queueEntry = await db.insert(emailQueue).values({
-      userId: params.userId,
-      emailType: params.emailType,
-      emailData: JSON.stringify(params.emailData),
-      scheduledFor: params.scheduledFor,
-    }).returning();
+    const queueEntry = await db
+      .insert(emailQueue)
+      .values({
+        userId: params.userId,
+        emailType: params.emailType,
+        emailData: JSON.stringify(params.emailData),
+        scheduledFor: params.scheduledFor,
+      })
+      .returning();
 
-    return { 
-      success: true, 
-      queueId: queueEntry[0]?.id 
+    return {
+      success: true,
+      queueId: queueEntry[0]?.id,
     };
   } catch (error) {
-    console.error('Failed to queue email:', error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : 'Unknown error' 
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
 
 // Handle unsubscribe
-export async function handleUnsubscribe(token: string, emailType?: string) {
-  // This would handle unsubscribe logic
-  console.log('Handling unsubscribe:', { token, emailType });
+export async function handleUnsubscribe(_token: string, _emailType?: string) {
   return { success: true };
 }

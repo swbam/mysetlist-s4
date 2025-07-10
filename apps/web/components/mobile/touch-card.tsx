@@ -1,10 +1,10 @@
 'use client';
 
-import { useTouchGestures } from '@/hooks/use-touch-gestures';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { cn } from '@repo/design-system/lib/utils';
 import { motion } from 'framer-motion';
 import { useRef, useState } from 'react';
+import { useTouchGestures } from '~/hooks/use-touch-gestures';
 
 interface TouchCardProps {
   children: React.ReactNode;
@@ -44,9 +44,9 @@ export function TouchCard({
 }: TouchCardProps) {
   const [isPressed, setIsPressed] = useState(false);
   const [isPressedLong, setIsPressedLong] = useState(false);
-  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(
-    null
-  );
+  const [_swipeDirection, setSwipeDirection] = useState<
+    'left' | 'right' | null
+  >(null);
   const [swipeDistance, setSwipeDistance] = useState(0);
 
   const cardRef = useRef<HTMLDivElement>(null);
@@ -56,7 +56,9 @@ export function TouchCard({
   );
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
 
     const touch = e.touches[0];
     touchStart.current = {
@@ -82,7 +84,9 @@ export function TouchCard({
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!touchStart.current || disabled) return;
+    if (!touchStart.current || disabled) {
+      return;
+    }
 
     const touch = e.touches[0];
     const deltaX = touch.clientX - touchStart.current.x;
@@ -122,7 +126,9 @@ export function TouchCard({
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStart.current || disabled) return;
+    if (!touchStart.current || disabled) {
+      return;
+    }
 
     const touch = e.changedTouches[0];
     const deltaX = touch.clientX - touchStart.current.x;

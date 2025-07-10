@@ -1,7 +1,5 @@
 'use client';
 
-import { VoteButton } from '@/components/voting/vote-button';
-import { useRealtimeSetlist } from '@/hooks/use-realtime-setlist';
 import {
   Alert,
   AlertDescription,
@@ -30,6 +28,8 @@ import {
   WifiOff,
 } from 'lucide-react';
 import { useState } from 'react';
+import { VoteButton } from '~/components/voting/vote-button';
+import { useRealtimeSetlist } from '~/hooks/use-realtime-setlist';
 
 type EnhancedSetlistViewerProps = {
   showId: string;
@@ -42,7 +42,7 @@ export const EnhancedSetlistViewer = ({
   const [realtimeEvents, setRealtimeEvents] = useState<
     Array<{ id: string; message: string; timestamp: Date }>
   >([]);
-  const [showEventNotifications, setShowEventNotifications] = useState(true);
+  const [showEventNotifications, _setShowEventNotifications] = useState(true);
 
   const {
     setlists,
@@ -58,7 +58,7 @@ export const EnhancedSetlistViewer = ({
       let message = '';
 
       switch (event.type) {
-        case 'song_played':
+        case 'song_played': {
           const playedSong = setlists
             .flatMap((s) => s.songs)
             .find((s) => s.id === event.data.songId);
@@ -66,6 +66,7 @@ export const EnhancedSetlistViewer = ({
             message = `Now playing: ${playedSong.song.title}`;
           }
           break;
+        }
         case 'vote_update':
           message = 'Vote counts updated';
           break;
@@ -114,15 +115,14 @@ export const EnhancedSetlistViewer = ({
       });
 
       if (!response.ok) {
-        console.error('Vote failed');
       }
-    } catch (error) {
-      console.error('Failed to vote:', error);
-    }
+    } catch (_error) {}
   };
 
   const formatDuration = (durationMs?: number) => {
-    if (!durationMs) return '?:??';
+    if (!durationMs) {
+      return '?:??';
+    }
     const minutes = Math.floor(durationMs / 60000);
     const seconds = Math.floor((durationMs % 60000) / 1000);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;

@@ -1,17 +1,5 @@
 'use client';
 
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   AlertCircle,
   CheckCircle2,
@@ -22,6 +10,18 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
+import { Badge } from '~/components/ui/badge';
+import { Button } from '~/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '~/components/ui/card';
+import { Progress } from '~/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 
 interface IntegrityCheck {
   name: string;
@@ -50,11 +50,12 @@ export function DataIntegrityDashboard() {
     setLoading(true);
     try {
       const response = await fetch('/api/admin/verify-integrity');
-      if (!response.ok) throw new Error('Failed to load integrity report');
+      if (!response.ok) {
+        throw new Error('Failed to load integrity report');
+      }
       const data = await response.json();
       setReport(data);
-    } catch (error) {
-      console.error('Error loading integrity report:', error);
+    } catch (_error) {
     } finally {
       setLoading(false);
     }
@@ -73,7 +74,9 @@ export function DataIntegrityDashboard() {
         body: JSON.stringify({ action }),
       });
 
-      if (!response.ok) throw new Error('Failed to execute fix');
+      if (!response.ok) {
+        throw new Error('Failed to execute fix');
+      }
 
       const result = await response.json();
 
@@ -82,15 +85,14 @@ export function DataIntegrityDashboard() {
 
       // Reload report
       await loadReport();
-    } catch (error) {
-      console.error('Error executing fix:', error);
+    } catch (_error) {
       alert('Failed to execute fix');
     } finally {
       setFixing(null);
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const _getStatusIcon = (status: string) => {
     switch (status) {
       case 'pass':
         return <CheckCircle2 className="h-5 w-5 text-green-500" />;
@@ -103,7 +105,7 @@ export function DataIntegrityDashboard() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const _getStatusBadge = (status: string) => {
     switch (status) {
       case 'pass':
         return (

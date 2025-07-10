@@ -32,6 +32,8 @@
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
     "strictPropertyInitialization": true,
-    "alwaysStrict": true
+    "alwaysStrict": true,
+    "experimentalDecorators": false,
+    "emitDecoratorMetadata": false
   }
 }

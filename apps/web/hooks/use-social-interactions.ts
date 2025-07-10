@@ -1,8 +1,8 @@
 'use client';
 
-import { useAuth } from '@/providers/auth-provider';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '~/providers/auth-provider';
 
 interface SocialStatus {
   liked: boolean;
@@ -53,8 +53,7 @@ export function useSocialInteractions({
             setStatus(data.status[targetId]);
           }
         }
-      } catch (error) {
-        console.error('Error fetching social status:', error);
+      } catch (_error) {
       } finally {
         setInitialLoading(false);
       }
@@ -86,7 +85,7 @@ export function useSocialInteractions({
         });
 
         if (response.ok) {
-          const data = await response.json();
+          const _data = await response.json();
 
           // Update local state
           setStatus((prev) => ({
@@ -122,8 +121,7 @@ export function useSocialInteractions({
         } else {
           throw new Error('Failed to update');
         }
-      } catch (error) {
-        console.error('Error updating social status:', error);
+      } catch (_error) {
         toast.error('Something went wrong. Please try again.');
       } finally {
         setLoading(false);
@@ -175,8 +173,7 @@ export function useSocialInteractionsBatch(
           const data = await response.json();
           setStatuses(data.status || {});
         }
-      } catch (error) {
-        console.error('Error fetching social statuses:', error);
+      } catch (_error) {
       } finally {
         setLoading(false);
       }

@@ -1,24 +1,26 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
+import { createClient } from '~/lib/supabase/server';
 
 // Validation schemas
-const signUpSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      'Password must contain at least one uppercase letter, one lowercase letter, and one number'
-    ),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ['confirmPassword'],
-});
+const signUpSchema = z
+  .object({
+    email: z.string().email('Invalid email address'),
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+      ),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
 const signInSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -28,7 +30,7 @@ const signInSchema = z.object({
 // Sign up action
 export async function signUp(formData: FormData) {
   const supabase = await createClient();
-  
+
   // Validate form data
   const validationResult = signUpSchema.safeParse({
     email: formData.get('email'),
@@ -37,8 +39,12 @@ export async function signUp(formData: FormData) {
   });
 
   if (!validationResult.success) {
-    const firstError = Object.values(validationResult.error.flatten().fieldErrors)[0]?.[0];
-    redirect(`/auth/sign-up?error=${encodeURIComponent(firstError || 'Validation error')}`);
+    const firstError = Object.values(
+      validationResult.error.flatten().fieldErrors
+    )[0]?.[0];
+    redirect(
+      `/auth/sign-up?error=${encodeURIComponent(firstError || 'Validation error')}`
+    );
   }
 
   const { email, password } = validationResult.data;
@@ -58,7 +64,9 @@ export async function signUp(formData: FormData) {
 
   // Check if email confirmation is required
   if (data?.user && !data.session) {
-    redirect(`/auth/sign-up?message=${encodeURIComponent('Please check your email to confirm your account.')}`);
+    redirect(
+      `/auth/sign-up?message=${encodeURIComponent('Please check your email to confirm your account.')}`
+    );
   }
 
   // If user is immediately signed in (no email confirmation required)
@@ -66,13 +74,15 @@ export async function signUp(formData: FormData) {
     redirect('/');
   }
 
-  redirect(`/auth/sign-up?message=${encodeURIComponent('Account created successfully!')}`);
+  redirect(
+    `/auth/sign-up?message=${encodeURIComponent('Account created successfully!')}`
+  );
 }
 
 // Sign in action
 export async function signIn(formData: FormData) {
   const supabase = await createClient();
-  
+
   // Validate form data
   const validationResult = signInSchema.safeParse({
     email: formData.get('email'),
@@ -80,8 +90,12 @@ export async function signIn(formData: FormData) {
   });
 
   if (!validationResult.success) {
-    const firstError = Object.values(validationResult.error.flatten().fieldErrors)[0]?.[0];
-    redirect(`/auth/sign-in?error=${encodeURIComponent(firstError || 'Validation error')}`);
+    const firstError = Object.values(
+      validationResult.error.flatten().fieldErrors
+    )[0]?.[0];
+    redirect(
+      `/auth/sign-in?error=${encodeURIComponent(firstError || 'Validation error')}`
+    );
   }
 
   const { email, password } = validationResult.data;
@@ -93,31 +107,33 @@ export async function signIn(formData: FormData) {
   });
 
   if (error) {
-    const errorMessage = error.message === 'Invalid login credentials' 
-      ? 'Invalid email or password' 
-      : error.message;
+    const errorMessage =
+      error.message === 'Invalid login credentials'
+        ? 'Invalid email or password'
+        : error.message;
     redirect(`/auth/sign-in?error=${encodeURIComponent(errorMessage)}`);
   }
 
   // Get the redirect URL from the query params or default to home
-  const redirectTo = formData.get('redirectTo') as string || '/';
-  
+  const redirectTo = (formData.get('redirectTo') as string) || '/';
+
   redirect(redirectTo);
 }
 
 // Sign in with OAuth provider
 export async function signInWithProvider(provider: 'spotify' | 'google') {
   const supabase = await createClient();
-  
+
   const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`;
-  
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
       redirectTo,
-      scopes: provider === 'spotify' 
-        ? 'user-read-email user-read-private user-top-read user-read-recently-played'
-        : undefined,
+      scopes:
+        provider === 'spotify'
+          ? 'user-read-email user-read-private user-top-read user-read-recently-played'
+          : undefined,
     },
   });
 
@@ -143,9 +159,9 @@ export async function signInWithProvider(provider: 'spotify' | 'google') {
 // Sign out action
 export async function signOut() {
   const supabase = await createClient();
-  
+
   const { error } = await supabase.auth.signOut();
-  
+
   if (error) {
     return {
       error: {
@@ -153,16 +169,16 @@ export async function signOut() {
       },
     };
   }
-  
+
   redirect('/');
 }
 
 // Reset password action
 export async function resetPassword(formData: FormData) {
   const supabase = await createClient();
-  
+
   const email = formData.get('email') as string;
-  
+
   if (!email || !z.string().email().safeParse(email).success) {
     return {
       error: {
@@ -192,10 +208,10 @@ export async function resetPassword(formData: FormData) {
 // Update password action (for password reset flow)
 export async function updatePassword(formData: FormData) {
   const supabase = await createClient();
-  
+
   const password = formData.get('password') as string;
   const confirmPassword = formData.get('confirmPassword') as string;
-  
+
   // Validate passwords
   if (!password || password.length < 8) {
     return {
@@ -204,7 +220,7 @@ export async function updatePassword(formData: FormData) {
       },
     };
   }
-  
+
   if (password !== confirmPassword) {
     return {
       error: {

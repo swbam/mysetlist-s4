@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createClient } from '~/lib/supabase/server';
 
 export interface EmailPreferences {
   id?: string;
@@ -18,9 +18,9 @@ export interface EmailPreferences {
 }
 
 // GET user's email preferences
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -36,7 +36,6 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (error && error.code !== 'PGRST116') {
-      console.error('Failed to fetch email preferences:', error);
       return NextResponse.json(
         { error: 'Failed to fetch preferences' },
         { status: 500 }
@@ -63,8 +62,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(preferences);
-  } catch (error) {
-    console.error('Email preferences GET error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -75,7 +73,7 @@ export async function GET(request: NextRequest) {
 // UPDATE user's email preferences
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -108,7 +106,7 @@ export async function PUT(request: NextRequest) {
     // Only include allowed fields
     Object.keys(body).forEach((key) => {
       if (allowedFields.includes(key)) {
-        updateData[key as keyof EmailPreferences] = body[key];
+        (updateData as any)[key] = body[key];
       }
     });
 
@@ -149,7 +147,6 @@ export async function PUT(request: NextRequest) {
     }
 
     if (result.error) {
-      console.error('Failed to update email preferences:', result.error);
       return NextResponse.json(
         { error: 'Failed to update preferences' },
         { status: 500 }
@@ -160,8 +157,7 @@ export async function PUT(request: NextRequest) {
       message: 'Preferences updated successfully',
       preferences: result.data,
     });
-  } catch (error) {
-    console.error('Email preferences PUT error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -172,7 +168,7 @@ export async function PUT(request: NextRequest) {
 // POST to bulk update preferences (for onboarding)
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -210,7 +206,6 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (error) {
-        console.error('Failed to reset email preferences:', error);
         return NextResponse.json(
           { error: 'Failed to reset preferences' },
           { status: 500 }
@@ -247,7 +242,6 @@ export async function POST(request: NextRequest) {
         .single();
 
       if (error) {
-        console.error('Failed to disable email preferences:', error);
         return NextResponse.json(
           { error: 'Failed to disable preferences' },
           { status: 500 }
@@ -281,7 +275,6 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Failed to update email preferences:', error);
       return NextResponse.json(
         { error: 'Failed to update preferences' },
         { status: 500 }
@@ -292,8 +285,7 @@ export async function POST(request: NextRequest) {
       message: 'Preferences updated successfully',
       preferences: data,
     });
-  } catch (error) {
-    console.error('Email preferences POST error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -19,8 +19,6 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    console.log('Updating trending scores...');
-
     // Update trending scores for shows
     const { data: shows, error: showsError } = await supabase
       .from('shows')
@@ -35,7 +33,9 @@ serve(async (req) => {
         new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
       );
 
-    if (showsError) throw showsError;
+    if (showsError) {
+      throw showsError;
+    }
 
     // Calculate and update trending scores for shows
     for (const show of shows || []) {
@@ -67,7 +67,9 @@ serve(async (req) => {
         user_follows_artists(count)
       `);
 
-    if (artistsError) throw artistsError;
+    if (artistsError) {
+      throw artistsError;
+    }
 
     // Calculate aggregate scores for artists
     for (const artist of artists || []) {
@@ -133,7 +135,6 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Error updating trending scores:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

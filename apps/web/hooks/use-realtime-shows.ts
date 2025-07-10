@@ -1,8 +1,8 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 interface Show {
   id: string;
@@ -75,8 +75,7 @@ export function useRealtimeShows({
       if (!error && data) {
         setShows(data);
       }
-    } catch (error) {
-      console.error('Error fetching shows:', error);
+    } catch (_error) {
     } finally {
       setIsLoading(false);
     }
@@ -88,9 +87,15 @@ export function useRealtimeShows({
 
     // Build filters for subscription
     const filters: any = {};
-    if (artistId) filters.artist_id = `eq.${artistId}`;
-    if (venueId) filters.venue_id = `eq.${venueId}`;
-    if (status) filters.status = `eq.${status}`;
+    if (artistId) {
+      filters.artist_id = `eq.${artistId}`;
+    }
+    if (venueId) {
+      filters.venue_id = `eq.${venueId}`;
+    }
+    if (status) {
+      filters.status = `eq.${status}`;
+    }
 
     // Subscribe to new shows
     const channel = supabase.channel('shows-realtime').on(
@@ -141,20 +146,23 @@ export function useRealtimeShows({
             artistId &&
             'artist_id' in payload.new &&
             payload.new.artist_id !== artistId
-          )
+          ) {
             return;
+          }
           if (
             venueId &&
             'venue_id' in payload.new &&
             payload.new.venue_id !== venueId
-          )
+          ) {
             return;
+          }
           if (
             status &&
             'status' in payload.new &&
             payload.new.status !== status
-          )
+          ) {
             return;
+          }
 
           // Fetch the full show data with relations
           const { data: fullShow } = await supabase

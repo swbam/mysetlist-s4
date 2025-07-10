@@ -1,7 +1,5 @@
 'use client';
 
-import { InfiniteScroll } from '@/components/ui/infinite-scroll';
-import { PullToRefresh } from '@/components/ui/pull-to-refresh';
 import { SearchBox } from '@repo/design-system';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
@@ -9,6 +7,8 @@ import { cn } from '@repo/design-system/lib/utils';
 import { Clock, Search, SlidersHorizontal, TrendingUp, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { InfiniteScroll } from '~/components/ui/infinite-scroll';
+import { PullToRefresh } from '~/components/ui/pull-to-refresh';
 import { SearchResultCard } from './search-result-card';
 
 interface RecentSearch {
@@ -54,7 +54,7 @@ export function MobileSearchInterface({
   onLoadMore,
   className,
 }: MobileSearchInterfaceProps) {
-  const router = useRouter();
+  const _router = useRouter();
   const [query, setQuery] = useState('');
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -73,9 +73,7 @@ export function MobileSearchInterface({
           timestamp: new Date(item.timestamp),
         }));
         setRecentSearches(parsed.slice(0, 5)); // Limit to 5 recent searches
-      } catch (error) {
-        console.error('Failed to parse recent searches:', error);
-      }
+      } catch (_error) {}
     }
 
     // Mock trending queries - in real app, fetch from API
@@ -94,7 +92,9 @@ export function MobileSearchInterface({
   }, []);
 
   const saveRecentSearch = useCallback((searchQuery: string) => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim()) {
+      return;
+    }
 
     const newSearch: RecentSearch = {
       id: Date.now().toString(),
@@ -115,7 +115,9 @@ export function MobileSearchInterface({
 
   const handleSearch = useCallback(
     (searchQuery: string) => {
-      if (!searchQuery.trim()) return;
+      if (!searchQuery.trim()) {
+        return;
+      }
 
       saveRecentSearch(searchQuery);
       onSearch?.(searchQuery, filters);

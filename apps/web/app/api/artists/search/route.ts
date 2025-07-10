@@ -11,30 +11,24 @@ class SpotifySearchClient {
     if (this.accessToken && Date.now() < this.tokenExpiry) {
       return;
     }
+    const response = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        Authorization: `Basic ${Buffer.from(
+          `${process.env['SPOTIFY_CLIENT_ID']}:${process.env['SPOTIFY_CLIENT_SECRET']}`
+        ).toString('base64')}`,
+      },
+      body: 'grant_type=client_credentials',
+    });
 
-    try {
-      const response = await fetch('https://accounts.spotify.com/api/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          Authorization: `Basic ${Buffer.from(
-            `${process.env['SPOTIFY_CLIENT_ID']}:${process.env['SPOTIFY_CLIENT_SECRET']}`
-          ).toString('base64')}`,
-        },
-        body: 'grant_type=client_credentials',
-      });
-
-      if (!response.ok) {
-        throw new Error('Spotify authentication failed');
-      }
-
-      const data = await response.json();
-      this.accessToken = data.access_token;
-      this.tokenExpiry = Date.now() + data.expires_in * 1000 - 60000;
-    } catch (error) {
-      console.error('Spotify auth error:', error);
-      throw error;
+    if (!response.ok) {
+      throw new Error('Spotify authentication failed');
     }
+
+    const data = await response.json();
+    this.accessToken = data.access_token;
+    this.tokenExpiry = Date.now() + data.expires_in * 1000 - 60000;
   }
 
   async searchArtists(query: string, limit = 5): Promise<any[]> {
@@ -62,8 +56,7 @@ class SpotifySearchClient {
 
       const data = await response.json();
       return data.artists?.items || [];
-    } catch (error) {
-      console.error('Spotify search error:', error);
+    } catch (_error) {
       return [];
     }
   }
@@ -90,7 +83,7 @@ export async function GET(request: NextRequest) {
       })
       .from(artists)
       .where(
-        sql`(${artists.name} ILIKE ${'%' + query + '%'} OR coalesce(${artists.genres}, '') ILIKE ${'%' + query + '%'})`
+        sql`(${artists.name} ILIKE ${`%${query}%`} OR coalesce(${artists.genres}, '') ILIKE ${`%${query}%`})`
       )
       .limit(10);
 
@@ -143,9 +136,7 @@ export async function GET(request: NextRequest) {
             existingNames.add(r.name.toLowerCase())
           );
         }
-      } catch (error) {
-        console.error('Spotify search failed:', error);
-      }
+      } catch (_error) {}
 
       // Try Ticketmaster search
       try {
@@ -180,17 +171,14 @@ export async function GET(request: NextRequest) {
             externalResults = [...externalResults, ...tmResults];
           }
         }
-      } catch (error) {
-        console.error('Ticketmaster search failed:', error);
-      }
+      } catch (_error) {}
     }
 
     // Combine results, database first
     const combinedResults = [...dbResults, ...externalResults];
 
     return NextResponse.json({ artists: combinedResults });
-  } catch (error) {
-    console.error('Artist search error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to search artists' },
       { status: 500 }

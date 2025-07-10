@@ -52,13 +52,15 @@ export function AddSongDialog({
   }, [query]);
 
   const handleSearch = async () => {
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      return;
+    }
 
     setIsSearching(true);
     try {
       const songs = await searchSongs(query, artistId);
       setResults(songs);
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to search songs');
     } finally {
       setIsSearching(false);

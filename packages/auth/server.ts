@@ -44,10 +44,10 @@ export async function createServiceClient() {
         get(name: string) {
           return cookieStore.get(name)?.value;
         },
-        set(name: string, value: string, options: CookieOptions) {
+        set(_name: string, _value: string, _options: CookieOptions) {
           // Service client doesn't need to set cookies
         },
-        remove(name: string, options: CookieOptions) {
+        remove(_name: string, _options: CookieOptions) {
           // Service client doesn't need to remove cookies
         },
       },
@@ -67,7 +67,7 @@ export async function getUser() {
   return user;
 }
 
-export async function getUserFromRequest(request: Request) {
+export async function getUserFromRequest(_request: Request) {
   const supabase = await createClient();
   const {
     data: { user },

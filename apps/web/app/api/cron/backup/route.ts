@@ -1,5 +1,5 @@
-import { createServiceClient } from '@/lib/api/supabase/server';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createServiceClient } from '~/lib/api/supabase/server';
 
 const CRON_SECRET = process.env['CRON_SECRET'];
 
@@ -35,7 +35,6 @@ export async function GET(request: NextRequest) {
     });
 
     if (logError) {
-      console.error('Error logging backup:', logError);
     }
 
     return NextResponse.json({
@@ -49,8 +48,6 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Backup cron error:', error);
-
     // Log backup failure
     try {
       const supabase = await createServiceClient();
@@ -60,9 +57,7 @@ export async function GET(request: NextRequest) {
         error_message: error instanceof Error ? error.message : String(error),
         created_at: new Date().toISOString(),
       });
-    } catch (logError) {
-      console.error('Error logging backup failure:', logError);
-    }
+    } catch (_logError) {}
 
     return NextResponse.json(
       {

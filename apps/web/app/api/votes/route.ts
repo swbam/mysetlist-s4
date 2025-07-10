@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     let body;
     try {
       body = await request.json();
-    } catch (e) {
+    } catch (_e) {
       return NextResponse.json(
         { error: 'Invalid JSON in request body' },
         { status: 400 }
@@ -111,8 +111,7 @@ export async function POST(request: NextRequest) {
       downvotes,
       netVotes,
     });
-  } catch (error) {
-    console.error('Vote API error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -159,15 +158,14 @@ export async function GET(request: NextRequest) {
         )
         .limit(1);
 
-      userVote = vote.length > 0 ? vote[0].voteType : null;
+      userVote = vote.length > 0 ? vote[0]?.voteType || null : null;
     }
 
     return NextResponse.json({
       ...song[0],
       userVote,
     });
-  } catch (error) {
-    console.error('Get votes API error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

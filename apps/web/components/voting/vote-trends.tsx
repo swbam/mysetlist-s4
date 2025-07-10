@@ -70,15 +70,16 @@ export function VoteTrends({ showId, setlistId, className }: VoteTrendsProps) {
     const fetchTrends = async () => {
       try {
         const params = new URLSearchParams({ showId, timeframe });
-        if (setlistId) params.set('setlistId', setlistId);
+        if (setlistId) {
+          params.set('setlistId', setlistId);
+        }
 
         const response = await fetch(`/api/votes/trends?${params}`);
         if (response.ok) {
           const result = await response.json();
           setData(result);
         }
-      } catch (error) {
-        console.error('Failed to fetch vote trends:', error);
+      } catch (_error) {
       } finally {
         setLoading(false);
       }
@@ -104,7 +105,7 @@ export function VoteTrends({ showId, setlistId, className }: VoteTrendsProps) {
           <div className="space-y-4">
             <div className="h-32 animate-pulse rounded-lg bg-muted" />
             <div className="grid grid-cols-3 gap-4">
-              {[...Array(3)].map((_, i) => (
+              {[...new Array(3)].map((_, i) => (
                 <div key={i} className="h-16 animate-pulse rounded bg-muted" />
               ))}
             </div>
@@ -138,8 +139,12 @@ export function VoteTrends({ showId, setlistId, className }: VoteTrendsProps) {
   };
 
   const getMomentumColor = (score: number) => {
-    if (score >= 0.7) return 'text-green-600';
-    if (score >= 0.4) return 'text-yellow-600';
+    if (score >= 0.7) {
+      return 'text-green-600';
+    }
+    if (score >= 0.4) {
+      return 'text-yellow-600';
+    }
     return 'text-red-600';
   };
 

@@ -34,7 +34,9 @@ export default function TopArtistsCarousel({
 
   // Auto-scroll every 3 seconds similar to Next-Forge template
   useEffect(() => {
-    if (!api) return;
+    if (!api) {
+      return;
+    }
 
     const interval = setInterval(() => {
       if (api.selectedScrollSnap() + 1 === api.scrollSnapList().length) {
@@ -48,9 +50,15 @@ export default function TopArtistsCarousel({
   }, [api]);
 
   const formatFollowers = (count: number | undefined) => {
-    if (!count) return '0';
-    if (count >= 1_000_000) return `${(count / 1_000_000).toFixed(1)}M`;
-    if (count >= 1_000) return `${Math.round(count / 1_000)}K`;
+    if (!count) {
+      return '0';
+    }
+    if (count >= 1_000_000) {
+      return `${(count / 1_000_000).toFixed(1)}M`;
+    }
+    if (count >= 1_000) {
+      return `${Math.round(count / 1_000)}K`;
+    }
     return `${count}`;
   };
 

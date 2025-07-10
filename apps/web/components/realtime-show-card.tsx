@@ -1,6 +1,5 @@
 'use client';
 
-import { useRealtimeShow } from '@/hooks/use-realtime-show';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import {
   Card,
@@ -12,6 +11,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
 import { Calendar, MapPin, Users } from 'lucide-react';
 import Link from 'next/link';
+import { useRealtimeShow } from '~/hooks/use-realtime-show';
 import { LiveIndicator } from './live-indicator';
 
 interface RealtimeShowCardProps {

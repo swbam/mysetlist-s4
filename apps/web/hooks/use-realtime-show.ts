@@ -1,8 +1,8 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 interface ShowAttendance {
   show_id: string;
@@ -54,8 +54,7 @@ export function useRealtimeShow({
         setAttendanceCount(count);
         onAttendanceChange?.(count);
       }
-    } catch (error) {
-      console.error('Error fetching attendance count:', error);
+    } catch (_error) {
     } finally {
       setIsLoading(false);
     }
@@ -74,9 +73,7 @@ export function useRealtimeShow({
         setShowStatus(data.status);
         onStatusChange?.(data.status);
       }
-    } catch (error) {
-      console.error('Error fetching show status:', error);
-    }
+    } catch (_error) {}
   }, [showId, supabase, onStatusChange]);
 
   useEffect(() => {

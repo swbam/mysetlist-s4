@@ -52,7 +52,9 @@ export default function BulkActions({
   const [isLoading, setIsLoading] = useState(false);
 
   const handleAction = async (action: string) => {
-    if (selectedItems.length === 0) return;
+    if (selectedItems.length === 0) {
+      return;
+    }
 
     const actionsNeedingDialog = [
       'reject_content',
@@ -73,7 +75,7 @@ export default function BulkActions({
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/admin/bulk`, {
+      const response = await fetch('/api/admin/bulk', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,9 +104,8 @@ export default function BulkActions({
       } else {
         toast.error(result.error || 'Action failed');
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Network error occurred');
-      console.error('Bulk action error:', error);
     } finally {
       setIsLoading(false);
     }

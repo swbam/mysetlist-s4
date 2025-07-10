@@ -36,31 +36,22 @@ const colors = {
 
 function log(
   level: 'info' | 'success' | 'error' | 'warn' | 'step',
-  message: string,
+  _message: string,
   details?: any
 ) {
-  const timestamp = new Date().toISOString();
-  const prefix = {
+  const _timestamp = new Date().toISOString();
+  const _prefix = {
     info: `${colors.blue}ℹ${colors.reset}`,
     success: `${colors.green}✅${colors.reset}`,
     error: `${colors.red}❌${colors.reset}`,
     warn: `${colors.yellow}⚠${colors.reset}`,
     step: `${colors.cyan}🔄${colors.reset}`,
   }[level];
-
-  console.log(
-    `${colors.dim}[${timestamp}]${colors.reset} ${prefix} ${message}`
-  );
   if (details) {
-    console.log(`${colors.dim}   Details:${colors.reset}`, details);
   }
 }
 
-function logSection(title: string) {
-  console.log(`\n${colors.magenta}${'='.repeat(60)}${colors.reset}`);
-  console.log(`${colors.magenta}${colors.bright} ${title} ${colors.reset}`);
-  console.log(`${colors.magenta}${'='.repeat(60)}${colors.reset}\n`);
-}
+function logSection(_title: string) {}
 
 // Test utilities
 class TestAPI {
@@ -79,7 +70,7 @@ class TestAPI {
     };
 
     if (this.authToken) {
-      (headers as Record<string, string>)['Authorization'] =
+      (headers as Record<string, string>).Authorization =
         `Bearer ${this.authToken}`;
     }
 
@@ -167,7 +158,7 @@ class ComprehensiveE2ETest {
         if (!data || !data.status || data.status !== 'ok') {
           throw new Error('Health check failed - invalid response');
         }
-      } catch (error: any) {
+      } catch (_error: any) {
         // Health endpoint might not exist, try homepage instead
         log('warn', 'Health endpoint not available, testing homepage');
         const { response } = await this.api.get('/');
@@ -218,7 +209,7 @@ class ComprehensiveE2ETest {
         throw new Error('Artist sync failed - no success response');
       }
 
-      log('success', `Artist sync completed successfully`);
+      log('success', 'Artist sync completed successfully');
     });
   }
 
@@ -276,7 +267,7 @@ class ComprehensiveE2ETest {
           'success',
           `Song catalog loaded: ${data.songs.length} songs available`
         );
-      } catch (error) {
+      } catch (_error) {
         // If songs endpoint doesn't exist, that's okay for now
         log('warn', 'Song catalog endpoint not implemented yet');
         this.testData.songs = [];
@@ -341,7 +332,7 @@ class ComprehensiveE2ETest {
           'success',
           `Sync functions working: ${data.syncedCount || 0} shows synced`
         );
-      } catch (error: any) {
+      } catch (_error: any) {
         log('warn', 'Sync shows endpoint may not be fully implemented');
         // Don't fail the test for this
       }
@@ -379,44 +370,18 @@ class ComprehensiveE2ETest {
     const passedTests = Object.values(this.testResults).filter(Boolean).length;
     const failedTests = totalTests - passedTests;
 
-    console.log(`${colors.bright}Total Tests:${colors.reset} ${totalTests}`);
-    console.log(`${colors.green}Passed:${colors.reset} ${passedTests}`);
-    console.log(`${colors.red}Failed:${colors.reset} ${failedTests}`);
-    console.log(
-      `${colors.cyan}Success Rate:${colors.reset} ${((passedTests / totalTests) * 100).toFixed(1)}%\n`
-    );
-
-    Object.entries(this.testResults).forEach(([testName, passed]) => {
-      const status = passed
+    Object.entries(this.testResults).forEach(([_testName, passed]) => {
+      const _status = passed
         ? `${colors.green}✅ PASS${colors.reset}`
         : `${colors.red}❌ FAIL${colors.reset}`;
-      console.log(`  ${status} ${testName}`);
     });
 
     // Show test data summary
     if (this.testData.artist) {
-      console.log(`\n${colors.cyan}Test Data Summary:${colors.reset}`);
-      console.log(
-        `  Artist: ${this.testData.artist.name} (${this.testData.artist.id})`
-      );
-      console.log(`  Shows: ${this.testData.shows?.length || 0}`);
-      console.log(`  Songs: ${this.testData.songs?.length || 0}`);
     }
 
     if (failedTests === 0) {
-      console.log(
-        `\n${colors.green}${colors.bright}🎉 ALL TESTS PASSED! MySetlist app is functional! 🎉${colors.reset}`
-      );
-      console.log(`\n${colors.green}Key User Journey Verified:${colors.reset}`);
-      console.log(`  ✓ Search for artists`);
-      console.log(`  ✓ Sync artist data from external APIs`);
-      console.log(`  ✓ View artist pages with shows`);
-      console.log(`  ✓ Access trending data`);
-      console.log(`  ✓ All API endpoints responding correctly`);
     } else {
-      console.log(
-        `\n${colors.red}${colors.bright}❌ ${failedTests} test(s) failed. Please review and fix issues.${colors.reset}`
-      );
     }
   }
 

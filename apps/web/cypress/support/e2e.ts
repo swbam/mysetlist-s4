@@ -21,10 +21,7 @@ import '@testing-library/cypress/add-commands';
 // require('./commands')
 
 // Add custom global configurations
-Cypress.on('uncaught:exception', (err, runnable) => {
-  // Returning false here prevents Cypress from failing the test
-  // We can add specific error handling if needed
-  console.error('Uncaught exception:', err);
+Cypress.on('uncaught:exception', (_err, _runnable) => {
   return false;
 });
 

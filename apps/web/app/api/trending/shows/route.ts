@@ -1,8 +1,8 @@
-import type { TrendingShow, TrendingShowsResponse } from '@/types/api';
 import { db } from '@repo/database';
 import { artists, shows, venues } from '@repo/database';
 import { desc, gte, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
+import type { TrendingShow, TrendingShowsResponse } from '~/types/api';
 
 // Force dynamic rendering for API route
 export const dynamic = 'force-dynamic';
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       .from(shows)
       .leftJoin(artists, sql`${artists.id} = ${shows.headlinerArtistId}`)
       .leftJoin(venues, sql`${venues.id} = ${shows.venueId}`)
-      .where(gte(shows.date, startDate.toISOString().split('T')[0]))
+      .where(gte(shows.date, startDate.toISOString().substring(0, 10)))
       .orderBy(desc(sql`COALESCE(${shows.trendingScore}, 0)`))
       .limit(limit);
 
@@ -112,19 +112,17 @@ export async function GET(request: NextRequest) {
       total: formatted.length,
       generatedAt: new Date().toISOString(),
     };
-    
+
     const response = NextResponse.json(payload);
-    
+
     // Add cache headers
     response.headers.set(
       'Cache-Control',
       'public, s-maxage=300, stale-while-revalidate=600'
     );
-    
+
     return response;
-  } catch (error) {
-    console.error('Trending shows API error:', error);
-    
+  } catch (_error) {
     // Return empty array with fallback data instead of error
     const fallbackPayload: TrendingShowsResponse = {
       shows: [],
@@ -134,12 +132,12 @@ export async function GET(request: NextRequest) {
       fallback: true,
       error: 'Unable to load trending shows at this time',
     };
-    
-    return NextResponse.json(fallbackPayload, { 
+
+    return NextResponse.json(fallbackPayload, {
       status: 200, // Return 200 to prevent UI crashes
       headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
-      }
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+      },
     });
   }
 }

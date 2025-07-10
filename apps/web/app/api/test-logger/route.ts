@@ -1,5 +1,5 @@
-import { logger } from '@/lib/logger';
 import { type NextRequest, NextResponse } from 'next/server';
+import { logger } from '~/lib/logger';
 
 export async function GET(request: NextRequest) {
   try {
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     // Simulate some work
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    transaction.finish();
+    (transaction as any)?.finish?.();
 
     // Clear user context
     logger.clearUser();
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     // Example error logging with actual error object
-    logger.error('Test endpoint error', error, {
+    logger.error('Test endpoint error', error as Error, {
       action: 'test-error',
       endpoint: '/api/test-logger',
     });
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
       receivedData: body,
     });
   } catch (error) {
-    logger.error('POST request failed', error, {
+    logger.error('POST request failed', error as Error, {
       action: 'test-post-error',
     });
 

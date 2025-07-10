@@ -56,8 +56,7 @@ export function AttendeeList({ showId, currentUser }: AttendeeListProps) {
         setAttendees(data.attendees || []);
         setTotalAttendees(data.total || 0);
       }
-    } catch (error) {
-      console.error('Failed to fetch attendees:', error);
+    } catch (_error) {
     } finally {
       setIsLoading(false);
     }

@@ -32,10 +32,14 @@ export function PullToRefresh({
 
   const handleTouchStart = useCallback(
     (e: React.TouchEvent) => {
-      if (disabled || isRefreshing) return;
+      if (disabled || isRefreshing) {
+        return;
+      }
 
       // Only start pull-to-refresh if we're at the top of the page
-      if (window.scrollY > 0) return;
+      if (window.scrollY > 0) {
+        return;
+      }
 
       setTouchStart(e.touches[0].clientY);
       setIsPulling(true);
@@ -45,7 +49,9 @@ export function PullToRefresh({
 
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
-      if (!touchStart || !isPulling || disabled || isRefreshing) return;
+      if (!touchStart || !isPulling || disabled || isRefreshing) {
+        return;
+      }
 
       const currentY = e.touches[0].clientY;
       const deltaY = currentY - touchStart;
@@ -64,7 +70,9 @@ export function PullToRefresh({
   );
 
   const handleTouchEnd = useCallback(async () => {
-    if (!isPulling || disabled || isRefreshing) return;
+    if (!isPulling || disabled || isRefreshing) {
+      return;
+    }
 
     setIsPulling(false);
 
@@ -73,8 +81,7 @@ export function PullToRefresh({
 
       try {
         await onRefresh();
-      } catch (error) {
-        console.error('Refresh failed:', error);
+      } catch (_error) {
       } finally {
         setIsRefreshing(false);
       }
@@ -88,7 +95,7 @@ export function PullToRefresh({
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const easeOut = 1 - (1 - progress) ** 3;
 
       const currentDistance = startDistance * (1 - easeOut);
       setPullDistance(currentDistance);
@@ -104,8 +111,12 @@ export function PullToRefresh({
   }, [isPulling, disabled, isRefreshing, pullDistance, threshold, onRefresh]);
 
   const getIndicatorText = () => {
-    if (isRefreshing) return loadingText;
-    if (pullDistance >= threshold) return releaseText;
+    if (isRefreshing) {
+      return loadingText;
+    }
+    if (pullDistance >= threshold) {
+      return releaseText;
+    }
     return refreshText;
   };
 

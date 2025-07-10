@@ -1,8 +1,8 @@
-import { ErrorBoundaryWrapper } from '@/components/error-boundary-wrapper';
-import { VenueGridSkeleton as VenueGridLoadingSkeleton } from '@/components/loading-states';
 import { createMetadata } from '@repo/seo/metadata';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { ErrorBoundaryWrapper } from '~/components/error-boundary-wrapper';
+import { VenueGridSkeleton as VenueGridLoadingSkeleton } from '~/components/loading-states';
 import { getVenues } from './actions';
 import { VenueGridClient } from './components/venue-grid-client';
 

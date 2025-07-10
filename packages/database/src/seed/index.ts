@@ -35,62 +35,38 @@ export class DatabaseSeeder {
       useExternalApis = false,
       syncPopularArtists = false,
     } = options;
-
-    console.log('🌱 Starting database seeding...');
-
-    try {
-      // If using external APIs, sync real data
-      if (useExternalApis) {
-        await this.seedWithExternalApis(syncPopularArtists);
-        return;
-      }
-
-      // Otherwise, create sample data
-      console.log('📊 Creating sample data...');
-
-      // Seed venues first
-      const seededVenues = await this.seedVenues(venueCount);
-      console.log(`✅ Created ${seededVenues.length} venues`);
-
-      // Seed artists
-      const seededArtists = await this.seedArtists(artistCount);
-      console.log(`✅ Created ${seededArtists.length} artists`);
-
-      // Seed songs
-      const seededSongs = await this.seedSongs(songCount, seededArtists);
-      console.log(`✅ Created ${seededSongs.length} songs`);
-
-      // Seed shows
-      const seededShows = await this.seedShows(
-        showCount,
-        seededArtists,
-        seededVenues
-      );
-      console.log(`✅ Created ${seededShows.length} shows`);
-
-      // Seed setlists
-      const seededSetlists = await this.seedSetlists(seededShows, seededSongs);
-      console.log(`✅ Created ${seededSetlists.length} setlists`);
-
-      console.log('🎉 Database seeding completed successfully!');
-    } catch (error) {
-      console.error('❌ Database seeding failed:', error);
-      throw error;
+    // If using external APIs, sync real data
+    if (useExternalApis) {
+      await this.seedWithExternalApis(syncPopularArtists);
+      return;
     }
+
+    // Seed venues first
+    const seededVenues = await this.seedVenues(venueCount);
+
+    // Seed artists
+    const seededArtists = await this.seedArtists(artistCount);
+
+    // Seed songs
+    const seededSongs = await this.seedSongs(songCount, seededArtists);
+
+    // Seed shows
+    const seededShows = await this.seedShows(
+      showCount,
+      seededArtists,
+      seededVenues
+    );
+
+    // Seed setlists
+    const _seededSetlists = await this.seedSetlists(seededShows, seededSongs);
   }
 
   private async seedWithExternalApis(
     syncPopularArtists: boolean
   ): Promise<void> {
-    console.log('🌐 Seeding with external API data...');
-
     if (syncPopularArtists) {
-      console.log('🎵 Syncing popular artists from Spotify...');
       await this.artistSync.syncPopularArtists();
     }
-
-    // Additional external API sync operations could go here
-    console.log('✅ External API seeding completed');
   }
 
   private async seedVenues(count: number): Promise<any[]> {
@@ -354,7 +330,7 @@ export class DatabaseSeeder {
         baseDate.getTime() + daysOffset * 24 * 60 * 60 * 1000
       );
 
-      const statuses = ['upcoming', 'completed', 'cancelled'] as const;
+      const _statuses = ['upcoming', 'completed', 'cancelled'] as const;
       const status = showDate > new Date() ? 'upcoming' : 'completed';
 
       return {
@@ -443,23 +419,14 @@ export class DatabaseSeeder {
   }
 
   async clearDatabase(): Promise<void> {
-    console.log('🗑️ Clearing database...');
-
-    try {
-      // Delete in reverse order of dependencies
-      await db.delete(setlistSongs);
-      await db.delete(setlists);
-      await db.delete(showArtists);
-      await db.delete(shows);
-      await db.delete(songs);
-      await db.delete(venues);
-      await db.delete(artists);
-
-      console.log('✅ Database cleared successfully');
-    } catch (error) {
-      console.error('❌ Failed to clear database:', error);
-      throw error;
-    }
+    // Delete in reverse order of dependencies
+    await db.delete(setlistSongs);
+    await db.delete(setlists);
+    await db.delete(showArtists);
+    await db.delete(shows);
+    await db.delete(songs);
+    await db.delete(venues);
+    await db.delete(artists);
   }
 
   async getSeededDataStats(): Promise<{
@@ -510,8 +477,7 @@ if (require.main === module) {
       if (operation === 'clear') {
         await databaseSeeder.clearDatabase();
       } else if (operation === 'stats') {
-        const stats = await databaseSeeder.getSeededDataStats();
-        console.log('📊 Database stats:', stats);
+        const _stats = await databaseSeeder.getSeededDataStats();
       } else {
         await databaseSeeder.seedDatabase({
           artists: 30,
@@ -521,8 +487,7 @@ if (require.main === module) {
           useExternalApis: false,
         });
       }
-    } catch (error) {
-      console.error('Seeding failed:', error);
+    } catch (_error) {
       process.exit(1);
     }
   };

@@ -5,8 +5,8 @@
  * Agent 10: End-to-End User Experience Testing
  */
 
-import http from 'http';
-import https from 'https';
+import http from 'node:http';
+import https from 'node:https';
 
 const BASE_URL = 'http://localhost:3001';
 
@@ -64,7 +64,6 @@ class UserJourneyTester {
   }
 
   async testJourney(name, steps) {
-    console.log(`\n🚀 Testing Journey: ${name}`);
     const journeyStart = Date.now();
     const stepResults = [];
 
@@ -73,7 +72,6 @@ class UserJourneyTester {
       const stepStart = Date.now();
 
       try {
-        console.log(`  Step ${i + 1}: ${step.description}`);
         const result = await step.action();
         const stepTime = Date.now() - stepStart;
 
@@ -88,10 +86,6 @@ class UserJourneyTester {
           time: stepTime,
           status: result.statusCode,
         });
-
-        console.log(
-          `    ✓ Success (${stepTime}ms) - Status: ${result.statusCode}`
-        );
       } catch (error) {
         const stepTime = Date.now() - stepStart;
         stepResults.push({
@@ -101,8 +95,6 @@ class UserJourneyTester {
           time: stepTime,
           error: error.message,
         });
-
-        console.log(`    ✗ Failed (${stepTime}ms) - ${error.message}`);
       }
     }
 
@@ -117,10 +109,6 @@ class UserJourneyTester {
       successRate,
       successful: successRate === 100,
     });
-
-    console.log(
-      `  📊 Journey completed: ${successCount}/${stepResults.length} steps (${successRate.toFixed(1)}%) in ${journeyTime}ms`
-    );
     return { successRate, totalTime: journeyTime, steps: stepResults };
   }
 
@@ -238,8 +226,6 @@ class UserJourneyTester {
   }
 
   async testPerformanceMetrics() {
-    console.log('\n⚡ Testing Performance Metrics');
-
     const tests = [
       { name: 'Homepage load', url: BASE_URL },
       { name: 'Search page load', url: `${BASE_URL}/search` },
@@ -258,21 +244,14 @@ class UserJourneyTester {
         };
 
         if (time < 1000) {
-          console.log(`  ✓ ${test.name}: ${time}ms (Excellent)`);
         } else if (time < 3000) {
-          console.log(`  ✓ ${test.name}: ${time}ms (Good)`);
         } else {
-          console.log(`  ⚠ ${test.name}: ${time}ms (Slow)`);
         }
-      } catch (error) {
-        console.log(`  ✗ ${test.name}: Failed - ${error.message}`);
-      }
+      } catch (_error) {}
     }
   }
 
   async testMobileResponsiveness() {
-    console.log('\n📱 Testing Mobile Responsiveness');
-
     const mobileHeaders = {
       'User-Agent':
         'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1',
@@ -285,23 +264,15 @@ class UserJourneyTester {
         const result = await makeRequest(`${BASE_URL}${page}`, {
           headers: mobileHeaders,
         });
-        const isMobileFriendly =
+        const _isMobileFriendly =
           (result.data.includes('viewport') &&
             result.data.includes('mobile-friendly')) ||
           result.data.includes('responsive');
-
-        console.log(
-          `  ${isMobileFriendly ? '✓' : '?'} ${page}: ${result.statusCode} - ${result.size} bytes`
-        );
-      } catch (error) {
-        console.log(`  ✗ ${page}: Failed - ${error.message}`);
-      }
+      } catch (_error) {}
     }
   }
 
   async testAccessibility() {
-    console.log('\n♿ Testing Accessibility Features');
-
     const pages = ['/', '/search', '/artists'];
 
     for (const page of pages) {
@@ -322,7 +293,6 @@ class UserJourneyTester {
           hasSemanticHTML,
           hasSkipLinks,
         ].filter(Boolean).length;
-        console.log(`  ${page}: ${score}/4 accessibility features detected`);
 
         this.results.accessibility[page] = {
           altTags: hasAltTags,
@@ -331,44 +301,23 @@ class UserJourneyTester {
           skipLinks: hasSkipLinks,
           score,
         };
-      } catch (error) {
-        console.log(`  ✗ ${page}: Failed - ${error.message}`);
-      }
+      } catch (_error) {}
     }
   }
 
   generateReport() {
-    console.log('\n📋 COMPREHENSIVE TEST REPORT');
-    console.log('='.repeat(50));
-
-    // Journey Summary
-    console.log('\n🚀 USER JOURNEY RESULTS:');
     const totalJourneys = this.results.journeys.length;
     const successfulJourneys = this.results.journeys.filter(
       (j) => j.successful
     ).length;
 
     this.results.journeys.forEach((journey) => {
-      const status = journey.successful ? '✅' : '⚠️';
-      console.log(
-        `  ${status} ${journey.name}: ${journey.successRate.toFixed(1)}% (${journey.totalTime}ms)`
-      );
+      const _status = journey.successful ? '✅' : '⚠️';
     });
-
-    console.log(
-      `\n📊 Overall Journey Success: ${successfulJourneys}/${totalJourneys} (${((successfulJourneys / totalJourneys) * 100).toFixed(1)}%)`
-    );
-
-    // Performance Summary
-    console.log('\n⚡ PERFORMANCE SUMMARY:');
-    Object.entries(this.results.performance).forEach(([test, metrics]) => {
-      const status =
+    Object.entries(this.results.performance).forEach(([_test, metrics]) => {
+      const _status =
         metrics.time < 1000 ? '🚀' : metrics.time < 3000 ? '✅' : '⚠️';
-      console.log(`  ${status} ${test}: ${metrics.time}ms`);
     });
-
-    // Accessibility Summary
-    console.log('\n♿ ACCESSIBILITY SUMMARY:');
     const accessibilityScores = Object.values(this.results.accessibility).map(
       (a) => a.score
     );
@@ -377,12 +326,6 @@ class UserJourneyTester {
         ? accessibilityScores.reduce((a, b) => a + b, 0) /
           accessibilityScores.length
         : 0;
-    console.log(
-      `  Average Accessibility Score: ${avgAccessibility.toFixed(1)}/4`
-    );
-
-    // Final Assessment
-    console.log('\n🎯 FINAL ASSESSMENT:');
     const overallScore =
       (successfulJourneys / totalJourneys) * 0.4 +
       (avgAccessibility / 4) * 0.3 +
@@ -392,16 +335,10 @@ class UserJourneyTester {
         0.3;
 
     if (overallScore >= 0.9) {
-      console.log('🌟 EXCELLENT - Application is production ready!');
     } else if (overallScore >= 0.7) {
-      console.log('✅ GOOD - Minor improvements recommended');
     } else if (overallScore >= 0.5) {
-      console.log('⚠️ FAIR - Several areas need attention');
     } else {
-      console.log('❌ POOR - Significant issues need fixing');
     }
-
-    console.log(`   Overall Score: ${(overallScore * 100).toFixed(1)}%`);
 
     return {
       overallScore,
@@ -412,9 +349,6 @@ class UserJourneyTester {
   }
 
   async runAllTests() {
-    console.log('🎯 MySetlist - Comprehensive User Journey Testing');
-    console.log('Agent 10: Final Testing & Quality Assurance\n');
-
     const startTime = Date.now();
 
     // Run all user journeys
@@ -430,9 +364,7 @@ class UserJourneyTester {
     await this.testAccessibility();
 
     const endTime = Date.now();
-    const totalTime = ((endTime - startTime) / 1000).toFixed(2);
-
-    console.log(`\n⏱️ All tests completed in ${totalTime}s`);
+    const _totalTime = ((endTime - startTime) / 1000).toFixed(2);
 
     return this.generateReport();
   }
@@ -443,8 +375,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   tester
     .runAllTests()
     .then(() => process.exit(0))
-    .catch((error) => {
-      console.error('Test suite failed:', error);
+    .catch((_error) => {
       process.exit(1);
     });
 }

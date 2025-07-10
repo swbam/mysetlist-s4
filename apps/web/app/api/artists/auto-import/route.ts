@@ -63,7 +63,16 @@ export async function POST(request: NextRequest) {
       const { syncArtist } = await import('../sync/sync-artist');
 
       try {
-        const syncResult = await syncArtist({ artistName, spotifyId });
+        if (!artistName && !spotifyId) {
+          return NextResponse.json(
+            { error: 'Artist name or Spotify ID is required for sync' },
+            { status: 400 }
+          );
+        }
+        const syncResult = await syncArtist({ 
+          artistName: artistName || 'Unknown Artist', 
+          ...(spotifyId && { spotifyId })
+        });
         if (!syncResult.success || !syncResult.artist) {
           return NextResponse.json(
             { error: 'Failed to sync artist', details: syncResult.error },
@@ -99,12 +108,12 @@ export async function POST(request: NextRequest) {
       setImmediate(async () => {
         try {
           // Import and use the sync service directly
-          const { UnifiedSyncService } = await import('../../sync/unified-pipeline/sync-service');
+          const { UnifiedSyncService } = await import(
+            '../../sync/unified-pipeline/sync-service'
+          );
           const syncService = new UnifiedSyncService();
           await syncService.syncArtistCatalog(artist.id);
-        } catch (error) {
-          console.error('Background sync failed:', error);
-        }
+        } catch (_error) {}
       });
     }
 
@@ -145,7 +154,6 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Auto-import failed:', error);
     return NextResponse.json(
       {
         error: 'Failed to auto-import artist data',

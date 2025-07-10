@@ -11,10 +11,7 @@ export default function VenuesError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    // Log the error to an error reporting service
-    console.error('Venues page error:', error);
-  }, [error]);
+  useEffect(() => {}, [error]);
 
   return (
     <div className="container mx-auto px-4 py-16">

@@ -111,7 +111,7 @@ export function OptimizedImage({
     sizes ||
     (fill
       ? '100vw'
-      : `(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw`);
+      : '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw');
 
   // Generate blur data URL for placeholder
   const defaultBlurDataURL =
@@ -284,7 +284,9 @@ export function ImageGallery({
   aspectRatio = '16/9',
   onImageClick,
 }: ImageGalleryProps) {
-  if (images.length === 0) return null;
+  if (images.length === 0) {
+    return null;
+  }
 
   if (images.length === 1) {
     return (

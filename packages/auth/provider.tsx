@@ -43,8 +43,7 @@ export const AuthProvider = ({
         } = await supabase.auth.getSession();
         setSession(session);
         setUser(session?.user || null);
-      } catch (error) {
-        console.error('Error checking session:', error);
+      } catch (_error) {
       } finally {
         setLoading(false);
       }
@@ -70,7 +69,9 @@ export const AuthProvider = ({
       email,
       password,
     });
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
   };
 
   const signUp = async (email: string, password: string) => {
@@ -78,7 +79,9 @@ export const AuthProvider = ({
       email,
       password,
     });
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
   };
 
   const signInWithSpotify = async () => {
@@ -90,12 +93,16 @@ export const AuthProvider = ({
         redirectTo: `${window.location.origin}/auth/callback`,
       },
     });
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
   };
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
     router.push('/');
   };
 

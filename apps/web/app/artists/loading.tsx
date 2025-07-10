@@ -1,8 +1,8 @@
+import { Skeleton } from '@repo/design-system/components/ui/skeleton';
 import {
   ArtistGridSkeleton,
   TrendingListSkeleton,
-} from '@/components/loading-states';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
+} from '~/components/loading-states';
 
 export default function ArtistsLoading() {
   return (
@@ -14,8 +14,8 @@ export default function ArtistsLoading() {
               Discover Artists
             </h1>
             <p className="max-w-2xl text-lg text-muted-foreground">
-              Search for your favorite artists to discover their upcoming
-              shows and past setlists
+              Search for your favorite artists to discover their upcoming shows
+              and past setlists
             </p>
           </div>
 

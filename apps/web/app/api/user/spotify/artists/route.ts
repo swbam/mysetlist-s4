@@ -5,7 +5,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 
 // Mock function to simulate Spotify API call
 // In production, this would use the actual Spotify Web API
-async function getSpotifyFollowedArtists(accessToken: string) {
+async function getSpotifyFollowedArtists(_accessToken: string) {
   // This would be replaced with actual Spotify API call:
   // GET https://api.spotify.com/v1/me/following?type=artist
 
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get Spotify access token (would come from OAuth in production)
-    const accessToken = user.app_metadata?.provider_token || 'mock_token';
+    const accessToken = user.app_metadata?.['provider_token'] || 'mock_token';
 
     // Fetch user's followed artists from Spotify
     const spotifyData = await getSpotifyFollowedArtists(accessToken);
@@ -90,9 +90,6 @@ export async function POST(request: NextRequest) {
           syncedCount++;
         }
       } else {
-        // Artist not in our database yet
-        // In production, we might create the artist or queue for sync
-        console.log(`Artist ${spotifyArtist.name} not found in database`);
       }
     }
 
@@ -106,8 +103,7 @@ export async function POST(request: NextRequest) {
       totalSpotifyArtists: spotifyData.artists.items.length,
       message: `Successfully synced ${syncedCount} artists from Spotify`,
     });
-  } catch (error) {
-    console.error('Error syncing Spotify artists:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to sync Spotify artists' },
       { status: 500 }
@@ -129,8 +125,7 @@ export async function GET(request: NextRequest) {
       isSpotifyConnected,
       spotifyEmail: isSpotifyConnected ? user.email : null,
     });
-  } catch (error) {
-    console.error('Error checking Spotify status:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to check Spotify status' },
       { status: 500 }

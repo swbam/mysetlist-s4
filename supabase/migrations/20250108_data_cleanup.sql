@@ -200,12 +200,19 @@ SET trending_score = COALESCE(
 )
 WHERE trending_score IS NULL OR trending_score = 0;
 
-UPDATE venues 
-SET trending_score = COALESCE(
-    ((SELECT COUNT(*) FROM shows WHERE venue_id = venues.id) * 10),
-    0
-)
-WHERE trending_score IS NULL OR trending_score = 0;
+-- Update venues trending_score only if column exists
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM information_schema.columns 
+               WHERE table_name = 'venues' AND column_name = 'trending_score') THEN
+        UPDATE venues 
+        SET trending_score = COALESCE(
+            ((SELECT COUNT(*) FROM shows WHERE venue_id = venues.id) * 10),
+            0
+        )
+        WHERE trending_score IS NULL OR trending_score = 0;
+    END IF;
+END $$;
 
 -- 14. Clean up any null dates on shows (set to future date if missing)
 UPDATE shows 

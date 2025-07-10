@@ -1,5 +1,5 @@
-import { env } from '@/env';
 import { Redis } from '@upstash/redis';
+import { env } from '~/env';
 
 export interface SyncProgress {
   artistId: string;
@@ -45,9 +45,6 @@ export class SyncProgressTracker {
       });
     } else {
       this.redis = null;
-      console.warn(
-        'Redis not configured, sync progress tracking will be in-memory only'
-      );
     }
   }
 
@@ -81,7 +78,9 @@ export class SyncProgressTracker {
     status: 'pending' | 'syncing' | 'completed' | 'failed',
     count?: number
   ): Promise<void> {
-    if (!this.redis) return;
+    if (!this.redis) {
+      return;
+    }
 
     const key = `${this.keyPrefix}${artistId}`;
     const data = await this.redis.get(key);
@@ -109,14 +108,18 @@ export class SyncProgressTracker {
   }
 
   async getProgress(artistId: string): Promise<SyncProgress | null> {
-    if (!this.redis) return null;
+    if (!this.redis) {
+      return null;
+    }
 
     const data = await this.redis.get(`${this.keyPrefix}${artistId}`);
     return data ? JSON.parse(data as string) : null;
   }
 
   async setError(artistId: string, error: string): Promise<void> {
-    if (!this.redis) return;
+    if (!this.redis) {
+      return;
+    }
 
     const key = `${this.keyPrefix}${artistId}`;
     const data = await this.redis.get(key);
@@ -132,7 +135,9 @@ export class SyncProgressTracker {
   }
 
   async clearProgress(artistId: string): Promise<void> {
-    if (!this.redis) return;
+    if (!this.redis) {
+      return;
+    }
     await this.redis.del(`${this.keyPrefix}${artistId}`);
   }
 }

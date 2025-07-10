@@ -1,10 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/server';
 import { db } from '@repo/database';
 import { sql } from 'drizzle-orm';
-import { withCache } from '@/lib/cache/redis';
+import { type NextRequest, NextResponse } from 'next/server';
+import { withCache } from '~/lib/cache/redis';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 interface AnalyticsQuery {
@@ -30,7 +29,14 @@ const getCachedAnalytics = withCache(
 );
 
 async function getAnalyticsData(query: AnalyticsQuery) {
-  const { metric, period = 'week', startDate, endDate, groupBy = 'day', filters } = query;
+  const {
+    metric,
+    period = 'week',
+    startDate,
+    endDate,
+    groupBy = 'day',
+    filters,
+  } = query;
 
   // Calculate date range
   const dates = getDateRange(period, startDate, endDate);
@@ -81,7 +87,7 @@ function getDateRange(period: string, startDate?: string, endDate?: string) {
   return { start, end };
 }
 
-async function getOverviewMetrics(dates: any, filters?: any) {
+async function getOverviewMetrics(dates: any, _filters?: any) {
   const query = sql`
     SELECT 
       -- User metrics
@@ -108,10 +114,10 @@ async function getOverviewMetrics(dates: any, filters?: any) {
   `;
 
   const result = await db.execute(query);
-  return result.rows[0];
+  return (result as any).rows?.[0] || (result as any)[0] || result;
 }
 
-async function getTrendingMetrics(dates: any, filters?: any) {
+async function getTrendingMetrics(dates: any, _filters?: any) {
   const artistsQuery = sql`
     SELECT 
       a.id,
@@ -156,14 +162,18 @@ async function getTrendingMetrics(dates: any, filters?: any) {
   ]);
 
   return {
-    topArtists: artists.rows,
-    topShows: shows.rows,
+    topArtists: (artists as any).rows || (artists as any) || [],
+    topShows: (shows as any).rows || (shows as any) || [],
   };
 }
 
-async function getEngagementMetrics(dates: any, groupBy: string, filters?: any) {
+async function getEngagementMetrics(
+  dates: any,
+  groupBy: string,
+  _filters?: any
+) {
   const timeFormat = getTimeGroupFormat(groupBy);
-  
+
   const query = sql`
     WITH time_series AS (
       SELECT 
@@ -187,20 +197,29 @@ async function getEngagementMetrics(dates: any, groupBy: string, filters?: any) 
   `;
 
   const result = await db.execute(query);
-  
+  const rows = (result as any).rows || (result as any) || [];
+
   return {
-    engagement: result.rows,
+    engagement: rows,
     summary: {
-      totalVotes: result.rows.reduce((sum, row) => sum + (row.total_votes || 0), 0),
-      totalAttendances: result.rows.reduce((sum, row) => sum + (row.total_attendances || 0), 0),
-      avgVoteValue: result.rows.reduce((sum, row) => sum + (row.avg_vote_value || 0), 0) / result.rows.length,
+      totalVotes: rows.reduce(
+        (sum: number, row: any) => sum + (row.total_votes || 0),
+        0
+      ),
+      totalAttendances: rows.reduce(
+        (sum: number, row: any) => sum + (row.total_attendances || 0),
+        0
+      ),
+      avgVoteValue:
+        rows.reduce((sum: number, row: any) => sum + (row.avg_vote_value || 0), 0) /
+        (rows.length || 1),
     },
   };
 }
 
-async function getGrowthMetrics(dates: any, groupBy: string, filters?: any) {
+async function getGrowthMetrics(dates: any, groupBy: string, _filters?: any) {
   const timeFormat = getTimeGroupFormat(groupBy);
-  
+
   const query = sql`
     WITH growth_metrics AS (
       SELECT 
@@ -239,19 +258,31 @@ async function getGrowthMetrics(dates: any, groupBy: string, filters?: any) {
   `;
 
   const result = await db.execute(query);
-  
+  const rows = (result as any).rows || (result as any) || [];
+
   return {
-    growth: result.rows,
+    growth: rows,
     summary: {
-      totalNewUsers: result.rows.reduce((sum, row) => sum + (row.new_users || 0), 0),
-      totalNewArtists: result.rows.reduce((sum, row) => sum + (row.new_artists || 0), 0),
-      totalNewShows: result.rows.reduce((sum, row) => sum + (row.new_shows || 0), 0),
-      avgGrowthRate: result.rows.reduce((sum, row) => sum + (row.user_growth_rate || 0), 0) / result.rows.length,
+      totalNewUsers: rows.reduce(
+        (sum: number, row: any) => sum + (row.new_users || 0),
+        0
+      ),
+      totalNewArtists: rows.reduce(
+        (sum: number, row: any) => sum + (row.new_artists || 0),
+        0
+      ),
+      totalNewShows: rows.reduce(
+        (sum: number, row: any) => sum + (row.new_shows || 0),
+        0
+      ),
+      avgGrowthRate:
+        rows.reduce((sum: number, row: any) => sum + (row.user_growth_rate || 0), 0) /
+        (rows.length || 1),
     },
   };
 }
 
-async function getPerformanceMetrics(dates: any, filters?: any) {
+async function getPerformanceMetrics(dates: any, _filters?: any) {
   // API performance metrics
   const apiMetrics = sql`
     SELECT 
@@ -278,13 +309,15 @@ async function getPerformanceMetrics(dates: any, filters?: any) {
   `;
 
   const [apiResult, dbResult] = await Promise.all([
-    db.execute(apiMetrics).catch(() => ({ rows: [{}] })), // Graceful fallback
+    db
+      .execute(apiMetrics)
+      .catch(() => ({ rows: [{}] })), // Graceful fallback
     db.execute(dbMetrics).catch(() => ({ rows: [{}] })),
   ]);
 
   return {
-    api: apiResult.rows[0] || {},
-    database: dbResult.rows[0] || {},
+    api: (apiResult as any).rows?.[0] || (apiResult as any)[0] || {},
+    database: (dbResult as any).rows?.[0] || (dbResult as any)[0] || {},
     cache: {
       hitRate: 0.85, // Placeholder - would calculate from Redis metrics
       avgLatency: 2.5,
@@ -308,13 +341,13 @@ function getTimeGroupFormat(groupBy: string): string {
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    
+
     // Parse query parameters
     const query: AnalyticsQuery = {
       metric: (searchParams.get('metric') || 'overview') as any,
       period: searchParams.get('period') as any,
-      startDate: searchParams.get('startDate') || undefined,
-      endDate: searchParams.get('endDate') || undefined,
+      startDate: searchParams.get('startDate') || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]!,
+      endDate: searchParams.get('endDate') || new Date().toISOString().split('T')[0]!,
       groupBy: searchParams.get('groupBy') as any,
     };
 
@@ -325,9 +358,9 @@ export async function GET(request: NextRequest) {
 
     if (artistIds || venueIds || showStatus) {
       query.filters = {
-        artistIds: artistIds?.split(','),
-        venueIds: venueIds?.split(','),
-        showStatus: showStatus?.split(','),
+        ...(artistIds && { artistIds: artistIds.split(',') }),
+        ...(venueIds && { venueIds: venueIds.split(',') }),
+        ...(showStatus && { showStatus: showStatus.split(',') }),
       };
     }
 
@@ -348,8 +381,7 @@ export async function GET(request: NextRequest) {
     );
 
     return response;
-  } catch (error) {
-    console.error('Analytics error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch analytics' },
       { status: 500 }

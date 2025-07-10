@@ -1,7 +1,5 @@
 'use client';
 
-import { ContentSlider, ContentSliderItem } from '@/components/ui/content-slider';
-import { Avatar, AvatarFallback, AvatarImage } from '@repo/design-system/components/ui/avatar';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { motion } from 'framer-motion';
@@ -9,6 +7,10 @@ import { Music, TrendingUp, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React, { useMemo } from 'react';
+import {
+  ContentSlider,
+  ContentSliderItem,
+} from '~/components/ui/content-slider';
 
 interface SimilarArtist {
   id: string;
@@ -95,24 +97,26 @@ const ArtistCard = React.memo(function ArtistCard({
           </div>
 
           {/* Content Section */}
-          <div className="p-4 space-y-3">
+          <div className="space-y-3 p-4">
             <div>
-              <h3 className="font-semibold text-base line-clamp-1 transition-colors group-hover:text-primary">
+              <h3 className="line-clamp-1 font-semibold text-base transition-colors group-hover:text-primary">
                 {artist.name}
               </h3>
-              <p className="text-sm text-muted-foreground mt-1">{primaryGenre}</p>
+              <p className="mt-1 text-muted-foreground text-sm">
+                {primaryGenre}
+              </p>
             </div>
 
             {/* Stats */}
             {artist.followerCount && (
-              <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <div className="flex items-center gap-3 text-muted-foreground text-sm">
                 <span className="flex items-center gap-1">
                   <Users className="h-3.5 w-3.5" />
                   {artist.followerCount >= 1000000
                     ? `${(artist.followerCount / 1000000).toFixed(1)}M`
                     : artist.followerCount >= 1000
-                    ? `${(artist.followerCount / 1000).toFixed(0)}K`
-                    : artist.followerCount.toString()}
+                      ? `${(artist.followerCount / 1000).toFixed(0)}K`
+                      : artist.followerCount.toString()}
                 </span>
                 {artist.trendingScore && artist.trendingScore > 0 && (
                   <span className="flex items-center gap-1">
@@ -140,42 +144,44 @@ const ArtistCard = React.memo(function ArtistCard({
   );
 });
 
-export const SimilarArtistsCarousel = React.memo(function SimilarArtistsCarousel({
-  artists,
-  currentArtistId,
-}: SimilarArtistsCarouselProps) {
-  // Filter out the current artist
-  const filteredArtists = useMemo(
-    () => artists.filter((artist) => artist.id !== currentArtistId),
-    [artists, currentArtistId]
-  );
+export const SimilarArtistsCarousel = React.memo(
+  function SimilarArtistsCarousel({
+    artists,
+    currentArtistId,
+  }: SimilarArtistsCarouselProps) {
+    // Filter out the current artist
+    const filteredArtists = useMemo(
+      () => artists.filter((artist) => artist.id !== currentArtistId),
+      [artists, currentArtistId]
+    );
 
-  if (filteredArtists.length === 0) {
-    return null;
+    if (filteredArtists.length === 0) {
+      return null;
+    }
+
+    return (
+      <ContentSlider
+        title="Similar Artists"
+        subtitle="Discover artists with a similar sound"
+        viewAllLink="/discover"
+        viewAllText="Discover More"
+        autoPlay={true}
+        autoPlayInterval={6000}
+        itemsPerView={{
+          mobile: 1.5,
+          tablet: 2.5,
+          desktop: 4,
+        }}
+        showDots={false}
+        gradientOverlay={false}
+        className="py-8"
+      >
+        {filteredArtists.map((artist, index) => (
+          <ContentSliderItem key={artist.id}>
+            <ArtistCard artist={artist} index={index} />
+          </ContentSliderItem>
+        ))}
+      </ContentSlider>
+    );
   }
-
-  return (
-    <ContentSlider
-      title="Similar Artists"
-      subtitle="Discover artists with a similar sound"
-      viewAllLink="/discover"
-      viewAllText="Discover More"
-      autoPlay={true}
-      autoPlayInterval={6000}
-      itemsPerView={{
-        mobile: 1.5,
-        tablet: 2.5,
-        desktop: 4,
-      }}
-      showDots={false}
-      gradientOverlay={false}
-      className="py-8"
-    >
-      {filteredArtists.map((artist, index) => (
-        <ContentSliderItem key={artist.id}>
-          <ArtistCard artist={artist} index={index} />
-        </ContentSliderItem>
-      ))}
-    </ContentSlider>
-  );
-});
+);

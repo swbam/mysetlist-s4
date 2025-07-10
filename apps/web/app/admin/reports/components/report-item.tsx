@@ -1,6 +1,5 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import {
   Avatar,
   AvatarFallback,
@@ -33,16 +32,15 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 interface ReportItemProps {
   report: any;
-  locale: string;
   isResolved?: boolean;
 }
 
 export default function ReportItem({
   report,
-  locale,
   isResolved = false,
 }: ReportItemProps) {
   const [loading, setLoading] = useState(false);
@@ -101,11 +99,13 @@ export default function ReportItem({
         })
         .eq('id', report.id);
 
-      if (reportError) throw reportError;
+      if (reportError) {
+        throw reportError;
+      }
 
       // Take action based on selection
       switch (selectedAction) {
-        case 'delete':
+        case 'delete': {
           // Update content moderation status
           await supabase.from('content_moderation').upsert({
             content_type: report.content_type,
@@ -131,6 +131,7 @@ export default function ReportItem({
             .update({ moderation_status: 'deleted' })
             .eq('id', report.content_id);
           break;
+        }
 
         case 'warn':
           if (report.reported_user_id) {
@@ -200,7 +201,7 @@ export default function ReportItem({
 
       setResolveDialogOpen(false);
       router.refresh();
-    } catch (error) {
+    } catch (_error) {
       toast('Error', {
         description: 'Failed to resolve report. Please try again.',
         type: 'error',

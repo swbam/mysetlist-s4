@@ -24,7 +24,7 @@ import {
   Search,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 
 interface Song {
   id: string;
@@ -46,8 +46,8 @@ interface ArtistSongCatalogProps {
   artistName: string;
 }
 
-export function ArtistSongCatalog({
-  artistId,
+export const ArtistSongCatalog = React.memo(function ArtistSongCatalog({
+  artistId: _artistId,
   artistSlug,
   artistName,
 }: ArtistSongCatalogProps) {
@@ -88,36 +88,38 @@ export function ArtistSongCatalog({
       let aValue: any, bValue: any;
 
       switch (sortBy) {
-        case 'title':
+        case 'title': {
           aValue = a.title.toLowerCase();
           bValue = b.title.toLowerCase();
           break;
-        case 'album':
+        }
+        case 'album': {
           aValue = a.album.toLowerCase();
           bValue = b.album.toLowerCase();
           break;
-        case 'releaseDate':
+        }
+        case 'releaseDate': {
           aValue = new Date(a.releaseDate || 0);
           bValue = new Date(b.releaseDate || 0);
           break;
-        case 'popularity':
-        default:
+        }
+        default: {
           aValue = a.popularity;
           bValue = b.popularity;
           break;
+        }
       }
 
       if (sortOrder === 'asc') {
         return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-      } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
       }
+      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
     });
 
     setFilteredSongs(filtered);
   }, [searchQuery, songs, sortBy, sortOrder]);
 
-  const fetchSongs = async (loadMore = false) => {
+  const fetchSongs = useCallback(async (loadMore = false) => {
     try {
       if (loadMore) {
         setLoadingMore(true);
@@ -143,13 +145,12 @@ export function ArtistSongCatalog({
         setHasMore(data.songs.length === limit);
         setOffset(currentOffset + data.songs.length);
       }
-    } catch (error) {
-      console.error('Error fetching songs:', error);
+    } catch (_error) {
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
-  };
+  }, [artistSlug, limit, offset]);
 
   const formatDuration = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
@@ -158,7 +159,9 @@ export function ArtistSongCatalog({
   };
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Unknown';
+    if (!dateString) {
+      return 'Unknown';
+    }
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -166,11 +169,14 @@ export function ArtistSongCatalog({
     });
   };
 
-  const handleLoadMore = () => {
+  const handleLoadMore = useCallback(() => {
     if (!loadingMore && hasMore) {
       fetchSongs(true);
     }
-  };
+  }, [loadingMore, hasMore, fetchSongs]);
+
+  // Memoize formatted data to prevent re-computation
+  const memoizedFilteredSongs = useMemo(() => filteredSongs, [filteredSongs]);
 
   if (loading) {
     return (
@@ -183,7 +189,7 @@ export function ArtistSongCatalog({
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
+            {[...new Array(5)].map((_, i) => (
               <div key={i} className="flex items-center gap-3 p-2">
                 <Skeleton className="h-16 w-16 rounded" />
                 <div className="flex-1 space-y-2">
@@ -286,7 +292,7 @@ export function ArtistSongCatalog({
       <CardContent className="p-0">
         <ScrollArea className="h-[600px]">
           <div className="space-y-1 p-4">
-            {filteredSongs.map((song, index) => (
+            {memoizedFilteredSongs.map((song, _index) => (
               <div
                 key={song.id}
                 className="group relative flex items-center gap-3 rounded-lg p-3 transition-all hover:bg-muted/50"
@@ -405,4 +411,4 @@ export function ArtistSongCatalog({
       </CardContent>
     </Card>
   );
-}
+});

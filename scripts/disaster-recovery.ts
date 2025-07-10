@@ -12,10 +12,10 @@
  *   npx tsx scripts/disaster-recovery.ts validate --environment=production
  */
 
-import { exec } from 'child_process';
-import { promises as fs } from 'fs';
-import path from 'path';
-import { promisify } from 'util';
+import { exec } from 'node:child_process';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+import { promisify } from 'node:util';
 import { createClient } from '@supabase/supabase-js';
 import { program } from 'commander';
 
@@ -58,86 +58,58 @@ class DisasterRecoveryManager {
       this.config.backupDirectory,
       `${backupId}.json`
     );
+    // Get all table names
+    const tables = await this.getAllTables();
 
-    console.log(`🔄 Starting full backup: ${backupId}`);
+    const backupData: any = {
+      metadata: {
+        id: backupId,
+        type: 'full',
+        timestamp,
+        version: '1.0',
+        tables: tables,
+      },
+      data: {},
+    };
 
-    try {
-      // Get all table names
-      const tables = await this.getAllTables();
-      console.log(`📊 Found ${tables.length} tables to backup`);
+    let totalRecords = 0;
 
-      const backupData: any = {
-        metadata: {
-          id: backupId,
-          type: 'full',
-          timestamp,
-          version: '1.0',
-          tables: tables,
-        },
-        data: {},
-      };
+    // Backup each table
+    for (const table of tables) {
+      try {
+        const { data, error } = await this.supabase.from(table).select('*');
 
-      let totalRecords = 0;
-
-      // Backup each table
-      for (const table of tables) {
-        console.log(`📋 Backing up table: ${table}`);
-
-        try {
-          const { data, error } = await this.supabase.from(table).select('*');
-
-          if (error) {
-            console.warn(
-              `⚠️  Warning: Could not backup table ${table}: ${error.message}`
-            );
-            backupData.data[`${table}_error`] = error.message;
-            continue;
-          }
-
-          backupData.data[table] = data || [];
-          totalRecords += (data || []).length;
-          console.log(
-            `✅ Backed up ${(data || []).length} records from ${table}`
-          );
-        } catch (tableError) {
-          console.warn(
-            `⚠️  Warning: Error backing up table ${table}:`,
-            tableError
-          );
-          backupData.data[`${table}_error`] = tableError.message;
+        if (error) {
+          backupData.data[`${table}_error`] = error.message;
+          continue;
         }
+
+        backupData.data[table] = data || [];
+        totalRecords += (data || []).length;
+      } catch (tableError) {
+        backupData.data[`${table}_error`] = tableError.message;
       }
-
-      // Update metadata
-      backupData.metadata.recordCount = totalRecords;
-      backupData.metadata.size = JSON.stringify(backupData).length;
-      backupData.metadata.checksum = await this.calculateChecksum(
-        JSON.stringify(backupData)
-      );
-
-      // Save backup file
-      await fs.writeFile(backupPath, JSON.stringify(backupData, null, 2));
-
-      // Compress if enabled
-      if (this.config.compressionLevel > 0) {
-        await this.compressBackup(backupPath);
-      }
-
-      // Store backup metadata
-      await this.storeBackupMetadata(backupData.metadata);
-
-      console.log(`✅ Full backup completed: ${backupId}`);
-      console.log(`📁 Location: ${backupPath}`);
-      console.log(`📊 Total records: ${totalRecords}`);
-      console.log(
-        `💾 Size: ${(backupData.metadata.size / 1024 / 1024).toFixed(2)} MB`
-      );
-
-      return backupId;
-    } catch (error) {
-      console.error(`❌ Full backup failed:`, error);
-      throw error;
     }
+
+    // Update metadata
+    backupData.metadata.recordCount = totalRecords;
+    backupData.metadata.size = JSON.stringify(backupData).length;
+    backupData.metadata.checksum = await this.calculateChecksum(
+      JSON.stringify(backupData)
+    );
+
+    // Save backup file
+    await fs.writeFile(backupPath, JSON.stringify(backupData, null, 2));
+
+    // Compress if enabled
+    if (this.config.compressionLevel > 0) {
+      await this.compressBackup(backupPath);
+    }
+
+    // Store backup metadata
+    await this.storeBackupMetadata(backupData.metadata);
+
+    return backupId;
   }
 
   /**
@@ -153,86 +125,60 @@ class DisasterRecoveryManager {
     const cutoffDate = new Date(
       Date.now() - 7 * 24 * 60 * 60 * 1000
     ).toISOString();
+    const tables = await this.getTablesWithTimestamps();
 
-    console.log(`🔄 Starting incremental backup: ${backupId}`);
-    console.log(`📅 Including changes since: ${cutoffDate}`);
+    const backupData: any = {
+      metadata: {
+        id: backupId,
+        type: 'incremental',
+        timestamp,
+        cutoffDate,
+        version: '1.0',
+        tables: tables,
+      },
+      data: {},
+    };
 
-    try {
-      const tables = await this.getTablesWithTimestamps();
+    let totalRecords = 0;
 
-      const backupData: any = {
-        metadata: {
-          id: backupId,
-          type: 'incremental',
-          timestamp,
-          cutoffDate,
-          version: '1.0',
-          tables: tables,
-        },
-        data: {},
-      };
-
-      let totalRecords = 0;
-
-      for (const table of tables) {
-        console.log(`📋 Backing up recent changes from: ${table}`);
+    for (const table of tables) {
+      try {
+        // Try updated_at first, then created_at
+        let query = this.supabase.from(table).select('*');
 
         try {
-          // Try updated_at first, then created_at
-          let query = this.supabase.from(table).select('*');
-
-          try {
-            query = query.gte('updated_at', cutoffDate);
-          } catch {
-            query = query.gte('created_at', cutoffDate);
-          }
-
-          const { data, error } = await query.limit(10000);
-
-          if (error) {
-            console.warn(
-              `⚠️  Warning: Could not backup table ${table}: ${error.message}`
-            );
-            continue;
-          }
-
-          if (data && data.length > 0) {
-            backupData.data[table] = data;
-            totalRecords += data.length;
-            console.log(
-              `✅ Backed up ${data.length} recent records from ${table}`
-            );
-          }
-        } catch (tableError) {
-          console.warn(
-            `⚠️  Warning: Error backing up table ${table}:`,
-            tableError
-          );
+          query = query.gte('updated_at', cutoffDate);
+        } catch {
+          query = query.gte('created_at', cutoffDate);
         }
-      }
 
-      // Update metadata
-      backupData.metadata.recordCount = totalRecords;
-      backupData.metadata.size = JSON.stringify(backupData).length;
-      backupData.metadata.checksum = await this.calculateChecksum(
-        JSON.stringify(backupData)
-      );
+        const { data, error } = await query.limit(10000);
 
-      // Save backup file
-      await fs.writeFile(backupPath, JSON.stringify(backupData, null, 2));
+        if (error) {
+          continue;
+        }
 
-      // Store backup metadata
-      await this.storeBackupMetadata(backupData.metadata);
-
-      console.log(`✅ Incremental backup completed: ${backupId}`);
-      console.log(`📁 Location: ${backupPath}`);
-      console.log(`📊 Total records: ${totalRecords}`);
-
-      return backupId;
-    } catch (error) {
-      console.error(`❌ Incremental backup failed:`, error);
-      throw error;
+        if (data && data.length > 0) {
+          backupData.data[table] = data;
+          totalRecords += data.length;
+        }
+      } catch (_tableError) {}
     }
+
+    // Update metadata
+    backupData.metadata.recordCount = totalRecords;
+    backupData.metadata.size = JSON.stringify(backupData).length;
+    backupData.metadata.checksum = await this.calculateChecksum(
+      JSON.stringify(backupData)
+    );
+
+    // Save backup file
+    await fs.writeFile(backupPath, JSON.stringify(backupData, null, 2));
+
+    // Store backup metadata
+    await this.storeBackupMetadata(backupData.metadata);
+
+    return backupId;
   }
 
   /**
@@ -247,128 +193,81 @@ class DisasterRecoveryManager {
       `${backupId}.json`
     );
 
-    console.log(`🔄 Starting restore from backup: ${backupId}`);
+    if (options.dryRun) {
+    }
+    // Check if backup file exists
+    const backupExists = await fs
+      .access(backupPath)
+      .then(() => true)
+      .catch(() => false);
+    if (!backupExists) {
+      throw new Error(`Backup file not found: ${backupPath}`);
+    }
+
+    // Load backup data
+    const backupContent = await fs.readFile(backupPath, 'utf8');
+    const backup = JSON.parse(backupContent);
+
+    // Verify backup integrity
+    const calculatedChecksum = await this.calculateChecksum(
+      JSON.stringify(backup)
+    );
+    if (
+      backup.metadata.checksum &&
+      backup.metadata.checksum !== calculatedChecksum
+    ) {
+      throw new Error('Backup file integrity check failed');
+    }
 
     if (options.dryRun) {
-      console.log(`🔍 DRY RUN MODE - No changes will be made`);
+      return;
     }
 
-    try {
-      // Check if backup file exists
-      const backupExists = await fs
-        .access(backupPath)
-        .then(() => true)
-        .catch(() => false);
-      if (!backupExists) {
-        throw new Error(`Backup file not found: ${backupPath}`);
+    const tablesToRestore =
+      options.tables ||
+      Object.keys(backup.data).filter((key) => !key.endsWith('_error'));
+
+    for (const table of tablesToRestore) {
+      if (!backup.data[table]) {
+        continue;
+      }
+      // Clear existing data
+      const { error: deleteError } = await this.supabase
+        .from(table)
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records
+
+      if (deleteError) {
       }
 
-      // Load backup data
-      const backupContent = await fs.readFile(backupPath, 'utf8');
-      const backup = JSON.parse(backupContent);
+      // Insert backup data in batches
+      const batchSize = 1000;
+      const records = backup.data[table];
 
-      // Verify backup integrity
-      const calculatedChecksum = await this.calculateChecksum(
-        JSON.stringify(backup)
-      );
-      if (
-        backup.metadata.checksum &&
-        backup.metadata.checksum !== calculatedChecksum
-      ) {
-        throw new Error('Backup file integrity check failed');
-      }
+      for (let i = 0; i < records.length; i += batchSize) {
+        const batch = records.slice(i, i + batchSize);
 
-      console.log(`📊 Backup metadata:`);
-      console.log(`   Type: ${backup.metadata.type}`);
-      console.log(`   Timestamp: ${backup.metadata.timestamp}`);
-      console.log(`   Tables: ${backup.metadata.tables?.length || 0}`);
-      console.log(`   Records: ${backup.metadata.recordCount}`);
+        const { error: insertError } = await this.supabase
+          .from(table)
+          .insert(batch);
 
-      if (options.dryRun) {
-        console.log(
-          `✅ Dry run completed - backup is valid and ready for restore`
-        );
-        return;
-      }
-
-      // Confirm restore operation
-      console.log(`⚠️  WARNING: This will overwrite existing data!`);
-
-      const tablesToRestore =
-        options.tables ||
-        Object.keys(backup.data).filter((key) => !key.endsWith('_error'));
-
-      for (const table of tablesToRestore) {
-        if (!backup.data[table]) {
-          console.log(`⏭️  Skipping table ${table} (no data in backup)`);
-          continue;
-        }
-
-        console.log(
-          `🔄 Restoring table: ${table} (${backup.data[table].length} records)`
-        );
-
-        try {
-          // Clear existing data
-          const { error: deleteError } = await this.supabase
-            .from(table)
-            .delete()
-            .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all records
-
-          if (deleteError) {
-            console.warn(
-              `⚠️  Warning: Could not clear table ${table}: ${deleteError.message}`
-            );
-          }
-
-          // Insert backup data in batches
-          const batchSize = 1000;
-          const records = backup.data[table];
-
-          for (let i = 0; i < records.length; i += batchSize) {
-            const batch = records.slice(i, i + batchSize);
-
-            const { error: insertError } = await this.supabase
-              .from(table)
-              .insert(batch);
-
-            if (insertError) {
-              console.error(
-                `❌ Error inserting batch for table ${table}:`,
-                insertError
-              );
-              throw insertError;
-            }
-          }
-
-          console.log(`✅ Restored ${records.length} records to ${table}`);
-        } catch (tableError) {
-          console.error(`❌ Error restoring table ${table}:`, tableError);
-          throw tableError;
+        if (insertError) {
+          throw insertError;
         }
       }
-
-      // Log restore completion
-      await this.logRestoreOperation(backupId, tablesToRestore);
-
-      console.log(`✅ Restore completed successfully from backup: ${backupId}`);
-    } catch (error) {
-      console.error(`❌ Restore failed:`, error);
-      throw error;
     }
+
+    // Log restore completion
+    await this.logRestoreOperation(backupId, tablesToRestore);
   }
 
   /**
    * Validate system integrity and performance
    */
   async validateSystem(): Promise<{ healthy: boolean; issues: string[] }> {
-    console.log(`🔍 Starting system validation...`);
-
     const issues: string[] = [];
 
     try {
-      // Test database connectivity
-      console.log(`🔗 Testing database connectivity...`);
       const { data, error } = await this.supabase
         .from('artists')
         .select('count')
@@ -377,11 +276,7 @@ class DisasterRecoveryManager {
       if (error) {
         issues.push(`Database connectivity failed: ${error.message}`);
       } else {
-        console.log(`✅ Database connection successful`);
       }
-
-      // Check critical tables exist and have data
-      console.log(`📊 Checking critical tables...`);
       const criticalTables = [
         'users',
         'artists',
@@ -404,15 +299,11 @@ class DisasterRecoveryManager {
           } else if (!data || data.length === 0) {
             issues.push(`Critical table ${table} is empty`);
           } else {
-            console.log(`✅ Table ${table} is accessible and has data`);
           }
         } catch (tableError) {
           issues.push(`Error checking table ${table}: ${tableError.message}`);
         }
       }
-
-      // Check external API connectivity
-      console.log(`🌐 Testing external API connectivity...`);
 
       // Test Spotify API
       try {
@@ -428,16 +319,12 @@ class DisasterRecoveryManager {
         );
 
         if (spotifyResponse.ok) {
-          console.log(`✅ Spotify API is accessible`);
         } else {
           issues.push('Spotify API connectivity failed');
         }
       } catch (spotifyError) {
         issues.push(`Spotify API test failed: ${spotifyError.message}`);
       }
-
-      // Check backup directory and recent backups
-      console.log(`💾 Checking backup system...`);
       try {
         const backupFiles = await fs.readdir(this.config.backupDirectory);
         const recentBackups = backupFiles.filter((file) => {
@@ -450,7 +337,6 @@ class DisasterRecoveryManager {
         if (recentBackups.length === 0) {
           issues.push('No recent backups found (within 7 days)');
         } else {
-          console.log(`✅ Found ${recentBackups.length} recent backup(s)`);
         }
       } catch (backupError) {
         issues.push(`Backup directory check failed: ${backupError.message}`);
@@ -458,19 +344,12 @@ class DisasterRecoveryManager {
 
       const healthy = issues.length === 0;
 
-      console.log(`\n📋 Validation Summary:`);
-      console.log(`Status: ${healthy ? '✅ HEALTHY' : '❌ ISSUES FOUND'}`);
-
       if (issues.length > 0) {
-        console.log(`\n🚨 Issues found:`);
-        issues.forEach((issue, index) => {
-          console.log(`   ${index + 1}. ${issue}`);
-        });
+        issues.forEach((_issue, _index) => {});
       }
 
       return { healthy, issues };
     } catch (error) {
-      console.error(`❌ System validation failed:`, error);
       return {
         healthy: false,
         issues: [`System validation failed: ${error.message}`],
@@ -482,40 +361,23 @@ class DisasterRecoveryManager {
    * Clean up old backups based on retention policy
    */
   async cleanupOldBackups(): Promise<void> {
-    console.log(`🧹 Cleaning up old backups...`);
+    const backupFiles = await fs.readdir(this.config.backupDirectory);
+    const cutoffDate = new Date(
+      Date.now() - this.config.retentionDays * 24 * 60 * 60 * 1000
+    );
 
-    try {
-      const backupFiles = await fs.readdir(this.config.backupDirectory);
-      const cutoffDate = new Date(
-        Date.now() - this.config.retentionDays * 24 * 60 * 60 * 1000
-      );
+    let _deletedCount = 0;
 
-      let deletedCount = 0;
+    for (const file of backupFiles) {
+      try {
+        const filePath = path.join(this.config.backupDirectory, file);
+        const stats = await fs.stat(filePath);
 
-      for (const file of backupFiles) {
-        try {
-          const filePath = path.join(this.config.backupDirectory, file);
-          const stats = await fs.stat(filePath);
-
-          if (stats.mtime < cutoffDate) {
-            await fs.unlink(filePath);
-            deletedCount++;
-            console.log(`🗑️  Deleted old backup: ${file}`);
-          }
-        } catch (fileError) {
-          console.warn(
-            `⚠️  Warning: Could not process file ${file}:`,
-            fileError
-          );
+        if (stats.mtime < cutoffDate) {
+          await fs.unlink(filePath);
+          _deletedCount++;
         }
-      }
-
-      console.log(
-        `✅ Cleanup completed: ${deletedCount} old backup(s) deleted`
-      );
-    } catch (error) {
-      console.error(`❌ Backup cleanup failed:`, error);
-      throw error;
+      } catch (_fileError) {}
     }
   }
 
@@ -565,17 +427,14 @@ class DisasterRecoveryManager {
   }
 
   private async calculateChecksum(data: string): Promise<string> {
-    const { createHash } = await import('crypto');
+    const { createHash } = await import('node:crypto');
     return createHash('sha256').update(data).digest('hex');
   }
 
   private async compressBackup(filePath: string): Promise<void> {
     try {
       await execAsync(`gzip -${this.config.compressionLevel} "${filePath}"`);
-      console.log(`🗜️  Compressed backup file`);
-    } catch (error) {
-      console.warn(`⚠️  Warning: Could not compress backup:`, error);
-    }
+    } catch (_error) {}
   }
 
   private async storeBackupMetadata(metadata: BackupMetadata): Promise<void> {
@@ -590,9 +449,7 @@ class DisasterRecoveryManager {
         checksum: metadata.checksum,
         created_at: metadata.timestamp,
       });
-    } catch (error) {
-      console.warn(`⚠️  Warning: Could not store backup metadata:`, error);
-    }
+    } catch (_error) {}
   }
 
   private async logRestoreOperation(
@@ -606,9 +463,7 @@ class DisasterRecoveryManager {
         status: 'completed',
         restored_at: new Date().toISOString(),
       });
-    } catch (error) {
-      console.warn(`⚠️  Warning: Could not log restore operation:`, error);
-    }
+    } catch (_error) {}
   }
 }
 
@@ -640,23 +495,19 @@ program
     const manager = new DisasterRecoveryManager(config);
 
     try {
-      let backupId: string;
+      let _backupId: string;
 
       switch (options.type) {
         case 'full':
-          backupId = await manager.createFullBackup();
+          _backupId = await manager.createFullBackup();
           break;
         case 'incremental':
-          backupId = await manager.createIncrementalBackup();
+          _backupId = await manager.createIncrementalBackup();
           break;
         default:
           throw new Error(`Unsupported backup type: ${options.type}`);
       }
-
-      console.log(`\n🎉 Backup completed successfully!`);
-      console.log(`📋 Backup ID: ${backupId}`);
-    } catch (error) {
-      console.error(`\n💥 Backup failed:`, error);
+    } catch (_error) {
       process.exit(1);
     }
   });
@@ -690,10 +541,7 @@ program
       }
 
       await manager.restoreFromBackup(options.backupId, restoreOptions);
-
-      console.log(`\n🎉 Restore completed successfully!`);
-    } catch (error) {
-      console.error(`\n💥 Restore failed:`, error);
+    } catch (_error) {
       process.exit(1);
     }
   });
@@ -720,10 +568,7 @@ program
       if (!result.healthy) {
         process.exit(1);
       }
-
-      console.log(`\n🎉 System validation passed!`);
-    } catch (error) {
-      console.error(`\n💥 Validation failed:`, error);
+    } catch (_error) {
       process.exit(1);
     }
   });
@@ -746,9 +591,7 @@ program
 
     try {
       await manager.cleanupOldBackups();
-      console.log(`\n🎉 Cleanup completed successfully!`);
-    } catch (error) {
-      console.error(`\n💥 Cleanup failed:`, error);
+    } catch (_error) {
       process.exit(1);
     }
   });

@@ -1,11 +1,11 @@
 'use client';
 
-import { SyncProgressDisplay } from '@/components/artist/sync-progress';
-import { useAutoImportOnMount } from '@/hooks/use-artist-auto-import';
-import { useArtistSync } from '@/hooks/use-artist-sync';
 import { Card } from '@repo/design-system/components/ui/card';
 import { AlertCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { SyncProgressDisplay } from '~/components/artist/sync-progress';
+import { useAutoImportOnMount } from '~/hooks/use-artist-auto-import';
+import { useArtistSync } from '~/hooks/use-artist-sync';
 
 interface ArtistPageWrapperProps {
   artistId: string;
@@ -24,7 +24,7 @@ export function ArtistPageWrapper({
   const { loading, error } = useAutoImportOnMount({
     artistId,
     artistName,
-    spotifyId: spotifyId || undefined,
+    ...(spotifyId && { spotifyId }),
     enabled: true,
   });
 
@@ -32,7 +32,6 @@ export function ArtistPageWrapper({
 
   useEffect(() => {
     if (error) {
-      console.error('Auto-import error:', error);
     }
   }, [error]);
 

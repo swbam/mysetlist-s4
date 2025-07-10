@@ -1,5 +1,3 @@
-import { BreadcrumbNavigation } from '@/components/breadcrumb-navigation';
-import { createVenueMetadata } from '@/lib/seo-metadata';
 import {
   Tabs,
   TabsContent,
@@ -8,6 +6,8 @@ import {
 } from '@repo/design-system/components/ui/tabs';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { BreadcrumbNavigation } from '~/components/breadcrumb-navigation';
+import { createVenueMetadata } from '~/lib/seo-metadata';
 import {
   getNearbyVenues,
   getVenueBySlug,

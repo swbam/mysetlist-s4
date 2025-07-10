@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import 'dotenv/config';
-import { join } from 'path';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
-import { readFile, readdir } from 'fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
+import { join } from 'node:path';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import postgres from 'postgres';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -27,8 +27,6 @@ class DirectMigrationRunner {
 
   async runMigrations(migrationsDir: string) {
     try {
-      console.log('🚀 Starting database migrations...');
-
       // Create migrations table
       await this.sql`
         CREATE TABLE IF NOT EXISTS schema_migrations (
@@ -42,11 +40,9 @@ class DirectMigrationRunner {
         SELECT version FROM schema_migrations ORDER BY version
       `;
       const executedMigrations = executedRows.map((row: any) => row.version);
-      console.log(`📋 Found ${executedMigrations.length} executed migrations`);
 
       // Get migration files
       const migrationFiles = await this.getMigrationFiles(migrationsDir);
-      console.log(`📁 Found ${migrationFiles.length} migration files`);
 
       // Filter pending migrations
       const pendingMigrations = migrationFiles.filter(
@@ -54,24 +50,16 @@ class DirectMigrationRunner {
       );
 
       if (pendingMigrations.length === 0) {
-        console.log('✅ All migrations are up to date!');
         await this.sql.end();
         return;
       }
-
-      console.log(
-        `🔄 Running ${pendingMigrations.length} pending migrations...`
-      );
 
       // Run migrations in order
       for (const migration of pendingMigrations) {
         await this.runMigration(migration);
       }
-
-      console.log('✅ All migrations completed successfully!');
       await this.sql.end();
-    } catch (error) {
-      console.error('❌ Migration failed:', error);
+    } catch (_error) {
       await this.sql.end();
       process.exit(1);
     }
@@ -97,23 +85,14 @@ class DirectMigrationRunner {
   }
 
   private async runMigration(migration: MigrationFile) {
-    console.log(`\n📝 Running migration: ${migration.filename}`);
-
     const transaction = this.sql.begin(async (sql: any) => {
-      try {
-        // Execute the migration SQL
-        await sql.unsafe(migration.sql);
+      // Execute the migration SQL
+      await sql.unsafe(migration.sql);
 
-        // Record migration as executed
-        await sql`
+      // Record migration as executed
+      await sql`
           INSERT INTO schema_migrations (version) VALUES (${migration.version})
         `;
-
-        console.log(`✅ Migration ${migration.filename} completed`);
-      } catch (error) {
-        console.error(`❌ Migration ${migration.filename} failed:`, error);
-        throw error; // This will rollback the transaction
-      }
     });
 
     await transaction;
@@ -122,13 +101,9 @@ class DirectMigrationRunner {
 
 // Run migrations
 async function main() {
-  const connectionString =
-    process.env['DATABASE_URL'] || process.env['POSTGRES_URL'];
+  const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 
   if (!connectionString) {
-    console.error(
-      '❌ Missing DATABASE_URL or POSTGRES_URL environment variable'
-    );
     process.exit(1);
   }
 

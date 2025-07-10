@@ -35,14 +35,11 @@ export function SyncPopularArtistsButton() {
       if (response.ok) {
         const result = await response.json();
         setLastResult(result);
-        console.log('Sync successful:', result);
       } else {
         const error = await response.json();
-        console.error('Sync failed:', error);
         setLastResult({ error: error.error || 'Sync failed' });
       }
-    } catch (error) {
-      console.error('Sync error:', error);
+    } catch (_error) {
       setLastResult({ error: 'Network error occurred' });
     } finally {
       setIsLoading(false);

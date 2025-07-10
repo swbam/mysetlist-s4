@@ -1,13 +1,14 @@
 import { NextResponse } from 'next/server';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 
 const API_DOCUMENTATION = {
   openapi: '3.0.0',
   info: {
     title: 'MySetlist API',
     version: '1.0.0',
-    description: 'API for accessing MySetlist data including artists, shows, venues, and voting functionality',
+    description:
+      'API for accessing MySetlist data including artists, shows, venues, and voting functionality',
     contact: {
       name: 'API Support',
       email: 'api@mysetlist.com',
@@ -15,7 +16,7 @@ const API_DOCUMENTATION = {
   },
   servers: [
     {
-      url: process.env.NEXT_PUBLIC_APP_URL || 'https://mysetlist.com',
+      url: process.env['NEXT_PUBLIC_APP_URL'] || 'https://mysetlist.com',
       description: 'Production server',
     },
   ],
@@ -23,7 +24,8 @@ const API_DOCUMENTATION = {
     '/api/trending': {
       get: {
         summary: 'Get trending content',
-        description: 'Retrieve trending artists and shows based on various time periods',
+        description:
+          'Retrieve trending artists and shows based on various time periods',
         parameters: [
           {
             name: 'period',
@@ -126,7 +128,8 @@ const API_DOCUMENTATION = {
     '/api/recommendations': {
       post: {
         summary: 'Get personalized recommendations',
-        description: 'Get recommended artists and shows based on user preferences',
+        description:
+          'Get recommended artists and shows based on user preferences',
         security: [{ bearerAuth: [] }],
         requestBody: {
           content: {
@@ -191,7 +194,13 @@ const API_DOCUMENTATION = {
                         },
                         resource: {
                           type: 'string',
-                          enum: ['artists', 'shows', 'venues', 'songs', 'setlists'],
+                          enum: [
+                            'artists',
+                            'shows',
+                            'venues',
+                            'songs',
+                            'setlists',
+                          ],
                         },
                         data: { type: 'object' },
                       },
@@ -221,7 +230,13 @@ const API_DOCUMENTATION = {
             required: true,
             schema: {
               type: 'string',
-              enum: ['overview', 'trending', 'engagement', 'growth', 'performance'],
+              enum: [
+                'overview',
+                'trending',
+                'engagement',
+                'growth',
+                'performance',
+              ],
             },
           },
           {

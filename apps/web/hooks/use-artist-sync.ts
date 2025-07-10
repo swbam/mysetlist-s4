@@ -83,9 +83,7 @@ export function useArtistSync() {
               }
             }
           }
-        } catch (error) {
-          console.error('Failed to fetch sync progress:', error);
-        }
+        } catch (_error) {}
       }, 1000);
 
       setPollingInterval(interval);
@@ -104,10 +102,10 @@ export function useArtistSync() {
         startProgressPolling(artistId);
 
         // Get CSRF token if needed
-        let headers: Record<string, string> = {
+        const headers: Record<string, string> = {
           'Content-Type': 'application/json',
         };
-        
+
         if (process.env.NODE_ENV !== 'development') {
           try {
             const csrfResponse = await fetch('/api/csrf-token');
@@ -119,7 +117,7 @@ export function useArtistSync() {
             // Ignore CSRF token errors in development
           }
         }
-        
+
         const response = await fetch('/api/sync/unified-pipeline', {
           method: 'POST',
           headers,
@@ -168,10 +166,10 @@ export function useArtistSync() {
 
     try {
       // Get CSRF token if needed
-      let headers: Record<string, string> = {
+      const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
-      
+
       if (process.env.NODE_ENV !== 'development') {
         try {
           const csrfResponse = await fetch('/api/csrf-token');
@@ -183,7 +181,7 @@ export function useArtistSync() {
           // Ignore CSRF token errors in development
         }
       }
-      
+
       const response = await fetch('/api/sync/unified-pipeline', {
         method: 'POST',
         headers,
@@ -216,9 +214,7 @@ export function useArtistSync() {
         method: 'DELETE',
       });
       setProgress(null);
-    } catch (error) {
-      console.error('Failed to clear sync progress:', error);
-    }
+    } catch (_error) {}
   }, []);
 
   return {

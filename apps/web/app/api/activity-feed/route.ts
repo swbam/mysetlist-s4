@@ -1,6 +1,6 @@
-import { createClient } from '@/lib/supabase/server';
 import { formatDistanceToNow } from 'date-fns';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createClient } from '~/lib/supabase/server';
 
 export interface ActivityItem {
   id: string;
@@ -254,8 +254,7 @@ export async function GET(request: NextRequest) {
       offset,
       limit,
     });
-  } catch (error) {
-    console.error('Error fetching activity feed:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch activity feed' },
       { status: 500 }

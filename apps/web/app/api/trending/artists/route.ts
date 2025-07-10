@@ -1,37 +1,16 @@
-import { CACHE_HEADERS } from '@/lib/cache';
 import { db } from '@repo/database';
 import { artists } from '@repo/database';
 import { desc, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
+import { CACHE_HEADERS } from '~/lib/cache';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const limit = Number.parseInt(searchParams.get('limit') || '20');
-    const timeframe = searchParams.get('timeframe') || 'week'; // day, week, month
-
-    console.log(
-      'Trending artists API called with limit:',
-      limit,
-      'timeframe:',
-      timeframe
-    );
-
-    // Calculate date range based on timeframe
-    const now = new Date();
-    let startDate: Date;
-
-    switch (timeframe) {
-      case 'day':
-        startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-        break;
-      case 'month':
-        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-        break;
-      default: // week
-        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-        break;
-    }
+    // TODO: Implement date range filtering based on timeframe parameter
+    // const timeframe = searchParams.get('timeframe') || 'week'; // day, week, month
+    // Currently using trending score only - future enhancement will filter by date range
 
     // Get trending artists with fallback for empty data
     const trendingArtists = await db
@@ -80,10 +59,11 @@ export async function GET(request: NextRequest) {
 
       // Transform fallback data too
       const transformedPopularArtists = popularArtists.map((artist) => {
-        const weeklyGrowth = Math.max(0, 
-          Math.min(25, // Lower cap for popular artists
-            (artist.popularity || 0) / 20 + 
-            Math.random() * 10
+        const weeklyGrowth = Math.max(
+          0,
+          Math.min(
+            25, // Lower cap for popular artists
+            (artist.popularity || 0) / 20 + Math.random() * 10
           )
         );
 
@@ -92,9 +72,10 @@ export async function GET(request: NextRequest) {
           recentShows: artist.upcomingShows || 0,
           weeklyGrowth: Number(weeklyGrowth.toFixed(1)),
           // Parse genres if it's a JSON string
-          genres: typeof artist.genres === 'string' 
-            ? JSON.parse(artist.genres || '[]') 
-            : (artist.genres || []),
+          genres:
+            typeof artist.genres === 'string'
+              ? JSON.parse(artist.genres || '[]')
+              : artist.genres || [],
         };
       });
 
@@ -114,15 +95,17 @@ export async function GET(request: NextRequest) {
     // Transform the data to match frontend expectations
     const transformedArtists = trendingArtists.map((artist) => {
       // Calculate weeklyGrowth based on trending score and recency
-      const hoursOld = artist.updatedAt 
+      const hoursOld = artist.updatedAt
         ? (Date.now() - new Date(artist.updatedAt).getTime()) / (1000 * 60 * 60)
         : 168; // Default to 7 days old if no updatedAt
-      
-      const weeklyGrowth = Math.max(0, 
-        Math.min(50, // Cap at 50%
-          (artist.trendingScore || 0) / 10 + 
-          Math.random() * 15 + 
-          (168 - hoursOld) / 168 * 10 // Recency bonus
+
+      const weeklyGrowth = Math.max(
+        0,
+        Math.min(
+          50, // Cap at 50%
+          (artist.trendingScore || 0) / 10 +
+            Math.random() * 15 +
+            ((168 - hoursOld) / 168) * 10 // Recency bonus
         )
       );
 
@@ -131,9 +114,10 @@ export async function GET(request: NextRequest) {
         recentShows: artist.upcomingShows || 0,
         weeklyGrowth: Number(weeklyGrowth.toFixed(1)),
         // Parse genres if it's a JSON string
-        genres: typeof artist.genres === 'string' 
-          ? JSON.parse(artist.genres || '[]') 
-          : (artist.genres || []),
+        genres:
+          typeof artist.genres === 'string'
+            ? JSON.parse(artist.genres || '[]')
+            : artist.genres || [],
       };
     });
 
@@ -148,9 +132,7 @@ export async function GET(request: NextRequest) {
     response.headers.set('Cache-Control', CACHE_HEADERS.api.public);
 
     return response;
-  } catch (error) {
-    console.error('Trending artists API error:', error);
-
+  } catch (_error) {
     // Return empty array with error info instead of throwing
     return NextResponse.json(
       {

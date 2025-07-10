@@ -19,9 +19,7 @@ interface SignInPageProps {
   }>;
 }
 
-export default async function SignInPage({
-  searchParams,
-}: SignInPageProps) {
+export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = await searchParams;
   const handleSpotifySignIn = async () => {
     'use server';
@@ -52,17 +50,17 @@ export default async function SignInPage({
               <AlertDescription>{params.error}</AlertDescription>
             </Alert>
           )}
-          
+
           {params?.message && (
             <Alert className="border-green-200 bg-green-50 text-green-800">
               <AlertDescription>{params.message}</AlertDescription>
             </Alert>
           )}
 
-          <input 
-            type="hidden" 
-            name="redirectTo" 
-            value={params?.returnUrl || '/'} 
+          <input
+            type="hidden"
+            name="redirectTo"
+            value={params?.returnUrl || '/'}
           />
 
           <div className="space-y-4">

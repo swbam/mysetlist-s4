@@ -1,11 +1,11 @@
-import { ErrorBoundaryWrapper } from '@/components/error-boundary-wrapper';
-import {
-  ArtistGridSkeleton,
-  TrendingListSkeleton,
-} from '@/components/loading-states';
 import { createMetadata } from '@repo/seo/metadata';
 import type { Metadata } from 'next';
 import { Suspense } from 'react';
+import { ErrorBoundaryWrapper } from '~/components/error-boundary-wrapper';
+import {
+  ArtistGridSkeleton,
+  TrendingListSkeleton,
+} from '~/components/loading-states';
 import { ArtistSearch } from './components/artist-search';
 import { PopularArtists } from './components/popular-artists';
 import { TrendingArtists } from './components/trending-artists';

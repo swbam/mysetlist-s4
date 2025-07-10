@@ -81,7 +81,9 @@ export default function ActivityPage() {
 
   useEffect(() => {
     const fetchActivity = async () => {
-      if (!user?.id) return;
+      if (!user?.id) {
+        return;
+      }
 
       try {
         const response = await fetch(`/api/user/activity/${user.id}`);
@@ -98,8 +100,7 @@ export default function ActivityPage() {
             }
           );
         }
-      } catch (error) {
-        console.error('Failed to fetch activity:', error);
+      } catch (_error) {
       } finally {
         setLoading(false);
       }
@@ -151,12 +152,18 @@ export default function ActivityPage() {
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (diffInSeconds < 60) return 'Just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400)
+    if (diffInSeconds < 60) {
+      return 'Just now';
+    }
+    if (diffInSeconds < 3600) {
+      return `${Math.floor(diffInSeconds / 60)}m ago`;
+    }
+    if (diffInSeconds < 86400) {
       return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    if (diffInSeconds < 604800)
+    }
+    if (diffInSeconds < 604800) {
       return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    }
 
     return date.toLocaleDateString('en-US', {
       month: 'short',
@@ -210,10 +217,10 @@ export default function ActivityPage() {
       <ProtectedRoute>
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-6">
-            <div className="h-32 rounded-lg bg-muted"></div>
+            <div className="h-32 rounded-lg bg-muted" />
             <div className="space-y-4">
               {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-20 rounded-lg bg-muted"></div>
+                <div key={i} className="h-20 rounded-lg bg-muted" />
               ))}
             </div>
           </div>

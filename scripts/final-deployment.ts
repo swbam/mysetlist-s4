@@ -1,10 +1,10 @@
 #!/usr/bin/env tsx
 /**
  * 🚀 ULTIMATE MYSETLIST DEPLOYMENT SCRIPT
- * 
+ *
  * This script provides comprehensive, production-ready deployment automation
  * with intelligent error handling, rollback capabilities, and parallel execution.
- * 
+ *
  * Features:
  * - Ultra-efficient parallel execution where safe
  * - Comprehensive error handling with automatic rollback
@@ -15,7 +15,7 @@
  * - Post-deployment validation and health checks
  * - Performance monitoring and reporting
  * - Auto-accept prompts for CI/CD compatibility
- * 
+ *
  * Usage:
  *   pnpm final                    # Development deployment
  *   pnpm final --prod             # Production deployment
@@ -27,12 +27,12 @@
  *   pnpm final --verbose          # Detailed logging
  */
 
-import { execSync, spawn } from 'child_process';
-import { existsSync, writeFileSync, readFileSync, mkdirSync } from 'fs';
-import { join, resolve, dirname } from 'path';
-import { performance } from 'perf_hooks';
+import { spawn } from 'node:child_process';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { performance } from 'node:perf_hooks';
+import { fileURLToPath } from 'node:url';
 import { config } from 'dotenv';
-import { fileURLToPath } from 'url';
 
 // ES module equivalent of __dirname
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -85,7 +85,11 @@ const FLAGS = {
 } as const;
 
 // Determine environment
-const ENVIRONMENT = FLAGS.PROD ? 'production' : FLAGS.STAGING ? 'staging' : 'development';
+const ENVIRONMENT = FLAGS.PROD
+  ? 'production'
+  : FLAGS.STAGING
+    ? 'staging'
+    : 'development';
 
 // Enhanced logging system
 class Logger {
@@ -97,12 +101,12 @@ class Logger {
   constructor() {
     this.startTime = Date.now();
     this.deploymentId = `deployment-${Date.now()}`;
-    
+
     // Ensure log directory exists
     if (!existsSync(CONFIG.LOG_DIR)) {
       mkdirSync(CONFIG.LOG_DIR, { recursive: true });
     }
-    
+
     this.logFile = join(CONFIG.LOG_DIR, `${this.deploymentId}.log`);
     this.info(`🚀 Starting MySetlist ${ENVIRONMENT} deployment`);
     this.info(`📋 Deployment ID: ${this.deploymentId}`);
@@ -121,22 +125,21 @@ class Logger {
     const timestamp = new Date().toISOString();
     const elapsed = ((Date.now() - this.startTime) / 1000).toFixed(2);
     const logEntry = `[${timestamp}] [${elapsed}s] [${level}] ${message}${data ? ` ${JSON.stringify(data)}` : ''}`;
-    
+
     // Write to file
-    writeFileSync(this.logFile, logEntry + '\n', { flag: 'a' });
-    
+    writeFileSync(this.logFile, `${logEntry}\n`, { flag: 'a' });
+
     // Console output with colors
     const colors = {
-      INFO: '\x1b[36m',    // Cyan
+      INFO: '\x1b[36m', // Cyan
       SUCCESS: '\x1b[32m', // Green
-      WARN: '\x1b[33m',    // Yellow
-      ERROR: '\x1b[31m',   // Red
-      DEBUG: '\x1b[90m',   // Gray
-      RESET: '\x1b[0m',    // Reset
+      WARN: '\x1b[33m', // Yellow
+      ERROR: '\x1b[31m', // Red
+      DEBUG: '\x1b[90m', // Gray
+      RESET: '\x1b[0m', // Reset
     };
-    
-    const color = colors[level as keyof typeof colors] || colors.INFO;
-    console.log(`${color}${logEntry}${colors.RESET}`);
+
+    const _color = colors[level as keyof typeof colors] || colors.INFO;
   }
 
   info(message: string, data?: any) {
@@ -187,14 +190,17 @@ class CommandRunner {
     return CommandRunner.instance;
   }
 
-  async run(command: string, options: {
-    cwd?: string;
-    timeout?: number;
-    retries?: number;
-    acceptPrompts?: boolean;
-    parallel?: boolean;
-    essential?: boolean;
-  } = {}): Promise<{ success: boolean; output: string; error?: string }> {
+  async run(
+    command: string,
+    options: {
+      cwd?: string;
+      timeout?: number;
+      retries?: number;
+      acceptPrompts?: boolean;
+      parallel?: boolean;
+      essential?: boolean;
+    } = {}
+  ): Promise<{ success: boolean; output: string; error?: string }> {
     const {
       cwd = CONFIG.PROJECT_ROOT,
       timeout = 5 * 60 * 1000, // 5 minutes default
@@ -203,8 +209,8 @@ class CommandRunner {
       essential = true,
     } = options;
 
-    let lastError: string = '';
-    
+    let lastError = '';
+
     for (let attempt = 0; attempt <= retries; attempt++) {
       if (attempt > 0) {
         this.logger.warn(`Retry attempt ${attempt}/${retries} for: ${command}`);
@@ -213,39 +219,48 @@ class CommandRunner {
 
       try {
         this.logger.debug(`Executing: ${command}`, { cwd, attempt });
-        
+
         if (FLAGS.DRY_RUN) {
           this.logger.info(`[DRY RUN] Would execute: ${command}`);
           return { success: true, output: '[DRY RUN] Simulated success' };
         }
 
         const startTime = performance.now();
-        
+
         // Prepare command with auto-accept flags
         let finalCommand = command;
         if (acceptPrompts && FLAGS.YES) {
           finalCommand = this.addAutoAcceptFlags(command);
         }
 
-        const result = await this.executeCommand(finalCommand, { cwd, timeout });
-        
+        const result = await this.executeCommand(finalCommand, {
+          cwd,
+          timeout,
+        });
+
         const duration = ((performance.now() - startTime) / 1000).toFixed(2);
         this.logger.success(`Completed in ${duration}s: ${command}`);
-        
+
         return { success: true, output: result };
       } catch (error) {
         lastError = error instanceof Error ? error.message : String(error);
-        this.logger.error(`Attempt ${attempt + 1} failed: ${command}`, { error: lastError });
-        
+        this.logger.error(`Attempt ${attempt + 1} failed: ${command}`, {
+          error: lastError,
+        });
+
         if (!essential && attempt === 0) {
-          this.logger.warn(`Non-essential command failed, continuing: ${command}`);
+          this.logger.warn(
+            `Non-essential command failed, continuing: ${command}`
+          );
           return { success: false, output: '', error: lastError };
         }
       }
     }
 
     if (essential) {
-      throw new Error(`Command failed after ${retries + 1} attempts: ${command}. Last error: ${lastError}`);
+      throw new Error(
+        `Command failed after ${retries + 1} attempts: ${command}. Last error: ${lastError}`
+      );
     }
 
     return { success: false, output: '', error: lastError };
@@ -253,15 +268,14 @@ class CommandRunner {
 
   private addAutoAcceptFlags(command: string): string {
     const autoAcceptMappings = {
-      'pnpm install': 'pnpm install --yes',
       'npm install': 'npm install --yes',
       'supabase db push': 'supabase db push --include-all',
       'supabase functions deploy': 'supabase functions deploy --no-verify-jwt',
-      'vercel': 'vercel --yes',
+      vercel: 'vercel --yes',
       'vercel --prod': 'vercel --prod --yes',
       'npm audit': 'npm audit --audit-level=moderate',
       'pnpm update': 'pnpm update --latest',
-      'git': command.includes('git') ? command : command,
+      git: command.includes('git') ? command : command,
     };
 
     for (const [pattern, replacement] of Object.entries(autoAcceptMappings)) {
@@ -273,22 +287,26 @@ class CommandRunner {
     return command;
   }
 
-  private executeCommand(command: string, options: { cwd: string; timeout: number }): Promise<string> {
+  private executeCommand(
+    command: string,
+    options: { cwd: string; timeout: number }
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
       const processId = `${Date.now()}-${Math.random()}`;
-      
+
       const child = spawn('sh', ['-c', command], {
         cwd: options.cwd,
         stdio: ['pipe', 'pipe', 'pipe'],
-        env: { 
-          ...process.env, 
-          CI: 'true', 
+        env: {
+          ...process.env,
+          CI: 'true',
           FORCE_COLOR: '0',
           // Ensure critical environment variables are passed
-          DATABASE_URL: process.env['DATABASE_URL'],
-          SUPABASE_SERVICE_ROLE_KEY: process.env['SUPABASE_SERVICE_ROLE_KEY'],
-          NEXT_PUBLIC_SUPABASE_URL: process.env['NEXT_PUBLIC_SUPABASE_URL'],
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'],
+          DATABASE_URL: process.env.DATABASE_URL,
+          SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+          NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+          NEXT_PUBLIC_SUPABASE_ANON_KEY:
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         },
       });
 
@@ -313,17 +331,21 @@ class CommandRunner {
       const timeoutId = setTimeout(() => {
         child.kill('SIGKILL');
         this.activeProcesses.delete(processId);
-        reject(new Error(`Command timed out after ${options.timeout}ms: ${command}`));
+        reject(
+          new Error(`Command timed out after ${options.timeout}ms: ${command}`)
+        );
       }, options.timeout);
 
       child.on('close', (code) => {
         clearTimeout(timeoutId);
         this.activeProcesses.delete(processId);
-        
+
         if (code === 0) {
           resolve(stdout);
         } else {
-          reject(new Error(`Command failed with code ${code}: ${stderr || stdout}`));
+          reject(
+            new Error(`Command failed with code ${code}: ${stderr || stdout}`)
+          );
         }
       });
 
@@ -335,16 +357,26 @@ class CommandRunner {
     });
   }
 
-  async parallel(commands: Array<{
-    command: string;
-    name: string;
-    options?: any;
-  }>, limit: number = CONFIG.PARALLEL_LIMIT): Promise<Array<{ name: string; success: boolean; output: string; error?: string }>> {
-    const results: Array<{ name: string; success: boolean; output: string; error?: string }> = [];
+  async parallel(
+    commands: Array<{
+      command: string;
+      name: string;
+      options?: any;
+    }>,
+    limit: number = CONFIG.PARALLEL_LIMIT
+  ): Promise<
+    Array<{ name: string; success: boolean; output: string; error?: string }>
+  > {
+    const results: Array<{
+      name: string;
+      success: boolean;
+      output: string;
+      error?: string;
+    }> = [];
     const executing: Promise<void>[] = [];
     let index = 0;
 
-    const execute = async (cmd: typeof commands[0]): Promise<void> => {
+    const execute = async (cmd: (typeof commands)[0]): Promise<void> => {
       try {
         const result = await this.run(cmd.command, cmd.options);
         results.push({ name: cmd.name, ...result });
@@ -372,7 +404,10 @@ class CommandRunner {
         // Remove completed promises
         for (let i = executing.length - 1; i >= 0; i--) {
           const promise = executing[i];
-          if (await Promise.race([promise, Promise.resolve('pending')]) !== 'pending') {
+          if (
+            (await Promise.race([promise, Promise.resolve('pending')])) !==
+            'pending'
+          ) {
             executing.splice(i, 1);
           }
         }
@@ -383,7 +418,7 @@ class CommandRunner {
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   cleanup(): void {
@@ -428,42 +463,51 @@ class DeploymentPhases {
     for (const tool of requiredTools) {
       try {
         this.logger.debug(`Checking ${tool.name}...`);
-        const result = await this.runner.run(tool.command, { 
-          essential: false, 
+        const result = await this.runner.run(tool.command, {
+          essential: false,
           retries: 0,
-          timeout: 10000 // 10 seconds
+          timeout: 10000, // 10 seconds
         });
-        
+
         if (!result.success) {
           // For Vercel CLI, check if it's actually installed despite error
-          if (tool.name === 'Vercel CLI' && (result.output.includes('Vercel CLI') || result.error?.includes('Vercel CLI'))) {
+          if (
+            tool.name === 'Vercel CLI' &&
+            (result.output.includes('Vercel CLI') ||
+              result.error?.includes('Vercel CLI'))
+          ) {
             this.logger.success(`✅ ${tool.name} is installed`);
             continue;
           }
           throw new Error(`Missing required tool: ${tool.name}`);
         }
-        
+
         this.logger.success(`✅ ${tool.name} is available`);
       } catch (error) {
         // Special handling for Vercel CLI - check if it's actually installed
         if (tool.name === 'Vercel CLI') {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
           if (errorMessage.includes('Vercel CLI')) {
-            this.logger.success(`✅ ${tool.name} is installed (ignoring configuration warnings)`);
+            this.logger.success(
+              `✅ ${tool.name} is installed (ignoring configuration warnings)`
+            );
             continue;
           }
-          
+
           try {
-            const simpleCheck = await this.runner.run('which vercel', { 
-              essential: false, 
+            const simpleCheck = await this.runner.run('which vercel', {
+              essential: false,
               retries: 0,
-              timeout: 5000
+              timeout: 5000,
             });
             if (simpleCheck.success) {
-              this.logger.success(`✅ ${tool.name} is installed (ignoring configuration warnings)`);
+              this.logger.success(
+                `✅ ${tool.name} is installed (ignoring configuration warnings)`
+              );
               continue;
             }
-          } catch (whichError) {
+          } catch (_whichError) {
             // Fall through to original error
           }
         }
@@ -477,14 +521,20 @@ class DeploymentPhases {
       'DATABASE_URL',
       'SUPABASE_SERVICE_ROLE_KEY',
       'NEXT_PUBLIC_SUPABASE_URL',
-      'NEXT_PUBLIC_SUPABASE_ANON_KEY'
+      'NEXT_PUBLIC_SUPABASE_ANON_KEY',
     ];
 
-    const missingVars = criticalEnvVars.filter(varName => !process.env[varName]);
+    const missingVars = criticalEnvVars.filter(
+      (varName) => !process.env[varName]
+    );
     if (missingVars.length > 0) {
-      this.logger.error(`Missing critical environment variables: ${missingVars.join(', ')}`);
+      this.logger.error(
+        `Missing critical environment variables: ${missingVars.join(', ')}`
+      );
       if (!FLAGS.FORCE) {
-        throw new Error(`Missing environment variables: ${missingVars.join(', ')}`);
+        throw new Error(
+          `Missing environment variables: ${missingVars.join(', ')}`
+        );
       }
     }
 
@@ -510,22 +560,29 @@ class DeploymentPhases {
     this.logger.info('🔍 Phase 2: Code quality validation');
 
     if (FLAGS.SKIP_TESTS) {
-      this.logger.warn('⚠️  Skipping code quality checks due to --skip-tests flag');
+      this.logger.warn(
+        '⚠️  Skipping code quality checks due to --skip-tests flag'
+      );
       return;
     }
 
     // Critical security check: Ensure no hardcoded credentials
     this.logger.info('🔒 Checking for hardcoded credentials...');
     try {
-      await this.runner.run('grep -r "postgresql://" packages/ --include="*.ts" --include="*.js" | grep -v node_modules | grep -v "process.env"', {
-        essential: false,
-        retries: 0,
-      });
+      await this.runner.run(
+        'grep -r "postgresql://" packages/ --include="*.ts" --include="*.js" | grep -v node_modules | grep -v "process.env"',
+        {
+          essential: false,
+          retries: 0,
+        }
+      );
       this.logger.error('⚠️  Found potential hardcoded database credentials!');
       if (!FLAGS.FORCE) {
-        throw new Error('Hardcoded credentials detected. Use --force to override.');
+        throw new Error(
+          'Hardcoded credentials detected. Use --force to override.'
+        );
       }
-    } catch (error) {
+    } catch (_error) {
       this.logger.success('✅ No hardcoded credentials found');
     }
 
@@ -537,11 +594,17 @@ class DeploymentPhases {
 
     if (FLAGS.PARALLEL) {
       const results = await this.runner.parallel(qualityChecks);
-      const failures = results.filter(r => !r.success);
+      const failures = results.filter((r) => !r.success);
       if (failures.length > 0 && !FLAGS.FORCE) {
-        this.logger.error(`💥 Code quality checks failed: ${failures.map(f => f.name).join(', ')}`);
-        this.logger.warn('💡 Consider running with --force to deploy despite errors, or fix the issues first.');
-        throw new Error(`Code quality checks failed: ${failures.map(f => f.name).join(', ')}`);
+        this.logger.error(
+          `💥 Code quality checks failed: ${failures.map((f) => f.name).join(', ')}`
+        );
+        this.logger.warn(
+          '💡 Consider running with --force to deploy despite errors, or fix the issues first.'
+        );
+        throw new Error(
+          `Code quality checks failed: ${failures.map((f) => f.name).join(', ')}`
+        );
       }
     } else {
       for (const check of qualityChecks) {
@@ -579,30 +642,39 @@ class DeploymentPhases {
     if (ENVIRONMENT === 'production') {
       this.logger.info('Creating database backup...');
       const backupTimestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      this.backupPath = join(CONFIG.BACKUP_DIR, `backup-${backupTimestamp}.sql`);
-      
+      this.backupPath = join(
+        CONFIG.BACKUP_DIR,
+        `backup-${backupTimestamp}.sql`
+      );
+
       if (!existsSync(CONFIG.BACKUP_DIR)) {
         mkdirSync(CONFIG.BACKUP_DIR, { recursive: true });
       }
 
       // Export database backup
-      await this.runner.run(`supabase db dump --schema public > ${this.backupPath}`, {
-        essential: true,
-        timeout: 10 * 60 * 1000, // 10 minutes for backup
-      });
-      
+      await this.runner.run(
+        `supabase db dump --schema public > ${this.backupPath}`,
+        {
+          essential: true,
+          timeout: 10 * 60 * 1000, // 10 minutes for backup
+        }
+      );
+
       this.logger.success(`Database backup created: ${this.backupPath}`);
     }
 
     // Database operations with enhanced error handling
     const dbCommands = [
       { command: 'pnpm db:generate', name: 'Generate database types' },
-      { command: 'supabase db push --include-all', name: 'Push database schema' },
+      {
+        command: 'supabase db push --include-all',
+        name: 'Push database schema',
+      },
     ];
 
     for (const cmd of dbCommands) {
       try {
-        await this.runner.run(cmd.command, { 
+        await this.runner.run(cmd.command, {
           essential: true,
           timeout: 5 * 60 * 1000, // 5 minutes
         });
@@ -631,17 +703,19 @@ class DeploymentPhases {
     await this.runner.run('rm -rf apps/web/.next .turbo', { essential: false });
 
     // Install dependencies
-    await this.runner.run('pnpm install --frozen-lockfile', { 
+    await this.runner.run('pnpm install --no-frozen-lockfile', {
       essential: true,
       timeout: 10 * 60 * 1000, // 10 minutes
+      acceptPrompts: false, // Disable auto-accept flags for pnpm install
     });
 
     // Build with appropriate settings
-    const buildCommand = ENVIRONMENT === 'production' 
-      ? 'ANALYZE=true NODE_ENV=production pnpm build'
-      : 'pnpm build';
+    const buildCommand =
+      ENVIRONMENT === 'production'
+        ? 'ANALYZE=true NODE_ENV=production pnpm build'
+        : 'pnpm build';
 
-    await this.runner.run(buildCommand, { 
+    await this.runner.run(buildCommand, {
       essential: true,
       timeout: 15 * 60 * 1000, // 15 minutes
     });
@@ -654,7 +728,9 @@ class DeploymentPhases {
     this.logger.info('⚡ Phase 5: Deploying Supabase functions');
 
     if (FLAGS.SKIP_FUNCTIONS) {
-      this.logger.warn('⚠️  Skipping function deployment due to --skip-functions flag');
+      this.logger.warn(
+        '⚠️  Skipping function deployment due to --skip-functions flag'
+      );
       return;
     }
 
@@ -676,23 +752,27 @@ class DeploymentPhases {
       'update-trending',
     ];
 
-    const functionCommands = functions.map(func => ({
+    const functionCommands = functions.map((func) => ({
       command: `supabase functions deploy ${func} --no-verify-jwt`,
       name: `Deploy ${func}`,
       options: { essential: false, timeout: 3 * 60 * 1000 },
     }));
 
     this.logger.info(`📦 Deploying ${functions.length} Supabase functions...`);
-    
+
     if (FLAGS.PARALLEL) {
       const results = await this.runner.parallel(functionCommands, 3);
-      const failures = results.filter(r => !r.success);
-      const successes = results.filter(r => r.success);
-      
-      this.logger.info(`✅ Successfully deployed ${successes.length}/${functions.length} functions`);
-      
+      const failures = results.filter((r) => !r.success);
+      const successes = results.filter((r) => r.success);
+
+      this.logger.info(
+        `✅ Successfully deployed ${successes.length}/${functions.length} functions`
+      );
+
       if (failures.length > 0) {
-        this.logger.warn(`⚠️  Failed to deploy: ${failures.map(f => f.name).join(', ')}`);
+        this.logger.warn(
+          `⚠️  Failed to deploy: ${failures.map((f) => f.name).join(', ')}`
+        );
         if (failures.length > functions.length / 2) {
           throw new Error('More than half of functions failed to deploy');
         }
@@ -711,16 +791,17 @@ class DeploymentPhases {
     this.logger.info('🚀 Phase 6: Deploying to Vercel');
 
     if (FLAGS.SKIP_VERCEL) {
-      this.logger.warn('⚠️  Skipping Vercel deployment due to --skip-vercel flag');
+      this.logger.warn(
+        '⚠️  Skipping Vercel deployment due to --skip-vercel flag'
+      );
       return;
     }
 
     // Prepare deployment command
-    const deployCommand = ENVIRONMENT === 'production' 
-      ? 'vercel --prod --yes'
-      : 'vercel --yes';
+    const deployCommand =
+      ENVIRONMENT === 'production' ? 'vercel --prod --yes' : 'vercel --yes';
 
-    await this.runner.run(deployCommand, { 
+    await this.runner.run(deployCommand, {
       essential: true,
       timeout: 10 * 60 * 1000, // 10 minutes
     });
@@ -733,9 +814,10 @@ class DeploymentPhases {
     this.logger.info('🔍 Phase 7: Post-deployment validation');
 
     // Determine health check URL
-    const healthUrl = ENVIRONMENT === 'production' 
-      ? 'https://mysetlist.vercel.app/api/health'
-      : 'http://localhost:3000/api/health';
+    const healthUrl =
+      ENVIRONMENT === 'production'
+        ? 'https://mysetlist.vercel.app/api/health'
+        : 'http://localhost:3000/api/health';
 
     // Wait for deployment to be ready
     this.logger.info('Waiting for deployment to be ready...');
@@ -744,20 +826,22 @@ class DeploymentPhases {
     // Health check with retries
     for (let i = 0; i < CONFIG.HEALTH_CHECK_RETRIES; i++) {
       try {
-        const response = await fetch(healthUrl, { 
+        const response = await fetch(healthUrl, {
           method: 'GET',
           headers: { 'User-Agent': 'MySetlist-Deploy-Bot' },
         });
-        
+
         if (response.ok) {
           this.logger.success('✅ Health check passed');
           break;
         }
-        
+
         throw new Error(`Health check failed: ${response.status}`);
       } catch (error) {
         if (i === CONFIG.HEALTH_CHECK_RETRIES - 1) {
-          this.logger.error(`Health check failed after ${CONFIG.HEALTH_CHECK_RETRIES} attempts`);
+          this.logger.error(
+            `Health check failed after ${CONFIG.HEALTH_CHECK_RETRIES} attempts`
+          );
           if (!FLAGS.FORCE) {
             throw error;
           }
@@ -780,9 +864,10 @@ class DeploymentPhases {
   async performanceValidation(): Promise<void> {
     this.logger.info('⚡ Running performance validation');
 
-    const targetUrl = ENVIRONMENT === 'production' 
-      ? 'https://mysetlist.vercel.app'
-      : 'http://localhost:3000';
+    const targetUrl =
+      ENVIRONMENT === 'production'
+        ? 'https://mysetlist.vercel.app'
+        : 'http://localhost:3000';
 
     // Run Lighthouse audit
     try {
@@ -790,29 +875,48 @@ class DeploymentPhases {
         `lighthouse ${targetUrl} --output=json --output-path=./lighthouse-results.json --chrome-flags="--headless --no-sandbox"`,
         { essential: false, timeout: 5 * 60 * 1000 }
       );
-      
+
       // Parse and log results
       if (existsSync('./lighthouse-results.json')) {
-        const results = JSON.parse(readFileSync('./lighthouse-results.json', 'utf8'));
+        const results = JSON.parse(
+          readFileSync('./lighthouse-results.json', 'utf8')
+        );
         const scores = {
-          performance: Math.round(results.lhr.categories.performance.score * 100),
-          accessibility: Math.round(results.lhr.categories.accessibility.score * 100),
+          performance: Math.round(
+            results.lhr.categories.performance.score * 100
+          ),
+          accessibility: Math.round(
+            results.lhr.categories.accessibility.score * 100
+          ),
           seo: Math.round(results.lhr.categories.seo.score * 100),
-          'best-practices': Math.round(results.lhr.categories['best-practices'].score * 100),
+          'best-practices': Math.round(
+            results.lhr.categories['best-practices'].score * 100
+          ),
         };
-        
+
         this.logger.info('Lighthouse scores:', scores);
-        
+
         // Check if scores meet requirements
-        const minScores = { performance: 80, accessibility: 90, seo: 85, 'best-practices': 90 };
-        const failures = Object.entries(scores).filter(([key, score]) => score < minScores[key as keyof typeof minScores]);
-        
+        const minScores = {
+          performance: 80,
+          accessibility: 90,
+          seo: 85,
+          'best-practices': 90,
+        };
+        const failures = Object.entries(scores).filter(
+          ([key, score]) => score < minScores[key as keyof typeof minScores]
+        );
+
         if (failures.length > 0 && !FLAGS.FORCE) {
-          this.logger.warn(`Performance scores below threshold: ${failures.map(([k, v]) => `${k}: ${v}`).join(', ')}`);
+          this.logger.warn(
+            `Performance scores below threshold: ${failures.map(([k, v]) => `${k}: ${v}`).join(', ')}`
+          );
         }
       }
     } catch (error) {
-      this.logger.warn('Performance validation failed, continuing...', { error });
+      this.logger.warn('Performance validation failed, continuing...', {
+        error,
+      });
     }
   }
 
@@ -823,14 +927,16 @@ class DeploymentPhases {
     try {
       // Rollback Vercel deployment
       await this.runner.run('vercel rollback --yes', { essential: false });
-      
+
       // Restore database backup if available
       if (this.backupPath && existsSync(this.backupPath)) {
         this.logger.info('Restoring database backup...');
-        await this.runner.run(`supabase db reset --db-url=$DATABASE_URL`, { essential: false });
+        await this.runner.run('supabase db reset --db-url=$DATABASE_URL', {
+          essential: false,
+        });
         this.logger.success('Database rollback completed');
       }
-      
+
       this.logger.success('✅ Rollback completed');
     } catch (error) {
       this.logger.error('Rollback failed', { error });
@@ -840,7 +946,7 @@ class DeploymentPhases {
 
   // Utility methods
   private async sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   getDeploymentDuration(): string {
@@ -897,16 +1003,17 @@ class DeploymentOrchestrator {
 
       // Final success message
       const duration = this.phases.getDeploymentDuration();
-      this.logger.success(`🎉 Deployment completed successfully in ${duration}!`);
+      this.logger.success(
+        `🎉 Deployment completed successfully in ${duration}!`
+      );
       this.logger.info('📊 Deployment summary:', {
         environment: ENVIRONMENT,
         duration,
         logFile: this.logger.getLogFile(),
       });
-
     } catch (error) {
       this.logger.error('💥 Deployment failed', { error });
-      
+
       // Automatic rollback on production failure
       if (ENVIRONMENT === 'production' && !FLAGS.FORCE) {
         this.logger.info('🔄 Initiating automatic rollback...');
@@ -925,8 +1032,8 @@ class DeploymentOrchestrator {
 // Signal handling for graceful shutdown
 function setupSignalHandlers(runner: CommandRunner): void {
   const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT'];
-  
-  signals.forEach(signal => {
+
+  signals.forEach((signal) => {
     process.on(signal, () => {
       const logger = Logger.getInstance();
       logger.info(`Received ${signal}, cleaning up...`);
@@ -940,15 +1047,14 @@ function setupSignalHandlers(runner: CommandRunner): void {
 async function main(): Promise<void> {
   const orchestrator = new DeploymentOrchestrator();
   const runner = CommandRunner.getInstance();
-  
+
   // Set up signal handlers
   setupSignalHandlers(runner);
 
   try {
     await orchestrator.run();
     process.exit(0);
-  } catch (error) {
-    console.error('Deployment failed:', error);
+  } catch (_error) {
     process.exit(1);
   }
 }

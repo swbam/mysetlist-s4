@@ -27,8 +27,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log(`🔍 Simple search for artists: "${query}"`);
-
     const results: SearchResult[] = [];
 
     // Search Ticketmaster for artists
@@ -40,8 +38,6 @@ export async function GET(request: NextRequest) {
       classificationName: 'Music',
       sort: 'relevance,desc',
     });
-
-    console.log('Ticketmaster response:', response);
 
     if (response._embedded?.attractions) {
       for (const attraction of response._embedded.attractions) {
@@ -62,15 +58,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    console.log(`✅ Found ${results.length} artists for "${query}"`);
-
     return NextResponse.json({
       results,
       total: results.length,
       query,
     });
   } catch (error) {
-    console.error('Search failed:', error);
     return NextResponse.json({
       results: [],
       error: 'Search failed',
@@ -89,7 +82,6 @@ async function syncArtistToDatabase(artist: SearchResult) {
       .limit(1);
 
     if (existing && existing.length > 0) {
-      console.log(`Artist ${artist.title} already exists in database`);
       return;
     }
 
@@ -113,18 +105,12 @@ async function syncArtistToDatabase(artist: SearchResult) {
       .single();
 
     if (insertError) {
-      console.error(`Failed to insert artist ${artist.title}:`, insertError);
       return;
     }
 
     if (result) {
-      console.log(
-        `✅ Synced artist ${artist.title} to database with ID: ${result.id}`
-      );
     }
-  } catch (error) {
-    console.error(`Failed to sync artist ${artist.title}:`, error);
-  }
+  } catch (_error) {}
 }
 
 function generateSlug(name: string): string {

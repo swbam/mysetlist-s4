@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { promises as fs } from 'fs';
-import path from 'path';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
 
 const API_APP_DIR = path.join(process.cwd(), 'apps/api/app');
 
@@ -33,12 +33,7 @@ async function fixImports(filePath: string) {
     content = content.replace(/@repo\/database/g, '@/lib/database');
 
     await fs.writeFile(filePath, content);
-    console.log(
-      `  ✅ Fixed imports in ${path.relative(process.cwd(), filePath)}`
-    );
-  } catch (error) {
-    console.error(`  ❌ Error fixing imports in ${filePath}:`, error);
-  }
+  } catch (_error) {}
 }
 
 async function processDirectory(dir: string) {
@@ -56,8 +51,6 @@ async function processDirectory(dir: string) {
 }
 
 async function createApiLibraries() {
-  console.log('\n📚 Creating API app library structure...');
-
   const libDir = path.join(process.cwd(), 'apps/api/lib');
   await fs.mkdir(libDir, { recursive: true });
 
@@ -87,20 +80,14 @@ async function createApiLibraries() {
     path.join(libDir, 'external-apis.ts'),
     externalApisContent
   );
-
-  console.log('  ✅ Created API app library structure');
 }
 
 async function main() {
-  console.log('🔧 Fixing imports in migrated API routes...\n');
-
   // Create library structure first
   await createApiLibraries();
 
   // Fix imports in all migrated files
   await processDirectory(API_APP_DIR);
-
-  console.log('\n✨ Import fixes complete!');
 }
 
 main().catch(console.error);

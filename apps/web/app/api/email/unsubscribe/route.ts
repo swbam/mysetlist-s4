@@ -1,21 +1,18 @@
-import { createClient } from '@/lib/supabase/server';
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from 'next/server';
+import { createClient } from '~/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
     const { email, type = 'all' } = await request.json();
-    
+
     if (!email) {
-      return NextResponse.json(
-        { error: 'Email is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
     const supabase = await createClient();
-    
+
     // Check if user exists and get their preferences
-    const { data: existingPrefs } = await supabase
+    const { data: _ } = await supabase
       .from('user_email_preferences')
       .select('*')
       .eq('email', email)
@@ -44,20 +41,17 @@ export async function POST(request: NextRequest) {
       });
 
     if (upsertError) {
-      console.error('Upsert error:', upsertError);
       return NextResponse.json(
         { error: 'Failed to update preferences' },
         { status: 500 }
       );
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      message: 'Successfully unsubscribed'
+      message: 'Successfully unsubscribed',
     });
-
-  } catch (error) {
-    console.error('Unsubscribe error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -72,26 +66,22 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') || 'all';
 
     if (!token) {
-      return NextResponse.json(
-        { error: 'Token is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Token is required' }, { status: 400 });
     }
 
     // Decode the token to get email
     const email = Buffer.from(token, 'base64').toString('utf-8');
-    
+
     if (!email.includes('@')) {
-      return NextResponse.json(
-        { error: 'Invalid token' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid token' }, { status: 400 });
     }
 
     const supabase = await createClient();
-    
+
     // Get current session if user is logged in
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
     let updateData;
     if (type === 'all') {
@@ -117,7 +107,6 @@ export async function GET(request: NextRequest) {
       });
 
     if (upsertError) {
-      console.error('Upsert error:', upsertError);
       return NextResponse.json(
         { error: 'Failed to update preferences' },
         { status: 500 }
@@ -160,9 +149,7 @@ export async function GET(request: NextRequest) {
         },
       }
     );
-
-  } catch (error) {
-    console.error('Unsubscribe error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

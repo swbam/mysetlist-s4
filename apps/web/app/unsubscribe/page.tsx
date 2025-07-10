@@ -1,4 +1,3 @@
-import { handleUnsubscribe } from '@/actions/email-notifications';
 import {
   Alert,
   AlertDescription,
@@ -14,6 +13,7 @@ import {
 import { ArrowLeft, Mail } from 'lucide-react';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import { handleUnsubscribe } from '~/actions/email-notifications';
 
 // Force dynamic rendering due to searchParams usage
 export const dynamic = 'force-dynamic';

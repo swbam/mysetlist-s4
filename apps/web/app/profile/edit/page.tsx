@@ -95,7 +95,9 @@ export default function EditProfilePage() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!user?.id) return;
+      if (!user?.id) {
+        return;
+      }
 
       try {
         const response = await fetch(`/api/user/profile/${user.id}`);
@@ -113,8 +115,7 @@ export default function EditProfilePage() {
           setValue('spotifyUsername', profile.spotifyUsername || '');
           setAvatarPreview(profile.avatarUrl || null);
         }
-      } catch (error) {
-        console.error('Failed to fetch profile:', error);
+      } catch (_error) {
         setError('Failed to load profile data');
       } finally {
         setLoading(false);
@@ -164,7 +165,9 @@ export default function EditProfilePage() {
 
       // Add profile data
       Object.entries(data).forEach(([key, value]) => {
-        if (value) formData.append(key, value);
+        if (value) {
+          formData.append(key, value);
+        }
       });
 
       // Add avatar if selected
@@ -200,8 +203,8 @@ export default function EditProfilePage() {
       <ProtectedRoute>
         <div className="container mx-auto px-4 py-8">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 w-1/4 rounded bg-muted"></div>
-            <div className="h-64 rounded-lg bg-muted"></div>
+            <div className="h-8 w-1/4 rounded bg-muted" />
+            <div className="h-64 rounded-lg bg-muted" />
           </div>
         </div>
       </ProtectedRoute>

@@ -7,6 +7,6 @@ export const keys = () =>
       BLOB_READ_WRITE_TOKEN: z.string().optional(),
     },
     runtimeEnv: {
-      BLOB_READ_WRITE_TOKEN: process.env['BLOB_READ_WRITE_TOKEN'],
+      BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
     },
   });

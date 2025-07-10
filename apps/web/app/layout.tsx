@@ -1,13 +1,13 @@
 import './styles.css';
-import { AnonymousUserProvider } from '@/components/anonymous-user-provider';
-import { DisableServiceWorker } from '@/components/disable-sw';
-import { PageTransitionProvider } from '@/components/page-transition-provider';
-import { SkipLink } from '@/components/ui/accessibility-utils';
 import { DesignSystemProvider } from '@repo/design-system';
 import { Toaster } from '@repo/design-system/components/ui/toaster';
 import { fonts } from '@repo/design-system/lib/fonts';
 import { cn } from '@repo/design-system/lib/utils';
 import type { ReactNode } from 'react';
+import { AnonymousUserProvider } from '~/components/anonymous-user-provider';
+import { DisableServiceWorker } from '~/components/disable-sw';
+import { PageTransitionProvider } from '~/components/page-transition-provider';
+import { SkipLink } from '~/components/ui/accessibility-utils';
 import { LayoutProvider } from '../providers/layout-provider';
 import { Footer } from './components/footer';
 import { Header } from './components/header';

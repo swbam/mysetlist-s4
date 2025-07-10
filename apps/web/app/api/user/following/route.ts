@@ -30,8 +30,7 @@ export async function GET(request: NextRequest) {
       .orderBy(desc(userFollowsArtists.createdAt));
 
     return NextResponse.json({ artists: followedArtists });
-  } catch (error) {
-    console.error('Error fetching followed artists:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch followed artists' },
       { status: 500 }

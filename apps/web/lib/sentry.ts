@@ -1,8 +1,8 @@
 import * as Sentry from '@sentry/nextjs';
 
 // Enhanced Sentry configuration
-const SENTRY_DSN = process.env['NEXT_PUBLIC_SENTRY_DSN'];
-const environment = process.env['NODE_ENV'] || 'development';
+const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN;
+const environment = process.env.NODE_ENV || 'development';
 
 if (SENTRY_DSN) {
   Sentry.init({
@@ -18,7 +18,7 @@ if (SENTRY_DSN) {
     replaysOnErrorSampleRate: 1.0,
 
     // Enhanced error filtering
-    beforeSend(event, hint) {
+    beforeSend(event, _hint) {
       // Filter out known non-critical errors
       if (event.exception) {
         const error = event.exception.values?.[0];
@@ -70,7 +70,7 @@ if (SENTRY_DSN) {
     },
 
     // Enhanced breadcrumb filtering
-    beforeBreadcrumb(breadcrumb, hint) {
+    beforeBreadcrumb(breadcrumb, _hint) {
       // Filter out noisy console logs in production
       if (environment === 'production' && breadcrumb.category === 'console') {
         return null;
@@ -94,20 +94,19 @@ if (SENTRY_DSN) {
     fingerprint: ['{{ default }}', '{{ type }}', '{{ value }}'],
 
     // Release tracking
-    release: process.env['VERCEL_GIT_COMMIT_SHA'] || 'unknown',
+    release: process.env.VERCEL_GIT_COMMIT_SHA || 'unknown',
 
     // Custom tags for better filtering
     initialScope: {
       tags: {
         component: 'web-app',
         environment,
-        deployment: process.env['VERCEL_ENV'] || 'development',
+        deployment: process.env.VERCEL_ENV || 'development',
       },
       level: 'info',
     },
   });
 } else if (environment === 'development') {
-  console.log('Sentry: DSN not provided, skipping initialization');
 }
 
 /**
@@ -211,7 +210,9 @@ export class ErrorReporter {
     threshold: number,
     metadata?: Record<string, any>
   ): void {
-    if (duration <= threshold) return;
+    if (duration <= threshold) {
+      return;
+    }
 
     Sentry.withScope((scope) => {
       scope.setTag('issue_type', 'performance');
@@ -250,7 +251,8 @@ export class ErrorReporter {
       comments: message,
     };
 
-    Sentry.captureUserFeedback(feedback);
+    // captureUserFeedback is deprecated, using captureMessage instead
+    Sentry.captureMessage(`User feedback: ${message}`, 'info');
   }
 }
 

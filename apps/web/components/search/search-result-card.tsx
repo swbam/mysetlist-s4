@@ -99,7 +99,9 @@ export function SearchResultCard({
   };
 
   const formatPrice = (price: SearchResult['price']) => {
-    if (!price) return null;
+    if (!price) {
+      return null;
+    }
     return `${price.currency}${price.min}-${price.max}`;
   };
 

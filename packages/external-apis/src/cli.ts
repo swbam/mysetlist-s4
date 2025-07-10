@@ -18,8 +18,7 @@ program
     try {
       await scheduler.runInitialSync();
       process.exit(0);
-    } catch (error) {
-      console.error('Initial sync failed:', error);
+    } catch (_error) {
       process.exit(1);
     }
   });
@@ -31,8 +30,7 @@ program
     try {
       await scheduler.runDailySync();
       process.exit(0);
-    } catch (error) {
-      console.error('Daily sync failed:', error);
+    } catch (_error) {
       process.exit(1);
     }
   });
@@ -46,8 +44,7 @@ program
     try {
       await scheduler.syncByLocation(options.city, options.state);
       process.exit(0);
-    } catch (error) {
-      console.error('Location sync failed:', error);
+    } catch (_error) {
       process.exit(1);
     }
   });
@@ -60,8 +57,7 @@ program
     try {
       await scheduler.syncArtistData(options.name);
       process.exit(0);
-    } catch (error) {
-      console.error('Artist sync failed:', error);
+    } catch (_error) {
       process.exit(1);
     }
   });
@@ -92,8 +88,7 @@ program
         endDate: options.endDate,
       });
       process.exit(0);
-    } catch (error) {
-      console.error('Custom sync failed:', error);
+    } catch (_error) {
       process.exit(1);
     }
   });
@@ -106,8 +101,7 @@ program
     try {
       await scheduler.syncShowDetails(options.id);
       process.exit(0);
-    } catch (error) {
-      console.error('Show sync failed:', error);
+    } catch (_error) {
       process.exit(1);
     }
   });

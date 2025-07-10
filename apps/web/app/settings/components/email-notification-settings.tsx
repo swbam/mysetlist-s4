@@ -1,10 +1,6 @@
 'use client';
 
 import {
-  getUserEmailPreferences,
-  updateEmailPreferences,
-} from '@/actions/email-notifications';
-import {
   Alert,
   AlertDescription,
 } from '@repo/design-system/components/ui/alert';
@@ -38,6 +34,10 @@ import {
   Users,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import {
+  getUserEmailPreferences,
+  updateEmailPreferences,
+} from '~/actions/email-notifications';
 
 type EmailPreferences = {
   emailEnabled: boolean;
@@ -73,7 +73,7 @@ export function EmailNotificationSettings() {
     try {
       const prefs = await getUserEmailPreferences();
       setPreferences(prefs as EmailPreferences);
-    } catch (error) {
+    } catch (_error) {
       toast('Failed to load email preferences', { type: 'error' });
     } finally {
       setLoading(false);
@@ -81,13 +81,15 @@ export function EmailNotificationSettings() {
   };
 
   const handleSave = async () => {
-    if (!preferences) return;
+    if (!preferences) {
+      return;
+    }
 
     setSaving(true);
     try {
       await updateEmailPreferences(preferences);
       toast('Your email preferences have been updated', { type: 'success' });
-    } catch (error) {
+    } catch (_error) {
       toast('Failed to save preferences', { type: 'error' });
     } finally {
       setSaving(false);
@@ -95,7 +97,9 @@ export function EmailNotificationSettings() {
   };
 
   const updatePreference = (key: keyof EmailPreferences, value: any) => {
-    if (!preferences) return;
+    if (!preferences) {
+      return;
+    }
     setPreferences({ ...preferences, [key]: value });
   };
 
@@ -108,9 +112,9 @@ export function EmailNotificationSettings() {
         </CardHeader>
         <CardContent>
           <div className="animate-pulse space-y-4">
-            <div className="h-4 w-3/4 rounded bg-gray-200"></div>
-            <div className="h-4 w-1/2 rounded bg-gray-200"></div>
-            <div className="h-4 w-2/3 rounded bg-gray-200"></div>
+            <div className="h-4 w-3/4 rounded bg-gray-200" />
+            <div className="h-4 w-1/2 rounded bg-gray-200" />
+            <div className="h-4 w-2/3 rounded bg-gray-200" />
           </div>
         </CardContent>
       </Card>

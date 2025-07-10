@@ -7,9 +7,11 @@ import { eq } from 'drizzle-orm';
 
 export async function syncArtistWithSpotify(artistId: string) {
   // Get artist from database
-  const artist = await db.query.artists.findFirst({
-    where: eq(artists.id, artistId),
-  });
+  const [artist] = await db
+    .select()
+    .from(artists)
+    .where(eq(artists.id, artistId))
+    .limit(1);
 
   if (!artist || !artist.spotifyId) {
     throw new Error('Artist not found or no Spotify ID');
@@ -37,8 +39,7 @@ export async function syncArtistWithSpotify(artistId: string) {
       .where(eq(artists.id, artistId));
 
     return { success: true };
-  } catch (error) {
-    console.error('Failed to sync artist with Spotify:', error);
+  } catch (_error) {
     return { success: false, error: 'Failed to sync with Spotify' };
   }
 }

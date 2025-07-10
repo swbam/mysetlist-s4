@@ -35,13 +35,17 @@ export function CookieConsent() {
   }, []);
 
   const getCookieConsent = (): CookiePreferences | null => {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === 'undefined') {
+      return null;
+    }
 
     const consent = document.cookie
       .split('; ')
       .find((row) => row.startsWith(`${CONSENT_COOKIE_NAME}=`));
 
-    if (!consent) return null;
+    if (!consent) {
+      return null;
+    }
 
     try {
       return JSON.parse(decodeURIComponent(consent.split('=')[1]));
@@ -93,7 +97,9 @@ export function CookieConsent() {
     setShowBanner(false);
   };
 
-  if (!showBanner) return null;
+  if (!showBanner) {
+    return null;
+  }
 
   return (
     <div className="fixed right-0 bottom-0 left-0 z-50 bg-background/80 p-4 backdrop-blur-sm">

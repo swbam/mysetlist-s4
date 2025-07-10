@@ -41,12 +41,13 @@ export function TrendingVenues() {
   const fetchTrendingVenues = async () => {
     try {
       const response = await fetch('/api/trending/venues');
-      if (!response.ok) throw new Error('Failed to fetch trending venues');
+      if (!response.ok) {
+        throw new Error('Failed to fetch trending venues');
+      }
 
       const data = await response.json();
       setVenues(data.venues || []);
-    } catch (err) {
-      console.error('Error fetching trending venues:', err);
+    } catch (_err) {
       setError('Failed to load trending venues');
     } finally {
       setLoading(false);
@@ -54,30 +55,37 @@ export function TrendingVenues() {
   };
 
   const formatCapacity = (capacity?: number) => {
-    if (!capacity) return 'N/A';
-    if (capacity >= 1000) return `${(capacity / 1000).toFixed(1)}K`;
+    if (!capacity) {
+      return 'N/A';
+    }
+    if (capacity >= 1000) {
+      return `${(capacity / 1000).toFixed(1)}K`;
+    }
     return capacity.toString();
   };
 
   const getGrowthBadge = (growth: number) => {
-    if (growth > 20)
+    if (growth > 20) {
       return {
         variant: 'default' as const,
         text: 'Hot',
         color: 'text-red-500',
       };
-    if (growth > 10)
+    }
+    if (growth > 10) {
       return {
         variant: 'secondary' as const,
         text: 'Rising',
         color: 'text-orange-500',
       };
-    if (growth > 0)
+    }
+    if (growth > 0) {
       return {
         variant: 'outline' as const,
         text: 'Growing',
         color: 'text-green-500',
       };
+    }
     return {
       variant: 'outline' as const,
       text: 'Stable',

@@ -21,15 +21,14 @@ import { useAuth } from '../../providers/auth-provider';
 
 export function UserMenu() {
   const { user, signOut, loading } = useAuth();
-  const router = useRouter();
+  const _router = useRouter();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
     try {
       await signOut();
-    } catch (error) {
-      console.error('Sign out error:', error);
+    } catch (_error) {
     } finally {
       setIsSigningOut(false);
     }

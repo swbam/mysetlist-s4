@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 import 'dotenv/config';
-import { join } from 'path';
-import { dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { readFile, readdir } from 'node:fs/promises';
+import { join } from 'node:path';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { createClient } from '@supabase/supabase-js';
-import { readFile, readdir } from 'fs/promises';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -30,10 +30,8 @@ class SupabaseMigrationRunner {
 
   constructor() {
     this.supabaseUrl =
-      process.env['NEXT_PUBLIC_SUPABASE_URL'] ||
-      process.env['SUPABASE_URL'] ||
-      '';
-    this.supabaseServiceKey = process.env['SUPABASE_SERVICE_ROLE_KEY'] || '';
+      process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
+    this.supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
     if (!this.supabaseUrl || !this.supabaseServiceKey) {
       throw new Error(
@@ -51,18 +49,14 @@ class SupabaseMigrationRunner {
 
   async runMigrations(migrationsDir: string) {
     try {
-      console.log('🚀 Starting Supabase migrations...');
-
       // Ensure migration table exists
       await this.executeSql(MIGRATION_TABLE_SQL);
 
       // Get executed migrations
       const executedMigrations = await this.getExecutedMigrations();
-      console.log(`📋 Found ${executedMigrations.length} executed migrations`);
 
       // Get migration files
       const migrationFiles = await this.getMigrationFiles(migrationsDir);
-      console.log(`📁 Found ${migrationFiles.length} migration files`);
 
       // Filter pending migrations
       const pendingMigrations = migrationFiles.filter(
@@ -70,22 +64,14 @@ class SupabaseMigrationRunner {
       );
 
       if (pendingMigrations.length === 0) {
-        console.log('✅ All migrations are up to date!');
         return;
       }
-
-      console.log(
-        `🔄 Running ${pendingMigrations.length} pending migrations...`
-      );
 
       // Run migrations in order
       for (const migration of pendingMigrations) {
         await this.runMigration(migration);
       }
-
-      console.log('✅ All migrations completed successfully!');
-    } catch (error) {
-      console.error('❌ Migration failed:', error);
+    } catch (_error) {
       process.exit(1);
     }
   }
@@ -124,24 +110,15 @@ class SupabaseMigrationRunner {
   }
 
   private async runMigration(migration: MigrationFile) {
-    console.log(`\n📝 Running migration: ${migration.filename}`);
+    // Execute the migration SQL
+    await this.executeSql(migration.sql);
 
-    try {
-      // Execute the migration SQL
-      await this.executeSql(migration.sql);
+    // Record migration as executed
+    const { error } = await this.client
+      .from('schema_migrations')
+      .insert({ version: migration.version });
 
-      // Record migration as executed
-      const { error } = await this.client
-        .from('schema_migrations')
-        .insert({ version: migration.version });
-
-      if (error) {
-        throw error;
-      }
-
-      console.log(`✅ Migration ${migration.filename} completed`);
-    } catch (error) {
-      console.error(`❌ Migration ${migration.filename} failed:`, error);
+    if (error) {
       throw error;
     }
   }
@@ -161,12 +138,10 @@ class SupabaseMigrationRunner {
 
       // Use Supabase's rpc to execute raw SQL
       const { error } = await this.client.rpc('exec_sql', {
-        sql: statement + ';',
+        sql: `${statement};`,
       });
 
       if (error) {
-        console.error('SQL Error:', error);
-        console.error('Statement:', statement);
         throw error;
       }
     }
@@ -192,12 +167,8 @@ async function main() {
 
   // First, ensure we have the exec_sql function
   try {
-    await runner['executeSql'](CREATE_EXEC_SQL_FUNCTION);
-  } catch (error) {
-    console.log(
-      'Note: exec_sql function might already exist or require manual creation'
-    );
-  }
+    await runner.executeSql(CREATE_EXEC_SQL_FUNCTION);
+  } catch (_error) {}
 
   const migrationsDir = join(__dirname, '..', 'migrations');
   await runner.runMigrations(migrationsDir);

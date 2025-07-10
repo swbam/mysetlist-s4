@@ -1,6 +1,5 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import { cn } from '@repo/design-system/lib/utils';
@@ -17,6 +16,7 @@ import {
   WifiOff,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 interface ConnectionStatus {
   status: 'connecting' | 'connected' | 'disconnected' | 'error';
@@ -56,8 +56,6 @@ export function MobileRealtimeStatus() {
     // Track connection events
     channel
       .on('system', { event: 'realtime' }, (payload) => {
-        console.log('Realtime system event:', payload);
-
         switch (payload.type) {
           case 'connected':
             setConnectionStatus((prev) => ({
@@ -89,8 +87,6 @@ export function MobileRealtimeStatus() {
         }
       })
       .subscribe((status) => {
-        console.log('Channel subscription status:', status);
-
         if (status === 'SUBSCRIBED') {
           setConnectionStatus((prev) => ({
             ...prev,
@@ -120,9 +116,7 @@ export function MobileRealtimeStatus() {
             latency,
             lastUpdate: new Date(),
           }));
-        } catch (error) {
-          console.warn('Latency check failed:', error);
-        }
+        } catch (_error) {}
       }, 10000); // Check every 10 seconds
     }
 
@@ -130,8 +124,12 @@ export function MobileRealtimeStatus() {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
 
-      if (latencyInterval) clearInterval(latencyInterval);
-      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (latencyInterval) {
+        clearInterval(latencyInterval);
+      }
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+      }
 
       supabase.removeChannel(channel);
     };
@@ -143,13 +141,18 @@ export function MobileRealtimeStatus() {
     }
 
     switch (connectionStatus.status) {
-      case 'connected':
+      case 'connected': {
         if (connectionStatus.latency) {
-          if (connectionStatus.latency < 100) return SignalHigh;
-          if (connectionStatus.latency < 300) return SignalMedium;
+          if (connectionStatus.latency < 100) {
+            return SignalHigh;
+          }
+          if (connectionStatus.latency < 300) {
+            return SignalMedium;
+          }
           return SignalLow;
         }
         return CheckCircle;
+      }
       case 'connecting':
         return Loader2;
       case 'disconnected':
@@ -162,16 +165,23 @@ export function MobileRealtimeStatus() {
   };
 
   const getStatusColor = () => {
-    if (networkStatus === 'offline') return 'bg-gray-500';
+    if (networkStatus === 'offline') {
+      return 'bg-gray-500';
+    }
 
     switch (connectionStatus.status) {
-      case 'connected':
+      case 'connected': {
         if (connectionStatus.latency) {
-          if (connectionStatus.latency < 100) return 'bg-green-500';
-          if (connectionStatus.latency < 300) return 'bg-yellow-500';
+          if (connectionStatus.latency < 100) {
+            return 'bg-green-500';
+          }
+          if (connectionStatus.latency < 300) {
+            return 'bg-yellow-500';
+          }
           return 'bg-orange-500';
         }
         return 'bg-green-500';
+      }
       case 'connecting':
         return 'bg-blue-500';
       case 'disconnected':
@@ -184,7 +194,9 @@ export function MobileRealtimeStatus() {
   };
 
   const getStatusText = () => {
-    if (networkStatus === 'offline') return 'Offline';
+    if (networkStatus === 'offline') {
+      return 'Offline';
+    }
 
     switch (connectionStatus.status) {
       case 'connected':
@@ -208,8 +220,7 @@ export function MobileRealtimeStatus() {
       await supabase.realtime.disconnect();
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await supabase.realtime.connect();
-    } catch (error) {
-      console.error('Failed to reconnect:', error);
+    } catch (_error) {
       setConnectionStatus((prev) => ({ ...prev, status: 'error' }));
     }
   };

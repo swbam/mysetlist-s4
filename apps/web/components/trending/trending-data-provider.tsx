@@ -1,5 +1,6 @@
 'use client';
 
+import { type ReactNode, createContext, useContext } from 'react';
 import {
   type UseLiveTrendingOptions,
   type UseTrendingOptions,
@@ -9,8 +10,7 @@ import {
   useTrendingShows,
   useTrendingStats,
   useTrendingVenues,
-} from '@/hooks/use-trending';
-import { type ReactNode, createContext, useContext } from 'react';
+} from '~/hooks/use-trending';
 
 interface TrendingContextValue {
   shows: ReturnType<typeof useTrendingShows>;

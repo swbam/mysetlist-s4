@@ -1,11 +1,11 @@
 'use client';
 
-import { LiveShowIndicator } from '@/components/live-show-indicator';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { format } from 'date-fns';
 import { Calendar, Heart, MapPin, Share2, Users } from 'lucide-react';
 import { useState } from 'react';
+import { LiveShowIndicator } from '~/components/live-show-indicator';
 
 type ShowInfoProps = {
   showId: string;
@@ -35,7 +35,7 @@ type ShowInfoProps = {
 export const ShowInfo = ({ showId, show }: ShowInfoProps) => {
   const [isSaved, setIsSaved] = useState(false);
 
-  const isLive = show.shows.status === 'ongoing';
+  const _isLive = show.shows.status === 'ongoing';
   const showDate = new Date(show.shows.date);
   const artistName = show.artists?.name || 'Unknown Artist';
   const venueName = show.venues?.name || 'Unknown Venue';

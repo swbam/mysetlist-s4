@@ -1,7 +1,7 @@
 'use client';
 
-import type { TrendingArtist, TrendingShow } from '@/types/api';
 import { useCallback, useEffect, useState } from 'react';
+import type { TrendingArtist, TrendingShow } from '~/types/api';
 
 // Re-export all trending hooks
 export * from './use-recent-activity';
@@ -60,12 +60,13 @@ export function useTrendingShows(options: UseTrendingOptions = {}) {
       });
 
       const response = await fetch(`/api/trending/shows?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch trending shows');
+      if (!response.ok) {
+        throw new Error('Failed to fetch trending shows');
+      }
 
       const data = await response.json();
       setShows(data.shows || []);
     } catch (err) {
-      console.error('Error fetching trending shows:', err);
       setError(
         err instanceof Error ? err.message : 'Failed to load trending shows'
       );
@@ -79,7 +80,9 @@ export function useTrendingShows(options: UseTrendingOptions = {}) {
   }, [fetchShows]);
 
   useEffect(() => {
-    if (!autoRefresh) return;
+    if (!autoRefresh) {
+      return;
+    }
 
     const interval = setInterval(fetchShows, refreshInterval);
     return () => clearInterval(interval);
@@ -115,12 +118,13 @@ export function useTrendingArtists(options: UseTrendingOptions = {}) {
       });
 
       const response = await fetch(`/api/trending/artists?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch trending artists');
+      if (!response.ok) {
+        throw new Error('Failed to fetch trending artists');
+      }
 
       const data = await response.json();
       setArtists(data.artists || []);
     } catch (err) {
-      console.error('Error fetching trending artists:', err);
       setError(
         err instanceof Error ? err.message : 'Failed to load trending artists'
       );
@@ -134,7 +138,9 @@ export function useTrendingArtists(options: UseTrendingOptions = {}) {
   }, [fetchArtists]);
 
   useEffect(() => {
-    if (!autoRefresh) return;
+    if (!autoRefresh) {
+      return;
+    }
 
     const interval = setInterval(fetchArtists, refreshInterval);
     return () => clearInterval(interval);
@@ -173,13 +179,14 @@ export function useLiveTrending(options: UseLiveTrendingOptions = {}) {
       });
 
       const response = await fetch(`/api/trending/live?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch live trending data');
+      if (!response.ok) {
+        throw new Error('Failed to fetch live trending data');
+      }
 
       const data = await response.json();
       setTrending(data.trending || []);
       setLastUpdate(new Date());
     } catch (err) {
-      console.error('Error fetching live trending:', err);
       setError(
         err instanceof Error ? err.message : 'Failed to load live trending data'
       );
@@ -193,7 +200,9 @@ export function useLiveTrending(options: UseLiveTrendingOptions = {}) {
   }, [fetchTrending]);
 
   useEffect(() => {
-    if (!autoRefresh) return;
+    if (!autoRefresh) {
+      return;
+    }
 
     const interval = setInterval(fetchTrending, refreshInterval);
     return () => clearInterval(interval);
@@ -255,7 +264,6 @@ export function useTrendingStats() {
         userGrowth: 18,
       });
     } catch (err) {
-      console.error('Error fetching trending stats:', err);
       setError(
         err instanceof Error ? err.message : 'Failed to load trending stats'
       );

@@ -1,10 +1,10 @@
 'use client';
 
 export const dynamic = 'force-dynamic';
-import { createClient } from '@/lib/supabase/client';
 import { Loader2 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 // Force dynamic rendering due to useSearchParams
 
@@ -25,7 +25,6 @@ export default function AuthCallbackPage() {
           const { error } = await supabase.auth.exchangeCodeForSession(code);
 
           if (error) {
-            console.error('Auth callback error:', error);
             router.push('/auth/sign-in');
             return;
           }
@@ -33,8 +32,7 @@ export default function AuthCallbackPage() {
 
         // Redirect to the next page or home
         router.push(next);
-      } catch (error) {
-        console.error('Auth callback error:', error);
+      } catch (_error) {
         router.push('/auth/sign-in');
       }
     };

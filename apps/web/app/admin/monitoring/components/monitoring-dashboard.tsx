@@ -43,7 +43,7 @@ export function MonitoringDashboard({
   errorLogs,
   userActivity,
 }: MonitoringDashboardProps) {
-  const [realtimeStats, setRealtimeStats] = useState({
+  const [realtimeStats, _setRealtimeStats] = useState({
     activeConnections: 0,
     requestsPerMinute: 0,
     avgResponseTime: 0,
@@ -364,23 +364,39 @@ function calculateHealthScore(
   let score = 100;
 
   // Deduct points for high error rate
-  if (apiStats.errorRate > 1) score -= 10;
-  if (apiStats.errorRate > 5) score -= 20;
+  if (apiStats.errorRate > 1) {
+    score -= 10;
+  }
+  if (apiStats.errorRate > 5) {
+    score -= 20;
+  }
 
   // Deduct points for slow response times
-  if (apiStats.avgResponseTime > 500) score -= 10;
-  if (apiStats.avgResponseTime > 1000) score -= 20;
+  if (apiStats.avgResponseTime > 500) {
+    score -= 10;
+  }
+  if (apiStats.avgResponseTime > 1000) {
+    score -= 20;
+  }
 
   // Deduct points for database issues
-  if (dbStats.slowQueries > 10) score -= 15;
-  if (dbStats.activeConnections > dbStats.maxConnections * 0.8) score -= 10;
+  if (dbStats.slowQueries > 10) {
+    score -= 15;
+  }
+  if (dbStats.activeConnections > dbStats.maxConnections * 0.8) {
+    score -= 10;
+  }
 
   // Deduct points for recent errors
   const recentErrors = errorLogs.filter(
     (e) => new Date(e.created_at) > new Date(Date.now() - 3600000)
   ).length;
-  if (recentErrors > 10) score -= 10;
-  if (recentErrors > 50) score -= 20;
+  if (recentErrors > 10) {
+    score -= 10;
+  }
+  if (recentErrors > 50) {
+    score -= 20;
+  }
 
   return Math.max(0, score);
 }

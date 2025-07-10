@@ -1,6 +1,5 @@
 'use client';
 
-import { useDebounce } from '@/hooks/use-debounce';
 import {
   Alert,
   AlertDescription,
@@ -18,6 +17,7 @@ import { Loader2, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import * as React from 'react';
+import { useDebounce } from '~/hooks/use-debounce';
 
 interface Artist {
   id: string;

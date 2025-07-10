@@ -31,8 +31,12 @@ async function getFeaturedVenues() {
 
 export async function FeaturedVenues() {
   const formatCapacity = (capacity: number | null) => {
-    if (!capacity) return 'N/A';
-    if (capacity >= 1000) return `${(capacity / 1000).toFixed(1)}K`;
+    if (!capacity) {
+      return 'N/A';
+    }
+    if (capacity >= 1000) {
+      return `${(capacity / 1000).toFixed(1)}K`;
+    }
     return capacity.toString();
   };
 

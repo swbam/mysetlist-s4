@@ -1,5 +1,5 @@
-import { createServiceClient } from '@/lib/supabase/server';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createServiceClient } from '~/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,8 +37,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({ results });
-  } catch (error) {
-    console.error('Search error:', error);
+  } catch (_error) {
     return NextResponse.json({ error: 'Search failed' }, { status: 500 });
   }
 }

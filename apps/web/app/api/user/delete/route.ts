@@ -1,4 +1,3 @@
-import { createServiceClient } from '@/lib/supabase/server';
 import { getUser } from '@repo/auth/server';
 import { db } from '@repo/database';
 import {
@@ -13,6 +12,7 @@ import {
 } from '@repo/database';
 import { eq } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createServiceClient } from '~/lib/supabase/server';
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -78,7 +78,6 @@ export async function DELETE(request: NextRequest) {
       );
 
       if (deleteAuthError) {
-        console.error('Failed to delete auth user:', deleteAuthError);
         // User data is deleted, but auth record remains - log this for manual cleanup
       }
 
@@ -90,15 +89,13 @@ export async function DELETE(request: NextRequest) {
         message:
           'Your account and all associated data has been permanently deleted.',
       });
-    } catch (error) {
-      console.error('Failed to delete user data:', error);
+    } catch (_error) {
       return NextResponse.json(
         { error: 'Failed to delete account. Please contact support.' },
         { status: 500 }
       );
     }
-  } catch (error) {
-    console.error('Account deletion error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Account deletion failed' },
       { status: 500 }

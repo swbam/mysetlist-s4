@@ -24,84 +24,76 @@ export class SetlistSyncService {
   }
 
   async syncSetlistFromSetlistFm(setlistData: SetlistFmSetlist): Promise<void> {
-    try {
-      await this.spotifyClient.authenticate();
+    await this.spotifyClient.authenticate();
 
-      // Find the show
-      const show = await db.query.shows.findFirst({
-        where: eq(shows.setlistFmId, setlistData.id),
-      });
+    // Find the show
+    const show = await db.query.shows.findFirst({
+      where: eq(shows.setlistFmId, setlistData.id),
+    });
 
-      if (!show) {
-        console.warn(`Show not found for setlist: ${setlistData.id}`);
-        return;
-      }
-
-      // Find the artist
-      const artist = await db.query.artists.findFirst({
-        where: eq(artists.name, setlistData.artist.name),
-      });
-
-      if (!artist) {
-        console.warn(`Artist not found: ${setlistData.artist.name}`);
-        return;
-      }
-
-      // Create setlist
-      const [setlist] = await db
-        .insert(setlists)
-        .values({
-          showId: show.id,
-          artistId: artist.id,
-          type: 'actual' as const,
-          name: 'Main Set',
-          importedFrom: 'setlist.fm',
-          externalId: setlistData.id,
-          importedAt: new Date(),
-        })
-        .onConflictDoNothing()
-        .returning({ id: setlists.id });
-
-      if (!setlist) {
-        console.log(`Setlist already exists for show: ${show.id}`);
-        return;
-      }
-
-      // Process all sets
-      let songOrder = 0;
-      for (const set of setlistData.sets.set) {
-        const songs = await this.processSongsFromSet(
-          set,
-          artist.id,
-          artist.spotifyId
-        );
-
-        // Add songs to setlist
-        for (const song of songs) {
-          await db
-            .insert(setlistSongs)
-            .values({
-              setlistId: setlist.id,
-              songId: song.id,
-              position: songOrder++,
-              notes: song.info,
-            })
-            .onConflictDoNothing();
-        }
-      }
-
-      // Update show setlist count
-      await db
-        .update(shows)
-        .set({
-          setlistCount: (show.setlistCount || 0) + 1,
-          updatedAt: new Date(),
-        })
-        .where(eq(shows.id, show.id));
-    } catch (error) {
-      console.error(`Failed to sync setlist: ${setlistData.id}`, error);
-      throw error;
+    if (!show) {
+      return;
     }
+
+    // Find the artist
+    const artist = await db.query.artists.findFirst({
+      where: eq(artists.name, setlistData.artist.name),
+    });
+
+    if (!artist) {
+      return;
+    }
+
+    // Create setlist
+    const [setlist] = await db
+      .insert(setlists)
+      .values({
+        showId: show.id,
+        artistId: artist.id,
+        type: 'actual' as const,
+        name: 'Main Set',
+        importedFrom: 'setlist.fm',
+        externalId: setlistData.id,
+        importedAt: new Date(),
+      })
+      .onConflictDoNothing()
+      .returning({ id: setlists.id });
+
+    if (!setlist) {
+      return;
+    }
+
+    // Process all sets
+    let songOrder = 0;
+    for (const set of setlistData.sets.set) {
+      const songs = await this.processSongsFromSet(
+        set,
+        artist.id,
+        artist.spotifyId
+      );
+
+      // Add songs to setlist
+      for (const song of songs) {
+        await db
+          .insert(setlistSongs)
+          .values({
+            setlistId: setlist.id,
+            songId: song.id,
+            position: songOrder++,
+            notes: song.info,
+          })
+          .onConflictDoNothing();
+      }
+    }
+
+    // Update show setlist count
+    await db
+      .update(shows)
+      .set({
+        setlistCount: (show.setlistCount || 0) + 1,
+        updatedAt: new Date(),
+      })
+      .where(eq(shows.id, show.id));
   }
 
   private async processSongsFromSet(
@@ -158,12 +150,7 @@ export class SetlistSyncService {
                 song = newSong;
               }
             }
-          } catch (error) {
-            console.error(
-              `Failed to find song on Spotify: ${songData.name}`,
-              error
-            );
-          }
+          } catch (_error) {}
         }
 
         if (!song) {
@@ -185,76 +172,63 @@ export class SetlistSyncService {
             info: songData.info,
           });
         }
-      } catch (error) {
-        console.error(`Failed to process song: ${songData.name}`, error);
-      }
+      } catch (_error) {}
     }
 
     return processedSongs;
   }
 
   async syncRecentSetlists(artistName: string, limit = 20): Promise<void> {
-    try {
-      const searchResult = await this.setlistFmClient.searchSetlists({
-        artistName,
-        p: 1,
-      });
+    const searchResult = await this.setlistFmClient.searchSetlists({
+      artistName,
+      p: 1,
+    });
 
-      const recentSetlists = searchResult.setlist.slice(0, limit);
+    const recentSetlists = searchResult.setlist.slice(0, limit);
 
-      for (const setlist of recentSetlists) {
-        await this.syncSetlistFromSetlistFm(setlist);
-        // Rate limit
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-    } catch (error) {
-      console.error(`Failed to sync recent setlists for ${artistName}:`, error);
-      throw error;
+    for (const setlist of recentSetlists) {
+      await this.syncSetlistFromSetlistFm(setlist);
+      // Rate limit
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
 
   async syncSetlistByShowId(showId: string): Promise<void> {
-    try {
-      const show = await db.query.shows.findFirst({
-        where: eq(shows.id, showId),
-        with: {
-          headlinerArtist: true,
-          venue: true,
-        },
-      });
+    const show = await db.query.shows.findFirst({
+      where: eq(shows.id, showId),
+      with: {
+        headlinerArtist: true,
+        venue: true,
+      },
+    });
 
-      if (!show) {
-        throw new Error(`Show not found: ${showId}`);
-      }
+    if (!show) {
+      throw new Error(`Show not found: ${showId}`);
+    }
 
-      // Search for setlist on Setlist.fm
-      const searchResult = await this.setlistFmClient.searchSetlists({
-        artistName: show.headlinerArtist.name,
-        venueName: show.venue?.name,
-        date: show.date,
-      });
+    // Search for setlist on Setlist.fm
+    const searchResult = await this.setlistFmClient.searchSetlists({
+      artistName: show.headlinerArtist.name,
+      venueName: show.venue?.name,
+      date: show.date,
+    });
 
-      if (searchResult.setlist.length > 0) {
-        // Use the first matching setlist
-        const setlistData = searchResult.setlist[0];
+    if (searchResult.setlist.length > 0) {
+      // Use the first matching setlist
+      const setlistData = searchResult.setlist[0];
 
-        // Update show with setlist.fm ID
-        await db
-          .update(shows)
-          .set({
-            setlistFmId: setlistData.id,
-            updatedAt: new Date(),
-          })
-          .where(eq(shows.id, showId));
+      // Update show with setlist.fm ID
+      await db
+        .update(shows)
+        .set({
+          setlistFmId: setlistData.id,
+          updatedAt: new Date(),
+        })
+        .where(eq(shows.id, showId));
 
-        // Sync the setlist
-        await this.syncSetlistFromSetlistFm(setlistData);
-      } else {
-        console.warn(`No setlist found on Setlist.fm for show: ${showId}`);
-      }
-    } catch (error) {
-      console.error(`Failed to sync setlist for show ${showId}:`, error);
-      throw error;
+      // Sync the setlist
+      await this.syncSetlistFromSetlistFm(setlistData);
+    } else {
     }
   }
 }

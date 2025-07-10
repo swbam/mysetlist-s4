@@ -3,8 +3,6 @@
 import { db, sql } from './db-client';
 
 async function main() {
-  console.log('🎵 Adding Dispatch shows and setlists...');
-
   try {
     // First check if Dispatch exists
     const dispatchCheck = await db.execute(sql`
@@ -12,15 +10,10 @@ async function main() {
     `);
 
     if (!dispatchCheck.rows.length) {
-      console.log('❌ Dispatch not found in the database');
-      console.log(
-        'Please search for Dispatch in the app first to import the artist'
-      );
       process.exit(1);
     }
 
     const dispatch = dispatchCheck.rows[0];
-    console.log(`✅ Found Dispatch: ${dispatch.name} (${dispatch.id})`);
 
     // Get Madison Square Garden venue
     const msgCheck = await db.execute(sql`
@@ -28,12 +21,10 @@ async function main() {
     `);
 
     if (!msgCheck.rows.length) {
-      console.log('❌ Madison Square Garden not found');
       process.exit(1);
     }
 
     const msg = msgCheck.rows[0];
-    console.log(`✅ Found venue: ${msg.name}`);
 
     // Create upcoming and past shows for Dispatch
     const showsData = [
@@ -64,7 +55,6 @@ async function main() {
       `);
 
       if (existingShow.rows.length) {
-        console.log(`⏭️  Show already exists: ${showData.name}`);
         continue;
       }
 
@@ -96,7 +86,6 @@ async function main() {
       `);
 
       const show = showResult.rows[0];
-      console.log(`✅ Created show: ${show.name}`);
 
       // Create show_artists relationship
       await db.execute(sql`
@@ -123,8 +112,6 @@ async function main() {
         'Midnight Lorry',
         'Passerby',
       ];
-
-      console.log('Adding Dispatch songs...');
       for (let i = 0; i < dispatchSongs.length; i++) {
         const songTitle = dispatchSongs[i];
 
@@ -172,7 +159,6 @@ async function main() {
       `);
 
       const setlist = setlistResult.rows[0];
-      console.log(`✅ Created setlist for show`);
 
       // Add songs to the setlist
       const songsForSetlist = await db.execute(sql`
@@ -199,8 +185,6 @@ async function main() {
           )
         `);
       }
-
-      console.log(`✅ Added ${songsForSetlist.rows.length} songs to setlist`);
     }
 
     // Show summary
@@ -215,16 +199,8 @@ async function main() {
       WHERE s.headliner_artist_id = ${dispatch.id}
     `);
 
-    const counts = summary.rows[0];
-    console.log('\n📊 Dispatch Summary:');
-    console.log(`- ${counts.show_count} shows`);
-    console.log(`- ${counts.setlist_count} setlists`);
-    console.log(`- ${counts.setlist_song_count} songs in setlists`);
-
-    console.log('\n✅ Successfully added Dispatch shows and setlists!');
-    console.log('You can now view them at /artists/dispatch');
-  } catch (error) {
-    console.error('❌ Error:', error);
+    const _counts = summary.rows[0];
+  } catch (_error) {
     process.exit(1);
   }
 }

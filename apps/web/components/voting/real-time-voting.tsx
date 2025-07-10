@@ -1,15 +1,15 @@
 'use client';
 
-import { useAuth } from '@/app/providers/auth-provider';
-import { createClient } from '@/lib/supabase/client';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Card } from '@repo/design-system/components/ui/card';
 import { Progress } from '@repo/design-system/components/ui/progress';
 import { cn } from '@repo/design-system/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, ChevronUp, Music, Sparkles, Users } from 'lucide-react';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '~/app/providers/auth-provider';
+import { createClient } from '~/lib/supabase/client';
 
 interface Song {
   id: string;
@@ -91,22 +91,28 @@ const SongCard = React.memo(function SongCard({
         <div className="p-4">
           <div className="flex items-center justify-between gap-4">
             {/* Rank and Song Info */}
-            <div className="flex items-center gap-4 min-w-0 flex-1">
+            <div className="flex min-w-0 flex-1 items-center gap-4">
               <div className="relative">
-                <div className={cn(
-                  'w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg',
-                  rank === 1 && 'bg-yellow-500/20 text-yellow-500',
-                  rank === 2 && 'bg-gray-400/20 text-gray-400',
-                  rank === 3 && 'bg-orange-600/20 text-orange-600',
-                  rank > 3 && 'bg-muted text-muted-foreground'
-                )}>
+                <div
+                  className={cn(
+                    'flex h-10 w-10 items-center justify-center rounded-full font-bold text-lg',
+                    rank === 1 && 'bg-yellow-500/20 text-yellow-500',
+                    rank === 2 && 'bg-gray-400/20 text-gray-400',
+                    rank === 3 && 'bg-orange-600/20 text-orange-600',
+                    rank > 3 && 'bg-muted text-muted-foreground'
+                  )}
+                >
                   {rank}
                 </div>
                 {rank <= 3 && (
                   <motion.div
-                    className="absolute -top-1 -right-1"
+                    className="-top-1 -right-1 absolute"
                     animate={{ rotate: [0, 10, -10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+                    transition={{
+                      duration: 2,
+                      repeat: Number.POSITIVE_INFINITY,
+                      repeatDelay: 3,
+                    }}
                   >
                     <Sparkles className="h-4 w-4 text-yellow-500" />
                   </motion.div>
@@ -114,8 +120,10 @@ const SongCard = React.memo(function SongCard({
               </div>
 
               <div className="min-w-0 flex-1">
-                <h4 className="font-semibold text-base truncate">{song.title}</h4>
-                <p className="text-sm text-muted-foreground truncate">
+                <h4 className="truncate font-semibold text-base">
+                  {song.title}
+                </h4>
+                <p className="truncate text-muted-foreground text-sm">
                   {song.artist}
                   {song.duration && (
                     <span className="ml-2">
@@ -135,7 +143,7 @@ const SongCard = React.memo(function SongCard({
                 onClick={() => onVote('down')}
                 disabled={isVoting}
               />
-              
+
               <div className="min-w-[60px] text-center">
                 <motion.div
                   key={song.votes}
@@ -145,7 +153,7 @@ const SongCard = React.memo(function SongCard({
                 >
                   {song.votes}
                 </motion.div>
-                <div className="text-xs text-muted-foreground">votes</div>
+                <div className="text-muted-foreground text-xs">votes</div>
               </div>
 
               <VoteButton
@@ -160,7 +168,7 @@ const SongCard = React.memo(function SongCard({
           {/* Vote Progress Bar */}
           <div className="mt-3">
             <Progress value={votePercentage} className="h-2" />
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-muted-foreground text-xs">
               {votePercentage.toFixed(1)}% of total votes
             </p>
           </div>
@@ -208,12 +216,16 @@ export const RealTimeVoting = React.memo(function RealTimeVoting({
 
       try {
         const song = songs.find((s) => s.id === songId);
-        if (!song) return;
+        if (!song) {
+          return;
+        }
 
         // Optimistic update
         setSongs((prevSongs) =>
           prevSongs.map((s) => {
-            if (s.id !== songId) return s;
+            if (s.id !== songId) {
+              return s;
+            }
 
             let newVotes = s.votes;
             let newUserVote: 'up' | 'down' | null = voteType;
@@ -244,13 +256,14 @@ export const RealTimeVoting = React.memo(function RealTimeVoting({
           p_vote_type: voteType,
         });
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
 
         toast.success('Vote recorded!');
-      } catch (error) {
-        console.error('Vote error:', error);
+      } catch (_error) {
         toast.error('Failed to record vote');
-        
+
         // Revert optimistic update
         setSongs(initialSongs);
       } finally {
@@ -262,7 +275,9 @@ export const RealTimeVoting = React.memo(function RealTimeVoting({
 
   // Subscribe to real-time updates
   useEffect(() => {
-    if (!showId) return;
+    if (!showId) {
+      return;
+    }
 
     const channel = supabase
       .channel(`votes:${showId}`)
@@ -275,9 +290,6 @@ export const RealTimeVoting = React.memo(function RealTimeVoting({
           filter: `show_id=eq.${showId}`,
         },
         (payload) => {
-          // Handle real-time vote updates
-          console.log('Vote update:', payload);
-          
           // Update active voters count
           if (payload.eventType === 'INSERT') {
             setActiveVoters((prev) => prev + 1);
@@ -300,12 +312,12 @@ export const RealTimeVoting = React.memo(function RealTimeVoting({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Vote for Songs</h3>
-          <p className="text-sm text-muted-foreground">
+          <h3 className="font-semibold text-lg">Vote for Songs</h3>
+          <p className="text-muted-foreground text-sm">
             Help predict the setlist by voting for your favorite songs
           </p>
         </div>
-        
+
         {activeVoters > 0 && (
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
@@ -313,7 +325,7 @@ export const RealTimeVoting = React.memo(function RealTimeVoting({
             className="flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1.5"
           >
             <Users className="h-4 w-4 text-primary" />
-            <span className="text-sm font-medium">
+            <span className="font-medium text-sm">
               {activeVoters} {activeVoters === 1 ? 'person' : 'people'} voting
             </span>
             <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
@@ -339,7 +351,7 @@ export const RealTimeVoting = React.memo(function RealTimeVoting({
         </AnimatePresence>
       ) : (
         <Card className="p-8 text-center">
-          <Music className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+          <Music className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
           <p className="text-muted-foreground">
             No songs available for voting yet
           </p>

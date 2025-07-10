@@ -1,4 +1,4 @@
-import { env } from '@/env';
+import { env } from '~/env';
 
 interface SetlistFmArtist {
   mbid: string;
@@ -187,8 +187,7 @@ export class SetlistFmClient {
 
         // Rate limiting - Setlist.fm allows 1 request per second
         await new Promise((resolve) => setTimeout(resolve, 1100));
-      } catch (error) {
-        console.error(`Failed to fetch page ${page} of setlists:`, error);
+      } catch (_error) {
         hasMore = false;
       }
     }
@@ -216,9 +215,7 @@ export class SetlistFmClient {
         // Otherwise return the first (most relevant) result
         return response.artist[0].mbid;
       }
-    } catch (error) {
-      console.error(`Failed to find MBID for artist ${artistName}:`, error);
-    }
+    } catch (_error) {}
 
     return null;
   }

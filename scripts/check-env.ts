@@ -26,43 +26,25 @@ const requiredVars = {
   DATABASE_URL: 'Database Connection String',
 };
 
-console.log('🔍 Checking environment variables for MySetlist sync...\n');
-
 let allPresent = true;
 const missing: string[] = [];
 
-for (const [key, description] of Object.entries(requiredVars)) {
+for (const [key, _description] of Object.entries(requiredVars)) {
   if (process.env[key]) {
-    console.log(`✅ ${key} - ${description}`);
   } else {
-    console.log(`❌ ${key} - ${description} (MISSING)`);
     missing.push(key);
     allPresent = false;
   }
 }
 
-console.log('\n' + '='.repeat(60) + '\n');
-
 if (allPresent) {
-  console.log('✅ All required environment variables are set!');
-  console.log('\nYou can now run:');
-  console.log('  pnpm sync:artists    - Sync trending artists');
-  console.log('  pnpm test:e2e        - Run comprehensive tests');
-  console.log('  pnpm allofit         - Run full sync and test');
 } else {
-  console.log('❌ Missing environment variables:');
-  missing.forEach((v) => console.log(`  - ${v}`));
-  console.log(
-    '\nPlease add these to your .env file before running sync operations.'
-  );
-  console.log('\nFor more information, see: docs/SYNC_SYSTEM.md');
+  missing.forEach((_v) => );
   process.exit(1);
 }
 
 // Optional: Test API connections
 if (process.argv.includes('--test-apis')) {
-  console.log('\n🧪 Testing API connections...\n');
-
   // Test Spotify
   try {
     const spotifyResponse = await fetch(
@@ -80,13 +62,9 @@ if (process.argv.includes('--test-apis')) {
     );
 
     if (spotifyResponse.ok) {
-      console.log('✅ Spotify API connection successful');
     } else {
-      console.log('❌ Spotify API connection failed:', spotifyResponse.status);
     }
-  } catch (error) {
-    console.log('❌ Spotify API connection error:', error);
-  }
+  } catch (_error) {}
 
   // Test Ticketmaster
   try {
@@ -95,11 +73,7 @@ if (process.argv.includes('--test-apis')) {
     );
 
     if (tmResponse.ok) {
-      console.log('✅ Ticketmaster API connection successful');
     } else {
-      console.log('❌ Ticketmaster API connection failed:', tmResponse.status);
     }
-  } catch (error) {
-    console.log('❌ Ticketmaster API connection error:', error);
-  }
+  } catch (_error) {}
 }

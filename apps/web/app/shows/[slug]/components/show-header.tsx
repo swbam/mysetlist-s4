@@ -1,9 +1,9 @@
 'use client';
 
-import { useRealtimeShow } from '@/hooks/use-realtime-show';
 import { Button } from '@repo/design-system/components/ui/button';
 import { format } from 'date-fns';
 import Link from 'next/link';
+import { useRealtimeShow } from '~/hooks/use-realtime-show';
 
 type ShowHeaderProps = {
   show: {
@@ -37,7 +37,7 @@ type ShowHeaderProps = {
 
 export function ShowHeader({ show }: ShowHeaderProps) {
   const showDate = new Date(show.date);
-  const formattedDate = format(showDate, 'EEEE, MMMM d, yyyy');
+  const _formattedDate = format(showDate, 'EEEE, MMMM d, yyyy');
 
   // Use real-time show status
   const { showStatus } = useRealtimeShow({
@@ -45,7 +45,7 @@ export function ShowHeader({ show }: ShowHeaderProps) {
     initialStatus: show.status as 'upcoming' | 'ongoing' | 'completed',
   });
 
-  const getStatusColor = (status: string) => {
+  const _getStatusColor = (status: string) => {
     switch (status) {
       case 'upcoming':
         return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
@@ -60,10 +60,14 @@ export function ShowHeader({ show }: ShowHeaderProps) {
     }
   };
 
-  const getVenueLocation = () => {
-    if (!show.venue) return 'Venue TBA';
+  const _getVenueLocation = () => {
+    if (!show.venue) {
+      return 'Venue TBA';
+    }
     const parts = [show.venue.city];
-    if (show.venue.state) parts.push(show.venue.state);
+    if (show.venue.state) {
+      parts.push(show.venue.state);
+    }
     parts.push(show.venue.country);
     return parts.join(', ');
   };

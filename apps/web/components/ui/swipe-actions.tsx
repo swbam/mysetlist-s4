@@ -45,14 +45,18 @@ export function SwipeActions({
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
     const touch = e.touches[0];
     setTouchStart({ x: touch.clientX, y: touch.clientY });
     setIsSwipeActive(true);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!touchStart || !isSwipeActive || disabled) return;
+    if (!touchStart || !isSwipeActive || disabled) {
+      return;
+    }
 
     const touch = e.touches[0];
     const deltaX = touch.clientX - touchStart.x;
@@ -79,7 +83,9 @@ export function SwipeActions({
   };
 
   const handleTouchEnd = () => {
-    if (!isSwipeActive || disabled) return;
+    if (!isSwipeActive || disabled) {
+      return;
+    }
 
     setIsSwipeActive(false);
 
@@ -101,7 +107,7 @@ export function SwipeActions({
     const animate = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const easeOut = 1 - (1 - progress) ** 3;
 
       const currentDistance = startDistance * (1 - easeOut);
       setSwipeDistance(currentDistance);
@@ -125,7 +131,9 @@ export function SwipeActions({
   }, []);
 
   const renderActions = (actions: SwipeAction[], side: 'left' | 'right') => {
-    if (actions.length === 0) return null;
+    if (actions.length === 0) {
+      return null;
+    }
 
     const isVisible = side === 'left' ? swipeDistance > 0 : swipeDistance < 0;
     const opacity = Math.min(Math.abs(swipeDistance) / threshold, 1);

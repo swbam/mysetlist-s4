@@ -1,8 +1,8 @@
-import { invalidateArtistCache } from '@/lib/cache';
 import { db } from '@repo/database';
 import { artists } from '@repo/database';
 import { eq } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
+import { invalidateArtistCache } from '~/lib/cache';
 
 // POST /api/sync/artist
 // Body: { artistId: string, slug: string }
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       .where(artistId ? eq(artists.id, artistId) : eq(artists.slug, slug))
       .limit(1);
 
-    if (!artist.length) {
+    if (!artist.length || !artist[0]) {
       return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
     }
 
@@ -112,7 +112,6 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Artist sync error:', error);
     return NextResponse.json(
       {
         error: 'Sync failed',

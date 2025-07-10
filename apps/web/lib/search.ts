@@ -38,8 +38,7 @@ export async function searchContent(
     }
 
     return await response.json();
-  } catch (error) {
-    console.error('Search error:', error);
+  } catch (_error) {
     return { results: [] };
   }
 }
@@ -49,7 +48,7 @@ export function getSearchResultHref(result: SearchResult): string {
   return `/artists/${result.slug}`;
 }
 
-export function getSearchResultIcon(type: SearchResult['type']): string {
+export function getSearchResultIcon(_type: SearchResult['type']): string {
   // Only artists are searchable
   return 'music';
 }

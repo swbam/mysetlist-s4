@@ -1,7 +1,5 @@
 'use client';
 
-import { useAuth } from '@/app/providers/auth-provider';
-import { AnonymousAddSongButton } from '@/components/anonymous-add-song-button';
 import {
   Avatar,
   AvatarFallback,
@@ -33,13 +31,15 @@ import {
   Music2,
   User,
 } from 'lucide-react';
-import { useState, useTransition, useEffect } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '~/app/providers/auth-provider';
+import { AnonymousAddSongButton } from '~/components/anonymous-add-song-button';
+import { createClient } from '~/lib/supabase/client';
 import { lockSetlist, removeSongFromSetlist } from '../actions';
 import { AnonymousAddSongDialog } from './anonymous-add-song-dialog';
 import { ReorderableSetlist } from './reorderable-setlist';
 import { SongItem } from './song-item';
-import { createClient } from '@/lib/supabase/client';
 
 type SetlistViewerProps = {
   setlist: any;
@@ -72,7 +72,7 @@ export function SetlistViewer({
   // Set up real-time subscription for votes
   useEffect(() => {
     const supabase = createClient();
-    
+
     // Subscribe to vote changes for this setlist
     const channel = supabase
       .channel(`setlist-votes-${setlist.id}`)
@@ -105,9 +105,15 @@ export function SetlistViewer({
               ...data,
               setlist_songs: data.setlist_songs?.map((item: any) => ({
                 ...item,
-                upvotes: item.votes?.filter((v: any) => v.vote_type === 'up').length || 0,
-                downvotes: item.votes?.filter((v: any) => v.vote_type === 'down').length || 0,
-                userVote: item.votes?.find((v: any) => v.user_id === currentUser?.id)?.vote_type || null,
+                upvotes:
+                  item.votes?.filter((v: any) => v.vote_type === 'up').length ||
+                  0,
+                downvotes:
+                  item.votes?.filter((v: any) => v.vote_type === 'down')
+                    .length || 0,
+                userVote:
+                  item.votes?.find((v: any) => v.user_id === currentUser?.id)
+                    ?.vote_type || null,
               })),
             };
             setSetlistData(processedData);
@@ -133,7 +139,7 @@ export function SetlistViewer({
       try {
         await lockSetlist(setlistData.id);
         toast.success('Setlist locked successfully');
-      } catch (error) {
+      } catch (_error) {
         toast.error('Failed to lock setlist');
       }
     });
@@ -144,7 +150,7 @@ export function SetlistViewer({
       try {
         await removeSongFromSetlist(setlistSongId);
         toast.success('Song removed from setlist');
-      } catch (error) {
+      } catch (_error) {
         toast.error('Failed to remove song');
       }
     });
@@ -194,7 +200,9 @@ export function SetlistViewer({
                       <User className="h-3 w-3" />
                     </AvatarFallback>
                   </Avatar>
-                  <span>{setlistData.creator?.display_name || 'Anonymous'}</span>
+                  <span>
+                    {setlistData.creator?.display_name || 'Anonymous'}
+                  </span>
                 </div>
                 <span>•</span>
                 <span>

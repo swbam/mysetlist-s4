@@ -1,12 +1,12 @@
-import { ShowListSkeleton } from '@/components/loading-states';
+import { Skeleton } from '@repo/design-system/components/ui/skeleton';
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from '@repo/design-system/components/ui/tabs';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
 import { List } from 'lucide-react';
+import { ShowListSkeleton } from '~/components/loading-states';
 
 export default function ShowsLoading() {
   return (

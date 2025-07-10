@@ -1,10 +1,10 @@
-import { BreadcrumbNavigation } from '@/components/breadcrumb-navigation';
-import { ShowErrorBoundary } from '@/components/error-boundaries/show-error-boundary';
-import { createShowMetadata } from '@/lib/seo-metadata';
 import { format } from 'date-fns';
 import type { Metadata } from 'next';
 import { unstable_cache } from 'next/cache';
 import { notFound } from 'next/navigation';
+import { BreadcrumbNavigation } from '~/components/breadcrumb-navigation';
+import { ShowErrorBoundary } from '~/components/error-boundaries/show-error-boundary';
+import { createShowMetadata } from '~/lib/seo-metadata';
 import { getShowDetails } from './actions';
 import { ShowPageContent } from './components/show-page-content';
 
@@ -92,10 +92,10 @@ export async function generateStaticParams() {
     // Create a simple client for static generation (no cookies)
     const { createClient } = await import('@supabase/supabase-js');
     const supabase = createClient(
-      process.env['NEXT_PUBLIC_SUPABASE_URL']!,
-      process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
-    
+
     const now = new Date();
     const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
     const oneMonthFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
@@ -109,13 +109,14 @@ export async function generateStaticParams() {
       .order('date', { ascending: false })
       .limit(100);
 
-    if (!shows) return [];
+    if (!shows) {
+      return [];
+    }
 
     return shows.map((show) => ({
       slug: show.slug,
     }));
-  } catch (error) {
-    console.error('Error generating static params for shows:', error);
+  } catch (_error) {
     return [];
   }
 }

@@ -94,7 +94,7 @@ export async function getUpcomingShows(options?: {
   }
 
   if (genre) {
-    conditions.push(sql`${artists.genres}::text ILIKE ${'%' + genre + '%'}`);
+    conditions.push(sql`${artists.genres}::text ILIKE ${`%${genre}%`}`);
   }
 
   if (startDate) {

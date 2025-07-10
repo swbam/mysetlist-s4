@@ -1,6 +1,5 @@
 'use client';
 
-import { useRealtimeConnection } from '@/app/providers/realtime-provider';
 import {
   Tooltip,
   TooltipContent,
@@ -9,6 +8,7 @@ import {
 } from '@repo/design-system/components/ui/tooltip';
 import { cn } from '@repo/design-system/lib/utils';
 import { AlertCircle, Wifi, WifiOff } from 'lucide-react';
+import { useRealtimeConnection } from '~/app/providers/realtime-provider';
 
 export function RealtimeStatus() {
   const { connectionStatus, isConnected } = useRealtimeConnection();

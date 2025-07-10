@@ -1,6 +1,5 @@
 'use client';
 
-import { anonymousUser } from '@/lib/anonymous-user';
 import {
   Alert,
   AlertDescription,
@@ -21,6 +20,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
+import { anonymousUser } from '~/lib/anonymous-user';
 import { searchSongs } from '../actions';
 import { recordAnonymousSongSuggestion } from '../anonymous-actions';
 
@@ -71,13 +71,15 @@ export function AnonymousAddSongDialog({
   }, [query]);
 
   const handleSearch = async () => {
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      return;
+    }
 
     setIsSearching(true);
     try {
       const songs = await searchSongs(query, artistId);
       setResults(songs);
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to search songs');
     } finally {
       setIsSearching(false);
@@ -125,8 +127,7 @@ export function AnonymousAddSongDialog({
               songId,
               sessionData.sessionId
             );
-          } catch (error) {
-            console.warn('Failed to record anonymous suggestion:', error);
+          } catch (_error) {
             // Continue anyway - the client-side tracking is what matters
           }
 
@@ -149,8 +150,7 @@ export function AnonymousAddSongDialog({
         }
 
         router.refresh();
-      } catch (error: any) {
-        console.error('Failed to add song:', error);
+      } catch (_error: any) {
         toast.error('Failed to add song');
       } finally {
         setAddingSongId(null);

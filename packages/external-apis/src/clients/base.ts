@@ -25,12 +25,12 @@ export abstract class BaseAPIClient {
 
     // Only initialize Redis if environment variables are available
     if (
-      process.env['UPSTASH_REDIS_REST_URL'] &&
-      process.env['UPSTASH_REDIS_REST_TOKEN']
+      process.env.UPSTASH_REDIS_REST_URL &&
+      process.env.UPSTASH_REDIS_REST_TOKEN
     ) {
       this.cache = new Redis({
-        url: process.env['UPSTASH_REDIS_REST_URL'],
-        token: process.env['UPSTASH_REDIS_REST_TOKEN'],
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
       });
     } else {
       this.cache = null;
@@ -50,7 +50,7 @@ export abstract class BaseAPIClient {
         if (cached) {
           return JSON.parse(cached as string) as T;
         }
-      } catch (error) {
+      } catch (_error) {
         // Cache miss or error, continue with API call
       }
     }
@@ -84,10 +84,7 @@ export abstract class BaseAPIClient {
     if (cacheKey && cacheTtl && this.cache) {
       try {
         await this.cache.setex(cacheKey, cacheTtl, JSON.stringify(data));
-      } catch (error) {
-        // Cache error, don't fail the request
-        console.warn('Failed to cache response:', error);
-      }
+      } catch (_error) {}
     }
 
     return data;
@@ -96,7 +93,9 @@ export abstract class BaseAPIClient {
   protected abstract getAuthHeaders(): Record<string, string>;
 
   protected async checkRateLimit(): Promise<void> {
-    if (!this.rateLimit || !this.cache) return;
+    if (!this.rateLimit || !this.cache) {
+      return;
+    }
 
     const key = `rate_limit:${this.constructor.name}`;
     const current = await this.cache.incr(key);

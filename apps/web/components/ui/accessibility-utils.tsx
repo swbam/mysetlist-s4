@@ -46,7 +46,9 @@ export function FocusTrap({
     useState<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled) {
+      return;
+    }
 
     // Store the currently focused element
     setPreviouslyFocusedElement(document.activeElement as HTMLElement);
@@ -68,7 +70,7 @@ export function FocusTrap({
       if (event.key === 'Tab') {
         const focusableElements = getFocusableElements();
         const firstElement = focusableElements[0];
-        const lastElement = focusableElements[focusableElements.length - 1];
+        const lastElement = focusableElements.at(-1);
 
         if (event.shiftKey) {
           // Shift + Tab
@@ -211,14 +213,16 @@ export function KeyboardNavigation({
       case 'Enter':
         onEnter?.();
         break;
-      case 'ArrowUp':
+      case 'ArrowUp': {
         event.preventDefault();
         onArrowUp?.();
         break;
-      case 'ArrowDown':
+      }
+      case 'ArrowDown': {
         event.preventDefault();
         onArrowDown?.();
         break;
+      }
       case 'ArrowLeft':
         onArrowLeft?.();
         break;

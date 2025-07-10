@@ -30,8 +30,8 @@ import { EmailNotificationSettings } from './components/email-notification-setti
 
 export default function SettingsPage() {
   const { user } = useAuth();
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [pushNotifications, setPushNotifications] = useState(false);
+  const [_emailNotifications, _setEmailNotifications] = useState(true);
+  const [_pushNotifications, _setPushNotifications] = useState(false);
   const [showEmail, setShowEmail] = useState(false);
 
   return (

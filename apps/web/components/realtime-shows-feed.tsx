@@ -1,10 +1,10 @@
 'use client';
 
-import { useRealtimeShows } from '@/hooks/use-realtime-shows';
 import { cn } from '@repo/design-system/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bell, BellRing } from 'lucide-react';
 import { useState } from 'react';
+import { useRealtimeShows } from '~/hooks/use-realtime-shows';
 import { RealtimeShowCard } from './realtime-show-card';
 
 interface RealtimeShowsFeedProps {
@@ -40,7 +40,9 @@ export function RealtimeShowsFeed({
   const sortedShows = [...shows].sort((a, b) => {
     const statusOrder = { ongoing: 0, upcoming: 1, completed: 2 };
     const statusDiff = statusOrder[a.status] - statusOrder[b.status];
-    if (statusDiff !== 0) return statusDiff;
+    if (statusDiff !== 0) {
+      return statusDiff;
+    }
 
     // Within same status, sort by date
     return new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -52,7 +54,7 @@ export function RealtimeShowsFeed({
   if (isLoading) {
     return (
       <div className={cn('space-y-4', className)}>
-        {[...Array(3)].map((_, i) => (
+        {[...new Array(3)].map((_, i) => (
           <div key={i} className="h-32 animate-pulse rounded-lg bg-muted" />
         ))}
       </div>

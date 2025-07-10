@@ -1,12 +1,12 @@
 'use client';
 
-import { LiveIndicator } from '@/components/live-indicator';
-import { useRealtimeSetlist } from '@/hooks/use-realtime-setlist';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Card } from '@repo/design-system/components/ui/card';
 import { cn } from '@repo/design-system/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Disc3, Music, Star } from 'lucide-react';
+import { LiveIndicator } from '~/components/live-indicator';
+import { useRealtimeSetlist } from '~/hooks/use-realtime-setlist';
 
 interface RealtimeSetlistViewerProps {
   showId: string;
@@ -29,7 +29,7 @@ export function RealtimeSetlistViewer({
   if (isLoading && songs.length === 0) {
     return (
       <div className="space-y-2">
-        {[...Array(5)].map((_, i) => (
+        {[...new Array(5)].map((_, i) => (
           <div key={i} className="h-16 animate-pulse rounded-lg bg-muted" />
         ))}
       </div>

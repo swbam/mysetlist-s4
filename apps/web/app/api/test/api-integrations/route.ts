@@ -1,24 +1,38 @@
-import { env } from '@/env';
 import { type NextRequest, NextResponse } from 'next/server';
 
 // Test all external API integrations
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   const results = {
-    spotify: { configured: false, authenticated: false, error: null as string | null },
-    ticketmaster: { configured: false, tested: false, error: null as string | null },
-    setlistfm: { configured: false, tested: false, error: null as string | null },
-    csrf: { enabled: true, development: process.env.NODE_ENV === 'development' }
+    spotify: {
+      configured: false,
+      authenticated: false,
+      error: null as string | null,
+    },
+    ticketmaster: {
+      configured: false,
+      tested: false,
+      error: null as string | null,
+    },
+    setlistfm: {
+      configured: false,
+      tested: false,
+      error: null as string | null,
+    },
+    csrf: {
+      enabled: true,
+      development: process.env.NODE_ENV === 'development',
+    },
   };
 
   // Test Spotify
-  if (env.SPOTIFY_CLIENT_ID && env.SPOTIFY_CLIENT_SECRET) {
+  if (process.env['SPOTIFY_CLIENT_ID'] && process.env['SPOTIFY_CLIENT_SECRET']) {
     results.spotify.configured = true;
     try {
       const response = await fetch('https://accounts.spotify.com/api/token', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
-          Authorization: `Basic ${Buffer.from(`${env.SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`).toString('base64')}`,
+          Authorization: `Basic ${Buffer.from(`${process.env['SPOTIFY_CLIENT_ID']}:${process.env['SPOTIFY_CLIENT_SECRET']}`).toString('base64')}`,
         },
         body: 'grant_type=client_credentials',
       });
@@ -30,16 +44,17 @@ export async function GET(request: NextRequest) {
         results.spotify.error = `Authentication failed: ${response.status}`;
       }
     } catch (error) {
-      results.spotify.error = error instanceof Error ? error.message : 'Unknown error';
+      results.spotify.error =
+        error instanceof Error ? error.message : 'Unknown error';
     }
   }
 
   // Test Ticketmaster
-  if (env.TICKETMASTER_API_KEY) {
+  if (process.env['TICKETMASTER_API_KEY']) {
     results.ticketmaster.configured = true;
     try {
       const response = await fetch(
-        `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${env.TICKETMASTER_API_KEY}&size=1`
+        `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${process.env['TICKETMASTER_API_KEY']}&size=1`
       );
 
       if (response.ok) {
@@ -48,19 +63,20 @@ export async function GET(request: NextRequest) {
         results.ticketmaster.error = `API test failed: ${response.status}`;
       }
     } catch (error) {
-      results.ticketmaster.error = error instanceof Error ? error.message : 'Unknown error';
+      results.ticketmaster.error =
+        error instanceof Error ? error.message : 'Unknown error';
     }
   }
 
   // Test Setlist.fm
-  if (env.SETLISTFM_API_KEY) {
+  if (process.env['SETLISTFM_API_KEY']) {
     results.setlistfm.configured = true;
     try {
       const response = await fetch(
         'https://api.setlist.fm/rest/1.0/search/artists?artistName=test&p=1',
         {
           headers: {
-            'x-api-key': env.SETLISTFM_API_KEY,
+            'x-api-key': process.env['SETLISTFM_API_KEY']!,
             Accept: 'application/json',
             'User-Agent': 'MySetlist/1.0',
           },
@@ -73,7 +89,8 @@ export async function GET(request: NextRequest) {
         results.setlistfm.error = `API test failed: ${response.status}`;
       }
     } catch (error) {
-      results.setlistfm.error = error instanceof Error ? error.message : 'Unknown error';
+      results.setlistfm.error =
+        error instanceof Error ? error.message : 'Unknown error';
     }
   }
 
@@ -83,9 +100,15 @@ export async function GET(request: NextRequest) {
     environment: process.env.NODE_ENV,
     results,
     recommendations: {
-      spotify: !results.spotify.configured ? 'Add SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET to env' : null,
-      ticketmaster: !results.ticketmaster.configured ? 'Add TICKETMASTER_API_KEY to env' : null,
-      setlistfm: !results.setlistfm.configured ? 'Add SETLISTFM_API_KEY to env (optional)' : null,
-    }
+      spotify: results.spotify.configured
+        ? null
+        : 'Add SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET to env',
+      ticketmaster: results.ticketmaster.configured
+        ? null
+        : 'Add TICKETMASTER_API_KEY to env',
+      setlistfm: results.setlistfm.configured
+        ? null
+        : 'Add SETLISTFM_API_KEY to env (optional)',
+    },
   });
 }

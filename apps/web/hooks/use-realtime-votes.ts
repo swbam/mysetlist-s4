@@ -1,11 +1,11 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import type {
   RealtimeChannel,
   RealtimePostgresChangesPayload,
 } from '@supabase/supabase-js';
 import { useEffect, useRef, useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 type VoteData = {
   upvotes: number;
@@ -53,7 +53,9 @@ export function useRealtimeVotes({
   const effectiveSongIds = songId ? [songId] : setlistSongIds || [];
 
   useEffect(() => {
-    if (effectiveSongIds.length === 0) return;
+    if (effectiveSongIds.length === 0) {
+      return;
+    }
 
     const setupSubscription = async () => {
       // Clean up existing subscription
@@ -133,9 +135,7 @@ export function useRealtimeVotes({
             onVoteUpdate(update);
           }
         }
-      } catch (error) {
-        console.error('Failed to fetch vote counts:', error);
-      }
+      } catch (_error) {}
     };
 
     setupSubscription();
@@ -152,44 +152,39 @@ export function useRealtimeVotes({
     setlistSongId: string,
     voteType: 'up' | 'down' | null
   ) => {
-    try {
-      const response = await fetch('/api/votes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          setlistSongId,
-          voteType,
-        }),
-      });
+    const response = await fetch('/api/votes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        setlistSongId,
+        voteType,
+      }),
+    });
 
-      if (response.ok) {
-        const result = await response.json();
+    if (response.ok) {
+      const result = await response.json();
 
-        // Update local state immediately
-        const update: VoteUpdate = {
-          setlistSongId,
-          upvotes: result.upvotes,
-          downvotes: result.downvotes,
-          netVotes: result.netVotes,
-          userVote: result.userVote,
-        };
+      // Update local state immediately
+      const update: VoteUpdate = {
+        setlistSongId,
+        upvotes: result.upvotes,
+        downvotes: result.downvotes,
+        netVotes: result.netVotes,
+        userVote: result.userVote,
+      };
 
-        setVoteCounts((prev) => ({
-          ...prev,
-          [setlistSongId]: update,
-        }));
+      setVoteCounts((prev) => ({
+        ...prev,
+        [setlistSongId]: update,
+      }));
 
-        if (onVoteUpdate) {
-          onVoteUpdate(update);
-        }
-
-        return result;
+      if (onVoteUpdate) {
+        onVoteUpdate(update);
       }
-    } catch (error) {
-      console.error('Failed to vote:', error);
-      throw error;
+
+      return result;
     }
   };
 

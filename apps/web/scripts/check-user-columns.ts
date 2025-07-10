@@ -11,16 +11,9 @@ async function check() {
       WHERE table_name = 'users' 
       AND table_schema = 'public'
     `);
-    console.log('Result:', result);
     if (result && Array.isArray(result)) {
-      console.log(
-        'User columns:',
-        result.map((r: any) => r.column_name)
-      );
     }
-  } catch (error) {
-    console.error('Error:', error);
-  }
+  } catch (_error) {}
 }
 
 check();

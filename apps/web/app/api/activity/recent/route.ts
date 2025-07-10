@@ -7,8 +7,8 @@ import {
   songs,
   userFollowsArtists,
   userProfiles,
-  users,
   userShowAttendance,
+  users,
   venues,
   votes,
 } from '@repo/database';
@@ -40,13 +40,11 @@ interface ActivityItem {
 }
 
 export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const limit = Number.parseInt(searchParams.get('limit') || '15');
+  // const offset = Number.parseInt(searchParams.get('offset') || '0');
+
   try {
-    const { searchParams } = new URL(request.url);
-    const limit = Number.parseInt(searchParams.get('limit') || '15');
-    const offset = Number.parseInt(searchParams.get('offset') || '0');
-
-    console.log('Recent activity API called with limit:', limit);
-
     const activities: ActivityItem[] = [];
 
     // Fetch recent votes
@@ -54,7 +52,7 @@ export async function GET(request: NextRequest) {
       .select({
         id: votes.id,
         userId: votes.userId,
-        userName: users.name,
+        userName: users.displayName,
         userAvatar: userProfiles.avatarUrl,
         voteType: votes.voteType,
         createdAt: votes.createdAt,
@@ -85,7 +83,7 @@ export async function GET(request: NextRequest) {
         user: {
           id: vote.userId,
           displayName: vote.userName || 'Anonymous',
-          avatarUrl: vote.userAvatar || undefined,
+          ...(vote.userAvatar && { avatarUrl: vote.userAvatar }),
         },
         target: {
           id: vote.showId,
@@ -105,7 +103,7 @@ export async function GET(request: NextRequest) {
       .select({
         id: userFollowsArtists.id,
         userId: userFollowsArtists.userId,
-        userName: users.name,
+        userName: users.displayName,
         userAvatar: userProfiles.avatarUrl,
         artistId: artists.id,
         artistName: artists.name,
@@ -126,7 +124,7 @@ export async function GET(request: NextRequest) {
         user: {
           id: follow.userId,
           displayName: follow.userName || 'Anonymous',
-          avatarUrl: follow.userAvatar || undefined,
+          ...(follow.userAvatar && { avatarUrl: follow.userAvatar }),
         },
         target: {
           id: follow.artistId,
@@ -143,7 +141,7 @@ export async function GET(request: NextRequest) {
       .select({
         id: userShowAttendance.id,
         userId: userShowAttendance.userId,
-        userName: users.name,
+        userName: users.displayName,
         userAvatar: userProfiles.avatarUrl,
         showId: shows.id,
         showName: shows.name,
@@ -174,7 +172,7 @@ export async function GET(request: NextRequest) {
         user: {
           id: attendance.userId,
           displayName: attendance.userName || 'Anonymous',
-          avatarUrl: attendance.userAvatar || undefined,
+          ...(attendance.userAvatar && { avatarUrl: attendance.userAvatar }),
         },
         target: {
           id: attendance.showId,
@@ -191,7 +189,7 @@ export async function GET(request: NextRequest) {
       .select({
         id: setlists.id,
         userId: setlists.createdBy,
-        userName: users.name,
+        userName: users.displayName,
         userAvatar: userProfiles.avatarUrl,
         showId: shows.id,
         showName: shows.name,
@@ -210,7 +208,7 @@ export async function GET(request: NextRequest) {
       .groupBy(
         setlists.id,
         setlists.createdBy,
-        users.name,
+        users.displayName,
         userProfiles.avatarUrl,
         shows.id,
         shows.name,
@@ -229,7 +227,7 @@ export async function GET(request: NextRequest) {
           user: {
             id: setlist.userId,
             displayName: setlist.userName || 'Anonymous',
-            avatarUrl: setlist.userAvatar || undefined,
+            ...(setlist.userAvatar && { avatarUrl: setlist.userAvatar }),
           },
           target: {
             id: setlist.showId,
@@ -269,9 +267,7 @@ export async function GET(request: NextRequest) {
     );
 
     return response;
-  } catch (error) {
-    console.error('Recent activity API error:', error);
-
+  } catch (_error) {
     // Return mock data as fallback
     const mockActivities = generateMockActivities(limit);
 
@@ -295,31 +291,80 @@ export async function GET(request: NextRequest) {
 
 // Keep the mock data generator as fallback
 function generateMockActivities(count: number): ActivityItem[] {
-  const activityTypes = ['vote', 'follow', 'attendance', 'setlist_create'] as const;
-  
+  const activityTypes = [
+    'vote',
+    'follow',
+    'attendance',
+    'setlist_create',
+  ] as const;
+
   const mockUsers = [
-    { id: '1', displayName: 'Alex Johnson', avatarUrl: 'https://i.pravatar.cc/150?u=alex' },
-    { id: '2', displayName: 'Maria Garcia', avatarUrl: 'https://i.pravatar.cc/150?u=maria' },
-    { id: '3', displayName: 'James Chen', avatarUrl: 'https://i.pravatar.cc/150?u=james' },
-    { id: '4', displayName: 'Sarah Miller', avatarUrl: 'https://i.pravatar.cc/150?u=sarah' },
+    {
+      id: '1',
+      displayName: 'Alex Johnson',
+      avatarUrl: 'https://i.pravatar.cc/150?u=alex',
+    },
+    {
+      id: '2',
+      displayName: 'Maria Garcia',
+      avatarUrl: 'https://i.pravatar.cc/150?u=maria',
+    },
+    {
+      id: '3',
+      displayName: 'James Chen',
+      avatarUrl: 'https://i.pravatar.cc/150?u=james',
+    },
+    {
+      id: '4',
+      displayName: 'Sarah Miller',
+      avatarUrl: 'https://i.pravatar.cc/150?u=sarah',
+    },
   ];
 
   const mockTargets = [
-    { id: '1', name: 'The Weeknd', slug: 'the-weeknd', type: 'artist' as const },
-    { id: '2', name: 'Taylor Swift', slug: 'taylor-swift', type: 'artist' as const },
-    { id: '3', name: 'Madison Square Garden Show', slug: 'msg-2024', type: 'show' as const },
-    { id: '4', name: 'Hollywood Bowl', slug: 'hollywood-bowl', type: 'venue' as const },
+    {
+      id: '1',
+      name: 'The Weeknd',
+      slug: 'the-weeknd',
+      type: 'artist' as const,
+    },
+    {
+      id: '2',
+      name: 'Taylor Swift',
+      slug: 'taylor-swift',
+      type: 'artist' as const,
+    },
+    {
+      id: '3',
+      name: 'Madison Square Garden Show',
+      slug: 'msg-2024',
+      type: 'show' as const,
+    },
+    {
+      id: '4',
+      name: 'Hollywood Bowl',
+      slug: 'hollywood-bowl',
+      type: 'venue' as const,
+    },
   ];
 
   const activities: ActivityItem[] = [];
   const now = new Date();
 
   for (let i = 0; i < count; i++) {
-    const activityType = activityTypes[Math.floor(Math.random() * activityTypes.length)];
-    const user = mockUsers[Math.floor(Math.random() * mockUsers.length)];
-    const target = mockTargets[Math.floor(Math.random() * mockTargets.length)];
+    const activityType =
+      activityTypes[Math.floor(Math.random() * activityTypes.length)] ?? 'vote';
+    const user = mockUsers[Math.floor(Math.random() * mockUsers.length)]!;
+    const target = mockTargets[Math.floor(Math.random() * mockTargets.length)]!;
     const minutesAgo = Math.floor(Math.random() * 1440);
     const createdAt = new Date(now.getTime() - minutesAgo * 60 * 1000);
+
+    const metadata =
+      activityType === 'vote'
+        ? { voteType: Math.random() > 0.7 ? 'down' : 'up' as 'up' | 'down' }
+        : activityType === 'setlist_create'
+          ? { songCount: Math.floor(Math.random() * 15) + 10 }
+          : undefined;
 
     activities.push({
       id: `mock-${i}-${Date.now()}`,
@@ -336,15 +381,11 @@ function generateMockActivities(count: number): ActivityItem[] {
         type: target.type,
       },
       createdAt: createdAt.toISOString(),
-      metadata: activityType === 'vote' 
-        ? { voteType: Math.random() > 0.7 ? 'down' : 'up' }
-        : activityType === 'setlist_create'
-        ? { songCount: Math.floor(Math.random() * 15) + 10 }
-        : undefined,
+      ...(metadata && { metadata }),
     });
   }
 
-  return activities.sort((a, b) => 
-    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  return activities.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 }

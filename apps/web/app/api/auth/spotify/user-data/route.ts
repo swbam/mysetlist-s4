@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { createClient } from '~/lib/supabase/server';
 
 export async function GET() {
   try {
@@ -113,8 +113,7 @@ export async function GET() {
       topArtists: topArtistsData.items || [],
       followedArtists: followedArtistsData.artists?.items || [],
     });
-  } catch (error) {
-    console.error('Error fetching Spotify user data:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -152,13 +151,6 @@ async function storeUserSpotifyData(
     );
 
     if (error) {
-      // If table doesn't exist, log but don't throw - this is optional functionality
-      console.error(
-        'Error storing user preferences (table may not exist):',
-        error
-      );
     }
-  } catch (error) {
-    console.error('Error in storeUserSpotifyData:', error);
-  }
+  } catch (_error) {}
 }

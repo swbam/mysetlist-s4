@@ -1,6 +1,6 @@
 'use client';
-import { useAuth } from '@/app/providers/auth-provider';
-import { useAnonymousSync } from '@/hooks/use-anonymous-sync';
+import { useAuth } from '~/app/providers/auth-provider';
+import { useAnonymousSync } from '~/hooks/use-anonymous-sync';
 import { AnonymousUserBanner } from './anonymous-user-banner';
 
 export function AnonymousUserProvider({

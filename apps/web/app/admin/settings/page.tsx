@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
   Card,
@@ -25,15 +24,13 @@ import {
 } from '@repo/design-system/components/ui/tabs';
 import { Textarea } from '@repo/design-system/components/ui/textarea';
 import { Download } from 'lucide-react';
+import { createClient } from '~/lib/supabase/server';
 
 // Force dynamic rendering due to user-specific data fetching
 export const dynamic = 'force-dynamic';
 
-export default async function SettingsPage({
-  params,
-}: { params: Promise<{ locale: string }> }) {
+export default async function SettingsPage() {
   const supabase = await createClient();
-  const { locale } = await params;
 
   // Check if user is admin
   const {

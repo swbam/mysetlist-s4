@@ -127,7 +127,9 @@ serve(async (req) => {
       const venue = event._embedded.venues[0];
       const mainArtist = event._embedded.attractions?.[0];
 
-      if (!venue || !mainArtist) continue;
+      if (!venue || !mainArtist) {
+        continue;
+      }
 
       // First, ensure venue exists
       const venueData = {
@@ -181,7 +183,9 @@ serve(async (req) => {
         dbArtist = newArtist;
       }
 
-      if (!dbVenue || !dbArtist) continue;
+      if (!dbVenue || !dbArtist) {
+        continue;
+      }
 
       // Calculate price info
       const priceRange = event.priceRanges?.[0];
@@ -219,7 +223,6 @@ serve(async (req) => {
         .single();
 
       if (showError) {
-        console.error('Error upserting show:', showError);
         continue;
       }
 
@@ -282,7 +285,6 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
-    console.error('Error syncing shows:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

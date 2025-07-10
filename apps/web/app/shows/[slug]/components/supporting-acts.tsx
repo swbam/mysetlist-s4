@@ -33,7 +33,9 @@ export function SupportingActs({ artists }: SupportingActsProps) {
     .filter((a) => !a.is_headliner)
     .sort((a, b) => a.order_index - b.order_index);
 
-  if (supportingActs.length === 0) return null;
+  if (supportingActs.length === 0) {
+    return null;
+  }
 
   return (
     <Card>

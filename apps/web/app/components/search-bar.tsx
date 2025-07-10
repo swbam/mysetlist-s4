@@ -1,20 +1,20 @@
 'use client';
 
+import { Badge } from '@repo/design-system/components/ui/badge';
+import { Button } from '@repo/design-system/components/ui/button';
+import { Card } from '@repo/design-system/components/ui/card';
+import { Input } from '@repo/design-system/components/ui/input';
+import { cn } from '@repo/design-system/lib/utils';
+import { Loader2, Music, Search, X } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   type SearchResult,
   debounce,
   getSearchResultHref,
   searchContent,
-} from '@/lib/search';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card } from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Loader2, Music, Search, X } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { cn } from '@repo/design-system/lib/utils';
+} from '~/lib/search';
 
 interface SearchBarProps {
   variant?: 'default' | 'hero';
@@ -22,7 +22,11 @@ interface SearchBarProps {
   className?: string;
 }
 
-export const SearchBar = ({ variant = 'default', placeholder = 'Search artists...', className }: SearchBarProps) => {
+export const SearchBar = ({
+  variant = 'default',
+  placeholder = 'Search artists...',
+  className,
+}: SearchBarProps) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -56,8 +60,7 @@ export const SearchBar = ({ variant = 'default', placeholder = 'Search artists..
       const response = await searchContent(searchQuery, 8);
       setResults(response.results);
       setIsOpen(true);
-    } catch (error) {
-      console.error('Search failed:', error);
+    } catch (_error) {
       setResults([]);
     } finally {
       setIsLoading(false);
@@ -72,48 +75,52 @@ export const SearchBar = ({ variant = 'default', placeholder = 'Search artists..
     debouncedSearch(query);
   }, [query, debouncedSearch]);
 
-  const getIcon = (type: SearchResult['type']) => {
+  const getIcon = (_type: SearchResult['type']) => {
     // Only artists are searchable now
     return <Music className="h-4 w-4" />;
   };
 
   return (
-    <div ref={searchRef} className={cn("relative w-full max-w-lg", className)}>
+    <div ref={searchRef} className={cn('relative w-full max-w-lg', className)}>
       <div className="relative">
         {isLoading ? (
-          <Loader2 className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 animate-spin text-muted-foreground" />
+          <Loader2 className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 animate-spin text-muted-foreground sm:left-4 sm:h-5 sm:w-5" />
         ) : (
-          <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
+          <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground sm:left-4 sm:h-5 sm:w-5" />
         )}
         <Input
           type="search"
           placeholder={placeholder}
           className={cn(
-            "pr-10 pl-10",
-            variant === 'hero' && "h-14 text-lg"
+            'pr-10 pl-10 sm:pl-12',
+            variant === 'hero' && 'h-12 text-base sm:h-14 sm:text-lg',
+            'focus:ring-2 focus:ring-primary/20 focus:border-primary'
           )}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => query.length > 1 && setIsOpen(true)}
+          autoComplete="off"
+          inputMode="search"
         />
         {query && (
           <Button
             variant="ghost"
             size="icon"
-            className="absolute top-0 right-0 h-full"
+            className="absolute top-0 right-0 h-full w-10 sm:w-12"
             onClick={() => {
               setQuery('');
               setIsOpen(false);
             }}
+            aria-label="Clear search"
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
         )}
       </div>
 
       {isOpen && results.length > 0 && (
-        <Card className="absolute top-full z-50 mt-2 max-h-96 w-full overflow-auto p-2">
-          <div className="space-y-1">
+        <Card className="absolute top-full z-50 mt-2 max-h-80 w-full overflow-auto border border-border/50 bg-card/95 p-1 shadow-lg backdrop-blur-sm sm:max-h-96 sm:p-2">
+          <div className="space-y-0.5 sm:space-y-1">
             {results.map((result) => (
               <Link
                 key={`${result.type}-${result.id}`}
@@ -123,14 +130,15 @@ export const SearchBar = ({ variant = 'default', placeholder = 'Search artists..
                   setIsOpen(false);
                 }}
               >
-                <div className="flex items-center gap-3 rounded-md p-2 transition-colors hover:bg-accent">
+                <div className="flex items-center gap-2 rounded-md p-2 transition-colors hover:bg-accent active:bg-accent/80 sm:gap-3 sm:p-3">
                   {result.imageUrl ? (
-                    <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                    <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-muted sm:h-10 sm:w-10">
                       <Image
                         src={result.imageUrl}
                         alt={result.title}
                         fill
                         className="object-cover"
+                        sizes="40px"
                       />
                     </div>
                   ) : (
@@ -139,16 +147,16 @@ export const SearchBar = ({ variant = 'default', placeholder = 'Search artists..
                     </div>
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{result.title}</p>
+                    <p className="truncate font-medium text-sm sm:text-base">{result.title}</p>
                     {result.subtitle && (
-                      <p className="truncate text-muted-foreground text-sm">
+                      <p className="truncate text-muted-foreground text-xs sm:text-sm">
                         {result.subtitle}
                       </p>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 sm:gap-2">
                     {result.meta && (
-                      <span className="text-muted-foreground text-xs">
+                      <span className="hidden text-muted-foreground text-xs sm:inline">
                         {result.meta}
                       </span>
                     )}

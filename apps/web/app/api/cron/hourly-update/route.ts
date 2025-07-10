@@ -1,5 +1,5 @@
 import { db } from '@repo/database';
-import { artists, setlists, showArtists, shows, votes } from '@repo/database';
+import { setlists, shows } from '@repo/database';
 import { and, eq, gte, lte, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
@@ -17,7 +17,7 @@ async function updateTrendingScores() {
     // - Vote activity
     // - Follower growth
     // - Upcoming shows
-    const result = await db.execute(sql`
+    await db.execute(sql`
       WITH artist_activity AS (
         SELECT 
           a.id,
@@ -103,7 +103,6 @@ async function updateTrendingScores() {
       message: 'Trending scores updated successfully',
     };
   } catch (error) {
-    console.error('Error updating trending scores:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -123,7 +122,12 @@ async function cleanupOldData() {
         status: 'completed',
         updatedAt: new Date(),
       })
-      .where(and(eq(shows.status, 'upcoming'), lte(shows.date, ninetyDaysAgo.toISOString().split('T')[0]!)));
+      .where(
+        and(
+          eq(shows.status, 'upcoming'),
+          lte(shows.date, ninetyDaysAgo.toISOString().split('T')[0]!)
+        )
+      );
 
     // Archive old votes (optional - keep for analytics)
     // Could move to a separate archive table if needed
@@ -133,7 +137,6 @@ async function cleanupOldData() {
       message: 'Cleanup completed successfully',
     };
   } catch (error) {
-    console.error('Error cleaning up old data:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -148,28 +151,32 @@ async function updateShowStatuses() {
     const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
     // Update past shows
-    const pastShowsResult = await db
+    await db
       .update(shows)
       .set({
         status: 'completed',
         updatedAt: now,
       })
-      .where(and(eq(shows.status, 'upcoming'), lte(shows.date, yesterday.toISOString().split('T')[0]!)));
+      .where(
+        and(
+          eq(shows.status, 'upcoming'),
+          lte(shows.date, yesterday.toISOString().split('T')[0]!)
+        )
+      );
 
     // Lock setlists for shows that have started
-    const lockedSetlistsResult = await db
+    await db
       .update(setlists)
       .set({
         isLocked: true,
-        lockedAt: now,
         updatedAt: now,
       })
       .where(
         and(
           eq(setlists.isLocked, false),
           gte(
-            yesterday,
-            sql`(SELECT date FROM shows WHERE shows.id = setlists.show_id)`
+            sql`(SELECT date FROM shows WHERE shows.id = setlists.show_id)`,
+            yesterday
           )
         )
       );
@@ -179,7 +186,6 @@ async function updateShowStatuses() {
       message: 'Show statuses updated successfully',
     };
   } catch (error) {
-    console.error('Error updating show statuses:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -195,8 +201,6 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log('🕐 Starting hourly update cron job...');
-
     // Run all tasks in parallel
     const [trendingResult, cleanupResult, statusResult] =
       await Promise.allSettled([
@@ -222,8 +226,6 @@ export async function GET(request: NextRequest) {
 
     const allSuccessful = Object.values(results).every((r) => r.success);
 
-    console.log('✅ Hourly update completed:', results);
-
     return NextResponse.json({
       success: allSuccessful,
       message: allSuccessful
@@ -233,7 +235,6 @@ export async function GET(request: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error('Hourly update cron error:', error);
     return NextResponse.json(
       {
         error: 'Hourly update failed',

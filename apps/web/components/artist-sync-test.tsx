@@ -1,8 +1,8 @@
 'use client';
 
-import { useArtistSync } from '@/hooks/use-artist-sync';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useArtistSync } from '~/hooks/use-artist-sync';
 
 export function ArtistSyncTest() {
   const [artistName, setArtistName] = useState('');
@@ -32,27 +32,33 @@ export function ArtistSyncTest() {
       }
 
       const importData = await importResponse.json();
-      
+
       if (importData.success) {
-        toast.success(`Artist "${importData.artist.name}" imported successfully!`);
-        
+        toast.success(
+          `Artist "${importData.artist.name}" imported successfully!`
+        );
+
         if (importData.stats.syncTriggered) {
           toast.info('Background sync started for full catalog data');
         }
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to import artist';
+      const message =
+        err instanceof Error ? err.message : 'Failed to import artist';
       toast.error(message);
     }
   };
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Artist Sync Test</h2>
-      
+    <div className="mx-auto max-w-2xl p-6">
+      <h2 className="mb-4 font-bold text-2xl">Artist Sync Test</h2>
+
       <div className="space-y-4">
         <div>
-          <label htmlFor="artistName" className="block text-sm font-medium mb-2">
+          <label
+            htmlFor="artistName"
+            className="mb-2 block font-medium text-sm"
+          >
             Artist Name
           </label>
           <input
@@ -61,7 +67,7 @@ export function ArtistSyncTest() {
             value={artistName}
             onChange={(e) => setArtistName(e.target.value)}
             placeholder="Enter artist name (e.g., Taylor Swift)"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
 
@@ -69,42 +75,59 @@ export function ArtistSyncTest() {
           <button
             onClick={handleAutoImport}
             disabled={isLoading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading ? 'Importing...' : 'Auto Import Artist'}
           </button>
         </div>
 
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+          <div className="rounded-md border border-red-200 bg-red-50 p-4">
             <p className="text-red-700">Error: {error.message}</p>
           </div>
         )}
 
         {progress && (
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
-            <h3 className="font-semibold mb-2">Sync Progress</h3>
+          <div className="rounded-md border border-blue-200 bg-blue-50 p-4">
+            <h3 className="mb-2 font-semibold">Sync Progress</h3>
             <div className="space-y-2">
-              <p className="text-sm">Status: <span className="font-medium">{progress.status}</span></p>
-              <p className="text-sm">Current Step: {progress.progress.currentStep}</p>
               <p className="text-sm">
-                Progress: {progress.progress.completedSteps} / {progress.progress.totalSteps} steps
+                Status: <span className="font-medium">{progress.status}</span>
               </p>
-              
+              <p className="text-sm">
+                Current Step: {progress.progress.currentStep}
+              </p>
+              <p className="text-sm">
+                Progress: {progress.progress.completedSteps} /{' '}
+                {progress.progress.totalSteps} steps
+              </p>
+
               <div className="mt-3">
-                <div className="text-sm space-y-1">
-                  <p>Songs: {progress.progress.details.songs.synced} synced, {progress.progress.details.songs.errors} errors</p>
-                  <p>Shows: {progress.progress.details.shows.synced} synced, {progress.progress.details.shows.errors} errors</p>
-                  <p>Venues: {progress.progress.details.venues.synced} synced, {progress.progress.details.venues.errors} errors</p>
-                  <p>Setlists: {progress.progress.details.setlists.synced} synced, {progress.progress.details.setlists.errors} errors</p>
+                <div className="space-y-1 text-sm">
+                  <p>
+                    Songs: {progress.progress.details.songs.synced} synced,{' '}
+                    {progress.progress.details.songs.errors} errors
+                  </p>
+                  <p>
+                    Shows: {progress.progress.details.shows.synced} synced,{' '}
+                    {progress.progress.details.shows.errors} errors
+                  </p>
+                  <p>
+                    Venues: {progress.progress.details.venues.synced} synced,{' '}
+                    {progress.progress.details.venues.errors} errors
+                  </p>
+                  <p>
+                    Setlists: {progress.progress.details.setlists.synced}{' '}
+                    synced, {progress.progress.details.setlists.errors} errors
+                  </p>
                 </div>
               </div>
 
-              <div className="w-full bg-gray-200 rounded-full h-2.5 mt-3">
-                <div 
-                  className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
-                  style={{ 
-                    width: `${(progress.progress.completedSteps / progress.progress.totalSteps) * 100}%` 
+              <div className="mt-3 h-2.5 w-full rounded-full bg-gray-200">
+                <div
+                  className="h-2.5 rounded-full bg-blue-600 transition-all duration-300"
+                  style={{
+                    width: `${(progress.progress.completedSteps / progress.progress.totalSteps) * 100}%`,
                   }}
                 />
               </div>

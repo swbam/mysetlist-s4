@@ -1,6 +1,5 @@
 'use client';
 
-import { anonymousUser } from '@/lib/anonymous-user';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
   Tooltip,
@@ -13,6 +12,7 @@ import { ChevronDown, ChevronUp, Loader2, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
+import { anonymousUser } from '~/lib/anonymous-user';
 
 interface AnonymousVoteButtonProps {
   setlistSongId: string;
@@ -55,7 +55,9 @@ export function AnonymousVoteButton({
   }, [setlistSongId, isAuthenticated]);
 
   const handleVote = async (voteType: 'up' | 'down') => {
-    if (isVoting || disabled || isPending) return;
+    if (isVoting || disabled || isPending) {
+      return;
+    }
 
     // If not authenticated and can't vote, prompt to sign up
     if (!isAuthenticated && !canVote && currentVote === null) {
@@ -155,8 +157,7 @@ export function AnonymousVoteButton({
             });
           }
         }
-      } catch (error) {
-        console.error('Vote failed:', error);
+      } catch (_error) {
         toast.error('Failed to vote');
       } finally {
         setIsVoting(false);

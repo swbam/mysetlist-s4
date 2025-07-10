@@ -1,6 +1,5 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import {
   type ReactNode,
   createContext,
@@ -8,6 +7,7 @@ import {
   useEffect,
   useState,
 } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 

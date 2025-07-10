@@ -46,13 +46,19 @@ export function VenueGridClient({ venues }: VenueGridClientProps) {
   };
 
   const formatCapacity = (capacity: number) => {
-    if (capacity >= 1000) return `${(capacity / 1000).toFixed(1)}k`;
+    if (capacity >= 1000) {
+      return `${(capacity / 1000).toFixed(1)}k`;
+    }
     return capacity.toString();
   };
 
   const formatDistance = (distance?: number) => {
-    if (!distance) return null;
-    if (distance < 1) return `${Math.round(distance * 1000)}m`;
+    if (!distance) {
+      return null;
+    }
+    if (distance < 1) {
+      return `${Math.round(distance * 1000)}m`;
+    }
     return `${distance.toFixed(1)}km`;
   };
 

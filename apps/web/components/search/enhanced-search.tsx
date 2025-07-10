@@ -79,7 +79,7 @@ export function EnhancedSearch({
 }: EnhancedSearchProps) {
   const router = useRouter();
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [_searchResults, _setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   // Load recent searches from localStorage
@@ -89,16 +89,16 @@ export function EnhancedSearch({
       if (stored) {
         try {
           setRecentSearches(JSON.parse(stored));
-        } catch (error) {
-          console.error('Failed to parse recent searches:', error);
-        }
+        } catch (_error) {}
       }
     }
   });
 
   const saveToRecentSearches = useCallback(
     (query: string) => {
-      if (typeof window === 'undefined') return;
+      if (typeof window === 'undefined') {
+        return;
+      }
 
       const updated = [
         query,
@@ -115,7 +115,9 @@ export function EnhancedSearch({
   );
 
   const handleSearch = async (query: string): Promise<SearchSuggestion[]> => {
-    if (query.length < 2) return [];
+    if (query.length < 2) {
+      return [];
+    }
 
     try {
       const response = await fetch(
@@ -125,9 +127,7 @@ export function EnhancedSearch({
         const data = await response.json();
         return data.suggestions || [];
       }
-    } catch (error) {
-      console.error('Search suggestions failed:', error);
-    }
+    } catch (_error) {}
 
     return [];
   };

@@ -1,9 +1,9 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Heart, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import { cn } from '~/lib/utils';
 import { useAuth } from '../../app/providers/auth-provider';
 
 interface FollowButtonProps {
@@ -60,8 +60,7 @@ export function FollowButton({
       const newFollowingState = !following;
       setFollowing(newFollowingState);
       onFollowChange?.(newFollowingState);
-    } catch (error) {
-      console.error('Error toggling follow:', error);
+    } catch (_error) {
     } finally {
       setLoading(false);
     }
@@ -175,8 +174,12 @@ export function FollowButtonWithCount({
   };
 
   const formatCount = (count: number) => {
-    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M`;
+    }
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}K`;
+    }
     return count.toString();
   };
 

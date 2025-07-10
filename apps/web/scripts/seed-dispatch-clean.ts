@@ -16,8 +16,6 @@ import { eq, inArray, sql } from 'drizzle-orm';
 import { db } from './db-client';
 
 async function cleanupDispatchData() {
-  console.log('🧹 Cleaning up existing Dispatch data...');
-
   // Get Dispatch artist
   const dispatchArtists = await db
     .select()
@@ -52,53 +50,38 @@ async function cleanupDispatchData() {
             setlistSongIds.map((s) => s.id)
           )
         );
-        console.log('  ✓ Deleted votes');
       }
 
       // Delete setlist songs
       await db
         .delete(setlistSongs)
         .where(inArray(setlistSongs.setlistId, setlistIds));
-      console.log('  ✓ Deleted setlist songs');
     }
 
     // 2. Delete setlists
     await db.delete(setlists).where(eq(setlists.artistId, dispatchId));
-    console.log('  ✓ Deleted setlists');
 
     // 3. Delete show artists
     await db.delete(showArtists).where(eq(showArtists.artistId, dispatchId));
-    console.log('  ✓ Deleted show artists');
 
     // 4. Delete shows
     await db.delete(shows).where(eq(shows.headlinerArtistId, dispatchId));
-    console.log('  ✓ Deleted shows');
 
     // 5. Delete artist stats
     await db.delete(artistStats).where(eq(artistStats.artistId, dispatchId));
-    console.log('  ✓ Deleted artist stats');
 
     // 6. Delete the artist
     await db.delete(artists).where(eq(artists.id, dispatchId));
-    console.log('  ✓ Deleted Dispatch artist');
   }
 
   // Delete Dispatch songs
   await db.delete(songs).where(eq(songs.artist, 'Dispatch'));
-  console.log('  ✓ Deleted Dispatch songs');
-
-  console.log('✅ Cleanup complete\n');
 }
 
 async function main() {
-  console.log('🎵 Dispatch Complete Data Population Script\n');
-
   try {
     // First, clean up any existing data
     await cleanupDispatchData();
-
-    // Step 1: Create Dispatch artist
-    console.log('1️⃣ Creating Dispatch artist...');
 
     // Try to update existing or create new
     let dispatchArtist = await db
@@ -182,11 +165,6 @@ async function main() {
     }
 
     const dispatchArtistData = dispatchArtist[0];
-
-    console.log('✅ Dispatch artist created successfully!');
-
-    // Step 2: Create venues for shows
-    console.log('\n2️⃣ Creating venues...');
 
     const venueData = [
       {
@@ -288,8 +266,6 @@ async function main() {
         });
     }
 
-    console.log(`✅ Created/updated ${venueData.length} venues`);
-
     // Get all venues for shows
     const allVenues = await db
       .select()
@@ -304,15 +280,10 @@ async function main() {
         ])
       );
 
-    // Step 3: Create shows for Dispatch
-    console.log('\n3️⃣ Creating shows for Dispatch...');
-
     // Ensure we have the artist ID
     if (!dispatchArtistData || !dispatchArtistData.id) {
       throw new Error('Failed to create Dispatch artist');
     }
-
-    console.log(`  Using artist ID: ${dispatchArtistData.id}`);
 
     const today = new Date();
     const showsData = [
@@ -434,8 +405,6 @@ async function main() {
 
     const createdShows = await db.insert(shows).values(showsData).returning();
 
-    console.log(`✅ Created ${createdShows.length} shows`);
-
     // Create show_artists entries
     for (const show of createdShows) {
       await db.insert(showArtists).values({
@@ -446,9 +415,6 @@ async function main() {
         setLength: 120,
       });
     }
-
-    // Step 4: Create Dispatch songs
-    console.log('\n4️⃣ Creating Dispatch song catalog...');
 
     const dispatchSongs = [
       {
@@ -646,21 +612,16 @@ async function main() {
       },
     ];
 
-    const createdSongs = await db
+    const _createdSongs = await db
       .insert(songs)
       .values(dispatchSongs)
       .returning();
-
-    console.log(`✅ Created ${createdSongs.length} songs`);
 
     // Get all songs for setlists
     const allSongs = await db
       .select()
       .from(songs)
       .where(eq(songs.artist, 'Dispatch'));
-
-    // Step 5: Create setlists and votes
-    console.log('\n5️⃣ Creating setlists and votes...');
 
     // Get or create a test user for votes
     let testUser = await db
@@ -681,7 +642,7 @@ async function main() {
     }
 
     let setlistCount = 0;
-    let voteCount = 0;
+    let _voteCount = 0;
 
     for (const show of createdShows) {
       // Create 1-3 setlists per show
@@ -758,17 +719,11 @@ async function main() {
               })
               .onConflictDoNothing();
 
-            voteCount++;
+            _voteCount++;
           }
         }
       }
     }
-
-    console.log(`✅ Created ${setlistCount} setlists with songs`);
-    console.log(`✅ Created ${voteCount} votes`);
-
-    // Step 6: Update aggregated data
-    console.log('\n6️⃣ Updating aggregated data...');
 
     // Update total votes for setlists
     await db.execute(sql`
@@ -803,29 +758,7 @@ async function main() {
           updatedAt: new Date(),
         },
       });
-
-    console.log('✅ Updated all aggregated data');
-
-    // Step 7: Final summary
-    console.log('\n🎉 Dispatch data population completed successfully!');
-    console.log('\n📊 Summary:');
-    console.log(
-      `- Artist: Dispatch (${dispatchArtistData.followers.toLocaleString()} Spotify followers)`
-    );
-    console.log(`- Venues: ${allVenues.length} venues`);
-    console.log(`- Shows: ${createdShows.length} shows (upcoming and past)`);
-    console.log(`- Songs: ${createdSongs.length} songs in catalog`);
-    console.log(`- Setlists: ${setlistCount} setlists with full song lists`);
-    console.log(`- Votes: ${voteCount} sample votes`);
-
-    console.log('\n✨ You can now test:');
-    console.log('- Search for "Dispatch" in the search bar');
-    console.log('- Visit http://localhost:3002/artists/dispatch');
-    console.log('- Check individual show pages for setlists');
-    console.log('- View trending data on http://localhost:3002/trending');
-    console.log('- Test voting functionality on predicted setlists');
-  } catch (error) {
-    console.error('❌ Error populating data:', error);
+  } catch (_error) {
     process.exit(1);
   }
 }
@@ -834,8 +767,7 @@ async function main() {
 if (require.main === module) {
   main()
     .then(() => process.exit(0))
-    .catch((error) => {
-      console.error(error);
+    .catch((_error) => {
       process.exit(1);
     });
 }

@@ -1,6 +1,5 @@
 'use client';
 
-import { useRealtimeShow } from '@/hooks/use-realtime-show';
 import { Button } from '@repo/design-system/components/ui/button';
 import { cn } from '@repo/design-system/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -8,6 +7,7 @@ import { Check, Users } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCallback, useState, useTransition } from 'react';
 import { toast } from 'sonner';
+import { useRealtimeShow } from '~/hooks/use-realtime-show';
 import { toggleAttendance } from '../actions';
 
 type AttendanceTrackerProps = {

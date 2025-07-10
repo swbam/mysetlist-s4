@@ -92,7 +92,7 @@ export function AddTipDialog({ venueId }: AddTipDialogProps) {
           variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Something went wrong',

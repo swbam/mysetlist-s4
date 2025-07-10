@@ -15,16 +15,16 @@ async function syncPopularArtists(limit = 20) {
   const { error } = await supabase.functions.invoke('sync-artists', {
     body: { limit },
   });
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
 }
 
 async function updateTrending() {
   // Call existing update-trending edge function if present
   try {
     await supabase.functions.invoke('update-trending');
-  } catch (_) {
-    console.warn('update-trending function not deployed');
-  }
+  } catch (_) {}
 }
 
 Deno.serve(async (req: Request) => {
@@ -47,7 +47,6 @@ Deno.serve(async (req: Request) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (e) {
-    console.error('scheduled-sync error', e);
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 });

@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createClient } from '~/lib/supabase/server';
 
 // This API allows triggering specific email notifications based on events
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const body = await request.json();
     const { event, data, systemToken } = body;
 
@@ -21,13 +21,11 @@ export async function POST(request: NextRequest) {
     }
 
     const emailQueue = [];
-    const appUrl =
-      process.env['NEXT_PUBLIC_APP_URL'] || 'https://mysetlist.app';
 
     switch (event) {
       case 'user.welcome':
         {
-          const { userId, name, email } = data;
+          const { name, email } = data;
 
           emailQueue.push({
             type: 'welcome',
@@ -40,7 +38,7 @@ export async function POST(request: NextRequest) {
 
       case 'show.announced':
         {
-          const { showId, artistId, artistName } = data;
+          const { showId, artistId } = data;
 
           // Get followers of the artist who want new show notifications
           const { data: followers } = await supabase
@@ -72,14 +70,14 @@ export async function POST(request: NextRequest) {
           if (show && followers) {
             const notificationRecipients = followers
               .filter((follower) => {
-                const prefs = follower.users.user_email_preferences[0];
+                const prefs = follower.users?.[0]?.user_email_preferences?.[0];
                 return (
                   prefs?.email_notifications && prefs?.new_show_notifications
                 );
               })
               .map((follower) => ({
-                email: follower.users.email,
-                name: follower.users.full_name,
+                email: follower.users?.[0]?.email,
+                name: follower.users?.[0]?.full_name,
               }));
 
             if (notificationRecipients.length > 0) {
@@ -134,13 +132,13 @@ export async function POST(request: NextRequest) {
 
           if (show) {
             const recipients = show.show_attendees
-              .filter((attendee) => {
-                const prefs = attendee.users.user_email_preferences[0];
+              .filter((attendee: any) => {
+                const prefs = attendee.users?.[0]?.user_email_preferences?.[0];
                 return prefs?.email_notifications && prefs?.setlist_updates;
               })
-              .map((attendee) => ({
-                email: attendee.users.email,
-                name: attendee.users.full_name,
+              .map((attendee: any) => ({
+                email: attendee.users?.[0]?.email,
+                name: attendee.users?.[0]?.full_name,
               }));
 
             if (recipients.length > 0) {
@@ -194,13 +192,13 @@ export async function POST(request: NextRequest) {
 
           if (show) {
             const recipients = show.show_attendees
-              .filter((attendee) => {
-                const prefs = attendee.users.user_email_preferences[0];
+              .filter((attendee: any) => {
+                const prefs = attendee.users?.[0]?.user_email_preferences?.[0];
                 return prefs?.email_notifications && prefs?.live_show_alerts;
               })
-              .map((attendee) => ({
-                email: attendee.users.email,
-                name: attendee.users.full_name,
+              .map((attendee: any) => ({
+                email: attendee.users?.[0]?.email,
+                name: attendee.users?.[0]?.full_name,
               }));
 
             if (recipients.length > 0) {
@@ -230,7 +228,7 @@ export async function POST(request: NextRequest) {
 
       case 'vote.milestone':
         {
-          const { songId, showId, milestone, userId } = data;
+          const { songId, milestone, userId } = data;
 
           // Get user details and song/show info
           const { data: user } = await supabase
@@ -331,16 +329,16 @@ export async function POST(request: NextRequest) {
 
           if (artist && follower) {
             const managers = artist.artist_managers
-              .filter((manager) => {
-                const prefs = manager.users.user_email_preferences[0];
+              .filter((manager: any) => {
+                const prefs = manager.users?.[0]?.user_email_preferences?.[0];
                 return (
                   prefs?.email_notifications &&
                   prefs?.artist_follow_notifications
                 );
               })
-              .map((manager) => ({
-                email: manager.users.email,
-                name: manager.users.full_name,
+              .map((manager: any) => ({
+                email: manager.users?.[0]?.email,
+                name: manager.users?.[0]?.full_name,
               }));
 
             if (managers.length > 0) {
@@ -438,11 +436,10 @@ export async function POST(request: NextRequest) {
           });
         }
       } catch (error) {
-        console.error(`Failed to send ${emailData.type} email:`, error);
         results.push({
           type: emailData.type,
           success: false,
-          error: error.message,
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
       }
     }
@@ -453,8 +450,7 @@ export async function POST(request: NextRequest) {
       triggeredEmails: emailQueue.length,
       results,
     });
-  } catch (error) {
-    console.error('Email trigger error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -78,18 +78,11 @@ const sampleArtists = [
 async function seedArtists() {
   const db = createClient();
 
-  console.log('Seeding artists...');
-
   for (const artist of sampleArtists) {
     try {
       await db.insert(artists).values(artist);
-      console.log(`✓ Added ${artist.name}`);
-    } catch (error) {
-      console.error(`✗ Failed to add ${artist.name}:`, error);
-    }
+    } catch (_error) {}
   }
-
-  console.log('Done seeding artists!');
   process.exit(0);
 }
 

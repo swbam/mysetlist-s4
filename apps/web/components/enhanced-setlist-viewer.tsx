@@ -1,7 +1,5 @@
 'use client';
 
-import { useAuth } from '@/app/providers/auth-provider';
-import { useRealtimeSetlist } from '@/hooks/use-realtime-setlist';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
@@ -15,6 +13,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Clock, Edit, Lock, Music, Plus, Users } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '~/app/providers/auth-provider';
+import { useRealtimeSetlist } from '~/hooks/use-realtime-setlist';
 import { RealtimeVoteButton } from './realtime-vote-button';
 
 interface Setlist {
@@ -53,22 +53,20 @@ export function EnhancedSetlistViewer({
   });
 
   const handleVote = async (songId: string, voteType: 'up' | 'down' | null) => {
-    if (!user) return;
+    if (!user) {
+      return;
+    }
+    const response = await fetch('/api/votes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        setlistSongId: songId,
+        voteType,
+      }),
+    });
 
-    try {
-      const response = await fetch('/api/votes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          setlistSongId: songId,
-          voteType,
-        }),
-      });
-
-      if (!response.ok) throw new Error('Vote failed');
-    } catch (error) {
-      console.error('Vote failed:', error);
-      throw error;
+    if (!response.ok) {
+      throw new Error('Vote failed');
     }
   };
 
@@ -93,7 +91,7 @@ export function EnhancedSetlistViewer({
   if (isLoading && songs.length === 0) {
     return (
       <div className="space-y-2">
-        {[...Array(5)].map((_, i) => (
+        {[...new Array(5)].map((_, i) => (
           <div key={i} className="h-20 animate-pulse rounded-lg bg-muted" />
         ))}
       </div>

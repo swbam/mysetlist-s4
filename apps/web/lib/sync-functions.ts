@@ -27,54 +27,45 @@ export interface SyncSetlistParams {
  * Sync artist data from Spotify
  */
 export async function syncArtist(params: SyncArtistParams) {
-  try {
-    const supabase = createClient();
-    const { data, error } = await supabase.functions.invoke('sync-artists', {
-      body: params,
-    });
+  const supabase = createClient();
+  const { data, error } = await supabase.functions.invoke('sync-artists', {
+    body: params,
+  });
 
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Error syncing artist:', error);
+  if (error) {
     throw error;
   }
+  return data;
 }
 
 /**
  * Sync shows/concerts from Ticketmaster
  */
 export async function syncShows(params: SyncShowsParams) {
-  try {
-    const supabase = createClient();
-    const { data, error } = await supabase.functions.invoke('sync-shows', {
-      body: params,
-    });
+  const supabase = createClient();
+  const { data, error } = await supabase.functions.invoke('sync-shows', {
+    body: params,
+  });
 
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Error syncing shows:', error);
+  if (error) {
     throw error;
   }
+  return data;
 }
 
 /**
  * Sync setlist from Setlist.fm
  */
 export async function syncSetlist(params: SyncSetlistParams) {
-  try {
-    const supabase = createClient();
-    const { data, error } = await supabase.functions.invoke('sync-setlists', {
-      body: params,
-    });
+  const supabase = createClient();
+  const { data, error } = await supabase.functions.invoke('sync-setlists', {
+    body: params,
+  });
 
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Error syncing setlist:', error);
+  if (error) {
     throw error;
   }
+  return data;
 }
 
 /**
@@ -84,16 +75,13 @@ export async function triggerManualSync(
   type: 'all' | 'artists' | 'shows' | 'setlists' = 'all',
   limit = 10
 ) {
-  try {
-    const supabase = createClient();
-    const { data, error } = await supabase.functions.invoke('scheduled-sync', {
-      body: { type, limit },
-    });
+  const supabase = createClient();
+  const { data, error } = await supabase.functions.invoke('scheduled-sync', {
+    body: { type, limit },
+  });
 
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Error triggering manual sync:', error);
+  if (error) {
     throw error;
   }
+  return data;
 }

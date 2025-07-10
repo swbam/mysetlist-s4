@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { promises as fs } from 'fs';
-import path from 'path';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
 
 const API_APP_DIR = path.join(process.cwd(), 'apps/api/app');
 
@@ -24,12 +24,7 @@ async function fixRemainingImports(filePath: string) {
     content = content.replace(/@repo\/api\//g, '@/');
 
     await fs.writeFile(filePath, content);
-    console.log(
-      `  ✅ Fixed imports in ${path.relative(process.cwd(), filePath)}`
-    );
-  } catch (error) {
-    console.error(`  ❌ Error fixing imports in ${filePath}:`, error);
-  }
+  } catch (_error) {}
 }
 
 async function processDirectory(dir: string) {
@@ -47,8 +42,6 @@ async function processDirectory(dir: string) {
 }
 
 async function createMissingLibraries() {
-  console.log('\n📚 Creating missing library files...');
-
   const libDir = path.join(process.cwd(), 'apps/api/lib');
 
   // Create monitoring library
@@ -115,20 +108,14 @@ export async function sendDigestEmails() {
     path.join(actionsDir, 'email-notifications.ts'),
     emailNotificationsContent
   );
-
-  console.log('  ✅ Created missing library files');
 }
 
 async function main() {
-  console.log('🔧 Fixing remaining imports in API app...\n');
-
   // Create missing libraries first
   await createMissingLibraries();
 
   // Fix imports in all files
   await processDirectory(API_APP_DIR);
-
-  console.log('\n✨ Import fixes complete!');
 }
 
 main().catch(console.error);

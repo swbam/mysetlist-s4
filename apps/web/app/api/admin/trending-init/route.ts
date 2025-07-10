@@ -11,9 +11,6 @@ export async function POST(request: NextRequest) {
     }
 
     const baseUrl = process.env['NEXT_PUBLIC_URL'] || 'http://localhost:3000';
-
-    // Step 1: Seed trending data
-    console.log('Seeding trending data...');
     const seedResponse = await fetch(
       `${baseUrl}/api/admin/seed-trending?type=all`,
       {
@@ -29,9 +26,6 @@ export async function POST(request: NextRequest) {
     }
 
     const seedResult = await seedResponse.json();
-
-    // Step 2: Calculate trending scores
-    console.log('Calculating trending scores...');
     const calculateResponse = await fetch(
       `${baseUrl}/api/admin/calculate-trending?type=all`,
       {
@@ -58,7 +52,6 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Error initializing trending system:', error);
     return NextResponse.json(
       {
         error: 'Failed to initialize trending system',
@@ -69,7 +62,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   // Provide instructions for using this endpoint
   return NextResponse.json({
     message: 'Trending System Initialization Endpoint',

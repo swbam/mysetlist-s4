@@ -120,8 +120,7 @@ export const VenueSearch = ({
       router.push(newUrl);
 
       setHasLocation(true);
-    } catch (error) {
-      console.error('Error getting location:', error);
+    } catch (_error) {
       alert(
         'Unable to get your location. Please try again or search manually.'
       );

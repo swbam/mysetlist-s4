@@ -1,6 +1,5 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import {
   Alert,
   AlertDescription,
@@ -17,6 +16,7 @@ import { ArrowLeft, CheckCircle, Loader2, Mail, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 const supabase = createClient();
 
@@ -45,7 +45,6 @@ export default function VerifyEmailPage() {
           });
 
           if (error) {
-            console.error('Email verification error:', error);
             setStatus('error');
             setMessage(
               error.message ||
@@ -62,8 +61,7 @@ export default function VerifyEmailPage() {
               router.push(next);
             }, 2000);
           }
-        } catch (error) {
-          console.error('Verification error:', error);
+        } catch (_error) {
           setStatus('error');
           setMessage('An unexpected error occurred during verification.');
         }
@@ -98,8 +96,7 @@ export default function VerifyEmailPage() {
       } else {
         setMessage('Verification email sent! Please check your inbox.');
       }
-    } catch (error) {
-      console.error('Resend error:', error);
+    } catch (_error) {
       setMessage('An error occurred while sending the verification email.');
     } finally {
       setIsResending(false);

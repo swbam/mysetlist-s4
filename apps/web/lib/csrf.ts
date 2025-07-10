@@ -39,7 +39,7 @@ export async function getCSRFToken(): Promise<string> {
   const newToken = generateCSRFToken();
   cookieStore.set(CSRF_COOKIE_NAME, newToken, {
     httpOnly: true,
-    secure: process.env['NODE_ENV'] === 'production',
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
     path: '/',
     maxAge: 60 * 60 * 24 * 7, // 7 days
@@ -94,24 +94,26 @@ export async function csrfProtection(
 ): Promise<Response | null> {
   // Skip CSRF for public endpoints
   const publicEndpoints = ['/api/health', '/api/search', '/api/trending'];
-  
+
   // Skip CSRF for sync/integration endpoints in development
   const internalEndpoints = [
     '/api/sync',
     '/api/artists/auto-import',
     '/api/artists/sync',
     '/api/cron',
-    '/api/webhooks'
+    '/api/webhooks',
   ];
 
   const pathname = request.nextUrl.pathname;
   if (publicEndpoints.some((endpoint) => pathname.startsWith(endpoint))) {
     return null;
   }
-  
+
   // In development, skip CSRF for internal endpoints
-  if (process.env.NODE_ENV === 'development' && 
-      internalEndpoints.some((endpoint) => pathname.startsWith(endpoint))) {
+  if (
+    process.env.NODE_ENV === 'development' &&
+    internalEndpoints.some((endpoint) => pathname.startsWith(endpoint))
+  ) {
     return null;
   }
 
@@ -153,9 +155,7 @@ export function useCSRFToken(): {
         const data = await response.json();
         return data.token;
       }
-    } catch (error) {
-      console.error('Failed to refresh CSRF token:', error);
-    }
+    } catch (_error) {}
   };
 
   return {

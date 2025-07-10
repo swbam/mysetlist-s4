@@ -31,7 +31,13 @@
     "allofit": "tsx scripts/comprehensive-e2e-test.ts",
     "seed": "tsx scripts/seed-comprehensive.ts",
     "seed:quick": "tsx scripts/seed-quick.ts",
-    "seed:artists": "tsx scripts/seed-database.ts"
+    "seed:artists": "tsx scripts/seed-database.ts",
+    "qa:comprehensive": "tsx scripts/run-comprehensive-qa.ts",
+    "qa:security": "tsx scripts/security-audit.ts",
+    "qa:production-ready": "tsx scripts/production-readiness-check.ts",
+    "qa:accessibility": "npx playwright test tests/accessibility/comprehensive-a11y.spec.ts",
+    "qa:performance": "k6 run k6/load-test.js && k6 run k6/stress-test.js",
+    "qa:all": "npm run qa:comprehensive"
   },
   "dependencies": {
     "@arcjet/next": "1.0.0-beta.8",
@@ -69,6 +75,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.54.2",
+    "recharts": "^3.1.0",
     "require-in-the-middle": "^7.5.2",
     "sharp": "^0.34.2",
     "shiki": "^3.4.2",
@@ -80,6 +87,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.10.0",
     "@faker-js/faker": "^9.9.0",
+    "@lhci/cli": "^0.13.0",
     "@next/bundle-analyzer": "15.3.4",
     "@playwright/test": "^1.48.0",
     "@repo/testing": "workspace:*",
@@ -98,10 +106,9 @@
     "jest-axe": "^8.0.0",
     "jsdom": "^24.0.0",
     "lighthouse": "^12.0.0",
-    "@lhci/cli": "^0.13.0",
-    "wait-on": "^7.2.0",
     "tailwindcss": "^4.1.7",
     "typescript": "^5.8.3",
-    "vitest": "^3.1.4"
+    "vitest": "^3.1.4",
+    "wait-on": "^7.2.0"
   }
 }

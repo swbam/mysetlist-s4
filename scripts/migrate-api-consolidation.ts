@@ -5,9 +5,9 @@
  * Ensures zero functionality loss during migration
  */
 
-import path from 'path';
-import { fileURLToPath } from 'url';
-import fs from 'fs/promises';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.join(__dirname, '..');
@@ -232,9 +232,7 @@ const MERGE_ROUTES = [
 async function createDirectory(dirPath: string) {
   try {
     await fs.mkdir(dirPath, { recursive: true });
-  } catch (error) {
-    console.error(`Failed to create directory ${dirPath}:`, error);
-  }
+  } catch (_error) {}
 }
 
 async function fileExists(filePath: string): Promise<boolean> {
@@ -253,7 +251,6 @@ async function migrateFile(task: MigrationTask) {
   try {
     // Check if source file exists
     if (!(await fileExists(sourcePath))) {
-      console.log(`⚠️  Source file not found: ${task.source}`);
       return;
     }
 
@@ -270,19 +267,14 @@ async function migrateFile(task: MigrationTask) {
 
     // Check if destination already exists
     if (await fileExists(destPath)) {
-      console.log(`⚠️  Destination already exists: ${task.destination}`);
       // Create backup
-      const backupPath = destPath + '.backup.' + Date.now();
+      const backupPath = `${destPath}.backup.${Date.now()}`;
       await fs.copyFile(destPath, backupPath);
-      console.log(`   Created backup: ${path.basename(backupPath)}`);
     }
 
     // Write to destination
     await fs.writeFile(destPath, content);
-    console.log(`✅ Migrated: ${task.source} → ${task.destination}`);
-  } catch (error) {
-    console.error(`❌ Failed to migrate ${task.source}:`, error);
-  }
+  } catch (_error) {}
 }
 
 async function updateEnvironmentVariables() {
@@ -338,20 +330,17 @@ async function updateEnvironmentVariables() {
     // Add to runtimeEnv
     envContent = envContent.replace(
       'runtimeEnv: {',
-      `runtimeEnv: {\n    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,\n    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,\n    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,`
+      'runtimeEnv: {\n    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,\n    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,\n    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,'
     );
 
     await fs.writeFile(webEnvPath, envContent);
-    console.log('✅ Updated environment variables configuration');
-  } catch (error) {
-    console.error('❌ Failed to update environment variables:', error);
-  }
+  } catch (_error) {}
 }
 
 async function createProxyRoutes() {
   // Create proxy routes for merged endpoints
   for (const route of MERGE_ROUTES) {
-    const routePath = path.join(ROOT_DIR, 'apps/web/app/api', route);
+    const _routePath = path.join(ROOT_DIR, 'apps/web/app/api', route);
     const apiRoutePath = path.join(
       ROOT_DIR,
       'apps/api/app',
@@ -359,9 +348,8 @@ async function createProxyRoutes() {
     );
 
     if (await fileExists(apiRoutePath)) {
-      console.log(`📝 Creating proxy route for ${route}`);
       // Read existing content from apps/api
-      const apiContent = await fs.readFile(apiRoutePath, 'utf-8');
+      const _apiContent = await fs.readFile(apiRoutePath, 'utf-8');
 
       // Merge with existing content if needed
       // This would require more complex logic based on specific routes
@@ -370,34 +358,11 @@ async function createProxyRoutes() {
 }
 
 async function main() {
-  console.log('🚀 Starting API Consolidation Migration');
-  console.log('='.repeat(50));
-
-  // Step 1: Update environment variables
-  console.log('\n📋 Step 1: Updating environment variables...');
   await updateEnvironmentVariables();
-
-  // Step 2: Migrate all files
-  console.log('\n📋 Step 2: Migrating API routes and utilities...');
   for (const task of MIGRATION_TASKS) {
     await migrateFile(task);
   }
-
-  // Step 3: Create proxy routes for merged endpoints
-  console.log('\n📋 Step 3: Creating proxy routes for merged endpoints...');
   await createProxyRoutes();
-
-  // Step 4: Update imports in apps/web
-  console.log('\n📋 Step 4: Updating imports in apps/web...');
-  // This would be implemented with a code transform tool
-
-  console.log('\n✅ Migration completed!');
-  console.log('='.repeat(50));
-  console.log('\n⚠️  Next steps:');
-  console.log('1. Test all migrated endpoints');
-  console.log('2. Update any remaining imports');
-  console.log('3. Remove apps/api folder after verification');
-  console.log('4. Update deployment configurations');
 }
 
 // Run migration

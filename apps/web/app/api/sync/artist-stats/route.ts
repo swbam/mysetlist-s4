@@ -138,7 +138,6 @@ export async function POST(request: NextRequest) {
       stats: stats[0],
     });
   } catch (error) {
-    console.error('Artist stats sync error:', error);
     return NextResponse.json(
       {
         error: 'Artist stats sync failed',

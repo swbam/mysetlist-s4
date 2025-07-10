@@ -1,11 +1,11 @@
+import { type NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import {
   authRateLimitMiddleware,
   passwordResetRateLimiter,
-} from '@/lib/auth-rate-limit';
-import { validateCSRFToken } from '@/lib/csrf';
-import { createClient } from '@/lib/supabase/server';
-import { type NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
+} from '~/lib/auth-rate-limit';
+import { validateCSRFToken } from '~/lib/csrf';
+import { createClient } from '~/lib/supabase/server';
 
 const resetPasswordSchema = z.object({
   email: z.string().email(),
@@ -49,25 +49,15 @@ export async function POST(request: NextRequest) {
 
     // Send password reset email
     const supabase = await createClient();
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error: _error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${request.nextUrl.origin}/auth/callback?next=/auth/update-password`,
-    });
-
-    // Always return success to prevent email enumeration
-    // Even if the email doesn't exist in our system
-    console.info('Password reset requested:', {
-      email,
-      success: !error,
-      ip: request.headers.get('x-forwarded-for') || 'unknown',
-      timestamp: new Date().toISOString(),
     });
 
     return NextResponse.json({
       message:
         'If an account exists with this email, you will receive a password reset link.',
     });
-  } catch (error) {
-    console.error('Password reset error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

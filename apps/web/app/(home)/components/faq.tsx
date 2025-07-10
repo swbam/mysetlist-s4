@@ -4,7 +4,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@repo/design-system/components/ui/accordion';
-import React from 'react';
 
 const faqs = [
   {
@@ -31,29 +30,29 @@ const faqs = [
 
 export default function FAQ() {
   return (
-  <div className="w-full py-20 lg:py-40">
-    <div className="container mx-auto">
-      <div className="flex flex-col gap-10">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <h2 className="font-regular text-3xl tracking-tighter md:text-5xl">
-            Frequently Asked Questions
-          </h2>
-          <p className="max-w-xl text-lg text-muted-foreground leading-relaxed tracking-tight">
-            Everything you need to know about MySetlist
-          </p>
-        </div>
-        <div className="mx-w-full max-w-3xl">
-          <Accordion type="single" collapsible className="w-full">
-            {faqs.map((faq, index) => (
-              <AccordionItem key={index} value={`item-${index}`}>
-                <AccordionTrigger>{faq.question}</AccordionTrigger>
-                <AccordionContent>{faq.answer}</AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+    <div className="w-full py-20 lg:py-40">
+      <div className="container mx-auto">
+        <div className="flex flex-col gap-10">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <h2 className="font-regular text-3xl tracking-tighter md:text-5xl">
+              Frequently Asked Questions
+            </h2>
+            <p className="max-w-xl text-lg text-muted-foreground leading-relaxed tracking-tight">
+              Everything you need to know about MySetlist
+            </p>
+          </div>
+          <div className="mx-w-full max-w-3xl">
+            <Accordion type="single" collapsible className="w-full">
+              {faqs.map((faq, index) => (
+                <AccordionItem key={index} value={`item-${index}`}>
+                  <AccordionTrigger>{faq.question}</AccordionTrigger>
+                  <AccordionContent>{faq.answer}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
         </div>
       </div>
     </div>
-  </div>
   );
 }

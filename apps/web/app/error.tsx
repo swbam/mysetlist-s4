@@ -11,10 +11,7 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    // Log the error to an error reporting service
-    console.error('Navigation error:', error);
-  }, [error]);
+  useEffect(() => {}, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
@@ -53,7 +50,7 @@ export default function Error({
           </Button>
         </div>
 
-        {process.env['NODE_ENV'] === 'development' && (
+        {process.env.NODE_ENV === 'development' && (
           <details className="mt-6 text-left">
             <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
               Error details (development only)

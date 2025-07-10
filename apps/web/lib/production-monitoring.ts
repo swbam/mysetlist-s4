@@ -33,11 +33,11 @@ export class ProductionMonitoringService extends MonitoringService {
    * Initialize production monitoring
    */
   static initializeProduction(): void {
-    this.setupErrorTracking();
-    this.setupPerformanceMonitoring();
-    this.setupResourceMonitoring();
-    this.setupAlertSystem();
-    this.setupHealthChecks();
+    ProductionMonitoringService.setupErrorTracking();
+    ProductionMonitoringService.setupPerformanceMonitoring();
+    ProductionMonitoringService.setupResourceMonitoring();
+    ProductionMonitoringService.setupAlertSystem();
+    ProductionMonitoringService.setupHealthChecks();
   }
 
   /**
@@ -47,7 +47,7 @@ export class ProductionMonitoringService extends MonitoringService {
     // Global error handler
     if (typeof window !== 'undefined') {
       window.addEventListener('error', (event) => {
-        this.handleError(event.error, {
+        ProductionMonitoringService.handleError(event.error, {
           type: 'javascript_error',
           filename: event.filename,
           lineno: event.lineno,
@@ -56,7 +56,7 @@ export class ProductionMonitoringService extends MonitoringService {
       });
 
       window.addEventListener('unhandledrejection', (event) => {
-        this.handleError(
+        ProductionMonitoringService.handleError(
           new Error(event.reason?.toString() || 'Unhandled promise rejection'),
           {
             type: 'unhandled_promise_rejection',
@@ -67,7 +67,7 @@ export class ProductionMonitoringService extends MonitoringService {
     }
 
     // API error tracking
-    this.setupAPIErrorTracking();
+    ProductionMonitoringService.setupAPIErrorTracking();
   }
 
   /**
@@ -85,7 +85,7 @@ export class ProductionMonitoringService extends MonitoringService {
         const duration = performance.now() - startTime;
 
         // Track API performance
-        this.trackMetric({
+        ProductionMonitoringService.trackMetric({
           name: 'api.response_time',
           value: duration,
           unit: 'ms',
@@ -98,13 +98,13 @@ export class ProductionMonitoringService extends MonitoringService {
 
         // Check for errors
         if (!response.ok) {
-          this.handleAPIError(response, duration, url);
+          ProductionMonitoringService.handleAPIError(response, duration, url);
         }
 
         return response;
       } catch (error) {
         const duration = performance.now() - startTime;
-        this.handleAPIError(error, duration, url);
+        ProductionMonitoringService.handleAPIError(error, duration, url);
         throw error;
       }
     };
@@ -113,7 +113,11 @@ export class ProductionMonitoringService extends MonitoringService {
   /**
    * Handle API errors
    */
-  private static handleAPIError(error: any, duration: number, url: string): void {
+  private static handleAPIError(
+    error: any,
+    duration: number,
+    url: string
+  ): void {
     const errorData = {
       url,
       duration,
@@ -121,29 +125,31 @@ export class ProductionMonitoringService extends MonitoringService {
       message: error.message || 'API request failed',
     };
 
-    this.trackError(
+    ProductionMonitoringService.trackError(
       error instanceof Error ? error : new Error(errorData.message),
       errorData
     );
 
     // Check if error rate exceeds threshold
-    this.checkErrorRateThreshold();
+    ProductionMonitoringService.checkErrorRateThreshold();
   }
 
   /**
    * Setup performance monitoring
    */
   private static setupPerformanceMonitoring(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+      return;
+    }
 
     // Core Web Vitals monitoring
-    this.setupCoreWebVitals();
+    ProductionMonitoringService.setupCoreWebVitals();
 
     // Resource timing monitoring
-    this.setupResourceTimingMonitoring();
+    ProductionMonitoringService.setupResourceTimingMonitoring();
 
     // Navigation timing monitoring
-    this.setupNavigationTimingMonitoring();
+    ProductionMonitoringService.setupNavigationTimingMonitoring();
   }
 
   /**
@@ -154,16 +160,19 @@ export class ProductionMonitoringService extends MonitoringService {
       // LCP monitoring
       const lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        const lastEntry = entries[entries.length - 1];
-        
-        this.trackMetric({
+        const lastEntry = entries.at(-1);
+
+        ProductionMonitoringService.trackMetric({
           name: 'performance.lcp',
           value: lastEntry.startTime,
           unit: 'ms',
           tags: { page: window.location.pathname },
         });
 
-        this.checkPerformanceBudget('LCP', lastEntry.startTime);
+        ProductionMonitoringService.checkPerformanceBudget(
+          'LCP',
+          lastEntry.startTime
+        );
       });
 
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
@@ -172,15 +181,15 @@ export class ProductionMonitoringService extends MonitoringService {
       const fidObserver = new PerformanceObserver((list) => {
         list.getEntries().forEach((entry) => {
           const fid = (entry as any).processingStart - entry.startTime;
-          
-          this.trackMetric({
+
+          ProductionMonitoringService.trackMetric({
             name: 'performance.fid',
             value: fid,
             unit: 'ms',
             tags: { page: window.location.pathname },
           });
 
-          this.checkPerformanceBudget('FID', fid);
+          ProductionMonitoringService.checkPerformanceBudget('FID', fid);
         });
       });
 
@@ -195,14 +204,14 @@ export class ProductionMonitoringService extends MonitoringService {
           }
         });
 
-        this.trackMetric({
+        ProductionMonitoringService.trackMetric({
           name: 'performance.cls',
           value: clsValue,
           unit: 'score',
           tags: { page: window.location.pathname },
         });
 
-        this.checkPerformanceBudget('CLS', clsValue);
+        ProductionMonitoringService.checkPerformanceBudget('CLS', clsValue);
       });
 
       clsObserver.observe({ entryTypes: ['layout-shift'] });
@@ -217,8 +226,8 @@ export class ProductionMonitoringService extends MonitoringService {
       const resourceObserver = new PerformanceObserver((list) => {
         list.getEntries().forEach((entry) => {
           const resource = entry as PerformanceResourceTiming;
-          
-          this.trackMetric({
+
+          ProductionMonitoringService.trackMetric({
             name: 'performance.resource_load_time',
             value: resource.loadEventEnd - resource.startTime,
             unit: 'ms',
@@ -239,19 +248,22 @@ export class ProductionMonitoringService extends MonitoringService {
    */
   private static setupNavigationTimingMonitoring(): void {
     window.addEventListener('load', () => {
-      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-      
+      const navigation = performance.getEntriesByType(
+        'navigation'
+      )[0] as PerformanceNavigationTiming;
+
       if (navigation) {
         const metrics = {
           dns_lookup: navigation.domainLookupEnd - navigation.domainLookupStart,
           tcp_connect: navigation.connectEnd - navigation.connectStart,
           ttfb: navigation.responseStart - navigation.requestStart,
-          dom_content_loaded: navigation.domContentLoadedEventEnd - navigation.navigationStart,
+          dom_content_loaded:
+            navigation.domContentLoadedEventEnd - navigation.navigationStart,
           page_load: navigation.loadEventEnd - navigation.navigationStart,
         };
 
         Object.entries(metrics).forEach(([name, value]) => {
-          this.trackMetric({
+          ProductionMonitoringService.trackMetric({
             name: `performance.${name}`,
             value,
             unit: 'ms',
@@ -259,7 +271,10 @@ export class ProductionMonitoringService extends MonitoringService {
           });
         });
 
-        this.checkPerformanceBudget('TTFB', metrics.ttfb);
+        ProductionMonitoringService.checkPerformanceBudget(
+          'TTFB',
+          metrics.ttfb
+        );
       }
     });
   }
@@ -268,16 +283,18 @@ export class ProductionMonitoringService extends MonitoringService {
    * Setup resource monitoring
    */
   private static setupResourceMonitoring(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+      return;
+    }
 
     // Memory monitoring
-    this.setupMemoryMonitoring();
+    ProductionMonitoringService.setupMemoryMonitoring();
 
     // Network monitoring
-    this.setupNetworkMonitoring();
+    ProductionMonitoringService.setupNetworkMonitoring();
 
     // Battery monitoring (if available)
-    this.setupBatteryMonitoring();
+    ProductionMonitoringService.setupBatteryMonitoring();
   }
 
   /**
@@ -287,9 +304,10 @@ export class ProductionMonitoringService extends MonitoringService {
     if ('memory' in performance) {
       const monitorMemory = () => {
         const memory = (performance as any).memory;
-        const usagePercent = (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
+        const usagePercent =
+          (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
 
-        this.trackMetric({
+        ProductionMonitoringService.trackMetric({
           name: 'system.memory_usage',
           value: usagePercent,
           unit: 'percent',
@@ -301,10 +319,14 @@ export class ProductionMonitoringService extends MonitoringService {
         });
 
         // Check memory threshold
-        if (usagePercent > this.alertThresholds.memoryUsage * 100) {
-          this.sendAlert('HIGH_MEMORY_USAGE', {
+        if (
+          usagePercent >
+          ProductionMonitoringService.alertThresholds.memoryUsage * 100
+        ) {
+          ProductionMonitoringService.sendAlert('HIGH_MEMORY_USAGE', {
             usage: usagePercent,
-            threshold: this.alertThresholds.memoryUsage * 100,
+            threshold:
+              ProductionMonitoringService.alertThresholds.memoryUsage * 100,
           });
         }
       };
@@ -323,7 +345,7 @@ export class ProductionMonitoringService extends MonitoringService {
       const connection = (navigator as any).connection;
 
       const monitorNetwork = () => {
-        this.trackMetric({
+        ProductionMonitoringService.trackMetric({
           name: 'network.downlink',
           value: connection.downlink,
           unit: 'mbps',
@@ -346,7 +368,7 @@ export class ProductionMonitoringService extends MonitoringService {
     if ('getBattery' in navigator) {
       (navigator as any).getBattery().then((battery: any) => {
         const monitorBattery = () => {
-          this.trackMetric({
+          ProductionMonitoringService.trackMetric({
             name: 'device.battery_level',
             value: battery.level * 100,
             unit: 'percent',
@@ -368,10 +390,10 @@ export class ProductionMonitoringService extends MonitoringService {
    */
   private static setupAlertSystem(): void {
     // Initialize alert counters
-    this.initializeAlertCounters();
+    ProductionMonitoringService.initializeAlertCounters();
 
     // Setup alert throttling
-    this.setupAlertThrottling();
+    ProductionMonitoringService.setupAlertThrottling();
   }
 
   /**
@@ -392,17 +414,20 @@ export class ProductionMonitoringService extends MonitoringService {
    */
   private static setupAlertThrottling(): void {
     // Prevent alert spam by throttling similar alerts
-    this.alertThrottleMap = new Map();
+    ProductionMonitoringService.alertThrottleMap = new Map();
   }
 
   /**
    * Check performance budget
    */
   private static checkPerformanceBudget(metric: string, value: number): void {
-    const budget = this.performanceBudgets[metric as keyof typeof this.performanceBudgets];
-    
+    const budget =
+      ProductionMonitoringService.performanceBudgets[
+        metric as keyof typeof this.performanceBudgets
+      ];
+
     if (budget && value > budget) {
-      this.sendAlert('PERFORMANCE_BUDGET_EXCEEDED', {
+      ProductionMonitoringService.sendAlert('PERFORMANCE_BUDGET_EXCEEDED', {
         metric,
         value,
         budget,
@@ -415,7 +440,9 @@ export class ProductionMonitoringService extends MonitoringService {
    * Check error rate threshold
    */
   private static checkErrorRateThreshold(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+      return;
+    }
 
     const alerts = (window as any).monitoringAlerts;
     const now = Date.now();
@@ -431,10 +458,10 @@ export class ProductionMonitoringService extends MonitoringService {
 
     // Check if error rate exceeds threshold
     const errorRate = alerts.errorCount / 60; // errors per second
-    if (errorRate > this.alertThresholds.errorRate) {
-      this.sendAlert('HIGH_ERROR_RATE', {
+    if (errorRate > ProductionMonitoringService.alertThresholds.errorRate) {
+      ProductionMonitoringService.sendAlert('HIGH_ERROR_RATE', {
         errorRate,
-        threshold: this.alertThresholds.errorRate,
+        threshold: ProductionMonitoringService.alertThresholds.errorRate,
         timeWindow: '1 minute',
       });
     }
@@ -448,25 +475,30 @@ export class ProductionMonitoringService extends MonitoringService {
     const now = Date.now();
 
     // Throttle similar alerts (max 1 per 5 minutes)
-    if (this.alertThrottleMap.has(alertKey)) {
-      const lastSent = this.alertThrottleMap.get(alertKey);
-      if (now - lastSent < 300000) { // 5 minutes
+    if (ProductionMonitoringService.alertThrottleMap.has(alertKey)) {
+      const lastSent =
+        ProductionMonitoringService.alertThrottleMap.get(alertKey);
+      if (now - lastSent < 300000) {
+        // 5 minutes
         return;
       }
     }
 
-    this.alertThrottleMap.set(alertKey, now);
+    ProductionMonitoringService.alertThrottleMap.set(alertKey, now);
 
     // Send to configured channels
-    this.sendSlackAlert(type, data);
-    this.sendPagerDutyAlert(type, data);
-    this.sendEmailAlert(type, data);
+    ProductionMonitoringService.sendSlackAlert(type, data);
+    ProductionMonitoringService.sendPagerDutyAlert(type, data);
+    ProductionMonitoringService.sendEmailAlert(type, data);
 
     // Track alert as metric
-    this.trackMetric({
+    ProductionMonitoringService.trackMetric({
       name: 'alerts.sent',
       value: 1,
-      tags: { type, severity: this.getAlertSeverity(type) },
+      tags: {
+        type,
+        severity: ProductionMonitoringService.getAlertSeverity(type),
+      },
     });
   }
 
@@ -474,13 +506,15 @@ export class ProductionMonitoringService extends MonitoringService {
    * Send Slack alert
    */
   private static sendSlackAlert(type: string, data: any): void {
-    if (!this.alertChannels.slack) return;
+    if (!ProductionMonitoringService.alertChannels.slack) {
+      return;
+    }
 
     const payload = {
       text: `🚨 MySetlist Alert: ${type}`,
       attachments: [
         {
-          color: this.getAlertColor(type),
+          color: ProductionMonitoringService.getAlertColor(type),
           fields: Object.entries(data).map(([key, value]) => ({
             title: key,
             value: value.toString(),
@@ -492,7 +526,7 @@ export class ProductionMonitoringService extends MonitoringService {
       ],
     };
 
-    fetch(this.alertChannels.slack, {
+    fetch(ProductionMonitoringService.alertChannels.slack, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -503,14 +537,16 @@ export class ProductionMonitoringService extends MonitoringService {
    * Send PagerDuty alert
    */
   private static sendPagerDutyAlert(type: string, data: any): void {
-    if (!this.alertChannels.pagerduty) return;
+    if (!ProductionMonitoringService.alertChannels.pagerduty) {
+      return;
+    }
 
     const payload = {
-      routing_key: this.alertChannels.pagerduty,
+      routing_key: ProductionMonitoringService.alertChannels.pagerduty,
       event_action: 'trigger',
       payload: {
         summary: `MySetlist Alert: ${type}`,
-        severity: this.getAlertSeverity(type),
+        severity: ProductionMonitoringService.getAlertSeverity(type),
         source: 'MySetlist Production',
         custom_details: data,
       },
@@ -526,11 +562,10 @@ export class ProductionMonitoringService extends MonitoringService {
   /**
    * Send email alert
    */
-  private static sendEmailAlert(type: string, data: any): void {
-    if (!this.alertChannels.email) return;
-
-    // This would typically use your email service (e.g., SendGrid, Resend)
-    console.log('Email alert:', { type, data });
+  private static sendEmailAlert(_type: string, _data: any): void {
+    if (!ProductionMonitoringService.alertChannels.email) {
+      return;
+    }
   }
 
   /**
@@ -545,7 +580,7 @@ export class ProductionMonitoringService extends MonitoringService {
    * Get alert color for Slack
    */
   private static getAlertColor(type: string): string {
-    const severity = this.getAlertSeverity(type);
+    const severity = ProductionMonitoringService.getAlertSeverity(type);
     return severity === 'critical' ? 'danger' : 'warning';
   }
 
@@ -555,11 +590,11 @@ export class ProductionMonitoringService extends MonitoringService {
   private static setupHealthChecks(): void {
     // Periodic health check
     setInterval(() => {
-      this.performHealthCheck();
+      ProductionMonitoringService.performHealthCheck();
     }, 60000); // Every minute
 
     // Initial health check
-    this.performHealthCheck();
+    ProductionMonitoringService.performHealthCheck();
   }
 
   /**
@@ -571,8 +606,8 @@ export class ProductionMonitoringService extends MonitoringService {
     fetch('/api/health')
       .then((response) => {
         const duration = performance.now() - startTime;
-        
-        this.trackMetric({
+
+        ProductionMonitoringService.trackMetric({
           name: 'health.check_duration',
           value: duration,
           unit: 'ms',
@@ -580,7 +615,7 @@ export class ProductionMonitoringService extends MonitoringService {
         });
 
         if (!response.ok) {
-          this.sendAlert('HEALTH_CHECK_FAILED', {
+          ProductionMonitoringService.sendAlert('HEALTH_CHECK_FAILED', {
             status: response.status,
             duration,
           });
@@ -588,13 +623,13 @@ export class ProductionMonitoringService extends MonitoringService {
       })
       .catch((error) => {
         const duration = performance.now() - startTime;
-        
-        this.trackError(error, {
+
+        ProductionMonitoringService.trackError(error, {
           type: 'health_check_error',
           duration,
         });
 
-        this.sendAlert('HEALTH_CHECK_ERROR', {
+        ProductionMonitoringService.sendAlert('HEALTH_CHECK_ERROR', {
           error: error.message,
           duration,
         });
@@ -611,15 +646,15 @@ export class ProductionMonitoringService extends MonitoringService {
       timestamp: new Date().toISOString(),
       url: window.location.href,
       userAgent: navigator.userAgent,
-      sessionId: this.getSessionId(),
-      userId: this.getUserId(),
+      sessionId: ProductionMonitoringService.getSessionId(),
+      userId: ProductionMonitoringService.getUserId(),
     };
 
-    this.trackError(error, errorData);
+    ProductionMonitoringService.trackError(error, errorData);
 
     // Send critical errors immediately
-    if (this.isCriticalError(error)) {
-      this.sendAlert('CRITICAL_ERROR', {
+    if (ProductionMonitoringService.isCriticalError(error)) {
+      ProductionMonitoringService.sendAlert('CRITICAL_ERROR', {
         message: error.message,
         stack: error.stack,
         ...errorData,

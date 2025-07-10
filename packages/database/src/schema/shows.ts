@@ -81,7 +81,7 @@ export const showComments = pgTable('show_comments', {
     .references(() => users.id)
     .notNull(),
   content: text('content').notNull(),
-  parentId: uuid('parent_id').references(() => showComments.id),
+  parentId: uuid('parent_id').references((): any => showComments.id),
   isEdited: boolean('is_edited').default(false).notNull(),
   editedAt: timestamp('edited_at'),
   upvotes: integer('upvotes').default(0).notNull(),

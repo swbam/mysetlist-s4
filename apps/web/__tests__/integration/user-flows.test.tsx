@@ -1,18 +1,18 @@
 'use client';
 
-import { AuthProvider } from '@/app/providers/auth-provider';
-import { RealtimeProvider } from '@/app/providers/realtime-provider';
-import { FollowButton } from '@/components/auth/follow-button';
-import { MobileVoteButton } from '@/components/mobile/mobile-vote-button';
-import { EnhancedSearch } from '@/components/search/enhanced-search';
-import { AddSongModal } from '@/components/setlist/add-song-modal';
-import { SetlistManager } from '@/components/setlist/setlist-manager';
-import { RealtimeVoteButton } from '@/components/voting/realtime-vote-button';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { vi } from 'vitest';
+import { AuthProvider } from '~/app/providers/auth-provider';
+import { RealtimeProvider } from '~/app/providers/realtime-provider';
+import { FollowButton } from '~/components/auth/follow-button';
+import { MobileVoteButton } from '~/components/mobile/mobile-vote-button';
+import { EnhancedSearch } from '~/components/search/enhanced-search';
+import { AddSongModal } from '~/components/setlist/add-song-modal';
+import { SetlistManager } from '~/components/setlist/setlist-manager';
+import { RealtimeVoteButton } from '~/components/voting/realtime-vote-button';
 
 // Mock providers and hooks
 vi.mock('next/navigation', () => ({

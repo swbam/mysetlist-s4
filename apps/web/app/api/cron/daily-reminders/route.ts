@@ -1,5 +1,5 @@
-import { sendDailyShowReminders } from '@/actions/email-notifications';
 import { type NextRequest, NextResponse } from 'next/server';
+import { sendDailyShowReminders } from '~/actions/email-notifications';
 
 // Protect the cron endpoint
 function isValidCronRequest(request: NextRequest): boolean {
@@ -7,7 +7,6 @@ function isValidCronRequest(request: NextRequest): boolean {
   const cronSecret = process.env['CRON_SECRET'];
 
   if (!cronSecret) {
-    console.warn('CRON_SECRET not set');
     return false;
   }
 
@@ -22,13 +21,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log('Starting daily show reminders cron job...');
-
     const result = await sendDailyShowReminders();
-
-    console.log(
-      `Daily reminders sent: ${result.usersNotified} users, ${result.showsNotified} shows`
-    );
 
     return NextResponse.json({
       success: true,
@@ -36,7 +29,6 @@ export async function GET(request: NextRequest) {
       showsNotified: result.showsNotified,
     });
   } catch (error) {
-    console.error('Daily reminders cron job failed:', error);
     return NextResponse.json(
       { error: 'Daily reminders failed', details: (error as Error).message },
       { status: 500 }

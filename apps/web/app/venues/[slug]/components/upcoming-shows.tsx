@@ -114,7 +114,9 @@ export function UpcomingShows({ shows, venueId }: UpcomingShowsProps) {
     const grouped: Record<string, Show[]> = {};
     filteredShows.forEach((show) => {
       const dateKey = format(new Date(show.date), 'yyyy-MM-dd');
-      if (!grouped[dateKey]) grouped[dateKey] = [];
+      if (!grouped[dateKey]) {
+        grouped[dateKey] = [];
+      }
       grouped[dateKey].push(show);
     });
     return grouped;

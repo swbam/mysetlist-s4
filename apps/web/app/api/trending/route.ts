@@ -1,11 +1,11 @@
+import { type NextRequest, NextResponse } from 'next/server';
 import {
   type TrendingConfig,
   getDailyTrending,
   getMonthlyTrending,
   getTrendingContent,
   getWeeklyTrending,
-} from '@/lib/trending';
-import { type NextRequest, NextResponse } from 'next/server';
+} from '~/lib/trending';
 
 // Force dynamic rendering for API route
 export const dynamic = 'force-dynamic';
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     if (customConfig) {
       try {
         config = JSON.parse(customConfig);
-      } catch (e) {
+      } catch (_e) {
         return NextResponse.json(
           { error: 'Invalid config parameter' },
           { status: 400 }
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       case 'month':
         data = await getMonthlyTrending(limit);
         break;
-      case 'custom':
+      case 'custom': {
         if (!config) {
           return NextResponse.json(
             { error: 'Custom period requires config parameter' },
@@ -57,6 +57,7 @@ export async function GET(request: NextRequest) {
         }
         data = await getTrendingContent(config);
         break;
+      }
       default:
         return NextResponse.json(
           { error: 'Invalid period. Use: day, week, month, or custom' },
@@ -89,8 +90,7 @@ export async function GET(request: NextRequest) {
     );
 
     return jsonResponse;
-  } catch (error) {
-    console.error('Error fetching trending content:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch trending content' },
       { status: 500 }

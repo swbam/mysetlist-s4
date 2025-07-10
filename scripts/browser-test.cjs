@@ -1,11 +1,11 @@
-#!/usr/bin/env node'use strict';'use strict';'use strict';'use strict';
+#!/usr/bin/env node'use strict';'use strict';'use strict';'use strict';'use strict';'use strict';
 
 /**
  * Browser test script to verify MySetlist app functionality
  * Uses a simple approach to test user interactions
  */
 
-const http = require('http');
+const http = require('node:http');
 
 const BASE_URL = 'http://localhost:3001';
 
@@ -82,55 +82,18 @@ async function testUrl(url) {
 
 // Main test runner
 async function runTests() {
-  console.log('🧪 MySetlist Browser Test Guide\n');
-  console.log('Since we cannot automate browser interactions directly,');
-  console.log('please follow these manual test steps:\n');
-
-  // First verify all URLs are accessible
-  console.log('📡 Verifying all pages are accessible...\n');
-
   for (const test of tests) {
     try {
       const result = await testUrl(test.url);
       if (result.status === 200) {
-        console.log(`✅ ${test.name} (${test.url}) - Page loads successfully`);
       } else {
-        console.log(`❌ ${test.name} (${test.url}) - Error: ${result.status}`);
       }
-    } catch (error) {
-      console.log(`❌ ${test.name} (${test.url}) - Connection error`);
-    }
+    } catch (_error) {}
   }
 
-  console.log('\n📋 Manual Test Steps:\n');
-
-  tests.forEach((test, index) => {
-    console.log(`${index + 1}. ${test.name}`);
-    console.log(`   URL: ${BASE_URL}${test.url}`);
-    console.log(`   Description: ${test.description}`);
-    console.log('   Steps:');
-    test.actions.forEach((action, i) => {
-      console.log(`     ${i + 1}) ${action}`);
-    });
-    console.log('');
+  tests.forEach((test, _index) => {
+    test.actions.forEach((_action, _i) => {});
   });
-
-  console.log('🔍 Key Features to Verify:\n');
-  console.log('1. Search functionality works from homepage');
-  console.log('2. Artist pages show artist info and upcoming shows');
-  console.log('3. Show pages display venue and date information');
-  console.log(
-    '4. Voting system allows users to vote on songs (if implemented)'
-  );
-  console.log('5. Trending page shows popular artists and shows');
-  console.log('6. Navigation links in header work correctly');
-  console.log('7. Pages are responsive and look good on mobile');
-
-  console.log('\n🐛 Known Issues to Check:\n');
-  console.log('- Sync system triggers when artist is clicked in search');
-  console.log('- Show sync populates shows from Ticketmaster API');
-  console.log('- Voting system functionality');
-  console.log('- Any console errors in browser DevTools');
 }
 
 // Run the tests

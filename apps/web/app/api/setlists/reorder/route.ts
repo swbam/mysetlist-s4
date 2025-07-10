@@ -35,7 +35,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Setlist not found' }, { status: 404 });
     }
 
-    if (setlist[0].createdBy !== user.id && setlist[0].isLocked) {
+    if (setlist[0]!.createdBy !== user.id && setlist[0]!.isLocked) {
       return NextResponse.json(
         { error: 'Cannot modify this setlist' },
         { status: 403 }
@@ -51,8 +51,7 @@ export async function PUT(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Reorder setlist error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to reorder setlist' },
       { status: 500 }

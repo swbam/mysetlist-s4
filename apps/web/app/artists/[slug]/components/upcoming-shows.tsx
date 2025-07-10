@@ -1,6 +1,5 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
@@ -14,7 +13,7 @@ import { Skeleton } from '@repo/design-system/components/ui/skeleton';
 import { format } from 'date-fns';
 import { Calendar, MapPin, RefreshCw, Ticket } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 
 interface Show {
   show: {
@@ -59,21 +58,21 @@ function ShowSkeleton() {
   );
 }
 
-export function UpcomingShows({
+export const UpcomingShows = React.memo(function UpcomingShows({
   shows: initialShows,
   artistName,
   artistId,
 }: UpcomingShowsProps) {
-  const [shows, setShows] = useState(initialShows);
+  const [shows, _setShows] = useState(initialShows);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const refreshShows = async () => {
-    if (!artistId) return;
+  const refreshShows = useCallback(async () => {
+    if (!artistId) {
+      return;
+    }
 
     setIsRefreshing(true);
     try {
-      const supabase = createClient();
-
       // Trigger sync
       const response = await fetch('/api/artists/sync-shows', {
         method: 'POST',
@@ -88,12 +87,11 @@ export function UpcomingShows({
         // Refresh the page to get new data
         window.location.reload();
       }
-    } catch (error) {
-      console.error('Failed to refresh shows:', error);
+    } catch (_error) {
     } finally {
       setIsRefreshing(false);
     }
-  };
+  }, [artistId]);
 
   if (shows.length === 0) {
     return (
@@ -108,7 +106,8 @@ export function UpcomingShows({
           <div className="py-8 text-center">
             <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
             <p className="mb-4 text-muted-foreground">
-              Check back later for new tour dates or sync shows from Ticketmaster
+              Check back later for new tour dates or sync shows from
+              Ticketmaster
             </p>
             {artistId && (
               <Button
@@ -222,4 +221,4 @@ export function UpcomingShows({
         ))}
     </div>
   );
-}
+});

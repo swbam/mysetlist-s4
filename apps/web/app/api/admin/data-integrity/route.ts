@@ -11,7 +11,7 @@ import {
 import { count, eq, isNull, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await getUser();
 
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
       .from(artists)
       .where(isNull(artists.spotifyId));
 
-    if (artistsWithoutSpotify[0].count > 0) {
+    if (artistsWithoutSpotify[0]?.count && artistsWithoutSpotify[0].count > 0) {
       addCheck(
         'Artists without Spotify ID',
         'warning',
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
       .from(shows)
       .where(isNull(shows.venueId));
 
-    if (showsWithoutVenues[0].count > 0) {
+    if (showsWithoutVenues[0]?.count && showsWithoutVenues[0].count > 0) {
       addCheck(
         'Shows without venues',
         'warning',
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
       .leftJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
       .where(isNull(setlists.id));
 
-    if (orphanedSetlistSongs[0].count > 0) {
+    if (orphanedSetlistSongs[0]?.count && orphanedSetlistSongs[0].count > 0) {
       addCheck(
         'Orphaned setlist songs',
         'fail',
@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
       .leftJoin(setlistSongs, eq(votes.setlistSongId, setlistSongs.id))
       .where(isNull(setlistSongs.id));
 
-    if (orphanedVotes[0].count > 0) {
+    if (orphanedVotes[0]?.count && orphanedVotes[0].count > 0) {
       addCheck(
         'Orphaned votes',
         'fail',
@@ -224,7 +224,7 @@ export async function GET(request: NextRequest) {
       .from(artists)
       .where(isNull(artists.slug));
 
-    if (artistsWithoutSlugs[0].count > 0) {
+    if (artistsWithoutSlugs[0]?.count && artistsWithoutSlugs[0].count > 0) {
       addCheck(
         'Missing artist slugs',
         'fail',
@@ -246,7 +246,7 @@ export async function GET(request: NextRequest) {
         `
       );
 
-    if (staleArtists[0].count > 0) {
+    if (staleArtists[0]?.count && staleArtists[0].count > 0) {
       addCheck(
         'Stale artist data',
         'warning',
@@ -258,8 +258,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(report);
-  } catch (error) {
-    console.error('Data integrity check error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to perform data integrity check' },
       { status: 500 }
@@ -278,9 +277,9 @@ export async function POST(request: NextRequest) {
     const { action } = await request.json();
 
     switch (action) {
-      case 'fix_vote_counts':
+      case 'fix_vote_counts': {
         // Fix vote count inconsistencies
-        const fixResults = await db.execute(sql`
+        await db.execute(sql`
           UPDATE setlist_songs 
           SET 
             upvotes = (
@@ -309,10 +308,11 @@ export async function POST(request: NextRequest) {
           message: 'Vote counts have been recalculated',
           affectedRows: 'unknown', // Drizzle doesn't provide row count for execute
         });
+      }
 
-      case 'cleanup_orphaned_votes':
+      case 'cleanup_orphaned_votes': {
         // Remove orphaned votes
-        const orphanedResult = await db.execute(sql`
+        await db.execute(sql`
           DELETE FROM votes 
           WHERE setlist_song_id NOT IN (
             SELECT id FROM setlist_songs
@@ -324,12 +324,12 @@ export async function POST(request: NextRequest) {
           message: 'Orphaned votes have been removed',
           deletedRows: 'unknown', // Drizzle doesn't provide row count for execute
         });
+      }
 
       default:
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }
-  } catch (error) {
-    console.error('Data repair error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to perform data repair' },
       { status: 500 }

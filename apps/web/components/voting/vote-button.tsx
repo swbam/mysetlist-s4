@@ -3,7 +3,7 @@
 import { Button } from '@repo/design-system/components/ui/button';
 import { cn } from '@repo/design-system/lib/utils';
 import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
-import { useState, useTransition } from 'react';
+import { memo, useState, useTransition, useCallback } from 'react';
 import { toast } from 'sonner';
 
 interface VoteButtonProps {
@@ -17,7 +17,7 @@ interface VoteButtonProps {
   variant?: 'default' | 'compact';
 }
 
-export function VoteButton({
+const VoteButtonComponent = function VoteButton({
   setlistSongId,
   currentVote,
   upvotes,
@@ -31,8 +31,10 @@ export function VoteButton({
   const [isPending, startTransition] = useTransition();
   const netVotes = upvotes - downvotes;
 
-  const handleVote = async (voteType: 'up' | 'down') => {
-    if (isVoting || disabled || isPending) return;
+  const handleVote = useCallback(async (voteType: 'up' | 'down') => {
+    if (isVoting || disabled || isPending) {
+      return;
+    }
 
     setIsVoting(true);
 
@@ -62,7 +64,6 @@ export function VoteButton({
           }
         }
       } catch (error) {
-        console.error('Vote failed:', error);
         const errorMessage =
           error instanceof Error ? error.message : 'Failed to vote';
         if (errorMessage.includes('Unauthorized')) {
@@ -74,7 +75,7 @@ export function VoteButton({
         setIsVoting(false);
       }
     });
-  };
+  }, [isVoting, disabled, isPending, currentVote, onVote, setlistSongId]);
 
   const buttonSize =
     size === 'sm' ? 'h-6 w-6' : size === 'lg' ? 'h-10 w-10' : 'h-8 w-8';
@@ -186,4 +187,19 @@ export function VoteButton({
       </Button>
     </div>
   );
-}
+};
+
+// Memoized export with custom comparison for better performance
+export const VoteButton = memo(VoteButtonComponent, (prevProps, nextProps) => {
+  // Custom comparison to prevent unnecessary re-renders
+  return (
+    prevProps.setlistSongId === nextProps.setlistSongId &&
+    prevProps.currentVote === nextProps.currentVote &&
+    prevProps.upvotes === nextProps.upvotes &&
+    prevProps.downvotes === nextProps.downvotes &&
+    prevProps.disabled === nextProps.disabled &&
+    prevProps.size === nextProps.size &&
+    prevProps.variant === nextProps.variant &&
+    prevProps.onVote === nextProps.onVote
+  );
+});

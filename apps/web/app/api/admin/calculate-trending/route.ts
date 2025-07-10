@@ -34,100 +34,89 @@ function calculateTimeDecay(date: Date): number {
 }
 
 async function calculateArtistScores() {
-  try {
-    // Get all artists with their stats
-    const artistsData = await db
-      .select({
-        id: artists.id,
-        followers: artists.followers,
-        popularity: artists.popularity,
-        followerCount: artists.followerCount,
-        createdAt: artists.createdAt,
-      })
-      .from(artists);
+  // Get all artists with their stats
+  const artistsData = await db
+    .select({
+      id: artists.id,
+      followers: artists.followers,
+      popularity: artists.popularity,
+      followerCount: artists.followerCount,
+      createdAt: artists.createdAt,
+    })
+    .from(artists);
 
-    // Calculate scores for each artist
-    for (const artist of artistsData) {
-      // Get recent shows count
-      const recentShowsResult = await db
-        .select({
-          count: sql<number>`count(*)::int`,
-        })
-        .from(shows)
-        .where(sql`${shows.headlinerArtistId} = ${artist.id} 
+  // Calculate scores for each artist
+  for (const artist of artistsData) {
+    // Get recent shows count
+    const recentShowsResult = await db
+      .select({
+        count: sql<number>`count(*)::int`,
+      })
+      .from(shows)
+      .where(sql`${shows.headlinerArtistId} = ${artist.id} 
         AND ${shows.date} >= CURRENT_DATE - INTERVAL '30 days'`);
 
-      const recentShowCount = recentShowsResult[0]?.count || 0;
+    const recentShowCount = recentShowsResult[0]?.count || 0;
 
-      // Calculate follower growth (mock for now, would need historical data)
-      const followerGrowth = Math.random() * 100;
+    // Calculate follower growth (mock for now, would need historical data)
+    const followerGrowth = Math.random() * 100;
 
-      // Calculate trending score
-      const score =
-        ((artist.followers || 0) / 10000) * WEIGHTS.artist.followers +
-        (artist.popularity || 0) * WEIGHTS.artist.popularity +
-        recentShowCount * 10 * WEIGHTS.artist.recentShows +
-        followerGrowth * WEIGHTS.artist.followerGrowth;
+    // Calculate trending score
+    const score =
+      ((artist.followers || 0) / 10000) * WEIGHTS.artist.followers +
+      (artist.popularity || 0) * WEIGHTS.artist.popularity +
+      recentShowCount * 10 * WEIGHTS.artist.recentShows +
+      followerGrowth * WEIGHTS.artist.followerGrowth;
 
-      // Update artist with new trending score
-      await db
-        .update(artists)
-        .set({ trendingScore: score })
-        .where(sql`${artists.id} = ${artist.id}`);
-    }
-
-    return { updated: artistsData.length };
-  } catch (error) {
-    console.error('Error calculating artist scores:', error);
-    throw error;
+    // Update artist with new trending score
+    await db
+      .update(artists)
+      .set({ trendingScore: score })
+      .where(sql`${artists.id} = ${artist.id}`);
   }
+
+  return { updated: artistsData.length };
 }
 
 async function calculateShowScores() {
-  try {
-    // Get all shows
-    const showsData = await db
-      .select({
-        id: shows.id,
-        viewCount: shows.viewCount,
-        attendeeCount: shows.attendeeCount,
-        voteCount: shows.voteCount,
-        setlistCount: shows.setlistCount,
-        date: shows.date,
-        createdAt: shows.createdAt,
-      })
-      .from(shows);
+  // Get all shows
+  const showsData = await db
+    .select({
+      id: shows.id,
+      viewCount: shows.viewCount,
+      attendeeCount: shows.attendeeCount,
+      voteCount: shows.voteCount,
+      setlistCount: shows.setlistCount,
+      date: shows.date,
+      createdAt: shows.createdAt,
+    })
+    .from(shows);
 
-    // Calculate scores for each show
-    for (const show of showsData) {
-      const recencyFactor = calculateTimeDecay(new Date(show.createdAt));
+  // Calculate scores for each show
+  for (const show of showsData) {
+    const recencyFactor = calculateTimeDecay(new Date(show.createdAt));
 
-      // Calculate trending score
-      const score =
-        (show.viewCount || 0) * WEIGHTS.show.viewCount +
-        (show.attendeeCount || 0) * WEIGHTS.show.attendeeCount +
-        (show.voteCount || 0) * WEIGHTS.show.voteCount +
-        (show.setlistCount || 0) * 5 * WEIGHTS.show.setlistCount +
-        recencyFactor * 100 * WEIGHTS.show.recency;
+    // Calculate trending score
+    const score =
+      (show.viewCount || 0) * WEIGHTS.show.viewCount +
+      (show.attendeeCount || 0) * WEIGHTS.show.attendeeCount +
+      (show.voteCount || 0) * WEIGHTS.show.voteCount +
+      (show.setlistCount || 0) * 5 * WEIGHTS.show.setlistCount +
+      recencyFactor * 100 * WEIGHTS.show.recency;
 
-      // Update show with new trending score
-      await db
-        .update(shows)
-        .set({ trendingScore: score })
-        .where(sql`${shows.id} = ${show.id}`);
-    }
-
-    return { updated: showsData.length };
-  } catch (error) {
-    console.error('Error calculating show scores:', error);
-    throw error;
+    // Update show with new trending score
+    await db
+      .update(shows)
+      .set({ trendingScore: score })
+      .where(sql`${shows.id} = ${show.id}`);
   }
+
+  return { updated: showsData.length };
 }
 
 async function calculateVenueScores() {
-  try {
-    // Get venue stats using raw SQL for complex aggregation
-    const venueStats = await db.execute(sql`
+  // Get venue stats using raw SQL for complex aggregation
+  const venueStats = await db.execute(sql`
       SELECT 
         v.id,
         COUNT(DISTINCT s.id) as show_count,
@@ -139,28 +128,18 @@ async function calculateVenueScores() {
       GROUP BY v.id
     `);
 
-    // Update each venue with calculated score
-    for (const venue of venueStats) {
-      const showCount = Number(venue.show_count) || 0;
-      const totalAttendance = Number(venue.total_attendance) || 0;
-      const avgRating = Number(venue.avg_rating) || 0;
+  // TODO: Update each venue with calculated score
+  // for (const venue of venueStats) {
+  //   const showCount = Number(venue['show_count']) || 0;
+  //   const totalAttendance = Number(venue['total_attendance']) || 0;
+  //   const avgRating = Number(venue['avg_rating']) || 0;
+  //   
+  //   const score = showCount * 5 * WEIGHTS.venue.showCount +
+  //     (totalAttendance / 100) * WEIGHTS.venue.totalAttendance +
+  //     avgRating * 20 * WEIGHTS.venue.averageRating;
+  // }
 
-      // Calculate trending score
-      const score =
-        showCount * 5 * WEIGHTS.venue.showCount +
-        (totalAttendance / 100) * WEIGHTS.venue.totalAttendance +
-        avgRating * 20 * WEIGHTS.venue.averageRating;
-
-      // Update venue with score (Note: venues table doesn't have trendingScore field yet)
-      // For now, we'll just log it
-      console.log(`Venue ${venue.id} score: ${score}`);
-    }
-
-    return { updated: venueStats.length };
-  } catch (error) {
-    console.error('Error calculating venue scores:', error);
-    throw error;
-  }
+  return { updated: venueStats.length };
 }
 
 export async function POST(request: NextRequest) {
@@ -202,7 +181,6 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Error calculating trending scores:', error);
     return NextResponse.json(
       {
         error: 'Failed to calculate trending scores',

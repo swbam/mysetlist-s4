@@ -9,11 +9,7 @@ async function check() {
     .select()
     .from(artists)
     .where(eq(artists.slug, 'dispatch'));
-  console.log('Dispatch in DB:', dispatch.length > 0 ? 'Yes' : 'No');
   if (dispatch.length > 0) {
-    console.log('Artist ID:', dispatch[0].id);
-    console.log('Name:', dispatch[0].name);
-    console.log('Spotify ID:', dispatch[0].spotifyId);
   }
 }
 

@@ -1,13 +1,22 @@
 import { db } from '@repo/database';
-import { artists, shows, venues, setlists, songs, showArtists, setlistSongs } from '@repo/database';
-import { sql, eq, and, gte, desc, asc, inArray } from 'drizzle-orm';
-import { CacheClient, cacheKeys, withCache } from '@/lib/cache/redis';
+import {
+  artists,
+  setlistSongs,
+  setlists,
+  shows,
+  songs,
+  venues,
+} from '@repo/database';
+import { asc, eq, inArray, sql } from 'drizzle-orm';
+import { cacheKeys, withCache } from '~/lib/cache/redis';
 
 // Optimized query helpers with caching
 export const optimizedQueries = {
   // Batch fetch with single query
   async getShowsWithDetails(showIds: string[]) {
-    if (showIds.length === 0) return [];
+    if (showIds.length === 0) {
+      return [];
+    }
 
     const result = await db
       .select({
@@ -23,7 +32,7 @@ export const optimizedQueries = {
 
     // Group by show ID for easy access
     const showMap = new Map();
-    result.forEach(row => {
+    result.forEach((row) => {
       if (!showMap.has(row.show.id)) {
         showMap.set(row.show.id, {
           ...row.show,
@@ -92,7 +101,9 @@ export const optimizedQueries = {
 
   // Batch setlist fetch with songs
   async getSetlistsWithSongs(setlistIds: string[]) {
-    if (setlistIds.length === 0) return [];
+    if (setlistIds.length === 0) {
+      return [];
+    }
 
     // Fetch setlists and their songs in parallel
     const [setlistData, songData] = await Promise.all([
@@ -117,25 +128,30 @@ export const optimizedQueries = {
 
     // Group songs by setlist
     const songsBySetlist = new Map<string, any[]>();
-    songData.forEach(row => {
+    songData.forEach((row) => {
       if (!songsBySetlist.has(row.setlistId)) {
         songsBySetlist.set(row.setlistId, []);
       }
-      songsBySetlist.get(row.setlistId)!.push({
+      songsBySetlist.get(row.setlistId)?.push({
         order: row.songOrder,
         ...row.song,
       });
     });
 
     // Combine data
-    return setlistData.map(setlist => ({
+    return setlistData.map((setlist) => ({
       ...setlist,
       songs: songsBySetlist.get(setlist.id) || [],
     }));
   },
 
   // Venue search with geo-location
-  async searchVenuesNearby(lat: number, lng: number, radiusMiles = 50, limit = 20) {
+  async searchVenuesNearby(
+    lat: number,
+    lng: number,
+    radiusMiles = 50,
+    limit = 20
+  ) {
     const radiusKm = radiusMiles * 1.60934;
 
     const query = sql`
@@ -196,13 +212,13 @@ export const optimizedQueries = {
 export const cachedQueries = {
   getTrendingShows: withCache(
     optimizedQueries.getTrendingShowsOptimized,
-    (limit, hoursAgo) => cacheKeys.trending('custom', 'shows', limit),
+    (limit, _hoursAgo) => cacheKeys.trending('custom', 'shows', limit),
     300 // 5 minutes
   ),
 
   searchArtists: withCache(
     optimizedQueries.searchArtistsOptimized,
-    (searchTerm, limit) => cacheKeys.searchResults(searchTerm, 'artists'),
+    (searchTerm, _limit) => cacheKeys.searchResults(searchTerm, 'artists'),
     600 // 10 minutes
   ),
 
@@ -215,29 +231,30 @@ export const cachedQueries = {
 
 // Query performance monitoring
 export async function withQueryMetrics<T>(
-  queryName: string,
+  _queryName: string,
   queryFn: () => Promise<T>
 ): Promise<T> {
   const start = Date.now();
-  
+
   try {
     const result = await queryFn();
     const duration = Date.now() - start;
-    
+
     // Log slow queries
     if (duration > 100) {
-      console.warn(`Slow query detected: ${queryName} took ${duration}ms`);
     }
-    
+
     // Track metrics (could send to analytics)
-    if (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') {
+    if (
+      typeof process !== 'undefined' &&
+      process.env.NODE_ENV === 'production'
+    ) {
       // Track query performance metrics
     }
-    
+
     return result;
   } catch (error) {
-    const duration = Date.now() - start;
-    console.error(`Query failed: ${queryName} after ${duration}ms`, error);
+    const _duration = Date.now() - start;
     throw error;
   }
 }

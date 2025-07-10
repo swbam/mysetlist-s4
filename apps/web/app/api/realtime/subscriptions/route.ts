@@ -2,7 +2,7 @@ import { realtimeManager } from '@repo/database';
 import { type NextRequest, NextResponse } from 'next/server';
 
 // GET /api/realtime/subscriptions - Get active subscriptions
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const activeChannels = realtimeManager.getActiveChannels();
     const connectionStatus = realtimeManager.getConnectionStatus();
@@ -12,8 +12,7 @@ export async function GET(request: NextRequest) {
       activeChannels,
       channelCount: activeChannels.length,
     });
-  } catch (error) {
-    console.error('Error getting realtime subscriptions:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to get subscription status' },
       { status: 500 }
@@ -30,7 +29,7 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'subscribe':
         switch (type) {
-          case 'setlist':
+          case 'setlist': {
             if (!id) {
               return NextResponse.json(
                 { error: 'Show ID required for setlist subscription' },
@@ -46,8 +45,9 @@ export async function POST(request: NextRequest) {
               type: 'setlist',
               id,
             });
+          }
 
-          case 'votes':
+          case 'votes': {
             if (!id) {
               return NextResponse.json(
                 { error: 'Setlist song ID required for vote subscription' },
@@ -61,8 +61,9 @@ export async function POST(request: NextRequest) {
               type: 'votes',
               id,
             });
+          }
 
-          case 'show':
+          case 'show': {
             if (!id) {
               return NextResponse.json(
                 { error: 'Show ID required for show subscription' },
@@ -76,8 +77,9 @@ export async function POST(request: NextRequest) {
               type: 'show',
               id,
             });
+          }
 
-          case 'attendance':
+          case 'attendance': {
             if (!id) {
               return NextResponse.json(
                 { error: 'Show ID required for attendance subscription' },
@@ -91,8 +93,9 @@ export async function POST(request: NextRequest) {
               type: 'attendance',
               id,
             });
+          }
 
-          case 'artist_followers':
+          case 'artist_followers': {
             if (!id) {
               return NextResponse.json(
                 { error: 'Artist ID required for follower subscription' },
@@ -106,6 +109,7 @@ export async function POST(request: NextRequest) {
               type: 'artist_followers',
               id,
             });
+          }
 
           case 'trending':
             return NextResponse.json({
@@ -128,7 +132,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-      case 'unsubscribe':
+      case 'unsubscribe': {
         if (!type || !id) {
           return NextResponse.json(
             { error: 'Type and ID required for unsubscription' },
@@ -143,21 +147,24 @@ export async function POST(request: NextRequest) {
           message: `Unsubscribed from ${channelName}`,
           channelName,
         });
+      }
 
-      case 'unsubscribe_all':
+      case 'unsubscribe_all': {
         realtimeManager.unsubscribeAll();
 
         return NextResponse.json({
           message: 'Unsubscribed from all channels',
         });
+      }
 
-      case 'reconnect':
+      case 'reconnect': {
         realtimeManager.reconnect();
 
         return NextResponse.json({
           message: 'Reconnecting to realtime service',
           connectionStatus: realtimeManager.getConnectionStatus(),
         });
+      }
 
       default:
         return NextResponse.json(
@@ -168,8 +175,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Error managing realtime subscriptions:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to manage subscription' },
       { status: 500 }
@@ -188,14 +194,12 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({
         message: `Unsubscribed from ${channelName}`,
       });
-    } else {
-      realtimeManager.unsubscribeAll();
-      return NextResponse.json({
-        message: 'Unsubscribed from all channels',
-      });
     }
-  } catch (error) {
-    console.error('Error deleting realtime subscriptions:', error);
+    realtimeManager.unsubscribeAll();
+    return NextResponse.json({
+      message: 'Unsubscribed from all channels',
+    });
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to unsubscribe' },
       { status: 500 }

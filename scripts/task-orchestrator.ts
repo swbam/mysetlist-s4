@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 interface Task {
   id: string;
@@ -221,7 +221,6 @@ class TaskOrchestrator {
 
     this.tasks.tasks = initialTasks;
     this.saveTasks();
-    console.log('✅ Initialized tasks from PRD');
   }
 
   public listTasks(status?: string) {
@@ -229,28 +228,22 @@ class TaskOrchestrator {
       ? this.tasks.tasks.filter((t) => t.status === status)
       : this.tasks.tasks;
 
-    console.log(`\n📋 Tasks (${filteredTasks.length} total):\n`);
-
     filteredTasks.forEach((task) => {
-      const statusEmoji = {
+      const _statusEmoji = {
         pending: '⏳',
         'in-progress': '🔄',
         done: '✅',
         blocked: '🚫',
       }[task.status];
 
-      const priorityEmoji = {
+      const _priorityEmoji = {
         high: '🔴',
         medium: '🟡',
         low: '🟢',
       }[task.priority];
-
-      console.log(`${statusEmoji} [${task.id}] ${task.title} ${priorityEmoji}`);
       if (task.dependencies.length > 0) {
-        console.log(`   Dependencies: ${task.dependencies.join(', ')}`);
       }
       if (task.tags) {
-        console.log(`   Tags: ${task.tags.join(', ')}`);
       }
     });
   }
@@ -262,7 +255,9 @@ class TaskOrchestrator {
       .map((t) => t.id);
 
     const availableTasks = this.tasks.tasks.filter((task) => {
-      if (task.status !== 'pending') return false;
+      if (task.status !== 'pending') {
+        return false;
+      }
 
       // Check if all dependencies are completed
       return task.dependencies.every((dep) => completedTaskIds.includes(dep));
@@ -280,69 +275,46 @@ class TaskOrchestrator {
   public updateTaskStatus(taskId: string, status: Task['status']) {
     const task = this.tasks.tasks.find((t) => t.id === taskId);
     if (!task) {
-      console.error(`❌ Task ${taskId} not found`);
       return;
     }
 
     task.status = status;
     this.saveTasks();
-    console.log(`✅ Updated task ${taskId} to ${status}`);
   }
 
   public showTaskDetails(taskId: string) {
     const task = this.tasks.tasks.find((t) => t.id === taskId);
     if (!task) {
-      console.error(`❌ Task ${taskId} not found`);
       return;
     }
 
-    console.log(`\n📄 Task Details:`);
-    console.log(`ID: ${task.id}`);
-    console.log(`Title: ${task.title}`);
-    console.log(`Status: ${task.status}`);
-    console.log(`Priority: ${task.priority}`);
-    console.log(`\nDescription:\n${task.description}`);
-    console.log(`\nDetails:${task.details}`);
-
     if (task.dependencies.length > 0) {
-      console.log(`\nDependencies: ${task.dependencies.join(', ')}`);
     }
 
     if (task.tags) {
-      console.log(`Tags: ${task.tags.join(', ')}`);
     }
   }
 
   public showProgress() {
     const total = this.tasks.tasks.length;
     const done = this.tasks.tasks.filter((t) => t.status === 'done').length;
-    const inProgress = this.tasks.tasks.filter(
+    const _inProgress = this.tasks.tasks.filter(
       (t) => t.status === 'in-progress'
     ).length;
-    const blocked = this.tasks.tasks.filter(
+    const _blocked = this.tasks.tasks.filter(
       (t) => t.status === 'blocked'
     ).length;
-    const pending = this.tasks.tasks.filter(
+    const _pending = this.tasks.tasks.filter(
       (t) => t.status === 'pending'
     ).length;
 
-    const percentage = Math.round((done / total) * 100);
-
-    console.log(`\n📊 Progress Report:`);
-    console.log(`Total Tasks: ${total}`);
-    console.log(`✅ Done: ${done}`);
-    console.log(`🔄 In Progress: ${inProgress}`);
-    console.log(`⏳ Pending: ${pending}`);
-    console.log(`🚫 Blocked: ${blocked}`);
-    console.log(
-      `\nProgress: [${'█'.repeat(percentage / 5)}${' '.repeat(20 - percentage / 5)}] ${percentage}%`
-    );
+    const _percentage = Math.round((done / total) * 100);
   }
 
   public exportForTaskMaster() {
     // Export in a format compatible with Task Master
     const taskmasterTasks = {
-      tasks: this.tasks.tasks.map((task, index) => ({
+      tasks: this.tasks.tasks.map((task, _index) => ({
         id: Number.parseInt(task.id),
         title: task.title,
         description: task.description,
@@ -357,7 +329,6 @@ class TaskOrchestrator {
 
     const exportPath = join(this.tasksDir, 'tasks.json');
     writeFileSync(exportPath, JSON.stringify(taskmasterTasks, null, 2));
-    console.log(`✅ Exported tasks to ${exportPath}`);
   }
 }
 
@@ -375,34 +346,29 @@ switch (command) {
     orchestrator.listTasks(arg);
     break;
 
-  case 'next':
+  case 'next': {
     const nextTask = orchestrator.getNextTask();
     if (nextTask) {
-      console.log(`\n🎯 Next recommended task:`);
       orchestrator.showTaskDetails(nextTask.id);
     } else {
-      console.log(
-        `\n✨ No available tasks. Check for blocked or completed tasks.`
-      );
     }
     break;
+  }
 
-  case 'update':
+  case 'update': {
     const taskId = arg;
     const newStatus = process.argv[4] as Task['status'];
     if (!taskId || !newStatus) {
-      console.error('Usage: task-orchestrator update <taskId> <status>');
-      console.error('Status options: pending, in-progress, done, blocked');
     } else {
       orchestrator.updateTaskStatus(taskId, newStatus);
     }
     break;
+  }
 
   case 'show':
     if (arg) {
       orchestrator.showTaskDetails(arg);
     } else {
-      console.error('Usage: task-orchestrator show <taskId>');
     }
     break;
 
@@ -413,31 +379,5 @@ switch (command) {
   case 'export':
     orchestrator.exportForTaskMaster();
     break;
-
-  case 'help':
   default:
-    console.log(`
-Task Orchestrator - Manage MySetlist Development Tasks
-
-Usage:
-  npx tsx scripts/task-orchestrator.ts <command> [options]
-
-Commands:
-  init              Initialize tasks from the PRD
-  list [status]     List all tasks (optionally filter by status)
-  next              Show the next recommended task to work on
-  update <id> <status>  Update task status (pending|in-progress|done|blocked)
-  show <id>         Show detailed information about a task
-  progress          Show overall progress report
-  export            Export tasks in Task Master format
-  help              Show this help message
-
-Examples:
-  npx tsx scripts/task-orchestrator.ts init
-  npx tsx scripts/task-orchestrator.ts list pending
-  npx tsx scripts/task-orchestrator.ts next
-  npx tsx scripts/task-orchestrator.ts update 1 in-progress
-  npx tsx scripts/task-orchestrator.ts show 1
-  npx tsx scripts/task-orchestrator.ts progress
-    `);
 }

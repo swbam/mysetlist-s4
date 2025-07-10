@@ -87,7 +87,9 @@ export function SetlistEditor({
   const [isPending, startTransition] = useTransition();
 
   const handleDragEnd = (result: any) => {
-    if (!result.destination || !canEdit) return;
+    if (!result.destination || !canEdit) {
+      return;
+    }
 
     const items = Array.from(songs);
     const [reorderedItem] = items.splice(result.source.index, 1);
@@ -128,8 +130,7 @@ export function SetlistEditor({
       }
 
       onUpdate?.();
-    } catch (error) {
-      console.error('Reorder error:', error);
+    } catch (_error) {
       toast.error('Failed to reorder songs');
       // Revert changes
       setSongs(setlist.songs);
@@ -153,8 +154,7 @@ export function SetlistEditor({
         setSongs(songs.filter((song) => song.id !== songId));
         toast.success('Song removed from setlist');
         onUpdate?.();
-      } catch (error) {
-        console.error('Remove song error:', error);
+      } catch (_error) {
         toast.error('Failed to remove song');
       }
     });
@@ -182,8 +182,7 @@ export function SetlistEditor({
       );
 
       onUpdate?.();
-    } catch (error) {
-      console.error('Update notes error:', error);
+    } catch (_error) {
       toast.error('Failed to update notes');
     }
   };
@@ -208,59 +207,54 @@ export function SetlistEditor({
 
         toast.success(setlist.isLocked ? 'Setlist unlocked' : 'Setlist locked');
         onUpdate?.();
-      } catch (error) {
-        console.error('Toggle lock error:', error);
+      } catch (_error) {
         toast.error('Failed to toggle lock');
       }
     });
   };
 
   const handleVote = async (songId: string, voteType: 'up' | 'down' | null) => {
-    try {
-      const response = await fetch('/api/songs/votes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          setlistSongId: songId,
-          voteType,
-        }),
-      });
+    const response = await fetch('/api/songs/votes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        setlistSongId: songId,
+        voteType,
+      }),
+    });
 
-      if (!response.ok) {
-        throw new Error('Failed to vote');
-      }
-
-      // Update local state optimistically
-      setSongs(
-        songs.map((song) => {
-          if (song.id === songId) {
-            const currentVote = song.userVote;
-            const upDelta =
-              voteType === 'up' ? 1 : currentVote === 'up' ? -1 : 0;
-            const downDelta =
-              voteType === 'down' ? 1 : currentVote === 'down' ? -1 : 0;
-
-            return {
-              ...song,
-              upvotes: song.upvotes + upDelta,
-              downvotes: song.downvotes + downDelta,
-              netVotes: song.upvotes + upDelta - (song.downvotes + downDelta),
-              userVote: voteType,
-            };
-          }
-          return song;
-        })
-      );
-    } catch (error) {
-      console.error('Vote error:', error);
-      throw error;
+    if (!response.ok) {
+      throw new Error('Failed to vote');
     }
+
+    // Update local state optimistically
+    setSongs(
+      songs.map((song) => {
+        if (song.id === songId) {
+          const currentVote = song.userVote;
+          const upDelta = voteType === 'up' ? 1 : currentVote === 'up' ? -1 : 0;
+          const downDelta =
+            voteType === 'down' ? 1 : currentVote === 'down' ? -1 : 0;
+
+          return {
+            ...song,
+            upvotes: song.upvotes + upDelta,
+            downvotes: song.downvotes + downDelta,
+            netVotes: song.upvotes + upDelta - (song.downvotes + downDelta),
+            userVote: voteType,
+          };
+        }
+        return song;
+      })
+    );
   };
 
   const formatDuration = (ms?: number) => {
-    if (!ms) return '';
+    if (!ms) {
+      return '';
+    }
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;

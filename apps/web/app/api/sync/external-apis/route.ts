@@ -143,20 +143,6 @@ interface VenueInsert {
   website?: string | null;
 }
 
-interface ShowInsert {
-  ticketmasterId: string;
-  headlinerArtistId: string;
-  venueId?: string | null;
-  name: string;
-  slug: string;
-  date: Date;
-  startTime?: string | null;
-  status: 'upcoming' | 'cancelled' | 'completed';
-  ticketUrl?: string;
-  minPrice?: number | null;
-  maxPrice?: number | null;
-  currency?: string;
-}
 
 interface SetlistInsert {
   setlistfmId: string;
@@ -422,25 +408,19 @@ class ArtistSyncService {
       lastSyncedAt: new Date(),
       verified: false,
     };
+    const [artist] = await db
+      .insert(artists)
+      .values(artistData)
+      .onConflictDoUpdate({
+        target: artists.spotifyId,
+        set: {
+          ...artistData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
 
-    try {
-      const [artist] = await db
-        .insert(artists)
-        .values(artistData)
-        .onConflictDoUpdate({
-          target: artists.spotifyId,
-          set: {
-            ...artistData,
-            updatedAt: new Date(),
-          },
-        })
-        .returning();
-
-      return artist;
-    } catch (error) {
-      console.error('Failed to sync artist:', error);
-      throw error;
-    }
+    return artist;
   }
 
   private generateSlug(name: string): string {
@@ -464,14 +444,22 @@ class ShowSyncService {
     const now = new Date();
     const futureDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year ahead
 
-    const events = await this.ticketmasterClient.searchEvents({
+    const searchParams: any = {
       startDateTime: now.toISOString(),
       endDateTime: futureDate.toISOString(),
       size: options.limit || 200,
       countryCode: 'US',
-      city: options.city,
-      stateCode: options.stateCode,
-    });
+    };
+    
+    if (options.city) {
+      searchParams.city = options.city;
+    }
+    
+    if (options.stateCode) {
+      searchParams.stateCode = options.stateCode;
+    }
+
+    const events = await this.ticketmasterClient.searchEvents(searchParams);
 
     const results = [];
     if (events._embedded?.events) {
@@ -481,9 +469,7 @@ class ShowSyncService {
           if (syncedShow) {
             results.push(syncedShow);
           }
-        } catch (error) {
-          console.error(`Failed to sync show ${event.id}:`, error);
-        }
+        } catch (_error) {}
       }
     }
 
@@ -500,15 +486,19 @@ class ShowSyncService {
 
       // Find or create artist
       const artist = await this.findOrCreateArtist(tmEvent);
+      
+      if (!artist) {
+        throw new Error('Failed to find or create artist');
+      }
 
       // Create or update show
-      const showData: ShowInsert = {
+      const showData = {
         ticketmasterId: tmEvent.id,
         headlinerArtistId: artist.id,
         venueId: venue?.id || null,
         name: tmEvent.name,
         slug: this.generateSlug(tmEvent.name),
-        date: new Date(tmEvent.dates.start.localDate),
+        date: tmEvent.dates.start.localDate,
         startTime: tmEvent.dates.start.localTime || null,
         status: this.mapEventStatus(tmEvent.dates.status.code),
         ticketUrl: tmEvent.url,
@@ -519,19 +509,18 @@ class ShowSyncService {
 
       const [show] = await db
         .insert(shows)
-        .values(showData)
+        .values(showData as any)
         .onConflictDoUpdate({
           target: shows.ticketmasterId,
           set: {
             ...showData,
             updatedAt: new Date(),
-          },
+          } as any,
         })
         .returning();
 
       return show;
-    } catch (error) {
-      console.error(`Failed to sync show ${tmEvent.id}:`, error);
+    } catch (_error) {
       return null;
     }
   }
@@ -560,19 +549,18 @@ class ShowSyncService {
     try {
       const [venue] = await db
         .insert(venues)
-        .values(venueData)
+        .values(venueData as any)
         .onConflictDoUpdate({
-          target: venues.ticketmasterId,
+          target: venues.slug,
           set: {
             ...venueData,
             updatedAt: new Date(),
-          },
+          } as any,
         })
         .returning();
 
       return venue;
-    } catch (error) {
-      console.error('Failed to sync venue:', error);
+    } catch (_error) {
       return null;
     }
   }
@@ -581,9 +569,11 @@ class ShowSyncService {
     const attractionName =
       tmEvent._embedded?.attractions?.[0]?.name || tmEvent.name;
 
-    let artist = await db.query.artists.findFirst({
-      where: eq(artists.name, attractionName),
-    });
+    let artist = await db.select()
+      .from(artists)
+      .where(eq(artists.name, attractionName))
+      .limit(1)
+      .then(results => results[0]);
 
     if (!artist) {
       const [newArtist] = await db
@@ -647,9 +637,7 @@ class SetlistSyncService {
               if (syncedSetlist) {
                 results.push(syncedSetlist);
               }
-            } catch (error) {
-              console.error(`Failed to sync setlist ${setlistData.id}:`, error);
-            }
+            } catch (_error) {}
           }
         } else {
           break; // No more setlists
@@ -657,8 +645,7 @@ class SetlistSyncService {
 
         // Rate limiting: wait 1 second between requests
         await new Promise((resolve) => setTimeout(resolve, 1000));
-      } catch (error) {
-        console.error(`Failed to fetch setlists page ${page}:`, error);
+      } catch (_error) {
         break;
       }
     }
@@ -673,6 +660,10 @@ class SetlistSyncService {
 
       // Find or create venue
       const venue = await this.findOrCreateVenue(setlistData.venue);
+      
+      if (!artist || !venue) {
+        throw new Error('Failed to find or create artist or venue');
+      }
 
       // Create or update setlist
       const setlistRecord: SetlistInsert = {
@@ -687,22 +678,23 @@ class SetlistSyncService {
 
       const [setlist] = await db
         .insert(setlists)
-        .values(setlistRecord)
+        .values(setlistRecord as any)
         .onConflictDoUpdate({
-          target: setlists.setlistfmId,
+          target: setlists.externalId,
           set: {
             ...setlistRecord,
             updatedAt: new Date(),
-          },
+          } as any,
         })
         .returning();
 
       // Sync songs
-      await this.syncSetlistSongs(setlist.id, setlistData.sets);
+      if (setlist) {
+        await this.syncSetlistSongs(setlist.id, setlistData.sets);
+      }
 
       return setlist;
-    } catch (error) {
-      console.error(`Failed to sync setlist ${setlistData.id}:`, error);
+    } catch (_error) {
       return null;
     }
   }
@@ -718,7 +710,7 @@ class SetlistSyncService {
 
     for (const set of sets.set) {
       for (const song of set.song) {
-        if (song.name && song.name.trim()) {
+        if (song.name?.trim()) {
           const songData: SetlistSongInsert = {
             setlistId,
             songName: song.name,
@@ -729,7 +721,7 @@ class SetlistSyncService {
             coverArtist: song.cover?.name || null,
           };
 
-          await db.insert(setlistSongs).values(songData);
+          await db.insert(setlistSongs).values(songData as any);
           position++;
         }
       }
@@ -737,9 +729,11 @@ class SetlistSyncService {
   }
 
   private async findOrCreateArtist(artistData: SetlistFmArtist) {
-    let artist = await db.query.artists.findFirst({
-      where: eq(artists.name, artistData.name),
-    });
+    let artist = await db.select()
+      .from(artists)
+      .where(eq(artists.name, artistData.name))
+      .limit(1)
+      .then(results => results[0]);
 
     if (!artist) {
       const [newArtist] = await db
@@ -749,7 +743,7 @@ class SetlistSyncService {
           slug: this.generateSlug(artistData.name),
           setlistfmMbid: artistData.mbid,
           verified: false,
-        })
+        } as any)
         .returning();
 
       artist = newArtist;
@@ -759,9 +753,11 @@ class SetlistSyncService {
   }
 
   private async findOrCreateVenue(venueData: SetlistFmVenue) {
-    let venue = await db.query.venues.findFirst({
-      where: eq(venues.name, venueData.name),
-    });
+    let venue = await db.select()
+      .from(venues)
+      .where(eq(venues.name, venueData.name))
+      .limit(1)
+      .then(results => results[0]);
 
     if (!venue) {
       const [newVenue] = await db
@@ -774,7 +770,8 @@ class SetlistSyncService {
           country: venueData.city.country.code,
           latitude: venueData.city.coords?.lat || null,
           longitude: venueData.city.coords?.long || null,
-        })
+          timezone: 'UTC', // Default timezone
+        } as any)
         .returning();
 
       venue = newVenue;
@@ -796,8 +793,8 @@ interface SyncResults {
   timestamp: string;
   results: {
     artist?: typeof artists.$inferSelect;
-    shows?: Array<typeof shows.$inferSelect>;
-    setlists?: Array<typeof setlists.$inferSelect>;
+    shows?: (typeof shows.$inferSelect)[];
+    setlists?: (typeof setlists.$inferSelect)[];
     spotify?: {
       success: boolean;
       artistCount?: number;
@@ -835,31 +832,36 @@ export async function POST(request: NextRequest) {
     };
 
     switch (action) {
-      case 'sync-artist':
+      case 'sync-artist': {
         const artistSync = new ArtistSyncService();
         const spotifyClient = new SpotifyClient();
 
         // Search for artist on Spotify first
         const searchResults = await spotifyClient.searchArtists(artistName, 1);
         if (searchResults.artists.items.length > 0) {
-          const artist = await artistSync.syncArtistFromSpotify(
-            searchResults.artists.items[0].id
-          );
-          results.results.artist = artist;
+          const firstArtist = searchResults.artists.items[0];
+          if (firstArtist) {
+            const artist = await artistSync.syncArtistFromSpotify(firstArtist.id);
+            if (artist) {
+              results.results.artist = artist;
+            }
+          }
         }
         break;
+      }
 
-      case 'sync-shows':
+      case 'sync-shows': {
         const showSync = new ShowSyncService();
-        const syncdShows = await showSync.syncUpcomingShows({
-          city,
-          stateCode: state,
-          limit: 50,
-        });
+        const showSyncOptions: any = { limit: 50 };
+        if (city) showSyncOptions.city = city;
+        if (state) showSyncOptions.stateCode = state;
+        
+        const syncdShows = await showSync.syncUpcomingShows(showSyncOptions);
         results.results.shows = syncdShows;
         break;
+      }
 
-      case 'sync-setlists':
+      case 'sync-setlists': {
         const setlistSync = new SetlistSyncService();
         const syncdSetlists = await setlistSync.syncSetlistsForArtist(
           artistName,
@@ -867,9 +869,8 @@ export async function POST(request: NextRequest) {
         );
         results.results.setlists = syncdSetlists;
         break;
-
-      case 'test':
-      default:
+      }
+      default: {
         // Test all APIs
         const spotifyTest = new SpotifyClient();
         const ticketmasterTest = new TicketmasterClient();
@@ -900,7 +901,7 @@ export async function POST(request: NextRequest) {
                   success: false,
                   error: (spotifyResult.reason as Error).message,
                 },
-          ticketmaster:
+          ticketmaster: 
             ticketmasterResult.status === 'fulfilled'
               ? {
                   success: true,
@@ -934,8 +935,9 @@ export async function POST(request: NextRequest) {
                   success: false,
                   error: (setlistfmResult.reason as Error).message,
                 },
-        };
+        } as any;
         break;
+      }
     }
 
     return NextResponse.json({
@@ -943,8 +945,6 @@ export async function POST(request: NextRequest) {
       ...results,
     });
   } catch (error) {
-    console.error('Sync failed:', error);
-
     return NextResponse.json(
       {
         success: false,

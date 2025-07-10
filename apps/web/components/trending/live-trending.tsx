@@ -28,7 +28,7 @@ import {
   TrendingUp,
 } from 'lucide-react';
 import Link from 'next/link';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 interface LiveTrendingItem {
   id: string;
@@ -122,10 +122,7 @@ const TrendingItem = React.memo(function TrendingItem({
       <div className="text-right">
         <div className="flex items-center gap-1 font-medium text-sm">
           <GrowthIcon
-            className={cn(
-              'h-3 w-3',
-              getGrowthColor(item.metrics.growth)
-            )}
+            className={cn('h-3 w-3', getGrowthColor(item.metrics.growth))}
           />
           <span className={getGrowthColor(item.metrics.growth)}>
             {item.metrics.growth > 0 ? '+' : ''}
@@ -153,35 +150,39 @@ export const LiveTrending = React.memo(function LiveTrending({
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchTrending = useCallback(async (refresh = false) => {
-    if (refresh) {
-      setIsRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-    setError(null);
+  const fetchTrending = useCallback(
+    async (refresh = false) => {
+      if (refresh) {
+        setIsRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+      setError(null);
 
-    try {
-      const params = new URLSearchParams({
-        timeframe,
-        limit: limit.toString(),
-        ...(type !== 'all' && { type }),
-      });
+      try {
+        const params = new URLSearchParams({
+          timeframe,
+          limit: limit.toString(),
+          ...(type !== 'all' && { type }),
+        });
 
-      const response = await fetch(`/api/trending/live?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch trending data');
+        const response = await fetch(`/api/trending/live?${params}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch trending data');
+        }
 
-      const data = await response.json();
-      setTrending(data.trending);
-      setLastUpdate(new Date());
-    } catch (err) {
-      console.error('Error fetching trending:', err);
-      setError('Failed to load trending data');
-    } finally {
-      setLoading(false);
-      setIsRefreshing(false);
-    }
-  }, [timeframe, type, limit]);
+        const data = await response.json();
+        setTrending(data.trending);
+        setLastUpdate(new Date());
+      } catch (_err) {
+        setError('Failed to load trending data');
+      } finally {
+        setLoading(false);
+        setIsRefreshing(false);
+      }
+    },
+    [timeframe, type, limit]
+  );
 
   useEffect(() => {
     fetchTrending();
@@ -189,7 +190,9 @@ export const LiveTrending = React.memo(function LiveTrending({
 
   // Auto-refresh every 5 minutes
   useEffect(() => {
-    if (!autoRefresh) return;
+    if (!autoRefresh) {
+      return;
+    }
 
     const interval = setInterval(
       () => {
@@ -224,9 +227,15 @@ export const LiveTrending = React.memo(function LiveTrending({
   }, []);
 
   const getGrowthColor = useCallback((growth: number) => {
-    if (growth > 20) return 'text-red-500';
-    if (growth > 10) return 'text-orange-500';
-    if (growth > 0) return 'text-green-500';
+    if (growth > 20) {
+      return 'text-red-500';
+    }
+    if (growth > 10) {
+      return 'text-orange-500';
+    }
+    if (growth > 0) {
+      return 'text-green-500';
+    }
     return 'text-gray-500';
   }, []);
 

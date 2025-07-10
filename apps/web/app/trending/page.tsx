@@ -1,6 +1,3 @@
-import { TrendingErrorBoundary } from '@/components/error-boundaries/trending-error-boundary';
-import { LiveTrending } from '@/components/trending/live-trending';
-import { createServiceClient } from '@/lib/supabase/server';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
@@ -29,6 +26,9 @@ import {
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import { TrendingErrorBoundary } from '~/components/error-boundaries/trending-error-boundary';
+import { LiveTrending } from '~/components/trending/live-trending';
+import { createServiceClient } from '~/lib/supabase/server';
 import { RecentActivity } from './components/recent-activity';
 import { TrendingArtists } from './components/trending-artists';
 import { TrendingShows } from './components/trending-shows';
@@ -95,8 +95,7 @@ async function getTrendingStats() {
       searchGrowth: 31,
       userGrowth: 18,
     };
-  } catch (error) {
-    console.error('Error fetching trending stats:', error);
+  } catch (_error) {
     // Return default values on error
     return {
       trendingArtists: 0,

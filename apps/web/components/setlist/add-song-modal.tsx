@@ -91,7 +91,6 @@ export function AddSongModal({
         // Keep modal open for adding more songs
         // onOpenChange(false);
       } catch (error: any) {
-        console.error('Error adding song:', error);
         toast.error(error.message || 'Failed to add song');
       }
     });

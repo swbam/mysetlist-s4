@@ -32,7 +32,9 @@ export function TouchOptimizedButton({
   };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    if (disabled || loading) return;
+    if (disabled || loading) {
+      return;
+    }
 
     // Add haptic feedback for mobile devices
     if (hapticFeedback && 'vibrate' in navigator) {

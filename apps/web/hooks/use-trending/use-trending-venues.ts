@@ -1,7 +1,7 @@
 'use client';
 
-import type { TrendingVenue, TrendingVenuesResponse } from '@/types/api';
 import { useCallback, useEffect, useState } from 'react';
+import type { TrendingVenue, TrendingVenuesResponse } from '~/types/api';
 
 export interface UseTrendingVenuesOptions {
   timeframe?: 'day' | 'week' | 'month';
@@ -35,16 +35,21 @@ export function useTrendingVenues(options: UseTrendingVenuesOptions = {}) {
       });
 
       // Add optional filters
-      if (city) params.append('city', city);
-      if (state) params.append('state', state);
+      if (city) {
+        params.append('city', city);
+      }
+      if (state) {
+        params.append('state', state);
+      }
 
       const response = await fetch(`/api/trending/venues?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch trending venues');
+      if (!response.ok) {
+        throw new Error('Failed to fetch trending venues');
+      }
 
       const data: TrendingVenuesResponse = await response.json();
       setVenues(data.venues || []);
     } catch (err) {
-      console.error('Error fetching trending venues:', err);
       setError(
         err instanceof Error ? err.message : 'Failed to load trending venues'
       );
@@ -58,7 +63,9 @@ export function useTrendingVenues(options: UseTrendingVenuesOptions = {}) {
   }, [fetchVenues]);
 
   useEffect(() => {
-    if (!autoRefresh) return;
+    if (!autoRefresh) {
+      return;
+    }
 
     const interval = setInterval(fetchVenues, refreshInterval);
     return () => clearInterval(interval);
@@ -85,14 +92,18 @@ export function useVenueStats(venueId: string) {
   const [error, setError] = useState<string | null>(null);
 
   const fetchStats = useCallback(async () => {
-    if (!venueId) return;
+    if (!venueId) {
+      return;
+    }
 
     try {
       setError(null);
       // This would typically fetch from a dedicated venue stats endpoint
       // For now, we'll use the trending venues endpoint to get basic info
-      const response = await fetch(`/api/trending/venues?limit=100`);
-      if (!response.ok) throw new Error('Failed to fetch venue stats');
+      const response = await fetch('/api/trending/venues?limit=100');
+      if (!response.ok) {
+        throw new Error('Failed to fetch venue stats');
+      }
 
       const data: TrendingVenuesResponse = await response.json();
       const venue = data.venues.find((v) => v.id === venueId);
@@ -107,7 +118,6 @@ export function useVenueStats(venueId: string) {
         });
       }
     } catch (err) {
-      console.error('Error fetching venue stats:', err);
       setError(
         err instanceof Error ? err.message : 'Failed to load venue stats'
       );

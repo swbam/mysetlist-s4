@@ -15,12 +15,12 @@ export class RateLimiter {
 
     // Initialize Redis if environment variables are available
     if (
-      process.env['UPSTASH_REDIS_REST_URL'] &&
-      process.env['UPSTASH_REDIS_REST_TOKEN']
+      process.env.UPSTASH_REDIS_REST_URL &&
+      process.env.UPSTASH_REDIS_REST_TOKEN
     ) {
       this.redis = new Redis({
-        url: process.env['UPSTASH_REDIS_REST_URL'],
-        token: process.env['UPSTASH_REDIS_REST_TOKEN'],
+        url: process.env.UPSTASH_REDIS_REST_URL,
+        token: process.env.UPSTASH_REDIS_REST_TOKEN,
       });
     } else {
       this.redis = null;
@@ -57,23 +57,22 @@ export class RateLimiter {
         remaining,
         resetIn: ttl > 0 ? ttl : 0,
       };
-    } catch (error) {
-      console.error('Rate limiter error:', error);
+    } catch (_error) {
       // On error, allow the request
       return { allowed: true, remaining: this.options.requests, resetIn: 0 };
     }
   }
 
   async reset(identifier: string): Promise<void> {
-    if (!this.redis) return;
+    if (!this.redis) {
+      return;
+    }
 
     const key = `${this.options.keyPrefix || 'rate_limit'}:${identifier}`;
 
     try {
       await this.redis.del(key);
-    } catch (error) {
-      console.error('Failed to reset rate limit:', error);
-    }
+    } catch (_error) {}
   }
 }
 

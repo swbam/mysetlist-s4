@@ -116,8 +116,7 @@ export default function UserManagementEnhanced() {
       } else {
         throw new Error('Failed to fetch users');
       }
-    } catch (error) {
-      console.error('Error fetching users:', error);
+    } catch (_error) {
       toast.error('Failed to load users');
     } finally {
       setLoading(false);
@@ -131,9 +130,7 @@ export default function UserManagementEnhanced() {
         const stats = await response.json();
         setUserStats(stats);
       }
-    } catch (error) {
-      console.error('Error fetching user stats:', error);
-    }
+    } catch (_error) {}
   };
 
   const handleUserAction = async (
@@ -146,12 +143,11 @@ export default function UserManagementEnhanced() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            action,
-            userId,
-            ...data,
-          }),
-        }
-      );
+          action,
+          userId,
+          ...data,
+        }),
+      });
 
       if (response.ok) {
         toast.success(`User ${action} successful`);
@@ -161,8 +157,7 @@ export default function UserManagementEnhanced() {
       } else {
         throw new Error(`Failed to ${action} user`);
       }
-    } catch (error) {
-      console.error(`Error ${action} user:`, error);
+    } catch (_error) {
       toast.error(`Failed to ${action} user`);
     }
   };
@@ -213,7 +208,7 @@ export default function UserManagementEnhanced() {
       user: { variant: 'secondary', className: '' },
     };
 
-    const config = variants[role] || variants.user;
+    const config = variants[role] || variants['user'];
     return <Badge {...config}>{role}</Badge>;
   };
 
@@ -221,7 +216,7 @@ export default function UserManagementEnhanced() {
     return (
       <Card>
         <CardContent className="p-8 text-center">
-          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-primary border-b-2"></div>
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-primary border-b-2" />
           <p className="mt-2 text-muted-foreground">Loading users...</p>
         </CardContent>
       </Card>

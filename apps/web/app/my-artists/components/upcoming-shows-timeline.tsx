@@ -64,19 +64,28 @@ export async function UpcomingShowsTimeline({
   }
 
   const getDateLabel = (date: Date) => {
-    if (isToday(date)) return 'Today';
-    if (isTomorrow(date)) return 'Tomorrow';
-    if (isThisWeek(date)) return format(date, 'EEEE');
+    if (isToday(date)) {
+      return 'Today';
+    }
+    if (isTomorrow(date)) {
+      return 'Tomorrow';
+    }
+    if (isThisWeek(date)) {
+      return format(date, 'EEEE');
+    }
     return format(date, 'MMM d');
   };
 
   const getDateColor = (date: Date) => {
-    if (isToday(date))
+    if (isToday(date)) {
       return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300';
-    if (isTomorrow(date))
+    }
+    if (isTomorrow(date)) {
       return 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300';
-    if (isThisWeek(date))
+    }
+    if (isThisWeek(date)) {
       return 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300';
+    }
     return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
   };
 

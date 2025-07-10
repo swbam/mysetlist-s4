@@ -1,4 +1,6 @@
 import { db } from '@repo/database';
+import { artists, shows, songs, venues } from '@repo/database';
+import { count } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 import { UnifiedSyncService } from './sync-service';
 
@@ -37,7 +39,6 @@ export async function POST(request: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error('Unified sync pipeline failed:', error);
     return NextResponse.json(
       {
         error: 'Sync pipeline failed',
@@ -53,15 +54,15 @@ export async function GET() {
   try {
     const config = {
       spotify: {
-        enabled: !!env.SPOTIFY_CLIENT_ID && !!env.SPOTIFY_CLIENT_SECRET,
+        enabled: !!process.env['SPOTIFY_CLIENT_ID'] && !!process.env['SPOTIFY_CLIENT_SECRET'],
         rateLimits: { requests: 90, window: '1 minute' },
       },
       ticketmaster: {
-        enabled: !!env.TICKETMASTER_API_KEY,
+        enabled: !!process.env['TICKETMASTER_API_KEY'],
         rateLimits: { requests: 200, window: '1 hour' },
       },
       setlistfm: {
-        enabled: !!env.SETLISTFM_API_KEY,
+        enabled: !!process.env['SETLISTFM_API_KEY'],
         rateLimits: { requests: 1, window: '1 second' },
       },
       features: {
@@ -69,16 +70,16 @@ export async function GET() {
         songSync: true,
         showSync: true,
         venueSync: true,
-        setlistSync: !!env.SETLISTFM_API_KEY,
+        setlistSync: !!process.env['SETLISTFM_API_KEY'],
       },
     };
 
     // Get sync statistics
     const stats = {
-      artists: await db.select({ count: db.count() }).from(artists),
-      songs: await db.select({ count: db.count() }).from(songs),
-      shows: await db.select({ count: db.count() }).from(shows),
-      venues: await db.select({ count: db.count() }).from(venues),
+      artists: await db.select({ count: count() }).from(artists),
+      songs: await db.select({ count: count() }).from(songs),
+      shows: await db.select({ count: count() }).from(shows),
+      venues: await db.select({ count: count() }).from(venues),
     };
 
     return NextResponse.json({
@@ -91,8 +92,7 @@ export async function GET() {
         totalVenues: stats.venues[0]?.count || 0,
       },
     });
-  } catch (error) {
-    console.error('Failed to get sync status:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to get sync status' },
       { status: 500 }

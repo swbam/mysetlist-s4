@@ -1,6 +1,6 @@
-import { CacheWarmer } from '@/lib/cache';
-import { MonitoringService } from '@/lib/monitoring';
 import { type NextRequest, NextResponse } from 'next/server';
+import { CacheWarmer } from '~/lib/cache';
+import { MonitoringService } from '~/lib/monitoring';
 
 // Verify cron secret to prevent unauthorized access
 function verifyCronSecret(request: NextRequest): boolean {
@@ -8,7 +8,6 @@ function verifyCronSecret(request: NextRequest): boolean {
   const cronSecret = process.env['CRON_SECRET'];
 
   if (!cronSecret) {
-    console.warn('CRON_SECRET not configured');
     return false;
   }
 
@@ -26,19 +25,15 @@ export async function GET(request: NextRequest) {
   try {
     MonitoringService.startMeasurement('cache-warming');
 
-    console.log('🔥 Starting cache warming process...');
-
     // Warm trending data
-    await CacheWarmer.warmTrendingData();
-    console.log('✅ Trending data warmed');
+    const cacheWarmer = new CacheWarmer();
+    await cacheWarmer.warmTrendingArtists();
 
-    // Warm popular searches
-    await CacheWarmer.warmPopularSearches();
-    console.log('✅ Popular searches warmed');
+    // Warm popular shows
+    await cacheWarmer.warmPopularShows();
 
     // Warm critical API endpoints
     await warmCriticalEndpoints();
-    console.log('✅ Critical endpoints warmed');
 
     const duration = MonitoringService.endMeasurement('cache-warming');
 
@@ -50,8 +45,6 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    console.log(`🚀 Cache warming completed in ${duration}ms`);
-
     return NextResponse.json({
       success: true,
       duration,
@@ -59,8 +52,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     const duration = Date.now() - startTime;
-
-    console.error('❌ Cache warming failed:', error);
 
     MonitoringService.trackError(error as Error, {
       operation: 'cache-warming',
@@ -112,13 +103,9 @@ async function warmCriticalEndpoints(): Promise<void> {
         });
 
         if (response.ok) {
-          console.log(`✅ Warmed ${endpoint}`);
         } else {
-          console.warn(`⚠️ Failed to warm ${endpoint}: ${response.status}`);
         }
-      } catch (error) {
-        console.warn(`⚠️ Error warming ${endpoint}:`, error);
-      }
+      } catch (_error) {}
     })
   );
 }

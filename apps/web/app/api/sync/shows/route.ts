@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       .where(
         and(
           eq(shows.headlinerArtistId, artistId),
-          gte(shows.date, currentDate.toISOString().split('T')[0])
+          gte(shows.date, currentDate.toISOString().split('T')[0]!)
         )
       )
       .orderBy(desc(shows.date));
@@ -88,27 +88,31 @@ export async function POST(request: NextRequest) {
           childRules: 'All ages welcome',
           cameraPolicy: 'No professional cameras',
           bagPolicy: 'Small bags allowed',
-        })
+        } as any)
         .returning();
       sampleVenue = newVenue;
     }
 
     const venueData = sampleVenue[0];
+    
+    if (!venueData) {
+      throw new Error('Failed to create or find venue');
+    }
 
     // Create sample shows for the artist
     const sampleShows = [
       {
         headlinerArtistId: artistId,
         venueId: venueData.id,
-        name: `${artistData.name} Live`,
-        slug: `${artistData.slug}-live-${Date.now()}`,
+        name: `${artistData!.name} Live`,
+        slug: `${artistData!.slug}-live-${Date.now()}`,
         date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
           .toISOString()
           .split('T')[0], // 30 days from now
         startTime: '20:00',
         doorsTime: '19:00',
         status: 'upcoming' as const,
-        description: `Don't miss ${artistData.name} performing live!`,
+        description: `Don't miss ${artistData!.name} performing live!`,
         ticketUrl: 'https://example.com/tickets',
         minPrice: 45,
         maxPrice: 125,
@@ -117,15 +121,15 @@ export async function POST(request: NextRequest) {
       {
         headlinerArtistId: artistId,
         venueId: venueData.id,
-        name: `${artistData.name} Summer Tour`,
-        slug: `${artistData.slug}-summer-tour-${Date.now()}`,
+        name: `${artistData!.name} Summer Tour`,
+        slug: `${artistData!.slug}-summer-tour-${Date.now()}`,
         date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)
           .toISOString()
           .split('T')[0], // 60 days from now
         startTime: '21:00',
         doorsTime: '20:00',
         status: 'upcoming' as const,
-        description: `${artistData.name} brings their summer tour to town!`,
+        description: `${artistData!.name} brings their summer tour to town!`,
         ticketUrl: 'https://example.com/tickets',
         minPrice: 55,
         maxPrice: 150,
@@ -136,11 +140,11 @@ export async function POST(request: NextRequest) {
     // Insert shows
     const insertedShows = await db
       .insert(shows)
-      .values(sampleShows)
+      .values(sampleShows as any)
       .returning();
 
     // Create show-artist relationships
-    const showArtistRelations = insertedShows.map((show, index) => ({
+    const showArtistRelations = insertedShows.map((show, _index) => ({
       showId: show.id,
       artistId: artistId,
       orderIndex: 0, // Headliner
@@ -166,7 +170,6 @@ export async function POST(request: NextRequest) {
       shows: insertedShows,
     });
   } catch (error) {
-    console.error('Shows sync error:', error);
     return NextResponse.json(
       {
         error: 'Shows sync failed',

@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 
-import * as path from 'path';
+import * as path from 'node:path';
 import * as dotenv from 'dotenv';
 import postgres from 'postgres';
 
@@ -9,12 +9,10 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
 async function testSearch() {
-  console.log('🔍 Testing search for "dispatch"...\n');
-
   // Use direct postgres client
-  const sql = postgres(process.env['DATABASE_URL']!, {
+  const sql = postgres(process.env.DATABASE_URL!, {
     max: 1,
-    ssl: process.env['NODE_ENV'] === 'production' ? 'require' : false,
+    ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
   });
 
   try {
@@ -32,20 +30,10 @@ async function testSearch() {
       LIMIT 10
     `;
 
-    console.log(`Found ${results.length} result(s):\n`);
-
-    results.forEach((artist, index) => {
-      console.log(`${index + 1}. ${artist.name}`);
-      console.log(`   - Slug: ${artist.id}`);
-      console.log(`   - Spotify ID: ${artist.spotifyId || 'None'}`);
-      console.log(`   - Genres: ${artist.genres || 'None'}`);
-      console.log(`   - Popularity: ${artist.popularity || 0}`);
-      console.log('');
-    });
+    results.forEach((_artist, _index) => {});
 
     await sql.end();
-  } catch (error) {
-    console.error('❌ Search failed:', error);
+  } catch (_error) {
     await sql.end();
     process.exit(1);
   }

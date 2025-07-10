@@ -16,7 +16,9 @@ class SpotifyClient {
   private accessToken: string | null = null;
   private tokenExpiry = 0;
   async auth() {
-    if (this.accessToken && Date.now() < this.tokenExpiry) return;
+    if (this.accessToken && Date.now() < this.tokenExpiry) {
+      return;
+    }
     const res = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
@@ -38,7 +40,9 @@ class SpotifyClient {
       const res = await fetch(next, {
         headers: { Authorization: `Bearer ${this.accessToken}` },
       });
-      if (!res.ok) throw new Error(`Spotify error ${res.status}`);
+      if (!res.ok) {
+        throw new Error(`Spotify error ${res.status}`);
+      }
       const json: any = await res.json();
       items = items.concat(json.items || json.tracks?.items || []);
       next = json.next;
@@ -144,7 +148,6 @@ Deno.serve(async (req: Request) => {
       { headers: { 'Content-Type': 'application/json' } }
     );
   } catch (e) {
-    console.error('sync-song-catalog error', e);
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 });

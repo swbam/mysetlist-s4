@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server';
 import {
   type EmailAddress,
   sendArtistFollowNotificationEmail,
@@ -13,10 +12,11 @@ import {
   sendWelcomeEmail,
 } from '@repo/email/services';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createClient } from '~/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Check authentication for non-system requests
     const {
@@ -63,8 +63,7 @@ export async function POST(request: NextRequest) {
       : [{ email: recipientList }];
 
     let result;
-    const appUrl =
-      process.env['NEXT_PUBLIC_APP_URL'] || 'https://mysetlist.app';
+    const appUrl = process.env['NEXT_PUBLIC_APP_URL'] || 'https://mysetlist.app';
 
     // Route to appropriate email service
     switch (emailType) {
@@ -192,10 +191,6 @@ export async function POST(request: NextRequest) {
 
     // Log email sending attempt
     if (result.success) {
-      console.log(
-        `Email sent successfully: ${emailType} to ${emailAddresses.length} recipients`
-      );
-
       // Store email log in database
       try {
         await supabase.from('email_logs').insert({
@@ -210,12 +205,8 @@ export async function POST(request: NextRequest) {
             subject,
           },
         });
-      } catch (logError) {
-        console.error('Failed to log email:', logError);
-      }
+      } catch (_logError) {}
     } else {
-      console.error(`Email failed: ${emailType}`, result.error);
-
       // Store failure log
       try {
         await supabase.from('email_logs').insert({
@@ -231,9 +222,7 @@ export async function POST(request: NextRequest) {
             subject,
           },
         });
-      } catch (logError) {
-        console.error('Failed to log email error:', logError);
-      }
+      } catch (_logError) {}
     }
 
     return NextResponse.json({
@@ -244,8 +233,7 @@ export async function POST(request: NextRequest) {
       data: result.data,
       error: result.error?.message,
     });
-  } catch (error) {
-    console.error('Email queue error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -256,7 +244,7 @@ export async function POST(request: NextRequest) {
 // GET endpoint to check email queue status
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -287,7 +275,6 @@ export async function GET(request: NextRequest) {
     const { data: emailLogs, error } = await query;
 
     if (error) {
-      console.error('Failed to fetch email logs:', error);
       return NextResponse.json(
         { error: 'Failed to fetch email logs' },
         { status: 500 }
@@ -315,8 +302,7 @@ export async function GET(request: NextRequest) {
       logs: emailLogs,
       summary,
     });
-  } catch (error) {
-    console.error('Email queue status error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

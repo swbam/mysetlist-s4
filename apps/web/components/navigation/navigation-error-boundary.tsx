@@ -6,8 +6,14 @@ import Link from 'next/link';
 import React from 'react';
 
 // Re-export all navigation error boundary components
-export { PageErrorBoundary, withPageErrorBoundary } from './page-error-boundary';
-export { RouteErrorBoundary, withRouteErrorBoundary } from './route-error-boundary';
+export {
+  PageErrorBoundary,
+  withPageErrorBoundary,
+} from './page-error-boundary';
+export {
+  RouteErrorBoundary,
+  withRouteErrorBoundary,
+} from './route-error-boundary';
 export { SafeLink, useSafeNavigation } from './safe-link';
 
 interface Props {
@@ -30,9 +36,7 @@ export class NavigationErrorBoundary extends React.Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Navigation error:', error, errorInfo);
-  }
+  componentDidCatch(_error: Error, _errorInfo: React.ErrorInfo) {}
 
   handleReset = () => {
     this.setState({ hasError: false, error: null });

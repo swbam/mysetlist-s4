@@ -83,8 +83,12 @@ export function VoteHistory({ userId, showId, className }: VoteHistoryProps) {
         limit: '20',
       });
 
-      if (userId) params.set('userId', userId);
-      if (showId) params.set('showId', showId);
+      if (userId) {
+        params.set('userId', userId);
+      }
+      if (showId) {
+        params.set('showId', showId);
+      }
 
       const response = await fetch(`/api/votes/history?${params}`);
       if (response.ok) {
@@ -106,8 +110,7 @@ export function VoteHistory({ userId, showId, className }: VoteHistoryProps) {
           setPage(1);
         }
       }
-    } catch (error) {
-      console.error('Failed to fetch vote history:', error);
+    } catch (_error) {
     } finally {
       setLoading(false);
     }
@@ -132,7 +135,7 @@ export function VoteHistory({ userId, showId, className }: VoteHistoryProps) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
+            {[...new Array(5)].map((_, i) => (
               <div
                 key={i}
                 className="flex items-center gap-3 rounded-lg border p-3"

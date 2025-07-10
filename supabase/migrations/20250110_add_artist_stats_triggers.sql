@@ -3,7 +3,7 @@
 -- First, ensure artist_stats table exists with all necessary columns
 CREATE TABLE IF NOT EXISTS artist_stats (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  artist_id UUID REFERENCES artists(id) ON DELETE CASCADE UNIQUE NOT NULL,
+  artist_id UUID REFERENCES artists(id) ON DELETE CASCADE NOT NULL,
   total_shows INTEGER DEFAULT 0,
   upcoming_shows INTEGER DEFAULT 0,
   total_setlists INTEGER DEFAULT 0,
@@ -15,6 +15,17 @@ CREATE TABLE IF NOT EXISTS artist_stats (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Add unique constraint on artist_id if it doesn't exist
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.table_constraints 
+    WHERE table_name = 'artist_stats' AND constraint_name = 'artist_stats_artist_id_key'
+  ) THEN
+    ALTER TABLE artist_stats ADD CONSTRAINT artist_stats_artist_id_key UNIQUE (artist_id);
+  END IF;
+END $$;
 
 -- Create index on artist_id for fast lookups
 CREATE INDEX IF NOT EXISTS idx_artist_stats_artist_id ON artist_stats(artist_id);

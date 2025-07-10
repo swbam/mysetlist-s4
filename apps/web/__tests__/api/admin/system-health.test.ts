@@ -10,7 +10,7 @@ const mockSupabase = {
   from: vi.fn(),
 };
 
-vi.mock('@/lib/supabase/server', () => ({
+vi.mock('~/lib/api/supabase/server', () => ({
   createClient: vi.fn(() => mockSupabase),
 }));
 

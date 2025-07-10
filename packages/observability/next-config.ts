@@ -7,7 +7,7 @@ export const sentryConfig: Parameters<typeof withSentryConfig>[1] = {
   project: keys().SENTRY_PROJECT,
 
   // Only print logs for uploading source maps in CI
-  silent: !process.env['CI'],
+  silent: !process.env.CI,
 
   /*
    * For all available options, see:

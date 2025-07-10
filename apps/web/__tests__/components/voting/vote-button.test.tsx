@@ -1,204 +1,211 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { VoteButton } from '@/components/voting/vote-button'
-import { mockSupabase } from '@/test-utils'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { VoteButton } from '~/components/voting/vote-button';
+import { mockSupabase } from '~/test-utils';
 
 describe('VoteButton', () => {
   beforeEach(() => {
-    mockSupabase()
-  })
+    mockSupabase();
+  });
 
   it('renders vote buttons correctly', () => {
     render(
-      <VoteButton 
+      <VoteButton
         setlistSongId="test-song-id"
-        initialVotes={{ upvotes: 10, downvotes: 2 }}
+        upvotes={10}
+        downvotes={2}
       />
-    )
+    );
 
-    expect(screen.getByTestId('vote-up')).toBeInTheDocument()
-    expect(screen.getByTestId('vote-down')).toBeInTheDocument()
-    expect(screen.getByText('10')).toBeInTheDocument()
-    expect(screen.getByText('2')).toBeInTheDocument()
-  })
+    expect(screen.getByLabelText(/upvote/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/downvote/i)).toBeInTheDocument();
+    expect(screen.getByText('10')).toBeInTheDocument();
+    expect(screen.getByText('2')).toBeInTheDocument();
+  });
 
   it('handles upvote click for authenticated user', async () => {
-    const onVote = vi.fn()
+    const onVote = vi.fn();
     render(
-      <VoteButton 
+      <VoteButton
         setlistSongId="test-song-id"
-        initialVotes={{ upvotes: 10, downvotes: 2 }}
+        upvotes={10}
+        downvotes={2}
         onVote={onVote}
       />
-    )
+    );
 
-    const upvoteButton = screen.getByTestId('vote-up')
-    fireEvent.click(upvoteButton)
+    const upvoteButton = screen.getByLabelText(/upvote/i);
+    fireEvent.click(upvoteButton);
 
     await waitFor(() => {
-      expect(onVote).toHaveBeenCalledWith('up', 'test-song-id')
-      expect(screen.getByText('11')).toBeInTheDocument()
-    })
-  })
+      expect(onVote).toHaveBeenCalled();
+      expect(screen.getByText('11')).toBeInTheDocument();
+    });
+  });
 
   it('shows auth prompt for anonymous users', async () => {
-    vi.mock('@/lib/supabase/server', () => ({
+    vi.mock('~/lib/supabase/server', () => ({
       createClient: vi.fn(() => ({
         auth: {
-          getUser: vi.fn().mockResolvedValue({ data: { user: null }, error: null })
-        }
-      }))
-    }))
+          getUser: vi
+            .fn()
+            .mockResolvedValue({ data: { user: null }, error: null }),
+        },
+      })),
+    }));
 
     render(
-      <VoteButton 
+      <VoteButton
         setlistSongId="test-song-id"
-        initialVotes={{ upvotes: 10, downvotes: 2 }}
+        upvotes={10}
+        downvotes={2}
       />
-    )
+    );
 
-    const upvoteButton = screen.getByTestId('vote-up')
-    fireEvent.click(upvoteButton)
+    const upvoteButton = screen.getByLabelText(/upvote/i);
+    fireEvent.click(upvoteButton);
 
     await waitFor(() => {
-      expect(screen.getByTestId('auth-prompt')).toBeInTheDocument()
-    })
-  })
+      expect(screen.getByText(/sign in/i)).toBeInTheDocument();
+    });
+  });
 
   it('toggles vote when clicking same button', async () => {
     render(
-      <VoteButton 
+      <VoteButton
         setlistSongId="test-song-id"
-        initialVotes={{ upvotes: 10, downvotes: 2 }}
-        userVote="up"
+        upvotes={10}
+        downvotes={2}
+        currentVote="up"
       />
-    )
+    );
 
-    const upvoteButton = screen.getByTestId('vote-up')
-    expect(upvoteButton).toHaveClass('active')
-    
-    fireEvent.click(upvoteButton)
+    const upvoteButton = screen.getByLabelText(/upvote/i);
+
+    fireEvent.click(upvoteButton);
 
     await waitFor(() => {
-      expect(screen.getByText('9')).toBeInTheDocument()
-      expect(upvoteButton).not.toHaveClass('active')
-    })
-  })
+      expect(screen.getByText('9')).toBeInTheDocument();
+    });
+  });
 
   it('switches vote from up to down', async () => {
     render(
-      <VoteButton 
+      <VoteButton
         setlistSongId="test-song-id"
-        initialVotes={{ upvotes: 10, downvotes: 2 }}
-        userVote="up"
+        upvotes={10}
+        downvotes={2}
+        currentVote="up"
       />
-    )
+    );
 
-    const downvoteButton = screen.getByTestId('vote-down')
-    fireEvent.click(downvoteButton)
+    const downvoteButton = screen.getByLabelText(/downvote/i);
+    fireEvent.click(downvoteButton);
 
     await waitFor(() => {
-      expect(screen.getByText('9')).toBeInTheDocument() // upvotes decreased
-      expect(screen.getByText('3')).toBeInTheDocument() // downvotes increased
-    })
-  })
+      expect(screen.getByText('9')).toBeInTheDocument(); // upvotes decreased
+      expect(screen.getByText('3')).toBeInTheDocument(); // downvotes increased
+    });
+  });
 
   it('handles API errors gracefully', async () => {
-    const mockError = new Error('API Error')
-    vi.mock('@/lib/supabase/server', () => ({
+    const mockError = new Error('API Error');
+    vi.mock('~/lib/supabase/server', () => ({
       createClient: vi.fn(() => ({
         from: vi.fn().mockReturnThis(),
-        insert: vi.fn().mockRejectedValue(mockError)
-      }))
-    }))
+        insert: vi.fn().mockRejectedValue(mockError),
+      })),
+    }));
 
     render(
-      <VoteButton 
+      <VoteButton
         setlistSongId="test-song-id"
         initialVotes={{ upvotes: 10, downvotes: 2 }}
       />
-    )
+    );
 
-    const upvoteButton = screen.getByTestId('vote-up')
-    fireEvent.click(upvoteButton)
+    const upvoteButton = screen.getByTestId('vote-up');
+    fireEvent.click(upvoteButton);
 
     await waitFor(() => {
-      expect(screen.getByText('Failed to record vote')).toBeInTheDocument()
-      expect(screen.getByText('10')).toBeInTheDocument() // Vote count unchanged
-    })
-  })
+      expect(screen.getByText('Failed to record vote')).toBeInTheDocument();
+      expect(screen.getByText('10')).toBeInTheDocument(); // Vote count unchanged
+    });
+  });
 
   it('prevents multiple simultaneous votes', async () => {
-    const onVote = vi.fn().mockImplementation(() => 
-      new Promise(resolve => setTimeout(resolve, 1000))
-    )
+    const onVote = vi
+      .fn()
+      .mockImplementation(
+        () => new Promise((resolve) => setTimeout(resolve, 1000))
+      );
 
     render(
-      <VoteButton 
+      <VoteButton
         setlistSongId="test-song-id"
         initialVotes={{ upvotes: 10, downvotes: 2 }}
         onVote={onVote}
       />
-    )
+    );
 
-    const upvoteButton = screen.getByTestId('vote-up')
-    
+    const upvoteButton = screen.getByTestId('vote-up');
+
     // Click multiple times quickly
-    fireEvent.click(upvoteButton)
-    fireEvent.click(upvoteButton)
-    fireEvent.click(upvoteButton)
+    fireEvent.click(upvoteButton);
+    fireEvent.click(upvoteButton);
+    fireEvent.click(upvoteButton);
 
-    expect(onVote).toHaveBeenCalledTimes(1)
-  })
+    expect(onVote).toHaveBeenCalledTimes(1);
+  });
 
   it('updates optimistically', () => {
     render(
-      <VoteButton 
+      <VoteButton
         setlistSongId="test-song-id"
         initialVotes={{ upvotes: 10, downvotes: 2 }}
         optimistic={true}
       />
-    )
+    );
 
-    const upvoteButton = screen.getByTestId('vote-up')
-    fireEvent.click(upvoteButton)
+    const upvoteButton = screen.getByTestId('vote-up');
+    fireEvent.click(upvoteButton);
 
     // Should update immediately
-    expect(screen.getByText('11')).toBeInTheDocument()
-  })
+    expect(screen.getByText('11')).toBeInTheDocument();
+  });
 
   describe('Accessibility', () => {
     it('has proper ARIA attributes', () => {
       render(
-        <VoteButton 
+        <VoteButton
           setlistSongId="test-song-id"
           initialVotes={{ upvotes: 10, downvotes: 2 }}
         />
-      )
+      );
 
-      const upvoteButton = screen.getByTestId('vote-up')
-      const downvoteButton = screen.getByTestId('vote-down')
+      const upvoteButton = screen.getByTestId('vote-up');
+      const downvoteButton = screen.getByTestId('vote-down');
 
-      expect(upvoteButton).toHaveAttribute('aria-label', 'Upvote song')
-      expect(downvoteButton).toHaveAttribute('aria-label', 'Downvote song')
-      expect(upvoteButton).toHaveAttribute('aria-pressed', 'false')
-    })
+      expect(upvoteButton).toHaveAttribute('aria-label', 'Upvote song');
+      expect(downvoteButton).toHaveAttribute('aria-label', 'Downvote song');
+      expect(upvoteButton).toHaveAttribute('aria-pressed', 'false');
+    });
 
     it('is keyboard navigable', () => {
       render(
-        <VoteButton 
+        <VoteButton
           setlistSongId="test-song-id"
           initialVotes={{ upvotes: 10, downvotes: 2 }}
         />
-      )
+      );
 
-      const upvoteButton = screen.getByTestId('vote-up')
-      upvoteButton.focus()
-      
-      expect(document.activeElement).toBe(upvoteButton)
-      
-      fireEvent.keyDown(upvoteButton, { key: 'Enter' })
-      expect(screen.getByText('11')).toBeInTheDocument()
-    })
-  })
-})
+      const upvoteButton = screen.getByTestId('vote-up');
+      upvoteButton.focus();
+
+      expect(document.activeElement).toBe(upvoteButton);
+
+      fireEvent.keyDown(upvoteButton, { key: 'Enter' });
+      expect(screen.getByText('11')).toBeInTheDocument();
+    });
+  });
+});

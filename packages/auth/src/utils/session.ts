@@ -70,8 +70,7 @@ export async function getServerAuthSession(): Promise<{
         },
       },
     };
-  } catch (error) {
-    console.error('Error getting server session:', error);
+  } catch (_error) {
     return { user: null, session: null };
   }
 }

@@ -1,9 +1,9 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import type { Session, User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 interface AuthContextType {
   user: User | null;
@@ -55,13 +55,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithEmail = async (
     email: string,
     password: string,
-    rememberMe = false
+    _rememberMe = false
   ) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
   };
 
   const signUpWithEmail = async (email: string, password: string) => {
@@ -77,7 +79,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         emailRedirectTo: redirectTo,
       },
     });
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
   };
 
   const signInWithSpotify = async () => {
@@ -94,12 +98,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           'user-read-email user-read-private user-top-read user-follow-read',
       },
     });
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
   };
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
     router.push('/');
   };
 
@@ -112,17 +120,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo,
     });
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
   };
 
   const updatePassword = async (password: string) => {
     const { error } = await supabase.auth.updateUser({ password });
-    if (error) throw error;
+    if (error) {
+      throw error;
+    }
   };
 
   const hasRole = (role: string) => {
     // Check user metadata for role
-    const userRole = user?.app_metadata?.role || user?.user_metadata?.role || 'user';
+    const userRole =
+      user?.app_metadata?.role || user?.user_metadata?.role || 'user';
     return userRole === role;
   };
 

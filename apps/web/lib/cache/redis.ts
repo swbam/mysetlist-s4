@@ -1,4 +1,4 @@
-import { env } from '@/env';
+import { env } from '~/env';
 
 // Redis/Upstash cache implementation
 export class CacheClient {
@@ -24,7 +24,7 @@ export class CacheClient {
     }
 
     try {
-      const url = pipeline 
+      const url = pipeline
         ? `${this.baseUrl}/pipeline`
         : `${this.baseUrl}/${command.join('/')}`;
 
@@ -43,16 +43,17 @@ export class CacheClient {
 
       const data = await response.json();
       return data.result;
-    } catch (error) {
-      console.error('Redis request failed:', error);
+    } catch (_error) {
       return null;
     }
   }
 
   async get<T>(key: string): Promise<T | null> {
     const result = await this.request(['GET', key]);
-    if (!result) return null;
-    
+    if (!result) {
+      return null;
+    }
+
     try {
       return JSON.parse(result);
     } catch {
@@ -66,7 +67,7 @@ export class CacheClient {
     options?: { ex?: number; px?: number }
   ): Promise<boolean> {
     const args = ['SET', key, JSON.stringify(value)];
-    
+
     if (options?.ex) {
       args.push('EX', options.ex.toString());
     } else if (options?.px) {
@@ -109,8 +110,10 @@ export class CacheClient {
     withScores = false
   ): Promise<string[]> {
     const args = ['ZRANGE', key, start.toString(), stop.toString()];
-    if (withScores) args.push('WITHSCORES');
-    
+    if (withScores) {
+      args.push('WITHSCORES');
+    }
+
     const result = await this.request(args);
     return result || [];
   }
@@ -154,25 +157,23 @@ export class CacheClient {
 
 // Cache key generators
 export const cacheKeys = {
-  trending: (period: string, type: string, limit: number) => 
+  trending: (period: string, type: string, limit: number) =>
     `trending:${period}:${type}:${limit}`,
-  
+
   artist: (id: string) => `artist:${id}`,
-  
+
   show: (id: string) => `show:${id}`,
-  
+
   venue: (id: string) => `venue:${id}`,
-  
-  userVotes: (userId: string, showId: string) => 
-    `votes:${userId}:${showId}`,
-  
-  searchResults: (query: string, type: string) => 
+
+  userVotes: (userId: string, showId: string) => `votes:${userId}:${showId}`,
+
+  searchResults: (query: string, type: string) =>
     `search:${type}:${query.toLowerCase().replace(/\s+/g, '-')}`,
-  
-  syncProgress: (artistId: string) => 
-    `sync:progress:${artistId}`,
-  
-  apiRateLimit: (apiName: string, identifier: string) => 
+
+  syncProgress: (artistId: string) => `sync:progress:${artistId}`,
+
+  apiRateLimit: (apiName: string, identifier: string) =>
     `ratelimit:${apiName}:${identifier}`,
 };
 
@@ -185,21 +186,21 @@ export function withCache<T extends (...args: any[]) => Promise<any>>(
   return (async (...args: Parameters<T>) => {
     const cache = CacheClient.getInstance();
     const key = keyGenerator(...args);
-    
+
     // Try cache first
     const cached = await cache.get(key);
     if (cached !== null) {
       return cached;
     }
-    
+
     // Execute function
     const result = await fn(...args);
-    
+
     // Cache result
     if (result !== null && result !== undefined) {
       await cache.set(key, result, { ex: ttl });
     }
-    
+
     return result;
   }) as T;
 }
@@ -216,14 +217,14 @@ export class RedisRateLimiter {
     const now = Math.floor(Date.now() / 1000);
     const window = Math.floor(now / windowSeconds) * windowSeconds;
     const resetAt = window + windowSeconds;
-    
+
     const rateLimitKey = `${key}:${window}`;
     const count = await this.cache.incr(rateLimitKey);
-    
+
     if (count === 1) {
       await this.cache.expire(rateLimitKey, windowSeconds + 60); // Extra buffer
     }
-    
+
     return {
       allowed: count <= maxRequests,
       remaining: Math.max(0, maxRequests - count),

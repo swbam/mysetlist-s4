@@ -159,8 +159,7 @@ export function PersonalizedRecommendations({
         // For unauthenticated users, use trending data
         await fetchTrendingData();
       }
-    } catch (err) {
-      console.error('Error fetching recommendations:', err);
+    } catch (_err) {
       setError('Failed to load recommendations');
     } finally {
       setLoading(false);
@@ -172,7 +171,9 @@ export function PersonalizedRecommendations({
       const response = await fetch(
         `/api/trending/live?timeframe=24h&type=${category === 'all' ? 'all' : category}&limit=${limit}`
       );
-      if (!response.ok) throw new Error('Failed to fetch trending data');
+      if (!response.ok) {
+        throw new Error('Failed to fetch trending data');
+      }
 
       const trendingData = await response.json();
 
@@ -193,14 +194,15 @@ export function PersonalizedRecommendations({
         })) || [];
 
       setRecommendations(recommendations);
-    } catch (err) {
-      console.error('Error fetching trending data:', err);
+    } catch (_err) {
       setError('Failed to load trending recommendations');
     }
   };
 
   const fetchFollowingStatus = async () => {
-    if (!userId) return;
+    if (!userId) {
+      return;
+    }
 
     try {
       const response = await fetch('/api/user/following');
@@ -208,9 +210,7 @@ export function PersonalizedRecommendations({
         const data = await response.json();
         setFollowingArtists(new Set(data.artistIds));
       }
-    } catch (error) {
-      console.error('Failed to fetch following status:', error);
-    }
+    } catch (_error) {}
   };
 
   const handleFollow = async (artistId: string, isFollowing: boolean) => {
@@ -240,7 +240,7 @@ export function PersonalizedRecommendations({
       } else if (response.status === 401) {
         toast.error('Please sign in to follow artists');
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to update follow status');
     }
   };
@@ -272,14 +272,22 @@ export function PersonalizedRecommendations({
   };
 
   const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 80) return 'text-green-600 bg-green-50';
-    if (confidence >= 60) return 'text-yellow-600 bg-yellow-50';
+    if (confidence >= 80) {
+      return 'text-green-600 bg-green-50';
+    }
+    if (confidence >= 60) {
+      return 'text-yellow-600 bg-yellow-50';
+    }
     return 'text-red-600 bg-red-50';
   };
 
   const getConfidenceLabel = (confidence: number) => {
-    if (confidence >= 80) return 'High match';
-    if (confidence >= 60) return 'Good match';
+    if (confidence >= 80) {
+      return 'High match';
+    }
+    if (confidence >= 60) {
+      return 'Good match';
+    }
     return 'Possible match';
   };
 

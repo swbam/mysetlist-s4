@@ -1,6 +1,5 @@
 'use client';
 
-import { RealtimeShowsFeed } from '@/components/realtime-shows-feed';
 import {
   Card,
   CardContent,
@@ -13,6 +12,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@repo/design-system/components/ui/tabs';
+import { RealtimeShowsFeed } from '~/components/realtime-shows-feed';
 
 export function LiveShows() {
   return (

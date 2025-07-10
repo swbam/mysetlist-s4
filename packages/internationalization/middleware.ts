@@ -34,8 +34,7 @@ const I18nMiddleware = createI18nMiddleware({
 
       const matchedLocale = matchLocale(validLanguages, locales, 'en');
       return matchedLocale;
-    } catch (error) {
-      console.error('Locale resolution error:', error);
+    } catch (_error) {
       return 'en';
     }
   },

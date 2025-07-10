@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
@@ -34,6 +33,7 @@ import {
   TrendingUp,
   Users,
 } from 'lucide-react';
+import { createClient } from '~/lib/supabase/server';
 
 // Force dynamic rendering due to user-specific data fetching
 export const dynamic = 'force-dynamic';
@@ -474,7 +474,7 @@ export default async function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {platformStats?.slice(0, 7).map((stat, index) => (
+                  {platformStats?.slice(0, 7).map((stat, _index) => (
                     <div
                       key={stat.id}
                       className="flex items-center justify-between"
@@ -506,7 +506,7 @@ export default async function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {platformStats?.slice(0, 7).map((stat, index) => (
+                  {platformStats?.slice(0, 7).map((stat, _index) => (
                     <div
                       key={stat.id}
                       className="flex items-center justify-between"

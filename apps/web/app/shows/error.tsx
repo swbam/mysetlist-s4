@@ -12,10 +12,7 @@ export default function ShowsError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    // Log the error to an error reporting service
-    console.error('Shows page error:', error);
-  }, [error]);
+  useEffect(() => {}, [error]);
 
   return (
     <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4">
@@ -25,16 +22,17 @@ export default function ShowsError({
             <AlertTriangle className="h-12 w-12 text-destructive" />
           </div>
         </div>
-        
-        <h1 className="mb-4 text-2xl font-bold">Unable to Load Shows</h1>
-        
+
+        <h1 className="mb-4 font-bold text-2xl">Unable to Load Shows</h1>
+
         <p className="mb-8 text-muted-foreground">
-          We're having trouble loading the shows right now. This might be a temporary issue.
+          We're having trouble loading the shows right now. This might be a
+          temporary issue.
         </p>
 
         {process.env.NODE_ENV === 'development' && error.message && (
           <div className="mb-6 rounded-lg bg-muted p-4 text-left">
-            <p className="font-mono text-sm text-muted-foreground">
+            <p className="font-mono text-muted-foreground text-sm">
               {error.message}
             </p>
           </div>
@@ -45,7 +43,7 @@ export default function ShowsError({
             <RefreshCw className="h-4 w-4" />
             Try Again
           </Button>
-          
+
           <Button variant="outline" asChild>
             <Link href="/" className="gap-2">
               <Home className="h-4 w-4" />

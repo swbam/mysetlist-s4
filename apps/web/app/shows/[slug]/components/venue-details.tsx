@@ -33,10 +33,16 @@ type VenueDetailsProps = {
 export function VenueDetails({ venue }: VenueDetailsProps) {
   const getFullAddress = () => {
     const parts = [];
-    if (venue.address) parts.push(venue.address);
+    if (venue.address) {
+      parts.push(venue.address);
+    }
     parts.push(venue.city);
-    if (venue.state) parts.push(venue.state);
-    if (venue.postal_code) parts.push(venue.postal_code);
+    if (venue.state) {
+      parts.push(venue.state);
+    }
+    if (venue.postal_code) {
+      parts.push(venue.postal_code);
+    }
     parts.push(venue.country);
     return parts.join(', ');
   };
@@ -68,7 +74,7 @@ export function VenueDetails({ venue }: VenueDetailsProps) {
               height="100%"
               frameBorder="0"
               style={{ border: 0 }}
-              src={`https://www.google.com/maps/embed/v1/place?key=${process.env['NEXT_PUBLIC_GOOGLE_MAPS_KEY']}&q=${venue.latitude},${venue.longitude}&zoom=15`}
+              src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY}&q=${venue.latitude},${venue.longitude}&zoom=15`}
               allowFullScreen
             />
           </div>

@@ -10,7 +10,7 @@ import { Button } from '@repo/design-system/components/ui/button';
 import { Skeleton } from '@repo/design-system/components/ui/skeleton';
 import { ExternalLink, Music, TrendingUp, Users } from 'lucide-react';
 import Link from 'next/link';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 interface TrendingArtist {
   id: string;
@@ -35,7 +35,11 @@ const ArtistRow = React.memo(function ArtistRow({
   artist: TrendingArtist;
   index: number;
   formatFollowers: (count: number) => string;
-  getGrowthBadge: (growth: number) => { variant: 'default' | 'secondary' | 'outline'; text: string; color: string };
+  getGrowthBadge: (growth: number) => {
+    variant: 'default' | 'secondary' | 'outline';
+    text: string;
+    color: string;
+  };
 }) {
   const growthBadge = getGrowthBadge(artist.weeklyGrowth);
 
@@ -123,12 +127,13 @@ export function TrendingArtists() {
   const fetchTrendingArtists = async () => {
     try {
       const response = await fetch('/api/trending/artists');
-      if (!response.ok) throw new Error('Failed to fetch trending artists');
+      if (!response.ok) {
+        throw new Error('Failed to fetch trending artists');
+      }
 
       const data = await response.json();
       setArtists(data.artists || []);
-    } catch (err) {
-      console.error('Error fetching trending artists:', err);
+    } catch (_err) {
       setError('Failed to load trending artists');
     } finally {
       setLoading(false);
@@ -136,30 +141,37 @@ export function TrendingArtists() {
   };
 
   const formatFollowers = useCallback((count: number) => {
-    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-    if (count >= 1000) return `${(count / 1000).toFixed(1)}K`;
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M`;
+    }
+    if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}K`;
+    }
     return count.toString();
   }, []);
 
   const getGrowthBadge = useCallback((growth: number) => {
-    if (growth > 20)
+    if (growth > 20) {
       return {
         variant: 'default' as const,
         text: 'Hot',
         color: 'text-red-500',
       };
-    if (growth > 10)
+    }
+    if (growth > 10) {
       return {
         variant: 'secondary' as const,
         text: 'Rising',
         color: 'text-orange-500',
       };
-    if (growth > 0)
+    }
+    if (growth > 0) {
       return {
         variant: 'outline' as const,
         text: 'Growing',
         color: 'text-green-500',
       };
+    }
     return {
       variant: 'outline' as const,
       text: 'Stable',

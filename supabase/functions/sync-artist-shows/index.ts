@@ -96,11 +96,11 @@ Deno.serve(async (req: Request) => {
               .select('id')
               .single();
 
-            if (!venueErr && newVenue) venueId = newVenue.id;
+            if (!venueErr && newVenue) {
+              venueId = newVenue.id;
+            }
           }
-        } catch (vErr) {
-          console.error('Venue upsert failed', vErr);
-        }
+        } catch (_vErr) {}
       }
 
       // 2. Upsert show -------------------------------------------------------
@@ -122,7 +122,6 @@ Deno.serve(async (req: Request) => {
         .select('id');
 
       if (showError) {
-        console.error('Show upsert failed', showError);
         continue;
       }
 
@@ -141,18 +140,18 @@ Deno.serve(async (req: Request) => {
         );
 
         if (saErr) {
-          console.error('show_artists upsert failed', saErr);
         }
       }
 
-      if (!showError) inserted++;
+      if (!showError) {
+        inserted++;
+      }
     }
     return new Response(
       JSON.stringify({ success: true, processed: events.length, inserted }),
       { headers: { 'Content-Type': 'application/json' } }
     );
   } catch (e) {
-    console.error(e);
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 });

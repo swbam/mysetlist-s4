@@ -61,14 +61,14 @@ export async function GET(request: NextRequest) {
         showStats: (showStats as any)?.[0] || null,
         timeframe,
       });
-    } else {
-      // Get trending shows with vote metrics
-      const trendingShows = await db.execute(sql`
+    }
+    // Get trending shows with vote metrics
+    const trendingShows = await db.execute(sql`
         SELECT * FROM get_trending_shows(20)
       `);
 
-      // Get overall platform vote statistics
-      const overallStats = await db.execute(sql`
+    // Get overall platform vote statistics
+    const overallStats = await db.execute(sql`
         SELECT 
           COUNT(DISTINCT shows.id) as total_shows_with_votes,
           COUNT(DISTINCT votes.user_id) as active_voters,
@@ -83,8 +83,8 @@ export async function GET(request: NextRequest) {
         WHERE votes.created_at > NOW() - INTERVAL '${sql.raw(timeInterval)}'
       `);
 
-      // Get top voted songs
-      const topVotedSongs = await db.execute(sql`
+    // Get top voted songs
+    const topVotedSongs = await db.execute(sql`
         SELECT 
           s.title,
           s.artist,
@@ -103,8 +103,8 @@ export async function GET(request: NextRequest) {
         LIMIT 20
       `);
 
-      // Get vote activity by hour for the past 24 hours
-      const hourlyActivity = await db.execute(sql`
+    // Get vote activity by hour for the past 24 hours
+    const hourlyActivity = await db.execute(sql`
         SELECT 
           EXTRACT(HOUR FROM v.created_at) as hour,
           COUNT(*) as vote_count,
@@ -116,16 +116,14 @@ export async function GET(request: NextRequest) {
         ORDER BY hour
       `);
 
-      return NextResponse.json({
-        trendingShows: trendingShows,
-        overallStats: overallStats[0] || {},
-        topVotedSongs: topVotedSongs,
-        hourlyActivity: hourlyActivity,
-        timeframe,
-      });
-    }
-  } catch (error) {
-    console.error('Error getting vote statistics:', error);
+    return NextResponse.json({
+      trendingShows: trendingShows,
+      overallStats: overallStats[0] || {},
+      topVotedSongs: topVotedSongs,
+      hourlyActivity: hourlyActivity,
+      timeframe,
+    });
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to get vote statistics' },
       { status: 500 }
@@ -147,7 +145,8 @@ export async function POST(request: NextRequest) {
         message: 'Trending scores updated successfully',
         timestamp: new Date().toISOString(),
       });
-    } else if (action === 'recalculate_votes') {
+    }
+    if (action === 'recalculate_votes') {
       // Recalculate all vote counts (useful for data integrity)
       await db.execute(sql`
         UPDATE setlist_songs 
@@ -193,17 +192,15 @@ export async function POST(request: NextRequest) {
         message: 'Vote counts recalculated successfully',
         timestamp: new Date().toISOString(),
       });
-    } else {
-      return NextResponse.json(
-        {
-          error:
-            'Invalid action. Valid actions: update_trending, recalculate_votes',
-        },
-        { status: 400 }
-      );
     }
-  } catch (error) {
-    console.error('Error updating vote statistics:', error);
+    return NextResponse.json(
+      {
+        error:
+          'Invalid action. Valid actions: update_trending, recalculate_votes',
+      },
+      { status: 400 }
+    );
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to update vote statistics' },
       { status: 500 }

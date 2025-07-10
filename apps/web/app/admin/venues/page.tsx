@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
@@ -45,31 +44,11 @@ import {
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
+import { createClient } from '~/lib/supabase/server';
 
 // Force dynamic rendering due to user-specific data fetching
 export const dynamic = 'force-dynamic';
 
-interface Venue {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  state: string;
-  country: string;
-  zip_code: string;
-  latitude?: number;
-  longitude?: number;
-  capacity?: number;
-  verified: boolean;
-  phone?: string;
-  email?: string;
-  website?: string;
-  created_at: string;
-  updated_at: string;
-  shows_count?: number;
-  avg_rating?: number;
-  photos_count?: number;
-}
 
 export default async function VenuesManagementPage({
   params,

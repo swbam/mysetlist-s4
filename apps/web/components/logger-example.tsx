@@ -1,8 +1,8 @@
 'use client';
 
-import { logger } from '@/lib/logger';
 import { Button } from '@repo/design-system/components/ui/button';
 import { useEffect } from 'react';
+import { logger } from '~/lib/logger';
 
 export function LoggerExample() {
   useEffect(() => {

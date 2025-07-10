@@ -1,12 +1,12 @@
 'use client';
 
-import { FollowButton } from '@/app/artists/[slug]/components/follow-button';
 import { Card, CardContent } from '@repo/design-system';
 import { Avatar, AvatarFallback, AvatarImage } from '@repo/design-system';
 import { formatDistanceToNow } from 'date-fns';
 import { Calendar, Disc3, Music } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { FollowButton } from '~/app/artists/[slug]/components/follow-button';
 
 interface FollowedArtist {
   id: string;
@@ -35,8 +35,7 @@ export function FollowingList() {
         const data = await response.json();
         setArtists(data.artists);
       }
-    } catch (error) {
-      console.error('Error fetching followed artists:', error);
+    } catch (_error) {
     } finally {
       setIsLoading(false);
     }
@@ -45,7 +44,7 @@ export function FollowingList() {
   if (isLoading) {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {[...Array(6)].map((_, i) => (
+        {[...new Array(6)].map((_, i) => (
           <Card key={i} className="animate-pulse">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">

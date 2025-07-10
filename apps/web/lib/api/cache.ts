@@ -12,7 +12,9 @@ export class CacheService {
 
   async get(key: string): Promise<any> {
     const item = cache.get(key);
-    if (!item) return null;
+    if (!item) {
+      return null;
+    }
     if (Date.now() > item.expiry) {
       cache.delete(key);
       return null;
@@ -49,18 +51,15 @@ export class CacheWarmer {
     this.cacheService = CacheService.getInstance();
   }
 
-  async warmCache(keys: string[]): Promise<void> {
-    console.log(`Warming cache for ${keys.length} keys`);
+  async warmCache(_keys: string[]): Promise<void> {
     // Implementation would fetch and cache data for the given keys
   }
 
   async warmTrendingData(): Promise<void> {
-    console.log('Warming trending data cache');
     // Implementation would fetch and cache trending data
   }
 
-  async warmArtistData(artistIds: string[]): Promise<void> {
-    console.log(`Warming artist data cache for ${artistIds.length} artists`);
+  async warmArtistData(_artistIds: string[]): Promise<void> {
     // Implementation would fetch and cache artist data
   }
 }
@@ -68,7 +67,9 @@ export class CacheWarmer {
 export const cacheManager = {
   get: async (key: string) => {
     const item = cache.get(key);
-    if (!item) return null;
+    if (!item) {
+      return null;
+    }
     if (Date.now() > item.expiry) {
       cache.delete(key);
       return null;

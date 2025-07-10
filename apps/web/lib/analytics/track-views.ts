@@ -41,10 +41,7 @@ export async function trackView(
           .where(sql`${venues.id} = ${id}`);
         break;
     }
-  } catch (error) {
-    // Don't throw - tracking shouldn't break the app
-    console.error(`Failed to track ${type} view:`, error);
-  }
+  } catch (_error) {}
 }
 
 /**
@@ -65,9 +62,7 @@ export async function trackAttendance(
         updatedAt: new Date(),
       })
       .where(sql`${shows.id} = ${showId}`);
-  } catch (error) {
-    console.error('Failed to track attendance:', error);
-  }
+  } catch (_error) {}
 }
 
 /**
@@ -88,9 +83,7 @@ export async function trackVote(
         updatedAt: new Date(),
       })
       .where(sql`${shows.id} = ${showId}`);
-  } catch (error) {
-    console.error('Failed to track vote:', error);
-  }
+  } catch (_error) {}
 }
 
 /**
@@ -105,7 +98,5 @@ export async function trackSetlistCreated(showId: string): Promise<void> {
         updatedAt: new Date(),
       })
       .where(sql`${shows.id} = ${showId}`);
-  } catch (error) {
-    console.error('Failed to track setlist creation:', error);
-  }
+  } catch (_error) {}
 }

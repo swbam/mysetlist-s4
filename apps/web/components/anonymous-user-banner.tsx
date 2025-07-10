@@ -1,10 +1,10 @@
 'use client';
 
-import { anonymousUser } from '@/lib/anonymous-user';
 import { Button } from '@repo/design-system/components/ui/button';
 import { X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { anonymousUser } from '~/lib/anonymous-user';
 
 interface AnonymousUserBannerProps {
   isAuthenticated: boolean;
@@ -36,7 +36,9 @@ export function AnonymousUserBanner({
     }
   }, [isAuthenticated]);
 
-  if (!isVisible) return null;
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <div className="fixed right-4 bottom-4 left-4 z-50 md:right-4 md:left-auto md:max-w-sm">

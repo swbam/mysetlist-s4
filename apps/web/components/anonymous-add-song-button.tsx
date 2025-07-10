@@ -1,6 +1,5 @@
 'use client';
 
-import { anonymousUser } from '@/lib/anonymous-user';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
   Tooltip,
@@ -11,6 +10,7 @@ import {
 import { Lock, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { anonymousUser } from '~/lib/anonymous-user';
 
 interface AnonymousAddSongButtonProps {
   setlistId: string;

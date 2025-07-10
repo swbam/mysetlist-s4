@@ -1,6 +1,5 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import { VoteButton } from '@repo/design-system';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import {
@@ -19,6 +18,7 @@ import {
   WifiOff,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 type SetlistViewerProps = {
   showId: string;
@@ -68,8 +68,7 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
           const data = await response.json();
           setSetlists(data.setlists || []);
         }
-      } catch (error) {
-        console.error('Failed to fetch setlists:', error);
+      } catch (_error) {
       } finally {
         setLoading(false);
       }
@@ -80,7 +79,9 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
 
   // Set up real-time subscriptions
   useEffect(() => {
-    if (!showId) return;
+    if (!showId) {
+      return;
+    }
 
     const setupRealtimeSubscription = async () => {
       try {
@@ -96,7 +97,6 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
               filter: `setlist_song_id=in.(${setlists.flatMap((s) => s.songs.map((song) => song.id)).join(',')})`,
             },
             (payload) => {
-              console.log('Vote update received:', payload);
               handleRealtimeVoteUpdate(payload);
             }
           )
@@ -108,29 +108,20 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
               table: 'setlist_songs',
             },
             (payload) => {
-              console.log('Setlist song update received:', payload);
               handleRealtimeSetlistUpdate(payload);
             }
           )
           .subscribe((status) => {
-            console.log('Subscription status:', status);
             setIsConnected(status === 'SUBSCRIBED');
 
             if (status === 'SUBSCRIBED') {
-              console.log(
-                "🎵 Live Updates Connected - You'll see vote updates in real-time!"
-              );
             } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
               setIsConnected(false);
-              console.log(
-                'Connection Lost - Real-time updates temporarily unavailable'
-              );
             }
           });
 
         subscriptionRef.current = channel;
-      } catch (error) {
-        console.error('Failed to set up real-time subscription:', error);
+      } catch (_error) {
         setIsConnected(false);
       }
     };
@@ -146,7 +137,7 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
     };
   }, [showId, setlists]);
 
-  const handleRealtimeVoteUpdate = (payload: any) => {
+  const handleRealtimeVoteUpdate = (_payload: any) => {
     // Refetch vote counts when votes change
     // In a production app, you'd want to be more granular here
     setTimeout(() => {
@@ -187,9 +178,6 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
           .flatMap((s) => s.songs)
           .find((s) => s.id === payload.new.id);
         if (song) {
-          console.log(
-            `🎵 Now Playing: ${song.song.title} by ${song.song.artist}`
-          );
         }
       }
     }
@@ -234,13 +222,13 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
           }))
         );
       }
-    } catch (error) {
-      console.error('Failed to vote:', error);
-    }
+    } catch (_error) {}
   };
 
   const formatDuration = (durationMs?: number) => {
-    if (!durationMs) return '?:??';
+    if (!durationMs) {
+      return '?:??';
+    }
     const minutes = Math.floor(durationMs / 60000);
     const seconds = Math.floor((durationMs % 60000) / 1000);
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -322,7 +310,7 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
       </CardHeader>
       <CardContent className="p-0">
         <div className="divide-y">
-          {songs.map((setlistSong, index) => (
+          {songs.map((setlistSong, _index) => (
             <div
               key={setlistSong.id}
               className={`p-4 transition-colors ${

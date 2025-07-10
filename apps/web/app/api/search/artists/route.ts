@@ -42,8 +42,7 @@ export async function GET(request: NextRequest) {
       query,
       total: searchResults.length,
     });
-  } catch (error) {
-    console.error('Artist search error:', error);
+  } catch (_error) {
     return NextResponse.json(
       {
         error: 'Artist search failed',

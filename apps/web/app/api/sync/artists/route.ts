@@ -1,6 +1,6 @@
 import { artists, db } from '@repo/database';
 import { SpotifyClient } from '@repo/external-apis';
-import { eq } from 'drizzle-orm';
+import { eq, or, and, isNull, lt, type SQL } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
@@ -68,9 +68,9 @@ export async function POST(request: NextRequest) {
         .update(artists)
         .set({
           name: spotifyArtist.name,
-          imageUrl: spotifyArtist.images[0]?.url,
+          imageUrl: spotifyArtist.images[0]?.url || null,
           smallImageUrl:
-            spotifyArtist.images[2]?.url || spotifyArtist.images[1]?.url,
+            spotifyArtist.images[2]?.url || spotifyArtist.images[1]?.url || null,
           genres: JSON.stringify(spotifyArtist.genres),
           popularity: spotifyArtist.popularity,
           followers: spotifyArtist.followers.total,
@@ -84,14 +84,12 @@ export async function POST(request: NextRequest) {
       // Also sync top tracks if requested
       if (forceSync) {
         try {
-          const topTracks = await spotifyClient.getArtistTopTracks(
+          await spotifyClient.getArtistTopTracks(
             artistRecord.spotifyId
           );
           // Here you could sync the top tracks to the songs table
           // This is left as an enhancement for future implementation
-        } catch (trackError) {
-          console.warn('Failed to sync top tracks:', trackError);
-        }
+        } catch (_trackError) {}
       }
 
       return NextResponse.json({
@@ -99,15 +97,13 @@ export async function POST(request: NextRequest) {
         artist: updatedArtist[0],
         syncedAt: new Date(),
       });
-    } catch (spotifyError) {
-      console.error('Spotify sync error:', spotifyError);
+    } catch (_spotifyError) {
       return NextResponse.json(
         { error: 'Failed to sync with Spotify API' },
         { status: 500 }
       );
     }
-  } catch (error) {
-    console.error('Artist sync error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to sync artist' },
       { status: 500 }
@@ -121,16 +117,20 @@ export async function GET(request: NextRequest) {
     const limit = Number.parseInt(searchParams.get('limit') || '50');
     const outdatedOnly = searchParams.get('outdated') === 'true';
 
-    let query = db.select().from(artists).where(eq(artists.verified, true)); // Only sync verified artists
+    let whereConditions: SQL<unknown> = eq(artists.verified, true); // Only sync verified artists
 
     if (outdatedOnly) {
       const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      query =
-        query.where(
-          // Artists that haven't been synced in a week or never synced
-          // Note: This would need proper SQL for null check
-        );
+      whereConditions = and(
+        whereConditions,
+        or(
+          isNull(artists.lastSyncedAt),
+          lt(artists.lastSyncedAt, oneWeekAgo)
+        )
+      )!; // Non-null assertion since we know conditions are not undefined
     }
+
+    const query = db.select().from(artists).where(whereConditions);
 
     const artistsToSync = await query.limit(limit);
 
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
           syncResults.push({
             artist: artist.id,
             success: false,
-            error: error.message,
+            error: error instanceof Error ? error.message : 'Unknown error',
           });
         }
       }
@@ -168,8 +168,7 @@ export async function GET(request: NextRequest) {
       synced: syncResults.length,
       results: syncResults,
     });
-  } catch (error) {
-    console.error('Bulk sync error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to sync artists' },
       { status: 500 }

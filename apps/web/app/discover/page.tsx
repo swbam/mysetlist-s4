@@ -1,5 +1,3 @@
-import { PersonalizedRecommendations } from '@/components/discovery/personalized-recommendations';
-import { LiveTrending } from '@/components/trending/live-trending';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
@@ -29,6 +27,8 @@ import {
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Suspense } from 'react';
+import { PersonalizedRecommendations } from '~/components/discovery/personalized-recommendations';
+import { LiveTrending } from '~/components/trending/live-trending';
 import { DiscoverFilters } from './components/discover-filters';
 
 export const metadata: Metadata = createMetadata({

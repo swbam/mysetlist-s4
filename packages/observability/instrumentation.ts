@@ -6,11 +6,11 @@ const opts = {
 };
 
 export const initializeSentry = () => {
-  if (process.env['NEXT_RUNTIME'] === 'nodejs') {
+  if (process.env.NEXT_RUNTIME === 'nodejs') {
     init(opts);
   }
 
-  if (process.env['NEXT_RUNTIME'] === 'edge') {
+  if (process.env.NEXT_RUNTIME === 'edge') {
     init(opts);
   }
 };

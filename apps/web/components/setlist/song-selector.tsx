@@ -55,7 +55,9 @@ export function SongSelector({
   }, [query]);
 
   const searchSongs = async () => {
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -76,8 +78,7 @@ export function SongSelector({
 
       const data = await response.json();
       setSongs(data.songs || []);
-    } catch (error) {
-      console.error('Search error:', error);
+    } catch (_error) {
       toast.error('Failed to search songs');
       setSongs([]);
     } finally {
@@ -86,22 +87,25 @@ export function SongSelector({
   };
 
   const handleSongSelect = async (song: Song) => {
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
 
     setAddingSongId(song.id);
     try {
       await onSongSelect(song);
       setQuery('');
       setSongs([]);
-    } catch (error) {
-      console.error('Error selecting song:', error);
+    } catch (_error) {
     } finally {
       setAddingSongId(null);
     }
   };
 
   const formatDuration = (ms?: number) => {
-    if (!ms) return '';
+    if (!ms) {
+      return '';
+    }
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;

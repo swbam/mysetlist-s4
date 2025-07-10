@@ -1,5 +1,5 @@
-import { SyncProgressTracker } from '@/lib/sync-progress-tracker';
 import { type NextRequest, NextResponse } from 'next/server';
+import { SyncProgressTracker } from '~/lib/sync-progress-tracker';
 
 const progressTracker = new SyncProgressTracker();
 
@@ -36,8 +36,7 @@ export async function GET(request: NextRequest) {
       failed: allProgress.filter((p) => p.status === 'failed').length,
       progress: allProgress,
     });
-  } catch (error) {
-    console.error('Failed to get sync progress:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to get sync progress' },
       { status: 500 }
@@ -64,8 +63,7 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Sync progress cleared',
     });
-  } catch (error) {
-    console.error('Failed to clear sync progress:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to clear sync progress' },
       { status: 500 }

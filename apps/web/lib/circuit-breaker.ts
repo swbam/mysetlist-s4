@@ -1,4 +1,4 @@
-import { CacheClient } from '@/lib/cache/redis';
+import { CacheClient } from '~/lib/cache/redis';
 
 export interface CircuitBreakerConfig {
   failureThreshold: number;
@@ -52,7 +52,7 @@ export class CircuitBreaker {
       return result;
     } catch (error) {
       await this.onFailure();
-      
+
       if (fallback) {
         return fallback();
       }
@@ -68,11 +68,15 @@ export class CircuitBreaker {
 
   private async setState(state: CircuitState): Promise<void> {
     const stateKey = `circuit:${this.name}:state`;
-    await this.cache.set(stateKey, state, { ex: this.config.resetTimeout / 1000 });
+    await this.cache.set(stateKey, state, {
+      ex: this.config.resetTimeout / 1000,
+    });
 
     if (state === CircuitState.OPEN) {
       const openTimeKey = `circuit:${this.name}:openTime`;
-      await this.cache.set(openTimeKey, Date.now(), { ex: this.config.resetTimeout / 1000 });
+      await this.cache.set(openTimeKey, Date.now(), {
+        ex: this.config.resetTimeout / 1000,
+      });
     }
   }
 
@@ -85,12 +89,12 @@ export class CircuitBreaker {
   private async incrementFailureCount(): Promise<number> {
     const countKey = `circuit:${this.name}:failures`;
     const newCount = await this.cache.incr(countKey);
-    
+
     // Set expiry on first increment
     if (newCount === 1) {
       await this.cache.expire(countKey, this.config.monitoringPeriod / 1000);
     }
-    
+
     return newCount;
   }
 
@@ -118,21 +122,21 @@ export class CircuitBreaker {
   private async shouldTransitionToHalfOpen(): Promise<boolean> {
     const openTimeKey = `circuit:${this.name}:openTime`;
     const openTime = await this.cache.get<number>(openTimeKey);
-    
+
     if (!openTime) {
       return true;
     }
-    
+
     const elapsedTime = Date.now() - openTime;
     return elapsedTime >= this.config.resetTimeout;
   }
 
   private async onSuccess(): Promise<void> {
     const state = await this.getState();
-    
+
     if (state === CircuitState.HALF_OPEN) {
       const halfOpenCount = await this.incrementHalfOpenCount();
-      
+
       if (halfOpenCount >= this.config.halfOpenRequests) {
         // Enough successful requests, close the circuit
         await this.setState(CircuitState.CLOSED);
@@ -147,14 +151,14 @@ export class CircuitBreaker {
 
   private async onFailure(): Promise<void> {
     const state = await this.getState();
-    
+
     if (state === CircuitState.HALF_OPEN) {
       // Failure in half-open state, immediately open the circuit
       await this.setState(CircuitState.OPEN);
       await this.resetHalfOpenCount();
     } else if (state === CircuitState.CLOSED) {
       const failureCount = await this.incrementFailureCount();
-      
+
       if (failureCount >= this.config.failureThreshold) {
         // Threshold reached, open the circuit
         await this.setState(CircuitState.OPEN);
@@ -167,10 +171,10 @@ export class CircuitBreaker {
     const state = await this.getState();
     const failureCount = await this.getFailureCount();
     const halfOpenCount = await this.getHalfOpenCount();
-    
+
     const openTimeKey = `circuit:${this.name}:openTime`;
     const openTime = await this.cache.get<number>(openTimeKey);
-    
+
     return {
       name: this.name,
       state,
@@ -196,15 +200,18 @@ export class CircuitBreakerFactory {
     name: string,
     config?: Partial<CircuitBreakerConfig>
   ): CircuitBreaker {
-    if (!this.breakers.has(name)) {
-      this.breakers.set(name, new CircuitBreaker(name, config));
+    if (!CircuitBreakerFactory.breakers.has(name)) {
+      CircuitBreakerFactory.breakers.set(
+        name,
+        new CircuitBreaker(name, config)
+      );
     }
-    return this.breakers.get(name)!;
+    return CircuitBreakerFactory.breakers.get(name)!;
   }
 
   static async getAllMetrics() {
     const metrics = [];
-    for (const [name, breaker] of this.breakers) {
+    for (const [_name, breaker] of CircuitBreakerFactory.breakers) {
       metrics.push(await breaker.getMetrics());
     }
     return metrics;
@@ -216,11 +223,11 @@ export function withCircuitBreaker(
   name: string,
   config?: Partial<CircuitBreakerConfig>
 ) {
-  return function (
-    target: any,
-    propertyKey: string,
+  return (
+    _target: any,
+    _propertyKey: string,
     descriptor: PropertyDescriptor
-  ) {
+  ) => {
     const originalMethod = descriptor.value;
     const breaker = CircuitBreakerFactory.getBreaker(name, config);
 

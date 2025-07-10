@@ -95,7 +95,7 @@ export function AddPhotoDialog({ venueId }: AddPhotoDialogProps) {
           variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Something went wrong',

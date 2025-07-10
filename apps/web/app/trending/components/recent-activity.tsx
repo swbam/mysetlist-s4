@@ -53,12 +53,13 @@ export function RecentActivity() {
   const fetchRecentActivity = async () => {
     try {
       const response = await fetch('/api/activity/recent?limit=15');
-      if (!response.ok) throw new Error('Failed to fetch recent activity');
+      if (!response.ok) {
+        throw new Error('Failed to fetch recent activity');
+      }
 
       const data = await response.json();
       setActivities(data.activities || []);
-    } catch (err) {
-      console.error('Error fetching recent activity:', err);
+    } catch (_err) {
       setError('Failed to load recent activity');
     } finally {
       setLoading(false);
@@ -140,14 +141,22 @@ export function RecentActivity() {
       (now.getTime() - date.getTime()) / (1000 * 60)
     );
 
-    if (diffInMinutes < 1) return 'just now';
-    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1) {
+      return 'just now';
+    }
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes}m ago`;
+    }
 
     const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    }
 
     const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) return `${diffInDays}d ago`;
+    if (diffInDays < 7) {
+      return `${diffInDays}d ago`;
+    }
 
     return date.toLocaleDateString();
   };

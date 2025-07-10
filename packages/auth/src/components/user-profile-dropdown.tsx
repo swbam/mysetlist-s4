@@ -27,8 +27,7 @@ export function UserProfileDropdown() {
     setIsSigningOut(true);
     try {
       await signOut();
-    } catch (error) {
-      console.error('Error signing out:', error);
+    } catch (_error) {
     } finally {
       setIsSigningOut(false);
     }

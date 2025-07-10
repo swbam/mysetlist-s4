@@ -93,12 +93,7 @@ export function createCachedFunction<TArgs extends readonly unknown[], TReturn>(
 ) {
   return unstable_cache(
     async (...args: TArgs) => {
-      try {
-        return await fn(...args);
-      } catch (error) {
-        console.error(`Cache error for ${keyParts.join('-')}:`, error);
-        throw error;
-      }
+      return await fn(...args);
     },
     keyParts,
     {
@@ -131,17 +126,17 @@ export const CACHE_HEADERS = {
 
 // Cache service for analytics
 export class CacheService {
-  async get(key: string) {
+  async get(_key: string) {
     // In production, this would use Redis or similar
     return null;
   }
 
-  async set(key: string, value: any, ttl?: number) {
+  async set(_key: string, _value: any, _ttl?: number) {
     // In production, this would use Redis or similar
     return true;
   }
 
-  async delete(key: string) {
+  async delete(_key: string) {
     // In production, this would use Redis or similar
     return true;
   }
@@ -160,9 +155,6 @@ export class CacheWarmer {
   }
 
   async warmAll() {
-    await Promise.all([
-      this.warmTrendingArtists(),
-      this.warmPopularShows(),
-    ]);
+    await Promise.all([this.warmTrendingArtists(), this.warmPopularShows()]);
   }
 }

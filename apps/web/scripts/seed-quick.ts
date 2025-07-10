@@ -7,8 +7,6 @@ import { db, sql } from './db-client';
 faker.seed(123);
 
 async function clearDatabase() {
-  console.log('🧹 Clearing existing data...');
-
   await db.execute(sql`
     -- Disable triggers temporarily
     SET session_replication_role = 'replica';
@@ -30,13 +28,9 @@ async function clearDatabase() {
     -- Re-enable triggers
     SET session_replication_role = 'origin';
   `);
-
-  console.log('✅ Database cleared');
 }
 
 async function seedWithSQL() {
-  console.log('🚀 Quick seeding with SQL...');
-
   // Create users
   await db.execute(sql`
     INSERT INTO users (email, role, email_verified, created_at)
@@ -280,21 +274,13 @@ async function seedWithSQL() {
       AND s.date >= CURRENT_DATE - INTERVAL '30 days'
     );
   `);
-
-  console.log('✅ Quick seeding completed!');
 }
 
 async function main() {
-  console.log('⚡ Starting quick database seeding...\n');
-
   try {
     await clearDatabase();
     await seedWithSQL();
-
-    // Show summary
-    console.log('\n📊 Database seeded successfully!');
-  } catch (error) {
-    console.error('❌ Seeding failed:', error);
+  } catch (_error) {
     process.exit(1);
   }
 }

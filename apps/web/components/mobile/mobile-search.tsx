@@ -1,6 +1,5 @@
 'use client';
 
-import { useDebounce } from '@/hooks/use-debounce';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
@@ -19,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { useDebounce } from '~/hooks/use-debounce';
 
 interface SearchResult {
   id: string;
@@ -114,8 +114,7 @@ export function MobileSearch({
       }
 
       setResults(searchResults);
-    } catch (error) {
-      console.error('Search failed:', error);
+    } catch (_error) {
       setResults([]);
     } finally {
       setIsLoading(false);

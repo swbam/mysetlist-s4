@@ -1,10 +1,10 @@
-import { env } from '@/env';
-import { createServiceClient } from '@/lib/supabase/server';
 import { db } from '@repo/database';
 import { artists } from '@repo/database';
 import { TicketmasterClient } from '@repo/external-apis';
 import { eq } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
+import { env } from '~/env';
+import { createServiceClient } from '~/lib/supabase/server';
 
 // Simple Spotify client without external dependencies
 class SpotifyClient {
@@ -21,7 +21,7 @@ class SpotifyClient {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Authorization: `Basic ${Buffer.from(
-          `${env.SPOTIFY_CLIENT_ID!}:${env.SPOTIFY_CLIENT_SECRET!}`
+          `${process.env['SPOTIFY_CLIENT_ID']}:${process.env['SPOTIFY_CLIENT_SECRET']}`
         ).toString('base64')}`,
       },
       body: 'grant_type=client_credentials',
@@ -106,7 +106,6 @@ const spotify = new SpotifyClient();
 async function findTicketmasterId(artistName: string): Promise<string | null> {
   try {
     if (!env.TICKETMASTER_API_KEY) {
-      console.warn('Ticketmaster API key not configured');
       return null;
     }
 
@@ -133,9 +132,7 @@ async function findTicketmasterId(artistName: string): Promise<string | null> {
         return response._embedded.attractions[0].id;
       }
     }
-  } catch (error) {
-    console.error('Failed to find Ticketmaster ID:', error);
-  }
+  } catch (_error) {}
 
   return null;
 }
@@ -152,7 +149,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if Spotify credentials are available
-    if (!env.SPOTIFY_CLIENT_ID || !env.SPOTIFY_CLIENT_SECRET) {
+    if (!process.env['SPOTIFY_CLIENT_ID'] || !process.env['SPOTIFY_CLIENT_SECRET']) {
       return NextResponse.json(
         { error: 'Spotify credentials not configured' },
         { status: 500 }
@@ -209,11 +206,11 @@ export async function POST(request: NextRequest) {
           verified: true,
           externalUrls: JSON.stringify(spotifyArtist.external_urls || {}),
           ticketmasterId:
-            resolvedTicketmasterId || existingArtist[0].ticketmasterId,
+            resolvedTicketmasterId || existingArtist[0]?.ticketmasterId,
           lastSyncedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(eq(artists.id, existingArtist[0].id as string))
+        .where(eq(artists.id, existingArtist[0]?.id as string))
         .returning();
 
       artistRecord = updated;
@@ -245,21 +242,28 @@ export async function POST(request: NextRequest) {
       const supabaseAdmin = await createServiceClient();
 
       // Always sync song catalog
-      await supabaseAdmin.functions.invoke('sync-song-catalog', {
-        body: { spotifyId: spotifyArtist.id, artistId: artistRecord.id },
-      });
+      if (artistRecord) {
+        await supabaseAdmin.functions.invoke('sync-song-catalog', {
+          body: { spotifyId: spotifyArtist.id, artistId: artistRecord.id },
+        });
 
-      // Sync shows if we have a Ticketmaster ID
-      if (artistRecord.ticketmasterId) {
+        // Sync shows if we have a Ticketmaster ID
+        if (artistRecord.ticketmasterId) {
         await supabaseAdmin.functions.invoke('sync-artist-shows', {
           body: {
             ticketmasterId: artistRecord.ticketmasterId,
             artistId: artistRecord.id,
           },
         });
+        }
       }
-    } catch (err) {
-      console.error('Failed to enqueue background jobs', err);
+    } catch (_err) {}
+
+    if (!artistRecord) {
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to create or update artist record'
+      }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -278,7 +282,6 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Artist sync failed:', error);
     return NextResponse.json(
       {
         error: 'Failed to sync artist',
@@ -292,7 +295,7 @@ export async function POST(request: NextRequest) {
 // GET endpoint to sync trending artists from Ticketmaster
 export async function GET() {
   try {
-    if (!env.SPOTIFY_CLIENT_ID || !env.SPOTIFY_CLIENT_SECRET) {
+    if (!process.env['SPOTIFY_CLIENT_ID'] || !process.env['SPOTIFY_CLIENT_SECRET']) {
       return NextResponse.json(
         { error: 'Spotify credentials not configured' },
         { status: 500 }
@@ -320,19 +323,24 @@ export async function GET() {
         classificationName: 'Music',
         size: 200,
         sort: 'relevance,desc',
-        startDateTime: new Date().toISOString().split('.')[0] + 'Z',
-        endDateTime:
+        startDateTime: `${new Date().toISOString().split('.')[0]}Z`,
+        endDateTime: `${
           new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
             .toISOString()
-            .split('.')[0] + 'Z',
+            .split('.')[0]
+        }Z`,
       });
 
       if (eventsResponse._embedded?.events) {
         for (const event of eventsResponse._embedded.events) {
-          if (!event._embedded?.attractions) continue;
+          if (!event._embedded?.attractions) {
+            continue;
+          }
 
           for (const attraction of event._embedded.attractions) {
-            if (attraction.type?.toLowerCase() !== 'artist') continue;
+            if (attraction.type?.toLowerCase() !== 'artist') {
+              continue;
+            }
 
             if (artistMap.has(attraction.id)) {
               artistMap.get(attraction.id)!.showCount++;
@@ -346,8 +354,7 @@ export async function GET() {
           }
         }
       }
-    } catch (tmError) {
-      console.error('Ticketmaster API error:', tmError);
+    } catch (_tmError) {
       // Fall back to a smaller hardcoded list if Ticketmaster fails
       const fallbackArtists = [
         'Taylor Swift',
@@ -411,7 +418,6 @@ export async function GET() {
         // Add delay to respect rate limits
         await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (error) {
-        console.error(`Error syncing ${artist.name}:`, error);
         errors.push(
           `Error syncing ${artist.name}: ${error instanceof Error ? error.message : 'Unknown error'}`
         );
@@ -431,7 +437,6 @@ export async function GET() {
       errors,
     });
   } catch (error) {
-    console.error('Bulk artist sync failed:', error);
     return NextResponse.json(
       {
         error: 'Bulk sync failed',

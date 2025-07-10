@@ -50,7 +50,9 @@ export function OptimizedImage({
 
   // Intersection Observer for lazy loading
   useEffect(() => {
-    if (!lazy || priority || isInView) return;
+    if (!lazy || priority || isInView) {
+      return;
+    }
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
@@ -125,7 +127,9 @@ export function OptimizedImage({
 
   // Generate blur data URL if not provided
   const getBlurDataURL = () => {
-    if (blurDataURL) return blurDataURL;
+    if (blurDataURL) {
+      return blurDataURL;
+    }
 
     // Simple 1x1 pixel blur for placeholder
     return 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q==';

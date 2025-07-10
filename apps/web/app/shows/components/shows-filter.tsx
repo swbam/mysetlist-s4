@@ -45,10 +45,18 @@ export const ShowsFilter = () => {
   const applyFilters = () => {
     const params = new URLSearchParams();
 
-    if (city && city !== 'all') params.set('city', city);
-    if (dateFrom) params.set('dateFrom', format(dateFrom, 'yyyy-MM-dd'));
-    if (dateTo) params.set('dateTo', format(dateTo, 'yyyy-MM-dd'));
-    if (orderBy !== 'date') params.set('orderBy', orderBy);
+    if (city && city !== 'all') {
+      params.set('city', city);
+    }
+    if (dateFrom) {
+      params.set('dateFrom', format(dateFrom, 'yyyy-MM-dd'));
+    }
+    if (dateTo) {
+      params.set('dateTo', format(dateTo, 'yyyy-MM-dd'));
+    }
+    if (orderBy !== 'date') {
+      params.set('orderBy', orderBy);
+    }
 
     router.push(`/shows?${params.toString()}`);
   };

@@ -10,7 +10,7 @@ const mockSupabase = {
   from: vi.fn(),
 };
 
-vi.mock('@/lib/supabase/server', () => ({
+vi.mock('~/lib/api/supabase/server', () => ({
   createClient: vi.fn(() => mockSupabase),
 }));
 
@@ -284,7 +284,7 @@ describe('/api/admin/analytics/votes', () => {
       };
 
       // Mock vote counts for trend calculation
-      mockSupabase.from.mockImplementation((table) => {
+      mockSupabase.from.mockImplementation((_table) => {
         return {
           ...mockQuery,
           select: vi.fn().mockImplementation((fields) => {

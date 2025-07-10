@@ -1,12 +1,12 @@
 'use client';
 
-import { useAuth } from '@/app/providers/auth-provider';
-import { useRealtimeVotes } from '@/hooks/use-realtime-votes';
 import { Button } from '@repo/design-system/components/ui/button';
 import { cn } from '@repo/design-system/lib/utils';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '~/app/providers/auth-provider';
+import { useRealtimeVotes } from '~/hooks/use-realtime-votes';
 
 interface RealtimeVoteButtonProps {
   songId: string;
@@ -33,7 +33,9 @@ export function RealtimeVoteButton({
   const netVotes = votes.upvotes - votes.downvotes;
 
   const handleVote = async (voteType: 'up' | 'down') => {
-    if (isVoting || disabled) return;
+    if (isVoting || disabled) {
+      return;
+    }
 
     if (!session) {
       toast.error('Please sign in to vote');
@@ -45,8 +47,7 @@ export function RealtimeVoteButton({
       // Toggle vote if same type, otherwise switch
       const newVote = votes.userVote === voteType ? null : voteType;
       await onVote(songId, newVote);
-    } catch (error) {
-      console.error('Vote failed:', error);
+    } catch (_error) {
       toast.error('Failed to vote. Please try again.');
     } finally {
       setIsVoting(false);

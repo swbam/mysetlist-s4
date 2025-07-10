@@ -10,7 +10,7 @@ type RouteParams = {
   }>;
 };
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { showId } = await params;
     const user = await getUser();
@@ -104,8 +104,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({
       setlists: setlistsArray,
     });
-  } catch (error) {
-    console.error('Setlists API error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

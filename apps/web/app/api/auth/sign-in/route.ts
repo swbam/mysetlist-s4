@@ -1,11 +1,11 @@
+import { type NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import {
   authRateLimitMiddleware,
   signInRateLimiter,
-} from '@/lib/auth-rate-limit';
-import { validateCSRFToken } from '@/lib/csrf';
-import { createClient } from '@/lib/supabase/server';
-import { type NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
+} from '~/lib/auth-rate-limit';
+import { validateCSRFToken } from '~/lib/csrf';
+import { createClient } from '~/lib/supabase/server';
 
 const signInSchema = z.object({
   email: z.string().email(),
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { email, password, rememberMe } = validationResult.data;
+    const { email, password, rememberMe: _rememberMe } = validationResult.data;
 
     // Sign in with Supabase
     const supabase = await createClient();
@@ -57,30 +57,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (error) {
-      // Log failed attempt for security monitoring
-      console.warn('Failed sign-in attempt:', {
-        email,
-        error: error.message,
-        ip: request.headers.get('x-forwarded-for') || 'unknown',
-        timestamp: new Date().toISOString(),
-      });
-
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
-
-    // Log successful sign-in
-    console.info('Successful sign-in:', {
-      userId: data.user?.id,
-      email: data.user?.email,
-      timestamp: new Date().toISOString(),
-    });
 
     return NextResponse.json({
       user: data.user,
       session: data.session,
     });
-  } catch (error) {
-    console.error('Sign-in error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

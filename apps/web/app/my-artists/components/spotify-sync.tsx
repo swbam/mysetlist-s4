@@ -1,6 +1,5 @@
 'use client';
 
-import { useAuth } from '@/app/providers/auth-provider';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
   Dialog,
@@ -13,6 +12,7 @@ import {
 import { AlertCircle, CheckCircle, Loader2, Music2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '~/app/providers/auth-provider';
 
 export function SpotifySync() {
   const { user } = useAuth();
@@ -47,8 +47,7 @@ export function SpotifySync() {
       setTimeout(() => {
         window.location.reload();
       }, 2000);
-    } catch (error) {
-      console.error('Error syncing Spotify:', error);
+    } catch (_error) {
       setSyncStatus('error');
       toast.error('Failed to sync Spotify artists');
     } finally {
@@ -61,8 +60,7 @@ export function SpotifySync() {
       const response = await fetch('/api/auth/spotify/authorize');
       const { url } = await response.json();
       window.location.href = url;
-    } catch (error) {
-      console.error('Error connecting to Spotify:', error);
+    } catch (_error) {
       toast.error('Failed to connect to Spotify');
     }
   };

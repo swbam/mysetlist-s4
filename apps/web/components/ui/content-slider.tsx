@@ -26,6 +26,7 @@ interface ContentSliderProps {
     mobile?: number;
     tablet?: number;
     desktop?: number;
+    wide?: number;
   };
   loop?: boolean;
   showDots?: boolean;
@@ -42,9 +43,10 @@ export function ContentSlider({
   className,
   children,
   itemsPerView = {
-    mobile: 1.5,
-    tablet: 3,
+    mobile: 1.2,
+    tablet: 2.5,
     desktop: 4,
+    wide: 6,
   },
   loop = true,
   showDots = false,
@@ -56,7 +58,9 @@ export function ContentSlider({
   const intervalRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
-    if (!api) return;
+    if (!api) {
+      return;
+    }
 
     setCount(api.scrollSnapList().length);
     setCurrent(api.selectedScrollSnap());
@@ -68,8 +72,10 @@ export function ContentSlider({
 
   // Auto-play functionality with performance optimization
   const startAutoPlay = useCallback(() => {
-    if (!api || !autoPlay) return;
-    
+    if (!api || !autoPlay) {
+      return;
+    }
+
     intervalRef.current = setInterval(() => {
       if (api.canScrollNext()) {
         api.scrollNext();
@@ -86,7 +92,9 @@ export function ContentSlider({
   }, []);
 
   useEffect(() => {
-    if (!api || !autoPlay) return;
+    if (!api || !autoPlay) {
+      return;
+    }
 
     // Start auto-play
     startAutoPlay();
@@ -104,11 +112,20 @@ export function ContentSlider({
   }, [api, autoPlay, startAutoPlay, stopAutoPlay]);
 
   const getBasisClass = useCallback(() => {
-    const { mobile = 1.5, tablet = 3, desktop = 4 } = itemsPerView;
-    const mobileClass = `basis-${Math.floor(100 / mobile)}/${Math.ceil(mobile)}`;
-    const tabletClass = `md:basis-1/${tablet}`;
-    const desktopClass = `lg:basis-1/${desktop}`;
-    return `${mobileClass} ${tabletClass} ${desktopClass}`;
+    const { mobile = 1.2, tablet = 2.5, desktop = 4, wide = 6 } = itemsPerView;
+    
+    // Calculate responsive basis classes
+    const mobilePercent = Math.floor(100 / mobile);
+    const tabletPercent = Math.floor(100 / tablet);
+    const desktopPercent = Math.floor(100 / desktop);
+    const widePercent = Math.floor(100 / wide);
+    
+    return {
+      mobile: `basis-${mobilePercent}%`,
+      tablet: `sm:basis-${tabletPercent}%`,
+      desktop: `lg:basis-${desktopPercent}%`,
+      wide: `xl:basis-${widePercent}%`,
+    };
   }, [itemsPerView]);
 
   return (
@@ -159,16 +176,16 @@ export function ContentSlider({
             opts={{ loop, align: 'start' }}
             className="w-full"
           >
-            <CarouselContent className="-ml-2 md:-ml-4">
+            <CarouselContent className="-ml-1 sm:-ml-2 md:-ml-4">
               {children}
             </CarouselContent>
 
-            {/* Custom navigation buttons */}
-            <div className="-left-4 md:-left-6 -translate-y-1/2 absolute top-1/2">
-              <CarouselPrevious className="h-12 w-12 border-border/50 bg-background/80 shadow-lg backdrop-blur-sm transition-all hover:bg-background hover:shadow-xl" />
+            {/* Custom navigation buttons - Hidden on mobile */}
+            <div className="-left-2 md:-left-4 lg:-left-6 -translate-y-1/2 absolute top-1/2 hidden sm:block">
+              <CarouselPrevious className="h-10 w-10 border-border/50 bg-background/80 shadow-lg backdrop-blur-sm transition-all hover:bg-background hover:shadow-xl sm:h-12 sm:w-12" />
             </div>
-            <div className="-right-4 md:-right-6 -translate-y-1/2 absolute top-1/2">
-              <CarouselNext className="h-12 w-12 border-border/50 bg-background/80 shadow-lg backdrop-blur-sm transition-all hover:bg-background hover:shadow-xl" />
+            <div className="-right-2 md:-right-4 lg:-right-6 -translate-y-1/2 absolute top-1/2 hidden sm:block">
+              <CarouselNext className="h-10 w-10 border-border/50 bg-background/80 shadow-lg backdrop-blur-sm transition-all hover:bg-background hover:shadow-xl sm:h-12 sm:w-12" />
             </div>
           </Carousel>
 
@@ -214,14 +231,15 @@ export function ContentSliderItem({
   return (
     <CarouselItem
       className={cn(
-        'pl-2 md:pl-4',
-        basis || 'basis-2/3 md:basis-1/3 lg:basis-1/4',
+        'pl-1 sm:pl-2 md:pl-4',
+        basis || 'basis-4/5 sm:basis-2/5 md:basis-1/3 lg:basis-1/4 xl:basis-1/6',
         className
       )}
     >
       <motion.div
         whileHover={{ scale: 1.02 }}
-        transition={{ type: 'spring', stiffness: 300 }}
+        whileTap={{ scale: 0.98 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
         className="h-full"
       >
         {children}

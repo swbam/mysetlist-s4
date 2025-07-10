@@ -156,7 +156,9 @@ export const getNearbyVenues = unstable_cache(
     radiusKm = 10,
     limit = 6
   ) => {
-    if (!latitude || !longitude) return [];
+    if (!latitude || !longitude) {
+      return [];
+    }
 
     // Calculate distance using Haversine formula in SQL
     const nearbyVenues = await db
@@ -229,8 +231,7 @@ export async function addVenueReview(
       .returning();
 
     return { success: true, review: newReview };
-  } catch (error) {
-    console.error('Error adding venue review:', error);
+  } catch (_error) {
     return { success: false, error: 'Failed to add review' };
   }
 }
@@ -255,8 +256,7 @@ export async function addVenuePhoto(
       .returning();
 
     return { success: true, photo: newPhoto };
-  } catch (error) {
-    console.error('Error adding venue photo:', error);
+  } catch (_error) {
     return { success: false, error: 'Failed to add photo' };
   }
 }
@@ -280,8 +280,7 @@ export async function addInsiderTip(
       .returning();
 
     return { success: true, tip: newTip };
-  } catch (error) {
-    console.error('Error adding insider tip:', error);
+  } catch (_error) {
     return { success: false, error: 'Failed to add tip' };
   }
 }
@@ -294,8 +293,7 @@ export async function markReviewHelpful(reviewId: string) {
       .where(eq(venueReviews.id, reviewId));
 
     return { success: true };
-  } catch (error) {
-    console.error('Error marking review helpful:', error);
+  } catch (_error) {
     return { success: false, error: 'Failed to update review' };
   }
 }
@@ -308,8 +306,7 @@ export async function markTipHelpful(tipId: string) {
       .where(eq(venueInsiderTips.id, tipId));
 
     return { success: true };
-  } catch (error) {
-    console.error('Error marking tip helpful:', error);
+  } catch (_error) {
     return { success: false, error: 'Failed to update tip' };
   }
 }

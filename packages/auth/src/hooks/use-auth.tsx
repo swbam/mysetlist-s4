@@ -70,8 +70,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
           setSession(currentSession);
           setUser(currentSession?.user || null);
         }
-      } catch (error) {
-        console.error('Error initializing auth:', error);
+      } catch (_error) {
         setSession(null);
         setUser(null);
       } finally {
@@ -85,8 +84,6 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
     const {
       data: { subscription },
     } = authProvider.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email);
-
       setSession(session);
       setUser(session?.user || null);
       setLoading(false);
@@ -183,8 +180,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
       const newSession = await authProvider.refreshSession();
       setSession(newSession);
       setUser(newSession?.user || null);
-    } catch (error) {
-      console.error('Error refreshing session:', error);
+    } catch (_error) {
       setSession(null);
       setUser(null);
     }
@@ -208,7 +204,9 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
 
   const hasRole = useCallback(
     (requiredRole: 'user' | 'moderator' | 'admin') => {
-      if (!user) return false;
+      if (!user) {
+        return false;
+      }
 
       const userRole = user.appMetadata?.role || 'user';
       const roleHierarchy = { user: 0, moderator: 1, admin: 2 };

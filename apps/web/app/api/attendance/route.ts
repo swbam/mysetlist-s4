@@ -57,8 +57,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({ success: true, status });
-  } catch (error) {
-    console.error('Attendance error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to update attendance' },
       { status: 500 }
@@ -94,8 +93,7 @@ export async function DELETE(request: NextRequest) {
       );
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Remove attendance error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to remove attendance' },
       { status: 500 }

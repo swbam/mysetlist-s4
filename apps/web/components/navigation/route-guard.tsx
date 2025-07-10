@@ -1,8 +1,8 @@
 'use client';
 
+import { Skeleton } from '@repo/design-system/components/ui/skeleton';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
 
 interface RouteGuardProps {
   children: React.ReactNode;
@@ -35,13 +35,13 @@ export function RouteGuard({ children, fallback }: RouteGuardProps) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-semibold mb-2">Page Load Error</h2>
-          <p className="text-muted-foreground mb-4">
+          <h2 className="mb-2 font-semibold text-2xl">Page Load Error</h2>
+          <p className="mb-4 text-muted-foreground">
             There was an error loading this page.
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+            className="rounded-md bg-primary px-4 py-2 text-primary-foreground"
           >
             Reload Page
           </button>
@@ -62,10 +62,10 @@ export function PageLoadingSkeleton() {
     <div className="container mx-auto px-4 py-8">
       <div className="space-y-8">
         <div>
-          <Skeleton className="h-12 w-64 mb-4" />
+          <Skeleton className="mb-4 h-12 w-64" />
           <Skeleton className="h-6 w-96" />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="space-y-4">
               <Skeleton className="h-48 w-full rounded-lg" />

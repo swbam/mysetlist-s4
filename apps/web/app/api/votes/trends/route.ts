@@ -22,21 +22,22 @@ export async function GET(request: NextRequest) {
     const hours = Number.parseInt(timeframe.replace('h', ''));
     const startTime = subHours(new Date(), hours);
 
+    // Build conditions for setlist songs query
+    const conditions = [eq(setlists.showId, showId)];
+    
+    if (setlistId) {
+      conditions.push(eq(setlistSongs.setlistId, setlistId));
+    }
+
     // Get all setlist songs for this show
-    let setlistSongsQuery = db
+    const setlistSongsQuery = db
       .select({
         id: setlistSongs.id,
         setlistId: setlistSongs.setlistId,
       })
       .from(setlistSongs)
       .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
-      .where(eq(setlists.showId, showId));
-
-    if (setlistId) {
-      setlistSongsQuery = setlistSongsQuery.where(
-        eq(setlistSongs.setlistId, setlistId)
-      );
-    }
+      .where(conditions.length > 1 ? and(...conditions) : conditions[0]);
 
     const setlistSongsData = await setlistSongsQuery;
 
@@ -105,10 +106,6 @@ export async function GET(request: NextRequest) {
 
     // Calculate summary statistics
     const totalVotes = votesData.length;
-    const totalUpvotes = votesData.filter((v) => v.voteType === 'up').length;
-    const totalDownvotes = votesData.filter(
-      (v) => v.voteType === 'down'
-    ).length;
     const averageVotesPerHour = totalVotes / Math.max(1, hourlyData.length);
 
     // Find peak and quiet hours
@@ -139,7 +136,7 @@ export async function GET(request: NextRequest) {
     // Calculate momentum score (0-1, based on consistency and growth)
     const hourlyGrowth = hourlyData
       .slice(1)
-      .map((h, i) => h.votes - hourlyData[i].votes);
+      .map((h, i) => h.votes - (hourlyData[i] || { votes: 0 }).votes);
     const positiveGrowth = hourlyGrowth.filter((g) => g > 0).length;
     const consistency = positiveGrowth / Math.max(1, hourlyGrowth.length);
     const volumeScore = Math.min(1, totalVotes / (hours * 10)); // Normalize to expected volume
@@ -166,18 +163,20 @@ export async function GET(request: NextRequest) {
       .slice(0, 5);
 
     // Simple prediction for next hour (based on recent trend and time patterns)
-    const lastHourVotes = hourlyData[hourlyData.length - 1]?.votes || 0;
+    const lastHourVotes = hourlyData.at(-1)?.votes || 0;
     const trendMultiplier =
       currentTrend === 'up' ? 1.2 : currentTrend === 'down' ? 0.8 : 1.0;
     const timeOfDay = new Date().getHours();
 
     // Adjust for typical activity patterns (simplified)
     let timeMultiplier = 1.0;
-    if (timeOfDay >= 18 && timeOfDay <= 23)
+    if (timeOfDay >= 18 && timeOfDay <= 23) {
       timeMultiplier = 1.3; // Evening peak
-    else if (timeOfDay >= 0 && timeOfDay <= 6)
+    } else if (timeOfDay >= 0 && timeOfDay <= 6) {
       timeMultiplier = 0.3; // Night quiet
-    else if (timeOfDay >= 12 && timeOfDay <= 17) timeMultiplier = 1.1; // Afternoon
+    } else if (timeOfDay >= 12 && timeOfDay <= 17) {
+      timeMultiplier = 1.1; // Afternoon
+    }
 
     const predictedVotes = Math.round(
       (lastHourVotes * 0.4 + averageVotes * 0.6) *
@@ -222,8 +221,7 @@ export async function GET(request: NextRequest) {
         factors: predictionFactors,
       },
     });
-  } catch (error) {
-    console.error('Vote trends API error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

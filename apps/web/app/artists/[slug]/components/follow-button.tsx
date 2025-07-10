@@ -1,10 +1,10 @@
 'use client';
 
-import { useAuth } from '@/app/providers/auth-provider';
 import { Button } from '@repo/design-system';
 import { Heart } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '~/app/providers/auth-provider';
 
 interface FollowButtonProps {
   artistId: string;
@@ -30,9 +30,7 @@ export function FollowButton({ artistId, artistName }: FollowButtonProps) {
         const data = await response.json();
         setIsFollowing(data.isFollowing);
       }
-    } catch (error) {
-      console.error('Error checking follow status:', error);
-    }
+    } catch (_error) {}
   };
 
   const handleFollowToggle = async () => {
@@ -57,8 +55,7 @@ export function FollowButton({ artistId, artistName }: FollowButtonProps) {
       } else {
         throw new Error('Failed to update follow status');
       }
-    } catch (error) {
-      console.error('Error toggling follow:', error);
+    } catch (_error) {
       toast.error('Failed to update follow status');
     } finally {
       setIsLoading(false);

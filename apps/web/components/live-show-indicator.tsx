@@ -31,21 +31,27 @@ export function LiveShowIndicator({
 
   // Determine show status based on date and time
   const getShowStatus = () => {
-    if (showStatus === 'cancelled') return 'cancelled';
-    if (showStatus === 'completed') return 'completed';
-    if (showStatus === 'live') return 'live';
+    if (showStatus === 'cancelled') {
+      return 'cancelled';
+    }
+    if (showStatus === 'completed') {
+      return 'completed';
+    }
+    if (showStatus === 'live') {
+      return 'live';
+    }
 
-    const now = currentTime;
+    const _now = currentTime;
     const showTime = new Date(showDate);
     const showEndTime = new Date(showTime.getTime() + 3 * 60 * 60 * 1000); // Assume 3-hour show
 
     if (isFuture(showTime)) {
       return 'upcoming';
-    } else if (isPast(showEndTime)) {
-      return 'completed';
-    } else {
-      return 'live';
     }
+    if (isPast(showEndTime)) {
+      return 'completed';
+    }
+    return 'live';
   };
 
   const status = getShowStatus();
@@ -88,7 +94,9 @@ export function LiveShowIndicator({
   const Icon = config.icon;
 
   if (variant === 'minimal') {
-    if (status !== 'live') return null;
+    if (status !== 'live') {
+      return null;
+    }
 
     return (
       <div className={cn('relative', className)}>

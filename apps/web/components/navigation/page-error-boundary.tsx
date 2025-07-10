@@ -1,10 +1,15 @@
 'use client';
 
 import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@repo/design-system/components/ui/card';
 import { AlertTriangle, ArrowLeft, Home, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import React from 'react';
 
 interface Props {
@@ -29,8 +34,7 @@ export class PageErrorBoundary extends React.Component<Props, State> {
     return { hasError: true, error, errorInfo: null };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Page error boundary caught an error:', error, errorInfo);
+  componentDidCatch(_error: Error, errorInfo: React.ErrorInfo) {
     this.setState({ errorInfo });
   }
 
@@ -58,25 +62,28 @@ export class PageErrorBoundary extends React.Component<Props, State> {
                 <AlertTriangle className="h-8 w-8 text-destructive" />
               </div>
               <CardTitle className="text-2xl">
-                {this.props.pageTitle ? `${this.props.pageTitle} Error` : 'Page Error'}
+                {this.props.pageTitle
+                  ? `${this.props.pageTitle} Error`
+                  : 'Page Error'}
               </CardTitle>
               <CardDescription>
-                Something went wrong while loading this page. Don't worry, we can help you get back on track.
+                Something went wrong while loading this page. Don't worry, we
+                can help you get back on track.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-3">
-                <Button 
+                <Button
                   onClick={this.handleReset}
-                  variant="default" 
+                  variant="default"
                   className="w-full"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Try Again
                 </Button>
-                <Button 
+                <Button
                   onClick={this.handleReload}
-                  variant="outline" 
+                  variant="outline"
                   className="w-full"
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
@@ -99,7 +106,7 @@ export class PageErrorBoundary extends React.Component<Props, State> {
                 </Button>
               </div>
 
-              {process.env['NODE_ENV'] === 'development' && this.state.error && (
+              {process.env.NODE_ENV === 'development' && this.state.error && (
                 <details className="mt-6 text-left">
                   <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
                     Error Details (Development)
@@ -121,7 +128,9 @@ export class PageErrorBoundary extends React.Component<Props, State> {
                     )}
                     {this.state.errorInfo && (
                       <div className="rounded-md bg-muted p-3">
-                        <h4 className="font-medium text-sm">Component Stack:</h4>
+                        <h4 className="font-medium text-sm">
+                          Component Stack:
+                        </h4>
                         <pre className="mt-1 overflow-auto text-xs">
                           {this.state.errorInfo.componentStack}
                         </pre>

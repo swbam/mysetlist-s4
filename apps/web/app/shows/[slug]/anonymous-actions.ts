@@ -1,8 +1,8 @@
 'use server';
 
-import { getCurrentUser } from '@/lib/auth';
-import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { getCurrentUser } from '~/lib/auth';
+import { createClient } from '~/lib/supabase/server';
 
 export async function recordAnonymousSongSuggestion(
   setlistId: string,
@@ -43,9 +43,6 @@ export async function recordAnonymousSongSuggestion(
   });
 
   if (error) {
-    // If table doesn't exist, we can still succeed
-    // The client-side tracking is the main feature
-    console.warn('Failed to record anonymous suggestion:', error);
   }
 
   revalidatePath('/shows/[slug]', 'page');
@@ -101,8 +98,7 @@ export async function syncAnonymousActions(sessionData: {
 
         results.votesSynced++;
       }
-    } catch (error) {
-      console.error('Failed to sync vote:', error);
+    } catch (_error) {
       results.errors.push(`Failed to sync vote for song ${vote.setlistSongId}`);
     }
   }
@@ -127,9 +123,7 @@ export async function syncAnonymousActions(sessionData: {
           net_votes: upvotes - downvotes,
         })
         .eq('id', vote.setlistSongId);
-    } catch (error) {
-      console.error('Failed to update vote counts:', error);
-    }
+    } catch (_error) {}
   }
 
   // Note: Song additions would typically need more complex handling
@@ -139,8 +133,7 @@ export async function syncAnonymousActions(sessionData: {
       // You might want to actually add these songs to the setlist
       // or record them as suggestions
       results.songsSynced++;
-    } catch (error) {
-      console.error('Failed to sync song addition:', error);
+    } catch (_error) {
       results.errors.push(
         `Failed to sync song addition for setlist ${song.setlistId}`
       );

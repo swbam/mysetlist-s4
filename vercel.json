@@ -11,10 +11,6 @@
     {
       "path": "/api/cron/analytics",
       "schedule": "0 1 * * *"
-    },
-    {
-      "path": "/api/cron/cache-warm",
-      "schedule": "*/30 * * * *"
     }
   ],
   "functions": {

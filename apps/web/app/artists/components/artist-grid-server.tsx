@@ -34,8 +34,7 @@ export async function ArtistGridServer() {
         ))}
       </div>
     );
-  } catch (error) {
-    console.error('Error fetching artists:', error);
+  } catch (_error) {
     return (
       <div className="py-8 text-center">
         <p className="text-muted-foreground">

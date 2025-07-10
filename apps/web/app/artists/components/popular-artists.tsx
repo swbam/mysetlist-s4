@@ -1,4 +1,3 @@
-import { parseGenres } from '@/lib/parse-genres';
 import { db } from '@repo/database';
 import { artists, showArtists, shows } from '@repo/database/src/schema';
 import { Badge } from '@repo/design-system/components/ui/badge';
@@ -6,6 +5,7 @@ import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { desc, eq, sql } from 'drizzle-orm';
 import { Calendar, Star, Users } from 'lucide-react';
 import Link from 'next/link';
+import { parseGenres } from '~/lib/parse-genres';
 
 async function getPopularArtists() {
   // Get artists ordered by their overall popularity (follower count, show attendance, etc.)
@@ -65,7 +65,7 @@ export async function PopularArtists() {
         const artist = { ...artistRaw, genres } as typeof artistRaw & {
           genres: string[];
         };
-        
+
         return (
           <Link
             key={artist.id}
@@ -102,7 +102,11 @@ export async function PopularArtists() {
                 {genres.length > 0 && (
                   <div className="mb-3 flex flex-wrap gap-1">
                     {genres.slice(0, 2).map((genre) => (
-                      <Badge key={genre} variant="secondary" className="text-xs">
+                      <Badge
+                        key={genre}
+                        variant="secondary"
+                        className="text-xs"
+                      >
                         {genre}
                       </Badge>
                     ))}

@@ -1,10 +1,5 @@
 'use client';
 
-import {
-  ContentSlider,
-  ContentSliderItem,
-} from '@/components/ui/content-slider';
-import type { TrendingShow } from '@/types/api';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { format } from 'date-fns';
@@ -13,12 +8,17 @@ import { Calendar, MapPin, TrendingUp, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
+import {
+  ContentSlider,
+  ContentSliderItem,
+} from '~/components/ui/content-slider';
+import type { TrendingShow } from '~/types/api';
 
 interface TrendingShowsCarouselProps {
   shows: TrendingShow[];
 }
 
-const TrendingShowsCarousel = React.memo(function TrendingShowsCarousel({
+function TrendingShowsCarousel({
   shows,
 }: TrendingShowsCarouselProps) {
   return (
@@ -30,9 +30,10 @@ const TrendingShowsCarousel = React.memo(function TrendingShowsCarousel({
       autoPlay={true}
       autoPlayInterval={5000}
       itemsPerView={{
-        mobile: 1.2,
-        tablet: 2.5,
-        desktop: 4,
+        mobile: 1.1,
+        tablet: 2.2,
+        desktop: 3.5,
+        wide: 5,
       }}
       showDots={true}
     >
@@ -49,7 +50,7 @@ const TrendingShowsCarousel = React.memo(function TrendingShowsCarousel({
                         src={show.artist.imageUrl}
                         alt={show.name}
                         fill
-                        sizes="(max-width: 640px) 90vw, (max-width: 1024px) 50vw, 400px"
+                        sizes="(max-width: 640px) 95vw, (max-width: 768px) 50vw, (max-width: 1024px) 40vw, 350px"
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
@@ -85,12 +86,12 @@ const TrendingShowsCarousel = React.memo(function TrendingShowsCarousel({
                 </div>
 
                 {/* Content section */}
-                <div className="flex-1 space-y-3 p-4">
+                <div className="flex-1 space-y-2 p-3 sm:space-y-3 sm:p-4">
                   <div>
-                    <h3 className="line-clamp-2 font-semibold text-lg transition-colors group-hover:text-primary">
+                    <h3 className="line-clamp-2 font-semibold text-base transition-colors group-hover:text-primary sm:text-lg">
                       {show.name}
                     </h3>
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="mt-0.5 text-muted-foreground text-xs sm:mt-1 sm:text-sm">
                       by {show.artist.name}
                     </p>
                   </div>
@@ -108,11 +109,12 @@ const TrendingShowsCarousel = React.memo(function TrendingShowsCarousel({
                   )}
 
                   {/* Stats */}
-                  <div className="mt-auto flex items-center gap-4 pt-2">
-                    <div className="flex items-center gap-1.5 text-sm">
-                      <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                  <div className="mt-auto flex items-center gap-3 pt-1 sm:gap-4 sm:pt-2">
+                    <div className="flex items-center gap-1 text-xs sm:gap-1.5 sm:text-sm">
+                      <Users className="h-3 w-3 text-muted-foreground sm:h-3.5 sm:w-3.5" />
                       <span className="font-medium">{show.attendeeCount}</span>
-                      <span className="text-muted-foreground">attending</span>
+                      <span className="text-muted-foreground hidden sm:inline">attending</span>
+                      <span className="text-muted-foreground sm:hidden">going</span>
                     </div>
                   </div>
                 </div>
@@ -123,6 +125,6 @@ const TrendingShowsCarousel = React.memo(function TrendingShowsCarousel({
       ))}
     </ContentSlider>
   );
-});
+}
 
 export default TrendingShowsCarousel;

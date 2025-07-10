@@ -41,8 +41,12 @@ export function BottomSheet({
 
   // Calculate height based on props and snap points
   const getHeight = () => {
-    if (height === 'full') return '100vh';
-    if (height === 'half') return '50vh';
+    if (height === 'full') {
+      return '100vh';
+    }
+    if (height === 'half') {
+      return '50vh';
+    }
     if (snapPoints && snapPoints.length > 0) {
       return `${snapPoints[currentSnapIndex]}vh`;
     }
@@ -65,17 +69,19 @@ export function BottomSheet({
     };
   }, [isOpen]);
 
-  const handleDragEnd = (event: any, info: PanInfo) => {
+  const handleDragEnd = (_event: any, info: PanInfo) => {
     setIsDragging(false);
 
-    if (!draggable || !snapPoints) return;
+    if (!draggable || !snapPoints) {
+      return;
+    }
 
     const { offset, velocity } = info;
     const sheetHeight = sheetRef.current?.offsetHeight || 0;
     const viewportHeight = window.innerHeight;
 
     // Calculate current position as percentage
-    const currentPosition =
+    const _currentPosition =
       ((viewportHeight - sheetHeight) / viewportHeight) * 100;
 
     // Determine which snap point to go to based on drag direction and velocity
@@ -86,9 +92,8 @@ export function BottomSheet({
       if (currentSnapIndex === 0) {
         onClose();
         return;
-      } else {
-        targetSnapIndex = Math.max(0, currentSnapIndex - 1);
       }
+      targetSnapIndex = Math.max(0, currentSnapIndex - 1);
     } else if (velocity.y < -300) {
       // Fast upward swipe - go to higher snap point
       targetSnapIndex = Math.min(snapPoints.length - 1, currentSnapIndex + 1);

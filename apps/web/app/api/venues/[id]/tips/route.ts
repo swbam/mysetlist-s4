@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
 import { db } from '@repo/database';
 import { users, venueTips } from '@repo/database/src/schema';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { createClient } from '~/lib/supabase/server';
 
 const tipSchema = z.object({
   content: z.string().min(10, 'Tip must be at least 10 characters').max(500),
@@ -11,7 +11,7 @@ const tipSchema = z.object({
 });
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -26,8 +26,8 @@ export async function GET(
         createdAt: venueTips.createdAt,
         userId: venueTips.userId,
         upvotes: venueTips.upvotes,
-        userName: users.name,
-        userImage: users.image,
+        userName: users.displayName,
+        userImage: sql<string | null>`null`, // No image field in users table
       })
       .from(venueTips)
       .leftJoin(users, eq(venueTips.userId, users.id))
@@ -35,8 +35,7 @@ export async function GET(
       .orderBy(desc(venueTips.upvotes), desc(venueTips.createdAt));
 
     return NextResponse.json({ tips });
-  } catch (error) {
-    console.error('Error fetching venue tips:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch venue tips' },
       { status: 500 }
@@ -80,18 +79,18 @@ export async function POST(
     // Get the created tip with user info
     const [tipWithUser] = await db
       .select({
-        id: newTip.id,
-        content: newTip.content,
-        category: newTip.category,
-        createdAt: newTip.createdAt,
-        userId: newTip.userId,
-        upvotes: newTip.upvotes,
-        userName: users.name,
-        userImage: users.image,
+        id: venueTips.id,
+        content: venueTips.content,
+        category: venueTips.category,
+        createdAt: venueTips.createdAt,
+        userId: venueTips.userId,
+        upvotes: venueTips.upvotes,
+        userName: users.displayName,
+        userImage: sql<string | null>`null`, // No image field in users table
       })
       .from(venueTips)
       .leftJoin(users, eq(venueTips.userId, users.id))
-      .where(eq(venueTips.id, newTip.id));
+      .where(eq(venueTips.id, newTip!.id));
 
     return NextResponse.json({ tip: tipWithUser });
   } catch (error) {
@@ -101,8 +100,6 @@ export async function POST(
         { status: 400 }
       );
     }
-
-    console.error('Error creating venue tip:', error);
     return NextResponse.json(
       { error: 'Failed to create venue tip' },
       { status: 500 }
@@ -112,7 +109,7 @@ export async function POST(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
@@ -135,14 +132,13 @@ export async function PATCH(
     const [updatedTip] = await db
       .update(venueTips)
       .set({
-        upvotes: venueTips.upvotes + 1,
+        upvotes: sql`${venueTips.upvotes} + 1`,
       })
       .where(eq(venueTips.id, tipId))
       .returning();
 
     return NextResponse.json({ tip: updatedTip });
-  } catch (error) {
-    console.error('Error updating venue tip:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to update venue tip' },
       { status: 500 }

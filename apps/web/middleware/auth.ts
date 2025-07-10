@@ -10,11 +10,10 @@ export async function updateSession(request: NextRequest) {
     });
 
     // Validate environment variables
-    const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'];
-    const supabaseAnonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('Missing Supabase environment variables');
       return response;
     }
 
@@ -63,14 +62,12 @@ export async function updateSession(request: NextRequest) {
     // Safely attempt to get user
     try {
       await supabase.auth.getUser();
-    } catch (error) {
-      console.error('Failed to get user session:', error);
+    } catch (_error) {
       // Continue without user session
     }
 
     return response;
-  } catch (error) {
-    console.error('updateSession error:', error);
+  } catch (_error) {
     // Return a basic response on error
     return NextResponse.next({
       request: {

@@ -44,14 +44,14 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
 
   // Register service worker
   const register = useCallback(async () => {
-    if (!state.isSupported) return null;
+    if (!state.isSupported) {
+      return null;
+    }
 
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', {
         scope: '/',
       });
-
-      console.log('Service worker registered:', registration);
 
       setState((prev) => ({
         ...prev,
@@ -62,7 +62,9 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
       // Handle updates
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
-        if (!newWorker) return;
+        if (!newWorker) {
+          return;
+        }
 
         setState((prev) => ({ ...prev, isInstalling: true }));
 
@@ -97,8 +99,7 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
       }
 
       return registration;
-    } catch (error) {
-      console.error('Service worker registration failed:', error);
+    } catch (_error) {
       return null;
     }
   }, [state.isSupported, onUpdate, onInstalled]);
@@ -116,10 +117,16 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
 
   // Request notification permission
   const requestNotificationPermission = useCallback(async () => {
-    if (!enableNotifications || !('Notification' in window)) return false;
+    if (!enableNotifications || !('Notification' in window)) {
+      return false;
+    }
 
-    if (Notification.permission === 'granted') return true;
-    if (Notification.permission === 'denied') return false;
+    if (Notification.permission === 'granted') {
+      return true;
+    }
+    if (Notification.permission === 'denied') {
+      return false;
+    }
 
     const permission = await Notification.requestPermission();
     return permission === 'granted';
@@ -134,7 +141,9 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
 
   // Cache important data for offline use
   const cacheData = useCallback(async (key: string, data: any) => {
-    if (!('caches' in window)) return;
+    if (!('caches' in window)) {
+      return;
+    }
 
     try {
       const cache = await caches.open('mysetlist-data-v1');
@@ -144,14 +153,14 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
           headers: { 'Content-Type': 'application/json' },
         })
       );
-    } catch (error) {
-      console.error('Failed to cache data:', error);
-    }
+    } catch (_error) {}
   }, []);
 
   // Get cached data
   const getCachedData = useCallback(async (key: string) => {
-    if (!('caches' in window)) return null;
+    if (!('caches' in window)) {
+      return null;
+    }
 
     try {
       const cache = await caches.open('mysetlist-data-v1');
@@ -159,9 +168,7 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
       if (response) {
         return await response.json();
       }
-    } catch (error) {
-      console.error('Failed to get cached data:', error);
-    }
+    } catch (_error) {}
     return null;
   }, []);
 
@@ -178,9 +185,7 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
       if (enableBackgroundSync && state.registration?.sync) {
         try {
           await state.registration.sync.register('offline-actions');
-        } catch (error) {
-          console.error('Failed to register background sync:', error);
-        }
+        } catch (_error) {}
       }
     },
     [offlineActions, cacheData, enableBackgroundSync, state.registration]
@@ -194,18 +199,21 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
 
   // Check if specific URL is cached
   const isCached = useCallback(async (url: string) => {
-    if (!('caches' in window)) return false;
+    if (!('caches' in window)) {
+      return false;
+    }
 
     try {
       const cacheNames = await caches.keys();
       for (const cacheName of cacheNames) {
         const cache = await caches.open(cacheName);
         const response = await cache.match(url);
-        if (response) return true;
+        if (response) {
+          return true;
+        }
       }
       return false;
-    } catch (error) {
-      console.error('Failed to check cache:', error);
+    } catch (_error) {
       return false;
     }
   }, []);
@@ -233,15 +241,15 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
 
   // Listen for service worker messages
   useEffect(() => {
-    if (!state.isSupported) return;
+    if (!state.isSupported) {
+      return;
+    }
 
     const handleMessage = (event: MessageEvent) => {
       const { data } = event;
 
       if (data.type === 'CACHE_UPDATED') {
-        console.log('Cache updated:', data.url);
       } else if (data.type === 'OFFLINE_ACTION_SYNCED') {
-        console.log('Offline action synced:', data.action);
         setOfflineActions((prev) =>
           prev.filter((action) => action.id !== data.action.id)
         );

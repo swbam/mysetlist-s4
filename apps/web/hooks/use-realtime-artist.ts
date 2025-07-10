@@ -1,8 +1,8 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { useCallback, useEffect, useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 interface ArtistFollower {
   artist_id: string;
@@ -38,8 +38,7 @@ export function useRealtimeArtist({
         setFollowerCount(count);
         onFollowerChange?.(count);
       }
-    } catch (error) {
-      console.error('Error fetching follower count:', error);
+    } catch (_error) {
     } finally {
       setIsLoading(false);
     }

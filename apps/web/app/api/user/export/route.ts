@@ -13,7 +13,7 @@ import {
 import { eq } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await getUser();
 
@@ -32,8 +32,7 @@ export async function GET(request: NextRequest) {
         'Content-Disposition': `attachment; filename="mysetlist-export-${user.id}-${new Date().toISOString().split('T')[0]}.json"`,
       },
     });
-  } catch (error) {
-    console.error('User data export error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to export user data' },
       { status: 500 }
@@ -47,6 +46,10 @@ async function collectUserData(userId: string) {
     .select()
     .from(users)
     .where(eq(users.id, userId));
+
+  if (!userProfile) {
+    throw new Error('User profile not found');
+  }
 
   // Get email preferences
   const [emailPrefs] = await db

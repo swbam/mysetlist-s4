@@ -1,10 +1,10 @@
 'use client';
 
-import type { Setlist } from '@/types/setlist';
 import { useAuth } from '@repo/auth';
 import { SetlistViewer as UISetlistViewer } from '@repo/design-system';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import type { Setlist } from '~/types/setlist';
 
 interface Vote {
   userId: string;
@@ -39,7 +39,9 @@ export function SetlistViewer({
 
   // Set up real-time subscription
   useEffect(() => {
-    if (!realtime || !showId) return;
+    if (!realtime || !showId) {
+      return;
+    }
 
     // Subscribe to setlist updates
     const eventSource = new EventSource(`/api/setlists/${showId}/stream`);
@@ -51,7 +53,9 @@ export function SetlistViewer({
       } else if (data.type === 'vote_update') {
         // Update specific song vote counts
         setSetlist((prev) => {
-          if (!prev) return prev;
+          if (!prev) {
+            return prev;
+          }
           return {
             ...prev,
             songs: prev.songs.map((song) =>
@@ -74,8 +78,7 @@ export function SetlistViewer({
         const data = await response.json();
         setSetlist(data);
       }
-    } catch (error) {
-      console.error('Failed to fetch setlist:', error);
+    } catch (_error) {
       toast.error('Failed to load setlist');
     } finally {
       setLoading(false);
@@ -83,7 +86,9 @@ export function SetlistViewer({
   };
 
   const fetchUserVotes = async () => {
-    if (!user) return;
+    if (!user) {
+      return;
+    }
 
     try {
       const response = await fetch(`/api/votes?showId=${showId}`);
@@ -95,9 +100,7 @@ export function SetlistViewer({
         });
         setUserVotes(votesMap);
       }
-    } catch (error) {
-      console.error('Failed to fetch user votes:', error);
-    }
+    } catch (_error) {}
   };
 
   const handleVote = async (songId: string, voteType: 'up' | 'down' | null) => {
@@ -133,23 +136,35 @@ export function SetlistViewer({
 
       // Optimistically update vote counts
       setSetlist((prev) => {
-        if (!prev) return prev;
+        if (!prev) {
+          return prev;
+        }
         return {
           ...prev,
           songs: prev.songs.map((song) => {
-            if (song.id !== songId) return song;
+            if (song.id !== songId) {
+              return song;
+            }
 
             const currentVote = userVotes[songId];
             let upvotes = song.upvotes || 0;
             let downvotes = song.downvotes || 0;
 
             // Remove previous vote
-            if (currentVote === 'up') upvotes--;
-            if (currentVote === 'down') downvotes--;
+            if (currentVote === 'up') {
+              upvotes--;
+            }
+            if (currentVote === 'down') {
+              downvotes--;
+            }
 
             // Add new vote
-            if (voteType === 'up') upvotes++;
-            if (voteType === 'down') downvotes++;
+            if (voteType === 'up') {
+              upvotes++;
+            }
+            if (voteType === 'down') {
+              downvotes++;
+            }
 
             return { ...song, upvotes, downvotes };
           }),
@@ -157,8 +172,7 @@ export function SetlistViewer({
       });
 
       toast.success(voteType ? 'Vote recorded!' : 'Vote removed');
-    } catch (error) {
-      console.error('Vote failed:', error);
+    } catch (_error) {
       toast.error('Failed to record vote. Please try again.');
     }
   };
@@ -187,8 +201,7 @@ export function SetlistViewer({
         await navigator.clipboard.writeText(window.location.href);
         toast.success('Link copied to clipboard!');
       }
-    } catch (error) {
-      console.error('Share failed:', error);
+    } catch (_error) {
       toast.error('Failed to share setlist');
     }
   };
@@ -220,10 +233,10 @@ export function SetlistViewer({
     return (
       <div className="space-y-4">
         <div className="animate-pulse">
-          <div className="mb-4 h-8 w-1/3 rounded bg-muted"></div>
+          <div className="mb-4 h-8 w-1/3 rounded bg-muted" />
           <div className="space-y-3">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-16 rounded bg-muted"></div>
+              <div key={i} className="h-16 rounded bg-muted" />
             ))}
           </div>
         </div>

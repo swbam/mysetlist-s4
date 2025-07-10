@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/server';
-import { withRateLimit } from '@/middleware/rate-limit';
 import { db } from '@repo/database';
-import { artists, shows, venues, songs, setlists } from '@repo/database';
+import { artists, setlists, shows, songs, venues } from '@repo/database';
 import { inArray, sql } from 'drizzle-orm';
+import { type NextRequest, NextResponse } from 'next/server';
+import { createServiceClient } from '~/lib/supabase/server';
+import { withRateLimit } from '~/middleware/rate-limit';
 
-export const runtime = 'edge';
+export const runtime = 'nodejs';
 export const maxDuration = 30; // 30 seconds for batch operations
 
 interface BatchOperation {
@@ -41,15 +41,15 @@ async function processBatchOperations(
         for (const op of operations) {
           const result = await processOperation(op, tx);
           results.push(result);
-          
+
           if (!result.success && !options.continueOnError) {
             throw new Error(`Operation ${op.id} failed: ${result.error}`);
           }
         }
       });
-    } catch (error) {
+    } catch (_error) {
       // If transaction fails, mark all remaining operations as failed
-      const processedIds = new Set(results.map(r => r.id));
+      const processedIds = new Set(results.map((r) => r.id));
       for (const op of operations) {
         if (!processedIds.has(op.id)) {
           results.push({
@@ -65,7 +65,7 @@ async function processBatchOperations(
     for (const op of operations) {
       const result = await processOperation(op, db);
       results.push(result);
-      
+
       if (!result.success && !options.continueOnError) {
         break;
       }
@@ -81,7 +81,7 @@ async function processOperation(
 ): Promise<BatchResult> {
   try {
     let result;
-    
+
     switch (operation.type) {
       case 'create':
         result = await handleCreate(operation, dbClient);
@@ -98,7 +98,7 @@ async function processOperation(
       default:
         throw new Error(`Unknown operation type: ${operation.type}`);
     }
-    
+
     return {
       id: operation.id,
       success: true,
@@ -115,31 +115,26 @@ async function processOperation(
 
 async function handleCreate(operation: BatchOperation, dbClient: any) {
   const table = getTable(operation.resource);
-  
+
   if (Array.isArray(operation.data)) {
     // Batch insert
-    return await dbClient
-      .insert(table)
-      .values(operation.data)
-      .returning();
-  } else {
-    // Single insert
-    const [result] = await dbClient
-      .insert(table)
-      .values(operation.data)
-      .returning();
-    return result;
+    return await dbClient.insert(table).values(operation.data).returning();
   }
+  // Single insert
+  const [result] = await dbClient
+    .insert(table)
+    .values(operation.data)
+    .returning();
+  return result;
 }
 
 async function handleUpdate(operation: BatchOperation, dbClient: any) {
   const table = getTable(operation.resource);
-  
+
   if (Array.isArray(operation.data)) {
     // Batch update - update multiple records by ID
-    const ids = operation.data.map((item: any) => item.id);
     const updates: any[] = [];
-    
+
     for (const item of operation.data) {
       const { id, ...updateData } = item;
       const [updated] = await dbClient
@@ -149,50 +144,47 @@ async function handleUpdate(operation: BatchOperation, dbClient: any) {
         .returning();
       updates.push(updated);
     }
-    
+
     return updates;
-  } else {
-    // Single update
-    const { id, ...updateData } = operation.data;
-    const [result] = await dbClient
-      .update(table)
-      .set(updateData)
-      .where(sql`${table.id} = ${id}`)
-      .returning();
-    return result;
   }
+  // Single update
+  const { id, ...updateData } = operation.data;
+  const [result] = await dbClient
+    .update(table)
+    .set(updateData)
+    .where(sql`${table.id} = ${id}`)
+    .returning();
+  return result;
 }
 
 async function handleDelete(operation: BatchOperation, dbClient: any) {
   const table = getTable(operation.resource);
-  
+
   if (Array.isArray(operation.data)) {
     // Batch delete by IDs
-    const ids = operation.data.map((item: any) => 
+    const ids = operation.data.map((item: any) =>
       typeof item === 'string' ? item : item.id
     );
-    
+
     return await dbClient
       .delete(table)
       .where(inArray(table.id, ids))
       .returning();
-  } else {
-    // Single delete
-    const id = typeof operation.data === 'string' 
-      ? operation.data 
-      : operation.data.id;
-      
-    const [result] = await dbClient
-      .delete(table)
-      .where(sql`${table.id} = ${id}`)
-      .returning();
-    return result;
   }
+  // Single delete
+  const id =
+    typeof operation.data === 'string' ? operation.data : operation.data.id;
+
+  const [result] = await dbClient
+    .delete(table)
+    .where(sql`${table.id} = ${id}`)
+    .returning();
+  return result;
 }
 
 async function handleUpsert(operation: BatchOperation, dbClient: any) {
   const table = getTable(operation.resource);
-  
+
   if (Array.isArray(operation.data)) {
     // Batch upsert
     return await dbClient
@@ -202,29 +194,28 @@ async function handleUpsert(operation: BatchOperation, dbClient: any) {
         target: table.id,
         set: operation.data.reduce((acc: any, item: any) => {
           const { id, ...rest } = item;
-          Object.keys(rest).forEach(key => {
+          Object.keys(rest).forEach((key) => {
             acc[key] = sql`EXCLUDED.${sql.identifier(key)}`;
           });
           return acc;
         }, {}),
       })
       .returning();
-  } else {
-    // Single upsert
-    const { id, ...data } = operation.data;
-    const [result] = await dbClient
-      .insert(table)
-      .values(operation.data)
-      .onConflictDoUpdate({
-        target: table.id,
-        set: Object.keys(data).reduce((acc: any, key) => {
-          acc[key] = sql`EXCLUDED.${sql.identifier(key)}`;
-          return acc;
-        }, {}),
-      })
-      .returning();
-    return result;
   }
+  // Single upsert
+  const { id, ...data } = operation.data;
+  const [result] = await dbClient
+    .insert(table)
+    .values(operation.data)
+    .onConflictDoUpdate({
+      target: table.id,
+      set: Object.keys(data).reduce((acc: any, key) => {
+        acc[key] = sql`EXCLUDED.${sql.identifier(key)}`;
+        return acc;
+      }, {}),
+    })
+    .returning();
+  return result;
 }
 
 function getTable(resource: string) {
@@ -235,12 +226,12 @@ function getTable(resource: string) {
     songs,
     setlists,
   };
-  
+
   const table = tables[resource];
   if (!table) {
     throw new Error(`Unknown resource: ${resource}`);
   }
-  
+
   return table;
 }
 
@@ -248,17 +239,17 @@ async function handler(request: NextRequest) {
   try {
     // Check authentication
     const supabase = await createServiceClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body: BatchRequest = await request.json();
-    
+
     // Validate request
     if (!body.operations || !Array.isArray(body.operations)) {
       return NextResponse.json(
@@ -266,27 +257,27 @@ async function handler(request: NextRequest) {
         { status: 400 }
       );
     }
-    
+
     if (body.operations.length > 100) {
       return NextResponse.json(
         { error: 'Too many operations: maximum 100 per request' },
         { status: 400 }
       );
     }
-    
+
     // Process operations
     const results = await processBatchOperations(body.operations, {
       transactional: body.transactional ?? false,
       continueOnError: body.continueOnError ?? false,
     });
-    
+
     // Calculate summary
     const summary = {
       total: results.length,
-      successful: results.filter(r => r.success).length,
-      failed: results.filter(r => !r.success).length,
+      successful: results.filter((r) => r.success).length,
+      failed: results.filter((r) => !r.success).length,
     };
-    
+
     const response = NextResponse.json({
       success: summary.failed === 0,
       summary,
@@ -295,11 +286,13 @@ async function handler(request: NextRequest) {
     });
 
     // No caching for batch operations
-    response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+    response.headers.set(
+      'Cache-Control',
+      'no-cache, no-store, must-revalidate'
+    );
 
     return response;
-  } catch (error) {
-    console.error('Batch operation error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to process batch operations' },
       { status: 500 }

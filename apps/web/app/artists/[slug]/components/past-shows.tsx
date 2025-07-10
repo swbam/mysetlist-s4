@@ -1,4 +1,3 @@
-import { formatDate } from '@/lib/utils';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
@@ -9,6 +8,8 @@ import {
 } from '@repo/design-system/components/ui/card';
 import { Calendar, MapPin, Music2, Users } from 'lucide-react';
 import Link from 'next/link';
+import React from 'react';
+import { formatDate } from '~/lib/utils';
 
 interface Show {
   show: {
@@ -37,9 +38,14 @@ interface Show {
 interface PastShowsProps {
   shows: Show[];
   artistName: string;
+  artistId?: string;
 }
 
-export function PastShows({ shows, artistName }: PastShowsProps) {
+export const PastShows = React.memo(function PastShows({ 
+  shows, 
+  artistName, 
+  artistId: _artistId 
+}: PastShowsProps) {
   if (shows.length === 0) {
     return (
       <Card>
@@ -133,4 +139,4 @@ export function PastShows({ shows, artistName }: PastShowsProps) {
       </CardContent>
     </Card>
   );
-}
+});

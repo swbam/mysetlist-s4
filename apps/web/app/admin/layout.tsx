@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server';
 import {
   Activity,
   AlertCircle,
@@ -14,6 +13,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { createClient } from '~/lib/supabase/server';
 export default async function AdminLayout({
   children,
   params,

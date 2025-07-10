@@ -101,7 +101,7 @@ export async function getArtistsByGenre(genre: string, limit = 20) {
       )`,
     })
     .from(artists)
-    .where(sql`${artists.genres}::text ILIKE ${'%' + genre + '%'}`)
+    .where(sql`${artists.genres}::text ILIKE ${`%${genre}%`}`)
     .orderBy(desc(artists.popularity))
     .limit(limit);
 
@@ -162,7 +162,7 @@ export async function getSimilarArtists(artistId: string, limit = 10) {
 
   // Find artists with similar genres
   const genreConditions = genres.map(
-    (genre) => sql`${artists.genres}::text ILIKE ${'%' + genre + '%'}`
+    (genre) => sql`${artists.genres}::text ILIKE ${`%${genre}%`}`
   );
 
   const results = await db

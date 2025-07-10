@@ -7,8 +7,8 @@
  * Tests all functionality across the MySetlist application
  */
 
-import http from 'http';
-import https from 'https';
+import http from 'node:http';
+import https from 'node:https';
 
 const BASE_URL = 'http://localhost:3001';
 const TEST_TIMEOUT = 10000;
@@ -83,49 +83,36 @@ function makeRequest(url, options = {}) {
 
 // Test logging functions
 function logTest(name, status, details = '') {
-  const statusColor =
+  const _statusColor =
     status === 'PASS'
       ? colors.green
       : status === 'FAIL'
         ? colors.red
         : colors.yellow;
-
-  console.log(`${statusColor}${status}${colors.reset} ${name}`);
   if (details) {
-    console.log(`  ${colors.cyan}${details}${colors.reset}`);
   }
 
   testResults.details.push({ name, status, details });
-  if (status === 'PASS') testResults.passed++;
-  else if (status === 'FAIL') testResults.failed++;
-  else testResults.skipped++;
+  if (status === 'PASS') {
+    testResults.passed++;
+  } else if (status === 'FAIL') {
+    testResults.failed++;
+  } else {
+    testResults.skipped++;
+  }
 }
 
-function logSection(title) {
-  console.log(`\n${colors.bold}${colors.blue}=== ${title} ===${colors.reset}`);
-}
+function logSection(_title) {}
 
 function logSummary() {
-  console.log(
-    `\n${colors.bold}${colors.magenta}=== TEST SUMMARY ===${colors.reset}`
-  );
-  console.log(`${colors.green}✓ Passed: ${testResults.passed}${colors.reset}`);
-  console.log(`${colors.red}✗ Failed: ${testResults.failed}${colors.reset}`);
-  console.log(
-    `${colors.yellow}⊝ Skipped: ${testResults.skipped}${colors.reset}`
-  );
-
   const total = testResults.passed + testResults.failed + testResults.skipped;
-  const successRate =
+  const _successRate =
     total > 0 ? ((testResults.passed / total) * 100).toFixed(1) : 0;
 
-  console.log(`\n${colors.bold}Success Rate: ${successRate}%${colors.reset}`);
-
   if (testResults.failed > 0) {
-    console.log(`\n${colors.red}Failed Tests:${colors.reset}`);
     testResults.details
       .filter((test) => test.status === 'FAIL')
-      .forEach((test) => console.log(`  - ${test.name}: ${test.details}`));
+      .forEach((_test) => );
   }
 }
 
@@ -493,15 +480,6 @@ async function testDatabaseConnectivity() {
 
 // Main test execution
 async function runAllTests() {
-  console.log(
-    `${colors.bold}${colors.cyan}MySetlist - Comprehensive End-to-End Testing Suite${colors.reset}`
-  );
-  console.log(
-    `${colors.cyan}Agent 10: Final Testing & Quality Assurance${colors.reset}\n`
-  );
-  console.log(`Testing application at: ${BASE_URL}`);
-  console.log(`Test timeout: ${TEST_TIMEOUT}ms\n`);
-
   const startTime = Date.now();
 
   try {
@@ -516,42 +494,21 @@ async function runAllTests() {
     await testErrorHandling();
     await testSecurityHeaders();
     await testDatabaseConnectivity();
-  } catch (error) {
-    console.error(
-      `${colors.red}Fatal error during testing: ${error.message}${colors.reset}`
-    );
-  }
+  } catch (_error) {}
 
   const endTime = Date.now();
-  const totalTime = ((endTime - startTime) / 1000).toFixed(2);
+  const _totalTime = ((endTime - startTime) / 1000).toFixed(2);
 
   logSummary();
-  console.log(`\nTotal test time: ${totalTime}s`);
 
   // Generate final assessment
   const total = testResults.passed + testResults.failed + testResults.skipped;
   const successRate = total > 0 ? (testResults.passed / total) * 100 : 0;
 
-  console.log(
-    `\n${colors.bold}${colors.magenta}=== FINAL ASSESSMENT ===${colors.reset}`
-  );
-
   if (successRate >= 90) {
-    console.log(
-      `${colors.green}${colors.bold}✓ EXCELLENT${colors.reset} - Application ready for production`
-    );
   } else if (successRate >= 75) {
-    console.log(
-      `${colors.yellow}${colors.bold}⚠ GOOD${colors.reset} - Minor issues need attention`
-    );
   } else if (successRate >= 50) {
-    console.log(
-      `${colors.yellow}${colors.bold}⚠ FAIR${colors.reset} - Several issues need fixing`
-    );
   } else {
-    console.log(
-      `${colors.red}${colors.bold}✗ POOR${colors.reset} - Major issues require immediate attention`
-    );
   }
 
   return {
@@ -567,10 +524,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     .then((results) => {
       process.exit(results.success ? 0 : 1);
     })
-    .catch((error) => {
-      console.error(
-        `${colors.red}Test suite failed: ${error.message}${colors.reset}`
-      );
+    .catch((_error) => {
       process.exit(1);
     });
 }

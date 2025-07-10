@@ -1,11 +1,11 @@
 'use client';
 
-import { formatNumber } from '@/lib/utils';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { CheckCircle2, Music, TrendingUp } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { formatNumber } from '~/lib/utils';
 
 interface ArtistCardProps {
   artist: {

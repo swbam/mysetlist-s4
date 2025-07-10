@@ -83,15 +83,16 @@ export function VoteLeaderboard({
     const fetchLeaderboard = async () => {
       try {
         const params = new URLSearchParams({ showId });
-        if (setlistId) params.set('setlistId', setlistId);
+        if (setlistId) {
+          params.set('setlistId', setlistId);
+        }
 
         const response = await fetch(`/api/votes/leaderboard?${params}`);
         if (response.ok) {
           const result = await response.json();
           setData(result);
         }
-      } catch (error) {
-        console.error('Failed to fetch leaderboard:', error);
+      } catch (_error) {
       } finally {
         setLoading(false);
       }
@@ -111,7 +112,7 @@ export function VoteLeaderboard({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {[...Array(5)].map((_, i) => (
+            {[...new Array(5)].map((_, i) => (
               <div key={i} className="flex items-center gap-3">
                 <div className="h-10 w-10 animate-pulse rounded-full bg-muted" />
                 <div className="flex-1 space-y-2">

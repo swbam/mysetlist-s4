@@ -77,7 +77,7 @@ export function ArtistGrid({
     }
   }, [user]);
 
-  const buildFetchUrl = (pageNum: number, reset = false) => {
+  const buildFetchUrl = (pageNum: number, _reset = false) => {
     const params = new URLSearchParams();
     params.set('page', pageNum.toString());
     params.set('limit', pageSize.toString());
@@ -124,15 +124,14 @@ export function ArtistGrid({
       } else {
         throw new Error('Failed to fetch artists');
       }
-    } catch (error) {
-      console.error('Failed to fetch artists:', error);
+    } catch (_error) {
       toast.error('Failed to load artists');
     } finally {
       setLoading(false);
     }
   };
 
-  const checkFollowingStatus = async (artistsToCheck: Artist[]) => {
+  const checkFollowingStatus = async (_artistsToCheck: Artist[]) => {
     try {
       const response = await fetch('/api/user/following');
       if (response.ok) {
@@ -146,9 +145,7 @@ export function ArtistGrid({
           }))
         );
       }
-    } catch (error) {
-      console.error('Failed to check following status:', error);
-    }
+    } catch (_error) {}
   };
 
   const handleArtistSelect = (artist: Artist) => {
@@ -190,8 +187,7 @@ export function ArtistGrid({
       } else {
         throw new Error('Failed to update follow status');
       }
-    } catch (error) {
-      console.error('Follow failed:', error);
+    } catch (_error) {
       toast.error('Failed to update follow status');
     }
   };

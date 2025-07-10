@@ -92,11 +92,8 @@ const popularArtists = [
 
 async function seedArtist(artistName: string) {
   try {
-    console.log(`🔍 Searching for ${artistName}...`);
-
     const searchResults = await spotify.searchArtists(artistName, 1);
     if (!searchResults.artists?.items?.length) {
-      console.log(`❌ ${artistName} not found on Spotify`);
       return null;
     }
 
@@ -118,8 +115,6 @@ async function seedArtist(artistName: string) {
     let artistRecord;
 
     if (existingArtist.length > 0) {
-      console.log(`✅ ${artistName} already exists, updating...`);
-
       const [updated] = await db
         .update(artists)
         .set({
@@ -139,8 +134,6 @@ async function seedArtist(artistName: string) {
 
       artistRecord = updated;
     } else {
-      console.log(`🆕 Creating new artist record for ${artistName}...`);
-
       const [created] = await db
         .insert(artists)
         .values({
@@ -162,20 +155,13 @@ async function seedArtist(artistName: string) {
 
       artistRecord = created;
     }
-
-    console.log(
-      `✅ ${artistName} synced successfully! (${artistRecord.followers} followers)`
-    );
     return artistRecord;
-  } catch (error) {
-    console.error(`❌ Failed to seed ${artistName}:`, error);
+  } catch (_error) {
     return null;
   }
 }
 
 async function main() {
-  console.log('🎵 Starting database seeding with popular artists...\n');
-
   const results = {
     success: 0,
     failed: 0,
@@ -201,19 +187,9 @@ async function main() {
     }
   }
 
-  console.log('\n📊 Seeding completed!');
-  console.log(`✅ Success: ${results.success}`);
-  console.log(`❌ Failed: ${results.failed}`);
-
   if (results.errors.length > 0) {
-    console.log('\n❌ Errors:');
-    results.errors.forEach((error) => console.log(`  - ${error}`));
+    results.errors.forEach((_error) => );
   }
-
-  console.log('\n🔧 Next steps:');
-  console.log('1. Run sync jobs to get shows and song catalogs');
-  console.log('2. Update trending scores via cron job');
-  console.log('3. Test the trending and artist pages');
 }
 
 if (require.main === module) {

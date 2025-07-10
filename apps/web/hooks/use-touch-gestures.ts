@@ -47,7 +47,9 @@ export function useTouchGestures(
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
-      if (!touchStartRef.current) return;
+      if (!touchStartRef.current) {
+        return;
+      }
 
       const currentY = e.touches[0].clientY;
 
@@ -78,7 +80,9 @@ export function useTouchGestures(
 
   const handleTouchEnd = useCallback(
     async (e: TouchEvent) => {
-      if (!touchStartRef.current) return;
+      if (!touchStartRef.current) {
+        return;
+      }
 
       const touchEnd = {
         x: e.changedTouches[0].clientX,
@@ -142,7 +146,9 @@ export function useTouchGestures(
 
   useEffect(() => {
     const element = elementRef.current;
-    if (!element) return;
+    if (!element) {
+      return;
+    }
 
     element.addEventListener('touchstart', handleTouchStart, { passive: true });
     element.addEventListener('touchmove', handleTouchMove, { passive: false });

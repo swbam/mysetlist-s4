@@ -45,8 +45,9 @@ export function ArtistTopTracks({ artistId, spotifyId }: ArtistTopTracksProps) {
         if (spotifyId) {
           // Try to fetch from Spotify via server action first
           const spotifyTracks = await getArtistTopTracks(spotifyId);
-          if (spotifyTracks && spotifyTracks.length > 0) {
-            setTracks(spotifyTracks);
+          if (spotifyTracks && (Array.isArray(spotifyTracks) ? spotifyTracks.length > 0 : spotifyTracks.tracks?.length > 0)) {
+            const tracks = Array.isArray(spotifyTracks) ? spotifyTracks : spotifyTracks.tracks;
+            setTracks(tracks as unknown as Track[]);
             return;
           }
         }
@@ -64,8 +65,7 @@ export function ArtistTopTracks({ artistId, spotifyId }: ArtistTopTracksProps) {
           }));
           setTracks(apiTracks);
         }
-      } catch (error) {
-        console.error('Error fetching tracks:', error);
+      } catch (_error) {
       } finally {
         setLoading(false);
       }
@@ -92,7 +92,7 @@ export function ArtistTopTracks({ artistId, spotifyId }: ArtistTopTracksProps) {
       <CardContent>
         {loading ? (
           <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
+            {[...new Array(5)].map((_, i) => (
               <div key={i} className="flex items-center gap-3">
                 <Skeleton className="h-12 w-12 rounded" />
                 <div className="flex-1 space-y-2">

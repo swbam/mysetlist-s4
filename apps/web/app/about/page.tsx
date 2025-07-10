@@ -1,4 +1,3 @@
-import { createPageMetadata } from '@/lib/seo-metadata';
 import {
   Card,
   CardContent,
@@ -7,6 +6,7 @@ import {
 } from '@repo/design-system/components/ui/card';
 import { Heart, Music, Users, Zap } from 'lucide-react';
 import type { Metadata } from 'next';
+import { createPageMetadata } from '~/lib/seo-metadata';
 
 export const metadata: Metadata = createPageMetadata({
   title: 'About MySetlist | Your Concert Companion',

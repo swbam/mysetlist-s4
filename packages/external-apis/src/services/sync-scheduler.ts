@@ -57,170 +57,106 @@ export class SyncScheduler {
   }
 
   async runInitialSync(): Promise<void> {
-    console.log('Starting initial sync...');
+    await this.artistSync.syncPopularArtists();
+    await this.venueSync.syncMajorVenues();
+    const majorCities = [
+      { city: 'New York', stateCode: 'NY' },
+      { city: 'Los Angeles', stateCode: 'CA' },
+      { city: 'Chicago', stateCode: 'IL' },
+      { city: 'San Francisco', stateCode: 'CA' },
+      { city: 'Austin', stateCode: 'TX' },
+      { city: 'Seattle', stateCode: 'WA' },
+      { city: 'Denver', stateCode: 'CO' },
+      { city: 'Nashville', stateCode: 'TN' },
+      { city: 'Portland', stateCode: 'OR' },
+      { city: 'Atlanta', stateCode: 'GA' },
+    ];
 
-    try {
-      // 1. Sync popular artists
-      console.log('Syncing popular artists...');
-      await this.artistSync.syncPopularArtists();
-
-      // 2. Sync major venues
-      console.log('Syncing major venues...');
-      await this.venueSync.syncMajorVenues();
-
-      // 3. Sync upcoming shows in major cities
-      console.log('Syncing upcoming shows...');
-      const majorCities = [
-        { city: 'New York', stateCode: 'NY' },
-        { city: 'Los Angeles', stateCode: 'CA' },
-        { city: 'Chicago', stateCode: 'IL' },
-        { city: 'San Francisco', stateCode: 'CA' },
-        { city: 'Austin', stateCode: 'TX' },
-        { city: 'Seattle', stateCode: 'WA' },
-        { city: 'Denver', stateCode: 'CO' },
-        { city: 'Nashville', stateCode: 'TN' },
-        { city: 'Portland', stateCode: 'OR' },
-        { city: 'Atlanta', stateCode: 'GA' },
-      ];
-
-      for (const { city, stateCode } of majorCities) {
-        await this.showSync.syncUpcomingShows({
-          city,
-          stateCode,
-          classificationName: 'Music',
-        });
-        // Rate limit between cities
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      }
-
-      console.log('Initial sync completed!');
-    } catch (error) {
-      console.error('Initial sync failed:', error);
-      throw error;
-    }
-  }
-
-  async runDailySync(): Promise<void> {
-    console.log('Starting daily sync...');
-
-    try {
-      // Sync upcoming shows for the next 30 days
-      const startDateTime = new Date().toISOString();
-      const endDate = new Date();
-      endDate.setDate(endDate.getDate() + 30);
-      const endDateTime = endDate.toISOString();
-
-      await this.showSync.syncUpcomingShows({
-        classificationName: 'Music',
-        startDateTime,
-        endDateTime,
-      });
-
-      console.log('Daily sync completed!');
-    } catch (error) {
-      console.error('Daily sync failed:', error);
-      throw error;
-    }
-  }
-
-  async syncByLocation(city: string, stateCode?: string): Promise<void> {
-    console.log(
-      `Syncing data for ${city}${stateCode ? `, ${stateCode}` : ''}...`
-    );
-
-    try {
-      // 1. Sync venues in the city
-      await this.venueSync.syncVenuesByCity(city, stateCode);
-
-      // 2. Sync upcoming shows in the city
+    for (const { city, stateCode } of majorCities) {
       await this.showSync.syncUpcomingShows({
         city,
         stateCode,
         classificationName: 'Music',
       });
-
-      console.log(`Location sync completed for ${city}!`);
-    } catch (error) {
-      console.error(`Location sync failed for ${city}:`, error);
-      throw error;
+      // Rate limit between cities
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
   }
 
+  async runDailySync(): Promise<void> {
+    // Sync upcoming shows for the next 30 days
+    const startDateTime = new Date().toISOString();
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + 30);
+    const endDateTime = endDate.toISOString();
+
+    await this.showSync.syncUpcomingShows({
+      classificationName: 'Music',
+      startDateTime,
+      endDateTime,
+    });
+  }
+
+  async syncByLocation(city: string, stateCode?: string): Promise<void> {
+    // 1. Sync venues in the city
+    await this.venueSync.syncVenuesByCity(city, stateCode);
+
+    // 2. Sync upcoming shows in the city
+    await this.showSync.syncUpcomingShows({
+      city,
+      stateCode,
+      classificationName: 'Music',
+    });
+  }
+
   async syncArtistData(artistName: string): Promise<void> {
-    console.log(`Syncing data for artist: ${artistName}...`);
+    // 1. Sync artist from Spotify
+    const spotifyClient = this.artistSync.spotifyClient;
+    await spotifyClient.authenticate();
+    const searchResult = await spotifyClient.searchArtists(artistName, 1);
 
-    try {
-      // 1. Sync artist from Spotify
-      const spotifyClient = this.artistSync['spotifyClient'];
-      await spotifyClient.authenticate();
-      const searchResult = await spotifyClient.searchArtists(artistName, 1);
+    if (searchResult.artists.items.length > 0) {
+      const artist = searchResult.artists.items[0];
+      await this.artistSync.syncArtist(artist.id);
 
-      if (searchResult.artists.items.length > 0) {
-        const artist = searchResult.artists.items[0];
-        await this.artistSync.syncArtist(artist.id);
+      // 2. Sync historical setlists
+      await this.showSync.syncHistoricalSetlists(artistName);
 
-        // 2. Sync historical setlists
-        await this.showSync.syncHistoricalSetlists(artistName);
-
-        // 3. Sync recent setlists with full data
-        await this.setlistSync.syncRecentSetlists(artistName, 10);
-      } else {
-        console.warn(`Artist not found on Spotify: ${artistName}`);
-      }
-
-      console.log(`Artist sync completed for ${artistName}!`);
-    } catch (error) {
-      console.error(`Artist sync failed for ${artistName}:`, error);
-      throw error;
+      // 3. Sync recent setlists with full data
+      await this.setlistSync.syncRecentSetlists(artistName, 10);
+    } else {
     }
   }
 
   async syncCustom(options: SyncOptions): Promise<void> {
-    console.log('Starting custom sync with options:', options);
+    if (options.artists) {
+      await this.artistSync.syncPopularArtists();
+    }
 
-    try {
-      if (options.artists) {
-        await this.artistSync.syncPopularArtists();
-      }
+    if (options.venues && options.city) {
+      await this.venueSync.syncVenuesByCity(options.city, options.stateCode);
+    } else if (options.venues) {
+      await this.venueSync.syncMajorVenues();
+    }
 
-      if (options.venues && options.city) {
-        await this.venueSync.syncVenuesByCity(options.city, options.stateCode);
-      } else if (options.venues) {
-        await this.venueSync.syncMajorVenues();
-      }
+    if (options.shows) {
+      await this.showSync.syncUpcomingShows({
+        city: options.city,
+        stateCode: options.stateCode,
+        startDateTime: options.startDate,
+        endDateTime: options.endDate,
+        classificationName: 'Music',
+      });
+    }
 
-      if (options.shows) {
-        await this.showSync.syncUpcomingShows({
-          city: options.city,
-          stateCode: options.stateCode,
-          startDateTime: options.startDate,
-          endDateTime: options.endDate,
-          classificationName: 'Music',
-        });
-      }
-
-      if (options.setlists && options.artistName) {
-        await this.setlistSync.syncRecentSetlists(options.artistName);
-      }
-
-      console.log('Custom sync completed!');
-    } catch (error) {
-      console.error('Custom sync failed:', error);
-      throw error;
+    if (options.setlists && options.artistName) {
+      await this.setlistSync.syncRecentSetlists(options.artistName);
     }
   }
 
   // Utility method to sync data for a specific show
   async syncShowDetails(showId: string): Promise<void> {
-    console.log(`Syncing details for show: ${showId}...`);
-
-    try {
-      await this.setlistSync.syncSetlistByShowId(showId);
-      console.log(`Show details sync completed for ${showId}!`);
-    } catch (error) {
-      console.error(`Show details sync failed for ${showId}:`, error);
-      throw error;
-    }
+    await this.setlistSync.syncSetlistByShowId(showId);
   }
 
   // Job management methods
@@ -302,7 +238,6 @@ export class SyncScheduler {
 
   // Scheduler control methods
   async startScheduler(): Promise<void> {
-    console.log('Starting sync scheduler...');
     // Create a job for the initial sync
     const job = this.createJob('initial-sync');
     this.startJob(job);
@@ -320,7 +255,6 @@ export class SyncScheduler {
   }
 
   async stopScheduler(): Promise<void> {
-    console.log('Stopping sync scheduler...');
     // Mark all running jobs as stopped
     for (const job of this.jobs.values()) {
       if (job.status === 'running') {
@@ -399,25 +333,16 @@ export class SyncScheduler {
     return this.jobs.delete(jobId);
   }
 
-  async scheduleJob(type: string, schedule: string): Promise<SyncJob> {
+  async scheduleJob(type: string, _schedule: string): Promise<SyncJob> {
     const job = this.createJob(type);
-    // In a real implementation, this would set up a cron job
-    // For now, we'll just create the job
-    console.log(
-      `Scheduled job ${job.id} of type ${type} with schedule ${schedule}`
-    );
     return job;
   }
 
-  updateJobSchedule(jobId: string, schedule: string): boolean {
+  updateJobSchedule(jobId: string, _schedule: string): boolean {
     const job = this.jobs.get(jobId);
     if (!job) {
       return false;
     }
-
-    // In a real implementation, this would update the cron schedule
-    // For now, we'll just log the update
-    console.log(`Updated job ${jobId} schedule to ${schedule}`);
     return true;
   }
 }

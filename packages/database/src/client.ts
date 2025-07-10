@@ -8,60 +8,50 @@ let _db: ReturnType<typeof drizzle> | null = null;
 let _client: postgres.Sql | null = null;
 
 export function getDb() {
-  if (_db) return _db;
+  if (_db) {
+    return _db;
+  }
 
   const connectionString = process.env['DATABASE_URL'];
-  
+
   if (!connectionString) {
     throw new Error(
       'DATABASE_URL is not configured. Please set it in your .env.local file.'
     );
   }
+  _client = postgres(connectionString, {
+    max: 10,
+    idle_timeout: 20,
+    connect_timeout: 10,
+    ssl: process.env['NODE_ENV'] === 'production' ? 'require' : false,
+  });
 
-  try {
-    _client = postgres(connectionString, {
-      max: 10,
-      idle_timeout: 20,
-      connect_timeout: 10,
-      ssl: process.env['NODE_ENV'] === 'production' ? 'require' : false,
-    });
+  _db = drizzle(_client, {
+    schema,
+    logger: process.env['NODE_ENV'] === 'development',
+  });
 
-    _db = drizzle(_client, {
-      schema,
-      logger: process.env['NODE_ENV'] === 'development',
-    });
-
-    return _db;
-  } catch (error) {
-    console.error('Failed to create database connection:', error);
-    throw error;
-  }
+  return _db;
 }
 
 // Export a proxy that initializes on first use
 export const db = new Proxy({} as ReturnType<typeof drizzle>, {
   get(_target, prop, receiver) {
-    try {
-      const actualDb = getDb();
-      const value = Reflect.get(actualDb, prop, receiver);
-      
-      // If it's a function, bind it to the actual db instance
-      if (typeof value === 'function') {
-        return value.bind(actualDb);
-      }
-      
-      return value;
-    } catch (error) {
-      console.error('Database proxy error:', error);
-      throw error;
+    const actualDb = getDb();
+    const value = Reflect.get(actualDb, prop, receiver);
+
+    // If it's a function, bind it to the actual db instance
+    if (typeof value === 'function') {
+      return value.bind(actualDb);
     }
+
+    return value;
   },
   has(_target, prop) {
     try {
       const actualDb = getDb();
       return Reflect.has(actualDb, prop);
-    } catch (error) {
-      console.error('Database proxy has() error:', error);
+    } catch (_error) {
       return false;
     }
   },
@@ -86,7 +76,7 @@ export const migrationClient = new Proxy({} as postgres.Sql, {
   get(_target, prop) {
     if (!_migrationClient) {
       const connectionString = process.env['DATABASE_URL'];
-      
+
       if (!connectionString) {
         throw new Error('DATABASE_URL is required for migrations');
       }
@@ -96,12 +86,22 @@ export const migrationClient = new Proxy({} as postgres.Sql, {
         ssl: process.env['NODE_ENV'] === 'production' ? 'require' : false,
       });
     }
-    
+
     return _migrationClient[prop as keyof typeof _migrationClient];
   },
 });
 
 // Re-export commonly used functions
-export { sql, eq, and, or, desc, asc, ilike, isNull, isNotNull } from 'drizzle-orm';
+export {
+  sql,
+  eq,
+  and,
+  or,
+  desc,
+  asc,
+  ilike,
+  isNull,
+  isNotNull,
+} from 'drizzle-orm';
 
 export type Database = ReturnType<typeof getDb>;

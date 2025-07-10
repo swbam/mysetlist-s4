@@ -28,8 +28,7 @@ export async function GET(
       .limit(1);
 
     return NextResponse.json({ isFollowing: follow.length > 0 });
-  } catch (error) {
-    console.error('Error checking follow status:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to check follow status' },
       { status: 500 }
@@ -86,8 +85,7 @@ export async function POST(
     // For now, the follow relationship itself serves as the activity record
 
     return NextResponse.json({ message: 'Successfully followed artist' });
-  } catch (error) {
-    console.error('Error following artist:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to follow artist' },
       { status: 500 }
@@ -108,7 +106,7 @@ export async function DELETE(
     const { id: artistId } = await params;
 
     // Delete the follow relationship
-    const result = await db
+    await db
       .delete(userFollowsArtists)
       .where(
         and(
@@ -118,8 +116,7 @@ export async function DELETE(
       );
 
     return NextResponse.json({ message: 'Successfully unfollowed artist' });
-  } catch (error) {
-    console.error('Error unfollowing artist:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to unfollow artist' },
       { status: 500 }

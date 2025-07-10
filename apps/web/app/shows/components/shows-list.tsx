@@ -50,8 +50,7 @@ export const ShowsList = () => {
         });
 
         setShows(fetchedShows);
-      } catch (error) {
-        console.error('Error loading shows:', error);
+      } catch (_error) {
       } finally {
         setLoading(false);
       }
@@ -72,7 +71,9 @@ export const ShowsList = () => {
     attending: number,
     capacity: number | null
   ) => {
-    if (!capacity || capacity === 0) return 0;
+    if (!capacity || capacity === 0) {
+      return 0;
+    }
     return Math.round((attending / capacity) * 100);
   };
 
@@ -81,7 +82,9 @@ export const ShowsList = () => {
     maxPrice: number | null,
     currency: string
   ) => {
-    if (!minPrice) return 'Price TBA';
+    if (!minPrice) {
+      return 'Price TBA';
+    }
     const currencySymbol = currency === 'USD' ? '$' : currency;
     if (maxPrice && maxPrice !== minPrice) {
       return `${currencySymbol}${minPrice}-${currencySymbol}${maxPrice}`;

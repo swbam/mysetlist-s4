@@ -46,7 +46,9 @@ export function useRecentActivity(options: UseRecentActivityOptions = {}) {
       });
 
       const response = await fetch(`/api/activity-feed?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch recent activity');
+      if (!response.ok) {
+        throw new Error('Failed to fetch recent activity');
+      }
 
       const data = await response.json();
 
@@ -73,7 +75,6 @@ export function useRecentActivity(options: UseRecentActivityOptions = {}) {
 
       setActivities(transformedActivities);
     } catch (err) {
-      console.error('Error fetching recent activity:', err);
       setError(
         err instanceof Error ? err.message : 'Failed to load recent activity'
       );
@@ -87,7 +88,9 @@ export function useRecentActivity(options: UseRecentActivityOptions = {}) {
   }, [fetchActivities]);
 
   useEffect(() => {
-    if (!autoRefresh) return;
+    if (!autoRefresh) {
+      return;
+    }
 
     const interval = setInterval(fetchActivities, refreshInterval);
     return () => clearInterval(interval);

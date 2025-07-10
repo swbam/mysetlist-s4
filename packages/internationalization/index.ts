@@ -16,11 +16,7 @@ const dictionaries: Record<string, () => Promise<Dictionary>> =
       () =>
         import(`./dictionaries/${locale}.json`)
           .then((mod) => mod.default)
-          .catch((err) => {
-            console.error(
-              `Failed to load dictionary for locale: ${locale}`,
-              err
-            );
+          .catch((_err) => {
             return import('./dictionaries/en.json').then((mod) => mod.default);
           }),
     ])
@@ -28,10 +24,9 @@ const dictionaries: Record<string, () => Promise<Dictionary>> =
 
 export const getDictionary = async (locale: string): Promise<Dictionary> => {
   const normalizedLocale = locale.split('-')[0];
-  
+
   if (!normalizedLocale || !locales.includes(normalizedLocale as any)) {
-    console.warn(`Locale "${locale}" is not supported, defaulting to "en"`);
-    const enDictionary = dictionaries['en'];
+    const enDictionary = dictionaries.en;
     if (!enDictionary) {
       throw new Error('Default dictionary not found');
     }
@@ -44,12 +39,8 @@ export const getDictionary = async (locale: string): Promise<Dictionary> => {
       throw new Error(`Dictionary for locale "${normalizedLocale}" not found`);
     }
     return await localeDictionary();
-  } catch (error) {
-    console.error(
-      `Error loading dictionary for locale "${normalizedLocale}", falling back to "en"`,
-      error
-    );
-    const enDictionary = dictionaries['en'];
+  } catch (_error) {
+    const enDictionary = dictionaries.en;
     if (!enDictionary) {
       throw new Error('Default dictionary not found');
     }

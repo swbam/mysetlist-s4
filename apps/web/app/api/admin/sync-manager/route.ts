@@ -1,5 +1,5 @@
-import { SyncScheduler } from '@/lib/api/external-apis';
 import { type NextRequest, NextResponse } from 'next/server';
+import { SyncScheduler } from '~/lib/api/external-apis';
 
 const syncScheduler = new SyncScheduler();
 
@@ -16,21 +16,19 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'Job not found' }, { status: 404 });
       }
       return NextResponse.json({ job });
-    } else {
-      // Get all jobs and overall statistics
-      const jobs = syncScheduler.getAllJobs();
-      const stats = syncScheduler.getJobStats();
-      const health = syncScheduler.getHealthStatus();
-
-      return NextResponse.json({
-        jobs,
-        stats,
-        health,
-        isRunning: stats.runningJobs > 0,
-      });
     }
-  } catch (error) {
-    console.error('Error getting sync manager status:', error);
+    // Get all jobs and overall statistics
+    const jobs = syncScheduler.getAllJobs();
+    const stats = syncScheduler.getJobStats();
+    const health = syncScheduler.getHealthStatus();
+
+    return NextResponse.json({
+      jobs,
+      stats,
+      health,
+      isRunning: stats.runningJobs > 0,
+    });
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to get sync status' },
       { status: 500 }
@@ -45,20 +43,22 @@ export async function POST(request: NextRequest) {
     const { action, jobId, schedule } = body;
 
     switch (action) {
-      case 'start':
+      case 'start': {
         await syncScheduler.startScheduler();
         return NextResponse.json({
           message: 'Sync scheduler started',
           jobs: syncScheduler.getAllJobs(),
         });
+      }
 
-      case 'stop':
+      case 'stop': {
         await syncScheduler.stopScheduler();
         return NextResponse.json({
           message: 'Sync scheduler stopped',
         });
+      }
 
-      case 'run_now':
+      case 'run_now': {
         if (!jobId) {
           return NextResponse.json(
             { error: 'Job ID required for run_now action' },
@@ -70,8 +70,9 @@ export async function POST(request: NextRequest) {
           message: `Job ${jobId} executed`,
           job: syncScheduler.getJob(jobId),
         });
+      }
 
-      case 'enable':
+      case 'enable': {
         if (!jobId) {
           return NextResponse.json(
             { error: 'Job ID required for enable action' },
@@ -86,8 +87,9 @@ export async function POST(request: NextRequest) {
           message: `Job ${jobId} enabled`,
           job: syncScheduler.getJob(jobId),
         });
+      }
 
-      case 'disable':
+      case 'disable': {
         if (!jobId) {
           return NextResponse.json(
             { error: 'Job ID required for disable action' },
@@ -102,8 +104,9 @@ export async function POST(request: NextRequest) {
           message: `Job ${jobId} disabled`,
           job: syncScheduler.getJob(jobId),
         });
+      }
 
-      case 'update_schedule':
+      case 'update_schedule': {
         if (!jobId || !schedule) {
           return NextResponse.json(
             {
@@ -120,6 +123,7 @@ export async function POST(request: NextRequest) {
           message: `Job ${jobId} schedule updated`,
           job: syncScheduler.getJob(jobId),
         });
+      }
 
       default:
         return NextResponse.json(
@@ -130,8 +134,7 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         );
     }
-  } catch (error) {
-    console.error('Error controlling sync manager:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to control sync manager' },
       { status: 500 }

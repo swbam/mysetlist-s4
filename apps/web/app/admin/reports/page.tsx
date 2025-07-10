@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import {
   Card,
@@ -14,16 +13,14 @@ import {
   TabsTrigger,
 } from '@repo/design-system/components/ui/tabs';
 import { AlertTriangle, CheckCircle, Clock, Flag } from 'lucide-react';
+import { createClient } from '~/lib/supabase/server';
 import ReportItem from './components/report-item';
 
 // Force dynamic rendering due to user-specific data fetching
 export const dynamic = 'force-dynamic';
 
-export default async function ReportsPage({
-  params,
-}: { params: Promise<{ locale: string }> }) {
+export default async function ReportsPage() {
   const supabase = await createClient();
-  const { locale } = await params;
 
   // Fetch reports with related data
   const { data: reports } = await supabase
@@ -199,7 +196,7 @@ export default async function ReportsPage({
                 </div>
               ) : (
                 pendingReports.map((report) => (
-                  <ReportItem key={report.id} report={report} locale={locale} />
+                  <ReportItem key={report.id} report={report} />
                 ))
               )}
             </TabsContent>
@@ -217,7 +214,6 @@ export default async function ReportsPage({
                   <ReportItem
                     key={report.id}
                     report={report}
-                    locale={locale}
                     isResolved
                   />
                 ))

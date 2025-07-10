@@ -1,6 +1,6 @@
-import { createClient } from '@/lib/api/supabase/server';
 import { getUser } from '@repo/auth/server';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createClient } from '~/lib/api/supabase/server';
 
 interface IntegrityCheck {
   name: string;
@@ -20,7 +20,7 @@ interface IntegrityReport {
   };
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const user = await getUser();
 
@@ -256,8 +256,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json(report);
-  } catch (error) {
-    console.error('Integrity verification error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to verify data integrity' },
       { status: 500 }
@@ -278,7 +277,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     switch (action) {
-      case 'recalculate_trending':
+      case 'recalculate_trending': {
         // Trigger trending score recalculation
         const { error: trendingError } = await supabase.rpc(
           'recalculate_all_trending_scores'
@@ -292,8 +291,9 @@ export async function POST(request: NextRequest) {
           success: true,
           message: 'Trending scores recalculated successfully',
         });
+      }
 
-      case 'fix_slugs':
+      case 'fix_slugs': {
         // Fix missing slugs
         const { error: slugError } = await supabase.rpc('fix_missing_slugs');
 
@@ -305,8 +305,9 @@ export async function POST(request: NextRequest) {
           success: true,
           message: 'Missing slugs have been generated',
         });
+      }
 
-      case 'cleanup_orphans':
+      case 'cleanup_orphans': {
         // Clean up orphaned records
         const { error: cleanupError } = await supabase.rpc(
           'cleanup_orphaned_records'
@@ -320,12 +321,12 @@ export async function POST(request: NextRequest) {
           success: true,
           message: 'Orphaned records have been cleaned up',
         });
+      }
 
       default:
         return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
     }
-  } catch (error) {
-    console.error('Data fix error:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fix data issues' },
       { status: 500 }

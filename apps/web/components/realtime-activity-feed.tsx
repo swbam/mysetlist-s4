@@ -1,6 +1,5 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import {
   Card,
@@ -22,6 +21,7 @@ import {
   UserPlus,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 type ActivityType = 'vote' | 'song_played' | 'user_joined' | 'setlist_updated';
 
@@ -161,9 +161,7 @@ export function RealtimeActivityFeed({
         },
       ];
       setActivities(mockActivities);
-    } catch (error) {
-      console.error('Failed to fetch activities:', error);
-    }
+    } catch (_error) {}
   };
 
   const fetchVoteDetails = async (vote: any) => {
@@ -175,7 +173,7 @@ export function RealtimeActivityFeed({
     };
   };
 
-  const fetchSongDetails = async (setlistSong: any) => {
+  const fetchSongDetails = async (_setlistSong: any) => {
     // This would fetch actual data from the API
     return {
       songTitle: 'Song Title',
@@ -184,7 +182,7 @@ export function RealtimeActivityFeed({
     };
   };
 
-  const fetchAttendeeDetails = async (attendee: any) => {
+  const fetchAttendeeDetails = async (_attendee: any) => {
     // This would fetch actual data from the API
     return {
       userName: 'New User',

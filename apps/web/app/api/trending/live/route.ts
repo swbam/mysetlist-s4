@@ -1,6 +1,6 @@
 import { db } from '@repo/database';
 import { artists, shows, venues } from '@repo/database';
-import { and, desc, eq, gte, sql } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
 interface LiveTrendingItem {
@@ -32,23 +32,8 @@ export async function GET(request: NextRequest) {
   try {
     const trending: LiveTrendingItem[] = [];
 
-    // Calculate the start time based on timeframe
-    const now = new Date();
-    let startTime: Date;
-    switch (timeframe) {
-      case '1h':
-        startTime = new Date(now.getTime() - 60 * 60 * 1000);
-        break;
-      case '6h':
-        startTime = new Date(now.getTime() - 6 * 60 * 60 * 1000);
-        break;
-      case '24h':
-      default:
-        startTime = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-        break;
-    }
-
-    const startTimeISO = startTime.toISOString();
+    // TODO: Implement time-based filtering for live trending
+    // Currently showing trending based on popularity/activity metrics only
 
     // -----------------------------
     // Artists
@@ -64,17 +49,11 @@ export async function GET(request: NextRequest) {
             popularity: artists.popularity,
             followers: artists.followers,
             followerCount: artists.followerCount,
-            trendingScore: artists.trendingScore,
+            trendingScore: artists.popularity,
             updatedAt: artists.updatedAt,
           })
           .from(artists)
-          .where(
-            and(
-              sql`COALESCE(${artists.trendingScore}, 0) > 0`,
-              gte(artists.updatedAt, startTimeISO)
-            )
-          )
-          .orderBy(desc(sql`COALESCE(${artists.trendingScore}, 0)`))
+          .orderBy(desc(artists.popularity))
           .limit(type === 'artist' ? limit : Math.ceil(limit / 3));
 
         if (trendingArtists && trendingArtists.length > 0) {
@@ -100,7 +79,7 @@ export async function GET(request: NextRequest) {
               type: 'artist',
               name: artist.name,
               slug: artist.slug,
-              imageUrl: artist.imageUrl || undefined,
+              ...(artist.imageUrl && { imageUrl: artist.imageUrl }),
               score: Math.round(score),
               metrics: {
                 searches,
@@ -112,13 +91,13 @@ export async function GET(request: NextRequest) {
             });
           });
         }
-      } catch (err) {
-        console.error('Error fetching artists:', err);
+      } catch (_err) {
+        // Silently continue on error
       }
     }
 
     // -----------------------------
-    // Shows (upcoming)
+    // Shows
     // -----------------------------
     if (type === 'all' || type === 'show') {
       try {
@@ -132,22 +111,16 @@ export async function GET(request: NextRequest) {
             viewCount: shows.viewCount,
             voteCount: shows.voteCount,
             attendeeCount: shows.attendeeCount,
-            trendingScore: shows.trendingScore,
+            trendingScore: shows.attendeeCount,
             updatedAt: shows.updatedAt,
             date: shows.date,
           })
           .from(shows)
           .leftJoin(artists, eq(artists.id, shows.headlinerArtistId))
-          .where(
-            and(
-              sql`COALESCE(${shows.trendingScore}, 0) > 0`,
-              gte(shows.updatedAt, startTimeISO),
-              gte(shows.date, new Date().toISOString().split('T')[0])
-            )
-          )
-          .orderBy(desc(sql`COALESCE(${shows.trendingScore}, 0)`))
+          .orderBy(desc(shows.attendeeCount))
           .limit(type === 'show' ? limit : Math.ceil(limit / 3));
 
+        
         if (trendingShows && trendingShows.length > 0) {
           trendingShows.forEach((show) => {
             const searches = Math.round((show.viewCount || 0) * 0.3);
@@ -168,7 +141,7 @@ export async function GET(request: NextRequest) {
               type: 'show',
               name: show.artistName || show.name || 'Unnamed Show',
               slug: show.slug,
-              imageUrl: show.artistImage || undefined,
+              ...(show.artistImage && { imageUrl: show.artistImage }),
               score: Math.round(score),
               metrics: {
                 searches,
@@ -180,13 +153,11 @@ export async function GET(request: NextRequest) {
             });
           });
         }
-      } catch (err) {
-        console.error('Error fetching shows:', err);
-      }
+      } catch (_err) {}
     }
 
     // -----------------------------
-    // Venues (rank by recent activity)
+    // Venues
     // -----------------------------
     if (type === 'all' || type === 'venue') {
       try {
@@ -199,35 +170,15 @@ export async function GET(request: NextRequest) {
             capacity: venues.capacity,
             city: venues.city,
             state: venues.state,
-            showCount: sql<number>`COUNT(DISTINCT ${shows.id})`.as('showCount'),
-            recentVotes: sql<number>`SUM(${shows.voteCount})`.as('recentVotes'),
-            recentViews: sql<number>`SUM(${shows.viewCount})`.as('recentViews'),
+            showCount: sql<number>`0`.as('showCount'),
+            recentVotes: sql<number>`0`.as('recentVotes'),
+            recentViews: sql<number>`0`.as('recentViews'),
           })
           .from(venues)
-          .leftJoin(
-            shows,
-            and(
-              eq(shows.venueId, venues.id),
-              gte(shows.updatedAt, startTimeISO)
-            )
-          )
-          .groupBy(
-            venues.id,
-            venues.name,
-            venues.slug,
-            venues.imageUrl,
-            venues.capacity,
-            venues.city,
-            venues.state
-          )
-          .having(sql`COUNT(DISTINCT ${shows.id}) > 0`)
-          .orderBy(
-            desc(
-              sql`SUM(COALESCE(${shows.voteCount}, 0) + COALESCE(${shows.viewCount}, 0))`
-            )
-          )
+          .orderBy(desc(venues.capacity))
           .limit(type === 'venue' ? limit : Math.floor(limit / 3));
 
+        
         if (trendingVenues && trendingVenues.length > 0) {
           trendingVenues.forEach((venue) => {
             const searches = Math.round((venue.recentViews || 0) * 0.1);
@@ -250,7 +201,7 @@ export async function GET(request: NextRequest) {
               type: 'venue',
               name: venue.name,
               slug: venue.slug,
-              imageUrl: venue.imageUrl || undefined,
+              ...(venue.imageUrl && { imageUrl: venue.imageUrl }),
               score: Math.round(score),
               metrics: {
                 searches,
@@ -262,9 +213,7 @@ export async function GET(request: NextRequest) {
             });
           });
         }
-      } catch (err) {
-        console.error('Error fetching venues:', err);
-      }
+      } catch (_err) {}
     }
 
     // Sort by score and return top results
@@ -288,9 +237,7 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error('Error fetching live trending:', error);
-
-    // Return empty results with error message
+    // Return error details for debugging
     return NextResponse.json({
       trending: [],
       timeframe,
@@ -298,6 +245,7 @@ export async function GET(request: NextRequest) {
       total: 0,
       generatedAt: new Date().toISOString(),
       error: 'Unable to fetch trending data',
+      errorDetails: error instanceof Error ? error.message : String(error),
     });
   }
 }

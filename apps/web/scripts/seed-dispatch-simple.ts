@@ -14,12 +14,7 @@ import { eq } from 'drizzle-orm';
 import { db } from './db-client';
 
 async function main() {
-  console.log('🎵 Populating Dispatch data (simplified version)...\n');
-
   try {
-    // Step 1: Get or create Dispatch artist
-    console.log('1️⃣ Setting up Dispatch artist...');
-
     let dispatchArtist = await db
       .select()
       .from(artists)
@@ -83,10 +78,6 @@ async function main() {
     }
 
     const dispatchArtistData = dispatchArtist[0];
-    console.log('✅ Dispatch artist ready!');
-
-    // Step 2: Ensure venues exist
-    console.log('\n2️⃣ Setting up venues...');
 
     // Just ensure Red Rocks exists for testing
     const [redRocks] = await db
@@ -113,11 +104,6 @@ async function main() {
         set: { updatedAt: new Date() },
       })
       .returning();
-
-    console.log('✅ Venue ready!');
-
-    // Step 3: Create a test show
-    console.log('\n3️⃣ Creating test show...');
 
     const today = new Date();
     const [show] = await db
@@ -157,12 +143,7 @@ async function main() {
           setLength: 120,
         })
         .onConflictDoNothing();
-
-      console.log('✅ Show created!');
     }
-
-    // Step 4: Create essential songs
-    console.log('\n4️⃣ Creating essential Dispatch songs...');
 
     const essentialSongs = [
       {
@@ -206,12 +187,8 @@ async function main() {
       .where(eq(songs.artist, 'Dispatch'))
       .limit(10);
 
-    console.log(`✅ ${dispatchSongs.length} songs ready!`);
-
     // Step 5: Create a sample setlist
     if (show && dispatchSongs.length > 0) {
-      console.log('\n5️⃣ Creating sample setlist...');
-
       const [setlist] = await db
         .insert(setlists)
         .values({
@@ -247,13 +224,8 @@ async function main() {
             })
             .onConflictDoNothing();
         }
-
-        console.log('✅ Setlist created with songs!');
       }
     }
-
-    // Step 6: Update stats
-    console.log('\n6️⃣ Updating stats...');
 
     await db
       .insert(artistStats)
@@ -273,20 +245,8 @@ async function main() {
           updatedAt: new Date(),
         },
       });
-
-    console.log('✅ Stats updated!');
-
-    // Final summary
-    console.log('\n🎉 Dispatch data population completed!');
-    console.log('\n✨ You can now:');
-    console.log('- Search for "Dispatch"');
-    console.log('- Visit http://localhost:3002/artists/dispatch');
-    console.log('- View the test show and setlist');
-    console.log('- Test voting on the predicted setlist');
   } catch (error) {
-    console.error('❌ Error:', error);
     if (error instanceof Error) {
-      console.error('Details:', error.message);
     }
     process.exit(1);
   }
@@ -296,8 +256,7 @@ async function main() {
 if (require.main === module) {
   main()
     .then(() => process.exit(0))
-    .catch((error) => {
-      console.error(error);
+    .catch((_error) => {
       process.exit(1);
     });
 }

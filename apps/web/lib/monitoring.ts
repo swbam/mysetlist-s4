@@ -29,7 +29,7 @@ export class MonitoringService {
   static startMeasurement(name: string, metadata?: Record<string, any>): void {
     const startTime = performance.now();
 
-    this.metrics.set(name, {
+    MonitoringService.metrics.set(name, {
       name,
       duration: 0,
       startTime,
@@ -47,9 +47,8 @@ export class MonitoringService {
    * End performance measurement and track result
    */
   static endMeasurement(name: string): number {
-    const metric = this.metrics.get(name);
+    const metric = MonitoringService.metrics.get(name);
     if (!metric) {
-      console.warn(`No measurement started for: ${name}`);
       return 0;
     }
 
@@ -71,7 +70,7 @@ export class MonitoringService {
     }
 
     // Send to monitoring services
-    this.trackMetric({
+    MonitoringService.trackMetric({
       name: `performance.${name}`,
       value: duration,
       unit: 'ms',
@@ -83,10 +82,6 @@ export class MonitoringService {
 
     // Log slow operations
     if (duration > 1000) {
-      console.warn(
-        `Slow operation detected: ${name} took ${duration.toFixed(2)}ms`
-      );
-
       // Send to Sentry for slow operations
       Sentry.addBreadcrumb({
         message: `Slow operation: ${name}`,
@@ -98,7 +93,7 @@ export class MonitoringService {
       });
     }
 
-    this.metrics.delete(name);
+    MonitoringService.metrics.delete(name);
     return duration;
   }
 
@@ -111,7 +106,7 @@ export class MonitoringService {
       timestamp: metric.timestamp || Date.now(),
     };
 
-    this.customMetrics.push(enrichedMetric);
+    MonitoringService.customMetrics.push(enrichedMetric);
 
     // Send to PostHog if available
     if (typeof window !== 'undefined' && window.posthog) {
@@ -131,11 +126,7 @@ export class MonitoringService {
     });
 
     // Log in development
-    if (process.env['NODE_ENV'] === 'development') {
-      console.log(
-        `📊 Metric: ${metric.name} = ${metric.value}${metric.unit || ''}`,
-        metric.tags
-      );
+    if (process.env.NODE_ENV === 'development') {
     }
   }
 
@@ -149,7 +140,7 @@ export class MonitoringService {
     status: number,
     error?: Error
   ): void {
-    this.trackMetric({
+    MonitoringService.trackMetric({
       name: 'api.call',
       value: duration,
       unit: 'ms',
@@ -163,12 +154,15 @@ export class MonitoringService {
 
     // Track errors separately
     if (error || status >= 400) {
-      this.trackError(error || new Error(`API call failed: ${status}`), {
-        endpoint,
-        method,
-        status,
-        duration,
-      });
+      MonitoringService.trackError(
+        error || new Error(`API call failed: ${status}`),
+        {
+          endpoint,
+          method,
+          status,
+          duration,
+        }
+      );
     }
   }
 
@@ -181,19 +175,19 @@ export class MonitoringService {
     rowCount?: number,
     error?: Error
   ): void {
-    this.trackMetric({
+    MonitoringService.trackMetric({
       name: 'database.query',
       value: duration,
       unit: 'ms',
       tags: {
-        query_type: this.getQueryType(query),
+        query_type: MonitoringService.getQueryType(query),
         row_count: rowCount?.toString(),
         success: error ? 'false' : 'true',
       },
     });
 
     if (error) {
-      this.trackError(error, {
+      MonitoringService.trackError(error, {
         query: query.substring(0, 100), // Truncate for privacy
         duration,
         rowCount,
@@ -209,7 +203,7 @@ export class MonitoringService {
     userId?: string,
     metadata?: Record<string, any>
   ): void {
-    this.trackMetric({
+    MonitoringService.trackMetric({
       name: 'user.action',
       value: 1,
       tags: {
@@ -244,7 +238,7 @@ export class MonitoringService {
     });
 
     // Track error metric
-    this.trackMetric({
+    MonitoringService.trackMetric({
       name: 'error.count',
       value: 1,
       tags: {
@@ -253,15 +247,15 @@ export class MonitoringService {
         ...context,
       },
     });
-
-    console.error('Error tracked:', error, context);
   }
 
   /**
    * Track page performance metrics
    */
   static trackPagePerformance(): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+      return;
+    }
 
     window.addEventListener('load', () => {
       // Get navigation timing
@@ -294,12 +288,12 @@ export class MonitoringService {
           try {
             const observer = new PerformanceObserver((list) => {
               const entries = list.getEntries();
-              const lastEntry = entries[entries.length - 1];
+              const lastEntry = entries.at(-1);
               metrics.largestContentfulPaint = lastEntry.startTime;
 
               // Track all metrics
               Object.entries(metrics).forEach(([name, value]) => {
-                this.trackMetric({
+                MonitoringService.trackMetric({
                   name: `performance.${name}`,
                   value: Math.round(value),
                   unit: 'ms',
@@ -311,9 +305,7 @@ export class MonitoringService {
             });
 
             observer.observe({ entryTypes: ['largest-contentful-paint'] });
-          } catch (error) {
-            console.warn('LCP observer failed:', error);
-          }
+          } catch (_error) {}
         }
       }
     });
@@ -323,11 +315,13 @@ export class MonitoringService {
    * Monitor memory usage (Chrome only)
    */
   static trackMemoryUsage(): void {
-    if (typeof window === 'undefined' || !('memory' in performance)) return;
+    if (typeof window === 'undefined' || !('memory' in performance)) {
+      return;
+    }
 
     const memory = (performance as any).memory;
 
-    this.trackMetric({
+    MonitoringService.trackMetric({
       name: 'memory.usage',
       value: memory.usedJSHeapSize,
       unit: 'bytes',
@@ -340,9 +334,7 @@ export class MonitoringService {
     // Warn if memory usage is high
     const usagePercent = (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
     if (usagePercent > 80) {
-      console.warn(`High memory usage: ${usagePercent.toFixed(1)}%`);
-
-      this.trackMetric({
+      MonitoringService.trackMetric({
         name: 'memory.warning',
         value: usagePercent,
         unit: 'percent',
@@ -354,15 +346,15 @@ export class MonitoringService {
    * Get all collected metrics
    */
   static getMetrics(): MetricData[] {
-    return [...this.customMetrics];
+    return [...MonitoringService.customMetrics];
   }
 
   /**
    * Clear collected metrics
    */
   static clearMetrics(): void {
-    this.customMetrics.length = 0;
-    this.metrics.clear();
+    MonitoringService.customMetrics.length = 0;
+    MonitoringService.metrics.clear();
   }
 
   /**
@@ -370,13 +362,27 @@ export class MonitoringService {
    */
   private static getQueryType(query: string): string {
     const trimmed = query.trim().toUpperCase();
-    if (trimmed.startsWith('SELECT')) return 'SELECT';
-    if (trimmed.startsWith('INSERT')) return 'INSERT';
-    if (trimmed.startsWith('UPDATE')) return 'UPDATE';
-    if (trimmed.startsWith('DELETE')) return 'DELETE';
-    if (trimmed.startsWith('CREATE')) return 'CREATE';
-    if (trimmed.startsWith('ALTER')) return 'ALTER';
-    if (trimmed.startsWith('DROP')) return 'DROP';
+    if (trimmed.startsWith('SELECT')) {
+      return 'SELECT';
+    }
+    if (trimmed.startsWith('INSERT')) {
+      return 'INSERT';
+    }
+    if (trimmed.startsWith('UPDATE')) {
+      return 'UPDATE';
+    }
+    if (trimmed.startsWith('DELETE')) {
+      return 'DELETE';
+    }
+    if (trimmed.startsWith('CREATE')) {
+      return 'CREATE';
+    }
+    if (trimmed.startsWith('ALTER')) {
+      return 'ALTER';
+    }
+    if (trimmed.startsWith('DROP')) {
+      return 'DROP';
+    }
     return 'OTHER';
   }
 }

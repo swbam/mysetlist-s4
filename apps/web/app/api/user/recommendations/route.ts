@@ -3,9 +3,11 @@ import {
   artistStats,
   artists,
   db,
+  setlists,
   shows,
   userFollowsArtists,
   venues,
+  votes,
 } from '@repo/database';
 import { and, desc, eq, gte, ne, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
@@ -49,21 +51,18 @@ async function getRecommendationFactors(
   // Get artists user has voted for
   const votedArtists = await db
     .selectDistinct({
-      artistId: shows.headlinerArtistId,
+      artistId: setlists.artistId,
     })
-    .from(userVotes)
-    .innerJoin(
-      shows,
-      sql`${userVotes.showId} = ${shows.id} OR ${userVotes.setlistId} IN (SELECT id FROM setlists WHERE show_id = ${shows.id})`
-    )
-    .where(eq(userVotes.userId, userId));
+    .from(votes)
+    .innerJoin(setlists, sql`${votes.setlistSongId} IN (SELECT id FROM setlist_songs WHERE setlist_id = ${setlists.id})`)
+    .where(eq(votes.userId, userId));
 
   return {
     followedArtistGenres: topGenres,
     votedArtistIds: votedArtists
       .map((v) => v.artistId)
       .filter(Boolean) as string[],
-    userLocation: undefined, // Would get from user profile
+    // userLocation would be populated from user profile in the future
   };
 }
 
@@ -107,8 +106,8 @@ export async function GET(request: NextRequest) {
           state: venues.state,
         },
         stats: {
-          trendingScore: artistStats.trendingScore,
-          followerCount: artistStats.followerCount,
+          trendingScore: artists.trendingScore,
+          totalShows: artistStats.totalShows,
         },
         relevanceScore: sql<number>`
           CASE
@@ -118,7 +117,7 @@ export async function GET(request: NextRequest) {
             ELSE 0
           END +
           -- Trending score (30 points max)
-          COALESCE(${artistStats.trendingScore} * 30, 0) +
+          COALESCE(${artists.trendingScore} * 30, 0) +
           -- Previously voted artists (20 points)
           CASE
             WHEN ${artists.id} = ANY(ARRAY[${factors.votedArtistIds.map((id) => `'${id}'`).join(',')}]::uuid[])
@@ -126,7 +125,7 @@ export async function GET(request: NextRequest) {
             ELSE 0
           END +
           -- Popularity (10 points max)
-          LEAST(COALESCE(${artistStats.followerCount}, 0) / 1000, 10)
+          LEAST(COALESCE(${artists.followerCount}, 0) / 1000, 10)
         `,
       })
       .from(shows)
@@ -135,7 +134,7 @@ export async function GET(request: NextRequest) {
       .leftJoin(artistStats, eq(artists.id, artistStats.artistId))
       .where(
         and(
-          gte(shows.date, new Date()),
+          gte(shows.date, new Date().toISOString().substring(0, 10)),
           followedIds.length > 0
             ? ne(
                 artists.id,
@@ -151,7 +150,11 @@ export async function GET(request: NextRequest) {
     const categorized = {
       genreMatch: recommendations
         .filter((r) =>
-          r.artist.genres?.some((g) => factors.followedArtistGenres.includes(g))
+          r.artist.genres
+            ? (typeof r.artist.genres === 'string' 
+                ? JSON.parse(r.artist.genres) 
+                : r.artist.genres)?.some((g: string) => factors.followedArtistGenres.includes(g))
+            : false
         )
         .slice(0, 5),
       trending: recommendations
@@ -159,7 +162,7 @@ export async function GET(request: NextRequest) {
         .slice(0, 5),
       popular: recommendations
         .sort(
-          (a, b) => (b.stats.followerCount || 0) - (a.stats.followerCount || 0)
+          (a, b) => (b.stats.totalShows || 0) - (a.stats.totalShows || 0)
         )
         .slice(0, 5),
     };
@@ -171,8 +174,7 @@ export async function GET(request: NextRequest) {
         followedArtistCount: followedIds.length,
       },
     });
-  } catch (error) {
-    console.error('Error getting recommendations:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to get recommendations' },
       { status: 500 }

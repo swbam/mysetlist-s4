@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import { exec } from 'child_process';
-import { promises as fs } from 'fs';
-import path from 'path';
-import { promisify } from 'util';
+import { exec } from 'node:child_process';
+import { promises as fs } from 'node:fs';
+import path from 'node:path';
+import { promisify } from 'node:util';
 
 const execAsync = promisify(exec);
 
@@ -75,9 +75,7 @@ const API_APP_DIR = path.join(process.cwd(), 'apps/api/app');
 async function ensureDirectoryExists(dirPath: string) {
   try {
     await fs.mkdir(dirPath, { recursive: true });
-  } catch (error) {
-    console.error(`Error creating directory ${dirPath}:`, error);
-  }
+  } catch (_error) {}
 }
 
 async function copyDirectory(src: string, dest: string) {
@@ -109,9 +107,7 @@ async function updateImports(filePath: string) {
     content = content.replace(/from ['"]@\//g, "from '@repo/api/");
 
     await fs.writeFile(filePath, content);
-  } catch (error) {
-    console.error(`Error updating imports in ${filePath}:`, error);
-  }
+  } catch (_error) {}
 }
 
 async function processDirectory(dir: string) {
@@ -182,8 +178,6 @@ export async function POST(request: NextRequest) {
 }
 
 async function migrateRoute(route: MigrationRoute) {
-  console.log(`\n📦 Migrating ${route.source} (${route.priority} priority)...`);
-
   const sourcePath = path.join(WEB_API_DIR, route.source);
   const destPath = path.join(API_APP_DIR, route.destination);
 
@@ -193,17 +187,14 @@ async function migrateRoute(route: MigrationRoute) {
 
     // Copy to API app
     await copyDirectory(sourcePath, destPath);
-    console.log(`  ✅ Copied to API app`);
 
     // Update imports in copied files
     await processDirectory(destPath);
-    console.log(`  ✅ Updated imports`);
 
     if (route.type === 'move') {
       // Create proxy in web app
       const proxyPath = path.join(sourcePath, 'route.ts');
       await createProxyRoute(proxyPath);
-      console.log(`  ✅ Created proxy route`);
 
       // Remove original files (except the proxy)
       const files = await fs.readdir(sourcePath, { withFileTypes: true });
@@ -217,16 +208,11 @@ async function migrateRoute(route: MigrationRoute) {
           }
         }
       }
-      console.log(`  ✅ Cleaned up original files`);
     }
-  } catch (error) {
-    console.error(`  ❌ Error migrating ${route.source}:`, error);
-  }
+  } catch (_error) {}
 }
 
 async function updateClientFetches() {
-  console.log('\n🔄 Updating client fetch calls...');
-
   const componentsDir = path.join(process.cwd(), 'apps/web/components');
   const appDir = path.join(process.cwd(), 'apps/web/app');
   const hooksDir = path.join(process.cwd(), 'apps/web/hooks');
@@ -243,27 +229,17 @@ async function updateClientFetches() {
 
   try {
     await execAsync(updateScript);
-    console.log('  ✅ Updated fetch calls to use API URL');
-  } catch (error) {
-    console.error('  ❌ Error updating fetch calls:', error);
-  }
+  } catch (_error) {}
 }
 
 async function removeHealthDuplicate() {
-  console.log('\n🗑️  Removing duplicate health endpoint from web app...');
-
   try {
     const healthPath = path.join(WEB_API_DIR, 'health');
     await fs.rm(healthPath, { recursive: true });
-    console.log('  ✅ Removed duplicate /health endpoint');
-  } catch (error) {
-    console.error('  ❌ Error removing health endpoint:', error);
-  }
+  } catch (_error) {}
 }
 
 async function updateApiAppEnv() {
-  console.log('\n📝 Updating API app environment configuration...');
-
   const apiEnvContent = `import { keys as auth } from '@repo/auth/keys';
 import { keys as database } from '@repo/database/keys';
 import { keys as core } from '@repo/next-config/keys';
@@ -307,12 +283,9 @@ export const env = createEnv({
     path.join(process.cwd(), 'apps/api/env.ts'),
     apiEnvContent
   );
-  console.log('  ✅ Updated API app environment configuration');
 }
 
 async function main() {
-  console.log('🚀 Starting API route migration...\n');
-
   // Remove duplicate health endpoint first
   await removeHealthDuplicate();
 
@@ -329,13 +302,6 @@ async function main() {
 
   // Update client fetch calls
   await updateClientFetches();
-
-  console.log('\n✨ Migration complete! Next steps:');
-  console.log('1. Review the migrated routes in apps/api/app/');
-  console.log('2. Test the proxy routes are working correctly');
-  console.log('3. Run pnpm build to ensure everything compiles');
-  console.log('4. Update any remaining fetch calls manually');
-  console.log('5. Consider migrating medium and low priority routes');
 }
 
 // Run the migration

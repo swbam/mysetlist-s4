@@ -32,7 +32,7 @@ function generateSlug(name: string): string {
 // Calculate trending score based on recency and popularity
 function calculateTrendingScore(date: Date, popularity: number): number {
   const hoursAgo = (Date.now() - date.getTime()) / (1000 * 60 * 60);
-  const timeDecay = Math.pow(0.5, hoursAgo / 48); // Half-life of 48 hours
+  const timeDecay = 0.5 ** (hoursAgo / 48); // Half-life of 48 hours
   return popularity * timeDecay;
 }
 
@@ -380,8 +380,6 @@ const songTitlesByGenre = {
 };
 
 async function clearDatabase() {
-  console.log('🧹 Clearing existing data...');
-
   // Delete in correct order to respect foreign keys
   await db.delete(votes);
   await db.delete(setlistSongs);
@@ -395,13 +393,9 @@ async function clearDatabase() {
   await db.delete(artists);
   await db.delete(venues);
   await db.delete(users);
-
-  console.log('✅ Database cleared');
 }
 
 async function seedUsers() {
-  console.log('👥 Seeding users...');
-
   const usersToCreate = [
     {
       email: 'admin@mysetlist.com',
@@ -425,14 +419,11 @@ async function seedUsers() {
   }
 
   const createdUsers = await db.insert(users).values(usersToCreate).returning();
-  console.log(`✅ Created ${createdUsers.length} users`);
 
   return createdUsers;
 }
 
 async function seedArtists() {
-  console.log('🎤 Seeding artists...');
-
   const artistsToCreate = artistsData.map((artist) => {
     const baseFollowers = artist.monthlyListeners / 3;
     const appFollowers = Math.floor(
@@ -470,14 +461,10 @@ async function seedArtists() {
   }));
 
   await db.insert(artistStats).values(statsToCreate);
-
-  console.log(`✅ Created ${createdArtists.length} artists with stats`);
   return createdArtists;
 }
 
 async function seedVenues() {
-  console.log('🏟️ Seeding venues...');
-
   const venuesToCreate = venuesData.map((venue) => ({
     name: venue.name,
     slug: generateSlug(venue.name),
@@ -502,14 +489,11 @@ async function seedVenues() {
     .insert(venues)
     .values(venuesToCreate)
     .returning();
-  console.log(`✅ Created ${createdVenues.length} venues`);
 
   return createdVenues;
 }
 
 async function seedSongs(createdArtists: any[]) {
-  console.log('🎵 Seeding songs...');
-
   const songsToCreate = [];
 
   for (const artist of createdArtists) {
@@ -547,14 +531,11 @@ async function seedSongs(createdArtists: any[]) {
   }
 
   const createdSongs = await db.insert(songs).values(songsToCreate).returning();
-  console.log(`✅ Created ${createdSongs.length} songs`);
 
   return createdSongs;
 }
 
 async function seedShows(createdArtists: any[], createdVenues: any[]) {
-  console.log('🎭 Seeding shows...');
-
   const showsToCreate = [];
   const now = new Date();
 
@@ -636,8 +617,6 @@ async function seedShows(createdArtists: any[], createdVenues: any[]) {
   }
 
   await db.insert(showArtists).values(showArtistsToCreate);
-
-  console.log(`✅ Created ${createdShows.length} shows`);
   return createdShows;
 }
 
@@ -646,8 +625,6 @@ async function seedSetlists(
   createdArtists: any[],
   createdSongs: any[]
 ) {
-  console.log('📋 Seeding setlists...');
-
   const setlistsToCreate = [];
   const setlistSongsToCreate = [];
 
@@ -662,10 +639,14 @@ async function seedSetlists(
 
   for (const show of createdShows) {
     const artist = createdArtists.find((a) => a.id === show.headlinerArtistId);
-    if (!artist) continue;
+    if (!artist) {
+      continue;
+    }
 
     const artistSongs = songsByArtist[artist.name] || [];
-    if (artistSongs.length === 0) continue;
+    if (artistSongs.length === 0) {
+      continue;
+    }
 
     // Create 1-3 setlists per show
     const setlistCount =
@@ -705,7 +686,9 @@ async function seedSetlists(
   // Add songs to setlists
   for (const setlist of createdSetlists) {
     const artist = createdArtists.find((a) => a.id === setlist.artistId);
-    if (!artist) continue;
+    if (!artist) {
+      continue;
+    }
 
     const artistSongs = songsByArtist[artist.name] || [];
     const songCount = 12 + Math.floor(Math.random() * 8); // 12-20 songs
@@ -741,10 +724,6 @@ async function seedSetlists(
     .insert(setlistSongs)
     .values(setlistSongsToCreate)
     .returning();
-
-  console.log(
-    `✅ Created ${createdSetlists.length} setlists with ${createdSetlistSongs.length} songs`
-  );
   return { createdSetlists, createdSetlistSongs };
 }
 
@@ -754,8 +733,6 @@ async function seedUserActivity(
   createdSetlistSongs: any[],
   createdVenues: any[]
 ) {
-  console.log('💫 Seeding user activity...');
-
   // User follows artists
   const followsToCreate = [];
   for (const user of createdUsers.slice(2)) {
@@ -836,15 +813,9 @@ async function seedUserActivity(
   }
 
   await db.insert(venueTips).values(tipsToCreate);
-
-  console.log(
-    `✅ Created ${followsToCreate.length} follows, ${votesToCreate.length} votes, and ${tipsToCreate.length} venue tips`
-  );
 }
 
 async function updateAggregates() {
-  console.log('📊 Updating aggregate counts...');
-
   // Update show vote counts
   await db.execute(sql`
     UPDATE shows s
@@ -886,13 +857,9 @@ async function updateAggregates() {
       AND s.date >= CURRENT_DATE - INTERVAL '30 days'
     )
   `);
-
-  console.log('✅ Aggregate counts updated');
 }
 
 async function main() {
-  console.log('🚀 Starting comprehensive database seeding...\n');
-
   try {
     // Clear existing data
     await clearDatabase();
@@ -915,18 +882,6 @@ async function main() {
       createdVenues
     );
     await updateAggregates();
-
-    console.log('\n✨ Seeding completed successfully!');
-    console.log('\n📊 Summary:');
-    console.log(`- ${createdUsers.length} users`);
-    console.log(`- ${createdArtists.length} artists`);
-    console.log(`- ${createdVenues.length} venues`);
-    console.log(`- ${createdSongs.length} songs`);
-    console.log(`- ${createdShows.length} shows`);
-    console.log(`- ${createdSetlists.length} setlists`);
-    console.log(`- ${createdSetlistSongs.length} setlist songs`);
-
-    console.log('\n🎯 Popular artists with high trending scores:');
     const topArtists = await db
       .select({
         name: artists.name,
@@ -937,13 +892,7 @@ async function main() {
       .orderBy(sql`${artists.trendingScore} DESC`)
       .limit(5);
 
-    topArtists.forEach((artist) => {
-      console.log(
-        `- ${artist.name}: ${artist.trendingScore?.toFixed(2)} trending, ${artist.followerCount} followers`
-      );
-    });
-
-    console.log('\n🔥 Trending shows:');
+    topArtists.forEach((_artist) => {});
     const topShows = await db
       .select({
         name: shows.name,
@@ -955,13 +904,8 @@ async function main() {
       .orderBy(sql`${shows.trendingScore} DESC`)
       .limit(5);
 
-    topShows.forEach((show) => {
-      console.log(
-        `- ${show.name} (${show.date}): ${show.trendingScore?.toFixed(2)} trending, ${show.voteCount} votes`
-      );
-    });
-  } catch (error) {
-    console.error('❌ Seeding failed:', error);
+    topShows.forEach((_show) => {});
+  } catch (_error) {
     process.exit(1);
   }
 }

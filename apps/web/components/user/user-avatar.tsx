@@ -1,6 +1,5 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import {
   Avatar,
   AvatarFallback,
@@ -8,6 +7,7 @@ import {
 } from '@repo/design-system/components/ui/avatar';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Crown, Music, Shield, User } from 'lucide-react';
+import { cn } from '~/lib/utils';
 
 interface UserAvatarProps {
   user: {
@@ -67,7 +67,9 @@ export function UserAvatar({
   };
 
   const getRoleBadge = () => {
-    if (!showRole || user.role === 'user') return null;
+    if (!showRole || user.role === 'user') {
+      return null;
+    }
 
     const roleConfig = {
       admin: {
@@ -83,7 +85,9 @@ export function UserAvatar({
     };
 
     const config = roleConfig[user.role as keyof typeof roleConfig];
-    if (!config) return null;
+    if (!config) {
+      return null;
+    }
 
     return (
       <Badge

@@ -48,7 +48,6 @@ export function BottomNavigation({
         'md:hidden', // Only show on mobile
         className
       )}
-      role="navigation"
       aria-label="Bottom navigation"
     >
       <div className="flex items-center justify-around px-2 py-2">

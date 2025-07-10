@@ -1,6 +1,5 @@
 'use client';
 
-import { useRealtimeConnection } from '@/app/providers/realtime-provider';
 import {
   Tooltip,
   TooltipContent,
@@ -10,6 +9,7 @@ import {
 import { cn } from '@repo/design-system/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, Wifi, WifiOff } from 'lucide-react';
+import { useRealtimeConnection } from '~/app/providers/realtime-provider';
 
 interface RealtimeConnectionIndicatorProps {
   variant?: 'default' | 'minimal' | 'detailed';

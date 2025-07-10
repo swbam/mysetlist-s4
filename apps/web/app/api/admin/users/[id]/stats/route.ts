@@ -1,8 +1,8 @@
-import { createClient } from '@/lib/api/supabase/server';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createClient } from '~/lib/api/supabase/server';
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -180,8 +180,7 @@ export async function GET(
     };
 
     return NextResponse.json(stats);
-  } catch (error) {
-    console.error('Error fetching user stats:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch user statistics' },
       { status: 500 }
@@ -227,9 +226,15 @@ function calculateContentQualityScore(metrics: {
   // Score out of 100
   let score = 50; // Base score
 
-  if (totalContent > 10) score += 20;
-  if (totalContent > 25) score += 15;
-  if (voteRatio > 5) score += 15;
+  if (totalContent > 10) {
+    score += 20;
+  }
+  if (totalContent > 25) {
+    score += 15;
+  }
+  if (voteRatio > 5) {
+    score += 15;
+  }
 
   return Math.min(100, score);
 }
@@ -242,12 +247,16 @@ function calculateCommunityEngagement(metrics: {
   const totalInteractions =
     metrics.votes + metrics.reviews * 2 + metrics.comments;
 
-  if (totalInteractions < 5) return 20;
-  if (totalInteractions < 25) return 60;
+  if (totalInteractions < 5) {
+    return 20;
+  }
+  if (totalInteractions < 25) {
+    return 60;
+  }
   return 90;
 }
 
-function calculateTenureDays(userId: string): number {
+function calculateTenureDays(_userId: string): number {
   // This would need to be calculated from user creation date
   // For now, return a placeholder
   return 90;

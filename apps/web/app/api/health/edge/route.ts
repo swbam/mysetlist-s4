@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { createServiceClient } from '@/lib/supabase/server';
-import { CacheClient } from '@/lib/cache/redis';
+import { CacheClient } from '~/lib/cache/redis';
+import { createServiceClient } from '~/lib/supabase/server';
 
-// Configure for edge runtime
-export const runtime = 'edge';
+// Configure for nodejs runtime
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 interface HealthCheckResult {
@@ -56,15 +56,15 @@ export async function GET() {
       .limit(1)
       .single();
 
-    if (!error) {
-      result.services.database = {
-        status: 'up',
-        latency: Date.now() - dbStart,
-      };
-    } else {
+    if (error) {
       result.services.database = {
         status: 'down',
         error: error.message,
+      };
+    } else {
+      result.services.database = {
+        status: 'up',
+        latency: Date.now() - dbStart,
       };
     }
   } catch (error) {
@@ -80,10 +80,10 @@ export async function GET() {
     const cache = CacheClient.getInstance();
     const testKey = 'health:check';
     const testValue = Date.now().toString();
-    
+
     await cache.set(testKey, testValue, { ex: 10 });
     const retrieved = await cache.get(testKey);
-    
+
     if (retrieved === testValue) {
       result.services.cache = {
         status: 'up',
@@ -103,10 +103,10 @@ export async function GET() {
   }
 
   // Determine overall health
-  const statuses = Object.values(result.services).map(s => s.status);
-  if (statuses.every(s => s === 'up')) {
+  const statuses = Object.values(result.services).map((s) => s.status);
+  if (statuses.every((s) => s === 'up')) {
     result.status = 'healthy';
-  } else if (statuses.some(s => s === 'up')) {
+  } else if (statuses.some((s) => s === 'up')) {
     result.status = 'degraded';
   } else {
     result.status = 'unhealthy';
@@ -116,11 +116,15 @@ export async function GET() {
   result.metrics.responseTime = Date.now() - checkStart;
 
   // Return appropriate status code
-  const statusCode = result.status === 'healthy' ? 200 : 
-                     result.status === 'degraded' ? 200 : 503;
+  const statusCode =
+    result.status === 'healthy'
+      ? 200
+      : result.status === 'degraded'
+        ? 200
+        : 503;
 
   const response = NextResponse.json(result, { status: statusCode });
-  
+
   // Add headers
   response.headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
   response.headers.set('X-Edge-Runtime', 'true');
@@ -135,8 +139,8 @@ export async function POST() {
     timestamp: new Date().toISOString(),
     environment: {
       runtime: 'edge',
-      region: process.env.VERCEL_REGION || 'unknown',
-      deployment: process.env.VERCEL_DEPLOYMENT_ID || 'local',
+      region: process.env['VERCEL_REGION'] || 'unknown',
+      deployment: process.env['VERCEL_DEPLOYMENT_ID'] || 'local',
     },
     checks: [] as any[],
   };
@@ -145,7 +149,7 @@ export async function POST() {
   try {
     const supabase = await createServiceClient();
     const start = Date.now();
-    
+
     // Test various operations
     const checks = await Promise.allSettled([
       supabase.from('artists').select('count').limit(1),
@@ -155,7 +159,7 @@ export async function POST() {
 
     detailedCheck.checks.push({
       name: 'database_operations',
-      status: checks.every(c => c.status === 'fulfilled') ? 'pass' : 'fail',
+      status: checks.every((c) => c.status === 'fulfilled') ? 'pass' : 'fail',
       duration: Date.now() - start,
       details: {
         artists: checks[0].status,
@@ -175,29 +179,29 @@ export async function POST() {
   try {
     const cache = CacheClient.getInstance();
     const start = Date.now();
-    
+
     // Test various cache operations
     const testResults = [];
-    
+
     // SET operation
     const setResult = await cache.set('health:detailed', 'test', { ex: 60 });
     testResults.push({ operation: 'SET', success: setResult });
-    
+
     // GET operation
     const getResult = await cache.get('health:detailed');
     testResults.push({ operation: 'GET', success: getResult === 'test' });
-    
+
     // TTL operation
     const ttlResult = await cache.ttl('health:detailed');
     testResults.push({ operation: 'TTL', success: ttlResult > 0 });
-    
+
     // DEL operation
     const delResult = await cache.del('health:detailed');
     testResults.push({ operation: 'DEL', success: delResult > 0 });
 
     detailedCheck.checks.push({
       name: 'cache_operations',
-      status: testResults.every(r => r.success) ? 'pass' : 'fail',
+      status: testResults.every((r) => r.success) ? 'pass' : 'fail',
       duration: Date.now() - start,
       details: testResults,
     });
@@ -220,10 +224,13 @@ export async function POST() {
   for (const endpoint of endpoints) {
     try {
       const start = Date.now();
-      const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}${endpoint}`, {
-        method: 'GET',
-        signal: AbortSignal.timeout(5000), // 5 second timeout
-      });
+      const response = await fetch(
+        `${process.env['NEXT_PUBLIC_APP_URL']}${endpoint}`,
+        {
+          method: 'GET',
+          signal: AbortSignal.timeout(5000), // 5 second timeout
+        }
+      );
 
       detailedCheck.checks.push({
         name: `endpoint_${endpoint}`,
@@ -241,13 +248,16 @@ export async function POST() {
   }
 
   // Overall status
-  const allPassed = detailedCheck.checks.every(c => c.status === 'pass');
+  const allPassed = detailedCheck.checks.every((c) => c.status === 'pass');
   const overallStatus = allPassed ? 'healthy' : 'unhealthy';
 
-  return NextResponse.json({
-    ...detailedCheck,
-    status: overallStatus,
-  }, {
-    status: allPassed ? 200 : 503,
-  });
+  return NextResponse.json(
+    {
+      ...detailedCheck,
+      status: overallStatus,
+    },
+    {
+      status: allPassed ? 200 : 503,
+    }
+  );
 }

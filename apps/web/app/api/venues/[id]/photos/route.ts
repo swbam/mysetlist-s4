@@ -1,9 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
 import { db } from '@repo/database';
 import { users, venuePhotos } from '@repo/database/src/schema';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { createClient } from '~/lib/supabase/server';
 
 const photoSchema = z.object({
   url: z.string().url('Invalid image URL'),
@@ -30,20 +30,20 @@ export async function GET(
     // Build query conditions
     const conditions = [eq(venuePhotos.venueId, venueId)];
     if (category) {
-      conditions.push(eq(venuePhotos.category, category as any));
+      conditions.push(eq(venuePhotos.photoType, category));
     }
 
     // Get photos for the venue
     const photos = await db
       .select({
         id: venuePhotos.id,
-        url: venuePhotos.url,
+        url: venuePhotos.imageUrl,
         caption: venuePhotos.caption,
-        category: venuePhotos.category,
+        category: venuePhotos.photoType,
         createdAt: venuePhotos.createdAt,
         userId: venuePhotos.userId,
-        userName: users.name,
-        userImage: users.image,
+        userName: users.displayName,
+        userImage: sql<string | null>`null`, // No image field in users table
       })
       .from(venuePhotos)
       .leftJoin(users, eq(venuePhotos.userId, users.id))
@@ -51,8 +51,7 @@ export async function GET(
       .orderBy(desc(venuePhotos.createdAt));
 
     return NextResponse.json({ photos });
-  } catch (error) {
-    console.error('Error fetching venue photos:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch venue photos' },
       { status: 500 }
@@ -87,27 +86,27 @@ export async function POST(
       .values({
         venueId,
         userId: user.id,
-        url: validatedData.url,
-        caption: validatedData.caption,
-        category: validatedData.category,
+        imageUrl: validatedData.url,
+        ...(validatedData.caption && { caption: validatedData.caption }),
+        photoType: validatedData.category,
       })
       .returning();
 
     // Get the created photo with user info
     const [photoWithUser] = await db
       .select({
-        id: newPhoto.id,
-        url: newPhoto.url,
-        caption: newPhoto.caption,
-        category: newPhoto.category,
-        createdAt: newPhoto.createdAt,
-        userId: newPhoto.userId,
-        userName: users.name,
-        userImage: users.image,
+        id: venuePhotos.id,
+        url: venuePhotos.imageUrl,
+        caption: venuePhotos.caption,
+        category: venuePhotos.photoType,
+        createdAt: venuePhotos.createdAt,
+        userId: venuePhotos.userId,
+        userName: users.displayName,
+        userImage: sql<string | null>`null`, // No image field in users table
       })
       .from(venuePhotos)
       .leftJoin(users, eq(venuePhotos.userId, users.id))
-      .where(eq(venuePhotos.id, newPhoto.id));
+      .where(eq(venuePhotos.id, newPhoto!.id));
 
     return NextResponse.json({ photo: photoWithUser });
   } catch (error) {
@@ -117,8 +116,6 @@ export async function POST(
         { status: 400 }
       );
     }
-
-    console.error('Error creating venue photo:', error);
     return NextResponse.json(
       { error: 'Failed to create venue photo' },
       { status: 500 }
@@ -128,7 +125,7 @@ export async function POST(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
@@ -161,8 +158,7 @@ export async function DELETE(
     await db.delete(venuePhotos).where(eq(venuePhotos.id, photoId));
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Error deleting venue photo:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to delete venue photo' },
       { status: 500 }

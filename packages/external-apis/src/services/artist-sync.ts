@@ -11,48 +11,42 @@ export class ArtistSyncService {
 
   async syncArtist(artistId: string): Promise<void> {
     await this.spotifyClient.authenticate();
+    // Get artist from Spotify
+    const spotifyArtist = await this.spotifyClient.getArtist(artistId);
 
-    try {
-      // Get artist from Spotify
-      const spotifyArtist = await this.spotifyClient.getArtist(artistId);
+    // Get top tracks
+    const topTracks = await this.spotifyClient.getArtistTopTracks(artistId);
 
-      // Get top tracks
-      const topTracks = await this.spotifyClient.getArtistTopTracks(artistId);
-
-      // Update or create artist in database
-      await db
-        .insert(artists)
-        .values({
-          spotifyId: spotifyArtist.id,
+    // Update or create artist in database
+    await db
+      .insert(artists)
+      .values({
+        spotifyId: spotifyArtist.id,
+        name: spotifyArtist.name,
+        slug: this.generateSlug(spotifyArtist.name),
+        imageUrl: spotifyArtist.images[0]?.url,
+        smallImageUrl: spotifyArtist.images[2]?.url,
+        genres: JSON.stringify(spotifyArtist.genres),
+        popularity: spotifyArtist.popularity,
+        followers: spotifyArtist.followers.total,
+        externalUrls: JSON.stringify(spotifyArtist.external_urls),
+        lastSyncedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: artists.spotifyId,
+        set: {
           name: spotifyArtist.name,
-          slug: this.generateSlug(spotifyArtist.name),
           imageUrl: spotifyArtist.images[0]?.url,
           smallImageUrl: spotifyArtist.images[2]?.url,
           genres: JSON.stringify(spotifyArtist.genres),
           popularity: spotifyArtist.popularity,
           followers: spotifyArtist.followers.total,
-          externalUrls: JSON.stringify(spotifyArtist.external_urls),
           lastSyncedAt: new Date(),
-        })
-        .onConflictDoUpdate({
-          target: artists.spotifyId,
-          set: {
-            name: spotifyArtist.name,
-            imageUrl: spotifyArtist.images[0]?.url,
-            smallImageUrl: spotifyArtist.images[2]?.url,
-            genres: JSON.stringify(spotifyArtist.genres),
-            popularity: spotifyArtist.popularity,
-            followers: spotifyArtist.followers.total,
-            lastSyncedAt: new Date(),
-          },
-        });
+        },
+      });
 
-      // Sync top tracks
-      await this.syncArtistTracks(artistId, topTracks.tracks);
-    } catch (error) {
-      console.error(`Failed to sync artist ${artistId}:`, error);
-      throw error;
-    }
+    // Sync top tracks
+    await this.syncArtistTracks(artistId, topTracks.tracks);
   }
 
   private async syncArtistTracks(
@@ -63,7 +57,9 @@ export class ArtistSyncService {
       where: eq(artists.spotifyId, artistId),
     });
 
-    if (!artist) return;
+    if (!artist) {
+      return;
+    }
 
     for (const track of tracks) {
       await db
@@ -94,25 +90,17 @@ export class ArtistSyncService {
 
   async syncPopularArtists(): Promise<void> {
     await this.spotifyClient.authenticate();
+    // Get popular artists in different genres
+    const genres = ['rock', 'pop', 'hip-hop', 'electronic', 'indie'];
 
-    try {
-      // Get popular artists in different genres
-      const genres = ['rock', 'pop', 'hip-hop', 'electronic', 'indie'];
+    for (const genre of genres) {
+      const searchResult = await this.spotifyClient.searchArtists(genre, 10);
 
-      for (const genre of genres) {
-        const searchResult = await this.spotifyClient.searchArtists(genre, 10);
-
-        for (const artist of searchResult.artists.items) {
-          try {
-            await this.syncArtist(artist.id);
-          } catch (error) {
-            console.error(`Failed to sync artist ${artist.name}:`, error);
-          }
-        }
+      for (const artist of searchResult.artists.items) {
+        try {
+          await this.syncArtist(artist.id);
+        } catch (_error) {}
       }
-    } catch (error) {
-      console.error('Failed to sync popular artists:', error);
-      throw error;
     }
   }
 

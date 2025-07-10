@@ -1,6 +1,5 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import { Button } from '@repo/design-system/components/ui/button';
 import {
   Dialog,
@@ -38,17 +37,16 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 interface UserActionsDialogProps {
   user: any;
   isBanned: boolean;
-  locale: string;
 }
 
 export default function UserActionsDialog({
   user,
   isBanned,
-  locale,
 }: UserActionsDialogProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState<'ban' | 'warn' | 'role' | null>(
@@ -82,7 +80,9 @@ export default function UserActionsDialog({
         banned_until: bannedUntil,
       });
 
-      if (banError) throw banError;
+      if (banError) {
+        throw banError;
+      }
 
       // Update user record
       const { error: userError } = await supabase
@@ -94,7 +94,9 @@ export default function UserActionsDialog({
         })
         .eq('id', user.id);
 
-      if (userError) throw userError;
+      if (userError) {
+        throw userError;
+      }
 
       // Log action
       await supabase.from('moderation_logs').insert({
@@ -115,7 +117,7 @@ export default function UserActionsDialog({
 
       setDialogOpen(false);
       router.refresh();
-    } catch (error) {
+    } catch (_error) {
       toast('Error', {
         description: 'Failed to ban user. Please try again.',
         type: 'error',
@@ -147,7 +149,9 @@ export default function UserActionsDialog({
           })
           .eq('id', activeBan.id);
 
-        if (banError) throw banError;
+        if (banError) {
+          throw banError;
+        }
       }
 
       // Update user record
@@ -160,7 +164,9 @@ export default function UserActionsDialog({
         })
         .eq('id', user.id);
 
-      if (userError) throw userError;
+      if (userError) {
+        throw userError;
+      }
 
       // Log action
       await supabase.from('moderation_logs').insert({
@@ -176,7 +182,7 @@ export default function UserActionsDialog({
       });
 
       router.refresh();
-    } catch (error) {
+    } catch (_error) {
       toast('Error', {
         description: 'Failed to lift ban. Please try again.',
         type: 'error',
@@ -198,7 +204,9 @@ export default function UserActionsDialog({
         })
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Log action
       await supabase.from('moderation_logs').insert({
@@ -234,7 +242,7 @@ export default function UserActionsDialog({
 
       setDialogOpen(false);
       router.refresh();
-    } catch (error) {
+    } catch (_error) {
       toast('Error', {
         description: 'Failed to warn user. Please try again.',
         type: 'error',
@@ -252,7 +260,9 @@ export default function UserActionsDialog({
         .update({ role: newRole })
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Log action
       await supabase.from('moderation_logs').insert({
@@ -270,7 +280,7 @@ export default function UserActionsDialog({
 
       setDialogOpen(false);
       router.refresh();
-    } catch (error) {
+    } catch (_error) {
       toast('Error', {
         description: 'Failed to update role. Please try again.',
         type: 'error',

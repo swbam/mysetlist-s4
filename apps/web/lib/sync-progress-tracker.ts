@@ -81,7 +81,9 @@ export class SyncProgressTracker {
     }
   ): Promise<void> {
     const current = await this.getProgress(artistId);
-    if (!current) return;
+    if (!current) {
+      return;
+    }
 
     current.updatedAt = new Date().toISOString();
 
@@ -102,7 +104,9 @@ export class SyncProgressTracker {
 
   async completeSync(artistId: string, error?: string): Promise<void> {
     const current = await this.getProgress(artistId);
-    if (!current) return;
+    if (!current) {
+      return;
+    }
 
     current.status = error ? 'failed' : 'completed';
     current.completedAt = new Date().toISOString();

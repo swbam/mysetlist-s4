@@ -12,23 +12,18 @@ export interface LogContext {
 }
 
 class Logger {
-  private isDevelopment = process.env['NODE_ENV'] === 'development';
+  private isDevelopment = process.env.NODE_ENV === 'development';
   private sentryLogger = Sentry.logger;
 
-  private consoleLog(level: LogLevel, message: string, context?: LogContext) {
+  private consoleLog(level: LogLevel, _message: string, _context?: LogContext) {
     // Always log to console in development
     if (this.isDevelopment) {
-      const consoleMethod =
+      const _consoleMethod =
         level === 'error' || level === 'fatal'
           ? 'error'
           : level === 'warn'
             ? 'warn'
             : 'log';
-      console[consoleMethod](
-        `[${level.toUpperCase()}]`,
-        message,
-        context || ''
-      );
     }
   }
 
@@ -154,7 +149,8 @@ class Logger {
 
   // Utility method to measure performance
   startTransaction(name: string, op: string) {
-    return Sentry.startTransaction({ name, op });
+    // Using startSpan instead of deprecated startTransaction
+    return Sentry.startSpan({ name, op }, () => {});
   }
 }
 

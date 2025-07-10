@@ -1,6 +1,6 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
+import { createClient } from '~/lib/supabase/server';
 
 export async function exportUserData() {
   const supabase = await createClient();
@@ -9,7 +9,9 @@ export async function exportUserData() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Unauthorized' };
+  if (!user) {
+    return { error: 'Unauthorized' };
+  }
 
   const { data: userData } = await supabase
     .from('users')
@@ -52,7 +54,9 @@ export async function exportContentData() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Unauthorized' };
+  if (!user) {
+    return { error: 'Unauthorized' };
+  }
 
   const { data: userData } = await supabase
     .from('users')
@@ -94,7 +98,9 @@ export async function exportAnalyticsData() {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return { error: 'Unauthorized' };
+  if (!user) {
+    return { error: 'Unauthorized' };
+  }
 
   const { data: userData } = await supabase
     .from('users')

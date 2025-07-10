@@ -1,5 +1,5 @@
-import { createClient } from '@/lib/api/supabase/server';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createClient } from '~/lib/api/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -90,7 +90,6 @@ export async function GET(request: NextRequest) {
     } = await query.range(offset, offset + limit - 1).select('*');
 
     if (error) {
-      console.error('Error fetching users:', error);
       return NextResponse.json(
         { error: 'Failed to fetch users' },
         { status: 500 }
@@ -147,8 +146,7 @@ export async function GET(request: NextRequest) {
         moderators: moderatorUsers || 0,
       },
     });
-  } catch (error) {
-    console.error('Error in users API:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

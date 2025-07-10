@@ -7,7 +7,6 @@ import { Input } from '@repo/design-system/components/ui/input';
 import { Label } from '@repo/design-system/components/ui/label';
 import { Music } from 'lucide-react';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
 import { signInWithProvider, signUp } from '../actions';
 
 export const dynamic = 'force-dynamic';
@@ -47,7 +46,7 @@ export default async function SignUpPage({
               <AlertDescription>{params.error}</AlertDescription>
             </Alert>
           )}
-          
+
           {params?.message && (
             <Alert className="border-green-200 bg-green-50 text-green-800">
               <AlertDescription>{params.message}</AlertDescription>
@@ -118,11 +117,7 @@ export default async function SignUpPage({
             </div>
 
             <form action={handleSpotifySignIn}>
-              <Button
-                type="submit"
-                variant="outline"
-                className="w-full"
-              >
+              <Button type="submit" variant="outline" className="w-full">
                 <Music className="mr-2 h-4 w-4" />
                 Sign up with Spotify
               </Button>

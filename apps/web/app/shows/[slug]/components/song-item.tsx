@@ -1,8 +1,5 @@
 'use client';
 
-import { useAuth } from '@/app/providers/auth-provider';
-import { MobileVoteButton } from '@/components/mobile/mobile-vote-button';
-import { AnonymousVoteButton } from '@/components/voting/anonymous-vote-button';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import { cn } from '@repo/design-system/lib/utils';
@@ -10,8 +7,11 @@ import { ExternalLink, GripVertical, Music, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
+import { useAuth } from '~/app/providers/auth-provider';
+import { MobileVoteButton } from '~/components/mobile/mobile-vote-button';
+import { AnonymousVoteButton } from '~/components/voting/anonymous-vote-button';
+import { useRealtimeVotes } from '~/hooks/use-realtime-votes';
 import { voteSong } from '../actions';
-import { useRealtimeVotes } from '@/hooks/use-realtime-votes';
 
 type SongItemProps = {
   item: {
@@ -56,8 +56,8 @@ export function SongItem({
   // Use real-time data if available, otherwise fall back to props
   const upvotes = votes.upvotes || item.upvotes || 0;
   const downvotes = votes.downvotes || item.downvotes || 0;
-  const netVotes = upvotes - downvotes;
-  const userVote = votes.userVote || item.userVote || null;
+  const _netVotes = upvotes - downvotes;
+  const _userVote = votes.userVote || item.userVote || null;
 
   const song = item.song;
   const position = index + 1;
@@ -70,7 +70,9 @@ export function SongItem({
   };
 
   const handleVote = (voteType: 'up' | 'down') => {
-    if (!canVote) return;
+    if (!canVote) {
+      return;
+    }
 
     startTransition(async () => {
       try {
@@ -180,7 +182,7 @@ export function SongItem({
             <div className="block md:hidden">
               <MobileVoteButton
                 songId={item.id}
-                onVote={async (songId, voteType) => {
+                onVote={async (_songId, voteType) => {
                   if (voteType === 'up') {
                     await handleVote('up');
                   } else if (voteType === 'down') {

@@ -1,9 +1,9 @@
-import { createServiceClient } from '@/lib/supabase/server';
 import { getUser } from '@repo/auth/server';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createServiceClient } from '~/lib/supabase/server';
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -77,8 +77,7 @@ export async function GET(
       recentActivity,
       followedArtists,
     });
-  } catch (error) {
-    console.error('Error fetching user profile:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to fetch profile' },
       { status: 500 }

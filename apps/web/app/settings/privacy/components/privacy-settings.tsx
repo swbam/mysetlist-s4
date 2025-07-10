@@ -1,6 +1,5 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import {
   Alert,
   AlertDescription,
@@ -18,6 +17,7 @@ import { Switch } from '@repo/design-system/components/ui/switch';
 import { toast } from '@repo/design-system/components/ui/use-toast';
 import { Download, Eye, Shield, UserX } from 'lucide-react';
 import { useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 interface PrivacySettingsProps {
   userId: string;
@@ -59,7 +59,9 @@ export function PrivacySettings({
         updated_at: new Date().toISOString(),
       });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       // Update cookie consent if analytics settings changed
       if (settings.allowAnalytics !== currentSettings?.allow_analytics) {
@@ -78,8 +80,7 @@ export function PrivacySettings({
       }
 
       toast('Privacy settings updated successfully', { type: 'success' });
-    } catch (error) {
-      console.error('Error updating privacy settings:', error);
+    } catch (_error) {
       toast('Failed to update privacy settings', { type: 'error' });
     } finally {
       setIsLoading(false);
@@ -131,8 +132,7 @@ export function PrivacySettings({
       URL.revokeObjectURL(url);
 
       toast('Your data has been exported successfully', { type: 'success' });
-    } catch (error) {
-      console.error('Error exporting data:', error);
+    } catch (_error) {
       toast('Failed to export data', { type: 'error' });
     } finally {
       setIsLoading(false);
@@ -155,12 +155,13 @@ export function PrivacySettings({
         p_user_id: userId,
       });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       toast('Your account has been deleted', { type: 'success' });
       window.location.href = '/';
-    } catch (error) {
-      console.error('Error deleting account:', error);
+    } catch (_error) {
       toast('Failed to delete account', { type: 'error' });
     } finally {
       setIsLoading(false);

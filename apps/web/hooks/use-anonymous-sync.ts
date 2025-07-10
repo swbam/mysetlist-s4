@@ -1,16 +1,18 @@
 'use client';
 
-import { syncAnonymousActions } from '@/app/shows/[slug]/anonymous-actions';
-import { anonymousUser } from '@/lib/anonymous-user';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
+import { syncAnonymousActions } from '~/app/shows/[slug]/anonymous-actions';
+import { anonymousUser } from '~/lib/anonymous-user';
 
 export function useAnonymousSync(isAuthenticated: boolean, userId?: string) {
   const router = useRouter();
 
   useEffect(() => {
-    if (!isAuthenticated || !userId) return;
+    if (!isAuthenticated || !userId) {
+      return;
+    }
 
     // Check if we have anonymous data to sync
     const sessionData = anonymousUser.getSessionData();
@@ -37,11 +39,8 @@ export function useAnonymousSync(isAuthenticated: boolean, userId?: string) {
         }
 
         if (results.errors.length > 0) {
-          console.error('Sync errors:', results.errors);
         }
-      } catch (error) {
-        console.error('Failed to sync anonymous actions:', error);
-      }
+      } catch (_error) {}
     };
 
     // Delay sync slightly to avoid race conditions

@@ -18,14 +18,14 @@ export const keys = () =>
       NEXT_PUBLIC_DOCS_URL: z.string().url().optional(),
     },
     runtimeEnv: {
-      ANALYZE: process.env['ANALYZE'],
-      NEXT_RUNTIME: process.env['NEXT_RUNTIME'] || 'nodejs',
+      ANALYZE: process.env.ANALYZE,
+      NEXT_RUNTIME: process.env.NEXT_RUNTIME || 'nodejs',
       NEXT_PUBLIC_APP_URL:
-        process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000',
+        process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
       NEXT_PUBLIC_WEB_URL:
-        process.env['NEXT_PUBLIC_WEB_URL'] || 'http://localhost:3001',
-      NEXT_PUBLIC_API_URL: process.env['NEXT_PUBLIC_API_URL'],
+        process.env.NEXT_PUBLIC_WEB_URL || 'http://localhost:3001',
+      NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
       NEXT_PUBLIC_DOCS_URL:
-        process.env['NEXT_PUBLIC_DOCS_URL'] || 'http://localhost:3004',
+        process.env.NEXT_PUBLIC_DOCS_URL || 'http://localhost:3004',
     },
   });

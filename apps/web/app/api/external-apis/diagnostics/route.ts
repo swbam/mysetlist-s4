@@ -1,9 +1,9 @@
+import { type NextRequest, NextResponse } from 'next/server';
 import {
   SetlistFmClient,
   SpotifyClient,
   TicketmasterClient,
-} from '@/lib/api/external-apis';
-import { type NextRequest, NextResponse } from 'next/server';
+} from '~/lib/api/external-apis';
 
 interface APIHealthStatus {
   service: string;
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
           status: responseTime < 5000 ? 'healthy' : 'degraded',
           responseTime,
           lastCheck: new Date(),
-          metrics,
+          ...(metrics && { metrics }),
         };
       } catch (error) {
         const responseTime = Date.now() - startTime;
@@ -228,8 +228,7 @@ export async function GET(request: NextRequest) {
       services: results,
       timestamp: new Date().toISOString(),
     });
-  } catch (error) {
-    console.error('Error checking API health:', error);
+  } catch (_error) {
     return NextResponse.json(
       { error: 'Failed to check API health' },
       { status: 500 }
@@ -257,13 +256,14 @@ export async function POST(request: NextRequest) {
               params.limit || 5
             );
             break;
-          case 'get_artist':
+          case 'get_artist': {
             if (!params.artistId) {
               throw new Error('Artist ID required');
             }
             results.data = await client.getArtist(params.artistId);
             break;
-          case 'get_top_tracks':
+          }
+          case 'get_top_tracks': {
             if (!params.artistId) {
               throw new Error('Artist ID required');
             }
@@ -272,6 +272,7 @@ export async function POST(request: NextRequest) {
               params.market || 'US'
             );
             break;
+          }
           case 'get_recommendations':
             results.data = await client.getRecommendations({
               seed_artists: params.seedArtists || [],
@@ -299,12 +300,13 @@ export async function POST(request: NextRequest) {
               size: params.size || 10,
             });
             break;
-          case 'get_event':
+          case 'get_event': {
             if (!params.eventId) {
               throw new Error('Event ID required');
             }
             results.data = await client.getEvent(params.eventId);
             break;
+          }
           case 'search_venues':
             results.data = await client.searchVenues({
               keyword: params.keyword,
@@ -334,12 +336,13 @@ export async function POST(request: NextRequest) {
               p: params.page || 1,
             });
             break;
-          case 'get_setlist':
+          case 'get_setlist': {
             if (!params.setlistId) {
               throw new Error('Setlist ID required');
             }
             results.data = await client.getSetlist(params.setlistId);
             break;
+          }
           default:
             throw new Error('Invalid Setlist.fm action');
         }
@@ -365,7 +368,6 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error('Error testing API functionality:', error);
     return NextResponse.json(
       {
         success: false,

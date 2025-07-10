@@ -57,20 +57,21 @@ export async function POST(request: NextRequest) {
       existingSong = existingSong.filter((s) => s.artist === artist);
     }
 
-    if (existingSong && existingSong.length > 0) {
+    if (existingSong && existingSong.length > 0 && existingSong[0]) {
       // Update existing song with new data if available
+      const existing = existingSong[0];
       const updatedSong = await db
         .update(songs)
         .set({
-          spotifyId: finalSpotifyId || existingSong[0].spotifyId,
-          album: album || existingSong[0].album,
-          albumArtUrl: finalAlbumArtUrl || existingSong[0].albumArtUrl,
-          durationMs: finalDurationMs || existingSong[0].durationMs,
-          popularity: popularity || existingSong[0].popularity,
-          previewUrl: previewUrl || existingSong[0].previewUrl,
+          spotifyId: finalSpotifyId || existing.spotifyId,
+          album: album || existing.album,
+          albumArtUrl: finalAlbumArtUrl || existing.albumArtUrl,
+          durationMs: finalDurationMs || existing.durationMs,
+          popularity: popularity || existing.popularity,
+          previewUrl: previewUrl || existing.previewUrl,
           updatedAt: new Date(),
         })
-        .where(eq(songs.id, existingSong[0].id))
+        .where(eq(songs.id, existing.id))
         .returning();
 
       return NextResponse.json({ song: updatedSong[0] });
@@ -101,8 +102,7 @@ export async function POST(request: NextRequest) {
       .returning();
 
     return NextResponse.json({ song: newSong[0] });
-  } catch (error) {
-    console.error('Song upsert error:', error);
+  } catch (_error) {
     return NextResponse.json({ error: 'Failed to save song' }, { status: 500 });
   }
 }

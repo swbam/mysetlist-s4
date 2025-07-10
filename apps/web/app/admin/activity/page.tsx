@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server';
 import {
   Avatar,
   AvatarFallback,
@@ -33,6 +32,7 @@ import {
   User,
   XCircle,
 } from 'lucide-react';
+import { createClient } from '~/lib/supabase/server';
 
 // Force dynamic rendering due to user-specific data fetching
 export const dynamic = 'force-dynamic';

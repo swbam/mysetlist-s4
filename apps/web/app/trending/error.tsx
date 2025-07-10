@@ -11,10 +11,7 @@ export default function TrendingError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    // Log the error to an error reporting service
-    console.error('Trending page error:', error);
-  }, [error]);
+  useEffect(() => {}, [error]);
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -28,8 +25,8 @@ export default function TrendingError({
             Error Loading Trending Data
           </h1>
           <p className="text-muted-foreground">
-            We're having trouble loading trending data right now. This might be a
-            temporary issue with our servers.
+            We're having trouble loading trending data right now. This might be
+            a temporary issue with our servers.
           </p>
         </div>
 

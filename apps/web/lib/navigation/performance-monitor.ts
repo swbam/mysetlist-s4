@@ -23,7 +23,7 @@ class NavigationPerformanceMonitor {
   private currentNavigation: Partial<NavigationMetrics> | null = null;
   private thresholds: PerformanceThresholds = {
     warning: 2000, // 2 seconds
-    error: 5000,   // 5 seconds
+    error: 5000, // 5 seconds
   };
   private observers: PerformanceObserver[] = [];
 
@@ -91,7 +91,9 @@ class NavigationPerformanceMonitor {
   }
 
   endNavigation(loadState: 'loaded' | 'error', errorMessage?: string): void {
-    if (!this.currentNavigation) return;
+    if (!this.currentNavigation) {
+      return;
+    }
 
     const endTime = performance.now();
     const duration = endTime - (this.currentNavigation.startTime || 0);
@@ -116,9 +118,7 @@ class NavigationPerformanceMonitor {
     }
   }
 
-  private recordPaintTiming(entry: PerformanceEntry): void {
-    console.log(`First Contentful Paint: ${entry.startTime}ms`);
-  }
+  private recordPaintTiming(_entry: PerformanceEntry): void {}
 
   private analyzePerformance(metric: NavigationMetrics): void {
     const { duration, route, loadState } = metric;
@@ -132,24 +132,27 @@ class NavigationPerformanceMonitor {
 
     // Log successful fast navigation
     if (loadState === 'loaded' && duration < 1000) {
-      console.log(`🚀 Fast navigation to ${route}: ${duration.toFixed(2)}ms`);
     }
   }
 
-  private reportPerformanceIssue(level: 'warning' | 'error', metric: NavigationMetrics): void {
-    const message = `${level.toUpperCase()}: Slow navigation to ${metric.route} (${metric.duration.toFixed(2)}ms)`;
-    
+  private reportPerformanceIssue(
+    level: 'warning' | 'error',
+    metric: NavigationMetrics
+  ): void {
+    const _message = `${level.toUpperCase()}: Slow navigation to ${metric.route} (${metric.duration.toFixed(2)}ms)`;
+
     if (level === 'error') {
-      console.error(message, metric);
     } else {
-      console.warn(message, metric);
     }
 
     // Send to analytics
     this.sendToAnalytics(level, metric);
   }
 
-  private sendToAnalytics(level: 'warning' | 'error', metric: NavigationMetrics): void {
+  private sendToAnalytics(
+    level: 'warning' | 'error',
+    metric: NavigationMetrics
+  ): void {
     // Send to Google Analytics
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'navigation_performance', {
@@ -197,11 +200,15 @@ class NavigationPerformanceMonitor {
     const totalDuration = this.metrics.reduce((sum, m) => sum + m.duration, 0);
     const averageDuration = totalDuration / this.metrics.length;
 
-    const sortedByDuration = [...this.metrics].sort((a, b) => a.duration - b.duration);
+    const sortedByDuration = [...this.metrics].sort(
+      (a, b) => a.duration - b.duration
+    );
     const fastestRoute = sortedByDuration[0]?.route || '';
-    const slowestRoute = sortedByDuration[sortedByDuration.length - 1]?.route || '';
+    const slowestRoute = sortedByDuration.at(-1)?.route || '';
 
-    const errorCount = this.metrics.filter(m => m.loadState === 'error').length;
+    const errorCount = this.metrics.filter(
+      (m) => m.loadState === 'error'
+    ).length;
     const errorRate = errorCount / this.metrics.length;
 
     return {
@@ -229,9 +236,9 @@ class NavigationPerformanceMonitor {
 • Slowest Route: ${stats.slowestRoute}
 
 ⚡ Recent Performance (Last 10):
-${recentMetrics.map(m => 
-  `• ${m.route}: ${m.duration.toFixed(2)}ms (${m.loadState})`
-).join('\n')}
+${recentMetrics
+  .map((m) => `• ${m.route}: ${m.duration.toFixed(2)}ms (${m.loadState})`)
+  .join('\n')}
 
 🎯 Performance Thresholds:
 • Warning: >${this.thresholds.warning}ms
@@ -257,21 +264,28 @@ ${this.getPerformanceRecommendations()}
       recommendations.push('• Review error boundary coverage');
     }
 
-    const slowRoutes = this.metrics.filter(m => m.duration > this.thresholds.warning);
+    const slowRoutes = this.metrics.filter(
+      (m) => m.duration > this.thresholds.warning
+    );
     if (slowRoutes.length > 0) {
-      const routeCounts = slowRoutes.reduce((acc, m) => {
-        acc[m.route] = (acc[m.route] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+      const routeCounts = slowRoutes.reduce(
+        (acc, m) => {
+          acc[m.route] = (acc[m.route] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>
+      );
 
       const problemRoutes = Object.entries(routeCounts)
         .sort(([, a], [, b]) => b - a)
         .slice(0, 3);
 
-      recommendations.push(`• Focus optimization on: ${problemRoutes.map(([route]) => route).join(', ')}`);
+      recommendations.push(
+        `• Focus optimization on: ${problemRoutes.map(([route]) => route).join(', ')}`
+      );
     }
 
-    return recommendations.length > 0 
+    return recommendations.length > 0
       ? `\n💡 Recommendations:\n${recommendations.join('\n')}`
       : '\n✅ Performance is within acceptable thresholds';
   }
@@ -285,7 +299,7 @@ ${this.getPerformanceRecommendations()}
   }
 
   destroy(): void {
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach((observer) => observer.disconnect());
     this.observers = [];
   }
 }
@@ -303,10 +317,10 @@ export function getNavigationPerformanceMonitor(): NavigationPerformanceMonitor 
 // Hook for React components
 export function useNavigationPerformance() {
   const monitor = getNavigationPerformanceMonitor();
-  
+
   return {
     startNavigation: (route: string) => monitor.startNavigation(route),
-    endNavigation: (loadState: 'loaded' | 'error', errorMessage?: string) => 
+    endNavigation: (loadState: 'loaded' | 'error', errorMessage?: string) =>
       monitor.endNavigation(loadState, errorMessage),
     getMetrics: () => monitor.getMetrics(),
     getReport: () => monitor.getPerformanceReport(),
@@ -320,15 +334,15 @@ export function trackNavigation<T>(
   navigationFn: () => Promise<T>
 ): Promise<T> {
   const monitor = getNavigationPerformanceMonitor();
-  
+
   monitor.startNavigation(route);
-  
+
   return navigationFn()
-    .then(result => {
+    .then((result) => {
       monitor.endNavigation('loaded');
       return result;
     })
-    .catch(error => {
+    .catch((error) => {
       monitor.endNavigation('error', error.message);
       throw error;
     });

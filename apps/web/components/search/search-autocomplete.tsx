@@ -1,6 +1,5 @@
 'use client';
 
-import { useDebounce } from '@/hooks/use-debounce';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
@@ -17,6 +16,7 @@ import {
   Users,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useDebounce } from '~/hooks/use-debounce';
 
 interface SearchSuggestion {
   id: string;
@@ -76,15 +76,15 @@ export function SearchAutocomplete({
     if (saved) {
       try {
         setRecentSearches(JSON.parse(saved).slice(0, 5));
-      } catch (error) {
-        console.error('Failed to load recent searches:', error);
-      }
+      } catch (_error) {}
     }
   }, []);
 
   // Save search to recent searches
   const saveRecentSearch = (query: string) => {
-    if (!query.trim() || query.length < 2) return;
+    if (!query.trim() || query.length < 2) {
+      return;
+    }
 
     const updated = [query, ...recentSearches.filter((s) => s !== query)].slice(
       0,
@@ -112,8 +112,7 @@ export function SearchAutocomplete({
           const data = await response.json();
           setSuggestions(data.suggestions || []);
         }
-      } catch (error) {
-        console.error('Failed to fetch suggestions:', error);
+      } catch (_error) {
         setSuggestions([]);
       } finally {
         setLoading(false);
@@ -125,22 +124,26 @@ export function SearchAutocomplete({
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showSuggestions) return;
+    if (!showSuggestions) {
+      return;
+    }
 
     switch (e.key) {
-      case 'ArrowDown':
+      case 'ArrowDown': {
         e.preventDefault();
         setSelectedIndex((prev) =>
           prev < suggestions.length - 1 ? prev + 1 : 0
         );
         break;
-      case 'ArrowUp':
+      }
+      case 'ArrowUp': {
         e.preventDefault();
         setSelectedIndex((prev) =>
           prev > 0 ? prev - 1 : suggestions.length - 1
         );
         break;
-      case 'Enter':
+      }
+      case 'Enter': {
         e.preventDefault();
         if (selectedIndex >= 0 && suggestions[selectedIndex]) {
           handleSelectSuggestion(suggestions[selectedIndex]);
@@ -148,11 +151,13 @@ export function SearchAutocomplete({
           handleSearch();
         }
         break;
-      case 'Escape':
+      }
+      case 'Escape': {
         setShowSuggestions(false);
         setSelectedIndex(-1);
         inputRef.current?.blur();
         break;
+      }
     }
   };
 
@@ -185,7 +190,7 @@ export function SearchAutocomplete({
     }
   };
 
-  const handleBlur = (e: React.FocusEvent) => {
+  const handleBlur = (_e: React.FocusEvent) => {
     // Delay hiding suggestions to allow clicking on them
     setTimeout(() => {
       if (!suggestionsRef.current?.contains(document.activeElement)) {

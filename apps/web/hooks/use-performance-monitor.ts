@@ -61,7 +61,6 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
       onMetricUpdate?.(key, value);
 
       if (debug) {
-        console.log(`Performance Metric - ${key}:`, value);
       }
     },
     [onMetricUpdate, debug]
@@ -69,7 +68,9 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
 
   // Core Web Vitals tracking
   useEffect(() => {
-    if (!trackCoreWebVitals || !('PerformanceObserver' in window)) return;
+    if (!trackCoreWebVitals || !('PerformanceObserver' in window)) {
+      return;
+    }
 
     const observer = new PerformanceObserver((list) => {
       list.getEntries().forEach((entry) => {
@@ -113,9 +114,8 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
         ],
       });
       observerRef.current = observer;
-    } catch (error) {
+    } catch (_error) {
       if (debug) {
-        console.warn('Failed to observe performance entries:', error);
       }
     }
 
@@ -126,7 +126,9 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
 
   // Resource usage tracking
   useEffect(() => {
-    if (!trackResourceUsage) return;
+    if (!trackResourceUsage) {
+      return;
+    }
 
     const trackResourceUsage = () => {
       // Memory usage (Chrome only)
@@ -150,7 +152,9 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
 
   // Network information tracking
   useEffect(() => {
-    if (!trackNetworkInfo || !('connection' in navigator)) return;
+    if (!trackNetworkInfo || !('connection' in navigator)) {
+      return;
+    }
 
     const connection = (navigator as any).connection;
 
@@ -186,12 +190,11 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
   }, []);
 
   const markComponentMount = useCallback(
-    (componentName: string) => {
+    (_componentName: string) => {
       const startTime = performance.now();
       updateMetric('componentMountTime', startTime);
 
       if (debug) {
-        console.log(`Component mounted: ${componentName} at ${startTime}ms`);
       }
     },
     [updateMetric, debug]
@@ -207,7 +210,6 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
       updateMetric('renderTime', renderTime);
 
       if (debug) {
-        console.log(`Render time: ${renderTime}ms`);
       }
 
       return renderTime;
@@ -251,7 +253,9 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
       (score) => score !== null
     ) as number[];
 
-    if (validScores.length === 0) return null;
+    if (validScores.length === 0) {
+      return null;
+    }
 
     const averageScore =
       validScores.reduce((sum, score) => sum + score, 0) / validScores.length;
@@ -301,7 +305,7 @@ export function useComponentPerformance(
 ) {
   const { markComponentMount, measureRenderTime, metrics } =
     usePerformanceMonitor({
-      debug: process.env['NODE_ENV'] === 'development',
+      debug: process.env.NODE_ENV === 'development',
     });
 
   const mountTimeRef = useRef<number>();
@@ -316,21 +320,17 @@ export function useComponentPerformance(
   useEffect(() => {
     renderCountRef.current += 1;
 
-    if (process.env['NODE_ENV'] === 'development') {
-      console.log(`${componentName} rendered ${renderCountRef.current} times`);
+    if (process.env.NODE_ENV === 'development') {
     }
   }, deps);
 
   const measureOperation = useCallback(
-    (operationName: string, operation: () => void) => {
+    (_operationName: string, operation: () => void) => {
       const startTime = performance.now();
       operation();
       const duration = performance.now() - startTime;
 
-      if (process.env['NODE_ENV'] === 'development') {
-        console.log(
-          `${componentName}.${operationName}: ${duration.toFixed(2)}ms`
-        );
+      if (process.env.NODE_ENV === 'development') {
       }
 
       return duration;

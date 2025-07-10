@@ -1,40 +1,31 @@
-import {
-  queueEmail,
-  sendWelcomeEmailAction,
-} from '@/actions/email-notifications';
 import { db } from '@repo/database';
 import { users } from '@repo/database/src/schema';
 import { eq } from 'drizzle-orm';
+import {
+  queueEmail,
+  sendWelcomeEmailAction,
+} from '~/actions/email-notifications';
 
 // Trigger welcome email when user signs up
 export async function triggerWelcomeEmail(userId: string) {
   try {
     await sendWelcomeEmailAction(userId);
-    console.log(`Welcome email sent to user ${userId}`);
-  } catch (error) {
-    console.error(`Failed to send welcome email to user ${userId}:`, error);
-  }
+  } catch (_error) {}
 }
 
 // Trigger new show notifications when a show is created
 // Note: This functionality is currently disabled since user follows have been removed
-export async function triggerNewShowNotifications(showId: string) {
-  console.log(
-    `New show notification trigger disabled for show ${showId} - user follows not available`
-  );
+export async function triggerNewShowNotifications(_showId: string) {
   return;
 }
 
 // Trigger setlist update notifications
 // Note: This functionality is currently disabled since user follows have been removed
 export async function triggerSetlistUpdateNotifications(
-  showId: string,
-  newSongs: Array<{ title: string; artist?: string; encore?: boolean }>,
-  updateType: 'new' | 'complete' | 'updated' = 'updated'
+  _showId: string,
+  _newSongs: Array<{ title: string; artist?: string; encore?: boolean }>,
+  _updateType: 'new' | 'complete' | 'updated' = 'updated'
 ) {
-  console.log(
-    `Setlist update notification trigger disabled for show ${showId} - user follows not available`
-  );
   return;
 }
 
@@ -53,12 +44,10 @@ export async function triggerEmailVerification(
       .limit(1);
 
     if (user.length === 0) {
-      console.error(`User ${userId} not found`);
       return;
     }
 
-    const appUrl =
-      process.env['NEXT_PUBLIC_APP_URL'] || 'https://MySetlist.app';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://MySetlist.app';
     const verificationUrl = `${appUrl}/auth/verify?token=${verificationToken}`;
 
     await queueEmail({
@@ -71,14 +60,7 @@ export async function triggerEmailVerification(
       },
       scheduledFor: new Date(), // Send immediately
     });
-
-    console.log(`Email verification queued for user ${userId}`);
-  } catch (error) {
-    console.error(
-      `Failed to trigger email verification for user ${userId}:`,
-      error
-    );
-  }
+  } catch (_error) {}
 }
 
 // Trigger password reset email
@@ -93,12 +75,10 @@ export async function triggerPasswordReset(userId: string, resetToken: string) {
       .limit(1);
 
     if (user.length === 0) {
-      console.error(`User ${userId} not found`);
       return;
     }
 
-    const appUrl =
-      process.env['NEXT_PUBLIC_APP_URL'] || 'https://MySetlist.app';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://MySetlist.app';
     const resetUrl = `${appUrl}/auth/reset-password?token=${resetToken}`;
 
     await queueEmail({
@@ -111,12 +91,5 @@ export async function triggerPasswordReset(userId: string, resetToken: string) {
       },
       scheduledFor: new Date(), // Send immediately
     });
-
-    console.log(`Password reset email queued for user ${userId}`);
-  } catch (error) {
-    console.error(
-      `Failed to trigger password reset for user ${userId}:`,
-      error
-    );
-  }
+  } catch (_error) {}
 }

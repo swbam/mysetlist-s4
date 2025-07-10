@@ -10,7 +10,7 @@ const mockSupabase = {
   from: vi.fn(),
 };
 
-vi.mock('@/lib/supabase/server', () => ({
+vi.mock('~/lib/api/supabase/server', () => ({
   createClient: vi.fn(() => mockSupabase),
 }));
 
@@ -163,7 +163,7 @@ describe('/api/admin/users', () => {
       const request = new NextRequest(
         'http://localhost/api/admin/users?search=test&role=moderator&status=active'
       );
-      const response = await GET(request);
+      const _response = await GET(request);
 
       expect(mockQuery.or).toHaveBeenCalledWith(
         'email.ilike.%test%,display_name.ilike.%test%,username.ilike.%test%'

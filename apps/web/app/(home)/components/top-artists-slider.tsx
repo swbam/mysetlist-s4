@@ -1,9 +1,5 @@
 'use client';
 
-import {
-  ContentSlider,
-  ContentSliderItem,
-} from '@/components/ui/content-slider';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { motion } from 'framer-motion';
@@ -11,6 +7,10 @@ import { Music, Sparkles, TrendingUp, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
+import {
+  ContentSlider,
+  ContentSliderItem,
+} from '~/components/ui/content-slider';
 
 interface TrendingArtist {
   id: string;
@@ -32,13 +32,21 @@ interface TopArtistsSliderProps {
 
 // Memoize the format function to prevent recreating on every render
 const formatFollowers = (num: number) => {
-  if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-  if (num >= 1000) return `${(num / 1000).toFixed(0)}K`;
+  if (num >= 1000000) {
+    return `${(num / 1000000).toFixed(1)}M`;
+  }
+  if (num >= 1000) {
+    return `${(num / 1000).toFixed(0)}K`;
+  }
   return num.toString();
 };
 
-const TopArtistsSlider = React.memo(function TopArtistsSlider({ artists }: TopArtistsSliderProps) {
-  if (!artists || artists.length === 0) return null;
+function TopArtistsSlider({
+  artists,
+}: TopArtistsSliderProps) {
+  if (!artists || artists.length === 0) {
+    return null;
+  }
 
   return (
     <ContentSlider
@@ -49,9 +57,10 @@ const TopArtistsSlider = React.memo(function TopArtistsSlider({ artists }: TopAr
       autoPlay={true}
       autoPlayInterval={4000}
       itemsPerView={{
-        mobile: 2,
-        tablet: 4,
-        desktop: 6,
+        mobile: 1.5,
+        tablet: 3,
+        desktop: 5,
+        wide: 7,
       }}
       className="bg-gradient-to-b from-background via-background/95 to-background"
     >
@@ -61,17 +70,17 @@ const TopArtistsSlider = React.memo(function TopArtistsSlider({ artists }: TopAr
             <Card className="overflow-hidden border-0 bg-transparent transition-all duration-300 hover:bg-card/20">
               <CardContent className="p-0">
                 {/* Artist image with gradient overlay */}
-                <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-gradient-to-br from-primary/20 to-purple-600/20">
+                <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-gradient-to-br from-primary/20 to-purple-600/20 sm:rounded-xl">
                   {artist.imageUrl ? (
                     <>
                       <Image
                         src={artist.imageUrl}
                         alt={artist.name}
                         fill
-                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
+                        sizes="(max-width: 640px) 66vw, (max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        priority={index < 6}
-                        loading={index < 6 ? 'eager' : 'lazy'}
+                        priority={index < 4}
+                        loading={index < 4 ? 'eager' : 'lazy'}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                     </>
@@ -132,12 +141,12 @@ const TopArtistsSlider = React.memo(function TopArtistsSlider({ artists }: TopAr
                 </div>
 
                 {/* Artist info */}
-                <div className="pt-3 pb-2 text-center">
-                  <h3 className="truncate font-semibold text-sm transition-colors group-hover:text-primary">
+                <div className="pt-2 pb-1 text-center sm:pt-3 sm:pb-2">
+                  <h3 className="truncate font-semibold text-xs transition-colors group-hover:text-primary sm:text-sm">
                     {artist.name}
                   </h3>
                   {artist.genres && artist.genres.length > 0 && (
-                    <p className="mt-1 truncate text-muted-foreground text-xs">
+                    <p className="mt-0.5 truncate text-muted-foreground text-xs sm:mt-1">
                       {artist.genres[0]}
                     </p>
                   )}
@@ -149,6 +158,6 @@ const TopArtistsSlider = React.memo(function TopArtistsSlider({ artists }: TopAr
       ))}
     </ContentSlider>
   );
-});
+}
 
 export default TopArtistsSlider;

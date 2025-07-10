@@ -1,11 +1,9 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import { env } from './env';
 
 async function applyNewMigrations() {
-  console.log('🚀 Applying new migrations...');
-
   const supabase = createClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.SUPABASE_SERVICE_ROLE_KEY,
@@ -31,29 +29,17 @@ async function applyNewMigrations() {
     );
 
     if (fs.existsSync(migrationPath)) {
-      console.log(`📝 Running migration: ${migrationFile}`);
-
       try {
         const sql = fs.readFileSync(migrationPath, 'utf8');
         const { error } = await supabase.rpc('exec_sql', { sql });
 
         if (error) {
-          console.error(`❌ Migration ${migrationFile} failed:`, error);
         } else {
-          console.log(`✅ Migration ${migrationFile} completed successfully`);
         }
-      } catch (error) {
-        console.error(
-          `❌ Error reading or applying migration ${migrationFile}:`,
-          error
-        );
-      }
+      } catch (_error) {}
     } else {
-      console.log(`⚠️  Migration file not found: ${migrationFile}`);
     }
   }
-
-  console.log('✨ Migration process completed');
 }
 
 applyNewMigrations().catch(console.error);

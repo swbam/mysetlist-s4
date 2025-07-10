@@ -1,11 +1,11 @@
 'use client';
 
-import { createClient } from '@/lib/supabase/client';
 import type {
   RealtimeChannel,
   RealtimePostgresChangesPayload,
 } from '@supabase/supabase-js';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createClient } from '~/lib/supabase/client';
 
 type SetlistSong = {
   id: string;
@@ -93,7 +93,6 @@ export function useRealtimeSetlist({
         return data.setlists || [];
       }
     } catch (error) {
-      console.error('Failed to fetch setlists:', error);
       emitEvent({
         type: 'connection_change',
         data: { error },
@@ -168,7 +167,9 @@ export function useRealtimeSetlist({
 
   // Setup real-time subscription with reconnection logic
   const setupSubscription = useCallback(async () => {
-    if (!showId || setlists.length === 0) return;
+    if (!showId || setlists.length === 0) {
+      return;
+    }
 
     // Clean up existing subscription
     if (channelRef.current) {
@@ -238,8 +239,7 @@ export function useRealtimeSetlist({
         });
 
       channelRef.current = channel;
-    } catch (error) {
-      console.error('Failed to setup real-time subscription:', error);
+    } catch (_error) {
       setConnectionStatus('error');
       handleReconnect();
     }
@@ -259,10 +259,7 @@ export function useRealtimeSetlist({
       clearTimeout(reconnectTimeoutRef.current);
     }
 
-    const delay = Math.min(
-      1000 * Math.pow(2, reconnectAttemptsRef.current),
-      30000
-    );
+    const delay = Math.min(1000 * 2 ** reconnectAttemptsRef.current, 30000);
     reconnectAttemptsRef.current += 1;
 
     reconnectTimeoutRef.current = setTimeout(() => {

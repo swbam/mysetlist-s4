@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server';
 import {
   Card,
   CardContent,
@@ -20,16 +19,14 @@ import {
   Lightbulb,
   MessageSquare,
 } from 'lucide-react';
+import { createClient } from '~/lib/supabase/server';
 import ModerationItem from './components/moderation-item';
 
 // Force dynamic rendering due to user-specific data fetching
 export const dynamic = 'force-dynamic';
 
-export default async function ModerationPage({
-  params,
-}: { params: Promise<{ locale: string }> }) {
+export default async function ModerationPage() {
   const supabase = await createClient();
-  const { locale } = await params;
 
   // Fetch pending content for moderation
   const [
@@ -194,7 +191,6 @@ export default async function ModerationPage({
                       key={setlist.id}
                       type="setlist"
                       item={setlist}
-                      locale={locale}
                     />
                   ))}
                   {pendingReviews?.map((review) => (
@@ -202,7 +198,6 @@ export default async function ModerationPage({
                       key={review.id}
                       type="review"
                       item={review}
-                      locale={locale}
                     />
                   ))}
                   {pendingPhotos?.map((photo) => (
@@ -210,7 +205,6 @@ export default async function ModerationPage({
                       key={photo.id}
                       type="photo"
                       item={photo}
-                      locale={locale}
                     />
                   ))}
                   {pendingTips?.map((tip) => (
@@ -218,7 +212,6 @@ export default async function ModerationPage({
                       key={tip.id}
                       type="tip"
                       item={tip}
-                      locale={locale}
                     />
                   ))}
                 </div>
@@ -237,7 +230,6 @@ export default async function ModerationPage({
                     key={setlist.id}
                     type="setlist"
                     item={setlist}
-                    locale={locale}
                   />
                 ))
               )}
@@ -255,7 +247,6 @@ export default async function ModerationPage({
                     key={review.id}
                     type="review"
                     item={review}
-                    locale={locale}
                   />
                 ))
               )}
@@ -273,7 +264,6 @@ export default async function ModerationPage({
                     key={photo.id}
                     type="photo"
                     item={photo}
-                    locale={locale}
                   />
                 ))
               )}
@@ -291,7 +281,6 @@ export default async function ModerationPage({
                     key={tip.id}
                     type="tip"
                     item={tip}
-                    locale={locale}
                   />
                 ))
               )}

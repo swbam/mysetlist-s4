@@ -1,8 +1,8 @@
-import { createServiceClient } from '@/lib/supabase/server';
 import { db } from '@repo/database';
 import { artistSongs, artists, songs } from '@repo/database';
 import { TicketmasterClient } from '@repo/external-apis';
 import { and, eq } from 'drizzle-orm';
+import { createServiceClient } from '~/lib/supabase/server';
 
 // Enhanced Spotify client with full catalog sync capabilities
 class SpotifyClient {
@@ -19,7 +19,7 @@ class SpotifyClient {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
         Authorization: `Basic ${Buffer.from(
-          `${process.env['SPOTIFY_CLIENT_ID']!}:${process.env['SPOTIFY_CLIENT_SECRET']!}`
+          `${process.env['SPOTIFY_CLIENT_ID']}:${process.env['SPOTIFY_CLIENT_SECRET']}`
         ).toString('base64')}`,
       },
       body: 'grant_type=client_credentials',
@@ -191,7 +191,6 @@ const spotify = new SpotifyClient();
 async function findTicketmasterId(artistName: string): Promise<string | null> {
   try {
     if (!process.env['TICKETMASTER_API_KEY']) {
-      console.warn('Ticketmaster API key not configured');
       return null;
     }
 
@@ -218,9 +217,7 @@ async function findTicketmasterId(artistName: string): Promise<string | null> {
         return response._embedded.attractions[0].id;
       }
     }
-  } catch (error) {
-    console.error('Failed to find Ticketmaster ID:', error);
-  }
+  } catch (_error) {}
 
   return null;
 }
@@ -246,123 +243,128 @@ async function syncFullCatalog(spotifyId: string, artistId: string) {
   const results = { albums: 0, songs: 0, errors: 0 };
   const processedAlbums = new Set<string>();
   const processedTracks = new Set<string>();
+  let offset = 0;
+  let hasMore = true;
 
-  try {
-    let offset = 0;
-    let hasMore = true;
+  // Fetch all albums (including singles and compilations)
+  while (hasMore) {
+    const albumsResponse = await spotify.getArtistAlbums(
+      spotifyId,
+      'album,single,compilation',
+      50,
+      offset
+    );
 
-    // Fetch all albums (including singles and compilations)
-    while (hasMore) {
-      const albumsResponse = await spotify.getArtistAlbums(
-        spotifyId,
-        'album,single,compilation',
-        50,
-        offset
-      );
+    if (!albumsResponse.items || albumsResponse.items.length === 0) {
+      hasMore = false;
+      break;
+    }
 
-      if (!albumsResponse.items || albumsResponse.items.length === 0) {
-        hasMore = false;
-        break;
+    // Process each album
+    for (const album of albumsResponse.items) {
+      if (processedAlbums.has(album.id)) {
+        continue;
       }
+      processedAlbums.add(album.id);
 
-      // Process each album
-      for (const album of albumsResponse.items) {
-        if (processedAlbums.has(album.id)) continue;
-        processedAlbums.add(album.id);
+      try {
+        results.albums++;
 
-        try {
-          results.albums++;
+        // Get all tracks from the album
+        let trackOffset = 0;
+        let hasMoreTracks = true;
 
-          // Get all tracks from the album
-          let trackOffset = 0;
-          let hasMoreTracks = true;
+        while (hasMoreTracks) {
+          const tracksResponse = await spotify.getAlbumTracks(
+            album.id,
+            50,
+            trackOffset
+          );
 
-          while (hasMoreTracks) {
-            const tracksResponse = await spotify.getAlbumTracks(
-              album.id,
-              50,
-              trackOffset
-            );
+          if (!tracksResponse.items || tracksResponse.items.length === 0) {
+            hasMoreTracks = false;
+            break;
+          }
 
-            if (!tracksResponse.items || tracksResponse.items.length === 0) {
-              hasMoreTracks = false;
-              break;
-            }
+          // Get full track details for all tracks
+          const trackIds = tracksResponse.items
+            .map((t: any) => t.id)
+            .filter((id: string) => id);
+          if (trackIds.length > 0) {
+            const fullTracks = await spotify.getTracks(trackIds);
 
-            // Get full track details for all tracks
-            const trackIds = tracksResponse.items
-              .map((t: any) => t.id)
-              .filter((id: string) => id);
-            if (trackIds.length > 0) {
-              const fullTracks = await spotify.getTracks(trackIds);
+            for (const track of fullTracks.tracks) {
+              if (!track || processedTracks.has(track.id)) {
+                continue;
+              }
+              processedTracks.add(track.id);
 
-              for (const track of fullTracks.tracks) {
-                if (!track || processedTracks.has(track.id)) continue;
-                processedTracks.add(track.id);
+              try {
+                // Check if song already exists
+                const existingSong = await db
+                  .select()
+                  .from(songs)
+                  .where(eq(songs.spotifyId, track.id))
+                  .limit(1);
 
-                try {
-                  // Check if song already exists
-                  const existingSong = await db
-                    .select()
-                    .from(songs)
-                    .where(eq(songs.spotifyId, track.id))
-                    .limit(1);
+                let songId: string | undefined;
 
-                  let songId: string;
-
-                  if (existingSong.length > 0) {
-                    // Update existing song
-                    songId = existingSong[0].id;
-                    await db
-                      .update(songs)
-                      .set({
-                        title: track.name,
-                        artist: track.artists[0]?.name || 'Unknown Artist',
-                        album: track.album.name,
-                        albumId: track.album.id,
-                        albumType: album.album_type,
-                        trackNumber: track.track_number,
-                        discNumber: track.disc_number || 1,
-                        albumArtUrl: track.album.images[0]?.url,
-                        releaseDate: track.album.release_date,
-                        durationMs: track.duration_ms,
-                        popularity: track.popularity,
-                        previewUrl: track.preview_url,
-                        spotifyUri: track.uri,
-                        externalUrls: JSON.stringify(track.external_urls),
-                        isExplicit: track.explicit,
-                        isPlayable: track.is_playable !== false,
-                        updatedAt: new Date(),
-                      })
-                      .where(eq(songs.id, songId));
-                  } else {
-                    // Insert new song
-                    const [newSong] = await db
-                      .insert(songs)
-                      .values({
-                        spotifyId: track.id,
-                        title: track.name,
-                        artist: track.artists[0]?.name || 'Unknown Artist',
-                        album: track.album.name,
-                        albumId: track.album.id,
-                        albumType: album.album_type,
-                        trackNumber: track.track_number,
-                        discNumber: track.disc_number || 1,
-                        albumArtUrl: track.album.images[0]?.url,
-                        releaseDate: track.album.release_date,
-                        durationMs: track.duration_ms,
-                        popularity: track.popularity,
-                        previewUrl: track.preview_url,
-                        spotifyUri: track.uri,
-                        externalUrls: JSON.stringify(track.external_urls),
-                        isExplicit: track.explicit,
-                        isPlayable: track.is_playable !== false,
-                      })
-                      .returning();
-                    songId = newSong.id;
+                if (existingSong.length > 0 && existingSong[0]) {
+                  // Update existing song
+                  songId = existingSong[0].id;
+                  await db
+                    .update(songs)
+                    .set({
+                      title: track.name,
+                      artist: track.artists[0]?.name || 'Unknown Artist',
+                      album: track.album.name,
+                      albumId: track.album.id,
+                      albumType: album.album_type,
+                      trackNumber: track.track_number,
+                      discNumber: track.disc_number || 1,
+                      albumArtUrl: track.album.images[0]?.url,
+                      releaseDate: track.album.release_date,
+                      durationMs: track.duration_ms,
+                      popularity: track.popularity,
+                      previewUrl: track.preview_url,
+                      spotifyUri: track.uri,
+                      externalUrls: JSON.stringify(track.external_urls),
+                      isExplicit: track.explicit,
+                      isPlayable: track.is_playable !== false,
+                      updatedAt: new Date(),
+                    })
+                    .where(eq(songs.id, songId));
+                } else {
+                  // Insert new song
+                  const newSongs = await db
+                    .insert(songs)
+                    .values({
+                      spotifyId: track.id,
+                      title: track.name,
+                      artist: track.artists[0]?.name || 'Unknown Artist',
+                      album: track.album.name,
+                      albumId: track.album.id,
+                      albumType: album.album_type,
+                      trackNumber: track.track_number,
+                      discNumber: track.disc_number || 1,
+                      albumArtUrl: track.album.images[0]?.url,
+                      releaseDate: track.album.release_date,
+                      durationMs: track.duration_ms,
+                      popularity: track.popularity,
+                      previewUrl: track.preview_url,
+                      spotifyUri: track.uri,
+                      externalUrls: JSON.stringify(track.external_urls),
+                      isExplicit: track.explicit,
+                      isPlayable: track.is_playable !== false,
+                    })
+                    .returning();
+                  if (newSongs[0]) {
+                    songId = newSongs[0].id;
                   }
+                }
 
-                  // Link song to artist (check if link exists first)
+                // Link song to artist (check if link exists first)
+                if (songId) {
                   const existingLink = await db
                     .select()
                     .from(artistSongs)
@@ -387,7 +389,9 @@ async function syncFullCatalog(spotifyId: string, artistId: string) {
 
                   // Also link other artists on the track
                   for (const artist of track.artists.slice(1)) {
-                    if (artist.id === spotifyId) continue; // Skip if it's the same artist
+                    if (artist.id === spotifyId) {
+                      continue; // Skip if it's the same artist
+                    }
 
                     // Check if we have this artist in our database
                     const otherArtist = await db
@@ -396,7 +400,7 @@ async function syncFullCatalog(spotifyId: string, artistId: string) {
                       .where(eq(artists.spotifyId, artist.id))
                       .limit(1);
 
-                    if (otherArtist.length > 0) {
+                    if (otherArtist.length > 0 && otherArtist[0]) {
                       const existingOtherLink = await db
                         .select()
                         .from(artistSongs)
@@ -417,36 +421,31 @@ async function syncFullCatalog(spotifyId: string, artistId: string) {
                       }
                     }
                   }
-
-                  results.songs++;
-                } catch (error) {
-                  console.error(`Failed to sync track ${track.name}:`, error);
-                  results.errors++;
                 }
+
+                results.songs++;
+              } catch (_error) {
+                results.errors++;
               }
             }
-
-            trackOffset += 50;
-            hasMoreTracks = trackOffset < tracksResponse.total;
-
-            // Rate limiting
-            await new Promise((resolve) => setTimeout(resolve, 100));
           }
-        } catch (error) {
-          console.error(`Failed to sync album ${album.name}:`, error);
-          results.errors++;
+
+          trackOffset += 50;
+          hasMoreTracks = trackOffset < tracksResponse.total;
+
+          // Rate limiting
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
+      } catch (_error) {
+        results.errors++;
       }
-
-      offset += 50;
-      hasMore = offset < albumsResponse.total;
-
-      // Rate limiting between album batches
-      await new Promise((resolve) => setTimeout(resolve, 200));
     }
-  } catch (error) {
-    console.error('Failed to sync full catalog:', error);
-    throw error;
+
+    offset += 50;
+    hasMore = offset < albumsResponse.total;
+
+    // Rate limiting between album batches
+    await new Promise((resolve) => setTimeout(resolve, 200));
   }
 
   return results;
@@ -466,10 +465,7 @@ export async function syncArtist(
     }
 
     // Check if Spotify credentials are available
-    if (
-      !process.env['SPOTIFY_CLIENT_ID'] ||
-      !process.env['SPOTIFY_CLIENT_SECRET']
-    ) {
+    if (!process.env['SPOTIFY_CLIENT_ID'] || !process.env['SPOTIFY_CLIENT_SECRET']) {
       return {
         success: false,
         error: 'Spotify credentials not configured',
@@ -525,12 +521,12 @@ export async function syncArtist(
           followers: spotifyArtist.followers?.total || 0,
           verified: true,
           externalUrls: JSON.stringify(spotifyArtist.external_urls || {}),
-          ticketmasterId:
-            resolvedTicketmasterId || existingArtist[0].ticketmasterId,
+          ...(resolvedTicketmasterId !== undefined && { ticketmasterId: resolvedTicketmasterId }),
+          ...(resolvedTicketmasterId === undefined && existingArtist[0]?.ticketmasterId !== undefined && { ticketmasterId: existingArtist[0].ticketmasterId }),
           lastSyncedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(eq(artists.id, existingArtist[0].id as string))
+        .where(eq(artists.id, existingArtist[0]?.id as string))
         .returning();
 
       artistRecord = updated;
@@ -561,37 +557,44 @@ export async function syncArtist(
     let catalogSync = { albums: 0, songs: 0, errors: 0 };
 
     try {
-      catalogSync = await syncFullCatalog(spotifyArtist.id, artistRecord.id);
+      if (artistRecord) {
+        catalogSync = await syncFullCatalog(spotifyArtist.id, artistRecord.id);
 
-      // Update artist with catalog counts
-      await db
-        .update(artists)
-        .set({
-          totalAlbums: catalogSync.albums,
-          totalSongs: catalogSync.songs,
-          songCatalogSyncedAt: new Date(),
-          lastFullSyncAt: new Date(),
-        })
-        .where(eq(artists.id, artistRecord.id));
-    } catch (err) {
-      console.error('Failed to sync catalog:', err);
-    }
+        // Update artist with catalog counts
+        await db
+          .update(artists)
+          .set({
+            totalAlbums: catalogSync.albums,
+            totalSongs: catalogSync.songs,
+            songCatalogSyncedAt: new Date(),
+            lastFullSyncAt: new Date(),
+          })
+          .where(eq(artists.id, artistRecord.id));
+      }
+    } catch (_err) {}
 
     // Fire-and-forget background jobs for other sync tasks
-    try {
-      const supabaseAdmin = await createServiceClient();
+    if (artistRecord) {
+      try {
+        const supabaseAdmin = await createServiceClient();
 
-      // Sync shows if we have a Ticketmaster ID
-      if (artistRecord.ticketmasterId) {
-        await supabaseAdmin.functions.invoke('sync-artist-shows', {
-          body: {
-            ticketmasterId: artistRecord.ticketmasterId,
-            artistId: artistRecord.id,
-          },
-        });
-      }
-    } catch (err) {
-      console.error('Failed to enqueue background jobs', err);
+        // Sync shows if we have a Ticketmaster ID
+        if (artistRecord.ticketmasterId) {
+          await supabaseAdmin.functions.invoke('sync-artist-shows', {
+            body: {
+              ticketmasterId: artistRecord.ticketmasterId,
+              artistId: artistRecord.id,
+            },
+          });
+        }
+      } catch (_err) {}
+    }
+
+    if (!artistRecord) {
+      return {
+        success: false,
+        error: 'Failed to create or update artist record',
+      };
     }
 
     return {
@@ -600,7 +603,6 @@ export async function syncArtist(
       catalogSync,
     };
   } catch (error) {
-    console.error('Artist sync failed:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

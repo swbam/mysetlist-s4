@@ -1,6 +1,7 @@
 import { db } from '@repo/database';
-import { sendEmailNotification } from '@/actions/email-notifications';
+import { sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
+import { sendEmailNotification } from '~/actions/email-notifications';
 
 const CRON_SECRET = process.env['CRON_SECRET'];
 
@@ -11,13 +12,13 @@ interface HealthCheckResult {
   timestamp: string;
 }
 
-async function checkDatabaseHealth() {
+async function checkDatabaseHealth(): Promise<{ status: 'healthy' | 'unhealthy'; responseTime?: number; error?: string }> {
   const startTime = Date.now();
   try {
     // Simple database query to check connectivity
-    await db.execute('SELECT 1');
+    await db.execute(sql`SELECT 1`);
     const responseTime = Date.now() - startTime;
-    
+
     return {
       status: 'healthy',
       responseTime,
@@ -30,29 +31,31 @@ async function checkDatabaseHealth() {
   }
 }
 
-async function checkApiHealth() {
+async function checkApiHealth(): Promise<{ status: 'healthy' | 'degraded' | 'unhealthy'; responseTime?: number; error?: string }> {
   const startTime = Date.now();
   try {
     // Check if API endpoints are responsive
-    const response = await fetch(`${process.env['NEXT_PUBLIC_APP_URL']}/api/health`, {
-      method: 'GET',
-      signal: AbortSignal.timeout(5000), // 5 second timeout
-    });
-    
+    const response = await fetch(
+      `${process.env['NEXT_PUBLIC_APP_URL']}/api/health`,
+      {
+        method: 'GET',
+        signal: AbortSignal.timeout(5000), // 5 second timeout
+      }
+    );
+
     const responseTime = Date.now() - startTime;
-    
+
     if (response.ok) {
       return {
         status: 'healthy',
         responseTime,
       };
-    } else {
-      return {
-        status: 'degraded',
-        responseTime,
-        error: `API returned status ${response.status}`,
-      };
     }
+    return {
+      status: 'degraded',
+      responseTime,
+      error: `API returned status ${response.status}`,
+    };
   } catch (error) {
     return {
       status: 'unhealthy',
@@ -69,45 +72,42 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    console.log('🏥 Starting health check...');
-    
     // Run health checks
     const [databaseHealth, apiHealth] = await Promise.all([
       checkDatabaseHealth(),
       checkApiHealth(),
     ]);
-    
+
     // Determine overall health status
     let overallStatus: HealthCheckResult['status'] = 'healthy';
-    
-    if (databaseHealth.status === 'unhealthy' || apiHealth.status === 'unhealthy') {
+
+    if (
+      databaseHealth.status === 'unhealthy' ||
+      apiHealth.status === 'unhealthy'
+    ) {
       overallStatus = 'unhealthy';
-    } else if (databaseHealth.status === 'degraded' || apiHealth.status === 'degraded') {
+    } else if (apiHealth.status === 'degraded') {
       overallStatus = 'degraded';
     }
-    
+
     const healthData: HealthCheckResult = {
       status: overallStatus,
       database: databaseHealth,
       api: apiHealth,
       timestamp: new Date().toISOString(),
     };
-    
+
     // Trigger alerts if unhealthy
-    if (overallStatus === 'unhealthy' || overallStatus === 'critical') {
+    if (overallStatus === 'unhealthy') {
       await triggerHealthAlert(healthData);
     }
-    
-    console.log('✅ Health check completed:', healthData);
-    
+
     return NextResponse.json({
       success: true,
       message: 'Health check completed',
       ...healthData,
     });
   } catch (error) {
-    console.error('Health check cron error:', error);
-    
     // Trigger critical alert
     const criticalHealth: HealthCheckResult = {
       status: 'critical',
@@ -115,9 +115,9 @@ export async function GET(request: NextRequest) {
       api: { status: 'unknown', error: 'Health check failed' },
       timestamp: new Date().toISOString(),
     };
-    
+
     await triggerHealthAlert(criticalHealth);
-    
+
     return NextResponse.json(
       {
         error: 'Health check failed',
@@ -130,13 +130,13 @@ export async function GET(request: NextRequest) {
 
 async function triggerHealthAlert(healthData: HealthCheckResult) {
   try {
-    // Log health issue to console
-    console.error('🚨 Health Alert:', healthData);
-
     // If we have email notifications setup, send alert
-    if (process.env['RESEND_TOKEN'] && (healthData.status === 'critical' || healthData.status === 'unhealthy')) {
+    if (
+      process.env['RESEND_TOKEN'] &&
+      (healthData.status === 'critical' || healthData.status === 'unhealthy')
+    ) {
       const adminEmail = process.env['ADMIN_EMAIL'] || 'admin@mysetlist.app';
-      
+
       await sendEmailNotification({
         to: adminEmail,
         subject: `MySetlist ${healthData.status === 'critical' ? 'CRITICAL' : 'Health'} Alert`,
@@ -165,9 +165,7 @@ async function triggerHealthAlert(healthData: HealthCheckResult) {
         `,
       });
     }
-  } catch (error) {
-    console.error('Error triggering health alert:', error);
-  }
+  } catch (_error) {}
 }
 
 export async function POST(request: NextRequest) {

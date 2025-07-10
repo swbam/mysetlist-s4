@@ -1,8 +1,8 @@
-import { createServiceClient } from '@/lib/supabase/server';
 import { db } from '@repo/database';
 import { artists } from '@repo/database';
 import { eq } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createServiceClient } from '~/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -47,7 +47,6 @@ export async function POST(request: NextRequest) {
     );
 
     if (error) {
-      console.error('Failed to sync shows:', error);
       return NextResponse.json(
         { error: 'Failed to sync shows', details: error.message },
         { status: 500 }
@@ -60,7 +59,6 @@ export async function POST(request: NextRequest) {
       data,
     });
   } catch (error) {
-    console.error('Show sync failed:', error);
     return NextResponse.json(
       {
         error: 'Failed to sync shows',

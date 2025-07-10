@@ -1,5 +1,4 @@
-import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import '@testing-library/jest-dom';
 import { toast } from 'sonner';
@@ -209,7 +208,7 @@ describe('UserManagementEnhanced', () => {
 
   it('should filter users by role', async () => {
     render(<UserManagementEnhanced />);
-    
+
     await waitFor(() => {
       expect(screen.getByText('test1@example.com')).toBeInTheDocument();
     });
@@ -221,7 +220,7 @@ describe('UserManagementEnhanced', () => {
 
   it('should filter users by status', async () => {
     render(<UserManagementEnhanced />);
-    
+
     await waitFor(() => {
       expect(screen.getByText('test1@example.com')).toBeInTheDocument();
     });
@@ -234,7 +233,7 @@ describe('UserManagementEnhanced', () => {
 
   it('should open user action menu and show options', async () => {
     render(<UserManagementEnhanced />);
-    
+
     await waitFor(() => {
       expect(screen.getByText('test1@example.com')).toBeInTheDocument();
     });
@@ -253,7 +252,7 @@ describe('UserManagementEnhanced', () => {
 
   it('should open user detail modal', async () => {
     render(<UserManagementEnhanced />);
-    
+
     await waitFor(() => {
       expect(screen.getByText('test1@example.com')).toBeInTheDocument();
     });
@@ -261,7 +260,7 @@ describe('UserManagementEnhanced', () => {
     // Open user detail via action menu
     const actionButtons = screen.getAllByRole('button', { name: /Open menu/i });
     await user.click(actionButtons[0]);
-    
+
     const viewDetailsButton = await screen.findByText('View Details');
     await user.click(viewDetailsButton);
 
@@ -351,7 +350,9 @@ describe('UserManagementEnhanced', () => {
     await user.type(reasonTextarea, 'Test ban reason');
 
     // Click ban button in dialog
-    const confirmBanButton = screen.getAllByRole('button', { name: 'Ban User' })[1]; // Second one is in dialog
+    const confirmBanButton = screen.getAllByRole('button', {
+      name: 'Ban User',
+    })[1]; // Second one is in dialog
     await user.click(confirmBanButton);
 
     // Should make API call and show success toast

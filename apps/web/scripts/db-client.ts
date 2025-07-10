@@ -1,4 +1,4 @@
-import * as path from 'path';
+import * as path from 'node:path';
 import * as schema from '@repo/database/src/schema';
 import * as dotenv from 'dotenv';
 // Database client for scripts - without server-only restriction
@@ -10,7 +10,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
 // Get database URL from environment
-const DATABASE_URL = process.env['DATABASE_URL'];
+const DATABASE_URL = process.env.DATABASE_URL;
 
 if (!DATABASE_URL) {
   throw new Error(
@@ -21,7 +21,7 @@ if (!DATABASE_URL) {
 // Create postgres connection
 const queryClient = postgres(DATABASE_URL, {
   max: 1,
-  ssl: process.env['NODE_ENV'] === 'production' ? 'require' : false,
+  ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
 });
 
 // Create drizzle instance

@@ -1,7 +1,7 @@
-import type { Config } from 'drizzle-kit';
+import { existsSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { config } from 'dotenv';
-import { resolve } from 'path';
-import { existsSync } from 'fs';
+import type { Config } from 'drizzle-kit';
 
 // Load environment variables from multiple possible locations
 const envPaths = [
@@ -19,12 +19,9 @@ for (const envPath of envPaths) {
 }
 
 // Get DATABASE_URL from environment
-const DATABASE_URL = process.env['DATABASE_URL'] || process.env['POSTGRES_URL'];
+const DATABASE_URL = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 
 if (!DATABASE_URL) {
-  console.error('Environment paths checked:', envPaths.map(p => ({ path: p, exists: existsSync(p) })));
-  console.error('Available DATABASE_URL:', !!process.env['DATABASE_URL']);
-  console.error('Available POSTGRES_URL:', !!process.env['POSTGRES_URL']);
   throw new Error(
     'DATABASE_URL environment variable is required for database migrations. Please check your .env.local file.'
   );

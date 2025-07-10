@@ -81,7 +81,7 @@ export interface TicketmasterVenue {
 
 export class TicketmasterClient extends BaseAPIClient {
   constructor(config: Omit<APIClientConfig, 'baseURL'>) {
-    const apiKey = process.env['TICKETMASTER_API_KEY'];
+    const apiKey = process.env.TICKETMASTER_API_KEY;
     if (!apiKey) {
       throw new Error('Ticketmaster API key not configured');
     }
@@ -117,7 +117,7 @@ export class TicketmasterClient extends BaseAPIClient {
         if (cached) {
           return JSON.parse(cached as string) as T;
         }
-      } catch (error) {
+      } catch (_error) {
         // Cache miss or error, continue with API call
       }
     }
@@ -147,10 +147,7 @@ export class TicketmasterClient extends BaseAPIClient {
     if (cacheKey && cacheTtl && this.cache) {
       try {
         await this.cache.setex(cacheKey, cacheTtl, JSON.stringify(data));
-      } catch (error) {
-        // Cache error, don't fail the request
-        console.warn('Failed to cache response:', error);
-      }
+      } catch (_error) {}
     }
 
     return data;
