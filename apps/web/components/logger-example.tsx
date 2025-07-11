@@ -78,7 +78,7 @@ export function LoggerExample() {
         success: data.success,
       });
     } catch (error) {
-      logger.error('API test failed', error, {
+      logger.error('API test failed', error as Error, {
         component: 'LoggerExample',
         action: 'api-test-error',
       });
@@ -99,7 +99,7 @@ export function LoggerExample() {
         throw new Error(data.error || 'API request failed');
       }
     } catch (error) {
-      logger.error('API error test failed (expected)', error, {
+      logger.error('API error test failed (expected)', error as Error, {
         component: 'LoggerExample',
         action: 'api-error-test',
       });

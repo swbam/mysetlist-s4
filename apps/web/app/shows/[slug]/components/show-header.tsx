@@ -37,40 +37,14 @@ type ShowHeaderProps = {
 
 export function ShowHeader({ show }: ShowHeaderProps) {
   const showDate = new Date(show.date);
-  const _formattedDate = format(showDate, 'EEEE, MMMM d, yyyy');
 
   // Use real-time show status
-  const { showStatus } = useRealtimeShow({
+  const { showStatus: _showStatus } = useRealtimeShow({
     showId: show.id,
     initialStatus: show.status as 'upcoming' | 'ongoing' | 'completed',
   });
 
-  const _getStatusColor = (status: string) => {
-    switch (status) {
-      case 'upcoming':
-        return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-      case 'ongoing':
-        return 'bg-green-500/10 text-green-500 border-green-500/20 animate-pulse';
-      case 'completed':
-        return 'bg-gray-500/10 text-gray-500 border-gray-500/20';
-      case 'cancelled':
-        return 'bg-red-500/10 text-red-500 border-red-500/20';
-      default:
-        return '';
-    }
-  };
 
-  const _getVenueLocation = () => {
-    if (!show.venue) {
-      return 'Venue TBA';
-    }
-    const parts = [show.venue.city];
-    if (show.venue.state) {
-      parts.push(show.venue.state);
-    }
-    parts.push(show.venue.country);
-    return parts.join(', ');
-  };
 
   const bg = show.headliner_artist.image_url ?? undefined;
 
@@ -92,7 +66,7 @@ export function ShowHeader({ show }: ShowHeaderProps) {
         </h1>
         <p className="text-muted-foreground text-sm md:text-base">
           {show.venue?.name ? `${show.venue.name} · ` : ''}
-          {format(new Date(show.date), 'MMM d, yyyy')}
+          {format(showDate, 'MMM d, yyyy')}
         </p>
         <div className="mt-4 flex gap-3">
           <Button size="sm" asChild>

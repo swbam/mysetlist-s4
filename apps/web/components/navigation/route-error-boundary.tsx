@@ -42,7 +42,7 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
     return { hasError: true, error, errorInfo: null };
   }
 
-  componentDidCatch(_error: Error, errorInfo: React.ErrorInfo) {
+  override componentDidCatch(_error: Error, errorInfo: React.ErrorInfo) {
     this.setState({ errorInfo });
 
     // Log to external service in production
@@ -70,7 +70,7 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
     }
   };
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return <>{this.props.fallback}</>;
@@ -200,7 +200,7 @@ export function withRouteErrorBoundary<T extends object>(
 ) {
   return function WithRouteErrorBoundaryComponent(props: T) {
     return (
-      <RouteErrorBoundary routeName={routeName} showBackButton={showBackButton}>
+      <RouteErrorBoundary routeName={routeName ?? 'Page'} showBackButton={showBackButton}>
         <Component {...props} />
       </RouteErrorBoundary>
     );

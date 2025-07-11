@@ -4,7 +4,7 @@ import { Button } from '@repo/design-system/components/ui/button';
 import { Card } from '@repo/design-system/components/ui/card';
 import { AlertTriangle, ChevronLeft, Home, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Component, type ReactNode } from 'react';
+import React, { Component, type ReactNode } from 'react';
 
 interface Props {
   children: ReactNode;
@@ -15,7 +15,7 @@ interface Props {
 
 interface State {
   hasError: boolean;
-  error?: Error;
+  error?: Error | undefined;
 }
 
 export class PageErrorBoundary extends Component<Props, State> {
@@ -28,13 +28,13 @@ export class PageErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(_error: Error, _errorInfo: React.ErrorInfo) {}
+  override componentDidCatch(_error: Error, _errorInfo: React.ErrorInfo) {}
 
   handleReset = () => {
     this.setState({ hasError: false, error: undefined });
   };
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       return (
         <ErrorFallback
@@ -52,11 +52,11 @@ export class PageErrorBoundary extends Component<Props, State> {
 }
 
 interface ErrorFallbackProps {
-  error?: Error;
+  error?: Error | undefined;
   onReset: () => void;
-  title?: string;
-  description?: string;
-  showBackButton?: boolean;
+  title?: string | undefined;
+  description?: string | undefined;
+  showBackButton?: boolean | undefined;
 }
 
 function ErrorFallback({

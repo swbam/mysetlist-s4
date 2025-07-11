@@ -1,4 +1,5 @@
-import { artists, db, songs } from '@repo/database';
+import { db } from '@repo/database/src/client';
+import { artists, songs, artistSongs } from '@repo/database/src/schema';
 import { eq } from 'drizzle-orm';
 import { SpotifyClient } from '../clients/spotify';
 
@@ -53,16 +54,19 @@ export class ArtistSyncService {
     artistId: string,
     tracks: any[]
   ): Promise<void> {
-    const artist = await db.query.artists.findFirst({
-      where: eq(artists.spotifyId, artistId),
-    });
+    const [artist] = await db
+      .select()
+      .from(artists)
+      .where(eq(artists.spotifyId, artistId))
+      .limit(1);
 
     if (!artist) {
       return;
     }
 
     for (const track of tracks) {
-      await db
+      // Insert or update song
+      const [song] = await db
         .insert(songs)
         .values({
           spotifyId: track.id,
@@ -84,7 +88,20 @@ export class ArtistSyncService {
             popularity: track.popularity,
             isPlayable: track.is_playable,
           },
-        });
+        })
+        .returning();
+
+      // Link artist to song if we have both records
+      if (song && artist) {
+        await db
+          .insert(artistSongs)
+          .values({
+            artistId: artist.id,
+            songId: song.id,
+            isPrimaryArtist: true,
+          })
+          .onConflictDoNothing();
+      }
     }
   }
 

@@ -32,7 +32,7 @@ interface MyArtistsContentProps {
   userId: string;
 }
 
-export function MyArtistsContent({ userId }: MyArtistsContentProps) {
+export function MyArtistsContent({ userId: _userId }: MyArtistsContentProps) {
   const { signInWithSpotify } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);

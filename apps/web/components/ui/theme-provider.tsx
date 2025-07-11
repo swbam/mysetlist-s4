@@ -29,7 +29,7 @@ export function ThemeProvider({
   children,
   defaultTheme = 'system',
   storageKey = 'mysetlist-theme',
-  enableSystem = true,
+  enableSystem: _enableSystem = true,
   disableTransitionOnChange = false,
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(defaultTheme);

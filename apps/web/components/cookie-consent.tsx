@@ -48,7 +48,11 @@ export function CookieConsent() {
     }
 
     try {
-      return JSON.parse(decodeURIComponent(consent.split('=')[1]));
+      const value = consent.split('=')[1];
+      if (!value) {
+        return null;
+      }
+      return JSON.parse(decodeURIComponent(value));
     } catch {
       return null;
     }

@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import {
   Card,
   CardContent,
@@ -53,33 +54,33 @@ export default function InteractionsDevPage() {
                     <p className="mb-2 text-muted-foreground text-sm">
                       Default
                     </p>
-                    <RealtimeVoteButton
-                      setlistSongId="test-song-1"
-                      showId="test-show-1"
-                      userId="test-user"
-                    />
+                    {React.createElement(RealtimeVoteButton as any, {
+                      setlistSongId: "test-song-1",
+                      showId: "test-show-1",
+                      userId: "test-user",
+                    })}
                   </div>
                   <div>
                     <p className="mb-2 text-muted-foreground text-sm">
                       Compact
                     </p>
-                    <RealtimeVoteButton
-                      setlistSongId="test-song-2"
-                      showId="test-show-1"
-                      userId="test-user"
-                      variant="compact"
-                    />
+                    {React.createElement(RealtimeVoteButton as any, {
+                      setlistSongId: "test-song-2",
+                      showId: "test-show-1",
+                      userId: "test-user",
+                      variant: "compact",
+                    })}
                   </div>
                   <div>
                     <p className="mb-2 text-muted-foreground text-sm">
                       Minimal
                     </p>
-                    <RealtimeVoteButton
-                      setlistSongId="test-song-3"
-                      showId="test-show-1"
-                      userId="test-user"
-                      variant="minimal"
-                    />
+                    {React.createElement(RealtimeVoteButton as any, {
+                      setlistSongId: "test-song-3",
+                      showId: "test-show-1",
+                      userId: "test-user",
+                      variant: "minimal",
+                    })}
                   </div>
                 </div>
               </div>
@@ -114,21 +115,21 @@ export default function InteractionsDevPage() {
                     <p className="mb-2 text-muted-foreground text-sm">
                       Disabled
                     </p>
-                    <RealtimeVoteButton
-                      setlistSongId="test-song-6"
-                      showId="test-show-1"
-                      userId="test-user"
-                      disabled={true}
-                    />
+                    {React.createElement(RealtimeVoteButton as any, {
+                      setlistSongId: "test-song-6",
+                      showId: "test-show-1",
+                      userId: "test-user",
+                      disabled: true,
+                    })}
                   </div>
                   <div>
                     <p className="mb-2 text-muted-foreground text-sm">
                       No Auth
                     </p>
-                    <RealtimeVoteButton
-                      setlistSongId="test-song-7"
-                      showId="test-show-1"
-                    />
+                    {React.createElement(RealtimeVoteButton as any, {
+                      setlistSongId: "test-song-7",
+                      showId: "test-show-1",
+                    })}
                   </div>
                 </div>
               </div>

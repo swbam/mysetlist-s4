@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo
 import { Button } from '@repo/design-system/components/ui/button';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Progress } from '@repo/design-system/components/ui/progress';
-import { Users, Eye, Activity, Clock, TrendingUp, Calendar, Music, Vote } from 'lucide-react';
+import { Users, Activity, Clock, TrendingUp } from 'lucide-react';
 
 interface EngagementMetrics {
   dailyActiveUsers: number;

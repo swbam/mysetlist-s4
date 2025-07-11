@@ -6,10 +6,11 @@ import { ArtistCard } from './artist-card';
 export async function ArtistGridServer() {
   try {
     // Fetch top artists using the same query pattern as the search API
-    const topArtists = await db.query.artists.findMany({
-      orderBy: [desc(artists.popularity)],
-      limit: 12,
-    });
+    const topArtists = await db
+      .select()
+      .from(artists)
+      .orderBy(desc(artists.popularity))
+      .limit(12);
 
     if (topArtists.length === 0) {
       return (

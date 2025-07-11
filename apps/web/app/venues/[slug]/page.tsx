@@ -50,13 +50,12 @@ export const generateMetadata = async ({
   return createVenueMetadata({
     name: venue.name,
     city: venue.city,
-    state: venue.state,
+    state: venue.state || '',
     country: venue.country,
-    description: venue.description,
-    imageUrl: venue.imageUrl,
+    description: venue.description || '',
+    imageUrl: venue.imageUrl || '',
     slug: venue.slug,
-    upcomingShowCount: venue.upcomingShowCount,
-    capacity: venue.capacity,
+    capacity: venue.capacity || 0,
   });
 };
 
@@ -120,6 +119,10 @@ const VenuePage = async ({ params }: VenuePageProps) => {
                 shows={upcomingShows.map((show) => ({
                   ...show,
                   date: new Date(show.date),
+                  artist: {
+                    ...show.artist,
+                    genres: show.artist.genres ? JSON.parse(show.artist.genres) : [],
+                  },
                 }))}
                 venueId={venue.id}
               />
@@ -130,6 +133,10 @@ const VenuePage = async ({ params }: VenuePageProps) => {
                 shows={pastShows.map((show) => ({
                   ...show,
                   date: new Date(show.date),
+                  artist: {
+                    ...show.artist,
+                    genres: show.artist.genres ? JSON.parse(show.artist.genres) : [],
+                  },
                 }))}
                 venueId={venue.id}
               />

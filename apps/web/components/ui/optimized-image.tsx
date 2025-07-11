@@ -64,7 +64,7 @@ export function OptimizedImage({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsInView(true);
           observer.disconnect();
         }
@@ -144,9 +144,9 @@ export function OptimizedImage({
         <Image
           src={src}
           alt={alt}
-          width={fill ? undefined : width}
-          height={fill ? undefined : height}
-          fill={fill}
+          {...(!fill && width && { width })}
+          {...(!fill && height && { height })}
+          {...(fill && { fill })}
           className={cn(
             'transition-opacity duration-300',
             isLoading ? 'opacity-0' : 'opacity-100',
@@ -157,9 +157,9 @@ export function OptimizedImage({
             objectFit === 'scale-down' && 'object-scale-down'
           )}
           placeholder={placeholder}
-          blurDataURL={defaultBlurDataURL}
+          {...(defaultBlurDataURL && { blurDataURL: defaultBlurDataURL })}
           priority={priority}
-          sizes={responsiveSizes}
+          {...(responsiveSizes && { sizes: responsiveSizes })}
           quality={quality}
           loading={loading}
           onLoad={handleLoad}
@@ -289,20 +289,26 @@ export function ImageGallery({
   }
 
   if (images.length === 1) {
+    const image = images[0];
+    if (!image) return null;
+    
     return (
       <div className={className}>
-        <OptimizedImage
-          src={images[0].src}
-          alt={images[0].alt}
-          fill
-          aspectRatio={aspectRatio}
-          className="cursor-pointer"
+        <div 
           onClick={() => onImageClick?.(0)}
-          rounded
-        />
-        {images[0].caption && (
+          className="cursor-pointer"
+        >
+          <OptimizedImage
+            src={image.src}
+            alt={image.alt}
+            fill
+            aspectRatio={aspectRatio}
+            rounded
+          />
+        </div>
+        {image.caption && (
           <p className="mt-2 text-muted-foreground text-sm">
-            {images[0].caption}
+            {image.caption}
           </p>
         )}
       </div>
@@ -314,43 +320,52 @@ export function ImageGallery({
       {images.length === 2 && (
         <div className="grid grid-cols-2 gap-2">
           {images.map((image, index) => (
-            <OptimizedImage
+            <div 
               key={image.id}
-              src={image.src}
-              alt={image.alt}
-              fill
-              aspectRatio={aspectRatio}
-              className="cursor-pointer"
               onClick={() => onImageClick?.(index)}
-              rounded
-            />
+              className="cursor-pointer"
+            >
+              <OptimizedImage
+                src={image.src}
+                alt={image.alt}
+                fill
+                aspectRatio={aspectRatio}
+                rounded
+              />
+            </div>
           ))}
         </div>
       )}
 
       {images.length === 3 && (
         <div className="grid grid-cols-2 gap-2">
-          <OptimizedImage
-            src={images[0].src}
-            alt={images[0].alt}
-            fill
-            aspectRatio={aspectRatio}
-            className="cursor-pointer"
+          <div 
             onClick={() => onImageClick?.(0)}
-            rounded
-          />
+            className="cursor-pointer"
+          >
+            <OptimizedImage
+              src={images[0]?.src || ''}
+              alt={images[0]?.alt || ''}
+              fill
+              aspectRatio={aspectRatio}
+              rounded
+            />
+          </div>
           <div className="grid gap-2">
             {images.slice(1).map((image, index) => (
-              <OptimizedImage
+              <div
                 key={image.id}
-                src={image.src}
-                alt={image.alt}
-                fill
-                aspectRatio="2/1"
-                className="cursor-pointer"
                 onClick={() => onImageClick?.(index + 1)}
-                rounded
-              />
+                className="cursor-pointer"
+              >
+                <OptimizedImage
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  aspectRatio="2/1"
+                  rounded
+                />
+              </div>
             ))}
           </div>
         </div>
@@ -359,29 +374,35 @@ export function ImageGallery({
       {images.length >= 4 && (
         <div className="grid grid-cols-2 gap-2">
           {images.slice(0, 3).map((image, index) => (
-            <OptimizedImage
+            <div
               key={image.id}
-              src={image.src}
-              alt={image.alt}
-              fill
-              aspectRatio={index === 0 ? aspectRatio : '1/1'}
-              className={cn('cursor-pointer', index === 0 && 'col-span-2')}
               onClick={() => onImageClick?.(index)}
-              rounded
-            />
+              className={cn('cursor-pointer', index === 0 && 'col-span-2')}
+            >
+              <OptimizedImage
+                src={image.src}
+                alt={image.alt}
+                fill
+                aspectRatio={index === 0 ? aspectRatio : '1/1'}
+                rounded
+              />
+            </div>
           ))}
 
           {images.length > 4 ? (
             <div className="relative">
-              <OptimizedImage
-                src={images[3].src}
-                alt={images[3].alt}
-                fill
-                aspectRatio="1/1"
-                className="cursor-pointer"
+              <div
                 onClick={() => onImageClick?.(3)}
-                rounded
-              />
+                className="cursor-pointer"
+              >
+                <OptimizedImage
+                  src={images[3]?.src || ''}
+                  alt={images[3]?.alt || ''}
+                  fill
+                  aspectRatio="1/1"
+                  rounded
+                />
+              </div>
               <div
                 className="absolute inset-0 flex cursor-pointer items-center justify-center rounded-lg bg-black/60"
                 onClick={() => onImageClick?.(3)}
@@ -392,15 +413,18 @@ export function ImageGallery({
               </div>
             </div>
           ) : (
-            <OptimizedImage
-              src={images[3].src}
-              alt={images[3].alt}
-              fill
-              aspectRatio="1/1"
-              className="cursor-pointer"
+            <div
               onClick={() => onImageClick?.(3)}
-              rounded
-            />
+              className="cursor-pointer"
+            >
+              <OptimizedImage
+                src={images[3]?.src || ''}
+                alt={images[3]?.alt || ''}
+                fill
+                aspectRatio="1/1"
+                rounded
+              />
+            </div>
           )}
         </div>
       )}

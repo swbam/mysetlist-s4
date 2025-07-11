@@ -169,40 +169,6 @@ export function SearchBar({
     }
   };
 
-  const _getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'artist':
-        return '🎤';
-      case 'show':
-        return '🎵';
-      case 'venue':
-        return '🏛️';
-      case 'song':
-        return '🎶';
-      default:
-        return '🔍';
-    }
-  };
-
-  const _formatSubtitle = (result: SearchResult) => {
-    return result.subtitle || '';
-  };
-
-  // Group results by type for better organization
-  const _groupedResults = results.reduce(
-    (groups, result) => {
-      const type = result.type;
-      if (!groups[type]) {
-        groups[type] = [];
-      }
-      groups[type].push(result);
-      return groups;
-    },
-    {} as Record<string, SearchResult[]>
-  );
-
-  const _typeOrder = ['artist'];
-  const _typeLabels = { artist: 'Artists' } as const;
 
   if (variant === 'hero') {
     return (
@@ -345,14 +311,13 @@ function SearchResults({
       if (!acc[result.type]) {
         acc[result.type] = [];
       }
-      acc[result.type].push(result);
+      acc[result.type]!.push(result);
       return acc;
     },
     {} as Record<string, SearchResult[]>
   );
 
   const typeOrder = ['artist'];
-  const _typeLabels = { artist: 'Artists' } as const;
 
   return (
     <Command shouldFilter={false}>

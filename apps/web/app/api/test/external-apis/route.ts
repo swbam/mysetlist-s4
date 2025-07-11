@@ -6,8 +6,8 @@ class SpotifyClient {
   private accessToken?: string;
 
   async authenticate() {
-    const clientId = process.env.SPOTIFY_CLIENT_ID;
-    const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+    const clientId = process.env['SPOTIFY_CLIENT_ID'];
+    const clientSecret = process.env['SPOTIFY_CLIENT_SECRET'];
 
     if (!clientId || !clientSecret) {
       throw new Error('Spotify credentials not configured');
@@ -57,7 +57,7 @@ class TicketmasterClient {
   private apiKey: string;
 
   constructor() {
-    const apiKey = process.env.TICKETMASTER_API_KEY;
+    const apiKey = process.env['TICKETMASTER_API_KEY'];
     if (!apiKey) {
       throw new Error('Ticketmaster API key not configured');
     }
@@ -95,7 +95,7 @@ class SetlistFmClient {
   private apiKey: string;
 
   constructor() {
-    const apiKey = process.env.SETLISTFM_API_KEY;
+    const apiKey = process.env['SETLISTFM_API_KEY'];
     if (!apiKey) {
       throw new Error('Setlist.fm API key not configured');
     }

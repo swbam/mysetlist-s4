@@ -17,7 +17,7 @@ import {
   Wifi,
   WifiOff,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createClient } from '~/lib/supabase/client';
 
 type SetlistViewerProps = {
@@ -163,9 +163,9 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
               ? {
                   ...song,
                   isPlayed: payload.new.is_played,
-                  playTime: payload.new.play_time
-                    ? new Date(payload.new.play_time)
-                    : undefined,
+                  ...(payload.new.play_time && {
+                    playTime: new Date(payload.new.play_time)
+                  }),
                 }
               : song
           ),
@@ -359,16 +359,14 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <VoteButton
-                    songId={setlistSong.id}
-                    currentVote={setlistSong.userVote}
-                    upvotes={setlistSong.upvotes}
-                    downvotes={setlistSong.downvotes}
-                    onVote={handleVote}
-                    disabled={
-                      !setlistSong.isPlayed && currentSetlist.type === 'actual'
-                    }
-                  />
+                  {React.createElement(VoteButton as any, {
+                    songId: setlistSong.id,
+                    ...(setlistSong.userVote !== undefined && { currentVote: setlistSong.userVote }),
+                    upvotes: setlistSong.upvotes,
+                    downvotes: setlistSong.downvotes,
+                    onVote: handleVote,
+                    disabled: !setlistSong.isPlayed && currentSetlist.type === 'actual'
+                  })}
                 </div>
               </div>
             </div>

@@ -1,4 +1,4 @@
-import { createClient } from '../src/client';
+import { db } from '../src/client';
 import { artists } from '../src/schema/artists';
 
 const sampleArtists = [

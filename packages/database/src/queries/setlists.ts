@@ -40,8 +40,8 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
   const userVotes: Record<string, 'up' | 'down'> = {};
   if (userId) {
     const setlistSongIds = setlistData
-      .filter((row) => row.setlistSong)
-      .map((row) => row.setlistSong?.id);
+      .filter((row): row is typeof row & { setlistSong: NonNullable<typeof row.setlistSong> } => row.setlistSong !== null)
+      .map((row) => row.setlistSong.id);
 
     if (setlistSongIds.length > 0) {
       const voteData = await db
@@ -65,31 +65,33 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
 
   // Construct the result
   const setlist = setlistData[0].setlist;
-  const songs = setlistData
-    .filter((row) => row.setlistSong && row.song)
+  const songList = setlistData
+    .filter((row): row is typeof row & { setlistSong: NonNullable<typeof row.setlistSong>; song: NonNullable<typeof row.song> } => 
+      row.setlistSong !== null && row.song !== null
+    )
     .map((row) => ({
-      id: row.setlistSong?.id,
-      songId: row.song?.id,
-      position: row.setlistSong?.position,
+      id: row.setlistSong.id,
+      songId: row.song.id,
+      position: row.setlistSong.position,
       song: {
-        id: row.song?.id,
-        title: row.song?.title,
-        artist: row.song?.artist,
-        durationMs: row.song?.durationMs,
-        albumArtUrl: row.song?.albumArtUrl,
+        id: row.song.id,
+        title: row.song.title,
+        artist: row.song.artist,
+        durationMs: row.song.durationMs,
+        albumArtUrl: row.song.albumArtUrl,
       },
-      notes: row.setlistSong?.notes,
-      isPlayed: row.setlistSong?.isPlayed,
-      playTime: row.setlistSong?.playTime,
-      upvotes: row.setlistSong?.upvotes,
-      downvotes: row.setlistSong?.downvotes,
-      netVotes: row.setlistSong?.netVotes,
-      userVote: userVotes[row.setlistSong?.id] || null,
+      notes: row.setlistSong.notes,
+      isPlayed: row.setlistSong.isPlayed,
+      playTime: row.setlistSong.playTime,
+      upvotes: row.setlistSong.upvotes,
+      downvotes: row.setlistSong.downvotes,
+      netVotes: row.setlistSong.netVotes,
+      userVote: userVotes[row.setlistSong.id] || null,
     }));
 
   return {
     ...setlist,
-    songs,
+    songs: songList,
   };
 }
 
@@ -118,7 +120,7 @@ export async function createSetlist(
       name: setlistData.name,
       type: setlistData.type,
       orderIndex,
-      createdBy: setlistData.createdBy,
+      createdBy: setlistData.createdBy ?? null,
       isLocked: false,
     })
     .returning();

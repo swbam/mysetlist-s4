@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { rateLimitMiddleware } from '~/middleware/rate-limit';
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs';
+import { csrfProtection } from '~/lib/csrf';
 
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next();
@@ -21,6 +22,12 @@ export async function middleware(request: NextRequest) {
     const rateLimitResponse = await rateLimitMiddleware(request);
     if (rateLimitResponse) {
       return rateLimitResponse;
+    }
+
+    // Apply CSRF protection to API routes
+    const csrfResponse = await csrfProtection(request);
+    if (csrfResponse) {
+      return csrfResponse;
     }
   }
 
@@ -44,7 +51,9 @@ export const config = {
   matcher: [
     // Match all API routes
     '/api/:path*',
-    // Skip static files
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    // Match protected routes only
+    '/dashboard/:path*',
+    '/vote/:path*',
+    '/profile/:path*',
   ],
 };

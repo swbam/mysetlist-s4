@@ -38,7 +38,7 @@ export function VirtualizedList<T>({
   const [isScrolling, setIsScrolling] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>();
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Calculate item positions and heights
   const itemMetrics = useMemo(() => {
@@ -78,7 +78,7 @@ export function VirtualizedList<T>({
     // Binary search for start index
     while (start < end) {
       const mid = Math.floor((start + end) / 2);
-      if (positions[mid] < scrollTop) {
+      if ((positions[mid] ?? 0) < scrollTop) {
         start = mid + 1;
       } else {
         end = mid;
@@ -96,7 +96,7 @@ export function VirtualizedList<T>({
       endIndex < items.length &&
       accumulatedHeight < scrollTop + containerHeight
     ) {
-      accumulatedHeight += heights[endIndex];
+      accumulatedHeight += heights[endIndex] ?? 0;
       endIndex++;
     }
 
@@ -215,8 +215,8 @@ export function VirtualizedList<T>({
       }
 
       const item = items[i];
-      const top = itemMetrics.positions[i];
-      const height = itemMetrics.heights[i];
+      const top = itemMetrics.positions[i] ?? 0;
+      const height = itemMetrics.heights[i] ?? estimatedItemHeight;
 
       result.push(
         <div

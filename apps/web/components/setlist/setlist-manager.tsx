@@ -78,6 +78,7 @@ export function SetlistManager({
 
       return () => clearInterval(interval);
     }
+    return undefined;
   }, [isRealtimeEnabled, isLive, showId]);
 
   const fetchSetlists = async () => {
@@ -166,56 +167,62 @@ export function SetlistManager({
       {/* Header Controls */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="flex items-center gap-2">
-              <Music2 className="h-6 w-6" />
-              Setlist Manager
-              {isLive && <Badge variant="destructive">LIVE</Badge>}
+              <Music2 className="h-5 w-5 sm:h-6 sm:w-6" />
+              <span className="text-lg sm:text-xl">Setlist Manager</span>
+              {isLive && <Badge variant="destructive" className="text-xs">LIVE</Badge>}
             </CardTitle>
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4">
               {/* Real-time Toggle */}
               {isLive && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   <Switch
                     id="realtime"
                     checked={isRealtimeEnabled}
                     onCheckedChange={setIsRealtimeEnabled}
+                    className="scale-90 sm:scale-100"
                   />
-                  <Label htmlFor="realtime" className="flex items-center gap-1">
-                    <Zap className="h-4 w-4" />
-                    Real-time
+                  <Label htmlFor="realtime" className="flex items-center gap-1 text-sm">
+                    <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Real-time</span>
+                    <span className="sm:hidden">Live</span>
                   </Label>
                 </div>
               )}
 
               {/* Voting Stats Toggle */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Switch
                   id="voting-stats"
                   checked={showVotingStats}
                   onCheckedChange={setShowVotingStats}
+                  className="scale-90 sm:scale-100"
                 />
                 <Label
                   htmlFor="voting-stats"
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 text-sm"
                 >
-                  <BarChart3 className="h-4 w-4" />
-                  Stats
+                  <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Stats</span>
+                  <span className="sm:hidden">Stats</span>
                 </Label>
               </div>
 
               {/* Actions */}
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={handleRefresh}>
-                  <Shuffle className="mr-2 h-4 w-4" />
-                  Refresh
+                <Button variant="outline" size="sm" onClick={handleRefresh} className="text-xs sm:text-sm">
+                  <Shuffle className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Refresh</span>
+                  <span className="sm:hidden">Refresh</span>
                 </Button>
 
                 {canEdit && (
-                  <Button onClick={() => setShowAddModal(true)} size="sm">
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Songs
+                  <Button onClick={() => setShowAddModal(true)} size="sm" className="text-xs sm:text-sm">
+                    <Plus className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Add Songs</span>
+                    <span className="sm:hidden">Add</span>
                   </Button>
                 )}
               </div>
@@ -224,15 +231,15 @@ export function SetlistManager({
         </CardHeader>
       </Card>
 
-      <div className="grid gap-6 lg:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-4">
         {/* Main Content */}
-        <div className="lg:col-span-3">
+        <div className="order-2 lg:order-1 lg:col-span-3">
           {isRealtimeEnabled && isLive ? (
             /* Real-time View for Live Shows */
             <RealtimeSetlistViewer
               showId={showId}
               isLive={true}
-              showVotes={canVote}
+              {...(canVote !== undefined && { showVotes: canVote })}
               refreshInterval={5000}
             />
           ) : (
@@ -270,11 +277,11 @@ export function SetlistManager({
                     <SetlistEditor
                       key={`${setlist.id}-${refreshKey}`}
                       setlist={setlist}
-                      currentUser={currentUser}
+                      currentUser={currentUser || { id: '' }}
                       artistId={show.headliner_artist.id}
                       onUpdate={fetchSetlists}
-                      canEdit={canEdit && setlist.createdBy === currentUser?.id}
-                      canVote={canVote && !setlist.isLocked}
+                      {...(canEdit !== undefined && { canEdit: canEdit && setlist.createdBy === currentUser?.id })}
+                      {...(canVote !== undefined && { canVote: canVote && !setlist.isLocked })}
                     />
                   ))
                 ) : (
@@ -304,10 +311,10 @@ export function SetlistManager({
                     <SetlistEditor
                       key={`${setlist.id}-${refreshKey}`}
                       setlist={setlist}
-                      currentUser={currentUser}
+                      currentUser={currentUser || { id: '' }}
                       artistId={show.headliner_artist.id}
                       onUpdate={fetchSetlists}
-                      canEdit={canEdit && setlist.createdBy === currentUser?.id}
+                      {...(canEdit !== undefined && { canEdit: canEdit && setlist.createdBy === currentUser?.id })}
                       canVote={false} // No voting on actual setlists
                     />
                   ))
@@ -339,7 +346,7 @@ export function SetlistManager({
 
         {/* Sidebar */}
         {showVotingStats && votingStats.totalVotes > 0 && (
-          <div className="lg:col-span-1">
+          <div className="order-1 lg:order-2 lg:col-span-1">
             <VoteSummary
               totalVotes={votingStats.totalVotes}
               totalUpvotes={votingStats.totalUpvotes}

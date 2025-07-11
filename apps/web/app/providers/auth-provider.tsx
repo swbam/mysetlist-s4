@@ -2,7 +2,7 @@
 
 import type { Session, User } from '@supabase/supabase-js';
 import { useRouter } from 'next/navigation';
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { createClient } from '~/lib/supabase/client';
 
 interface AuthContextType {
@@ -27,29 +27,59 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const supabase = createClient();
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider = React.memo(function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    let isMounted = true;
+
+    const initializeAuth = async () => {
+      try {
+        // Check initial session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error fetching session:', error);
+        }
+        
+        if (isMounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Failed to initialize auth:', error);
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    initializeAuth();
 
     // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-    });
+    let subscription: any;
+    try {
+      const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (isMounted) {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }
+      });
+      subscription = data.subscription;
+    } catch (error) {
+      console.error('Failed to setup auth listener:', error);
+    }
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      if (subscription) {
+        subscription.unsubscribe();
+      }
+    };
   }, []);
 
   const signInWithEmail = async (
@@ -135,32 +165,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const hasRole = (role: string) => {
     // Check user metadata for role
     const userRole =
-      user?.app_metadata?.role || user?.user_metadata?.role || 'user';
+      user?.app_metadata?.['role'] || user?.user_metadata?.['role'] || 'user';
     return userRole === role;
   };
 
   const isAuthenticated = !!session && !!user;
 
+  const contextValue = useMemo(
+    () => ({
+      user,
+      session,
+      loading,
+      isAuthenticated,
+      signInWithEmail,
+      signUpWithEmail,
+      signInWithSpotify,
+      signOut,
+      resetPassword,
+      updatePassword,
+      hasRole,
+    }),
+    [user, session, loading, isAuthenticated]
+  );
+
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        session,
-        loading,
-        isAuthenticated,
-        signInWithEmail,
-        signUpWithEmail,
-        signInWithSpotify,
-        signOut,
-        resetPassword,
-        updatePassword,
-        hasRole,
-      }}
-    >
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );
-}
+});
 
 export function useAuth() {
   const context = useContext(AuthContext);

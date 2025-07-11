@@ -5,7 +5,7 @@ import { Button } from '@repo/design-system/components/ui/button';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@repo/design-system/components/ui/avatar';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@repo/design-system/components/ui/table';
-import { TrendingUp, TrendingDown, Music, Calendar, MapPin, User, Trophy, Eye } from 'lucide-react';
+import { TrendingUp, TrendingDown, Music, MapPin, User, Eye } from 'lucide-react';
 
 interface TableProps {
   type: 'engaged-users' | 'trending-artists' | 'trending-shows' | 'top-venues' | 'recent-activity';
@@ -78,8 +78,8 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
         const artists = ['Taylor Swift', 'The Weeknd', 'Billie Eilish', 'Post Malone', 'Harry Styles', 'Ariana Grande', 'Ed Sheeran', 'Drake', 'Dua Lipa', 'Olivia Rodrigo'];
         return Array.from({ length: Math.min(itemLimit, artists.length) }, (_, i) => ({
           id: `artist-${i}`,
-          name: artists[i],
-          avatar: `https://api.dicebear.com/7.x/personas/svg?seed=${artists[i]}`,
+          name: artists[i] ?? '',
+          avatar: `https://api.dicebear.com/7.x/personas/svg?seed=${artists[i] ?? ''}`,
           subtitle: `${Math.floor(Math.random() * 50) + 10} upcoming shows`,
           metric: Math.floor(Math.random() * 100) + 50,
           metricLabel: 'trending score',
@@ -95,8 +95,8 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
         const venues = ['Madison Square Garden', 'Staples Center', 'Wembley Stadium', 'Red Rocks', 'The Forum'];
         return Array.from({ length: Math.min(itemLimit, shows.length) }, (_, i) => ({
           id: `show-${i}`,
-          name: shows[i],
-          subtitle: venues[i],
+          name: shows[i] ?? '',
+          subtitle: venues[i] ?? '',
           metric: Math.floor(Math.random() * 100) + 60,
           metricLabel: 'buzz score',
           secondaryMetric: Math.floor(Math.random() * 5000) + 1000,
@@ -112,15 +112,15 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
         const cities = ['New York, NY', 'Los Angeles, CA', 'London, UK', 'Morrison, CO', 'Inglewood, CA'];
         return Array.from({ length: Math.min(itemLimit, venueNames.length) }, (_, i) => ({
           id: `venue-${i}`,
-          name: venueNames[i],
-          subtitle: cities[i],
+          name: venueNames[i] ?? '',
+          subtitle: cities[i] ?? '',
           metric: Math.floor(Math.random() * 100) + 30,
           metricLabel: 'popularity',
           secondaryMetric: Math.floor(Math.random() * 50) + 10,
           secondaryLabel: 'shows',
           trend: Math.random() > 0.5 ? 'up' : 'down',
           type: 'Arena',
-          location: cities[i]
+          location: cities[i] ?? ''
         }));
 
       case 'recent-activity':
@@ -129,7 +129,7 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
           id: `activity-${i}`,
           name: `User ${i + 1}`,
           avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`,
-          subtitle: activities[Math.floor(Math.random() * activities.length)],
+          subtitle: activities[Math.floor(Math.random() * activities.length)] ?? '',
           lastActive: `${Math.floor(Math.random() * 60)} minutes ago`,
           type: 'User Activity',
           status: 'active'
@@ -238,7 +238,7 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((row, index) => (
+          {data.map((row) => (
             <TableRow key={row.id}>
               <TableCell>
                 <div className="flex items-center gap-3">

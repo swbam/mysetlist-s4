@@ -140,7 +140,7 @@ export async function isUserFollowingArtist(userId: string, artistId: string) {
       )
     );
 
-  return result[0].count > 0;
+  return result[0]?.count ? result[0].count > 0 : false;
 }
 
 export async function getSimilarArtists(artistId: string, limit = 10) {

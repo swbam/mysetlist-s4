@@ -5,6 +5,7 @@ import {
   artists,
   shows,
   users,
+  userProfiles,
   venueInsiderTips,
   venuePhotos,
   venueReviews,
@@ -33,7 +34,7 @@ export const getVenueShows = unstable_cache(
     type: 'upcoming' | 'past' = 'upcoming',
     limit = 20
   ) => {
-    const now = new Date().toISOString().split('T')[0]; // Format as YYYY-MM-DD
+    const now = new Date().toISOString().split('T')[0]!; // Format as YYYY-MM-DD
     const condition =
       type === 'upcoming' ? gte(shows.date, now) : lte(shows.date, now);
 
@@ -81,11 +82,12 @@ export const getVenueReviews = unstable_cache(
         user: {
           id: users.id,
           name: users.displayName,
-          avatarUrl: users.avatarUrl,
+          avatarUrl: userProfiles.avatarUrl,
         },
       })
       .from(venueReviews)
       .innerJoin(users, eq(venueReviews.userId, users.id))
+      .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
       .where(eq(venueReviews.venueId, venueId))
       .orderBy(desc(venueReviews.helpful), desc(venueReviews.createdAt))
       .limit(limit);

@@ -26,7 +26,7 @@ export const getDictionary = async (locale: string): Promise<Dictionary> => {
   const normalizedLocale = locale.split('-')[0];
 
   if (!normalizedLocale || !locales.includes(normalizedLocale as any)) {
-    const enDictionary = dictionaries.en;
+    const enDictionary = dictionaries['en'];
     if (!enDictionary) {
       throw new Error('Default dictionary not found');
     }
@@ -40,7 +40,7 @@ export const getDictionary = async (locale: string): Promise<Dictionary> => {
     }
     return await localeDictionary();
   } catch (_error) {
-    const enDictionary = dictionaries.en;
+    const enDictionary = dictionaries['en'];
     if (!enDictionary) {
       throw new Error('Default dictionary not found');
     }

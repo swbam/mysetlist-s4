@@ -1,30 +1,27 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '~/components/ui/card';
-import { Button } from '~/components/ui/button';
-import { Input } from '~/components/ui/input';
-import { Label } from '~/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '~/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
-import { Badge } from '~/components/ui/badge';
-import { Progress } from '~/components/ui/progress';
-import { Alert, AlertDescription } from '~/components/ui/alert';
-import { Separator } from '~/components/ui/separator';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
+import { Button } from '@repo/design-system/components/ui/button';
+import { Input } from '@repo/design-system/components/ui/input';
+import { Label } from '@repo/design-system/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/design-system/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
+import { Badge } from '@repo/design-system/components/ui/badge';
+import { Progress } from '@repo/design-system/components/ui/progress';
+import { Alert, AlertDescription } from '@repo/design-system/components/ui/alert';
 import { 
-  TrendingUp, 
   Database, 
   Server, 
   Shield, 
   DollarSign, 
   Clock, 
-  Users, 
   AlertTriangle,
   CheckCircle,
-  XCircle,
   Activity,
   BarChart3,
   Settings,
+  TrendingUp,
   Target
 } from 'lucide-react';
 

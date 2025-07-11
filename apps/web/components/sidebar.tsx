@@ -42,7 +42,7 @@ export const Sidebar = async ({
       <div className="-mx-2">
         <div className="grid gap-2 p-2">
           <p className="text-muted-foreground text-sm">Sections</p>
-          {Toc}
+          <>{Toc}</>
         </div>
       </div>
     ) : undefined}

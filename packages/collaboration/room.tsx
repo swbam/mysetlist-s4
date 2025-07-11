@@ -7,13 +7,14 @@ import {
   LiveblocksProvider,
   RoomProvider,
 } from '@liveblocks/react/suspense';
-import type { ComponentProps, ReactNode } from 'react';
+import type { ComponentProps } from 'react';
+import type React from 'react';
 
 type RoomProps = ComponentProps<typeof LiveblocksProvider> & {
   id: string;
-  children: ReactNode;
+  children: React.ReactNode;
   authEndpoint: string;
-  fallback: ReactNode;
+  fallback: React.ReactNode;
   resolveUsers?: (
     args: ResolveUsersArgs
   ) => Promise<Liveblocks['UserMeta']['info'][]>;
@@ -31,7 +32,7 @@ export const Room = ({
 }: RoomProps) => (
   <LiveblocksProvider authEndpoint={authEndpoint} {...props}>
     <RoomProvider id={id} initialPresence={{ cursor: null }}>
-      <ClientSideSuspense fallback={fallback}>{children}</ClientSideSuspense>
+      <ClientSideSuspense fallback={fallback as any}>{children}</ClientSideSuspense>
     </RoomProvider>
   </LiveblocksProvider>
 );

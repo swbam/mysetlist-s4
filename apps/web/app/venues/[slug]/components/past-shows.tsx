@@ -24,7 +24,7 @@ interface PastShowsProps {
   venueId: string;
 }
 
-export function PastShows({ shows, venueId }: PastShowsProps) {
+export function PastShows({ shows, venueId: _venueId }: PastShowsProps) {
   if (shows.length === 0) {
     return (
       <Card className="p-8 text-center">
@@ -66,7 +66,7 @@ export function PastShows({ shows, venueId }: PastShowsProps) {
           </h3>
 
           <div className="grid gap-3">
-            {showsByYear[Number(year)].map((show) => (
+            {showsByYear[Number(year)]?.map((show) => (
               <Card key={show.id} className="overflow-hidden">
                 <Link href={`/shows/${show.id}`}>
                   <div className="flex items-center gap-4 p-4 transition-colors hover:bg-muted/50">

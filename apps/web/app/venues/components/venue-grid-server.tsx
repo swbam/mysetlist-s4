@@ -13,18 +13,18 @@ interface VenueGridServerProps {
 
 export async function VenueGridServer({ searchParams }: VenueGridServerProps) {
   const venues = await getVenues({
-    search: searchParams.q,
-    types: searchParams.types?.split(',').filter(Boolean),
-    capacity: searchParams.capacity,
-    userLat: searchParams.lat ? Number.parseFloat(searchParams.lat) : undefined,
-    userLng: searchParams.lng ? Number.parseFloat(searchParams.lng) : undefined,
+    ...(searchParams.q && { search: searchParams.q }),
+    ...(searchParams.types && { types: searchParams.types.split(',').filter(Boolean) }),
+    ...(searchParams.capacity && { capacity: searchParams.capacity }),
+    ...(searchParams.lat && { userLat: Number.parseFloat(searchParams.lat) }),
+    ...(searchParams.lng && { userLng: Number.parseFloat(searchParams.lng) }),
   });
 
   return (
     <VenueGridClient
       venues={venues.map((venue) => ({
         ...venue,
-        avgRating: venue.avgRating ?? undefined,
+        avgRating: venue.avgRating ?? 0,
       }))}
     />
   );

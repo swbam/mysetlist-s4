@@ -34,7 +34,7 @@ export class PageErrorBoundary extends React.Component<Props, State> {
     return { hasError: true, error, errorInfo: null };
   }
 
-  componentDidCatch(_error: Error, errorInfo: React.ErrorInfo) {
+  override componentDidCatch(_error: Error, errorInfo: React.ErrorInfo) {
     this.setState({ errorInfo });
   }
 
@@ -48,7 +48,7 @@ export class PageErrorBoundary extends React.Component<Props, State> {
     }
   };
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return <>{this.props.fallback}</>;
@@ -156,7 +156,7 @@ export function withPageErrorBoundary<T extends object>(
 ) {
   return function WithPageErrorBoundaryComponent(props: T) {
     return (
-      <PageErrorBoundary pageTitle={pageTitle}>
+      <PageErrorBoundary pageTitle={pageTitle ?? 'Page'}>
         <Component {...props} />
       </PageErrorBoundary>
     );

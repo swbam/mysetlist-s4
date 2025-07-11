@@ -1,7 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createClient } from '@supabase/supabase-js';
-import { env } from './env';
+import { keys } from '../keys';
+
+const env = keys();
 
 async function applyNewMigrations() {
   const supabase = createClient(

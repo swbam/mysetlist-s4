@@ -50,7 +50,7 @@ export function TouchCard({
   const [swipeDistance, setSwipeDistance] = useState(0);
 
   const cardRef = useRef<HTMLDivElement>(null);
-  const longPressTimer = useRef<NodeJS.Timeout>();
+  const longPressTimer = useRef<NodeJS.Timeout | undefined>(undefined);
   const touchStart = useRef<{ x: number; y: number; time: number } | null>(
     null
   );
@@ -61,6 +61,9 @@ export function TouchCard({
     }
 
     const touch = e.touches[0];
+    if (!touch) {
+      return;
+    }
     touchStart.current = {
       x: touch.clientX,
       y: touch.clientY,
@@ -89,6 +92,9 @@ export function TouchCard({
     }
 
     const touch = e.touches[0];
+    if (!touch) {
+      return;
+    }
     const deltaX = touch.clientX - touchStart.current.x;
     const deltaY = touch.clientY - touchStart.current.y;
 
@@ -131,6 +137,9 @@ export function TouchCard({
     }
 
     const touch = e.changedTouches[0];
+    if (!touch) {
+      return;
+    }
     const deltaX = touch.clientX - touchStart.current.x;
     const deltaY = touch.clientY - touchStart.current.y;
     const deltaTime = Date.now() - touchStart.current.time;

@@ -30,8 +30,8 @@ class SupabaseMigrationRunner {
 
   constructor() {
     this.supabaseUrl =
-      process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
-    this.supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+      process.env['NEXT_PUBLIC_SUPABASE_URL'] || process.env['SUPABASE_URL'] || '';
+    this.supabaseServiceKey = process.env['SUPABASE_SERVICE_ROLE_KEY'] || '';
 
     if (!this.supabaseUrl || !this.supabaseServiceKey) {
       throw new Error(
@@ -123,7 +123,7 @@ class SupabaseMigrationRunner {
     }
   }
 
-  private async executeSql(sql: string) {
+  async executeSql(sql: string) {
     // Split SQL into individual statements
     const statements = sql
       .split(/;\s*$/m)

@@ -44,6 +44,7 @@ export function GDPRCookieConsent() {
       initializeAnalytics(
         preferences ? JSON.parse(preferences) : { analytics: false }
       );
+      return; // Add explicit return for this path
     } else {
       // Show banner after a short delay
       const timer = setTimeout(() => setShowBanner(true), 1000);
@@ -55,9 +56,9 @@ export function GDPRCookieConsent() {
     // Initialize PostHog with consent
     if (typeof window !== 'undefined' && window.posthog) {
       if (prefs.analytics) {
-        window.posthog.opt_in_capturing();
+        (window.posthog as any).opt_in_capturing();
       } else {
-        window.posthog.opt_out_capturing();
+        (window.posthog as any).opt_out_capturing();
       }
     }
 
@@ -72,11 +73,15 @@ export function GDPRCookieConsent() {
 
     // Initialize Sentry with consent
     if (typeof window !== 'undefined' && window.Sentry) {
-      if (prefs.analytics) {
-        // Sentry is considered analytics for error tracking
-        window.Sentry.getCurrentHub().getClient()?.getOptions().enabled = true;
-      } else {
-        window.Sentry.getCurrentHub().getClient()?.getOptions().enabled = false;
+      const client = window.Sentry.getCurrentHub().getClient();
+      if (client) {
+        const options = client.getOptions();
+        if (prefs.analytics) {
+          // Sentry is considered analytics for error tracking
+          options.enabled = true;
+        } else {
+          options.enabled = false;
+        }
       }
     }
   };
@@ -341,6 +346,7 @@ declare global {
     posthog?: {
       opt_in_capturing: () => void;
       opt_out_capturing: () => void;
+      capture: (event: string, properties?: Record<string, any>) => void;
     };
     Sentry?: {
       getCurrentHub: () => {

@@ -2,7 +2,6 @@
 
 import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { createClient } from '~/lib/supabase/client';
-import { useRealtimeConnection } from '~/app/providers/realtime-provider';
 import { useScreenReaderAnnouncements } from '~/components/accessibility/enhanced-accessibility';
 import { cn } from '@repo/design-system/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
@@ -10,17 +9,15 @@ import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Progress } from '@repo/design-system/components/ui/progress';
 import { 
-  Wifi, 
   WifiOff, 
   AlertCircle, 
   CheckCircle, 
   RefreshCw, 
   Activity,
   Users,
-  TrendingUp,
-  Zap,
   Signal,
-  Clock
+  TrendingUp,
+  Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -78,8 +75,8 @@ export function useEnhancedRealtimeConnection() {
   
   const supabase = createClient();
   const channelRef = useRef<any>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
-  const metricsIntervalRef = useRef<NodeJS.Timeout>();
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const metricsIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { announce } = useScreenReaderAnnouncements();
 
   // Calculate connection latency
@@ -193,13 +190,15 @@ export function useEnhancedRealtimeConnection() {
     
     channel
       .on('presence', { event: 'sync' }, () => {
-        setConnectionState(prev => ({
-          ...prev,
-          status: 'connected',
-          lastConnected: new Date(),
-          reconnectAttempts: 0,
-          error: undefined,
-        }));
+        setConnectionState(prev => {
+          const { error, ...rest } = prev;
+          return {
+            ...rest,
+            status: 'connected',
+            lastConnected: new Date(),
+            reconnectAttempts: 0,
+          };
+        });
         
         announce('Real-time connection established', 'polite');
         measureLatency();
@@ -354,7 +353,7 @@ export const EnhancedConnectionStatus = memo(function EnhancedConnectionStatus({
   showMetrics = false,
   className,
 }: EnhancedConnectionStatusProps) {
-  const { connectionState, metrics, forceReconnect, measureLatency } = useEnhancedRealtimeConnection();
+  const { connectionState, metrics, forceReconnect } = useEnhancedRealtimeConnection();
 
   const statusConfig = {
     connecting: {
@@ -623,7 +622,7 @@ interface PresenceIndicatorProps {
 }
 
 export const RealtimePresenceIndicator = memo(function RealtimePresenceIndicator({
-  userId,
+  userId: _userId,
   showCount = true,
   className,
 }: PresenceIndicatorProps) {

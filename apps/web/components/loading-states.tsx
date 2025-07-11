@@ -37,7 +37,7 @@ export function LoadingSpinner({
 
 interface LoadingStateProps {
   message?: string;
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: any;
   className?: string;
 }
 

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React from 'react';
+import * as React from 'react';
 
 interface SafeLinkProps {
   href: string;
@@ -32,82 +32,28 @@ export const SafeLink: React.FC<SafeLinkProps> = ({
   onError,
   ...props
 }) => {
-  const router = useRouter();
-  const [isNavigating, setIsNavigating] = React.useState(false);
-
   const handleClick = React.useCallback(
     (e: React.MouseEvent) => {
-      try {
-        // Call custom onClick if provided
-        if (onClick) {
-          onClick(e);
-        }
-
-        // Don't prevent default for external links
-        if (
-          href.startsWith('http') ||
-          href.startsWith('mailto:') ||
-          href.startsWith('tel:')
-        ) {
-          return;
-        }
-
-        // Don't prevent default if target is blank
-        if (target === '_blank') {
-          return;
-        }
-
-        // Don't prevent default if event is already prevented
-        if (e.defaultPrevented) {
-          return;
-        }
-
-        // For internal navigation, use router with error handling
-        if (!isNavigating) {
-          setIsNavigating(true);
-
-          // Use a timeout to prevent infinite loading states
-          const timeoutId = setTimeout(() => {
-            setIsNavigating(false);
-          }, 5000);
-
-          // Attempt navigation
-          const navigationPromise = replace
-            ? router.replace(href, { scroll })
-            : router.push(href, { scroll });
-
-          navigationPromise
-            .then(() => {
-              clearTimeout(timeoutId);
-              setIsNavigating(false);
-            })
-            .catch((error) => {
-              clearTimeout(timeoutId);
-              setIsNavigating(false);
-
-              if (onError) {
-                onError(error);
-              } else {
-                // Fallback to native navigation
-                window.location.href = href;
-              }
-            });
-
-          // Prevent default Link behavior since we're handling it manually
-          e.preventDefault();
-        }
-      } catch (error) {
-        if (onError) {
-          onError(error as Error);
-        }
-
-        // Fallback to native navigation
-        if (!href.startsWith('http')) {
-          window.location.href = href;
-        }
+      // Call custom onClick if provided
+      if (onClick) {
+        onClick(e);
       }
+
+      // Don't intercept external links or special targets
+      if (
+        href.startsWith('http') ||
+        href.startsWith('mailto:') ||
+        href.startsWith('tel:') ||
+        target === '_blank' ||
+        e.defaultPrevented
+      ) {
+        return;
+      }
+
+      // For internal navigation, let Next.js Link handle it naturally
+      // Only intercept on error
     },
-    [href, onClick, onError, isNavigating, router, replace, scroll, target]
+    [href, onClick, target]
   );
 
   // For external links, use regular Link behavior
@@ -116,16 +62,21 @@ export const SafeLink: React.FC<SafeLinkProps> = ({
     href.startsWith('mailto:') ||
     href.startsWith('tel:')
   ) {
+    const linkProps: any = {
+      href,
+      className,
+      target,
+      rel,
+      ...props,
+    };
+    
+    if (onClick) {
+      linkProps.onClick = onClick;
+    }
+    
     return (
-      <Link
-        href={href}
-        className={className}
-        target={target}
-        rel={rel}
-        onClick={onClick}
-        {...props}
-      >
-        {children}
+      <Link {...linkProps}>
+        <>{children}</>
       </Link>
     );
   }
@@ -140,7 +91,7 @@ export const SafeLink: React.FC<SafeLinkProps> = ({
       onClick={handleClick}
       {...props}
     >
-      {children}
+      <>{children}</>
     </Link>
   );
 };
@@ -148,31 +99,22 @@ export const SafeLink: React.FC<SafeLinkProps> = ({
 // Hook for safe navigation
 export function useSafeNavigation() {
   const router = useRouter();
-  const [isNavigating, setIsNavigating] = React.useState(false);
 
   const safeNavigate = React.useCallback(
     async (href: string, options?: { replace?: boolean; scroll?: boolean }) => {
-      if (isNavigating) {
-        return;
-      }
-
-      setIsNavigating(true);
-
       try {
-        const navigationPromise = options?.replace
-          ? router.replace(href, { scroll: options.scroll })
-          : router.push(href, { scroll: options.scroll });
-
-        await navigationPromise;
+        if (options?.replace) {
+          await router.replace(href, { scroll: options.scroll ?? true });
+        } else {
+          await router.push(href, { scroll: options?.scroll ?? true });
+        }
       } catch (_error) {
         // Fallback to native navigation
         window.location.href = href;
-      } finally {
-        setIsNavigating(false);
       }
     },
-    [router, isNavigating]
+    [router]
   );
 
-  return { safeNavigate, isNavigating };
+  return { safeNavigate };
 }

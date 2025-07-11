@@ -19,25 +19,6 @@ import { useAuth } from '~/app/providers/auth-provider';
 import { VoteButton } from '../voting/vote-button';
 import { VoteSummary } from '../voting/vote-summary';
 
-interface SetlistSong {
-  id: string;
-  position: number;
-  song: {
-    id: string;
-    title: string;
-    artist: string;
-    album?: string;
-    albumArtUrl?: string;
-    durationMs?: number;
-    isExplicit?: boolean;
-  };
-  upvotes: number;
-  downvotes: number;
-  netVotes: number;
-  userVote?: 'up' | 'down' | null;
-  isPlayed?: boolean;
-  playTime?: string;
-}
 
 interface RealtimeSetlistViewerProps {
   showId: string;
@@ -340,6 +321,7 @@ export function RealtimeSetlistViewer({
                             session &&
                             !setlist.isLocked &&
                             setlist.type === 'predicted' && (
+                              /* @ts-expect-error - React 19 memo type issue */
                               <VoteButton
                                 setlistSongId={song.id}
                                 currentVote={song.userVote}

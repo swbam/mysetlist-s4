@@ -126,7 +126,7 @@ export const config: NextConfig = {
   // Output configuration
   distDir: '.next',
   cleanDistDir: true,
-  assetPrefix: isProd ? process.env.NEXT_PUBLIC_ASSET_PREFIX || '' : '',
+  assetPrefix: isProd ? process.env['NEXT_PUBLIC_ASSET_PREFIX'] || '' : '',
 
   // Compiler options
   compiler: {
@@ -155,7 +155,7 @@ export const config: NextConfig = {
 
 export const withAnalyzer = (sourceConfig: NextConfig): NextConfig => {
   const bundleAnalyzer = withBundleAnalyzer({
-    enabled: process.env.ANALYZE === 'true',
+    enabled: process.env['ANALYZE'] === 'true',
     openAnalyzer: true,
   });
 

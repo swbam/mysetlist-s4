@@ -24,9 +24,9 @@ export const showStatusEnum = pgEnum('show_status', [
 export const shows = pgTable('shows', {
   id: uuid('id').primaryKey().defaultRandom(),
   headlinerArtistId: uuid('headliner_artist_id')
-    .references(() => artists.id)
+    .references(() => artists.id, { onDelete: 'cascade' })
     .notNull(),
-  venueId: uuid('venue_id').references(() => venues.id),
+  venueId: uuid('venue_id').references(() => venues.id, { onDelete: 'set null' }),
   name: text('name').notNull(),
   slug: text('slug').unique().notNull(),
   date: date('date').notNull(),
@@ -61,10 +61,10 @@ export const shows = pgTable('shows', {
 export const showArtists = pgTable('show_artists', {
   id: uuid('id').primaryKey().defaultRandom(),
   showId: uuid('show_id')
-    .references(() => shows.id)
+    .references(() => shows.id, { onDelete: 'cascade' })
     .notNull(),
   artistId: uuid('artist_id')
-    .references(() => artists.id)
+    .references(() => artists.id, { onDelete: 'cascade' })
     .notNull(),
   orderIndex: integer('order_index').notNull(), // 0 = headliner
   setLength: integer('set_length'), // minutes
@@ -75,10 +75,10 @@ export const showArtists = pgTable('show_artists', {
 export const showComments = pgTable('show_comments', {
   id: uuid('id').primaryKey().defaultRandom(),
   showId: uuid('show_id')
-    .references(() => shows.id)
+    .references(() => shows.id, { onDelete: 'cascade' })
     .notNull(),
   userId: uuid('user_id')
-    .references(() => users.id)
+    .references(() => users.id, { onDelete: 'cascade' })
     .notNull(),
   content: text('content').notNull(),
   parentId: uuid('parent_id').references((): any => showComments.id),

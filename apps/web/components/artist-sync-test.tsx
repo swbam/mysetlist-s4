@@ -6,7 +6,7 @@ import { useArtistSync } from '~/hooks/use-artist-sync';
 
 export function ArtistSyncTest() {
   const [artistName, setArtistName] = useState('');
-  const { syncArtist, isLoading, progress, error } = useArtistSync();
+  const { isLoading, progress, error } = useArtistSync();
 
   const handleAutoImport = async () => {
     if (!artistName.trim()) {

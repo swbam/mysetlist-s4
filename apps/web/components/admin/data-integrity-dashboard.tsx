@@ -4,24 +4,25 @@ import {
   AlertCircle,
   CheckCircle2,
   Database,
+  Loader2,
   RefreshCw,
   TrendingUp,
   Wrench,
   XCircle,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert';
-import { Badge } from '~/components/ui/badge';
-import { Button } from '~/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@repo/design-system/components/ui/alert';
+import { Badge } from '@repo/design-system/components/ui/badge';
+import { Button } from '@repo/design-system/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '~/components/ui/card';
-import { Progress } from '~/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
+} from '@repo/design-system/components/ui/card';
+import { Progress } from '@repo/design-system/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
 
 interface IntegrityCheck {
   name: string;
@@ -40,6 +41,44 @@ interface IntegrityReport {
     warnings: number;
   };
 }
+
+const getStatusIcon = (status: string) => {
+  switch (status) {
+    case 'pass':
+      return <CheckCircle2 className="h-5 w-5 text-green-500" />;
+    case 'fail':
+      return <XCircle className="h-5 w-5 text-red-500" />;
+    case 'warning':
+      return <AlertCircle className="h-5 w-5 text-yellow-500" />;
+    default:
+      return <Loader2 className="h-5 w-5 animate-spin text-gray-500" />;
+  }
+};
+
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case 'pass':
+      return (
+        <Badge variant="outline" className="border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-400">
+          Passed
+        </Badge>
+      );
+    case 'fail':
+      return (
+        <Badge variant="outline" className="border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400">
+          Failed
+        </Badge>
+      );
+    case 'warning':
+      return (
+        <Badge variant="outline" className="border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400">
+          Warning
+        </Badge>
+      );
+    default:
+      return null;
+  }
+};
 
 export function DataIntegrityDashboard() {
   const [report, setReport] = useState<IntegrityReport | null>(null);
@@ -92,39 +131,7 @@ export function DataIntegrityDashboard() {
     }
   };
 
-  const _getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'pass':
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-      case 'fail':
-        return <XCircle className="h-5 w-5 text-red-500" />;
-      case 'warning':
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
-      default:
-        return null;
-    }
-  };
 
-  const _getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pass':
-        return (
-          <Badge variant="outline" className="bg-green-50">
-            Passed
-          </Badge>
-        );
-      case 'fail':
-        return <Badge variant="destructive">Failed</Badge>;
-      case 'warning':
-        return (
-          <Badge variant="outline" className="bg-yellow-50">
-            Warning
-          </Badge>
-        );
-      default:
-        return null;
-    }
-  };
 
   if (!report) {
     return (

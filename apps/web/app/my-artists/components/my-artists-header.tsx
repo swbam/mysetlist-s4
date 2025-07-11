@@ -15,13 +15,16 @@ export async function MyArtistsHeader({ userId }: MyArtistsHeaderProps) {
     .where(eq(userFollowsArtists.userId, userId));
 
   const upcomingShowsCount = await db
-    .select({ count: sql<number>`count(distinct s.id)` })
-    .from(shows.as('s'))
+    .select({ count: sql<number>`count(distinct ${shows.id})` })
+    .from(shows)
     .innerJoin(
-      userFollowsArtists.as('ufa'),
-      eq(sql`s.artist_id`, sql`ufa.artist_id`)
+      userFollowsArtists,
+      eq(shows.headlinerArtistId, userFollowsArtists.artistId)
     )
-    .where(and(eq(sql`ufa.user_id`, userId), gte(sql`s.date`, new Date())));
+    .where(and(
+      eq(userFollowsArtists.userId, userId), 
+      gte(shows.date, new Date().toISOString().substring(0, 10))
+    ));
 
   const stats = [
     {

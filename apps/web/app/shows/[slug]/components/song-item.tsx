@@ -50,14 +50,12 @@ export function SongItem({
   // Use real-time votes hook
   const { votes } = useRealtimeVotes({
     songId: item.id,
-    userId: session?.user?.id,
+    ...(session?.user?.id && { userId: session.user.id }),
   });
 
   // Use real-time data if available, otherwise fall back to props
   const upvotes = votes.upvotes || item.upvotes || 0;
   const downvotes = votes.downvotes || item.downvotes || 0;
-  const _netVotes = upvotes - downvotes;
-  const _userVote = votes.userVote || item.userVote || null;
 
   const song = item.song;
   const position = index + 1;
@@ -107,9 +105,9 @@ export function SongItem({
 
       {/* Album Art */}
       <div className="relative h-10 w-10 flex-shrink-0 rounded bg-muted">
-        {song.album_art_url ? (
+        {song.albumArtUrl ? (
           <Image
-            src={song.album_art_url}
+            src={song.albumArtUrl}
             alt={song.album || song.title}
             fill
             className="rounded object-cover"
@@ -130,7 +128,7 @@ export function SongItem({
               {item.notes}
             </Badge>
           )}
-          {song.is_explicit && (
+          {song.isExplicit && (
             <Badge variant="outline" className="text-xs">
               E
             </Badge>
@@ -144,10 +142,10 @@ export function SongItem({
               <span className="truncate">{song.album}</span>
             </>
           )}
-          {song.duration_ms && (
+          {song.durationMs && (
             <>
               <span>•</span>
-              <span>{formatDuration(song.duration_ms)}</span>
+              <span>{formatDuration(song.durationMs)}</span>
             </>
           )}
         </div>
@@ -198,10 +196,10 @@ export function SongItem({
         )}
 
         {/* Spotify Link */}
-        {song.spotify_id && (
+        {song.spotifyId && (
           <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
             <a
-              href={`https://open.spotify.com/track/${song.spotify_id}`}
+              href={`https://open.spotify.com/track/${song.spotifyId}`}
               target="_blank"
               rel="noopener noreferrer"
             >

@@ -4,7 +4,7 @@ export async function GET() {
   return NextResponse.json({
     success: true,
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
+    environment: process.env['NODE_ENV'],
     apis: {
       spotify: {
         clientId: !!process.env['SPOTIFY_CLIENT_ID'],

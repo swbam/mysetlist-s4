@@ -33,7 +33,7 @@ export function InfiniteScroll({
   const handleIntersection = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [entry] = entries;
-      if (entry.isIntersecting && hasMore && !isLoading) {
+      if (entry?.isIntersecting && hasMore && !isLoading) {
         onLoadMore();
       }
     },

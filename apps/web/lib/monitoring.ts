@@ -488,10 +488,4 @@ if (typeof window !== 'undefined') {
   });
 }
 
-declare global {
-  interface Window {
-    posthog?: {
-      capture: (event: string, properties?: Record<string, any>) => void;
-    };
-  }
-}
+// PostHog types are defined in components/gdpr-cookie-consent.tsx

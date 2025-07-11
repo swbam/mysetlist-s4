@@ -12,7 +12,7 @@ export interface AnonymousActions {
 }
 
 export const ANONYMOUS_LIMITS = {
-  votes: 1,
+  votes: 5,
   songsAdded: 1,
 } as const;
 

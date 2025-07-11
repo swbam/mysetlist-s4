@@ -78,7 +78,11 @@ export function AddPhotoDialog({ venueId }: AddPhotoDialogProps) {
     setIsSubmitting(true);
 
     try {
-      const result = await addVenuePhoto(venueId, user.id, data);
+      const result = await addVenuePhoto(venueId, user.id, {
+        imageUrl: data.imageUrl,
+        ...(data.caption && { caption: data.caption }),
+        ...(data.photoType && { photoType: data.photoType }),
+      });
 
       if (result.success) {
         toast({
@@ -152,7 +156,7 @@ export function AddPhotoDialog({ venueId }: AddPhotoDialogProps) {
                   <FormLabel>Photo Type</FormLabel>
                   <Select
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    {...(field.value && { defaultValue: field.value })}
                   >
                     <FormControl>
                       <SelectTrigger>

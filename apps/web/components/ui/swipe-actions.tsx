@@ -35,7 +35,7 @@ export function SwipeActions({
     null
   );
   const containerRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number>(0);
 
   const colorClasses = {
     primary: 'bg-primary text-primary-foreground',
@@ -49,6 +49,7 @@ export function SwipeActions({
       return;
     }
     const touch = e.touches[0];
+    if (!touch) return;
     setTouchStart({ x: touch.clientX, y: touch.clientY });
     setIsSwipeActive(true);
   };
@@ -59,6 +60,7 @@ export function SwipeActions({
     }
 
     const touch = e.touches[0];
+    if (!touch) return;
     const deltaX = touch.clientX - touchStart.x;
     const deltaY = Math.abs(touch.clientY - touchStart.y);
 

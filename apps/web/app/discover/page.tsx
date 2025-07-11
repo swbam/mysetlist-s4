@@ -26,7 +26,7 @@ import {
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { PersonalizedRecommendations } from '~/components/discovery/personalized-recommendations';
 import { LiveTrending } from '~/components/trending/live-trending';
 import { DiscoverFilters } from './components/discover-filters';
@@ -77,7 +77,8 @@ export default function DiscoverPage() {
           </p>
         </div>
 
-        <Suspense fallback={<DiscoverSkeleton />}>
+        {React.createElement(Suspense as any, { fallback: React.createElement(DiscoverSkeleton) }, (
+          <>
           {/* Quick Stats */}
           <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             <Card>
@@ -317,7 +318,8 @@ export default function DiscoverPage() {
               </CardContent>
             </Card>
           </div>
-        </Suspense>
+          </>
+        ))}
       </div>
     </div>
   );

@@ -12,7 +12,7 @@ import {
 } from '@repo/design-system/components/ui/card';
 import { ArrowLeft, Mail } from 'lucide-react';
 import Link from 'next/link';
-import { Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { handleUnsubscribe } from '~/actions/email-notifications';
 
 // Force dynamic rendering due to searchParams usage
@@ -121,21 +121,19 @@ async function UnsubscribeContent({ searchParams }: UnsubscribePageProps) {
 }
 
 export default function UnsubscribePage(props: UnsubscribePageProps) {
-  return (
-    <Suspense
-      fallback={
-        <div className="container mx-auto px-4 py-16">
-          <div className="mx-auto max-w-md">
-            <Card>
-              <CardHeader className="text-center">
-                <CardTitle>Loading...</CardTitle>
-              </CardHeader>
-            </Card>
-          </div>
+  return React.createElement(Suspense as any, {
+    fallback: (
+      <div className="container mx-auto px-4 py-16">
+        <div className="mx-auto max-w-md">
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle>Loading...</CardTitle>
+            </CardHeader>
+          </Card>
         </div>
-      }
-    >
-      <UnsubscribeContent {...props} />
-    </Suspense>
+      </div>
+    )
+  },
+    React.createElement(UnsubscribeContent, props)
   );
 }

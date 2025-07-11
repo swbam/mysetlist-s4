@@ -7,7 +7,7 @@ import {
 } from '@repo/database';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { and, desc, eq, gte, sql } from 'drizzle-orm';
+import { desc, eq, sql } from 'drizzle-orm';
 import { Calendar, Music, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -28,22 +28,22 @@ export async function FollowedArtistsGrid({
       genres: artists.genres,
       followedAt: userFollowsArtists.createdAt,
       totalShows: artistStats.totalShows,
-      followerCount: artistStats.followerCount,
-      upcomingShows: sql<number>`count(distinct s.id)`,
+      followerCount: artists.followerCount,
+      upcomingShows: sql<number>`count(distinct ${shows.id})`,
     })
     .from(userFollowsArtists)
     .innerJoin(artists, eq(userFollowsArtists.artistId, artists.id))
     .leftJoin(artistStats, eq(artists.id, artistStats.artistId))
     .leftJoin(
-      shows.as('s'),
-      and(eq(artists.id, sql`s.artist_id`), gte(sql`s.date`, new Date()))
+      shows,
+      eq(artists.id, shows.headlinerArtistId)
     )
     .where(eq(userFollowsArtists.userId, userId))
     .groupBy(
       artists.id,
       userFollowsArtists.createdAt,
       artistStats.totalShows,
-      artistStats.followerCount
+      artists.followerCount
     )
     .orderBy(desc(userFollowsArtists.createdAt));
 
@@ -93,17 +93,24 @@ export async function FollowedArtistsGrid({
                     {artist.name}
                   </h3>
 
-                  {artist.genres && artist.genres.length > 0 && (
+                  {artist.genres && (
                     <div className="mt-1 mb-3 flex gap-1">
-                      {artist.genres.slice(0, 2).map((genre) => (
-                        <Badge
-                          key={genre}
-                          variant="secondary"
-                          className="text-xs"
-                        >
-                          {genre}
-                        </Badge>
-                      ))}
+                      {(() => {
+                        try {
+                          const genres = JSON.parse(artist.genres);
+                          return Array.isArray(genres) && genres.slice(0, 2).map((genre) => (
+                            <Badge
+                              key={genre}
+                              variant="secondary"
+                              className="text-xs"
+                            >
+                              {genre}
+                            </Badge>
+                          ));
+                        } catch {
+                          return null;
+                        }
+                      })()}
                     </div>
                   )}
 

@@ -42,7 +42,7 @@ export const artists = pgTable('artists', {
 export const artistStats = pgTable('artist_stats', {
   id: uuid('id').primaryKey().defaultRandom(),
   artistId: uuid('artist_id')
-    .references(() => artists.id)
+    .references(() => artists.id, { onDelete: 'cascade' })
     .notNull(),
   totalShows: integer('total_shows').default(0),
   upcomingShows: integer('upcoming_shows').default(0),
@@ -57,10 +57,10 @@ export const artistStats = pgTable('artist_stats', {
 export const artistSongs = pgTable('artist_songs', {
   id: uuid('id').primaryKey().defaultRandom(),
   artistId: uuid('artist_id')
-    .references(() => artists.id)
+    .references(() => artists.id, { onDelete: 'cascade' })
     .notNull(),
   songId: uuid('song_id')
-    .references(() => songs.id)
+    .references(() => songs.id, { onDelete: 'cascade' })
     .notNull(),
   isPrimaryArtist: boolean('is_primary_artist').default(true),
   createdAt: timestamp('created_at').defaultNow().notNull(),

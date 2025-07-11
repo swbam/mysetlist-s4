@@ -86,7 +86,7 @@ export function ShareButtons({
       try {
         await navigator.share({
           title,
-          text: description,
+          ...(description && { text: description }),
           url: fullUrl,
         });
       } catch (_error) {

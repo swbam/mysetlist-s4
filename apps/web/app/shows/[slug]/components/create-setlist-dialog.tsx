@@ -44,7 +44,7 @@ export function CreateSetlistDialog({
 
     startTransition(async () => {
       try {
-        const _setlist = await createSetlist(
+        await createSetlist(
           show.id,
           show.headliner_artist.id,
           type,

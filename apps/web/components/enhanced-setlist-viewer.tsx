@@ -20,11 +20,25 @@ import { RealtimeVoteButton } from './realtime-vote-button';
 interface Setlist {
   id: string;
   showId: string;
+  name?: string;
+  type?: string;
+  isLocked?: boolean;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
   songs?: Array<{
     id: string;
     songId: string;
     position: number;
     notes?: string;
+    is_cover?: boolean;
+    is_debut?: boolean;
+    song?: {
+      id: string;
+      title: string;
+      artist?: string;
+      durationMs?: number;
+      duration_ms?: number;
+    };
   }>;
 }
 
@@ -47,10 +61,12 @@ export function EnhancedSetlistViewer({
   const [selectedSongId, setSelectedSongId] = useState<string | null>(null);
 
   // Use real-time setlist updates
-  const { songs, isLoading } = useRealtimeSetlist({
+  const { setlists, loading: isLoading } = useRealtimeSetlist({
     showId,
-    setlistId: initialSetlist?.id,
   });
+  
+  // Get songs from initial setlist or first setlist from real-time data
+  const songs = initialSetlist?.songs || setlists[0]?.songs || [];
 
   const handleVote = async (songId: string, voteType: 'up' | 'down' | null) => {
     if (!user) {
@@ -214,12 +230,12 @@ export function EnhancedSetlistViewer({
                       <h4 className="font-medium">
                         {song.song?.title || 'Unknown Song'}
                       </h4>
-                      {song.is_cover && (
+                      {(song as any).is_cover && (
                         <Badge variant="secondary" className="text-xs">
                           Cover
                         </Badge>
                       )}
-                      {song.is_debut && (
+                      {(song as any).is_debut && (
                         <Badge
                           variant="default"
                           className="bg-yellow-500 text-xs"

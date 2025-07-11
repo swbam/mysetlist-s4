@@ -1,10 +1,9 @@
 'use client';
 
-import { Badge } from '@repo/design-system/components/ui/badge';
 import { Card } from '@repo/design-system/components/ui/card';
 import { cn } from '@repo/design-system/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Disc3, Music, Star } from 'lucide-react';
+import { Music } from 'lucide-react';
 import { LiveIndicator } from '~/components/live-indicator';
 import { useRealtimeSetlist } from '~/hooks/use-realtime-setlist';
 
@@ -19,14 +18,16 @@ export function RealtimeSetlistViewer({
   showId,
   setlistId,
   isLive = false,
-  showVotes = true,
+  showVotes: _showVotes = true,
 }: RealtimeSetlistViewerProps) {
-  const { songs, isLoading } = useRealtimeSetlist({
-    setlistId,
+  const { setlists, loading } = useRealtimeSetlist({
     showId,
   });
 
-  if (isLoading && songs.length === 0) {
+  const currentSetlist = setlists.find(s => s.id === setlistId);
+  const songs = currentSetlist?.songs || [];
+
+  if (loading && songs.length === 0) {
     return (
       <div className="space-y-2">
         {[...new Array(5)].map((_, i) => (
@@ -93,21 +94,6 @@ export function RealtimeSetlistViewer({
                       <h4 className="font-medium">
                         {song.song?.title || 'Unknown Song'}
                       </h4>
-                      {song.is_cover && (
-                        <Badge variant="secondary" className="text-xs">
-                          <Disc3 className="mr-1 h-3 w-3" />
-                          Cover
-                        </Badge>
-                      )}
-                      {song.is_debut && (
-                        <Badge
-                          variant="default"
-                          className="bg-yellow-500 text-xs"
-                        >
-                          <Star className="mr-1 h-3 w-3" />
-                          Debut
-                        </Badge>
-                      )}
                     </div>
 
                     {song.notes && (

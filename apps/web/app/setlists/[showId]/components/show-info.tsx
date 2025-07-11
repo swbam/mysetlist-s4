@@ -32,10 +32,9 @@ type ShowInfoProps = {
   };
 };
 
-export const ShowInfo = ({ showId, show }: ShowInfoProps) => {
+export const ShowInfo = ({ showId: _showId, show }: ShowInfoProps) => {
   const [isSaved, setIsSaved] = useState(false);
 
-  const _isLive = show.shows.status === 'ongoing';
   const showDate = new Date(show.shows.date);
   const artistName = show.artists?.name || 'Unknown Artist';
   const venueName = show.venues?.name || 'Unknown Venue';
@@ -54,7 +53,9 @@ export const ShowInfo = ({ showId, show }: ShowInfoProps) => {
               <LiveShowIndicator
                 showDate={showDate}
                 showStatus={
-                  show.shows.status === 'ongoing' ? 'live' : show.shows.status
+                  show.shows.status === 'ongoing' ? 'live' : 
+                  show.shows.status === 'upcoming' ? 'scheduled' :
+                  show.shows.status
                 }
               />
             </div>

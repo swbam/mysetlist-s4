@@ -1,6 +1,6 @@
 import { getUser } from '@repo/auth/server';
 import { redirect } from 'next/navigation';
-import { Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { FollowedArtistsGrid } from './components/followed-artists-grid';
 import { MyArtistsHeader } from './components/my-artists-header';
 import { RecommendedConcerts } from './components/recommended-concerts';
@@ -30,33 +30,25 @@ export default async function MyArtistsPage() {
               <h2 className="font-bold text-2xl">My Artists</h2>
               <SpotifySync />
             </div>
-            <Suspense
-              fallback={<div className="animate-pulse">Loading artists...</div>}
-            >
-              <FollowedArtistsGrid userId={user.id} />
-            </Suspense>
+            {React.createElement(Suspense as any, {
+              fallback: React.createElement('div', { className: "animate-pulse" }, "Loading artists...")
+            }, React.createElement(FollowedArtistsGrid, { userId: user.id }))}
           </section>
 
           <section>
             <h2 className="mb-6 font-bold text-2xl">Upcoming Shows</h2>
-            <Suspense
-              fallback={<div className="animate-pulse">Loading shows...</div>}
-            >
-              <UpcomingShowsTimeline userId={user.id} />
-            </Suspense>
+            {React.createElement(Suspense as any, {
+              fallback: React.createElement('div', { className: "animate-pulse" }, "Loading shows...")
+            }, React.createElement(UpcomingShowsTimeline, { userId: user.id }))}
           </section>
         </div>
 
         <div className="lg:col-span-1">
           <section>
             <h2 className="mb-4 font-bold text-xl">Recommended for You</h2>
-            <Suspense
-              fallback={
-                <div className="animate-pulse">Loading recommendations...</div>
-              }
-            >
-              <RecommendedConcerts userId={user.id} />
-            </Suspense>
+            {React.createElement(Suspense as any, {
+              fallback: React.createElement('div', { className: "animate-pulse" }, "Loading recommendations...")
+            }, React.createElement(RecommendedConcerts, { userId: user.id }))}
           </section>
         </div>
       </div>

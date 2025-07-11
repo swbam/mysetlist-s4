@@ -353,7 +353,7 @@ export default function EditProfilePage() {
                   />
                   <div className="flex justify-between text-muted-foreground text-xs">
                     <span>Optional bio to share with other music fans</span>
-                    <span>{bioValue.length}/500</span>
+                    <span>{(bioValue || '').length}/500</span>
                   </div>
                   {errors.bio && (
                     <p className="text-destructive text-sm">

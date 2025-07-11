@@ -130,7 +130,7 @@ interface LiveRegionProps {
   children: React.ReactNode;
   politeness?: 'polite' | 'assertive' | 'off';
   atomic?: boolean;
-  relevant?: 'additions' | 'removals' | 'text' | 'all';
+  relevant?: string;
   className?: string;
 }
 
@@ -146,7 +146,7 @@ export function LiveRegion({
       className={cn('sr-only', className)}
       aria-live={politeness}
       aria-atomic={atomic}
-      aria-relevant={relevant}
+      aria-relevant={relevant as any}
     >
       {children}
     </div>
@@ -382,12 +382,12 @@ export function AccessibleIcon({
   className,
 }: AccessibleIconProps) {
   if (decorative) {
-    return <Icon className={className} aria-hidden="true" />;
+    return <Icon {...(className && { className })} aria-hidden="true" />;
   }
 
   return (
     <>
-      <Icon className={className} aria-hidden="true" />
+      <Icon {...(className && { className })} aria-hidden="true" />
       <ScreenReaderOnly>{label}</ScreenReaderOnly>
     </>
   );

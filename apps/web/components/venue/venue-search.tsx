@@ -158,12 +158,22 @@ export function VenueSearch({
   };
 
   const handleSearchSelect = (result: {
-    type: string;
-    slug: string;
+    id: string;
+    type: 'artist' | 'show' | 'venue' | 'song' | 'genre' | 'location' | 'recent' | 'trending';
     title: string;
+    subtitle?: string;
+    imageUrl?: string | null;
+    metadata?: {
+      popularity?: number;
+      upcomingShows?: number;
+      followerCount?: number;
+      capacity?: number;
+      showDate?: string;
+      verified?: boolean;
+    };
   }) => {
     if (result.type === 'venue') {
-      router.push(`/venues/${result.slug}`);
+      router.push(`/venues/${result.id}`);
     } else {
       setSearchQuery(result.title);
       fetchVenues(true);
@@ -383,8 +393,16 @@ export function VenueSearch({
             >
               <VenueCard
                 venue={{
-                  ...venue,
+                  id: venue.id,
+                  name: venue.name,
+                  city: venue.city,
+                  country: venue.country,
                   upcomingShows: venue.upcomingShows || 0,
+                  ...(venue.imageUrl && { imageUrl: venue.imageUrl }),
+                  ...(venue.address && { address: venue.address }),
+                  ...(venue.state && { state: venue.state }),
+                  ...(venue.capacity && { capacity: venue.capacity }),
+                  ...(venue.website && { website: venue.website }),
                 }}
                 variant={viewMode === 'list' ? 'detailed' : 'default'}
               />

@@ -4,11 +4,11 @@ import { and, desc, eq, gte } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
 // POST /api/sync/shows
-// Body: { artistId: string }
+// Body: { artistId: string, ticketmasterId?: string }
 // Syncs all shows for a given artist
 export async function POST(request: NextRequest) {
   try {
-    const { artistId } = await request.json();
+    const { artistId, ticketmasterId: _ticketmasterId } = await request.json();
 
     if (!artistId) {
       return NextResponse.json(

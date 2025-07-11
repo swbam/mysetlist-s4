@@ -28,7 +28,7 @@ interface QuickInsight {
   value?: string | number;
   change?: number;
   timestamp: Date;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: any;
   color: string;
 }
 
@@ -52,7 +52,6 @@ export function QuickInsights({
       const supabase = createClient();
       const now = new Date();
       const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-      const _oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
       // Get recent activity
       const [
@@ -156,13 +155,13 @@ export function QuickInsights({
 
       if (trendingArtists && trendingArtists.length > 0) {
         const topArtist = trendingArtists[0];
-        if (topArtist.trending_score > 80) {
+        if (topArtist?.trending_score && topArtist.trending_score > 80) {
           insights.push({
             id: 'trending-artist',
             type: 'trending_up',
             title: 'Hot Artist Alert',
-            description: `${topArtist.name} is trending with score ${topArtist.trending_score}`,
-            value: topArtist.trending_score,
+            description: `${topArtist.name ?? 'Artist'} is trending with score ${topArtist.trending_score ?? 0}`,
+            value: topArtist.trending_score ?? 0,
             timestamp: now,
             icon: TrendingUp,
             color: 'text-red-600',

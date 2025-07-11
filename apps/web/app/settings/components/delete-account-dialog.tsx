@@ -31,7 +31,7 @@ import { useAuth } from '../../providers/auth-provider';
 
 export function DeleteAccountDialog() {
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user: _user, signOut } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState<
     'confirm' | 'verify' | 'deleting' | 'success'
@@ -234,7 +234,9 @@ export function DeleteAccountDialog() {
                 <Checkbox
                   id="confirm-deletion"
                   checked={confirmDeletion}
-                  onCheckedChange={setConfirmDeletion}
+                  onCheckedChange={(checked) => 
+                    setConfirmDeletion(checked === true)
+                  }
                 />
                 <Label htmlFor="confirm-deletion" className="text-sm leading-5">
                   I understand that this action is permanent and cannot be

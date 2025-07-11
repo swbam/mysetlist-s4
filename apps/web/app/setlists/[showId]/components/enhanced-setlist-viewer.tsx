@@ -27,7 +27,7 @@ import {
   Wifi,
   WifiOff,
 } from 'lucide-react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { VoteButton } from '~/components/voting/vote-button';
 import { useRealtimeSetlist } from '~/hooks/use-realtime-setlist';
 
@@ -48,7 +48,7 @@ export const EnhancedSetlistViewer = ({
     setlists,
     loading,
     connectionStatus,
-    isConnected,
+    isConnected: _isConnected,
     lastUpdate,
     refetch,
   } = useRealtimeSetlist({
@@ -367,21 +367,16 @@ export const EnhancedSetlistViewer = ({
                       )}
 
                       {/* Vote Button */}
-                      <VoteButton
-                        setlistSongId={setlistSong.id}
-                        currentVote={setlistSong.userVote}
-                        upvotes={setlistSong.upvotes}
-                        downvotes={setlistSong.downvotes}
-                        onVote={(voteType) =>
-                          handleVote(setlistSong.id, voteType)
-                        }
-                        disabled={
-                          !setlistSong.isPlayed &&
-                          currentSetlist.type === 'actual'
-                        }
-                        variant="compact"
-                        size="sm"
-                      />
+                      {React.createElement(VoteButton as any, {
+                        setlistSongId: setlistSong.id,
+                        ...(setlistSong.userVote !== undefined && { currentVote: setlistSong.userVote }),
+                        upvotes: setlistSong.upvotes,
+                        downvotes: setlistSong.downvotes,
+                        onVote: (voteType: any) => handleVote(setlistSong.id, voteType),
+                        disabled: !setlistSong.isPlayed && currentSetlist.type === 'actual',
+                        variant: "compact",
+                        size: "sm"
+                      })}
                     </div>
                   </div>
                 </motion.div>

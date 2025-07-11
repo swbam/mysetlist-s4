@@ -33,16 +33,17 @@ export const generateMetadata = async ({
     .where(eq(shows.id, showId))
     .limit(1);
 
-  if (show.length === 0) {
+  if (show.length === 0 || !show[0]) {
     return createMetadata({
       title: 'Show Not Found - MySetlist',
       description: 'The requested show could not be found.',
     });
   }
 
+  const firstShow = show[0];
   return createMetadata({
-    title: `${show[0].artist} at ${show[0].venue} - MySetlist`,
-    description: `Live setlist and voting for ${show[0].artist} at ${show[0].venue}`,
+    title: `${firstShow.artist} at ${firstShow.venue} - MySetlist`,
+    description: `Live setlist and voting for ${firstShow.artist} at ${firstShow.venue}`,
   });
 };
 
@@ -78,14 +79,15 @@ const SetlistPage = async ({ params }: SetlistPageProps) => {
     .where(eq(shows.id, showId))
     .limit(1);
 
-  if (show.length === 0) {
+  if (show.length === 0 || !show[0]) {
     notFound();
   }
 
+  const showData = show[0];
   return (
     <div className="flex flex-col gap-8 py-8 md:py-16">
       <div className="container mx-auto">
-        <ShowInfo showId={showId} show={show[0]} />
+        <ShowInfo showId={showId} show={showData} />
 
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">

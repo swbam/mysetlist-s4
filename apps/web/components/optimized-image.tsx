@@ -46,7 +46,7 @@ export function OptimizedImage({
   const [isInView, setIsInView] = useState(!lazy || priority);
 
   const imgRef = useRef<HTMLDivElement>(null);
-  const observerRef = useRef<IntersectionObserver>();
+  const observerRef = useRef<IntersectionObserver | undefined>(undefined);
 
   // Intersection Observer for lazy loading
   useEffect(() => {
@@ -171,12 +171,10 @@ export function OptimizedImage({
     );
   }
 
-  const imageProps = {
+  const imageProps: any = {
     src: currentSrc,
     alt,
     fill: !width && !height,
-    width: width,
-    height: height,
     sizes,
     priority,
     quality,
@@ -190,6 +188,13 @@ export function OptimizedImage({
       !isLoading && 'scale-100 opacity-100 blur-0'
     ),
   };
+
+  if (width) {
+    imageProps.width = width;
+  }
+  if (height) {
+    imageProps.height = height;
+  }
 
   return (
     <div ref={imgRef} className={containerClasses}>

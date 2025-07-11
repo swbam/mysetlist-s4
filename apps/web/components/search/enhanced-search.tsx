@@ -74,12 +74,11 @@ export function EnhancedSearch({
   placeholder = 'Search artists, shows, venues...',
   showRecentSearches = true,
   autoFocus = false,
-  onResultSelect,
+  onResultSelect: _onResultSelect,
   className,
 }: EnhancedSearchProps) {
   const router = useRouter();
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
-  const [_searchResults, _setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   // Load recent searches from localStorage

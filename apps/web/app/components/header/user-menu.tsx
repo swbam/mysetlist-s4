@@ -15,13 +15,11 @@ import {
 } from '@repo/design-system/components/ui/dropdown-menu';
 import { Heart, Loader2, LogOut, Music2, Settings } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAuth } from '../../providers/auth-provider';
 
-export function UserMenu() {
+export const UserMenu = React.memo(function UserMenu() {
   const { user, signOut, loading } = useAuth();
-  const _router = useRouter();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
@@ -55,14 +53,23 @@ export function UserMenu() {
     );
   }
 
-  const initials =
-    user.email
-      ?.split('@')[0]
-      .split('.')
-      .map((n) => n[0])
+  const initials = useMemo(() => {
+    const email = user?.email;
+    if (!email) return 'U';
+    
+    const atIndex = email.indexOf('@');
+    if (atIndex === -1) return 'U';
+    
+    const username = email.substring(0, atIndex);
+    const parts = username.split('.');
+    const initials = parts
+      .map((n) => n[0] || '')
       .join('')
       .toUpperCase()
-      .slice(0, 2) || 'U';
+      .slice(0, 2);
+    
+    return initials || 'U';
+  }, [user]);
 
   return (
     <DropdownMenu>
@@ -117,4 +124,4 @@ export function UserMenu() {
       </DropdownMenuContent>
     </DropdownMenu>
   );
-}
+});

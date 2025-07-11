@@ -140,7 +140,7 @@ export async function TrendingArtists() {
                   <div className="flex items-center gap-1 text-primary">
                     <TrendingUp className="h-4 w-4" />
                     <span className="font-semibold">
-                      +{Math.round(artist.trendingScore)}%
+                      +{Math.round(artist.trendingScore || 0)}%
                     </span>
                   </div>
                 </div>

@@ -3,10 +3,10 @@ import { type NextRequest, NextResponse } from 'next/server';
 export async function GET(_request: NextRequest) {
   const results = {
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV,
+    environment: process.env['NODE_ENV'],
     csrf: {
-      disabled_for_development: process.env.NODE_ENV === 'development',
-      enabled_for_production: process.env.NODE_ENV === 'production',
+      disabled_for_development: process.env['NODE_ENV'] === 'development',
+      enabled_for_production: process.env['NODE_ENV'] === 'production',
     },
     apis: {
       spotify: {

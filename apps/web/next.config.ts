@@ -18,13 +18,27 @@ const nextConfig: NextConfig = {
       '@repo/design-system',
       'framer-motion',
       '@sentry/nextjs',
+      '@supabase/supabase-js',
+      '@supabase/auth-helpers-nextjs',
     ],
     reactCompiler: false,
     optimizeCss: true,
+    turbo: {
+      loaders: {
+        '.svg': ['@svgr/webpack'],
+      },
+    },
   },
 
-  // Turbopack configuration
-  turbopack: {},
+  // Turbopack configuration - enabled for better performance
+  turbo: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
+  },
 
   // Production optimizations
   compress: true,

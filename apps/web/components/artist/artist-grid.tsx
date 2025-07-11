@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@repo/auth';
+// import { useAuth } from '@repo/auth';
 import { ArtistGrid as UIArtistGrid } from '@repo/design-system';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -50,7 +50,8 @@ export function ArtistGrid({
   className,
 }: ArtistGridProps) {
   const router = useRouter();
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const user = null; // Temporarily disabled auth
   const [artists, setArtists] = useState<Artist[]>(initialArtists);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -203,7 +204,7 @@ export function ArtistGrid({
   };
 
   const handleSortChange = (newSort: string) => {
-    setCurrentSort(newSort);
+    setCurrentSort(newSort as 'name' | 'popularity' | 'followers' | 'trending');
     setPage(1);
   };
 
@@ -255,7 +256,7 @@ export function ArtistGrid({
       onRefresh={handleRefresh}
       loading={loading}
       hasMore={hasMore}
-      title={title}
+      title={title ?? ''}
       showFollowButtons={showFollowButtons}
       variant={variant}
       sortBy={currentSort}
@@ -263,7 +264,7 @@ export function ArtistGrid({
       filterBy={currentFilter}
       onFilterChange={handleFilterChange}
       emptyState={getEmptyState()}
-      className={className}
+      className={className ?? ''}
     />
   );
 }

@@ -20,7 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface MobileNavigationProps {
   className?: string;
@@ -82,7 +82,7 @@ const userMenuItems = [
   },
 ];
 
-export function MobileNavigation({
+export const MobileNavigation = React.memo(function MobileNavigation({
   className,
   user,
   notificationCount = 0,
@@ -363,4 +363,4 @@ export function MobileNavigation({
       </AnimatePresence>
     </>
   );
-}
+});

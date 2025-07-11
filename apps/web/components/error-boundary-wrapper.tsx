@@ -9,12 +9,12 @@ import {
 } from '@repo/design-system/components/ui/card';
 import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
-import { Component, type ReactNode } from 'react';
+import React, { Component, type ReactNode } from 'react';
 
 interface ErrorBoundaryState {
   hasError: boolean;
-  error?: Error;
-  errorInfo?: string;
+  error?: Error | undefined;
+  errorInfo?: string | undefined;
 }
 
 interface ErrorBoundaryProps {
@@ -27,6 +27,8 @@ export class ErrorBoundaryWrapper extends Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
 > {
+  refs: any = {};
+  
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -39,7 +41,7 @@ export class ErrorBoundaryWrapper extends Component<
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: any) {
+  override componentDidCatch(error: Error, errorInfo: any) {
     this.setState({
       error,
       errorInfo: errorInfo.componentStack,
@@ -64,7 +66,7 @@ export class ErrorBoundaryWrapper extends Component<
     this.setState({ hasError: false, error: undefined, errorInfo: undefined });
   };
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       // Use custom fallback if provided
       if (this.props.fallback && this.state.error) {
@@ -87,7 +89,7 @@ export class ErrorBoundaryWrapper extends Component<
                 again.
               </p>
 
-              {process.env.NODE_ENV === 'development' && this.state.error && (
+              {process.env['NODE_ENV'] === 'development' && this.state.error && (
                 <details className="text-left text-xs">
                   <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
                     Error Details (Development)
@@ -132,20 +134,22 @@ export function withErrorBoundary<P extends object>(
   errorBoundaryProps?: Omit<ErrorBoundaryProps, 'children'>
 ) {
   return function WithErrorBoundaryComponent(props: P) {
+    const Wrapper = ErrorBoundaryWrapper as any;
     return (
-      <ErrorBoundaryWrapper {...errorBoundaryProps}>
+      <Wrapper {...errorBoundaryProps}>
         <Component {...props} />
-      </ErrorBoundaryWrapper>
+      </Wrapper>
     );
   };
 }
 
 // Specific error boundaries for different contexts
 export function PageErrorBoundary({ children }: { children: ReactNode }) {
+  const Wrapper = ErrorBoundaryWrapper as any;
   return (
-    <ErrorBoundaryWrapper
-      onError={(_error, _errorInfo) => {}}
-      fallback={(_error, retry) => (
+    <Wrapper
+      onError={(_error: Error, _errorInfo: string) => {}}
+      fallback={(_error: Error, retry: () => void) => (
         <div className="container mx-auto px-4 py-16">
           <div className="text-center">
             <div className="mx-auto mb-8 flex h-20 w-20 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
@@ -173,7 +177,7 @@ export function PageErrorBoundary({ children }: { children: ReactNode }) {
       )}
     >
       {children}
-    </ErrorBoundaryWrapper>
+    </Wrapper>
   );
 }
 
@@ -184,9 +188,10 @@ export function ComponentErrorBoundary({
   children: ReactNode;
   componentName?: string;
 }) {
+  const Wrapper = ErrorBoundaryWrapper as any;
   return (
-    <ErrorBoundaryWrapper
-      fallback={(_error, retry) => (
+    <Wrapper
+      fallback={(_error: Error, retry: () => void) => (
         <Card className="border-red-200 dark:border-red-800">
           <CardContent className="p-6 text-center">
             <AlertTriangle className="mx-auto mb-4 h-8 w-8 text-red-600 dark:text-red-400" />
@@ -205,6 +210,6 @@ export function ComponentErrorBoundary({
       )}
     >
       {children}
-    </ErrorBoundaryWrapper>
+    </Wrapper>
   );
 }

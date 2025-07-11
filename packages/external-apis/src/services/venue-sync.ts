@@ -42,11 +42,11 @@ export class VenueSyncService {
       .onConflictDoUpdate({
         target: venues.slug,
         set: {
-          address: ticketmasterVenue.address?.line1,
+          address: ticketmasterVenue.address?.line1 ?? null,
           city: ticketmasterVenue.city?.name || '',
-          state: ticketmasterVenue.state?.name,
+          state: ticketmasterVenue.state?.name ?? null,
           country: ticketmasterVenue.country?.name || '',
-          postalCode: ticketmasterVenue.postalCode,
+          postalCode: ticketmasterVenue.postalCode ?? null,
           latitude: ticketmasterVenue.location?.latitude
             ? Number.parseFloat(ticketmasterVenue.location.latitude)
             : null,
@@ -66,7 +66,7 @@ export class VenueSyncService {
         name: setlistFmVenue.name,
         slug: this.generateSlug(setlistFmVenue.name),
         city: setlistFmVenue.city.name,
-        state: setlistFmVenue.city.state,
+        state: setlistFmVenue.city.state ?? null,
         country: setlistFmVenue.city.country.name,
         latitude: setlistFmVenue.city.coords.lat,
         longitude: setlistFmVenue.city.coords.long,
@@ -79,7 +79,7 @@ export class VenueSyncService {
         target: venues.slug,
         set: {
           city: setlistFmVenue.city.name,
-          state: setlistFmVenue.city.state,
+          state: setlistFmVenue.city.state ?? null,
           country: setlistFmVenue.city.country.name,
           latitude: setlistFmVenue.city.coords.lat,
           longitude: setlistFmVenue.city.coords.long,
@@ -96,7 +96,7 @@ export class VenueSyncService {
     // Sync from Ticketmaster
     const ticketmasterResult = await this.ticketmasterClient.searchVenues({
       city,
-      stateCode,
+      ...(stateCode && { stateCode }),
       countryCode,
       size: 50,
     });
@@ -110,7 +110,7 @@ export class VenueSyncService {
     // Sync from Setlist.fm
     const setlistFmResult = await this.setlistFmClient.searchVenues({
       cityName: city,
-      stateCode,
+      ...(stateCode && { stateCode }),
       countryCode,
     });
 

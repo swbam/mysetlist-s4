@@ -41,7 +41,7 @@ export function PullToRefresh({
         return;
       }
 
-      setTouchStart(e.touches[0].clientY);
+      setTouchStart(e.touches[0]?.clientY || 0);
       setIsPulling(true);
     },
     [disabled, isRefreshing]
@@ -53,7 +53,7 @@ export function PullToRefresh({
         return;
       }
 
-      const currentY = e.touches[0].clientY;
+      const currentY = e.touches[0]?.clientY || 0;
       const deltaY = currentY - touchStart;
 
       // Only allow pulling down

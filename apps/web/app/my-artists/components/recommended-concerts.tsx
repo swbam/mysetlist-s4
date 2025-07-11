@@ -54,8 +54,8 @@ export async function RecommendedConcerts({
         city: venues.city,
         state: venues.state,
       },
-      trendingScore: artistStats.trendingScore,
-      followerCount: artistStats.followerCount,
+      trendingScore: artists.trendingScore,
+      followerCount: artists.followerCount,
     })
     .from(shows)
     .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
@@ -63,13 +63,13 @@ export async function RecommendedConcerts({
     .leftJoin(artistStats, eq(artists.id, artistStats.artistId))
     .where(
       and(
-        gte(shows.date, new Date()),
+        gte(shows.date, new Date().toISOString().substring(0, 10)),
         artistIds.length > 0
           ? ne(artists.id, sql`ANY(${artistIds})`)
           : undefined
       )
     )
-    .orderBy(desc(artistStats.trendingScore))
+    .orderBy(desc(artists.trendingScore))
     .limit(5);
 
   if (recommendedShows.length === 0) {
@@ -120,7 +120,7 @@ export async function RecommendedConcerts({
 
                 <div className="mt-1 flex items-center gap-2 text-muted-foreground text-xs">
                   <Calendar className="h-3 w-3" />
-                  <span>{format(show.date, 'MMM d')}</span>
+                  <span>{format(new Date(show.date), 'MMM d')}</span>
                 </div>
 
                 {show.venue && (
@@ -134,17 +134,24 @@ export async function RecommendedConcerts({
                   </div>
                 )}
 
-                {show.artist.genres && show.artist.genres.length > 0 && (
+                {show.artist.genres && (
                   <div className="mt-2 flex gap-1">
-                    {show.artist.genres.slice(0, 2).map((genre) => (
-                      <Badge
-                        key={genre}
-                        variant="secondary"
-                        className="px-2 py-0 text-xs"
-                      >
-                        {genre}
-                      </Badge>
-                    ))}
+                    {(() => {
+                      try {
+                        const genres = JSON.parse(show.artist.genres);
+                        return Array.isArray(genres) && genres.slice(0, 2).map((genre) => (
+                          <Badge
+                            key={genre}
+                            variant="secondary"
+                            className="px-2 py-0 text-xs"
+                          >
+                            {genre}
+                          </Badge>
+                        ));
+                      } catch {
+                        return null;
+                      }
+                    })()}
                   </div>
                 )}
 

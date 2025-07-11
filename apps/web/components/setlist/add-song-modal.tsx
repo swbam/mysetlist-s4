@@ -113,7 +113,7 @@ export function AddSongModal({
         <div className="py-4">
           <SongSelector
             onSongSelect={handleSongSelect}
-            artistId={artistId}
+            {...(artistId && { artistId })}
             placeholder="Search for songs to add..."
             maxHeight="400px"
             disabled={isPending}

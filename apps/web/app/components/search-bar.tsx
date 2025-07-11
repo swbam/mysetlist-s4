@@ -8,7 +8,7 @@ import { cn } from '@repo/design-system/lib/utils';
 import { Loader2, Music, Search, X } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   type SearchResult,
   debounce,
@@ -22,7 +22,7 @@ interface SearchBarProps {
   className?: string;
 }
 
-export const SearchBar = ({
+export const SearchBar = React.memo(({
   variant = 'default',
   placeholder = 'Search artists...',
   className,
@@ -172,4 +172,6 @@ export const SearchBar = ({
       )}
     </div>
   );
-};
+});
+
+SearchBar.displayName = 'SearchBar';

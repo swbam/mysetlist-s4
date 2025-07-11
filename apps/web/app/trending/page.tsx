@@ -25,7 +25,7 @@ import {
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { TrendingErrorBoundary } from '~/components/error-boundaries/trending-error-boundary';
 import { LiveTrending } from '~/components/trending/live-trending';
 import { createServiceClient } from '~/lib/supabase/server';
@@ -191,7 +191,7 @@ export default async function TrendingPage() {
           </p>
         </div>
 
-        <Suspense fallback={<TrendingPageSkeleton />}>
+        {React.createElement(Suspense as any, { fallback: React.createElement(TrendingPageSkeleton) }, (
           <div className="space-y-8">
             {/* Live Trending Section */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -450,7 +450,7 @@ export default async function TrendingPage() {
               </div>
             </div>
           </div>
-        </Suspense>
+        ))}
       </div>
     </TrendingErrorBoundary>
   );

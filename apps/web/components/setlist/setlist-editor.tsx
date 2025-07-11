@@ -29,10 +29,11 @@ import {
   Unlock,
 } from 'lucide-react';
 import Image from 'next/image';
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useEffect } from 'react';
 import { toast } from 'sonner';
 import { VoteButton } from '../voting/vote-button';
 import { AddSongModal } from './add-song-modal';
+import { createClient } from '~/lib/supabase/client';
 
 interface SetlistSong {
   id: string;
@@ -74,7 +75,7 @@ interface SetlistEditorProps {
 
 export function SetlistEditor({
   setlist,
-  currentUser,
+  currentUser: _currentUser,
   artistId,
   onUpdate,
   canEdit = false,
@@ -85,6 +86,56 @@ export function SetlistEditor({
   const [showAddSong, setShowAddSong] = useState(false);
   const [setlistName, setListName] = useState(setlist.name);
   const [isPending, startTransition] = useTransition();
+  
+  // Set up realtime subscription for votes
+  useEffect(() => {
+    if (!canVote) return;
+    
+    const supabase = createClient();
+    const songIds = songs.map(song => song.id);
+    
+    if (songIds.length === 0) return;
+    
+    // Subscribe to vote changes for this setlist's songs
+    const channel = supabase
+      .channel(`setlist-votes-${setlist.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'votes',
+          filter: `setlist_song_id=in.(${songIds.join(',')})`
+        },
+        async (payload: any) => {
+          // Refetch vote counts for the affected song
+          const setlistSongId = payload.new?.setlist_song_id || payload.old?.setlist_song_id;
+          if (!setlistSongId) return;
+          
+          try {
+            const response = await fetch(`/api/votes/${setlistSongId}/count`);
+            if (response.ok) {
+              const { upvotes, downvotes, userVote } = await response.json();
+              
+              setSongs(prevSongs => 
+                prevSongs.map(song => 
+                  song.id === setlistSongId
+                    ? { ...song, upvotes, downvotes, netVotes: upvotes - downvotes, userVote }
+                    : song
+                )
+              );
+            }
+          } catch (error) {
+            console.error('Failed to fetch vote counts:', error);
+          }
+        }
+      )
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [setlist.id, songs.length, canVote]);
 
   const handleDragEnd = (result: any) => {
     if (!result.destination || !canEdit) {
@@ -93,6 +144,7 @@ export function SetlistEditor({
 
     const items = Array.from(songs);
     const [reorderedItem] = items.splice(result.source.index, 1);
+    if (!reorderedItem) return;
     items.splice(result.destination.index, 0, reorderedItem);
 
     // Update positions
@@ -214,22 +266,8 @@ export function SetlistEditor({
   };
 
   const handleVote = async (songId: string, voteType: 'up' | 'down' | null) => {
-    const response = await fetch('/api/songs/votes', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        setlistSongId: songId,
-        voteType,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to vote');
-    }
-
-    // Update local state optimistically
+    // Optimistically update UI
+    const previousSongs = [...songs];
     setSongs(
       songs.map((song) => {
         if (song.id === songId) {
@@ -249,6 +287,28 @@ export function SetlistEditor({
         return song;
       })
     );
+    
+    try {
+      const response = await fetch('/api/songs/votes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          setlistSongId: songId,
+          voteType,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to vote');
+      }
+    } catch (error) {
+      // Revert on error
+      setSongs(previousSongs);
+      toast.error('Failed to save vote');
+      throw error;
+    }
   };
 
   const formatDuration = (ms?: number) => {
@@ -290,9 +350,9 @@ export function SetlistEditor({
                 )}
               </div>
 
-              <div className="flex items-center gap-4 text-muted-foreground text-sm">
+              <div className="flex items-center gap-2 text-muted-foreground text-xs sm:gap-4 sm:text-sm">
                 <span>{songs.length} songs</span>
-                <span>
+                <span className="hidden sm:inline">
                   {formatDuration(
                     songs.reduce(
                       (acc, song) => acc + (song.song.durationMs || 0),
@@ -361,7 +421,7 @@ export function SetlistEditor({
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             className={cn(
-                              'flex items-center gap-3 rounded-lg border p-3 transition-colors',
+                              'flex items-center gap-2 rounded-lg border p-2 transition-colors sm:gap-3 sm:p-3',
                               'hover:bg-muted/50',
                               isEditing && canEdit && 'cursor-move'
                             )}
@@ -374,12 +434,12 @@ export function SetlistEditor({
                             )}
 
                             {/* Position */}
-                            <div className="w-8 text-center font-medium text-muted-foreground text-sm">
+                            <div className="w-6 text-center font-medium text-muted-foreground text-xs sm:w-8 sm:text-sm">
                               {index + 1}
                             </div>
 
                             {/* Album Art */}
-                            <div className="relative h-10 w-10 flex-shrink-0 rounded bg-muted">
+                            <div className="relative h-8 w-8 flex-shrink-0 rounded bg-muted sm:h-10 sm:w-10">
                               {song.song.albumArtUrl ? (
                                 <Image
                                   src={song.song.albumArtUrl}
@@ -389,31 +449,31 @@ export function SetlistEditor({
                                 />
                               ) : (
                                 <div className="flex h-full w-full items-center justify-center">
-                                  <Music2 className="h-4 w-4 text-muted-foreground" />
+                                  <Music2 className="h-3 w-3 text-muted-foreground sm:h-4 sm:w-4" />
                                 </div>
                               )}
                             </div>
 
                             {/* Song Info */}
                             <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2">
-                                <h4 className="truncate font-medium">
+                              <div className="flex items-center gap-1 sm:gap-2">
+                                <h4 className="truncate font-medium text-sm sm:text-base">
                                   {song.song.title}
                                 </h4>
                                 {song.song.isExplicit && (
-                                  <Badge variant="outline" className="text-xs">
+                                  <Badge variant="outline" className="text-[10px] sm:text-xs">
                                     E
                                   </Badge>
                                 )}
                               </div>
-                              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                              <div className="flex items-center gap-1 text-muted-foreground text-xs sm:gap-2 sm:text-sm">
                                 <span className="truncate">
                                   {song.song.artist}
                                 </span>
                                 {song.song.album && (
                                   <>
-                                    <span>•</span>
-                                    <span className="truncate">
+                                    <span className="hidden sm:inline">•</span>
+                                    <span className="hidden truncate sm:inline">
                                       {song.song.album}
                                     </span>
                                   </>
@@ -421,7 +481,7 @@ export function SetlistEditor({
                                 {song.song.durationMs && (
                                   <>
                                     <span>•</span>
-                                    <span>
+                                    <span className="hidden sm:inline">
                                       {formatDuration(song.song.durationMs)}
                                     </span>
                                   </>
@@ -454,6 +514,7 @@ export function SetlistEditor({
                             <div className="flex items-center gap-2">
                               {/* Voting */}
                               {canVote && !isEditing && !setlist.isLocked && (
+                                /* @ts-expect-error - React 19 memo type issue */
                                 <VoteButton
                                   setlistSongId={song.id}
                                   currentVote={song.userVote}

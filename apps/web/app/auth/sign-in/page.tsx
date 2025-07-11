@@ -5,6 +5,7 @@ import {
 import { Button } from '@repo/design-system/components/ui/button';
 import { Input } from '@repo/design-system/components/ui/input';
 import { Label } from '@repo/design-system/components/ui/label';
+import { Checkbox } from '@repo/design-system/components/ui/checkbox';
 import { Music } from 'lucide-react';
 import Link from 'next/link';
 import { signIn, signInWithProvider } from '../actions';
@@ -92,6 +93,15 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           </div>
 
           <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Checkbox id="remember" name="remember" />
+              <Label 
+                htmlFor="remember" 
+                className="text-sm font-normal cursor-pointer"
+              >
+                Remember me
+              </Label>
+            </div>
             <Link
               href="/auth/reset-password"
               className="text-primary text-sm underline-offset-4 hover:underline"

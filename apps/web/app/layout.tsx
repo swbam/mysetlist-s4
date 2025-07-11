@@ -3,7 +3,7 @@ import { DesignSystemProvider } from '@repo/design-system';
 import { Toaster } from '@repo/design-system/components/ui/toaster';
 import { fonts } from '@repo/design-system/lib/fonts';
 import { cn } from '@repo/design-system/lib/utils';
-import type { ReactNode } from 'react';
+import React, { type ReactNode } from 'react';
 import { AnonymousUserProvider } from '~/components/anonymous-user-provider';
 import { DisableServiceWorker } from '~/components/disable-sw';
 import { PageTransitionProvider } from '~/components/page-transition-provider';
@@ -13,6 +13,7 @@ import { Footer } from './components/footer';
 import { Header } from './components/header';
 import { AuthProvider } from './providers/auth-provider';
 import { RealtimeProvider } from './providers/realtime-provider';
+import { ErrorBoundary } from './components/error-boundary';
 
 // Removed global force-dynamic to improve performance
 // Only apply force-dynamic to specific pages that need real-time data
@@ -35,26 +36,28 @@ const RootLayout = async ({ children }: RootLayoutProperties) => {
         />
       </head>
       <body>
-        <DesignSystemProvider>
-          <AuthProvider>
-            <RealtimeProvider>
-              <LayoutProvider>
-                <AnonymousUserProvider>
-                  <PageTransitionProvider>
-                    <DisableServiceWorker />
-                    <SkipLink href="#main-content" />
-                    <Header />
-                    <main id="main-content" className="focus:outline-none">
-                      {children}
-                    </main>
-                    <Footer />
-                    <Toaster />
-                  </PageTransitionProvider>
-                </AnonymousUserProvider>
-              </LayoutProvider>
-            </RealtimeProvider>
-          </AuthProvider>
-        </DesignSystemProvider>
+        {React.createElement(ErrorBoundary as any, {},
+          <DesignSystemProvider>
+            <AuthProvider>
+              <RealtimeProvider>
+                <LayoutProvider>
+                  <AnonymousUserProvider>
+                    <PageTransitionProvider>
+                      <DisableServiceWorker />
+                      <SkipLink href="#main-content" />
+                      <Header />
+                      <main id="main-content" className="focus:outline-none">
+                        {children}
+                      </main>
+                      <Footer />
+                      <Toaster />
+                    </PageTransitionProvider>
+                  </AnonymousUserProvider>
+                </LayoutProvider>
+              </RealtimeProvider>
+            </AuthProvider>
+          </DesignSystemProvider>
+        )}
       </body>
     </html>
   );

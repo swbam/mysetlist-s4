@@ -19,8 +19,6 @@ export function ShowPageContent({ show }: ShowPageContentProps) {
     show.setlists?.filter((s: any) => s.type === 'actual') || [];
   const predictedSetlists =
     show.setlists?.filter((s: any) => s.type === 'predicted') || [];
-  const _hasSetlists =
-    actualSetlists.length > 0 || predictedSetlists.length > 0;
 
   // Enable real-time updates for ongoing shows
   useRealtimeUpdates(show.id, show.status === 'ongoing');

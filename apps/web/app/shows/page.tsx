@@ -7,7 +7,7 @@ import {
 import { createMetadata } from '@repo/seo/metadata';
 import { List } from 'lucide-react';
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { ErrorBoundaryWrapper } from '~/components/error-boundary-wrapper';
 import { ShowListSkeleton } from '~/components/loading-states';
 import { ShowsFilter } from './components/shows-filter';
@@ -26,9 +26,8 @@ export const generateMetadata = (): Metadata => {
 };
 
 const ShowsPage = () => {
-  return (
-    <ErrorBoundaryWrapper>
-      <div className="flex flex-col gap-8 py-8 md:py-16">
+  return React.createElement(ErrorBoundaryWrapper as any, {}, (
+    <div className="flex flex-col gap-8 py-8 md:py-16">
         <div className="container mx-auto">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-4">
@@ -40,9 +39,9 @@ const ShowsPage = () => {
               </p>
             </div>
 
-            <Suspense fallback={<div className="h-12" />}>
-              <ShowsFilter />
-            </Suspense>
+            {React.createElement(Suspense as any, { fallback: React.createElement('div', { className: "h-12" }) },
+              React.createElement(ShowsFilter)
+            )}
 
             <Tabs defaultValue="list" className="w-full">
               <TabsList className="w-full max-w-[200px]">
@@ -52,16 +51,17 @@ const ShowsPage = () => {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="list" className="mt-6">
-                <Suspense fallback={<ShowListSkeleton count={5} />}>
-                  <ShowsList />
-                </Suspense>
+                {React.createElement(Suspense as any, { 
+                  fallback: React.createElement(ShowListSkeleton, { count: 5 }) 
+                },
+                  React.createElement(ShowsList)
+                )}
               </TabsContent>
             </Tabs>
           </div>
         </div>
       </div>
-    </ErrorBoundaryWrapper>
-  );
+  ));
 };
 
 export default ShowsPage;

@@ -120,7 +120,7 @@ export const getVenues = unstable_cache(
           .where(eq(venueReviews.venueId, venue.id));
 
         // Get upcoming show count
-        const now = new Date().toISOString().split('T')[0]; // Format as YYYY-MM-DD
+        const now = new Date().toISOString().split('T')[0]!; // Format as YYYY-MM-DD
         const [showCount] = await db
           .select({
             count: sql<number>`COUNT(${shows.id})`,

@@ -12,8 +12,10 @@ export function ArtistErrorBoundary({
   children,
   artistName,
 }: ArtistErrorBoundaryProps) {
+  const ErrorBoundary = PageErrorBoundary as any;
+  
   return (
-    <PageErrorBoundary
+    <ErrorBoundary
       fallbackTitle={
         artistName ? `Error loading ${artistName}` : 'Error loading artist'
       }
@@ -21,6 +23,6 @@ export function ArtistErrorBoundary({
       showBackButton={true}
     >
       {children}
-    </PageErrorBoundary>
+    </ErrorBoundary>
   );
 }

@@ -77,12 +77,6 @@ export function BottomSheet({
     }
 
     const { offset, velocity } = info;
-    const sheetHeight = sheetRef.current?.offsetHeight || 0;
-    const viewportHeight = window.innerHeight;
-
-    // Calculate current position as percentage
-    const _currentPosition =
-      ((viewportHeight - sheetHeight) / viewportHeight) * 100;
 
     // Determine which snap point to go to based on drag direction and velocity
     let targetSnapIndex = currentSnapIndex;

@@ -60,7 +60,7 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     this.setState({ errorInfo });
 
     // Call custom error handler
@@ -85,7 +85,7 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
     }
   }
 
-  componentWillUnmount() {
+  override componentWillUnmount() {
     // Clear any pending retries
     this.retryTimeouts.forEach((timeout) => clearTimeout(timeout));
   }
@@ -148,7 +148,7 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
     this.handleReload();
   };
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return <>{this.props.fallback}</>;
@@ -331,14 +331,16 @@ export function withEnhancedNavigationErrorBoundary<T extends object>(
   }
 ) {
   return function WithEnhancedNavigationErrorBoundaryComponent(props: T) {
-    return (
-      <EnhancedNavigationErrorBoundary
-        enableAutoRetry={options?.enableAutoRetry}
-        maxRetries={options?.maxRetries}
-        onError={options?.onError}
-      >
-        <Component {...props} />
-      </EnhancedNavigationErrorBoundary>
-    );
+    const boundaryProps: Props = {
+      children: <Component {...props} />,
+      enableAutoRetry: options?.enableAutoRetry ?? false,
+      maxRetries: options?.maxRetries ?? 3,
+    };
+    
+    if (options?.onError) {
+      boundaryProps.onError = options.onError;
+    }
+    
+    return <EnhancedNavigationErrorBoundary {...boundaryProps} />;
   };
 }

@@ -12,8 +12,10 @@ export function ShowErrorBoundary({
   children,
   showDate,
 }: ShowErrorBoundaryProps) {
+  const ErrorBoundary = PageErrorBoundary as any;
+  
   return (
-    <PageErrorBoundary
+    <ErrorBoundary
       fallbackTitle={
         showDate ? `Error loading show from ${showDate}` : 'Error loading show'
       }
@@ -21,6 +23,6 @@ export function ShowErrorBoundary({
       showBackButton={true}
     >
       {children}
-    </PageErrorBoundary>
+    </ErrorBoundary>
   );
 }

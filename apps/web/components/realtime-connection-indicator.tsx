@@ -49,6 +49,12 @@ export function RealtimeConnectionIndicator({
       label: 'Error',
       bgClass: 'bg-red-500/10',
     },
+    disabled: {
+      icon: WifiOff,
+      className: 'text-gray-400',
+      label: 'Disabled',
+      bgClass: 'bg-gray-500/10',
+    },
   };
 
   const config = statusConfig[connectionStatus];

@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
 import { Button } from '@repo/design-system/components/ui/button';
-import { Badge } from '@repo/design-system/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, AreaChart, Area, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, TrendingDown, Calendar, Users, Music, Eye } from 'lucide-react';
+import { TrendingUp, TrendingDown, Users, Eye } from 'lucide-react';
 
 interface ChartData {
   period: string;
@@ -240,7 +239,7 @@ export function AnalyticsCharts({ type, height = 300, period = 'week' }: ChartPr
               cx="50%"
               cy="50%"
               labelLine={false}
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}
               outerRadius={80}
               fill="#8884d8"
               dataKey="value"
@@ -299,13 +298,13 @@ export function AnalyticsCharts({ type, height = 300, period = 'week' }: ChartPr
   };
 
   const getCurrentValue = () => {
-    return data.length > 0 ? data[data.length - 1].value : 0;
+    return data.length > 0 ? data[data.length - 1]?.value ?? 0 : 0;
   };
 
   const getTrend = () => {
     if (data.length < 2) return 0;
-    const current = data[data.length - 1].value;
-    const previous = data[data.length - 2].value;
+    const current = data[data.length - 1]?.value ?? 0;
+    const previous = data[data.length - 2]?.value ?? 0;
     return ((current - previous) / previous) * 100;
   };
 

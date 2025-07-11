@@ -1,6 +1,6 @@
 import { createMetadata } from '@repo/seo/metadata';
 import type { Metadata } from 'next';
-import { Suspense } from 'react';
+import React, { Suspense } from 'react';
 import { ErrorBoundaryWrapper } from '~/components/error-boundary-wrapper';
 import { VenueGridSkeleton as VenueGridLoadingSkeleton } from '~/components/loading-states';
 import { getVenues } from './actions';
@@ -26,18 +26,18 @@ interface VenuesPageProps {
 
 const VenuesContent = async ({ searchParams }: { searchParams: any }) => {
   const venues = await getVenues({
-    search: searchParams.q,
-    types: searchParams.types?.split(',').filter(Boolean),
-    capacity: searchParams.capacity,
-    userLat: searchParams.lat ? Number.parseFloat(searchParams.lat) : undefined,
-    userLng: searchParams.lng ? Number.parseFloat(searchParams.lng) : undefined,
+    ...(searchParams.q && { search: searchParams.q }),
+    ...(searchParams.types && { types: searchParams.types.split(',').filter(Boolean) }),
+    ...(searchParams.capacity && { capacity: searchParams.capacity }),
+    ...(searchParams.lat && { userLat: Number.parseFloat(searchParams.lat) }),
+    ...(searchParams.lng && { userLng: Number.parseFloat(searchParams.lng) }),
   });
 
   return (
     <VenueGridClient
       venues={venues.map((venue) => ({
         ...venue,
-        avgRating: venue.avgRating ?? undefined,
+        avgRating: venue.avgRating ?? 0,
       }))}
     />
   );
@@ -46,9 +46,8 @@ const VenuesContent = async ({ searchParams }: { searchParams: any }) => {
 const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
   const resolvedSearchParams = (await searchParams) || {};
 
-  return (
-    <ErrorBoundaryWrapper>
-      <div className="flex flex-col gap-8 py-8 md:py-16">
+  return React.createElement(ErrorBoundaryWrapper as any, {}, (
+    <div className="flex flex-col gap-8 py-8 md:py-16">
         <div className="container mx-auto">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-4">
@@ -61,14 +60,15 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
               </p>
             </div>
 
-            <Suspense fallback={<VenueGridLoadingSkeleton count={6} />}>
-              <VenuesContent searchParams={resolvedSearchParams} />
-            </Suspense>
+            {React.createElement(Suspense as any, {
+              fallback: React.createElement(VenueGridLoadingSkeleton, { count: 6 })
+            },
+              React.createElement(VenuesContent, { searchParams: resolvedSearchParams })
+            )}
           </div>
         </div>
       </div>
-    </ErrorBoundaryWrapper>
-  );
+  ));
 };
 
 export default VenuesPage;

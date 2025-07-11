@@ -42,9 +42,9 @@ export const ShowsList = () => {
 
         const { shows: fetchedShows } = await fetchShows({
           status: 'upcoming',
-          city,
-          dateFrom,
-          dateTo,
+          ...(city && { city }),
+          ...(dateFrom && { dateFrom }),
+          ...(dateTo && { dateTo }),
           orderBy,
           limit: 20,
         });

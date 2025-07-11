@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system';
 import type { Metadata } from 'next';
 import dynamic from 'next/dynamic';
 import { notFound } from 'next/navigation';
+import React from 'react';
 import { BreadcrumbNavigation } from '~/components/breadcrumb-navigation';
 import { ArtistErrorBoundary } from '~/components/error-boundaries/artist-error-boundary';
 import { createArtistMetadata } from '~/lib/seo-metadata';
@@ -250,25 +251,24 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
             </TabsList>
 
             <TabsContent value="shows" className="space-y-4">
-              {/* @ts-ignore React 19 type compatibility */}
-              <UpcomingShows
-                shows={transformedUpcomingShows as any}
-                artistName={artist.name}
-                artistId={artist.id}
-              />
+              {React.createElement(UpcomingShows as any, {
+                shows: transformedUpcomingShows,
+                artistName: artist.name,
+                artistId: artist.id,
+              })}
             </TabsContent>
 
             <TabsContent value="past" className="space-y-4">
-              {PastShows({ 
-                shows: transformedPastShows as any,
+              {React.createElement(PastShows as any, {
+                shows: transformedPastShows,
                 artistName: artist.name,
-                artistId: artist.id
+                artistId: artist.id,
               })}
             </TabsContent>
 
             <TabsContent value="setlists" className="space-y-4">
               <ArtistSetlistsView
-                setlists={artistSetlists || []}
+                setlists={(artistSetlists || []) as any}
                 artistName={artist.name}
                 artistId={artist.id}
               />
@@ -280,11 +280,11 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
                   artistId={artist.id}
                   spotifyId={artist.spotifyId}
                 />
-                <ArtistSongCatalog
-                  artistId={artist.id}
-                  artistSlug={artist.slug}
-                  artistName={artist.name}
-                />
+                {React.createElement(ArtistSongCatalog as any, {
+                  artistId: artist.id,
+                  artistSlug: artist.slug,
+                  artistName: artist.name,
+                })}
               </div>
             </TabsContent>
 

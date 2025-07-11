@@ -86,7 +86,16 @@ export function AddReviewDialog({ venueId }: AddReviewDialogProps) {
     setIsSubmitting(true);
 
     try {
-      const result = await addVenueReview(venueId, user.id, data);
+      const result = await addVenueReview(venueId, user.id, {
+        rating: data.rating,
+        review: data.review,
+        visitedAt: data.visitedAt,
+        ...(data.acoustics !== undefined && { acoustics: data.acoustics }),
+        ...(data.accessibility !== undefined && { accessibility: data.accessibility }),
+        ...(data.sightlines !== undefined && { sightlines: data.sightlines }),
+        ...(data.parkingEase !== undefined && { parkingEase: data.parkingEase }),
+        ...(data.concessions !== undefined && { concessions: data.concessions }),
+      });
 
       if (result.success) {
         toast({

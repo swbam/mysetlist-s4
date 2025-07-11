@@ -345,7 +345,7 @@ export async function POST(request: NextRequest) {
 
       case 'seed_sample_data': {
         // Seed sample data for development/testing
-        if (process.env.NODE_ENV === 'production') {
+        if (process.env['NODE_ENV'] === 'production') {
           return NextResponse.json(
             { error: 'Sample data seeding not allowed in production' },
             { status: 403 }

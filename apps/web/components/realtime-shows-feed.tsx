@@ -26,9 +26,9 @@ export function RealtimeShowsFeed({
 
   const { shows, isLoading } = useRealtimeShows({
     limit,
-    status,
-    artistId,
-    venueId,
+    ...(status && { status }),
+    ...(artistId && { artistId }),
+    ...(venueId && { venueId }),
     onNewShow: () => {
       setHasNewShows(true);
       // Auto-dismiss notification after 5 seconds

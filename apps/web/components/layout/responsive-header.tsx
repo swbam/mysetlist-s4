@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@repo/auth';
+import { useAuth } from '~/app/providers/auth-provider';
 import { Button } from '@repo/design-system';
 import { SearchBox } from '@repo/design-system';
 import { Avatar, AvatarFallback, AvatarImage } from '@repo/design-system';
@@ -54,12 +54,16 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
     }
 
     const handleTouchStart = (e: TouchEvent) => {
-      touchStartX.current = e.changedTouches[0].screenX;
+      if (e.changedTouches[0]) {
+        touchStartX.current = e.changedTouches[0].screenX;
+      }
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      touchEndX.current = e.changedTouches[0].screenX;
-      handleSwipeGesture();
+      if (e.changedTouches[0]) {
+        touchEndX.current = e.changedTouches[0].screenX;
+        handleSwipeGesture();
+      }
     };
 
     const handleSwipeGesture = () => {
@@ -124,10 +128,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
     return [];
   };
 
-  const handleSearchSelect = (result: {
-    type: 'artist' | 'show' | 'venue' | 'song';
-    id: string;
-  }) => {
+  const handleSearchSelect = (result: any) => {
     switch (result.type) {
       case 'artist':
         router.push(`/artists/${result.id}`);
@@ -139,7 +140,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
         router.push(`/venues/${result.id}`);
         break;
       default:
-        router.push(`/search?q=${encodeURIComponent(result.title)}`);
+        router.push(`/search?q=${encodeURIComponent('')}`);
     }
     setIsSearchOpen(false);
   };
@@ -245,7 +246,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                     >
                       <Avatar className="h-8 w-8">
                         <AvatarImage
-                          src={user.user_metadata?.avatar_url}
+                          src={user.user_metadata?.['avatar_url']}
                           alt={user.email || ''}
                         />
                         <AvatarFallback>
@@ -258,7 +259,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                     <div className="flex items-center justify-start gap-2 p-2">
                       <div className="flex flex-col space-y-1 leading-none">
                         <p className="font-medium">
-                          {user.user_metadata?.full_name || 'User'}
+                          {user.user_metadata?.['full_name'] || 'User'}
                         </p>
                         <p className="w-[200px] truncate text-muted-foreground text-sm">
                           {user.email}

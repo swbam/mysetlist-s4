@@ -23,8 +23,8 @@ type ReorderableSetlistProps = {
 
 export function ReorderableSetlist({
   setlist,
-  show,
-  currentUser,
+  show: _show,
+  currentUser: _currentUser,
   onReorder,
   onCancel,
 }: ReorderableSetlistProps) {
@@ -43,7 +43,7 @@ export function ReorderableSetlist({
 
     // Update positions
     const updatedItems = items.map((item, index) => ({
-      ...item,
+      ...(typeof item === 'object' && item !== null ? item : {}),
       position: index + 1,
     }));
 
@@ -55,7 +55,7 @@ export function ReorderableSetlist({
     startTransition(async () => {
       try {
         // Prepare the reorder data
-        const reorderData = songs.map((song, index) => ({
+        const reorderData = songs.map((song: any, index: number) => ({
           id: song.id,
           position: index + 1,
         }));
@@ -119,7 +119,7 @@ export function ReorderableSetlist({
                 snapshot.isDraggingOver ? 'rounded-lg bg-muted/20 p-2' : ''
               }`}
             >
-              {songs.map((item, index) => (
+              {songs.map((item: any, index: number) => (
                 <Draggable
                   key={item.id}
                   draggableId={item.id.toString()}

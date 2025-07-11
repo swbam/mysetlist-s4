@@ -116,9 +116,9 @@ export async function PopularArtists() {
                   <div className="flex items-center gap-1">
                     <Users className="h-3 w-3" />
                     <span>
-                      {artist.followerCount > 1000
+                      {artist.followerCount && artist.followerCount > 1000
                         ? `${(artist.followerCount / 1000).toFixed(0)}k`
-                        : artist.followerCount}{' '}
+                        : artist.followerCount || 0}{' '}
                       fans
                     </span>
                   </div>

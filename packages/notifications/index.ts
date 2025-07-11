@@ -3,4 +3,5 @@ import { keys } from './keys';
 
 const key = keys().KNOCK_SECRET_API_KEY;
 
-export const notifications = new Knock(key);
+// Knock constructor expects an options object with apiKey property
+export const notifications = key ? new Knock({ apiKey: key }) : null;

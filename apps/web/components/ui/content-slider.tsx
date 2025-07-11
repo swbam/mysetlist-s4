@@ -42,7 +42,7 @@ export function ContentSlider({
   autoPlayInterval = 4000,
   className,
   children,
-  itemsPerView = {
+  itemsPerView: _itemsPerView = {
     mobile: 1.2,
     tablet: 2.5,
     desktop: 4,
@@ -55,7 +55,7 @@ export function ContentSlider({
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
-  const intervalRef = useRef<NodeJS.Timeout>();
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!api) {
@@ -111,22 +111,6 @@ export function ContentSlider({
     };
   }, [api, autoPlay, startAutoPlay, stopAutoPlay]);
 
-  const getBasisClass = useCallback(() => {
-    const { mobile = 1.2, tablet = 2.5, desktop = 4, wide = 6 } = itemsPerView;
-    
-    // Calculate responsive basis classes
-    const mobilePercent = Math.floor(100 / mobile);
-    const tabletPercent = Math.floor(100 / tablet);
-    const desktopPercent = Math.floor(100 / desktop);
-    const widePercent = Math.floor(100 / wide);
-    
-    return {
-      mobile: `basis-${mobilePercent}%`,
-      tablet: `sm:basis-${tabletPercent}%`,
-      desktop: `lg:basis-${desktopPercent}%`,
-      wide: `xl:basis-${widePercent}%`,
-    };
-  }, [itemsPerView]);
 
   return (
     <section className={cn('relative py-16 md:py-24', className)}>

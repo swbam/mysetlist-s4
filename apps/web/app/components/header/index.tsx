@@ -11,12 +11,12 @@ import {
   NavigationMenuTrigger,
 } from '@repo/design-system/components/ui/navigation-menu';
 import { MoveRight } from 'lucide-react';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useAuth } from '~/app/providers/auth-provider';
 
 import Image from 'next/image';
-import { MobileNavigation } from '~/components/mobile/mobile-navigation';
-import { MobileSearch } from '~/components/mobile/mobile-search';
+import { MobileNavigation } from '~/app/components/mobile/mobile-navigation';
+import { MobileSearch } from '~/app/components/mobile/mobile-search';
 import {
   NavigationErrorBoundary,
   SafeLink,
@@ -29,7 +29,7 @@ import { UserMenu } from './user-menu';
 const HeaderContent = React.memo(() => {
   const { user } = useAuth();
 
-  const navigationItems = [
+  const navigationItems = useMemo(() => [
     {
       title: 'Home',
       href: '/',
@@ -64,7 +64,7 @@ const HeaderContent = React.memo(() => {
       href: '/trending',
       description: '',
     },
-  ];
+  ], [user]);
 
   return (
     <header className="sticky top-0 left-0 z-40 w-full border-b bg-background">
@@ -78,22 +78,23 @@ const HeaderContent = React.memo(() => {
                     <>
                       <NavigationMenuLink asChild>
                         <Button variant="ghost" asChild>
-                          <SafeLink
-                            href={item.href}
-                            target={
-                              item.href.startsWith('http')
-                                ? '_blank'
-                                : undefined
-                            }
-                            rel={
-                              item.href.startsWith('http')
-                                ? 'noopener noreferrer'
-                                : undefined
-                            }
-                            prefetch={!item.href.startsWith('http')}
-                          >
-                            {item.title}
-                          </SafeLink>
+                          {item.href.startsWith('http') ? (
+                            <SafeLink
+                              href={item.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              prefetch={false}
+                            >
+                              {item.title}
+                            </SafeLink>
+                          ) : (
+                            <SafeLink
+                              href={item.href}
+                              prefetch={true}
+                            >
+                              {item.title}
+                            </SafeLink>
+                          )}
                         </Button>
                       </NavigationMenuLink>
                     </>
@@ -167,13 +168,12 @@ const HeaderContent = React.memo(() => {
             <>
               <Button
                 variant="ghost"
-                className="hidden md:inline"
                 size="sm"
                 asChild
               >
                 <SafeLink href="/auth/sign-in">Sign in</SafeLink>
               </Button>
-              <Button className="hidden md:inline" size="sm" asChild>
+              <Button size="sm" asChild>
                 <SafeLink href="/auth/sign-up">Sign up</SafeLink>
               </Button>
             </>

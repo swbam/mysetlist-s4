@@ -62,7 +62,7 @@ const caches = new Map<string, LRUCache<string, any>>();
 // Get or create a cache instance for a specific type
 function getCache(type: string): LRUCache<string, any> {
   if (!caches.has(type)) {
-    const config = cacheConfigs[type] || cacheConfigs.default;
+    const config = cacheConfigs[type] || cacheConfigs['default'];
     caches.set(type, new LRUCache(config));
   }
   return caches.get(type)!;
@@ -104,7 +104,7 @@ export async function withCache<T>(
     const cached = cache.get(cacheKey);
     if (cached !== undefined) {
       // Track cache hit for monitoring
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env['NODE_ENV'] === 'development') {
       }
       return cached;
     }
@@ -122,7 +122,7 @@ export async function withCache<T>(
     }
 
     // Track cache miss for monitoring
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env['NODE_ENV'] === 'development') {
     }
 
     return result;

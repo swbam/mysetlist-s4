@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
 import { Button } from '@repo/design-system/components/ui/button';
-import { Badge } from '@repo/design-system/components/ui/badge';
 import { TrendingUp, TrendingDown, Users, Music, Calendar, MapPin, Vote, Eye, Activity } from 'lucide-react';
 
 interface OverviewMetrics {

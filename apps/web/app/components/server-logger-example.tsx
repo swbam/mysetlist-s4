@@ -8,17 +8,23 @@ export async function ServerLoggerExample({
   userId,
 }: ServerLoggerExampleProps) {
   // Log server component render with trace
-  logger.trace('Server component rendering started', {
+  const logContext: any = {
     component: 'ServerLoggerExample',
-    userId,
-  });
+  };
+  if (userId !== undefined) {
+    logContext.userId = userId;
+  }
+  logger.trace('Server component rendering started', logContext);
 
   // Log server component render
-  logger.info('Server component rendered', {
+  const infoContext: any = {
     component: 'ServerLoggerExample',
-    userId,
     timestamp: new Date().toISOString(),
-  });
+  };
+  if (userId !== undefined) {
+    infoContext.userId = userId;
+  }
+  logger.info('Server component rendered', infoContext);
 
   try {
     // Simulate some server-side data fetching
@@ -37,10 +43,17 @@ export async function ServerLoggerExample({
       </div>
     );
   } catch (error) {
-    logger.error('Failed to fetch data in server component', error, {
+    const errorContext: any = {
       component: 'ServerLoggerExample',
-      userId,
-    });
+    };
+    if (userId !== undefined) {
+      errorContext.userId = userId;
+    }
+    if (error instanceof Error) {
+      logger.error('Failed to fetch data in server component', error);
+    } else {
+      logger.error('Failed to fetch data in server component', errorContext);
+    }
 
     return (
       <div className="rounded-lg border border-red-500 p-4">

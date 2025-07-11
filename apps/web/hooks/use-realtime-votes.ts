@@ -23,11 +23,11 @@ type VoteUpdate = {
 };
 
 interface UseRealtimeVotesOptions {
-  songId?: string;
-  setlistSongIds?: string[];
-  userId?: string;
-  onVoteUpdate?: (update: VoteUpdate) => void;
-  onVoteChange?: (votes: VoteData) => void;
+  songId?: string | undefined;
+  setlistSongIds?: string[] | undefined;
+  userId?: string | undefined;
+  onVoteUpdate?: ((update: VoteUpdate) => void) | undefined;
+  onVoteChange?: ((votes: VoteData) => void) | undefined;
 }
 
 export function useRealtimeVotes({

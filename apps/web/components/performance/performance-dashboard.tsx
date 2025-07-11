@@ -8,9 +8,8 @@ import { Button } from '@repo/design-system/components/ui/button';
 import { Progress } from '@repo/design-system/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
 import { 
-  Activity, 
+  Activity,
   AlertTriangle, 
-  CheckCircle, 
   Clock, 
   Download,
   Eye,
@@ -67,15 +66,6 @@ const MetricCard = memo(function MetricCard({
   }, [threshold]);
 
   const status = value ? getStatus(value) : 'unknown';
-
-  const statusConfig = {
-    good: { color: 'bg-green-500', text: 'text-green-700', icon: CheckCircle },
-    'needs-improvement': { color: 'bg-yellow-500', text: 'text-yellow-700', icon: AlertTriangle },
-    poor: { color: 'bg-red-500', text: 'text-red-700', icon: AlertTriangle },
-    unknown: { color: 'bg-gray-500', text: 'text-gray-700', icon: Activity },
-  };
-
-  const config = statusConfig[status];
 
   return (
     <Card className="h-full">
@@ -137,7 +127,7 @@ const MetricCard = memo(function MetricCard({
       </CardContent>
     </Card>
   );
-});
+}) as any;
 
 // Network information component
 const NetworkInfo = memo(function NetworkInfo({ 
@@ -173,7 +163,7 @@ const NetworkInfo = memo(function NetworkInfo({
       </CardContent>
     </Card>
   );
-});
+}) as any;
 
 // Memory usage component
 const MemoryUsage = memo(function MemoryUsage({
@@ -232,14 +222,14 @@ const MemoryUsage = memo(function MemoryUsage({
       </CardContent>
     </Card>
   );
-});
+}) as any;
 
 // Main dashboard component
 const PerformanceDashboardComponent = function PerformanceDashboard({
   className,
   autoRefresh = true,
   refreshInterval = 5000,
-  showDetailedMetrics = true,
+  showDetailedMetrics: _showDetailedMetrics = true,
   onMetricAlert,
 }: PerformanceDashboardProps) {
   const [isVisible, setIsVisible] = useState(false);
@@ -286,7 +276,7 @@ const PerformanceDashboardComponent = function PerformanceDashboard({
   // Intersection observer for visibility
   useEffect(() => {
     const observer = new IntersectionObserver(
-      ([entry]) => setIsVisible(entry.isIntersecting),
+      ([entry]) => setIsVisible(entry?.isIntersecting ?? false),
       { threshold: 0.1 }
     );
 

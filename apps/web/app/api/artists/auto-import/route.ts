@@ -104,15 +104,34 @@ export async function POST(request: NextRequest) {
         .set({ lastSyncedAt: new Date() })
         .where(eq(artists.id, artist.id));
 
-      // Trigger unified sync pipeline directly
+      // Trigger background sync for shows and additional data
       setImmediate(async () => {
         try {
-          // Import and use the sync service directly
-          const { UnifiedSyncService } = await import(
-            '../../sync/unified-pipeline/sync-service'
-          );
-          const syncService = new UnifiedSyncService();
-          await syncService.syncArtistCatalog(artist.id);
+          // If we have a Ticketmaster ID, sync shows
+          if (artist.ticketmasterId) {
+            await fetch(`${process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000'}/api/sync/shows`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                ticketmasterId: artist.ticketmasterId,
+                artistId: artist.id,
+              }),
+            });
+          }
+          
+          // Sync additional data from external APIs
+          await fetch(`${process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000'}/api/sync/artist-catalog`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              artistId: artist.id,
+              spotifyId: artist.spotifyId,
+            }),
+          });
         } catch (_error) {}
       });
     }

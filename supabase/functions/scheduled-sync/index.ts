@@ -12,19 +12,39 @@ interface Payload {
 }
 
 async function syncPopularArtists(limit = 20) {
-  const { error } = await supabase.functions.invoke('sync-artists', {
-    body: { limit },
-  });
-  if (error) {
+  try {
+    const { data, error } = await supabase.functions.invoke('sync-artists', {
+      body: { limit },
+    });
+    
+    if (error) {
+      console.error('Failed to sync popular artists:', error);
+      throw new Error(`Artist sync failed: ${error.message}`);
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Artist sync error:', error);
     throw error;
   }
 }
 
 async function updateTrending() {
-  // Call existing update-trending edge function if present
   try {
-    await supabase.functions.invoke('update-trending');
-  } catch (_) {}
+    const { data, error } = await supabase.functions.invoke('update-trending');
+    
+    if (error) {
+      console.error('Failed to update trending:', error);
+      // Don't throw - trending update is non-critical
+      return null;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Trending update error:', error);
+    // Don't throw - trending update is non-critical
+    return null;
+  }
 }
 
 Deno.serve(async (req: Request) => {
@@ -34,19 +54,61 @@ Deno.serve(async (req: Request) => {
 
   const { type = 'all', limit = 20 } = (await req.json()) as Payload;
 
+  const results = {
+    artistSync: null as any,
+    trendingUpdate: null as any,
+    errors: [] as string[],
+  };
+
   try {
     if (type === 'all' || type === 'artists') {
-      await syncPopularArtists(limit);
+      try {
+        results.artistSync = await syncPopularArtists(limit);
+      } catch (error) {
+        results.errors.push(`Artist sync failed: ${error.message}`);
+        // Continue with other tasks
+      }
     }
 
     if (type === 'all' || type === 'trending') {
-      await updateTrending();
+      try {
+        results.trendingUpdate = await updateTrending();
+      } catch (error) {
+        results.errors.push(`Trending update failed: ${error.message}`);
+        // Continue - this is non-critical
+      }
     }
 
-    return new Response(JSON.stringify({ success: true, ran: type }), {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    const hasErrors = results.errors.length > 0;
+    const statusCode = hasErrors ? 207 : 200; // 207 = Multi-Status
+
+    return new Response(
+      JSON.stringify({
+        success: !hasErrors || results.errors.length < 2,
+        ran: type,
+        results: {
+          artistSync: results.artistSync,
+          trendingUpdate: results.trendingUpdate,
+        },
+        errors: results.errors.length > 0 ? results.errors : undefined,
+      }),
+      {
+        status: statusCode,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   } catch (e) {
-    return new Response(JSON.stringify({ error: e.message }), { status: 500 });
+    console.error('Scheduled sync fatal error:', e);
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: e.message || 'Unknown error occurred',
+        type: 'fatal',
+      }),
+      { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      }
+    );
   }
 });

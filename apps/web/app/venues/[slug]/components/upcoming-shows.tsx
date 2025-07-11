@@ -52,7 +52,7 @@ interface UpcomingShowsProps {
   venueId: string;
 }
 
-export function UpcomingShows({ shows, venueId }: UpcomingShowsProps) {
+export function UpcomingShows({ shows, venueId: _venueId }: UpcomingShowsProps) {
   const [view, setView] = useState<'list' | 'calendar'>('list');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [searchTerm, setSearchTerm] = useState('');

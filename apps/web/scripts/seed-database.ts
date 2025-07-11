@@ -185,7 +185,9 @@ async function main() {
   }
 
   if (results.errors.length > 0) {
-    results.errors.forEach((_error) => );
+    results.errors.forEach((_error) => {
+      // Error handling can be added here if needed
+    });
   }
 }
 

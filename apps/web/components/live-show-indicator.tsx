@@ -4,7 +4,6 @@ import { Badge } from '@repo/design-system/components/ui/badge';
 import { cn } from '@repo/design-system/lib/utils';
 import { formatDistanceToNow, isFuture, isPast, isToday } from 'date-fns';
 import { Calendar, Pause, Radio } from 'lucide-react';
-import { useEffect, useState } from 'react';
 
 interface LiveShowIndicatorProps {
   showDate: Date;
@@ -19,15 +18,7 @@ export function LiveShowIndicator({
   variant = 'default',
   className,
 }: LiveShowIndicatorProps) {
-  const [currentTime, setCurrentTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000); // Update every minute
-
-    return () => clearInterval(timer);
-  }, []);
+  // Removed unused currentTime state
 
   // Determine show status based on date and time
   const getShowStatus = () => {
@@ -41,7 +32,6 @@ export function LiveShowIndicator({
       return 'live';
     }
 
-    const _now = currentTime;
     const showTime = new Date(showDate);
     const showEndTime = new Date(showTime.getTime() + 3 * 60 * 60 * 1000); // Assume 3-hour show
 
@@ -104,13 +94,13 @@ export function LiveShowIndicator({
           <span
             className={cn(
               'absolute inline-flex h-full w-full animate-ping rounded-full opacity-75',
-              config.pulseColor
+              (config as any).pulseColor || ''
             )}
           />
           <span
             className={cn(
               'relative inline-flex h-3 w-3 rounded-full',
-              config.pulseColor
+              (config as any).pulseColor || ''
             )}
           />
         </span>
@@ -135,13 +125,13 @@ export function LiveShowIndicator({
               <span
                 className={cn(
                   'absolute inline-flex h-full w-full animate-ping rounded-full opacity-75',
-                  config.pulseColor
+                  (config as any).pulseColor || ''
                 )}
               />
               <span
                 className={cn(
                   'relative inline-flex h-2 w-2 rounded-full',
-                  config.pulseColor
+                  (config as any).pulseColor || ''
                 )}
               />
             </span>

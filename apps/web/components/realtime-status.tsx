@@ -8,12 +8,13 @@ import {
 } from '@repo/design-system/components/ui/tooltip';
 import { cn } from '@repo/design-system/lib/utils';
 import { AlertCircle, Wifi, WifiOff } from 'lucide-react';
+import React, { useMemo } from 'react';
 import { useRealtimeConnection } from '~/app/providers/realtime-provider';
 
-export function RealtimeStatus() {
+export const RealtimeStatus = React.memo(function RealtimeStatus() {
   const { connectionStatus, isConnected } = useRealtimeConnection();
 
-  const statusConfig = {
+  const statusConfig = useMemo(() => ({
     connecting: {
       icon: Wifi,
       className: 'text-yellow-500 animate-pulse',
@@ -34,7 +35,12 @@ export function RealtimeStatus() {
       className: 'text-red-500',
       label: 'Connection error',
     },
-  };
+    disabled: {
+      icon: WifiOff,
+      className: 'text-gray-400',
+      label: 'Disabled',
+    },
+  }), []);
 
   const config = statusConfig[connectionStatus];
   const Icon = config.icon;
@@ -65,4 +71,4 @@ export function RealtimeStatus() {
       </Tooltip>
     </TooltipProvider>
   );
-}
+});

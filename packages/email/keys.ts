@@ -8,7 +8,7 @@ export const keys = () =>
       RESEND_TOKEN: z.string().startsWith('re_').optional(),
     },
     runtimeEnv: {
-      RESEND_FROM: process.env.RESEND_FROM,
-      RESEND_TOKEN: process.env.RESEND_TOKEN,
+      RESEND_FROM: process.env['RESEND_FROM'],
+      RESEND_TOKEN: process.env['RESEND_TOKEN'],
     },
   });

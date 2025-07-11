@@ -11,12 +11,10 @@ import {
   Volume2, 
   VolumeX, 
   Keyboard, 
-  Mouse, 
   Accessibility,
   Contrast,
   Type,
-  Zap,
-  Settings
+  Zap
 } from 'lucide-react';
 
 // Focus management hook
@@ -157,7 +155,7 @@ export const KeyboardNavigation = memo(function KeyboardNavigation({
 
     if (newIndex !== currentIndex) {
       setCurrentIndex(newIndex);
-      focusableElements[newIndex].focus();
+      focusableElements[newIndex]?.focus();
     }
   }, [currentIndex, orientation, wrap]);
 

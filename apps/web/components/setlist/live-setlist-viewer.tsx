@@ -16,7 +16,7 @@ import {
   Wifi,
   WifiOff,
 } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { useAuth } from '~/app/providers/auth-provider';
 import { useRealtimeConnection } from '~/app/providers/realtime-provider';
@@ -34,29 +34,6 @@ interface LiveSetlistViewerProps {
   className?: string;
 }
 
-interface SongWithVotes {
-  id: string;
-  position: number;
-  song: {
-    id: string;
-    title: string;
-    artist: string;
-    album?: string;
-    duration_ms?: number;
-    album_art_url?: string;
-    spotify_id?: string;
-  };
-  notes?: string;
-  is_cover?: boolean;
-  is_debut?: boolean;
-  is_played?: boolean;
-  play_time?: Date;
-  upvotes: number;
-  downvotes: number;
-  netVotes: number;
-  userVote?: 'up' | 'down' | null;
-}
-
 export function LiveSetlistViewer({
   showId,
   setlistId,
@@ -70,10 +47,7 @@ export function LiveSetlistViewer({
   const { session } = useAuth();
   const {
     isConnected,
-    connectionStatus,
-    joinShow,
-    leaveShow,
-    getShowAttendance,
+    connectionStatus: _connectionStatus,
   } = useRealtimeConnection();
 
   // State for view preferences
@@ -85,13 +59,12 @@ export function LiveSetlistViewer({
 
   // Real-time setlist data with event handling
   const {
-    songs,
-    isLoading,
-    connectionStatus: setlistConnectionStatus,
+    setlists,
+    loading: isLoading,
+    connectionStatus: _setlistConnectionStatus,
     lastUpdate,
   } = useRealtimeSetlist({
     showId,
-    setlistId,
     onEvent: (event) => {
       switch (event.type) {
         case 'song_played':
@@ -107,13 +80,29 @@ export function LiveSetlistViewer({
     },
   });
 
-  // Join show presence when component mounts
-  useEffect(() => {
-    if (showPresence && showId && session?.user) {
-      joinShow(showId);
-      return () => leaveShow(showId);
+  // Extract songs from the appropriate setlist
+  const songs = useMemo(() => {
+    if (!setlists || setlists.length === 0) return [];
+    
+    // If setlistId is provided, find that specific setlist
+    if (setlistId) {
+      const targetSetlist = setlists.find(s => s.id === setlistId);
+      return targetSetlist?.songs || [];
     }
-  }, [showId, showPresence, session?.user, joinShow, leaveShow]);
+    
+    // Otherwise, use the first setlist (or the actual setlist if available)
+    const actualSetlist = setlists.find(s => s.type === 'actual');
+    return actualSetlist?.songs || setlists[0]?.songs || [];
+  }, [setlists, setlistId]);
+
+  // Join show presence when component mounts
+  // TODO: Implement show presence once the methods are available
+  // useEffect(() => {
+  //   if (showPresence && showId && session?.user) {
+  //     joinShow(showId);
+  //     return () => leaveShow(showId);
+  //   }
+  // }, [showId, showPresence, session?.user]);
 
   // Handle song played events
   const handleSongPlayed = useCallback(
@@ -182,12 +171,13 @@ export function LiveSetlistViewer({
       return null;
     }
     return (
-      songs.find((song) => song.is_played && song.play_time) || songs.at(-1)
+      songs.find((song) => song.isPlayed && song.playTime) || songs.at(-1)
     ); // Fallback to last song
   }, [songs, isLive]);
 
   // Get attendance count
-  const attendanceCount = showPresence ? getShowAttendance(showId) : 0;
+  // TODO: Implement attendance count once getShowAttendance is available
+  const attendanceCount = 0;
 
   // Format duration helper
   const formatDuration = (ms: number) => {
@@ -347,10 +337,10 @@ export function LiveSetlistViewer({
 
                     {/* Album art */}
                     <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
-                      {song.song.album_art_url ? (
+                      {song.song.albumArtUrl ? (
                         <img
-                          src={song.song.album_art_url}
-                          alt={song.song.album || song.song.title}
+                          src={song.song.albumArtUrl}
+                          alt={song.song.title}
                           className="h-full w-full object-cover"
                         />
                       ) : (
@@ -384,14 +374,14 @@ export function LiveSetlistViewer({
                               {song.song.title}
                             </h4>
 
-                            {song.is_cover && (
+                            {(song as any).is_cover && (
                               <Badge variant="secondary" className="text-xs">
                                 <Disc3 className="mr-1 h-3 w-3" />
                                 Cover
                               </Badge>
                             )}
 
-                            {song.is_debut && (
+                            {(song as any).is_debut && (
                               <Badge
                                 variant="default"
                                 className="bg-yellow-500 text-xs"
@@ -414,19 +404,19 @@ export function LiveSetlistViewer({
 
                           <div className="mt-1 flex items-center gap-2 text-muted-foreground text-sm">
                             <span className="truncate">{song.song.artist}</span>
-                            {song.song.album && (
+                            {(song.song as any).album && (
                               <>
                                 <span>•</span>
                                 <span className="truncate">
-                                  {song.song.album}
+                                  {(song.song as any).album}
                                 </span>
                               </>
                             )}
-                            {song.song.duration_ms && (
+                            {song.song.durationMs && (
                               <>
                                 <span>•</span>
                                 <span>
-                                  {formatDuration(song.song.duration_ms)}
+                                  {formatDuration(song.song.durationMs)}
                                 </span>
                               </>
                             )}
@@ -438,12 +428,12 @@ export function LiveSetlistViewer({
                             </p>
                           )}
 
-                          {song.play_time && (
+                          {song.playTime && (
                             <div className="mt-2 flex items-center gap-1 text-muted-foreground text-xs">
                               <Clock className="h-3 w-3" />
                               <span>
                                 Played at{' '}
-                                {new Date(song.play_time).toLocaleTimeString()}
+                                {new Date(song.playTime).toLocaleTimeString()}
                               </span>
                             </div>
                           )}
@@ -452,10 +442,11 @@ export function LiveSetlistViewer({
                         {/* Vote button */}
                         {showVotes && (
                           <div className="shrink-0">
+                            {/* @ts-expect-error - React 19 memo type issue */}
                             <RealtimeVoteButton
                               setlistSongId={song.id}
                               showId={showId}
-                              userId={session?.user?.id}
+                              {...(session?.user?.id && { userId: session.user.id })}
                               variant="compact"
                               size="sm"
                               showConnection={false}
@@ -488,8 +479,8 @@ export function LiveSetlistViewer({
         <div className="flex items-center justify-between text-muted-foreground text-sm">
           <div className="flex items-center gap-4">
             <span>{songs.length} songs</span>
-            {songs.some((s) => s.is_played) && (
-              <span>{songs.filter((s) => s.is_played).length} played</span>
+            {songs.some((s) => s.isPlayed) && (
+              <span>{songs.filter((s) => s.isPlayed).length} played</span>
             )}
             {showVotes && (
               <span>

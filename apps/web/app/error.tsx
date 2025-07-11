@@ -50,7 +50,7 @@ export default function Error({
           </Button>
         </div>
 
-        {process.env.NODE_ENV === 'development' && (
+        {process.env['NODE_ENV'] === 'development' && (
           <details className="mt-6 text-left">
             <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
               Error details (development only)

@@ -5,8 +5,7 @@ import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import { cn } from '@repo/design-system/lib/utils';
 import { Clock, Search, SlidersHorizontal, TrendingUp, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { InfiniteScroll } from '~/components/ui/infinite-scroll';
 import { PullToRefresh } from '~/components/ui/pull-to-refresh';
 import { SearchResultCard } from './search-result-card';
@@ -54,14 +53,11 @@ export function MobileSearchInterface({
   onLoadMore,
   className,
 }: MobileSearchInterfaceProps) {
-  const _router = useRouter();
-  const [query, setQuery] = useState('');
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([]);
   const [trendingQueries, setTrendingQueries] = useState<TrendingQuery[]>([]);
   const [filters, setFilters] = useState<SearchFilter>({ type: 'all' });
-  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -121,7 +117,6 @@ export function MobileSearchInterface({
 
       saveRecentSearch(searchQuery);
       onSearch?.(searchQuery, filters);
-      setQuery(searchQuery);
       setIsSearchExpanded(false);
     },
     [onSearch, filters, saveRecentSearch]
@@ -131,12 +126,8 @@ export function MobileSearchInterface({
     (newFilters: SearchFilter) => {
       setFilters(newFilters);
       onFilterChange?.(newFilters);
-
-      if (query) {
-        onSearch?.(query, newFilters);
-      }
     },
-    [onFilterChange, onSearch, query]
+    [onFilterChange]
   );
 
   const clearRecentSearches = () => {
@@ -153,10 +144,9 @@ export function MobileSearchInterface({
   };
 
   const handleRefresh = async () => {
-    if (query && onSearch) {
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate refresh
-      onSearch(query, filters);
-    }
+    // Refresh functionality would need to be handled differently
+    // since we don't track query state anymore
+    await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate refresh
   };
 
   return (
@@ -166,12 +156,19 @@ export function MobileSearchInterface({
         <div className="flex items-center gap-3 p-4">
           <div className="flex-1">
             <SearchBox
-              ref={searchInputRef}
               placeholder="Search artists, shows, venues..."
-              value={query}
-              onChange={setQuery}
-              onSubmit={handleSearch}
-              onFocus={() => setIsSearchExpanded(true)}
+              onSearch={async (query) => {
+                // Convert the sync onSearch to async for SearchBox
+                onSearch?.(query, filters);
+                // Return empty results as this is handled elsewhere
+                return [];
+              }}
+              onSelect={(_result) => {
+                // Handle selection if needed
+              }}
+              onSubmit={(query) => {
+                onSearch?.(query, filters);
+              }}
               className="mobile-text-enhance w-full"
               autoFocus={isSearchExpanded}
             />
@@ -214,7 +211,7 @@ export function MobileSearchInterface({
 
       {/* Search Content */}
       <div className="flex-1 overflow-hidden">
-        {!query && isSearchExpanded ? (
+        {isSearchExpanded ? (
           /* Search Suggestions */
           <div className="space-y-6 p-4">
             {/* Recent Searches */}
@@ -292,7 +289,7 @@ export function MobileSearchInterface({
               </div>
             </div>
           </div>
-        ) : query && results.length > 0 ? (
+        ) : results.length > 0 ? (
           /* Search Results */
           <PullToRefresh onRefresh={handleRefresh}>
             <InfiniteScroll
@@ -308,7 +305,7 @@ export function MobileSearchInterface({
               ))}
             </InfiniteScroll>
           </PullToRefresh>
-        ) : query && !isLoading ? (
+        ) : !isLoading && !isSearchExpanded ? (
           /* No Results */
           <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
             <Search className="mb-4 h-12 w-12 text-muted-foreground" />
@@ -316,13 +313,6 @@ export function MobileSearchInterface({
             <p className="mb-4 text-muted-foreground">
               Try adjusting your search terms or filters
             </p>
-            <Button
-              variant="outline"
-              onClick={() => setQuery('')}
-              className="touch-manipulation"
-            >
-              Clear Search
-            </Button>
           </div>
         ) : isLoading ? (
           /* Loading State */

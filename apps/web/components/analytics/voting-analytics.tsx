@@ -5,8 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo
 import { Button } from '@repo/design-system/components/ui/button';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import { Vote, TrendingUp, Users, Music, Calendar, Trophy, Target, Activity } from 'lucide-react';
-import { AnalyticsCharts } from './analytics-charts';
+import { Vote, TrendingUp, Users, Calendar, Trophy, Target, Activity } from 'lucide-react';
 
 interface VotingMetrics {
   totalVotes: number;

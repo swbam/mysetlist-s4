@@ -54,7 +54,7 @@ export async function signUp(formData: FormData) {
     email,
     password,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      emailRedirectTo: `${process.env['NEXT_PUBLIC_SITE_URL']}/auth/callback`,
     },
   });
 
@@ -99,9 +99,10 @@ export async function signIn(formData: FormData) {
   }
 
   const { email, password } = validationResult.data;
+  // const rememberMe = formData.get('remember') === 'on'; // TODO: Implement remember me functionality
 
   // Sign in the user
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
@@ -124,17 +125,16 @@ export async function signIn(formData: FormData) {
 export async function signInWithProvider(provider: 'spotify' | 'google') {
   const supabase = await createClient();
 
-  const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`;
+  const redirectTo = `${process.env['NEXT_PUBLIC_SITE_URL']}/auth/callback`;
 
+  const options: any = { redirectTo };
+  if (provider === 'spotify') {
+    options.scopes = 'user-read-email user-read-private user-top-read user-read-recently-played';
+  }
+  
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
-    options: {
-      redirectTo,
-      scopes:
-        provider === 'spotify'
-          ? 'user-read-email user-read-private user-top-read user-read-recently-played'
-          : undefined,
-    },
+    options,
   });
 
   if (error) {
@@ -188,7 +188,7 @@ export async function resetPassword(formData: FormData) {
   }
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/update-password`,
+    redirectTo: `${process.env['NEXT_PUBLIC_SITE_URL']}/auth/update-password`,
   });
 
   if (error) {

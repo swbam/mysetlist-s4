@@ -27,7 +27,7 @@ interface PrivacySettingsProps {
 
 export function PrivacySettings({
   userId,
-  email,
+  email: _email,
   currentSettings,
 }: PrivacySettingsProps) {
   const [settings, setSettings] = useState({

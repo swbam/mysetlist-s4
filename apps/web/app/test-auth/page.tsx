@@ -70,8 +70,8 @@ export default function TestAuthPage() {
             <div className="flex items-center justify-between">
               <span className="font-medium text-sm">User Role:</span>
               <Badge variant="outline">
-                {user?.app_metadata?.role ||
-                  user?.user_metadata?.role ||
+                {user?.app_metadata?.['role'] ||
+                  user?.user_metadata?.['role'] ||
                   'user'}
               </Badge>
             </div>

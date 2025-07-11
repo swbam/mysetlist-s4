@@ -45,7 +45,7 @@ export async function UpcomingShowsTimeline({
         eq(userFollowsArtists.userId, userId)
       )
     )
-    .where(gte(shows.date, new Date()))
+    .where(gte(shows.date, new Date().toISOString().substring(0, 10)))
     .orderBy(asc(shows.date))
     .limit(10);
 
@@ -63,7 +63,8 @@ export async function UpcomingShowsTimeline({
     );
   }
 
-  const getDateLabel = (date: Date) => {
+  const getDateLabel = (dateString: string) => {
+    const date = new Date(dateString);
     if (isToday(date)) {
       return 'Today';
     }
@@ -76,7 +77,8 @@ export async function UpcomingShowsTimeline({
     return format(date, 'MMM d');
   };
 
-  const getDateColor = (date: Date) => {
+  const getDateColor = (dateString: string) => {
+    const date = new Date(dateString);
     if (isToday(date)) {
       return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300';
     }
@@ -103,10 +105,10 @@ export async function UpcomingShowsTimeline({
                 className={`flex w-24 flex-col items-center justify-center p-4 ${getDateColor(show.date)}`}
               >
                 <div className="font-bold text-2xl">
-                  {format(show.date, 'd')}
+                  {format(new Date(show.date), 'd')}
                 </div>
                 <div className="text-sm uppercase">
-                  {format(show.date, 'MMM')}
+                  {format(new Date(show.date), 'MMM')}
                 </div>
                 <div className="mt-1 text-xs">{getDateLabel(show.date)}</div>
               </div>
@@ -166,10 +168,10 @@ export async function UpcomingShowsTimeline({
                     </div>
                   </div>
 
-                  {show.ticketmasterUrl && (
+                  {show.ticketUrl && (
                     <Button size="sm" variant="default" asChild>
                       <a
-                        href={show.ticketmasterUrl}
+                        href={show.ticketUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="flex items-center gap-1"

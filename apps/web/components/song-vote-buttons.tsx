@@ -95,7 +95,7 @@ export function SongVoteButtons({
         );
       } catch (_error) {
         // Revert optimistic update
-        setOptimisticVote(votes.userVote);
+        setOptimisticVote(votes.userVote ?? null);
         toast.error('Failed to update vote');
       }
     });

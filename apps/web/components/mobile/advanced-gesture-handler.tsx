@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useRef, useState } from 'react';
 import { motion, PanInfo, useAnimation, useMotionValue, useSpring } from 'framer-motion';
 import { cn } from '@repo/design-system/lib/utils';
 import { ChevronLeft, ChevronRight, Heart, Star, Trash2, Share, X } from 'lucide-react';
@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight, Heart, Star, Trash2, Share, X } from 'lucide
 interface GestureAction {
   id: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: any;
   color: string;
   threshold: number;
   hapticPattern?: number[];
@@ -22,7 +22,6 @@ interface AdvancedGestureHandlerProps {
   enableHapticFeedback?: boolean;
   enableVisualFeedback?: boolean;
   snapBackDuration?: number;
-  threshold?: number;
   className?: string;
   onGestureStart?: (direction: 'left' | 'right') => void;
   onGestureEnd?: (direction: 'left' | 'right', triggered: boolean) => void;
@@ -98,9 +97,9 @@ const ActionButton = memo(function ActionButton({
       <Icon className="w-5 h-5" />
     </motion.div>
   );
-});
+}) as any;
 
-const GestureBackground = memo(function GestureBackground({
+const GestureBackground = (({
   direction,
   progress,
   action,
@@ -108,7 +107,7 @@ const GestureBackground = memo(function GestureBackground({
   direction: 'left' | 'right';
   progress: number;
   action?: GestureAction;
-}) {
+}) => {
   const backgroundOpacity = Math.min(progress / 100, 0.3);
   
   return (
@@ -128,7 +127,7 @@ const GestureBackground = memo(function GestureBackground({
       )}
     </div>
   );
-});
+}) as any;
 
 const AdvancedGestureHandlerComponent = function AdvancedGestureHandler({
   children,
@@ -137,7 +136,6 @@ const AdvancedGestureHandlerComponent = function AdvancedGestureHandler({
   enableHapticFeedback = true,
   enableVisualFeedback = true,
   snapBackDuration = 0.3,
-  threshold = 80,
   className,
   onGestureStart,
   onGestureEnd,
@@ -179,7 +177,7 @@ const AdvancedGestureHandlerComponent = function AdvancedGestureHandler({
   }, [triggerHaptic]);
 
   // Handle drag
-  const handleDrag = useCallback((event: any, info: PanInfo) => {
+  const handleDrag = useCallback((_event: any, info: PanInfo) => {
     const { offset } = info;
     const direction = offset.x > 0 ? 'right' : 'left';
     
@@ -205,8 +203,8 @@ const AdvancedGestureHandlerComponent = function AdvancedGestureHandler({
   }, [currentAction, dragDirection, getActionForDistance, onGestureStart, triggerHaptic]);
 
   // Handle drag end
-  const handleDragEnd = useCallback((event: any, info: PanInfo) => {
-    const { offset, velocity } = info;
+  const handleDragEnd = useCallback((_event: any, info: PanInfo) => {
+    const { offset } = info;
     const direction = offset.x > 0 ? 'right' : 'left';
     const action = getActionForDistance(offset.x, direction);
     
@@ -332,7 +330,7 @@ const AdvancedGestureHandlerComponent = function AdvancedGestureHandler({
   );
 };
 
-export const AdvancedGestureHandler = memo(AdvancedGestureHandlerComponent);
+export const AdvancedGestureHandler = memo(AdvancedGestureHandlerComponent) as any;
 
 // Preset gesture configurations
 export const GesturePresets = {
@@ -438,9 +436,9 @@ export function withGestureSupport<P extends object>(
   return memo(function GestureEnabledComponent(props: P) {
     return (
       <AdvancedGestureHandler
-        leftActions={gestureConfig?.leftActions}
-        rightActions={gestureConfig?.rightActions}
-        enableHapticFeedback={gestureConfig?.enableHapticFeedback}
+        leftActions={gestureConfig?.leftActions ?? defaultLeftActions}
+        rightActions={gestureConfig?.rightActions ?? defaultRightActions}
+        enableHapticFeedback={gestureConfig?.enableHapticFeedback ?? true}
       >
         <Component {...props} />
       </AdvancedGestureHandler>
