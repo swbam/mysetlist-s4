@@ -11,7 +11,7 @@ import {
 } from '@repo/design-system/components/ui/card';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import Link from 'next/link';
-import { Component, type ReactNode } from 'react';
+import React, { Component, type ReactNode } from 'react';
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -32,6 +32,7 @@ interface ErrorBoundaryProps {
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   private resetTimeoutId: number | null = null;
+  refs: {} = {};
 
   constructor(props: ErrorBoundaryProps) {
     super(props);
@@ -159,7 +160,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
   };
 
-  render() {
+  override render(): React.ReactNode {
     const { hasError, error, errorId, retryCount } = this.state;
     const { children, fallback, showErrorDetails = false, maxRetries = 3 } = this.props;
 
@@ -261,7 +262,7 @@ export function WithErrorBoundary({
 }: WithErrorBoundaryProps) {
   return (
     <ErrorBoundary 
-      onError={onError} 
+      {...(onError && { onError })}
       showErrorDetails={showErrorDetails}
       maxRetries={3}
       resetOnPropsChange

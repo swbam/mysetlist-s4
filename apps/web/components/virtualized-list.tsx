@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@repo/design-system/lib/utils';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface VirtualizedListProps<T> {
   items: T[];
@@ -19,7 +19,7 @@ interface VirtualizedListProps<T> {
   estimatedItemHeight?: number;
 }
 
-export function VirtualizedList<T>({
+export const VirtualizedList = React.memo(function VirtualizedList<T>({
   items,
   itemHeight,
   renderItem,
@@ -317,59 +317,72 @@ export function VirtualizedList<T>({
       </div>
     </div>
   );
+});
+
+// Artist interface for type safety
+interface Artist {
+  name: string;
+  genre?: string;
+}
+
+// Show interface for type safety
+interface Show {
+  name: string;
+  artist?: string;
+  venue?: string;
+  date?: string;
 }
 
 // Specialized list components
-export function ArtistList({
-  artists,
-  ...props
-}: { artists: any[] } & Omit<
-  VirtualizedListProps<any>,
-  'items' | 'renderItem' | 'itemHeight'
->) {
+export const ArtistList = React.memo(function ArtistList({
+  artists: _artists,
+}: { artists: Artist[] }) {
   return (
     <VirtualizedList
-      items={artists}
+      items={_artists}
       itemHeight={80}
-      renderItem={(artist, _index) => (
+      renderItem={(artist, _index) => {
+        const typedArtist = artist as Artist;
+        return (
         <div className="border-b p-4 transition-colors hover:bg-muted/50">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-full bg-muted" />
             <div>
-              <h3 className="font-medium">{artist.name}</h3>
-              <p className="text-muted-foreground text-sm">{artist.genre}</p>
+              <h3 className="font-medium">{typedArtist.name}</h3>
+              <p className="text-muted-foreground text-sm">{typedArtist.genre}</p>
             </div>
           </div>
         </div>
-      )}
-      {...props}
+      );
+      }}
     />
   );
-}
+});
 
-export function ShowList({
-  shows,
-  ...props
-}: { shows: any[] } & Omit<VirtualizedListProps<any>, 'items' | 'renderItem' | 'itemHeight'>) {
+export const ShowList = React.memo(function ShowList({
+  shows: _shows,
+}: { shows: Show[] }) {
   return (
     <VirtualizedList
-      items={shows}
+      items={_shows}
       itemHeight={120}
-      renderItem={(show, _index) => (
+      renderItem={(show, _index) => {
+        const typedShow = show as Show;
+        return (
         <div className="border-b p-4 transition-colors hover:bg-muted/50">
           <div className="flex items-start gap-3">
             <div className="h-16 w-16 rounded bg-muted" />
             <div className="flex-1">
-              <h3 className="font-medium">{show.name}</h3>
-              <p className="text-muted-foreground text-sm">{show.artist}</p>
+              <h3 className="font-medium">{typedShow.name}</h3>
+              <p className="text-muted-foreground text-sm">{typedShow.artist}</p>
               <p className="text-muted-foreground text-sm">
-                {show.venue} • {show.date}
+                {typedShow.venue} • {typedShow.date}
               </p>
             </div>
           </div>
         </div>
-      )}
-      {...props}
+      );
+      }}
     />
   );
-}
+});

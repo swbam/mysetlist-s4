@@ -5,8 +5,8 @@ export async function createClient() {
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env['NEXT_PUBLIC_SUPABASE_URL']!,
+    process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!,
     {
       cookies: {
         get(name: string) {
@@ -48,8 +48,8 @@ export async function createServiceClient() {
 
   // Service client for server-side operations that bypass RLS
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env['NEXT_PUBLIC_SUPABASE_URL']!,
+    process.env['SUPABASE_SERVICE_ROLE_KEY']!,
     {
       auth: {
         autoRefreshToken: false,

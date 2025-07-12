@@ -72,7 +72,7 @@ class NavigationTestRunner {
       name: 'Middleware file exists',
       status: middlewareExists ? 'passed' : 'failed',
       duration: 0,
-      error: middlewareExists ? undefined : 'middleware.ts file not found',
+      ...(!middlewareExists && { error: 'middleware.ts file not found' }),
     });
 
     // Test 2: Middleware compiles
@@ -101,7 +101,7 @@ class NavigationTestRunner {
         name: 'Security headers present',
         status: hasSecurityHeaders ? 'passed' : 'failed',
         duration: 0,
-        error: hasSecurityHeaders ? undefined : 'Security headers not found',
+        ...(!hasSecurityHeaders && { error: 'Security headers not found' }),
       });
     } catch (_error) {
       suite.tests.push({
@@ -148,7 +148,7 @@ class NavigationTestRunner {
           name: `Route ${route} accessible`,
           status: isSuccess ? 'passed' : 'failed',
           duration: 0,
-          error: isSuccess ? undefined : `HTTP ${response.status}`,
+          ...(!isSuccess && { error: `HTTP ${response.status}` }),
         });
       } catch (error) {
         suite.tests.push({
@@ -192,7 +192,7 @@ class NavigationTestRunner {
               name: spec.title,
               status: spec.ok ? 'passed' : 'failed',
               duration: spec.duration || 0,
-              error: spec.ok ? undefined : 'Navigation test failed',
+              ...(!spec.ok && { error: 'Navigation test failed' }),
             });
           });
         });
@@ -238,7 +238,7 @@ class NavigationTestRunner {
               name: spec.title,
               status: spec.ok ? 'passed' : 'failed',
               duration: spec.duration || 0,
-              error: spec.ok ? undefined : 'Mobile test failed',
+              ...(!spec.ok && { error: 'Mobile test failed' }),
             });
           });
         });
@@ -275,7 +275,7 @@ class NavigationTestRunner {
     for (const route of routes) {
       try {
         const testStart = Date.now();
-        const _response = await fetch(`http://localhost:3000${route}`);
+        void await fetch(`http://localhost:3000${route}`);
         const testEnd = Date.now();
 
         const loadTime = testEnd - testStart;
@@ -285,7 +285,7 @@ class NavigationTestRunner {
           name: `${route} loads under 2s`,
           status: isPerformant ? 'passed' : 'failed',
           duration: loadTime,
-          error: isPerformant ? undefined : `Load time: ${loadTime}ms`,
+          ...(!isPerformant && { error: `Load time: ${loadTime}ms` }),
         });
       } catch (_error) {
         suite.tests.push({
@@ -328,7 +328,7 @@ class NavigationTestRunner {
         name: `Error boundary ${file} exists`,
         status: exists ? 'passed' : 'failed',
         duration: 0,
-        error: exists ? undefined : `File ${file} not found`,
+        ...(!exists && { error: `File ${file} not found` }),
       });
     }
 
@@ -341,7 +341,7 @@ class NavigationTestRunner {
         name: '404 errors handled properly',
         status: is404 ? 'passed' : 'failed',
         duration: 0,
-        error: is404 ? undefined : `Expected 404, got ${response.status}`,
+        ...(!is404 && { error: `Expected 404, got ${response.status}` }),
       });
     } catch (_error) {
       suite.tests.push({
@@ -383,7 +383,7 @@ class NavigationTestRunner {
               name: spec.title,
               status: spec.ok ? 'passed' : 'failed',
               duration: spec.duration || 0,
-              error: spec.ok ? undefined : 'Accessibility test failed',
+              ...(!spec.ok && { error: 'Accessibility test failed' }),
             });
           });
         });

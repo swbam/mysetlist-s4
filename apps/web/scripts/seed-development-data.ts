@@ -10,12 +10,11 @@ import {
   venues,
   setlists,
   setlistSongs,
-  userVotes,
   users,
   userProfiles,
 } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { createId } from '@paralleldrive/cuid2';
+import { eq, count } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
 
 // Popular artists to seed
 const POPULAR_ARTISTS = [
@@ -66,6 +65,7 @@ const SAMPLE_VENUES = [
     capacity: 20000,
     latitude: 40.7505,
     longitude: -73.9934,
+    timezone: 'America/New_York',
   },
   {
     name: 'The Forum',
@@ -75,6 +75,7 @@ const SAMPLE_VENUES = [
     capacity: 17500,
     latitude: 33.9583,
     longitude: -118.3417,
+    timezone: 'America/Los_Angeles',
   },
   {
     name: 'United Center',
@@ -84,6 +85,7 @@ const SAMPLE_VENUES = [
     capacity: 20917,
     latitude: 41.8807,
     longitude: -87.6742,
+    timezone: 'America/Chicago',
   },
   {
     name: 'O2 Arena',
@@ -93,6 +95,7 @@ const SAMPLE_VENUES = [
     capacity: 20000,
     latitude: 51.5033,
     longitude: 0.0032,
+    timezone: 'Europe/London',
   },
   {
     name: 'Red Rocks Amphitheatre',
@@ -102,6 +105,7 @@ const SAMPLE_VENUES = [
     capacity: 9525,
     latitude: 39.6654,
     longitude: -105.2057,
+    timezone: 'America/Denver',
   },
 ];
 
@@ -168,8 +172,9 @@ async function seedDevelopmentData() {
     const [testUser] = await db
       .insert(users)
       .values({
-        id: createId(),
+        id: randomUUID(),
         email: 'test@mysetlist.com',
+        displayName: 'Test User',
         emailVerified: new Date(),
       })
       .onConflictDoNothing()
@@ -180,8 +185,6 @@ async function seedDevelopmentData() {
         .insert(userProfiles)
         .values({
           userId: testUser.id,
-          username: 'testuser',
-          displayName: 'Test User',
           bio: 'Development test account',
         })
         .onConflictDoNothing();
@@ -234,18 +237,22 @@ async function seedDevelopmentData() {
         })
         .returning();
 
+      if (!artist) continue;
+
       // Seed songs for this artist
-      const artistSongList = SAMPLE_SONGS[artistData.name] || [];
+      const artistSongList = SAMPLE_SONGS[artistData.name as keyof typeof SAMPLE_SONGS] || [];
       for (let i = 0; i < artistSongList.length; i++) {
         const songTitle = artistSongList[i];
+        if (!songTitle) continue;
+        
         const [song] = await db
           .insert(songs)
           .values({
-            spotifyId: `${artist.spotifyId}_song_${i}`,
+            spotifyId: `${artistData.spotifyId}_song_${i}`,
             title: songTitle,
-            artist: artist.name,
-            album: `${artist.name} - Greatest Hits`,
-            albumArtUrl: artist.imageUrl,
+            artist: artistData.name,
+            album: `${artistData.name} - Greatest Hits`,
+            albumArtUrl: `https://via.placeholder.com/300x300?text=${encodeURIComponent(artistData.name)}`,
             durationMs: 180000 + Math.random() * 120000, // 3-5 minutes
             popularity: 50 + Math.floor(Math.random() * 50),
             isPlayable: true,
@@ -271,8 +278,11 @@ async function seedDevelopmentData() {
       
       for (let i = 0; i < numShows; i++) {
         const venue = seededVenues[Math.floor(Math.random() * seededVenues.length)];
+        if (!venue) continue;
+        
         const showDate = new Date();
         showDate.setDate(showDate.getDate() + Math.floor(Math.random() * 90) + 30); // 30-120 days in future
+        const dateString = showDate.toISOString().split('T')[0]!;
 
         const [show] = await db
           .insert(shows)
@@ -280,8 +290,8 @@ async function seedDevelopmentData() {
             headlinerArtistId: artist.id,
             venueId: venue.id,
             name: `${artist.name} at ${venue.name}`,
-            slug: `${artist.slug}-${venue.slug}-${showDate.toISOString().split('T')[0]}`,
-            date: showDate.toISOString().split('T')[0],
+            slug: `${artist.slug}-${venue.slug}-${dateString}`,
+            date: dateString,
             startTime: '20:00',
             doorsTime: '19:00',
             status: 'upcoming',
@@ -315,10 +325,11 @@ async function seedDevelopmentData() {
               .insert(setlists)
               .values({
                 showId: show.id,
-                userId: testUser?.id || createId(),
+                artistId: artist.id,
+                type: 'predicted',
                 name: `${artist.name} Setlist`,
-                isOfficial: true,
-                voteCount: Math.floor(Math.random() * 100),
+                ...(testUser?.id && { createdBy: testUser.id }),
+                totalVotes: Math.floor(Math.random() * 100),
               })
               .returning();
 
@@ -333,27 +344,21 @@ async function seedDevelopmentData() {
                 .limit(setlistSongCount);
 
               for (let j = 0; j < availableSongs.length; j++) {
+                const songRecord = availableSongs[j];
+                if (!songRecord) continue;
+                
                 await db
                   .insert(setlistSongs)
                   .values({
                     setlistId: setlist.id,
-                    songId: availableSongs[j].songs.id,
-                    orderIndex: j,
+                    songId: songRecord.songs.id,
+                    position: j + 1,
                   })
                   .onConflictDoNothing();
               }
 
-              // Add some votes
-              if (testUser) {
-                await db
-                  .insert(userVotes)
-                  .values({
-                    userId: testUser.id,
-                    setlistId: setlist.id,
-                    value: 1,
-                  })
-                  .onConflictDoNothing();
-              }
+              // Note: Vote creation would require referencing specific setlist songs
+              // This is omitted for simplicity in development seed data
             }
           }
         }
@@ -371,12 +376,12 @@ async function seedDevelopmentData() {
 
       if (artist) {
         const [showCount] = await db
-          .select({ count: db.count() })
+          .select({ count: count() })
           .from(shows)
           .where(eq(shows.headlinerArtistId, artist.id));
 
         const [songCount] = await db
-          .select({ count: db.count() })
+          .select({ count: count() })
           .from(artistSongs)
           .where(eq(artistSongs.artistId, artist.id));
 

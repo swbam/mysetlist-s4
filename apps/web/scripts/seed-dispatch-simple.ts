@@ -72,9 +72,9 @@ async function main() {
           trendingScore: 85.5,
           updatedAt: new Date(),
         })
-        .where(eq(artists.id, dispatchArtist[0].id))
+        .where(eq(artists.id, dispatchArtist[0]!.id))
         .returning();
-      dispatchArtist = [updated];
+      dispatchArtist = [updated!];
     }
 
     const dispatchArtistData = dispatchArtist[0];
@@ -109,13 +109,13 @@ async function main() {
     const [show] = await db
       .insert(shows)
       .values({
-        headlinerArtistId: dispatchArtistData.id,
-        venueId: redRocks.id,
+        headlinerArtistId: dispatchArtistData!.id,
+        venueId: redRocks!.id,
         name: 'Dispatch: Summer Tour 2025',
         slug: 'dispatch-summer-tour-2025-red-rocks-test',
         date: new Date(today.getTime() + 45 * 24 * 60 * 60 * 1000)
           .toISOString()
-          .split('T')[0],
+          .split('T')[0]!,
         startTime: '19:30',
         doorsTime: '18:00',
         status: 'upcoming',
@@ -137,7 +137,7 @@ async function main() {
         .insert(showArtists)
         .values({
           showId: show.id,
-          artistId: dispatchArtistData.id,
+          artistId: dispatchArtistData!.id,
           orderIndex: 0,
           isHeadliner: true,
           setLength: 120,
@@ -170,7 +170,7 @@ async function main() {
       await db
         .insert(songs)
         .values({
-          spotifyId: song.spotifyId,
+          ...(song.spotifyId && { spotifyId: song.spotifyId }),
           title: song.title,
           artist: 'Dispatch',
           album: 'Various',
@@ -193,7 +193,7 @@ async function main() {
         .insert(setlists)
         .values({
           showId: show.id,
-          artistId: dispatchArtistData.id,
+          artistId: dispatchArtistData!.id,
           type: 'predicted',
           name: 'Fan Predictions',
           orderIndex: 0,
@@ -208,6 +208,8 @@ async function main() {
         // Add songs to setlist
         for (let i = 0; i < Math.min(dispatchSongs.length, 8); i++) {
           const song = dispatchSongs[i];
+          if (!song) continue;
+          
           const upvotes = Math.floor(Math.random() * 100) + 20;
           const downvotes = Math.floor(Math.random() * 20);
 
@@ -230,7 +232,7 @@ async function main() {
     await db
       .insert(artistStats)
       .values({
-        artistId: dispatchArtistData.id,
+        artistId: dispatchArtistData!.id,
         totalShows: 1,
         totalSetlists: 1,
         avgSetlistLength: 8,

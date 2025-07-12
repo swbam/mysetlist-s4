@@ -9,7 +9,7 @@ interface Metric {
   rating: 'good' | 'needs-improvement' | 'poor';
   delta: number;
   id: string;
-  navigationType: 'navigate' | 'reload' | 'back-forward' | 'prerender';
+  navigationType: 'navigate' | 'reload' | 'back-forward' | 'back-forward-cache' | 'prerender' | 'restore';
 }
 
 // Thresholds for performance metrics (in milliseconds or score)

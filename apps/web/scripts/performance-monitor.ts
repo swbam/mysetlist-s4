@@ -55,8 +55,9 @@ async function measurePerformance(url: string): Promise<PerformanceMetrics> {
   // Track resource sizes
   page.on('response', (response) => {
     const url = response.url();
-    const size = response.headers()['content-length']
-      ? Number.parseInt(response.headers()['content-length'])
+    const contentLengthHeader = response.headers()['content-length'];
+    const size = contentLengthHeader
+      ? Number.parseInt(contentLengthHeader)
       : 0;
 
     resources.totalSize += size;
@@ -103,7 +104,7 @@ async function measurePerformance(url: string): Promise<PerformanceMetrics> {
     observer.observe({ entryTypes: ['largest-contentful-paint'] });
     const lcpEntries = performance.getEntriesByType('largest-contentful-paint');
     if (lcpEntries.length > 0) {
-      LCP = lcpEntries.at(-1).startTime;
+      LCP = lcpEntries[lcpEntries.length - 1]!.startTime;
     }
 
     // Calculate CLS

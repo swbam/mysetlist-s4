@@ -396,16 +396,20 @@ async function clearDatabase() {
 }
 
 async function seedUsers() {
-  const usersToCreate = [
+  const usersToCreate: Array<{
+    email: string;
+    displayName: string;
+    role: 'user' | 'moderator' | 'admin';
+  }> = [
     {
       email: 'admin@mysetlist.com',
       displayName: 'Admin User',
-      role: 'admin' as const,
+      role: 'admin',
     },
     {
       email: 'moderator@mysetlist.com',
       displayName: 'Moderator User',
-      role: 'moderator' as const,
+      role: 'moderator',
     },
   ];
 
@@ -414,7 +418,7 @@ async function seedUsers() {
     usersToCreate.push({
       email: faker.internet.email(),
       displayName: faker.person.fullName(),
-      role: 'user' as const,
+      role: 'user',
     });
   }
 
@@ -516,7 +520,7 @@ async function seedSongs(createdArtists: any[]) {
         artist: artist.name,
         album: faker.lorem.words(2),
         albumArtUrl: faker.image.url({ width: 300, height: 300 }),
-        releaseDate: faker.date.past({ years: 5 }).toISOString().split('T')[0],
+        releaseDate: faker.date.past({ years: 5 }).toISOString().split('T')[0] || null,
         durationMs: 180000 + Math.floor(Math.random() * 120000), // 3-5 minutes
         popularity: Math.floor(artist.popularity * (0.5 + Math.random() * 0.5)),
         previewUrl: faker.internet.url(),
@@ -559,10 +563,10 @@ async function seedShows(createdArtists: any[], createdVenues: any[]) {
         slug: generateSlug(
           `${artist.name} ${venue.city} ${showDate.toISOString().split('T')[0]}`
         ),
-        date: showDate.toISOString().split('T')[0],
+        date: showDate.toISOString().split('T')[0] || '',
         startTime: '20:00:00',
         doorsTime: '19:00:00',
-        status: isUpcoming ? 'upcoming' : 'completed',
+        status: isUpcoming ? ('upcoming' as const) : ('completed' as const),
         description: faker.lorem.paragraph(),
         ticketUrl: isUpcoming ? faker.internet.url() : null,
         minPrice: Math.floor(50 + Math.random() * 100),
@@ -601,13 +605,14 @@ async function seedShows(createdArtists: any[], createdVenues: any[]) {
 
   // Add some supporting artists
   for (let i = 0; i < createdShows.length; i++) {
-    if (Math.random() < 0.6) {
+    const currentShow = createdShows[i];
+    if (currentShow && Math.random() < 0.6) {
       // 60% of shows have supporting acts
       const supportingArtist = faker.helpers.arrayElement(
-        createdArtists.filter((a) => a.id !== createdShows[i].headlinerArtistId)
+        createdArtists.filter((a) => a.id !== currentShow.headlinerArtistId)
       );
       showArtistsToCreate.push({
-        showId: createdShows[i].id,
+        showId: currentShow.id,
         artistId: supportingArtist.id,
         orderIndex: 1,
         setLength: 30 + Math.floor(Math.random() * 15),
@@ -634,7 +639,7 @@ async function seedSetlists(
     if (!songsByArtist[song.artist]) {
       songsByArtist[song.artist] = [];
     }
-    songsByArtist[song.artist].push(song);
+    songsByArtist[song.artist]!.push(song);
   }
 
   for (const show of createdShows) {
@@ -778,7 +783,7 @@ async function seedUserActivity(
       votesToCreate.push({
         userId: user.id,
         setlistSongId: setlistSong.id,
-        voteType: Math.random() < 0.7 ? 'up' : 'down', // 70% upvotes
+        voteType: Math.random() < 0.7 ? ('up' as const) : ('down' as const), // 70% upvotes
       });
     }
   }
@@ -870,7 +875,7 @@ async function main() {
     const createdVenues = await seedVenues();
     const createdSongs = await seedSongs(createdArtists);
     const createdShows = await seedShows(createdArtists, createdVenues);
-    const { createdSetlists, createdSetlistSongs } = await seedSetlists(
+    const { createdSetlists: _createdSetlists, createdSetlistSongs } = await seedSetlists(
       createdShows,
       createdArtists,
       createdSongs

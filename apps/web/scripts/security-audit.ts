@@ -8,7 +8,6 @@
 import { execSync } from 'child_process';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { createHash } from 'crypto';
 
 interface SecurityFinding {
   severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
@@ -401,7 +400,7 @@ class SecurityAuditor {
         const dbPasswordMatch = content.match(/DB_PASSWORD=(.+)/);
         if (dbPasswordMatch) {
           const password = dbPasswordMatch[1];
-          if (password.length < 12 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+          if (password && (password.length < 12 || !/[A-Z]/.test(password) || !/[0-9]/.test(password))) {
             this.findings.push({
               severity: 'medium',
               category: 'Environment',

@@ -1,5 +1,4 @@
 import { createClient } from '~/lib/supabase/server';
-import { cache } from 'react';
 
 export interface MLRecommendationConfig {
   algorithm: 'collaborative' | 'content' | 'hybrid' | 'matrix_factorization';
@@ -64,7 +63,6 @@ export interface MLRecommendation {
 class MLRecommendationEngine {
   private supabase: ReturnType<typeof createClient>;
   private userVectorCache = new Map<string, UserVector>();
-  private similarityCache = new Map<string, SimilarityMatrix[]>();
 
   constructor() {
     this.supabase = createClient();
@@ -180,7 +178,8 @@ class MLRecommendationEngine {
 
     // Get items liked by similar users
     for (const similarUser of similarUsers) {
-      const { data: similarUserItems } = await this.supabase
+      const supabase = await this.supabase;
+      const { data: similarUserItems } = await supabase
         .from('setlist_votes')
         .select(`
           vote_value,
@@ -198,9 +197,13 @@ class MLRecommendationEngine {
 
       if (similarUserItems) {
         for (const item of similarUserItems) {
-          const show = item.setlist_songs?.setlists?.shows;
+          const setlistSongs = Array.isArray(item.setlist_songs) ? item.setlist_songs[0] : item.setlist_songs;
+          const setlists = Array.isArray(setlistSongs?.setlists) ? setlistSongs.setlists[0] : setlistSongs?.setlists;
+          const show = Array.isArray(setlists?.shows) ? setlists.shows[0] : setlists?.shows;
           if (show && !seenItems.has(show.id)) {
             seenItems.add(show.id);
+            
+            const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
             
             const score = this.calculateCollaborativeScore(
               item.vote_value,
@@ -214,10 +217,10 @@ class MLRecommendationEngine {
               type: 'show',
               name: show.name,
               score,
-              image_url: show.artists?.image_url,
+              image_url: artist?.image_url,
               slug: show.slug,
               metadata: {
-                artist_name: show.artists?.name,
+                artist_name: artist?.name,
                 show_date: show.date,
                 similarity_source: similarUser.userB
               },
@@ -256,7 +259,8 @@ class MLRecommendationEngine {
       .map(([genre]) => genre);
 
     if (topGenres.length > 0) {
-      const { data: genreShows } = await this.supabase
+      const supabase = await this.supabase;
+      const { data: genreShows } = await supabase
         .from('shows')
         .select(`
           id,
@@ -273,6 +277,8 @@ class MLRecommendationEngine {
 
       if (genreShows) {
         for (const show of genreShows) {
+          const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
+          const venue = Array.isArray(show.venues) ? show.venues[0] : show.venues;
           const score = this.calculateContentScore(show, userVector);
           
           recommendations.push({
@@ -280,14 +286,14 @@ class MLRecommendationEngine {
             type: 'show',
             name: show.name,
             score,
-            image_url: show.artists?.image_url,
+            image_url: artist?.image_url,
             slug: show.slug,
             metadata: {
-              artist_name: show.artists?.name,
-              venue_name: show.venues?.name,
-              city: show.venues?.city,
+              artist_name: artist?.name,
+              venue_name: venue?.name,
+              city: venue?.city,
               show_date: show.date,
-              genres: show.artists?.genres
+              genres: artist?.genres
             },
             explanation: {
               algorithm: 'content_based',
@@ -373,7 +379,8 @@ class MLRecommendationEngine {
     const latentFactors = this.simulateLatentFactors(userVector);
     
     // Get shows that match discovered latent factors
-    const { data: shows } = await this.supabase
+    const supabase = await this.supabase;
+    const { data: shows } = await supabase
       .from('shows')
       .select(`
         id,
@@ -389,6 +396,8 @@ class MLRecommendationEngine {
 
     if (shows) {
       for (const show of shows) {
+        const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
+        const venue = Array.isArray(show.venues) ? show.venues[0] : show.venues;
         const score = this.calculateMatrixFactorizationScore(show, latentFactors);
         
         if (score > config.minSimilarity) {
@@ -397,12 +406,12 @@ class MLRecommendationEngine {
             type: 'show',
             name: show.name,
             score,
-            image_url: show.artists?.image_url,
+            image_url: artist?.image_url,
             slug: show.slug,
             metadata: {
-              artist_name: show.artists?.name,
-              venue_name: show.venues?.name,
-              city: show.venues?.city,
+              artist_name: artist?.name,
+              venue_name: venue?.name,
+              city: venue?.city,
               show_date: show.date,
               latent_factors: latentFactors
             },
@@ -472,7 +481,9 @@ class MLRecommendationEngine {
     const maxScore = Math.max(...Object.values(genreCounts));
     if (maxScore > 0) {
       Object.keys(genreCounts).forEach(genre => {
-        genreCounts[genre] /= maxScore;
+        if (genreCounts[genre] !== undefined) {
+          genreCounts[genre] /= maxScore;
+        }
       });
     }
 
@@ -510,7 +521,9 @@ class MLRecommendationEngine {
     const maxScore = Math.max(...Object.values(artistCounts));
     if (maxScore > 0) {
       Object.keys(artistCounts).forEach(artistId => {
-        artistCounts[artistId] /= maxScore;
+        if (artistCounts[artistId] !== undefined) {
+          artistCounts[artistId] /= maxScore;
+        }
       });
     }
 
@@ -540,7 +553,9 @@ class MLRecommendationEngine {
     const maxScore = Math.max(...Object.values(venueCounts));
     if (maxScore > 0) {
       Object.keys(venueCounts).forEach(venueId => {
-        venueCounts[venueId] /= maxScore;
+        if (venueCounts[venueId] !== undefined) {
+          venueCounts[venueId] /= maxScore;
+        }
       });
     }
 
@@ -561,7 +576,9 @@ class MLRecommendationEngine {
     const maxScore = Math.max(...Object.values(timeCounts));
     if (maxScore > 0) {
       Object.keys(timeCounts).forEach(timeSlot => {
-        timeCounts[timeSlot] /= maxScore;
+        if (timeCounts[timeSlot] !== undefined) {
+          timeCounts[timeSlot] /= maxScore;
+        }
       });
     }
 
@@ -582,7 +599,9 @@ class MLRecommendationEngine {
     const maxScore = Math.max(...Object.values(locationCounts));
     if (maxScore > 0) {
       Object.keys(locationCounts).forEach(city => {
-        locationCounts[city] /= maxScore;
+        if (locationCounts[city] !== undefined) {
+          locationCounts[city] /= maxScore;
+        }
       });
     }
 
@@ -603,7 +622,9 @@ class MLRecommendationEngine {
     const maxScore = Math.max(...Object.values(seasonCounts));
     if (maxScore > 0) {
       Object.keys(seasonCounts).forEach(season => {
-        seasonCounts[season] /= maxScore;
+        if (seasonCounts[season] !== undefined) {
+          seasonCounts[season] /= maxScore;
+        }
       });
     }
 
@@ -620,7 +641,7 @@ class MLRecommendationEngine {
     ].filter(sim => sim.similarity >= minSimilarity);
   }
 
-  private calculateCollaborativeScore(voteValue: number, userSimilarity: number, userVector: UserVector, show: any): number {
+  private calculateCollaborativeScore(voteValue: number, userSimilarity: number, _userVector: UserVector, show: any): number {
     const baseScore = (voteValue / 5) * userSimilarity;
     const recencyBonus = this.calculateFreshnessScore(show.date) * 0.1;
     return Math.min(baseScore + recencyBonus, 1.0);
@@ -675,7 +696,7 @@ class MLRecommendationEngine {
     return Math.max(0.1, 1 - (daysDiff - 30) / 335);
   }
 
-  private simulateLatentFactors(userVector: UserVector): Record<string, number> {
+  private simulateLatentFactors(_userVector: UserVector): Record<string, number> {
     // In a real implementation, this would be learned from matrix factorization
     return {
       factor1: Math.random() * 0.8 + 0.2,
@@ -684,9 +705,9 @@ class MLRecommendationEngine {
     };
   }
 
-  private calculateMatrixFactorizationScore(show: any, latentFactors: Record<string, number>): number {
+  private calculateMatrixFactorizationScore(_show: any, latentFactors: Record<string, number>): number {
     // Simplified scoring based on latent factors
-    const showFactors = {
+    const showFactors: Record<string, number> = {
       factor1: Math.random() * 0.8 + 0.2,
       factor2: Math.random() * 0.8 + 0.2,
       factor3: Math.random() * 0.8 + 0.2
@@ -694,7 +715,11 @@ class MLRecommendationEngine {
     
     let score = 0;
     Object.keys(latentFactors).forEach(factor => {
-      score += latentFactors[factor] * showFactors[factor];
+      const latentValue = latentFactors[factor];
+      const showValue = showFactors[factor];
+      if (latentValue !== undefined && showValue !== undefined) {
+        score += latentValue * showValue;
+      }
     });
     
     return Math.min(score / Object.keys(latentFactors).length, 1.0);
@@ -713,8 +738,8 @@ class MLRecommendationEngine {
       if (diversifiedRecommendations.length >= config.limit) break;
       
       // Apply diversity constraints
-      const artistId = rec.metadata.artist_id;
-      const venueId = rec.metadata.venue_id;
+      const artistId = rec.metadata['artist_id'];
+      const venueId = rec.metadata['venue_id'];
       
       const artistCount = seenArtists.has(artistId) ? 1 : 0;
       const venueCount = seenVenues.has(venueId) ? 1 : 0;

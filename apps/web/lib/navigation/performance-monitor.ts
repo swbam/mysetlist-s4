@@ -121,7 +121,7 @@ class NavigationPerformanceMonitor {
   private recordPaintTiming(_entry: PerformanceEntry): void {}
 
   private analyzePerformance(metric: NavigationMetrics): void {
-    const { duration, route, loadState } = metric;
+    const { duration, route: _route, loadState } = metric;
 
     // Check performance thresholds
     if (duration > this.thresholds.error) {
@@ -139,23 +139,17 @@ class NavigationPerformanceMonitor {
     level: 'warning' | 'error',
     metric: NavigationMetrics
   ): void {
-    const _message = `${level.toUpperCase()}: Slow navigation to ${metric.route} (${metric.duration.toFixed(2)}ms)`;
-
-    if (level === 'error') {
-    } else {
-    }
-
-    // Send to analytics
-    this.sendToAnalytics(level, metric);
+    // TODO: Implement performance issue reporting
+    this._sendToAnalytics(level, metric);
   }
 
-  private sendToAnalytics(
+  private _sendToAnalytics(
     level: 'warning' | 'error',
     metric: NavigationMetrics
   ): void {
     // Send to Google Analytics
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'navigation_performance', {
+    if (typeof window !== 'undefined' && (window as any).gtag) {
+      (window as any).gtag('event', 'navigation_performance', {
         event_category: 'Performance',
         event_label: metric.route,
         value: Math.round(metric.duration),
@@ -167,8 +161,8 @@ class NavigationPerformanceMonitor {
     }
 
     // Send to other analytics services
-    if (typeof window !== 'undefined' && window.dataLayer) {
-      window.dataLayer.push({
+    if (typeof window !== 'undefined' && (window as any).dataLayer) {
+      (window as any).dataLayer.push({
         event: 'navigation_performance',
         performance_level: level,
         route: metric.route,

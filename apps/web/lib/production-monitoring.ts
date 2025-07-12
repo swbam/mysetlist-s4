@@ -24,9 +24,9 @@ export class ProductionMonitoringService extends MonitoringService {
   };
 
   private static alertChannels = {
-    slack: process.env.SLACK_WEBHOOK_URL,
-    pagerduty: process.env.PAGERDUTY_INTEGRATION_KEY,
-    email: process.env.ALERT_EMAIL,
+    slack: process.env['SLACK_WEBHOOK_URL'],
+    pagerduty: process.env['PAGERDUTY_INTEGRATION_KEY'],
+    email: process.env['ALERT_EMAIL'],
   };
 
   /**
@@ -162,17 +162,19 @@ export class ProductionMonitoringService extends MonitoringService {
         const entries = list.getEntries();
         const lastEntry = entries.at(-1);
 
-        ProductionMonitoringService.trackMetric({
-          name: 'performance.lcp',
-          value: lastEntry.startTime,
-          unit: 'ms',
-          tags: { page: window.location.pathname },
-        });
+        if (lastEntry) {
+          ProductionMonitoringService.trackMetric({
+            name: 'performance.lcp',
+            value: lastEntry.startTime,
+            unit: 'ms',
+            tags: { page: window.location.pathname },
+          });
 
-        ProductionMonitoringService.checkPerformanceBudget(
-          'LCP',
-          lastEntry.startTime
-        );
+          ProductionMonitoringService.checkPerformanceBudget(
+            'LCP',
+            lastEntry.startTime
+          );
+        }
       });
 
       lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
@@ -229,7 +231,7 @@ export class ProductionMonitoringService extends MonitoringService {
 
           ProductionMonitoringService.trackMetric({
             name: 'performance.resource_load_time',
-            value: resource.loadEventEnd - resource.startTime,
+            value: resource.responseEnd - resource.startTime,
             unit: 'ms',
             tags: {
               resource_type: resource.initiatorType,
@@ -258,8 +260,8 @@ export class ProductionMonitoringService extends MonitoringService {
           tcp_connect: navigation.connectEnd - navigation.connectStart,
           ttfb: navigation.responseStart - navigation.requestStart,
           dom_content_loaded:
-            navigation.domContentLoadedEventEnd - navigation.navigationStart,
-          page_load: navigation.loadEventEnd - navigation.navigationStart,
+            navigation.domContentLoadedEventEnd,
+          page_load: navigation.loadEventEnd,
         };
 
         Object.entries(metrics).forEach(([name, value]) => {
@@ -478,7 +480,7 @@ export class ProductionMonitoringService extends MonitoringService {
     if (ProductionMonitoringService.alertThrottleMap.has(alertKey)) {
       const lastSent =
         ProductionMonitoringService.alertThrottleMap.get(alertKey);
-      if (now - lastSent < 300000) {
+      if (lastSent && now - lastSent < 300000) {
         // 5 minutes
         return;
       }
@@ -517,7 +519,7 @@ export class ProductionMonitoringService extends MonitoringService {
           color: ProductionMonitoringService.getAlertColor(type),
           fields: Object.entries(data).map(([key, value]) => ({
             title: key,
-            value: value.toString(),
+            value: String(value),
             short: true,
           })),
           footer: 'MySetlist Production Monitoring',

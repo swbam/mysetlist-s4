@@ -6,7 +6,7 @@
 import * as Sentry from '@sentry/nextjs';
 
 // Only initialize Sentry if DSN is provided
-const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+const sentryDsn = process.env['NEXT_PUBLIC_SENTRY_DSN'];
 
 if (sentryDsn) {
   Sentry.init({
@@ -15,25 +15,22 @@ if (sentryDsn) {
     // Enhanced edge runtime integrations
     integrations: [
       // Edge runtime has limited APIs, only include compatible integrations
-      Sentry.httpIntegration({
-        tracing: true,
-        breadcrumbs: true,
-      }),
+      // httpIntegration is not available in the current Sentry version
     ],
 
     // Performance monitoring with adaptive sampling
-    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.05 : 1.0,
+    tracesSampleRate: process.env['NODE_ENV'] === 'production' ? 0.05 : 1.0,
 
     // Environment and release tracking
-    environment: process.env.NODE_ENV || 'development',
-    release: process.env.VERCEL_GIT_COMMIT_SHA || 'unknown',
+    environment: process.env['NODE_ENV'] || 'development',
+    release: process.env['VERCEL_GIT_COMMIT_SHA'] || 'unknown',
 
     // Enhanced error filtering for edge runtime
     beforeSend: (event, hint) => {
       // Filter out edge runtime specific errors that are not actionable
       if (event.exception) {
         const error = hint.originalException;
-        if (error && error.message) {
+        if (error instanceof Error && error.message) {
           // Filter out edge runtime limitations
           if (
             error.message.includes('Dynamic code evaluation') ||
@@ -49,7 +46,7 @@ if (sentryDsn) {
       event.tags = {
         ...event.tags,
         runtime: 'edge',
-        environment: process.env.NODE_ENV || 'development',
+        environment: process.env['NODE_ENV'] || 'development',
       };
 
       return event;
@@ -69,7 +66,7 @@ if (sentryDsn) {
     initialScope: {
       tags: {
         component: 'edge-runtime',
-        deployment: process.env.VERCEL_ENV || 'development',
+        deployment: process.env['VERCEL_ENV'] || 'development',
         runtime_type: 'edge',
       },
     },
@@ -77,27 +74,27 @@ if (sentryDsn) {
     // Edge-specific sampling
     tracesSampler: (samplingContext) => {
       // Higher sampling for middleware and API routes
-      if (samplingContext.request?.url?.includes('/api/')) {
-        return process.env.NODE_ENV === 'production' ? 0.1 : 1.0;
+      if (samplingContext['request']?.url?.includes('/api/')) {
+        return process.env['NODE_ENV'] === 'production' ? 0.1 : 1.0;
       }
       
       // Lower sampling for static requests
-      if (samplingContext.request?.url?.includes('/_next/static/')) {
+      if (samplingContext['request']?.url?.includes('/_next/static/')) {
         return 0.01;
       }
       
       // Default sampling for edge runtime
-      return process.env.NODE_ENV === 'production' ? 0.05 : 1.0;
+      return process.env['NODE_ENV'] === 'production' ? 0.05 : 1.0;
     },
 
     // Debug configuration for edge runtime
-    debug: process.env.NODE_ENV === 'development',
+    debug: process.env['NODE_ENV'] === 'development',
 
     // Enable experimental features compatible with edge runtime
     _experiments: {
       enableLogs: true,
     },
   });
-} else if (process.env.NODE_ENV === 'development') {
+} else if (process.env['NODE_ENV'] === 'development') {
   console.log('Sentry DSN not configured for edge runtime - monitoring disabled');
 }

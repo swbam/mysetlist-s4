@@ -61,6 +61,7 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
       onMetricUpdate?.(key, value);
 
       if (debug) {
+        console.log(`Performance metric updated: ${key} = ${value}`);
       }
     },
     [onMetricUpdate, debug]
@@ -116,6 +117,7 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
       observerRef.current = observer;
     } catch (_error) {
       if (debug) {
+        console.warn('PerformanceObserver not supported:', _error);
       }
     }
 
@@ -195,6 +197,7 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
       updateMetric('componentMountTime', startTime);
 
       if (debug) {
+        console.log(`Component mount tracked: ${_componentName} at ${startTime}ms`);
       }
     },
     [updateMetric, debug]
@@ -210,6 +213,7 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
       updateMetric('renderTime', renderTime);
 
       if (debug) {
+        console.log(`Render time measured: ${renderTime}ms`);
       }
 
       return renderTime;
@@ -321,6 +325,7 @@ export function useComponentPerformance(
     renderCountRef.current += 1;
 
     if (process.env.NODE_ENV === 'development') {
+      console.log(`Component ${componentName} rendered #${renderCountRef.current}`);
     }
   }, deps);
 
@@ -331,6 +336,7 @@ export function useComponentPerformance(
       const duration = performance.now() - startTime;
 
       if (process.env.NODE_ENV === 'development') {
+        console.log(`${componentName} operation ${_operationName}: ${duration}ms`);
       }
 
       return duration;

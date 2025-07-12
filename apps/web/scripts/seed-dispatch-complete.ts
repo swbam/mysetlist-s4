@@ -62,6 +62,10 @@ async function main() {
       })
       .returning();
 
+    if (!dispatchArtist) {
+      throw new Error('Failed to create or retrieve Dispatch artist');
+    }
+
     const venueData = [
       {
         name: 'Red Rocks Amphitheatre',
@@ -148,11 +152,10 @@ async function main() {
       },
     ];
 
-    const _createdVenues = await db
+    await db
       .insert(venues)
       .values(venueData)
-      .onConflictDoNothing()
-      .returning();
+      .onConflictDoNothing();
 
     // Get all venues for shows
     const allVenues = await db
@@ -166,12 +169,12 @@ async function main() {
     const showsData = [
       {
         headlinerArtistId: dispatchArtist.id,
-        venueId: allVenues.find((v) => v.slug === 'red-rocks-amphitheatre')?.id,
+        venueId: allVenues.find((v) => v.slug === 'red-rocks-amphitheatre')?.id!,
         name: 'Dispatch: Summer Tour 2025',
         slug: 'dispatch-summer-tour-2025-red-rocks',
         date: new Date(today.getTime() + 45 * 24 * 60 * 60 * 1000)
           .toISOString()
-          .split('T')[0], // 45 days from now
+          .split('T')[0]!, // 45 days from now
         startTime: '19:30',
         doorsTime: '18:00',
         status: 'upcoming' as const,
@@ -190,12 +193,12 @@ async function main() {
       },
       {
         headlinerArtistId: dispatchArtist.id,
-        venueId: allVenues.find((v) => v.slug === 'house-of-blues-boston')?.id,
+        venueId: allVenues.find((v) => v.slug === 'house-of-blues-boston')?.id!,
         name: 'Dispatch: Hometown Heroes',
         slug: 'dispatch-hometown-heroes-boston',
         date: new Date(today.getTime() - 10 * 24 * 60 * 60 * 1000)
           .toISOString()
-          .split('T')[0], // 10 days ago
+          .split('T')[0]!, // 10 days ago
         startTime: '20:00',
         doorsTime: '19:00',
         status: 'completed' as const,
@@ -212,12 +215,12 @@ async function main() {
       },
       {
         headlinerArtistId: dispatchArtist.id,
-        venueId: allVenues.find((v) => v.slug === 'the-fillmore-sf')?.id,
+        venueId: allVenues.find((v) => v.slug === 'the-fillmore-sf')?.id!,
         name: 'Dispatch: West Coast Winter Tour',
         slug: 'dispatch-west-coast-fillmore',
         date: new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
           .toISOString()
-          .split('T')[0], // 30 days from now
+          .split('T')[0]!, // 30 days from now
         startTime: '21:00',
         doorsTime: '20:00',
         status: 'upcoming' as const,
@@ -235,12 +238,12 @@ async function main() {
       },
       {
         headlinerArtistId: dispatchArtist.id,
-        venueId: allVenues.find((v) => v.slug === '930-club')?.id,
+        venueId: allVenues.find((v) => v.slug === '930-club')?.id!,
         name: 'Dispatch: Capital Sessions',
         slug: 'dispatch-capital-sessions-dc',
         date: new Date(today.getTime() - 25 * 24 * 60 * 60 * 1000)
           .toISOString()
-          .split('T')[0], // 25 days ago
+          .split('T')[0]!, // 25 days ago
         startTime: '20:30',
         doorsTime: '19:30',
         status: 'completed' as const,
@@ -257,12 +260,12 @@ async function main() {
       },
       {
         headlinerArtistId: dispatchArtist.id,
-        venueId: allVenues.find((v) => v.slug === 'bowery-ballroom')?.id,
+        venueId: allVenues.find((v) => v.slug === 'bowery-ballroom')?.id!,
         name: 'Dispatch: Intimate NYC Night',
         slug: 'dispatch-intimate-nyc-bowery',
         date: new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000)
           .toISOString()
-          .split('T')[0], // 60 days from now
+          .split('T')[0]!, // 60 days from now
         startTime: '21:30',
         doorsTime: '20:30',
         status: 'upcoming' as const,
@@ -496,11 +499,10 @@ async function main() {
       },
     ];
 
-    const _createdSongs = await db
+    await db
       .insert(songs)
       .values(dispatchSongs)
-      .onConflictDoNothing()
-      .returning();
+      .onConflictDoNothing();
 
     // Get all songs for setlists
     const allSongs = await db
@@ -543,9 +545,11 @@ async function main() {
             isLocked: setlistType === 'actual',
             totalVotes: 0,
             accuracyScore: setlistType === 'actual' ? 95 : 0,
-            createdBy: testUser?.id,
+            ...(testUser?.id && { createdBy: testUser.id }),
           })
           .returning();
+
+        if (!setlist) continue;
 
         _setlistCount++;
 
@@ -559,6 +563,7 @@ async function main() {
           position++
         ) {
           const song = shuffledSongs[position];
+          if (!song) continue;
 
           const [setlistSong] = await db
             .insert(setlistSongs)
@@ -580,7 +585,7 @@ async function main() {
             .returning();
 
           // Add some votes for predicted setlists
-          if (setlistType === 'predicted' && testUser && Math.random() > 0.5) {
+          if (setlistType === 'predicted' && testUser && setlistSong && Math.random() > 0.5) {
             await db
               .insert(votes)
               .values({

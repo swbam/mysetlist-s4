@@ -40,7 +40,7 @@ export async function rateLimitMiddleware(
     pathname.startsWith(path)
   );
 
-  const finalConfig = config || matchingConfig?.[1] || defaultConfigs.default;
+  const finalConfig = config || matchingConfig?.[1] || defaultConfigs['default']!;
 
   // Generate rate limit key
   const keyGenerator =

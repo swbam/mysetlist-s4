@@ -222,14 +222,13 @@ class TestReporter {
     // Generate reports
     const markdownReport = this.generateMarkdownReport();
     const jsonReport = this.generateJSONReport();
-    const _githubSummary = this.generateGitHubSummary();
 
     // Write reports
     writeFileSync('test-report.md', markdownReport);
     writeFileSync('test-report.json', jsonReport);
 
     // Output for GitHub Actions
-    if (process.env.GITHUB_ACTIONS) {
+    if (process.env['GITHUB_ACTIONS']) {
       if (this.report.totalFailed > 0) {
         process.exit(1);
       }

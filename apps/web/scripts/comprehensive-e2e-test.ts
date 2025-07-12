@@ -21,33 +21,14 @@ const BASE_URL = env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
 const TEST_ARTIST_NAME = 'Taylor Swift';
 
 // Logging utilities
-const colors = {
-  reset: '\x1b[0m',
-  bright: '\x1b[1m',
-  dim: '\x1b[2m',
-  red: '\x1b[31m',
-  green: '\x1b[32m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m',
-  magenta: '\x1b[35m',
-  cyan: '\x1b[36m',
-  white: '\x1b[37m',
-};
-
 function log(
-  level: 'info' | 'success' | 'error' | 'warn' | 'step',
+  _level: 'info' | 'success' | 'error' | 'warn' | 'step',
   _message: string,
   details?: any
 ) {
-  const _timestamp = new Date().toISOString();
-  const _prefix = {
-    info: `${colors.blue}ℹ${colors.reset}`,
-    success: `${colors.green}✅${colors.reset}`,
-    error: `${colors.red}❌${colors.reset}`,
-    warn: `${colors.yellow}⚠${colors.reset}`,
-    step: `${colors.cyan}🔄${colors.reset}`,
-  }[level];
+  // Logging function placeholder
   if (details) {
+    // Handle details if needed
   }
 }
 
@@ -70,7 +51,7 @@ class TestAPI {
     };
 
     if (this.authToken) {
-      (headers as Record<string, string>).Authorization =
+      (headers as Record<string, string>)['Authorization'] =
         `Bearer ${this.authToken}`;
     }
 
@@ -371,9 +352,8 @@ class ComprehensiveE2ETest {
     const failedTests = totalTests - passedTests;
 
     Object.entries(this.testResults).forEach(([_testName, passed]) => {
-      const _status = passed
-        ? `${colors.green}✅ PASS${colors.reset}`
-        : `${colors.red}❌ FAIL${colors.reset}`;
+      // Test result processing placeholder
+      void passed; // Suppress unused variable warning
     });
 
     // Show test data summary

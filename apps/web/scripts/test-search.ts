@@ -10,9 +10,9 @@ dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
 async function testSearch() {
   // Use direct postgres client
-  const sql = postgres(process.env.DATABASE_URL!, {
+  const sql = postgres(process.env['DATABASE_URL']!, {
     max: 1,
-    ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
+    ssl: process.env['NODE_ENV'] === 'production' ? 'require' : false,
   });
 
   try {

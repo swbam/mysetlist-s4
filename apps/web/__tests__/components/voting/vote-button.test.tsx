@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, act } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { VoteButton } from '~/components/voting/vote-button';
 import { mockSupabase } from '~/test-utils';
@@ -35,7 +35,10 @@ describe('VoteButton', () => {
     );
 
     const upvoteButton = screen.getByLabelText(/upvote/i);
-    fireEvent.click(upvoteButton);
+    
+    await act(async () => {
+      fireEvent.click(upvoteButton);
+    });
 
     await waitFor(() => {
       expect(onVote).toHaveBeenCalled();
@@ -63,7 +66,10 @@ describe('VoteButton', () => {
     );
 
     const upvoteButton = screen.getByLabelText(/upvote/i);
-    fireEvent.click(upvoteButton);
+    
+    await act(async () => {
+      fireEvent.click(upvoteButton);
+    });
 
     await waitFor(() => {
       expect(screen.getByText(/sign in/i)).toBeInTheDocument();
@@ -82,7 +88,9 @@ describe('VoteButton', () => {
 
     const upvoteButton = screen.getByLabelText(/upvote/i);
 
-    fireEvent.click(upvoteButton);
+    await act(async () => {
+      fireEvent.click(upvoteButton);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('9')).toBeInTheDocument();
@@ -100,7 +108,10 @@ describe('VoteButton', () => {
     );
 
     const downvoteButton = screen.getByLabelText(/downvote/i);
-    fireEvent.click(downvoteButton);
+    
+    await act(async () => {
+      fireEvent.click(downvoteButton);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('9')).toBeInTheDocument(); // upvotes decreased
@@ -125,7 +136,10 @@ describe('VoteButton', () => {
     );
 
     const upvoteButton = screen.getByTestId('vote-up');
-    fireEvent.click(upvoteButton);
+    
+    await act(async () => {
+      fireEvent.click(upvoteButton);
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Failed to record vote')).toBeInTheDocument();
@@ -151,14 +165,16 @@ describe('VoteButton', () => {
     const upvoteButton = screen.getByTestId('vote-up');
 
     // Click multiple times quickly
-    fireEvent.click(upvoteButton);
-    fireEvent.click(upvoteButton);
-    fireEvent.click(upvoteButton);
+    await act(async () => {
+      fireEvent.click(upvoteButton);
+      fireEvent.click(upvoteButton);
+      fireEvent.click(upvoteButton);
+    });
 
     expect(onVote).toHaveBeenCalledTimes(1);
   });
 
-  it('updates optimistically', () => {
+  it('updates optimistically', async () => {
     render(
       <VoteButton
         setlistSongId="test-song-id"
@@ -168,7 +184,10 @@ describe('VoteButton', () => {
     );
 
     const upvoteButton = screen.getByTestId('vote-up');
-    fireEvent.click(upvoteButton);
+    
+    await act(async () => {
+      fireEvent.click(upvoteButton);
+    });
 
     // Should update immediately
     expect(screen.getByText('11')).toBeInTheDocument();
@@ -191,7 +210,7 @@ describe('VoteButton', () => {
       expect(upvoteButton).toHaveAttribute('aria-pressed', 'false');
     });
 
-    it('is keyboard navigable', () => {
+    it('is keyboard navigable', async () => {
       render(
         <VoteButton
           setlistSongId="test-song-id"
@@ -204,7 +223,10 @@ describe('VoteButton', () => {
 
       expect(document.activeElement).toBe(upvoteButton);
 
-      fireEvent.keyDown(upvoteButton, { key: 'Enter' });
+      await act(async () => {
+        fireEvent.keyDown(upvoteButton, { key: 'Enter' });
+      });
+      
       expect(screen.getByText('11')).toBeInTheDocument();
     });
   });

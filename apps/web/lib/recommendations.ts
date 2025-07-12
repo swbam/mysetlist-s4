@@ -82,7 +82,10 @@ export const getUserPreferences = cache(
         favoriteVenues = [...new Set(shows.map((s) => s.venue_id))];
 
         // Extract genres from artists
-        const allGenres = shows.flatMap((s) => s.artists.genres || []);
+        const allGenres = shows.flatMap((s) => {
+          const artists = Array.isArray(s.artists) ? s.artists : [s.artists];
+          return artists.flatMap(artist => artist?.genres || []);
+        });
         const genreCounts = allGenres.reduce(
           (acc, genre) => {
             acc[genre] = (acc[genre] || 0) + 1;
@@ -93,7 +96,7 @@ export const getUserPreferences = cache(
 
         // Get top genres
         favoriteGenres = Object.entries(genreCounts)
-          .sort(([, a], [, b]) => b - a)
+          .sort(([, a], [, b]) => (b as number) - (a as number))
           .slice(0, 5)
           .map(([genre]) => genre);
       }
@@ -149,17 +152,19 @@ export async function getRecommendedShows(
 
     if (followedArtistShows) {
       followedArtistShows.forEach((show) => {
+        const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
+        const venue = Array.isArray(show.venues) ? show.venues[0] : show.venues;
         recommendations.push({
           id: show.id,
           type: 'show',
-          name: `${show.artists.name} at ${show.venues.name}`,
-          reason: `You follow ${show.artists.name}`,
+          name: `${artist?.name} at ${venue?.name}`,
+          reason: `You follow ${artist?.name}`,
           score: 0.9,
-          image_url: show.artists.image_url,
+          image_url: artist?.image_url,
           slug: show.slug,
           metadata: {
-            artist_name: show.artists.name,
-            venue_name: `${show.venues.name}, ${show.venues.city}`,
+            artist_name: artist?.name,
+            venue_name: `${venue?.name}, ${venue?.city}`,
             show_date: show.show_date,
           },
         });
@@ -193,17 +198,19 @@ export async function getRecommendedShows(
 
     if (venueShows) {
       venueShows.forEach((show) => {
+        const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
+        const venue = Array.isArray(show.venues) ? show.venues[0] : show.venues;
         recommendations.push({
           id: show.id,
           type: 'show',
-          name: `${show.artists.name} at ${show.venues.name}`,
-          reason: `At your favorite venue: ${show.venues.name}`,
+          name: `${artist?.name} at ${venue?.name}`,
+          reason: `At your favorite venue: ${venue?.name}`,
           score: 0.8,
-          image_url: show.artists.image_url,
+          image_url: artist?.image_url,
           slug: show.slug,
           metadata: {
-            artist_name: show.artists.name,
-            venue_name: `${show.venues.name}, ${show.venues.city}`,
+            artist_name: artist?.name,
+            venue_name: `${venue?.name}, ${venue?.city}`,
             show_date: show.show_date,
           },
         });
@@ -247,22 +254,24 @@ export async function getRecommendedShows(
 
       if (genreShows) {
         genreShows.forEach((show) => {
+          const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
+          const venue = Array.isArray(show.venues) ? show.venues[0] : show.venues;
           const matchingGenres =
-            show.artists.genres?.filter((g) =>
+            artist?.genres?.filter((g: string) =>
               preferences.favoriteGenres.includes(g)
             ) || [];
 
           recommendations.push({
             id: show.id,
             type: 'show',
-            name: `${show.artists.name} at ${show.venues.name}`,
+            name: `${artist?.name} at ${venue?.name}`,
             reason: `Similar to your taste: ${matchingGenres.join(', ')}`,
             score: 0.7,
-            image_url: show.artists.image_url,
+            image_url: artist?.image_url,
             slug: show.slug,
             metadata: {
-              artist_name: show.artists.name,
-              venue_name: `${show.venues.name}, ${show.venues.city}`,
+              artist_name: artist?.name,
+              venue_name: `${venue?.name}, ${venue?.city}`,
               show_date: show.show_date,
               genres: matchingGenres,
             },
@@ -315,7 +324,7 @@ export async function getRecommendedArtists(
     if (similarArtists) {
       similarArtists.forEach((artist) => {
         const matchingGenres =
-          artist.genres?.filter((g) =>
+          artist.genres?.filter((g: string) =>
             preferences.favoriteGenres.includes(g)
           ) || [];
 
@@ -353,19 +362,24 @@ export async function getRecommendedArtists(
 
     if (venueArtists) {
       const uniqueArtists = Array.from(
-        new Map(venueArtists.map((va) => [va.artists.id, va.artists])).values()
+        new Map(venueArtists.map((va) => {
+          const artist = Array.isArray(va.artists) ? va.artists[0] : va.artists;
+          return [artist?.id, artist];
+        })).values()
       );
 
       uniqueArtists.forEach((artist) => {
-        recommendations.push({
-          id: artist.id,
-          type: 'artist',
-          name: artist.name,
-          reason: 'Performed at venues you like',
-          score: 0.7,
-          image_url: artist.image_url,
-          slug: artist.slug,
-        });
+        if (artist?.id) {
+          recommendations.push({
+            id: artist.id,
+            type: 'artist',
+            name: artist.name,
+            reason: 'Performed at venues you like',
+            score: 0.7,
+            image_url: artist.image_url,
+            slug: artist.slug,
+          });
+        }
       });
     }
   }
@@ -458,23 +472,28 @@ export async function getRecommendedVenues(
 
     if (artistVenues) {
       const uniqueVenues = Array.from(
-        new Map(artistVenues.map((av) => [av.venues.id, av.venues])).values()
+        new Map(artistVenues.map((av) => {
+          const venue = Array.isArray(av.venues) ? av.venues[0] : av.venues;
+          return [venue?.id, venue];
+        })).values()
       );
 
       uniqueVenues.forEach((venue) => {
-        recommendations.push({
-          id: venue.id,
-          type: 'venue',
-          name: venue.name,
-          reason: 'Hosts artists you follow',
-          score: 0.7,
-          image_url: venue.image_url,
-          slug: venue.slug,
-          metadata: {
-            city: venue.city,
-            capacity: venue.capacity,
-          },
-        });
+        if (venue?.id) {
+          recommendations.push({
+            id: venue.id,
+            type: 'venue',
+            name: venue.name,
+            reason: 'Hosts artists you follow',
+            score: 0.7,
+            image_url: venue.image_url,
+            slug: venue.slug,
+            metadata: {
+              city: venue.city,
+              capacity: venue.capacity,
+            },
+          });
+        }
       });
     }
   }

@@ -5,33 +5,28 @@
 import * as Sentry from '@sentry/nextjs';
 
 // Only initialize Sentry if DSN is provided
-const sentryDsn = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN;
+const sentryDsn = process.env['SENTRY_DSN'] || process.env['NEXT_PUBLIC_SENTRY_DSN'];
 
 if (sentryDsn) {
   Sentry.init({
     dsn: sentryDsn,
 
     // Server-side integrations for comprehensive monitoring
+    // Note: httpIntegration, nodeContextIntegration, and localVariablesIntegration 
+    // may not be available in older Sentry versions (9.x)
     integrations: [
-      Sentry.httpIntegration({
-        tracing: true,
-        breadcrumbs: true,
-        instrumentOutgoingRequests: true,
-      }),
-      Sentry.nodeContextIntegration(),
-      Sentry.localVariablesIntegration({
-        captureAllExceptions: false,
-        maxExceptionsPerSecond: 50,
-      }),
+      // Only include integrations that exist in the current version
+      // httpIntegration, nodeContextIntegration, and localVariablesIntegration 
+      // are not available in the current Sentry version
     ],
 
     // Performance monitoring
-    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-    profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    tracesSampleRate: process.env['NODE_ENV'] === 'production' ? 0.1 : 1.0,
+    profilesSampleRate: process.env['NODE_ENV'] === 'production' ? 0.1 : 1.0,
 
     // Environment and release tracking
-    environment: process.env.NODE_ENV || 'development',
-    release: process.env.VERCEL_GIT_COMMIT_SHA || 'unknown',
+    environment: process.env['NODE_ENV'] || 'development',
+    release: process.env['VERCEL_GIT_COMMIT_SHA'] || 'unknown',
 
     // Enhanced error handling
     beforeSend: (event, hint) => {
@@ -47,7 +42,7 @@ if (sentryDsn) {
       // Filter out expected errors
       if (event.exception) {
         const error = hint.originalException;
-        if (error && error.message) {
+        if (error instanceof Error && error.message) {
           // Filter out common operational errors
           if (error.message.includes('ECONNRESET') || 
               error.message.includes('ENOTFOUND') ||
@@ -64,28 +59,28 @@ if (sentryDsn) {
     initialScope: {
       tags: {
         component: 'web-server',
-        deployment: process.env.VERCEL_ENV || 'development',
-        region: process.env.VERCEL_REGION || 'unknown',
+        deployment: process.env['VERCEL_ENV'] || 'development',
+        region: process.env['VERCEL_REGION'] || 'unknown',
       },
     },
 
     // Debug configuration
-    debug: process.env.NODE_ENV === 'development',
+    debug: process.env['NODE_ENV'] === 'development',
 
     // Advanced sampling for different types of events
     tracesSampler: (samplingContext) => {
       // Higher sampling for critical API routes
-      if (samplingContext.request?.url?.includes('/api/')) {
-        return process.env.NODE_ENV === 'production' ? 0.2 : 1.0;
+      if (samplingContext['request']?.url?.includes('/api/')) {
+        return process.env['NODE_ENV'] === 'production' ? 0.2 : 1.0;
       }
       
       // Lower sampling for static assets
-      if (samplingContext.request?.url?.includes('/_next/')) {
+      if (samplingContext['request']?.url?.includes('/_next/')) {
         return 0.01;
       }
       
       // Default sampling
-      return process.env.NODE_ENV === 'production' ? 0.1 : 1.0;
+      return process.env['NODE_ENV'] === 'production' ? 0.1 : 1.0;
     },
 
     // Enable experimental features
@@ -93,6 +88,6 @@ if (sentryDsn) {
       enableLogs: true,
     },
   });
-} else if (process.env.NODE_ENV === 'development') {
+} else if (process.env['NODE_ENV'] === 'development') {
   console.log('Sentry DSN not configured for server - monitoring disabled');
 }

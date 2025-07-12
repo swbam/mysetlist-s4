@@ -36,6 +36,7 @@
     "updateit": "supabase db repair && supabase db push && supabase functions deploy scheduled-sync && vercel env pull .env.production",
     "check:env": "tsx scripts/check-env.ts",
     "check:env:test": "tsx scripts/check-env.ts --test-apis",
+    "validate:env": "tsx scripts/validate-env-config.ts",
     "sync:artists": "tsx scripts/sync-trending-artists.ts",
     "sync:top": "tsx scripts/sync-top-artists.ts",
     "test:e2e": "tsx scripts/comprehensive-e2e-test.ts --npm-script",

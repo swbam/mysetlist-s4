@@ -116,7 +116,7 @@ export function generateShowMeta({
   return generateSocialMeta({
     title,
     description,
-    image: imageUrl,
+    ...(imageUrl && { image: imageUrl }),
     url: showUrl,
     type: 'article',
     publishedTime: new Date().toISOString(),
@@ -158,7 +158,7 @@ export function generateArtistMeta({
   return generateSocialMeta({
     title: `${artistName} | MySetlist`,
     description: enhancedDescription,
-    image: imageUrl,
+    ...(imageUrl && { image: imageUrl }),
     url: artistUrl,
     type: 'profile',
     tags: genres
@@ -195,7 +195,7 @@ export function generateVenueMeta({
   return generateSocialMeta({
     title: `${venueName} - ${location} | MySetlist`,
     description: venueDescription.trim(),
-    image: imageUrl,
+    ...(imageUrl && { image: imageUrl }),
     url: venueUrl,
     type: 'article',
     tags: [venueName, venueCity, 'venue', 'concert venue', 'live music'],

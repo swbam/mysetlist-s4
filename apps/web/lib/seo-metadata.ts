@@ -13,8 +13,8 @@ export function createPageMetadata(props: BaseMetadataProps): Metadata {
   return createMetadata({
     title: props.title,
     description: props.description,
-    image: props.image,
-    noIndex: props.noIndex,
+    ...(props.image && { image: props.image }),
+    ...(props.noIndex && { robots: { index: false, follow: false } }),
     openGraph: {
       title: props.title,
       description: props.description,
@@ -58,7 +58,7 @@ export function createArtistMetadata(artist: {
   return createPageMetadata({
     title: `${artist.name} - Concerts & Setlists | MySetlist`,
     description,
-    image: artist.imageUrl,
+    ...(artist.imageUrl && { image: artist.imageUrl }),
     canonicalUrl: `/artists/${artist.slug}`,
   });
 }
@@ -84,7 +84,7 @@ export function createShowMetadata(show: {
   return createPageMetadata({
     title: `${show.headliner} - ${formattedDate} at ${location} | MySetlist`,
     description: `Get tickets and setlist for ${show.headliner} performing at ${location} on ${formattedDate}. View predicted setlist, vote on songs, and connect with other fans.`,
-    image: show.image,
+    ...(show.image && { image: show.image }),
     canonicalUrl: `/shows/${show.slug}`,
   });
 }
@@ -111,7 +111,7 @@ export function createVenueMetadata(venue: {
   return createPageMetadata({
     title: `${venue.name} - ${location} | MySetlist`,
     description,
-    image: venue.imageUrl,
+    ...(venue.imageUrl && { image: venue.imageUrl }),
     canonicalUrl: `/venues/${venue.slug}`,
   });
 }

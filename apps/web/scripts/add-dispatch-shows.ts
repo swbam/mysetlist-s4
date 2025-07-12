@@ -9,22 +9,22 @@ async function main() {
       SELECT id, name, slug FROM artists WHERE slug = 'dispatch'
     `);
 
-    if (!dispatchCheck.rows.length) {
+    if (!dispatchCheck.length) {
       process.exit(1);
     }
 
-    const dispatch = dispatchCheck.rows[0];
+    const dispatch = dispatchCheck[0]!;
 
     // Get Madison Square Garden venue
     const msgCheck = await db.execute(sql`
       SELECT id, name, slug FROM venues WHERE slug = 'madison-square-garden'
     `);
 
-    if (!msgCheck.rows.length) {
+    if (!msgCheck.length) {
       process.exit(1);
     }
 
-    const msg = msgCheck.rows[0];
+    const msg = msgCheck[0]!;
 
     // Create upcoming and past shows for Dispatch
     const showsData = [
@@ -54,7 +54,7 @@ async function main() {
         SELECT id FROM shows WHERE slug = ${showData.slug}
       `);
 
-      if (existingShow.rows.length) {
+      if (existingShow.length) {
         continue;
       }
 
@@ -65,8 +65,8 @@ async function main() {
           status, view_count, vote_count, trending_score, is_featured, is_verified,
           min_price, max_price, created_at
         ) VALUES (
-          ${dispatch.id},
-          ${msg.id},
+          ${dispatch['id']},
+          ${msg['id']},
           ${showData.name},
           ${showData.slug},
           ${showData.date.toISOString()},
@@ -85,12 +85,12 @@ async function main() {
         RETURNING id, name
       `);
 
-      const show = showResult.rows[0];
+      const show = showResult[0]!;
 
       // Create show_artists relationship
       await db.execute(sql`
         INSERT INTO show_artists (show_id, artist_id, order_index, set_length, is_headliner)
-        VALUES (${show.id}, ${dispatch.id}, 0, 90, true)
+        VALUES (${show['id']}, ${dispatch['id']}, 0, 90, true)
       `);
 
       // Create songs for Dispatch if they don't exist
@@ -118,23 +118,23 @@ async function main() {
         // Check if song exists
         const existingSong = await db.execute(sql`
           SELECT id FROM songs 
-          WHERE title = ${songTitle} AND artist = ${dispatch.name}
+          WHERE title = ${songTitle} AND artist = ${dispatch['name']}
         `);
 
-        if (!existingSong.rows.length) {
+        if (!existingSong.length) {
           await db.execute(sql`
             INSERT INTO songs (
               title, artist, album, duration_ms, popularity, 
               is_playable, created_at, artist_id
             ) VALUES (
               ${songTitle},
-              ${dispatch.name},
+              ${dispatch['name']},
               ${i < 8 ? 'Bang Bang' : 'America, Location 12'},
               ${180000 + Math.floor(Math.random() * 120000)},
               ${70 + Math.floor(Math.random() * 30)},
               true,
               NOW(),
-              ${dispatch.id}
+              ${dispatch['id']}
             )
           `);
         }
@@ -146,8 +146,8 @@ async function main() {
           show_id, artist_id, type, name, order_index, 
           total_votes, is_locked, created_at
         ) VALUES (
-          ${show.id},
-          ${dispatch.id},
+          ${show['id']},
+          ${dispatch['id']},
           ${showData.status === 'upcoming' ? 'predicted' : 'actual'},
           'Main Set',
           0,
@@ -158,25 +158,25 @@ async function main() {
         RETURNING id
       `);
 
-      const setlist = setlistResult.rows[0];
+      const setlist = setlistResult[0]!;
 
       // Add songs to the setlist
       const songsForSetlist = await db.execute(sql`
         SELECT id FROM songs 
-        WHERE artist = ${dispatch.name}
+        WHERE artist = ${dispatch['name']}
         ORDER BY popularity DESC
         LIMIT 12
       `);
 
-      for (let i = 0; i < songsForSetlist.rows.length; i++) {
-        const song = songsForSetlist.rows[i];
+      for (let i = 0; i < songsForSetlist.length; i++) {
+        const song = songsForSetlist[i]!;
         await db.execute(sql`
           INSERT INTO setlist_songs (
             setlist_id, song_id, position, upvotes, downvotes, 
             net_votes, created_at
           ) VALUES (
-            ${setlist.id},
-            ${song.id},
+            ${setlist['id']},
+            ${song['id']},
             ${i + 1},
             ${Math.floor(Math.random() * 20)},
             ${Math.floor(Math.random() * 5)},
@@ -187,19 +187,7 @@ async function main() {
       }
     }
 
-    // Show summary
-    const summary = await db.execute(sql`
-      SELECT 
-        COUNT(DISTINCT s.id) as show_count,
-        COUNT(DISTINCT sl.id) as setlist_count,
-        COUNT(DISTINCT ss.id) as setlist_song_count
-      FROM shows s
-      LEFT JOIN setlists sl ON sl.show_id = s.id
-      LEFT JOIN setlist_songs ss ON ss.setlist_id = sl.id
-      WHERE s.headliner_artist_id = ${dispatch.id}
-    `);
-
-    const _counts = summary.rows[0];
+    // Data setup completed successfully
   } catch (_error) {
     process.exit(1);
   }

@@ -10,9 +10,9 @@ dotenv.config({ path: path.resolve(__dirname, '../.env.local') });
 
 async function addDispatch() {
   // Use direct postgres client
-  const sql = postgres(process.env.DATABASE_URL!, {
+  const sql = postgres(process.env['DATABASE_URL']!, {
     max: 1,
-    ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
+    ssl: process.env['NODE_ENV'] === 'production' ? 'require' : false,
   });
 
   try {
@@ -56,7 +56,7 @@ async function addDispatch() {
     `;
 
     if (artistResult.length > 0) {
-      const artistId = artistResult[0].id;
+      const artistId = artistResult[0]!['id'];
 
       await sql`
         INSERT INTO artist_stats (artist_id, total_shows, total_setlists, avg_setlist_length)
@@ -80,21 +80,6 @@ async function addDispatch() {
         ON CONFLICT DO NOTHING
       `;
     }
-
-    // Show summary
-    const summary = await sql`
-      SELECT 
-        a.name,
-        a.spotify_id,
-        a.ticketmaster_id,
-        a.genres,
-        s.total_shows,
-        (SELECT COUNT(*) FROM songs WHERE artist = 'Dispatch') as song_count
-      FROM artists a
-      LEFT JOIN artist_stats s ON a.id = s.artist_id
-      WHERE a.slug = 'dispatch'
-    `;
-    const _dispatch = summary[0];
 
     await sql.end();
   } catch (_error) {

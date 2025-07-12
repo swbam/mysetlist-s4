@@ -1,7 +1,7 @@
 'use client';
 
 import { captureException, setUser, setContext, addBreadcrumb } from '@sentry/nextjs';
-import { createContext, useContext, useCallback, useEffect, type ReactNode } from 'react';
+import React, { createContext, useContext, useCallback, useEffect } from 'react';
 import { MonitoringService } from '~/lib/monitoring';
 
 interface ErrorTrackingContextType {
@@ -18,7 +18,7 @@ interface ErrorTrackingContextType {
 const ErrorTrackingContext = createContext<ErrorTrackingContextType | null>(null);
 
 interface ErrorTrackingProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
   userId?: string;
   userEmail?: string;
   username?: string;
@@ -46,7 +46,7 @@ export function ErrorTrackingProvider({
       const eventId = captureException(error, {
         tags: {
           errorSource: 'application',
-          component: context?.component || 'unknown',
+          component: context?.['component'] || 'unknown',
         },
         extra: {
           timestamp: new Date().toISOString(),
@@ -57,7 +57,7 @@ export function ErrorTrackingProvider({
         fingerprint: [
           error.name,
           error.message,
-          context?.component || 'default',
+          context?.['component'] || 'default',
         ],
       });
 
@@ -87,7 +87,7 @@ export function ErrorTrackingProvider({
         message: `User action: ${action}`,
         level: 'info',
         category: 'user',
-        data: metadata,
+        ...(metadata && { data: metadata }),
       });
 
       // Track in monitoring service
@@ -141,8 +141,8 @@ export function ErrorTrackingProvider({
       // Set user context in Sentry
       setUser({
         id: user.id,
-        email: user.email,
-        username: user.username,
+        ...(user.email && { email: user.email }),
+        ...(user.username && { username: user.username }),
       });
 
       // Add user context for monitoring
@@ -241,8 +241,8 @@ export function ErrorTrackingProvider({
     if (userId) {
       setUserContext({
         id: userId,
-        email: userEmail,
-        username: username,
+        ...(userEmail && { email: userEmail }),
+        ...(username && { username }),
       });
     }
   }, [userId, userEmail, username, setUserContext]);

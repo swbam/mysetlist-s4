@@ -6,7 +6,7 @@
  */
 
 import { execSync } from 'child_process';
-import { writeFileSync, existsSync } from 'fs';
+import { writeFileSync } from 'fs';
 import { join } from 'path';
 
 interface TestResult {

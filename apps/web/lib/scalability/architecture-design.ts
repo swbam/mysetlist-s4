@@ -117,79 +117,10 @@ export interface ScalabilityPlan {
 }
 
 class ScalabilityArchitect {
-  private config: ScalabilityConfig;
-  private currentMetrics: ScalabilityMetrics;
   private scalabilityPlans: ScalabilityPlan[];
 
   constructor() {
-    this.config = this.getDefaultConfig();
-    this.currentMetrics = this.initializeMetrics();
     this.scalabilityPlans = this.defineScalabilityPlans();
-  }
-
-  private getDefaultConfig(): ScalabilityConfig {
-    return {
-      database: {
-        sharding: {
-          enabled: false,
-          strategy: 'user_id',
-          shardCount: 4,
-          replicationFactor: 3
-        },
-        readReplicas: {
-          enabled: true,
-          count: 2,
-          distribution: 'load_based'
-        },
-        partitioning: {
-          enabled: true,
-          tables: ['events', 'setlist_votes', 'user_sessions'],
-          strategy: 'range'
-        }
-      },
-      caching: {
-        layers: {
-          cdn: true,
-          application: true,
-          database: true
-        },
-        strategy: 'cache_aside',
-        ttl: {
-          static: 86400, // 24 hours
-          dynamic: 3600, // 1 hour
-          user_specific: 1800 // 30 minutes
-        },
-        invalidation: 'event_driven'
-      },
-      loadBalancing: {
-        type: 'least_connections',
-        healthChecks: true,
-        failover: true,
-        autoScaling: true
-      },
-      realtime: {
-        websockets: true,
-        pubsub: true,
-        messageQueue: true,
-        eventSourcing: true
-      },
-      monitoring: {
-        metrics: ['response_time', 'throughput', 'error_rate', 'resource_usage'],
-        alerting: true,
-        tracing: true,
-        logging: 'centralized'
-      }
-    };
-  }
-
-  private initializeMetrics(): ScalabilityMetrics {
-    return {
-      responseTime: { p50: 0, p95: 0, p99: 0 },
-      throughput: { requestsPerSecond: 0, transactionsPerSecond: 0 },
-      resources: { cpu: 0, memory: 0, disk: 0, network: 0 },
-      database: { connections: 0, queryTime: 0, cacheHitRate: 0, deadlocks: 0 },
-      users: { concurrent: 0, active: 0, peak: 0 }
-    };
   }
 
   private defineScalabilityPlans(): ScalabilityPlan[] {
@@ -690,11 +621,11 @@ class ScalabilityArchitect {
   } {
     const currentPlan = this.scalabilityPlans.find(p => 
       currentUsers <= p.userTarget
-    ) || this.scalabilityPlans[0];
+    ) || this.scalabilityPlans[0]!;
 
     const targetPlan = this.scalabilityPlans.find(p => 
       targetUsers <= p.userTarget
-    ) || this.scalabilityPlans[this.scalabilityPlans.length - 1];
+    ) || this.scalabilityPlans[this.scalabilityPlans.length - 1]!;
 
     return {
       currentState: {
@@ -735,7 +666,7 @@ class ScalabilityArchitect {
     };
   }
 
-  private getMigrationPhases(currentUsers: number, targetUsers: number): string[] {
+  private getMigrationPhases(_currentUsers: number, targetUsers: number): string[] {
     const phases = ['assessment', 'planning', 'infrastructure', 'migration', 'optimization'];
     
     if (targetUsers > 500000) {
@@ -766,7 +697,7 @@ class ScalabilityArchitect {
     ];
   }
 
-  private getTimelinePhases(timeframe: string): Array<{ phase: string; duration: string }> {
+  private getTimelinePhases(_timeframe: string): Array<{ phase: string; duration: string }> {
     return [
       { phase: 'assessment', duration: '2 weeks' },
       { phase: 'planning', duration: '4 weeks' },
@@ -796,7 +727,7 @@ class ScalabilityArchitect {
     return Math.floor(baselineCost * scalingFactor);
   }
 
-  private getTechnicalRisks(currentUsers: number, targetUsers: number): string[] {
+  private getTechnicalRisks(_currentUsers: number, targetUsers: number): string[] {
     const risks = [
       'data_migration_complexity',
       'system_downtime',

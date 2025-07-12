@@ -2,7 +2,6 @@
 
 import { artists } from '@repo/database/src/schema';
 import { eq } from 'drizzle-orm';
-import { env } from '../env';
 import { db } from './db-client';
 
 // Simple Spotify client
@@ -15,8 +14,8 @@ class SpotifyClient {
       return;
     }
 
-    const clientId = env.SPOTIFY_CLIENT_ID;
-    const clientSecret = env.SPOTIFY_CLIENT_SECRET;
+    const clientId = process.env['SPOTIFY_CLIENT_ID'];
+    const clientSecret = process.env['SPOTIFY_CLIENT_SECRET'];
 
     if (!clientId || !clientSecret) {
       throw new Error('Spotify credentials not configured');
@@ -126,7 +125,7 @@ async function seedArtist(artistName: string) {
           lastSyncedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(eq(artists.id, existingArtist[0].id))
+        .where(eq(artists.id, existingArtist[0]!.id))
         .returning();
 
       artistRecord = updated;

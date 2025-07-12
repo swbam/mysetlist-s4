@@ -17,7 +17,7 @@ interface RouteTest {
   critical: boolean;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+const BASE_URL = process.env['NEXT_PUBLIC_BASE_URL'] || 'http://localhost:3000';
 
 const ROUTES_TO_TEST: RouteTest[] = [
   // Core Pages
@@ -150,9 +150,7 @@ class NavigationTester {
         status: response.status,
         success,
         responseTime,
-        error: success
-          ? undefined
-          : `Expected ${route.expectedStatus}, got ${response.status}`,
+        ...(!success && { error: `Expected ${route.expectedStatus}, got ${response.status}` }),
       });
     } catch (error) {
       const responseTime = Date.now() - startTime;
@@ -184,29 +182,10 @@ class NavigationTester {
         !r.success && ROUTES_TO_TEST.find((rt) => rt.path === r.path)?.critical
     ).length;
 
-    // Performance metrics
-    const _avgResponseTime =
-      this.results.reduce((sum, r) => sum + r.responseTime, 0) / totalTests;
-    const _maxResponseTime = Math.max(
-      ...this.results.map((r) => r.responseTime)
-    );
-    const _minResponseTime = Math.min(
-      ...this.results.map((r) => r.responseTime)
-    );
-
-    // Failed routes details
-    if (failed > 0) {
-      this.results
-        .filter((r) => !r.success)
-        .forEach((r) => {
-          const _route = ROUTES_TO_TEST.find((rt) => rt.path === r.path);
-        });
-    }
-
     // Performance warnings
     const slowRoutes = this.results.filter((r) => r.responseTime > 2000);
     if (slowRoutes.length > 0) {
-      slowRoutes.forEach((_r) => {});
+      // Log slow routes if needed in the future
     }
 
     if (criticalFailed > 0) {

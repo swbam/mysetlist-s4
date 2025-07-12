@@ -25,7 +25,7 @@ afterEach(() => {
 
 // Mock Supabase for integration tests with more realistic behavior
 vi.mock('~/lib/supabase/server', () => ({
-  createClient: vi.fn(() => ({
+  createClient: vi.fn().mockResolvedValue({
     auth: {
       getUser: vi.fn().mockResolvedValue({
         data: { 
@@ -98,7 +98,7 @@ vi.mock('~/lib/supabase/server', () => ({
 
 // Mock client-side Supabase
 vi.mock('~/lib/supabase/client', () => ({
-  createClient: vi.fn(() => ({
+  createClient: vi.fn().mockResolvedValue({
     auth: {
       getUser: vi.fn().mockResolvedValue({
         data: { 
@@ -236,14 +236,27 @@ global.fetch = vi.fn().mockImplementation((url: string | URL, options?: RequestI
       status: 200,
       statusText: 'OK',
       json: () => Promise.resolve({
-        database: { status: 'healthy', responseTime: 45 },
-        external_apis: {
-          spotify: { status: 'healthy', responseTime: 120 },
-          ticketmaster: { status: 'healthy', responseTime: 150 },
-          setlistfm: { status: 'healthy', responseTime: 200 },
+        overall: {
+          status: 'healthy',
+          timestamp: new Date().toISOString(),
+          summary: { total: 4, healthy: 4, degraded: 0, down: 0 }
         },
-        memory: { usage: 45.2, limit: 100 },
-        uptime: 86400,
+        services: [
+          { service: 'Database', status: 'healthy', responseTime: 45, lastCheck: new Date() },
+          { service: 'Authentication', status: 'healthy', responseTime: 30, lastCheck: new Date() },
+          { service: 'Spotify API', status: 'healthy', responseTime: 120, lastCheck: new Date() },
+          { service: 'Ticketmaster API', status: 'healthy', responseTime: 150, lastCheck: new Date() }
+        ],
+        metrics: {
+          cpuUsage: 25,
+          memoryUsage: 45,
+          diskUsage: 30,
+          apiResponseTime: 150,
+          activeConnections: 35,
+          requestsPerMinute: 750,
+          errorRate: '0.001'
+        },
+        alerts: []
       }),
       headers: new Headers({ 'content-type': 'application/json' }),
     } as Response);
