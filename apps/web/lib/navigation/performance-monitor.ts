@@ -104,7 +104,7 @@ class NavigationPerformanceMonitor {
       endTime,
       duration,
       loadState,
-      errorMessage,
+      ...(errorMessage !== undefined && { errorMessage }),
     };
 
     this.metrics.push(metric);

@@ -202,6 +202,6 @@ export function getCanonicalUrl(pathname: string, baseUrl?: string): string {
 export function isExternalLink(href: string): boolean {
   return (
     href.startsWith('http') &&
-    !href.includes(process.env.NEXT_PUBLIC_SITE_URL || 'mysetlist.com')
+    !href.includes(process.env['NEXT_PUBLIC_SITE_URL'] || 'mysetlist.com')
   );
 }

@@ -1,5 +1,5 @@
-// This file configures the initialization of Sentry for edge features (middleware, edge routes, and so on).
-// The config you add here will be used whenever one of the edge features is loaded.
+// Enhanced Edge Runtime Sentry configuration for comprehensive monitoring
+// This file configures Sentry for edge features (middleware, edge routes, and so on).
 // Note that this config is unrelated to the Vercel Edge Runtime and is also required when running locally.
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
@@ -12,19 +12,92 @@ if (sentryDsn) {
   Sentry.init({
     dsn: sentryDsn,
 
-    // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
+    // Enhanced edge runtime integrations
+    integrations: [
+      // Edge runtime has limited APIs, only include compatible integrations
+      Sentry.httpIntegration({
+        tracing: true,
+        breadcrumbs: true,
+      }),
+    ],
 
-    // Setting this option to true will print useful information to the console while you're setting up Sentry.
+    // Performance monitoring with adaptive sampling
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.05 : 1.0,
+
+    // Environment and release tracking
+    environment: process.env.NODE_ENV || 'development',
+    release: process.env.VERCEL_GIT_COMMIT_SHA || 'unknown',
+
+    // Enhanced error filtering for edge runtime
+    beforeSend: (event, hint) => {
+      // Filter out edge runtime specific errors that are not actionable
+      if (event.exception) {
+        const error = hint.originalException;
+        if (error && error.message) {
+          // Filter out edge runtime limitations
+          if (
+            error.message.includes('Dynamic code evaluation') ||
+            error.message.includes('eval is not allowed') ||
+            error.message.includes('Function constructor')
+          ) {
+            return null;
+          }
+        }
+      }
+
+      // Add edge runtime context
+      event.tags = {
+        ...event.tags,
+        runtime: 'edge',
+        environment: process.env.NODE_ENV || 'development',
+      };
+
+      return event;
+    },
+
+    // Enhanced breadcrumb filtering for edge runtime
+    beforeBreadcrumb: (breadcrumb, _hint) => {
+      // Filter out noisy edge runtime breadcrumbs
+      if (breadcrumb.category === 'console' && breadcrumb.level === 'log') {
+        return null;
+      }
+
+      return breadcrumb;
+    },
+
+    // Custom tags for edge runtime identification
+    initialScope: {
+      tags: {
+        component: 'edge-runtime',
+        deployment: process.env.VERCEL_ENV || 'development',
+        runtime_type: 'edge',
+      },
+    },
+
+    // Edge-specific sampling
+    tracesSampler: (samplingContext) => {
+      // Higher sampling for middleware and API routes
+      if (samplingContext.request?.url?.includes('/api/')) {
+        return process.env.NODE_ENV === 'production' ? 0.1 : 1.0;
+      }
+      
+      // Lower sampling for static requests
+      if (samplingContext.request?.url?.includes('/_next/static/')) {
+        return 0.01;
+      }
+      
+      // Default sampling for edge runtime
+      return process.env.NODE_ENV === 'production' ? 0.05 : 1.0;
+    },
+
+    // Debug configuration for edge runtime
     debug: process.env.NODE_ENV === 'development',
 
-    // Set environment
-    environment: process.env.NODE_ENV || 'development',
-
-    // Enable Sentry Logs (Beta) - requires SDK version 9.17.0+
+    // Enable experimental features compatible with edge runtime
     _experiments: {
       enableLogs: true,
     },
   });
 } else if (process.env.NODE_ENV === 'development') {
+  console.log('Sentry DSN not configured for edge runtime - monitoring disabled');
 }

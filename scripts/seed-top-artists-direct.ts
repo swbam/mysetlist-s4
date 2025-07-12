@@ -5,8 +5,8 @@
  */
 
 import 'dotenv/config';
-import { db } from '../packages/database/index.js';
-import { artists } from '../packages/database/schema.js';
+import { db } from '../packages/database/src/client.js';
+import { artists } from '../packages/database/src/schema/artists.js';
 import { eq } from 'drizzle-orm';
 
 // Top 5 trending US artists
