@@ -1,10 +1,8 @@
-# Ignore everything except apps/web
-/*
-!/apps
-/apps/*
-!/apps/web
-!package.json
-!pnpm-lock.yaml
-!pnpm-workspace.yaml
-!turbo.json
-!.npmrc
+# Vercel ignore file
+.git
+.github
+docs
+scripts/*.sh
+*.md
+.env.local
+.env*.local
