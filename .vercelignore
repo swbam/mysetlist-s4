@@ -1,0 +1,10 @@
+# Ignore everything except apps/web
+/*
+!/apps
+/apps/*
+!/apps/web
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!turbo.json
+!.npmrc
