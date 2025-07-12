@@ -238,7 +238,7 @@ function getTable(resource: string) {
 async function handler(request: NextRequest) {
   try {
     // Check authentication
-    const supabase = await createServiceClient();
+    const supabase = createServiceClient();
     const {
       data: { user },
       error: authError,

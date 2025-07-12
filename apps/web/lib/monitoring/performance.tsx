@@ -123,7 +123,7 @@ class PerformanceMonitor {
 
   private sendToAnalytics(metric: PerformanceMetric) {
     // Send to analytics service
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env["NODE_ENV"] === 'production') {
       fetch('/api/analytics/performance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -132,7 +132,7 @@ class PerformanceMonitor {
     }
 
     // Log in development
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env["NODE_ENV"] === 'development') {
     }
   }
 

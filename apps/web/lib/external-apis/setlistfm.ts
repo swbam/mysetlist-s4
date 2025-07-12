@@ -73,10 +73,10 @@ export class SetlistFmClient {
   private baseUrl = 'https://api.setlist.fm/rest/1.0';
 
   constructor() {
-    if (!env.SETLISTFM_API_KEY) {
+    if (!env["SETLISTFM_API_KEY"]) {
       throw new Error('SETLISTFM_API_KEY is not configured');
     }
-    this.apiKey = env.SETLISTFM_API_KEY;
+    this.apiKey = env["SETLISTFM_API_KEY"];
   }
 
   private async makeRequest<T>(

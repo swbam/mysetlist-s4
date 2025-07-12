@@ -232,7 +232,7 @@ export function withPerformanceMonitoring<P extends object>(
     const renderTime = renderEnd - renderStart;
     
     // Log slow renders in development
-    if (process.env.NODE_ENV === 'development' && renderTime > 16) {
+    if (process.env["NODE_ENV"] === 'development' && renderTime > 16) {
       console.warn(`Slow render detected: ${renderTime.toFixed(2)}ms`);
     }
     

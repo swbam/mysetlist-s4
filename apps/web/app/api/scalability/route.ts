@@ -219,7 +219,7 @@ export async function POST(request: NextRequest) {
         const migrationPlan = generateScalabilityPlan(userCount, targetUsers, timeframe);
         
         // Store the plan in database for tracking
-        const supabase = await createClient();
+        const supabase = createClient();
         const { data: savedPlan, error: saveError } = await supabase
           .from('scalability_plans')
           .insert({
@@ -339,7 +339,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
     
     // Update scalability plan
     const { data: updatedPlan, error: updateError } = await supabase
@@ -392,7 +392,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
     
     // Archive the plan instead of deleting
     const { error: archiveError } = await supabase

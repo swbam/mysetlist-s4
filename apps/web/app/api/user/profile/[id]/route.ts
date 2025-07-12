@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = await createServiceClient();
+    const supabase = createServiceClient();
 
     // Fetch user profile data
     const profile = {

@@ -576,7 +576,7 @@ export async function syncArtist(
     // Fire-and-forget background jobs for other sync tasks
     if (artistRecord) {
       try {
-        const supabaseAdmin = await createServiceClient();
+        const supabaseAdmin = createServiceClient();
 
         // Sync shows if we have a Ticketmaster ID
         if (artistRecord.ticketmasterId) {

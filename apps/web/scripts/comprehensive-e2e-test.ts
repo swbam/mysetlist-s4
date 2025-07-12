@@ -17,7 +17,7 @@
 import { env } from '../env';
 
 // Test configuration
-const BASE_URL = env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+const BASE_URL = env["NEXT_PUBLIC_APP_URL"] || 'http://localhost:3001';
 const TEST_ARTIST_NAME = 'Taylor Swift';
 
 // Logging utilities

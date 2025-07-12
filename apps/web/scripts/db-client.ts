@@ -21,7 +21,7 @@ if (!DATABASE_URL) {
 // Create postgres connection
 const queryClient = postgres(DATABASE_URL, {
   max: 1,
-  ssl: process.env.NODE_ENV === 'production' ? 'require' : false,
+  ssl: process.env["NODE_ENV"] === 'production' ? 'require' : false,
 });
 
 // Create drizzle instance

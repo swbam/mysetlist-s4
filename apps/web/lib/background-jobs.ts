@@ -497,7 +497,7 @@ class CleanupProcessor implements JobProcessor {
     // Cleanup old data
     monitor.log('Running cleanup', { type, retentionDays });
     
-    const supabase = await createServiceClient();
+    const supabase = createServiceClient();
     const cutoffDate = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000);
     
     let deletedCount = 0;
@@ -538,7 +538,7 @@ class TrendingCalculationProcessor implements JobProcessor {
     // Calculate trending scores
     monitor.log('Calculating trending scores', { period, entities });
     
-    const supabase = await createServiceClient();
+    const supabase = createServiceClient();
     
     // Update trending scores based on votes, views, and recency
     const { error } = await supabase.rpc('calculate_trending_scores', {
@@ -558,7 +558,7 @@ class UserActivityAnalysisProcessor implements JobProcessor {
     // Analyze user activity patterns
     monitor.log('Analyzing user activity', { userId, timeRange });
     
-    const supabase = await createServiceClient();
+    const supabase = createServiceClient();
     
     // Get user activity data
     const { data: activities, error } = await supabase

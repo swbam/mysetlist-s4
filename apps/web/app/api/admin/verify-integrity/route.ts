@@ -29,7 +29,7 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
     const report: IntegrityReport = {
       timestamp: new Date().toISOString(),
       checks: [],
@@ -274,7 +274,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { action } = await request.json();
-    const supabase = await createClient();
+    const supabase = createClient();
 
     switch (action) {
       case 'recalculate_trending': {

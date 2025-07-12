@@ -4,7 +4,7 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   // TypeScript configuration - Enable strict checking in production
   typescript: {
-    ignoreBuildErrors: process.env.NODE_ENV === 'development',
+    ignoreBuildErrors: process.env["NODE_ENV"] === 'development',
   },
   eslint: {
     ignoreDuringBuilds: false,

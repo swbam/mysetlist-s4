@@ -23,9 +23,9 @@ describe('/api/admin/system-health', () => {
     vi.useFakeTimers();
     
     // Set environment variables for tests
-    process.env.SPOTIFY_ACCESS_TOKEN = 'test-token';
-    process.env.TICKETMASTER_API_KEY = 'test-key';
-    process.env.SETLISTFM_API_KEY = 'test-key';
+    process.env["SPOTIFY_ACCESS_TOKEN"] = 'test-token';
+    process.env["TICKETMASTER_API_KEY"] = 'test-key';
+    process.env["SETLISTFM_API_KEY"] = 'test-key';
   });
 
   afterEach(() => {

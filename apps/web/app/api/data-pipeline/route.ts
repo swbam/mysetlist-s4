@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
           });
         } else {
           // Get all pipeline statuses
-          const supabase = await createClient();
+          const supabase = createClient();
           const { data: pipelines } = await supabase
             .from('pipeline_configs')
             .select('id, name, active')
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
         };
 
         try {
-          const supabase = await createClient();
+          const supabase = createClient();
           const { data: pipelineConfigs } = await supabase
             .from('pipeline_configs')
             .select('id, active');
@@ -259,7 +259,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
     
     // Update pipeline configuration
     const { data: updatedConfig, error: updateError } = await supabase
@@ -311,7 +311,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
     
     // First, pause the pipeline
     try {

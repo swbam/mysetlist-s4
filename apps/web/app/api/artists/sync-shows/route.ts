@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Trigger the sync via Supabase edge function
-    const supabase = await createServiceClient();
+    const supabase = createServiceClient();
     const { data, error } = await supabase.functions.invoke(
       'sync-artist-shows',
       {

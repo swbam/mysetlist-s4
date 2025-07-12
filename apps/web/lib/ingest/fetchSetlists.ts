@@ -27,7 +27,7 @@ async function rateLimitSetlistFm() {
 }
 
 export async function fetchAllSetlists(mbid: string) {
-  if (!env.SETLISTFM_API_KEY) {
+  if (!env["SETLISTFM_API_KEY"]) {
     console.warn('SETLISTFM_API_KEY not configured, skipping setlist fetch');
     return [];
   }
@@ -44,7 +44,7 @@ export async function fetchAllSetlists(mbid: string) {
       
       const response = await fetch(url, {
         headers: {
-          'x-api-key': env.SETLISTFM_API_KEY,
+          'x-api-key': env["SETLISTFM_API_KEY"],
           'Accept': 'application/json',
         },
       });

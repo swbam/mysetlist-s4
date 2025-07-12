@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ results: [] });
     }
 
-    const supabase = await createServiceClient();
+    const supabase = createServiceClient();
 
     // Search artists only (as per PRD requirements)
     const { data: artists } = await supabase

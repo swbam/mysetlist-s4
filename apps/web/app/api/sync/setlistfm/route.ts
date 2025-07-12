@@ -16,7 +16,7 @@ async function syncSetlistFmData(request: NextRequest): Promise<NextResponse> {
   const startTime = Date.now();
   
   try {
-    const supabase = await createServiceClient();
+    const supabase = createServiceClient();
     const body = await request.json() as SyncRequest;
     
     // Validate input
@@ -304,7 +304,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const supabase = await createServiceClient();
+    const supabase = createServiceClient();
     
     // Get sync status
     const { data: artist } = await supabase

@@ -7,7 +7,9 @@ import { keys as database } from '@repo/database/keys';
 import { keys as nextConfig } from '@repo/next-config/keys';
 
 export const env = createEnv({
-  extends: [auth(), database(), nextConfig()],
+  extends: [
+    ...(process.env['SKIP_ENV_VALIDATION'] ? [] : [auth(), database(), nextConfig()])
+  ],
   server: {
     // Authentication
     NEXTAUTH_URL: z.string().url().optional(),
@@ -109,23 +111,23 @@ export const isProduction = process.env['NODE_ENV'] === 'production';
 
 // Client-safe performance configurations (only using client-side variables)
 export const performanceConfig = {
-  enableAnalytics: env.NEXT_PUBLIC_ENABLE_ANALYTICS ?? isProduction,
+  enableAnalytics: env["NEXT_PUBLIC_ENABLE_ANALYTICS"] ?? isProduction,
   enablePerformanceMonitoring:
-    env.NEXT_PUBLIC_ENABLE_PERFORMANCE_MONITORING ?? isProduction,
-  posthogEnabled: !!env.NEXT_PUBLIC_POSTHOG_KEY,
+    env["NEXT_PUBLIC_ENABLE_PERFORMANCE_MONITORING"] ?? isProduction,
+  posthogEnabled: !!env["NEXT_PUBLIC_POSTHOG_KEY"],
 };
 
 // Server-only cache configuration - export as function to prevent client access
 export const getServerCacheConfig = () => ({
-  redisEnabled: !!env.REDIS_URL || !!env.UPSTASH_REDIS_REST_URL,
-  edgeConfigEnabled: !!env.EDGE_CONFIG,
+  redisEnabled: !!env["REDIS_URL"] || !!env["UPSTASH_REDIS_REST_URL"],
+  edgeConfigEnabled: !!env["EDGE_CONFIG"],
   defaultTTL: isProduction ? 3600 : 60, // 1 hour in prod, 1 minute in dev
   staleWhileRevalidate: isProduction ? 86400 : 300, // 24 hours in prod, 5 minutes in dev
 });
 
 // Client-safe API configuration (only using client-side variables)
 export const apiConfig = {
-  baseUrl: env.NEXT_PUBLIC_API_URL || env.NEXT_PUBLIC_APP_URL,
+  baseUrl: env["NEXT_PUBLIC_API_URL"] || env["NEXT_PUBLIC_APP_URL"],
   timeout: isProduction ? 30000 : 60000, // 30s in prod, 60s in dev
   retries: isProduction ? 3 : 1,
 };

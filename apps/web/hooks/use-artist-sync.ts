@@ -106,7 +106,7 @@ export function useArtistSync() {
           'Content-Type': 'application/json',
         };
 
-        if (process.env.NODE_ENV !== 'development') {
+        if (process.env["NODE_ENV"] !== 'development') {
           try {
             const csrfResponse = await fetch('/api/csrf-token');
             if (csrfResponse.ok) {
@@ -170,7 +170,7 @@ export function useArtistSync() {
         'Content-Type': 'application/json',
       };
 
-      if (process.env.NODE_ENV !== 'development') {
+      if (process.env["NODE_ENV"] !== 'development') {
         try {
           const csrfResponse = await fetch('/api/csrf-token');
           if (csrfResponse.ok) {

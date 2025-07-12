@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
     const now = new Date();
 
     // Find shows that have started but haven't been locked yet

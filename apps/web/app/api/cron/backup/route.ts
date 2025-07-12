@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = await createServiceClient();
+    const supabase = createServiceClient();
 
     // Call Supabase edge function for database backup
     const { data, error } = await supabase.functions.invoke('backup-database', {
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     // Log backup failure
     try {
-      const supabase = await createServiceClient();
+      const supabase = createServiceClient();
       await supabase.from('backup_logs').insert({
         backup_type: 'incremental',
         status: 'failed',

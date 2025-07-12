@@ -64,7 +64,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient();
     const {
       data: { user },
       error: authError,
@@ -128,7 +128,7 @@ export async function DELETE(
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient();
     const {
       data: { user },
       error: authError,

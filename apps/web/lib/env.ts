@@ -43,10 +43,10 @@ export const env = {
 export type Env = typeof env;
 
 // Helper to check if we're in production
-export const isProduction = env.NODE_ENV === 'production';
+export const isProduction = env["NODE_ENV"] === 'production';
 
 // Helper to check if we're in development
-export const isDevelopment = env.NODE_ENV === 'development';
+export const isDevelopment = env["NODE_ENV"] === 'development';
 
 // Helper to get required env variable with error handling
 type StringKeys<T> = {

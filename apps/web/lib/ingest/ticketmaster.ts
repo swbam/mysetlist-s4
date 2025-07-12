@@ -22,7 +22,7 @@ async function rateLimit() {
 export async function fetchAttraction(tmId: string) {
   await rateLimit();
   
-  const url = `${TICKETMASTER_BASE_URL}/attractions/${tmId}?apikey=${env.TICKETMASTER_API_KEY}`;
+  const url = `${TICKETMASTER_BASE_URL}/attractions/${tmId}?apikey=${env["TICKETMASTER_API_KEY"]}`;
   
   const response = await fetch(url, {
     headers: {
@@ -51,7 +51,7 @@ export async function fetchAttractionEvents(tmId: string, options: {
   await rateLimit();
   
   const url = new URL(`${TICKETMASTER_BASE_URL}/events`);
-  url.searchParams.append('apikey', env.TICKETMASTER_API_KEY);
+  url.searchParams.append('apikey', env["TICKETMASTER_API_KEY"]);
   url.searchParams.append('attractionId', tmId);
   url.searchParams.append('size', (options.size || 200).toString());
   url.searchParams.append('page', (options.page || 0).toString());

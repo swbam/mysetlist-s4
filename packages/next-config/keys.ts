@@ -28,4 +28,5 @@ export const keys = () =>
       NEXT_PUBLIC_DOCS_URL:
         process.env['NEXT_PUBLIC_DOCS_URL'] || 'http://localhost:3004',
     },
+    skipValidation: !!process.env['SKIP_ENV_VALIDATION'],
   });

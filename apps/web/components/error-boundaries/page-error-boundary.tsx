@@ -112,7 +112,7 @@ function ErrorFallback({
             </Button>
           </div>
 
-          {process.env.NODE_ENV === 'development' && error && (
+          {process.env["NODE_ENV"] === 'development' && error && (
             <details className="mt-6 w-full max-w-md text-left">
               <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
                 Error details (development only)

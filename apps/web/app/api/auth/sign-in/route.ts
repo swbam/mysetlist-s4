@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     const { email, password, rememberMe: _rememberMe } = validationResult.data;
 
     // Sign in with Supabase
-    const supabase = await createClient();
+    const supabase = createClient();
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,

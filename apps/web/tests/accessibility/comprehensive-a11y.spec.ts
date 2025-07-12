@@ -7,7 +7,7 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 // Test configuration
-const BASE_URL = process.env.BASE_URL || 'http://localhost:3001';
+const BASE_URL = process.env["BASE_URL"] || 'http://localhost:3001';
 
 // Common accessibility test setup
 async function runAccessibilityTests(page, context: string) {

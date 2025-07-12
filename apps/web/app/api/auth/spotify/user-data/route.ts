@@ -3,7 +3,7 @@ import { createClient } from '~/lib/supabase/server';
 
 export async function GET() {
   try {
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Get the current user
     const {
@@ -127,7 +127,7 @@ async function storeUserSpotifyData(
   followedArtists: any[]
 ) {
   try {
-    const supabase = await createClient();
+    const supabase = createClient();
 
     // Store user's music preferences
     const { error } = await supabase.from('user_music_preferences').upsert(

@@ -105,7 +105,7 @@ const spotify = new SpotifyClient();
 // Function to find Ticketmaster ID for an artist
 async function findTicketmasterId(artistName: string): Promise<string | null> {
   try {
-    if (!env.TICKETMASTER_API_KEY) {
+    if (!env["TICKETMASTER_API_KEY"]) {
       return null;
     }
 
@@ -239,7 +239,7 @@ export async function POST(request: NextRequest) {
 
     // Fire-and-forget background jobs
     try {
-      const supabaseAdmin = await createServiceClient();
+      const supabaseAdmin = createServiceClient();
 
       // Always sync song catalog
       if (artistRecord) {
@@ -302,7 +302,7 @@ export async function GET() {
       );
     }
 
-    if (!env.TICKETMASTER_API_KEY) {
+    if (!env["TICKETMASTER_API_KEY"]) {
       return NextResponse.json(
         { error: 'Ticketmaster API key not configured' },
         { status: 500 }
@@ -391,7 +391,7 @@ export async function GET() {
 
           // Sync this artist with both Spotify and Ticketmaster IDs
           const syncResponse = await fetch(
-            `${env.NEXT_PUBLIC_APP_URL}/api/artists/sync`,
+            `${env["NEXT_PUBLIC_APP_URL"]}/api/artists/sync`,
             {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },

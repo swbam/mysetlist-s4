@@ -247,7 +247,7 @@ export async function withQueryMetrics<T>(
     // Track metrics (could send to analytics)
     if (
       typeof process !== 'undefined' &&
-      process.env.NODE_ENV === 'production'
+      process.env["NODE_ENV"] === 'production'
     ) {
       // Track query performance metrics
     }

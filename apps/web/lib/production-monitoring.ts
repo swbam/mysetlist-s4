@@ -697,7 +697,7 @@ export class ProductionMonitoringService extends MonitoringService {
 }
 
 // Initialize production monitoring
-if (typeof window !== 'undefined' && process.env.NODE_ENV === 'production') {
+if (typeof window !== 'undefined' && process.env["NODE_ENV"] === 'production') {
   ProductionMonitoringService.initializeProduction();
 }
 

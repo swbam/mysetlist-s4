@@ -7,8 +7,8 @@ export class CacheClient {
   private token: string;
 
   private constructor() {
-    this.baseUrl = env.UPSTASH_REDIS_REST_URL || '';
-    this.token = env.UPSTASH_REDIS_REST_TOKEN || '';
+    this.baseUrl = env["UPSTASH_REDIS_REST_URL"] || '';
+    this.token = env["UPSTASH_REDIS_REST_TOKEN"] || '';
   }
 
   static getInstance(): CacheClient {

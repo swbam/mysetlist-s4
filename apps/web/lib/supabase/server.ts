@@ -1,19 +1,19 @@
 import { type CookieOptions, createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 
-export async function createClient() {
-  const cookieStore = await cookies();
-
+export function createClient() {
   return createServerClient(
     process.env['NEXT_PUBLIC_SUPABASE_URL']!,
     process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!,
     {
       cookies: {
-        get(name: string) {
+        async get(name: string) {
+          const cookieStore = await cookies();
           return cookieStore.get(name)?.value;
         },
-        set(name: string, value: string, options: CookieOptions) {
+        async set(name: string, value: string, options: CookieOptions) {
           try {
+            const cookieStore = await cookies();
             cookieStore.set({ name, value, ...options });
           } catch (_error) {
             // The `set` method was called from a Server Component.
@@ -21,8 +21,9 @@ export async function createClient() {
             // user sessions.
           }
         },
-        remove(name: string, options: CookieOptions) {
+        async remove(name: string, options: CookieOptions) {
           try {
+            const cookieStore = await cookies();
             cookieStore.set({ name, value: '', ...options });
           } catch (_error) {
             // The `delete` method was called from a Server Component.
@@ -36,16 +37,14 @@ export async function createClient() {
 }
 
 export async function auth() {
-  const supabase = await createClient();
+  const supabase = createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   return { user };
 }
 
-export async function createServiceClient() {
-  const cookieStore = await cookies();
-
+export function createServiceClient() {
   // Service client for server-side operations that bypass RLS
   return createServerClient(
     process.env['NEXT_PUBLIC_SUPABASE_URL']!,
@@ -56,7 +55,8 @@ export async function createServiceClient() {
         persistSession: false,
       },
       cookies: {
-        get(name: string) {
+        async get(name: string) {
+          const cookieStore = await cookies();
           return cookieStore.get(name)?.value;
         },
         set(_name: string, _value: string, _options: CookieOptions) {

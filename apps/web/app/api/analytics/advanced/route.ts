@@ -309,7 +309,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createClient();
     
     switch (updateType) {
       case 'cohort_settings':
@@ -487,7 +487,7 @@ function generateAlerts(_cohort: any, retention: any, predictive: any, rfm: any)
 }
 
 async function analyzeUserSegments(segments: string[], startDate: string, endDate: string): Promise<any> {
-  const supabase = await createClient();
+  const supabase = createClient();
   
   const segmentAnalysis = await Promise.all(
     segments.map(async (segment) => {

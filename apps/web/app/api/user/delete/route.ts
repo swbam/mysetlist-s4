@@ -33,7 +33,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Verify password with Supabase
-    const supabase = await createServiceClient();
+    const supabase = createServiceClient();
     const { error: authError } = await supabase.auth.signInWithPassword({
       email: user.email!,
       password,

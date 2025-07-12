@@ -39,7 +39,7 @@ export async function getCSRFToken(): Promise<string> {
   const newToken = generateCSRFToken();
   cookieStore.set(CSRF_COOKIE_NAME, newToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env["NODE_ENV"] === 'production',
     sameSite: 'strict',
     path: '/',
     maxAge: 60 * 60 * 24 * 7, // 7 days
@@ -111,7 +111,7 @@ export async function csrfProtection(
 
   // In development, skip CSRF for internal endpoints
   if (
-    process.env.NODE_ENV === 'development' &&
+    process.env["NODE_ENV"] === 'development' &&
     internalEndpoints.some((endpoint) => pathname.startsWith(endpoint))
   ) {
     return null;

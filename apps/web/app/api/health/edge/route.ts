@@ -49,7 +49,7 @@ export async function GET() {
   // Check database
   try {
     const dbStart = Date.now();
-    const supabase = await createServiceClient();
+    const supabase = createServiceClient();
     const { error } = await supabase
       .from('artists')
       .select('id')
@@ -147,7 +147,7 @@ export async function POST() {
 
   // Database connection pool check
   try {
-    const supabase = await createServiceClient();
+    const supabase = createServiceClient();
     const start = Date.now();
 
     // Test various operations
