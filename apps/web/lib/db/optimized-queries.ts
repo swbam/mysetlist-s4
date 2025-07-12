@@ -75,7 +75,7 @@ export const optimizedQueries = {
     `;
 
     const result = await db.execute(query);
-    return result.rows;
+    return result;
   },
 
   // Efficient artist search with full-text search
@@ -96,7 +96,7 @@ export const optimizedQueries = {
     `;
 
     const result = await db.execute(query);
-    return result.rows;
+    return result;
   },
 
   // Batch setlist fetch with songs
@@ -116,13 +116,13 @@ export const optimizedQueries = {
       db
         .select({
           setlistId: setlistSongs.setlistId,
-          songOrder: setlistSongs.order,
+          songOrder: setlistSongs.position,
           song: songs,
         })
         .from(setlistSongs)
         .innerJoin(songs, eq(setlistSongs.songId, songs.id))
         .where(inArray(setlistSongs.setlistId, setlistIds))
-        .orderBy(asc(setlistSongs.order))
+        .orderBy(asc(setlistSongs.position))
         .execute(),
     ]);
 
@@ -180,7 +180,7 @@ export const optimizedQueries = {
     `;
 
     const result = await db.execute(query);
-    return result.rows;
+    return result;
   },
 
   // Get artist statistics with aggregation
@@ -204,7 +204,7 @@ export const optimizedQueries = {
     `;
 
     const result = await db.execute(query);
-    return result.rows[0];
+    return result[0];
   },
 };
 
@@ -212,7 +212,7 @@ export const optimizedQueries = {
 export const cachedQueries = {
   getTrendingShows: withCache(
     optimizedQueries.getTrendingShowsOptimized,
-    (limit, _hoursAgo) => cacheKeys.trending('custom', 'shows', limit),
+    (limit, _hoursAgo) => cacheKeys.trending('custom', 'shows', limit || 20),
     300 // 5 minutes
   ),
 
@@ -254,7 +254,6 @@ export async function withQueryMetrics<T>(
 
     return result;
   } catch (error) {
-    const _duration = Date.now() - start;
     throw error;
   }
 }

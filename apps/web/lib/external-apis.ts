@@ -1,8 +1,8 @@
 import { SpotifyClient, TicketmasterClient } from '@repo/external-apis';
 
 // Create singleton instances
-export const spotify = new SpotifyClient();
-export const ticketmaster = new TicketmasterClient();
+export const spotify = new SpotifyClient({});
+export const ticketmaster = new TicketmasterClient({});
 
 // External API utilities
 export const syncArtistData = async (artistName: string) => {

@@ -23,15 +23,10 @@ const nextConfig: NextConfig = {
     ],
     reactCompiler: false,
     optimizeCss: true,
-    turbo: {
-      loaders: {
-        '.svg': ['@svgr/webpack'],
-      },
-    },
   },
 
-  // Turbopack configuration - enabled for better performance
-  turbo: {
+  // Turbopack configuration - moved from experimental as it's now stable
+  turbopack: {
     rules: {
       '*.svg': {
         loaders: ['@svgr/webpack'],

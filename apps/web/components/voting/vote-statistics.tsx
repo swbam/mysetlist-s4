@@ -95,6 +95,7 @@ export function VoteStatistics({
       const interval = setInterval(fetchStats, 30000); // Update every 30 seconds
       return () => clearInterval(interval);
     }
+    return undefined;
   }, [showId, setlistId, realtime]);
 
   if (loading) {

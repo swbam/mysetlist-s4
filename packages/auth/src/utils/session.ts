@@ -50,9 +50,9 @@ export async function getServerAuthSession(): Promise<{
     return {
       user: {
         id: session.user.id,
-        email: session.user.email,
+        email: session.user.email || '',
         emailVerified: !!session.user.email_confirmed_at,
-        lastSignIn: session.user.last_sign_in_at,
+        lastSignIn: session.user.last_sign_in_at || '',
         metadata: session.user.user_metadata || {},
         appMetadata: session.user.app_metadata || {},
       },
@@ -62,9 +62,9 @@ export async function getServerAuthSession(): Promise<{
         expiresAt: session.expires_at || 0,
         user: {
           id: session.user.id,
-          email: session.user.email,
+          email: session.user.email || '',
           emailVerified: !!session.user.email_confirmed_at,
-          lastSignIn: session.user.last_sign_in_at,
+          lastSignIn: session.user.last_sign_in_at || '',
           metadata: session.user.user_metadata || {},
           appMetadata: session.user.app_metadata || {},
         },
@@ -92,7 +92,7 @@ export async function requireServerRole(
   requiredRole: 'user' | 'moderator' | 'admin'
 ): Promise<AuthUser> {
   const user = await requireServerAuth();
-  const userRole = user.appMetadata?.role || 'user';
+  const userRole = user.appMetadata?.['role'] || 'user';
 
   const roleHierarchy = { user: 0, moderator: 1, admin: 2 };
   const userLevel = roleHierarchy[userRole as keyof typeof roleHierarchy] ?? 0;

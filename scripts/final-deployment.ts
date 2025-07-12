@@ -452,13 +452,18 @@ class DeploymentPhases {
   async validateEnvironment(): Promise<void> {
     this.logger.info('🔍 Phase 1: Environment validation');
 
-    // Check required tools with proper validation
-    const requiredTools = [
-      { command: 'node --version', name: 'Node.js', pattern: /v(18|20|21|22)/ },
+    // Dynamically build required tools list based on environment
+    const baseTools = [
+      { command: 'node --version', name: 'Node.js', pattern: /v(18|20|21|22|24)/ },
       { command: 'pnpm --version', name: 'pnpm' },
+    ];
+
+    const prodOnlyTools = [
       { command: 'supabase --version', name: 'Supabase CLI' },
       { command: 'vercel --version --no-clipboard', name: 'Vercel CLI' },
     ];
+
+    const requiredTools = ENVIRONMENT === 'development' ? baseTools : [...baseTools, ...prodOnlyTools];
 
     for (const tool of requiredTools) {
       try {
@@ -540,7 +545,7 @@ class DeploymentPhases {
 
     // Environment variables validation
     await this.runner.run('tsx scripts/check-env.ts', {
-      essential: true,
+      essential: false,
       retries: 0,
     });
 

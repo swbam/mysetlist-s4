@@ -1,5 +1,4 @@
 import { CacheClient } from '~/lib/cache/redis';
-import { env } from '~/env';
 
 interface LogEntry {
   timestamp: string;
@@ -162,7 +161,7 @@ export class MonitoringService {
 
   private async sendToExternalMonitoring(errorLogs: LogEntry[]) {
     // Send to Sentry or other external monitoring service
-    if (env.SENTRY_DSN) {
+    if (process.env['SENTRY_DSN']) {
       for (const log of errorLogs) {
         try {
           // This would integrate with Sentry SDK
@@ -186,7 +185,7 @@ export class MonitoringService {
     this.logQueue.push(entry);
     
     // Also log to console in development
-    if (env.NODE_ENV === 'development') {
+    if (process.env['NODE_ENV'] === 'development') {
       console.log(`[${entry.timestamp}] ${message}`, data);
     }
   }
@@ -202,7 +201,7 @@ export class MonitoringService {
     
     this.logQueue.push(entry);
     
-    if (env.NODE_ENV === 'development') {
+    if (process.env['NODE_ENV'] === 'development') {
       console.warn(`[${entry.timestamp}] ${message}`, data);
     }
   }
@@ -222,13 +221,13 @@ export class MonitoringService {
     
     this.logQueue.push(entry);
     
-    if (env.NODE_ENV === 'development') {
+    if (process.env['NODE_ENV'] === 'development') {
       console.error(`[${entry.timestamp}] ${message}`, error);
     }
   }
 
   debug(message: string, data?: any, context?: Partial<LogEntry>) {
-    if (env.NODE_ENV === 'development') {
+    if (process.env['NODE_ENV'] === 'development') {
       const entry: LogEntry = {
         timestamp: new Date().toISOString(),
         level: 'debug',
@@ -247,8 +246,8 @@ export class MonitoringService {
       name,
       value,
       timestamp: new Date().toISOString(),
-      tags,
-      unit
+      ...(tags && { tags }),
+      ...(unit && { unit })
     };
     
     this.metricQueue.push(entry);
@@ -376,7 +375,7 @@ export class MonitoringService {
   async getLogs(level: 'info' | 'warn' | 'error' | 'debug', limit: number = 100): Promise<LogEntry[]> {
     try {
       const results = await this.cache.pipeline([
-        ['LRANGE', `logs:${level}`, 0, limit - 1]
+        ['LRANGE', `logs:${level}`, '0', (limit - 1).toString()]
       ]);
       
       return results[0]?.map((log: string) => JSON.parse(log)) || [];

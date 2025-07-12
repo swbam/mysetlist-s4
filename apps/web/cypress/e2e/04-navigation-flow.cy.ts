@@ -113,11 +113,13 @@ describe('Navigation Flow', () => {
     // Slow down API response
     cy.intercept('GET', '/api/artists/*', (req) => {
       req.reply((res) => {
-        res.delay(1000);
-        res.send({
-          statusCode: 200,
-          body: { artist: { id: '1', name: 'Test' } },
-        });
+        if (res) {
+          res.delay(1000);
+          res.send({
+            statusCode: 200,
+            body: { artist: { id: '1', name: 'Test' } },
+          });
+        }
       });
     }).as('slowArtist');
 

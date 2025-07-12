@@ -2,12 +2,12 @@ import { withLogtail } from '@logtail/next';
 import { withSentryConfig } from '@sentry/nextjs';
 import { keys } from './keys';
 
-export const sentryConfig: Parameters<typeof withSentryConfig>[1] = {
-  org: keys().SENTRY_ORG,
-  project: keys().SENTRY_PROJECT,
+export const sentryConfig = {
+  ...(keys().SENTRY_ORG && { org: keys().SENTRY_ORG }),
+  ...(keys().SENTRY_PROJECT && { project: keys().SENTRY_PROJECT }),
 
   // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
+  silent: !process.env['CI'],
 
   /*
    * For all available options, see:
@@ -35,7 +35,7 @@ export const sentryConfig: Parameters<typeof withSentryConfig>[1] = {
    * https://vercel.com/docs/cron-jobs
    */
   automaticVercelMonitors: true,
-};
+} as Parameters<typeof withSentryConfig>[1];
 
 export const withSentry = (sourceConfig: object): object => {
   const configWithTranspile = {

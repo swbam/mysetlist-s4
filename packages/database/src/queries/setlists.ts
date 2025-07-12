@@ -153,7 +153,7 @@ export async function addSongToSetlist(
       setlistId,
       songId: songData.songId,
       position,
-      notes: songData.notes,
+      notes: songData.notes ?? null,
       isPlayed: false,
       upvotes: 0,
       downvotes: 0,

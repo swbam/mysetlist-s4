@@ -65,6 +65,7 @@ interface SetlistFmSearchResponse {
   page: number;
   total: number;
   setlist?: SetlistFmSetlist[];
+  artist?: SetlistFmArtist[];
 }
 
 export class SetlistFmClient {
@@ -213,7 +214,7 @@ export class SetlistFmClient {
         }
 
         // Otherwise return the first (most relevant) result
-        return response.artist[0].mbid;
+        return response.artist[0]?.mbid ?? null;
       }
     } catch (_error) {}
 
@@ -262,10 +263,10 @@ export class SetlistFmClient {
       venue: {
         name: setlist.venue.name,
         city: setlist.venue.city.name,
-        state: setlist.venue.city.state,
+        ...(setlist.venue.city.state && { state: setlist.venue.city.state }),
         country: setlist.venue.city.country.name,
-        latitude: setlist.venue.city.coords?.lat,
-        longitude: setlist.venue.city.coords?.long,
+        ...(setlist.venue.city.coords?.lat && { latitude: setlist.venue.city.coords.lat }),
+        ...(setlist.venue.city.coords?.long && { longitude: setlist.venue.city.coords.long }),
       },
     };
   }

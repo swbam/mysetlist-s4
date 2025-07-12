@@ -208,7 +208,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
         return false;
       }
 
-      const userRole = user.appMetadata?.role || 'user';
+      const userRole = user.appMetadata?.['role'] || 'user';
       const roleHierarchy = { user: 0, moderator: 1, admin: 2 };
 
       return (

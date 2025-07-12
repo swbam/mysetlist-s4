@@ -77,7 +77,7 @@ export function useRealtimeVotes({
           async (payload: RealtimePostgresChangesPayload<any>) => {
             // When a vote changes, fetch the updated counts
             const setlistSongId =
-              payload.new?.setlist_song_id || payload.old?.setlist_song_id;
+              (payload.new as any)?.['setlist_song_id'] || (payload.old as any)?.['setlist_song_id'];
             if (setlistSongId) {
               await fetchVoteCounts(setlistSongId);
             }

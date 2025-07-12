@@ -14,7 +14,7 @@ export const SPOTIFY_CONFIG = {
     'playlist-read-private',
     'playlist-read-collaborative',
   ],
-  redirectUri: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/auth/callback`,
+  redirectUri: `${process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001'}/auth/callback`,
 } as const;
 
 export const getSpotifyAuthUrl = () => {

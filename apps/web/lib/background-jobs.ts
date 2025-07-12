@@ -263,7 +263,7 @@ export class BackgroundJobQueue {
     await this.cache.set(`job:${job.id}`, job);
     await this.cache.pipeline([
       ['ZREM', 'job_queue', job.id],
-      ['EXPIRE', `job:${job.id}`, 86400] // Keep completed jobs for 24 hours
+      ['EXPIRE', `job:${job.id}`, '86400'] // Keep completed jobs for 24 hours
     ]);
 
     monitor.log('Background job completed', {
@@ -299,13 +299,15 @@ export class BackgroundJobQueue {
     await this.cache.set(`job:${job.id}`, job);
     await this.cache.pipeline([
       ['ZREM', 'job_queue', job.id],
-      ['EXPIRE', `job:${job.id}`, 86400] // Keep failed jobs for 24 hours
+      ['EXPIRE', `job:${job.id}`, '86400'] // Keep failed jobs for 24 hours
     ]);
 
     monitor.error('Background job failed', new Error(error), {
-      jobId: job.id,
-      type: job.type,
-      attempts: job.attempts
+      data: {
+        jobId: job.id,
+        type: job.type,
+        attempts: job.attempts
+      }
     });
 
     monitor.metric('background_jobs_failed', 1, {
@@ -373,7 +375,7 @@ class EmailNotificationProcessor implements JobProcessor {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Authorization': `Bearer ${process.env['RESEND_API_KEY']}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -397,7 +399,7 @@ class EmailNotificationProcessor implements JobProcessor {
 
 class DataSyncProcessor implements JobProcessor {
   async process(job: Job): Promise<any> {
-    const { source, artistId, type } = job.data;
+    const { source, artistId } = job.data;
     
     // Sync data from external APIs
     switch (source) {
@@ -480,7 +482,7 @@ class CacheWarmingProcessor implements JobProcessor {
         await fetch(endpoint);
         warmed++;
       } catch (error) {
-        monitor.error('Cache warming failed for endpoint', error, { endpoint });
+        monitor.error('Cache warming failed for endpoint', error, { data: { endpoint } });
       }
     }
     
@@ -591,7 +593,8 @@ class UserActivityAnalysisProcessor implements JobProcessor {
     return hourCounts;
   }
 
-  private identifyPatterns(activities: any[]) {
+  private identifyPatterns(_activities: any[]) {
+    // TODO: Implement actual pattern identification from activities data
     return {
       mostActiveHour: 14, // Would be calculated from actual data
       preferredActions: ['page_view', 'search', 'vote'],

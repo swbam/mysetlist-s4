@@ -28,14 +28,19 @@ export class CacheClient {
         ? `${this.baseUrl}/pipeline`
         : `${this.baseUrl}/${command.join('/')}`;
 
-      const response = await fetch(url, {
+      const fetchInit: RequestInit = {
         method: pipeline ? 'POST' : 'GET',
         headers: {
           Authorization: `Bearer ${this.token}`,
           'Content-Type': 'application/json',
         },
-        body: pipeline ? JSON.stringify(command) : undefined,
-      });
+      };
+
+      if (pipeline) {
+        fetchInit.body = JSON.stringify(command);
+      }
+
+      const response = await fetch(url, fetchInit);
 
       if (!response.ok) {
         throw new Error(`Redis error: ${response.status}`);
@@ -119,8 +124,29 @@ export class CacheClient {
   }
 
   async pipeline(commands: string[][]): Promise<any[]> {
-    const result = await this.request(commands, true);
-    return result || [];
+    if (!this.baseUrl || !this.token) {
+      return [];
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/pipeline`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(commands),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Redis error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.result || [];
+    } catch (_error) {
+      return [];
+    }
   }
 
   // Cache invalidation patterns
@@ -146,8 +172,11 @@ export class CacheClient {
     ];
 
     if (ttl) {
-      pipeline[0].push('EX', ttl.toString());
-      pipeline.push(['EXPIRE', `cache:keys:${pattern}`, ttl + 60]); // Extra time for the set
+      const firstCommand = pipeline[0];
+      if (firstCommand) {
+        firstCommand.push('EX', ttl.toString());
+      }
+      pipeline.push(['EXPIRE', `cache:keys:${pattern}`, (ttl + 60).toString()]); // Extra time for the set
     }
 
     const results = await this.pipeline(pipeline);

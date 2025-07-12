@@ -66,15 +66,21 @@ async function sendEmail({
   const environment = keys();
 
   try {
-    const result = await resend.emails.send({
+    const emailOptions: any = {
       from: environment.RESEND_FROM || 'noreply@example.com',
       to: to.map((addr) =>
         addr.name ? `${addr.name} <${addr.email}>` : addr.email
       ),
       subject,
-      html,
-      replyTo,
-    });
+      text: html, // Use text instead of html to match API requirements
+    };
+    
+    // Only add replyTo if it's defined
+    if (replyTo) {
+      emailOptions.replyTo = replyTo;
+    }
+
+    const result = await resend.emails.send(emailOptions);
 
     return { success: true, data: result };
   } catch (error) {
@@ -345,7 +351,9 @@ export async function sendBatchEmails<T extends Record<string, any>>({
       try {
         const html = template(emailData);
         const result = await sendEmail({
-          to: [{ email: emailData.email, name: emailData.name }],
+          to: emailData.name 
+            ? [{ email: emailData.email, name: emailData.name }]
+            : [{ email: emailData.email }],
           subject: getSubject(emailData),
           html,
         });
@@ -353,7 +361,7 @@ export async function sendBatchEmails<T extends Record<string, any>>({
         return {
           success: result.success,
           email: emailData.email,
-          error: result.error,
+          ...(result.error && { error: result.error }),
         };
       } catch (error) {
         return {

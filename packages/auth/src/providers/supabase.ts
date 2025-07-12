@@ -216,9 +216,9 @@ export class SupabaseAuthProvider implements AuthProvider {
   private mapUser(user: User): AuthUser {
     return {
       id: user.id,
-      email: user.email,
+      email: user.email || '',
       emailVerified: !!user.email_confirmed_at,
-      lastSignIn: user.last_sign_in_at,
+      lastSignIn: user.last_sign_in_at || '',
       metadata: user.user_metadata || {},
       appMetadata: user.app_metadata || {},
     };

@@ -152,6 +152,8 @@ export function generateBreadcrumbs(
 
   for (let i = 0; i < segments.length; i++) {
     const segment = segments[i];
+    if (!segment) continue; // Skip undefined or empty segments
+    
     currentPath += `/${segment}`;
 
     // Capitalize and format segment
@@ -162,7 +164,7 @@ export function generateBreadcrumbs(
 
     breadcrumbs.push({
       label,
-      href: i === segments.length - 1 ? undefined : currentPath, // No href for last item
+      ...(i !== segments.length - 1 && { href: currentPath }), // No href for last item
     });
   }
 
@@ -190,7 +192,7 @@ export function getNavigationSections(): NavigationSection[] {
  */
 export function getCanonicalUrl(pathname: string, baseUrl?: string): string {
   const base =
-    baseUrl || process.env.NEXT_PUBLIC_SITE_URL || 'https://mysetlist.com';
+    baseUrl || process.env['NEXT_PUBLIC_SITE_URL'] || 'https://mysetlist.com';
   return new URL(pathname, base).href;
 }
 

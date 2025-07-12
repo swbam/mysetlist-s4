@@ -45,10 +45,8 @@ export class CacheService {
 }
 
 export class CacheWarmer {
-  private cacheService: CacheService;
-
   constructor() {
-    this.cacheService = CacheService.getInstance();
+    // CacheService will be used when methods are implemented
   }
 
   async warmCache(_keys: string[]): Promise<void> {

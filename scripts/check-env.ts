@@ -29,22 +29,28 @@ const requiredVars = {
 let allPresent = true;
 const missing: string[] = [];
 
-for (const [key, _description] of Object.entries(requiredVars)) {
+for (const [key, description] of Object.entries(requiredVars)) {
   if (process.env[key]) {
+    console.log(`✅ ${description}: Found`);
   } else {
+    console.log(`❌ ${description}: Missing`);
     missing.push(key);
     allPresent = false;
   }
 }
 
 if (allPresent) {
+  console.log('✅ All required environment variables are present');
 } else {
-  missing.forEach((_v) => );
+  console.log('❌ Missing environment variables:');
+  missing.forEach((v) => console.log(`  - ${v}`));
   process.exit(1);
 }
 
 // Optional: Test API connections
 if (process.argv.includes('--test-apis')) {
+  console.log('🔍 Testing API connections...');
+  
   // Test Spotify
   try {
     const spotifyResponse = await fetch(
@@ -62,9 +68,13 @@ if (process.argv.includes('--test-apis')) {
     );
 
     if (spotifyResponse.ok) {
+      console.log('✅ Spotify API: Connected');
     } else {
+      console.log('❌ Spotify API: Failed');
     }
-  } catch (_error) {}
+  } catch (error) {
+    console.log('❌ Spotify API: Error -', error);
+  }
 
   // Test Ticketmaster
   try {
@@ -73,7 +83,11 @@ if (process.argv.includes('--test-apis')) {
     );
 
     if (tmResponse.ok) {
+      console.log('✅ Ticketmaster API: Connected');
     } else {
+      console.log('❌ Ticketmaster API: Failed');
     }
-  } catch (_error) {}
+  } catch (error) {
+    console.log('❌ Ticketmaster API: Error -', error);
+  }
 }

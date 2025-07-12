@@ -46,7 +46,7 @@ export async function requireRole(
   requiredRole: 'user' | 'moderator' | 'admin'
 ) {
   const session = await requireAuth();
-  const userRole = session.user.appMetadata?.role || 'user';
+  const userRole = session.user.appMetadata?.['role'] || 'user';
 
   if (!hasRole(userRole, requiredRole)) {
     throw new Error('Insufficient permissions');
@@ -81,7 +81,7 @@ export function getRedirectUrl(path = '/'): string {
   const baseUrl =
     typeof window !== 'undefined'
       ? window.location.origin
-      : process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+      : process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001';
 
   return `${baseUrl}${path}`;
 }

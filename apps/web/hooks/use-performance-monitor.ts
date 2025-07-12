@@ -50,13 +50,13 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
 
   const [metrics, setMetrics] = useState<PerformanceMetrics>({});
   const [isMonitoring, setIsMonitoring] = useState(false);
-  const metricsRef = useRef<PerformanceMetrics>({});
-  const observerRef = useRef<PerformanceObserver>();
-  const intervalRef = useRef<NodeJS.Timeout>();
+  const metricsRef = useRef<PerformanceMetrics>({} as PerformanceMetrics);
+  const observerRef = useRef<PerformanceObserver | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const updateMetric = useCallback(
     (key: keyof PerformanceMetrics, value: number) => {
-      metricsRef.current[key] = value;
+      (metricsRef.current as any)[key] = value;
       setMetrics((prev) => ({ ...prev, [key]: value }));
       onMetricUpdate?.(key, value);
 
@@ -93,11 +93,11 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
           updateMetric('ttfb', navEntry.responseStart - navEntry.requestStart);
           updateMetric(
             'domContentLoaded',
-            navEntry.domContentLoadedEventEnd - navEntry.navigationStart
+            navEntry.domContentLoadedEventEnd - navEntry.startTime
           );
           updateMetric(
             'loadComplete',
-            navEntry.loadEventEnd - navEntry.navigationStart
+            navEntry.loadEventEnd - navEntry.startTime
           );
         }
       });
@@ -130,7 +130,7 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
       return;
     }
 
-    const trackResourceUsage = () => {
+    const trackMemoryUsage = () => {
       // Memory usage (Chrome only)
       if ('memory' in performance) {
         const memory = (performance as any).memory;
@@ -140,8 +140,8 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
       }
     };
 
-    trackResourceUsage();
-    intervalRef.current = setInterval(trackResourceUsage, reportInterval);
+    trackMemoryUsage();
+    intervalRef.current = setInterval(trackMemoryUsage, reportInterval);
 
     return () => {
       if (intervalRef.current) {
@@ -303,12 +303,12 @@ export function useComponentPerformance(
   componentName: string,
   deps: any[] = []
 ) {
-  const { markComponentMount, measureRenderTime, metrics } =
+  const { markComponentMount, measureRenderTime: _measureRenderTime, metrics } =
     usePerformanceMonitor({
       debug: process.env.NODE_ENV === 'development',
     });
 
-  const mountTimeRef = useRef<number>();
+  const mountTimeRef = useRef<number>(0);
   const renderCountRef = useRef(0);
 
   useEffect(() => {

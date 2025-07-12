@@ -7,9 +7,16 @@
 import { init, replayIntegration } from '@sentry/nextjs';
 import { keys } from './keys';
 
-export const initializeSentry = (): ReturnType<typeof init> =>
-  init({
-    dsn: keys().NEXT_PUBLIC_SENTRY_DSN,
+export const initializeSentry = (): ReturnType<typeof init> => {
+  const sentryDsn = keys().NEXT_PUBLIC_SENTRY_DSN;
+  
+  if (!sentryDsn) {
+    console.warn('Sentry DSN not configured, skipping Sentry initialization');
+    return;
+  }
+
+  return init({
+    dsn: sentryDsn,
 
     // Adjust this value in production, or use tracesSampler for greater control
     tracesSampleRate: 1,
@@ -34,3 +41,4 @@ export const initializeSentry = (): ReturnType<typeof init> =>
       }),
     ],
   });
+};

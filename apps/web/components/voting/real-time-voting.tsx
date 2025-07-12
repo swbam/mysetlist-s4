@@ -183,7 +183,7 @@ export const RealTimeVoting = React.memo(function RealTimeVoting({
   setlistId,
   songs: initialSongs,
   className,
-  onVoteUpdate,
+  onVoteUpdate: _onVoteUpdate,
 }: RealTimeVotingProps) {
   const { user } = useAuth();
   const [songs, setSongs] = useState(initialSongs);

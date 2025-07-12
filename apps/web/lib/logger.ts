@@ -15,15 +15,21 @@ class Logger {
   private isDevelopment = process.env.NODE_ENV === 'development';
   private sentryLogger = Sentry.logger;
 
-  private consoleLog(level: LogLevel, _message: string, _context?: LogContext) {
+  private consoleLog(level: LogLevel, message: string, context?: LogContext) {
     // Always log to console in development
     if (this.isDevelopment) {
-      const _consoleMethod =
+      const consoleMethod =
         level === 'error' || level === 'fatal'
           ? 'error'
           : level === 'warn'
             ? 'warn'
             : 'log';
+      
+      // Log to console with context
+      console[consoleMethod](
+        `[${level.toUpperCase()}] ${message}`,
+        context ? JSON.stringify(context, null, 2) : ''
+      );
     }
   }
 
@@ -141,8 +147,8 @@ class Logger {
   addBreadcrumb(message: string, category?: string, data?: any) {
     Sentry.addBreadcrumb({
       message,
-      category,
-      data,
+      ...(category && { category }),
+      ...(data && { data }),
       timestamp: Date.now() / 1000,
     });
   }

@@ -34,7 +34,7 @@ export class MonitoringService {
       duration: 0,
       startTime,
       endTime: 0,
-      metadata,
+      ...(metadata && { metadata }),
     });
 
     // Mark performance start
@@ -181,7 +181,7 @@ export class MonitoringService {
       unit: 'ms',
       tags: {
         query_type: MonitoringService.getQueryType(query),
-        row_count: rowCount?.toString(),
+        ...(rowCount !== undefined && { row_count: rowCount.toString() }),
         success: error ? 'false' : 'true',
       },
     });
@@ -228,12 +228,11 @@ export class MonitoringService {
   static trackError(error: Error, context?: Record<string, any>): void {
     // Send to Sentry
     Sentry.captureException(error, {
-      tags: context,
+      ...(context && { tags: context }),
       extra: {
         timestamp: new Date().toISOString(),
-        userAgent:
-          typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
-        url: typeof window !== 'undefined' ? window.location.href : undefined,
+        ...(typeof navigator !== 'undefined' && { userAgent: navigator.userAgent }),
+        ...(typeof window !== 'undefined' && { url: window.location.href }),
       },
     });
 
@@ -289,19 +288,21 @@ export class MonitoringService {
             const observer = new PerformanceObserver((list) => {
               const entries = list.getEntries();
               const lastEntry = entries.at(-1);
-              metrics.largestContentfulPaint = lastEntry.startTime;
+              if (lastEntry) {
+                metrics.largestContentfulPaint = lastEntry.startTime;
 
-              // Track all metrics
-              Object.entries(metrics).forEach(([name, value]) => {
-                MonitoringService.trackMetric({
-                  name: `performance.${name}`,
-                  value: Math.round(value),
-                  unit: 'ms',
-                  tags: {
-                    page: window.location.pathname,
-                  },
+                // Track all metrics
+                Object.entries(metrics).forEach(([name, value]) => {
+                  MonitoringService.trackMetric({
+                    name: `performance.${name}`,
+                    value: Math.round(value),
+                    unit: 'ms',
+                    tags: {
+                      page: window.location.pathname,
+                    },
+                  });
                 });
-              });
+              }
             });
 
             observer.observe({ entryTypes: ['largest-contentful-paint'] });

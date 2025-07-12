@@ -28,7 +28,8 @@ export class DatabaseOptimizer {
 
     // Try cache first if cache key provided
     if (cacheKey) {
-      const cached = await CacheService.get<T>(cacheKey);
+      const cacheService = new CacheService();
+      const cached = await cacheService.get(cacheKey) as T | null;
       if (cached !== null) {
         MonitoringService.trackMetric({
           name: 'database.cache_hit',
@@ -51,7 +52,8 @@ export class DatabaseOptimizer {
 
       // Cache result if cache key provided
       if (cacheKey) {
-        await CacheService.set(cacheKey, result, { ttl: cacheTTL });
+        const cacheService = new CacheService();
+        await cacheService.set(cacheKey, result, cacheTTL);
         MonitoringService.trackMetric({
           name: 'database.cache_miss',
           value: 1,
@@ -81,7 +83,7 @@ export class DatabaseOptimizer {
       failFast?: boolean;
     } = {}
   ): Promise<T[]> {
-    const { batchSize = 10, concurrency = 5, failFast = false } = options;
+    const { batchSize = 10, failFast = false } = options;
 
     const results: T[] = [];
 
@@ -153,7 +155,7 @@ export class DatabaseOptimizer {
           (SELECT setting::int FROM pg_settings WHERE name = 'max_connections') as max_connections
       `);
 
-      const row = result.rows[0] as any;
+      const row = result[0] as any;
       const activeConnections = Number.parseInt(row.active_connections);
       const totalConnections = Number.parseInt(row.total_connections);
       const maxConnections = Number.parseInt(row.max_connections);
@@ -231,7 +233,7 @@ export class DatabaseOptimizer {
 
       const recommendations: string[] = [];
 
-      if (slowQueries.rows.length > 0) {
+      if (slowQueries.length > 0) {
         recommendations.push(
           'Consider adding indexes for frequently executed slow queries'
         );
@@ -256,14 +258,14 @@ export class DatabaseOptimizer {
         LIMIT 10
       `);
 
-      if (missingIndexes.rows.length > 0) {
+      if (missingIndexes.length > 0) {
         recommendations.push(
           'Consider adding indexes on high-cardinality columns with low correlation'
         );
       }
 
       return {
-        slowQueries: slowQueries.rows as any[],
+        slowQueries: slowQueries as any[],
         recommendations,
       };
     } catch (_error) {
@@ -312,7 +314,7 @@ export class DatabaseOptimizer {
       `);
 
       // Vacuum tables with high dead tuple ratio
-      for (const row of tableStats.rows as any[]) {
+      for (const row of tableStats as any[]) {
         if (row.dead_ratio > 0.2) {
           // More than 20% dead tuples
           try {
@@ -324,7 +326,7 @@ export class DatabaseOptimizer {
             );
           } catch (error) {
             results.vacuumResults.push(
-              `Failed to vacuum ${row.schemaname}.${row.tablename}: ${error.message}`
+              `Failed to vacuum ${row.schemaname}.${row.tablename}: ${error instanceof Error ? error.message : 'Unknown error'}`
             );
           }
         }
@@ -342,7 +344,7 @@ export class DatabaseOptimizer {
       MonitoringService.trackError(error as Error, {
         operation: 'database_maintenance',
       });
-      results.vacuumResults.push(`Maintenance error: ${error.message}`);
+      results.vacuumResults.push(`Maintenance error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 
     return results;
@@ -362,7 +364,7 @@ export class DatabaseOptimizer {
         sql.raw(`EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ${query}`)
       );
 
-      const plan = explainResult.rows[0]['QUERY PLAN'][0];
+      const plan = explainResult[0] ? (explainResult[0] as any)['QUERY PLAN'][0] : {};
       const cost = plan['Total Cost'] || 0;
       const duration = plan['Actual Total Time'] || 0;
 
@@ -395,7 +397,7 @@ export class DatabaseOptimizer {
         suggestions,
       };
     } catch (error) {
-      throw new Error(`Query explanation failed: ${error.message}`);
+      throw new Error(`Query explanation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -429,7 +431,7 @@ export class DatabaseOptimizer {
         ORDER BY efficiency DESC
       `);
 
-      return result.rows.map((row: any) => ({
+      return result.map((row: any) => ({
         tableName: `${row.schemaname}.${row.tablename}`,
         indexName: row.indexname,
         scans: row.scans,

@@ -1,3 +1,5 @@
+import React, { useEffect } from 'react';
+
 interface PerformanceMetric {
   name: string;
   value: number;
@@ -43,8 +45,12 @@ class PerformanceMonitor {
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
       const lastEntry = entries.at(-1) as any;
-      this.vitalMetrics.LCP = lastEntry.renderTime || lastEntry.loadTime;
-      this.reportMetric('LCP', this.vitalMetrics.LCP, 'ms');
+      if (lastEntry) {
+        this.vitalMetrics.LCP = lastEntry.renderTime || lastEntry.loadTime;
+        if (this.vitalMetrics.LCP !== undefined) {
+          this.reportMetric('LCP', this.vitalMetrics.LCP, 'ms');
+        }
+      }
     });
 
     observer.observe({ entryTypes: ['largest-contentful-paint'] });
@@ -55,7 +61,9 @@ class PerformanceMonitor {
       const entries = list.getEntries();
       entries.forEach((entry: any) => {
         this.vitalMetrics.FID = entry.processingStart - entry.startTime;
-        this.reportMetric('FID', this.vitalMetrics.FID, 'ms');
+        if (this.vitalMetrics.FID !== undefined) {
+          this.reportMetric('FID', this.vitalMetrics.FID, 'ms');
+        }
       });
     });
 
@@ -76,7 +84,9 @@ class PerformanceMonitor {
       });
 
       this.vitalMetrics.CLS = clsValue;
-      this.reportMetric('CLS', this.vitalMetrics.CLS, 'score');
+      if (this.vitalMetrics.CLS !== undefined) {
+        this.reportMetric('CLS', this.vitalMetrics.CLS, 'score');
+      }
     });
 
     observer.observe({ entryTypes: ['layout-shift'] });
@@ -88,7 +98,9 @@ class PerformanceMonitor {
       entries.forEach((entry) => {
         if (entry.name === 'first-contentful-paint') {
           this.vitalMetrics.FCP = entry.startTime;
-          this.reportMetric('FCP', this.vitalMetrics.FCP, 'ms');
+          if (this.vitalMetrics.FCP !== undefined) {
+            this.reportMetric('FCP', this.vitalMetrics.FCP, 'ms');
+          }
         }
       });
     });
@@ -96,7 +108,7 @@ class PerformanceMonitor {
     observer.observe({ entryTypes: ['paint'] });
   }
 
-  private reportMetric(name: string, value: number, unit: string) {
+  public reportMetric(name: string, value: number, unit: string) {
     const metric: PerformanceMetric = {
       name,
       value,

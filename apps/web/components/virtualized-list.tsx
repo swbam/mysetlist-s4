@@ -215,6 +215,8 @@ export function VirtualizedList<T>({
       }
 
       const item = items[i];
+      if (!item) continue;
+      
       const top = itemMetrics.positions[i] ?? 0;
       const height = itemMetrics.heights[i] ?? estimatedItemHeight;
 
@@ -323,7 +325,7 @@ export function ArtistList({
   ...props
 }: { artists: any[] } & Omit<
   VirtualizedListProps<any>,
-  'items' | 'renderItem'
+  'items' | 'renderItem' | 'itemHeight'
 >) {
   return (
     <VirtualizedList
@@ -348,7 +350,7 @@ export function ArtistList({
 export function ShowList({
   shows,
   ...props
-}: { shows: any[] } & Omit<VirtualizedListProps<any>, 'items' | 'renderItem'>) {
+}: { shows: any[] } & Omit<VirtualizedListProps<any>, 'items' | 'renderItem' | 'itemHeight'>) {
   return (
     <VirtualizedList
       items={shows}

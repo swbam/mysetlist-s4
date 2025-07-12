@@ -182,9 +182,9 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
       await cacheData('/offline-actions', actions);
 
       // Register for background sync if supported
-      if (enableBackgroundSync && state.registration?.sync) {
+      if (enableBackgroundSync && (state.registration as any)?.sync) {
         try {
-          await state.registration.sync.register('offline-actions');
+          await (state.registration as any).sync.register('offline-actions');
         } catch (_error) {}
       }
     },

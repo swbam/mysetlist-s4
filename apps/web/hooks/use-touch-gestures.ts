@@ -33,13 +33,13 @@ export function useTouchGestures(
   const handleTouchStart = useCallback(
     (e: TouchEvent) => {
       touchStartRef.current = {
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY,
+        x: e.touches[0]?.clientX ?? 0,
+        y: e.touches[0]?.clientY ?? 0,
       };
 
       // Check if at top of page for pull to refresh
       if (window.scrollY === 0 && onPullToRefresh) {
-        pullStartRef.current = e.touches[0].clientY;
+        pullStartRef.current = e.touches[0]?.clientY ?? 0;
       }
     },
     [onPullToRefresh]
@@ -51,7 +51,7 @@ export function useTouchGestures(
         return;
       }
 
-      const currentY = e.touches[0].clientY;
+      const currentY = e.touches[0]?.clientY ?? 0;
 
       // Handle pull to refresh
       if (pullStartRef.current !== null && onPullToRefresh) {
@@ -85,8 +85,8 @@ export function useTouchGestures(
       }
 
       const touchEnd = {
-        x: e.changedTouches[0].clientX,
-        y: e.changedTouches[0].clientY,
+        x: e.changedTouches[0]?.clientX ?? 0,
+        y: e.changedTouches[0]?.clientY ?? 0,
       };
 
       const deltaX = touchEnd.x - touchStartRef.current.x;

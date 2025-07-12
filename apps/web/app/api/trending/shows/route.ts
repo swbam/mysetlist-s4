@@ -1,6 +1,6 @@
 import { db } from '@repo/database';
 import { artists, shows, venues } from '@repo/database';
-import { desc, gte, sql } from 'drizzle-orm';
+import { desc, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 import type { TrendingShow, TrendingShowsResponse } from '~/types/api';
 
@@ -70,8 +70,8 @@ export async function GET(request: NextRequest) {
       .from(shows)
       .leftJoin(artists, sql`${artists.id} = ${shows.headlinerArtistId}`)
       .leftJoin(venues, sql`${venues.id} = ${shows.venueId}`)
-      .where(gte(shows.date, startDate.toISOString().substring(0, 10)))
-      .orderBy(desc(sql`COALESCE(${shows.trendingScore}, 0)`))
+      .where(sql`${shows.date} >= ${startDate.toISOString().substring(0, 10)} OR ${shows.attendeeCount} > 0 OR ${shows.viewCount} > 0`)
+      .orderBy(desc(sql`COALESCE(${shows.trendingScore}, 0)`), desc(shows.attendeeCount), desc(shows.viewCount))
       .limit(limit);
 
     const formatted: TrendingShow[] = (raw as RawShow[]).map((s, idx) => {

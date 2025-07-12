@@ -1,24 +1,28 @@
-import { createRateLimiter, slidingWindow } from '@repo/rate-limit';
+import { createRateLimiter } from '@repo/rate-limit';
 import type { NextRequest } from 'next/server';
 
 // Rate limiters for different auth operations
 export const signInRateLimiter = createRateLimiter({
-  limiter: slidingWindow(5, '15 m'), // 5 attempts per 15 minutes
+  limit: 5,
+  window: '15 m', // 5 attempts per 15 minutes
   prefix: 'auth:signin',
 });
 
 export const signUpRateLimiter = createRateLimiter({
-  limiter: slidingWindow(3, '1 h'), // 3 sign-ups per hour
+  limit: 3,
+  window: '1 h', // 3 sign-ups per hour
   prefix: 'auth:signup',
 });
 
 export const passwordResetRateLimiter = createRateLimiter({
-  limiter: slidingWindow(3, '1 h'), // 3 reset attempts per hour
+  limit: 3,
+  window: '1 h', // 3 reset attempts per hour
   prefix: 'auth:reset',
 });
 
 export const emailVerificationRateLimiter = createRateLimiter({
-  limiter: slidingWindow(5, '1 h'), // 5 verification emails per hour
+  limit: 5,
+  window: '1 h', // 5 verification emails per hour
   prefix: 'auth:verify',
 });
 

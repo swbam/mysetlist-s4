@@ -130,12 +130,12 @@ export function useRealtimeSetlist({
               song.id === payload.new.id
                 ? {
                     ...song,
-                    isPlayed: payload.new.is_played,
-                    playTime: payload.new.play_time
-                      ? new Date(payload.new.play_time)
-                      : undefined,
-                    notes: payload.new.notes,
-                  }
+                    isPlayed: payload.new['is_played'] ?? song.isPlayed,
+                    playTime: payload.new['play_time']
+                      ? new Date(payload.new['play_time'])
+                      : song.playTime,
+                    notes: payload.new['notes'] ?? song.notes,
+                  } as SetlistSong
                 : song
             ),
           }))
@@ -144,7 +144,7 @@ export function useRealtimeSetlist({
         setLastUpdate(new Date());
 
         // Check if a song was just marked as played
-        if (payload.new.is_played && !payload.old.is_played) {
+        if (payload.new['is_played'] && !payload.old['is_played']) {
           emitEvent({
             type: 'song_played',
             data: {

@@ -1,5 +1,5 @@
 import { createClient } from '~/lib/supabase/server';
-import { Redis } from 'ioredis';
+import { CacheClient } from '~/lib/cache/redis';
 
 export interface CacheStrategy {
   key: string;
@@ -26,22 +26,16 @@ export interface PerformanceMetrics {
 }
 
 class DataOptimizationService {
-  private redis: Redis;
+  private cache: CacheClient;
   private supabase: ReturnType<typeof createClient>;
   private queryCache: Map<string, { data: any; timestamp: number; ttl: number }> = new Map();
   private queryStats: Map<string, PerformanceMetrics> = new Map();
   private compressionEnabled: boolean;
 
   constructor() {
-    this.redis = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379'),
-      password: process.env.REDIS_PASSWORD,
-      lazyConnect: true,
-    });
-
+    this.cache = CacheClient.getInstance();
     this.supabase = createClient();
-    this.compressionEnabled = process.env.ENABLE_COMPRESSION === 'true';
+    this.compressionEnabled = process.env?.['ENABLE_COMPRESSION'] === 'true';
   }
 
   // Intelligent query caching with automatic invalidation
@@ -61,13 +55,15 @@ class DataOptimizationService {
       }
 
       // Check Redis cache
-      const cachedResult = await this.redis.get(key);
+      const cachedResult = await this.cache.get<any>(key);
       if (cachedResult) {
         let data;
         try {
-          data = strategy.compression ? 
+          // If compression is enabled, the cached result should be a compressed string
+          // Otherwise, it's already parsed by cache.get
+          data = strategy.compression && typeof cachedResult === 'string' ? 
             JSON.parse(await this.decompress(cachedResult)) : 
-            JSON.parse(cachedResult);
+            cachedResult;
           
           // Update memory cache
           this.queryCache.set(key, {
@@ -110,11 +106,8 @@ class DataOptimizationService {
     const patterns = Array.isArray(pattern) ? pattern : [pattern];
     
     for (const p of patterns) {
-      // Invalidate Redis cache
-      const keys = await this.redis.keys(p);
-      if (keys.length > 0) {
-        await this.redis.del(...keys);
-      }
+      // TODO: Implement Redis pattern-based invalidation when full Redis client is available
+      // For now, we can only invalidate memory cache
       
       // Invalidate memory cache
       for (const [key] of this.queryCache.entries()) {
@@ -325,7 +318,7 @@ class DataOptimizationService {
   private async checkConnectionHealth(): Promise<{ healthy: number; unhealthy: number }> {
     try {
       const supabase = await this.supabase;
-      const { data, error } = await supabase.rpc('check_connection_health');
+      const { error } = await supabase.rpc('check_connection_health');
       
       if (error) {
         return { healthy: 0, unhealthy: 1 };
@@ -371,15 +364,10 @@ class DataOptimizationService {
       }
       
       // Set cache with TTL
-      await this.redis.setex(key, strategy.ttl, serialized);
+      await this.cache.set(key, serialized, { ex: strategy.ttl });
       
-      // Add tags for group invalidation
-      if (strategy.tags.length > 0) {
-        for (const tag of strategy.tags) {
-          await this.redis.sadd(`tag:${tag}`, key);
-          await this.redis.expire(`tag:${tag}`, strategy.ttl);
-        }
-      }
+      // TODO: Implement tag-based invalidation when full Redis client is available
+      // Tags would allow group invalidation of related cache entries
     } catch (error) {
       console.error('Failed to cache result:', error);
     }
@@ -418,8 +406,10 @@ class DataOptimizationService {
 
   // Clear all caches
   async clearAllCaches(): Promise<void> {
-    await this.redis.flushall();
+    // TODO: Implement cache flush when full Redis client is available
+    // For now, clear memory cache
     this.queryCache.clear();
+    this.queryStats.clear();
   }
 
   // Get cache statistics
@@ -431,17 +421,15 @@ class DataOptimizationService {
     const avgHitRate = Array.from(this.queryStats.values())
       .reduce((sum, stats) => sum + stats.cacheHitRate, 0) / this.queryStats.size || 0;
     
-    const redisInfo = await this.redis.info('memory');
-    const redisSize = await this.redis.dbsize();
-    
+    // TODO: Implement Redis stats when full Redis client is available
     return {
       memoryCache: {
         size: memorySize,
         hitRate: avgHitRate
       },
       redisCache: {
-        size: redisSize,
-        memory: redisInfo.match(/used_memory_human:(.+)/)?.[1] || 'unknown'
+        size: 0, // Not available with current cache client
+        memory: 'N/A'
       }
     };
   }
@@ -457,30 +445,13 @@ class DataOptimizationService {
       }
     }
     
-    // Redis handles TTL automatically, but we can clean up tags
-    const tagKeys = await this.redis.keys('tag:*');
-    for (const tagKey of tagKeys) {
-      const members = await this.redis.smembers(tagKey);
-      const existingMembers = await Promise.all(
-        members.map(async (member) => {
-          const exists = await this.redis.exists(member);
-          return exists ? member : null;
-        })
-      );
-      
-      const validMembers = existingMembers.filter(Boolean);
-      if (validMembers.length !== members.length) {
-        await this.redis.del(tagKey);
-        if (validMembers.length > 0) {
-          await this.redis.sadd(tagKey, ...validMembers);
-        }
-      }
-    }
+    // TODO: Implement tag cleanup when full Redis client is available
+    // Redis handles TTL automatically for regular keys
   }
 
   // Shutdown cleanup
   async shutdown(): Promise<void> {
-    await this.redis.quit();
+    // CacheClient doesn't have quit method - it uses HTTP connections
     this.queryCache.clear();
     this.queryStats.clear();
   }

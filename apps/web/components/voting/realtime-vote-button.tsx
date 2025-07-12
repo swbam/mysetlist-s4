@@ -56,7 +56,7 @@ const countVariants = {
 
 const RealtimeVoteButtonComponent = function RealtimeVoteButton({
   setlistSongId,
-  showId,
+  showId: _showId,
   userId,
   disabled = false,
   size = 'md',
@@ -72,7 +72,7 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
   >(null);
   const previousNetVotes = useRef<number>(0);
 
-  const { isConnected, connectionStatus } = useRealtimeConnection();
+  const { isConnected, connectionStatus: _connectionStatus } = useRealtimeConnection();
 
   // Use optimistic voting for instant feedback
   const {
@@ -82,7 +82,7 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
     isOptimistic,
   } = useOptimisticVoting({
     setlistSongId,
-    userId,
+    ...(userId && { userId }),
     onVoteSuccess: (result) => {
       if (result.voteLimits) {
         setVoteLimits(result.voteLimits);
@@ -119,6 +119,7 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
       const timer = setTimeout(() => setLastVoteAnimation(null), 500);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [netVotes]);
 
   const triggerHapticFeedback = useCallback(

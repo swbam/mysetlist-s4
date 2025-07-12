@@ -28,7 +28,6 @@ import {
   Users,
 } from 'lucide-react';
 import { useState } from 'react';
-import { VoteAnalyticsDashboard } from './vote-analytics-dashboard';
 import { VoteHistory } from './vote-history';
 import { VoteLeaderboard } from './vote-leaderboard';
 import { VoteStatistics } from './vote-statistics';
@@ -43,7 +42,9 @@ interface ComprehensiveVotingDashboardProps {
   compact?: boolean;
 }
 
-export function ComprehensiveVotingDashboard({
+import { memo } from 'react';
+
+function ComprehensiveVotingDashboardComponent({
   showId,
   setlistId,
   userId,
@@ -68,9 +69,6 @@ export function ComprehensiveVotingDashboard({
           totalDownvotes={0}
           className="h-auto"
         />
-        {isAdmin && (
-          <VoteAnalyticsDashboard showId={showId} className="h-auto" />
-        )}
       </div>
     );
   }
@@ -172,7 +170,7 @@ export function ComprehensiveVotingDashboard({
             <div>
               <VoteLeaderboard
                 showId={showId}
-                setlistId={setlistId}
+                {...(setlistId && { setlistId })}
                 className="h-fit"
               />
             </div>
@@ -198,7 +196,7 @@ export function ComprehensiveVotingDashboard({
               </CardHeader>
               <CardContent>
                 <VoteHistory
-                  userId={userId}
+                  {...(userId && { userId })}
                   showId={showId}
                   className="max-h-64 overflow-hidden"
                 />
@@ -211,27 +209,29 @@ export function ComprehensiveVotingDashboard({
         <TabsContent value="statistics" className="space-y-6">
           <VoteStatistics
             showId={showId}
-            setlistId={setlistId}
+            {...(setlistId && { setlistId })}
             realtime={realtimeEnabled}
           />
         </TabsContent>
 
         {/* Leaderboard Tab */}
         <TabsContent value="leaderboard" className="space-y-6">
-          <VoteLeaderboard showId={showId} setlistId={setlistId} />
+          <VoteLeaderboard showId={showId} {...(setlistId && { setlistId })} />
         </TabsContent>
 
         {/* Personal History Tab */}
         {hasUserId && showPersonalData && (
           <TabsContent value="history" className="space-y-6">
-            <VoteHistory userId={userId} showId={showId} />
+            <VoteHistory {...(userId && { userId })} showId={showId} />
           </TabsContent>
         )}
 
         {/* Admin Analytics Tab */}
         {isAdmin && (
           <TabsContent value="analytics" className="space-y-6">
-            <VoteAnalyticsDashboard showId={showId} />
+            <div className="p-8 text-center text-muted-foreground">
+              Analytics dashboard coming soon
+            </div>
           </TabsContent>
         )}
       </Tabs>
@@ -252,3 +252,17 @@ export function ComprehensiveVotingDashboard({
     </div>
   );
 }
+
+export const ComprehensiveVotingDashboard = memo(
+  ComprehensiveVotingDashboardComponent,
+  (prevProps, nextProps) => {
+    return (
+      prevProps.showId === nextProps.showId &&
+      prevProps.setlistId === nextProps.setlistId &&
+      prevProps.userId === nextProps.userId &&
+      prevProps.userRole === nextProps.userRole &&
+      prevProps.className === nextProps.className &&
+      prevProps.compact === nextProps.compact
+    );
+  }
+);

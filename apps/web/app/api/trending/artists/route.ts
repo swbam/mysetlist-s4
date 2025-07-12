@@ -30,8 +30,8 @@ export async function GET(request: NextRequest) {
         updatedAt: artists.updatedAt,
       })
       .from(artists)
-      .where(sql`${artists.trendingScore} > 0`)
-      .orderBy(desc(artists.trendingScore), desc(artists.popularity))
+      .where(sql`${artists.trendingScore} > 0 OR ${artists.popularity} > 0`)
+      .orderBy(desc(artists.trendingScore), desc(artists.popularity), desc(artists.followers))
       .limit(limit);
 
     // If no trending data, get popular artists as fallback

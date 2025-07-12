@@ -4,12 +4,8 @@ import {
   sendWelcomeEmail, 
   sendShowReminderEmail, 
   sendNewShowNotificationEmail,
-  sendSetlistUpdateEmail,
   sendWeeklyDigestEmail,
-  sendArtistFollowNotificationEmail,
-  sendVoteMilestoneEmail,
-  sendLiveShowAlertEmail,
-  type EmailAddress 
+  sendVoteMilestoneEmail
 } from '@repo/email/services';
 
 export interface EmailTrigger {
@@ -293,26 +289,26 @@ class EmailAutomationEngine {
       email: user.email,
       preferences: {
         favoriteGenres: preferences.favoriteGenres,
-        favoriteArtists: followedArtists?.map(f => f.artists).filter(Boolean) || [],
-        favoriteVenues: favoriteVenues?.map(v => v.venues).filter(Boolean) || [],
+        favoriteArtists: followedArtists?.map(f => f.artists).filter(Boolean).flat() || [],
+        favoriteVenues: favoriteVenues?.map(v => v.venues).filter(Boolean).flat() || [],
         lastActivity: new Date(user.last_sign_in_at || user.created_at),
         timezone: user.timezone || 'UTC',
-        location: user.location ? { city: user.location.city, country: user.location.country } : undefined
+        ...(user.location && { location: { city: user.location.city, country: user.location.country } })
       },
       recommendations,
       recentActivity: {
         votesCount: recentVotes?.length || 0,
         showsAttended: recentAttendance?.length || 0,
         newFollows: followedArtists?.length || 0,
-        lastVote: recentVotes?.[0]?.created_at ? new Date(recentVotes[0].created_at) : undefined,
-        lastAttendance: recentAttendance?.[0]?.created_at ? new Date(recentAttendance[0].created_at) : undefined
+        ...(recentVotes?.[0]?.created_at && { lastVote: new Date(recentVotes[0].created_at) }),
+        ...(recentAttendance?.[0]?.created_at && { lastAttendance: new Date(recentAttendance[0].created_at) })
       },
       engagement
     };
   }
 
   // Get personalized recommendations for email content
-  private async getPersonalizedRecommendations(userId: string) {
+  private async getPersonalizedRecommendations(_userId: string) {
     const supabase = await this.supabase;
     
     // Get upcoming shows for followed artists
@@ -340,7 +336,7 @@ class EmailAutomationEngine {
         id: show.id,
         name: show.name,
         date: show.date,
-        venue: `${show.venues?.name}, ${show.venues?.city}`
+        venue: show.venues?.[0] ? `${show.venues[0].name}, ${show.venues[0].city}` : ''
       })) || [],
       artists: recommendedArtists || []
     };
@@ -398,8 +394,6 @@ class EmailAutomationEngine {
     };
 
     try {
-      const supabase = await this.supabase;
-
       // Process each trigger type
       for (const trigger of this.defaultTriggers) {
         if (!trigger.active) continue;
@@ -450,7 +444,7 @@ class EmailAutomationEngine {
           const emailResult = await sendWelcomeEmail({
             to: [{ email: user.email, name: personalizedData.userName }],
             name: personalizedData.userName,
-            appUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://mysetlist.app'
+            appUrl: process.env['NEXT_PUBLIC_APP_URL'] || 'https://mysetlist.app'
           });
 
           if (emailResult.success) {
@@ -486,7 +480,7 @@ class EmailAutomationEngine {
             id,
             name,
             date,
-            artists(name, image_url),
+            artists(id, name, image_url),
             venues(name, city)
           `)
           .gte('date', new Date().toISOString())
@@ -497,19 +491,19 @@ class EmailAutomationEngine {
           const { data: interestedUsers } = await supabase
             .from('user_follows_artists')
             .select('user_id, users(email, display_name)')
-            .eq('artist_id', show.artists.id);
+            .eq('artist_id', show.artists?.[0]?.id);
 
           for (const userFollow of interestedUsers || []) {
             const personalizedData = await this.generatePersonalizedData(userFollow.user_id);
             
             const emailResult = await sendShowReminderEmail({
-              to: [{ email: userFollow.users.email, name: personalizedData.userName }],
+              to: [{ email: userFollow.users?.[0]?.email, name: personalizedData.userName }],
               userName: personalizedData.userName,
               show: {
                 id: show.id,
                 name: show.name,
-                artistName: show.artists.name,
-                venue: show.venues.name,
+                artistName: show.artists?.[0]?.name || 'Unknown Artist',
+                venue: show.venues?.[0]?.name || 'Unknown Venue',
                 date: show.date
               },
               daysUntilShow: Math.ceil((new Date(show.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
@@ -519,7 +513,7 @@ class EmailAutomationEngine {
               results.sent++;
             } else {
               results.failed++;
-              results.errors.push(`Show reminder for ${userFollow.users.email}: ${emailResult.error?.message}`);
+              results.errors.push(`Show reminder for ${userFollow.users?.[0]?.email}: ${emailResult.error?.message}`);
             }
           }
         }
@@ -556,8 +550,14 @@ class EmailAutomationEngine {
               name: a.name,
               upcomingShows: Math.floor(Math.random() * 5) + 1
             })),
-            upcomingShows: personalizedData.recommendations.shows.slice(0, 3),
-            newSetlists: personalizedData.recommendations.shows.slice(3, 6),
+            upcomingShows: personalizedData.recommendations.shows.slice(0, 3).map(show => ({
+              ...show,
+              artistName: 'Various Artists' // Since we don't have artist info in recommendations
+            })),
+            newSetlists: personalizedData.recommendations.shows.slice(3, 6).map(show => ({
+              ...show,
+              artistName: 'Various Artists'
+            })),
             totalFollowedArtists: personalizedData.preferences.favoriteArtists.length
           });
 
@@ -582,15 +582,22 @@ class EmailAutomationEngine {
         const milestones = [10, 50, 100, 500, 1000];
         
         for (const milestone of milestones) {
-          const { data: users } = await supabase
+          // Get all users and then filter by vote count
+          const { data: allUsers } = await supabase
             .from('users')
-            .select(`
-              id,
-              email,
-              display_name,
-              user_vote_count:setlist_votes(count)
-            `)
-            .having('count', 'eq', milestone);
+            .select('id, email, display_name');
+          
+          const users = [];
+          for (const user of allUsers || []) {
+            const { count } = await supabase
+              .from('setlist_votes')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id);
+            
+            if (count === milestone) {
+              users.push({ ...user, voteCount: count });
+            }
+          }
 
           for (const user of users || []) {
             const personalizedData = await this.generatePersonalizedData(user.id);
@@ -618,13 +625,13 @@ class EmailAutomationEngine {
                 userName: personalizedData.userName,
                 show: {
                   id: 'show-id',
-                  name: topVote.setlist_songs?.setlists?.shows?.name || 'Unknown Show',
+                  name: topVote.setlist_songs?.[0]?.setlists?.[0]?.shows?.[0]?.name || 'Unknown Show',
                   artistName: 'Artist',
-                  venue: topVote.setlist_songs?.setlists?.shows?.venues?.name || 'Unknown Venue',
+                  venue: topVote.setlist_songs?.[0]?.setlists?.[0]?.shows?.[0]?.venues?.[0]?.name || 'Unknown Venue',
                   date: new Date().toISOString()
                 },
                 song: {
-                  title: topVote.setlist_songs?.songs?.title || 'Unknown Song',
+                  title: topVote.setlist_songs?.[0]?.songs?.[0]?.title || 'Unknown Song',
                   votes: topVote.vote_value,
                   position: 1
                 },
@@ -668,19 +675,19 @@ class EmailAutomationEngine {
       const { data: followers } = await supabase
         .from('user_follows_artists')
         .select('user_id, users(email, display_name)')
-        .eq('artist_id', show.artists.id);
+        .eq('artist_id', show.artists?.[0]?.id);
 
       for (const follower of followers || []) {
         const personalizedData = await this.generatePersonalizedData(follower.user_id);
         
         const emailResult = await sendNewShowNotificationEmail({
-          to: [{ email: follower.users.email, name: personalizedData.userName }],
+          to: [{ email: follower.users?.[0]?.email, name: personalizedData.userName }],
           userName: personalizedData.userName,
           show: {
             id: show.id,
             name: show.name,
-            artistName: show.artists.name,
-            venue: show.venues.name,
+            artistName: show.artists?.[0]?.name || 'Unknown Artist',
+            venue: show.venues?.[0]?.name || 'Unknown Venue',
             date: show.date,
             announcedAt: show.created_at
           }
@@ -690,7 +697,7 @@ class EmailAutomationEngine {
           results.sent++;
         } else {
           results.failed++;
-          results.errors.push(`New show notification for ${follower.users.email}: ${emailResult.error?.message}`);
+          results.errors.push(`New show notification for ${follower.users?.[0]?.email}: ${emailResult.error?.message}`);
         }
       }
     }
@@ -709,7 +716,7 @@ class EmailAutomationEngine {
       const personalizedData = await this.generatePersonalizedData(user.user_id);
       
       const emailResult = await sendWeeklyDigestEmail({
-        to: [{ email: user.users.email, name: personalizedData.userName }],
+        to: [{ email: user.users?.[0]?.email, name: personalizedData.userName }],
         userName: personalizedData.userName,
         weekOf: new Date().toLocaleDateString(),
         followedArtists: personalizedData.preferences.favoriteArtists.map(a => ({
@@ -717,8 +724,14 @@ class EmailAutomationEngine {
           name: a.name,
           upcomingShows: Math.floor(Math.random() * 5) + 1
         })),
-        upcomingShows: personalizedData.recommendations.shows.slice(0, 5),
-        newSetlists: personalizedData.recommendations.shows.slice(5, 10),
+        upcomingShows: personalizedData.recommendations.shows.slice(0, 5).map(show => ({
+          ...show,
+          artistName: 'Various Artists'
+        })),
+        newSetlists: personalizedData.recommendations.shows.slice(5, 10).map(show => ({
+          ...show,
+          artistName: 'Various Artists'
+        })),
         totalFollowedArtists: personalizedData.preferences.favoriteArtists.length
       });
 
@@ -726,7 +739,7 @@ class EmailAutomationEngine {
         results.sent++;
       } else {
         results.failed++;
-        results.errors.push(`Weekly digest for ${user.users.email}: ${emailResult.error?.message}`);
+        results.errors.push(`Weekly digest for ${user.users?.[0]?.email}: ${emailResult.error?.message}`);
       }
     }
   }
@@ -760,13 +773,13 @@ class EmailAutomationEngine {
     if (existingAssignment) {
       return {
         variant: existingAssignment.variant,
-        template: campaign.abTest.variants.find(v => v.name === existingAssignment.variant)?.template || 'default'
+        template: campaign.abTest.variants.find((v: any) => v.name === existingAssignment.variant)?.template || 'default'
       };
     }
 
     // Assign user to a variant based on weights
     const variants = campaign.abTest.variants;
-    const totalWeight = variants.reduce((sum, v) => sum + v.weight, 0);
+    const totalWeight = variants.reduce((sum: number, v: any) => sum + v.weight, 0);
     const random = Math.random() * totalWeight;
     
     let currentWeight = 0;

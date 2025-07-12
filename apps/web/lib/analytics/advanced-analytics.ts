@@ -174,6 +174,8 @@ class AdvancedAnalyticsService {
     // Calculate retention rates for each cohort
     Object.keys(cohorts).forEach(cohortKey => {
       const cohort = cohorts[cohortKey];
+      if (!cohort) return;
+      
       const retentionData = this.calculateRetentionRates(
         cohort.userIds,
         cohortKey,
@@ -246,7 +248,7 @@ class AdvancedAnalyticsService {
     for (let i = 0; i < maxPeriods; i++) {
       const validCohorts = cohorts.filter(c => c.retentionRates[i] !== undefined);
       if (validCohorts.length > 0) {
-        const sum = validCohorts.reduce((acc, c) => acc + c.retentionRates[i], 0);
+        const sum = validCohorts.reduce((acc, c) => acc + (c.retentionRates[i] ?? 0), 0);
         averageRetention.push(sum / validCohorts.length);
       }
     }
@@ -258,11 +260,12 @@ class AdvancedAnalyticsService {
     const insights: string[] = [];
     
     // Best performing cohort
-    const bestCohort = cohorts.reduce((best, current) => {
+    const bestCohort = cohorts.length > 0 ? cohorts.reduce((best, current) => {
+      if (!best || !current) return current || best;
       const bestAvg = best.retentionRates.reduce((sum, rate) => sum + rate, 0) / best.retentionRates.length;
       const currentAvg = current.retentionRates.reduce((sum, rate) => sum + rate, 0) / current.retentionRates.length;
       return currentAvg > bestAvg ? current : best;
-    }, cohorts[0]);
+    }, cohorts[0]) : null;
     
     if (bestCohort) {
       insights.push(`Best performing cohort: ${bestCohort.cohortMonth} with ${bestCohort.cohortSize} users`);
@@ -270,7 +273,7 @@ class AdvancedAnalyticsService {
     
     // Retention trends
     if (averageRetention.length >= 2) {
-      const trend = averageRetention[1] - averageRetention[0];
+      const trend = (averageRetention[1] ?? 0) - (averageRetention[0] ?? 0);
       insights.push(
         trend > 0 
           ? `Retention is improving: ${trend.toFixed(1)}% increase from M0 to M1`
@@ -281,7 +284,9 @@ class AdvancedAnalyticsService {
     // Long-term retention
     if (averageRetention.length >= 6) {
       const sixMonthRetention = averageRetention[5];
-      insights.push(`Six-month retention rate: ${sixMonthRetention.toFixed(1)}%`);
+      if (sixMonthRetention !== undefined) {
+        insights.push(`Six-month retention rate: ${sixMonthRetention.toFixed(1)}%`);
+      }
     }
     
     return insights;
@@ -395,7 +400,7 @@ class AdvancedAnalyticsService {
     const retentionBySegment: Record<string, number> = {};
     
     Object.keys(segments).forEach(segment => {
-      const segmentUsers = segments[segment];
+      const segmentUsers = (segments as any)[segment];
       retentionBySegment[segment] = this.calculateDayNRetention(segmentUsers, sessions, 7);
     });
     
@@ -403,7 +408,6 @@ class AdvancedAnalyticsService {
   }
 
   private calculateChurnRate(users: any[], sessions: any[]): number {
-    const now = new Date();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
@@ -420,7 +424,6 @@ class AdvancedAnalyticsService {
   }
 
   private calculateStickiness(sessions: any[]): number {
-    const now = new Date();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
@@ -433,10 +436,12 @@ class AdvancedAnalyticsService {
     
     recentSessions.forEach(session => {
       const day = new Date(session.created_at).toISOString().split('T')[0];
-      if (!dailyActiveUsers.has(day)) {
+      if (day && !dailyActiveUsers.has(day)) {
         dailyActiveUsers.set(day, new Set());
       }
-      dailyActiveUsers.get(day)!.add(session.user_id);
+      if (day) {
+        dailyActiveUsers.get(day)!.add(session.user_id);
+      }
     });
     
     // Calculate average DAU
@@ -510,14 +515,21 @@ class AdvancedAnalyticsService {
     // Calculate growth rate
     const growthRates = [];
     for (let i = 1; i < months.length; i++) {
-      const prevMonth = monthlyData[months[i - 1]];
-      const currentMonth = monthlyData[months[i]];
-      const rate = (currentMonth - prevMonth) / prevMonth;
-      growthRates.push(rate);
+      const prevMonthKey = months[i - 1];
+      const currentMonthKey = months[i];
+      if (prevMonthKey && currentMonthKey) {
+        const prevMonth = monthlyData[prevMonthKey];
+        const currentMonth = monthlyData[currentMonthKey];
+        if (prevMonth !== undefined && currentMonth !== undefined) {
+          const rate = (currentMonth - prevMonth) / prevMonth;
+          growthRates.push(rate);
+        }
+      }
     }
     
     const avgGrowthRate = growthRates.reduce((sum, rate) => sum + rate, 0) / growthRates.length;
-    const lastMonthUsers = monthlyData[months[months.length - 1]];
+    const lastMonthKey = months[months.length - 1];
+    const lastMonthUsers = lastMonthKey ? (monthlyData[lastMonthKey] ?? 0) : 0;
     
     // Predict next 6 months
     const predictions = [];
@@ -609,9 +621,9 @@ class AdvancedAnalyticsService {
     };
     
     const ltv = Object.keys(segments).map(segment => {
-      const segmentUsers = segments[segment];
+      const segmentUsers = (segments as any)[segment];
       const avgSessionsPerUser = segmentUsers.length > 0 
-        ? sessions.filter(s => segmentUsers.some(u => u.id === s.user_id)).length / segmentUsers.length 
+        ? sessions.filter(s => segmentUsers.some((u: any) => u.id === s.user_id)).length / segmentUsers.length 
         : 0;
       
       // Simplified LTV calculation (sessions * value per session)
@@ -650,7 +662,7 @@ class AdvancedAnalyticsService {
     
     const trends = months.map(month => ({
       month,
-      seasonality: (monthlyData[month] / average) * 100
+      seasonality: ((monthlyData[month] ?? 0) / average) * 100
     }));
     
     // Identify peak and low periods
@@ -695,6 +707,7 @@ class AdvancedAnalyticsService {
         
         for (let i = 0; i < funnelSteps.length; i++) {
           const step = funnelSteps[i];
+          if (!step) continue;
           
           // Get users for this step (simplified example)
           const { data: events, error } = await supabase
@@ -721,8 +734,10 @@ class AdvancedAnalyticsService {
           previousUsers = uniqueUsers;
         }
         
-        const overallConversion = funnel.length > 0 ? 
-          (funnel[funnel.length - 1].users / funnel[0].users) * 100 : 0;
+        const firstStep = funnel[0];
+        const lastStep = funnel[funnel.length - 1];
+        const overallConversion = funnel.length > 0 && firstStep && lastStep ? 
+          (lastStep.users / firstStep.users) * 100 : 0;
         
         const bottlenecks = funnel
           .filter(step => step.dropoffRate > 50)
@@ -750,7 +765,7 @@ class AdvancedAnalyticsService {
   private generateOptimizationSuggestions(funnel: FunnelStep[]): string[] {
     const suggestions: string[] = [];
     
-    funnel.forEach((step, index) => {
+    funnel.forEach((step, _index) => {
       if (step.dropoffRate > 50) {
         suggestions.push(`Optimize ${step.step} - high drop-off rate of ${step.dropoffRate.toFixed(1)}%`);
       }
@@ -872,7 +887,6 @@ class AdvancedAnalyticsService {
         frequency: 0,
         monetary: 0,
         userCount: 0,
-        userCount: 0,
         description: 'Recent customers with potential'
       },
       {
@@ -895,15 +909,15 @@ class AdvancedAnalyticsService {
     
     // Segment users based on RFM scores
     rfmData.forEach(user => {
-      if (user.recency <= 7 && user.frequency >= 10 && user.monetary >= 25) {
+      if (user.recency <= 7 && user.frequency >= 10 && user.monetary >= 25 && segments[0]) {
         segments[0].userCount++;
-      } else if (user.recency <= 14 && user.frequency >= 5 && user.monetary >= 12.5) {
+      } else if (user.recency <= 14 && user.frequency >= 5 && user.monetary >= 12.5 && segments[1]) {
         segments[1].userCount++;
-      } else if (user.recency <= 7 && user.frequency >= 2) {
+      } else if (user.recency <= 7 && user.frequency >= 2 && segments[2]) {
         segments[2].userCount++;
-      } else if (user.recency > 30 && user.frequency >= 3) {
+      } else if (user.recency > 30 && user.frequency >= 3 && segments[3]) {
         segments[3].userCount++;
-      } else {
+      } else if (segments[4]) {
         segments[4].userCount++;
       }
     });
@@ -922,7 +936,7 @@ class AdvancedAnalyticsService {
     return distribution;
   }
 
-  private generateRFMRecommendations(segments: RFMSegment[]): Record<string, string[]> {
+  private generateRFMRecommendations(_segments: RFMSegment[]): Record<string, string[]> {
     return {
       'Champions': [
         'Reward them with exclusive offers',

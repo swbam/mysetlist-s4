@@ -22,7 +22,20 @@ export async function createClient() {
         ) {
           try {
             cookiesToSet.forEach(({ name, value, options }) => {
-              cookieStore.set(name, value, options);
+              if (options) {
+                const cookieOptions = {
+                  httpOnly: options.httpOnly,
+                  secure: options.secure,
+                  sameSite: options.sameSite as any,
+                  maxAge: options.maxAge,
+                  expires: options.expires ? new Date(options.expires) : undefined,
+                  path: options.path,
+                  domain: options.domain,
+                };
+                cookieStore.set(name, value, cookieOptions);
+              } else {
+                cookieStore.set(name, value);
+              }
             });
           } catch {
             // The `set` method was called from a Server Component.

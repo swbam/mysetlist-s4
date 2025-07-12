@@ -53,7 +53,8 @@ export async function GET(request: NextRequest) {
             updatedAt: artists.updatedAt,
           })
           .from(artists)
-          .orderBy(desc(artists.popularity))
+          .where(sql`${artists.popularity} > 0 OR ${artists.followers} > 0`)
+          .orderBy(desc(artists.popularity), desc(artists.followers))
           .limit(type === 'artist' ? limit : Math.ceil(limit / 3));
 
         if (trendingArtists && trendingArtists.length > 0) {
@@ -91,8 +92,9 @@ export async function GET(request: NextRequest) {
             });
           });
         }
-      } catch (_err) {
-        // Silently continue on error
+      } catch (err) {
+        console.error('Error fetching trending artists:', err);
+        // Continue with other data types
       }
     }
 
@@ -117,7 +119,8 @@ export async function GET(request: NextRequest) {
           })
           .from(shows)
           .leftJoin(artists, eq(artists.id, shows.headlinerArtistId))
-          .orderBy(desc(shows.attendeeCount))
+          .where(sql`${shows.date} >= CURRENT_DATE OR ${shows.attendeeCount} > 0`)
+          .orderBy(desc(shows.attendeeCount), desc(shows.viewCount))
           .limit(type === 'show' ? limit : Math.ceil(limit / 3));
 
         
@@ -153,7 +156,9 @@ export async function GET(request: NextRequest) {
             });
           });
         }
-      } catch (_err) {}
+      } catch (err) {
+        console.error('Error fetching trending data:', err);
+      }
     }
 
     // -----------------------------
@@ -175,7 +180,8 @@ export async function GET(request: NextRequest) {
             recentViews: sql<number>`0`.as('recentViews'),
           })
           .from(venues)
-          .orderBy(desc(venues.capacity))
+          .where(sql`${venues.capacity} IS NOT NULL AND ${venues.capacity} > 0`)
+          .orderBy(desc(venues.capacity), venues.name)
           .limit(type === 'venue' ? limit : Math.floor(limit / 3));
 
         
@@ -213,7 +219,9 @@ export async function GET(request: NextRequest) {
             });
           });
         }
-      } catch (_err) {}
+      } catch (err) {
+        console.error('Error fetching trending data:', err);
+      }
     }
 
     // Sort by score and return top results

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { useAuth } from '~/providers/auth-provider';
+import { useAuth } from '~/app/providers/auth-provider';
 
 interface SocialStatus {
   liked: boolean;
@@ -85,7 +85,7 @@ export function useSocialInteractions({
         });
 
         if (response.ok) {
-          const _data = await response.json();
+          await response.json();
 
           // Update local state
           setStatus((prev) => ({
@@ -187,6 +187,8 @@ export function useSocialInteractionsBatch(
       setStatuses((prev) => ({
         ...prev,
         [targetId]: {
+          liked: false,
+          saved: false,
           ...prev[targetId],
           ...updates,
         },
