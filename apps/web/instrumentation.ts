@@ -1,3 +1,6 @@
+// Import server polyfills before anything else
+import './lib/server-polyfills';
+
 // Complete instrumentation for all runtimes with enhanced error handling
 export async function register() {
   if (process.env['NEXT_RUNTIME'] === 'nodejs') {

@@ -1,14 +1,13 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Search, X, Loader2 } from 'lucide-react';
 import { Input } from './input';
 import { Button } from './button';
-import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from './command';
+import { Command, CommandList, CommandEmpty, CommandGroup, CommandItem } from './command';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 import { Badge } from './badge';
 import { cn } from '../../lib/utils';
-import { musicTokens } from '../../lib/design-tokens';
 
 interface SearchResult {
   id: string;

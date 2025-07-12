@@ -11,7 +11,7 @@ const mockSupabase = {
 };
 
 vi.mock('~/lib/api/supabase/server', () => ({
-  createClient: vi.fn(() => mockSupabase),
+  createClient: vi.fn(async () => mockSupabase),
 }));
 
 describe('/api/admin/users/actions', () => {
@@ -20,6 +20,7 @@ describe('/api/admin/users/actions', () => {
   });
 
   describe('POST', () => {
+
     it('should return 401 if user is not authenticated', async () => {
       mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: null },
@@ -105,32 +106,34 @@ describe('/api/admin/users/actions', () => {
         data: { user: { id: 'admin-1' } },
       });
 
+      const mockUpdate = vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ data: {}, error: null }),
+      });
+
+      const mockInsert = vi.fn().mockResolvedValue({ data: {}, error: null });
+
       const mockQuery = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({
           data: { role: 'admin' },
         }),
-        update: vi.fn().mockReturnThis(),
-        insert: vi.fn().mockReturnThis(),
+        update: mockUpdate,
+        insert: mockInsert,
       };
-
-      mockQuery.update.mockResolvedValue({ data: {}, error: null });
-      mockQuery.insert.mockResolvedValue({ data: {}, error: null });
 
       mockSupabase.from.mockReturnValue(mockQuery);
 
-      const request = new NextRequest(
-        'http://localhost/api/admin/users/actions',
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            action: 'ban',
-            userId: 'user-1',
-            reason: 'Violation of terms',
-          }),
-        }
-      );
+      const requestBody = {
+        action: 'ban',
+        userId: 'user-1',
+        reason: 'Violation of terms',
+      };
+
+      // Create a mock request with working json() method
+      const request = {
+        json: vi.fn().mockResolvedValue(requestBody),
+      } as any;
 
       const response = await POST(request);
       const data = await response.json();
@@ -138,7 +141,7 @@ describe('/api/admin/users/actions', () => {
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
       expect(data.message).toBe('User ban completed successfully');
-      expect(mockQuery.update).toHaveBeenCalledWith({
+      expect(mockUpdate).toHaveBeenCalledWith({
         is_banned: true,
         ban_reason: 'Violation of terms',
         banned_at: expect.any(String),
@@ -151,35 +154,37 @@ describe('/api/admin/users/actions', () => {
         data: { user: { id: 'admin-1' } },
       });
 
+      const mockUpdate = vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ data: {}, error: null }),
+      });
+
+      const mockInsert = vi.fn().mockResolvedValue({ data: {}, error: null });
+
       const mockQuery = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({
           data: { role: 'admin' },
         }),
-        update: vi.fn().mockReturnThis(),
-        insert: vi.fn().mockReturnThis(),
+        update: mockUpdate,
+        insert: mockInsert,
       };
-
-      mockQuery.update.mockResolvedValue({ data: {}, error: null });
-      mockQuery.insert.mockResolvedValue({ data: {}, error: null });
 
       mockSupabase.from.mockReturnValue(mockQuery);
 
-      const request = new NextRequest(
-        'http://localhost/api/admin/users/actions',
-        {
-          method: 'POST',
-          body: JSON.stringify({ action: 'unban', userId: 'user-1' }),
-        }
-      );
+      const requestBody = { action: 'unban', userId: 'user-1' };
+
+      // Create a mock request with working json() method
+      const request = {
+        json: vi.fn().mockResolvedValue(requestBody),
+      } as any;
 
       const response = await POST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
-      expect(mockQuery.update).toHaveBeenCalledWith({
+      expect(mockUpdate).toHaveBeenCalledWith({
         is_banned: false,
         ban_reason: null,
         banned_at: null,
@@ -192,47 +197,45 @@ describe('/api/admin/users/actions', () => {
         data: { user: { id: 'admin-1' } },
       });
 
+      const mockUpdate = vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ data: {}, error: null }),
+      });
+
+      const mockInsert = vi.fn().mockResolvedValue({ data: {}, error: null });
+
       const mockQuery = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
-        single: vi.fn(),
-        update: vi.fn().mockReturnThis(),
-        insert: vi.fn().mockReturnThis(),
+        single: vi.fn()
+          .mockResolvedValueOnce({
+            data: { role: 'admin' },
+          })
+          .mockResolvedValueOnce({
+            data: { warning_count: 1 },
+          }),
+        update: mockUpdate,
+        insert: mockInsert,
       };
-
-      // Mock role check
-      mockQuery.single.mockResolvedValueOnce({
-        data: { role: 'admin' },
-      });
-
-      // Mock current user warning count check
-      mockQuery.single.mockResolvedValueOnce({
-        data: { warning_count: 1 },
-      });
-
-      mockQuery.update.mockResolvedValue({ data: {}, error: null });
-      mockQuery.insert.mockResolvedValue({ data: {}, error: null });
 
       mockSupabase.from.mockReturnValue(mockQuery);
 
-      const request = new NextRequest(
-        'http://localhost/api/admin/users/actions',
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            action: 'warn',
-            userId: 'user-1',
-            reason: 'Inappropriate behavior',
-          }),
-        }
-      );
+      const requestBody = {
+        action: 'warn',
+        userId: 'user-1',
+        reason: 'Inappropriate behavior',
+      };
+
+      // Create a mock request with working json() method
+      const request = {
+        json: vi.fn().mockResolvedValue(requestBody),
+      } as any;
 
       const response = await POST(request);
       const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(data.success).toBe(true);
-      expect(mockQuery.update).toHaveBeenCalledWith({
+      expect(mockUpdate).toHaveBeenCalledWith({
         warning_count: 2,
         last_warning_at: expect.any(String),
         last_warning_by: 'admin-1',
@@ -254,13 +257,12 @@ describe('/api/admin/users/actions', () => {
 
       mockSupabase.from.mockReturnValue(mockQuery);
 
-      const request = new NextRequest(
-        'http://localhost/api/admin/users/actions',
-        {
-          method: 'POST',
-          body: JSON.stringify({ action: 'invalid_action', userId: 'user-1' }),
-        }
-      );
+      const requestBody = { action: 'invalid_action', userId: 'user-1' };
+
+      // Create a mock request with working json() method
+      const request = {
+        json: vi.fn().mockResolvedValue(requestBody),
+      } as any;
 
       const response = await POST(request);
       const data = await response.json();

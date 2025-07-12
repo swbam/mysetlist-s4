@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { ArtistCard } from './artist-card';
 import { Button } from './button';
 import { Skeleton } from './skeleton';
@@ -18,7 +18,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './dropdown-menu';
 import { cn } from '../../lib/utils';
@@ -68,18 +67,14 @@ interface ArtistGridProps {
 
 export function ArtistGrid({
   artists,
-  onArtistSelect,
-  onFollow,
   onLoadMore,
   onRefresh,
   loading = false,
   hasMore = false,
   title,
-  showFollowButtons = true,
   variant = 'grid',
   sortBy = 'name',
   onSortChange,
-  filterBy,
   onFilterChange,
   emptyState,
   className,
@@ -87,24 +82,11 @@ export function ArtistGrid({
 }: ArtistGridProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>(variant === 'compact' ? 'list' : 'grid');
 
-  const handleArtistClick = (artistSlug: string) => {
-    const artist = artists.find(a => a.slug === artistSlug);
-    if (artist && onArtistSelect) {
-      onArtistSelect(artist);
-    }
-  };
-
   const getGridClasses = () => {
     if (viewMode === 'list' || variant === 'compact') {
       return 'space-y-3';
     }
     return 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4';
-  };
-
-  const getCardVariant = () => {
-    if (variant === 'compact') return 'compact';
-    if (viewMode === 'list') return 'default';
-    return 'grid';
   };
 
   const getSortLabel = (sort: string) => {
@@ -282,10 +264,6 @@ export function ArtistGrid({
           <ArtistCard
             key={artist.id}
             artist={artist}
-            onFollow={onFollow}
-            onNavigate={handleArtistClick}
-            variant={getCardVariant()}
-            showFollowButton={showFollowButtons}
             className={cardClassName}
           />
         ))}

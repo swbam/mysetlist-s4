@@ -183,19 +183,6 @@ export async function getUserVotingHistory(
 ) {
   const { limit = 50, showId, voteType, dateRange } = options || {};
 
-  let query = db
-    .select({
-      vote: votes,
-      setlistSong: setlistSongs,
-      setlist: setlists,
-      show: shows,
-    })
-    .from(votes)
-    .innerJoin(setlistSongs, eq(votes.setlistSongId, setlistSongs.id))
-    .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
-    .innerJoin(shows, eq(setlists.showId, shows.id))
-    .where(eq(votes.userId, userId));
-
   const conditions = [eq(votes.userId, userId)];
 
   if (showId) {
@@ -215,11 +202,20 @@ export async function getUserVotingHistory(
     );
   }
 
-  if (conditions.length > 1) {
-    query = query.where(and(...conditions));
-  }
-
-  const results = await query.orderBy(desc(votes.createdAt)).limit(limit);
+  const results = await db
+    .select({
+      vote: votes,
+      setlistSong: setlistSongs,
+      setlist: setlists,
+      show: shows,
+    })
+    .from(votes)
+    .innerJoin(setlistSongs, eq(votes.setlistSongId, setlistSongs.id))
+    .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
+    .innerJoin(shows, eq(setlists.showId, shows.id))
+    .where(and(...conditions))
+    .orderBy(desc(votes.createdAt))
+    .limit(limit);
 
   return results;
 }
@@ -338,7 +334,18 @@ export async function getVotingTrends(options?: {
       ? sql`DATE_TRUNC('hour', ${votes.createdAt})`
       : sql`DATE_TRUNC('day', ${votes.createdAt})`;
 
-  let query = db
+  const conditions = [
+    gte(
+      votes.createdAt,
+      sql`NOW() - INTERVAL '${sql.raw(days.toString())} days'`
+    )
+  ];
+
+  if (showId) {
+    conditions.push(eq(setlists.showId, showId));
+  }
+
+  const query = db
     .select({
       period: dateFormat.as('period'),
       upvotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'up')`,
@@ -348,26 +355,9 @@ export async function getVotingTrends(options?: {
     .from(votes)
     .innerJoin(setlistSongs, eq(votes.setlistSongId, setlistSongs.id))
     .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
-    .where(
-      gte(
-        votes.createdAt,
-        sql`NOW() - INTERVAL '${sql.raw(days.toString())} days'`
-      )
-    )
+    .where(and(...conditions))
     .groupBy(dateFormat)
     .orderBy(asc(dateFormat));
-
-  if (showId) {
-    query = query.where(
-      and(
-        eq(setlists.showId, showId),
-        gte(
-          votes.createdAt,
-          sql`NOW() - INTERVAL '${sql.raw(days.toString())} days'`
-        )
-      )
-    );
-  }
 
   return await query;
 }

@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader } from './card';
 import { Avatar, AvatarFallback, AvatarImage } from './avatar';
-import { Badge } from './badge';
 import { Button } from './button';
 import { MapPin, Calendar, Users, ExternalLink } from 'lucide-react';
 
@@ -21,7 +20,7 @@ interface VenueCardProps {
   variant?: 'default' | 'compact' | 'detailed';
 }
 
-export function VenueCard({ venue, onVisit, variant = 'default' }: VenueCardProps) {
+export function VenueCard({ venue }: VenueCardProps) {
   const formatCapacity = (capacity?: number) => {
     if (!capacity) return 'Unknown capacity';
     if (capacity >= 1000) return `${(capacity / 1000).toFixed(1)}K capacity`;

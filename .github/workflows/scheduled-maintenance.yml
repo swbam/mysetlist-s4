@@ -1,0 +1,485 @@
+name: 🔧 Scheduled Maintenance & Monitoring
+
+on:
+  schedule:
+    # Daily health check at 6 AM UTC
+    - cron: '0 6 * * *'
+    # Weekly dependency audit on Mondays at 9 AM UTC
+    - cron: '0 9 * * 1'
+    # Monthly performance audit on 1st of month at 10 AM UTC
+    - cron: '0 10 1 * *'
+  workflow_dispatch:
+    inputs:
+      maintenance_type:
+        description: 'Type of maintenance to run'
+        required: true
+        type: choice
+        options:
+          - health-check
+          - dependency-audit
+          - performance-audit
+          - security-scan
+          - database-health
+          - full-maintenance
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8'
+
+jobs:
+  # ============================================================================
+  # DAILY HEALTH MONITORING
+  # ============================================================================
+
+  daily-health-check:
+    name: 🏥 Daily Health Check
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 6 * * *' || github.event.inputs.maintenance_type == 'health-check' || github.event.inputs.maintenance_type == 'full-maintenance'
+    steps:
+      - name: Production health check
+        run: |
+          echo "🏥 Running comprehensive health check..."
+          
+          # Define critical endpoints
+          ENDPOINTS=(
+            "https://mysetlist-sonnet.vercel.app/api/health/comprehensive"
+            "https://mysetlist-sonnet.vercel.app/api/trending"
+            "https://mysetlist-sonnet.vercel.app/api/search"
+            "https://mysetlist-sonnet.vercel.app/"
+            "https://mysetlist-sonnet.vercel.app/trending"
+            "https://mysetlist-sonnet.vercel.app/artists"
+          )
+          
+          FAILED_ENDPOINTS=()
+          
+          for endpoint in "${ENDPOINTS[@]}"; do
+            echo "Testing: $endpoint"
+            
+            if ! curl -f -s --max-time 30 "$endpoint" > /dev/null; then
+              echo "❌ FAILED: $endpoint"
+              FAILED_ENDPOINTS+=("$endpoint")
+            else
+              echo "✅ OK: $endpoint"
+            fi
+          done
+          
+          if [[ ${#FAILED_ENDPOINTS[@]} -gt 0 ]]; then
+            echo "❌ Health check failed for ${#FAILED_ENDPOINTS[@]} endpoints"
+            printf '%s\n' "${FAILED_ENDPOINTS[@]}"
+            exit 1
+          else
+            echo "✅ All health checks passed"
+          fi
+
+      - name: Database health check
+        run: |
+          echo "🗄️ Checking database health..."
+          
+          # Test database connectivity through API
+          RESPONSE=$(curl -s "https://mysetlist-sonnet.vercel.app/api/health/db")
+          
+          if echo "$RESPONSE" | grep -q "healthy"; then
+            echo "✅ Database health check passed"
+          else
+            echo "❌ Database health check failed"
+            echo "Response: $RESPONSE"
+            exit 1
+          fi
+
+      - name: Performance baseline check
+        run: |
+          echo "⚡ Running performance baseline check..."
+          
+          # Test key page load times
+          PAGES=(
+            "https://mysetlist-sonnet.vercel.app/"
+            "https://mysetlist-sonnet.vercel.app/trending"
+          )
+          
+          for page in "${PAGES[@]}"; do
+            echo "Testing load time: $page"
+            
+            LOAD_TIME=$(curl -w "%{time_total}" -s -o /dev/null "$page")
+            
+            # Convert to milliseconds
+            LOAD_TIME_MS=$(echo "$LOAD_TIME * 1000" | bc -l | cut -d. -f1)
+            
+            echo "Load time: ${LOAD_TIME_MS}ms"
+            
+            if [[ $LOAD_TIME_MS -gt 5000 ]]; then
+              echo "⚠️ Slow load time detected: ${LOAD_TIME_MS}ms"
+            elif [[ $LOAD_TIME_MS -gt 3000 ]]; then
+              echo "⚠️ Moderate load time: ${LOAD_TIME_MS}ms"
+            else
+              echo "✅ Good load time: ${LOAD_TIME_MS}ms"
+            fi
+          done
+
+      - name: Send health report
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,workflow,took
+          text: |
+            🏥 **Daily Health Check Report**
+            Status: ${{ job.status == 'success' && '✅ All systems healthy' || '❌ Issues detected' }}
+            
+            ${{ job.status == 'success' && 'All endpoints responding normally' || 'Immediate investigation required' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ============================================================================
+  # WEEKLY DEPENDENCY AUDIT
+  # ============================================================================
+
+  weekly-dependency-audit:
+    name: 📦 Weekly Dependency Audit
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 9 * * 1' || github.event.inputs.maintenance_type == 'dependency-audit' || github.event.inputs.maintenance_type == 'full-maintenance'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js & pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run dependency audit
+        id: audit
+        run: |
+          echo "📦 Running comprehensive dependency audit..."
+          
+          # Run pnpm audit and capture output
+          pnpm audit --json > audit-report.json || true
+          
+          # Parse audit results
+          CRITICAL=$(cat audit-report.json | jq '.metadata.vulnerabilities.critical // 0')
+          HIGH=$(cat audit-report.json | jq '.metadata.vulnerabilities.high // 0')
+          MODERATE=$(cat audit-report.json | jq '.metadata.vulnerabilities.moderate // 0')
+          LOW=$(cat audit-report.json | jq '.metadata.vulnerabilities.low // 0')
+          
+          echo "Critical: $CRITICAL"
+          echo "High: $HIGH"
+          echo "Moderate: $MODERATE"
+          echo "Low: $LOW"
+          
+          # Set outputs
+          echo "critical=$CRITICAL" >> $GITHUB_OUTPUT
+          echo "high=$HIGH" >> $GITHUB_OUTPUT
+          echo "moderate=$MODERATE" >> $GITHUB_OUTPUT
+          echo "low=$LOW" >> $GITHUB_OUTPUT
+          
+          # Determine status
+          if [[ $CRITICAL -gt 0 ]]; then
+            echo "status=critical" >> $GITHUB_OUTPUT
+            echo "❌ Critical vulnerabilities found!"
+          elif [[ $HIGH -gt 5 ]]; then
+            echo "status=high" >> $GITHUB_OUTPUT
+            echo "⚠️ High number of high-severity vulnerabilities!"
+          elif [[ $HIGH -gt 0 ]]; then
+            echo "status=warning" >> $GITHUB_OUTPUT
+            echo "⚠️ High-severity vulnerabilities found"
+          else
+            echo "status=good" >> $GITHUB_OUTPUT
+            echo "✅ No critical or high-severity vulnerabilities"
+          fi
+
+      - name: Check outdated dependencies
+        run: |
+          echo "📅 Checking for outdated dependencies..."
+          
+          pnpm outdated --format=json > outdated.json || true
+          
+          # Count outdated packages
+          OUTDATED_COUNT=$(cat outdated.json | jq 'length // 0')
+          echo "Outdated packages: $OUTDATED_COUNT"
+          
+          if [[ $OUTDATED_COUNT -gt 50 ]]; then
+            echo "⚠️ Many packages are outdated ($OUTDATED_COUNT)"
+          elif [[ $OUTDATED_COUNT -gt 20 ]]; then
+            echo "📅 Some packages are outdated ($OUTDATED_COUNT)"
+          else
+            echo "✅ Dependencies are relatively up to date"
+          fi
+
+      - name: Generate dependency report
+        run: |
+          echo "📋 Generating dependency report..."
+          
+          cat << EOF > dependency-report.md
+          # 📦 Weekly Dependency Audit Report
+          
+          **Date**: $(date)
+          **Repository**: ${{ github.repository }}
+          
+          ## Security Vulnerabilities
+          
+          - **Critical**: ${{ steps.audit.outputs.critical }}
+          - **High**: ${{ steps.audit.outputs.high }}
+          - **Moderate**: ${{ steps.audit.outputs.moderate }}
+          - **Low**: ${{ steps.audit.outputs.low }}
+          
+          ## Status
+          
+          ${{ steps.audit.outputs.status == 'critical' && '🚨 **IMMEDIATE ACTION REQUIRED** - Critical vulnerabilities detected' || steps.audit.outputs.status == 'high' && '⚠️ **ACTION REQUIRED** - High-severity vulnerabilities detected' || steps.audit.outputs.status == 'warning' && '⚠️ **REVIEW RECOMMENDED** - Some high-severity vulnerabilities' || '✅ **GOOD** - No critical issues detected' }}
+          
+          ## Next Steps
+          
+          ${{ steps.audit.outputs.status == 'critical' && '1. Review critical vulnerabilities immediately\n2. Update affected packages\n3. Test thoroughly\n4. Deploy fixes ASAP' || steps.audit.outputs.status == 'high' && '1. Schedule vulnerability review\n2. Plan dependency updates\n3. Test in staging environment' || '1. Monitor for new vulnerabilities\n2. Plan routine dependency updates' }}
+          EOF
+
+      - name: Upload dependency report
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-audit-report
+          path: |
+            dependency-report.md
+            audit-report.json
+            outdated.json
+
+      - name: Send dependency audit notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ steps.audit.outputs.status == 'critical' && 'failure' || steps.audit.outputs.status == 'high' && 'warning' || 'success' }}
+          fields: repo,workflow,took
+          text: |
+            📦 **Weekly Dependency Audit**
+            
+            **Security Status**: ${{ steps.audit.outputs.status == 'critical' && '🚨 Critical' || steps.audit.outputs.status == 'high' && '⚠️ High Risk' || steps.audit.outputs.status == 'warning' && '⚠️ Moderate Risk' || '✅ Good' }}
+            
+            **Vulnerabilities**:
+            • Critical: ${{ steps.audit.outputs.critical }}
+            • High: ${{ steps.audit.outputs.high }}
+            • Moderate: ${{ steps.audit.outputs.moderate }}
+            • Low: ${{ steps.audit.outputs.low }}
+            
+            ${{ steps.audit.outputs.status == 'critical' && '**Action**: Immediate review required' || steps.audit.outputs.status == 'high' && '**Action**: Schedule security review' || '**Action**: Continue monitoring' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ============================================================================
+  # MONTHLY PERFORMANCE AUDIT
+  # ============================================================================
+
+  monthly-performance-audit:
+    name: ⚡ Monthly Performance Audit
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 10 1 * *' || github.event.inputs.maintenance_type == 'performance-audit' || github.event.inputs.maintenance_type == 'full-maintenance'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js & pnpm
+        uses: ./.github/actions/setup-node-pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run comprehensive Lighthouse audit
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            https://mysetlist-sonnet.vercel.app
+            https://mysetlist-sonnet.vercel.app/trending
+            https://mysetlist-sonnet.vercel.app/artists
+          configPath: '.lighthouserc.json'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Bundle size analysis
+        run: |
+          echo "📦 Analyzing bundle size..."
+          cd apps/web
+          ANALYZE=true pnpm build
+          
+          # Extract bundle info
+          if [[ -f ".next/analyze/bundle-analyzer.json" ]]; then
+            TOTAL_SIZE=$(cat .next/analyze/bundle-analyzer.json | jq '.total.size')
+            echo "Total bundle size: $TOTAL_SIZE bytes"
+            
+            # Convert to MB
+            SIZE_MB=$(echo "scale=2; $TOTAL_SIZE / 1024 / 1024" | bc)
+            echo "Total bundle size: ${SIZE_MB}MB"
+            
+            if (( $(echo "$SIZE_MB > 5.0" | bc -l) )); then
+              echo "⚠️ Large bundle size detected: ${SIZE_MB}MB"
+            elif (( $(echo "$SIZE_MB > 3.0" | bc -l) )); then
+              echo "📦 Moderate bundle size: ${SIZE_MB}MB"
+            else
+              echo "✅ Good bundle size: ${SIZE_MB}MB"
+            fi
+          fi
+
+      - name: Check Core Web Vitals
+        run: |
+          echo "📊 Checking Core Web Vitals..."
+          
+          # Test real user metrics via API
+          VITALS_RESPONSE=$(curl -s "https://mysetlist-sonnet.vercel.app/api/analytics/vitals" || echo "{}")
+          
+          echo "Core Web Vitals response: $VITALS_RESPONSE"
+
+      - name: Database performance check
+        run: |
+          echo "🗄️ Checking database performance..."
+          
+          # Test API response times
+          ENDPOINTS=(
+            "/api/trending"
+            "/api/search?q=test"
+            "/api/artists/search?q=test"
+          )
+          
+          for endpoint in "${ENDPOINTS[@]}"; do
+            echo "Testing API performance: $endpoint"
+            
+            RESPONSE_TIME=$(curl -w "%{time_total}" -s -o /dev/null "https://mysetlist-sonnet.vercel.app$endpoint")
+            RESPONSE_TIME_MS=$(echo "$RESPONSE_TIME * 1000" | bc -l | cut -d. -f1)
+            
+            echo "Response time: ${RESPONSE_TIME_MS}ms"
+            
+            if [[ $RESPONSE_TIME_MS -gt 2000 ]]; then
+              echo "⚠️ Slow API response: ${RESPONSE_TIME_MS}ms"
+            elif [[ $RESPONSE_TIME_MS -gt 1000 ]]; then
+              echo "📈 Moderate API response: ${RESPONSE_TIME_MS}ms"
+            else
+              echo "✅ Fast API response: ${RESPONSE_TIME_MS}ms"
+            fi
+          done
+
+      - name: Generate performance report
+        run: |
+          echo "📈 Generating performance report..."
+          
+          cat << EOF > performance-report.md
+          # ⚡ Monthly Performance Audit Report
+          
+          **Date**: $(date)
+          **Repository**: ${{ github.repository }}
+          
+          ## Lighthouse Scores
+          
+          See uploaded Lighthouse reports for detailed metrics.
+          
+          ## Bundle Analysis
+          
+          Bundle size analysis completed. Check artifacts for detailed breakdown.
+          
+          ## API Performance
+          
+          Database and API performance tests completed.
+          
+          ## Recommendations
+          
+          1. Monitor Core Web Vitals trends
+          2. Review bundle size optimizations
+          3. Optimize slow API endpoints
+          4. Consider implementing performance budgets
+          
+          ## Next Steps
+          
+          1. Review performance trends monthly
+          2. Implement performance improvements
+          3. Set up performance monitoring alerts
+          EOF
+
+      - name: Upload performance report
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-audit-report
+          path: performance-report.md
+
+      - name: Send performance report
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          fields: repo,workflow,took
+          text: |
+            ⚡ **Monthly Performance Audit Complete**
+            
+            📊 **Report**: Performance audit completed successfully
+            📈 **Metrics**: Core Web Vitals and bundle analysis done
+            🎯 **Action**: Review performance trends and optimization opportunities
+            
+            Check GitHub Actions artifacts for detailed reports.
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ============================================================================
+  # DATABASE MAINTENANCE
+  # ============================================================================
+
+  database-maintenance:
+    name: 🗄️ Database Health Check
+    runs-on: ubuntu-latest
+    if: github.event.inputs.maintenance_type == 'database-health' || github.event.inputs.maintenance_type == 'full-maintenance'
+    steps:
+      - name: Database connectivity test
+        run: |
+          echo "🗄️ Testing database connectivity..."
+          
+          # Test through health API
+          curl -f "https://mysetlist-sonnet.vercel.app/api/health/db"
+
+      - name: Check database performance
+        run: |
+          echo "📊 Checking database performance metrics..."
+          
+          # Test key queries through API
+          curl -f "https://mysetlist-sonnet.vercel.app/api/admin/system-health"
+
+      - name: Send database health report
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            🗄️ **Database Health Check**
+            Status: ${{ job.status == 'success' && '✅ Healthy' || '❌ Issues detected' }}
+            
+            ${{ job.status == 'success' && 'Database performing normally' || 'Database issues require attention' }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ============================================================================
+  # MAINTENANCE SUMMARY
+  # ============================================================================
+
+  maintenance-summary:
+    name: 📋 Maintenance Summary
+    runs-on: ubuntu-latest
+    needs: [daily-health-check, weekly-dependency-audit, monthly-performance-audit, database-maintenance]
+    if: always()
+    steps:
+      - name: Create maintenance summary
+        run: |
+          echo "## 🔧 Scheduled Maintenance Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Date**: $(date)" >> $GITHUB_STEP_SUMMARY
+          echo "**Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status | Notes |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Health Check | ${{ needs.daily-health-check.result == 'success' && '✅' || needs.daily-health-check.result == 'skipped' && '⏭️' || '❌' }} | ${{ needs.daily-health-check.result == 'success' && 'All systems healthy' || needs.daily-health-check.result == 'skipped' && 'Skipped' || 'Issues detected' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Dependencies | ${{ needs.weekly-dependency-audit.result == 'success' && '✅' || needs.weekly-dependency-audit.result == 'skipped' && '⏭️' || '❌' }} | ${{ needs.weekly-dependency-audit.result == 'success' && 'No critical issues' || needs.weekly-dependency-audit.result == 'skipped' && 'Skipped' || 'Vulnerabilities found' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Performance | ${{ needs.monthly-performance-audit.result == 'success' && '✅' || needs.monthly-performance-audit.result == 'skipped' && '⏭️' || '❌' }} | ${{ needs.monthly-performance-audit.result == 'success' && 'Performance good' || needs.monthly-performance-audit.result == 'skipped' && 'Skipped' || 'Performance issues' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Database | ${{ needs.database-maintenance.result == 'success' && '✅' || needs.database-maintenance.result == 'skipped' && '⏭️' || '❌' }} | ${{ needs.database-maintenance.result == 'success' && 'Database healthy' || needs.database-maintenance.result == 'skipped' && 'Skipped' || 'Database issues' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🌐 **Production URL**: https://mysetlist-sonnet.vercel.app" >> $GITHUB_STEP_SUMMARY
+
+      - name: Send final maintenance notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ (needs.daily-health-check.result == 'success' || needs.daily-health-check.result == 'skipped') && (needs.weekly-dependency-audit.result == 'success' || needs.weekly-dependency-audit.result == 'skipped') && (needs.monthly-performance-audit.result == 'success' || needs.monthly-performance-audit.result == 'skipped') && (needs.database-maintenance.result == 'success' || needs.database-maintenance.result == 'skipped') && 'success' || 'failure' }}
+          fields: repo,workflow,took
+          text: |
+            🔧 **Scheduled Maintenance Complete**
+            
+            **Summary**: All maintenance checks completed
+            **Status**: ${{ (needs.daily-health-check.result == 'success' || needs.daily-health-check.result == 'skipped') && (needs.weekly-dependency-audit.result == 'success' || needs.weekly-dependency-audit.result == 'skipped') && (needs.monthly-performance-audit.result == 'success' || needs.monthly-performance-audit.result == 'skipped') && (needs.database-maintenance.result == 'success' || needs.database-maintenance.result == 'skipped') && '✅ All systems operational' || '⚠️ Some issues detected' }}
+            
+            Check GitHub Actions for detailed reports and recommendations.
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

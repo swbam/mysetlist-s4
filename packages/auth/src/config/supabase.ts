@@ -2,10 +2,9 @@ import { createBrowserClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { keys } from '../../keys';
 
-const env = keys();
-
 // Client-side Supabase instance
 export function createSupabaseClient() {
+  const env = keys();
   return createBrowserClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -21,6 +20,7 @@ export function createSupabaseClient() {
 
 // Server-side admin client for administrative operations
 export function createSupabaseAdmin() {
+  const env = keys();
   return createClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.SUPABASE_SERVICE_ROLE_KEY,

@@ -64,7 +64,10 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
   }
 
   // Construct the result
-  const setlist = setlistData[0].setlist;
+  const setlist = setlistData[0]?.setlist;
+  if (!setlist) {
+    throw new Error('Setlist not found');
+  }
   const songList = setlistData
     .filter((row): row is typeof row & { setlistSong: NonNullable<typeof row.setlistSong>; song: NonNullable<typeof row.song> } => 
       row.setlistSong !== null && row.song !== null

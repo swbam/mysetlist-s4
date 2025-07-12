@@ -14,8 +14,8 @@ export interface APIClientConfig {
 
 export abstract class BaseAPIClient {
   protected baseURL: string;
-  protected apiKey?: string;
-  protected rateLimit?: { requests: number; window: number };
+  protected apiKey?: string | undefined;
+  protected rateLimit?: { requests: number; window: number } | undefined;
   protected cache: Redis | null;
 
   constructor(config: APIClientConfig) {

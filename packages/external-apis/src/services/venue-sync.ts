@@ -22,11 +22,11 @@ export class VenueSyncService {
       .values({
         name: ticketmasterVenue.name,
         slug: this.generateSlug(ticketmasterVenue.name),
-        address: ticketmasterVenue.address?.line1,
+        ...(ticketmasterVenue.address?.line1 && { address: ticketmasterVenue.address.line1 }),
         city: ticketmasterVenue.city?.name || '',
-        state: ticketmasterVenue.state?.name,
+        ...(ticketmasterVenue.state?.name && { state: ticketmasterVenue.state.name }),
         country: ticketmasterVenue.country?.name || '',
-        postalCode: ticketmasterVenue.postalCode,
+        ...(ticketmasterVenue.postalCode && { postalCode: ticketmasterVenue.postalCode }),
         latitude: ticketmasterVenue.location?.latitude
           ? Number.parseFloat(ticketmasterVenue.location.latitude)
           : null,
@@ -34,26 +34,26 @@ export class VenueSyncService {
           ? Number.parseFloat(ticketmasterVenue.location.longitude)
           : null,
         timezone: ticketmasterVenue.timezone || 'America/New_York',
-        capacity: ticketmasterVenue.capacity,
+        ...(ticketmasterVenue.capacity && { capacity: ticketmasterVenue.capacity }),
         venueType: ticketmasterVenue.type,
-        imageUrl: ticketmasterVenue.images?.[0]?.url,
+        ...(ticketmasterVenue.images?.[0]?.url && { imageUrl: ticketmasterVenue.images[0].url }),
         amenities: JSON.stringify(ticketmasterVenue.generalInfo || {}),
       })
       .onConflictDoUpdate({
         target: venues.slug,
         set: {
-          address: ticketmasterVenue.address?.line1 ?? null,
+          ...(ticketmasterVenue.address?.line1 && { address: ticketmasterVenue.address.line1 }),
           city: ticketmasterVenue.city?.name || '',
-          state: ticketmasterVenue.state?.name ?? null,
+          ...(ticketmasterVenue.state?.name && { state: ticketmasterVenue.state.name }),
           country: ticketmasterVenue.country?.name || '',
-          postalCode: ticketmasterVenue.postalCode ?? null,
+          ...(ticketmasterVenue.postalCode && { postalCode: ticketmasterVenue.postalCode }),
           latitude: ticketmasterVenue.location?.latitude
             ? Number.parseFloat(ticketmasterVenue.location.latitude)
             : null,
           longitude: ticketmasterVenue.location?.longitude
             ? Number.parseFloat(ticketmasterVenue.location.longitude)
             : null,
-          capacity: ticketmasterVenue.capacity,
+          ...(ticketmasterVenue.capacity && { capacity: ticketmasterVenue.capacity }),
           updatedAt: new Date(),
         },
       });

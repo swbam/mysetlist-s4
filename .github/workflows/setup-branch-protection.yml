@@ -1,0 +1,349 @@
+name: 🛡️ Setup Branch Protection & Repository Settings
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply_changes:
+        description: 'Apply branch protection rules'
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  setup-branch-protection:
+    name: 🛡️ Configure Branch Protection
+    runs-on: ubuntu-latest
+    if: github.event.inputs.apply_changes == 'true'
+    steps:
+      - name: Setup branch protection for main
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            console.log('Setting up branch protection for main branch...');
+            
+            try {
+              await github.rest.repos.updateBranchProtection({
+                owner,
+                repo,
+                branch: 'main',
+                required_status_checks: {
+                  strict: true,
+                  contexts: [
+                    'Build & TypeCheck',
+                    'Lint & Format Check',
+                    'Unit Tests',
+                    'Security Scan'
+                  ]
+                },
+                enforce_admins: false,
+                required_pull_request_reviews: {
+                  required_approving_review_count: 1,
+                  dismiss_stale_reviews: true,
+                  require_code_owner_reviews: true,
+                  require_last_push_approval: false
+                },
+                restrictions: null,
+                allow_force_pushes: false,
+                allow_deletions: false,
+                block_creations: false,
+                required_conversation_resolution: true,
+                lock_branch: false,
+                allow_fork_syncing: true
+              });
+              
+              console.log('✅ Branch protection set up for main');
+            } catch (error) {
+              console.error('❌ Failed to set up branch protection for main:', error);
+              throw error;
+            }
+
+      - name: Setup branch protection for production
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            console.log('Setting up branch protection for production branch...');
+            
+            try {
+              await github.rest.repos.updateBranchProtection({
+                owner,
+                repo,
+                branch: 'production',
+                required_status_checks: {
+                  strict: true,
+                  contexts: [
+                    'Build & TypeCheck',
+                    'Lint & Format Check', 
+                    'Unit Tests',
+                    'E2E Tests (chromium)',
+                    'Security Scan',
+                    'Deploy to Staging'
+                  ]
+                },
+                enforce_admins: false,
+                required_pull_request_reviews: {
+                  required_approving_review_count: 2,
+                  dismiss_stale_reviews: true,
+                  require_code_owner_reviews: true,
+                  require_last_push_approval: true
+                },
+                restrictions: {
+                  users: [],
+                  teams: ['maintainers'],
+                  apps: []
+                },
+                allow_force_pushes: false,
+                allow_deletions: false,
+                block_creations: false,
+                required_conversation_resolution: true,
+                lock_branch: false,
+                allow_fork_syncing: false
+              });
+              
+              console.log('✅ Branch protection set up for production');
+            } catch (error) {
+              console.error('❌ Failed to set up branch protection for production:', error);
+              // Don't fail if production branch doesn't exist yet
+              if (error.status !== 404) {
+                throw error;
+              }
+              console.log('ℹ️ Production branch does not exist yet');
+            }
+
+      - name: Setup repository settings
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            console.log('Configuring repository settings...');
+            
+            try {
+              // Update repository settings
+              await github.rest.repos.update({
+                owner,
+                repo,
+                allow_squash_merge: true,
+                allow_merge_commit: false,
+                allow_rebase_merge: true,
+                delete_branch_on_merge: true,
+                allow_auto_merge: true,
+                allow_update_branch: true,
+                use_squash_pr_title_as_default: true,
+                squash_merge_commit_title: 'PR_TITLE',
+                squash_merge_commit_message: 'PR_BODY',
+                merge_commit_title: 'PR_TITLE',
+                merge_commit_message: 'PR_BODY'
+              });
+              
+              console.log('✅ Repository settings updated');
+            } catch (error) {
+              console.error('❌ Failed to update repository settings:', error);
+              throw error;
+            }
+
+      - name: Create CODEOWNERS file
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            const codeownersContent = `# MySetlist Code Owners
+            # Global owners for all files
+            * @${owner}
+            
+            # CI/CD and deployment
+            .github/ @${owner}
+            vercel.json @${owner}
+            infrastructure/ @${owner}
+            
+            # Security and authentication
+            packages/auth/ @${owner}
+            middleware.ts @${owner}
+            apps/web/lib/auth.ts @${owner}
+            
+            # Database and migrations
+            packages/database/ @${owner}
+            supabase/ @${owner}
+            
+            # API routes
+            apps/web/app/api/ @${owner}
+            
+            # Performance critical components
+            apps/web/components/voting/ @${owner}
+            apps/web/hooks/use-realtime*.ts @${owner}
+            
+            # Configuration files
+            package.json @${owner}
+            turbo.json @${owner}
+            next.config.ts @${owner}
+            `;
+            
+            try {
+              // Check if CODEOWNERS exists
+              let sha;
+              try {
+                const { data } = await github.rest.repos.getContent({
+                  owner,
+                  repo,
+                  path: '.github/CODEOWNERS'
+                });
+                sha = data.sha;
+              } catch (error) {
+                if (error.status !== 404) throw error;
+              }
+              
+              // Create or update CODEOWNERS
+              await github.rest.repos.createOrUpdateFileContents({
+                owner,
+                repo,
+                path: '.github/CODEOWNERS',
+                message: 'Setup CODEOWNERS file for automated review assignments',
+                content: Buffer.from(codeownersContent).toString('base64'),
+                sha
+              });
+              
+              console.log('✅ CODEOWNERS file created/updated');
+            } catch (error) {
+              console.error('❌ Failed to create CODEOWNERS file:', error);
+              throw error;
+            }
+
+      - name: Setup required checks
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            console.log('ℹ️ Branch protection rules configured');
+            console.log('ℹ️ Required status checks:');
+            console.log('  - Build & TypeCheck');
+            console.log('  - Lint & Format Check');
+            console.log('  - Unit Tests');
+            console.log('  - Security Scan');
+            console.log('  - Deploy to Staging (for production branch)');
+            console.log('  - E2E Tests (for production branch)');
+            console.log('');
+            console.log('ℹ️ Pull request requirements:');
+            console.log('  - Main: 1 approval, code owner review required');
+            console.log('  - Production: 2 approvals, code owner review required');
+            console.log('');
+            console.log('ℹ️ Repository settings:');
+            console.log('  - Squash merge enabled (default)');
+            console.log('  - Merge commits disabled');
+            console.log('  - Delete branch on merge enabled');
+            console.log('  - Auto-merge enabled');
+
+  validate-setup:
+    name: ✅ Validate Configuration
+    runs-on: ubuntu-latest
+    if: always()
+    needs: setup-branch-protection
+    steps:
+      - name: Validate branch protection
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            console.log('Validating branch protection setup...');
+            
+            try {
+              // Check main branch protection
+              const mainProtection = await github.rest.repos.getBranchProtection({
+                owner,
+                repo,
+                branch: 'main'
+              });
+              
+              console.log('✅ Main branch protection validated');
+              console.log(`   Required reviews: ${mainProtection.data.required_pull_request_reviews.required_approving_review_count}`);
+              console.log(`   Status checks: ${mainProtection.data.required_status_checks.contexts.length} required`);
+              
+              // Check production branch protection (if exists)
+              try {
+                const prodProtection = await github.rest.repos.getBranchProtection({
+                  owner,
+                  repo,
+                  branch: 'production'
+                });
+                
+                console.log('✅ Production branch protection validated');
+                console.log(`   Required reviews: ${prodProtection.data.required_pull_request_reviews.required_approving_review_count}`);
+                console.log(`   Status checks: ${prodProtection.data.required_status_checks.contexts.length} required`);
+              } catch (error) {
+                if (error.status === 404) {
+                  console.log('ℹ️ Production branch does not exist yet');
+                } else {
+                  throw error;
+                }
+              }
+              
+            } catch (error) {
+              console.error('❌ Branch protection validation failed:', error);
+              throw error;
+            }
+
+      - name: Create setup summary
+        run: |
+          echo "## 🛡️ Repository Security Setup Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Configured Components" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch Protection Rules**: Main and Production branches protected" >> $GITHUB_STEP_SUMMARY
+          echo "- **Required Status Checks**: CI/CD pipeline validations enforced" >> $GITHUB_STEP_SUMMARY
+          echo "- **Pull Request Reviews**: Code owner reviews required" >> $GITHUB_STEP_SUMMARY
+          echo "- **Repository Settings**: Merge strategies optimized" >> $GITHUB_STEP_SUMMARY
+          echo "- **CODEOWNERS**: Automated review assignments configured" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔧 Main Branch Requirements" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- 1 approving review required" >> $GITHUB_STEP_SUMMARY
+          echo "- Code owner review required" >> $GITHUB_STEP_SUMMARY
+          echo "- All status checks must pass" >> $GITHUB_STEP_SUMMARY
+          echo "- Dismiss stale reviews enabled" >> $GITHUB_STEP_SUMMARY
+          echo "- Conversation resolution required" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔒 Production Branch Requirements" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- 2 approving reviews required" >> $GITHUB_STEP_SUMMARY
+          echo "- Code owner review required" >> $GITHUB_STEP_SUMMARY
+          echo "- Last push approval required" >> $GITHUB_STEP_SUMMARY
+          echo "- Extended status checks (including E2E tests)" >> $GITHUB_STEP_SUMMARY
+          echo "- Team restrictions applied" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Next Steps" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "1. **Configure Repository Secrets**: Add required environment variables" >> $GITHUB_STEP_SUMMARY
+          echo "2. **Create Production Branch**: When ready for production deployments" >> $GITHUB_STEP_SUMMARY
+          echo "3. **Test CI/CD Pipeline**: Create a test PR to validate workflows" >> $GITHUB_STEP_SUMMARY
+          echo "4. **Team Access**: Configure team permissions and access levels" >> $GITHUB_STEP_SUMMARY
+
+      - name: Send setup notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,workflow
+          text: |
+            🛡️ **Repository Security Setup Complete**
+            
+            ✅ **Branch Protection**: Main and production branches secured
+            ✅ **Code Reviews**: Automated review assignments configured  
+            ✅ **CI/CD Integration**: Required status checks enforced
+            ✅ **Repository Settings**: Optimized for security and workflow
+            
+            **Next**: Configure repository secrets and test the pipeline
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

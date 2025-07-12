@@ -5,6 +5,7 @@ import {
   setlists,
   shows,
   songs,
+  venues,
 } from '@repo/database';
 import { and, eq } from 'drizzle-orm';
 import {
@@ -27,18 +28,24 @@ export class SetlistSyncService {
     await this.spotifyClient.authenticate();
 
     // Find the show
-    const show = await db.query.shows.findFirst({
-      where: eq(shows.setlistFmId, setlistData.id),
-    });
+    const showResults = await db
+      .select()
+      .from(shows)
+      .where(eq(shows.setlistFmId, setlistData.id))
+      .limit(1);
+    const show = showResults[0];
 
     if (!show) {
       return;
     }
 
     // Find the artist
-    const artist = await db.query.artists.findFirst({
-      where: eq(artists.name, setlistData.artist.name),
-    });
+    const artistResults = await db
+      .select()
+      .from(artists)
+      .where(eq(artists.name, setlistData.artist.name))
+      .limit(1);
+    const artist = artistResults[0];
 
     if (!artist) {
       return;
@@ -80,7 +87,7 @@ export class SetlistSyncService {
             setlistId: setlist.id,
             songId: song.id,
             position: songOrder++,
-            notes: song.info,
+            notes: song.info || null,
           })
           .onConflictDoNothing();
       }
@@ -100,18 +107,21 @@ export class SetlistSyncService {
     set: SetlistFmSet,
     artistId: string,
     artistSpotifyId: string | null
-  ): Promise<Array<{ id: string; info?: string }>> {
-    const processedSongs: Array<{ id: string; info?: string }> = [];
+  ): Promise<Array<{ id: string; info?: string | undefined }>> {
+    const processedSongs: Array<{ id: string; info?: string | undefined }> = [];
 
     for (const songData of set.song) {
       try {
         // Check if song already exists
-        let song = await db.query.songs.findFirst({
-          where: and(
+        const songResults = await db
+          .select({ id: songs.id })
+          .from(songs)
+          .where(and(
             eq(songs.title, songData.name),
             eq(songs.artist, songData.cover?.name || artistId)
-          ),
-        });
+          ))
+          .limit(1);
+        let song: { id: string } | undefined = songResults[0];
 
         if (!song && artistSpotifyId) {
           // Try to find song on Spotify
@@ -127,27 +137,29 @@ export class SetlistSyncService {
             if (searchResult.tracks.items.length > 0) {
               const track = searchResult.tracks.items[0];
 
-              // Create song
-              const [newSong] = await db
-                .insert(songs)
-                .values({
-                  spotifyId: track.id,
-                  title: track.name,
-                  artist: track.artists[0].name,
-                  album: track.album.name,
-                  albumArtUrl: track.album.images[0]?.url,
-                  releaseDate: track.album.release_date,
-                  durationMs: track.duration_ms,
-                  popularity: track.popularity,
-                  previewUrl: track.preview_url,
-                  isExplicit: track.explicit,
-                  isPlayable: track.is_playable,
-                })
-                .onConflictDoNothing()
-                .returning({ id: songs.id });
+              if (track) {
+                // Create song
+                const [newSong] = await db
+                  .insert(songs)
+                  .values({
+                    spotifyId: track.id,
+                    title: track.name,
+                    artist: track.artists[0]?.name || 'Unknown Artist',
+                    album: track.album.name,
+                    albumArtUrl: track.album.images[0]?.url || null,
+                    releaseDate: track.album.release_date,
+                    durationMs: track.duration_ms,
+                    popularity: track.popularity,
+                    previewUrl: track.preview_url,
+                    isExplicit: track.explicit,
+                    isPlayable: track.is_playable,
+                  })
+                  .onConflictDoNothing()
+                  .returning({ id: songs.id });
 
-              if (newSong) {
-                song = newSong;
+                if (newSong) {
+                  song = newSong;
+                }
               }
             }
           } catch (_error) {}
@@ -163,7 +175,9 @@ export class SetlistSyncService {
             })
             .returning({ id: songs.id });
 
-          song = newSong;
+          if (newSong) {
+            song = newSong;
+          }
         }
 
         if (song) {
@@ -194,41 +208,69 @@ export class SetlistSyncService {
   }
 
   async syncSetlistByShowId(showId: string): Promise<void> {
-    const show = await db.query.shows.findFirst({
-      where: eq(shows.id, showId),
-      with: {
-        headlinerArtist: true,
-        venue: true,
-      },
-    });
+    const showResults = await db
+      .select()
+      .from(shows)
+      .where(eq(shows.id, showId))
+      .limit(1);
+    const show = showResults[0];
 
     if (!show) {
       throw new Error(`Show not found: ${showId}`);
     }
 
+    // Get the headliner artist
+    const headlinerResults = await db
+      .select()
+      .from(artists)
+      .where(eq(artists.id, show.headlinerArtistId))
+      .limit(1);
+    const headlinerArtist = headlinerResults[0];
+
+    // Get the venue if it exists
+    let venue = null;
+    if (show.venueId) {
+      const venueResults = await db
+        .select()
+        .from(venues)
+        .where(eq(venues.id, show.venueId))
+        .limit(1);
+      venue = venueResults[0];
+    }
+
+    if (!headlinerArtist) {
+      throw new Error(`Headliner artist not found for show: ${showId}`);
+    }
+
     // Search for setlist on Setlist.fm
-    const searchResult = await this.setlistFmClient.searchSetlists({
-      artistName: show.headlinerArtist.name,
-      venueName: show.venue?.name,
+    const searchParams: any = {
+      artistName: headlinerArtist.name,
       date: show.date,
-    });
+    };
+    
+    if (venue?.name) {
+      searchParams.venueName = venue.name;
+    }
+    
+    const searchResult = await this.setlistFmClient.searchSetlists(searchParams);
 
     if (searchResult.setlist.length > 0) {
       // Use the first matching setlist
       const setlistData = searchResult.setlist[0];
 
-      // Update show with setlist.fm ID
-      await db
-        .update(shows)
-        .set({
-          setlistFmId: setlistData.id,
-          updatedAt: new Date(),
-        })
-        .where(eq(shows.id, showId));
+      if (setlistData) {
+        // Update show with setlist.fm ID
+        await db
+          .update(shows)
+          .set({
+            setlistFmId: setlistData.id,
+            updatedAt: new Date(),
+          })
+          .where(eq(shows.id, showId));
 
-      // Sync the setlist
-      await this.syncSetlistFromSetlistFm(setlistData);
-    } else {
+        // Sync the setlist
+        await this.syncSetlistFromSetlistFm(setlistData);
+      }
     }
   }
 }

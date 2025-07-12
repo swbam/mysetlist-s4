@@ -1,12 +1,12 @@
-import * as React from "react";
+import React from "react";
 import { cn } from "../../lib/utils";
 
 export interface ArtistCardProps extends React.HTMLAttributes<HTMLDivElement> {
   artist: {
     id: string;
     name: string;
-    imageUrl?: string;
-    followers?: number;
+    imageUrl?: string | null;
+    followers?: number | null;
   };
 }
 

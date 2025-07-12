@@ -2,6 +2,7 @@ import { ArtistSyncService } from './artist-sync';
 import { SetlistSyncService } from './setlist-sync';
 import { ShowSyncService } from './show-sync';
 import { VenueSyncService } from './venue-sync';
+import { SpotifyClient } from '../clients/spotify';
 
 export interface SyncOptions {
   artists?: boolean;
@@ -104,26 +105,28 @@ export class SyncScheduler {
     // 2. Sync upcoming shows in the city
     await this.showSync.syncUpcomingShows({
       city,
-      stateCode,
+      ...(stateCode && { stateCode }),
       classificationName: 'Music',
     });
   }
 
   async syncArtistData(artistName: string): Promise<void> {
     // 1. Sync artist from Spotify
-    const spotifyClient = this.artistSync.spotifyClient;
+    const spotifyClient = new SpotifyClient({});
     await spotifyClient.authenticate();
     const searchResult = await spotifyClient.searchArtists(artistName, 1);
 
     if (searchResult.artists.items.length > 0) {
       const artist = searchResult.artists.items[0];
-      await this.artistSync.syncArtist(artist.id);
+      if (artist) {
+        await this.artistSync.syncArtist(artist.id);
 
-      // 2. Sync historical setlists
-      await this.showSync.syncHistoricalSetlists(artistName);
+        // 2. Sync historical setlists
+        await this.showSync.syncHistoricalSetlists(artistName);
 
-      // 3. Sync recent setlists with full data
-      await this.setlistSync.syncRecentSetlists(artistName, 10);
+        // 3. Sync recent setlists with full data
+        await this.setlistSync.syncRecentSetlists(artistName, 10);
+      }
     } else {
     }
   }
@@ -141,10 +144,10 @@ export class SyncScheduler {
 
     if (options.shows) {
       await this.showSync.syncUpcomingShows({
-        city: options.city,
-        stateCode: options.stateCode,
-        startDateTime: options.startDate,
-        endDateTime: options.endDate,
+        ...(options.city && { city: options.city }),
+        ...(options.stateCode && { stateCode: options.stateCode }),
+        ...(options.startDate && { startDateTime: options.startDate }),
+        ...(options.endDate && { endDateTime: options.endDate }),
         classificationName: 'Music',
       });
     }
@@ -221,7 +224,7 @@ export class SyncScheduler {
 
     return {
       isHealthy: failedJobs.length === 0 || failedJobs.length < 3,
-      lastSyncTime: this.lastSyncTime,
+      ...(this.lastSyncTime && { lastSyncTime: this.lastSyncTime }),
       errors: [...new Set([...this.currentErrors, ...recentErrors])].slice(-10),
     };
   }
@@ -307,7 +310,7 @@ export class SyncScheduler {
 
     if (job.status === 'failed') {
       job.status = 'pending';
-      job.error = undefined;
+      delete job.error;
     }
     return true;
   }

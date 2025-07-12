@@ -69,25 +69,8 @@ export async function getUpcomingShows(options?: {
     endDate,
   } = options || {};
 
-  let query = db
-    .select({
-      show: shows,
-      artist: artists,
-      venue: venues,
-      attendanceCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM user_show_attendance usa
-        WHERE usa.show_id = ${shows.id}
-        AND usa.status IN ('going', 'interested')
-      )`,
-    })
-    .from(shows)
-    .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
-    .leftJoin(venues, eq(shows.venueId, venues.id))
-    .where(gte(shows.date, new Date().toISOString()));
-
-  // Apply filters
-  const conditions = [];
+  // Build all conditions upfront
+  const conditions = [gte(shows.date, new Date().toISOString())];
 
   if (city && venues.city) {
     conditions.push(ilike(venues.city, `%${city}%`));
@@ -105,11 +88,22 @@ export async function getUpcomingShows(options?: {
     conditions.push(lte(shows.date, endDate.toISOString()));
   }
 
-  if (conditions.length > 0) {
-    query = query.where(and(...conditions));
-  }
-
-  const results = await query
+  const results = await db
+    .select({
+      show: shows,
+      artist: artists,
+      venue: venues,
+      attendanceCount: sql<number>`(
+        SELECT COUNT(*)
+        FROM user_show_attendance usa
+        WHERE usa.show_id = ${shows.id}
+        AND usa.status IN ('going', 'interested')
+      )`,
+    })
+    .from(shows)
+    .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
+    .leftJoin(venues, eq(shows.venueId, venues.id))
+    .where(and(...conditions))
     .orderBy(asc(shows.date))
     .limit(limit)
     .offset(offset);
@@ -126,7 +120,13 @@ export async function getShowsByArtist(
 ) {
   const { limit = 50, onlyUpcoming = false } = options || {};
 
-  let query = db
+  const conditions = [eq(showArtists.artistId, artistId)];
+
+  if (onlyUpcoming) {
+    conditions.push(gte(shows.date, new Date().toISOString()));
+  }
+
+  const results = await db
     .select({
       show: shows,
       artist: artists,
@@ -136,18 +136,9 @@ export async function getShowsByArtist(
     .innerJoin(showArtists, eq(shows.id, showArtists.showId))
     .innerJoin(artists, eq(showArtists.artistId, artists.id))
     .leftJoin(venues, eq(shows.venueId, venues.id))
-    .where(eq(showArtists.artistId, artistId));
-
-  if (onlyUpcoming) {
-    query = query.where(
-      and(
-        eq(showArtists.artistId, artistId),
-        gte(shows.date, new Date().toISOString())
-      )
-    );
-  }
-
-  const results = await query.orderBy(desc(shows.date)).limit(limit);
+    .where(and(...conditions))
+    .orderBy(desc(shows.date))
+    .limit(limit);
 
   return results;
 }
@@ -161,7 +152,13 @@ export async function getShowsByVenue(
 ) {
   const { limit = 50, onlyUpcoming = false } = options || {};
 
-  let query = db
+  const conditions = [eq(shows.venueId, venueId)];
+
+  if (onlyUpcoming) {
+    conditions.push(gte(shows.date, new Date().toISOString()));
+  }
+
+  const results = await db
     .select({
       show: shows,
       artist: artists,
@@ -170,15 +167,9 @@ export async function getShowsByVenue(
     .from(shows)
     .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
     .leftJoin(venues, eq(shows.venueId, venues.id))
-    .where(eq(shows.venueId, venueId));
-
-  if (onlyUpcoming) {
-    query = query.where(
-      and(eq(shows.venueId, venueId), gte(shows.date, new Date().toISOString()))
-    );
-  }
-
-  const results = await query.orderBy(desc(shows.date)).limit(limit);
+    .where(and(...conditions))
+    .orderBy(desc(shows.date))
+    .limit(limit);
 
   return results;
 }
@@ -193,19 +184,6 @@ export async function getUserAttendingShows(
 ) {
   const { limit = 50, onlyUpcoming = false, status } = options || {};
 
-  let query = db
-    .select({
-      show: shows,
-      artist: artists,
-      venue: venues,
-      attendance: userShowAttendance,
-    })
-    .from(userShowAttendance)
-    .innerJoin(shows, eq(userShowAttendance.showId, shows.id))
-    .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
-    .leftJoin(venues, eq(shows.venueId, venues.id))
-    .where(eq(userShowAttendance.userId, userId));
-
   const conditions = [eq(userShowAttendance.userId, userId)];
 
   if (onlyUpcoming) {
@@ -216,9 +194,20 @@ export async function getUserAttendingShows(
     conditions.push(eq(userShowAttendance.status, status));
   }
 
-  query = query.where(and(...conditions));
-
-  const results = await query.orderBy(asc(shows.date)).limit(limit);
+  const results = await db
+    .select({
+      show: shows,
+      artist: artists,
+      venue: venues,
+      attendance: userShowAttendance,
+    })
+    .from(userShowAttendance)
+    .innerJoin(shows, eq(userShowAttendance.showId, shows.id))
+    .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
+    .leftJoin(venues, eq(shows.venueId, venues.id))
+    .where(and(...conditions))
+    .orderBy(asc(shows.date))
+    .limit(limit);
 
   return results;
 }
@@ -232,7 +221,19 @@ export async function searchShows(
 ) {
   const { limit = 20, onlyUpcoming = true } = options || {};
 
-  let searchQuery = db
+  const searchConditions = or(
+    ilike(shows.name, `%${query}%`),
+    ilike(artists.name, `%${query}%`),
+    venues.name ? ilike(venues.name, `%${query}%`) : undefined
+  );
+
+  const conditions = [searchConditions];
+
+  if (onlyUpcoming) {
+    conditions.push(gte(shows.date, new Date().toISOString()));
+  }
+
+  const results = await db
     .select({
       show: shows,
       artist: artists,
@@ -241,28 +242,9 @@ export async function searchShows(
     .from(shows)
     .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
     .leftJoin(venues, eq(shows.venueId, venues.id))
-    .where(
-      or(
-        ilike(shows.name, `%${query}%`),
-        ilike(artists.name, `%${query}%`),
-        venues.name ? ilike(venues.name, `%${query}%`) : undefined
-      )
-    );
-
-  if (onlyUpcoming) {
-    searchQuery = searchQuery.where(
-      and(
-        or(
-          ilike(shows.name, `%${query}%`),
-          ilike(artists.name, `%${query}%`),
-          venues.name ? ilike(venues.name, `%${query}%`) : undefined
-        ),
-        gte(shows.date, new Date().toISOString())
-      )
-    );
-  }
-
-  const results = await searchQuery.orderBy(asc(shows.date)).limit(limit);
+    .where(and(...conditions))
+    .orderBy(asc(shows.date))
+    .limit(limit);
 
   return results;
 }

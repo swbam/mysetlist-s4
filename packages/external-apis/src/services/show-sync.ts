@@ -23,9 +23,12 @@ export class ShowSyncService {
     let venueId: string | null = null;
     if (event._embedded?.venues?.[0]) {
       const venue = event._embedded.venues[0];
-      const existingVenue = await db.query.venues.findFirst({
-        where: eq(venues.slug, this.generateSlug(venue.name)),
-      });
+      const venueResults = await db
+        .select()
+        .from(venues)
+        .where(eq(venues.slug, this.generateSlug(venue.name)))
+        .limit(1);
+      const existingVenue = venueResults[0];
       venueId = existingVenue?.id || null;
     }
 
@@ -44,15 +47,16 @@ export class ShowSyncService {
         if (searchResult.artists.items.length > 0) {
           const spotifyArtist = searchResult.artists.items[0];
 
-          // Create or update artist
-          const [artist] = await db
+          if (spotifyArtist) {
+            // Create or update artist
+            const [artist] = await db
             .insert(artists)
             .values({
               spotifyId: spotifyArtist.id,
               name: spotifyArtist.name,
               slug: this.generateSlug(spotifyArtist.name),
-              imageUrl: spotifyArtist.images[0]?.url,
-              smallImageUrl: spotifyArtist.images[2]?.url,
+              imageUrl: spotifyArtist.images[0]?.url || null,
+              smallImageUrl: spotifyArtist.images[2]?.url || null,
               genres: JSON.stringify(spotifyArtist.genres),
               popularity: spotifyArtist.popularity,
               followers: spotifyArtist.followers.total,
@@ -63,8 +67,8 @@ export class ShowSyncService {
               target: artists.spotifyId,
               set: {
                 name: spotifyArtist.name,
-                imageUrl: spotifyArtist.images[0]?.url,
-                smallImageUrl: spotifyArtist.images[2]?.url,
+                imageUrl: spotifyArtist.images[0]?.url || null,
+                smallImageUrl: spotifyArtist.images[2]?.url || null,
                 popularity: spotifyArtist.popularity,
                 followers: spotifyArtist.followers.total,
                 lastSyncedAt: new Date(),
@@ -72,7 +76,10 @@ export class ShowSyncService {
             })
             .returning({ id: artists.id });
 
-          artistId = artist.id;
+            if (artist) {
+              artistId = artist.id;
+            }
+          }
         }
       } catch (_error) {}
     }
@@ -91,11 +98,11 @@ export class ShowSyncService {
         name: event.name,
         slug: this.generateShowSlug(event.name, showDate),
         date: event.dates.start.localDate,
-        startTime: event.dates.start.localTime,
+        ...(event.dates.start.localTime && { startTime: event.dates.start.localTime }),
         status: this.mapTicketmasterStatus(event.dates.status.code),
         ticketUrl: event.url,
-        minPrice: event.priceRanges?.[0]?.min,
-        maxPrice: event.priceRanges?.[0]?.max,
+        ...(event.priceRanges?.[0]?.min && { minPrice: event.priceRanges[0].min }),
+        ...(event.priceRanges?.[0]?.max && { maxPrice: event.priceRanges[0].max }),
         currency: event.priceRanges?.[0]?.currency || 'USD',
         ticketmasterId: event.id,
       })
@@ -103,12 +110,16 @@ export class ShowSyncService {
         target: shows.ticketmasterId,
         set: {
           status: this.mapTicketmasterStatus(event.dates.status.code),
-          minPrice: event.priceRanges?.[0]?.min,
-          maxPrice: event.priceRanges?.[0]?.max,
+          ...(event.priceRanges?.[0]?.min && { minPrice: event.priceRanges[0].min }),
+          ...(event.priceRanges?.[0]?.max && { maxPrice: event.priceRanges[0].max }),
           updatedAt: new Date(),
         },
       })
       .returning({ id: shows.id });
+
+    if (!show) {
+      return;
+    }
 
     // Add supporting acts if available
     if (
@@ -117,6 +128,8 @@ export class ShowSyncService {
     ) {
       for (let i = 1; i < event._embedded.attractions.length; i++) {
         const attraction = event._embedded.attractions[i];
+        
+        if (!attraction) continue;
 
         try {
           const searchResult = await this.spotifyClient.searchArtists(
@@ -126,14 +139,15 @@ export class ShowSyncService {
           if (searchResult.artists.items.length > 0) {
             const spotifyArtist = searchResult.artists.items[0];
 
-            const [supportingArtist] = await db
+            if (spotifyArtist) {
+              const [supportingArtist] = await db
               .insert(artists)
               .values({
                 spotifyId: spotifyArtist.id,
                 name: spotifyArtist.name,
                 slug: this.generateSlug(spotifyArtist.name),
-                imageUrl: spotifyArtist.images[0]?.url,
-                smallImageUrl: spotifyArtist.images[2]?.url,
+                imageUrl: spotifyArtist.images[0]?.url || null,
+                smallImageUrl: spotifyArtist.images[2]?.url || null,
                 genres: JSON.stringify(spotifyArtist.genres),
                 popularity: spotifyArtist.popularity,
                 followers: spotifyArtist.followers.total,
@@ -148,15 +162,18 @@ export class ShowSyncService {
               })
               .returning({ id: artists.id });
 
-            await db
-              .insert(showArtists)
-              .values({
-                showId: show.id,
-                artistId: supportingArtist.id,
+            if (supportingArtist) {
+              await db
+                .insert(showArtists)
+                .values({
+                  showId: show.id,
+                  artistId: supportingArtist.id,
                 orderIndex: i,
                 isHeadliner: false,
               })
               .onConflictDoNothing();
+            }
+            }
           }
         } catch (_error) {}
       }
@@ -165,21 +182,27 @@ export class ShowSyncService {
 
   async syncShowFromSetlistFm(setlist: SetlistFmSetlist): Promise<void> {
     // Find artist
-    const artist = await db.query.artists.findFirst({
-      where: eq(artists.name, setlist.artist.name),
-    });
+    const artistResults = await db
+      .select()
+      .from(artists)
+      .where(eq(artists.name, setlist.artist.name))
+      .limit(1);
+    const artist = artistResults[0];
 
     if (!artist) {
       return;
     }
 
     // Find venue
-    const venue = await db.query.venues.findFirst({
-      where: and(
+    const venueResults = await db
+      .select()
+      .from(venues)
+      .where(and(
         eq(venues.name, setlist.venue.name),
         eq(venues.city, setlist.venue.city.name)
-      ),
-    });
+      ))
+      .limit(1);
+    const venue = venueResults[0];
 
     // Create or update show
     const showDate = new Date(setlist.eventDate);
@@ -187,7 +210,7 @@ export class ShowSyncService {
       .insert(shows)
       .values({
         headlinerArtistId: artist.id,
-        venueId: venue?.id,
+        ...(venue?.id && { venueId: venue.id }),
         name: `${setlist.artist.name} at ${setlist.venue.name}`,
         slug: this.generateShowSlug(setlist.artist.name, showDate),
         date: setlist.eventDate,
@@ -234,7 +257,12 @@ export class ShowSyncService {
       return;
     }
 
-    const artistMbid = searchResult.artist[0].mbid;
+    const artist = searchResult.artist[0];
+    if (!artist) {
+      return;
+    }
+
+    const artistMbid = artist.mbid;
     let page = 1;
     let hasMore = true;
 

@@ -100,7 +100,7 @@ export class TicketmasterClient extends BaseAPIClient {
     return {};
   }
 
-  protected async makeRequest<T>(
+  protected override async makeRequest<T>(
     endpoint: string,
     options: RequestInit = {},
     cacheKey?: string,

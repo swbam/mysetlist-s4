@@ -48,7 +48,7 @@ const nextConfig: NextConfig = {
   },
 
   // Enhanced webpack configuration
-  webpack: (config, { dev, isServer }) => {
+  webpack: (config, { isServer, webpack }) => {
     // Handle OpenTelemetry instrumentation warnings
     if (!isServer) {
       config.resolve.fallback = {
@@ -57,6 +57,21 @@ const nextConfig: NextConfig = {
         net: false,
         tls: false,
       };
+    }
+    
+    // Fix 'self is not defined' error on server
+    if (isServer) {
+      // Exclude problematic client-side packages from server bundle
+      config.externals = [...(config.externals || []), '@sentry/replay'];
+      
+      // Add polyfill for 'self' at the beginning of server bundles
+      config.plugins.push(
+        new webpack.BannerPlugin({
+          banner: `if (typeof self === 'undefined') { global.self = global; }`,
+          raw: true,
+          entryOnly: false,
+        })
+      );
     }
     
     // Suppress OpenTelemetry warnings
@@ -71,25 +86,15 @@ const nextConfig: NextConfig = {
       },
     ];
     
-    // Production optimizations
-    if (!dev) {
-      config.optimization = {
-        ...config.optimization,
-        minimize: true,
-        sideEffects: false,
-        usedExports: true,
-        splitChunks: {
-          chunks: 'all',
-          cacheGroups: {
-            vendor: {
-              test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              chunks: 'all',
-            },
-          },
-        },
-      };
-    }
+    // Production optimizations - commented out to avoid runtime errors
+    // if (!dev) {
+    //   config.optimization = {
+    //     ...config.optimization,
+    //     minimize: true,
+    //     sideEffects: false,
+    //     usedExports: true,
+    //   };
+    // }
     
     return config;
   },

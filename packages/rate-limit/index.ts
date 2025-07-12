@@ -1,7 +1,15 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { keys } from './keys';
 
-const supabase = createClient(keys().SUPABASE_URL, keys().SUPABASE_ANON_KEY);
+let supabaseClient: SupabaseClient | null = null;
+
+function getSupabaseClient() {
+  if (!supabaseClient) {
+    const env = keys();
+    supabaseClient = createClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY);
+  }
+  return supabaseClient;
+}
 
 type RateLimiterProps = {
   limit: number;
@@ -60,7 +68,7 @@ export const createRateLimiter = (props: RateLimiterProps) => {
 };
 
 async function getRateLimit(key: string) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseClient()
     .from('rate_limits')
     .select('count, last_reset')
     .eq('key', key)
@@ -71,15 +79,16 @@ async function getRateLimit(key: string) {
 }
 
 async function insertRateLimit(key: string, { count, last_reset }: { count: number; last_reset: Date }) {
-  await supabase.from('rate_limits').insert({ key, count, last_reset });
+  await getSupabaseClient().from('rate_limits').insert({ key, count, last_reset });
 }
 
 async function updateRateLimit(key: string, { count, last_reset }: { count: number; last_reset: Date }) {
-  await supabase.from('rate_limits').update({ count, last_reset }).eq('key', key);
+  await getSupabaseClient().from('rate_limits').update({ count, last_reset }).eq('key', key);
 }
 
 function parseWindow(windowStr: string): number {
   const [value, unit] = windowStr.split(' ');
+  if (!value) throw new Error(`Invalid window format: ${windowStr}`);
   const num = parseFloat(value);
 
   switch (unit) {

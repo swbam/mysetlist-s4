@@ -78,23 +78,6 @@ export async function searchVenues(
 ) {
   const { limit = 20, city, state } = options || {};
 
-  let searchQuery = db
-    .select({
-      venue: venues,
-      showCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM shows s
-        WHERE s.venue_id = ${venues.id}
-      )`,
-      upcomingShowCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM shows s
-        WHERE s.venue_id = ${venues.id}
-        AND s.date >= CURRENT_DATE
-      )`,
-    })
-    .from(venues);
-
   const conditions = [
     or(
       ilike(venues.name, `%${query}%`),
@@ -111,9 +94,23 @@ export async function searchVenues(
     conditions.push(ilike(venues.state, `%${state}%`));
   }
 
-  searchQuery = searchQuery.where(and(...conditions.filter(Boolean)));
-
-  const results = await searchQuery
+  const results = await db
+    .select({
+      venue: venues,
+      showCount: sql<number>`(
+        SELECT COUNT(*)
+        FROM shows s
+        WHERE s.venue_id = ${venues.id}
+      )`,
+      upcomingShowCount: sql<number>`(
+        SELECT COUNT(*)
+        FROM shows s
+        WHERE s.venue_id = ${venues.id}
+        AND s.date >= CURRENT_DATE
+      )`,
+    })
+    .from(venues)
+    .where(and(...conditions.filter(Boolean)))
     .orderBy(
       desc(sql`(
       SELECT COUNT(*)
@@ -135,7 +132,19 @@ export async function getVenuesByCity(
 ) {
   const { limit = 50, onlyWithUpcomingShows = false } = options || {};
 
-  let query = db
+  const conditions = [ilike(venues.city, city)];
+
+  if (onlyWithUpcomingShows) {
+    conditions.push(
+      sql`EXISTS (
+        SELECT 1 FROM shows s 
+        WHERE s.venue_id = ${venues.id} 
+        AND s.date >= CURRENT_DATE
+      )`
+    );
+  }
+
+  const results = await db
     .select({
       venue: venues,
       showCount: sql<number>`(
@@ -151,22 +160,9 @@ export async function getVenuesByCity(
       )`,
     })
     .from(venues)
-    .where(ilike(venues.city, city));
-
-  if (onlyWithUpcomingShows) {
-    query = query.where(
-      and(
-        ilike(venues.city, city),
-        sql`EXISTS (
-          SELECT 1 FROM shows s 
-          WHERE s.venue_id = ${venues.id} 
-          AND s.date >= CURRENT_DATE
-        )`
-      )
-    );
-  }
-
-  const results = await query.orderBy(asc(venues.name)).limit(limit);
+    .where(and(...conditions))
+    .orderBy(asc(venues.name))
+    .limit(limit);
 
   return results;
 }
@@ -244,8 +240,8 @@ export async function getVenueReviews(
       review: venueReviews,
       user: {
         id: users.id,
-        name: users.name,
-        avatarUrl: users.avatarUrl,
+        displayName: users.displayName,
+        email: users.email,
       },
     })
     .from(venueReviews)

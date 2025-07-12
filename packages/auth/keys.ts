@@ -21,4 +21,5 @@ export const keys = () =>
       NEXT_PUBLIC_SPOTIFY_CLIENT_ID: process.env['NEXT_PUBLIC_SPOTIFY_CLIENT_ID'],
       SPOTIFY_CLIENT_SECRET: process.env['SPOTIFY_CLIENT_SECRET'],
     },
+    skipValidation: !!process.env['SKIP_ENV_VALIDATION'],
   });

@@ -140,19 +140,7 @@ export async function getUserActivity(
 ) {
   const { limit = 50, offset = 0, startDate, endDate } = options || {};
 
-  // This would need a more complex query or multiple queries to get different activity types
-  // For now, returning a simplified version focusing on show attendance
-  let query = db
-    .select({
-      activityType: sql<string>`'attendance'`,
-      activityId: userShowAttendance.id,
-      timestamp: userShowAttendance.createdAt,
-      status: userShowAttendance.status,
-      showId: userShowAttendance.showId,
-    })
-    .from(userShowAttendance)
-    .where(eq(userShowAttendance.userId, userId));
-
+  // Build all conditions upfront
   const conditions = [eq(userShowAttendance.userId, userId)];
 
   if (startDate) {
@@ -163,11 +151,18 @@ export async function getUserActivity(
     conditions.push(lte(userShowAttendance.createdAt, endDate));
   }
 
-  if (conditions.length > 1) {
-    query = query.where(and(...conditions));
-  }
-
-  const activities = await query
+  // This would need a more complex query or multiple queries to get different activity types
+  // For now, returning a simplified version focusing on show attendance
+  const activities = await db
+    .select({
+      activityType: sql<string>`'attendance'`,
+      activityId: userShowAttendance.id,
+      timestamp: userShowAttendance.createdAt,
+      status: userShowAttendance.status,
+      showId: userShowAttendance.showId,
+    })
+    .from(userShowAttendance)
+    .where(and(...conditions))
     .orderBy(desc(userShowAttendance.createdAt))
     .limit(limit)
     .offset(offset);

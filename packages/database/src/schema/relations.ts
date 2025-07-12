@@ -1,4 +1,4 @@
-import { relations, type One, type Many } from 'drizzle-orm';
+import { relations } from 'drizzle-orm';
 import { artistSongs, artistStats, artists } from './artists';
 import {
   emailLogs,
@@ -14,7 +14,7 @@ import { users } from './users';
 import { venueInsiderTips, venuePhotos, venueReviews } from './venue-reviews';
 import { venueTips, venues } from './venues';
 
-export const usersRelations = relations(users, ({ many, one }: { many: Many; one: One }) => ({
+export const usersRelations = relations(users, ({ many, one }) => ({
   profile: one(userProfiles, {
     fields: [users.id],
     references: [userProfiles.userId],
@@ -36,7 +36,7 @@ export const usersRelations = relations(users, ({ many, one }: { many: Many; one
   emailLogs: many(emailLogs),
 }));
 
-export const artistsRelations = relations(artists, ({ many, one }: { many: Many; one: One }) => ({
+export const artistsRelations = relations(artists, ({ many, one }) => ({
   shows: many(shows),
   setlists: many(setlists),
   showAppearances: many(showArtists),
@@ -48,14 +48,14 @@ export const artistsRelations = relations(artists, ({ many, one }: { many: Many;
   followers: many(userFollowsArtists),
 }));
 
-export const artistStatsRelations = relations(artistStats, ({ one }: { one: One }) => ({
+export const artistStatsRelations = relations(artistStats, ({ one }) => ({
   artist: one(artists, {
     fields: [artistStats.artistId],
     references: [artists.id],
   }),
 }));
 
-export const venuesRelations = relations(venues, ({ many }: { many: Many }) => ({
+export const venuesRelations = relations(venues, ({ many }) => ({
   shows: many(shows),
   reviews: many(venueReviews),
   photos: many(venuePhotos),
@@ -63,7 +63,7 @@ export const venuesRelations = relations(venues, ({ many }: { many: Many }) => (
   insiderTips: many(venueInsiderTips),
 }));
 
-export const showsRelations = relations(shows, ({ many, one }: { many: Many; one: One }) => ({
+export const showsRelations = relations(shows, ({ many, one }) => ({
   headlinerArtist: one(artists, {
     fields: [shows.headlinerArtistId],
     references: [artists.id],
@@ -77,7 +77,7 @@ export const showsRelations = relations(shows, ({ many, one }: { many: Many; one
   comments: many(showComments),
 }));
 
-export const showArtistsRelations = relations(showArtists, ({ one }: { one: One }) => ({
+export const showArtistsRelations = relations(showArtists, ({ one }) => ({
   show: one(shows, {
     fields: [showArtists.showId],
     references: [shows.id],
@@ -88,7 +88,7 @@ export const showArtistsRelations = relations(showArtists, ({ one }: { one: One 
   }),
 }));
 
-export const setlistsRelations = relations(setlists, ({ many, one }: { many: Many; one: One }) => ({
+export const setlistsRelations = relations(setlists, ({ many, one }) => ({
   show: one(shows, {
     fields: [setlists.showId],
     references: [shows.id],
@@ -106,7 +106,7 @@ export const setlistsRelations = relations(setlists, ({ many, one }: { many: Man
 
 export const setlistSongsRelations = relations(
   setlistSongs,
-  ({ one, many }: { one: One; many: Many }) => ({
+  ({ one, many }) => ({
     setlist: one(setlists, {
       fields: [setlistSongs.setlistId],
       references: [setlists.id],
@@ -119,12 +119,12 @@ export const setlistSongsRelations = relations(
   })
 );
 
-export const songsRelations = relations(songs, ({ many }: { many: Many }) => ({
+export const songsRelations = relations(songs, ({ many }) => ({
   setlistAppearances: many(setlistSongs),
   artists: many(artistSongs),
 }));
 
-export const votesRelations = relations(votes, ({ one }: { one: One }) => ({
+export const votesRelations = relations(votes, ({ one }) => ({
   user: one(users, {
     fields: [votes.userId],
     references: [users.id],
@@ -135,7 +135,7 @@ export const votesRelations = relations(votes, ({ one }: { one: One }) => ({
   }),
 }));
 
-export const venueReviewsRelations = relations(venueReviews, ({ one }: { one: One }) => ({
+export const venueReviewsRelations = relations(venueReviews, ({ one }) => ({
   venue: one(venues, {
     fields: [venueReviews.venueId],
     references: [venues.id],
@@ -146,7 +146,7 @@ export const venueReviewsRelations = relations(venueReviews, ({ one }: { one: On
   }),
 }));
 
-export const venuePhotosRelations = relations(venuePhotos, ({ one }: { one: One }) => ({
+export const venuePhotosRelations = relations(venuePhotos, ({ one }) => ({
   venue: one(venues, {
     fields: [venuePhotos.venueId],
     references: [venues.id],
@@ -159,7 +159,7 @@ export const venuePhotosRelations = relations(venuePhotos, ({ one }: { one: One 
 
 export const venueInsiderTipsRelations = relations(
   venueInsiderTips,
-  ({ one }: { one: One }) => ({
+  ({ one }) => ({
     venue: one(venues, {
       fields: [venueInsiderTips.venueId],
       references: [venues.id],
@@ -173,7 +173,7 @@ export const venueInsiderTipsRelations = relations(
 
 export const userFollowsArtistsRelations = relations(
   userFollowsArtists,
-  ({ one }: { one: One }) => ({
+  ({ one }) => ({
     user: one(users, {
       fields: [userFollowsArtists.userId],
       references: [users.id],
@@ -185,7 +185,7 @@ export const userFollowsArtistsRelations = relations(
   })
 );
 
-export const artistSongsRelations = relations(artistSongs, ({ one }: { one: One }) => ({
+export const artistSongsRelations = relations(artistSongs, ({ one }) => ({
   artist: one(artists, {
     fields: [artistSongs.artistId],
     references: [artists.id],
@@ -196,14 +196,14 @@ export const artistSongsRelations = relations(artistSongs, ({ one }: { one: One 
   }),
 }));
 
-export const userProfilesRelations = relations(userProfiles, ({ one }: { one: One }) => ({
+export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
   user: one(users, {
     fields: [userProfiles.userId],
     references: [users.id],
   }),
 }));
 
-export const showCommentsRelations = relations(showComments, ({ one }: { one: One }) => ({
+export const showCommentsRelations = relations(showComments, ({ one }) => ({
   show: one(shows, {
     fields: [showComments.showId],
     references: [shows.id],
@@ -218,7 +218,7 @@ export const showCommentsRelations = relations(showComments, ({ one }: { one: On
   }),
 }));
 
-export const venueTipsRelations = relations(venueTips, ({ one }: { one: One }) => ({
+export const venueTipsRelations = relations(venueTips, ({ one }) => ({
   venue: one(venues, {
     fields: [venueTips.venueId],
     references: [venues.id],
@@ -231,7 +231,7 @@ export const venueTipsRelations = relations(venueTips, ({ one }: { one: One }) =
 
 export const emailPreferencesRelations = relations(
   emailPreferences,
-  ({ one }: { one: One }) => ({
+  ({ one }) => ({
     user: one(users, {
       fields: [emailPreferences.userId],
       references: [users.id],
@@ -241,7 +241,7 @@ export const emailPreferencesRelations = relations(
 
 export const emailUnsubscribesRelations = relations(
   emailUnsubscribes,
-  ({ one }: { one: One }) => ({
+  ({ one }) => ({
     user: one(users, {
       fields: [emailUnsubscribes.userId],
       references: [users.id],
@@ -249,14 +249,14 @@ export const emailUnsubscribesRelations = relations(
   })
 );
 
-export const emailQueueRelations = relations(emailQueue, ({ one }: { one: One }) => ({
+export const emailQueueRelations = relations(emailQueue, ({ one }) => ({
   user: one(users, {
     fields: [emailQueue.userId],
     references: [users.id],
   }),
 }));
 
-export const emailLogsRelations = relations(emailLogs, ({ one }: { one: One }) => ({
+export const emailLogsRelations = relations(emailLogs, ({ one }) => ({
   user: one(users, {
     fields: [emailLogs.userId],
     references: [users.id],
