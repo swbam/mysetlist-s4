@@ -1,23 +1,27 @@
 import { getUser } from '@repo/auth/server';
-import { flag } from 'flags/next';
 
-export const createFlag = (key: string) =>
-  flag({
-    key,
-    defaultValue: false,
-    async decide() {
-      try {
-        const user = await getUser();
+export interface Flag {
+  key: string;
+  defaultValue: boolean;
+  decide(): Promise<boolean>;
+}
 
-        if (!user?.id) {
-          return this.defaultValue as boolean;
-        }
+export const createFlag = (key: string, defaultValue: boolean = false): Flag => ({
+  key,
+  defaultValue,
+  async decide() {
+    try {
+      const user = await getUser();
 
-        // Feature flags now default to the defaultValue without analytics
-        // This can be extended with a different feature flag service if needed
-        return this.defaultValue as boolean;
-      } catch (_error) {
-        return this.defaultValue as boolean;
+      if (!user?.id) {
+        return defaultValue;
       }
-    },
-  });
+
+      // Feature flags now default to the defaultValue without analytics
+      // This can be extended with a different feature flag service if needed
+      return defaultValue;
+    } catch (_error) {
+      return defaultValue;
+    }
+  },
+});
