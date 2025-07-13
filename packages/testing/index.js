@@ -1,4 +1,4 @@
-const path = require('node:path');
+const path = require('path');
 const react = require('@vitejs/plugin-react');
 const { defineConfig } = require('vitest/config');
 

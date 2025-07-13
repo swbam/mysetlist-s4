@@ -104,7 +104,7 @@
     "@lhci/cli": "^0.13.0",
     "@next/bundle-analyzer": "15.3.4",
     "@playwright/test": "^1.48.0",
-    "@repo/testing": "workspace:*",
+
     "@repo/typescript-config": "workspace:*",
     "@testing-library/cypress": "^10.0.3",
     "@testing-library/jest-dom": "^6.4.2",
