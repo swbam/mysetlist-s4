@@ -48,9 +48,47 @@ export {
   DropdownMenuSeparator, 
   DropdownMenuTrigger 
 } from './components/ui/dropdown-menu';
+export {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+  useFormField
+} from './components/ui/form';
+export { Input } from './components/ui/input';
+export { Textarea } from './components/ui/textarea';
+export {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from './components/ui/select';
+export {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from './components/ui/dialog';
+export {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from './components/ui/accordion';
 
 // Music design tokens
 export { musicTokens, type MusicTokens } from './lib/design-tokens';
 
 // Utilities
 export { cn, capitalize, handleError } from './lib/utils';
+
+// Hooks
+export { useToast } from './hooks/use-toast';
+export { toast } from './components/ui/use-toast';
+export { useIsMobile } from './hooks/use-mobile';

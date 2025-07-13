@@ -1,6 +1,0 @@
-{
-  "buildCommand": "cd ../.. && pnpm install && pnpm turbo build --filter=web",
-  "outputDirectory": ".next",
-  "framework": "nextjs",
-  "installCommand": "echo 'Skipping install'"
-}

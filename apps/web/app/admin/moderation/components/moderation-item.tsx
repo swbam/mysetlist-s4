@@ -171,15 +171,17 @@ export default function ModerationItem({
         reason: 'Content approved',
       });
 
-      toast('Content approved', {
+      toast({
+        title: 'Content approved',
         description: 'The content has been approved and is now visible.',
       });
 
       router.refresh();
     } catch (_error) {
-      toast('Error', {
+      toast({
+        title: 'Error',
         description: 'Failed to approve content. Please try again.',
-        type: 'error',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -221,16 +223,18 @@ export default function ModerationItem({
         reason: rejectReason,
       });
 
-      toast('Content rejected', {
+      toast({
+        title: 'Content rejected',
         description: 'The content has been rejected.',
       });
 
       setRejectDialogOpen(false);
       router.refresh();
     } catch (_error) {
-      toast('Error', {
+      toast({
+        title: 'Error',
         description: 'Failed to reject content. Please try again.',
-        type: 'error',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);

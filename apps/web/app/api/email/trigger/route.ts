@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const emailQueue = [];
+    const emailQueue: any[] = [];
 
     switch (event) {
       case 'user.welcome':
@@ -372,7 +372,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Send all queued emails
-    const results = [];
+    const results: any[] = [];
     for (const emailData of emailQueue) {
       try {
         // Personalize emails for each recipient

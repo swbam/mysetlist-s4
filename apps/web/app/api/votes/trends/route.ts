@@ -188,7 +188,7 @@ export async function GET(request: NextRequest) {
     const dataPoints = hourlyData.filter((h) => h.votes > 0).length;
     const confidence = Math.min(0.95, Math.max(0.3, dataPoints / hours));
 
-    const predictionFactors = [];
+    const predictionFactors: string[] = [];
     if (currentTrend !== 'stable') {
       predictionFactors.push(
         `${currentTrend === 'up' ? 'Upward' : 'Downward'} trend detected`

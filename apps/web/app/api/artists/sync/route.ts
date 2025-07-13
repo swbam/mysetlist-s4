@@ -379,8 +379,8 @@ export async function GET() {
       .sort((a, b) => b.showCount - a.showCount)
       .slice(0, 10);
 
-    const syncedArtists = [];
-    const errors = [];
+    const syncedArtists: any[] = [];
+    const errors: string[] = [];
 
     // Sync each trending artist
     for (const artist of trendingArtists) {
@@ -428,7 +428,7 @@ export async function GET() {
       success: true,
       syncedCount: syncedArtists.length,
       totalAttempted: trendingArtists.length,
-      trendingArtists: syncedArtists.map((a) => ({
+      trendingArtists: syncedArtists.map((a: any) => ({
         name: a.name,
         spotifyId: a.spotifyId,
         ticketmasterId: a.ticketmasterId,

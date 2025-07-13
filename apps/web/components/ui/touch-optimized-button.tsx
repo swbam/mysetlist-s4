@@ -3,15 +3,21 @@
 import { Button } from '@repo/design-system/components/ui/button';
 import { cn } from '@repo/design-system/lib/utils';
 import { Loader2 } from 'lucide-react';
-import type React from 'react';
+import * as React from 'react';
 
-interface TouchOptimizedButtonProps
-  extends React.ComponentProps<typeof Button> {
+interface TouchOptimizedButtonProps {
   loading?: boolean;
   loadingText?: string;
   touchSize?: 'sm' | 'md' | 'lg';
   hapticFeedback?: boolean;
-  children: React.ReactNode;
+  children: any;
+  className?: string;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  disabled?: boolean;
+  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+  size?: 'default' | 'sm' | 'lg' | 'icon';
+  type?: 'button' | 'submit' | 'reset';
+  [key: string]: any;
 }
 
 export function TouchOptimizedButton({

@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
       return Response.json({ error: 'Failed to fetch shows' }, { status: 500 });
     }
 
-    const lockedSetlists = [];
+    const lockedSetlists: any[] = [];
 
     for (const show of showsToUpdate || []) {
       // Lock all predicted setlists for this show

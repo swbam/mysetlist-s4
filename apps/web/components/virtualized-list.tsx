@@ -207,7 +207,7 @@ export const VirtualizedList = React.memo(function VirtualizedList<T>({
 
   // Render visible items
   const visibleItems = useMemo(() => {
-    const result = [];
+    const result: any[] = [];
 
     for (let i = visibleRange.start; i < visibleRange.end; i++) {
       if (i >= items.length) {

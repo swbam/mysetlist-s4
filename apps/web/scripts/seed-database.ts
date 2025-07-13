@@ -125,7 +125,7 @@ async function seedArtist(artistName: string) {
           lastSyncedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(eq(artists.id, existingArtist[0]!.id))
+        .where(eq(artists.id, existingArtist[0]!['id']))
         .returning();
 
       artistRecord = updated;

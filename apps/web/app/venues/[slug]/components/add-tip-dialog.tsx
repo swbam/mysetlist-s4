@@ -12,7 +12,6 @@ import {
 } from '@repo/design-system/components/ui/dialog';
 import {
   Form,
-  FormControl,
   FormDescription,
   FormField,
   FormItem,
@@ -132,11 +131,9 @@ export function AddTipDialog({ venueId }: AddTipDialogProps) {
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="parking">Parking</SelectItem>
                       <SelectItem value="food">Food & Drinks</SelectItem>
@@ -163,13 +160,11 @@ export function AddTipDialog({ venueId }: AddTipDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Your Tip*</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Share your insider knowledge..."
-                      className="min-h-[100px]"
-                      {...field}
-                    />
-                  </FormControl>
+                  <Textarea
+                    placeholder="Share your insider knowledge..."
+                    className="min-h-[100px]"
+                    {...field}
+                  />
                   <FormDescription>
                     Be specific and helpful. Minimum 10 characters.
                   </FormDescription>

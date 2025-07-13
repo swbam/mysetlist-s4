@@ -5,7 +5,7 @@ import { upsertVenue } from './upsertVenue';
 import { nanoid } from 'nanoid';
 
 export async function upsertShows(rawShows: any[], artistId: string) {
-  const upsertedShows = [];
+  const upsertedShows: any[] = [];
   
   for (const show of rawShows) {
     try {

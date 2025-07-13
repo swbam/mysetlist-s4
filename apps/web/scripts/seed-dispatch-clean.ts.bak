@@ -289,7 +289,7 @@ async function main() {
     const showsData = [
       {
         headlinerArtistId: dispatchArtistData['id'],
-        venueId: allVenues.find((v) => v['slug'] === 'red-rocks-amphitheatre')?.['id']!,
+        venueId: allVenues.find((v) => v.slug === 'red-rocks-amphitheatre')?.id!,
         name: 'Dispatch: Summer Tour 2025',
         slug: 'dispatch-summer-tour-2025-red-rocks',
         date: new Date(today.getTime() + 45 * 24 * 60 * 60 * 1000)
@@ -313,7 +313,7 @@ async function main() {
       },
       {
         headlinerArtistId: dispatchArtistData['id'],
-        venueId: allVenues.find((v) => v['slug'] === 'house-of-blues-boston')?.['id']!,
+        venueId: allVenues.find((v) => v.slug === 'house-of-blues-boston')?.id!,
         name: 'Dispatch: Hometown Heroes',
         slug: 'dispatch-hometown-heroes-boston',
         date: new Date(today.getTime() - 10 * 24 * 60 * 60 * 1000)
@@ -335,7 +335,7 @@ async function main() {
       },
       {
         headlinerArtistId: dispatchArtistData['id'],
-        venueId: allVenues.find((v) => v['slug'] === 'the-fillmore-sf')?.['id']!,
+        venueId: allVenues.find((v) => v.slug === 'the-fillmore-sf')?.id!,
         name: 'Dispatch: West Coast Winter Tour',
         slug: 'dispatch-west-coast-fillmore',
         date: new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
@@ -358,7 +358,7 @@ async function main() {
       },
       {
         headlinerArtistId: dispatchArtistData['id'],
-        venueId: allVenues.find((v) => v['slug'] === '930-club')?.['id']!,
+        venueId: allVenues.find((v) => v.slug === '930-club')?.id!,
         name: 'Dispatch: Capital Sessions',
         slug: 'dispatch-capital-sessions-dc',
         date: new Date(today.getTime() - 25 * 24 * 60 * 60 * 1000)
@@ -380,7 +380,7 @@ async function main() {
       },
       {
         headlinerArtistId: dispatchArtistData['id'],
-        venueId: allVenues.find((v) => v['slug'] === 'bowery-ballroom')?.['id']!,
+        venueId: allVenues.find((v) => v.slug === 'bowery-ballroom')?.id!,
         name: 'Dispatch: Intimate NYC Night',
         slug: 'dispatch-intimate-nyc-bowery',
         date: new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000)
@@ -665,7 +665,7 @@ async function main() {
             isLocked: setlistType === 'actual',
             totalVotes: 0,
             accuracyScore: setlistType === 'actual' ? 95 : 0,
-            ...(testUser[0]?.['id'] && { createdBy: testUser[0]['id'] }),
+            ...(testUser[0]?.id && { createdBy: testUser[0].id }),
           })
           .returning();
 
@@ -691,8 +691,8 @@ async function main() {
           const [setlistSong] = await db
             .insert(setlistSongs)
             .values({
-              setlistId: setlist['id'],
-              songId: song['id'],
+              setlistId: setlist.id,
+              songId: song.id,
               position: position + 1,
               notes:
                 position === 0
@@ -717,7 +717,7 @@ async function main() {
             await db
               .insert(votes)
               .values({
-                userId: testUser[0]['id'],
+                userId: testUser[0].id,
                 setlistSongId: setlistSong.id,
                 voteType: Math.random() > 0.3 ? 'up' : 'down',
               })

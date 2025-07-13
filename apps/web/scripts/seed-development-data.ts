@@ -192,7 +192,7 @@ async function seedDevelopmentData() {
 
     // Seed venues
     console.log('Seeding venues...');
-    const seededVenues = [];
+    const seededVenues: any[] = [];
     for (const venue of SAMPLE_VENUES) {
       const [seededVenue] = await db
         .insert(venues)

@@ -79,9 +79,15 @@ export function PrivacySettings({
         );
       }
 
-      toast('Privacy settings updated successfully', { type: 'success' });
+      toast({
+        title: 'Privacy settings updated successfully',
+        variant: 'success',
+      });
     } catch (_error) {
-      toast('Failed to update privacy settings', { type: 'error' });
+      toast({
+        title: 'Failed to update privacy settings',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -131,9 +137,15 @@ export function PrivacySettings({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast('Your data has been exported successfully', { type: 'success' });
+      toast({
+        title: 'Your data has been exported successfully',
+        variant: 'success',
+      });
     } catch (_error) {
-      toast('Failed to export data', { type: 'error' });
+      toast({
+        title: 'Failed to export data',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -159,10 +171,16 @@ export function PrivacySettings({
         throw error;
       }
 
-      toast('Your account has been deleted', { type: 'success' });
+      toast({
+        title: 'Your account has been deleted',
+        variant: 'success',
+      });
       window.location.href = '/';
     } catch (_error) {
-      toast('Failed to delete account', { type: 'error' });
+      toast({
+        title: 'Failed to delete account',
+        variant: 'destructive',
+      });
     } finally {
       setIsLoading(false);
     }

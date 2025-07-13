@@ -498,7 +498,7 @@ async function seedVenues() {
 }
 
 async function seedSongs(createdArtists: any[]) {
-  const songsToCreate = [];
+  const songsToCreate: any[] = [];
 
   for (const artist of createdArtists) {
     const genres = JSON.parse(artist.genres);
@@ -540,7 +540,7 @@ async function seedSongs(createdArtists: any[]) {
 }
 
 async function seedShows(createdArtists: any[], createdVenues: any[]) {
-  const showsToCreate = [];
+  const showsToCreate: any[] = [];
   const now = new Date();
 
   for (const artist of createdArtists) {
@@ -630,8 +630,8 @@ async function seedSetlists(
   createdArtists: any[],
   createdSongs: any[]
 ) {
-  const setlistsToCreate = [];
-  const setlistSongsToCreate = [];
+  const setlistsToCreate: any[] = [];
+  const setlistSongsToCreate: any[] = [];
 
   // Group songs by artist
   const songsByArtist: Record<string, any[]> = {};
@@ -739,7 +739,7 @@ async function seedUserActivity(
   createdVenues: any[]
 ) {
   // User follows artists
-  const followsToCreate = [];
+  const followsToCreate: any[] = [];
   for (const user of createdUsers.slice(2)) {
     // Skip admin and moderator
     const followCount = Math.floor(Math.random() * 10) + 1;
@@ -770,7 +770,7 @@ async function seedUserActivity(
   }
 
   // User votes on songs
-  const votesToCreate = [];
+  const votesToCreate: any[] = [];
   for (const user of createdUsers.slice(2)) {
     // Skip admin and moderator
     const voteCount = Math.floor(Math.random() * 30) + 10;
@@ -791,7 +791,7 @@ async function seedUserActivity(
   await db.insert(votes).values(votesToCreate);
 
   // Venue tips
-  const tipsToCreate = [];
+  const tipsToCreate: any[] = [];
   const tipCategories = [
     'parking',
     'food',

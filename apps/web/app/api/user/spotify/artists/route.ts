@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     const spotifyData = await getSpotifyFollowedArtists(accessToken);
 
     let syncedCount = 0;
-    const artistsToSync = [];
+    const artistsToSync: any[] = [];
 
     // Process each Spotify artist
     for (const spotifyArtist of spotifyData.artists.items) {

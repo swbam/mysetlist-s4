@@ -134,7 +134,7 @@ export async function GET(request: NextRequest) {
 
     const artistsToSync = await query.limit(limit);
 
-    const syncResults = [];
+    const syncResults: any[] = [];
     for (const artist of artistsToSync) {
       if (artist.spotifyId) {
         try {

@@ -1,27 +1,37 @@
 import { toast as sonnerToast } from 'sonner';
 
+interface ToastOptions {
+  title: string;
+  description?: string;
+  variant?: 'default' | 'destructive' | 'success';
+}
+
 // Simple wrapper around sonner for consistency
 export const useToast = () => {
   return {
-    toast: (message: string, options?: { description?: string; type?: 'success' | 'error' | 'info' }) => {
-      if (options?.type === 'error') {
-        sonnerToast.error(message, { description: options?.description });
-      } else if (options?.type === 'success') {
-        sonnerToast.success(message, { description: options?.description });
+    toast: (options: ToastOptions) => {
+      const { title, description, variant } = options;
+      
+      if (variant === 'destructive') {
+        sonnerToast.error(title, { description });
+      } else if (variant === 'success') {
+        sonnerToast.success(title, { description });
       } else {
-        sonnerToast(message, { description: options?.description });
+        sonnerToast(title, { description });
       }
     },
   };
 };
 
 // Export toast function directly for those who prefer it
-export const toast = (message: string, options?: { description?: string; type?: 'success' | 'error' | 'info' }) => {
-  if (options?.type === 'error') {
-    sonnerToast.error(message, { description: options?.description });
-  } else if (options?.type === 'success') {
-    sonnerToast.success(message, { description: options?.description });
+export const toast = (options: ToastOptions) => {
+  const { title, description, variant } = options;
+  
+  if (variant === 'destructive') {
+    sonnerToast.error(title, { description });
+  } else if (variant === 'success') {
+    sonnerToast.success(title, { description });
   } else {
-    sonnerToast(message, { description: options?.description });
+    sonnerToast(title, { description });
   }
 };

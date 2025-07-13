@@ -210,7 +210,7 @@ export class CircuitBreakerFactory {
   }
 
   static async getAllMetrics() {
-    const metrics = [];
+    const metrics: any[] = [];
     for (const [_name, breaker] of CircuitBreakerFactory.breakers) {
       metrics.push(await breaker.getMetrics());
     }

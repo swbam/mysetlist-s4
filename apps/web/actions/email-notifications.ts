@@ -105,7 +105,7 @@ export async function sendDailyShowReminders() {
 
     // Send reminders for each show
     for (const [showId, attendees] of showAttendees) {
-      const showData = upcomingShows.find((s) => s.show.id === showId);
+      const showData = upcomingShows.find((s: any) => s.show.id === showId);
       if (!showData) {
         continue;
       }
@@ -222,7 +222,7 @@ export async function sendWeeklyDigests() {
         continue;
       }
 
-      const artistIds = followedArtists.map((f) => f.artist.id);
+      const artistIds = followedArtists.map((f: any) => f.artist.id);
 
       // Get upcoming shows for followed artists
       const upcomingShows = await db
@@ -242,14 +242,14 @@ export async function sendWeeklyDigests() {
         .limit(10);
 
       // Format data for email
-      const artistsWithActivity = followedArtists.slice(0, 5).map((f) => ({
+      const artistsWithActivity = followedArtists.slice(0, 5).map((f: any) => ({
         id: f.artist.id,
         name: f.artist.name,
-        upcomingShows: upcomingShows.filter((s) => s.artist.id === f.artist.id)
+        upcomingShows: upcomingShows.filter((s: any) => s.artist.id === f.artist.id)
           .length,
       }));
 
-      const formattedShows = upcomingShows.slice(0, 5).map((s) => ({
+      const formattedShows = upcomingShows.slice(0, 5).map((s: any) => ({
         id: s.show.id,
         name: s.show.name,
         artistName: s.artist.name,

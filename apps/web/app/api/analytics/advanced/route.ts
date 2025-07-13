@@ -423,7 +423,7 @@ async function generateAdvancedInsights(startDate: string, endDate: string): Pro
 }
 
 function generateRetentionRecommendations(retention: any): string[] {
-  const recommendations = [];
+  const recommendations: string[] = [];
   
   if (retention.dayOneRetention < 40) {
     recommendations.push('Focus on improving onboarding experience - day 1 retention is below 40%');
@@ -441,7 +441,7 @@ function generateRetentionRecommendations(retention: any): string[] {
 }
 
 function generateChurnRecommendations(churnPrediction: any[]): string[] {
-  const recommendations = [];
+  const recommendations: string[] = [];
   
   if (churnPrediction.length > 0) {
     recommendations.push(`${churnPrediction.length} users at high risk of churn - implement retention campaigns`);
@@ -456,7 +456,7 @@ function generateChurnRecommendations(churnPrediction: any[]): string[] {
 }
 
 function generateAlerts(_cohort: any, retention: any, predictive: any, rfm: any): any[] {
-  const alerts = [];
+  const alerts: any[] = [];
   
   if (retention.churnRate > 25) {
     alerts.push({
@@ -587,7 +587,7 @@ function generateInterventionRecommendations(churnPrediction: any[]): string[] {
 }
 
 function generatePredictiveActionItems(predictive: any): string[] {
-  const actionItems = [];
+  const actionItems: string[] = [];
   
   if (predictive.churnPrediction.length > 0) {
     actionItems.push('Implement targeted retention campaigns for high-risk users');

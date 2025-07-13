@@ -157,12 +157,12 @@ class SpotifyClient {
     await this.authenticate();
 
     // Spotify limits to 50 tracks per request
-    const chunks = [];
+    const chunks: string[][] = [];
     for (let i = 0; i < trackIds.length; i += 50) {
       chunks.push(trackIds.slice(i, i + 50));
     }
 
-    const allTracks = [];
+    const allTracks: any[] = [];
     for (const chunk of chunks) {
       const response = await fetch(
         `https://api.spotify.com/v1/tracks?ids=${chunk.join(',')}&market=US`,

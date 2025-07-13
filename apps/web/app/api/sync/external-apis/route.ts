@@ -461,7 +461,7 @@ class ShowSyncService {
 
     const events = await this.ticketmasterClient.searchEvents(searchParams);
 
-    const results = [];
+    const results: any[] = [];
     if (events._embedded?.events) {
       for (const event of events._embedded.events) {
         try {
@@ -479,7 +479,7 @@ class ShowSyncService {
   private async syncShow(tmEvent: TicketmasterEvent) {
     try {
       // Sync venue first
-      let venue = null;
+      let venue: any = null;
       if (tmEvent._embedded?.venues?.[0]) {
         venue = await this.syncVenue(tmEvent._embedded.venues[0]);
       }
@@ -621,7 +621,7 @@ class SetlistSyncService {
   }
 
   async syncSetlistsForArtist(artistName: string, maxPages = 5) {
-    const results = [];
+    const results: any[] = [];
 
     for (let page = 1; page <= maxPages; page++) {
       try {

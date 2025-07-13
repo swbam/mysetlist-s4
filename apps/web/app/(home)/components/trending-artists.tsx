@@ -64,7 +64,7 @@ export async function TrendingArtists() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {trendingArtists.map((artist) => (
+          {trendingArtists.map((artist: any) => (
             <Card
               key={artist.id}
               className="overflow-hidden transition-shadow hover:shadow-lg"

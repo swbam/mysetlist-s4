@@ -83,7 +83,7 @@ async function handleShowCreated(data: any) {
   } = data;
 
   // Find or create venue
-  let venue = null;
+  let venue: any = null;
   if (venueData) {
     venue = await db
       .select()
@@ -91,7 +91,7 @@ async function handleShowCreated(data: any) {
       .where(eq(venues.name, venueData.name))
       .limit(1);
 
-    if (venue.length === 0) {
+    if (!venue || venue.length === 0) {
       const [newVenue] = await db
         .insert(venues)
         .values({

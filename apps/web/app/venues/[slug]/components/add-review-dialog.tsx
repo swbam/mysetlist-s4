@@ -13,7 +13,6 @@ import {
 } from '@repo/design-system/components/ui/dialog';
 import {
   Form,
-  FormControl,
   FormDescription,
   FormField,
   FormItem,
@@ -173,13 +172,11 @@ export function AddReviewDialog({ venueId }: AddReviewDialogProps) {
               name="rating"
               render={({ field }) => (
                 <FormItem>
-                  <FormControl>
-                    <StarRating
-                      value={field.value}
-                      onChange={field.onChange}
-                      label="Overall Rating*"
-                    />
-                  </FormControl>
+                  <StarRating
+                    value={field.value}
+                    onChange={field.onChange}
+                    label="Overall Rating*"
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -194,22 +191,20 @@ export function AddReviewDialog({ venueId }: AddReviewDialogProps) {
                   <FormLabel>Visit Date*</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            'w-full pl-3 text-left font-normal',
-                            !field.value && 'text-muted-foreground'
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, 'PPP')
-                          ) : (
-                            <span>Pick a date</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          'w-full pl-3 text-left font-normal',
+                          !field.value && 'text-muted-foreground'
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, 'PPP')
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
@@ -235,13 +230,11 @@ export function AddReviewDialog({ venueId }: AddReviewDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Your Review*</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Tell us about your experience..."
-                      className="min-h-[100px]"
-                      {...field}
-                    />
-                  </FormControl>
+                  <Textarea
+                    placeholder="Tell us about your experience..."
+                    className="min-h-[100px]"
+                    {...field}
+                  />
                   <FormDescription>Minimum 10 characters</FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -259,13 +252,11 @@ export function AddReviewDialog({ venueId }: AddReviewDialogProps) {
                   name="acoustics"
                   render={({ field }) => (
                     <FormItem>
-                      <FormControl>
-                        <StarRating
-                          value={field.value || 0}
-                          onChange={field.onChange}
-                          label="Acoustics"
-                        />
-                      </FormControl>
+                      <StarRating
+                        value={field.value || 0}
+                        onChange={field.onChange}
+                        label="Acoustics"
+                      />
                     </FormItem>
                   )}
                 />
@@ -275,13 +266,11 @@ export function AddReviewDialog({ venueId }: AddReviewDialogProps) {
                   name="sightlines"
                   render={({ field }) => (
                     <FormItem>
-                      <FormControl>
-                        <StarRating
-                          value={field.value || 0}
-                          onChange={field.onChange}
-                          label="Sightlines"
-                        />
-                      </FormControl>
+                      <StarRating
+                        value={field.value || 0}
+                        onChange={field.onChange}
+                        label="Sightlines"
+                      />
                     </FormItem>
                   )}
                 />
@@ -291,13 +280,11 @@ export function AddReviewDialog({ venueId }: AddReviewDialogProps) {
                   name="accessibility"
                   render={({ field }) => (
                     <FormItem>
-                      <FormControl>
-                        <StarRating
-                          value={field.value || 0}
-                          onChange={field.onChange}
-                          label="Accessibility"
-                        />
-                      </FormControl>
+                      <StarRating
+                        value={field.value || 0}
+                        onChange={field.onChange}
+                        label="Accessibility"
+                      />
                     </FormItem>
                   )}
                 />
@@ -307,13 +294,11 @@ export function AddReviewDialog({ venueId }: AddReviewDialogProps) {
                   name="parkingEase"
                   render={({ field }) => (
                     <FormItem>
-                      <FormControl>
-                        <StarRating
-                          value={field.value || 0}
-                          onChange={field.onChange}
-                          label="Parking Ease"
-                        />
-                      </FormControl>
+                      <StarRating
+                        value={field.value || 0}
+                        onChange={field.onChange}
+                        label="Parking Ease"
+                      />
                     </FormItem>
                   )}
                 />
@@ -323,13 +308,11 @@ export function AddReviewDialog({ venueId }: AddReviewDialogProps) {
                   name="concessions"
                   render={({ field }) => (
                     <FormItem>
-                      <FormControl>
-                        <StarRating
-                          value={field.value || 0}
-                          onChange={field.onChange}
-                          label="Concessions"
-                        />
-                      </FormControl>
+                      <StarRating
+                        value={field.value || 0}
+                        onChange={field.onChange}
+                        label="Concessions"
+                      />
                     </FormItem>
                   )}
                 />

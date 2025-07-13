@@ -114,8 +114,8 @@ export async function GET(request: NextRequest) {
     }));
 
     // Calculate voting pattern (only on first page)
-    let pattern = null;
-    let dailyData = null;
+    let pattern: any = null;
+    let dailyData: any = null;
 
     if (page === 1) {
       // Build conditions for pattern analysis query

@@ -148,7 +148,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's vote if authenticated
-    let userVote = null;
+    let userVote: 'up' | 'down' | null = null;
     if (user) {
       const vote = await db
         .select({ voteType: votes.voteType })
@@ -158,7 +158,7 @@ export async function GET(request: NextRequest) {
         )
         .limit(1);
 
-      userVote = vote.length > 0 ? vote[0]?.voteType || null : null;
+      userVote = vote.length > 0 ? vote[0]?.['voteType'] || null : null;
     }
 
     return NextResponse.json({

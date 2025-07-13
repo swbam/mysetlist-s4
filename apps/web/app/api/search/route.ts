@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       .limit(limit);
 
     // Format results - artists only
-    const results = [];
+    const results: any[] = [];
 
     if (artists) {
       results.push(

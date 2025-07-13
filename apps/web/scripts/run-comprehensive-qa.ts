@@ -413,7 +413,7 @@ class ComprehensiveQARunner {
   }
 
   private generateRecommendations(): string[] {
-    const recommendations = [];
+    const recommendations: any[] = [];
     
     const failedTests = this.results.filter(r => r.status === 'fail');
     

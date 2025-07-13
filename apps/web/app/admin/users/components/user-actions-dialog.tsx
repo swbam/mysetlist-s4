@@ -111,16 +111,18 @@ export default function UserActionsDialog({
         },
       });
 
-      toast('User banned', {
+      toast({
+        title: 'User banned',
         description: `${user.display_name || user.email} has been banned ${banType === 'temporary' ? `for ${banDays} days` : 'permanently'}.`,
       });
 
       setDialogOpen(false);
       router.refresh();
     } catch (_error) {
-      toast('Error', {
+      toast({
+        title: 'Error',
         description: 'Failed to ban user. Please try again.',
-        type: 'error',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -177,15 +179,17 @@ export default function UserActionsDialog({
         reason: 'Manual unban',
       });
 
-      toast('Ban lifted', {
+      toast({
+        title: 'Ban lifted',
         description: `The ban on ${user.display_name || user.email} has been lifted.`,
       });
 
       router.refresh();
     } catch (_error) {
-      toast('Error', {
+      toast({
+        title: 'Error',
         description: 'Failed to lift ban. Please try again.',
-        type: 'error',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -236,16 +240,18 @@ export default function UserActionsDialog({
         });
       }
 
-      toast('Warning issued', {
+      toast({
+        title: 'Warning issued',
         description: `${user.display_name || user.email} has been warned.`,
       });
 
       setDialogOpen(false);
       router.refresh();
     } catch (_error) {
-      toast('Error', {
+      toast({
+        title: 'Error',
         description: 'Failed to warn user. Please try again.',
-        type: 'error',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -274,16 +280,18 @@ export default function UserActionsDialog({
         metadata: { old_role: user.role, new_role: newRole },
       });
 
-      toast('Role updated', {
+      toast({
+        title: 'Role updated',
         description: `${user.display_name || user.email}'s role has been changed to ${newRole}.`,
       });
 
       setDialogOpen(false);
       router.refresh();
     } catch (_error) {
-      toast('Error', {
+      toast({
+        title: 'Error',
         description: 'Failed to update role. Please try again.',
-        type: 'error',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -371,7 +379,7 @@ export default function UserActionsDialog({
                   <Label>Ban Type</Label>
                   <RadioGroup
                     value={banType}
-                    onValueChange={(v) => setBanType(v as any)}
+                    onValueChange={(v: any) => setBanType(v as any)}
                   >
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="temporary" id="temporary" />

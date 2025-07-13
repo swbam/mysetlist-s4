@@ -64,15 +64,17 @@ export default function ContentActions({
         reason: `${type} ${item[field] ? 'unverified' : 'verified'} by admin`,
       });
 
-      toast(item[field] ? 'Unverified' : 'Verified', {
+      toast({
+        title: item[field] ? 'Unverified' : 'Verified',
         description: `${item.name} has been ${item[field] ? 'unverified' : 'verified'}.`,
       });
 
       router.refresh();
     } catch (_error) {
-      toast('Error', {
+      toast({
+        title: 'Error',
         description: 'Failed to update verification status.',
-        type: 'error',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -104,15 +106,17 @@ export default function ContentActions({
         reason: `Show ${item.is_featured ? 'unfeatured' : 'featured'} by admin`,
       });
 
-      toast(item.is_featured ? 'Unfeatured' : 'Featured', {
+      toast({
+        title: item.is_featured ? 'Unfeatured' : 'Featured',
         description: `${item.name} has been ${item.is_featured ? 'unfeatured' : 'featured'}.`,
       });
 
       router.refresh();
     } catch (_error) {
-      toast('Error', {
+      toast({
+        title: 'Error',
         description: 'Failed to update feature status.',
-        type: 'error',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -138,15 +142,17 @@ export default function ContentActions({
 
       const result = await response.json();
 
-      toast('Sync completed', {
+      toast({
+        title: 'Sync completed',
         description: `Artist data synced successfully. Updated ${result.updated || 0} fields.`,
       });
 
       router.refresh();
     } catch (_error) {
-      toast('Error', {
+      toast({
+        title: 'Error',
         description: 'Failed to sync artist data.',
-        type: 'error',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);

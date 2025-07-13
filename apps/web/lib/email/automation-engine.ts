@@ -587,7 +587,7 @@ class EmailAutomationEngine {
             .from('users')
             .select('id, email, display_name');
           
-          const users = [];
+          const users: any[] = [];
           for (const user of allUsers || []) {
             const { count } = await supabase
               .from('setlist_votes')

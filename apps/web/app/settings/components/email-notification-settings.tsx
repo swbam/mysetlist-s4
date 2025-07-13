@@ -74,7 +74,10 @@ export function EmailNotificationSettings() {
       const prefs = await getUserEmailPreferences();
       setPreferences(prefs as EmailPreferences);
     } catch (_error) {
-      toast('Failed to load email preferences', { type: 'error' });
+      toast({
+        title: 'Failed to load email preferences',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
@@ -88,9 +91,15 @@ export function EmailNotificationSettings() {
     setSaving(true);
     try {
       await updateEmailPreferences(preferences);
-      toast('Your email preferences have been updated', { type: 'success' });
+      toast({
+        title: 'Your email preferences have been updated',
+        variant: 'success',
+      });
     } catch (_error) {
-      toast('Failed to save preferences', { type: 'error' });
+      toast({
+        title: 'Failed to save preferences',
+        variant: 'destructive',
+      });
     } finally {
       setSaving(false);
     }

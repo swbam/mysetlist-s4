@@ -513,7 +513,7 @@ class AdvancedAnalyticsService {
     }
     
     // Calculate growth rate
-    const growthRates = [];
+    const growthRates: number[] = [];
     for (let i = 1; i < months.length; i++) {
       const prevMonthKey = months[i - 1];
       const currentMonthKey = months[i];
@@ -532,7 +532,7 @@ class AdvancedAnalyticsService {
     const lastMonthUsers = lastMonthKey ? (monthlyData[lastMonthKey] ?? 0) : 0;
     
     // Predict next 6 months
-    const predictions = [];
+    const predictions: any[] = [];
     for (let i = 1; i <= 6; i++) {
       const nextMonth = new Date();
       nextMonth.setMonth(nextMonth.getMonth() + i);

@@ -1,7 +1,6 @@
 #!/usr/bin/env tsx
 
 import {
-  artistStats,
   artists,
   setlistSongs,
   setlists,
@@ -12,159 +11,60 @@ import {
   venues,
   votes,
 } from '@repo/database/src/schema';
-import { eq, inArray, sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { db } from './db-client';
-
-async function cleanupDispatchData() {
-  // Get Dispatch artist
-  const dispatchArtists = await db
-    .select()
-    .from(artists)
-    .where(eq(artists.slug, 'dispatch'));
-
-  if (dispatchArtists.length > 0) {
-    const dispatchId = dispatchArtists[0]!['id'];
-
-    // Delete in correct order due to foreign keys
-
-    // 1. Delete votes for Dispatch setlists
-    const dispatchSetlists = await db
-      .select({ id: setlists.id })
-      .from(setlists)
-      .where(eq(setlists.artistId, dispatchId));
-
-    if (dispatchSetlists.length > 0) {
-      const setlistIds = dispatchSetlists.map((s) => s.id);
-
-      // Get setlist songs
-      const setlistSongIds = await db
-        .select({ id: setlistSongs.id })
-        .from(setlistSongs)
-        .where(inArray(setlistSongs.setlistId, setlistIds));
-
-      if (setlistSongIds.length > 0) {
-        // Delete votes
-        await db.delete(votes).where(
-          inArray(
-            votes.setlistSongId,
-            setlistSongIds.map((s) => s.id)
-          )
-        );
-      }
-
-      // Delete setlist songs
-      await db
-        .delete(setlistSongs)
-        .where(inArray(setlistSongs.setlistId, setlistIds));
-    }
-
-    // 2. Delete setlists
-    await db.delete(setlists).where(eq(setlists.artistId, dispatchId));
-
-    // 3. Delete show artists
-    await db.delete(showArtists).where(eq(showArtists.artistId, dispatchId));
-
-    // 4. Delete shows
-    await db.delete(shows).where(eq(shows.headlinerArtistId, dispatchId));
-
-    // 5. Delete artist stats
-    await db.delete(artistStats).where(eq(artistStats.artistId, dispatchId));
-
-    // 6. Delete the artist
-    await db.delete(artists).where(eq(artists.id, dispatchId));
-  }
-
-  // Delete Dispatch songs
-  await db.delete(songs).where(eq(songs.artist, 'Dispatch'));
-}
 
 async function main() {
   try {
-    // First, clean up any existing data
-    await cleanupDispatchData();
-
-    // Try to update existing or create new
-    let dispatchArtist = await db
-      .select()
-      .from(artists)
-      .where(eq(artists.slug, 'dispatch'))
-      .limit(1);
-
-    if (dispatchArtist.length > 0) {
-      // Update existing
-      const [updated] = await db
-        .update(artists)
-        .set({
-          ticketmasterId: 'K8vZ9171K-V',
-          imageUrl:
-            'https://i.scdn.co/image/ab6761610000e5eb0a7388b95df960b5c0ed8e46',
-          smallImageUrl:
-            'https://i.scdn.co/image/ab6761610000517a0a7388b95df960b5c0ed8e46',
-          genres: JSON.stringify([
-            'indie rock',
-            'jam band',
-            'alternative rock',
-            'folk rock',
-          ]),
+    const [dispatchArtist] = await db
+      .insert(artists)
+      .values({
+        spotifyId: '3jq7HNC7zNqdDc3oQPZEiu', // Real Spotify ID for Dispatch
+        ticketmasterId: 'K8vZ9171K-V', // Example Ticketmaster ID
+        name: 'Dispatch',
+        slug: 'dispatch',
+        imageUrl:
+          'https://i.scdn.co/image/ab6761610000e5eb0a7388b95df960b5c0ed8e46',
+        smallImageUrl:
+          'https://i.scdn.co/image/ab6761610000517a0a7388b95df960b5c0ed8e46',
+        genres: JSON.stringify([
+          'indie rock',
+          'jam band',
+          'alternative rock',
+          'folk rock',
+        ]),
+        popularity: 65,
+        followers: 528493,
+        followerCount: 1245, // App followers
+        monthlyListeners: 2184567,
+        verified: true,
+        bio: 'Dispatch is an American indie rock band. The band consists of Brad Corrigan, Pete Francis Heimbold, and Chad Urmston. The band originated in the early 1990s as One Fell Swoop, but changed their name to Dispatch in 1996. They are known for their grassroots fanbase and socially conscious lyrics.',
+        externalUrls: JSON.stringify({
+          spotify: 'https://open.spotify.com/artist/3jq7HNC7zNqdDc3oQPZEiu',
+          website: 'https://dispatchmusic.com/',
+          instagram: 'https://www.instagram.com/dispatch/',
+          twitter: 'https://twitter.com/dispatch',
+        }),
+        lastSyncedAt: new Date(),
+        songCatalogSyncedAt: new Date(),
+        trendingScore: 85.5,
+      })
+      .onConflictDoUpdate({
+        target: artists.spotifyId,
+        set: {
           popularity: 65,
           followers: 528493,
-          followerCount: 1245,
           monthlyListeners: 2184567,
-          verified: true,
-          bio: 'Dispatch is an American indie rock band. The band consists of Brad Corrigan, Pete Francis Heimbold, and Chad Urmston. The band originated in the early 1990s as One Fell Swoop, but changed their name to Dispatch in 1996. They are known for their grassroots fanbase and socially conscious lyrics.',
-          externalUrls: JSON.stringify({
-            spotify: 'https://open.spotify.com/artist/3jq7HNC7zNqdDc3oQPZEiu',
-            website: 'https://dispatchmusic.com/',
-            instagram: 'https://www.instagram.com/dispatch/',
-            twitter: 'https://twitter.com/dispatch',
-          }),
-          lastSyncedAt: new Date(),
-          songCatalogSyncedAt: new Date(),
           trendingScore: 85.5,
+          lastSyncedAt: new Date(),
           updatedAt: new Date(),
-        })
-        .where(eq(artists.id, dispatchArtist[0]!['id']))
-        .returning();
-      dispatchArtist = [updated!];
-    } else {
-      // Create new
-      dispatchArtist = await db
-        .insert(artists)
-        .values({
-          spotifyId: '3jq7HNC7zNqdDc3oQPZEiu',
-          ticketmasterId: 'K8vZ9171K-V',
-          name: 'Dispatch',
-          slug: 'dispatch',
-          imageUrl:
-            'https://i.scdn.co/image/ab6761610000e5eb0a7388b95df960b5c0ed8e46',
-          smallImageUrl:
-            'https://i.scdn.co/image/ab6761610000517a0a7388b95df960b5c0ed8e46',
-          genres: JSON.stringify([
-            'indie rock',
-            'jam band',
-            'alternative rock',
-            'folk rock',
-          ]),
-          popularity: 65,
-          followers: 528493,
-          followerCount: 1245,
-          monthlyListeners: 2184567,
-          verified: true,
-          bio: 'Dispatch is an American indie rock band. The band consists of Brad Corrigan, Pete Francis Heimbold, and Chad Urmston. The band originated in the early 1990s as One Fell Swoop, but changed their name to Dispatch in 1996. They are known for their grassroots fanbase and socially conscious lyrics.',
-          externalUrls: JSON.stringify({
-            spotify: 'https://open.spotify.com/artist/3jq7HNC7zNqdDc3oQPZEiu',
-            website: 'https://dispatchmusic.com/',
-            instagram: 'https://www.instagram.com/dispatch/',
-            twitter: 'https://twitter.com/dispatch',
-          }),
-          lastSyncedAt: new Date(),
-          songCatalogSyncedAt: new Date(),
-          trendingScore: 85.5,
-        })
-        .returning();
-    }
+        },
+      })
+      .returning();
 
-    const dispatchArtistData = dispatchArtist[0];
+    if (!dispatchArtist) {
+      throw new Error('Failed to create or retrieve Dispatch artist');
+    }
 
     const venueData = [
       {
@@ -252,49 +152,29 @@ async function main() {
       },
     ];
 
-    // Upsert venues
-    for (const venue of venueData) {
-      await db
-        .insert(venues)
-        .values(venue)
-        .onConflictDoUpdate({
-          target: venues.slug,
-          set: {
-            ...venue,
-            updatedAt: new Date(),
-          },
-        });
-    }
+    await db
+      .insert(venues)
+      .values(venueData)
+      .onConflictDoNothing();
 
     // Get all venues for shows
     const allVenues = await db
       .select()
       .from(venues)
       .where(
-        inArray(venues.slug, [
-          'red-rocks-amphitheatre',
-          'house-of-blues-boston',
-          'the-fillmore-sf',
-          '930-club',
-          'bowery-ballroom',
-        ])
+        sql`slug IN ('red-rocks-amphitheatre', 'house-of-blues-boston', 'the-fillmore-sf', '930-club', 'bowery-ballroom')`
       );
-
-    // Ensure we have the artist ID
-    if (!dispatchArtistData || !dispatchArtistData['id']) {
-      throw new Error('Failed to create Dispatch artist');
-    }
 
     const today = new Date();
     const showsData = [
       {
-        headlinerArtistId: dispatchArtistData['id'],
+        headlinerArtistId: dispatchArtist['id'],
         venueId: allVenues.find((v) => v['slug'] === 'red-rocks-amphitheatre')?.['id']!,
         name: 'Dispatch: Summer Tour 2025',
         slug: 'dispatch-summer-tour-2025-red-rocks',
         date: new Date(today.getTime() + 45 * 24 * 60 * 60 * 1000)
           .toISOString()
-          .split('T')[0]!,
+          .split('T')[0]!, // 45 days from now
         startTime: '19:30',
         doorsTime: '18:00',
         status: 'upcoming' as const,
@@ -312,13 +192,13 @@ async function main() {
         isVerified: true,
       },
       {
-        headlinerArtistId: dispatchArtistData['id'],
+        headlinerArtistId: dispatchArtist['id'],
         venueId: allVenues.find((v) => v['slug'] === 'house-of-blues-boston')?.['id']!,
         name: 'Dispatch: Hometown Heroes',
         slug: 'dispatch-hometown-heroes-boston',
         date: new Date(today.getTime() - 10 * 24 * 60 * 60 * 1000)
           .toISOString()
-          .split('T')[0]!,
+          .split('T')[0]!, // 10 days ago
         startTime: '20:00',
         doorsTime: '19:00',
         status: 'completed' as const,
@@ -334,13 +214,13 @@ async function main() {
         isVerified: true,
       },
       {
-        headlinerArtistId: dispatchArtistData['id'],
+        headlinerArtistId: dispatchArtist['id'],
         venueId: allVenues.find((v) => v['slug'] === 'the-fillmore-sf')?.['id']!,
         name: 'Dispatch: West Coast Winter Tour',
         slug: 'dispatch-west-coast-fillmore',
         date: new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
           .toISOString()
-          .split('T')[0]!,
+          .split('T')[0]!, // 30 days from now
         startTime: '21:00',
         doorsTime: '20:00',
         status: 'upcoming' as const,
@@ -357,13 +237,13 @@ async function main() {
         isVerified: true,
       },
       {
-        headlinerArtistId: dispatchArtistData['id'],
+        headlinerArtistId: dispatchArtist['id'],
         venueId: allVenues.find((v) => v['slug'] === '930-club')?.['id']!,
         name: 'Dispatch: Capital Sessions',
         slug: 'dispatch-capital-sessions-dc',
         date: new Date(today.getTime() - 25 * 24 * 60 * 60 * 1000)
           .toISOString()
-          .split('T')[0]!,
+          .split('T')[0]!, // 25 days ago
         startTime: '20:30',
         doorsTime: '19:30',
         status: 'completed' as const,
@@ -379,13 +259,13 @@ async function main() {
         isVerified: true,
       },
       {
-        headlinerArtistId: dispatchArtistData['id'],
+        headlinerArtistId: dispatchArtist['id'],
         venueId: allVenues.find((v) => v['slug'] === 'bowery-ballroom')?.['id']!,
         name: 'Dispatch: Intimate NYC Night',
         slug: 'dispatch-intimate-nyc-bowery',
         date: new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000)
           .toISOString()
-          .split('T')[0]!,
+          .split('T')[0]!, // 60 days from now
         startTime: '21:30',
         doorsTime: '20:30',
         status: 'upcoming' as const,
@@ -403,17 +283,24 @@ async function main() {
       },
     ];
 
-    const createdShows = await db.insert(shows).values(showsData).returning();
+    const createdShows = await db
+      .insert(shows)
+      .values(showsData)
+      .onConflictDoNothing()
+      .returning();
 
     // Create show_artists entries
     for (const show of createdShows) {
-      await db.insert(showArtists).values({
-        showId: show.id,
-        artistId: dispatchArtistData['id'],
-        orderIndex: 0,
-        isHeadliner: true,
-        setLength: 120,
-      });
+      await db
+        .insert(showArtists)
+        .values({
+          showId: show.id,
+          artistId: dispatchArtist['id'],
+          orderIndex: 0,
+          isHeadliner: true,
+          setLength: 120,
+        })
+        .onConflictDoNothing();
     }
 
     const dispatchSongs = [
@@ -615,7 +502,7 @@ async function main() {
     await db
       .insert(songs)
       .values(dispatchSongs)
-      .returning();
+      .onConflictDoNothing();
 
     // Get all songs for setlists
     const allSongs = await db
@@ -623,25 +510,18 @@ async function main() {
       .from(songs)
       .where(eq(songs.artist, 'Dispatch'));
 
-    // Get or create a test user for votes
-    let testUser = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, 'test@example.com'))
-      .limit(1);
+    // Create a test user for votes
+    const [testUser] = await db
+      .insert(users)
+      .values({
+        email: 'test@example.com',
+        displayName: 'Test User',
+        emailVerified: new Date(),
+      })
+      .onConflictDoNothing()
+      .returning();
 
-    if (testUser.length === 0) {
-      const [newUser] = await db
-        .insert(users)
-        .values({
-          email: 'test@example.com',
-          emailVerified: new Date(),
-        })
-        .returning();
-      testUser = [newUser!];
-    }
-
-    let setlistCount = 0;
+    let _setlistCount = 0;
     let _voteCount = 0;
 
     for (const show of createdShows) {
@@ -655,7 +535,7 @@ async function main() {
           .insert(setlists)
           .values({
             showId: show.id,
-            artistId: dispatchArtistData['id'],
+            artistId: dispatchArtist['id'],
             type: setlistType,
             name:
               setlistType === 'predicted'
@@ -665,13 +545,13 @@ async function main() {
             isLocked: setlistType === 'actual',
             totalVotes: 0,
             accuracyScore: setlistType === 'actual' ? 95 : 0,
-            ...(testUser[0]?.['id'] && { createdBy: testUser[0]['id'] }),
+            ...(testUser?.id && { createdBy: testUser.id }),
           })
           .returning();
 
         if (!setlist) continue;
 
-        setlistCount++;
+        _setlistCount++;
 
         // Add 15-20 songs to each setlist
         const shuffledSongs = [...allSongs].sort(() => Math.random() - 0.5);
@@ -685,14 +565,11 @@ async function main() {
           const song = shuffledSongs[position];
           if (!song) continue;
 
-          const upvotes = Math.floor(Math.random() * 150);
-          const downvotes = Math.floor(Math.random() * 30);
-
           const [setlistSong] = await db
             .insert(setlistSongs)
             .values({
-              setlistId: setlist['id'],
-              songId: song['id'],
+              setlistId: setlist.id,
+              songId: song.id,
               position: position + 1,
               notes:
                 position === 0
@@ -701,23 +578,18 @@ async function main() {
                     ? 'closer'
                     : null,
               isPlayed: setlistType === 'actual' ? true : null,
-              upvotes,
-              downvotes,
-              netVotes: upvotes - downvotes,
+              upvotes: Math.floor(Math.random() * 150),
+              downvotes: Math.floor(Math.random() * 30),
+              netVotes: 0, // Will be calculated by trigger
             })
             .returning();
 
           // Add some votes for predicted setlists
-          if (
-            setlistType === 'predicted' &&
-            testUser[0] &&
-            setlistSong &&
-            Math.random() > 0.5
-          ) {
+          if (setlistType === 'predicted' && testUser && setlistSong && Math.random() > 0.5) {
             await db
               .insert(votes)
               .values({
-                userId: testUser[0]['id'],
+                userId: testUser.id,
                 setlistSongId: setlistSong.id,
                 voteType: Math.random() > 0.3 ? 'up' : 'down',
               })
@@ -729,6 +601,12 @@ async function main() {
       }
     }
 
+    // Update net votes for all setlist songs
+    await db.execute(sql`
+      UPDATE setlist_songs 
+      SET net_votes = upvotes - downvotes
+    `);
+
     // Update total votes for setlists
     await db.execute(sql`
       UPDATE setlists s
@@ -737,31 +615,28 @@ async function main() {
         FROM setlist_songs ss
         WHERE ss.setlist_id = s.id
       )
-      WHERE s.artist_id = ${dispatchArtistData['id']}
     `);
 
-    // Create or update artist stats
-    await db
-      .insert(artistStats)
-      .values({
-        artistId: dispatchArtistData['id'],
-        totalShows: createdShows.length,
-        totalSetlists: setlistCount,
-        avgSetlistLength: 18,
-        mostPlayedSong: 'The General',
-        lastShowDate: new Date(today.getTime() - 10 * 24 * 60 * 60 * 1000),
-      })
-      .onConflictDoUpdate({
-        target: artistStats.artistId,
-        set: {
-          totalShows: createdShows.length,
-          totalSetlists: setlistCount,
-          avgSetlistLength: 18,
-          mostPlayedSong: 'The General',
-          lastShowDate: new Date(today.getTime() - 10 * 24 * 60 * 60 * 1000),
-          updatedAt: new Date(),
-        },
-      });
+    // Update artist stats
+    await db.execute(sql`
+      INSERT INTO artist_stats (artist_id, total_shows, total_setlists, last_show_date)
+      SELECT 
+        a.id,
+        COUNT(DISTINCT s.id) as total_shows,
+        COUNT(DISTINCT sl.id) as total_setlists,
+        MAX(s.date::timestamp) as last_show_date
+      FROM artists a
+      LEFT JOIN shows s ON s.headliner_artist_id = a.id
+      LEFT JOIN setlists sl ON sl.artist_id = a.id
+      WHERE a.id = ${dispatchArtist['id']}
+      GROUP BY a.id
+      ON CONFLICT (artist_id) 
+      DO UPDATE SET
+        total_shows = EXCLUDED.total_shows,
+        total_setlists = EXCLUDED.total_setlists,
+        last_show_date = EXCLUDED.last_show_date,
+        updated_at = NOW()
+    `);
   } catch (_error) {
     process.exit(1);
   }

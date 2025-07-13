@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
           const responseTime = Date.now() - startTime;
 
           // Check for any critical issues
-          const issues = [];
+          const issues: string[] = [];
 
           // Check for orphaned records
           const orphanedSetlists = await db.execute(sql`
@@ -275,7 +275,7 @@ export async function POST(request: NextRequest) {
 
       case 'cleanup_orphaned_records': {
         // Clean up orphaned records
-        const results = [];
+        const results: any[] = [];
 
         // Remove orphaned setlist songs
         const orphanedSetlistSongs = await db.execute(sql`

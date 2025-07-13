@@ -1,5 +1,5 @@
 import { render } from '@react-email/components';
-import { resend } from './index';
+import { getResendClient } from './index';
 import { keys } from './keys';
 
 import { ArtistFollowNotificationTemplate } from './templates/artist-follow-notification';
@@ -80,7 +80,7 @@ async function sendEmail({
       emailOptions.replyTo = replyTo;
     }
 
-    const result = await resend.emails.send(emailOptions);
+    const result = await getResendClient().emails.send(emailOptions);
 
     return { success: true, data: result };
   } catch (error) {

@@ -343,7 +343,7 @@ class ShowSyncService {
       }
 
       // Process venue
-      let venue = null;
+      let venue: any = null;
       if (tmEvent._embedded?.venues?.[0]) {
         venue = await this.syncVenue(tmEvent._embedded.venues[0]);
       }

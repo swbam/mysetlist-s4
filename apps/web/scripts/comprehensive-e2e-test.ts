@@ -136,7 +136,7 @@ class ComprehensiveE2ETest {
     await this.runTest('Health Check', async () => {
       try {
         const { data } = await this.api.get('/api/health');
-        if (!data || !data.status || data.status !== 'ok') {
+        if (!data || !(data as any).status || (data as any).status !== 'ok') {
           throw new Error('Health check failed - invalid response');
         }
       } catch (_error: any) {
@@ -156,11 +156,11 @@ class ComprehensiveE2ETest {
         `/api/artists/search?q=${encodeURIComponent(TEST_ARTIST_NAME)}`
       );
 
-      if (!data || !data.artists || !Array.isArray(data.artists)) {
+      if (!data || !(data as any).artists || !Array.isArray((data as any).artists)) {
         throw new Error('Invalid search response format');
       }
 
-      const targetArtist = data.artists.find((a: any) =>
+      const targetArtist = (data as any).artists.find((a: any) =>
         a.name.toLowerCase().includes(TEST_ARTIST_NAME.toLowerCase())
       );
 
@@ -186,7 +186,7 @@ class ComprehensiveE2ETest {
         artistName: TEST_ARTIST_NAME,
       });
 
-      if (!data || !data.success) {
+      if (!data || !(data as any).success) {
         throw new Error('Artist sync failed - no success response');
       }
 
@@ -205,12 +205,12 @@ class ComprehensiveE2ETest {
       // Test artist page API endpoint
       const { data } = await this.api.get(`/api/artists/${artist.slug}/shows`);
 
-      if (!data || !data.shows || !Array.isArray(data.shows)) {
+      if (!data || !(data as any).shows || !Array.isArray((data as any).shows)) {
         throw new Error('Artist page shows data invalid');
       }
 
-      this.testData.shows = data.shows;
-      log('success', `Artist page loaded with ${data.shows.length} shows`);
+      this.testData.shows = (data as any).shows;
+      log('success', `Artist page loaded with ${(data as any).shows.length} shows`);
     });
   }
 
@@ -239,14 +239,14 @@ class ComprehensiveE2ETest {
       try {
         const { data } = await this.api.get(`/api/artists/${artist.id}/songs`);
 
-        if (!data || !data.songs || !Array.isArray(data.songs)) {
+        if (!data || !(data as any).songs || !Array.isArray((data as any).songs)) {
           throw new Error('Song catalog not available');
         }
 
-        this.testData.songs = data.songs;
+        this.testData.songs = (data as any).songs;
         log(
           'success',
-          `Song catalog loaded: ${data.songs.length} songs available`
+          `Song catalog loaded: ${(data as any).songs.length} songs available`
         );
       } catch (_error) {
         // If songs endpoint doesn't exist, that's okay for now
@@ -265,8 +265,8 @@ class ComprehensiveE2ETest {
 
       if (
         !trendingArtists ||
-        !trendingArtists.artists ||
-        !Array.isArray(trendingArtists.artists)
+        !(trendingArtists as any).artists ||
+        !Array.isArray((trendingArtists as any).artists)
       ) {
         throw new Error('Trending artists API failed');
       }
@@ -278,15 +278,15 @@ class ComprehensiveE2ETest {
 
       if (
         !trendingShows ||
-        !trendingShows.shows ||
-        !Array.isArray(trendingShows.shows)
+        !(trendingShows as any).shows ||
+        !Array.isArray((trendingShows as any).shows)
       ) {
         throw new Error('Trending shows API failed');
       }
 
       log(
         'success',
-        `Trending APIs working: ${trendingArtists.artists.length} artists, ${trendingShows.shows.length} shows`
+        `Trending APIs working: ${(trendingArtists as any).artists.length} artists, ${(trendingShows as any).shows.length} shows`
       );
     });
   }
@@ -305,13 +305,13 @@ class ComprehensiveE2ETest {
           artistId: artist.id,
         });
 
-        if (!data || !data.success) {
+        if (!data || !(data as any).success) {
           throw new Error('Sync shows function failed');
         }
 
         log(
           'success',
-          `Sync functions working: ${data.syncedCount || 0} shows synced`
+          `Sync functions working: ${(data as any).syncedCount || 0} shows synced`
         );
       } catch (_error: any) {
         log('warn', 'Sync shows endpoint may not be fully implemented');

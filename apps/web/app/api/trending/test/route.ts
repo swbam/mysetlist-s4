@@ -97,7 +97,7 @@ export async function GET() {
         });
 
         const responseTime = Date.now() - startTime;
-        let data = null;
+        let data: any = null;
 
         if (response.ok) {
           data = await response.json();

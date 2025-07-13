@@ -44,7 +44,7 @@ async function getRecommendationFactors(
 
   // Get top genres
   const topGenres = Object.entries(genreCounts)
-    .sort(([, a], [, b]) => b - a)
+    .sort(([, a], [, b]) => (b as number) - (a as number))
     .slice(0, 5)
     .map(([genre]) => genre);
 

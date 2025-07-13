@@ -559,19 +559,19 @@ export class UnifiedSyncService {
                         ticketUrl: event.url,
                         updatedAt: new Date(),
                       })
-                      .where(eq(shows.id, existingShow[0]!.id));
+                      .where(eq(shows.id, existingShow[0]!['id']));
 
                     // Update supporting artists for existing show
                     // First, check if we already have the headliner in show_artists
                     const existingShowArtists = await db
                       .select()
                       .from(showArtists)
-                      .where(eq(showArtists.showId, existingShow[0]!.id));
+                      .where(eq(showArtists.showId, existingShow[0]!['id']));
 
                     if (existingShowArtists.length === 0) {
                       // Add headliner if missing
                       await db.insert(showArtists).values({
-                        showId: existingShow[0]!.id,
+                        showId: existingShow[0]!['id'],
                         artistId: artistId,
                         orderIndex: 0,
                         isHeadliner: true,
@@ -606,7 +606,7 @@ export class UnifiedSyncService {
                             .limit(1);
 
                           if (existingSupportArtist.length > 0) {
-                            supportArtistId = existingSupportArtist[0]!.id;
+                            supportArtistId = existingSupportArtist[0]!['id'];
                           } else {
                             // Create a basic artist record for the supporting act
                             const [newSupportArtist] = await db
@@ -625,7 +625,7 @@ export class UnifiedSyncService {
 
                           // Add supporting artist to show_artists
                           await db.insert(showArtists).values({
-                            showId: existingShow[0]!.id,
+                            showId: existingShow[0]!['id'],
                             artistId: supportArtistId,
                             orderIndex: i,
                             isHeadliner: false,
@@ -689,7 +689,7 @@ export class UnifiedSyncService {
                           .limit(1);
 
                         if (existingSupportArtist.length > 0) {
-                          supportArtistId = existingSupportArtist[0]!.id;
+                          supportArtistId = existingSupportArtist[0]!['id'];
                         } else {
                           // Create a basic artist record for the supporting act
                           const [newSupportArtist] = await db
@@ -923,7 +923,7 @@ export class UnifiedSyncService {
                     const isEncore = songData.setName
                       ?.toLowerCase()
                       .includes('encore');
-                    const notes = [];
+                    const notes: any[] = [];
 
                     if (isEncore) {
                       notes.push('Encore');

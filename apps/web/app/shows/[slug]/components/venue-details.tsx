@@ -32,7 +32,7 @@ type VenueDetailsProps = {
 
 export function VenueDetails({ venue }: VenueDetailsProps) {
   const getFullAddress = () => {
-    const parts = [];
+    const parts: string[] = [];
     if (venue.address) {
       parts.push(venue.address);
     }

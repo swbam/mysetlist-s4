@@ -147,7 +147,7 @@ async function syncShows(options: any) {
           newShows++;
         } else {
           // Update existing show
-          await updateShowFromTicketmaster(event, existingShow[0]!.id);
+          await updateShowFromTicketmaster(event, existingShow[0]!['id']);
           updatedShows++;
         }
       }

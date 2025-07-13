@@ -6,10 +6,10 @@ import {
   CardHeader,
 } from '@repo/design-system/components/ui/card';
 import { cn } from '@repo/design-system/lib/utils';
-import type React from 'react';
+import * as React from 'react';
 
 interface MobileOptimizedCardProps {
-  children: React.ReactNode;
+  children: any;
   className?: string;
   variant?: 'default' | 'compact' | 'elevated';
   orientation?: 'horizontal' | 'vertical';
@@ -59,7 +59,7 @@ export function MobileOptimizedCard({
 }
 
 interface MobileCardContentProps {
-  children: React.ReactNode;
+  children: any;
   className?: string;
   padding?: 'none' | 'sm' | 'md' | 'lg';
 }
@@ -84,7 +84,7 @@ export function MobileCardContent({
 }
 
 interface MobileCardHeaderProps {
-  children: React.ReactNode;
+  children: any;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
 }

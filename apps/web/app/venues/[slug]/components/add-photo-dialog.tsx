@@ -12,7 +12,6 @@ import {
 } from '@repo/design-system/components/ui/dialog';
 import {
   Form,
-  FormControl,
   FormDescription,
   FormField,
   FormItem,
@@ -135,12 +134,10 @@ export function AddPhotoDialog({ venueId }: AddPhotoDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Image URL*</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="https://example.com/image.jpg"
-                      {...field}
-                    />
-                  </FormControl>
+                  <Input
+                    placeholder="https://example.com/image.jpg"
+                    {...field}
+                  />
                   <FormDescription>Enter the URL of your image</FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -158,11 +155,9 @@ export function AddPhotoDialog({ venueId }: AddPhotoDialogProps) {
                     onValueChange={field.onChange}
                     {...(field.value && { defaultValue: field.value })}
                   >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select photo type" />
-                      </SelectTrigger>
-                    </FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select photo type" />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="interior">Interior</SelectItem>
                       <SelectItem value="exterior">Exterior</SelectItem>
@@ -186,13 +181,11 @@ export function AddPhotoDialog({ venueId }: AddPhotoDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Caption</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Add a caption..."
-                      className="resize-none"
-                      {...field}
-                    />
-                  </FormControl>
+                  <Textarea
+                    placeholder="Add a caption..."
+                    className="resize-none"
+                    {...field}
+                  />
                   <FormMessage />
                 </FormItem>
               )}

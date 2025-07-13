@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
       .orderBy(desc(votes.createdAt))
       .limit(Math.ceil(limit / 3));
 
-    recentVotes.forEach((vote) => {
+    recentVotes.forEach((vote: any) => {
       activities.push({
         id: `vote-${vote.id}`,
         type: 'vote',

@@ -234,7 +234,7 @@ async function getExternalAPIStatus(): Promise<{
 
 async function getActiveAlerts() {
   // Mock implementation - in production, integrate with actual alerting system
-  const alerts = [];
+  const alerts: any[] = [];
   
   // Memory usage alert
   const memoryUsage = process.memoryUsage();

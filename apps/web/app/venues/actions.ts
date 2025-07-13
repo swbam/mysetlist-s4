@@ -23,7 +23,7 @@ export const getVenues = unstable_cache(
     userLng,
     limit = 50,
   }: GetVenuesParams) => {
-    const conditions = [];
+    const conditions: any[] = [];
 
     // Search filter
     if (search) {

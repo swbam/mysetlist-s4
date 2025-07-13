@@ -215,7 +215,7 @@ function generateMockSongs(artist: any, limit: number, offset: number) {
     'Remix Album',
   ];
 
-  const songs = [];
+  const songs: any[] = [];
   const startIdx = offset;
   const endIdx = Math.min(startIdx + limit, songTitles.length);
 

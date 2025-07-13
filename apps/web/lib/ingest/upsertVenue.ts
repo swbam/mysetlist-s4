@@ -41,7 +41,7 @@ export async function upsertVenue(tmVenue: any) {
         ...(tmVenue.images?.[0]?.url && { imageUrl: tmVenue.images[0].url }),
         updatedAt: new Date(),
       })
-      .where(eq(venues.id, existingVenue[0]!.id));
+      .where(eq(venues.id, existingVenue[0]!['id']));
     
     return existingVenue[0];
   }
@@ -76,7 +76,7 @@ export async function upsertVenue(tmVenue: any) {
 function formatAddress(venue: any): string | null {
   if (!venue.address) return null;
   
-  const parts = [];
+  const parts: any[] = [];
   if (venue.address.line1) parts.push(venue.address.line1);
   if (venue.address.line2) parts.push(venue.address.line2);
   

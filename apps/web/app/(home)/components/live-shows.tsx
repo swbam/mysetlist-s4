@@ -5,13 +5,11 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
+  // Tabs,
+  // TabsContent,
+  // TabsList,
+  // TabsTrigger,
+} from '@repo/design-system';
 import { RealtimeShowsFeed } from '~/components/realtime-shows-feed';
 
 export function LiveShows() {
@@ -26,6 +24,7 @@ export function LiveShows() {
           </p>
         </div>
 
+        {/* Temporarily disabled Tabs component due to build issues
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="mx-auto mb-8 grid w-full max-w-md grid-cols-3">
             <TabsTrigger value="all">All Shows</TabsTrigger>
@@ -44,7 +43,10 @@ export function LiveShows() {
           <TabsContent value="upcoming">
             <RealtimeShowsFeed limit={6} status="upcoming" />
           </TabsContent>
-        </Tabs>
+        </Tabs> */}
+        <div className="space-y-4">
+          <RealtimeShowsFeed limit={6} />
+        </div>
 
         <Card className="mt-8 bg-muted/50">
           <CardHeader>

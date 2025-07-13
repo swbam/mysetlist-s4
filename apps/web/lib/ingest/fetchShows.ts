@@ -2,7 +2,7 @@ import { fetchAttractionEvents } from './ticketmaster';
 
 export async function fetchShows(tmId: string) {
   try {
-    const events = [];
+    const events: any[] = [];
     let page = 0;
     let totalPages = 1;
     

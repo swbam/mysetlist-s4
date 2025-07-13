@@ -181,7 +181,7 @@ export async function POST() {
     const start = Date.now();
 
     // Test various cache operations
-    const testResults = [];
+    const testResults: any[] = [];
 
     // SET operation
     const setResult = await cache.set('health:detailed', 'test', { ex: 60 });

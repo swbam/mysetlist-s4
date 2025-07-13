@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Trigger sync operations in parallel
-    const syncPromises = [];
+    const syncPromises: Promise<Response>[] = [];
 
     // 1. Sync artist shows
     if (artistData.spotifyId) {

@@ -708,7 +708,7 @@ class ScalabilityArchitect {
   }
 
   private getMilestones(currentUsers: number, targetUsers: number): Array<{ milestone: string; users: number }> {
-    const milestones = [];
+    const milestones: any[] = [];
     const step = Math.floor((targetUsers - currentUsers) / 4);
     
     for (let i = 1; i <= 4; i++) {

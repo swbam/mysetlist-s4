@@ -4,7 +4,7 @@ import { eq, and } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 
 export async function upsertSetlists(rawSetlists: any[], artistId: string) {
-  const upsertedSetlists = [];
+  const upsertedSetlists: any[] = [];
   
   for (const setlist of rawSetlists) {
     try {
@@ -152,7 +152,7 @@ async function processSetlistSongs(setlistId: string, sets: any[], artistId: str
           
           if (song) {
             // Add to setlist_songs junction table
-            const notes = [];
+            const notes: any[] = [];
             if (set.encore === 1) notes.push('encore');
             if (songData.cover) notes.push('cover');
             if (songData.info) notes.push(songData.info);

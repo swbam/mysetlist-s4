@@ -195,16 +195,18 @@ export default function ReportItem({
         metadata: { action: selectedAction },
       });
 
-      toast('Report resolved', {
+      toast({
+        title: 'Report resolved',
         description: `The report has been resolved with action: ${selectedAction}.`,
       });
 
       setResolveDialogOpen(false);
       router.refresh();
     } catch (_error) {
-      toast('Error', {
+      toast({
+        title: 'Error',
         description: 'Failed to resolve report. Please try again.',
-        type: 'error',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);

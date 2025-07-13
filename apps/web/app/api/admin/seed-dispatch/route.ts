@@ -68,7 +68,7 @@ export async function POST(_request: NextRequest) {
       'Passerby',
     ];
 
-    const createdSongs = [];
+    const createdSongs: any[] = [];
     for (let i = 0; i < dispatchSongs.length; i++) {
       const songTitle = dispatchSongs[i];
       
@@ -123,7 +123,7 @@ export async function POST(_request: NextRequest) {
       },
     ];
 
-    const createdShows = [];
+    const createdShows: any[] = [];
     for (const showData of showsData) {
       // Check if show already exists
       const existingShow = await db

@@ -168,8 +168,8 @@ async function main() {
     const today = new Date();
     const showsData = [
       {
-        headlinerArtistId: dispatchArtist.id,
-        venueId: allVenues.find((v) => v.slug === 'red-rocks-amphitheatre')?.id!,
+        headlinerArtistId: dispatchArtist['id'],
+        venueId: allVenues.find((v) => v['slug'] === 'red-rocks-amphitheatre')?.['id']!,
         name: 'Dispatch: Summer Tour 2025',
         slug: 'dispatch-summer-tour-2025-red-rocks',
         date: new Date(today.getTime() + 45 * 24 * 60 * 60 * 1000)
@@ -192,8 +192,8 @@ async function main() {
         isVerified: true,
       },
       {
-        headlinerArtistId: dispatchArtist.id,
-        venueId: allVenues.find((v) => v.slug === 'house-of-blues-boston')?.id!,
+        headlinerArtistId: dispatchArtist['id'],
+        venueId: allVenues.find((v) => v['slug'] === 'house-of-blues-boston')?.['id']!,
         name: 'Dispatch: Hometown Heroes',
         slug: 'dispatch-hometown-heroes-boston',
         date: new Date(today.getTime() - 10 * 24 * 60 * 60 * 1000)
@@ -214,8 +214,8 @@ async function main() {
         isVerified: true,
       },
       {
-        headlinerArtistId: dispatchArtist.id,
-        venueId: allVenues.find((v) => v.slug === 'the-fillmore-sf')?.id!,
+        headlinerArtistId: dispatchArtist['id'],
+        venueId: allVenues.find((v) => v['slug'] === 'the-fillmore-sf')?.['id']!,
         name: 'Dispatch: West Coast Winter Tour',
         slug: 'dispatch-west-coast-fillmore',
         date: new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
@@ -237,8 +237,8 @@ async function main() {
         isVerified: true,
       },
       {
-        headlinerArtistId: dispatchArtist.id,
-        venueId: allVenues.find((v) => v.slug === '930-club')?.id!,
+        headlinerArtistId: dispatchArtist['id'],
+        venueId: allVenues.find((v) => v['slug'] === '930-club')?.['id']!,
         name: 'Dispatch: Capital Sessions',
         slug: 'dispatch-capital-sessions-dc',
         date: new Date(today.getTime() - 25 * 24 * 60 * 60 * 1000)
@@ -259,8 +259,8 @@ async function main() {
         isVerified: true,
       },
       {
-        headlinerArtistId: dispatchArtist.id,
-        venueId: allVenues.find((v) => v.slug === 'bowery-ballroom')?.id!,
+        headlinerArtistId: dispatchArtist['id'],
+        venueId: allVenues.find((v) => v['slug'] === 'bowery-ballroom')?.['id']!,
         name: 'Dispatch: Intimate NYC Night',
         slug: 'dispatch-intimate-nyc-bowery',
         date: new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000)
@@ -294,8 +294,8 @@ async function main() {
       await db
         .insert(showArtists)
         .values({
-          showId: show.id,
-          artistId: dispatchArtist.id,
+          showId: show['id'],
+          artistId: dispatchArtist['id'],
           orderIndex: 0,
           isHeadliner: true,
           setLength: 120,
@@ -534,8 +534,8 @@ async function main() {
         const [setlist] = await db
           .insert(setlists)
           .values({
-            showId: show.id,
-            artistId: dispatchArtist.id,
+            showId: show['id'],
+            artistId: dispatchArtist['id'],
             type: setlistType,
             name:
               setlistType === 'predicted'
@@ -568,8 +568,8 @@ async function main() {
           const [setlistSong] = await db
             .insert(setlistSongs)
             .values({
-              setlistId: setlist.id,
-              songId: song.id,
+              setlistId: setlist['id'],
+              songId: song['id'],
               position: position + 1,
               notes:
                 position === 0
@@ -590,7 +590,7 @@ async function main() {
               .insert(votes)
               .values({
                 userId: testUser.id,
-                setlistSongId: setlistSong.id,
+                setlistSongId: setlistSong['id'],
                 voteType: Math.random() > 0.3 ? 'up' : 'down',
               })
               .onConflictDoNothing();
@@ -628,7 +628,7 @@ async function main() {
       FROM artists a
       LEFT JOIN shows s ON s.headliner_artist_id = a.id
       LEFT JOIN setlists sl ON sl.artist_id = a.id
-      WHERE a.id = ${dispatchArtist.id}
+      WHERE a.id = ${dispatchArtist['id']}
       GROUP BY a.id
       ON CONFLICT (artist_id) 
       DO UPDATE SET

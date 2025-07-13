@@ -768,7 +768,7 @@ class SecurityAuditor {
   }
 
   private generateRecommendations(): string[] {
-    const recommendations = [];
+    const recommendations: any[] = [];
     
     if (this.findings.some(f => f.category === 'Dependencies')) {
       recommendations.push('Update all dependencies to latest secure versions');
