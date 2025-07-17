@@ -1,373 +1,208 @@
 'use client';
 
-import { ModeToggle } from '@repo/design-system/components/mode-toggle';
-import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
-import { Separator } from '@repo/design-system/components/ui/separator';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
-import {
-  Bell,
-  Calendar,
-  Headphones,
-  Heart,
-  Home,
-  MapPin,
-  Menu,
-  Music,
-  Settings,
-  TrendingUp,
+import { Sheet, SheetContent, SheetTrigger } from '@repo/design-system/components/ui/sheet';
+import { 
+  Menu, 
+  Home, 
+  Music, 
+  Calendar, 
+  MapPin, 
+  TrendingUp, 
   User,
-  X,
+  Search,
+  X
 } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
-import { SafeLink } from '~/components/navigation/navigation-error-boundary';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useState } from 'react';
+import { cn } from '@repo/design-system/lib/utils';
 
-interface MobileNavigationProps {
-  className?: string;
-  user?: any;
-  notificationCount?: number;
+interface NavigationItem {
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  description?: string;
 }
 
-const navigationItems = [
+const navigationItems: NavigationItem[] = [
   {
-    title: 'Home',
     href: '/',
+    label: 'Home',
     icon: Home,
-    description: 'Discover trending shows',
+    description: 'Discover trending artists and shows'
   },
   {
-    title: 'Artists',
     href: '/artists',
+    label: 'Artists',
     icon: Music,
-    description: 'Browse music artists',
+    description: 'Browse and search artists'
   },
   {
-    title: 'Shows',
     href: '/shows',
+    label: 'Shows',
     icon: Calendar,
-    description: 'Upcoming & past shows',
+    description: 'Find upcoming concerts'
   },
   {
-    title: 'Venues',
     href: '/venues',
+    label: 'Venues',
     icon: MapPin,
-    description: 'Concert venues & locations',
+    description: 'Explore concert venues'
   },
   {
-    title: 'Trending',
     href: '/trending',
+    label: 'Trending',
     icon: TrendingUp,
-    description: 'Trending artists & shows',
+    description: 'What\'s hot right now'
   },
 ];
 
-const userMenuItems = [
-  {
-    title: 'Profile',
-    href: '/profile',
-    icon: User,
-    description: 'Your profile & activity',
-  },
-  {
-    title: 'Following',
-    href: '/profile/following',
-    icon: Heart,
-    description: 'Artists you follow',
-  },
-  {
-    title: 'Playlists',
-    href: '/playlists',
-    icon: Headphones,
-    description: 'Your saved setlists',
-  },
-  {
-    title: 'Settings',
-    href: '/settings',
-    icon: Settings,
-    description: 'Account & preferences',
-  },
-];
+interface MobileNavigationProps {
+  user?: any;
+}
 
-export const MobileNavigation = React.memo(function MobileNavigation({
-  className,
-  user,
-  notificationCount = 0,
-}: MobileNavigationProps) {
+export function MobileNavigation({ user }: MobileNavigationProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
+  const pathname = usePathname();
 
-  // Close menu on route change
-  useEffect(() => {
-    const handleRouteChange = () => {
-      setIsOpen(false);
-    };
-
-    // Listen for navigation events
-    window.addEventListener('popstate', handleRouteChange);
-
-    return () => {
-      window.removeEventListener('popstate', handleRouteChange);
-    };
-  }, []);
-
-  // Prevent body scroll when menu is open
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
-
-  const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      setIsOpen(false);
-      setIsClosing(false);
-    }, 150);
-  };
-
-  const handleLinkClick = () => {
-    handleClose();
-  };
+  const closeSheet = () => setIsOpen(false);
 
   return (
-    <>
-      {/* Mobile Menu Toggle Button */}
-      <div className={cn('flex md:hidden', className)}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsOpen(!isOpen)}
-          className="relative h-10 w-10 p-0"
-          aria-label="Toggle menu"
+    <div className="md:hidden">
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10"
+            aria-label="Open navigation menu"
+            data-testid="mobile-menu"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        </SheetTrigger>
+        <SheetContent 
+          side="left" 
+          className="w-80 p-0"
+          data-testid="mobile-nav"
+          role="dialog"
+          aria-label="Navigation menu"
         >
-          {isOpen ? (
-            <X className="h-5 w-5" />
-          ) : (
-            <>
-              <Menu className="h-5 w-5" />
-              {notificationCount > 0 && (
-                <Badge
-                  variant="destructive"
-                  className="-top-1 -right-1 absolute flex h-5 w-5 items-center justify-center p-0 text-xs"
-                >
-                  {notificationCount > 9 ? '9+' : notificationCount}
-                </Badge>
-              )}
-            </>
-          )}
-        </Button>
-      </div>
-
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-50 bg-black/50 md:hidden"
-              onClick={handleClose}
-            />
-
-            {/* Menu Panel */}
-            <motion.div
-              initial={{ x: '-100%' }}
-              animate={{ x: isClosing ? '-100%' : 0 }}
-              exit={{ x: '-100%' }}
-              transition={{
-                type: 'spring',
-                stiffness: 300,
-                damping: 30,
-                duration: 0.3,
-              }}
-              className="fixed top-0 left-0 z-50 h-full w-80 max-w-[85vw] bg-background shadow-xl md:hidden"
-            >
-              <div className="flex h-full flex-col">
-                {/* Header */}
-                <div className="flex items-center justify-between border-b p-4">
-                  <SafeLink href="/" onClick={handleLinkClick} className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
-                      <Music className="h-4 w-4 text-primary-foreground" />
-                    </div>
-                    <span className="font-semibold text-lg">MySetlist</span>
-                  </SafeLink>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleClose}
-                    className="h-8 w-8 p-0"
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto">
-                  {/* User Section */}
-                  {user && (
-                    <div className="border-b p-4">
-                      <div className="mb-3 flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary/80">
-                          <User className="h-5 w-5 text-primary-foreground" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">
-                            {user.name || user.email}
-                          </p>
-                          <p className="text-muted-foreground text-xs">
-                            {user.email}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Notifications */}
-                      {notificationCount > 0 && (
-                        <SafeLink
-                          href="/notifications"
-                          onClick={handleLinkClick}
-                          className="flex items-center gap-2 rounded-lg bg-muted/50 p-2 transition-colors hover:bg-muted"
-                        >
-                          <Bell className="h-4 w-4" />
-                          <span className="text-sm">Notifications</span>
-                          <Badge variant="secondary" className="ml-auto">
-                            {notificationCount}
-                          </Badge>
-                        </SafeLink>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Main Navigation */}
-                  <div className="p-4">
-                    <nav className="space-y-2">
-                      {navigationItems.map((item) => {
-                        const Icon = item.icon;
-                        return (
-                          <SafeLink
-                            key={item.href}
-                            href={item.href}
-                            onClick={handleLinkClick}
-                            className="group flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-muted"
-                            prefetch
-                          >
-                            <Icon className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-foreground" />
-                            <div className="flex-1">
-                              <p className="font-medium text-sm">
-                                {item.title}
-                              </p>
-                              <p className="text-muted-foreground text-xs">
-                                {item.description}
-                              </p>
-                            </div>
-                          </SafeLink>
-                        );
-                      })}
-
-                      {/* My Artists link for authenticated users */}
-                      {user && (
-                        <SafeLink
-                          href="/my-artists"
-                          onClick={handleLinkClick}
-                          className="group flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-muted"
-                          prefetch
-                        >
-                          <Heart className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-foreground" />
-                          <div className="flex-1">
-                            <p className="font-medium text-sm">My Artists</p>
-                            <p className="text-muted-foreground text-xs">
-                              Your followed artists & shows
-                            </p>
-                          </div>
-                        </SafeLink>
-                      )}
-                    </nav>
-                  </div>
-
-                  {/* User Menu */}
-                  {user && (
-                    <>
-                      <Separator />
-                      <div className="p-4">
-                        <p className="mb-3 font-medium text-muted-foreground text-xs uppercase tracking-wider">
-                          Account
-                        </p>
-                        <nav className="space-y-2">
-                          {userMenuItems.map((item) => {
-                            const Icon = item.icon;
-                            return (
-                              <SafeLink
-                                key={item.href}
-                                href={item.href}
-                                onClick={handleLinkClick}
-                                className="group flex items-center gap-3 rounded-lg p-3 transition-colors hover:bg-muted"
-                              >
-                                <Icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground" />
-                                <div className="flex-1">
-                                  <p className="font-medium text-sm">
-                                    {item.title}
-                                  </p>
-                                  <p className="text-muted-foreground text-xs">
-                                    {item.description}
-                                  </p>
-                                </div>
-                              </SafeLink>
-                            );
-                          })}
-                        </nav>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Auth Actions */}
-                  {!user && (
-                    <>
-                      <Separator />
-                      <div className="space-y-2 p-4">
-                        <Button asChild className="w-full" size="sm">
-                          <SafeLink href="/auth/sign-in" onClick={handleLinkClick}>
-                            Sign In
-                          </SafeLink>
-                        </Button>
-                        <Button
-                          asChild
-                          variant="outline"
-                          className="w-full"
-                          size="sm"
-                        >
-                          <SafeLink href="/auth/sign-up" onClick={handleLinkClick}>
-                            Sign Up
-                          </SafeLink>
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </div>
-
-                {/* Footer */}
-                <div className="border-t p-4">
-                  <div className="mb-3 flex items-center justify-between">
-                    <span className="text-muted-foreground text-sm">Theme</span>
-                    <ModeToggle />
-                  </div>
-                  <p className="text-center text-muted-foreground text-xs">
-                    MySetlist © 2024
-                  </p>
-                </div>
+          <div className="flex h-full flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b p-4">
+              <div className="flex items-center gap-2">
+                <Music className="h-6 w-6 text-primary" />
+                <span className="font-bold text-lg">MySetlist</span>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-    </>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={closeSheet}
+                aria-label="Close navigation menu"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Search Section */}
+            <div className="border-b p-4">
+              <Link
+                href="/search"
+                onClick={closeSheet}
+                className="flex items-center gap-3 rounded-lg border p-3 text-muted-foreground transition-colors hover:bg-muted"
+              >
+                <Search className="h-4 w-4" />
+                <span>Search artists, shows...</span>
+              </Link>
+            </div>
+
+            {/* Navigation Items */}
+            <nav className="flex-1 p-4" role="navigation" aria-label="Main navigation">
+              <ul className="space-y-2" role="list">
+                {navigationItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = pathname === item.href;
+                  
+                  return (
+                    <li key={item.href} role="listitem">
+                      <Link
+                        href={item.href}
+                        onClick={closeSheet}
+                        className={cn(
+                          "flex items-center gap-3 rounded-lg p-3 text-sm font-medium transition-colors",
+                          "hover:bg-muted focus:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                          isActive 
+                            ? "bg-primary text-primary-foreground" 
+                            : "text-foreground"
+                        )}
+                        aria-current={isActive ? 'page' : undefined}
+                      >
+                        <Icon className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium">{item.label}</div>
+                          {item.description && (
+                            <div className={cn(
+                              "text-xs mt-0.5",
+                              isActive 
+                                ? "text-primary-foreground/80" 
+                                : "text-muted-foreground"
+                            )}>
+                              {item.description}
+                            </div>
+                          )}
+                        </div>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </nav>
+
+            {/* User Section */}
+            <div className="border-t p-4">
+              {user ? (
+                <div className="space-y-2">
+                  <Link
+                    href="/profile"
+                    onClick={closeSheet}
+                    className="flex items-center gap-3 rounded-lg p-3 text-sm font-medium transition-colors hover:bg-muted focus:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  >
+                    <User className="h-5 w-5" aria-hidden="true" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium">Profile</div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {user.email}
+                      </div>
+                    </div>
+                  </Link>
+                  <Link
+                    href="/settings"
+                    onClick={closeSheet}
+                    className="flex items-center gap-3 rounded-lg p-3 text-sm font-medium transition-colors hover:bg-muted focus:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  >
+                    Settings
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Link href="/auth/sign-in" onClick={closeSheet}>
+                    <Button className="w-full" size="sm">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/auth/sign-up" onClick={closeSheet}>
+                    <Button variant="outline" className="w-full" size="sm">
+                      Sign Up
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </div>
   );
-});
+}

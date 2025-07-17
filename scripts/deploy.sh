@@ -1,360 +1,317 @@
 #!/bin/bash
 
-# MySetlist Production Deployment Script
-# SUB-AGENT 6: Production Deployment Implementation
+# MySetlist Deployment Script
+# This script handles deployment to different environments
 
-set -e
-
-# Configuration
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-ENVIRONMENT="${1:-staging}"
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_DIR="/tmp/mysetlist_backup_${TIMESTAMP}"
+set -e  # Exit on any error
 
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Logging function
-log() {
-    echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')] $1${NC}"
+# Configuration
+ENVIRONMENTS=("staging" "production")
+DEFAULT_ENVIRONMENT="staging"
+
+# Functions
+log_info() {
+    echo -e "${BLUE}[INFO]${NC} $1"
 }
 
-error() {
-    echo -e "${RED}[$(date +'%Y-%m-%d %H:%M:%S')] ERROR: $1${NC}"
-    exit 1
+log_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
 }
 
-warn() {
-    echo -e "${YELLOW}[$(date +'%Y-%m-%d %H:%M:%S')] WARNING: $1${NC}"
+log_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
-# Pre-deployment checks
-pre_deployment_checks() {
-    log "Starting pre-deployment checks..."
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+show_usage() {
+    echo "Usage: $0 [OPTIONS]"
+    echo ""
+    echo "Options:"
+    echo "  -e, --environment ENV    Target environment (staging|production)"
+    echo "  -s, --skip-tests        Skip running tests before deployment"
+    echo "  -f, --force             Force deployment without confirmation"
+    echo "  -m, --migrate           Run database migrations"
+    echo "  -h, --help              Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  $0 -e production -m     Deploy to production with migrations"
+    echo "  $0 --skip-tests         Deploy to staging without tests"
+    echo "  $0 --force              Deploy without confirmation prompts"
+}
+
+check_prerequisites() {
+    log_info "Checking prerequisites..."
     
-    # Check Node.js version
-    if ! node --version | grep -E "v(18|20|21)" > /dev/null; then
-        error "Node.js version must be 18, 20, or 21"
+    # Check if required tools are installed
+    command -v node >/dev/null 2>&1 || { log_error "Node.js is required but not installed."; exit 1; }
+    command -v pnpm >/dev/null 2>&1 || { log_error "pnpm is required but not installed."; exit 1; }
+    command -v vercel >/dev/null 2>&1 || { log_error "Vercel CLI is required but not installed."; exit 1; }
+    
+    # Check if we're in the right directory
+    if [ ! -f "package.json" ]; then
+        log_error "package.json not found. Please run this script from the project root."
+        exit 1
     fi
     
-    # Check pnpm
-    if ! command -v pnpm &> /dev/null; then
-        error "pnpm is required but not installed"
-    fi
-    
-    # Check Docker
-    if ! command -v docker &> /dev/null; then
-        error "Docker is required but not installed"
-    fi
-    
-    # Check environment variables
-    if [[ "$ENVIRONMENT" == "production" ]]; then
-        required_vars=(
-            "DATABASE_URL"
-            "NEXT_PUBLIC_SUPABASE_URL"
-            "NEXT_PUBLIC_SUPABASE_ANON_KEY"
-            "SUPABASE_SERVICE_ROLE_KEY"
-            "NEXT_PUBLIC_SENTRY_DSN"
-            "SENTRY_AUTH_TOKEN"
-        )
-        
-        for var in "${required_vars[@]}"; do
-            if [[ -z "${!var}" ]]; then
-                error "Required environment variable $var is not set"
+    # Check if we're on the right branch for production
+    if [ "$ENVIRONMENT" = "production" ]; then
+        CURRENT_BRANCH=$(git branch --show-current)
+        if [ "$CURRENT_BRANCH" != "main" ]; then
+            log_warning "You're not on the main branch. Production deployments should be from main."
+            if [ "$FORCE" != "true" ]; then
+                read -p "Continue anyway? (y/N): " -n 1 -r
+                echo
+                if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                    log_info "Deployment cancelled."
+                    exit 0
+                fi
             fi
-        done
-    fi
-    
-    log "Pre-deployment checks completed successfully"
-}
-
-# TypeScript check
-typescript_check() {
-    log "Running TypeScript checks..."
-    
-    cd "$PROJECT_ROOT"
-    
-    if ! pnpm typecheck; then
-        error "TypeScript check failed. Please fix all TypeScript errors before deployment."
-    fi
-    
-    log "TypeScript checks completed successfully"
-}
-
-# Security scan
-security_scan() {
-    log "Running security scan..."
-    
-    cd "$PROJECT_ROOT"
-    
-    # Run npm audit
-    if ! npm audit --audit-level=high --production; then
-        warn "npm audit found vulnerabilities. Please review and fix if critical."
-    fi
-    
-    # Run Trivy scan if available
-    if command -v trivy &> /dev/null; then
-        if ! trivy fs . --exit-code 1 --severity HIGH,CRITICAL; then
-            error "Critical security vulnerabilities found. Please fix before deployment."
         fi
-    else
-        warn "Trivy not available. Skipping container security scan."
     fi
     
-    log "Security scan completed"
+    log_success "Prerequisites check passed"
 }
 
-# Build application
+run_tests() {
+    if [ "$SKIP_TESTS" = "true" ]; then
+        log_warning "Skipping tests as requested"
+        return 0
+    fi
+    
+    log_info "Running tests..."
+    
+    # Type checking
+    log_info "Running type check..."
+    pnpm run type-check || { log_error "Type check failed"; exit 1; }
+    
+    # Linting
+    log_info "Running linter..."
+    pnpm run lint || { log_error "Linting failed"; exit 1; }
+    
+    # Unit tests
+    log_info "Running unit tests..."
+    pnpm run test || { log_error "Unit tests failed"; exit 1; }
+    
+    # Integration tests
+    log_info "Running integration tests..."
+    pnpm run test:integration || { log_error "Integration tests failed"; exit 1; }
+    
+    log_success "All tests passed"
+}
+
 build_application() {
-    log "Building application..."
-    
-    cd "$PROJECT_ROOT"
-    
-    # Clean previous builds
-    rm -rf apps/web/.next
-    rm -rf .turbo
+    log_info "Building application..."
     
     # Install dependencies
-    if ! pnpm install --frozen-lockfile; then
-        error "Failed to install dependencies"
+    log_info "Installing dependencies..."
+    pnpm install --frozen-lockfile || { log_error "Failed to install dependencies"; exit 1; }
+    
+    # Build the application
+    log_info "Building Next.js application..."
+    pnpm run build || { log_error "Build failed"; exit 1; }
+    
+    log_success "Application built successfully"
+}
+
+run_migrations() {
+    if [ "$RUN_MIGRATIONS" != "true" ]; then
+        return 0
     fi
     
-    # Build with bundle analysis
-    if [[ "$ENVIRONMENT" == "production" ]]; then
-        ANALYZE=true pnpm build
+    log_info "Running database migrations..."
+    
+    # Check if migrations are needed
+    if [ -d "packages/database/migrations" ]; then
+        log_info "Applying database migrations..."
+        pnpm run db:migrate || { log_error "Database migration failed"; exit 1; }
+        
+        # Verify migrations
+        log_info "Verifying migrations..."
+        pnpm run db:verify || { log_error "Migration verification failed"; exit 1; }
+        
+        log_success "Database migrations completed"
     else
-        pnpm build
+        log_warning "No migrations directory found"
     fi
-    
-    log "Application built successfully"
 }
 
-# Run tests
-run_tests() {
-    log "Running tests..."
+deploy_to_vercel() {
+    log_info "Deploying to Vercel ($ENVIRONMENT)..."
     
-    cd "$PROJECT_ROOT"
-    
-    # Run unit tests
-    if ! pnpm test; then
-        error "Unit tests failed"
-    fi
-    
-    # Run E2E tests for production
-    if [[ "$ENVIRONMENT" == "production" ]]; then
-        if ! pnpm test:e2e; then
-            error "E2E tests failed"
-        fi
-    fi
-    
-    log "Tests completed successfully"
-}
-
-# Database migration
-database_migration() {
-    log "Running database migrations..."
-    
-    cd "$PROJECT_ROOT"
-    
-    # Create backup before migration
-    if [[ "$ENVIRONMENT" == "production" ]]; then
-        log "Creating database backup..."
-        mkdir -p "$BACKUP_DIR"
-        pg_dump "$DATABASE_URL" > "$BACKUP_DIR/database_backup.sql"
-        log "Database backup created at $BACKUP_DIR/database_backup.sql"
-    fi
-    
-    # Run migrations
-    if ! pnpm db:migrate; then
-        error "Database migration failed"
-    fi
-    
-    log "Database migrations completed successfully"
-}
-
-# Deploy to Vercel
-deploy_vercel() {
-    log "Deploying to Vercel..."
-    
-    cd "$PROJECT_ROOT"
-    
-    # Set deployment command based on environment
-    if [[ "$ENVIRONMENT" == "production" ]]; then
-        DEPLOY_CMD="vercel --prod --yes"
+    # Set Vercel environment
+    if [ "$ENVIRONMENT" = "production" ]; then
+        VERCEL_ARGS="--prod"
     else
-        DEPLOY_CMD="vercel --yes"
+        VERCEL_ARGS=""
     fi
     
     # Deploy
-    if ! $DEPLOY_CMD; then
-        error "Vercel deployment failed"
+    log_info "Starting Vercel deployment..."
+    DEPLOYMENT_URL=$(vercel deploy $VERCEL_ARGS --yes 2>&1 | grep -o 'https://[^[:space:]]*' | tail -1)
+    
+    if [ -z "$DEPLOYMENT_URL" ]; then
+        log_error "Failed to get deployment URL"
+        exit 1
     fi
     
-    log "Vercel deployment completed successfully"
-}
-
-# Deploy with Docker
-deploy_docker() {
-    log "Deploying with Docker..."
+    log_success "Deployed to: $DEPLOYMENT_URL"
     
-    cd "$PROJECT_ROOT"
-    
-    # Build Docker image
-    if ! docker build -t mysetlist:$TIMESTAMP .; then
-        error "Docker build failed"
-    fi
-    
-    # Tag for production
-    if [[ "$ENVIRONMENT" == "production" ]]; then
-        docker tag mysetlist:$TIMESTAMP mysetlist:production
-        docker tag mysetlist:$TIMESTAMP mysetlist:latest
-    fi
-    
-    # Deploy with docker-compose
-    if [[ "$ENVIRONMENT" == "production" ]]; then
-        ENV_FILE=".env.production"
-    else
-        ENV_FILE=".env.local"
-    fi
-    
-    if ! docker-compose --env-file "$ENV_FILE" up -d; then
-        error "Docker deployment failed"
-    fi
-    
-    log "Docker deployment completed successfully"
-}
-
-# Health check
-health_check() {
-    log "Performing health check..."
-    
-    if [[ "$ENVIRONMENT" == "production" ]]; then
-        HEALTH_URL="https://mysetlist.app/api/health"
-    else
-        HEALTH_URL="http://localhost:3001/api/health"
-    fi
-    
-    # Wait for application to start
+    # Wait for deployment to be ready
+    log_info "Waiting for deployment to be ready..."
     sleep 30
     
-    # Check health endpoint
-    for i in {1..30}; do
-        if curl -f "$HEALTH_URL" > /dev/null 2>&1; then
-            log "Health check passed"
-            return 0
-        fi
-        
-        log "Health check attempt $i failed, retrying in 10 seconds..."
-        sleep 10
-    done
-    
-    error "Health check failed after 30 attempts"
-}
-
-# Performance validation
-performance_validation() {
-    log "Running performance validation..."
-    
-    if [[ "$ENVIRONMENT" == "production" ]]; then
-        TARGET_URL="https://mysetlist.app"
+    # Health check
+    log_info "Running health check..."
+    if curl -f "$DEPLOYMENT_URL/api/health" > /dev/null 2>&1; then
+        log_success "Health check passed"
     else
-        TARGET_URL="http://localhost:3001"
+        log_error "Health check failed"
+        exit 1
     fi
     
-    # Run Lighthouse if available
-    if command -v lighthouse &> /dev/null; then
-        if ! lighthouse "$TARGET_URL" --output=json --output-path=./lighthouse-results.json --chrome-flags="--headless"; then
-            warn "Lighthouse performance test failed"
-        else
-            log "Lighthouse performance test completed"
-        fi
-    else
-        warn "Lighthouse not available. Skipping performance validation."
-    fi
+    return 0
 }
 
-# Rollback function
-rollback() {
-    log "Initiating rollback..."
+post_deployment_tasks() {
+    log_info "Running post-deployment tasks..."
     
-    if [[ "$ENVIRONMENT" == "production" ]]; then
-        # Rollback Vercel deployment
-        if command -v vercel &> /dev/null; then
-            vercel rollback --yes
-        fi
-        
-        # Restore database backup if exists
-        if [[ -f "$BACKUP_DIR/database_backup.sql" ]]; then
-            log "Restoring database backup..."
-            psql "$DATABASE_URL" < "$BACKUP_DIR/database_backup.sql"
-            log "Database restored from backup"
-        fi
+    # Warm up cache
+    log_info "Warming up cache..."
+    curl -s "$DEPLOYMENT_URL/api/trending" > /dev/null || log_warning "Failed to warm up trending cache"
+    curl -s "$DEPLOYMENT_URL/api/artists" > /dev/null || log_warning "Failed to warm up artists cache"
+    
+    # Update monitoring
+    if [ -n "$MONITORING_WEBHOOK" ]; then
+        log_info "Notifying monitoring systems..."
+        curl -X POST "$MONITORING_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{\"event\": \"deployment\", \"environment\": \"$ENVIRONMENT\", \"url\": \"$DEPLOYMENT_URL\"}" \
+            > /dev/null 2>&1 || log_warning "Failed to notify monitoring"
     fi
     
-    log "Rollback completed"
+    # Slack notification
+    if [ -n "$SLACK_WEBHOOK" ]; then
+        log_info "Sending Slack notification..."
+        curl -X POST "$SLACK_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "{\"text\": \"🚀 MySetlist deployed to $ENVIRONMENT: $DEPLOYMENT_URL\"}" \
+            > /dev/null 2>&1 || log_warning "Failed to send Slack notification"
+    fi
+    
+    log_success "Post-deployment tasks completed"
 }
 
-# Cleanup function
 cleanup() {
-    log "Cleaning up temporary files..."
+    log_info "Cleaning up..."
     
-    # Remove backup directory if deployment succeeded
-    if [[ -d "$BACKUP_DIR" ]]; then
-        rm -rf "$BACKUP_DIR"
+    # Clean up temporary files
+    rm -rf .next/cache/webpack || true
+    
+    # Clean up old node_modules if needed
+    if [ "$ENVIRONMENT" = "production" ]; then
+        log_info "Cleaning up development dependencies..."
+        pnpm prune --prod || log_warning "Failed to prune dependencies"
     fi
     
-    log "Cleanup completed"
+    log_success "Cleanup completed"
 }
 
-# Notification function
-send_notification() {
-    local status=$1
-    local message=$2
-    
-    # Send Slack notification if webhook URL is set
-    if [[ -n "$SLACK_WEBHOOK_URL" ]]; then
-        curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\":\"🚀 MySetlist Deployment $status: $message\"}" \
-            "$SLACK_WEBHOOK_URL"
-    fi
-    
-    log "Notification sent: $status - $message"
-}
-
-# Main deployment function
 main() {
-    log "Starting MySetlist deployment to $ENVIRONMENT..."
+    log_info "Starting MySetlist deployment to $ENVIRONMENT"
+    log_info "Timestamp: $(date)"
+    log_info "Git commit: $(git rev-parse HEAD)"
     
-    # Trap for cleanup and rollback on error
-    trap 'error "Deployment failed. Initiating rollback..."; rollback; exit 1' ERR
+    # Confirmation prompt
+    if [ "$FORCE" != "true" ]; then
+        echo
+        log_warning "You are about to deploy to $ENVIRONMENT"
+        read -p "Are you sure you want to continue? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            log_info "Deployment cancelled."
+            exit 0
+        fi
+    fi
     
     # Run deployment steps
-    pre_deployment_checks
-    typescript_check
-    security_scan
-    build_application
+    check_prerequisites
     run_tests
-    database_migration
-    
-    # Deploy based on environment
-    if [[ "$ENVIRONMENT" == "production" ]] && [[ "$DEPLOY_METHOD" == "docker" ]]; then
-        deploy_docker
-    else
-        deploy_vercel
-    fi
-    
-    health_check
-    performance_validation
+    build_application
+    run_migrations
+    deploy_to_vercel
+    post_deployment_tasks
     cleanup
     
-    log "Deployment to $ENVIRONMENT completed successfully!"
-    send_notification "SUCCESS" "Deployment to $ENVIRONMENT completed successfully"
+    log_success "🎉 Deployment to $ENVIRONMENT completed successfully!"
+    log_info "Deployment URL: $DEPLOYMENT_URL"
+    
+    # Show next steps
+    echo
+    log_info "Next steps:"
+    echo "  1. Monitor the application: $DEPLOYMENT_URL"
+    echo "  2. Check logs: vercel logs $DEPLOYMENT_URL"
+    echo "  3. Run smoke tests if needed"
+    echo "  4. Update documentation if necessary"
 }
 
-# Script execution
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    main "$@"
+# Parse command line arguments
+ENVIRONMENT="$DEFAULT_ENVIRONMENT"
+SKIP_TESTS="false"
+FORCE="false"
+RUN_MIGRATIONS="false"
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -e|--environment)
+            ENVIRONMENT="$2"
+            shift 2
+            ;;
+        -s|--skip-tests)
+            SKIP_TESTS="true"
+            shift
+            ;;
+        -f|--force)
+            FORCE="true"
+            shift
+            ;;
+        -m|--migrate)
+            RUN_MIGRATIONS="true"
+            shift
+            ;;
+        -h|--help)
+            show_usage
+            exit 0
+            ;;
+        *)
+            log_error "Unknown option: $1"
+            show_usage
+            exit 1
+            ;;
+    esac
+done
+
+# Validate environment
+if [[ ! " ${ENVIRONMENTS[@]} " =~ " ${ENVIRONMENT} " ]]; then
+    log_error "Invalid environment: $ENVIRONMENT"
+    log_info "Valid environments: ${ENVIRONMENTS[*]}"
+    exit 1
 fi
+
+# Load environment variables
+if [ -f ".env.$ENVIRONMENT" ]; then
+    log_info "Loading environment variables from .env.$ENVIRONMENT"
+    export $(cat .env.$ENVIRONMENT | grep -v '^#' | xargs)
+fi
+
+# Run main deployment
+main

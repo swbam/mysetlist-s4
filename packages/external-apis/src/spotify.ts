@@ -1,6 +1,7 @@
 import 'server-only';
 import axios from 'axios';
 import { keys } from '../keys';
+import { CacheManager, cacheKeys } from './utils/cache';
 
 const env = keys();
 
@@ -55,6 +56,14 @@ interface SpotifyAudioFeatures {
 class SpotifyAPI {
   private accessToken: string | null = null;
   private tokenExpiry: Date | null = null;
+  private cache: CacheManager;
+
+  constructor() {
+    this.cache = new CacheManager({
+      keyPrefix: 'spotify',
+      defaultTTL: 3600, // 1 hour cache for most Spotify data
+    });
+  }
 
   private async getAccessToken(): Promise<string> {
     if (this.accessToken && this.tokenExpiry && this.tokenExpiry > new Date()) {
@@ -83,6 +92,14 @@ class SpotifyAPI {
   }
 
   async searchArtists(query: string, limit = 10): Promise<SpotifyArtist[]> {
+    const cacheKey = cacheKeys.spotify.searchArtists(query, limit);
+    
+    // Try cache first
+    const cached = await this.cache.get<SpotifyArtist[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const token = await this.getAccessToken();
 
     const response = await axios.get(
@@ -94,10 +111,23 @@ class SpotifyAPI {
       }
     );
 
-    return response.data.artists.items;
+    const artists = response.data.artists.items;
+    
+    // Cache for 30 minutes (search results change frequently)
+    await this.cache.set(cacheKey, artists, 1800);
+    
+    return artists;
   }
 
   async getArtist(artistId: string): Promise<SpotifyArtist> {
+    const cacheKey = cacheKeys.spotify.artist(artistId);
+    
+    // Try cache first
+    const cached = await this.cache.get<SpotifyArtist>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const token = await this.getAccessToken();
 
     const response = await axios.get(
@@ -109,13 +139,26 @@ class SpotifyAPI {
       }
     );
 
-    return response.data;
+    const artist = response.data;
+    
+    // Cache for 2 hours (artist data doesn't change frequently)
+    await this.cache.set(cacheKey, artist, 7200);
+    
+    return artist;
   }
 
   async getArtistTopTracks(
     artistId: string,
     market = 'US'
   ): Promise<SpotifyTrack[]> {
+    const cacheKey = cacheKeys.spotify.artistTopTracks(artistId, market);
+    
+    // Try cache first
+    const cached = await this.cache.get<SpotifyTrack[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const token = await this.getAccessToken();
 
     const response = await axios.get(
@@ -127,10 +170,23 @@ class SpotifyAPI {
       }
     );
 
-    return response.data.tracks;
+    const tracks = response.data.tracks;
+    
+    // Cache for 6 hours (top tracks change slowly)
+    await this.cache.set(cacheKey, tracks, 21600);
+    
+    return tracks;
   }
 
   async searchTracks(query: string, limit = 20): Promise<SpotifyTrack[]> {
+    const cacheKey = cacheKeys.spotify.searchTracks(query, limit);
+    
+    // Try cache first
+    const cached = await this.cache.get<SpotifyTrack[]>(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
     const token = await this.getAccessToken();
 
     const response = await axios.get(
@@ -142,7 +198,12 @@ class SpotifyAPI {
       }
     );
 
-    return response.data.tracks.items;
+    const tracks = response.data.tracks.items;
+    
+    // Cache for 30 minutes (search results change frequently)
+    await this.cache.set(cacheKey, tracks, 1800);
+    
+    return tracks;
   }
 
   async getTrack(trackId: string): Promise<SpotifyTrack> {

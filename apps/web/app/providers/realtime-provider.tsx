@@ -44,7 +44,7 @@ interface RealtimeProviderProps {
 export function RealtimeProvider({ children }: RealtimeProviderProps) {
   const [connectionStatus, setConnectionStatus] =
     useState<ConnectionStatus>('disconnected');
-  const [error, setError] = useState<Error>();
+  const [error, setError] = useState<Error | undefined>();
   const [retryCount, setRetryCount] = useState(0);
   const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(true);
 

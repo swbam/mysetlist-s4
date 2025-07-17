@@ -1,5 +1,6 @@
 export * from './users';
 export * from './user-profiles';
+export * from './user-auth-tokens';
 export * from './artists';
 export * from './venues';
 export * from './venue-reviews';
