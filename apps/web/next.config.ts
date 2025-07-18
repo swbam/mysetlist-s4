@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
+  
+  // Transpile packages for monorepo
+  transpilePackages: ['@repo/design-system'],
 
   // Performance optimizations
   experimental: {

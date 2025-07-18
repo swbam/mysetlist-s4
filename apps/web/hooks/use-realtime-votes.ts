@@ -83,6 +83,22 @@ export function useRealtimeVotes({
             }
           }
         )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'setlist_songs',
+            filter: `id=in.(${effectiveSongIds.join(',')})`,
+          },
+          async (payload: RealtimePostgresChangesPayload<any>) => {
+            // When setlist_songs vote counts update, fetch the updated counts
+            const setlistSongId = (payload.new as any)?.['id'];
+            if (setlistSongId) {
+              await fetchVoteCounts(setlistSongId);
+            }
+          }
+        )
         .subscribe((status) => {
           setIsSubscribed(status === 'SUBSCRIBED');
         });
@@ -100,7 +116,7 @@ export function useRealtimeVotes({
     const fetchVoteCounts = async (setlistSongId: string) => {
       try {
         // Fetch vote counts from the API
-        const response = await fetch(`/api/votes/${setlistSongId}/count`);
+        const response = await fetch(`/api/votes?setlistSongId=${setlistSongId}`);
         if (response.ok) {
           const data = await response.json();
           const update: VoteUpdate = {

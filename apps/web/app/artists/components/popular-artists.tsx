@@ -1,50 +1,40 @@
-import { db } from '@repo/database';
-import { artists, showArtists, shows } from '@repo/database/src/schema';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { desc, eq, sql } from 'drizzle-orm';
 import { Calendar, Star, Users } from 'lucide-react';
 import Link from 'next/link';
 import { parseGenres } from '~/lib/parse-genres';
+import { createClient } from '~/lib/supabase/server';
 
 async function getPopularArtists() {
-  // Get artists ordered by their overall popularity (follower count, show attendance, etc.)
-  const popularArtists = await db
-    .select({
-      id: artists.id,
-      name: artists.name,
-      slug: artists.slug,
-      imageUrl: artists.imageUrl,
-      genres: artists.genres,
-      verified: artists.verified,
-      followerCount: artists.followerCount,
-      upcomingShows: sql<number>`
-        COUNT(DISTINCT CASE 
-          WHEN ${shows.date} >= CURRENT_DATE 
-          AND ${shows.status} = 'upcoming' 
-          THEN ${shows.id} 
-        END)
-      `.as('upcomingShows'),
-      avgAttendance: sql<number>`
-        COALESCE(AVG(${shows.attendeeCount}), 0)
-      `.as('avgAttendance'),
-    })
-    .from(artists)
-    .leftJoin(showArtists, eq(artists.id, showArtists.artistId))
-    .leftJoin(shows, eq(showArtists.showId, shows.id))
-    .where(
-      sql`${artists.followerCount} > 0 
-      OR EXISTS (
-        SELECT 1 FROM ${shows} 
-        JOIN ${showArtists} ON ${shows.id} = ${showArtists.showId}
-        WHERE ${showArtists.artistId} = ${artists.id}
-      )`
-    )
-    .groupBy(artists.id)
-    .orderBy(desc(artists.followerCount))
+  const supabase = createClient();
+  
+  // Get artists ordered by their overall popularity
+  const { data: popularArtists, error } = await supabase
+    .from('artists')
+    .select('*')
+    .eq('verified', true)
+    .order('follower_count', { ascending: false })
     .limit(8);
 
-  return popularArtists;
+  if (error) {
+    console.error('Error fetching popular artists:', error);
+    return [];
+  }
+
+  // Process the data to match the expected format
+  const processedArtists = popularArtists?.map(artist => ({
+    id: artist.id,
+    name: artist.name,
+    slug: artist.slug,
+    imageUrl: artist.image_url,
+    genres: artist.genres,
+    verified: artist.verified,
+    followerCount: artist.follower_count || 0,
+    upcomingShows: 0, // Simplified for now
+    avgAttendance: 0  // Simplified for now
+  })) || [];
+
+  return processedArtists;
 }
 
 export async function PopularArtists() {

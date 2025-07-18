@@ -1,8 +1,6 @@
-import { db } from '@repo/database';
-import { artists } from '@repo/database';
-import { desc, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 import { CACHE_HEADERS } from '~/lib/cache';
+import { createClient } from '~/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,53 +10,38 @@ export async function GET(request: NextRequest) {
     // const timeframe = searchParams.get('timeframe') || 'week'; // day, week, month
     // Currently using trending score only - future enhancement will filter by date range
 
+    const supabase = createClient();
+
     // Get trending artists with fallback for empty data
-    const trendingArtists = await db
-      .select({
-        id: artists.id,
-        name: artists.name,
-        slug: artists.slug,
-        imageUrl: artists.imageUrl,
-        smallImageUrl: artists.smallImageUrl,
-        genres: artists.genres,
-        popularity: artists.popularity,
-        followers: artists.followers,
-        trendingScore: artists.trendingScore,
-        verified: artists.verified,
-        totalShows: artists.totalShows,
-        upcomingShows: artists.upcomingShows,
-        updatedAt: artists.updatedAt,
-      })
-      .from(artists)
-      .where(sql`${artists.trendingScore} > 0 OR ${artists.popularity} > 0`)
-      .orderBy(desc(artists.trendingScore), desc(artists.popularity), desc(artists.followers))
+    const { data: trendingArtists, error } = await supabase
+      .from('artists')
+      .select('*')
+      .or('trending_score.gt.0,popularity.gt.0')
+      .order('trending_score', { ascending: false })
+      .order('popularity', { ascending: false })
+      .order('followers', { ascending: false })
       .limit(limit);
 
+    if (error) {
+      throw error;
+    }
+
     // If no trending data, get popular artists as fallback
-    if (trendingArtists.length === 0) {
-      const popularArtists = await db
-        .select({
-          id: artists.id,
-          name: artists.name,
-          slug: artists.slug,
-          imageUrl: artists.imageUrl,
-          smallImageUrl: artists.smallImageUrl,
-          genres: artists.genres,
-          popularity: artists.popularity,
-          followers: artists.followers,
-          trendingScore: sql<number>`0`.as('trendingScore'),
-          verified: artists.verified,
-          totalShows: artists.totalShows,
-          upcomingShows: artists.upcomingShows,
-          updatedAt: artists.updatedAt,
-        })
-        .from(artists)
-        .where(sql`${artists.popularity} > 0`)
-        .orderBy(desc(artists.popularity), desc(artists.followers))
+    if (!trendingArtists || trendingArtists.length === 0) {
+      const { data: popularArtists, error: popularError } = await supabase
+        .from('artists')
+        .select('*')
+        .gt('popularity', 0)
+        .order('popularity', { ascending: false })
+        .order('followers', { ascending: false })
         .limit(limit);
 
+      if (popularError) {
+        throw popularError;
+      }
+
       // Transform fallback data too
-      const transformedPopularArtists = popularArtists.map((artist) => {
+      const transformedPopularArtists = (popularArtists || []).map((artist) => {
         const weeklyGrowth = Math.max(
           0,
           Math.min(
@@ -68,14 +51,23 @@ export async function GET(request: NextRequest) {
         );
 
         return {
-          ...artist,
-          recentShows: artist.upcomingShows || 0,
+          id: artist.id,
+          name: artist.name,
+          slug: artist.slug,
+          imageUrl: artist.image_url,
+          smallImageUrl: artist.small_image_url,
+          genres: typeof artist.genres === 'string'
+            ? JSON.parse(artist.genres || '[]')
+            : artist.genres || [],
+          popularity: artist.popularity || 0,
+          followers: artist.followers || 0,
+          trendingScore: 0,
+          verified: artist.verified || false,
+          totalShows: artist.total_shows || 0,
+          upcomingShows: artist.upcoming_shows || 0,
+          updatedAt: artist.updated_at,
+          recentShows: artist.upcoming_shows || 0,
           weeklyGrowth: Number(weeklyGrowth.toFixed(1)),
-          // Parse genres if it's a JSON string
-          genres:
-            typeof artist.genres === 'string'
-              ? JSON.parse(artist.genres || '[]')
-              : artist.genres || [],
         };
       });
 
@@ -93,31 +85,40 @@ export async function GET(request: NextRequest) {
     }
 
     // Transform the data to match frontend expectations
-    const transformedArtists = trendingArtists.map((artist) => {
+    const transformedArtists = (trendingArtists || []).map((artist) => {
       // Calculate weeklyGrowth based on trending score and recency
-      const hoursOld = artist.updatedAt
-        ? (Date.now() - new Date(artist.updatedAt).getTime()) / (1000 * 60 * 60)
-        : 168; // Default to 7 days old if no updatedAt
+      const hoursOld = artist.updated_at
+        ? (Date.now() - new Date(artist.updated_at).getTime()) / (1000 * 60 * 60)
+        : 168; // Default to 7 days old if no updated_at
 
       const weeklyGrowth = Math.max(
         0,
         Math.min(
           50, // Cap at 50%
-          (artist.trendingScore || 0) / 10 +
+          (artist.trending_score || 0) / 10 +
             Math.random() * 15 +
             ((168 - hoursOld) / 168) * 10 // Recency bonus
         )
       );
 
       return {
-        ...artist,
-        recentShows: artist.upcomingShows || 0,
+        id: artist.id,
+        name: artist.name,
+        slug: artist.slug,
+        imageUrl: artist.image_url,
+        smallImageUrl: artist.small_image_url,
+        genres: typeof artist.genres === 'string'
+          ? JSON.parse(artist.genres || '[]')
+          : artist.genres || [],
+        popularity: artist.popularity || 0,
+        followers: artist.followers || 0,
+        trendingScore: artist.trending_score || 0,
+        verified: artist.verified || false,
+        totalShows: artist.total_shows || 0,
+        upcomingShows: artist.upcoming_shows || 0,
+        updatedAt: artist.updated_at,
+        recentShows: artist.upcoming_shows || 0,
         weeklyGrowth: Number(weeklyGrowth.toFixed(1)),
-        // Parse genres if it's a JSON string
-        genres:
-          typeof artist.genres === 'string'
-            ? JSON.parse(artist.genres || '[]')
-            : artist.genres || [],
       };
     });
 
