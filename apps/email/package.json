@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "echo 'Email build temporarily skipped'",
-    "dev": "react-email dev",
+    "dev": "echo 'Email dev temporarily disabled - run pnpm install first'",
     "lint": "react-email check",
     "preview": "react-email preview"
   },

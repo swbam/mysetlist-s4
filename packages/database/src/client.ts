@@ -1,4 +1,5 @@
-import 'server-only';
+// Remove server-only import to allow client usage
+// import 'server-only';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';

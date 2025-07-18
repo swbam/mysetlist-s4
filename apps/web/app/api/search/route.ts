@@ -38,54 +38,41 @@ export async function GET(request: NextRequest) {
             id: artist.id,
             type: 'artist' as const,
             title: artist.name,
-            subtitle: artist.genres?.join(', '),
+            subtitle: artist.genres ? JSON.parse(artist.genres).join(', ') : '',
             imageUrl: artist.image_url,
             slug: artist.slug || artist.id,
             metadata: {
-              genre: artist.genres?.split(',')[0]?.trim(),
+              genre: artist.genres ? JSON.parse(artist.genres)[0] : '',
             },
           }))
         );
       }
     }
 
-    // Search shows
+    // Search shows - simplified query without complex joins
     if (type === 'all' || type === 'show') {
-      let showQuery = supabase
+      const { data: shows } = await supabase
         .from('shows')
         .select(`
           id, name, slug, date, start_time,
-          venues!inner(name, city, state),
-          artists!inner(name, image_url)
+          venue_id,
+          headliner_artist_id
         `)
-        .or(`name.ilike.%${query}%, artists.name.ilike.%${query}%`);
-
-      if (location) {
-        showQuery = showQuery.or(`venues.city.ilike.%${location}%, venues.state.ilike.%${location}%`);
-      }
-
-      if (startDate) {
-        showQuery = showQuery.gte('date', startDate);
-      }
-
-      if (endDate) {
-        showQuery = showQuery.lte('date', endDate);
-      }
-
-      const { data: shows } = await showQuery.limit(Math.ceil(limit / (type === 'all' ? 4 : 1)));
+        .ilike('name', `%${query}%`)
+        .limit(Math.ceil(limit / (type === 'all' ? 4 : 1)));
 
       if (shows) {
         results.push(
           ...shows.map((show: any) => ({
             id: show.id,
             type: 'show' as const,
-            title: show.name,
-            subtitle: `${show.artists?.name} at ${show.venues?.name}`,
-            imageUrl: show.artists?.image_url,
+            title: show.name || 'Concert Show',
+            subtitle: `Concert on ${new Date(show.date).toLocaleDateString()}`,
+            imageUrl: null,
             slug: show.slug || show.id,
             metadata: {
               date: new Date(show.date).toLocaleDateString(),
-              location: `${show.venues?.city}, ${show.venues?.state}`,
+              location: 'TBA',
             },
           }))
         );
@@ -124,12 +111,11 @@ export async function GET(request: NextRequest) {
 
     // Search songs (if requested)
     if (type === 'song') {
-      let songQuery = supabase
+      const { data: songs } = await supabase
         .from('songs')
         .select('id, title, artist, album, album_art_url')
-        .or(`title.ilike.%${query}%, artist.ilike.%${query}%`);
-
-      const { data: songs } = await songQuery.limit(limit);
+        .or(`title.ilike.%${query}%, artist.ilike.%${query}%`)
+        .limit(limit);
 
       if (songs) {
         results.push(

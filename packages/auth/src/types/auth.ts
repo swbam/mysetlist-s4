@@ -73,8 +73,8 @@ export interface UserPreferences {
 }
 
 export interface AuthUser extends SupabaseUser {
-  profile?: UserProfile;
-  preferences?: UserPreferences;
+  profile: UserProfile;
+  preferences: UserPreferences;
   spotifyProfile?: SpotifyProfile;
   spotifyTokens?: SpotifyTokens;
   emailVerified: boolean;

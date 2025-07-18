@@ -18,7 +18,10 @@ async function spotifyExample() {
   const artist = searchResult.artists.items[0];
 
   // Get top tracks
-  const _topTracks = await spotify.getArtistTopTracks(artist.id);
+  if (artist) {
+    const topTracks = await spotify.getArtistTopTracks(artist.id);
+    console.log(`Found ${topTracks.tracks.length} top tracks for ${artist.name}`);
+  }
 }
 
 // Example 2: Using Ticketmaster client
@@ -104,6 +107,10 @@ async function main() {
     // console.log('\n=== Sync Examples ===');
     // await syncExample();
     // await schedulerExample();
+    
+    // Reference functions to prevent unused warnings
+    void syncExample;
+    void schedulerExample;
   } catch (_error) {}
 }
 

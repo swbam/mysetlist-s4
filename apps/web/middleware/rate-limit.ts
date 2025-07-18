@@ -33,6 +33,11 @@ export async function rateLimitMiddleware(
   request: NextRequest,
   config?: RateLimitConfig
 ): Promise<NextResponse | null> {
+  // Skip rate limiting in development
+  if (process.env.NODE_ENV === 'development') {
+    return null;
+  }
+
   const pathname = request.nextUrl.pathname;
 
   // Find matching config

@@ -60,16 +60,17 @@ const navigationItems: NavigationItem[] = [
 
 interface MobileNavigationProps {
   user?: any;
+  className?: string;
 }
 
-export function MobileNavigation({ user }: MobileNavigationProps) {
+export function MobileNavigation({ user, className }: MobileNavigationProps) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
   const closeSheet = () => setIsOpen(false);
 
   return (
-    <div className="md:hidden">
+    <div className={cn("md:hidden", className)}>
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetTrigger asChild>
           <Button

@@ -37,6 +37,9 @@ interface AuthContextType {
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   updateProfile: (metadata: Record<string, any>) => Promise<AuthUser>;
+  updatePreferences: (preferences: any) => Promise<void>;
+  linkSpotify: () => Promise<void>;
+  refreshSpotifyTokens: () => Promise<void>;
   isAuthenticated: boolean;
   hasRole: (role: 'user' | 'moderator' | 'admin') => boolean;
 }
@@ -202,6 +205,21 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
 
   const isAuthenticated = !!user && !!session;
 
+  const updatePreferences = useCallback(async (preferences: any) => {
+    // TODO: Implement preferences update logic
+    console.log('Updating preferences:', preferences);
+  }, []);
+
+  const linkSpotify = useCallback(async () => {
+    // TODO: Implement Spotify linking logic
+    console.log('Linking Spotify account');
+  }, []);
+
+  const refreshSpotifyTokens = useCallback(async () => {
+    // TODO: Implement Spotify token refresh logic
+    console.log('Refreshing Spotify tokens');
+  }, []);
+
   const hasRole = useCallback(
     (requiredRole: 'user' | 'moderator' | 'admin') => {
       if (!user) {
@@ -235,6 +253,9 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
     resetPassword,
     updatePassword,
     updateProfile,
+    updatePreferences,
+    linkSpotify,
+    refreshSpotifyTokens,
     isAuthenticated,
     hasRole,
   };

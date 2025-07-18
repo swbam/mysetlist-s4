@@ -1,6 +1,4 @@
-import { db } from '@repo/database';
-import { artists } from '@repo/database';
-import { ilike, or } from 'drizzle-orm';
+import { createServiceClient } from '~/lib/supabase/server';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -13,34 +11,36 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ artists: [] });
     }
 
+    const supabase = createServiceClient();
+
     // Search artists by name with fuzzy matching
-    const searchResults = await db
-      .select({
-        id: artists.id,
-        name: artists.name,
-        slug: artists.slug,
-        imageUrl: artists.imageUrl,
-        smallImageUrl: artists.smallImageUrl,
-        genres: artists.genres,
-        popularity: artists.popularity,
-        followers: artists.followers,
-        verified: artists.verified,
-        spotifyId: artists.spotifyId,
-      })
-      .from(artists)
-      .where(
-        or(
-          ilike(artists.name, `%${query}%`),
-          ilike(artists.name, `${query}%`) // Starts with
-        )
-      )
-      .orderBy(artists.popularity)
+    const { data: searchResults, error } = await supabase
+      .from('artists')
+      .select(`
+        id,
+        name,
+        slug,
+        image_url,
+        small_image_url,
+        genres,
+        popularity,
+        followers,
+        verified,
+        spotify_id
+      `)
+      .or(`name.ilike.%${query}%,name.ilike.${query}%`)
+      .order('popularity', { ascending: false })
       .limit(limit);
 
+    if (error) {
+      console.error('Artist search error:', error);
+      throw error;
+    }
+
     return NextResponse.json({
-      artists: searchResults,
+      artists: searchResults || [],
       query,
-      total: searchResults.length,
+      total: searchResults?.length || 0,
     });
   } catch (_error) {
     return NextResponse.json(

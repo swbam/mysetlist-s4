@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { useAuth } from '../provider';
+import { useAuth } from '../src/hooks/use-auth';
 
 export const SignUp = () => {
   const router = useRouter();

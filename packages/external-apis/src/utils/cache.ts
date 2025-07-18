@@ -106,7 +106,8 @@ export class CacheManager {
       try {
         // Note: This is not efficient for large datasets
         // In production, consider using Redis SCAN command
-        const _pattern = `${this.options.keyPrefix}:*`;
+        // const pattern = `${this.options.keyPrefix}:*`;
+        // TODO: Implement Redis SCAN command for clearing keys
       } catch (_error) {}
     }
   }

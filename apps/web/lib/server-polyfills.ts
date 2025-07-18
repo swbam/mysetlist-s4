@@ -6,7 +6,21 @@
       (globalThis as any).self = globalThis;
     }
     if (typeof globalThis.window === 'undefined') {
-      (globalThis as any).window = globalThis;
+      // Create a proper window-like object with location property to prevent destructuring errors
+      (globalThis as any).window = {
+        ...globalThis,
+        location: {
+          href: 'http://localhost:3001',
+          protocol: 'http:',
+          host: 'localhost:3001',
+          hostname: 'localhost',
+          port: '3001',
+          pathname: '/',
+          search: '',
+          hash: '',
+          origin: 'http://localhost:3001',
+        },
+      };
     }
   }
 
@@ -15,7 +29,21 @@
       (global as any).self = global;
     }
     if (typeof global.window === 'undefined') {
-      (global as any).window = global;
+      // Create a proper window-like object with location property to prevent destructuring errors
+      (global as any).window = {
+        ...global,
+        location: {
+          href: 'http://localhost:3001',
+          protocol: 'http:',
+          host: 'localhost:3001',
+          hostname: 'localhost',
+          port: '3001',
+          pathname: '/',
+          search: '',
+          hash: '',
+          origin: 'http://localhost:3001',
+        },
+      };
     }
   }
 
