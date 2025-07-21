@@ -5,7 +5,7 @@ import { expect, test } from '@playwright/test';
  * Tests mobile-specific navigation functionality
  */
 
-const BASE_URL = process.env["NEXT_PUBLIC_BASE_URL"] || 'http://localhost:3000';
+const BASE_URL = process.env["NEXT_PUBLIC_BASE_URL"] || 'http://localhost:3001';
 
 // Mobile device configurations
 const MOBILE_DEVICES = [

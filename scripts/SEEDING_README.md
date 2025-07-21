@@ -53,7 +53,7 @@ pnpm seed:mock:clear
 # 2. Start the development server
 pnpm dev
 
-# 3. Visit http://localhost:3000
+# 3. Visit http://localhost:3001
 ```
 
 ## What Gets Seeded

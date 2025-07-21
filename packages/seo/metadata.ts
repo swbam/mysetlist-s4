@@ -30,7 +30,7 @@ export const createMetadata = ({
     applicationName,
     metadataBase: productionUrl
       ? new URL(`${protocol}://${productionUrl}`)
-      : new URL(`${protocol}://localhost:3000`),
+      : new URL(`${protocol}://localhost:3001`),
     authors: [author],
     creator: author.name,
     formatDetection: {

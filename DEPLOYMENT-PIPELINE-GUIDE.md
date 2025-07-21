@@ -28,7 +28,7 @@ This guide covers the complete deployment pipeline for MySetlist, including auto
 
 | Environment | URL | Branch | Purpose |
 |-------------|-----|--------|---------|
-| **Development** | `localhost:3000` | `feature/*` | Local development |
+| **Development** | `localhost:3001` | `feature/*` | Local development |
 | **Preview** | `pr-123.vercel.app` | `PR branches` | Pull request previews |
 | **Staging** | `staging.vercel.app` | `main` | Pre-production testing |
 | **Production** | `mysetlist-sonnet.vercel.app` | `production` | Live application |

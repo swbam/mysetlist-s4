@@ -59,7 +59,7 @@ The trending system uses the following database fields:
 To initialize the trending system with data:
 
 ```bash
-curl -X POST http://localhost:3000/api/admin/trending-init \
+curl -X POST http://localhost:3001/api/admin/trending-init \
   -H "Authorization: Bearer YOUR_ADMIN_API_KEY"
 ```
 
@@ -132,7 +132,7 @@ The cron job at `/api/cron/trending-update` should run hourly to:
 To manually recalculate all trending scores:
 
 ```bash
-curl -X POST http://localhost:3000/api/admin/calculate-trending?type=all \
+curl -X POST http://localhost:3001/api/admin/calculate-trending?type=all \
   -H "Authorization: Bearer YOUR_ADMIN_API_KEY"
 ```
 
@@ -141,7 +141,7 @@ curl -X POST http://localhost:3000/api/admin/calculate-trending?type=all \
 To verify the trending system is working:
 
 ```bash
-curl http://localhost:3000/api/trending/test
+curl http://localhost:3001/api/trending/test
 ```
 
 This returns statistics about:
@@ -155,12 +155,12 @@ This returns statistics about:
 
 1. Check if data has trending scores:
    ```bash
-   curl http://localhost:3000/api/trending/test
+   curl http://localhost:3001/api/trending/test
    ```
 
 2. Initialize the system:
    ```bash
-   curl -X POST http://localhost:3000/api/admin/trending-init \
+   curl -X POST http://localhost:3001/api/admin/trending-init \
      -H "Authorization: Bearer YOUR_ADMIN_API_KEY"
    ```
 
@@ -171,7 +171,7 @@ This returns statistics about:
 1. Check cron job logs
 2. Manually trigger update:
    ```bash
-   curl -X POST http://localhost:3000/api/cron/trending-update \
+   curl -X POST http://localhost:3001/api/cron/trending-update \
      -H "Authorization: Bearer YOUR_CRON_SECRET"
    ```
 

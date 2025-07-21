@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-BASE_URL="${BASE_URL:-http://localhost:3000}"
+BASE_URL="${BASE_URL:-http://localhost:3001}"
 TIMEOUT=30
 FAILED_CHECKS=0
 TOTAL_CHECKS=0
@@ -291,7 +291,7 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 [OPTIONS]"
             echo ""
             echo "Options:"
-            echo "  --url URL        Base URL to test (default: http://localhost:3000)"
+            echo "  --url URL        Base URL to test (default: http://localhost:3001)"
             echo "  --timeout SEC    Request timeout in seconds (default: 30)"
             echo "  -h, --help       Show this help message"
             exit 0

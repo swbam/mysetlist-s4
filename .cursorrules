@@ -105,7 +105,7 @@ packages/
 ### URL Configuration Pattern
 ```bash
 # Development URLs
-NEXT_PUBLIC_APP_URL=http://localhost:3000    # Main app
+NEXT_PUBLIC_APP_URL=http://localhost:3001    # Main app
 NEXT_PUBLIC_WEB_URL=http://localhost:3001    # Marketing site
 NEXT_PUBLIC_API_URL=http://localhost:3002    # API service
 NEXT_PUBLIC_DOCS_URL=http://localhost:3004   # Documentation

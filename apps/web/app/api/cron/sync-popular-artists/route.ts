@@ -56,7 +56,7 @@ export async function GET(_request: NextRequest) {
     for (const artist of artistsToSync) {
       try {
         const syncUrl =
-          process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000';
+          process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001';
         const response = await fetch(`${syncUrl}/api/sync/unified-pipeline`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

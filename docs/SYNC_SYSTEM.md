@@ -24,7 +24,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 SUPABASE_JWT_SECRET=your_supabase_jwt_secret
 
 # App URL
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3001
 ```
 
 ## Sync Components
@@ -38,7 +38,7 @@ The main sync endpoint that:
 
 **POST endpoint:**
 ```bash
-curl -X POST http://localhost:3000/api/artists/sync \
+curl -X POST http://localhost:3001/api/artists/sync \
   -H "Content-Type: application/json" \
   -d '{"spotifyId": "spotify_artist_id", "artistName": "Artist Name"}'
 ```
@@ -46,7 +46,7 @@ curl -X POST http://localhost:3000/api/artists/sync \
 **GET endpoint:**
 ```bash
 # Automatically syncs top 10 trending artists with upcoming US shows
-curl http://localhost:3000/api/artists/sync
+curl http://localhost:3001/api/artists/sync
 ```
 
 ### 2. Edge Functions

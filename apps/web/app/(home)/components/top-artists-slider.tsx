@@ -68,22 +68,18 @@ function TopArtistsSlider({
         <ContentSliderItem key={artist.id}>
           <Link href={`/artists/${artist.slug}`} className="group block">
             <Card className="overflow-hidden border-0 bg-transparent transition-all duration-300 hover:bg-card/20">
-              <CardContent className="p-0">
+              <CardContent className="relative p-0">
                 {/* Artist image with gradient overlay */}
                 <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-gradient-to-br from-primary/20 to-purple-600/20 sm:rounded-xl">
                   {artist.imageUrl ? (
-                    <>
-                      <Image
-                        src={artist.imageUrl}
-                        alt={artist.name}
-                        fill
-                        sizes="(max-width: 640px) 66vw, (max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
-                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                        priority={index < 4}
-                        loading={index < 4 ? 'eager' : 'lazy'}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                    </>
+                    <Image
+                      src={artist.imageUrl}
+                      alt={artist.name}
+                      fill
+                      sizes="(max-width: 640px) 66vw, (max-width: 768px) 50vw, (max-width: 1200px) 25vw, 16vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      priority={index < 4}
+                    />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center">
                       <div className="font-bold text-5xl text-muted-foreground/30">
@@ -93,6 +89,9 @@ function TopArtistsSlider({
                           .join('')}
                       </div>
                     </div>
+                  )}
+                  {artist.imageUrl && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                   )}
 
                   {/* Rank badge */}

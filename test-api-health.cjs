@@ -26,7 +26,7 @@ function log(_message, _color = 'reset') {}
 
 class APIHealthChecker {
   constructor() {
-    this.baseUrl = 'http://localhost:3000';
+    this.baseUrl = 'http://localhost:3001';
     this.results = [];
   }
 

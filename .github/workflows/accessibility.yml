@@ -33,7 +33,7 @@ jobs:
       - name: Start application
         run: |
           npm run start &
-          npx wait-on http://localhost:3000 -t 30000
+          npx wait-on http://localhost:3001 -t 30000
         env:
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
@@ -41,22 +41,22 @@ jobs:
       - name: Run axe accessibility tests
         run: |
           npm install -g @axe-core/cli
-          axe http://localhost:3000 --tags wcag2a,wcag2aa,wcag21a,wcag21aa --exit
+          axe http://localhost:3001 --tags wcag2a,wcag2aa,wcag21a,wcag21aa --exit
 
       - name: Run Pa11y tests
         run: |
           npm install -g pa11y
-          pa11y http://localhost:3000 --standard WCAG2AA
-          pa11y http://localhost:3000/trending --standard WCAG2AA
-          pa11y http://localhost:3000/artists --standard WCAG2AA
+          pa11y http://localhost:3001 --standard WCAG2AA
+          pa11y http://localhost:3001/trending --standard WCAG2AA
+          pa11y http://localhost:3001/artists --standard WCAG2AA
 
       - name: Generate accessibility report
         if: failure()
         run: |
           mkdir -p accessibility-reports
-          pa11y http://localhost:3000 --reporter html > accessibility-reports/home.html
-          pa11y http://localhost:3000/trending --reporter html > accessibility-reports/trending.html
-          pa11y http://localhost:3000/artists --reporter html > accessibility-reports/artists.html
+          pa11y http://localhost:3001 --reporter html > accessibility-reports/home.html
+          pa11y http://localhost:3001/trending --reporter html > accessibility-reports/trending.html
+          pa11y http://localhost:3001/artists --reporter html > accessibility-reports/artists.html
 
       - name: Upload accessibility reports
         if: failure()

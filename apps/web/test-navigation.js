@@ -25,7 +25,7 @@ async function testNavigation() {
     // Determine the correct URL
     const baseUrl = process.env.VERCEL_URL 
       ? `https://${process.env.VERCEL_URL}`
-      : 'http://localhost:3000';
+      : 'http://localhost:3001';
 
     console.log(`🔍 Testing navigation on: ${baseUrl}\n`);
 

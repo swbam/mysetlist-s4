@@ -114,11 +114,11 @@ For local testing, manually trigger cron endpoints:
 
 ```bash
 # Test email processing
-curl -X GET http://localhost:3000/api/cron/email-processing \
+curl -X GET http://localhost:3001/api/cron/email-processing \
   -H "Authorization: Bearer YOUR_CRON_SECRET"
 
 # Test health check
-curl -X GET http://localhost:3000/api/cron/health-check \
+curl -X GET http://localhost:3001/api/cron/health-check \
   -H "Authorization: Bearer YOUR_CRON_SECRET"
 ```
 
@@ -130,10 +130,10 @@ Use the test endpoint to verify email configuration:
 
 ```bash
 # Check configuration
-curl http://localhost:3000/api/test/email
+curl http://localhost:3001/api/test/email
 
 # Send test email
-curl -X POST http://localhost:3000/api/test/email \
+curl -X POST http://localhost:3001/api/test/email \
   -H "Authorization: Bearer YOUR_EMAIL_SYSTEM_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{

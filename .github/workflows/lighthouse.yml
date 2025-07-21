@@ -34,9 +34,9 @@ jobs:
         uses: treosh/lighthouse-ci-action@v11
         with:
           urls: |
-            http://localhost:3000
-            http://localhost:3000/trending
-            http://localhost:3000/artists
+            http://localhost:3001
+            http://localhost:3001/trending
+            http://localhost:3001/artists
           uploadArtifacts: true
           temporaryPublicStorage: true
           configPath: './.github/lighthouse/lighthouserc.json'

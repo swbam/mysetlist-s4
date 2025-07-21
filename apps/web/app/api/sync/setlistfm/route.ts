@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '~/lib/supabase/server';
-import { SetlistFmClient } from '~/lib/external-apis/setlistfm';
+import { SetlistFmClient } from '@repo/external-apis';
 import { monitor } from '~/lib/api/monitoring';
 import { withRateLimit } from '~/middleware/rate-limit';
 

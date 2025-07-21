@@ -59,7 +59,7 @@ class SyncPipelineTester {
   ): Promise<void> {
     // Step 1: Simulate artist click (search)
     await this.testStep(`${artistName}-SEARCH`, async () => {
-      const response = await fetch('http://localhost:3000/api/search', {
+      const response = await fetch('http://localhost:3001/api/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query: artistName, type: 'artist' }),
@@ -80,7 +80,7 @@ class SyncPipelineTester {
 
     // Step 2: Trigger artist sync
     await this.testStep(`${artistName}-SYNC`, async () => {
-      const response = await fetch('http://localhost:3000/api/artists/sync', {
+      const response = await fetch('http://localhost:3001/api/artists/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ artistName }),
@@ -138,7 +138,7 @@ class SyncPipelineTester {
 
     // Step 4: Test shows sync
     await this.testStep(`${artistName}-SHOWS`, async () => {
-      const response = await fetch('http://localhost:3000/api/sync/shows', {
+      const response = await fetch('http://localhost:3001/api/sync/shows', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ artistName }),
@@ -154,7 +154,7 @@ class SyncPipelineTester {
 
     // Step 5: Test setlists sync
     await this.testStep(`${artistName}-SETLISTS`, async () => {
-      const response = await fetch('http://localhost:3000/api/sync/setlists', {
+      const response = await fetch('http://localhost:3001/api/sync/setlists', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ artistName }),
@@ -184,7 +184,7 @@ class SyncPipelineTester {
 
       // Test artist page would load
       const response = await fetch(
-        `http://localhost:3000/api/artists/${artistData.slug}`
+        `http://localhost:3001/api/artists/${artistData.slug}`
       );
 
       if (!response.ok) {
@@ -249,7 +249,7 @@ class SyncPipelineTester {
       const startTime = Date.now();
 
       const promises = concurrentArtists.map(async (artistName) => {
-        const response = await fetch('http://localhost:3000/api/artists/sync', {
+        const response = await fetch('http://localhost:3001/api/artists/sync', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ artistName }),
@@ -312,7 +312,7 @@ class SyncPipelineTester {
       // Make rapid requests to test rate limiting
       for (let i = 0; i < 10; i++) {
         try {
-          const response = await fetch('http://localhost:3000/api/health');
+          const response = await fetch('http://localhost:3001/api/health');
           requestCount++;
 
           if (response.status === 429) {
@@ -341,7 +341,7 @@ class SyncPipelineTester {
   async testErrorHandling(): Promise<void> {
     // Test invalid artist name
     await this.testStep('INVALID_ARTIST', async () => {
-      const response = await fetch('http://localhost:3000/api/artists/sync', {
+      const response = await fetch('http://localhost:3001/api/artists/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ artistName: 'ThisArtistDoesNotExist12345' }),
@@ -360,7 +360,7 @@ class SyncPipelineTester {
 
     // Test malformed request
     await this.testStep('MALFORMED_REQUEST', async () => {
-      const response = await fetch('http://localhost:3000/api/artists/sync', {
+      const response = await fetch('http://localhost:3001/api/artists/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ invalidField: 'test' }),

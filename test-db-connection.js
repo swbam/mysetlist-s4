@@ -1,6 +1,6 @@
-const { db } = require('./packages/database/src/client');
-const { artists } = require('./packages/database/src/schema');
-const { ilike } = require('drizzle-orm');
+import { db } from './packages/database/src/client';
+import { artists } from './packages/database/src/schema';
+import { ilike } from 'drizzle-orm';
 
 async function testDatabaseConnection() {
   try {

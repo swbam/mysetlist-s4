@@ -17,7 +17,7 @@ interface RouteTest {
   critical: boolean;
 }
 
-const BASE_URL = process.env['NEXT_PUBLIC_BASE_URL'] || 'http://localhost:3000';
+const BASE_URL = process.env['NEXT_PUBLIC_BASE_URL'] || 'http://localhost:3001';
 
 const ROUTES_TO_TEST: RouteTest[] = [
   // Core Pages

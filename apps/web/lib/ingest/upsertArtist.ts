@@ -1,8 +1,13 @@
 import { db } from '@repo/database';
 import { artists } from '@repo/database';
 import { eq } from 'drizzle-orm';
-import { fetchAttraction } from './ticketmaster';
+import { TicketmasterClient } from '@repo/external-apis';
 import { nanoid } from 'nanoid';
+
+async function fetchAttraction(tmId: string) {
+  const tmClient = new TicketmasterClient({});
+  return await tmClient.getAttraction(tmId);
+}
 
 export async function upsertArtist(tmId: string) {
   // Fetch artist data from Ticketmaster

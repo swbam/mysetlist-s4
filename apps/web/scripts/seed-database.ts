@@ -2,68 +2,8 @@
 
 import { artists } from '@repo/database/src/schema';
 import { eq } from 'drizzle-orm';
+import { SpotifyClient } from '@repo/external-apis';
 import { db } from './db-client';
-
-// Simple Spotify client
-class SpotifyClient {
-  private accessToken: string | null = null;
-  private tokenExpiry = 0;
-
-  async authenticate(): Promise<void> {
-    if (this.accessToken && Date.now() < this.tokenExpiry) {
-      return;
-    }
-
-    const clientId = process.env['SPOTIFY_CLIENT_ID'];
-    const clientSecret = process.env['SPOTIFY_CLIENT_SECRET'];
-
-    if (!clientId || !clientSecret) {
-      throw new Error('Spotify credentials not configured');
-    }
-
-    const response = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-      },
-      body: 'grant_type=client_credentials',
-    });
-
-    if (!response.ok) {
-      throw new Error('Spotify authentication failed');
-    }
-
-    const data = await response.json();
-    this.accessToken = data.access_token;
-    this.tokenExpiry = Date.now() + data.expires_in * 1000 - 60000;
-  }
-
-  async searchArtists(query: string, limit = 1): Promise<any> {
-    await this.authenticate();
-
-    const params = new URLSearchParams({
-      q: query,
-      type: 'artist',
-      limit: limit.toString(),
-    });
-
-    const response = await fetch(
-      `https://api.spotify.com/v1/search?${params}`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Spotify search failed: ${response.statusText}`);
-    }
-
-    return response.json();
-  }
-}
 
 const spotify = new SpotifyClient();
 
@@ -88,7 +28,8 @@ const popularArtists = [
 
 async function seedArtist(artistName: string) {
   try {
-    const searchResults = await spotify.searchArtists(artistName, 1);
+    await spotify.authenticate();
+    const searchResults = await spotify.searchArtists(artistName, { limit: 1 });
     if (!searchResults.artists?.items?.length) {
       return null;
     }

@@ -5,7 +5,7 @@ import { env } from '../apps/web/env';
 async function syncPopularArtists() {
   try {
     const response = await fetch(
-      `${env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/api/artists/sync`,
+      `${env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/api/artists/sync`,
       {
         method: 'GET',
       }

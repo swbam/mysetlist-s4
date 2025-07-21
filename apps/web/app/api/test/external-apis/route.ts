@@ -1,156 +1,6 @@
 // @ts-nocheck
 import { type NextRequest, NextResponse } from 'next/server';
-
-// Spotify API Client
-class SpotifyClient {
-  private accessToken?: string;
-
-  async authenticate() {
-    const clientId = process.env['SPOTIFY_CLIENT_ID'];
-    const clientSecret = process.env['SPOTIFY_CLIENT_SECRET'];
-
-    if (!clientId || !clientSecret) {
-      throw new Error('Spotify credentials not configured');
-    }
-
-    const response = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-      },
-      body: 'grant_type=client_credentials',
-    });
-
-    if (!response.ok) {
-      throw new Error(`Spotify authentication failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-    this.accessToken = data.access_token;
-  }
-
-  async searchArtists(query: string, limit = 10) {
-    if (!this.accessToken) {
-      await this.authenticate();
-    }
-
-    const response = await fetch(
-      `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist&limit=${limit}`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Spotify search failed: ${response.status}`);
-    }
-
-    return response.json();
-  }
-}
-
-// Ticketmaster API Client
-class TicketmasterClient {
-  private apiKey: string;
-
-  constructor() {
-    const apiKey = process.env['TICKETMASTER_API_KEY'];
-    if (!apiKey) {
-      throw new Error('Ticketmaster API key not configured');
-    }
-    this.apiKey = apiKey;
-  }
-
-  async searchEvents(options: {
-    keyword?: string;
-    city?: string;
-    size?: number;
-  }) {
-    const params = new URLSearchParams();
-    params.append('apikey', this.apiKey);
-
-    Object.entries(options).forEach(([key, value]) => {
-      if (value !== undefined) {
-        params.append(key, value.toString());
-      }
-    });
-
-    const response = await fetch(
-      `https://app.ticketmaster.com/discovery/v2/events.json?${params}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Ticketmaster search failed: ${response.status}`);
-    }
-
-    return response.json();
-  }
-}
-
-// Setlist.fm API Client
-class SetlistFmClient {
-  private apiKey: string;
-
-  constructor() {
-    const apiKey = process.env['SETLISTFM_API_KEY'];
-    if (!apiKey) {
-      throw new Error('Setlist.fm API key not configured');
-    }
-    this.apiKey = apiKey;
-  }
-
-  async searchArtists(artistName: string, page = 1) {
-    const response = await fetch(
-      `https://api.setlist.fm/rest/1.0/search/artists?artistName=${encodeURIComponent(artistName)}&p=${page}`,
-      {
-        headers: {
-          'x-api-key': this.apiKey,
-          Accept: 'application/json',
-          'User-Agent': 'MySetlist/1.0',
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Setlist.fm artist search failed: ${response.status}`);
-    }
-
-    return response.json();
-  }
-
-  async searchSetlists(options: {
-    artistName?: string;
-    p?: number;
-  }) {
-    const params = new URLSearchParams();
-
-    Object.entries(options).forEach(([key, value]) => {
-      if (value !== undefined) {
-        params.append(key, value.toString());
-      }
-    });
-
-    const response = await fetch(
-      `https://api.setlist.fm/rest/1.0/search/setlists?${params}`,
-      {
-        headers: {
-          'x-api-key': this.apiKey,
-          Accept: 'application/json',
-          'User-Agent': 'MySetlist/1.0',
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Setlist.fm setlist search failed: ${response.status}`);
-    }
-
-    return response.json();
-  }
-}
+import { SpotifyClient, TicketmasterClient, SetlistFmClient } from '@repo/external-apis';
 
 export async function GET(request: NextRequest) {
   try {
@@ -159,12 +9,13 @@ export async function GET(request: NextRequest) {
 
     // Test all APIs in parallel
     const spotifyClient = new SpotifyClient();
+    await spotifyClient.authenticate();
     const ticketmasterClient = new TicketmasterClient();
     const setlistfmClient = new SetlistFmClient();
 
     const [spotifyResult, ticketmasterResult, setlistfmResult] =
       await Promise.allSettled([
-        spotifyClient.searchArtists(artist, 5),
+        spotifyClient.searchArtists(artist, { limit: 5 }),
         ticketmasterClient.searchEvents({ keyword: artist, size: 5 }),
         setlistfmClient.searchArtists(artist, 1),
       ]);

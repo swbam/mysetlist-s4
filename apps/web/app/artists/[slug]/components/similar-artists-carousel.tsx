@@ -45,21 +45,19 @@ const ArtistCard = React.memo(function ArtistCard({
           {/* Image Section */}
           <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-primary/10 to-purple-600/10">
             {artist.imageUrl ? (
-              <>
-                <Image
-                  src={artist.imageUrl}
-                  alt={artist.name}
-                  fill
-                  sizes="(max-width: 640px) 80vw, (max-width: 1024px) 40vw, 300px"
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              </>
+              <Image
+                src={artist.imageUrl}
+                alt={artist.name}
+                fill
+                sizes="(max-width: 640px) 80vw, (max-width: 1024px) 40vw, 300px"
+                className="object-cover transition-transform duration-500 group-hover:scale-110"
+              />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-muted">
                 <Music className="h-16 w-16 text-muted-foreground/50" />
               </div>
             )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
             {/* Verified Badge */}
             {artist.verified && (

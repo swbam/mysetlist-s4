@@ -822,7 +822,7 @@ class DeploymentPhases {
     const healthUrl =
       ENVIRONMENT === 'production'
         ? 'https://mysetlist.vercel.app/api/health'
-        : 'http://localhost:3000/api/health';
+        : 'http://localhost:3001/api/health';
 
     // Wait for deployment to be ready
     this.logger.info('Waiting for deployment to be ready...');
@@ -872,7 +872,7 @@ class DeploymentPhases {
     const targetUrl =
       ENVIRONMENT === 'production'
         ? 'https://mysetlist.vercel.app'
-        : 'http://localhost:3000';
+        : 'http://localhost:3001';
 
     // Run Lighthouse audit
     try {

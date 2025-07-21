@@ -8,7 +8,7 @@ import {
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { desc, eq, sql } from 'drizzle-orm';
-import { Calendar, Music, Users } from 'lucide-react';
+import { CheckCircle2, Music, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -73,19 +73,20 @@ export async function FollowedArtistsGrid({
           <Link href={`/artists/${artist.slug}`}>
             <CardContent className="p-6">
               <div className="flex gap-4">
-                <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-full bg-muted">
-                  {artist.imageUrl ? (
-                    <Image
-                      src={artist.imageUrl}
-                      alt={artist.name}
-                      fill
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <Music className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                  )}
+            <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
+              {artist.imageUrl ? (
+                <Image
+                  src={artist.imageUrl}
+                  alt={artist.name}
+                  fill
+                  sizes="(max-width: 768px) 50vw, 200px"
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Music className="h-12 w-12 text-muted-foreground" />
+                </div>
+              )}
                 </div>
 
                 <div className="min-w-0 flex-1">

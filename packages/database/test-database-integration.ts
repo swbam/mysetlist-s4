@@ -406,7 +406,7 @@ class DatabaseIntegrationTester {
   private async testSpotifyAPI(): Promise<void> {
     await this.testAPIOperation('Spotify', 'AUTHENTICATION', async () => {
       const response = await fetch(
-        'http://localhost:3000/api/sync/external-apis?action=test',
+        'http://localhost:3001/api/sync/external-apis?action=test',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -423,7 +423,7 @@ class DatabaseIntegrationTester {
     });
 
     await this.testAPIOperation('Spotify', 'ARTIST_SEARCH', async () => {
-      const response = await fetch('http://localhost:3000/api/artists/sync', {
+      const response = await fetch('http://localhost:3001/api/artists/sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ artistName: 'The Beatles' }),
@@ -443,7 +443,7 @@ class DatabaseIntegrationTester {
   private async testTicketmasterAPI(): Promise<void> {
     await this.testAPIOperation('Ticketmaster', 'EVENT_SEARCH', async () => {
       const response = await fetch(
-        'http://localhost:3000/api/sync/external-apis?action=test',
+        'http://localhost:3001/api/sync/external-apis?action=test',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -461,7 +461,7 @@ class DatabaseIntegrationTester {
 
     await this.testAPIOperation('Ticketmaster', 'VENUE_SYNC', async () => {
       const response = await fetch(
-        'http://localhost:3000/api/sync/external-apis?action=sync-shows',
+        'http://localhost:3001/api/sync/external-apis?action=sync-shows',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -483,7 +483,7 @@ class DatabaseIntegrationTester {
   private async testSetlistFMAPI(): Promise<void> {
     await this.testAPIOperation('SetlistFM', 'SETLIST_SEARCH', async () => {
       const response = await fetch(
-        'http://localhost:3000/api/sync/external-apis?action=test',
+        'http://localhost:3001/api/sync/external-apis?action=test',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -501,7 +501,7 @@ class DatabaseIntegrationTester {
 
     await this.testAPIOperation('SetlistFM', 'SETLIST_SYNC', async () => {
       const response = await fetch(
-        'http://localhost:3000/api/sync/external-apis?action=sync-setlists',
+        'http://localhost:3001/api/sync/external-apis?action=sync-setlists',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -524,7 +524,7 @@ class DatabaseIntegrationTester {
     // Test trending API
     await this.testAPIOperation('Internal', 'TRENDING', async () => {
       const response = await fetch(
-        'http://localhost:3000/api/trending?period=week&limit=10'
+        'http://localhost:3001/api/trending?period=week&limit=10'
       );
 
       if (!response.ok) {
@@ -537,7 +537,7 @@ class DatabaseIntegrationTester {
     // Test search API
     await this.testAPIOperation('Internal', 'SEARCH', async () => {
       const response = await fetch(
-        'http://localhost:3000/api/search?q=taylor&type=artist'
+        'http://localhost:3001/api/search?q=taylor&type=artist'
       );
 
       if (!response.ok) {
@@ -549,7 +549,7 @@ class DatabaseIntegrationTester {
 
     // Test health check
     await this.testAPIOperation('Internal', 'HEALTH_CHECK', async () => {
-      const response = await fetch('http://localhost:3000/api/health');
+      const response = await fetch('http://localhost:3001/api/health');
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);

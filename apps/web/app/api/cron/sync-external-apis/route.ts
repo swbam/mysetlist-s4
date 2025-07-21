@@ -2,6 +2,7 @@ import { db } from '@repo/database';
 import { artists, shows, venues } from '@repo/database';
 import { eq, gte, isNull, or } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
+import { SpotifyClient, TicketmasterClient } from '@repo/external-apis';
 
 // Rate limiting and caching utilities
 class RateLimiter {
@@ -39,143 +40,7 @@ class RateLimiter {
   }
 }
 
-// Spotify API Client with rate limiting
-class SpotifyClient {
-  private accessToken?: string;
-  private tokenExpiry?: number;
 
-  async authenticate() {
-    const clientId = process.env['SPOTIFY_CLIENT_ID'];
-    const clientSecret = process.env['SPOTIFY_CLIENT_SECRET'];
-
-    if (!clientId || !clientSecret) {
-      throw new Error('Spotify credentials not configured');
-    }
-
-    const response = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
-      },
-      body: 'grant_type=client_credentials',
-    });
-
-    if (!response.ok) {
-      throw new Error(`Spotify authentication failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-    this.accessToken = data.access_token;
-    this.tokenExpiry = Date.now() + data.expires_in * 1000 - 60000; // 1 minute buffer
-  }
-
-  private async ensureValidToken() {
-    if (
-      !this.accessToken ||
-      !this.tokenExpiry ||
-      Date.now() > this.tokenExpiry
-    ) {
-      await this.authenticate();
-    }
-  }
-
-  async searchArtists(query: string, limit = 20) {
-    await this.ensureValidToken();
-
-    // Rate limit: 100 requests per minute
-    if (!(await RateLimiter.checkLimit('spotify', 90, 60000))) {
-      await RateLimiter.delay(1000);
-    }
-
-    const response = await fetch(
-      `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist&limit=${limit}`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Spotify search failed: ${response.status}`);
-    }
-
-    return response.json();
-  }
-
-  async getArtist(artistId: string) {
-    await this.ensureValidToken();
-
-    if (!(await RateLimiter.checkLimit('spotify', 90, 60000))) {
-      await RateLimiter.delay(1000);
-    }
-
-    const response = await fetch(
-      `https://api.spotify.com/v1/artists/${artistId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Spotify artist fetch failed: ${response.status}`);
-    }
-
-    return response.json();
-  }
-}
-
-// Ticketmaster API Client
-class TicketmasterClient {
-  private apiKey: string;
-
-  constructor() {
-    const apiKey = process.env['TICKETMASTER_API_KEY'];
-    if (!apiKey) {
-      throw new Error('Ticketmaster API key not configured');
-    }
-    this.apiKey = apiKey;
-  }
-
-  async searchEvents(options: {
-    keyword?: string;
-    city?: string;
-    stateCode?: string;
-    countryCode?: string;
-    startDateTime?: string;
-    endDateTime?: string;
-    size?: number;
-    page?: number;
-  }) {
-    // Rate limit: Conservative approach for daily quota
-    if (!(await RateLimiter.checkLimit('ticketmaster', 200, 3600000))) {
-      // 200 per hour
-      await RateLimiter.delay(2000);
-    }
-
-    const params = new URLSearchParams();
-    params.append('apikey', this.apiKey);
-
-    Object.entries(options).forEach(([key, value]) => {
-      if (value !== undefined) {
-        params.append(key, value.toString());
-      }
-    });
-
-    const response = await fetch(
-      `https://app.ticketmaster.com/discovery/v2/events.json?${params}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Ticketmaster search failed: ${response.status}`);
-    }
-
-    return response.json();
-  }
-}
 
 
 // Sync Services
@@ -187,6 +52,7 @@ class ArtistSyncService {
   }
 
   async syncPopularArtists() {
+    await this.spotifyClient.authenticate();
     const results = { synced: 0, errors: 0, details: [] as any[] };
 
     try {

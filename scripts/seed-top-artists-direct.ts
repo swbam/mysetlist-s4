@@ -143,7 +143,7 @@ async function main() {
     });
     console.log('\n💡 Next steps:');
     console.log('  1. Start the dev server: pnpm dev');
-    console.log('  2. Visit http://localhost:3000/artists to see the artists');
+    console.log('  2. Visit http://localhost:3001/artists to see the artists');
     console.log('  3. The sync system will fetch shows and songs in the background');
   } else {
     console.log('\n❌ Failed to seed any artists. Please check your database connection.');

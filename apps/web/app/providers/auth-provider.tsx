@@ -100,7 +100,7 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
     const redirectTo =
       typeof window !== 'undefined'
         ? `${window.location.origin}/auth/callback`
-        : 'http://localhost:3000/auth/callback';
+        : 'http://localhost:3001/auth/callback';
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -118,7 +118,7 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
     const redirectTo =
       typeof window !== 'undefined'
         ? `${window.location.origin}/auth/callback?next=/my-artists`
-        : 'http://localhost:3000/auth/callback?next=/my-artists';
+        : 'http://localhost:3001/auth/callback?next=/my-artists';
 
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'spotify',
@@ -145,7 +145,7 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
     const redirectTo =
       typeof window !== 'undefined'
         ? `${window.location.origin}/auth/callback?next=/auth/update-password`
-        : 'http://localhost:3000/auth/callback?next=/auth/update-password';
+        : 'http://localhost:3001/auth/callback?next=/auth/update-password';
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo,

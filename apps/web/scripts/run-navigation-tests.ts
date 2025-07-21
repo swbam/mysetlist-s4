@@ -94,7 +94,7 @@ class NavigationTestRunner {
 
     // Test 3: Security headers are set
     try {
-      const response = await fetch('http://localhost:3000/');
+      const response = await fetch('http://localhost:3001/');
       const hasSecurityHeaders = response.headers.has('X-Content-Type-Options');
 
       suite.tests.push({
@@ -141,7 +141,7 @@ class NavigationTestRunner {
 
     for (const route of routes) {
       try {
-        const response = await fetch(`http://localhost:3000${route}`);
+        const response = await fetch(`http://localhost:3001${route}`);
         const isSuccess = response.status === 200;
 
         suite.tests.push({
@@ -275,7 +275,7 @@ class NavigationTestRunner {
     for (const route of routes) {
       try {
         const testStart = Date.now();
-        void await fetch(`http://localhost:3000${route}`);
+        void await fetch(`http://localhost:3001${route}`);
         const testEnd = Date.now();
 
         const loadTime = testEnd - testStart;
@@ -334,7 +334,7 @@ class NavigationTestRunner {
 
     // Test 404 handling
     try {
-      const response = await fetch('http://localhost:3000/non-existent-route');
+      const response = await fetch('http://localhost:3001/non-existent-route');
       const is404 = response.status === 404;
 
       suite.tests.push({

@@ -9,12 +9,12 @@ async function runAccessibilityAudit() {
 
   // Test pages
   const pages = [
-    { name: 'Homepage', url: 'http://localhost:3000' },
-    { name: 'Artists', url: 'http://localhost:3000/artists' },
-    { name: 'Shows', url: 'http://localhost:3000/shows' },
-    { name: 'Trending', url: 'http://localhost:3000/trending' },
-    { name: 'Auth Sign In', url: 'http://localhost:3000/auth/sign-in' },
-    { name: 'Search', url: 'http://localhost:3000/search' },
+    { name: 'Homepage', url: 'http://localhost:3001' },
+    { name: 'Artists', url: 'http://localhost:3001/artists' },
+    { name: 'Shows', url: 'http://localhost:3001/shows' },
+    { name: 'Trending', url: 'http://localhost:3001/trending' },
+    { name: 'Auth Sign In', url: 'http://localhost:3001/auth/sign-in' },
+    { name: 'Search', url: 'http://localhost:3001/search' },
   ];
 
   const results = [];

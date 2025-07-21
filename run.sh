@@ -21,7 +21,7 @@ fi
 
 # Start the development server
 echo "🚀 Starting development server..."
-echo "📍 Web app will be available at: http://localhost:3000"
+echo "📍 Web app will be available at: http://localhost:3001"
 echo ""
 
 # Run the web app

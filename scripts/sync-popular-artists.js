@@ -2,7 +2,7 @@
 
 async function syncPopularArtists() {
   try {
-    const response = await fetch('http://localhost:3000/api/artists/sync', {
+    const response = await fetch('http://localhost:3001/api/artists/sync', {
       method: 'GET',
     });
 

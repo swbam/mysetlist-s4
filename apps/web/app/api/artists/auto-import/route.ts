@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
         try {
           // If we have a Ticketmaster ID, sync shows
           if (artist.ticketmasterId) {
-            await fetch(`${process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000'}/api/sync/shows`, {
+            await fetch(`${process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001'}/api/sync/shows`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
           }
           
           // Sync additional data from external APIs
-          await fetch(`${process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000'}/api/sync/artist-catalog`, {
+          await fetch(`${process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001'}/api/sync/artist-catalog`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

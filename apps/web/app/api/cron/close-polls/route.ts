@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@repo/database';
 import { setlists } from '@repo/database';
 import { and, eq, lt } from 'drizzle-orm';
-import { env } from '~/env';
+import { env } from '@repo/env';
 
 export async function GET(req: NextRequest) {
   try {

@@ -1,17 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
+import { createSupabaseAdminClient } from '@repo/database';
 import { config } from 'dotenv';
 
 config({ path: '.env.local' });
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  console.error('Missing Supabase credentials');
-  process.exit(1);
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = createSupabaseAdminClient();
 
 async function checkTables() {
   // Try to query a few tables to see what exists

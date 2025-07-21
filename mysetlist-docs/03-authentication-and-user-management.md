@@ -114,15 +114,15 @@ NEXT_PUBLIC_SPOTIFY_CLIENT_ID=your_spotify_client_id
 SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
 
 # App URLs
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3001
 ```
 
 ### Supabase Auth Configuration
 ```sql
 -- Supabase Auth settings
 UPDATE auth.config SET
-  site_url = 'http://localhost:3000',
-  additional_redirect_urls = '["http://localhost:3000/auth/callback"]';
+  site_url = 'http://localhost:3001',
+  additional_redirect_urls = '["http://localhost:3001/auth/callback"]';
 
 -- Enable OAuth providers
 INSERT INTO auth.providers (name, enabled) VALUES

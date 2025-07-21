@@ -32,7 +32,7 @@ export const createMockRequest = (url: string, options: MockApiOptions = {}): Ne
   } = options;
 
   // Build URL with search params
-  const urlObj = new URL(url, 'http://localhost:3000');
+  const urlObj = new URL(url, 'http://localhost:3001');
   Object.entries(searchParams).forEach(([key, value]) => {
     urlObj.searchParams.set(key, value);
   });

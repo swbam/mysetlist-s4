@@ -167,7 +167,7 @@ async function main() {
     });
     console.log('\n💡 Next steps:');
     console.log('  1. Start the dev server: pnpm dev');
-    console.log('  2. Visit http://localhost:3000/artists to see the artists');
+    console.log('  2. Visit http://localhost:3001/artists to see the artists');
     console.log('  3. Click on an artist to trigger show and song sync');
   }
 

@@ -99,9 +99,9 @@ SETLISTFM_API_KEY=xkutflW-aRy_Df9rF4OkJyCsHBYN88V37EBL
 CRON_SECRET=6155002300
 
 # Application URLs
-NEXT_PUBLIC_URL=http://localhost:3000
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_WEB_URL=http://localhost:3000
+NEXT_PUBLIC_URL=http://localhost:3001
+NEXT_PUBLIC_APP_URL=http://localhost:3001
+NEXT_PUBLIC_WEB_URL=http://localhost:3001
 NEXT_PUBLIC_APP_ENV=development
 
 

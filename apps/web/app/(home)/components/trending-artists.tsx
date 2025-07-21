@@ -73,10 +73,11 @@ export async function TrendingArtists() {
                 <div className="relative aspect-square overflow-hidden bg-muted">
                   {artist.smallImageUrl || artist.imageUrl ? (
                     <Image
-                      src={artist.smallImageUrl || artist.imageUrl || ''}
+                      src={artist.smallImageUrl || artist.imageUrl}
                       alt={artist.name}
                       fill
-                      className="object-cover transition-transform hover:scale-105"
+                      sizes="(max-width: 768px) 50vw, 200px"
+                      className="object-cover transition-transform duration-300 hover:scale-105"
                     />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">

@@ -14,8 +14,8 @@ import {
   Play,
   TrendingUp
 } from 'lucide-react';
-import Image from 'next/image';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { EnhancedSearch } from '../enhanced-search';
 
@@ -135,12 +135,12 @@ export function ArtistPageEnhanced({ artist, userId }: ArtistPageEnhancedProps) 
             {/* Artist Image */}
             <div className="flex-shrink-0">
               <div className="relative h-48 w-48 md:h-64 md:w-64">
-                {artist.imageUrl ? (
+{artist.imageUrl ? (
                   <Image
                     src={artist.imageUrl}
                     alt={artist.name}
                     fill
-                    className="rounded-lg object-cover shadow-lg"
+                    className="object-cover rounded-lg shadow-lg"
                     priority
                   />
                 ) : (

@@ -23,9 +23,9 @@ This guide will help you configure all necessary environment variables for the M
 ### Core Application
 ```bash
 # Application URLs
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3001
 NEXT_PUBLIC_WEB_URL=http://localhost:3001
-NEXT_PUBLIC_API_URL=http://localhost:3000/api
+NEXT_PUBLIC_API_URL=http://localhost:3001/api
 
 # Database (Required)
 DATABASE_URL="postgresql://username:password@localhost:5432/mysetlist"
@@ -46,7 +46,7 @@ SUPABASE_JWT_SECRET=your_supabase_jwt_secret
 ```bash
 # Generate a 32+ character secret
 NEXTAUTH_SECRET=your_nextauth_secret_32_characters_minimum
-NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_URL=http://localhost:3001
 ```
 
 ### External APIs (Required for data sync)
@@ -135,7 +135,7 @@ SPOTIFY_WEBHOOK_SECRET=your_spotify_webhook_secret
 ### 2. Spotify API Setup
 1. Go to [developer.spotify.com](https://developer.spotify.com/)
 2. Create a new app
-3. Add redirect URIs: `http://localhost:3000/api/auth/callback/spotify`
+3. Add redirect URIs: `http://localhost:3001/api/auth/callback/spotify`
 4. Copy Client ID and Client Secret
 
 ### 3. Ticketmaster API Setup

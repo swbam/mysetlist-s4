@@ -1,104 +1,10 @@
 import { db } from '@repo/database';
 import { artists } from '@repo/database';
-import { TicketmasterClient } from '@repo/external-apis';
+import { SpotifyClient, TicketmasterClient } from '@repo/external-apis';
 import { eq } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
-import { env } from '~/env';
+import { env } from '@repo/env';
 import { createServiceClient } from '~/lib/supabase/server';
-
-// Simple Spotify client without external dependencies
-class SpotifyClient {
-  private accessToken: string | null = null;
-  private tokenExpiry = 0;
-
-  async authenticate(): Promise<void> {
-    if (this.accessToken && Date.now() < this.tokenExpiry) {
-      return; // Token is still valid
-    }
-
-    const response = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${Buffer.from(
-          `${process.env['SPOTIFY_CLIENT_ID']}:${process.env['SPOTIFY_CLIENT_SECRET']}`
-        ).toString('base64')}`,
-      },
-      body: 'grant_type=client_credentials',
-    });
-
-    if (!response.ok) {
-      throw new Error('Spotify authentication failed');
-    }
-
-    const data = await response.json();
-    this.accessToken = data.access_token;
-    this.tokenExpiry = Date.now() + data.expires_in * 1000 - 60000; // 1 minute buffer
-  }
-
-  async searchArtists(query: string, limit = 20): Promise<any> {
-    await this.authenticate();
-
-    const params = new URLSearchParams({
-      q: query,
-      type: 'artist',
-      limit: limit.toString(),
-    });
-
-    const response = await fetch(
-      `https://api.spotify.com/v1/search?${params}`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Spotify search failed: ${response.statusText}`);
-    }
-
-    return response.json();
-  }
-
-  async getArtist(artistId: string): Promise<any> {
-    await this.authenticate();
-
-    const response = await fetch(
-      `https://api.spotify.com/v1/artists/${artistId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to get artist: ${response.statusText}`);
-    }
-
-    return response.json();
-  }
-
-  async getArtistTopTracks(artistId: string, market = 'US'): Promise<any> {
-    await this.authenticate();
-
-    const response = await fetch(
-      `https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=${market}`,
-      {
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-        },
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to get top tracks: ${response.statusText}`);
-    }
-
-    return response.json();
-  }
-}
 
 const spotify = new SpotifyClient();
 
@@ -156,6 +62,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    await spotify.authenticate();
     let spotifyArtist;
 
     if (spotifyId) {
@@ -163,7 +70,7 @@ export async function POST(request: NextRequest) {
       spotifyArtist = await spotify.getArtist(spotifyId);
     } else {
       // Search for artist by name
-      const searchResults = await spotify.searchArtists(artistName, 1);
+      const searchResults = await spotify.searchArtists({ query: artistName, limit: 1 });
       if (!searchResults.artists?.items?.length) {
         return NextResponse.json(
           { error: 'Artist not found on Spotify' },

@@ -1,12 +1,9 @@
-import { createClient } from '@supabase/supabase-js';
+import { createSupabaseAdminClient } from '@repo/database';
 import { config } from 'dotenv';
 
 config({ path: '.env.local' });
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+const supabase = createSupabaseAdminClient();
 
 async function testDataRendering() {
   console.log('Testing data rendering issues...\n');

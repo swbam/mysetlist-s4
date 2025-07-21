@@ -197,7 +197,7 @@ This will:
 5. Provide actionable improvement recommendations
 
 ### Prerequisites
-- Application running on `http://localhost:3000`
+- Application running on `http://localhost:3001`
 - All pages accessible (no 404s)
 - Playwright browser dependencies installed
 

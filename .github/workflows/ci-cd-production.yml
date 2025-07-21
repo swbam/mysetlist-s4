@@ -265,13 +265,13 @@ jobs:
 
       - name: Wait for application
         run: |
-          timeout 60s bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done'
+          timeout 60s bash -c 'until curl -f http://localhost:3001/api/health; do sleep 2; done'
 
       - name: Run E2E tests
         run: pnpm exec playwright test --project=${{ matrix.browser }}
         env:
           CI: true
-          PLAYWRIGHT_BASE_URL: http://localhost:3000
+          PLAYWRIGHT_BASE_URL: http://localhost:3001
 
       - name: Upload E2E test results
         uses: actions/upload-artifact@v4
@@ -315,7 +315,7 @@ jobs:
 
       - name: Run accessibility tests
         run: |
-          npx @axe-core/cli http://localhost:3000 \
+          npx @axe-core/cli http://localhost:3001 \
             --tags wcag2a,wcag2aa \
             --exit \
             --stdout \
@@ -422,7 +422,7 @@ jobs:
 
       - name: Wait for application
         run: |
-          timeout 60s bash -c 'until curl -f http://localhost:3000/api/health; do sleep 2; done'
+          timeout 60s bash -c 'until curl -f http://localhost:3001/api/health; do sleep 2; done'
 
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v10

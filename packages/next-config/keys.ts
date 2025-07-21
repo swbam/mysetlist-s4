@@ -21,7 +21,7 @@ export const keys = () =>
       ANALYZE: process.env['ANALYZE'],
       NEXT_RUNTIME: process.env['NEXT_RUNTIME'] || 'nodejs',
       NEXT_PUBLIC_APP_URL:
-        process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000',
+        process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001',
       NEXT_PUBLIC_WEB_URL:
         process.env['NEXT_PUBLIC_WEB_URL'] || 'http://localhost:3001',
       NEXT_PUBLIC_API_URL: process.env['NEXT_PUBLIC_API_URL'],

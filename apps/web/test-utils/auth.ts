@@ -223,7 +223,7 @@ export const mockAuthRequest = (method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'POS
     headers.set('authorization', 'Bearer test-token');
   }
 
-  return new Request('http://localhost:3000/api/auth/test', {
+  return new Request('http://localhost:3001/api/auth/test', {
     method,
     headers,
     body: method !== 'GET' ? JSON.stringify({ test: 'data' }) : undefined,

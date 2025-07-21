@@ -32,7 +32,7 @@ export async function GET() {
 
     // Test 3: Search functionality
     try {
-      const searchResponse = await fetch(`${process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000'}/api/search?q=test`);
+      const searchResponse = await fetch(`${process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001'}/api/search?q=test`);
       tests.searchFunctionality = searchResponse.ok;
       console.log('Search functionality test passed');
     } catch (error) {

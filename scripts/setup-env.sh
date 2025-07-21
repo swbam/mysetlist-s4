@@ -12,8 +12,8 @@ NODE_ENV=development
 NEXT_PUBLIC_APP_ENV=development
 
 # Application URLs (Local Development)
-NEXT_PUBLIC_URL=http://localhost:3000
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_URL=http://localhost:3001
+NEXT_PUBLIC_APP_URL=http://localhost:3001
 NEXT_PUBLIC_WEB_URL=http://localhost:3001
 NEXT_PUBLIC_API_URL=http://localhost:3002
 NEXT_PUBLIC_DOCS_URL=http://localhost:3004

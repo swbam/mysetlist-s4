@@ -25,7 +25,7 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
-const APP_URL = process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3000';
+const APP_URL = process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001';
 
 // Top 5 trending artists in the US with upcoming shows (as of 2024)
 const TOP_US_ARTISTS = [

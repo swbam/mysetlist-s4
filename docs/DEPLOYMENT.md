@@ -418,7 +418,7 @@ export const postDeploymentHook = async () => {
 ```bash
 # Development
 export DEPLOYMENT_ENV=development
-export HEALTH_CHECK_URL=http://localhost:3000
+export HEALTH_CHECK_URL=http://localhost:3001
 
 # Staging
 export DEPLOYMENT_ENV=staging

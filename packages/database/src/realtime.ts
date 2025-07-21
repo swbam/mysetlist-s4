@@ -1,5 +1,5 @@
 import type { RealtimeChannel } from '@supabase/supabase-js';
-import { supabase } from './supabase';
+import { createSupabaseBrowserClient } from './supabase-client';
 
 export interface RealtimeSubscriptionOptions {
   onInsert?: (payload: any) => void;
@@ -41,6 +41,7 @@ export class RealtimeManager {
     // Remove existing channel if it exists
     this.unsubscribe(channelName);
 
+    const supabase = createSupabaseBrowserClient();
     const channel = supabase
       .channel(channelName)
       .on(
@@ -103,6 +104,7 @@ export class RealtimeManager {
     // Remove existing channel if it exists
     this.unsubscribe(channelName);
 
+    const supabase = createSupabaseBrowserClient();
     const channel = supabase
       .channel(channelName)
       .on(
@@ -166,6 +168,7 @@ export class RealtimeManager {
     // Remove existing channel if it exists
     this.unsubscribe(channelName);
 
+    const supabase = createSupabaseBrowserClient();
     const channel = supabase
       .channel(channelName)
       .on(
@@ -200,6 +203,7 @@ export class RealtimeManager {
     // Remove existing channel if it exists
     this.unsubscribe(channelName);
 
+    const supabase = createSupabaseBrowserClient();
     const channel = supabase
       .channel(channelName)
       .on(
@@ -234,6 +238,7 @@ export class RealtimeManager {
     // Remove existing channel if it exists
     this.unsubscribe(channelName);
 
+    const supabase = createSupabaseBrowserClient();
     const channel = supabase
       .channel(channelName)
       .on(
@@ -267,6 +272,7 @@ export class RealtimeManager {
     // Remove existing channel if it exists
     this.unsubscribe(channelName);
 
+    const supabase = createSupabaseBrowserClient();
     const channel = supabase
       .channel(channelName)
       .on(
@@ -311,6 +317,7 @@ export class RealtimeManager {
     // Remove existing channel if it exists
     this.unsubscribe(channelName);
 
+    const supabase = createSupabaseBrowserClient();
     const channel = supabase
       .channel(channelName)
       .on(
@@ -352,6 +359,7 @@ export class RealtimeManager {
     // Remove existing channel if it exists
     this.unsubscribe(channelName);
 
+    const supabase = createSupabaseBrowserClient();
     const channel = supabase
       .channel(channelName)
       .on(
@@ -406,6 +414,7 @@ export class RealtimeManager {
   unsubscribe(channelName: string): void {
     const channel = this.channels.get(channelName);
     if (channel) {
+      const supabase = createSupabaseBrowserClient();
       supabase.removeChannel(channel);
       this.channels.delete(channelName);
     }
@@ -431,6 +440,7 @@ export class RealtimeManager {
    * Get connection status
    */
   getConnectionStatus(): string {
+    const supabase = createSupabaseBrowserClient();
     return supabase.realtime.isConnected() ? 'connected' : 'disconnected';
   }
 
@@ -438,6 +448,7 @@ export class RealtimeManager {
    * Reconnect to Supabase realtime
    */
   reconnect(): void {
+    const supabase = createSupabaseBrowserClient();
     supabase.realtime.disconnect();
     supabase.realtime.connect();
   }

@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@repo/design-system/components/ui/card';
-import { Users } from 'lucide-react';
+import { CheckCircle2, Clock, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -60,7 +60,7 @@ export function SupportingActs({ artists }: SupportingActsProps) {
                     src={act.artist.image_url}
                     alt={act.artist.name}
                     fill
-                    className="object-cover"
+                    className="object-cover rounded-full"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center">

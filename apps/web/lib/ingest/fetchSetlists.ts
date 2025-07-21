@@ -1,4 +1,4 @@
-import { env } from '~/env';
+import { env } from '@repo/env';
 
 const SETLISTFM_BASE_URL = 'https://api.setlist.fm/rest/1.0';
 

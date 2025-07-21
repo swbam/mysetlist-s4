@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const baseUrl = process.env['NEXT_PUBLIC_URL'] || 'http://localhost:3000';
+    const baseUrl = process.env['NEXT_PUBLIC_URL'] || 'http://localhost:3001';
     const seedResponse = await fetch(
       `${baseUrl}/api/admin/seed-trending?type=all`,
       {

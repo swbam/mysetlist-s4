@@ -1,7 +1,8 @@
 import { type CookieOptions, createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { createSupabaseAdminClient } from '@repo/database/server';
 
-export function createClient() {
+export async function createClient() {
   return createServerClient(
     process.env['NEXT_PUBLIC_SUPABASE_URL']!,
     process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!,
@@ -44,28 +45,4 @@ export async function auth() {
   return { user };
 }
 
-export function createServiceClient() {
-  // Service client for server-side operations that bypass RLS
-  return createServerClient(
-    process.env['NEXT_PUBLIC_SUPABASE_URL']!,
-    process.env['SUPABASE_SERVICE_ROLE_KEY']!,
-    {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-      cookies: {
-        async get(name: string) {
-          const cookieStore = await cookies();
-          return cookieStore.get(name)?.value;
-        },
-        set(_name: string, _value: string, _options: CookieOptions) {
-          // Service client doesn't need to set cookies
-        },
-        remove(_name: string, _options: CookieOptions) {
-          // Service client doesn't need to remove cookies
-        },
-      },
-    }
-  );
-}
+export const createServiceClient = createSupabaseAdminClient;

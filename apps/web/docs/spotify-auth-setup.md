@@ -15,7 +15,7 @@ The MySetlist app uses Spotify OAuth to allow users to sign in with their Spotif
 1. Go to [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
 2. Create a new app or use existing app
 3. Add redirect URIs:
-   - Development: `http://localhost:3000/auth/callback`
+   - Development: `http://localhost:3001/auth/callback`
    - Production: `https://your-domain.com/auth/callback`
 4. Note your Client ID and Client Secret
 

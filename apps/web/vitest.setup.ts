@@ -99,7 +99,7 @@ const createBasicFetchMock = () => {
     .mockImplementation((url: string | URL, _options?: RequestInit) => {
       // Convert relative URLs to absolute URLs for testing
       if (typeof url === 'string' && url.startsWith('/')) {
-        url = `http://localhost:3000${url}`;
+        url = `http://localhost:3001${url}`;
       }
 
       return Promise.resolve({

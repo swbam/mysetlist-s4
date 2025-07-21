@@ -41,7 +41,7 @@ SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
 RESEND_API_KEY=your_resend_api_key
 
 # App Configuration
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_APP_URL=http://localhost:3001
 
 # JWT (optional)
 JWT_SECRET=your_jwt_secret

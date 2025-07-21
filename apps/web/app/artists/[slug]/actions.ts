@@ -67,11 +67,7 @@ const _getArtistShows = async (artistId: string, type: 'upcoming' | 'past') => {
           FROM setlists 
           WHERE setlists.show_id = ${shows.id}
         )`,
-        attendeeCount: drizzleSql<number>`(
-          SELECT COUNT(*)::int 
-          FROM show_attendance 
-          WHERE show_attendance.show_id = ${shows.id}
-        )`,
+        // Attendance feature removed as per requirements
         voteCount: drizzleSql<number>`(
           SELECT COUNT(*)::int 
           FROM votes v 
@@ -104,11 +100,10 @@ const _getArtistShows = async (artistId: string, type: 'upcoming' | 'past') => {
     // Transform and validate each show record
     return artistShows
       .filter(({ show }) => show && show.id) // Ensure valid show data
-      .map(({ show, venue, orderIndex, isHeadliner, setlistCount, attendeeCount, voteCount }) => ({
+      .map(({ show, venue, orderIndex, isHeadliner, setlistCount, voteCount }) => ({
         show: {
           ...show,
           setlistCount: setlistCount || 0,
-          attendeeCount: attendeeCount || 0,
           voteCount: voteCount || 0,
           ticketUrl: show.ticketUrl || undefined,
           status: show.status || (type === 'upcoming' ? 'confirmed' : 'completed'),

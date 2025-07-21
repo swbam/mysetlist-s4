@@ -4,6 +4,11 @@
   "private": true,
   "main": "./index.ts",
   "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./client": "./src/supabase-client.ts",
+    "./server": "./src/supabase.ts"
+  },
   "scripts": {
     "push": "drizzle-kit push:pg",
     "generate": "drizzle-kit generate:pg",
@@ -11,6 +16,8 @@
     "studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@repo/env": "workspace:*",
+    "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.50.3",
     "drizzle-orm": "^0.29.5",
     "postgres": "^3.4.7"

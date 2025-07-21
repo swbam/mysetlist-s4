@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { NextRequest, NextResponse } from 'next/server';
-import { env } from '~/env';
+// import { env } from '@repo/env';
 import { searchRateLimiter, apiRateLimitMiddleware } from '~/lib/api-rate-limit';
 
 const QuerySchema = z.object({
@@ -32,7 +32,7 @@ export async function GET(req: NextRequest) {
     
     // Build Ticketmaster API URL
     const url = new URL('https://app.ticketmaster.com/discovery/v2/attractions');
-    url.searchParams.append('apikey', env["TICKETMASTER_API_KEY"]);
+    url.searchParams.append('apikey', process.env.TICKETMASTER_API_KEY!);
     url.searchParams.append('keyword', q);
     url.searchParams.append('size', '20');
     url.searchParams.append('classificationName', 'music'); // Filter for music attractions only
