@@ -1,6 +1,7 @@
-export * from './client';
-export * from './server';
-export * from './provider';
+export { createClient as createBrowserClient, type Session, type User } from './client';
+export { createClient as createServerClient, createServiceClient, getUser, getUserFromRequest, getSession } from './server';
+export { AuthProvider as SimpleAuthProvider } from './provider-simple';
+export { AuthProvider as AdvancedAuthProvider } from './provider';
 export * from './middleware';
 export * from './keys';
 

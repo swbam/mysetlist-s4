@@ -21,7 +21,7 @@ export const SignIn = () => {
     setLoading(true);
 
     try {
-      await signIn({ email, password });
+      await signIn(email, password);
       router.push('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
@@ -35,9 +35,7 @@ export const SignIn = () => {
     setLoading(true);
 
     try {
-      await signInWithGoogle({
-        redirectTo: `${window.location.origin}/auth/callback`,
-      });
+      await signInWithGoogle();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setLoading(false);
@@ -49,9 +47,7 @@ export const SignIn = () => {
     setLoading(true);
 
     try {
-      await signInWithSpotify({
-        redirectTo: `${window.location.origin}/auth/callback`,
-      });
+      await signInWithSpotify();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setLoading(false);
@@ -69,7 +65,7 @@ export const SignIn = () => {
     setLoading(true);
 
     try {
-      await resetPassword({ email });
+      await resetPassword(email);
       setSuccess('Password reset email sent! Check your inbox.');
       setShowForgotPassword(false);
     } catch (err) {

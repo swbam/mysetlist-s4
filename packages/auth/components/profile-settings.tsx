@@ -55,7 +55,7 @@ export const ProfileSettings = () => {
   useEffect(() => {
     if (user?.profile) {
       setProfileData({
-        displayName: user.profile.displayName || '',
+        displayName: user.user_metadata?.['displayName'] || '',
         bio: user.profile.bio || '',
         location: user.profile.location || '',
         favoriteGenres: user.profile.favoriteGenres || [],

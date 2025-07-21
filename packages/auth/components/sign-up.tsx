@@ -63,9 +63,7 @@ export const SignUp = () => {
     setLoading(true);
 
     try {
-      await signUp({
-        email,
-        password,
+      await signUp(email, password, {
         displayName: displayName.trim() || undefined,
       });
       
@@ -87,9 +85,7 @@ export const SignUp = () => {
     setLoading(true);
 
     try {
-      await signInWithGoogle({
-        redirectTo: `${window.location.origin}/auth/callback`,
-      });
+      await signInWithGoogle();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setLoading(false);
@@ -101,9 +97,7 @@ export const SignUp = () => {
     setLoading(true);
 
     try {
-      await signInWithSpotify({
-        redirectTo: `${window.location.origin}/auth/callback`,
-      });
+      await signInWithSpotify();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setLoading(false);
