@@ -18,7 +18,7 @@ export interface UserPreferences {
   favoriteVenues: string[];
   attendedShows: string[];
   votedShows: string[];
-  followedArtists: string[];
+  // Following feature removed from MySetlist
 }
 
 export interface RecommendationConfig {
@@ -39,11 +39,7 @@ export const getUserPreferences = cache(
   async (userId: string): Promise<UserPreferences> => {
     const supabase = await createClient();
 
-    // Get user's followed artists
-    const { data: followedArtists } = await supabase
-      .from('user_follows_artists')
-      .select('artist_id')
-      .eq('user_id', userId);
+    // Following feature removed - get preferences from voting/attendance history only
 
     // Get user's voted shows
     const { data: votedShows } = await supabase
@@ -108,7 +104,7 @@ export const getUserPreferences = cache(
       favoriteVenues,
       attendedShows: attendedShows?.map((a) => a.show_id) || [],
       votedShows: votedShows?.map((v) => v.show_id) || [],
-      followedArtists: followedArtists?.map((f) => f.artist_id) || [],
+      // Following feature removed
     };
   }
 );
@@ -126,50 +122,47 @@ export async function getRecommendedShows(
     ...preferences.votedShows,
   ]);
 
-  // 1. Shows by followed artists
-  if (preferences.followedArtists.length > 0) {
-    const { data: followedArtistShows } = await supabase
-      .from('shows')
-      .select(`
-        id,
-        slug,
-        show_date,
-        artists!inner(id, name, image_url),
-        venues!inner(id, name, city)
-      `)
-      .in('artist_id', preferences.followedArtists)
-      .not('id', 'in', `(${Array.from(seenShowIds).join(',')})`)
-      .gte(
-        'show_date',
-        config.includeUpcoming ? new Date().toISOString() : '1970-01-01'
-      )
-      .lte(
-        'show_date',
-        config.includePast ? '2100-01-01' : new Date().toISOString()
-      )
-      .order('show_date', { ascending: true })
-      .limit(10);
+  // 1. Popular shows by trending artists (replaces followed artists)
+  const { data: popularShows } = await supabase
+    .from('shows')
+    .select(`
+      id,
+      slug,
+      show_date,
+      artists!inner(id, name, image_url, trending_score),
+      venues!inner(id, name, city)
+    `)
+    .not('id', 'in', `(${Array.from(seenShowIds).join(',')})`)
+    .gte(
+      'show_date',
+      config.includeUpcoming ? new Date().toISOString() : '1970-01-01'
+    )
+    .lte(
+      'show_date',
+      config.includePast ? '2100-01-01' : new Date().toISOString()
+    )
+    .order('artists.trending_score', { ascending: false })
+    .limit(10);
 
-    if (followedArtistShows) {
-      followedArtistShows.forEach((show) => {
-        const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
-        const venue = Array.isArray(show.venues) ? show.venues[0] : show.venues;
-        recommendations.push({
-          id: show.id,
-          type: 'show',
-          name: `${artist?.name} at ${venue?.name}`,
-          reason: `You follow ${artist?.name}`,
-          score: 0.9,
-          image_url: artist?.image_url,
-          slug: show.slug,
-          metadata: {
-            artist_name: artist?.name,
-            venue_name: `${venue?.name}, ${venue?.city}`,
-            show_date: show.show_date,
-          },
-        });
+  if (popularShows) {
+    popularShows.forEach((show) => {
+      const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
+      const venue = Array.isArray(show.venues) ? show.venues[0] : show.venues;
+      recommendations.push({
+        id: show.id,
+        type: 'show',
+        name: `${artist?.name} at ${venue?.name}`,
+        reason: `Popular trending show`,
+        score: 0.9,
+        image_url: artist?.image_url,
+        slug: show.slug,
+        metadata: {
+          artist_name: artist?.name,
+          venue_name: `${venue?.name}, ${venue?.city}`,
+          show_date: show.show_date,
+        },
       });
-    }
+    });
   }
 
   // 2. Shows at favorite venues
@@ -224,7 +217,7 @@ export async function getRecommendedShows(
       .from('artists')
       .select('id')
       .contains('genres', preferences.favoriteGenres)
-      .not('id', 'in', `(${preferences.followedArtists.join(',')})`);
+      .not('id', 'in', `(${preferences.favoriteArtists.join(',')})`);
 
     if (genreArtists && genreArtists.length > 0) {
       const { data: genreShows } = await supabase
@@ -301,10 +294,10 @@ export async function getRecommendedArtists(
   const recommendations: RecommendedItem[] = [];
   const seenArtistIds = new Set([
     ...preferences.favoriteArtists,
-    ...preferences.followedArtists,
+    // Following feature removed
   ]);
 
-  // 1. Artists similar to followed artists (by genre)
+  // 1. Popular artists by trending score (replaces followed artists similarity)
   if (preferences.favoriteGenres.length > 0) {
     const { data: similarArtists } = await supabase
       .from('artists')
@@ -314,11 +307,11 @@ export async function getRecommendedArtists(
         slug,
         image_url,
         genres,
-        user_follows_artists(count)
+        trending_score
       `)
       .contains('genres', preferences.favoriteGenres)
       .not('id', 'in', `(${Array.from(seenArtistIds).join(',')})`)
-      .order('user_follows_artists.count', { ascending: false })
+      .order('trending_score', { ascending: false })
       .limit(15);
 
     if (similarArtists) {
@@ -333,12 +326,12 @@ export async function getRecommendedArtists(
           type: 'artist',
           name: artist.name,
           reason: `Similar genres: ${matchingGenres.join(', ')}`,
-          score: 0.8 + (artist.user_follows_artists?.[0]?.count || 0) / 10000,
+          score: 0.8 + (artist.trending_score || 0) / 100,
           image_url: artist.image_url,
           slug: artist.slug,
           metadata: {
             genres: matchingGenres,
-            followers: artist.user_follows_artists?.[0]?.count || 0,
+            trending_score: artist.trending_score || 0,
           },
         });
       });

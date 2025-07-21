@@ -138,7 +138,7 @@ export default async function ModerationPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="font-medium text-sm">Photos</CardTitle>
-            <Image className="h-4 w-4 text-muted-foreground" />
+            <Image className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
           </CardHeader>
           <CardContent>
             <div className="font-bold text-2xl">
@@ -255,7 +255,7 @@ export default async function ModerationPage() {
             <TabsContent value="photos" className="mt-6 space-y-4">
               {pendingPhotos?.length === 0 ? (
                 <div className="py-12 text-center">
-                  <Image className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                  <Image className="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
                   <p className="text-muted-foreground">No pending photos</p>
                 </div>
               ) : (

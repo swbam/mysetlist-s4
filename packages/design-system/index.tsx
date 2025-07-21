@@ -37,10 +37,20 @@ export { SearchBox } from './components/ui/search-box';
 export { ScrollArea, ScrollBar } from './components/ui/scroll-area';
 export { Alert, AlertDescription, AlertTitle } from './components/ui/alert';
 export { Button } from './components/ui/button';
-export { Card, CardHeader, CardTitle, CardContent } from './components/ui/card';
+export { Card, CardHeader, CardTitle, CardContent, CardDescription } from './components/ui/card';
 export { Badge } from './components/ui/badge';
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/tabs';
 export { Avatar, AvatarImage, AvatarFallback } from './components/ui/avatar';
+export {
+  Table,
+  TableHeader,
+  TableBody,
+  TableFooter,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableCaption,
+} from './components/ui/table';
 export { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -59,7 +69,9 @@ export {
   useFormField
 } from './components/ui/form';
 export { Input } from './components/ui/input';
+export { Label } from './components/ui/label';
 export { Textarea } from './components/ui/textarea';
+export { Switch } from './components/ui/switch';
 export {
   Select,
   SelectContent,

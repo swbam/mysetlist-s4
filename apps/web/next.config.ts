@@ -2,7 +2,8 @@ import type { NextConfig } from 'next';
 
 // Production-ready configuration with full optimizations
 const nextConfig: NextConfig = {
-  // TypeScript configuration - Temporarily disable for build
+  // TypeScript configuration
+  // TODO: Fix remaining design system component type issues
   typescript: {
     ignoreBuildErrors: true,
   },

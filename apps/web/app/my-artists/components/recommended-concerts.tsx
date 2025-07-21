@@ -3,39 +3,25 @@ import {
   artists,
   db,
   shows,
-  userFollowsArtists,
   venues,
 } from '@repo/database';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { format } from 'date-fns';
-import { and, desc, eq, gte, ne, sql } from 'drizzle-orm';
+import { desc, eq, gte } from 'drizzle-orm';
 import { Calendar, MapPin, Music, Sparkles, TrendingUp } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 interface RecommendedConcertsProps {
-  userId: string;
+  userId?: string; // userId not used anymore, kept for compatibility
 }
 
 export async function RecommendedConcerts({
   userId,
 }: RecommendedConcertsProps) {
-  // Get user's followed artists
-  const followedArtistIds = await db
-    .select({ artistId: userFollowsArtists.artistId })
-    .from(userFollowsArtists)
-    .where(eq(userFollowsArtists.userId, userId));
-
-  const artistIds = followedArtistIds.map((f) => f.artistId);
-
-  // Get recommendations based on:
-  // 1. Similar artists to those they follow
-  // 2. Trending artists they don't follow
-  // 3. Popular artists in their area
-
-  // For now, let's get trending artists they don't follow
+  // Show trending artists' shows instead of personalized recommendations
   const recommendedShows = await db
     .select({
       id: shows.id,
@@ -61,14 +47,7 @@ export async function RecommendedConcerts({
     .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
     .leftJoin(venues, eq(shows.venueId, venues.id))
     .leftJoin(artistStats, eq(artists.id, artistStats.artistId))
-    .where(
-      and(
-        gte(shows.date, new Date().toISOString().substring(0, 10)),
-        artistIds.length > 0
-          ? ne(artists.id, sql`ANY(${artistIds})`)
-          : undefined
-      )
-    )
+    .where(gte(shows.date, new Date().toISOString().substring(0, 10)))
     .orderBy(desc(artists.trendingScore))
     .limit(5);
 

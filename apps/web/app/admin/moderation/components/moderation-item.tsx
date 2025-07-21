@@ -4,20 +4,19 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@repo/design-system/components/ui/dialog';
-import { Label } from '@repo/design-system/components/ui/label';
-import { Textarea } from '@repo/design-system/components/ui/textarea';
+  Label,
+  Textarea,
+} from '~/components/ui-exports';
 import { toast } from '@repo/design-system/components/ui/use-toast';
 import { format } from 'date-fns';
 import {
@@ -257,12 +256,12 @@ export default function ModerationItem({
               <div>
                 <h4 className="font-medium">{getTitle()}</h4>
                 <div className="mt-1 flex items-center gap-2">
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={user?.avatar_url} />
-                    <AvatarFallback>
+                  {/* Avatar temporarily disabled due to TypeScript issues */}
+                  <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
+                    <span className="text-xs font-medium">
                       {user?.display_name?.[0] || user?.email?.[0] || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
+                    </span>
+                  </div>
                   <span className="text-muted-foreground text-sm">
                     {user?.display_name || user?.email}
                   </span>

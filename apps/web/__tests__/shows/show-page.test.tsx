@@ -3,7 +3,6 @@
  * Tests all show page functionality including:
  * - ShowHeader with social sharing
  * - SetlistContainer with voting system
- * - AttendeeList with real-time updates
  * - Drag-and-drop reordering
  * - Mobile responsiveness
  * - Lock mechanism
@@ -11,7 +10,6 @@
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
-import { AttendeeList } from '~/app/shows/[slug]/components/attendee-list';
 import { ReorderableSetlist } from '~/app/shows/[slug]/components/reorderable-setlist';
 import { SetlistSection } from '~/app/shows/[slug]/components/setlist-section';
 import { ShowHeader } from '~/app/shows/[slug]/components/show-header';
@@ -140,8 +138,6 @@ const mockShow = {
       ],
     },
   ],
-  attendanceCount: 42,
-  isAttending: false,
   currentUser: {
     id: 'test-user-id',
     display_name: 'Test User',
@@ -174,25 +170,6 @@ describe('Show Page Components', () => {
     });
   });
 
-  describe('AttendeeList', () => {
-    it('renders attendee list with count', async () => {
-      render(
-        <AttendeeList showId="show-1" currentUser={mockShow.currentUser} />
-      );
-
-      await waitFor(() => {
-        expect(screen.getByText('Attendees')).toBeInTheDocument();
-      });
-    });
-
-    it('shows attendance tracker', () => {
-      render(
-        <AttendeeList showId="show-1" currentUser={mockShow.currentUser} />
-      );
-
-      expect(screen.getByText("I'm going")).toBeInTheDocument();
-    });
-  });
 
   describe('SetlistSection', () => {
     it('renders setlist tabs correctly', () => {

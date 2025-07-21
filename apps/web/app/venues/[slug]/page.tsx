@@ -11,19 +11,13 @@ import { createVenueMetadata } from '~/lib/seo-metadata';
 import {
   getNearbyVenues,
   getVenueBySlug,
-  getVenueInsiderTips,
-  getVenuePhotos,
-  getVenueReviews,
   getVenueShows,
 } from './actions';
-import { InsiderTips } from './components/insider-tips';
 import { NearbyVenues } from './components/nearby-venues';
 import { PastShows } from './components/past-shows';
 import { UpcomingShows } from './components/upcoming-shows';
 import { VenueDetails } from './components/venue-details';
 import { VenueHeader } from './components/venue-header';
-import { VenuePhotos } from './components/venue-photos';
-import { VenueReviews } from './components/venue-reviews';
 
 type VenuePageProps = {
   params: Promise<{
@@ -67,21 +61,13 @@ const VenuePage = async ({ params }: VenuePageProps) => {
     notFound();
   }
 
-  // Fetch all venue data in parallel
-  const [upcomingShows, pastShows, reviews, photos, insiderTips, nearbyVenues] =
+  // Fetch basic venue data in parallel
+  const [upcomingShows, pastShows, nearbyVenues] =
     await Promise.all([
       getVenueShows(venue.id, 'upcoming'),
       getVenueShows(venue.id, 'past'),
-      getVenueReviews(venue.id),
-      getVenuePhotos(venue.id),
-      getVenueInsiderTips(venue.id),
       getNearbyVenues(venue.id, venue.latitude, venue.longitude),
     ]);
-
-  const avgRating =
-    reviews.length > 0
-      ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-      : null;
 
   const breadcrumbItems = [
     { label: 'Venues', href: '/venues' },
@@ -96,8 +82,6 @@ const VenuePage = async ({ params }: VenuePageProps) => {
           {/* Venue Header */}
           <VenueHeader
             venue={venue}
-            avgRating={avgRating}
-            reviewCount={reviews.length}
             upcomingShowCount={upcomingShows.length}
           />
 
@@ -106,12 +90,9 @@ const VenuePage = async ({ params }: VenuePageProps) => {
 
           {/* Main Content Tabs */}
           <Tabs defaultValue="upcoming" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="upcoming">Upcoming Shows</TabsTrigger>
               <TabsTrigger value="past">Past Shows</TabsTrigger>
-              <TabsTrigger value="reviews">Reviews</TabsTrigger>
-              <TabsTrigger value="photos">Photos</TabsTrigger>
-              <TabsTrigger value="tips">Insider Tips</TabsTrigger>
             </TabsList>
 
             <TabsContent value="upcoming" className="space-y-4">
@@ -137,35 +118,6 @@ const VenuePage = async ({ params }: VenuePageProps) => {
                     ...show.artist,
                     genres: show.artist.genres ? JSON.parse(show.artist.genres) : [],
                   },
-                }))}
-                venueId={venue.id}
-              />
-            </TabsContent>
-
-            <TabsContent value="reviews" className="space-y-4">
-              <VenueReviews
-                reviews={reviews.map((review) => ({
-                  ...review,
-                  helpful: review.helpful || 0,
-                }))}
-                venueId={venue.id}
-                avgRating={avgRating}
-              />
-            </TabsContent>
-
-            <TabsContent value="photos" className="space-y-4">
-              <VenuePhotos
-                photos={photos}
-                venueId={venue.id}
-                venueName={venue.name}
-              />
-            </TabsContent>
-
-            <TabsContent value="tips" className="space-y-4">
-              <InsiderTips
-                tips={insiderTips.map((tip) => ({
-                  ...tip,
-                  helpful: tip.helpful || 0,
                 }))}
                 venueId={venue.id}
               />

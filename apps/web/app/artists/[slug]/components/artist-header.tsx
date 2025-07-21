@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@repo/design-system';
 import { Calendar, ExternalLink, Music, Users, Verified } from 'lucide-react';
 import Link from 'next/link';
 import React, { Suspense } from 'react';
+import { parseGenres } from '~/lib/utils';
 import { FollowButton } from './follow-button';
 import { FollowerCount } from './follower-count';
 import { SyncShowsButton } from './sync-shows-button';
@@ -31,14 +32,9 @@ interface ArtistHeaderProps {
 }
 
 export const ArtistHeader = React.memo(function ArtistHeader({ artist }: ArtistHeaderProps) {
-  // Enhanced error handling for JSON parsing
+  // Safe genre parsing with utility function
   const genres = React.useMemo(() => {
-    try {
-      return artist.genres ? JSON.parse(artist.genres) : [];
-    } catch (error) {
-      console.warn('Failed to parse artist genres:', error);
-      return [];
-    }
+    return parseGenres(artist.genres);
   }, [artist.genres]);
 
   const externalUrls = React.useMemo(() => {

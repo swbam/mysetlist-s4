@@ -1,6 +1,7 @@
 import { artists, db, sql } from '@repo/database';
 import { TicketmasterClient } from '@repo/external-apis';
 import { type NextRequest, NextResponse } from 'next/server';
+import { parseGenres } from '~/lib/utils';
 
 // Simple Spotify client for search
 class SpotifySearchClient {
@@ -92,7 +93,7 @@ export async function GET(request: NextRequest) {
       id: artist.id,
       name: artist.name,
       imageUrl: artist.imageUrl || undefined,
-      genres: artist.genres ? JSON.parse(artist.genres) : [],
+      genres: parseGenres(artist.genres),
       source: 'database' as const,
       spotifyId: artist.spotifyId || undefined,
       popularity: artist.popularity || 0,

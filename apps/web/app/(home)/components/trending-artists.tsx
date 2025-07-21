@@ -7,6 +7,7 @@ import { desc, eq } from 'drizzle-orm';
 import { Music, TrendingUp, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { parseGenres } from '~/lib/utils';
 
 async function getTrendingArtists() {
   const trendingArtists = await db
@@ -106,22 +107,15 @@ export async function TrendingArtists() {
 
                 {artist.genres && (
                   <div className="mb-3 flex gap-2">
-                    {(() => {
-                      try {
-                        const genres = JSON.parse(artist.genres);
-                        return genres.slice(0, 2).map((genre: string) => (
-                          <Badge
-                            key={genre}
-                            variant="outline"
-                            className="text-xs"
-                          >
-                            {genre}
-                          </Badge>
-                        ));
-                      } catch {
-                        return null;
-                      }
-                    })()}
+                    {parseGenres(artist.genres).slice(0, 2).map((genre: string) => (
+                      <Badge
+                        key={genre}
+                        variant="outline"
+                        className="text-xs"
+                      >
+                        {genre}
+                      </Badge>
+                    ))}
                   </div>
                 )}
 

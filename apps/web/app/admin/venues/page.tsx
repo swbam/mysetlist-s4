@@ -76,30 +76,17 @@ export default async function VenuesManagementPage({
       website,
       created_at,
       updated_at,
-      shows (count),
-      venue_photos (count),
-      venue_reviews (rating)
+      shows (count)
     `)
     .order('created_at', { ascending: false })
     .limit(100);
 
-  // Calculate average ratings
+  // Calculate venue stats
   const venuesWithStats =
     venues?.map((venue) => {
-      const ratings = venue.venue_reviews || [];
-      const avgRating =
-        ratings.length > 0
-          ? ratings.reduce(
-              (sum: number, review: any) => sum + review.rating,
-              0
-            ) / ratings.length
-          : 0;
-
       return {
         ...venue,
         shows_count: venue.shows?.[0]?.count || 0,
-        photos_count: venue.venue_photos?.[0]?.count || 0,
-        avg_rating: avgRating,
       };
     }) || [];
 
@@ -254,7 +241,7 @@ export default async function VenuesManagementPage({
                 <TableHead>Location</TableHead>
                 <TableHead>Capacity</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Shows & Rating</TableHead>
+                <TableHead>Shows</TableHead>
                 <TableHead>Contact</TableHead>
                 <TableHead>Added</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -331,15 +318,6 @@ export default async function VenuesManagementPage({
                       <p className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {venue.shows_count} shows
-                      </p>
-                      {venue.avg_rating > 0 && (
-                        <p className="flex items-center gap-1 text-muted-foreground">
-                          <Star className="h-3 w-3" />
-                          {venue.avg_rating.toFixed(1)} rating
-                        </p>
-                      )}
-                      <p className="text-muted-foreground">
-                        {venue.photos_count} photos
                       </p>
                     </div>
                   </TableCell>

@@ -1,15 +1,15 @@
 'use client';
 
-import { Button } from '@repo/design-system/components/ui/button';
 import {
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { toast } from '@repo/design-system/components/ui/use-toast';
+  toast,
+} from '~/components/ui-exports';
 import {
   CheckCircle,
   Edit,

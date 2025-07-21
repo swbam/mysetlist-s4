@@ -66,7 +66,7 @@ export function VenueDetails({ venue }: VenueDetailsProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Map Preview */}
+        {/* Map Preview - Using OpenStreetMap instead of Google Maps to avoid API key exposure */}
         {venue.latitude && venue.longitude && (
           <div className="relative h-48 overflow-hidden rounded-lg bg-muted">
             <iframe
@@ -74,8 +74,9 @@ export function VenueDetails({ venue }: VenueDetailsProps) {
               height="100%"
               frameBorder="0"
               style={{ border: 0 }}
-              src={`https://www.google.com/maps/embed/v1/place?key=${process.env['NEXT_PUBLIC_GOOGLE_MAPS_KEY']}&q=${venue.latitude},${venue.longitude}&zoom=15`}
+              src={`https://www.openstreetmap.org/export/embed.html?bbox=${venue.longitude - 0.01},${venue.latitude - 0.01},${venue.longitude + 0.01},${venue.latitude + 0.01}&layer=mapnik&marker=${venue.latitude},${venue.longitude}`}
               allowFullScreen
+              title={`Map of ${venue.name}`}
             />
           </div>
         )}

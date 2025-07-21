@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { CACHE_HEADERS } from '~/lib/cache';
+import { parseGenres } from '~/lib/utils';
 import { createClient } from '~/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
@@ -10,7 +11,7 @@ export async function GET(request: NextRequest) {
     // const timeframe = searchParams.get('timeframe') || 'week'; // day, week, month
     // Currently using trending score only - future enhancement will filter by date range
 
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Get trending artists with fallback for empty data
     const { data: trendingArtists, error } = await supabase
@@ -56,9 +57,7 @@ export async function GET(request: NextRequest) {
           slug: artist.slug,
           imageUrl: artist.image_url,
           smallImageUrl: artist.small_image_url,
-          genres: typeof artist.genres === 'string'
-            ? JSON.parse(artist.genres || '[]')
-            : artist.genres || [],
+          genres: parseGenres(artist.genres),
           popularity: artist.popularity || 0,
           followers: artist.followers || 0,
           trendingScore: 0,
@@ -107,9 +106,7 @@ export async function GET(request: NextRequest) {
         slug: artist.slug,
         imageUrl: artist.image_url,
         smallImageUrl: artist.small_image_url,
-        genres: typeof artist.genres === 'string'
-          ? JSON.parse(artist.genres || '[]')
-          : artist.genres || [],
+        genres: parseGenres(artist.genres),
         popularity: artist.popularity || 0,
         followers: artist.followers || 0,
         trendingScore: artist.trending_score || 0,

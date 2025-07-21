@@ -1,5 +1,5 @@
-import { artists, db, showArtists, shows, venues } from '@repo/database';
-import { and, eq } from 'drizzle-orm';
+import { db, and, eq } from '../database';
+import { artists, shows, venues, showArtists } from '../schema';
 import { SetlistFmClient, type SetlistFmSetlist } from '../clients/setlistfm';
 import { SpotifyClient } from '../clients/spotify';
 import {

@@ -11,7 +11,7 @@ import { parseGenres } from '~/lib/parse-genres';
 import { createClient } from '~/lib/supabase/server';
 
 async function getTrendingArtists() {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   // Get artists with high trending scores
   const { data: trendingArtists, error } = await supabase

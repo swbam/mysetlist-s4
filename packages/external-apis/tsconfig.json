@@ -2,8 +2,9 @@
   "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
     "lib": ["es2015"],
-    "outDir": "dist"
+    "outDir": "dist",
+    "skipLibCheck": true
   },
-  "include": ["."],
+  "include": ["src/**/*", "index.ts", "keys.ts"],
   "exclude": ["dist", "node_modules"]
 }

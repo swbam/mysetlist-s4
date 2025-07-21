@@ -1,4 +1,5 @@
-import { db, venues } from '@repo/database';
+import { db } from '../database';
+import { venues } from '../schema';
 import { SetlistFmClient, type SetlistFmVenue } from '../clients/setlistfm';
 import {
   TicketmasterClient,

@@ -69,7 +69,6 @@ export function createRateLimiter(options: {
             key,
             count: 1,
             lastReset: now,
-            windowMs,
           });
           
           return {
@@ -94,7 +93,7 @@ export function createRateLimiter(options: {
         await db
           .update(rateLimits)
           .set({ count: existing.count + 1 })
-          .where(eq(rateLimits.id, existing.id));
+          .where(eq(rateLimits.key, existing.key));
         
         return {
           success: true,

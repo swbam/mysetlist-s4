@@ -5,7 +5,7 @@ import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { CheckCircle2, Music, TrendingUp } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { formatNumber } from '~/lib/utils';
+import { formatNumber, parseGenres } from '~/lib/utils';
 
 interface ArtistCardProps {
   artist: {
@@ -24,7 +24,7 @@ interface ArtistCardProps {
 }
 
 export function ArtistCard({ artist }: ArtistCardProps) {
-  const genres = artist.genres ? JSON.parse(artist.genres) : [];
+  const genres = parseGenres(artist.genres);
   const imageUrl = artist.smallImageUrl || artist.imageUrl;
 
   return (

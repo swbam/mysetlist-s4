@@ -22,6 +22,7 @@ interface SignInPageProps {
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = await searchParams;
+  
   const handleSpotifySignIn = async () => {
     'use server';
     await signInWithProvider('spotify');
@@ -110,34 +111,34 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             </Link>
           </div>
 
-          <div className="space-y-4">
-            <Button type="submit" className="w-full">
-              Sign in
-            </Button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with
-                </span>
-              </div>
-            </div>
-
-            <form action={handleSpotifySignIn}>
-              <Button
-                type="submit"
-                variant="outline"
-                className="w-full border-0 bg-[#1DB954] text-white hover:bg-[#1ed760]"
-              >
-                <Music className="mr-2 h-4 w-4" />
-                Sign in with Spotify
-              </Button>
-            </form>
-          </div>
+          <Button type="submit" className="w-full">
+            Sign in
+          </Button>
         </form>
+
+        <div className="space-y-4">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
+
+          <form action={handleSpotifySignIn}>
+            <Button
+              type="submit"
+              variant="outline"
+              className="w-full border-0 bg-[#1DB954] text-white hover:bg-[#1ed760]"
+            >
+              <Music className="mr-2 h-4 w-4" />
+              Sign in with Spotify
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   );
