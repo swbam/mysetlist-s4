@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '~/lib/supabase/server';
+import { createClient } from '~/lib/supabase/server';
 import { TicketmasterClient } from '@repo/external-apis';
 
 const ticketmaster = new TicketmasterClient();
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ results: [] });
     }
 
-    const supabase = createServiceClient();
+    const supabase = await createClient();
     const results: SearchResult[] = [];
 
     // Search Artists
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
             id: artist.id,
             type: 'artist',
             title: artist.name,
-            subtitle: artist.genres ? JSON.parse(artist.genres).slice(0, 2).join(', ') : 'Artist',
+            subtitle: artist.genres && Array.isArray(artist.genres) ? artist.genres.slice(0, 2).join(', ') : 'Artist',
             imageUrl: artist.image_url,
             slug: artist.slug,
             verified: artist.verified,
