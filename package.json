@@ -46,8 +46,9 @@
     "seed:mock:clear": "tsx scripts/seed-mock-data.ts --clear",
     "seed:comprehensive": "tsx scripts/seed-comprehensive-data.ts",
     "seed:all": "pnpm seed:mock && pnpm sync:artists",
-    "final": "echo '🚀 MySetlist Ultimate Deployment' && tsx scripts/final-deployment.ts --parallel --yes",
-    "final:prod": "echo '🌍 Production Deployment' && tsx scripts/final-deployment.ts --prod --parallel --yes",
+    "final": "tsx scripts/simple-deploy.ts",
+    "final:build": "tsx scripts/simple-deploy.ts --skip-deploy",
+    "final:deploy": "tsx scripts/simple-deploy.ts --skip-build",
     "final:staging": "echo '🧪 Staging Deployment' && tsx scripts/final-deployment.ts --staging --parallel --yes",
     "final:validate": "echo '🔍 Validation Mode' && tsx scripts/final-deployment.ts --validate-only --verbose",
     "final:rollback": "echo '🔄 Rollback Mode' && tsx scripts/final-deployment.ts --rollback --yes",
@@ -75,6 +76,7 @@
     "turbo": "^2.5.3",
     "typescript": "^5.8.3",
     "ultracite": "^4.2.5",
+    "vercel": "^44.5.0",
     "vitest": "^3.1.4"
   },
   "engines": {
@@ -83,12 +85,16 @@
   "packageManager": "pnpm@10.12.4",
   "dependencies": {
     "@clack/prompts": "^0.11.0",
+    "@react-email/components": "0.0.25",
     "@t3-oss/env-nextjs": "^0.13.8",
+    "@types/lodash.merge": "^4.6.9",
     "@types/qrcode": "^1.5.5",
     "commander": "^14.0.0",
     "framer-motion": "^11.0.0",
     "keen-slider": "^6.8.6",
+    "lodash.merge": "^4.6.2",
     "otplib": "^12.0.1",
+    "playwright": "^1.54.1",
     "qrcode": "^1.5.4"
   },
   "type": "module"

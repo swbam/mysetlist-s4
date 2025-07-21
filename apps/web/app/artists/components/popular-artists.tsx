@@ -6,7 +6,7 @@ import { parseGenres } from '~/lib/parse-genres';
 import { createClient } from '~/lib/supabase/server';
 
 async function getPopularArtists() {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   // Get artists ordered by their overall popularity
   const { data: popularArtists, error } = await supabase

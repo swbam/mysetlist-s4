@@ -1,19 +1,20 @@
-import { artists, db, shows, userFollowsArtists, venues } from '@repo/database';
+import { artists, db, shows, venues } from '@repo/database';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { format, isThisWeek, isToday, isTomorrow } from 'date-fns';
-import { and, asc, eq, gte } from 'drizzle-orm';
+import { asc, desc, eq, gte } from 'drizzle-orm';
 import { Calendar, Clock, MapPin, Music, Ticket } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
 interface UpcomingShowsTimelineProps {
-  userId: string;
+  userId?: string; // userId not used anymore, kept for compatibility
 }
 
 export async function UpcomingShowsTimeline({
   userId,
 }: UpcomingShowsTimelineProps) {
+  // Show popular upcoming shows instead of followed artists' shows
   const upcomingShows = await db
     .select({
       id: shows.id,
@@ -38,15 +39,8 @@ export async function UpcomingShowsTimeline({
     .from(shows)
     .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
     .leftJoin(venues, eq(shows.venueId, venues.id))
-    .innerJoin(
-      userFollowsArtists,
-      and(
-        eq(userFollowsArtists.artistId, artists.id),
-        eq(userFollowsArtists.userId, userId)
-      )
-    )
     .where(gte(shows.date, new Date().toISOString().substring(0, 10)))
-    .orderBy(asc(shows.date))
+    .orderBy(asc(shows.date), desc(artists.trendingScore))
     .limit(10);
 
   if (upcomingShows.length === 0) {
@@ -56,7 +50,7 @@ export async function UpcomingShowsTimeline({
           <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
           <h3 className="mb-2 font-semibold text-lg">No upcoming shows</h3>
           <p className="text-muted-foreground">
-            Your followed artists don't have any upcoming shows scheduled
+            No upcoming shows scheduled at the moment
           </p>
         </CardContent>
       </Card>

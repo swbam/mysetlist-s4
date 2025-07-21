@@ -147,6 +147,23 @@ export async function POST(request: NextRequest) {
       .from(artistSongs)
       .where(eq(artistSongs.artistId, artist.id));
 
+    // Helper function to safely parse genres
+    const parseGenres = (genresField: string | null): string[] => {
+      if (!genresField) return [];
+      
+      try {
+        // Try to parse as JSON first
+        const parsed = JSON.parse(genresField);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        // If JSON parsing fails, treat as comma-separated string
+        return genresField
+          .split(',')
+          .map((genre) => genre.trim())
+          .filter((genre) => genre.length > 0);
+      }
+    };
+
     return NextResponse.json({
       success: true,
       artist: {
@@ -156,7 +173,7 @@ export async function POST(request: NextRequest) {
         spotifyId: artist.spotifyId,
         ticketmasterId: artist.ticketmasterId,
         imageUrl: artist.imageUrl,
-        genres: artist.genres ? JSON.parse(artist.genres) : [],
+        genres: parseGenres(artist.genres),
         popularity: artist.popularity,
         followers: artist.followers,
         verified: artist.verified,

@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, ilike, or, sql } from 'drizzle-orm';
 import { db } from '../client';
-import { users, venueReviews, venues } from '../schema';
+import { venues } from '../schema';
 
 export async function getVenueById(venueId: string) {
   const result = await db
@@ -16,16 +16,6 @@ export async function getVenueById(venueId: string) {
         FROM shows s
         WHERE s.venue_id = ${venues.id}
         AND s.date >= CURRENT_DATE
-      )`,
-      reviewCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM venue_reviews vr
-        WHERE vr.venue_id = ${venues.id}
-      )`,
-      averageRating: sql<number>`(
-        SELECT AVG(vr.rating)::numeric(3,2)
-        FROM venue_reviews vr
-        WHERE vr.venue_id = ${venues.id}
       )`,
     })
     .from(venues)
@@ -49,16 +39,6 @@ export async function getVenueBySlug(slug: string) {
         FROM shows s
         WHERE s.venue_id = ${venues.id}
         AND s.date >= CURRENT_DATE
-      )`,
-      reviewCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM venue_reviews vr
-        WHERE vr.venue_id = ${venues.id}
-      )`,
-      averageRating: sql<number>`(
-        SELECT AVG(vr.rating)::numeric(3,2)
-        FROM venue_reviews vr
-        WHERE vr.venue_id = ${venues.id}
       )`,
     })
     .from(venues)
@@ -226,58 +206,3 @@ export async function getNearbyVenues(
   return results;
 }
 
-export async function getVenueReviews(
-  venueId: string,
-  options?: {
-    limit?: number;
-    offset?: number;
-  }
-) {
-  const { limit = 20, offset = 0 } = options || {};
-
-  const reviews = await db
-    .select({
-      review: venueReviews,
-      user: {
-        id: users.id,
-        displayName: users.displayName,
-        email: users.email,
-      },
-    })
-    .from(venueReviews)
-    .innerJoin(users, eq(venueReviews.userId, users.id))
-    .where(eq(venueReviews.venueId, venueId))
-    .orderBy(desc(venueReviews.createdAt))
-    .limit(limit)
-    .offset(offset);
-
-  return reviews;
-}
-
-export async function getTopRatedVenues(options?: {
-  limit?: number;
-  minReviews?: number;
-}) {
-  const { limit = 20, minReviews = 5 } = options || {};
-
-  const results = await db
-    .select({
-      venue: venues,
-      averageRating: sql<number>`AVG(vr.rating)::numeric(3,2)`,
-      reviewCount: sql<number>`COUNT(vr.id)`,
-      upcomingShowCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM shows s
-        WHERE s.venue_id = ${venues.id}
-        AND s.date >= CURRENT_DATE
-      )`,
-    })
-    .from(venues)
-    .innerJoin(venueReviews, eq(venues.id, venueReviews.venueId))
-    .groupBy(venues.id)
-    .having(sql`COUNT(vr.id) >= ${minReviews}`)
-    .orderBy(desc(sql`AVG(vr.rating)`))
-    .limit(limit);
-
-  return results;
-}

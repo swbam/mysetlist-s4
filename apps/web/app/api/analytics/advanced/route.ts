@@ -147,11 +147,18 @@ export async function GET(request: NextRequest) {
         );
     }
   } catch (error) {
-    console.error('Advanced analytics GET error:', error);
+    // Use Sentry for production error logging
+    if (process.env.NODE_ENV === 'production') {
+      // Sentry will capture this automatically via instrumentation
+    } else {
+      console.error('Advanced analytics GET error:', error);
+    }
     return NextResponse.json(
       { 
         error: 'Failed to fetch advanced analytics data',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: process.env.NODE_ENV === 'development' 
+          ? (error instanceof Error ? error.message : 'Unknown error')
+          : 'Internal server error'
       },
       { status: 500 }
     );
@@ -281,11 +288,18 @@ export async function POST(request: NextRequest) {
         );
     }
   } catch (error) {
-    console.error('Advanced analytics POST error:', error);
+    // Use Sentry for production error logging
+    if (process.env.NODE_ENV === 'production') {
+      // Sentry will capture this automatically via instrumentation
+    } else {
+      console.error('Advanced analytics POST error:', error);
+    }
     return NextResponse.json(
       { 
         error: 'Failed to generate analytics report',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: process.env.NODE_ENV === 'development' 
+          ? (error instanceof Error ? error.message : 'Unknown error')
+          : 'Internal server error'
       },
       { status: 500 }
     );
@@ -379,11 +393,18 @@ export async function PUT(request: NextRequest) {
         );
     }
   } catch (error) {
-    console.error('Advanced analytics PUT error:', error);
+    // Use Sentry for production error logging
+    if (process.env.NODE_ENV === 'production') {
+      // Sentry will capture this automatically via instrumentation
+    } else {
+      console.error('Advanced analytics PUT error:', error);
+    }
     return NextResponse.json(
       { 
         error: 'Failed to update analytics configuration',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: process.env.NODE_ENV === 'development' 
+          ? (error instanceof Error ? error.message : 'Unknown error')
+          : 'Internal server error'
       },
       { status: 500 }
     );

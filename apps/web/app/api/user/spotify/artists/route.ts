@@ -1,6 +1,6 @@
 import { getUserFromRequest } from '@repo/auth/server';
-import { artists, db, userFollowsArtists } from '@repo/database';
-import { and, eq } from 'drizzle-orm';
+import { artists, db } from '@repo/database';
+import { eq } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
 // Mock function to simulate Spotify API call
@@ -57,8 +57,8 @@ export async function POST(request: NextRequest) {
     // Fetch user's followed artists from Spotify
     const spotifyData = await getSpotifyFollowedArtists(accessToken);
 
-    let syncedCount = 0;
-    const artistsToSync: any[] = [];
+    let foundCount = 0;
+    const foundArtists: any[] = [];
 
     // Process each Spotify artist
     for (const spotifyArtist of spotifyData.artists.items) {
@@ -70,38 +70,21 @@ export async function POST(request: NextRequest) {
         .limit(1);
 
       if (existingArtist) {
-        // Check if user already follows this artist
-        const [existingFollow] = await db
-          .select()
-          .from(userFollowsArtists)
-          .where(
-            and(
-              eq(userFollowsArtists.userId, user.id),
-              eq(userFollowsArtists.artistId, existingArtist.id)
-            )
-          )
-          .limit(1);
-
-        if (!existingFollow) {
-          artistsToSync.push({
-            userId: user.id,
-            artistId: existingArtist.id,
-          });
-          syncedCount++;
-        }
-      } else {
+        foundArtists.push({
+          id: existingArtist.id,
+          name: existingArtist.name,
+          slug: existingArtist.slug,
+        });
+        foundCount++;
       }
     }
 
-    // Bulk insert all new follows
-    if (artistsToSync.length > 0) {
-      await db.insert(userFollowsArtists).values(artistsToSync);
-    }
-
+    // Note: Following functionality removed since userFollowsArtists table doesn't exist
     return NextResponse.json({
-      syncedCount,
+      foundCount,
       totalSpotifyArtists: spotifyData.artists.items.length,
-      message: `Successfully synced ${syncedCount} artists from Spotify`,
+      foundArtists,
+      message: `Found ${foundCount} matching artists in database (following functionality unavailable)`,
     });
   } catch (_error) {
     return NextResponse.json(

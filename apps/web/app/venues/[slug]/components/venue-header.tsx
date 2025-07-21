@@ -29,15 +29,11 @@ interface VenueHeaderProps {
     website?: string | null;
     timezone?: string;
   };
-  avgRating: number | null;
-  reviewCount: number;
   upcomingShowCount: number;
 }
 
 export function VenueHeader({
   venue,
-  avgRating,
-  reviewCount,
   upcomingShowCount,
 }: VenueHeaderProps) {
   const formatCapacity = (capacity: number) => {
@@ -100,7 +96,7 @@ export function VenueHeader({
       )}
 
       {/* Venue Stats */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4">
         <Card className="p-4">
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-primary/10 p-2">
@@ -123,32 +119,6 @@ export function VenueHeader({
             <div>
               <p className="text-muted-foreground text-sm">Upcoming</p>
               <p className="font-semibold text-lg">{upcomingShowCount} shows</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-primary/10 p-2">
-              <Star className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-muted-foreground text-sm">Rating</p>
-              <p className="font-semibold text-lg">
-                {avgRating ? avgRating.toFixed(1) : 'N/A'}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-primary/10 p-2">
-              <Star className="h-5 w-5 text-primary" />
-            </div>
-            <div>
-              <p className="text-muted-foreground text-sm">Reviews</p>
-              <p className="font-semibold text-lg">{reviewCount}</p>
             </div>
           </div>
         </Card>

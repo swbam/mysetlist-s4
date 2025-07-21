@@ -4,7 +4,6 @@ import {
   artists,
   emailPreferences,
   shows,
-  userShowAttendance,
   users,
   venueReviews,
   venues,
@@ -57,22 +56,6 @@ async function collectUserData(userId: string) {
     .from(emailPreferences)
     .where(eq(emailPreferences.userId, userId));
 
-  // Get show attendance
-  const showAttendance = await db
-    .select({
-      showId: userShowAttendance.showId,
-      showName: shows.name,
-      showDate: shows.date,
-      artistName: artists.name,
-      venueName: venues.name,
-      status: userShowAttendance.status,
-      createdAt: userShowAttendance.createdAt,
-    })
-    .from(userShowAttendance)
-    .innerJoin(shows, eq(userShowAttendance.showId, shows.id))
-    .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
-    .leftJoin(venues, eq(shows.venueId, venues.id))
-    .where(eq(userShowAttendance.userId, userId));
 
   // Get votes
   const userVotes = await db
@@ -109,15 +92,6 @@ async function collectUserData(userId: string) {
     preferences: {
       email: emailPrefs || null,
     },
-    showAttendance: showAttendance.map((a) => ({
-      showId: a.showId,
-      showName: a.showName,
-      showDate: a.showDate,
-      artistName: a.artistName,
-      venueName: a.venueName,
-      status: a.status,
-      addedAt: a.createdAt,
-    })),
     votes: userVotes.map((v) => ({
       setlistSongId: v.setlistSongId,
       voteType: v.voteType,

@@ -58,8 +58,9 @@ export function ArtistPageWrapper({
     );
   }
 
-  // Show error state if sync failed
-  if (error && !showSyncProgress) {
+  // Don't show sync errors to users - just work with cached data
+  // Only show error if it's a critical page loading error (not sync errors)
+  if (error && error.includes('not found') && !showSyncProgress) {
     return (
       <div className="container mx-auto py-8">
         <Card className="border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20">
@@ -67,11 +68,10 @@ export function ArtistPageWrapper({
             <AlertCircle className="mt-0.5 h-5 w-5 text-red-600 dark:text-red-400" />
             <div className="space-y-1">
               <h3 className="font-semibold text-red-900 dark:text-red-100">
-                Failed to sync artist data
+                Artist not found
               </h3>
               <p className="text-red-700 text-sm dark:text-red-300">
-                We couldn't sync the latest data for this artist. The page will
-                still load with cached data.
+                This artist could not be found in our database.
               </p>
             </div>
           </div>

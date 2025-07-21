@@ -3,60 +3,59 @@ import {
   artists,
   db,
   shows,
-  userFollowsArtists,
 } from '@repo/database';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { desc, eq, sql } from 'drizzle-orm';
-import { CheckCircle2, Music, Users } from 'lucide-react';
+import { Calendar, Music, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-interface FollowedArtistsGridProps {
-  userId: string;
+interface PopularArtistsGridProps {
+  userId?: string; // userId not used anymore, kept for compatibility
 }
 
 export async function FollowedArtistsGrid({
   userId,
-}: FollowedArtistsGridProps) {
-  const followedArtists = await db
+}: PopularArtistsGridProps) {
+  // Show popular artists instead of followed artists since userFollowsArtists table doesn't exist
+  const popularArtists = await db
     .select({
       id: artists.id,
       name: artists.name,
       slug: artists.slug,
       imageUrl: artists.imageUrl,
       genres: artists.genres,
-      followedAt: userFollowsArtists.createdAt,
       totalShows: artistStats.totalShows,
       followerCount: artists.followerCount,
       upcomingShows: sql<number>`count(distinct ${shows.id})`,
+      trendingScore: artists.trendingScore,
     })
-    .from(userFollowsArtists)
-    .innerJoin(artists, eq(userFollowsArtists.artistId, artists.id))
+    .from(artists)
     .leftJoin(artistStats, eq(artists.id, artistStats.artistId))
     .leftJoin(
       shows,
       eq(artists.id, shows.headlinerArtistId)
     )
-    .where(eq(userFollowsArtists.userId, userId))
     .groupBy(
       artists.id,
-      userFollowsArtists.createdAt,
       artistStats.totalShows,
-      artists.followerCount
+      artists.followerCount,
+      artists.trendingScore
     )
-    .orderBy(desc(userFollowsArtists.createdAt));
+    .orderBy(desc(artists.trendingScore))
+    .limit(20);
 
-  if (followedArtists.length === 0) {
+  if (popularArtists.length === 0) {
     return (
       <Card>
         <CardContent className="p-12 text-center">
           <Music className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
           <h3 className="mb-2 font-semibold text-lg">
-            No artists followed yet
+            No popular artists found
           </h3>
           <p className="mb-4 text-muted-foreground">
-            Start following your favorite artists to see their upcoming shows
+            Check back later for trending artists and their upcoming shows
           </p>
           <Link href="/artists" className="text-primary hover:underline">
             Browse Artists
@@ -68,7 +67,7 @@ export async function FollowedArtistsGrid({
 
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      {followedArtists.map((artist) => (
+      {popularArtists.map((artist) => (
         <Card key={artist.id} className="transition-shadow hover:shadow-lg">
           <Link href={`/artists/${artist.slug}`}>
             <CardContent className="p-6">

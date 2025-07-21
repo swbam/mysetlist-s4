@@ -55,8 +55,8 @@ export function SetlistSection({
         </h2>
 
         <div className="flex gap-2">
-          {/* Core requirement: Add songs dropdown on show page */}
-          {hasPredictedSetlists && currentUser && (
+          {/* Enhanced setlist dropdown - now the primary voting interface */}
+          {(hasPredictedSetlists || canCreateSetlist) && (
             <SongDropdown
               show={show}
               setlists={predictedSetlists}
@@ -65,13 +65,13 @@ export function SetlistSection({
           )}
           {hasAnySetlists && (
             <Link href={`/setlists/${show.id}`}>
-              <Button variant="outline" className="gap-2">
+              <Button variant="ghost" size="sm" className="gap-2">
                 <Vote className="h-4 w-4" />
-                Vote on Songs
+                Full Page View
               </Button>
             </Link>
           )}
-          {canCreateSetlist && (
+          {canCreateSetlist && !hasPredictedSetlists && (
             <Button onClick={() => setShowCreateDialog(true)} className="gap-2">
               <Plus className="h-4 w-4" />
               Create Setlist

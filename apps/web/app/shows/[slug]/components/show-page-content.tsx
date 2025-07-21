@@ -1,8 +1,6 @@
 'use client';
 
 import { useRealtimeUpdates } from '../hooks/use-realtime-updates';
-import { AttendanceTracker } from './attendance-tracker';
-import { AttendeeList } from './attendee-list';
 import { SetlistSection } from './setlist-section';
 import { ShareButtons } from './share-buttons';
 import { ShowHeader } from './show-header';
@@ -30,11 +28,6 @@ export function ShowPageContent({ show }: ShowPageContentProps) {
         <ShowHeader show={show} />
 
         <div className="flex flex-wrap gap-4">
-          <AttendanceTracker
-            showId={show.id}
-            initialCount={show.attendanceCount}
-            initialIsAttending={show.isAttending}
-          />
           <ShareButtons
             url={`/shows/${show.slug}`}
             title={`${show.headliner_artist.name} at ${show.venue?.name || 'TBA'}`}
@@ -73,7 +66,6 @@ export function ShowPageContent({ show }: ShowPageContentProps) {
 
         {show.venue && <VenueDetails venue={show.venue} />}
 
-        <AttendeeList showId={show.id} currentUser={show.currentUser} />
       </div>
     </div>
   );

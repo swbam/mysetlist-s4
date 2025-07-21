@@ -29,7 +29,11 @@ export const createSupabaseAdminClient = () => {
     env.NEXT_PUBLIC_SUPABASE_URL!,
     env.SUPABASE_SERVICE_ROLE_KEY!,
     {
-      cookies: {},
+      cookies: {
+        get() { return undefined; },
+        set() {},
+        remove() {},
+      },
       auth: {
         autoRefreshToken: false,
         persistSession: false,

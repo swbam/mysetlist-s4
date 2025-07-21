@@ -11,6 +11,7 @@ import {
 } from '@repo/design-system/components/ui/card';
 import { Music } from 'lucide-react';
 import Link from 'next/link';
+import { parseGenres } from '~/lib/utils';
 import { getSimilarArtists } from '../actions';
 
 interface SimilarArtistsProps {
@@ -53,7 +54,7 @@ export async function SimilarArtists({
                 <p className="truncate font-medium">{artist.name}</p>
                 {artist.genres && (
                   <p className="truncate text-muted-foreground text-sm">
-                    {JSON.parse(artist.genres).slice(0, 2).join(', ')}
+                    {parseGenres(artist.genres).slice(0, 2).join(', ')}
                   </p>
                 )}
               </div>

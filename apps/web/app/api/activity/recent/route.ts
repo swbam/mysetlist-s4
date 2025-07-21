@@ -5,9 +5,7 @@ import {
   setlists,
   shows,
   songs,
-  userFollowsArtists,
   userProfiles,
-  userShowAttendance,
   users,
   venues,
   votes,
@@ -20,7 +18,7 @@ export const dynamic = 'force-dynamic';
 
 interface ActivityItem {
   id: string;
-  type: 'vote' | 'follow' | 'attendance' | 'setlist_create';
+  type: 'vote' | 'setlist_create';
   user: {
     id: string;
     displayName: string;
@@ -98,91 +96,6 @@ export async function GET(request: NextRequest) {
       });
     });
 
-    // Fetch recent follows
-    const recentFollows = await db
-      .select({
-        id: userFollowsArtists.id,
-        userId: userFollowsArtists.userId,
-        userName: users.displayName,
-        userAvatar: userProfiles.avatarUrl,
-        artistId: artists.id,
-        artistName: artists.name,
-        artistSlug: artists.slug,
-        createdAt: userFollowsArtists.createdAt,
-      })
-      .from(userFollowsArtists)
-      .innerJoin(users, eq(userFollowsArtists.userId, users.id))
-      .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
-      .innerJoin(artists, eq(userFollowsArtists.artistId, artists.id))
-      .orderBy(desc(userFollowsArtists.createdAt))
-      .limit(Math.ceil(limit / 3));
-
-    recentFollows.forEach((follow) => {
-      activities.push({
-        id: `follow-${follow.id}`,
-        type: 'follow',
-        user: {
-          id: follow.userId,
-          displayName: follow.userName || 'Anonymous',
-          ...(follow.userAvatar && { avatarUrl: follow.userAvatar }),
-        },
-        target: {
-          id: follow.artistId,
-          name: follow.artistName,
-          slug: follow.artistSlug,
-          type: 'artist',
-        },
-        createdAt: follow.createdAt.toISOString(),
-      });
-    });
-
-    // Fetch recent attendance updates
-    const recentAttendance = await db
-      .select({
-        id: userShowAttendance.id,
-        userId: userShowAttendance.userId,
-        userName: users.displayName,
-        userAvatar: userProfiles.avatarUrl,
-        showId: shows.id,
-        showName: shows.name,
-        showSlug: shows.slug,
-        artistName: artists.name,
-        venueName: venues.name,
-        createdAt: userShowAttendance.createdAt,
-        status: userShowAttendance.status,
-      })
-      .from(userShowAttendance)
-      .innerJoin(users, eq(userShowAttendance.userId, users.id))
-      .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
-      .innerJoin(shows, eq(userShowAttendance.showId, shows.id))
-      .leftJoin(artists, eq(shows.headlinerArtistId, artists.id))
-      .leftJoin(venues, eq(shows.venueId, venues.id))
-      .where(eq(userShowAttendance.status, 'going'))
-      .orderBy(desc(userShowAttendance.createdAt))
-      .limit(Math.ceil(limit / 3));
-
-    recentAttendance.forEach((attendance) => {
-      const showName = attendance.artistName
-        ? `${attendance.artistName} at ${attendance.venueName || 'TBA'}`
-        : attendance.showName;
-
-      activities.push({
-        id: `attendance-${attendance.id}`,
-        type: 'attendance',
-        user: {
-          id: attendance.userId,
-          displayName: attendance.userName || 'Anonymous',
-          ...(attendance.userAvatar && { avatarUrl: attendance.userAvatar }),
-        },
-        target: {
-          id: attendance.showId,
-          name: showName,
-          slug: attendance.showSlug,
-          type: 'show',
-        },
-        createdAt: attendance.createdAt.toISOString(),
-      });
-    });
 
     // Fetch recent setlist creations
     const recentSetlists = await db
@@ -293,8 +206,6 @@ export async function GET(request: NextRequest) {
 function generateMockActivities(count: number): ActivityItem[] {
   const activityTypes = [
     'vote',
-    'follow',
-    'attendance',
     'setlist_create',
   ] as const;
 
@@ -362,9 +273,7 @@ function generateMockActivities(count: number): ActivityItem[] {
     const metadata =
       activityType === 'vote'
         ? { voteType: Math.random() > 0.7 ? 'down' : 'up' as 'up' | 'down' }
-        : activityType === 'setlist_create'
-          ? { songCount: Math.floor(Math.random() * 15) + 10 }
-          : undefined;
+        : { songCount: Math.floor(Math.random() * 15) + 10 };
 
     activities.push({
       id: `mock-${i}-${Date.now()}`,

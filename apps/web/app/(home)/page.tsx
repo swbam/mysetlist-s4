@@ -92,7 +92,7 @@ const Home = async () => {
   // Temporarily disable beta feature to isolate issues
   let betaFeature = false;
   try {
-    betaFeature = await showBetaFeature();
+    betaFeature = await showBetaFeature.decide();
   } catch (_error) {}
 
   return (

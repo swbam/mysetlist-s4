@@ -1,6 +1,5 @@
-import { db } from '@repo/database/src/client';
-import { artists, songs, artistSongs } from '@repo/database/src/schema';
-import { eq } from 'drizzle-orm';
+import { db, eq } from '../database';
+import { artists, songs, artistSongs } from '../schema';
 import { SpotifyClient } from '../clients/spotify';
 
 export class ArtistSyncService {

@@ -30,26 +30,8 @@ export function useRealtimeUpdates(showId: string, isLive: boolean) {
       )
       .subscribe();
 
-    // Subscribe to attendance updates
-    const attendanceChannel = supabase
-      .channel(`show-attendance-${showId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'show_attendances',
-          filter: `show_id=eq.${showId}`,
-        },
-        (_payload) => {
-          router.refresh();
-        }
-      )
-      .subscribe();
-
     return () => {
       supabase.removeChannel(setlistChannel);
-      supabase.removeChannel(attendanceChannel);
     };
   }, [showId, isLive, router, supabase]);
 }

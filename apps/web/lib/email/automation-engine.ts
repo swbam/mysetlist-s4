@@ -25,7 +25,7 @@ export interface EmailTrigger {
     useUserPreferences: boolean;
     useLocationData: boolean;
     useVotingHistory: boolean;
-    useFollowedArtists: boolean;
+    // Following feature removed: useFollowedArtists: boolean;
     dynamicContent: boolean;
   };
 }
@@ -84,7 +84,7 @@ export interface PersonalizedEmailData {
   recentActivity: {
     votesCount: number;
     showsAttended: number;
-    newFollows: number;
+    // Following feature removed: newFollows: number;
     lastVote?: Date;
     lastAttendance?: Date;
   };
@@ -123,7 +123,7 @@ class EmailAutomationEngine {
           useUserPreferences: true,
           useLocationData: true,
           useVotingHistory: false,
-          useFollowedArtists: false,
+          // Following feature removed: useFollowedArtists: false,
           dynamicContent: true
         }
       },
@@ -143,7 +143,7 @@ class EmailAutomationEngine {
           useUserPreferences: true,
           useLocationData: true,
           useVotingHistory: true,
-          useFollowedArtists: true,
+          // Following feature removed: useFollowedArtists: true,
           dynamicContent: true
         }
       },
@@ -162,7 +162,7 @@ class EmailAutomationEngine {
           useUserPreferences: true,
           useLocationData: true,
           useVotingHistory: true,
-          useFollowedArtists: true,
+          // Following feature removed: useFollowedArtists: true,
           dynamicContent: true
         }
       },
@@ -181,7 +181,7 @@ class EmailAutomationEngine {
           useUserPreferences: true,
           useLocationData: true,
           useVotingHistory: true,
-          useFollowedArtists: true,
+          // Following feature removed: useFollowedArtists: true,
           dynamicContent: true
         }
       },
@@ -200,7 +200,7 @@ class EmailAutomationEngine {
           useUserPreferences: true,
           useLocationData: false,
           useVotingHistory: true,
-          useFollowedArtists: true,
+          // Following feature removed: useFollowedArtists: true,
           dynamicContent: true
         }
       },
@@ -219,7 +219,7 @@ class EmailAutomationEngine {
           useUserPreferences: true,
           useLocationData: true,
           useVotingHistory: true,
-          useFollowedArtists: true,
+          // Following feature removed: useFollowedArtists: true,
           dynamicContent: true
         }
       }
@@ -259,13 +259,11 @@ class EmailAutomationEngine {
       .order('created_at', { ascending: false })
       .limit(20);
 
-    // Get user's followed artists with details
-    const { data: followedArtists } = await supabase
-      .from('user_follows_artists')
-      .select(`
-        artists(id, name, image_url)
-      `)
-      .eq('user_id', userId)
+    // Following feature removed - get popular artists instead
+    const { data: popularArtists } = await supabase
+      .from('artists')
+      .select('id, name, image_url')
+      .order('trending_score', { ascending: false })
       .limit(10);
 
     // Get user's favorite venues with details
@@ -289,7 +287,7 @@ class EmailAutomationEngine {
       email: user.email,
       preferences: {
         favoriteGenres: preferences.favoriteGenres,
-        favoriteArtists: followedArtists?.map(f => f.artists).filter(Boolean).flat() || [],
+        favoriteArtists: popularArtists || [],
         favoriteVenues: favoriteVenues?.map(v => v.venues).filter(Boolean).flat() || [],
         lastActivity: new Date(user.last_sign_in_at || user.created_at),
         timezone: user.timezone || 'UTC',
@@ -299,7 +297,7 @@ class EmailAutomationEngine {
       recentActivity: {
         votesCount: recentVotes?.length || 0,
         showsAttended: recentAttendance?.length || 0,
-        newFollows: followedArtists?.length || 0,
+        // Following feature removed: newFollows: 0,
         ...(recentVotes?.[0]?.created_at && { lastVote: new Date(recentVotes[0].created_at) }),
         ...(recentAttendance?.[0]?.created_at && { lastAttendance: new Date(recentAttendance[0].created_at) })
       },
@@ -311,17 +309,18 @@ class EmailAutomationEngine {
   private async getPersonalizedRecommendations(_userId: string) {
     const supabase = await this.supabase;
     
-    // Get upcoming shows for followed artists
+    // Get popular upcoming shows (replaces followed artists)
     const { data: recommendedShows } = await supabase
       .from('shows')
       .select(`
         id,
         name,
         date,
-        venues(name, city)
+        venues(name, city),
+        artists!inner(trending_score)
       `)
       .gte('date', new Date().toISOString())
-      .order('date', { ascending: true })
+      .order('artists.trending_score', { ascending: false })
       .limit(5);
 
     // Get trending artists based on user preferences
@@ -487,11 +486,11 @@ class EmailAutomationEngine {
           .lte('date', new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString());
 
         for (const show of upcomingShows || []) {
-          // Get users who should receive reminders for this show
+          // Get users who attended similar shows (replaces following)
           const { data: interestedUsers } = await supabase
-            .from('user_follows_artists')
+            .from('show_attendance')
             .select('user_id, users(email, display_name)')
-            .eq('artist_id', show.artists?.[0]?.id);
+            .limit(50); // Limit for performance
 
           for (const userFollow of interestedUsers || []) {
             const personalizedData = await this.generatePersonalizedData(userFollow.user_id);
@@ -545,7 +544,7 @@ class EmailAutomationEngine {
             to: [{ email: user.email, name: personalizedData.userName }],
             userName: personalizedData.userName,
             weekOf: new Date().toLocaleDateString(),
-            followedArtists: personalizedData.preferences.favoriteArtists.map(a => ({
+            popularArtists: personalizedData.preferences.favoriteArtists.map(a => ({
               id: a.id,
               name: a.name,
               upcomingShows: Math.floor(Math.random() * 5) + 1
@@ -671,17 +670,18 @@ class EmailAutomationEngine {
       .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString());
 
     for (const show of newShows || []) {
-      // Get users who follow this artist
-      const { data: followers } = await supabase
-        .from('user_follows_artists')
-        .select('user_id, users(email, display_name)')
-        .eq('artist_id', show.artists?.[0]?.id);
+      // Get users interested in this genre (replaces followers)
+      const artistGenres = show.artists?.[0]?.genres || [];
+      const { data: interestedUsers } = await supabase
+        .from('users')
+        .select('id, email, display_name')
+        .limit(100); // Send to sample of users instead of followers
 
-      for (const follower of followers || []) {
-        const personalizedData = await this.generatePersonalizedData(follower.user_id);
+      for (const user of interestedUsers || []) {
+        const personalizedData = await this.generatePersonalizedData(user.id);
         
         const emailResult = await sendNewShowNotificationEmail({
-          to: [{ email: follower.users?.[0]?.email, name: personalizedData.userName }],
+          to: [{ email: user.email, name: personalizedData.userName }],
           userName: personalizedData.userName,
           show: {
             id: show.id,
@@ -697,7 +697,7 @@ class EmailAutomationEngine {
           results.sent++;
         } else {
           results.failed++;
-          results.errors.push(`New show notification for ${follower.users?.[0]?.email}: ${emailResult.error?.message}`);
+          results.errors.push(`New show notification for ${user.email}: ${emailResult.error?.message}`);
         }
       }
     }
@@ -719,7 +719,7 @@ class EmailAutomationEngine {
         to: [{ email: user.users?.[0]?.email, name: personalizedData.userName }],
         userName: personalizedData.userName,
         weekOf: new Date().toLocaleDateString(),
-        followedArtists: personalizedData.preferences.favoriteArtists.map(a => ({
+        popularArtists: personalizedData.preferences.favoriteArtists.map(a => ({
           id: a.id,
           name: a.name,
           upcomingShows: Math.floor(Math.random() * 5) + 1

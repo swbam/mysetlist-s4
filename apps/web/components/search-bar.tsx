@@ -37,20 +37,35 @@ interface SearchResult {
   date?: string;
   verified?: boolean;
   source: 'database' | 'ticketmaster';
+  location?: string;
+  artistName?: string;
+  venueName?: string;
   externalId?: string;
   requiresSync?: boolean;
+}
+
+interface SearchFilters {
+  types: string[];
+  location: string;
+  genre: string;
+  dateFrom: string;
+  dateTo: string;
 }
 
 interface SearchBarProps {
   placeholder?: string;
   className?: string;
   variant?: 'default' | 'hero';
+  showFilters?: boolean;
+  defaultFilters?: Partial<SearchFilters>;
 }
 
 export function SearchBar({
-  placeholder = 'Search artists...',
+  placeholder = 'Search artists, shows, venues...',
   className,
   variant = 'default',
+  showFilters = false,
+  defaultFilters,
 }: SearchBarProps) {
   const router = useRouter();
   const [query, setQuery] = useState('');
@@ -59,11 +74,18 @@ export function SearchBar({
   const [isOpen, setIsOpen] = useState(false);
   const [searched, setSearched] = useState(false);
   const [_error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<SearchFilters>({
+    types: defaultFilters?.types || ['artist', 'show', 'venue', 'song'],
+    location: defaultFilters?.location || '',
+    genre: defaultFilters?.genre || '',
+    dateFrom: defaultFilters?.dateFrom || '',
+    dateTo: defaultFilters?.dateTo || '',
+  });
 
   const debouncedQuery = useDebounce(query, 300);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const performSearch = useCallback(async (searchQuery: string) => {
+  const performSearch = useCallback(async (searchQuery: string, searchFilters = filters) => {
     if (searchQuery.length < 2) {
       setResults([]);
       setIsOpen(false);
@@ -74,40 +96,34 @@ export function SearchBar({
     setError(null);
 
     try {
-      // ARTIST-ONLY SEARCH as per PRD requirements
-      const response = await fetch(
-        `/api/search/suggestions?query=${encodeURIComponent(searchQuery)}&limit=8`
-      );
+      const params = new URLSearchParams({
+        q: searchQuery,
+        limit: '8',
+        types: searchFilters.types.join(','),
+      });
+
+      if (searchFilters.location) params.set('location', searchFilters.location);
+      if (searchFilters.genre) params.set('genre', searchFilters.genre);
+      if (searchFilters.dateFrom) params.set('dateFrom', searchFilters.dateFrom);
+      if (searchFilters.dateTo) params.set('dateTo', searchFilters.dateTo);
+
+      const response = await fetch(`/api/search?${params}`);
 
       if (!response.ok) {
         throw new Error('Search failed');
       }
 
       const data = await response.json();
-      const artists = data.suggestions || [];
-
-      // Map to our SearchResult format
-      const mapped = artists.map((artist: any) => ({
-        id: artist.id,
-        type: 'artist' as const,
-        title: artist.title,
-        subtitle: artist.subtitle,
-        imageUrl: artist.imageUrl,
-        slug: artist.href?.replace('/artists/', '') || artist.id,
-        verified: artist.verified,
-        requiresSync: artist.requiresSync,
-      })) as SearchResult[];
-
-      setResults(mapped);
+      setResults(data.results || []);
       setSearched(true);
       setIsOpen(true);
     } catch (_err) {
-      setError('Artist search failed. Please try again.');
+      setError('Search failed. Please try again.');
       setResults([]);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [filters]);
 
   useEffect(() => {
     if (debouncedQuery) {
@@ -119,32 +135,52 @@ export function SearchBar({
   }, [debouncedQuery, performSearch]);
 
   const handleSelect = async (result: SearchResult) => {
-    // Core PRD flow: Click artist → Trigger sync → Go to artist page
-    if (result.requiresSync) {
-      try {
-        setIsLoading(true);
-        const resp = await fetch('/api/artists/sync', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            artistName: result.title,
-            artistId: result.id,
-          }),
-        });
-        const data = await resp.json();
-        if (resp.ok && data.artist?.slug) {
-          router.push(`/artists/${data.artist.slug}`);
-        } else {
-          throw new Error('Sync failed');
-        }
-      } catch (_error) {
-        setError('Failed to import artist data. Please try again.');
-        setIsLoading(false);
-        return;
+    try {
+      setIsLoading(true);
+      
+      // Handle different result types
+      switch (result.type) {
+        case 'artist':
+          if (result.requiresSync) {
+            const resp = await fetch('/api/artists/sync', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                artistName: result.title,
+                artistId: result.id,
+              }),
+            });
+            const data = await resp.json();
+            if (resp.ok && data.artist?.slug) {
+              router.push(`/artists/${data.artist.slug}`);
+            } else {
+              throw new Error('Sync failed');
+            }
+          } else {
+            router.push(`/artists/${result.slug || result.id}`);
+          }
+          break;
+          
+        case 'show':
+          router.push(`/shows/${result.slug || result.id}`);
+          break;
+          
+        case 'venue':
+          router.push(`/venues/${result.slug || result.id}`);
+          break;
+          
+        case 'song':
+          // For songs, navigate to setlist or artist page
+          if (result.artistName) {
+            // Try to find the artist page
+            router.push(`/artists?search=${encodeURIComponent(result.artistName)}`);
+          }
+          break;
       }
-    } else {
-      // Artist already in database
-      router.push(`/artists/${result.slug || result.id}`);
+    } catch (_error) {
+      setError(`Failed to navigate to ${result.type}. Please try again.`);
+      setIsLoading(false);
+      return;
     }
 
     setQuery('');
@@ -317,7 +353,17 @@ function SearchResults({
     {} as Record<string, SearchResult[]>
   );
 
-  const typeOrder = ['artist'];
+  const typeOrder = ['artist', 'show', 'venue', 'song'];
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'artist': return 'Artists';
+      case 'show': return 'Shows';
+      case 'venue': return 'Venues';
+      case 'song': return 'Songs';
+      default: return type;
+    }
+  };
 
   return (
     <Command shouldFilter={false}>
@@ -346,7 +392,7 @@ function SearchResults({
           return (
             <CommandGroup
               key={type}
-              heading={type === 'artist' ? 'Artists' : type}
+              heading={getTypeLabel(type)}
             >
               {typeResults.map((result) => {
                 const Icon = getResultIcon(result.type);

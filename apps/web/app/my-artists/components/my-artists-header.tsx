@@ -1,35 +1,23 @@
-import { db, shows, userFollowsArtists } from '@repo/database';
+import { db, shows } from '@repo/database';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { and, eq, gte, sql } from 'drizzle-orm';
+import { gte, sql } from 'drizzle-orm';
 import { Calendar, Heart, TrendingUp } from 'lucide-react';
 
 interface MyArtistsHeaderProps {
-  userId: string;
+  userId?: string; // userId not used anymore, kept for compatibility
 }
 
 export async function MyArtistsHeader({ userId }: MyArtistsHeaderProps) {
-  // Get stats for the user
-  const [followingCount] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(userFollowsArtists)
-    .where(eq(userFollowsArtists.userId, userId));
-
+  // Get general stats since userFollowsArtists table doesn't exist
   const upcomingShowsCount = await db
-    .select({ count: sql<number>`count(distinct ${shows.id})` })
+    .select({ count: sql<number>`count(*)` })
     .from(shows)
-    .innerJoin(
-      userFollowsArtists,
-      eq(shows.headlinerArtistId, userFollowsArtists.artistId)
-    )
-    .where(and(
-      eq(userFollowsArtists.userId, userId), 
-      gte(shows.date, new Date().toISOString().substring(0, 10))
-    ));
+    .where(gte(shows.date, new Date().toISOString().substring(0, 10)));
 
   const stats = [
     {
       label: 'Following',
-      value: followingCount?.count || 0,
+      value: 0, // No following functionality available
       icon: Heart,
       color: 'text-pink-600',
     },
@@ -50,9 +38,9 @@ export async function MyArtistsHeader({ userId }: MyArtistsHeaderProps) {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="font-bold text-3xl">My Artists</h1>
+        <h1 className="font-bold text-3xl">Popular Artists</h1>
         <p className="mt-2 text-muted-foreground">
-          Track your favorite artists and never miss their shows
+          Discover trending artists and upcoming shows
         </p>
       </div>
 

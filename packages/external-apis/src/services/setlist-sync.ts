@@ -1,13 +1,12 @@
+import { db, and, eq } from '../database';
 import {
   artists,
-  db,
   setlistSongs,
   setlists,
   shows,
   songs,
   venues,
-} from '@repo/database';
-import { and, eq } from 'drizzle-orm';
+} from '../schema';
 import {
   SetlistFmClient,
   type SetlistFmSet,
@@ -228,14 +227,14 @@ export class SetlistSyncService {
     const headlinerArtist = headlinerResults[0];
 
     // Get the venue if it exists
-    let venue = null;
+    let venue: typeof venues.$inferSelect | null = null;
     if (show.venueId) {
       const venueResults = await db
         .select()
         .from(venues)
         .where(eq(venues.id, show.venueId))
         .limit(1);
-      venue = venueResults[0];
+      venue = venueResults[0] || null;
     }
 
     if (!headlinerArtist) {

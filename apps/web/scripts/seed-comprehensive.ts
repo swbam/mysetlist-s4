@@ -9,7 +9,6 @@ import {
   showArtists,
   shows,
   songs,
-  userFollowsArtists,
   users,
   venueTips,
   venues,
@@ -387,7 +386,6 @@ async function clearDatabase() {
   await db.delete(venueTips);
   await db.delete(showArtists);
   await db.delete(shows);
-  await db.delete(userFollowsArtists);
   await db.delete(artistStats);
   await db.delete(songs);
   await db.delete(artists);
@@ -738,31 +736,10 @@ async function seedUserActivity(
   createdSetlistSongs: any[],
   createdVenues: any[]
 ) {
-  // User follows artists
-  const followsToCreate: any[] = [];
-  for (const user of createdUsers.slice(2)) {
-    // Skip admin and moderator
-    const followCount = Math.floor(Math.random() * 10) + 1;
-    const artistsToFollow = faker.helpers.arrayElements(
-      createdArtists,
-      followCount
-    );
-
-    for (const artist of artistsToFollow) {
-      followsToCreate.push({
-        userId: user.id,
-        artistId: artist.id,
-      });
-    }
-  }
-
-  await db.insert(userFollowsArtists).values(followsToCreate);
-
-  // Update follower counts
+  // Note: User follows artists functionality removed since userFollowsArtists table doesn't exist
+  // Setting random follower counts instead
   for (const artist of createdArtists) {
-    const followerCount = followsToCreate.filter(
-      (f) => f.artistId === artist.id
-    ).length;
+    const followerCount = Math.floor(Math.random() * 10000) + 100;
     await db
       .update(artists)
       .set({ followerCount })

@@ -5,7 +5,6 @@ import {
   emailPreferences,
   emailQueue,
   emailUnsubscribes,
-  userShowAttendance,
   users,
   venueReviews,
   votes,
@@ -52,11 +51,6 @@ export async function DELETE(request: NextRequest) {
 
         // Delete venue reviews
         await tx.delete(venueReviews).where(eq(venueReviews.userId, user.id));
-
-        // Delete show attendance
-        await tx
-          .delete(userShowAttendance)
-          .where(eq(userShowAttendance.userId, user.id));
 
         // Delete email data
         await tx.delete(emailQueue).where(eq(emailQueue.userId, user.id));

@@ -3,10 +3,9 @@ import {
   artists,
   db,
   shows,
-  userFollowsArtists,
   venues,
 } from '@repo/database';
-import { and, asc, eq, exists, gte, sql } from 'drizzle-orm';
+import { and, asc, eq, gte, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -14,11 +13,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const limit = Number.parseInt(searchParams.get('limit') || '20');
     const offset = Number.parseInt(searchParams.get('offset') || '0');
-    const filter = searchParams.get('filter') || 'all'; // all, following, nearby
+    const filter = searchParams.get('filter') || 'all'; // all, popular, nearby
 
-    const user = await getUserFromRequest(request);
+    // Note: Following filter removed since userFollowsArtists table doesn't exist
+    // Only support 'all' and 'popular' filters now
+    const actualFilter = filter === 'following' ? 'all' : filter;
 
-    // Build the query with all clauses at once to avoid TypeScript issues
+    // Build the query - simplified without following logic
     const upcomingShows = await db
       .select({
         id: shows.id,
@@ -44,36 +45,16 @@ export async function GET(request: NextRequest) {
           latitude: venues.latitude,
           longitude: venues.longitude,
         },
-        isFollowing: user
-          ? sql<boolean>`EXISTS (
-              SELECT 1 FROM ${userFollowsArtists} 
-              WHERE ${userFollowsArtists.artistId} = ${artists.id} 
-              AND ${userFollowsArtists.userId} = ${user.id}
-            )`
-          : sql<boolean>`false`,
       })
       .from(shows)
       .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
       .leftJoin(venues, eq(shows.venueId, venues.id))
-      .where(
-        filter === 'following' && user
-          ? and(
-              gte(shows.date, new Date().toISOString().substring(0, 10)),
-              exists(
-                db
-                  .select()
-                  .from(userFollowsArtists)
-                  .where(
-                    and(
-                      eq(userFollowsArtists.artistId, artists.id),
-                      eq(userFollowsArtists.userId, user.id)
-                    )
-                  )
-              )
-            )
-          : gte(shows.date, new Date().toISOString().substring(0, 10))
+      .where(gte(shows.date, new Date().toISOString().substring(0, 10)))
+      .orderBy(
+        actualFilter === 'popular' 
+          ? artists.trendingScore 
+          : asc(shows.date)
       )
-      .orderBy(asc(shows.date))
       .limit(limit)
       .offset(offset);
 

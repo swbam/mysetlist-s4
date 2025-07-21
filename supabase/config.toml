@@ -44,14 +44,14 @@ enabled = true
 # Port to use for Supabase Studio.
 port = 54323
 # External URL of the API server that frontend connects to.
-api_url = "http://localhost:3001/api"
+api_url = "env(NEXT_PUBLIC_APP_URL)/api"
 
 [auth]
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "http://localhost:3001"
+site_url = "env(NEXT_PUBLIC_APP_URL)"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://localhost:3001"]
+additional_redirect_urls = ["env(NEXT_PUBLIC_APP_URL)"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 seconds (one
 # week).
 jwt_expiry = 3600
@@ -76,7 +76,7 @@ enable_confirmations = false
 enabled = true
 client_id = "env(NEXT_PUBLIC_SPOTIFY_CLIENT_ID)"
 secret = "env(SPOTIFY_CLIENT_SECRET)"
-redirect_uri = "http://localhost:54321/auth/v1/callback"
+redirect_uri = "env(NEXT_PUBLIC_SUPABASE_URL)/auth/v1/callback"
 
 [storage]
 # The maximum file size allowed (e.g. "5MB", "500KB").

@@ -1,23 +1,15 @@
-import { getUser } from '@repo/auth/server';
+// Following feature removed from MySetlist
+// This page has been disabled as the app no longer supports following artists
+// MySetlist is focused on setlist voting, not social following features
+
 import { redirect } from 'next/navigation';
-import { FollowingList } from './components/following-list';
 
 export const metadata = {
-  title: 'Following - MySetlist',
-  description: 'Artists you follow',
+  title: 'Feature Removed - MySetlist',
+  description: 'Following feature has been removed',
 };
 
 export default async function FollowingPage() {
-  const user = await getUser();
-
-  if (!user) {
-    redirect('/sign-in');
-  }
-
-  return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="mb-8 font-bold text-3xl">Artists You Follow</h1>
-      <FollowingList />
-    </div>
-  );
+  // Redirect to artist discovery page instead
+  redirect('/artists');
 }

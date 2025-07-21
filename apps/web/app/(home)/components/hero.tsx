@@ -78,7 +78,7 @@ function HomeHero() {
               <div className="relative">
                 <SearchBar
                   variant="hero"
-                  placeholder="Search artists, shows, or venues..."
+                  placeholder="Search artists..."
                   className="w-full shadow-2xl"
                 />
               </div>

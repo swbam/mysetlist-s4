@@ -1,28 +1,24 @@
-import { Button } from '@repo/design-system/components/ui/button';
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
-import {
+  Input,
+  Label,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/design-system/components/ui/select';
-import { Switch } from '@repo/design-system/components/ui/switch';
-import {
+  Switch,
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
-import { Textarea } from '@repo/design-system/components/ui/textarea';
+  Textarea,
+} from '~/components/ui-exports';
 import { Download } from 'lucide-react';
 import { createClient } from '~/lib/supabase/server';
 

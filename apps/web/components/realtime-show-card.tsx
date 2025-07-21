@@ -9,7 +9,7 @@ import {
 import { cn } from '@repo/design-system/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, Users } from 'lucide-react';
+import { Calendar, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { useRealtimeShow } from '~/hooks/use-realtime-show';
 import { LiveIndicator } from './live-indicator';
@@ -32,20 +32,15 @@ interface RealtimeShowCardProps {
       country: string;
     };
   };
-  initialAttendanceCount?: number;
-  showAttendance?: boolean;
   className?: string;
 }
 
 export function RealtimeShowCard({
   show,
-  initialAttendanceCount = 0,
-  showAttendance = true,
   className,
 }: RealtimeShowCardProps) {
-  const { attendanceCount, showStatus } = useRealtimeShow({
+  const { showStatus } = useRealtimeShow({
     showId: show.id,
-    initialAttendanceCount,
     initialStatus: show.status,
   });
 
@@ -129,23 +124,6 @@ export function RealtimeShowCard({
             </div>
           )}
 
-          {showAttendance && (
-            <div className="flex items-center gap-2 text-sm">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <motion.span
-                key={attendanceCount}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.2 }}
-                className="font-medium"
-              >
-                {attendanceCount}
-              </motion.span>
-              <span className="text-muted-foreground">
-                {attendanceCount === 1 ? 'person' : 'people'} attending
-              </span>
-            </div>
-          )}
         </CardContent>
       </Card>
     </motion.div>

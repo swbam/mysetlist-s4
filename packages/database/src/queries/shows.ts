@@ -4,7 +4,6 @@ import {
   artists,
   showArtists,
   shows,
-  userShowAttendance,
   venues,
 } from '../schema';
 
@@ -14,12 +13,6 @@ export async function getShowById(showId: string) {
       show: shows,
       artist: artists,
       venue: venues,
-      attendanceCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM user_show_attendance usa
-        WHERE usa.show_id = ${shows.id}
-        AND usa.status IN ('going', 'interested')
-      )`,
     })
     .from(shows)
     .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
@@ -36,12 +29,6 @@ export async function getShowBySlug(slug: string) {
       show: shows,
       artist: artists,
       venue: venues,
-      attendanceCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM user_show_attendance usa
-        WHERE usa.show_id = ${shows.id}
-        AND usa.status IN ('going', 'interested')
-      )`,
     })
     .from(shows)
     .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
@@ -93,12 +80,6 @@ export async function getUpcomingShows(options?: {
       show: shows,
       artist: artists,
       venue: venues,
-      attendanceCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM user_show_attendance usa
-        WHERE usa.show_id = ${shows.id}
-        AND usa.status IN ('going', 'interested')
-      )`,
     })
     .from(shows)
     .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
@@ -174,43 +155,6 @@ export async function getShowsByVenue(
   return results;
 }
 
-export async function getUserAttendingShows(
-  userId: string,
-  options?: {
-    limit?: number;
-    onlyUpcoming?: boolean;
-    status?: 'going' | 'interested' | 'not_going';
-  }
-) {
-  const { limit = 50, onlyUpcoming = false, status } = options || {};
-
-  const conditions = [eq(userShowAttendance.userId, userId)];
-
-  if (onlyUpcoming) {
-    conditions.push(gte(shows.date, new Date().toISOString()));
-  }
-
-  if (status) {
-    conditions.push(eq(userShowAttendance.status, status));
-  }
-
-  const results = await db
-    .select({
-      show: shows,
-      artist: artists,
-      venue: venues,
-      attendance: userShowAttendance,
-    })
-    .from(userShowAttendance)
-    .innerJoin(shows, eq(userShowAttendance.showId, shows.id))
-    .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
-    .leftJoin(venues, eq(shows.venueId, venues.id))
-    .where(and(...conditions))
-    .orderBy(asc(shows.date))
-    .limit(limit);
-
-  return results;
-}
 
 export async function searchShows(
   query: string,
@@ -249,25 +193,3 @@ export async function searchShows(
   return results;
 }
 
-export async function getShowAttendanceCounts(showId: string) {
-  const counts = await db
-    .select({
-      status: userShowAttendance.status,
-      count: sql<number>`COUNT(*)`,
-    })
-    .from(userShowAttendance)
-    .where(eq(userShowAttendance.showId, showId))
-    .groupBy(userShowAttendance.status);
-
-  const result = {
-    going: 0,
-    interested: 0,
-    not_going: 0,
-  };
-
-  counts.forEach(({ status, count }) => {
-    result[status] = count;
-  });
-
-  return result;
-}
