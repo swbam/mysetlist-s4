@@ -167,13 +167,18 @@ const HeaderContent = React.memo(() => {
           {!user && (
             <>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 asChild
+                className="font-medium"
               >
                 <SafeLink href="/auth/sign-in">Sign in</SafeLink>
               </Button>
-              <Button size="sm" asChild>
+              <Button 
+                size="sm" 
+                asChild
+                className="bg-primary font-medium text-primary-foreground hover:bg-primary/90"
+              >
                 <SafeLink href="/auth/sign-up">Sign up</SafeLink>
               </Button>
             </>

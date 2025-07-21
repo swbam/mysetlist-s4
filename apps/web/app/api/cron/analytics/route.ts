@@ -189,50 +189,93 @@ async function cleanupOldAnalytics(): Promise<void> {
  */
 async function updateTrendingData(): Promise<void> {
   try {
-    // TODO: Calculate trending artists based on recent searches/views
-    // const trendingArtists = await db.execute(sql`
-    //   SELECT artist_id, COUNT(*) as activity_count
-    //   FROM (
-    //     SELECT artist_id FROM search_analytics 
-    //     WHERE created_at >= NOW() - INTERVAL '24 hours'
-    //     UNION ALL
-    //     SELECT artist_id FROM show_views 
-    //     WHERE created_at >= NOW() - INTERVAL '24 hours'
-    //   ) combined
-    //   GROUP BY artist_id
-    //   ORDER BY activity_count DESC
-    //   LIMIT 50
-    // `);
+    // Calculate trending artists based on database activity
+    const trendingArtistQuery = sql`
+      UPDATE artists 
+      SET trending_score = COALESCE(
+        (
+          -- Base score from popularity and followers
+          (popularity * 0.4) + 
+          (follower_count * 0.0001) +
+          -- Boost recent shows
+          (
+            SELECT COUNT(*) * 5 
+            FROM shows s 
+            WHERE s.headliner_artist_id = artists.id 
+            AND s.created_at >= NOW() - INTERVAL '7 days'
+          ) +
+          -- Boost recent setlists/votes
+          (
+            SELECT COALESCE(SUM(total_votes), 0) * 0.1
+            FROM setlists sl 
+            WHERE sl.artist_id = artists.id 
+            AND sl.created_at >= NOW() - INTERVAL '7 days'
+          )
+        ), 
+        0
+      ),
+      updated_at = NOW()
+      WHERE 
+        trending_score IS NULL OR 
+        updated_at < NOW() - INTERVAL '1 hour'
+    `;
 
-    // TODO: Fix CacheService.set method
-    // await CacheService.set(
-    //   'trending:artists',
-    //   trendingArtists,
-    //   { ttl: 3600 } // Cache for 1 hour
-    // );
+    await db.execute(trendingArtistQuery);
 
-    // TODO: Calculate trending shows
-    // const trendingShows = await db.execute(sql`
-    //   SELECT show_id, COUNT(*) as activity_count
-    //   FROM (
-    //     SELECT show_id FROM show_views 
-    //     WHERE created_at >= NOW() - INTERVAL '24 hours'
-    //     UNION ALL
-    //     SELECT show_id FROM votes 
-    //     WHERE created_at >= NOW() - INTERVAL '24 hours'
-    //   ) combined
-    //   GROUP BY show_id
-    //   ORDER BY activity_count DESC
-    //   LIMIT 50
-    // `);
+    // Calculate trending shows based on votes and recent activity  
+    const trendingShowQuery = sql`
+      UPDATE shows 
+      SET trending_score = COALESCE(
+        (
+          -- Base score from vote counts
+          (vote_count * 2.0) +
+          (attendee_count * 1.5) +
+          -- Recency boost - newer shows get higher scores
+          CASE 
+            WHEN created_at >= NOW() - INTERVAL '24 hours' THEN 10
+            WHEN created_at >= NOW() - INTERVAL '7 days' THEN 5
+            WHEN created_at >= NOW() - INTERVAL '30 days' THEN 2
+            ELSE 0
+          END +
+          -- Future show boost
+          CASE 
+            WHEN date >= CURRENT_DATE AND date <= CURRENT_DATE + INTERVAL '30 days' THEN 8
+            WHEN date >= CURRENT_DATE AND date <= CURRENT_DATE + INTERVAL '90 days' THEN 4
+            ELSE 0
+          END
+        ), 
+        0
+      ),
+      updated_at = NOW()
+      WHERE 
+        trending_score IS NULL OR 
+        updated_at < NOW() - INTERVAL '1 hour'
+    `;
 
-    // TODO: Fix CacheService.set method
-    // await CacheService.set(
-    //   'trending:shows',
-    //   trendingShows,
-    //   { ttl: 3600 } // Cache for 1 hour
-    // );
-  } catch (_error) {}
+    await db.execute(trendingShowQuery);
+
+    // Apply decay to prevent stale trending items
+    const decayQuery = sql`
+      UPDATE artists 
+      SET trending_score = trending_score * 0.98
+      WHERE trending_score > 0 
+      AND updated_at < NOW() - INTERVAL '24 hours'
+    `;
+    
+    await db.execute(decayQuery);
+
+    const showDecayQuery = sql`
+      UPDATE shows 
+      SET trending_score = trending_score * 0.95
+      WHERE trending_score > 0 
+      AND updated_at < NOW() - INTERVAL '12 hours'
+    `;
+
+    await db.execute(showDecayQuery);
+
+  } catch (error) {
+    console.error('Failed to update trending data:', error);
+  }
 }
 
 /**
