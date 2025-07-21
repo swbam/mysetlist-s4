@@ -6,7 +6,8 @@
   "regions": ["iad1"],
   "git": {
     "deploymentEnabled": {
-      "main": true
+      "main": true,
+      "mysetlist-completion-fix": true
     }
   },
   "headers": [
