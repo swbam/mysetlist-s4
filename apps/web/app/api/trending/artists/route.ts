@@ -130,14 +130,15 @@ export async function GET(request: NextRequest) {
     response.headers.set('Cache-Control', CACHE_HEADERS.api.public);
 
     return response;
-  } catch (_error) {
+  } catch (error) {
+    console.error('Trending artists error:', error);
     // Return empty array with error info instead of throwing
     return NextResponse.json(
       {
         artists: [],
         fallback: true,
         error: 'Failed to load trending artists',
-        message: 'Unable to load artist data at this time',
+        message: error instanceof Error ? error.message : 'Unable to load artist data at this time',
         total: 0,
       },
       { status: 200 }
