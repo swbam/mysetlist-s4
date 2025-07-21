@@ -36,11 +36,5 @@
         }
       ]
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/cron/daily-sync",
-      "schedule": "0 3 * * *"
-    }
   ]
 }
