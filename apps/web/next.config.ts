@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
       '@supabase/supabase-js',
       '@supabase/auth-helpers-nextjs',
     ],
-    reactCompiler: false,
+    reactCompiler: true,
     optimizeCss: true,
   },
 
