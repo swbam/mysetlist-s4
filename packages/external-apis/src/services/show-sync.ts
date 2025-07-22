@@ -6,16 +6,25 @@ import {
   TicketmasterClient,
   type TicketmasterEvent,
 } from '../clients/ticketmaster';
+import { SyncErrorHandler, SyncServiceError } from '../utils/error-handler';
 
 export class ShowSyncService {
   private ticketmasterClient: TicketmasterClient;
   private setlistFmClient: SetlistFmClient;
   private spotifyClient: SpotifyClient;
+  private errorHandler: SyncErrorHandler;
 
   constructor() {
     this.ticketmasterClient = new TicketmasterClient({});
     this.setlistFmClient = new SetlistFmClient({});
     this.spotifyClient = new SpotifyClient({});
+    this.errorHandler = new SyncErrorHandler({
+      maxRetries: 3,
+      retryDelay: 1000,
+      onError: (error) => {
+        console.error(`[ShowSyncService] Error:`, error);
+      },
+    });
   }
 
   async syncShowFromTicketmaster(event: TicketmasterEvent): Promise<void> {
@@ -36,14 +45,27 @@ export class ShowSyncService {
     let artistId: string | null = null;
     if (event._embedded?.attractions?.[0]) {
       const attraction = event._embedded.attractions[0];
-      await this.spotifyClient.authenticate();
+      try {
+        await this.spotifyClient.authenticate();
+      } catch (error) {
+        console.error('Failed to authenticate with Spotify:', error);
+        return; // Continue without Spotify data
+      }
 
       try {
-        // Search for artist on Spotify
-        const searchResult = await this.spotifyClient.searchArtists(
-          attraction.name,
-          1
+        // Search for artist on Spotify with retry
+        const searchResult = await this.errorHandler.withRetry(
+          () => this.spotifyClient.searchArtists(attraction.name, 1),
+          {
+            service: 'ShowSyncService',
+            operation: 'searchArtists',
+            context: { attractionName: attraction.name },
+          }
         );
+        
+        if (!searchResult) {
+          return;
+        }
         if (searchResult.artists.items.length > 0) {
           const spotifyArtist = searchResult.artists.items[0];
 
@@ -81,7 +103,10 @@ export class ShowSyncService {
             }
           }
         }
-      } catch (_error) {}
+      } catch (error) {
+        console.error(`Failed to sync artist ${attraction.name}:`, error);
+        // Continue without artist data
+      }
     }
 
     if (!artistId) {
@@ -235,11 +260,28 @@ export class ShowSyncService {
     startDateTime?: string;
     endDateTime?: string;
   }): Promise<void> {
-    const events = await this.ticketmasterClient.searchEvents({
-      ...options,
-      size: 200,
-      sort: 'date,asc',
-    });
+    const eventsResult = await this.errorHandler.withRetry(
+      () => this.ticketmasterClient.searchEvents({
+        ...options,
+        size: 200,
+        sort: 'date,asc',
+      }),
+      {
+        service: 'ShowSyncService',
+        operation: 'searchEvents',
+        context: options,
+      }
+    );
+
+    if (!eventsResult) {
+      throw new SyncServiceError(
+        'Failed to fetch events from Ticketmaster',
+        'ShowSyncService',
+        'syncUpcomingShows'
+      );
+    }
+
+    const events = eventsResult;
 
     if (events._embedded?.events) {
       for (const event of events._embedded.events) {

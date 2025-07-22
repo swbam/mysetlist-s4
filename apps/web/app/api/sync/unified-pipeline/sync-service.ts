@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { db } from '@repo/database';
 import {
   artistSongs,
@@ -13,8 +12,13 @@ import {
 } from '@repo/database';
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { SyncProgressTracker } from '~/lib/sync-progress-tracker';
-import { SpotifyClient, TicketmasterClient } from '@repo/external-apis';
-import { SetlistFmClient } from '@repo/external-apis/src/clients/setlistfm';
+import {
+  ArtistSyncService,
+  ShowSyncService,
+  SetlistSyncService,
+  VenueSyncService,
+  SyncScheduler,
+} from '@repo/external-apis';
 
 // Rate limiting and caching utilities
 export class RateLimiter {
@@ -54,15 +58,19 @@ export class RateLimiter {
 
 // Unified Sync Service
 export class UnifiedSyncService {
-  private spotifyClient: SpotifyClient;
-  private ticketmasterClient: TicketmasterClient;
-  private setlistFmClient: SetlistFmClient | null;
+  private artistSyncService: ArtistSyncService;
+  private showSyncService: ShowSyncService;
+  private setlistSyncService: SetlistSyncService;
+  private venueSyncService: VenueSyncService;
+  private syncScheduler: SyncScheduler;
   private progressTracker: SyncProgressTracker;
 
   constructor() {
-    this.spotifyClient = new SpotifyClient();
-    this.ticketmasterClient = new TicketmasterClient();
-    this.setlistFmClient = process.env['SETLISTFM_API_KEY'] ? new SetlistFmClient() : null;
+    this.artistSyncService = new ArtistSyncService();
+    this.showSyncService = new ShowSyncService();
+    this.setlistSyncService = new SetlistSyncService();
+    this.venueSyncService = new VenueSyncService();
+    this.syncScheduler = new SyncScheduler();
     this.progressTracker = new SyncProgressTracker();
   }
 
@@ -93,73 +101,26 @@ export class UnifiedSyncService {
       // Start progress tracking
       await this.progressTracker.startSync(artistId, artist.name);
 
-      // Sync Spotify data if available
+      // Sync artist data from all sources
       if (artist.spotifyId) {
         try {
-          const spotifyArtist = await this.spotifyClient.getArtist(
-            artist.spotifyId
-          );
-
-          // Update artist with latest Spotify data
-          await db
-            .update(artists)
-            .set({
-              imageUrl: spotifyArtist.images[0]?.url || artist.imageUrl,
-              smallImageUrl:
-                spotifyArtist.images[2]?.url || artist.smallImageUrl,
-              genres: JSON.stringify(spotifyArtist.genres),
-              popularity: spotifyArtist.popularity,
-              followers: spotifyArtist.followers.total,
-              externalUrls: JSON.stringify(spotifyArtist.external_urls),
-              lastSyncedAt: new Date(),
-            })
-            .where(eq(artists.id, artistId));
-
-          results.artist.updated = true;
-
-          // Update progress
           await this.progressTracker.updateProgress(artistId, {
-            currentStep: 'Syncing songs from Spotify',
+            currentStep: 'Syncing artist from Spotify',
             completedSteps: 1,
           });
 
-          // Sync top tracks
-          const topTracks = await this.spotifyClient.getArtistTopTracks(
-            artist.spotifyId
-          );
-
-          for (const track of topTracks.tracks) {
-            try {
-              const existingSong = await db
-                .select()
-                .from(songs)
-                .where(
-                  and(
-                    eq(songs.spotifyId, track.id),
-                    eq(songs.artist, artistId)
-                  )
-                )
-                .limit(1);
-
-              if (!existingSong.length) {
-                await db.insert(songs).values({
-                  artist: artistId,
-                  spotifyId: track.id,
-                  title: track.name,
-                  album: track.album.name,
-                  albumArt: track.album.images[0]?.url,
-                  previewUrl: track.preview_url,
-                  externalUrl: track.external_urls.spotify,
-                  popularity: track.popularity,
-                  durationMs: track.duration_ms,
-                } as any);
-
-                results.songs.synced++;
-              }
-            } catch (_error) {
-              results.songs.errors++;
-            }
-          }
+          // Use the ArtistSyncService to sync from Spotify
+          await this.artistSyncService.syncArtist(artist.spotifyId);
+          results.artist.updated = true;
+          
+          // Update song sync results
+          const songCount = await db
+            .select({ count: sql<number>`count(*)` })
+            .from(songs)
+            .innerJoin(artistSongs, eq(artistSongs.songId, songs.id))
+            .where(eq(artistSongs.artistId, artistId));
+          
+          results.songs.synced = Number(songCount[0]?.count || 0);
 
           // Update progress with song sync details
           await this.progressTracker.updateProgress(artistId, {
@@ -170,7 +131,10 @@ export class UnifiedSyncService {
               setlists: results.setlists,
             },
           });
-        } catch (_error) {}
+        } catch (error) {
+          results.artist.updated = false;
+          console.error('Artist sync error:', error);
+        }
       }
 
       // Sync Ticketmaster shows if available

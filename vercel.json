@@ -9,48 +9,6 @@
       "main": true
     }
   },
-  "crons": [
-    {
-      "path": "/api/cron/calculate-trending",
-      "schedule": "*/30 * * * *"
-    },
-    {
-      "path": "/api/cron/trending-update",
-      "schedule": "*/15 * * * *"
-    },
-    {
-      "path": "/api/cron/hourly-update",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/cron/daily-sync",
-      "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/cron/weekly-digest", 
-      "schedule": "0 9 * * 1"
-    },
-    {
-      "path": "/api/cron/show-lifecycle",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/lock-setlists",
-      "schedule": "*/10 * * * *"
-    },
-    {
-      "path": "/api/cron/close-polls",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cron/sync-popular-artists",
-      "schedule": "0 */6 * * *"
-    },
-    {
-      "path": "/api/cron/data-maintenance",
-      "schedule": "0 3 * * *"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",

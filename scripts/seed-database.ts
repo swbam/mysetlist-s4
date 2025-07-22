@@ -188,7 +188,7 @@ async function main() {
   }
 
   if (results.errors.length > 0) {
-    results.errors.forEach((_error) => );
+    results.errors.forEach((error) => console.error(error));
   }
 }
 

@@ -2,7 +2,7 @@ import { db } from '@repo/database';
 import { artists, shows, songs, venues } from '@repo/database';
 import { count } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
-import { UnifiedSyncService } from './sync-service';
+import { UnifiedSyncService } from './sync-service-v2';
 
 // API Handler
 export async function POST(request: NextRequest) {

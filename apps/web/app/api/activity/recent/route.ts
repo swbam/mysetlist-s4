@@ -1,17 +1,5 @@
-import { db } from '@repo/database';
-import {
-  artists,
-  setlistSongs,
-  setlists,
-  shows,
-  songs,
-  userProfiles,
-  users,
-  venues,
-  votes,
-} from '@repo/database';
-import { desc, eq, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createServiceClient } from '~/lib/supabase/server';
 
 // Force dynamic rendering for API route
 export const dynamic = 'force-dynamic';
@@ -40,121 +28,134 @@ interface ActivityItem {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const limit = Number.parseInt(searchParams.get('limit') || '15');
-  // const offset = Number.parseInt(searchParams.get('offset') || '0');
 
   try {
+    const supabase = await createServiceClient();
     const activities: ActivityItem[] = [];
 
-    // Fetch recent votes
-    const recentVotes = await db
-      .select({
-        id: votes.id,
-        userId: votes.userId,
-        userName: users.displayName,
-        userAvatar: userProfiles.avatarUrl,
-        voteType: votes.voteType,
-        createdAt: votes.createdAt,
-        songId: songs.id,
-        songTitle: songs.title,
-        songArtist: songs.artist,
-        setlistId: setlists.id,
-        showId: shows.id,
-        showSlug: shows.slug,
-        showName: shows.name,
-        artistName: artists.name,
-      })
-      .from(votes)
-      .innerJoin(users, eq(votes.userId, users.id))
-      .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
-      .innerJoin(setlistSongs, eq(votes.setlistSongId, setlistSongs.id))
-      .innerJoin(songs, eq(setlistSongs.songId, songs.id))
-      .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
-      .innerJoin(shows, eq(setlists.showId, shows.id))
-      .leftJoin(artists, eq(shows.headlinerArtistId, artists.id))
-      .orderBy(desc(votes.createdAt))
+    // Fetch recent votes with related data
+    const { data: recentVotes } = await supabase
+      .from('votes')
+      .select(`
+        id,
+        user_id,
+        vote_type,
+        created_at,
+        users!votes_user_id_fkey(
+          display_name,
+          user_profiles!user_profiles_user_id_fkey(
+            avatar_url
+          )
+        ),
+        setlist_songs!votes_setlist_song_id_fkey(
+          songs!setlist_songs_song_id_fkey(
+            id,
+            title,
+            artist
+          ),
+          setlists!setlist_songs_setlist_id_fkey(
+            id,
+            shows!setlists_show_id_fkey(
+              id,
+              name,
+              slug,
+              headliner_artist:artists!shows_headliner_artist_id_fkey(
+                name
+              )
+            )
+          )
+        )
+      `)
+      .order('created_at', { ascending: false })
       .limit(Math.ceil(limit / 3));
 
-    recentVotes.forEach((vote: any) => {
-      activities.push({
-        id: `vote-${vote.id}`,
-        type: 'vote',
-        user: {
-          id: vote.userId,
-          displayName: vote.userName || 'Anonymous',
-          ...(vote.userAvatar && { avatarUrl: vote.userAvatar }),
-        },
-        target: {
-          id: vote.showId,
-          name: `${vote.songTitle} at ${vote.artistName || vote.showName}`,
-          slug: vote.showSlug,
-          type: 'show',
-        },
-        createdAt: vote.createdAt.toISOString(),
-        metadata: {
-          voteType: vote.voteType as 'up' | 'down',
-        },
+    if (recentVotes) {
+      recentVotes.forEach((vote: any) => {
+        const song = vote.setlist_songs?.songs;
+        const show = vote.setlist_songs?.setlists?.shows;
+        const user = vote.users;
+        
+        if (song && show && user) {
+          activities.push({
+            id: `vote-${vote.id}`,
+            type: 'vote',
+            user: {
+              id: vote.user_id,
+              displayName: user.display_name || 'Anonymous',
+              ...(user.user_profiles?.avatar_url && { avatarUrl: user.user_profiles.avatar_url }),
+            },
+            target: {
+              id: show.id,
+              name: `${song.title} at ${show.headliner_artist?.name || show.name}`,
+              slug: show.slug,
+              type: 'show',
+            },
+            createdAt: vote.created_at,
+            metadata: {
+              voteType: vote.vote_type as 'up' | 'down',
+            },
+          });
+        }
       });
-    });
-
+    }
 
     // Fetch recent setlist creations
-    const recentSetlists = await db
-      .select({
-        id: setlists.id,
-        userId: setlists.createdBy,
-        userName: users.displayName,
-        userAvatar: userProfiles.avatarUrl,
-        showId: shows.id,
-        showName: shows.name,
-        showSlug: shows.slug,
-        artistName: artists.name,
-        createdAt: setlists.createdAt,
-        songCount: sql<number>`COUNT(${setlistSongs.id})::int`.as('songCount'),
-      })
-      .from(setlists)
-      .innerJoin(users, eq(setlists.createdBy, users.id))
-      .leftJoin(userProfiles, eq(users.id, userProfiles.userId))
-      .innerJoin(shows, eq(setlists.showId, shows.id))
-      .leftJoin(artists, eq(shows.headlinerArtistId, artists.id))
-      .leftJoin(setlistSongs, eq(setlists.id, setlistSongs.setlistId))
-      .where(eq(setlists.type, 'predicted'))
-      .groupBy(
-        setlists.id,
-        setlists.createdBy,
-        users.displayName,
-        userProfiles.avatarUrl,
-        shows.id,
-        shows.name,
-        shows.slug,
-        artists.name,
-        setlists.createdAt
-      )
-      .orderBy(desc(setlists.createdAt))
+    const { data: recentSetlists } = await supabase
+      .from('setlists')
+      .select(`
+        id,
+        created_by,
+        created_at,
+        type,
+        users!setlists_created_by_fkey(
+          display_name,
+          user_profiles!user_profiles_user_id_fkey(
+            avatar_url
+          )
+        ),
+        shows!setlists_show_id_fkey(
+          id,
+          name,
+          slug,
+          headliner_artist:artists!shows_headliner_artist_id_fkey(
+            name
+          )
+        ),
+        setlist_songs!setlist_songs_setlist_id_fkey(count)
+      `)
+      .eq('type', 'predicted')
+      .order('created_at', { ascending: false })
       .limit(Math.floor(limit / 4));
 
-    recentSetlists.forEach((setlist) => {
-      if (setlist.userId) {
-        activities.push({
-          id: `setlist-${setlist.id}`,
-          type: 'setlist_create',
-          user: {
-            id: setlist.userId,
-            displayName: setlist.userName || 'Anonymous',
-            ...(setlist.userAvatar && { avatarUrl: setlist.userAvatar }),
-          },
-          target: {
-            id: setlist.showId,
-            name: setlist.artistName || setlist.showName,
-            slug: setlist.showSlug,
-            type: 'show',
-          },
-          createdAt: setlist.createdAt.toISOString(),
-          metadata: {
-            songCount: setlist.songCount || 0,
-          },
-        });
-      }
-    });
+    if (recentSetlists) {
+      recentSetlists.forEach((setlist: any) => {
+        const user = setlist.users;
+        const show = setlist.shows;
+        const songCount = setlist.setlist_songs?.[0]?.count || 0;
+        
+        if (setlist.created_by && user && show) {
+          activities.push({
+            id: `setlist-${setlist.id}`,
+            type: 'setlist_create',
+            user: {
+              id: setlist.created_by,
+              displayName: user.display_name || 'Anonymous',
+              ...(user.user_profiles?.avatar_url && { avatarUrl: user.user_profiles.avatar_url }),
+            },
+            target: {
+              id: show.id,
+              name: show.headliner_artist?.name || show.name,
+              slug: show.slug,
+              type: 'show',
+            },
+            createdAt: setlist.created_at,
+            metadata: {
+              songCount: songCount,
+            },
+          });
+        }
+      });
+    }
 
     // Sort all activities by createdAt descending
     activities.sort(

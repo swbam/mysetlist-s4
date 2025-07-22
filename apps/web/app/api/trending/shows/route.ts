@@ -1,7 +1,5 @@
-import { db } from '@repo/database';
-import { artists, shows, venues } from '@repo/database';
-import { desc, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createServiceClient } from '~/lib/supabase/server';
 import type { TrendingShow, TrendingShowsResponse } from '~/types/api';
 
 // Force dynamic rendering for API route
@@ -28,59 +26,47 @@ export async function GET(request: NextRequest) {
         break;
     }
 
-    // Trending logic: base on vote_count, attendee_count, view_count
-    type RawShow = {
-      id: string;
-      name: string;
-      slug: string;
-      date: string;
-      status: string;
-      voteCount: number | null;
-      attendeeCount: number | null;
-      viewCount: number | null;
-      trendingScore: number | null;
-      artistName: string;
-      artistSlug: string;
-      artistImage: string | null;
-      venueName: string | null;
-      venueCity: string | null;
-      venueState: string | null;
-    };
+    const supabase = await createServiceClient();
 
-    const raw = await db
-      .select({
-        id: shows.id,
-        name: shows.name,
-        slug: shows.slug,
-        date: shows.date,
-        status: shows.status,
-        voteCount: shows.voteCount,
-        attendeeCount: shows.attendeeCount,
-        viewCount: shows.viewCount,
-        trendingScore: shows.trendingScore,
-        artistId: shows.headlinerArtistId,
-        venueId: shows.venueId,
-        artistName: artists.name,
-        artistSlug: artists.slug,
-        artistImage: artists.imageUrl,
-        venueName: venues.name,
-        venueCity: venues.city,
-        venueState: venues.state,
-      })
-      .from(shows)
-      .leftJoin(artists, sql`${artists.id} = ${shows.headlinerArtistId}`)
-      .leftJoin(venues, sql`${venues.id} = ${shows.venueId}`)
-      .where(sql`${shows.date} >= ${startDate.toISOString().substring(0, 10)} OR ${shows.attendeeCount} > 0 OR ${shows.viewCount} > 0`)
-      .orderBy(desc(sql`COALESCE(${shows.trendingScore}, 0)`), desc(shows.attendeeCount), desc(shows.viewCount))
+    // Get trending shows with artist and venue information
+    const { data: raw, error } = await supabase
+      .from('shows')
+      .select(`
+        id,
+        name,
+        slug,
+        date,
+        status,
+        vote_count,
+        attendee_count,
+        view_count,
+        trending_score,
+        headliner_artist:artists!shows_headliner_artist_id_fkey(
+          name,
+          slug,
+          image_url
+        ),
+        venue:venues!shows_venue_id_fkey(
+          name,
+          city,
+          state
+        )
+      `)
+      .or(`date.gte.${startDate.toISOString().substring(0, 10)},attendee_count.gt.0,view_count.gt.0`)
+      .order('trending_score', { ascending: false, nullsFirst: false })
+      .order('attendee_count', { ascending: false, nullsFirst: false })
+      .order('view_count', { ascending: false, nullsFirst: false })
       .limit(limit);
 
-    const formatted: TrendingShow[] = (raw as RawShow[]).map((s, idx) => {
+    if (error) throw error;
+
+    const formatted: TrendingShow[] = ((raw || []) as any[]).map((s, idx) => {
       // Fallback trending score if null
       const score =
-        s.trendingScore ?? (s.voteCount ?? 0) * 2 + (s.attendeeCount ?? 0);
+        s.trending_score ?? (s.vote_count ?? 0) * 2 + (s.attendee_count ?? 0);
       const weeklyGrowth = Math.max(
         0,
-        Math.random() * 25 + (s.voteCount ?? 0) / 10
+        Math.random() * 25 + (s.vote_count ?? 0) / 10
       );
       return {
         id: s.id,
@@ -89,17 +75,17 @@ export async function GET(request: NextRequest) {
         date: s.date,
         status: s.status,
         artist: {
-          name: s.artistName,
-          slug: s.artistSlug,
-          imageUrl: s.artistImage,
+          name: s.headliner_artist?.name || 'Unknown Artist',
+          slug: s.headliner_artist?.slug || '',
+          imageUrl: s.headliner_artist?.image_url || null,
         },
         venue: {
-          name: s.venueName,
-          city: s.venueCity,
-          state: s.venueState,
+          name: s.venue?.name || null,
+          city: s.venue?.city || null,
+          state: s.venue?.state || null,
         },
-        voteCount: s.voteCount ?? 0,
-        attendeeCount: s.attendeeCount ?? 0,
+        voteCount: s.vote_count ?? 0,
+        attendeeCount: s.attendee_count ?? 0,
         trendingScore: score,
         weeklyGrowth: Number(weeklyGrowth.toFixed(1)),
         rank: idx + 1,
