@@ -1,7 +1,7 @@
 #!/usr/bin/env ts-node
 
 import { db, testConnection } from './src/index';
-import { createSupabaseServerClient, createSupabaseAdminClient } from './src/supabase';
+import { createSupabaseAdminClient } from './src/supabase';
 import { createSupabaseBrowserClient } from './src/supabase-client';
 import { artists } from './src/schema';
 
@@ -23,20 +23,6 @@ async function testDrizzle() {
   }
 }
 
-async function testSupabaseServer() {
-  console.log('\n2. Testing Supabase Server Client:');
-  try {
-    const supabase = createSupabaseServerClient();
-    const { data, error } = await supabase.from('artists').select('id').limit(1);
-    
-    if (error) throw error;
-    console.log(`   ✓ Supabase server test: SUCCESS (found ${data?.length || 0} artists)`);
-    return true;
-  } catch (error) {
-    console.log(`   ✗ Supabase server test failed:`, error);
-    return false;
-  }
-}
 
 async function testSupabaseAdmin() {
   console.log('\n3. Testing Supabase Admin Client:');
@@ -71,7 +57,6 @@ async function testSupabaseBrowser() {
 async function runAllTests() {
   const results = await Promise.all([
     testDrizzle(),
-    testSupabaseServer(),
     testSupabaseAdmin(),
     testSupabaseBrowser()
   ]);

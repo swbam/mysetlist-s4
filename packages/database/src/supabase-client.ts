@@ -14,11 +14,11 @@ try {
 
 // Fallback to process.env or hardcoded values
 supabaseUrl = supabaseUrl || 
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 
+  process.env['NEXT_PUBLIC_SUPABASE_URL'] || 
   'https://yzwkimtdaabyjbpykquu.supabase.co';
 
 supabaseAnonKey = supabaseAnonKey || 
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 
+  process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'] || 
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk0NDQ2NzAsImV4cCI6MjA0NTAyMDY3MH0.JpQbmFj7H8P9JN74_uqr8bKMZfqPOIMH5j9pFMh3NZA';
 
 export const createSupabaseBrowserClient = () => {

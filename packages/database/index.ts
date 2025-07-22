@@ -14,4 +14,4 @@ export type { RealtimeManager } from './src/realtime';
 
 // Re-export Supabase client helpers
 export { createSupabaseBrowserClient } from './src/supabase-client';
-export { createSupabaseAdminClient, createSupabaseServerClient } from './src/supabase';
+export { createSupabaseAdminClient } from './src/supabase';
