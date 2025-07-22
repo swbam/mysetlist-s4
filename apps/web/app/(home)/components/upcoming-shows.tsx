@@ -5,79 +5,76 @@ import { format } from 'date-fns';
 import { Calendar, ChevronRight, Clock, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { createServiceClient } from '~/lib/supabase/server';
 
-// Sample data for demonstration - In production, this would come from the database
-const sampleUpcomingShows = [
-  {
-    id: '1',
-    name: 'Summer Tour 2024',
-    slug: 'summer-tour-2024-nashville',
-    date: '2024-08-15',
-    startTime: '20:00',
-    status: 'upcoming',
-    artist: {
-      id: '1',
-      name: 'Taylor Swift',
-      slug: 'taylor-swift',
-      imageUrl:
-        'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100&h=100&fit=crop',
-    },
-    venue: {
-      id: '1',
-      name: 'Nissan Stadium',
-      slug: 'nissan-stadium',
-      city: 'Nashville',
-      state: 'TN',
-    },
-  },
-  {
-    id: '2',
-    name: 'World Tour',
-    slug: 'world-tour-los-angeles',
-    date: '2024-08-22',
-    startTime: '19:30',
-    status: 'upcoming',
-    artist: {
-      id: '2',
-      name: 'The Weeknd',
-      slug: 'the-weeknd',
-      imageUrl:
-        'https://images.unsplash.com/photo-1547355253-ff0740f6e8c1?w=100&h=100&fit=crop',
-    },
-    venue: {
-      id: '2',
-      name: 'SoFi Stadium',
-      slug: 'sofi-stadium',
-      city: 'Los Angeles',
-      state: 'CA',
-    },
-  },
-  {
-    id: '3',
-    name: 'Arena Tour',
-    slug: 'arena-tour-chicago',
-    date: '2024-09-05',
-    startTime: '20:00',
-    status: 'upcoming',
-    artist: {
-      id: '3',
-      name: 'Billie Eilish',
-      slug: 'billie-eilish',
-      imageUrl:
-        'https://images.unsplash.com/photo-1520872024865-3ff2805d8bb3?w=100&h=100&fit=crop',
-    },
-    venue: {
-      id: '3',
-      name: 'United Center',
-      slug: 'united-center',
-      city: 'Chicago',
-      state: 'IL',
-    },
-  },
-];
+async function getUpcomingShows() {
+  try {
+    const supabase = await createServiceClient();
+    
+    // Get upcoming shows with artist and venue information
+    const { data: shows, error } = await supabase
+      .from('shows')
+      .select(`
+        id,
+        name,
+        slug,
+        date,
+        start_time,
+        status,
+        headliner_artist:artists!shows_headliner_artist_id_fkey (
+          id,
+          name,
+          slug,
+          image_url
+        ),
+        venue:venues (
+          id,
+          name,
+          slug,
+          city,
+          state
+        )
+      `)
+      .eq('status', 'upcoming')
+      .gte('date', new Date().toISOString().split('T')[0])
+      .order('date', { ascending: true })
+      .limit(3);
 
-export function UpcomingShows() {
-  const upcomingShows = sampleUpcomingShows;
+    if (error) {
+      console.error('Error fetching upcoming shows:', error);
+      return [];
+    }
+
+    // Transform data to match component expectations
+    return (shows || []).map(show => ({
+      id: show.id,
+      name: show.name,
+      slug: show.slug,
+      date: show.date,
+      startTime: show.start_time,
+      status: show.status,
+      artist: show.headliner_artist ? {
+        id: show.headliner_artist.id,
+        name: show.headliner_artist.name,
+        slug: show.headliner_artist.slug,
+        imageUrl: show.headliner_artist.image_url,
+      } : null,
+      venue: show.venue ? {
+        id: show.venue.id,
+        name: show.venue.name,
+        slug: show.venue.slug,
+        city: show.venue.city,
+        state: show.venue.state,
+      } : null,
+    }));
+  } catch (error) {
+    console.error('Failed to fetch upcoming shows:', error);
+    return [];
+  }
+}
+
+export async function UpcomingShows() {
+  const upcomingShows = await getUpcomingShows();
   return (
     <section className="bg-muted/50 py-16 md:py-24">
       <div className="container mx-auto px-4">
@@ -113,10 +110,10 @@ export function UpcomingShows() {
                   <div className="flex flex-col md:flex-row">
                     <div className="flex flex-1 items-center gap-4 p-6">
                       <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-full bg-muted">
-                        {show.artist.imageUrl && (
+                        {show.artist?.imageUrl && (
                           <Image
                             src={show.artist.imageUrl}
-                            alt={show.artist.name}
+                            alt={show.artist?.name || 'Artist'}
                             fill
                             className="object-cover"
                           />
@@ -130,7 +127,7 @@ export function UpcomingShows() {
                           </h3>
                         </Link>
                         <p className="text-muted-foreground">
-                          {show.artist.name}
+                          {show.artist?.name || 'Unknown Artist'}
                         </p>
                       </div>
                     </div>

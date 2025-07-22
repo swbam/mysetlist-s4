@@ -29,7 +29,12 @@ export async function searchContent(
       limit: limit.toString(),
     });
 
-    const response = await fetch(`/api/search?${params}`, {
+    // Use absolute URL in production
+    const baseUrl = typeof window !== 'undefined' 
+      ? window.location.origin 
+      : (process.env.NEXT_PUBLIC_URL || process.env.NEXT_PUBLIC_APP_URL || '');
+    
+    const response = await fetch(`${baseUrl}/api/search?${params}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -37,11 +42,15 @@ export async function searchContent(
     });
 
     if (!response.ok) {
-      throw new Error(`Search failed: ${response.status}`);
+      console.error(`Search failed with status: ${response.status}`);
+      // Still try to parse the response in case it contains error info
+      const data = await response.json().catch(() => ({ results: [] }));
+      return data;
     }
 
     return await response.json();
-  } catch (_error) {
+  } catch (error) {
+    console.error('Search error:', error);
     return { results: [] };
   }
 }

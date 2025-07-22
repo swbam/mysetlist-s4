@@ -5,7 +5,9 @@ const nextConfig: NextConfig = {
   // TypeScript configuration
   // TODO: Fix remaining design system component type issues
   typescript: {
-    ignoreBuildErrors: true,
+    // IMPORTANT: This should be false in production!
+    // Only temporarily set to true while fixing type errors
+    ignoreBuildErrors: process.env.FORCE_IGNORE_TS_ERRORS === 'true',
   },
   eslint: {
     ignoreDuringBuilds: false,

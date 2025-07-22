@@ -16,7 +16,53 @@ import { CACHE_TAGS, REVALIDATION_TIMES } from '~/lib/cache';
 
 const _getArtist = async (slug: string) => {
   try {
-    // First try with Drizzle for better performance
+    // First try with Supabase client for better edge runtime compatibility
+    try {
+      const { createServiceClient } = await import('~/lib/supabase/server');
+      const supabase = await createServiceClient();
+      
+      const { data, error } = await supabase
+        .from('artists')
+        .select('*')
+        .eq('slug', slug)
+        .single();
+      
+      if (!error && data) {
+        // Transform snake_case to camelCase
+        return {
+          id: data.id,
+          spotifyId: data.spotify_id,
+          ticketmasterId: data.ticketmaster_id,
+          name: data.name,
+          slug: data.slug,
+          imageUrl: data.image_url,
+          smallImageUrl: data.small_image_url,
+          genres: data.genres,
+          popularity: data.popularity,
+          followers: data.followers,
+          followerCount: data.follower_count,
+          monthlyListeners: data.monthly_listeners,
+          verified: data.verified,
+          bio: data.bio,
+          externalUrls: data.external_urls,
+          lastSyncedAt: data.last_synced_at,
+          songCatalogSyncedAt: data.song_catalog_synced_at,
+          totalAlbums: data.total_albums,
+          totalSongs: data.total_songs,
+          lastFullSyncAt: data.last_full_sync_at,
+          trendingScore: data.trending_score,
+          totalShows: data.total_shows,
+          upcomingShows: data.upcoming_shows,
+          totalSetlists: data.total_setlists,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at,
+        };
+      }
+    } catch (supabaseError) {
+      console.error('Supabase client error:', supabaseError);
+    }
+
+    // Fallback to Drizzle if Supabase fails
     const [artist] = await db
       .select({
         id: artists.id,
@@ -54,55 +100,8 @@ const _getArtist = async (slug: string) => {
       return artist;
     }
 
-    // If not found with Drizzle, try Supabase client as fallback
-    try {
-      const { createServiceClient } = await import('~/lib/supabase/server');
-      const supabase = await createServiceClient();
-      
-      const { data, error } = await supabase
-        .from('artists')
-        .select('*')
-        .eq('slug', slug)
-        .single();
-      
-      if (error || !data) {
-        console.warn('Artist not found in Supabase:', slug);
-        return null;
-      }
-
-      // Transform snake_case to camelCase
-      return {
-        id: data.id,
-        spotifyId: data.spotify_id,
-        ticketmasterId: data.ticketmaster_id,
-        name: data.name,
-        slug: data.slug,
-        imageUrl: data.image_url,
-        smallImageUrl: data.small_image_url,
-        genres: data.genres,
-        popularity: data.popularity,
-        followers: data.followers,
-        followerCount: data.follower_count,
-        monthlyListeners: data.monthly_listeners,
-        verified: data.verified,
-        bio: data.bio,
-        externalUrls: data.external_urls,
-        lastSyncedAt: data.last_synced_at,
-        songCatalogSyncedAt: data.song_catalog_synced_at,
-        totalAlbums: data.total_albums,
-        totalSongs: data.total_songs,
-        lastFullSyncAt: data.last_full_sync_at,
-        trendingScore: data.trending_score,
-        totalShows: data.total_shows,
-        upcomingShows: data.upcoming_shows,
-        totalSetlists: data.total_setlists,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
-      };
-    } catch (supabaseError) {
-      console.error('Supabase fallback error:', supabaseError);
-      return null;
-    }
+    console.warn('Artist not found:', slug);
+    return null;
   } catch (err: unknown) {
     console.error('Error fetching artist:', err);
     return null;
@@ -110,10 +109,22 @@ const _getArtist = async (slug: string) => {
 };
 
 // Cached version with tags
-export const getArtist = unstable_cache(_getArtist, ['artist-by-slug'], {
-  revalidate: REVALIDATION_TIMES.artist,
-  tags: [CACHE_TAGS.artists],
-});
+export const getArtist = unstable_cache(
+  async (slug: string) => {
+    try {
+      return await _getArtist(slug);
+    } catch (error) {
+      console.error('Error in cached getArtist:', error);
+      // Return null instead of throwing to prevent 500 errors
+      return null;
+    }
+  },
+  ['artist-by-slug'],
+  {
+    revalidate: REVALIDATION_TIMES.artist,
+    tags: [CACHE_TAGS.artists],
+  }
+);
 
 const _getArtistShows = async (artistId: string, type: 'upcoming' | 'past') => {
   const now = new Date();
@@ -185,7 +196,14 @@ const _getArtistShows = async (artistId: string, type: 'upcoming' | 'past') => {
 
 // Cached version with shorter revalidation for upcoming shows
 export const getArtistShows = unstable_cache(
-  _getArtistShows,
+  async (artistId: string, type: 'upcoming' | 'past') => {
+    try {
+      return await _getArtistShows(artistId, type);
+    } catch (error) {
+      console.error(`Error in cached getArtistShows for ${type}:`, error);
+      return [];
+    }
+  },
   ['artist-shows'],
   {
     revalidate: REVALIDATION_TIMES.show,

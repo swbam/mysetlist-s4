@@ -27,6 +27,7 @@ const ArtistBio = dynamic(
     })),
   {
     loading: () => <div className="h-32 animate-pulse rounded-lg bg-muted" />,
+    ssr: false, // Disable SSR for dynamic imports to avoid hydration issues
   }
 );
 
@@ -37,6 +38,7 @@ const ArtistSongCatalog = dynamic(
     })),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
+    ssr: false,
   }
 );
 
@@ -47,6 +49,7 @@ const ArtistTopTracks = dynamic(
     })),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
+    ssr: false,
   }
 );
 
@@ -57,6 +60,7 @@ const PastShows = dynamic(
     })),
   {
     loading: () => <div className="h-64 animate-pulse rounded-lg bg-muted" />,
+    ssr: false,
   }
 );
 
@@ -67,6 +71,7 @@ const SimilarArtists = dynamic(
     })),
   {
     loading: () => <div className="h-64 animate-pulse rounded-lg bg-muted" />,
+    ssr: false,
   }
 );
 
@@ -77,6 +82,7 @@ const ArtistSetlistsView = dynamic(
     })),
   {
     loading: () => <div className="h-64 animate-pulse rounded-lg bg-muted" />,
+    ssr: false,
   }
 );
 

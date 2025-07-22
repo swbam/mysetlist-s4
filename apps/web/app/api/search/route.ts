@@ -2,7 +2,19 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { createClient } from '~/lib/supabase/server';
 import { TicketmasterClient } from '@repo/external-apis';
 
-const ticketmaster = new TicketmasterClient();
+// Initialize Ticketmaster client lazily to avoid errors when API key is missing
+let ticketmaster: TicketmasterClient | null = null;
+
+function getTicketmasterClient() {
+  if (!ticketmaster && process.env.TICKETMASTER_API_KEY) {
+    try {
+      ticketmaster = new TicketmasterClient({});
+    } catch (error) {
+      console.error('Failed to initialize Ticketmaster client:', error);
+    }
+  }
+  return ticketmaster;
+}
 
 interface SearchResult {
   id: string;
@@ -43,10 +55,17 @@ export async function GET(request: NextRequest) {
       supabase = await createClient();
     } catch (error) {
       console.error('Failed to create Supabase client:', error);
-      return NextResponse.json({ 
-        error: 'Database connection failed',
-        message: 'Unable to connect to the database'
-      }, { status: 500 });
+      // Fallback to admin client for server-side requests
+      try {
+        const { createSupabaseAdminClient } = await import('@repo/database');
+        supabase = createSupabaseAdminClient();
+      } catch (fallbackError) {
+        console.error('Fallback client also failed:', fallbackError);
+        return NextResponse.json({ 
+          error: 'Database connection failed',
+          message: 'Unable to connect to the database'
+        }, { status: 500 });
+      }
     }
     const results: SearchResult[] = [];
 
@@ -76,15 +95,16 @@ export async function GET(request: NextRequest) {
       }
 
       // Add Ticketmaster artists only if API key is available
-      if (results.length < limit && process.env.TICKETMASTER_API_KEY) {
+      const ticketmasterClient = getTicketmasterClient();
+      if (results.length < limit && ticketmasterClient) {
         try {
-          const ticketmasterResponse = await ticketmaster.searchAttractions({
+          const ticketmasterResponse = await ticketmasterClient.searchAttractions({
             keyword: query,
             size: limit - results.length,
             classificationName: ['music'],
             sort: 'relevance,desc'
           });
-          const ticketmasterArtists = ticketmasterResponse._embedded?.attractions || [];
+          const ticketmasterArtists = ticketmasterResponse?._embedded?.attractions || [];
           
           for (const attraction of ticketmasterArtists) {
             const existsInResults = results.some(r => 
@@ -296,9 +316,11 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Search error:', error);
+    // Return empty results instead of error to prevent UI issues
     return NextResponse.json({ 
-      error: 'Search failed',
+      results: [],
+      error: 'Search temporarily unavailable',
       message: error instanceof Error ? error.message : 'Unknown error'
-    }, { status: 500 });
+    }, { status: 200 }); // Return 200 with empty results to prevent client errors
   }
 }

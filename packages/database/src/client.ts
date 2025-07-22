@@ -11,12 +11,13 @@ let _client: postgres.Sql | null = null;
 // Get database URL with fallback
 function getDatabaseUrl(): string {
   // Try env first
-  let url = process.env['DATABASE_URL'] || process.env['DIRECT_URL'];
+  const url = process.env['DATABASE_URL'] || process.env['DIRECT_URL'];
   
-  // If not found, use the provided Supabase URL
+  // If not found, throw error for production safety
   if (!url) {
-    console.warn('DATABASE_URL not found in environment, using fallback connection');
-    url = 'postgresql://postgres.yzwkimtdaabyjbpykquu:Bambseth1590@aws-0-us-east-1.pooler.supabase.com:6543/postgres';
+    const errorMessage = 'DATABASE_URL not found in environment. Please configure DATABASE_URL or DIRECT_URL environment variable.';
+    console.error(errorMessage);
+    throw new Error(errorMessage);
   }
   
   return url;
@@ -27,22 +28,27 @@ export function getDb() {
     return _db;
   }
 
-  const connectionString = getDatabaseUrl();
+  try {
+    const connectionString = getDatabaseUrl();
 
-  _client = postgres(connectionString, {
-    max: 10,
-    idle_timeout: 20,
-    connect_timeout: 10,
-    ssl: 'require',
-    prepare: false, // Disable prepared statements for Supabase pooler
-  });
+    _client = postgres(connectionString, {
+      max: 10,
+      idle_timeout: 20,
+      connect_timeout: 10,
+      ssl: 'require',
+      prepare: false, // Disable prepared statements for Supabase pooler
+    });
 
-  _db = drizzle(_client, {
-    schema,
-    logger: process.env['NODE_ENV'] === 'development',
-  });
+    _db = drizzle(_client, {
+      schema,
+      logger: process.env['NODE_ENV'] === 'development',
+    });
 
-  return _db;
+    return _db;
+  } catch (error) {
+    console.error('Failed to initialize database connection:', error);
+    throw error;
+  }
 }
 
 // Export a proxy that initializes on first use

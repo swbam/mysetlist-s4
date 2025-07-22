@@ -37,6 +37,7 @@
     "check:env": "tsx scripts/check-env.ts",
     "check:env:test": "tsx scripts/check-env.ts --test-apis",
     "validate:env": "tsx scripts/validate-env-config.ts",
+    "validate:prod": "tsx scripts/validate-production-env.ts",
     "sync:artists": "tsx scripts/sync-trending-artists.ts",
     "sync:top": "tsx scripts/sync-top-artists.ts",
     "test:e2e": "tsx scripts/comprehensive-e2e-test.ts --npm-script",
@@ -59,7 +60,9 @@
     "final:full": "echo '🎯 Full Deployment Pipeline' && pnpm check:env && pnpm db:generate && pnpm typecheck && tsx scripts/final-deployment.ts --prod --parallel --yes --verbose",
     "final:emergency": "echo '🚨 Emergency Deployment' && tsx scripts/final-deployment.ts --prod --force --skip-tests --yes",
     "final:ci": "echo '🤖 CI/CD Deployment' && tsx scripts/final-deployment.ts --prod --parallel --yes --verbose",
-    "final:test": "echo '🧪 Test Deployment' && tsx scripts/final-deployment.ts --validate-only --verbose && tsx scripts/final-deployment.ts --dry-run --verbose"
+    "final:test": "echo '🧪 Test Deployment' && tsx scripts/final-deployment.ts --validate-only --verbose && tsx scripts/final-deployment.ts --dry-run --verbose",
+    "deploy:next-forge": "tsx scripts/deploy-next-forge.ts",
+    "deploy:next-forge:prod": "tsx scripts/deploy-next-forge.ts --prod"
   },
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.0",

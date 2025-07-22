@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '~/lib/supabase/server';
+import { getBaseUrl } from '~/lib/utils';
 
 interface AutoImportRequest {
   artistId?: string;
@@ -59,11 +60,54 @@ export async function POST(request: NextRequest) {
 
     // If artist doesn't exist, trigger sync to create it
     if (!artist) {
-      // For now, return error. In production, this would trigger artist creation
-      return NextResponse.json(
-        { error: 'Artist not found in database' },
-        { status: 404 }
-      );
+      // Import the artist using the import endpoint
+      try {
+        const importResponse = await fetch(`${getBaseUrl()}/api/artists/import`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            artistName: artistName || '',
+            ticketmasterId: body.ticketmasterId,
+            spotifyId: spotifyId,
+          }),
+        });
+
+        if (!importResponse.ok) {
+          const errorData = await importResponse.json();
+          throw new Error(errorData.error || 'Import failed');
+        }
+
+        const importData = await importResponse.json();
+        
+        // Fetch the newly created artist
+        if (importData.artist?.id) {
+          const { data: newArtist } = await supabase
+            .from('artists')
+            .select('*')
+            .eq('id', importData.artist.id)
+            .single();
+          
+          if (newArtist) {
+            artist = newArtist;
+          }
+        }
+      } catch (importError) {
+        console.error('Failed to import artist:', importError);
+        return NextResponse.json(
+          { error: 'Failed to import artist', details: importError instanceof Error ? importError.message : 'Unknown error' },
+          { status: 500 }
+        );
+      }
+      
+      // If still no artist after import attempt, return error
+      if (!artist) {
+        return NextResponse.json(
+          { error: 'Artist not found and could not be imported' },
+          { status: 404 }
+        );
+      }
     }
 
     // Check if we need to sync data (only if not synced in last 24 hours)
@@ -84,7 +128,7 @@ export async function POST(request: NextRequest) {
         try {
           // If we have a Ticketmaster ID, sync shows
           if (artist.ticketmaster_id) {
-            await fetch(`${process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001'}/api/artists/sync-shows`, {
+            await fetch(`${getBaseUrl()}/api/artists/sync-shows`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',

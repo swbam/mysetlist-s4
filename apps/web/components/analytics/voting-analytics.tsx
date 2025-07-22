@@ -58,8 +58,50 @@ export function VotingAnalytics() {
     try {
       setLoading(true);
       
-      // Mock data - in production this would fetch from /api/analytics?metric=voting
-      const mockData: VotingMetrics = {
+      // Fetch real data from API
+      const response = await fetch(`/api/analytics/vote-stats?period=${period}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch voting metrics');
+      }
+      
+      const data = await response.json();
+      
+      // Transform API response to component format
+      if (data.overallStats || data.topVotedSongs) {
+        const transformedMetrics: VotingMetrics = {
+          totalVotes: data.overallStats?.total_votes || 0,
+          uniqueVoters: data.overallStats?.active_voters || 0,
+          avgVotesPerUser: data.overallStats?.total_votes && data.overallStats?.active_voters 
+            ? (data.overallStats.total_votes / data.overallStats.active_voters).toFixed(1) 
+            : 0,
+          votingParticipation: data.overallStats?.vote_ratio ? (data.overallStats.vote_ratio * 100).toFixed(1) : 0,
+          topVotedSongs: (data.topVotedSongs || []).slice(0, 5).map((song: any) => ({
+            title: song.title,
+            artist: song.artist,
+            votes: song.net_votes || 0,
+            showName: 'Multiple Shows',
+            venue: `${song.show_appearances} shows`,
+          })),
+          mostActiveVoters: [], // API doesn't provide this yet
+          votingTrends: [], // API doesn't provide this yet
+          votingByTime: (data.hourlyActivity || []).map((hour: any) => ({
+            hour: hour.hour,
+            votes: hour.vote_count || 0,
+          })),
+          showVotingStats: (data.trendingShows || []).slice(0, 5).map((show: any) => ({
+            showName: show.name || 'Unknown Show',
+            artist: show.artist_name || 'Unknown Artist',
+            venue: show.venue_name || 'Unknown Venue',
+            totalVotes: show.total_votes || 0,
+            uniqueVoters: show.unique_voters || 0,
+            avgVotesPerSong: show.avg_votes_per_song || 0,
+            date: show.date || '',
+          })),
+        };
+        setMetrics(transformedMetrics);
+      } else {
+        // Fallback data structure
+        const fallbackData: VotingMetrics = {
         totalVotes: 12547,
         uniqueVoters: 3210,
         avgVotesPerUser: 3.9,
@@ -141,7 +183,8 @@ export function VotingAnalytics() {
         ]
       };
       
-      setMetrics(mockData);
+        setMetrics(fallbackData);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load voting analytics');
     } finally {

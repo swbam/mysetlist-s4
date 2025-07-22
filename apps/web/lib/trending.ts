@@ -52,7 +52,7 @@ export async function getTrendingShows(
   config: TrendingConfig = DEFAULT_CONFIG
 ): Promise<TrendingItem[]> {
   try {
-    const supabase = createServiceClient();
+    const supabase = await createServiceClient();
 
     // Get shows with highest trending scores
     const { data: shows, error } = await supabase
@@ -125,7 +125,7 @@ export async function getTrendingArtists(
   config: TrendingConfig = DEFAULT_CONFIG
 ): Promise<TrendingItem[]> {
   try {
-    const supabase = createServiceClient();
+    const supabase = await createServiceClient();
 
     // Get artists with highest trending scores
     const { data: artists, error } = await supabase

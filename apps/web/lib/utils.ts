@@ -59,25 +59,47 @@ export function parseGenres(genresField: string | string[] | null | undefined): 
  * Get the base URL based on environment
  */
 export function getBaseUrl(): string {
-  // Check for explicitly set URL first
+  // Priority 1: Explicitly configured URLs
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL;
+  }
   if (process.env.NEXT_PUBLIC_URL) {
     return process.env.NEXT_PUBLIC_URL;
   }
   
-  // Production
+  // Priority 2: Browser environment - use current origin
+  if (typeof window !== 'undefined') {
+    return window.location.origin;
+  }
+  
+  // Priority 3: Production environment
   if (process.env.NODE_ENV === 'production') {
-    if (process.env.VERCEL_ENV === 'production') {
-      return 'https://theset.live';
+    // Vercel production URL
+    if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+      return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
     }
-    // Development/preview deployments on Vercel
+    // Vercel environment check
+    if (process.env.VERCEL_ENV === 'production' && process.env.DOMAIN) {
+      return `https://${process.env.DOMAIN}`;
+    }
+    // Vercel deployment URL
     if (process.env.VERCEL_URL) {
       return `https://${process.env.VERCEL_URL}`;
     }
-    // Fallback for production builds running locally
-    return 'http://localhost:3001';
+    // Generic production URL fallback
+    if (process.env.PRODUCTION_URL) {
+      return process.env.PRODUCTION_URL;
+    }
+    // CRITICAL: Remove localhost fallback in production!
+    console.error('WARNING: No production URL configured! Set NEXT_PUBLIC_APP_URL');
   }
   
-  // Local development
+  // Priority 4: Development/preview deployments
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  
+  // Priority 5: Local development only
   return 'http://localhost:3001';
 }
 

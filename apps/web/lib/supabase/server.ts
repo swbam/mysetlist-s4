@@ -5,10 +5,14 @@ import { createSupabaseAdminClient } from '@repo/database';
 export async function createClient() {
   // Check if we're in a request context or build time
   try {
-    const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'] || 
-      'https://yzwkimtdaabyjbpykquu.supabase.co';
-    const supabaseAnonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'] || 
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mjk0NDQ2NzAsImV4cCI6MjA0NTAyMDY3MH0.JpQbmFj7H8P9JN74_uqr8bKMZfqPOIMH5j9pFMh3NZA';
+    const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'];
+    const supabaseAnonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.error('[Supabase Server] Missing required environment variables');
+      // Return admin client as fallback for server operations
+      return createSupabaseAdminClient();
+    }
     
     return createServerClient(
       supabaseUrl,
@@ -59,4 +63,6 @@ export async function auth() {
   return { user };
 }
 
-export const createServiceClient = createSupabaseAdminClient;
+export async function createServiceClient() {
+  return createSupabaseAdminClient();
+}
