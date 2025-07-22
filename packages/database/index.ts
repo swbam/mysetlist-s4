@@ -2,6 +2,9 @@
 export { db, getDb, sql, eq, and, or, desc, asc, ilike, isNull, isNotNull } from './src/client';
 export type { Database } from './src/client';
 
+// Re-export from main index
+export { testConnection } from './src/index';
+
 // Re-export all schema tables
 export * from './src/schema';
 

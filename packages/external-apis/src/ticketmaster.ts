@@ -125,6 +125,10 @@ class TicketmasterAPI {
     endpoint: string,
     params: Record<string, any> = {}
   ): Promise<T> {
+    if (!env.TICKETMASTER_API_KEY) {
+      throw new Error('TICKETMASTER_API_KEY is not configured');
+    }
+
     const url = `${this.baseURL}${endpoint}`;
 
     const response = await axios.get(url, {
@@ -233,4 +237,5 @@ class TicketmasterAPI {
 }
 
 export const ticketmaster = new TicketmasterAPI();
+export class TicketmasterClient extends TicketmasterAPI {}
 export type { TicketmasterEvent, TicketmasterVenue };

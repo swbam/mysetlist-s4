@@ -28,31 +28,36 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createServiceClient();
 
-    // Get trending shows with artist and venue information
+    // Get trending shows with artist and venue information using proper column names
     const { data: raw, error } = await supabase
       .from('shows')
       .select(`
         id,
         name,
         slug,
-        date,
+        show_date,
         status,
         vote_count,
         attendee_count,
         view_count,
         trending_score,
-        headliner_artist:artists!shows_headliner_artist_id_fkey(
+        headliner_artist_id,
+        venue_id,
+        artists!inner(
+          id,
           name,
           slug,
           image_url
         ),
-        venue:venues!shows_venue_id_fkey(
+        venues!inner(
+          id,
           name,
           city,
-          state
+          state,
+          country
         )
       `)
-      .or(`date.gte.${startDate.toISOString().substring(0, 10)},attendee_count.gt.0,view_count.gt.0`)
+      .or(`show_date.gte.${startDate.toISOString().substring(0, 10)},attendee_count.gt.0,view_count.gt.0`)
       .order('trending_score', { ascending: false, nullsFirst: false })
       .order('attendee_count', { ascending: false, nullsFirst: false })
       .order('view_count', { ascending: false, nullsFirst: false })
@@ -61,6 +66,10 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
 
     const formatted: TrendingShow[] = ((raw || []) as any[]).map((s, idx) => {
+      // Get the first artist from the array (headliner)
+      const artist = Array.isArray(s.artists) ? s.artists[0] : s.artists;
+      const venue = Array.isArray(s.venues) ? s.venues[0] : s.venues;
+      
       // Fallback trending score if null
       const score =
         s.trending_score ?? (s.vote_count ?? 0) * 2 + (s.attendee_count ?? 0);
@@ -70,19 +79,19 @@ export async function GET(request: NextRequest) {
       );
       return {
         id: s.id,
-        name: s.name,
+        name: s.name || (artist?.name ? `${artist.name} Live` : 'Unknown Show'),
         slug: s.slug,
-        date: s.date,
-        status: s.status,
+        date: s.show_date,
+        status: s.status || 'confirmed',
         artist: {
-          name: s.headliner_artist?.name || 'Unknown Artist',
-          slug: s.headliner_artist?.slug || '',
-          imageUrl: s.headliner_artist?.image_url || null,
+          name: artist?.name || 'Unknown Artist',
+          slug: artist?.slug || '',
+          imageUrl: artist?.image_url || null,
         },
         venue: {
-          name: s.venue?.name || null,
-          city: s.venue?.city || null,
-          state: s.venue?.state || null,
+          name: venue?.name || null,
+          city: venue?.city || null,
+          state: venue?.state || null,
         },
         voteCount: s.vote_count ?? 0,
         attendeeCount: s.attendee_count ?? 0,
