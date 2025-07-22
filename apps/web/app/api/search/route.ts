@@ -38,7 +38,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ results: [] });
     }
 
-    const supabase = await createClient();
+    let supabase;
+    try {
+      supabase = await createClient();
+    } catch (error) {
+      console.error('Failed to create Supabase client:', error);
+      return NextResponse.json({ 
+        error: 'Database connection failed',
+        message: 'Unable to connect to the database'
+      }, { status: 500 });
+    }
     const results: SearchResult[] = [];
 
     // Search Artists

@@ -40,7 +40,10 @@ NEXT_PUBLIC_POSTHOG_KEY=phc_NuCfMIwb8GUzJWAW7FZKsqpviEoH10ZDgc4IcjJfNIi
 NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 
 # Security - Same for all environments
+NEXTAUTH_SECRET=your_production_secret_minimum_32_characters_long_generate_with_openssl
 CRON_SECRET=6155002300
+CSRF_SECRET=your_csrf_secret_for_production_minimum_32_chars
+ADMIN_API_KEY=your_admin_api_key_for_production
 
 # Production Logging
 NEXT_PUBLIC_LOG_LEVEL=error

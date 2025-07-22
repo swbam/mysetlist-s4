@@ -16,30 +16,42 @@ import { CACHE_TAGS, REVALIDATION_TIMES } from '~/lib/cache';
 
 const _getArtist = async (slug: string) => {
   try {
+    // Select only the columns we know exist and need
     const [artist] = await db
-      .select()
+      .select({
+        id: artists.id,
+        spotifyId: artists.spotifyId,
+        ticketmasterId: artists.ticketmasterId,
+        name: artists.name,
+        slug: artists.slug,
+        imageUrl: artists.imageUrl,
+        smallImageUrl: artists.smallImageUrl,
+        genres: artists.genres,
+        popularity: artists.popularity,
+        followers: artists.followers,
+        followerCount: artists.followerCount,
+        monthlyListeners: artists.monthlyListeners,
+        verified: artists.verified,
+        bio: artists.bio,
+        externalUrls: artists.externalUrls,
+        lastSyncedAt: artists.lastSyncedAt,
+        songCatalogSyncedAt: artists.songCatalogSyncedAt,
+        totalAlbums: artists.totalAlbums,
+        totalSongs: artists.totalSongs,
+        lastFullSyncAt: artists.lastFullSyncAt,
+        trendingScore: artists.trendingScore,
+        totalShows: artists.totalShows,
+        upcomingShows: artists.upcomingShows,
+        totalSetlists: artists.totalSetlists,
+        createdAt: artists.createdAt,
+        updatedAt: artists.updatedAt,
+      })
       .from(artists)
       .where(eq(artists.slug, slug))
       .limit(1);
     return artist;
   } catch (err: unknown) {
-    const error = err as Partial<{ code: string; message: string }>;
-    // If column "mbid" (or any other missing column) does not exist, attempt to patch schema on the fly.
-    if (error?.code === '42703') {
-      // Add mbid column if it is missing
-      try {
-        await db.execute(
-          drizzleSql`ALTER TABLE artists ADD COLUMN IF NOT EXISTS mbid TEXT UNIQUE;`
-        );
-        // retry once
-        const [artistRetry] = await db
-          .select()
-          .from(artists)
-          .where(eq(artists.slug, slug))
-          .limit(1);
-        return artistRetry;
-      } catch (_patchErr) {}
-    }
+    console.error('Error fetching artist:', err);
     throw err;
   }
 };

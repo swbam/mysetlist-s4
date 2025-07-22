@@ -6,6 +6,9 @@ export interface SearchResult {
   meta?: string;
   imageUrl?: string;
   slug: string;
+  source?: 'database' | 'ticketmaster';
+  requiresSync?: boolean;
+  ticketmasterId?: string;
 }
 
 export interface SearchResponse {
@@ -45,7 +48,9 @@ export async function searchContent(
 
 export function getSearchResultHref(result: SearchResult): string {
   // Only artists are searchable, so always return artist URL
-  return `/artists/${result.slug}`;
+  // For Ticketmaster results without a slug, generate one
+  const slug = result.slug || result.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  return `/artists/${slug}`;
 }
 
 export function getSearchResultIcon(_type: SearchResult['type']): string {

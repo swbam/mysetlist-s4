@@ -13,7 +13,8 @@ import {
 } from '@repo/database';
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { SyncProgressTracker } from '~/lib/sync-progress-tracker';
-import { SpotifyClient, TicketmasterClient, SetlistFmClient } from '@repo/external-apis';
+import { SpotifyClient, TicketmasterClient } from '@repo/external-apis';
+import { SetlistFmClient } from '@repo/external-apis/src/clients/setlistfm';
 
 // Rate limiting and caching utilities
 export class RateLimiter {

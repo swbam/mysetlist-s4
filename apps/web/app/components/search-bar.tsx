@@ -125,9 +125,27 @@ export const SearchBar = React.memo(({
               <Link
                 key={`${result.type}-${result.id}`}
                 href={getSearchResultHref(result)}
-                onClick={() => {
+                onClick={async () => {
                   setQuery('');
                   setIsOpen(false);
+                  
+                  // If this is a Ticketmaster artist that needs sync, trigger it
+                  if (result.requiresSync && result.source === 'ticketmaster') {
+                    try {
+                      // Trigger artist import in the background
+                      fetch('/api/sync/artist-import', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          ticketmasterId: result.ticketmasterId,
+                          name: result.title,
+                          imageUrl: result.imageUrl,
+                        }),
+                      });
+                    } catch (error) {
+                      console.error('Failed to trigger artist sync:', error);
+                    }
+                  }
                 }}
               >
                 <div className="flex items-center gap-2 rounded-md p-2 transition-colors hover:bg-accent active:bg-accent/80 sm:gap-3 sm:p-3">

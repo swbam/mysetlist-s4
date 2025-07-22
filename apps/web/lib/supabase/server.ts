@@ -5,9 +5,16 @@ import { createSupabaseAdminClient } from '@repo/database/server';
 export async function createClient() {
   // Check if we're in a request context or build time
   try {
+    const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'];
+    const supabaseAnonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
+    
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Missing Supabase environment variables');
+    }
+    
     return createServerClient(
-      process.env['NEXT_PUBLIC_SUPABASE_URL']!,
-      process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!,
+      supabaseUrl,
+      supabaseAnonKey,
       {
         cookies: {
           async get(name: string) {
