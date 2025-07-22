@@ -38,7 +38,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ results: [] });
     }
 
-    const supabase = await createClient();
+    let supabase;
+    try {
+      supabase = await createClient();
+    } catch (error) {
+      console.error('Failed to create Supabase client:', error);
+      return NextResponse.json({ 
+        error: 'Database connection failed',
+        message: 'Unable to connect to the database'
+      }, { status: 500 });
+    }
     const results: SearchResult[] = [];
 
     // Search Artists
@@ -66,8 +75,8 @@ export async function GET(request: NextRequest) {
         );
       }
 
-      // Add Ticketmaster artists
-      if (results.length < limit) {
+      // Add Ticketmaster artists only if API key is available
+      if (results.length < limit && process.env.TICKETMASTER_API_KEY) {
         try {
           const ticketmasterResponse = await ticketmaster.searchAttractions({
             keyword: query,
@@ -115,11 +124,10 @@ export async function GET(request: NextRequest) {
           show_date,
           name,
           status,
-          artists!inner(id, name, image_url),
-          venues!inner(id, name, city, state, country)
+          headliner_artist_id,
+          venue_id
         `)
-        .or(`name.ilike.%${query}%,artists.name.ilike.%${query}%`)
-        .eq('status', 'upcoming')
+        .ilike('name', `%${query}%`)
         .order('show_date', { ascending: true })
         .limit(Math.min(limit, 3));
 
@@ -131,29 +139,43 @@ export async function GET(request: NextRequest) {
         showsQuery = showsQuery.lte('show_date', dateTo);
       }
 
-      // Apply location filter
-      if (location) {
-        showsQuery = showsQuery.or(`venues.city.ilike.%${location}%,venues.state.ilike.%${location}%,venues.country.ilike.%${location}%`);
+      // Apply location filter - simplified for now
+      // TODO: Implement location filter with venue join
+
+      const { data: shows, error: showsError } = await showsQuery;
+
+      if (showsError) {
+        console.warn('Shows search error:', showsError);
       }
 
-      const { data: shows } = await showsQuery;
-
-      if (shows) {
+      if (shows && shows.length > 0) {
+        // Fetch artist and venue details for the shows
+        const artistIds = [...new Set(shows.map(s => s.headliner_artist_id).filter(Boolean))];
+        const venueIds = [...new Set(shows.map(s => s.venue_id).filter(Boolean))];
+        
+        const [artistsData, venuesData] = await Promise.all([
+          artistIds.length > 0 ? supabase.from('artists').select('id, name, image_url').in('id', artistIds) : { data: [] },
+          venueIds.length > 0 ? supabase.from('venues').select('id, name, city, state, country').in('id', venueIds) : { data: [] }
+        ]);
+        
+        const artistsMap = new Map((artistsData.data || []).map(a => [a.id, a]));
+        const venuesMap = new Map((venuesData.data || []).map(v => [v.id, v]));
+        
         results.push(
           ...shows.map((show): SearchResult => {
-            const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
-            const venue = Array.isArray(show.venues) ? show.venues[0] : show.venues;
+            const artist = show.headliner_artist_id ? artistsMap.get(show.headliner_artist_id) : null;
+            const venue = show.venue_id ? venuesMap.get(show.venue_id) : null;
             return {
               id: show.id,
               type: 'show',
-              title: show.name || `${artist?.name} Live`,
-              subtitle: `${venue?.name}, ${venue?.city} • ${new Date(show.show_date).toLocaleDateString()}`,
+              title: show.name || (artist ? `${artist.name} Live` : 'Unknown Show'),
+              subtitle: venue ? `${venue.name}, ${venue.city} • ${new Date(show.show_date).toLocaleDateString()}` : new Date(show.show_date).toLocaleDateString(),
               imageUrl: artist?.image_url,
               slug: show.slug,
               date: show.show_date,
               artistName: artist?.name,
               venueName: venue?.name,
-              location: `${venue?.city}, ${venue?.state || venue?.country}`,
+              location: venue ? `${venue.city}, ${venue.state || venue.country}` : 'Unknown Location',
               source: 'database',
             };
           })
@@ -175,7 +197,11 @@ export async function GET(request: NextRequest) {
         venuesQuery = venuesQuery.or(`city.ilike.%${location}%,state.ilike.%${location}%,country.ilike.%${location}%`);
       }
 
-      const { data: venues } = await venuesQuery;
+      const { data: venues, error: venuesError } = await venuesQuery;
+
+      if (venuesError) {
+        console.warn('Venues search error:', venuesError);
+      }
 
       if (venues) {
         results.push(
@@ -194,28 +220,35 @@ export async function GET(request: NextRequest) {
 
     // Search Songs
     if (types.includes('song')) {
-      const { data: songs } = await supabase
+      const { data: songs, error: songsError } = await supabase
         .from('songs')
         .select(`
           id,
           title,
-          artists!inner(id, name, image_url)
+          artist,
+          album,
+          spotify_id,
+          duration_ms,
+          popularity
         `)
-        .or(`title.ilike.%${query}%,artists.name.ilike.%${query}%`)
+        .ilike('title', `%${query}%`)
         .order('popularity', { ascending: false })
         .limit(Math.min(limit, 2));
+
+      if (songsError) {
+        console.warn('Songs search error:', songsError);
+      }
 
       if (songs) {
         results.push(
           ...songs.map((song): SearchResult => {
-            const artist = Array.isArray(song.artists) ? song.artists[0] : song.artists;
             return {
               id: song.id,
               type: 'song',
               title: song.title,
-              subtitle: `by ${artist?.name}`,
-              imageUrl: artist?.image_url,
-              artistName: artist?.name,
+              subtitle: song.artist ? `by ${song.artist}` : 'Unknown Artist',
+              imageUrl: undefined,
+              artistName: song.artist || 'Unknown Artist',
               source: 'database',
             };
           })

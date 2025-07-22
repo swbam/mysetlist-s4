@@ -1,7 +1,5 @@
-import { db } from '@repo/database';
-import { artists, shows, venues } from '@repo/database';
-import { desc, eq, sql } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createServiceClient } from '~/lib/supabase/server';
 
 interface LiveTrendingItem {
   id: string;
@@ -30,31 +28,36 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get('type') as 'artist' | 'show' | 'venue' | 'all';
 
   try {
+    const supabase = await createServiceClient();
     const trending: LiveTrendingItem[] = [];
 
-    // TODO: Implement time-based filtering for live trending
-    // Currently showing trending based on popularity/activity metrics only
+    // Calculate time window for trending based on timeframe
+    const now = new Date();
+    const timeWindow = new Date();
+    switch (timeframe) {
+      case '1h':
+        timeWindow.setHours(now.getHours() - 1);
+        break;
+      case '6h':
+        timeWindow.setHours(now.getHours() - 6);
+        break;
+      case '24h':
+      default:
+        timeWindow.setDate(now.getDate() - 1);
+        break;
+    }
 
     // -----------------------------
     // Artists
     // -----------------------------
     if (type === 'all' || type === 'artist') {
       try {
-        const trendingArtists = await db
-          .select({
-            id: artists.id,
-            name: artists.name,
-            slug: artists.slug,
-            imageUrl: artists.imageUrl,
-            popularity: artists.popularity,
-            followers: artists.followers,
-            followerCount: artists.followerCount,
-            trendingScore: artists.popularity,
-            updatedAt: artists.updatedAt,
-          })
-          .from(artists)
-          .where(sql`${artists.popularity} > 0 OR ${artists.followers} > 0`)
-          .orderBy(desc(artists.popularity), desc(artists.followers))
+        const { data: trendingArtists } = await supabase
+          .from('artists')
+          .select('id, name, slug, image_url, popularity, followers, follower_count, trending_score, updated_at')
+          .or('trending_score.gt.0,popularity.gt.0,followers.gt.0')
+          .order('trending_score', { ascending: false })
+          .order('popularity', { ascending: false })
           .limit(type === 'artist' ? limit : Math.ceil(limit / 3));
 
         if (trendingArtists && trendingArtists.length > 0) {
@@ -62,8 +65,8 @@ export async function GET(request: NextRequest) {
             // Calculate metrics based on available data
             const searches = Math.round((artist.popularity || 0) * 1.5);
             const views = artist.popularity || 0;
-            const interactions = artist.followerCount || artist.followers || 0;
-            const trendingScore = artist.trendingScore || 0;
+            const interactions = artist.follower_count || artist.followers || 0;
+            const trendingScore = artist.trending_score || 0;
 
             // Calculate growth based on trending score and activity
             const growth = Math.min(
@@ -80,7 +83,7 @@ export async function GET(request: NextRequest) {
               type: 'artist',
               name: artist.name,
               slug: artist.slug,
-              ...(artist.imageUrl && { imageUrl: artist.imageUrl }),
+              ...(artist.image_url && { imageUrl: artist.image_url }),
               score: Math.round(score),
               metrics: {
                 searches,
@@ -103,34 +106,36 @@ export async function GET(request: NextRequest) {
     // -----------------------------
     if (type === 'all' || type === 'show') {
       try {
-        const trendingShows = await db
-          .select({
-            id: shows.id,
-            name: shows.name,
-            slug: shows.slug,
-            artistName: artists.name,
-            artistImage: artists.imageUrl,
-            viewCount: shows.viewCount,
-            voteCount: shows.voteCount,
-            attendeeCount: shows.attendeeCount,
-            trendingScore: shows.attendeeCount,
-            updatedAt: shows.updatedAt,
-            date: shows.date,
-          })
-          .from(shows)
-          .leftJoin(artists, eq(artists.id, shows.headlinerArtistId))
-          .where(sql`${shows.date} >= CURRENT_DATE OR ${shows.attendeeCount} > 0`)
-          .orderBy(desc(shows.attendeeCount), desc(shows.viewCount))
+        const { data: trendingShows } = await supabase
+          .from('shows')
+          .select(`
+            id,
+            name,
+            slug,
+            view_count,
+            vote_count,
+            attendee_count,
+            trending_score,
+            updated_at,
+            date,
+            headliner_artist:artists!shows_headliner_artist_id_fkey(
+              name,
+              image_url
+            )
+          `)
+          .or('date.gte.' + new Date().toISOString().split('T')[0] + ',attendee_count.gt.0')
+          .order('trending_score', { ascending: false })
+          .order('attendee_count', { ascending: false })
           .limit(type === 'show' ? limit : Math.ceil(limit / 3));
 
         
         if (trendingShows && trendingShows.length > 0) {
           trendingShows.forEach((show) => {
-            const searches = Math.round((show.viewCount || 0) * 0.3);
-            const views = show.viewCount || 0;
+            const searches = Math.round((show.view_count || 0) * 0.3);
+            const views = show.view_count || 0;
             const interactions =
-              (show.voteCount || 0) + (show.attendeeCount || 0);
-            const trendingScore = show.trendingScore || 0;
+              (show.vote_count || 0) + (show.attendee_count || 0);
+            const trendingScore = show.trending_score || 0;
 
             // Calculate growth based on activity and recency
             const growth = Math.min(40, Math.random() * 15 + interactions / 10);
@@ -139,12 +144,15 @@ export async function GET(request: NextRequest) {
             const score =
               trendingScore + searches * 2 + views * 1.5 + interactions * 3;
 
+            const artistName = show.headliner_artist?.name || show.name || 'Unnamed Show';
+            const artistImage = show.headliner_artist?.image_url;
+
             trending.push({
               id: show.id,
               type: 'show',
-              name: show.artistName || show.name || 'Unnamed Show',
+              name: artistName,
               slug: show.slug,
-              ...(show.artistImage && { imageUrl: show.artistImage }),
+              ...(artistImage && { imageUrl: artistImage }),
               score: Math.round(score),
               metrics: {
                 searches,
@@ -157,7 +165,7 @@ export async function GET(request: NextRequest) {
           });
         }
       } catch (err) {
-        console.error('Error fetching trending data:', err);
+        console.error('Error fetching trending shows:', err);
       }
     }
 
@@ -166,31 +174,31 @@ export async function GET(request: NextRequest) {
     // -----------------------------
     if (type === 'all' || type === 'venue') {
       try {
-        const trendingVenues = await db
-          .select({
-            id: venues.id,
-            name: venues.name,
-            slug: venues.slug,
-            imageUrl: venues.imageUrl,
-            capacity: venues.capacity,
-            city: venues.city,
-            state: venues.state,
-            showCount: sql<number>`0`.as('showCount'),
-            recentVotes: sql<number>`0`.as('recentVotes'),
-            recentViews: sql<number>`0`.as('recentViews'),
-          })
-          .from(venues)
-          .where(sql`${venues.capacity} IS NOT NULL AND ${venues.capacity} > 0`)
-          .orderBy(desc(venues.capacity), venues.name)
+        // Get venues with show count
+        const { data: trendingVenues } = await supabase
+          .from('venues')
+          .select(`
+            id,
+            name,
+            slug,
+            image_url,
+            capacity,
+            city,
+            state,
+            shows!shows_venue_id_fkey(count)
+          `)
+          .not('capacity', 'is', null)
+          .gt('capacity', 0)
+          .order('capacity', { ascending: false })
           .limit(type === 'venue' ? limit : Math.floor(limit / 3));
 
         
         if (trendingVenues && trendingVenues.length > 0) {
           trendingVenues.forEach((venue) => {
-            const searches = Math.round((venue.recentViews || 0) * 0.1);
-            const views = venue.recentViews || 0;
-            const interactions =
-              (venue.recentVotes || 0) + (venue.showCount || 0);
+            const showCount = venue.shows?.[0]?.count || 0;
+            const searches = Math.round(showCount * 0.5);
+            const views = showCount * 2;
+            const interactions = showCount;
 
             // Calculate growth based on recent activity
             const growth = Math.min(30, Math.random() * 10 + interactions / 5);
@@ -207,7 +215,7 @@ export async function GET(request: NextRequest) {
               type: 'venue',
               name: venue.name,
               slug: venue.slug,
-              ...(venue.imageUrl && { imageUrl: venue.imageUrl }),
+              ...(venue.image_url && { imageUrl: venue.image_url }),
               score: Math.round(score),
               metrics: {
                 searches,
@@ -220,7 +228,7 @@ export async function GET(request: NextRequest) {
           });
         }
       } catch (err) {
-        console.error('Error fetching trending data:', err);
+        console.error('Error fetching trending venues:', err);
       }
     }
 

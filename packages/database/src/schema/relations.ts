@@ -8,7 +8,7 @@ import {
 } from './email-preferences';
 import { setlistSongs, setlists, songs, votes } from './setlists';
 import { showArtists, showComments, shows } from './shows';
-import { userFollowsArtists } from './user-follows-artists';
+// import { userFollowsArtists } from './user-follows-artists'; // Table removed
 import { userProfiles } from './user-profiles';
 import { users } from './users';
 import { venueInsiderTips, venuePhotos, venueReviews } from './venue-reviews';
@@ -26,7 +26,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   venueTips: many(venueTips),
   venueInsiderTips: many(venueInsiderTips),
   showComments: many(showComments),
-  followedArtists: many(userFollowsArtists),
+  // followedArtists: many(userFollowsArtists), // Table removed
   emailPreferences: one(emailPreferences, {
     fields: [users.id],
     references: [emailPreferences.userId],
@@ -45,7 +45,7 @@ export const artistsRelations = relations(artists, ({ many, one }) => ({
     fields: [artists.id],
     references: [artistStats.artistId],
   }),
-  followers: many(userFollowsArtists),
+  // followers: many(userFollowsArtists), // Table removed
 }));
 
 export const artistStatsRelations = relations(artistStats, ({ one }) => ({
@@ -171,19 +171,20 @@ export const venueInsiderTipsRelations = relations(
   })
 );
 
-export const userFollowsArtistsRelations = relations(
-  userFollowsArtists,
-  ({ one }) => ({
-    user: one(users, {
-      fields: [userFollowsArtists.userId],
-      references: [users.id],
-    }),
-    artist: one(artists, {
-      fields: [userFollowsArtists.artistId],
-      references: [artists.id],
-    }),
-  })
-);
+// Table removed - userFollowsArtists relations
+// export const userFollowsArtistsRelations = relations(
+//   userFollowsArtists,
+//   ({ one }) => ({
+//     user: one(users, {
+//       fields: [userFollowsArtists.userId],
+//       references: [users.id],
+//     }),
+//     artist: one(artists, {
+//       fields: [userFollowsArtists.artistId],
+//       references: [artists.id],
+//     }),
+//   })
+// );
 
 export const artistSongsRelations = relations(artistSongs, ({ one }) => ({
   artist: one(artists, {

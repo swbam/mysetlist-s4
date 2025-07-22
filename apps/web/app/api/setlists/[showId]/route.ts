@@ -1,8 +1,5 @@
-import { getUser } from '@repo/auth/server';
-import { db } from '@repo/database';
-import { setlistSongs, setlists, songs, votes } from '@repo/database';
-import { and, eq, inArray } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createClient } from '~/lib/supabase/server';
 
 type RouteParams = {
   params: Promise<{
@@ -13,98 +10,113 @@ type RouteParams = {
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { showId } = await params;
-    const user = await getUser();
+    const supabase = createClient();
+    
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser();
 
-    // Fetch setlists for the show
-    const showSetlists = await db
-      .select({
-        setlist: setlists,
-        setlistSong: setlistSongs,
-        song: songs,
-      })
-      .from(setlists)
-      .leftJoin(setlistSongs, eq(setlists.id, setlistSongs.setlistId))
-      .leftJoin(songs, eq(setlistSongs.songId, songs.id))
-      .where(eq(setlists.showId, showId))
-      .orderBy(setlists.orderIndex, setlistSongs.position);
+    // Fetch setlists for the show with songs
+    const { data: setlists, error } = await supabase
+      .from('setlists')
+      .select(`
+        id,
+        name,
+        type,
+        is_locked,
+        order_index,
+        setlist_songs (
+          id,
+          song_id,
+          position,
+          notes,
+          is_played,
+          play_time,
+          upvotes,
+          downvotes,
+          net_votes,
+          songs (
+            id,
+            title,
+            artist,
+            album,
+            duration_ms,
+            album_art_url,
+            is_explicit
+          )
+        )
+      `)
+      .eq('show_id', showId)
+      .order('order_index');
+
+    if (error) {
+      console.error('Error fetching setlists:', error);
+      return NextResponse.json(
+        { error: 'Failed to fetch setlists' },
+        { status: 500 }
+      );
+    }
 
     // Get user votes if authenticated
     const userVotes: Record<string, 'up' | 'down'> = {};
-    if (user && showSetlists.length > 0) {
-      const setlistSongIds = showSetlists
-        .filter((row) => row.setlistSong)
-        .map((row) => row.setlistSong!.id);
+    if (user && setlists && setlists.length > 0) {
+      const setlistSongIds: string[] = [];
+      setlists.forEach((setlist) => {
+        setlist.setlist_songs?.forEach((song: any) => {
+          setlistSongIds.push(song.id);
+        });
+      });
 
       if (setlistSongIds.length > 0) {
-        const voteRecords = await db
-          .select({
-            setlistSongId: votes.setlistSongId,
-            voteType: votes.voteType,
-          })
-          .from(votes)
-          .where(
-            and(
-              eq(votes.userId, user.id),
-              inArray(votes.setlistSongId, setlistSongIds)
-            )
-          );
+        const { data: votes } = await supabase
+          .from('votes')
+          .select('setlist_song_id, vote_type')
+          .eq('user_id', user.id)
+          .in('setlist_song_id', setlistSongIds);
 
-        voteRecords.forEach((vote) => {
-          if (setlistSongIds.includes(vote.setlistSongId)) {
-            userVotes[vote.setlistSongId] = vote.voteType;
-          }
-        });
+        if (votes) {
+          votes.forEach((vote) => {
+            userVotes[vote.setlist_song_id] = vote.vote_type;
+          });
+        }
       }
     }
 
-    // Group by setlist
-    const setlistMap = new Map();
-
-    showSetlists.forEach((row) => {
-      const setlist = row.setlist;
-      const setlistSong = row.setlistSong;
-      const song = row.song;
-
-      if (!setlistMap.has(setlist.id)) {
-        setlistMap.set(setlist.id, {
-          id: setlist.id,
-          name: setlist.name,
-          type: setlist.type,
-          isLocked: setlist.isLocked,
-          songs: [],
-        });
-      }
-
-      if (setlistSong && song) {
-        const setlistEntry = setlistMap.get(setlist.id);
-        setlistEntry.songs.push({
+    // Transform the data to match the expected format
+    const transformedSetlists = setlists?.map((setlist) => ({
+      id: setlist.id,
+      name: setlist.name,
+      type: setlist.type,
+      isLocked: setlist.is_locked,
+      songs: setlist.setlist_songs
+        ?.sort((a: any, b: any) => a.position - b.position)
+        .map((setlistSong: any) => ({
           id: setlistSong.id,
-          songId: song.id,
+          songId: setlistSong.song_id,
           position: setlistSong.position,
           song: {
-            id: song.id,
-            title: song.title,
-            artist: song.artist,
-            durationMs: song.durationMs,
-            albumArtUrl: song.albumArtUrl,
+            id: setlistSong.songs.id,
+            title: setlistSong.songs.title,
+            artist: setlistSong.songs.artist,
+            album: setlistSong.songs.album,
+            durationMs: setlistSong.songs.duration_ms,
+            albumArtUrl: setlistSong.songs.album_art_url,
+            isExplicit: setlistSong.songs.is_explicit,
           },
           notes: setlistSong.notes,
-          isPlayed: setlistSong.isPlayed,
-          playTime: setlistSong.playTime,
+          isPlayed: setlistSong.is_played,
+          playTime: setlistSong.play_time,
           upvotes: setlistSong.upvotes,
           downvotes: setlistSong.downvotes,
-          netVotes: setlistSong.netVotes,
+          netVotes: setlistSong.net_votes,
           userVote: userVotes[setlistSong.id] || null,
-        });
-      }
-    });
-
-    const setlistsArray = Array.from(setlistMap.values());
+        })) || [],
+    })) || [];
 
     return NextResponse.json({
-      setlists: setlistsArray,
+      setlists: transformedSetlists,
     });
-  } catch (_error) {
+  } catch (error) {
+    console.error('Setlist fetch error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

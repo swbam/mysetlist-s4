@@ -65,6 +65,7 @@
     "@auto-it/first-time-contributor": "^11.3.0",
     "@biomejs/biome": "1.9.4",
     "@repo/typescript-config": "workspace:*",
+    "@supabase/supabase-js": "^2.52.0",
     "@tailwindcss/postcss": "^4.1.11",
     "@turbo/gen": "^2.5.3",
     "@types/node": "^24.0.10",

@@ -26,7 +26,19 @@ export async function middleware(request: NextRequest) {
 
   const { data: { session } } = await supabase.auth.getSession();
 
-  const protectedPaths = ['/dashboard', '/vote', '/profile', '/api/user'];
+  const protectedPaths = [
+    '/dashboard',
+    '/vote',
+    '/profile',
+    '/api/user',
+    '/admin',
+    '/settings',
+    '/my-artists',
+    '/notifications',
+    '/api/admin',
+    '/api/votes',
+    '/api/setlists',
+  ];
 
   if (protectedPaths.some(path => request.nextUrl.pathname.startsWith(path)) && !session) {
     return NextResponse.redirect(new URL('/auth/sign-in', request.url));
@@ -68,9 +80,13 @@ export const config = {
   matcher: [
     // Match all API routes
     '/api/:path*',
-    // Match protected routes only
+    // Match protected routes
     '/dashboard/:path*',
     '/vote/:path*',
     '/profile/:path*',
+    '/admin/:path*',
+    '/settings/:path*',
+    '/my-artists/:path*',
+    '/notifications/:path*',
   ],
 };
