@@ -59,7 +59,15 @@
     "final:full": "echo '🎯 Full Deployment Pipeline' && pnpm check:env && pnpm db:generate && pnpm typecheck && tsx scripts/final-deployment.ts --prod --parallel --yes --verbose",
     "final:emergency": "echo '🚨 Emergency Deployment' && tsx scripts/final-deployment.ts --prod --force --skip-tests --yes",
     "final:ci": "echo '🤖 CI/CD Deployment' && tsx scripts/final-deployment.ts --prod --parallel --yes --verbose",
-    "final:test": "echo '🧪 Test Deployment' && tsx scripts/final-deployment.ts --validate-only --verbose && tsx scripts/final-deployment.ts --dry-run --verbose"
+    "final:test": "echo '🧪 Test Deployment' && tsx scripts/final-deployment.ts --validate-only --verbose && tsx scripts/final-deployment.ts --dry-run --verbose",
+    "deploy:checklist": "tsx scripts/pre-deployment-checklist.ts",
+    "deploy:verify": "tsx scripts/post-deployment-test.ts",
+    "deploy:guide": "tsx scripts/deployment-guide.ts",
+    "deploy:health": "curl -s https://mysetlist-sonnet.vercel.app/api/health/comprehensive | jq",
+    "prod:check": "pnpm deploy:checklist && pnpm build && pnpm deploy:verify",
+    "prod:ready": "echo '🚀 Running Production Readiness Check' && pnpm deploy:checklist && echo '✅ App is production ready!'",
+    "prod:summary": "tsx scripts/production-readiness-summary.ts",
+    "prod:quick": "./scripts/quick-production-check.sh"
   },
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.0",
