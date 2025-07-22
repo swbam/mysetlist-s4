@@ -14,9 +14,9 @@ SELECT cron.schedule(
     $$
     SELECT
       net.http_post(
-        url := 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/scheduled-sync',
+        url := 'https://yzwkimtdaabyjbpykquu.supabase.co/functions/v1/scheduled-sync',
         headers := jsonb_build_object(
-          'Authorization', 'Bearer YOUR_ANON_KEY',
+          'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2OTIzMTYsImV4cCI6MjA2NjI2ODMxNn0.8pKUt_PL7q9XmNACDKVrkyqBfK8jmUDx6ARNybrmIVM',
           'Content-Type', 'application/json'
         ),
         body := '{}'::jsonb
@@ -31,9 +31,9 @@ SELECT cron.schedule(
     $$
     SELECT
       net.http_post(
-        url := 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/sync-artists',
+        url := 'https://yzwkimtdaabyjbpykquu.supabase.co/functions/v1/sync-artists',
         headers := jsonb_build_object(
-          'Authorization', 'Bearer YOUR_ANON_KEY',
+          'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2OTIzMTYsImV4cCI6MjA2NjI2ODMxNn0.8pKUt_PL7q9XmNACDKVrkyqBfK8jmUDx6ARNybrmIVM',
           'Content-Type', 'application/json'
         ),
         body := '{}'::jsonb
@@ -48,9 +48,9 @@ SELECT cron.schedule(
     $$
     SELECT
       net.http_post(
-        url := 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/sync-setlists',
+        url := 'https://yzwkimtdaabyjbpykquu.supabase.co/functions/v1/sync-setlists',
         headers := jsonb_build_object(
-          'Authorization', 'Bearer YOUR_ANON_KEY',
+          'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2OTIzMTYsImV4cCI6MjA2NjI2ODMxNn0.8pKUt_PL7q9XmNACDKVrkyqBfK8jmUDx6ARNybrmIVM',
           'Content-Type', 'application/json'
         ),
         body := '{}'::jsonb
@@ -65,9 +65,9 @@ SELECT cron.schedule(
     $$
     SELECT
       net.http_post(
-        url := 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/sync-shows',
+        url := 'https://yzwkimtdaabyjbpykquu.supabase.co/functions/v1/sync-shows',
         headers := jsonb_build_object(
-          'Authorization', 'Bearer YOUR_ANON_KEY',
+          'Authorization', 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2OTIzMTYsImV4cCI6MjA2NjI2ODMxNn0.8pKUt_PL7q9XmNACDKVrkyqBfK8jmUDx6ARNybrmIVM',
           'Content-Type', 'application/json'
         ),
         body := '{}'::jsonb
