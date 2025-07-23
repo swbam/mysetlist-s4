@@ -3,7 +3,7 @@
   "buildCommand": "turbo build --filter=web",
   "outputDirectory": "apps/web/.next",
   "installCommand": "pnpm install --frozen-lockfile && npx turbo prune",
-  "regions": ["iad1", "sfo1", "lhr1", "fra1", "nrt1"],
+  "regions": ["iad1", "sfo1", "lhr1", "fra1", "hnd1"],
   "git": {
     "deploymentEnabled": {
       "main": true
