@@ -82,6 +82,11 @@ export const SearchBar = React.memo(({
 
   return (
     <div ref={searchRef} className={cn('relative w-full max-w-lg', className)}>
+      {isLoading && (
+        <div id="search-status" className="sr-only" aria-live="polite">
+          Searching...
+        </div>
+      )}
       <div className="relative">
         {isLoading ? (
           <Loader2 className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 animate-spin text-muted-foreground sm:left-4 sm:h-5 sm:w-5" />
@@ -101,6 +106,11 @@ export const SearchBar = React.memo(({
           onFocus={() => query.length > 1 && setIsOpen(true)}
           autoComplete="off"
           inputMode="search"
+          role="combobox"
+          aria-expanded={isOpen}
+          aria-haspopup="listbox"
+          aria-label="Search for artists, shows, or venues"
+          aria-describedby={isLoading ? "search-status" : undefined}
         />
         {query && (
           <Button
@@ -120,8 +130,12 @@ export const SearchBar = React.memo(({
 
       {isOpen && results.length > 0 && (
         <Card className="absolute top-full z-50 mt-2 max-h-80 w-full overflow-auto border border-border/50 bg-card/95 p-1 shadow-lg backdrop-blur-sm sm:max-h-96 sm:p-2">
-          <div className="space-y-0.5 sm:space-y-1">
-            {results.map((result) => (
+          <div 
+            role="listbox" 
+            className="space-y-0.5 sm:space-y-1"
+            aria-label={`${results.length} search results`}
+          >
+            {results.map((result, index) => (
               <Link
                 key={`${result.type}-${result.id}`}
                 href={getSearchResultHref(result)}
@@ -147,8 +161,14 @@ export const SearchBar = React.memo(({
                     }
                   }
                 }}
+                role="option"
+                aria-selected={false}
+                aria-describedby={`search-result-${index}`}
               >
-                <div className="flex items-center gap-2 rounded-md p-2 transition-colors hover:bg-accent active:bg-accent/80 sm:gap-3 sm:p-3">
+                <div 
+                  id={`search-result-${index}`}
+                  className="flex items-center gap-2 rounded-md p-2 transition-colors hover:bg-accent active:bg-accent/80 sm:gap-3 sm:p-3"
+                >
                   {result.imageUrl ? (
                     <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-muted sm:h-10 sm:w-10">
                       <Image

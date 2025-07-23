@@ -101,5 +101,5 @@ verify_jwt = false
 [functions.daily-artist-sync]
 verify_jwt = false
 
-# Note: Cron jobs are now handled by Vercel cron jobs in apps/web/app/api/cron/
-# See vercel.json for cron job configuration
+# Note: Cron jobs are handled by Supabase pg_cron extension, not Vercel
+# See supabase/migrations/ for cron job setup

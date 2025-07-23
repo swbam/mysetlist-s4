@@ -18,8 +18,8 @@ export function useSession() {
 
     const checkExpiration = () => {
       const now = Date.now() / 1000; // Current time in seconds
-      const expiresAt = session.expiresAt;
-      const timeLeft = expiresAt - now;
+      const expiresAt = session.expires_at || 0;
+      const timeLeft = Math.max(0, expiresAt - now);
       const fiveMinutes = 5 * 60; // 5 minutes in seconds
 
       setTimeToExpire(timeLeft);
@@ -48,11 +48,12 @@ export function useSession() {
     }
 
     const now = Date.now() / 1000;
-    const timeLeft = session.expiresAt - now;
+    const expiresAt = session.expires_at || 0;
+    const timeLeft = expiresAt - now;
 
     return {
       isValid: timeLeft > 0,
-      expiresAt: new Date(session.expiresAt * 1000),
+      expiresAt: new Date(expiresAt * 1000),
       timeToExpire: Math.max(0, timeLeft),
       isExpiring: timeLeft <= 300 && timeLeft > 0, // 5 minutes
     };

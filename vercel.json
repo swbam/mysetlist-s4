@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+<<<<<<< HEAD
   "buildCommand": "pnpm build",
   "outputDirectory": ".next",
   "installCommand": "pnpm install --frozen-lockfile",
@@ -9,8 +10,45 @@
   "git": {
     "deploymentEnabled": {
       "main": true
+=======
+  "buildCommand": "pnpm turbo build --filter=web",
+  "outputDirectory": "apps/web/.next",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "functions": {
+    "apps/web/app/api/*/route.ts": {
+      "maxDuration": 30
+    },
+    "apps/web/app/api/sync/*/route.ts": {
+      "maxDuration": 300
+    },
+    "apps/web/app/api/scheduled/*/route.ts": {
+      "maxDuration": 300
+    },
+    "apps/web/app/api/autonomous-sync/*/route.ts": {
+      "maxDuration": 300
+    },
+    "apps/web/app/api/admin/*/route.ts": {
+      "maxDuration": 60
+>>>>>>> main
     }
   },
+  "redirects": [
+    {
+      "source": "/app/(.*)",
+      "destination": "/$1",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/health",
+      "destination": "/api/health"
+    },
+    {
+      "source": "/healthz",
+      "destination": "/api/health"
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -36,12 +74,35 @@
           "value": "strict-origin-when-cross-origin"
         },
         {
+<<<<<<< HEAD
           "key": "Content-Security-Policy",
           "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.vercel-analytics.com *.vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: *.spotify.com *.scdn.co; connect-src 'self' *.supabase.co *.spotify.com api.setlist.fm app.ticketmaster.com *.vercel-analytics.com wss:; font-src 'self' data:; frame-src 'self' accounts.spotify.com;"
         },
         {
           "key": "Permissions-Policy",
           "value": "geolocation=(), microphone=(), camera=()"
+=======
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/_next/static/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+>>>>>>> main
         }
       ]
     }

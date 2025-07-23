@@ -43,7 +43,7 @@ export function useAuthState() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, supabaseSession) => {
+    } = supabase.auth.onAuthStateChange(async (event, _supabaseSession) => {
       if (!mounted) return;
 
       try {

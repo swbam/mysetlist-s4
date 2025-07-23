@@ -118,7 +118,7 @@ To set up the scheduled sync, you'll need to create a cron job that calls the `s
 Example cron expression for hourly sync:
 ```
 0 * * * * curl -X POST https://your-project.supabase.co/functions/v1/scheduled-sync \
-  -H "Authorization: Bearer YOUR_ANON_KEY" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2OTIzMTYsImV4cCI6MjA2NjI2ODMxNn0.8pKUt_PL7q9XmNACDKVrkyqBfK8jmUDx6ARNybrmIVM" \
   -H "Content-Type: application/json" \
   -d '{"type": "all", "limit": 20}'
 ```
@@ -159,13 +159,13 @@ const { data, error } = await supabase.functions.invoke('sync-setlists', {
 ```bash
 # Sync artist
 curl -X POST https://your-project.supabase.co/functions/v1/sync-artists \
-  -H "Authorization: Bearer YOUR_ANON_KEY" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2OTIzMTYsImV4cCI6MjA2NjI2ODMxNn0.8pKUt_PL7q9XmNACDKVrkyqBfK8jmUDx6ARNybrmIVM" \
   -H "Content-Type: application/json" \
   -d '{"artistName": "The Weeknd"}'
 
 # Sync shows
 curl -X POST https://your-project.supabase.co/functions/v1/sync-shows \
-  -H "Authorization: Bearer YOUR_ANON_KEY" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA2OTIzMTYsImV4cCI6MjA2NjI2ODMxNn0.8pKUt_PL7q9XmNACDKVrkyqBfK8jmUDx6ARNybrmIVM" \
   -H "Content-Type: application/json" \
   -d '{"artistName": "Olivia Rodrigo", "city": "Los Angeles"}'
 ```
