@@ -20,6 +20,7 @@
       "maxDuration": 60
     }
   },
+<
   "redirects": [
     {
       "source": "/app/(.*)",
@@ -35,6 +36,7 @@
     {
       "source": "/healthz",
       "destination": "/api/health"
+
     }
   ],
   "headers": [
