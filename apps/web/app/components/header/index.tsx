@@ -161,22 +161,32 @@ const HeaderContent = React.memo(() => {
           <div className="max-w-md flex-1 lg:hidden">
             <MobileSearch />
           </div>
-          <Button variant="ghost" className="hidden md:inline" asChild>
-            <SafeLink href="/contact">Contact</SafeLink>
-          </Button>
           {!user && (
             <>
+              <Button variant="ghost" className="hidden md:inline" asChild>
+                <SafeLink href="/contact">Contact</SafeLink>
+              </Button>
               <Button
                 variant="ghost"
                 size="sm"
+                className="transition-colors hover:bg-muted/80"
                 asChild
               >
                 <SafeLink href="/auth/sign-in">Sign in</SafeLink>
               </Button>
-              <Button size="sm" asChild>
-                <SafeLink href="/auth/sign-up">Sign up</SafeLink>
+              <Button 
+                size="sm" 
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
+                asChild
+              >
+                <SafeLink href="/auth/sign-up">Get Started</SafeLink>
               </Button>
             </>
+          )}
+          {user && (
+            <Button variant="ghost" className="hidden md:inline" asChild>
+              <SafeLink href="/contact">Contact</SafeLink>
+            </Button>
           )}
           <div className="hidden border-r md:inline" />
           <div className="hidden md:inline">

@@ -207,10 +207,14 @@ export class SupabaseAuthProvider implements IAuthProvider {
   // Event listener for auth state changes
   onAuthStateChange(
     callback: (event: string, session: AuthSession | null) => void
-  ) {
-    return this.client.auth.onAuthStateChange((event, session) => {
+  ): (() => void) {
+    const { data } = this.client.auth.onAuthStateChange((event, session) => {
       callback(event, session ? this.mapSession(session) : null);
     });
+    
+    return () => {
+      data.subscription.unsubscribe();
+    };
   }
 
   private mapUser(user: User): AuthUser {
@@ -219,7 +223,7 @@ export class SupabaseAuthProvider implements IAuthProvider {
       profile: {
         id: '',
         userId: user.id,
-        displayName: user.user_metadata?.displayName || user.email?.split('@')[0] || '',
+        displayName: user.user_metadata?.['displayName'] || user.email?.split('@')[0] || '',
         isPublic: true,
         showAttendedShows: true,
         showVotedSongs: true,
@@ -266,10 +270,11 @@ export class SupabaseAuthProvider implements IAuthProvider {
 
   private mapSession(session: Session): AuthSession {
     return {
-      accessToken: session.access_token,
-      refreshToken: session.refresh_token,
-      expiresAt: session.expires_at || 0,
+      ...session,
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
+      expires_at: session.expires_at || 0,
       user: this.mapUser(session.user),
-    };
+    } as AuthSession;
   }
 }
