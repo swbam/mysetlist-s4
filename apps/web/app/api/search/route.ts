@@ -39,40 +39,62 @@ export async function GET(request: NextRequest) {
     }
 
     let supabase;
+    let databaseAvailable = true;
+    
     try {
       supabase = await createClient();
+      // Test the connection
+      const { error: connectionError } = await supabase.from('artists').select('id').limit(1);
+      if (connectionError) {
+        console.error('Supabase connection test failed:', connectionError);
+        databaseAvailable = false;
+      }
     } catch (error) {
       console.error('Failed to create Supabase client:', error);
-      return NextResponse.json({ 
-        error: 'Database connection failed',
-        message: 'Unable to connect to the database'
-      }, { status: 500 });
+      databaseAvailable = false;
+      
+      // If database is unavailable but we have Ticketmaster, continue with external data only
+      if (!process.env.TICKETMASTER_API_KEY) {
+        return NextResponse.json({ 
+          error: 'Search temporarily unavailable',
+          message: 'Both database and external APIs are unavailable',
+          results: [],
+          fallbackMode: true
+        }, { status: 503 });
+      }
     }
     const results: SearchResult[] = [];
 
     // Search Artists
     if (types.includes('artist')) {
-      const { data: artists } = await supabase
-        .from('artists')
-        .select('id, name, slug, image_url, genres, verified, popularity')
-        .ilike('name', `%${query}%`)
-        .order('popularity', { ascending: false })
-        .limit(Math.min(limit, 3));
+      // Only search database if available
+      if (databaseAvailable && supabase) {
+        try {
+          const { data: artists } = await supabase
+            .from('artists')
+            .select('id, name, slug, image_url, genres, verified, popularity')
+            .ilike('name', `%${query}%`)
+            .order('popularity', { ascending: false })
+            .limit(Math.min(limit, 3));
 
-      if (artists) {
-        results.push(
-          ...artists.map((artist): SearchResult => ({
-            id: artist.id,
-            type: 'artist',
-            title: artist.name,
-            subtitle: artist.genres && Array.isArray(artist.genres) ? artist.genres.slice(0, 2).join(', ') : 'Artist',
-            imageUrl: artist.image_url,
-            slug: artist.slug,
-            verified: artist.verified,
-            popularity: artist.popularity,
-            source: 'database',
-          }))
-        );
+          if (artists) {
+            results.push(
+              ...artists.map((artist): SearchResult => ({
+                id: artist.id,
+                type: 'artist',
+                title: artist.name,
+                subtitle: artist.genres && Array.isArray(artist.genres) ? artist.genres.slice(0, 2).join(', ') : 'Artist',
+                imageUrl: artist.image_url,
+                slug: artist.slug,
+                verified: artist.verified,
+                popularity: artist.popularity,
+                source: 'database',
+              }))
+            );
+          }
+        } catch (dbError) {
+          console.warn('Database artist search failed:', dbError);
+        }
       }
 
       // Add Ticketmaster artists only if API key is available
@@ -292,7 +314,9 @@ export async function GET(request: NextRequest) {
       sources: {
         database: results.filter(r => r.source === 'database').length,
         ticketmaster: results.filter(r => r.source === 'ticketmaster').length,
-      }
+      },
+      fallbackMode: !databaseAvailable,
+      message: !databaseAvailable ? 'Search using external data only - database temporarily unavailable' : undefined
     });
   } catch (error) {
     console.error('Search error:', error);

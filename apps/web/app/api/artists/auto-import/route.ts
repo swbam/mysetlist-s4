@@ -57,13 +57,91 @@ export async function POST(request: NextRequest) {
       artist = existingArtist;
     }
 
-    // If artist doesn't exist, trigger sync to create it
+    // If artist doesn't exist, create it
     if (!artist) {
-      // For now, return error. In production, this would trigger artist creation
-      return NextResponse.json(
-        { error: 'Artist not found in database' },
-        { status: 404 }
-      );
+      // Import external APIs for artist creation
+      const { SpotifyClient, TicketmasterClient } = await import('@repo/external-apis');
+      
+      let spotifyData = null;
+      let ticketmasterData = null;
+      
+      // Try to get data from Spotify if we have a Spotify ID or name
+      if ((spotifyId || artistName) && process.env.SPOTIFY_CLIENT_ID && process.env.SPOTIFY_CLIENT_SECRET) {
+        try {
+          const spotify = new SpotifyClient({});
+          await spotify.authenticate();
+          
+          if (spotifyId) {
+            spotifyData = await spotify.getArtist(spotifyId);
+          } else if (artistName) {
+            const searchResults = await spotify.searchArtists(artistName, 1);
+            if (searchResults.artists.items.length > 0) {
+              spotifyData = searchResults.artists.items[0];
+            }
+          }
+        } catch (error) {
+          console.warn('Spotify fetch failed:', error);
+        }
+      }
+      
+      // Try to get data from Ticketmaster if we have artist name
+      if (artistName && process.env.TICKETMASTER_API_KEY) {
+        try {
+          const ticketmaster = new TicketmasterClient();
+          const searchResults = await ticketmaster.searchAttractions({
+            keyword: artistName,
+            size: 1,
+            classificationName: ['music'],
+          });
+          
+          if (searchResults._embedded?.attractions?.length > 0) {
+            ticketmasterData = searchResults._embedded.attractions[0];
+          }
+        } catch (error) {
+          console.warn('Ticketmaster search failed:', error);
+        }
+      }
+      
+      // Create the artist with whatever data we have
+      const artistSlug = (artistName || spotifyData?.name || ticketmasterData?.name || 'unknown')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+        
+      const { data: newArtist, error: createError } = await supabase
+        .from('artists')
+        .insert({
+          name: artistName || spotifyData?.name || ticketmasterData?.name || 'Unknown Artist',
+          slug: artistSlug,
+          spotify_id: spotifyData?.id || spotifyId || null,
+          ticketmaster_id: ticketmasterData?.id || null,
+          image_url: spotifyData?.images?.[0]?.url || ticketmasterData?.images?.[0]?.url || null,
+          small_image_url: spotifyData?.images?.[2]?.url || null,
+          genres: spotifyData?.genres || ticketmasterData?.classifications?.map(c => c.genre?.name).filter(Boolean) || [],
+          popularity: spotifyData?.popularity || 0,
+          followers: spotifyData?.followers?.total || 0,
+          verified: (spotifyData?.followers?.total || 0) > 100000,
+          external_urls: {
+            spotify: spotifyData?.external_urls?.spotify || null,
+            ticketmaster: ticketmasterData?.url || null,
+          },
+          trending_score: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          last_synced_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+        
+      if (createError) {
+        console.error('Failed to create artist:', createError);
+        return NextResponse.json(
+          { error: 'Failed to create artist', details: createError.message },
+          { status: 500 }
+        );
+      }
+      
+      artist = newArtist;
     }
 
     // Check if we need to sync data (only if not synced in last 24 hours)

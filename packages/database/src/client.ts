@@ -11,12 +11,11 @@ let _client: postgres.Sql | null = null;
 // Get database URL with fallback
 function getDatabaseUrl(): string {
   // Try env first
-  let url = process.env['DATABASE_URL'] || process.env['DIRECT_URL'];
+  const url = process.env['DATABASE_URL'] || process.env['DIRECT_URL'];
   
-  // If not found, use the provided Supabase URL
+  // If not found, throw an error - never use hardcoded credentials
   if (!url) {
-    console.warn('DATABASE_URL not found in environment, using fallback connection');
-    url = 'postgresql://postgres.yzwkimtdaabyjbpykquu:Bambseth1590@aws-0-us-east-1.pooler.supabase.com:6543/postgres';
+    throw new Error('DATABASE_URL environment variable is required');
   }
   
   return url;

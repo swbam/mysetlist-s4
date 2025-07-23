@@ -2,7 +2,7 @@ import { showBetaFeature } from '@repo/feature-flags';
 import { createMetadata } from '@repo/seo/metadata';
 import type { Metadata } from 'next';
 import nextDynamic from 'next/dynamic';
-import Hero from './components/hero';
+import { HomeHeroWithData } from './components/hero-with-data';
 import TopArtistsWrapper from './components/top-artists-wrapper';
 import { TrendingShowsSlider } from './components/trending-shows-slider';
 import FeaturedVenuesWrapper from './components/featured-venues-wrapper';
@@ -107,7 +107,7 @@ const Home = async () => {
         </div>
       )}
       <main id="main-content" className="min-h-screen">
-        <Hero />
+        <HomeHeroWithData />
         <section aria-label="Trending content">
           <TopArtistsWrapper />
           <TrendingShowsSlider />

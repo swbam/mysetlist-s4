@@ -117,7 +117,9 @@ export async function POST(request: NextRequest) {
             .split('T')[0], // 30 days from now
           status: 'upcoming' as const,
           description: `Upcoming show for ${artistData.name}`,
-    const tmId = ticketmasterId || artistData?.ticketmasterId;
+        };
+
+        const tmId = ticketmasterId || artistData?.ticketmasterId;
     
     if (!tmId) {
       // If no Ticketmaster ID, create sample shows as fallback
