@@ -46,8 +46,9 @@ const VenuesContent = async ({ searchParams }: { searchParams: any }) => {
 const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
   const resolvedSearchParams = (await searchParams) || {};
 
-  return React.createElement(ErrorBoundaryWrapper as any, {}, (
-    <div className="flex flex-col gap-8 py-8 md:py-16">
+  return (
+    <ErrorBoundaryWrapper>
+      <div className="flex flex-col gap-8 py-8 md:py-16">
         <div className="container mx-auto">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-4">
@@ -60,15 +61,14 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
               </p>
             </div>
 
-            {React.createElement(Suspense as any, {
-              fallback: React.createElement(VenueGridLoadingSkeleton, { count: 6 })
-            },
-              React.createElement(VenuesContent, { searchParams: resolvedSearchParams })
-            )}
+            <Suspense fallback={<VenueGridLoadingSkeleton count={6} />}>
+              <VenuesContent searchParams={resolvedSearchParams} />
+            </Suspense>
           </div>
         </div>
       </div>
-  ));
+    </ErrorBoundaryWrapper>
+  );
 };
 
 export default VenuesPage;

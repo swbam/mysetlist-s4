@@ -5,6 +5,7 @@ import nextDynamic from 'next/dynamic';
 import Hero from './components/hero';
 import TopArtistsWrapper from './components/top-artists-wrapper';
 import { TrendingShowsSlider } from './components/trending-shows-slider';
+import FeaturedVenuesWrapper from './components/featured-venues-wrapper';
 import AccessibilityEnhancements from './components/accessibility-enhancements';
 
 // Configure route as dynamic due to feature flags using headers
@@ -110,6 +111,7 @@ const Home = async () => {
         <section aria-label="Trending content">
           <TopArtistsWrapper />
           <TrendingShowsSlider />
+          <FeaturedVenuesWrapper />
         </section>
         <section aria-label="Featured content and site features">
           <FeaturedContent />

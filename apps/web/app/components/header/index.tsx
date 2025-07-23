@@ -22,7 +22,7 @@ import {
   SafeLink,
 } from '~/components/navigation/navigation-error-boundary';
 import { RealtimeStatus } from '~/components/realtime-status';
-import { SearchBar } from '../search-bar';
+import { SearchBar } from '~/components/search-bar';
 import Logo from './logo.svg';
 import { UserMenu } from './user-menu';
 

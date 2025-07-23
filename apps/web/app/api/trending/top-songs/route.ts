@@ -1,0 +1,67 @@
+import { createServiceClient } from '~/lib/supabase/server';
+import { type NextRequest, NextResponse } from 'next/server';
+
+export async function GET(_request: NextRequest) {
+  try {
+    const supabase = await createServiceClient();
+
+    // Get top voted songs from recent setlists
+    const { data: topSongs } = await supabase
+      .from('setlist_songs')
+      .select(`
+        song:songs(id, title, artist),
+        votes:user_votes(count)
+      `)
+      .order('votes', { ascending: false })
+      .limit(10);
+
+    if (!topSongs || topSongs.length === 0) {
+      // Fallback: get any songs from the catalog
+      const { data: anySongs } = await supabase
+        .from('songs')
+        .select('id, title, artist')
+        .limit(4);
+
+      if (!anySongs) {
+        return NextResponse.json({ songs: [] });
+      }
+
+      return NextResponse.json({
+        songs: anySongs.map((song, index) => ({
+          id: song.id,
+          title: song.title,
+          artist: song.artist,
+          votes: 0,
+          percentage: 100 - index * 20,
+        })),
+      });
+    }
+
+    // Calculate vote counts and percentages
+    const songsWithVotes = await Promise.all(
+      topSongs
+        .filter(item => item.song)
+        .slice(0, 4)
+        .map(async (item, index) => {
+          const { count } = await supabase
+            .from('user_votes')
+            .select('*', { count: 'exact', head: true })
+            .eq('song_id', item.song.id);
+
+          return {
+            id: item.song.id,
+            title: item.song.title,
+            artist: item.song.artist,
+            votes: count || 0,
+            percentage: 100 - index * 10,
+          };
+        })
+    );
+
+    return NextResponse.json({
+      songs: songsWithVotes,
+    });
+  } catch (_error) {
+    return NextResponse.json({ songs: [] });
+  }
+}
