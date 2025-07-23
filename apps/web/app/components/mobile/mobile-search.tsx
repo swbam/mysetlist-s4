@@ -90,24 +90,18 @@ export function MobileSearch({
         searchResults = await onSearch(searchQuery);
       } else {
         const res = await fetch(
-          `/api/artists/search?q=${encodeURIComponent(searchQuery)}`
+          `/api/search?q=${encodeURIComponent(searchQuery)}&limit=8`
         );
         if (res.ok) {
           const data = await res.json();
-          searchResults = (data.artists || []).map(
-            (a: {
-              id: string;
-              name: string;
-              slug?: string;
-              imageUrl?: string;
-              genres?: string[];
-            }) => ({
-              id: a.slug ?? a.id,
-              type: 'artist' as const,
-              title: a.name,
-              imageUrl: a.imageUrl,
-              subtitle: a.genres?.[0],
-              trending: false,
+          searchResults = (data.results || []).map(
+            (result: any) => ({
+              id: result.slug || result.id,
+              type: result.type,
+              title: result.title,
+              imageUrl: result.imageUrl,
+              subtitle: result.subtitle,
+              trending: result.trending || false,
             })
           );
         }
@@ -138,8 +132,25 @@ export function MobileSearch({
   const handleResultSelect = (result: SearchResult) => {
     if (onResultSelect) {
       onResultSelect(result);
-    } else if (result.type === 'artist') {
-      router.push(`/artists/${result.id}`);
+    } else {
+      // Handle different result types
+      switch (result.type) {
+        case 'artist':
+          router.push(`/artists/${result.id}`);
+          break;
+        case 'show':
+          router.push(`/shows/${result.id}`);
+          break;
+        case 'venue':
+          router.push(`/venues/${result.id}`);
+          break;
+        case 'song':
+          // For songs, try to navigate to the artist page
+          if (result.subtitle) {
+            router.push(`/artists?search=${encodeURIComponent(result.subtitle)}`);
+          }
+          break;
+      }
     }
 
     // Note: persist recent searches can be implemented later

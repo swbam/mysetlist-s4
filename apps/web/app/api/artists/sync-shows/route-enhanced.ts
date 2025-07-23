@@ -1,44 +1,51 @@
 import { db } from '@repo/database';
 import { artists, showArtists, shows, venues } from '@repo/database';
 import { ticketmaster } from '@repo/external-apis';
-import { and, desc, eq, gte } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
-// POST /api/sync/shows
-// Body: { artistId: string, ticketmasterId?: string }
-// Syncs all shows for a given artist
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
-    const { artistId, ticketmasterId } = await request.json();
+    const { artistId } = await request.json();
 
     if (!artistId) {
       return NextResponse.json(
-        { error: 'Artist ID required' },
+        { error: 'artistId is required' },
         { status: 400 }
       );
     }
 
-    // Verify artist exists
-    const artist = await db
+    // Get artist from database
+    const [artist] = await db
       .select()
       .from(artists)
-      .where(eq(artists.id, artistId))
+      .where(eq(artists.id, artistId as string))
       .limit(1);
 
-    if (!artist.length) {
+    if (!artist) {
       return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
     }
 
-    const artistData = artist[0];
-    const tmId = ticketmasterId || artistData?.ticketmasterId;
-    
-    if (!tmId) {
-      // If no Ticketmaster ID, create sample shows as fallback
-      const sampleShows = await createSampleShows(artistId, artistData!);
+    // If no Ticketmaster ID, create sample shows
+    if (!artist.ticketmasterId) {
+      // Create sample shows as fallback
+      const sampleShows = await createSampleShows(artistId, artist);
+      
+      // Update artist's last sync timestamp
+      await db
+        .update(artists)
+        .set({
+          updatedAt: new Date(),
+          lastSyncedAt: new Date(),
+        })
+        .where(eq(artists.id, artistId));
+
       return NextResponse.json({
         success: true,
         message: 'Created sample shows (no Ticketmaster ID)',
-        artist: artistData,
         showsCount: sampleShows.length,
         shows: sampleShows,
       });
@@ -46,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     try {
       // Fetch shows from Ticketmaster API
-      const tmShows = await ticketmaster.getArtistEvents(tmId, {
+      const tmShows = await ticketmaster.getArtistEvents(artist.ticketmasterId, {
         size: 50,
         sort: 'date,asc',
       });
@@ -55,7 +62,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
           success: true,
           message: 'No upcoming shows found on Ticketmaster',
-          artist: artistData,
           showsCount: 0,
           shows: [],
         });
@@ -132,18 +138,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message: 'Shows sync completed',
-        artist: artistData,
         showsCount: syncedShows.length,
         shows: syncedShows,
       });
     } catch (apiError) {
       console.error('Ticketmaster API error:', apiError);
       // Fall back to sample shows if API fails
-      const sampleShows = await createSampleShows(artistId, artistData!);
+      const sampleShows = await createSampleShows(artistId, artist);
       return NextResponse.json({
         success: true,
         message: 'Created sample shows (API error)',
-        artist: artistData,
         showsCount: sampleShows.length,
         shows: sampleShows,
       });
@@ -151,7 +155,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Shows sync failed',
+        error: 'Failed to sync shows',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
@@ -257,7 +261,7 @@ async function createSampleShows(artistId: string, artistData: any) {
     {
       headlinerArtistId: artistId,
       venueId: venueData!.id,
-      name: `${artistData.name} Live`,
+      name: `${artistData.name} Live in Concert`,
       slug: `${artistData.slug}-live-${Date.now()}`,
       date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
         .toISOString()
@@ -269,6 +273,23 @@ async function createSampleShows(artistId: string, artistData: any) {
       ticketUrl: 'https://example.com/tickets',
       minPrice: 45,
       maxPrice: 125,
+      currency: 'USD',
+    },
+    {
+      headlinerArtistId: artistId,
+      venueId: venueData!.id,
+      name: `${artistData.name} Summer Tour`,
+      slug: `${artistData.slug}-summer-tour-${Date.now()}`,
+      date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split('T')[0],
+      startTime: '21:00',
+      doorsTime: '20:00',
+      status: 'upcoming' as const,
+      description: `Experience ${artistData.name} on their summer tour!`,
+      ticketUrl: 'https://example.com/tickets',
+      minPrice: 55,
+      maxPrice: 150,
       currency: 'USD',
     },
   ];
