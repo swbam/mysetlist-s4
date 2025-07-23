@@ -19,74 +19,97 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+
+interface FeaturedShow {
+  id: string;
+  name: string;
+  venue: string;
+  date: string;
+  imageUrl: string;
+  attendees: number;
+  votesCount: number;
+}
+
+interface TopVotedSong {
+  id: string;
+  title: string;
+  artist: string;
+  votes: number;
+  percentage: number;
+}
+
+interface UpcomingShow {
+  id: string;
+  artist: string;
+  venue: string;
+  date: string;
+  ticketsLeft?: number;
+}
 
 function FeaturedContent() {
-  // This would normally come from props/API
-  const featuredShow = {
-    id: '1',
-    name: 'Taylor Swift | The Eras Tour',
-    venue: 'SoFi Stadium, Los Angeles',
-    date: '2024-08-05',
-    imageUrl: '/api/placeholder/800/600',
-    attendees: 70000,
-    votesCount: 125000,
-  };
+  const [featuredShow, setFeaturedShow] = useState<FeaturedShow | null>(null);
+  const [topVotedSongs, setTopVotedSongs] = useState<TopVotedSong[]>([]);
+  const [upcomingHighlights, setUpcomingHighlights] = useState<UpcomingShow[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const topVotedSongs = [
-    {
-      id: '1',
-      title: 'Anti-Hero',
-      artist: 'Taylor Swift',
-      votes: 45231,
-      percentage: 89,
-    },
-    {
-      id: '2',
-      title: 'Blank Space',
-      artist: 'Taylor Swift',
-      votes: 42100,
-      percentage: 83,
-    },
-    {
-      id: '3',
-      title: 'Shake It Off',
-      artist: 'Taylor Swift',
-      votes: 38500,
-      percentage: 76,
-    },
-    {
-      id: '4',
-      title: 'Love Story',
-      artist: 'Taylor Swift',
-      votes: 35200,
-      percentage: 69,
-    },
-  ];
+  useEffect(() => {
+    const fetchFeaturedContent = async () => {
+      try {
+        // Fetch featured show
+        const featuredRes = await fetch('/api/trending/featured');
+        if (featuredRes.ok) {
+          const data = await featuredRes.json();
+          setFeaturedShow(data.show);
+        }
 
-  const upcomingHighlights = [
-    {
-      id: '1',
-      artist: 'The Weeknd',
-      venue: 'Madison Square Garden',
-      date: '2024-07-20',
-      ticketsLeft: 523,
-    },
-    {
-      id: '2',
-      artist: 'Drake',
-      venue: 'United Center',
-      date: '2024-07-22',
-      ticketsLeft: 1200,
-    },
-    {
-      id: '3',
-      artist: 'Olivia Rodrigo',
-      venue: 'The Forum',
-      date: '2024-07-25',
-      ticketsLeft: 89,
-    },
-  ];
+        // Fetch top voted songs
+        const songsRes = await fetch('/api/trending/top-songs');
+        if (songsRes.ok) {
+          const data = await songsRes.json();
+          setTopVotedSongs(data.songs || []);
+        }
+
+        // Fetch upcoming shows
+        const upcomingRes = await fetch('/api/trending/upcoming-shows');
+        if (upcomingRes.ok) {
+          const data = await upcomingRes.json();
+          setUpcomingHighlights(data.shows || []);
+        }
+      } catch (error) {
+        console.error('Error fetching featured content:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedContent();
+  }, []);
+
+  // Show loading skeleton while fetching
+  if (loading) {
+    return (
+      <section className="relative py-12 md:py-16 lg:py-24">
+        <div className="container mx-auto px-4">
+          <div className="mb-8 text-center md:mb-12">
+            <div className="mx-auto mb-4 h-10 w-64 animate-pulse rounded bg-muted" />
+            <div className="mx-auto h-6 w-96 animate-pulse rounded bg-muted" />
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:gap-6 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <div className="h-96 animate-pulse rounded-lg bg-muted" />
+            </div>
+            <div className="h-96 animate-pulse rounded-lg bg-muted" />
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // Don't render if no data
+  if (!featuredShow && topVotedSongs.length === 0 && upcomingHighlights.length === 0) {
+    return null;
+  }
 
   return (
     <section className="relative py-12 md:py-16 lg:py-24">

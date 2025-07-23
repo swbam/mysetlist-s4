@@ -1,5 +1,4 @@
 import { createClient } from '../../client';
-import { createServiceClient } from '../../server';
 import type {
   AuthUser,
   AuthSession,
@@ -10,7 +9,6 @@ import type {
   SpotifyTokens,
   SpotifyProfile,
   OAuthConfig,
-  AuthProvider,
 } from '../types/auth';
 import { SpotifyService } from '../services/spotify-service';
 import { UserService } from '../services/user-service';

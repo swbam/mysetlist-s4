@@ -1,9 +1,8 @@
 'use client';
 import { Button } from '@repo/design-system/components/ui/button';
-import { motion } from 'framer-motion';
 import { ChevronRight, Music, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-import React from 'react';
+import React, { memo } from 'react';
 import { SearchBar } from '~/components/search-bar';
 
 function HomeHero() {
@@ -13,27 +12,17 @@ function HomeHero() {
       aria-label="Homepage hero section"
       role="banner"
     >
-      {/* Animated gradient background with subtle mesh pattern */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1.2 }}
-        className="-z-10 absolute inset-0"
-      >
+      {/* Gradient background with subtle mesh pattern */}
+      <div className="-z-10 absolute inset-0 animate-fade-in">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-100px,rgba(120,0,255,0.1),transparent)]" />
         <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:radial-gradient(white,transparent_70%)]" />
-      </motion.div>
+      </div>
 
       <div className="container mx-auto px-4">
         {/* Hero content */}
         <div className="mx-auto max-w-5xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="space-y-6"
-          >
+          <div className="space-y-6 animate-slide-up">
             {/* Badge */}
             <div 
               className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-primary"
@@ -63,15 +52,10 @@ function HomeHero() {
               Vote on the songs you want to hear at upcoming concerts and see
               what other fans are predicting.
             </p>
-          </motion.div>
+          </div>
 
           {/* Enhanced search section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="mt-12 space-y-4 px-4 sm:px-0"
-          >
+          <div className="mt-12 space-y-4 px-4 sm:px-0 animate-slide-up-delay-1">
             {/* Search container with glow effect */}
             <div className="relative mx-auto w-full max-w-2xl">
               <div className="absolute inset-0 bg-gradient-to-r from-gray-400/20 via-gray-600/20 to-gray-800/20 opacity-50 blur-3xl" />
@@ -100,15 +84,10 @@ function HomeHero() {
                 )
               )}
             </div>
-          </motion.div>
+          </div>
 
           {/* CTA buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="mt-10 flex flex-col items-center justify-center gap-3 px-4 sm:flex-row sm:gap-4 sm:px-0"
-          >
+          <div className="mt-10 flex flex-col items-center justify-center gap-3 px-4 sm:flex-row sm:gap-4 sm:px-0 animate-slide-up-delay-2">
             <Button size="lg" className="group w-full min-w-[200px] sm:w-auto" asChild>
               <Link href="/artists">
                 Start Voting
@@ -126,14 +105,11 @@ function HomeHero() {
                 Discover Music
               </Link>
             </Button>
-          </motion.div>
+          </div>
 
           {/* Stats */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="mx-auto mt-16 grid max-w-2xl grid-cols-2 gap-6 px-4 sm:px-0 md:grid-cols-3 md:gap-8"
+          <div
+            className="mx-auto mt-16 grid max-w-2xl grid-cols-2 gap-6 px-4 sm:px-0 md:grid-cols-3 md:gap-8 animate-fade-in-delay-3"
             role="region"
             aria-label="Platform statistics"
           >
@@ -164,11 +140,11 @@ function HomeHero() {
                 Music Fans
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-export default HomeHero;
+export default memo(HomeHero);

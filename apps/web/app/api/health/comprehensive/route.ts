@@ -4,6 +4,9 @@ import { spotify } from '@repo/external-apis';
 import { ticketmaster } from '@repo/external-apis';
 import { setlistfm } from '@repo/external-apis';
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 interface HealthCheck {
   service: string;
   status: 'healthy' | 'degraded' | 'unhealthy';

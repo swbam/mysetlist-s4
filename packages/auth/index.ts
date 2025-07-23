@@ -1,6 +1,18 @@
-export * from './client';
-export * from './server';
-export * from './provider';
+// Client-side utilities
+export { createClient as createBrowserClient } from './client';
+export type { Session, User } from './client';
+
+// Server-side utilities
+export { 
+  createClient as createServerClient,
+  createServiceClient,
+  getUser,
+  getUserFromRequest,
+  getSession 
+} from './server';
+
+// Main AuthProvider from use-auth hook (preferred)
+export { AuthProvider, useAuth } from './src/hooks/use-auth';
 export * from './middleware';
 export * from './keys';
 

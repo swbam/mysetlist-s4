@@ -26,8 +26,9 @@ export const generateMetadata = (): Metadata => {
 };
 
 const ShowsPage = () => {
-  return React.createElement(ErrorBoundaryWrapper as any, {}, (
-    <div className="flex flex-col gap-8 py-8 md:py-16">
+  return (
+    <ErrorBoundaryWrapper>
+      <div className="flex flex-col gap-8 py-8 md:py-16">
         <div className="container mx-auto">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-4">
@@ -39,9 +40,9 @@ const ShowsPage = () => {
               </p>
             </div>
 
-            {React.createElement(Suspense as any, { fallback: React.createElement('div', { className: "h-12" }) },
-              React.createElement(ShowsFilter)
-            )}
+            <Suspense fallback={<div className="h-12" />}>
+              <ShowsFilter />
+            </Suspense>
 
             <Tabs defaultValue="list" className="w-full">
               <TabsList className="w-full max-w-[200px]">
@@ -51,17 +52,16 @@ const ShowsPage = () => {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="list" className="mt-6">
-                {React.createElement(Suspense as any, { 
-                  fallback: React.createElement(ShowListSkeleton, { count: 5 }) 
-                },
-                  React.createElement(ShowsList)
-                )}
+                <Suspense fallback={<ShowListSkeleton count={5} />}>
+                  <ShowsList />
+                </Suspense>
               </TabsContent>
             </Tabs>
           </div>
         </div>
       </div>
-  ));
+    </ErrorBoundaryWrapper>
+  );
 };
 
 export default ShowsPage;
