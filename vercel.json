@@ -16,34 +16,16 @@
     "apps/web/app/api/*/route.js": {
       "maxDuration": 30
     },
-    "apps/web/app/api/cron/*/route.ts": {
+    "apps/web/app/api/sync/*/route.ts": {
       "maxDuration": 300
     },
-    "apps/web/app/api/sync/*/route.ts": {
+    "apps/web/app/api/scheduled/*/route.ts": {
       "maxDuration": 300
     },
     "apps/web/app/api/admin/*/route.ts": {
       "maxDuration": 60
     }
   },
-  "crons": [
-    {
-      "path": "/api/cron/trending-update",
-      "schedule": "0 */6 * * *"
-    },
-    {
-      "path": "/api/cron/daily-sync",
-      "schedule": "0 2 * * *"
-    },
-    {
-      "path": "/api/cron/health-check",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/cache-warm",
-      "schedule": "0 */4 * * *"
-    }
-  ],
   "redirects": [
     {
       "source": "/app/(.*)",
