@@ -1,15 +1,17 @@
-import React, { Suspense } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import { AnalyticsOverview } from '~/components/analytics/analytics-overview';
-import { AnalyticsCharts } from '~/components/analytics/analytics-charts';
-import { AnalyticsTable } from '~/components/analytics/analytics-table';
-import { RealTimeMetrics } from '~/components/analytics/real-time-metrics';
-import { UserEngagement } from '~/components/analytics/user-engagement';
-import { PerformanceMetrics } from '~/components/analytics/performance-metrics';
-import { VotingAnalytics } from '~/components/analytics/voting-analytics';
-import { RecommendationAnalytics } from '~/components/analytics/recommendation-analytics';
 import { LoadingSpinner } from '@repo/design-system/components/ui/loading-spinner';
+
+// Lazy load heavy analytics components for better bundle splitting
+const AnalyticsOverview = lazy(() => import('~/components/analytics/analytics-overview').then(m => ({ default: m.AnalyticsOverview })));
+const AnalyticsCharts = lazy(() => import('~/components/analytics/analytics-charts').then(m => ({ default: m.AnalyticsCharts })));
+const AnalyticsTable = lazy(() => import('~/components/analytics/analytics-table').then(m => ({ default: m.AnalyticsTable })));
+const RealTimeMetrics = lazy(() => import('~/components/analytics/real-time-metrics').then(m => ({ default: m.RealTimeMetrics })));
+const UserEngagement = lazy(() => import('~/components/analytics/user-engagement').then(m => ({ default: m.UserEngagement })));
+const PerformanceMetrics = lazy(() => import('~/components/analytics/performance-metrics').then(m => ({ default: m.PerformanceMetrics })));
+const VotingAnalytics = lazy(() => import('~/components/analytics/voting-analytics').then(m => ({ default: m.VotingAnalytics })));
+const RecommendationAnalytics = lazy(() => import('~/components/analytics/recommendation-analytics').then(m => ({ default: m.RecommendationAnalytics })));
 
 export default function AnalyticsPage() {
   return (

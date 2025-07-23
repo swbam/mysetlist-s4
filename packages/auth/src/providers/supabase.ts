@@ -4,9 +4,9 @@ import {
   createSupabaseAdmin,
   createSupabaseClient,
 } from '../config/supabase';
-import type { AuthProvider, AuthSession, AuthUser } from '../types';
+import type { IAuthProvider, AuthSession, AuthUser } from '../types';
 
-export class SupabaseAuthProvider implements AuthProvider {
+export class SupabaseAuthProvider implements IAuthProvider {
   private client = createSupabaseClient();
   private adminClient = createSupabaseAdmin();
 
@@ -215,13 +215,53 @@ export class SupabaseAuthProvider implements AuthProvider {
 
   private mapUser(user: User): AuthUser {
     return {
-      id: user.id,
-      email: user.email || '',
+      ...user,
+      profile: {
+        id: '',
+        userId: user.id,
+        displayName: user.user_metadata?.displayName || user.email?.split('@')[0] || '',
+        isPublic: true,
+        showAttendedShows: true,
+        showVotedSongs: true,
+        showsAttended: 0,
+        songsVoted: 0,
+        artistsFollowed: 0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      preferences: {
+        emailPreferences: {
+          id: '',
+          userId: user.id,
+          emailEnabled: true,
+          showReminders: true,
+          showReminderFrequency: 'daily',
+          newShowNotifications: true,
+          newShowFrequency: 'daily',
+          setlistUpdates: true,
+          setlistUpdateFrequency: 'immediately',
+          weeklyDigest: false,
+          marketingEmails: false,
+          securityEmails: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        privacySettings: {
+          showProfile: true,
+          showVotingHistory: true,
+          showAttendanceHistory: true,
+          allowFollowing: true,
+          showOnlineStatus: false,
+        },
+        musicPreferences: {
+          favoriteGenres: [],
+          preferredVenues: [],
+          notificationRadius: 50,
+        },
+      },
       emailVerified: !!user.email_confirmed_at,
-      lastSignIn: user.last_sign_in_at || '',
-      metadata: user.user_metadata || {},
-      appMetadata: user.app_metadata || {},
-    };
+      spotifyConnected: false,
+    } as AuthUser;
   }
 
   private mapSession(session: Session): AuthSession {

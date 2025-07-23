@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { cn } from '@repo/design-system/lib/utils';
 
 interface NavigationItem {
@@ -63,11 +63,21 @@ interface MobileNavigationProps {
   className?: string;
 }
 
-export function MobileNavigation({ user, className }: MobileNavigationProps) {
+export const MobileNavigation = React.memo(({ user, className }: MobileNavigationProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
   const closeSheet = () => setIsOpen(false);
+
+  // Memoize filtered navigation items based on user state
+  const visibleNavigationItems = useMemo(() => 
+    navigationItems.filter(item => {
+      // Hide My Artists if user is not authenticated
+      if (item.href === '/my-artists' && !user) return false;
+      return true;
+    }), 
+    [user]
+  );
 
   return (
     <div className={cn("md:hidden", className)}>
@@ -122,7 +132,7 @@ export function MobileNavigation({ user, className }: MobileNavigationProps) {
             {/* Navigation Items */}
             <nav className="flex-1 p-4" role="navigation" aria-label="Main navigation">
               <ul className="space-y-2" role="list">
-                {navigationItems.map((item) => {
+                {visibleNavigationItems.map((item) => {
                   const Icon = item.icon;
                   const isActive = pathname === item.href;
                   
@@ -164,7 +174,7 @@ export function MobileNavigation({ user, className }: MobileNavigationProps) {
             {/* User Section */}
             <div className="border-t p-4">
               {user ? (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Link
                     href="/profile"
                     onClick={closeSheet}
@@ -178,6 +188,21 @@ export function MobileNavigation({ user, className }: MobileNavigationProps) {
                       </div>
                     </div>
                   </Link>
+                  
+                  <Link
+                    href="/my-artists"
+                    onClick={closeSheet}
+                    className="flex items-center gap-3 rounded-lg p-3 text-sm font-medium transition-colors hover:bg-muted focus:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                  >
+                    <Music className="h-5 w-5" aria-hidden="true" />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium">My Artists</div>
+                      <div className="text-xs text-muted-foreground">
+                        Your followed artists
+                      </div>
+                    </div>
+                  </Link>
+                  
                   <Link
                     href="/settings"
                     onClick={closeSheet}
@@ -187,15 +212,20 @@ export function MobileNavigation({ user, className }: MobileNavigationProps) {
                   </Link>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <Link href="/auth/sign-in" onClick={closeSheet}>
-                    <Button className="w-full" size="sm">
-                      Sign In
+                <div className="space-y-3">
+                  <div className="px-3 py-2">
+                    <p className="text-center text-sm text-muted-foreground">
+                      Join MySetlist to follow artists and vote on setlists
+                    </p>
+                  </div>
+                  <Link href="/auth/sign-up" onClick={closeSheet}>
+                    <Button className="w-full shadow-sm" size="sm">
+                      Get Started
                     </Button>
                   </Link>
-                  <Link href="/auth/sign-up" onClick={closeSheet}>
+                  <Link href="/auth/sign-in" onClick={closeSheet}>
                     <Button variant="outline" className="w-full" size="sm">
-                      Sign Up
+                      Sign In
                     </Button>
                   </Link>
                 </div>
@@ -206,4 +236,6 @@ export function MobileNavigation({ user, className }: MobileNavigationProps) {
       </Sheet>
     </div>
   );
-}
+});
+
+MobileNavigation.displayName = 'MobileNavigation';

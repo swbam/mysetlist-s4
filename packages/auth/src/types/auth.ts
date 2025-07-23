@@ -20,6 +20,7 @@ export interface SpotifyProfile {
 export interface UserProfile {
   id: string;
   userId: string;
+  displayName?: string;
   bio?: string;
   location?: string;
   favoriteGenres?: string[];
@@ -133,8 +134,30 @@ export interface UpdatePreferencesData {
 
 export type AuthProvider = 'email' | 'google' | 'spotify';
 
+// Interface for auth provider implementations
+export interface IAuthProvider {
+  signIn(email: string, password: string): Promise<AuthUser>;
+  signUp(email: string, password: string, metadata?: Record<string, any>): Promise<AuthUser>;
+  signOut(): Promise<void>;
+  signInWithGoogle(config?: OAuthConfig): Promise<AuthUser>;
+  signInWithSpotify(config?: OAuthConfig): Promise<AuthUser>;
+  resetPassword(email: string): Promise<void>;
+  updateProfile(metadata: Record<string, any>): Promise<AuthUser>;
+  onAuthStateChange(callback: (event: string, session: AuthSession | null) => void): () => void;
+}
+
 export interface OAuthConfig {
   redirectTo?: string;
   scopes?: string;
   queryParams?: Record<string, string>;
 }
+
+// Missing exports that were causing TypeScript errors
+export type AuthState = 'loading' | 'authenticated' | 'unauthenticated' | 'error';
+
+export type AuthEventType = 
+  | 'SIGNED_IN'
+  | 'SIGNED_OUT' 
+  | 'TOKEN_REFRESHED'
+  | 'USER_UPDATED'
+  | 'PASSWORD_RECOVERY';
