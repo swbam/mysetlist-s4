@@ -8,23 +8,33 @@ import * as schema from './schema';
 let _db: ReturnType<typeof drizzle> | null = null;
 let _client: postgres.Sql | null = null;
 
+// Get database URL with fallback
+function getDatabaseUrl(): string {
+  // Try env first
+  let url = process.env['DATABASE_URL'] || process.env['DIRECT_URL'];
+  
+  // If not found, use the provided Supabase URL
+  if (!url) {
+    console.warn('DATABASE_URL not found in environment, using fallback connection');
+    url = 'postgresql://postgres.yzwkimtdaabyjbpykquu:Bambseth1590@aws-0-us-east-1.pooler.supabase.com:6543/postgres';
+  }
+  
+  return url;
+}
+
 export function getDb() {
   if (_db) {
     return _db;
   }
 
-  const connectionString = process.env['DATABASE_URL'];
+  const connectionString = getDatabaseUrl();
 
-  if (!connectionString) {
-    throw new Error(
-      'DATABASE_URL is not configured. Please set it in your .env.local file.'
-    );
-  }
   _client = postgres(connectionString, {
     max: 10,
     idle_timeout: 20,
     connect_timeout: 10,
     ssl: 'require',
+    prepare: false, // Disable prepared statements for Supabase pooler
   });
 
   _db = drizzle(_client, {
@@ -76,15 +86,12 @@ let _migrationClient: postgres.Sql | null = null;
 export const migrationClient = new Proxy({} as postgres.Sql, {
   get(_target, prop) {
     if (!_migrationClient) {
-      const connectionString = process.env['DATABASE_URL'];
-
-      if (!connectionString) {
-        throw new Error('DATABASE_URL is required for migrations');
-      }
+      const connectionString = getDatabaseUrl();
 
       _migrationClient = postgres(connectionString, {
         max: 1,
-        ssl: process.env['NODE_ENV'] === 'production' ? 'require' : false,
+        ssl: 'require', // Always use SSL for Supabase
+        prepare: false, // Disable prepared statements for Supabase pooler
       });
     }
 

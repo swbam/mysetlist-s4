@@ -12,6 +12,7 @@
     "sync:location": "tsx src/cli.ts location"
   },
   "dependencies": {
+    "@repo/database": "workspace:*",
     "@upstash/redis": "^1.28.0",
     "axios": "^1.6.0",
     "commander": "^11.1.0",

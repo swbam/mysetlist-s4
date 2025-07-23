@@ -1,21 +1,64 @@
 import { db, eq } from '../database';
 import { artists, songs, artistSongs } from '../schema';
 import { SpotifyClient } from '../clients/spotify';
+import { SyncErrorHandler, SyncServiceError } from '../utils/error-handler';
 
 export class ArtistSyncService {
   private spotifyClient: SpotifyClient;
+  private errorHandler: SyncErrorHandler;
 
   constructor() {
     this.spotifyClient = new SpotifyClient({});
+    this.errorHandler = new SyncErrorHandler({
+      maxRetries: 3,
+      retryDelay: 1000,
+      onError: (error) => {
+        console.error(`[ArtistSyncService] Error:`, error);
+      },
+    });
   }
 
   async syncArtist(artistId: string): Promise<void> {
-    await this.spotifyClient.authenticate();
-    // Get artist from Spotify
-    const spotifyArtist = await this.spotifyClient.getArtist(artistId);
+    try {
+      await this.spotifyClient.authenticate();
+    } catch (error) {
+      throw new SyncServiceError(
+        'Failed to authenticate with Spotify',
+        'ArtistSyncService',
+        'authenticate',
+        error instanceof Error ? error : undefined
+      );
+    }
 
-    // Get top tracks
-    const topTracks = await this.spotifyClient.getArtistTopTracks(artistId);
+    // Get artist from Spotify with retry
+    const spotifyArtist = await this.errorHandler.withRetry(
+      () => this.spotifyClient.getArtist(artistId),
+      {
+        service: 'ArtistSyncService',
+        operation: 'getArtist',
+        context: { artistId },
+      }
+    );
+
+    if (!spotifyArtist) {
+      throw new SyncServiceError(
+        `Failed to fetch artist ${artistId} from Spotify`,
+        'ArtistSyncService',
+        'getArtist'
+      );
+    }
+
+    // Get top tracks with retry
+    const topTracksResult = await this.errorHandler.withRetry(
+      () => this.spotifyClient.getArtistTopTracks(artistId),
+      {
+        service: 'ArtistSyncService',
+        operation: 'getArtistTopTracks',
+        context: { artistId },
+      }
+    );
+
+    const topTracks = topTracksResult || { tracks: [] };
 
     // Update or create artist in database
     await db
@@ -115,7 +158,10 @@ export class ArtistSyncService {
       for (const artist of searchResult.artists.items) {
         try {
           await this.syncArtist(artist.id);
-        } catch (_error) {}
+        } catch (error) {
+          console.error(`Failed to sync artist ${artist.name}:`, error);
+          // Continue with next artist
+        }
       }
     }
   }

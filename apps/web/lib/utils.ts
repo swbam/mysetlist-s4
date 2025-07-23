@@ -29,20 +29,30 @@ export function formatDate(date: string | Date): string {
  * Safely parse artist genres from database field
  * Handles both JSON arrays and comma-separated strings
  */
-export function parseGenres(genresField: string | null | undefined): string[] {
+export function parseGenres(genresField: string | string[] | null | undefined): string[] {
   if (!genresField) return [];
   
-  try {
-    // Try to parse as JSON first (for backward compatibility)
-    const parsed = JSON.parse(genresField);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    // If JSON parsing fails, treat as comma-separated string
-    return genresField
-      .split(',')
-      .map((genre) => genre.trim())
-      .filter((genre) => genre.length > 0);
+  // If it's already an array, return it
+  if (Array.isArray(genresField)) {
+    return genresField.filter((genre) => genre && genre.length > 0);
   }
+  
+  // If it's a string, try different parsing methods
+  if (typeof genresField === 'string') {
+    try {
+      // Try to parse as JSON first (for backward compatibility)
+      const parsed = JSON.parse(genresField);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      // If JSON parsing fails, treat as comma-separated string
+      return genresField
+        .split(',')
+        .map((genre) => genre.trim())
+        .filter((genre) => genre.length > 0);
+    }
+  }
+  
+  return [];
 }
 
 /**

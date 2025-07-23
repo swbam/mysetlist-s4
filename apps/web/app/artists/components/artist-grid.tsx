@@ -3,126 +3,63 @@
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { Calendar, Heart, TrendingUp } from 'lucide-react';
+import { Skeleton } from '@repo/design-system/components/ui/skeleton';
+import { Calendar, Heart, TrendingUp, Music } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-// Mock data - in real app this would come from the database
-const mockArtists = [
-  {
-    id: 1,
-    name: 'Taylor Swift',
-    genre: 'Pop',
-    image: '/api/placeholder/400/400',
-    followers: 850000,
-    upcomingShows: 12,
-    trending: 98,
-  },
-  {
-    id: 2,
-    name: 'The Weeknd',
-    genre: 'R&B',
-    image: '/api/placeholder/400/400',
-    followers: 720000,
-    upcomingShows: 8,
-    trending: 92,
-  },
-  {
-    id: 3,
-    name: 'Olivia Rodrigo',
-    genre: 'Pop Rock',
-    image: '/api/placeholder/400/400',
-    followers: 650000,
-    upcomingShows: 15,
-    trending: 89,
-  },
-  {
-    id: 4,
-    name: 'Arctic Monkeys',
-    genre: 'Indie Rock',
-    image: '/api/placeholder/400/400',
-    followers: 580000,
-    upcomingShows: 10,
-    trending: 87,
-  },
-  {
-    id: 5,
-    name: 'Billie Eilish',
-    genre: 'Alternative',
-    image: '/api/placeholder/400/400',
-    followers: 920000,
-    upcomingShows: 18,
-    trending: 85,
-  },
-  {
-    id: 6,
-    name: 'Post Malone',
-    genre: 'Hip Hop',
-    image: '/api/placeholder/400/400',
-    followers: 680000,
-    upcomingShows: 7,
-    trending: 82,
-  },
-  {
-    id: 7,
-    name: 'Dua Lipa',
-    genre: 'Pop',
-    image: '/api/placeholder/400/400',
-    followers: 540000,
-    upcomingShows: 14,
-    trending: 79,
-  },
-  {
-    id: 8,
-    name: 'The 1975',
-    genre: 'Indie Pop',
-    image: '/api/placeholder/400/400',
-    followers: 420000,
-    upcomingShows: 9,
-    trending: 76,
-  },
-  {
-    id: 9,
-    name: 'Bad Bunny',
-    genre: 'Reggaeton',
-    image: '/api/placeholder/400/400',
-    followers: 880000,
-    upcomingShows: 20,
-    trending: 95,
-  },
-  {
-    id: 10,
-    name: 'Radiohead',
-    genre: 'Alternative Rock',
-    image: '/api/placeholder/400/400',
-    followers: 620000,
-    upcomingShows: 5,
-    trending: 72,
-  },
-  {
-    id: 11,
-    name: 'Kendrick Lamar',
-    genre: 'Hip Hop',
-    image: '/api/placeholder/400/400',
-    followers: 750000,
-    upcomingShows: 11,
-    trending: 88,
-  },
-  {
-    id: 12,
-    name: 'Lana Del Rey',
-    genre: 'Indie Pop',
-    image: '/api/placeholder/400/400',
-    followers: 590000,
-    upcomingShows: 13,
-    trending: 81,
-  },
-];
+interface Artist {
+  id: string;
+  name: string;
+  slug: string;
+  genres: string[] | null;
+  imageUrl: string | null;
+  followers: number | null;
+  upcomingShows: number;
+  trendingScore: number;
+}
 
 export const ArtistGrid = () => {
-  const [followedArtists, setFollowedArtists] = useState<number[]>([]);
+  const [artists, setArtists] = useState<Artist[]>([]);
+  const [followedArtists, setFollowedArtists] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const toggleFollow = (artistId: number) => {
+  useEffect(() => {
+    fetchArtists();
+  }, []);
+
+  const fetchArtists = async () => {
+    try {
+      const response = await fetch('/api/artists?limit=20');
+      if (!response.ok) {
+        throw new Error('Failed to fetch artists');
+      }
+
+      const data = await response.json();
+      
+      // Map the API response to our component's interface
+      const mappedArtists: Artist[] = data.artists.map((artist: any) => ({
+        id: artist.id,
+        name: artist.name,
+        slug: artist.slug,
+        genres: artist.genres,
+        imageUrl: artist.imageUrl || artist.image_url,
+        followers: artist.followers,
+        upcomingShows: artist.upcomingShows || artist.upcoming_shows || 0,
+        trendingScore: artist.trendingScore || artist.trending_score || 0,
+      }));
+
+      setArtists(mappedArtists);
+    } catch (err) {
+      console.error('Error fetching artists:', err);
+      setError('Failed to load artists. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleFollow = (artistId: string) => {
     setFollowedArtists((prev) =>
       prev.includes(artistId)
         ? prev.filter((id) => id !== artistId)
@@ -140,24 +77,74 @@ export const ArtistGrid = () => {
     return count.toString();
   };
 
+  // Loading skeleton
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <Card key={i} className="overflow-hidden">
+            <Skeleton className="aspect-square" />
+            <CardContent className="p-4">
+              <Skeleton className="h-6 w-3/4 mb-2" />
+              <Skeleton className="h-4 w-1/2 mb-3" />
+              <Skeleton className="h-4 w-full mb-4" />
+              <Skeleton className="h-9 w-full" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground mb-4">{error}</p>
+        <Button onClick={fetchArtists} variant="outline">
+          Try Again
+        </Button>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (artists.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <Music className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+        <p className="text-muted-foreground">No artists found.</p>
+      </div>
+    );
+  }
+
+  // Main content
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-      {mockArtists.map((artist) => (
+      {artists.map((artist) => (
         <Card
           key={artist.id}
           className="overflow-hidden transition-shadow hover:shadow-lg"
         >
-          <Link href={`/artists/${artist.id}`}>
+          <Link href={`/artists/${artist.slug || artist.id}`}>
             <div className="relative aspect-square cursor-pointer bg-gradient-to-br from-primary/20 to-primary/5">
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="font-bold text-6xl text-primary/20">
-                  {artist.name
-                    .split(' ')
-                    .map((word) => word[0])
-                    .join('')}
+              {artist.imageUrl ? (
+                <img
+                  src={artist.imageUrl}
+                  alt={artist.name}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="font-bold text-6xl text-primary/20">
+                    {artist.name
+                      .split(' ')
+                      .map((word) => word[0])
+                      .join('')}
+                  </div>
                 </div>
-              </div>
-              {artist.trending > 85 && (
+              )}
+              {artist.trendingScore > 85 && (
                 <div className="absolute top-2 right-2">
                   <Badge variant="secondary" className="gap-1">
                     <TrendingUp className="h-3 w-3" />
@@ -168,17 +155,19 @@ export const ArtistGrid = () => {
             </div>
           </Link>
           <CardContent className="p-4">
-            <Link href={`/artists/${artist.id}`}>
+            <Link href={`/artists/${artist.slug || artist.id}`}>
               <h3 className="mb-1 font-semibold text-lg transition-colors hover:text-primary">
                 {artist.name}
               </h3>
             </Link>
-            <Badge variant="outline" className="mb-3">
-              {artist.genre}
-            </Badge>
+            {artist.genres && artist.genres.length > 0 && (
+              <Badge variant="outline" className="mb-3">
+                {artist.genres[0]}
+              </Badge>
+            )}
 
             <div className="mb-4 flex items-center justify-between text-muted-foreground text-sm">
-              <span>{formatFollowers(artist.followers)} followers</span>
+              <span>{formatFollowers(artist.followers || 0)} followers</span>
               <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
                 <span>{artist.upcomingShows} shows</span>

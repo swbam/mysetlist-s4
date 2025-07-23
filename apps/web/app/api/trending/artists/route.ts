@@ -11,7 +11,25 @@ export async function GET(request: NextRequest) {
     // const timeframe = searchParams.get('timeframe') || 'week'; // day, week, month
     // Currently using trending score only - future enhancement will filter by date range
 
-    const supabase = await createClient();
+    let supabase;
+    try {
+      supabase = await createClient();
+    } catch (error) {
+      console.error('Failed to create Supabase client:', error);
+      // Return empty array instead of throwing
+      return NextResponse.json({
+        artists: [],
+        fallback: true,
+        error: 'Database connection failed',
+        message: 'Unable to connect to the database',
+        total: 0,
+      }, { 
+        status: 200,
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        },
+      });
+    }
 
     // Get trending artists with fallback for empty data
     const { data: trendingArtists, error } = await supabase
@@ -130,14 +148,15 @@ export async function GET(request: NextRequest) {
     response.headers.set('Cache-Control', CACHE_HEADERS.api.public);
 
     return response;
-  } catch (_error) {
+  } catch (error) {
+    console.error('Trending artists error:', error);
     // Return empty array with error info instead of throwing
     return NextResponse.json(
       {
         artists: [],
         fallback: true,
         error: 'Failed to load trending artists',
-        message: 'Unable to load artist data at this time',
+        message: error instanceof Error ? error.message : 'Unable to load artist data at this time',
         total: 0,
       },
       { status: 200 }
