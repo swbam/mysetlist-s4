@@ -87,7 +87,12 @@ function HomeHero() {
           </div>
 
           {/* CTA buttons */}
-          <div className="mt-10 flex flex-col items-center justify-center gap-3 px-4 sm:flex-row sm:gap-4 sm:px-0 animate-slide-up-delay-2">
+          <div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.3 }}
+            className="mt-10 flex flex-col items-center justify-center gap-3 px-4 sm:flex-row sm:gap-4 sm:px-0"
+          >
             <Button size="lg" className="group w-full min-w-[200px] sm:w-auto" asChild>
               <Link href="/artists">
                 Start Voting
@@ -105,11 +110,14 @@ function HomeHero() {
                 Discover Music
               </Link>
             </Button>
-          </div>
+          </motion.div>
 
           {/* Stats */}
-          <div
-            className="mx-auto mt-16 grid max-w-2xl grid-cols-2 gap-6 px-4 sm:px-0 md:grid-cols-3 md:gap-8 animate-fade-in-delay-3"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="mx-auto mt-16 grid max-w-2xl grid-cols-2 gap-6 px-4 sm:px-0 md:grid-cols-3 md:gap-8"
             role="region"
             aria-label="Platform statistics"
           >
@@ -140,11 +148,11 @@ function HomeHero() {
                 Music Fans
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>
   );
 }
 
-export default memo(HomeHero);
+export default HomeHero;

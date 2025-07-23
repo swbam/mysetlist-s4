@@ -191,7 +191,7 @@ export default async function TrendingPage() {
           </p>
         </div>
 
-        {React.createElement(Suspense as any, { fallback: React.createElement(TrendingPageSkeleton) }, (
+        <Suspense fallback={<TrendingPageSkeleton />}>
           <div className="space-y-8">
             {/* Live Trending Section */}
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -450,7 +450,7 @@ export default async function TrendingPage() {
               </div>
             </div>
           </div>
-        ))}
+        </Suspense>
       </div>
     </TrendingErrorBoundary>
   );
