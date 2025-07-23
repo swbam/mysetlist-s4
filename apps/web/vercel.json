@@ -1,8 +1,25 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd apps/web && npm run build",
-  "outputDirectory": "apps/web/.next", 
-  "installCommand": "npm install && cd apps/web && npm install",
+  "functions": {
+    "app/api/*/route.ts": {
+      "maxDuration": 30
+    },
+    "app/api/*/route.js": {
+      "maxDuration": 30
+    },
+    "app/api/sync/*/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/scheduled/*/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/autonomous-sync/*/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/admin/*/route.ts": {
+      "maxDuration": 60
+    }
+  },
   "redirects": [
     {
       "source": "/app/(.*)",
