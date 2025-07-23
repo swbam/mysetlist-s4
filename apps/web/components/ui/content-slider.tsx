@@ -9,6 +9,7 @@ import {
   CarouselPrevious,
 } from '@repo/design-system/components/ui/carousel';
 import { cn } from '@repo/design-system/lib/utils';
+import { Skeleton } from '@repo/design-system/components/ui/skeleton';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -31,6 +32,47 @@ interface ContentSliderProps {
   loop?: boolean;
   showDots?: boolean;
   gradientOverlay?: boolean;
+  isLoading?: boolean;
+}
+
+// Loading skeleton component for content slider
+export function ContentSliderSkeleton({
+  title = "Loading...",
+  itemCount = 6,
+  className
+}: {
+  title?: string;
+  itemCount?: number;
+  className?: string;
+}) {
+  return (
+    <section className={cn('relative py-16 md:py-24', className)}>
+      <div className="container relative mx-auto px-4">
+        {/* Header skeleton */}
+        <div className="mb-8 flex items-end justify-between">
+          <div>
+            <Skeleton className="mb-2 h-8 w-48 md:h-10 md:w-64" />
+            <Skeleton className="h-5 w-32 md:w-40" />
+          </div>
+          <Skeleton className="h-6 w-20" />
+        </div>
+        
+        {/* Items skeleton */}
+        <div className="flex gap-4 overflow-hidden">
+          {Array.from({ length: itemCount }).map((_, i) => (
+            <div key={i} className="w-64 flex-shrink-0 sm:w-72">
+              <Skeleton className="aspect-[16/10] w-full rounded-lg" />
+              <div className="mt-3 space-y-2">
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }
 
 export function ContentSlider({

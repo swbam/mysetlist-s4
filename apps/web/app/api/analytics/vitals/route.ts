@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { monitor } from '~/lib/api/monitoring';
 
 export async function POST(request: NextRequest) {
   try {
-    const startTime = Date.now();
-    
     // Parse the request body
     const body = await request.json();
     
@@ -16,58 +13,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract context from request
-    const context = {
-      ip: request.headers.get('x-forwarded-for') || 
-          request.headers.get('x-real-ip') ||
-          'unknown',
-      userAgent: request.headers.get('user-agent') || 'unknown',
-      url: body.url || 'unknown',
-      requestId: request.headers.get('x-request-id') || 'unknown'
-    };
+    // Log to console in development
+    if (process.env['NODE_ENV'] === 'development') {
+      console.log('Web Vital:', {
+        name: body.name,
+        value: body.value,
+        rating: body.rating || 'good',
+        navigationType: body.navigationType,
+        timestamp: body.timestamp || new Date().toISOString()
+      });
+    }
 
-    // Track the Web Vital metric
-    monitor.trackPerformance(
-      body.name.toLowerCase(),
-      body.value,
-      body.rating || 'good'
-    );
-
-    // Log the Web Vital for debugging
-    monitor.log('Web Vital Received', {
-      name: body.name,
-      value: body.value,
-      rating: body.rating,
-      id: body.id,
-      navigationType: body.navigationType,
-      delta: body.delta,
-      timestamp: body.timestamp
-    }, context);
-
-    // Track additional metrics
-    monitor.metric('web_vitals_total', 1, {
-      name: body.name,
-      rating: body.rating,
-      navigation_type: body.navigationType
-    });
-
-    // Track endpoint performance
-    const duration = Date.now() - startTime;
-    monitor.trackRequest({
-      url: '/api/analytics/vitals',
-      method: 'POST',
-      headers: Object.fromEntries(request.headers.entries())
-    }, { statusCode: 200 }, duration);
+    // In production, you could send this to a service like:
+    // - Google Analytics 4
+    // - PostHog
+    // - Mixpanel
+    // - Custom analytics endpoint
+    // For now, just acknowledge receipt
 
     return NextResponse.json({ 
       success: true,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    monitor.error('Error processing web vital', error, {
-      endpoint: '/api/analytics/vitals',
-      method: 'POST'
-    } as any);
+    console.error('Error processing web vital:', error);
 
     return NextResponse.json(
       { error: 'Internal server error' },

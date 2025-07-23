@@ -1,6 +1,5 @@
-import { artists, db } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { getArtistBySlug } from '@repo/database/src/queries/artists';
 
 export async function GET(
   request: NextRequest,
@@ -16,21 +15,19 @@ export async function GET(
       );
     }
 
-    // Get artist from database
-    const [artist] = await db
-      .select()
-      .from(artists)
-      .where(eq(artists.slug, slug))
-      .limit(1);
+    // Use Drizzle ORM query function
+    const result = await getArtistBySlug(slug);
 
-    if (!artist) {
+    if (!result) {
       return NextResponse.json(
         { error: 'Artist not found' },
         { status: 404 }
       );
     }
 
-    // Transform the artist data for API response
+    const { artist, showCount, upcomingShowCount, followerCount } = result;
+
+    // Transform the artist data for API response  
     const artistResponse = {
       id: artist.id,
       name: artist.name,
@@ -46,6 +43,10 @@ export async function GET(
       spotifyId: artist.spotifyId,
       createdAt: artist.createdAt,
       updatedAt: artist.updatedAt,
+      // Additional data from the query
+      showCount: showCount || 0,
+      upcomingShowCount: upcomingShowCount || 0,
+      followerCount: followerCount || 0,
     };
 
     return NextResponse.json({ artist: artistResponse });

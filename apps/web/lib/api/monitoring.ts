@@ -49,7 +49,10 @@ export class MonitoringService {
 
   private constructor() {
     this.cache = CacheClient.getInstance();
-    this.startFlushInterval();
+    // Only start flush interval if Redis is configured
+    if (this.cache && process.env['UPSTASH_REDIS_REST_URL']) {
+      this.startFlushInterval();
+    }
   }
 
   static getInstance(): MonitoringService {

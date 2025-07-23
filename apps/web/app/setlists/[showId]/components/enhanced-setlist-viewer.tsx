@@ -30,6 +30,7 @@ import {
 import React, { useState } from 'react';
 import { VoteButton } from '~/components/voting/vote-button';
 import { useRealtimeSetlist } from '~/hooks/use-realtime-setlist';
+import { generateId } from '~/lib/utils/id-generator';
 
 type EnhancedSetlistViewerProps = {
   showId: string;
@@ -82,7 +83,7 @@ export const EnhancedSetlistViewer = ({
 
       if (message) {
         const newEvent = {
-          id: Math.random().toString(36).substr(2, 9),
+          id: generateId('event'),
           message,
           timestamp: event.timestamp,
         };

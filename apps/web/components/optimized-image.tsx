@@ -3,7 +3,7 @@
 import { cn } from '@repo/design-system/lib/utils';
 import { AlertCircle, ImageIcon, Loader2 } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, memo } from 'react';
 
 interface OptimizedImageProps {
   src: string;
@@ -23,7 +23,7 @@ interface OptimizedImageProps {
   onError?: (error: any) => void;
 }
 
-export function OptimizedImage({
+const OptimizedImageComponent = function OptimizedImage({
   src,
   alt,
   width,
@@ -219,7 +219,22 @@ export function OptimizedImage({
       )}
     </div>
   );
-}
+};
+
+// Memoized export for performance
+export const OptimizedImage = memo(OptimizedImageComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.src === nextProps.src &&
+    prevProps.alt === nextProps.alt &&
+    prevProps.width === nextProps.width &&
+    prevProps.height === nextProps.height &&
+    prevProps.className === nextProps.className &&
+    prevProps.aspectRatio === nextProps.aspectRatio &&
+    prevProps.priority === nextProps.priority &&
+    prevProps.lazy === nextProps.lazy &&
+    prevProps.quality === nextProps.quality
+  );
+});
 
 // Convenience wrapper for common image types
 export function ArtistImage(props: Omit<OptimizedImageProps, 'aspectRatio'>) {

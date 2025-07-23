@@ -2,7 +2,7 @@
 
 import { useAuth } from '~/app/providers/auth-provider';
 // import { SetlistViewer as UISetlistViewer } from '@repo/design-system';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo, useCallback } from 'react';
 import { toast } from 'sonner';
 import type { Setlist } from '~/types/setlist';
 
@@ -18,7 +18,7 @@ interface SetlistViewerProps {
   realtime?: boolean;
 }
 
-export function SetlistViewer({
+const SetlistViewerComponent = function SetlistViewer({
   showId,
   initialSetlist,
   realtime = true,
@@ -71,7 +71,7 @@ export function SetlistViewer({
     return () => eventSource.close();
   }, [showId, realtime]);
 
-  const fetchSetlist = async () => {
+  const fetchSetlist = useCallback(async () => {
     try {
       const response = await fetch(`/api/setlists/${showId}`);
       if (response.ok) {
@@ -83,9 +83,9 @@ export function SetlistViewer({
     } finally {
       setLoading(false);
     }
-  };
+  }, [showId]);
 
-  const fetchUserVotes = async () => {
+  const fetchUserVotes = useCallback(async () => {
     if (!user) {
       return;
     }
@@ -101,7 +101,7 @@ export function SetlistViewer({
         setUserVotes(votesMap);
       }
     } catch (_error) {}
-  };
+  }, [showId, user]);
 
   return (
     // TODO: Implement SetlistViewer UI component
@@ -111,4 +111,13 @@ export function SetlistViewer({
       {!loading && setlist && <div>SetlistViewer component not implemented</div>}
     </div>
   );
-}
+};
+
+// Memoized export with custom comparison for better performance
+export const SetlistViewer = memo(SetlistViewerComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.showId === nextProps.showId &&
+    prevProps.initialSetlist === nextProps.initialSetlist &&
+    prevProps.realtime === nextProps.realtime
+  );
+});

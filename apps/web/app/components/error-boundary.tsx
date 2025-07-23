@@ -28,6 +28,27 @@ export class ErrorBoundary extends Component<Props, State> {
 
   override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Error caught by boundary:', error, errorInfo);
+    
+    // Send to error tracking service in production
+    if (process.env['NODE_ENV'] === 'production') {
+      // You could integrate with Sentry, LogRocket, etc. here
+      try {
+        fetch('/api/errors', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            error: error.toString(),
+            errorInfo,
+            url: typeof window !== 'undefined' ? window.location.href : '',
+            timestamp: new Date().toISOString(),
+          }),
+        }).catch(() => {
+          // Silently fail if error tracking fails
+        });
+      } catch {
+        // Silently fail if error tracking fails
+      }
+    }
   }
 
   override render() {

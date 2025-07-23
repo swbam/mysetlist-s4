@@ -85,22 +85,29 @@ export function useAutoImportOnMount(params: {
   const [hasImported, setHasImported] = useState(false);
 
   useEffect(() => {
+    // Only run once on mount when enabled
+    let isMounted = true;
+    
     if (
       params.enabled !== false &&
       !hasImported &&
       (params.artistId || params.artistName || params.spotifyId)
     ) {
-      setHasImported(true);
-      importArtist(params);
+      const runImport = async () => {
+        if (!isMounted) return;
+        setHasImported(true);
+        await importArtist(params);
+      };
+      
+      runImport();
     }
-  }, [
-    params.artistId,
-    params.artistName,
-    params.spotifyId,
-    params.enabled,
-    hasImported,
-    importArtist,
-  ]);
+    
+    return () => {
+      isMounted = false;
+    };
+    // Only re-run if enabled state changes or on initial mount
+    // Don't include importArtist in deps to avoid loops
+  }, [params.enabled, hasImported]);
 
   return { loading, error };
 }

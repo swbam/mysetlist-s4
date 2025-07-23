@@ -6,9 +6,9 @@ import {
   emailQueue,
   emailUnsubscribes,
 } from './email-preferences';
-import { setlistSongs, setlists, songs, votes } from './setlists';
+import { setlistSongs, setlists, votes } from './setlists';
+import { songs } from './songs';
 import { showArtists, showComments, shows } from './shows';
-import { userFollowsArtists } from './user-follows-artists';
 import { userProfiles } from './user-profiles';
 import { users } from './users';
 import { venueInsiderTips, venuePhotos, venueReviews } from './venue-reviews';
@@ -26,7 +26,6 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   venueTips: many(venueTips),
   venueInsiderTips: many(venueInsiderTips),
   showComments: many(showComments),
-  followedArtists: many(userFollowsArtists),
   emailPreferences: one(emailPreferences, {
     fields: [users.id],
     references: [emailPreferences.userId],
@@ -45,7 +44,6 @@ export const artistsRelations = relations(artists, ({ many, one }) => ({
     fields: [artists.id],
     references: [artistStats.artistId],
   }),
-  followers: many(userFollowsArtists),
 }));
 
 export const artistStatsRelations = relations(artistStats, ({ one }) => ({
@@ -171,19 +169,7 @@ export const venueInsiderTipsRelations = relations(
   })
 );
 
-export const userFollowsArtistsRelations = relations(
-  userFollowsArtists,
-  ({ one }) => ({
-    user: one(users, {
-      fields: [userFollowsArtists.userId],
-      references: [users.id],
-    }),
-    artist: one(artists, {
-      fields: [userFollowsArtists.artistId],
-      references: [artists.id],
-    }),
-  })
-);
+// userFollowsArtists table has been removed - relations removed as well
 
 export const artistSongsRelations = relations(artistSongs, ({ one }) => ({
   artist: one(artists, {

@@ -4,34 +4,71 @@ import { useEffect } from 'react';
 
 export function AccessibilityEnhancements() {
   useEffect(() => {
-    // Enhanced focus management for keyboard navigation
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Skip links functionality
-      if (e.key === 'Tab' && e.shiftKey === false) {
-        const firstFocusable = document.querySelector('[data-skip-to-content]') as HTMLElement;
-        if (document.activeElement === document.body && firstFocusable) {
-          e.preventDefault();
-          firstFocusable.focus();
-        }
-      }
-    };
+    // Ensure we're on the client before accessing browser APIs
+    if (typeof window === 'undefined' || typeof document === 'undefined') {
+      return;
+    }
 
-    // Reduced motion preferences
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const handleReducedMotion = (e: MediaQueryListEvent | MediaQueryList) => {
-      if (e.matches) {
-        document.documentElement.style.setProperty('--animation-duration', '0.01ms');
-        document.documentElement.style.setProperty('--animation-delay', '0ms');
-      }
-    };
+    let handleKeyDown: ((e: KeyboardEvent) => void) | undefined;
+    let handleReducedMotion: ((e: MediaQueryListEvent | MediaQueryList) => void) | undefined;
+    let mediaQuery: MediaQueryList | undefined;
 
-    document.addEventListener('keydown', handleKeyDown);
-    mediaQuery.addEventListener('change', handleReducedMotion);
-    handleReducedMotion(mediaQuery);
+    // Add small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      try {
+        // Enhanced focus management for keyboard navigation
+        handleKeyDown = (e: KeyboardEvent) => {
+          try {
+            // Skip links functionality
+            if (e.key === 'Tab' && e.shiftKey === false) {
+              const firstFocusable = document.querySelector('[data-skip-to-content]') as HTMLElement;
+              if (document.activeElement === document.body && firstFocusable) {
+                e.preventDefault();
+                firstFocusable.focus();
+              }
+            }
+          } catch (error) {
+            console.warn('Focus management error:', error);
+          }
+        };
+
+        // Reduced motion preferences
+        mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+        handleReducedMotion = (e: MediaQueryListEvent | MediaQueryList) => {
+          try {
+            if (e.matches) {
+              document.documentElement.style.setProperty('--animation-duration', '0.01ms');
+              document.documentElement.style.setProperty('--animation-delay', '0ms');
+            } else {
+              // Reset to default values when reduced motion is not preferred
+              document.documentElement.style.removeProperty('--animation-duration');
+              document.documentElement.style.removeProperty('--animation-delay');
+            }
+          } catch (error) {
+            console.warn('Reduced motion handling error:', error);
+          }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        mediaQuery.addEventListener('change', handleReducedMotion);
+        handleReducedMotion(mediaQuery);
+      } catch (error) {
+        console.warn('Accessibility setup error:', error);
+      }
+    }, 100);
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      mediaQuery.removeEventListener('change', handleReducedMotion);
+      clearTimeout(timer);
+      try {
+        if (handleKeyDown) {
+          document.removeEventListener('keydown', handleKeyDown);
+        }
+        if (mediaQuery && handleReducedMotion) {
+          mediaQuery.removeEventListener('change', handleReducedMotion);
+        }
+      } catch (error) {
+        console.warn('Cleanup error:', error);
+      }
     };
   }, []);
 

@@ -9,7 +9,12 @@ import { DisableServiceWorker } from '~/components/disable-sw';
 import { PageTransitionProvider } from '~/components/page-transition-provider';
 import { SkipLink } from '~/components/ui/accessibility-utils';
 import { WebVitalsTracker } from '~/components/analytics/web-vitals-tracker';
+import { ClientOnly } from '~/components/client-only';
+import { GlobalErrorHandler } from '~/components/global-error-handler';
+import { SafeScriptLoader } from '~/components/safe-script-loader';
 import { LayoutProvider } from '../providers/layout-provider';
+import { ReactQueryProvider } from '../providers/react-query-provider';
+import { PerformanceMonitor } from '~/components/performance/performance-monitor';
 import { Footer } from './components/footer';
 import { Header } from './components/header';
 import { AuthProvider } from './providers/auth-provider';
@@ -77,12 +82,11 @@ type RootLayoutProperties = {
   readonly children: React.ReactNode;
 };
 
-const RootLayout = async ({ children }: RootLayoutProperties) => {
+const RootLayout = ({ children }: RootLayoutProperties) => {
   return (
     <html
       lang="en"
       className={cn(fonts, 'scroll-smooth')}
-      suppressHydrationWarning
     >
       <head>
         <meta
@@ -93,25 +97,33 @@ const RootLayout = async ({ children }: RootLayoutProperties) => {
       <body>
         <ErrorBoundary>
           <DesignSystemProvider>
-            <AuthProvider>
-              <RealtimeProvider>
-                <LayoutProvider>
-                  <AnonymousUserProvider>
-                    <PageTransitionProvider>
-                      <DisableServiceWorker />
-                      <WebVitalsTracker />
-                      <SkipLink href="#main-content" />
-                      <Header />
-                      <main id="main-content" className="focus:outline-none">
-                        {children}
-                      </main>
-                      <Footer />
-                      <Toaster />
-                    </PageTransitionProvider>
-                  </AnonymousUserProvider>
-                </LayoutProvider>
-              </RealtimeProvider>
-            </AuthProvider>
+            <ReactQueryProvider>
+              <AuthProvider>
+                <RealtimeProvider>
+                  <LayoutProvider>
+                    <AnonymousUserProvider>
+                      <PageTransitionProvider>
+                        <SafeScriptLoader>
+                          <ClientOnly>
+                            <GlobalErrorHandler />
+                            <DisableServiceWorker />
+                            <WebVitalsTracker />
+                            <PerformanceMonitor />
+                          </ClientOnly>
+                        </SafeScriptLoader>
+                        <SkipLink href="#main-content" />
+                        <Header />
+                        <main id="main-content" className="focus:outline-none">
+                          {children}
+                        </main>
+                        <Footer />
+                        <Toaster />
+                      </PageTransitionProvider>
+                    </AnonymousUserProvider>
+                  </LayoutProvider>
+                </RealtimeProvider>
+              </AuthProvider>
+            </ReactQueryProvider>
           </DesignSystemProvider>
         </ErrorBoundary>
       </body>

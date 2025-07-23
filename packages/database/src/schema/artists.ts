@@ -7,7 +7,7 @@ import {
   timestamp,
   uuid,
 } from 'drizzle-orm/pg-core';
-import { songs } from './setlists';
+import { songs } from './songs';
 
 export const artists = pgTable('artists', {
   id: uuid('id').primaryKey().defaultRandom(),

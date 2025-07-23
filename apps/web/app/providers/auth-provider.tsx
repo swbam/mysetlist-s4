@@ -31,10 +31,16 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
+  // Handle mounting state
   useEffect(() => {
-    let isMounted = true;
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
 
     const initializeAuth = async () => {
       try {
@@ -45,14 +51,14 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
           console.error('Error fetching session:', error);
         }
         
-        if (isMounted) {
+        if (isActive && isMounted) {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
         }
       } catch (error) {
         console.error('Failed to initialize auth:', error);
-        if (isMounted) {
+        if (isActive && isMounted) {
           setLoading(false);
         }
       }
@@ -64,7 +70,7 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
     let subscription: any;
     try {
       const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-        if (isMounted) {
+        if (isActive && isMounted) {
           setSession(session);
           setUser(session?.user ?? null);
         }
@@ -75,12 +81,12 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
     }
 
     return () => {
-      isMounted = false;
+      isActive = false;
       if (subscription) {
         subscription.unsubscribe();
       }
     };
-  }, []);
+  }, [isMounted]);
 
   const signInWithEmail = async (
     email: string,
@@ -187,6 +193,27 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
     }),
     [user, session, loading, isAuthenticated]
   );
+
+  // Don't render until mounted to prevent hydration mismatch
+  if (!isMounted) {
+    return (
+      <AuthContext.Provider value={{
+        user: null,
+        session: null,
+        loading: true,
+        isAuthenticated: false,
+        signInWithEmail,
+        signUpWithEmail,
+        signInWithSpotify,
+        signOut,
+        resetPassword,
+        updatePassword,
+        hasRole: () => false,
+      }}>
+        {children}
+      </AuthContext.Provider>
+    );
+  }
 
   return (
     <AuthContext.Provider value={contextValue}>

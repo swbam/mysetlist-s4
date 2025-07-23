@@ -68,3 +68,48 @@ export interface TrendingVenuesResponse {
   fallback?: boolean;
   error?: string;
 }
+
+export interface RecentSetlist {
+  id: string;
+  name: string;
+  type: 'predicted' | 'actual';
+  totalVotes: number;
+  voteCount: number;
+  songCount: number;
+  accuracyScore: number;
+  isLocked: boolean;
+  createdAt: string;
+  rank: number;
+  show: {
+    id: string;
+    name: string;
+    slug: string;
+    date: string | null;
+    status: string;
+  };
+  artist: {
+    id: string | null;
+    name: string;
+    slug: string | null;
+    imageUrl: string | null;
+  };
+  venue: {
+    name: string | null;
+    city: string | null;
+    state: string | null;
+  };
+  creator: {
+    id: string;
+    name: string;
+    avatarUrl: string | null;
+  } | null;
+}
+
+export interface RecentSetlistsResponse {
+  setlists: RecentSetlist[];
+  timeframe: string;
+  total: number;
+  generatedAt: string;
+  fallback?: boolean;
+  error?: string;
+}

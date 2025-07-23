@@ -5,7 +5,7 @@ import { Button } from '@repo/design-system/components/ui/button';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { Calendar, Heart, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, memo, useCallback } from 'react';
 
 // Mock data - in real app this would come from the database
 const mockArtists = [
@@ -119,18 +119,18 @@ const mockArtists = [
   },
 ];
 
-export const ArtistGrid = () => {
+const ArtistGridComponent = () => {
   const [followedArtists, setFollowedArtists] = useState<number[]>([]);
 
-  const toggleFollow = (artistId: number) => {
+  const toggleFollow = useCallback((artistId: number) => {
     setFollowedArtists((prev) =>
       prev.includes(artistId)
         ? prev.filter((id) => id !== artistId)
         : [...prev, artistId]
     );
-  };
+  }, []);
 
-  const formatFollowers = (count: number) => {
+  const formatFollowers = useCallback((count: number) => {
     if (count >= 1000000) {
       return `${(count / 1000000).toFixed(1)}M`;
     }
@@ -138,7 +138,7 @@ export const ArtistGrid = () => {
       return `${(count / 1000).toFixed(0)}K`;
     }
     return count.toString();
-  };
+  }, []);
 
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
@@ -204,3 +204,6 @@ export const ArtistGrid = () => {
     </div>
   );
 };
+
+// Memoized export for performance
+export const ArtistGrid = memo(ArtistGridComponent);

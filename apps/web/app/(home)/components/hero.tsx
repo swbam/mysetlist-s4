@@ -3,10 +3,36 @@ import { Button } from '@repo/design-system/components/ui/button';
 import { motion } from 'framer-motion';
 import { ChevronRight, Music, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { SearchBar } from '~/components/search-bar';
 
+// Animated placeholder suggestions
+const SEARCH_PLACEHOLDERS = [
+  'Search artists, venues, shows...',
+  'Find Taylor Swift concerts...',
+  'Discover Madison Square Garden events...',
+  'Search for The Weeknd setlists...',
+  'Find concerts in your city...',
+  'Explore trending artists...',
+  'Search for festival lineups...',
+  'Find acoustic sessions...',
+];
+
 function HomeHero() {
+  const [currentPlaceholder, setCurrentPlaceholder] = useState(0);
+  const [isTyping, setIsTyping] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsTyping(true);
+      setTimeout(() => {
+        setCurrentPlaceholder((prev) => (prev + 1) % SEARCH_PLACEHOLDERS.length);
+        setIsTyping(false);
+      }, 300);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
   return (
     <section 
       className="relative overflow-hidden pt-32 pb-40"
@@ -76,11 +102,18 @@ function HomeHero() {
             <div className="relative mx-auto w-full max-w-2xl">
               <div className="absolute inset-0 bg-gradient-to-r from-gray-400/20 via-gray-600/20 to-gray-800/20 opacity-50 blur-3xl" />
               <div className="relative">
-                <SearchBar
-                  variant="hero"
-                  placeholder="Search artists..."
-                  className="w-full shadow-2xl"
-                />
+                <motion.div
+                  key={currentPlaceholder}
+                  initial={{ opacity: 0.7 }}
+                  animate={{ opacity: isTyping ? 0.5 : 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <SearchBar
+                    variant="hero"
+                    placeholder={SEARCH_PLACEHOLDERS[currentPlaceholder]}
+                    className="w-full shadow-2xl"
+                  />
+                </motion.div>
               </div>
             </div>
 

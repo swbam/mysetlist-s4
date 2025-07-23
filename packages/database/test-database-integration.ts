@@ -27,7 +27,7 @@ import {
   shows,
   songs,
   userBans,
-  userFollowsArtists,
+  // userFollowsArtists removed
   userProfiles,
   users,
   venueInsiderTips,

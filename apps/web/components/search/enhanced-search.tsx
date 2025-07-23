@@ -30,6 +30,7 @@ import {
   Calendar,
   Disc,
   Filter,
+  Loader2,
   MapPin,
   Music,
   Search,
@@ -38,6 +39,7 @@ import {
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDebounce } from '~/hooks/use-debounce';
+import { useArtistAutoImport } from '~/hooks/use-artist-auto-import';
 
 interface SearchResult {
   id: string;
@@ -76,12 +78,14 @@ export function EnhancedSearch({
 }: EnhancedSearchProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { importArtist, loading: importLoading } = useArtistAutoImport();
   
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [showFiltersPanel, setShowFiltersPanel] = useState(false);
+  const [syncingArtists, setSyncingArtists] = useState<Set<string>>(new Set());
   
   const [filters, setFilters] = useState<SearchFilters>({
     types: searchParams.get('types')?.split(',') || ['artist', 'show', 'venue', 'song'],
@@ -174,7 +178,36 @@ export function EnhancedSearch({
     }
   };
 
-  const handleResultClick = (result: SearchResult) => {
+  const handleResultClick = async (result: SearchResult) => {
+    // For artists, trigger auto-import first
+    if (result.type === 'artist') {
+      // Add to syncing set to show loading state
+      setSyncingArtists(prev => new Set([...prev, result.id]));
+      
+      try {
+        // Trigger auto-import with available data
+        await importArtist({
+          artistId: result.source === 'database' ? result.id : undefined,
+          artistName: result.title,
+          // Extract Spotify ID if available from the result
+          spotifyId: result.source === 'ticketmaster' ? undefined : (result as any).spotifyId,
+        });
+        
+        // Small delay to show sync indication
+        await new Promise(resolve => setTimeout(resolve, 800));
+      } catch (error) {
+        console.warn('Auto-import failed:', error);
+        // Continue navigation even if auto-import fails
+      } finally {
+        setSyncingArtists(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(result.id);
+          return newSet;
+        });
+      }
+    }
+
+    // Navigate to the appropriate page
     switch (result.type) {
       case 'artist':
         router.push(`/artists/${result.slug || result.id}`);
@@ -473,14 +506,24 @@ export function EnhancedSearch({
                     <div className="grid gap-3">
                       {typeResults.map((result) => {
                         const Icon = getResultIcon(result.type);
+                        const isSyncing = syncingArtists.has(result.id);
+                        const isClickDisabled = isSyncing || (result.type === 'artist' && importLoading);
+                        
                         return (
                           <div
                             key={result.id}
-                            className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
-                            onClick={() => handleResultClick(result)}
+                            className={cn(
+                              "flex items-center gap-3 rounded-lg border p-3 transition-colors",
+                              isClickDisabled ? "opacity-70" : "cursor-pointer hover:bg-muted/50"
+                            )}
+                            onClick={isClickDisabled ? undefined : () => handleResultClick(result)}
                           >
                             <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
-                              <Icon className="h-4 w-4 text-muted-foreground" />
+                              {isSyncing ? (
+                                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                              ) : (
+                                <Icon className="h-4 w-4 text-muted-foreground" />
+                              )}
                             </div>
 
                             <div className="min-w-0 flex-1">
@@ -490,6 +533,11 @@ export function EnhancedSearch({
                                 </span>
                                 {result.verified && (
                                   <div className="h-1 w-1 rounded-full bg-blue-500" />
+                                )}
+                                {isSyncing && (
+                                  <Badge variant="secondary" className="text-xs animate-pulse">
+                                    Syncing...
+                                  </Badge>
                                 )}
                               </div>
                               {result.subtitle && (

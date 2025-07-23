@@ -34,12 +34,23 @@ export function MobileRealtimeStatus() {
   });
   const [isExpanded, setIsExpanded] = useState(false);
   const [networkStatus, setNetworkStatus] = useState<'online' | 'offline'>(
-    'online'
+    typeof window !== 'undefined' && navigator.onLine ? 'online' : 'offline'
   );
+  const [isMounted, setIsMounted] = useState(false);
 
   const supabase = createClient();
 
+  // Handle client-side mounting
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    // Ensure we're on the client before accessing window
+    if (typeof window === 'undefined' || !isMounted) {
+      return;
+    }
+
     let latencyInterval: NodeJS.Timeout;
     let reconnectTimer: NodeJS.Timeout | undefined;
 
@@ -133,7 +144,7 @@ export function MobileRealtimeStatus() {
 
       supabase.removeChannel(channel);
     };
-  }, [connectionStatus.status]);
+  }, [connectionStatus.status, isMounted]);
 
   const getStatusIcon = () => {
     if (networkStatus === 'offline') {
@@ -226,6 +237,11 @@ export function MobileRealtimeStatus() {
   };
 
   const StatusIcon = getStatusIcon();
+
+  // Don't render until mounted to prevent hydration mismatch
+  if (!isMounted) {
+    return null;
+  }
 
   return (
     <div className="fixed right-4 bottom-4 z-40 md:relative md:right-auto md:bottom-auto">

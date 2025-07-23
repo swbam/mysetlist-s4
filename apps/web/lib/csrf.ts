@@ -93,7 +93,7 @@ export async function csrfProtection(
   request: NextRequest
 ): Promise<Response | null> {
   // Skip CSRF for public endpoints
-  const publicEndpoints = ['/api/health', '/api/search', '/api/trending'];
+  const publicEndpoints = ['/api/health', '/api/search', '/api/trending', '/api/analytics', '/api/placeholder'];
 
   // Skip CSRF for sync/integration endpoints in development
   const internalEndpoints = [

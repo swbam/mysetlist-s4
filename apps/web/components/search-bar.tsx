@@ -24,7 +24,7 @@ import { cn } from '@repo/design-system/lib/utils';
 import { Calendar, Disc, MapPin, Music, Search, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, memo } from 'react';
 import { useDebounce } from '~/hooks/use-debounce';
 
 interface SearchResult {
@@ -60,7 +60,7 @@ interface SearchBarProps {
   defaultFilters?: Partial<SearchFilters>;
 }
 
-export function SearchBar({
+const SearchBarComponent = function SearchBar({
   placeholder = 'Search artists, shows, venues...',
   className,
   variant = 'default',
@@ -290,7 +290,7 @@ export function SearchBar({
   );
 }
 
-function SearchResults({
+const SearchResultsComponent = function SearchResults({
   results,
   isLoading,
   query,
@@ -303,7 +303,7 @@ function SearchResults({
   onSelect: (result: SearchResult) => void;
   searched: boolean;
 }) {
-  const getResultIcon = (type: string) => {
+  const getResultIcon = useCallback((type: string) => {
     switch (type) {
       case 'artist':
         return Music;
@@ -316,9 +316,9 @@ function SearchResults({
       default:
         return Search;
     }
-  };
+  }, []);
 
-  const getResultBadgeColor = (type: string) => {
+  const getResultBadgeColor = useCallback((type: string) => {
     switch (type) {
       case 'artist':
         return 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300';
@@ -331,15 +331,15 @@ function SearchResults({
       default:
         return 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300';
     }
-  };
+  }, []);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
     });
-  };
+  }, []);
 
   // Group results by type
   const groupedResults = results.reduce(
@@ -452,5 +452,29 @@ function SearchResults({
     </Command>
   );
 }
+
+// Memoized SearchResults component
+const SearchResults = memo(SearchResultsComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.query === nextProps.query &&
+    prevProps.isLoading === nextProps.isLoading &&
+    prevProps.searched === nextProps.searched &&
+    prevProps.results.length === nextProps.results.length &&
+    prevProps.results.every((result, index) => 
+      result.id === nextProps.results[index]?.id
+    )
+  );
+});
+
+// Memoized SearchBar component
+export const SearchBar = memo(SearchBarComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.placeholder === nextProps.placeholder &&
+    prevProps.className === nextProps.className &&
+    prevProps.variant === nextProps.variant &&
+    prevProps.showFilters === nextProps.showFilters &&
+    JSON.stringify(prevProps.defaultFilters) === JSON.stringify(nextProps.defaultFilters)
+  );
+});
 
 SearchBar.displayName = 'SearchBar';

@@ -19,29 +19,52 @@ function sendToAnalytics(metric: WebVital) {
     return;
   }
 
-  fetch('/api/analytics/vitals', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      ...metric,
-      url: window.location.href,
-      timestamp: Date.now(),
-    }),
-  }).catch((error) => {
-    console.warn('Failed to send web vital:', error);
-  });
+  // Ensure we're in browser context
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    fetch('/api/analytics/vitals', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        ...metric,
+        url: window.location.href,
+        timestamp: Date.now(),
+      }),
+    }).catch((error) => {
+      console.warn('Failed to send web vital:', error);
+    });
+  } catch (error) {
+    console.warn('Web vitals analytics error:', error);
+  }
 }
 
 export function WebVitalsTracker() {
   useEffect(() => {
-    // Track Core Web Vitals
-    onCLS(sendToAnalytics);
-    onFCP(sendToAnalytics);
-    onINP(sendToAnalytics);
-    onLCP(sendToAnalytics);
-    onTTFB(sendToAnalytics);
+    // Ensure we're in the browser before tracking vitals
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    // Add a small delay to ensure hydration is complete
+    const timer = setTimeout(() => {
+      try {
+        // Track Core Web Vitals
+        onCLS(sendToAnalytics);
+        onFCP(sendToAnalytics);
+        onINP(sendToAnalytics);
+        onLCP(sendToAnalytics);
+        onTTFB(sendToAnalytics);
+      } catch (error) {
+        console.warn('Web vitals tracking error:', error);
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, []);
 
   return null; // This component only tracks metrics, doesn't render anything

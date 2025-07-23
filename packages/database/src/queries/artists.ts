@@ -1,6 +1,6 @@
 import { and, desc, eq, ilike, sql } from 'drizzle-orm';
 import { db } from '../client';
-import { artists, userFollowsArtists } from '../schema';
+import { artists } from '../schema';
 
 export async function getArtistById(artistId: string) {
   const artist = await db
@@ -42,11 +42,7 @@ export async function getArtistBySlug(slug: string) {
         WHERE sa.artist_id = ${artists.id}
         AND s.date >= CURRENT_DATE
       )`,
-      followerCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM user_follows_artists ufa
-        WHERE ufa.artist_id = ${artists.id}
-      )`,
+      followerCount: sql<number>`0`, // user_follows_artists table removed
     })
     .from(artists)
     .where(eq(artists.slug, slug))
@@ -59,11 +55,7 @@ export async function searchArtists(query: string, limit = 20) {
   const results = await db
     .select({
       artist: artists,
-      followerCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM user_follows_artists ufa
-        WHERE ufa.artist_id = ${artists.id}
-      )`,
+      followerCount: sql<number>`0`, // user_follows_artists table removed
     })
     .from(artists)
     .where(ilike(artists.name, `%${query}%`))
@@ -77,11 +69,7 @@ export async function getPopularArtists(limit = 20) {
   const results = await db
     .select({
       artist: artists,
-      followerCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM user_follows_artists ufa
-        WHERE ufa.artist_id = ${artists.id}
-      )`,
+      followerCount: sql<number>`0`, // user_follows_artists table removed
     })
     .from(artists)
     .orderBy(desc(artists.popularity))
@@ -94,11 +82,7 @@ export async function getArtistsByGenre(genre: string, limit = 20) {
   const results = await db
     .select({
       artist: artists,
-      followerCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM user_follows_artists ufa
-        WHERE ufa.artist_id = ${artists.id}
-      )`,
+      followerCount: sql<number>`0`, // user_follows_artists table removed
     })
     .from(artists)
     .where(sql`${artists.genres}::text ILIKE ${`%${genre}%`}`)
@@ -109,38 +93,13 @@ export async function getArtistsByGenre(genre: string, limit = 20) {
 }
 
 export async function getUserFollowedArtists(userId: string) {
-  const results = await db
-    .select({
-      artist: artists,
-      followedAt: userFollowsArtists.createdAt,
-      upcomingShowCount: sql<number>`(
-        SELECT COUNT(DISTINCT s.id)
-        FROM shows s
-        JOIN show_artists sa ON sa.show_id = s.id
-        WHERE sa.artist_id = ${artists.id}
-        AND s.date >= CURRENT_DATE
-      )`,
-    })
-    .from(userFollowsArtists)
-    .innerJoin(artists, eq(userFollowsArtists.artistId, artists.id))
-    .where(eq(userFollowsArtists.userId, userId))
-    .orderBy(desc(userFollowsArtists.createdAt));
-
-  return results;
+  // userFollowsArtists table has been removed - return empty array
+  return [];
 }
 
 export async function isUserFollowingArtist(userId: string, artistId: string) {
-  const result = await db
-    .select({ count: sql<number>`COUNT(*)` })
-    .from(userFollowsArtists)
-    .where(
-      and(
-        eq(userFollowsArtists.userId, userId),
-        eq(userFollowsArtists.artistId, artistId)
-      )
-    );
-
-  return result[0]?.count ? result[0].count > 0 : false;
+  // userFollowsArtists table has been removed - return false
+  return false;
 }
 
 export async function getSimilarArtists(artistId: string, limit = 10) {
@@ -168,11 +127,7 @@ export async function getSimilarArtists(artistId: string, limit = 10) {
   const results = await db
     .select({
       artist: artists,
-      followerCount: sql<number>`(
-        SELECT COUNT(*)
-        FROM user_follows_artists ufa
-        WHERE ufa.artist_id = ${artists.id}
-      )`,
+      followerCount: sql<number>`0`, // user_follows_artists table removed
     })
     .from(artists)
     .where(

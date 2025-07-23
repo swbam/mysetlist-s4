@@ -5,6 +5,9 @@ import nextDynamic from 'next/dynamic';
 import Hero from './components/hero';
 import TopArtistsWrapper from './components/top-artists-wrapper';
 import { TrendingShowsSlider } from './components/trending-shows-slider';
+import PopularVenuesWrapper from './components/popular-venues-wrapper';
+import RecentSetlistsWrapper from './components/recent-setlists-wrapper';
+import CommunityActivityFeed from './components/community-activity-feed';
 import AccessibilityEnhancements from './components/accessibility-enhancements';
 
 // Configure route as dynamic due to feature flags using headers
@@ -110,6 +113,11 @@ const Home = async () => {
         <section aria-label="Trending content">
           <TopArtistsWrapper />
           <TrendingShowsSlider />
+          <PopularVenuesWrapper />
+          <RecentSetlistsWrapper />
+        </section>
+        <section aria-label="Community activity and engagement">
+          <CommunityActivityFeed />
         </section>
         <section aria-label="Featured content and site features">
           <FeaturedContent />
