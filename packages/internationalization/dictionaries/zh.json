@@ -6,6 +6,9 @@
     },
     "header": {
       "home": "首页",
+      "artists": "艺术家",
+      "shows": "演出",
+      "venues": "场地",
       "product": {
         "title": "产品",
         "description": "今天管理一家小企业已经很困难。",

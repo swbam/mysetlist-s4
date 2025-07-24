@@ -6,6 +6,9 @@
     },
     "header": {
       "home": "Inicio",
+      "artists": "Artistas",
+      "shows": "Espectáculos",
+      "venues": "Lugares",
       "product": {
         "title": "Producto",
         "description": "Gestionar un pequeño negocio hoy en día ya es difícil.",

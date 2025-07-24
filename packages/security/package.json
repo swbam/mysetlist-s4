@@ -3,5 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "main": "./index.ts",
-  "types": "./index.ts"
+  "types": "./index.ts",
+  "dependencies": {
+    "@t3-oss/env-nextjs": "^0.13.4",
+    "zod": "^3.25.28"
+  }
 }

@@ -5,6 +5,7 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "dependencies": {
-    "resend": "^4.6.0"
+    "resend": "^4.6.0",
+    "zod": "^3.25.28"
   }
 }

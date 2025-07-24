@@ -30,7 +30,9 @@
     "next.config.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "vitest-env.d.ts",
+    "tests/types/**/*.d.ts"
   ],
   "exclude": ["__tests__", "cypress", "supabase", "test-utils", "*.setup.ts", "vitest.*"]
 }

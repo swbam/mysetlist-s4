@@ -6,6 +6,9 @@
     },
     "header": {
       "home": "Startseite",
+      "artists": "Künstler",
+      "shows": "Shows",
+      "venues": "Veranstaltungsorte",
       "product": {
         "title": "Produkt",
         "description": "Die Verwaltung eines kleinen Unternehmens ist heute bereits schwierig.",

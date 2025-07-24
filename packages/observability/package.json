@@ -5,6 +5,8 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "dependencies": {
-    "@logtail/next": "^0.2.1"
+    "@logtail/next": "^0.2.1",
+    "@t3-oss/env-nextjs": "^0.13.4",
+    "zod": "^3.25.28"
   }
 }

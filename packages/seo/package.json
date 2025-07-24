@@ -3,5 +3,13 @@
   "version": "0.0.0",
   "private": true,
   "main": "./index.ts",
-  "types": "./index.ts"
+  "types": "./index.ts",
+  "dependencies": {
+    "lodash.merge": "^4.6.2",
+    "next": "15.3.4"
+  },
+  "devDependencies": {
+    "@types/lodash.merge": "^4.6.9",
+    "@types/node": "^24.0.10"
+  }
 }
