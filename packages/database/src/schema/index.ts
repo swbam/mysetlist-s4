@@ -7,7 +7,7 @@ export * from './venue-reviews';
 export * from './shows';
 export * from './setlists';
 export * from './email-preferences';
-// User following removed: export * from './user-follows-artists';
+export * from './user-follows-artists';
 export * from './relations';
 export * from './admin';
 export * from './search';
