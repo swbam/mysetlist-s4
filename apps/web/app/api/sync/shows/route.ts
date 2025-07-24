@@ -30,7 +30,6 @@ export async function POST(request: NextRequest) {
     }
 
     const artistData = artist[0];
-<<<<<<< HEAD
 
     // Check if sync is needed (last synced < 4 hours ago)
     const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
@@ -87,8 +86,6 @@ export async function POST(request: NextRequest) {
       
       // Fallback to sample shows on API failure
       const sampleShows = await createSampleShows(artistId, artistData);
-=======
-    const tmId = ticketmasterId || artistData?.ticketmasterId;
     
     if (!tmId) {
       // If no Ticketmaster ID, create sample shows as fallback
