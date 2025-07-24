@@ -64,7 +64,9 @@
     "final:full": "echo '🎯 Full Deployment Pipeline' && pnpm check:env && pnpm db:generate && pnpm typecheck && tsx scripts/final-deployment.ts --prod --parallel --yes --verbose",
     "final:emergency": "echo '🚨 Emergency Deployment' && tsx scripts/final-deployment.ts --prod --force --skip-tests --yes",
     "final:ci": "echo '🤖 CI/CD Deployment' && tsx scripts/final-deployment.ts --prod --parallel --yes --verbose",
-    "final:test": "echo '🧪 Test Deployment' && tsx scripts/final-deployment.ts --validate-only --verbose && tsx scripts/final-deployment.ts --dry-run --verbose"
+    "final:test": "echo '🧪 Test Deployment' && tsx scripts/final-deployment.ts --validate-only --verbose && tsx scripts/final-deployment.ts --dry-run --verbose",
+    "test:sync": "tsx scripts/test-sync-pipeline.ts",
+    "final:check": "tsx scripts/final-deployment-check.ts"
   },
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.0",
@@ -76,6 +78,7 @@
     "@types/node": "^24.0.10",
     "@types/react": "^18.2.35",
     "@types/react-dom": "^18.2.14",
+    "chalk": "^5.4.1",
     "dotenv": "^16.6.1",
     "drizzle-orm": "^0.44.3",
     "postgres": "^3.4.7",

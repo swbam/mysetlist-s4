@@ -72,6 +72,9 @@ importers:
       '@types/react-dom':
         specifier: ^18.2.14
         version: 18.3.7(@types/react@18.3.23)
+      chalk:
+        specifier: ^5.4.1
+        version: 5.4.1
       dotenv:
         specifier: ^16.6.1
         version: 16.6.1
