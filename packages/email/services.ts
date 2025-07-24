@@ -428,7 +428,7 @@ export async function sendArtistFollowNotificationEmail({
       followerName,
       isFirstFollow,
       appUrl,
-    })
+    }
   );
 
   return sendEmail({
