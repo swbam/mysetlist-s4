@@ -33,6 +33,11 @@ export async function POST(
     }
 
     const artistData = artist[0];
+    
+    // Type guard to ensure artistData is defined
+    if (!artistData) {
+      return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
+    }
 
     // Check if sync is needed (avoid over-syncing)
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
@@ -133,6 +138,11 @@ export async function GET(
     }
 
     const artistData = artist[0];
+    
+    // Type guard to ensure artistData is defined
+    if (!artistData) {
+      return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
+    }
 
     return NextResponse.json({
       success: true,

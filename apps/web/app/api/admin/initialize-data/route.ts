@@ -71,7 +71,7 @@ async function seedMockData() {
   results.venues = insertedVenues.length;
 
   // Create mock shows
-  const showsToInsert = [];
+  const showsToInsert: Parameters<typeof db.insert<typeof shows>['values']>[0] = [];
   for (const artist of insertedArtists.slice(0, 5)) {
     for (const venue of insertedVenues) {
       const showDate = new Date();
@@ -84,7 +84,7 @@ async function seedMockData() {
         venueId: venue.id,
         date: showDate.toISOString().split('T')[0], // date column expects string date
         startTime: '20:00',
-        status: showDate > new Date() ? 'upcoming' : 'completed',
+        status: showDate > new Date() ? 'upcoming' : 'completed' as const,
         trendingScore: Math.random() * 100,
       });
     }
@@ -94,7 +94,7 @@ async function seedMockData() {
   results.shows = insertedShows.length;
 
   // Create mock songs for each artist
-  const songsToInsert = [];
+  const songsToInsert: Parameters<typeof db.insert<typeof songs>['values']>[0] = [];
   for (const artist of insertedArtists) {
     const songCount = Math.floor(Math.random() * 10) + 15;
     for (let i = 0; i < songCount; i++) {

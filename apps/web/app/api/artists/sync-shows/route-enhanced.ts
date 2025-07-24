@@ -1,6 +1,6 @@
 import { db } from '@repo/database';
 import { artists, showArtists, shows, venues } from '@repo/database';
-import { ticketmaster } from '@repo/external-apis';
+import { TicketmasterClient } from '@repo/external-apis';
 import { eq } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
 
@@ -52,8 +52,13 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Fetch shows from Ticketmaster API
-      const tmShows = await ticketmaster.getArtistEvents(artist.ticketmasterId, {
+      // Initialize Ticketmaster client and fetch shows
+      const ticketmasterClient = new TicketmasterClient({
+        apiKey: process.env.TICKETMASTER_API_KEY!,
+      });
+      
+      const tmShows = await ticketmasterClient.searchEvents({
+        attractionId: artist.ticketmasterId,
         size: 50,
         sort: 'date,asc',
       });
@@ -77,7 +82,7 @@ export async function POST(request: NextRequest) {
           .where(eq(shows.ticketmasterId, tmShow.id))
           .limit(1);
 
-        if (existingShow.length > 0) {
+        if (existingShow.length > 0 && existingShow[0]) {
           syncedShows.push(existingShow[0]);
           continue;
         }
@@ -109,10 +114,17 @@ export async function POST(request: NextRequest) {
           seatmapUrl: tmShow.seatmap?.staticUrl || null,
         };
 
-        const [insertedShow] = await db
+        const insertResult = await db
           .insert(shows)
           .values(showData as any)
           .returning();
+        
+        const insertedShow = insertResult[0];
+        
+        if (!insertedShow) {
+          console.error('Failed to insert show');
+          continue;
+        }
 
         // Create show-artist relationship
         await db.insert(showArtists).values({
