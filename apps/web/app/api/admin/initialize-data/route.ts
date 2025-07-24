@@ -59,9 +59,11 @@ async function seedMockData() {
   const insertedVenues = await db.insert(venues).values(
     MOCK_VENUES.map((venue) => ({
       name: venue.name,
+      slug: venue.name.toLowerCase().replace(/\s+/g, '-'),
       city: venue.city,
       state: venue.state,
       country: 'USA',
+      timezone: 'America/New_York', // Default timezone
       capacity: venue.capacity,
       imageUrl: `https://picsum.photos/seed/${venue.name}/600/400`,
     }))
@@ -77,14 +79,12 @@ async function seedMockData() {
       
       showsToInsert.push({
         name: `${artist.name} at ${venue.name}`,
-        date: showDate.toISOString(),
-        venueId: venue.id,
+        slug: `${artist.slug}-${venue.slug}-${showDate.toISOString().split('T')[0]}`,
         headlinerArtistId: artist.id,
+        venueId: venue.id,
+        date: showDate.toISOString().split('T')[0], // date column expects string date
+        startTime: '20:00',
         status: showDate > new Date() ? 'upcoming' : 'completed',
-        viewCount: Math.floor(Math.random() * 10000),
-        attendeeCount: Math.floor(Math.random() * venue.capacity!),
-        voteCount: Math.floor(Math.random() * 5000),
-        setlistCount: Math.floor(Math.random() * 20) + 10,
         trendingScore: Math.random() * 100,
       });
     }
@@ -99,9 +99,9 @@ async function seedMockData() {
     const songCount = Math.floor(Math.random() * 10) + 15;
     for (let i = 0; i < songCount; i++) {
       songsToInsert.push({
-        name: `${artist.name} - Song ${i + 1}`,
-        artistId: artist.id,
-        duration: Math.floor(Math.random() * 240) + 120, // 2-6 minutes
+        title: `Song ${i + 1}`,
+        artist: artist.name,
+        durationMs: (Math.floor(Math.random() * 240) + 120) * 1000, // 2-6 minutes in ms
         popularity: Math.floor(Math.random() * 100),
         previewUrl: `https://example.com/preview/${artist.id}/${i}`,
       });
@@ -119,7 +119,7 @@ async function initializeTrendingScores() {
   const baseUrl = process.env['NEXT_PUBLIC_URL'] || 'http://localhost:3001';
   const adminKey = process.env['ADMIN_API_KEY'];
   
-  const headers = adminKey ? { Authorization: `Bearer ${adminKey}` } : {};
+  const headers: HeadersInit = adminKey ? { Authorization: `Bearer ${adminKey}` } : {};
 
   // Seed trending metrics
   const seedResponse = await fetch(`${baseUrl}/api/admin/seed-trending?type=all`, {

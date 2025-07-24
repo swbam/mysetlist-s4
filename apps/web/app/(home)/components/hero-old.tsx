@@ -4,7 +4,10 @@ import { ChevronRight, Music, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import React, { memo } from 'react';
 import { SearchBar } from '~/components/search-bar';
+<<<<<<< HEAD
 import { motion } from 'framer-motion';
+=======
+>>>>>>> origin/terragon/complete-setlist-voting-app-nor5mc
 
 function HomeHero() {
   return (
@@ -88,7 +91,11 @@ function HomeHero() {
           </div>
 
           {/* CTA buttons */}
+<<<<<<< HEAD
           <motion.div
+=======
+          <div
+>>>>>>> origin/terragon/complete-setlist-voting-app-nor5mc
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}

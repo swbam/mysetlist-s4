@@ -139,59 +139,61 @@ function FeaturedContent() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="lg:col-span-2"
           >
-            <Card className="h-full overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:bg-card/80">
-              <div className="relative h-48 overflow-hidden sm:h-64 md:h-80 lg:h-96">
-                <Image
-                  src={featuredShow.imageUrl}
-                  alt={featuredShow.name}
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+            {featuredShow && (
+              <Card className="h-full overflow-hidden border-border/50 bg-card/50 backdrop-blur-sm transition-all duration-300 hover:bg-card/80">
+                <div className="relative h-48 overflow-hidden sm:h-64 md:h-80 lg:h-96">
+                  <Image
+                    src={featuredShow.imageUrl}
+                    alt={featuredShow.name}
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
-                {/* Overlay content */}
-                <div className="absolute right-0 bottom-0 left-0 p-4 sm:p-6 md:p-8">
-                  <Badge className="mb-3 border-0 bg-primary/90 backdrop-blur-sm">
-                    <Trophy className="mr-1 h-3 w-3" />
-                    Most Voted Show This Week
-                  </Badge>
-                  <h3 className="mb-2 font-bold text-lg text-white sm:text-xl md:text-2xl lg:text-3xl">
-                    {featuredShow.name}
-                  </h3>
-                  <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-white/80 sm:mb-4 sm:gap-4 sm:text-sm">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {featuredShow.venue}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      {new Date(featuredShow.date).toLocaleDateString()}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Users className="h-4 w-4" />
-                      {featuredShow.attendees.toLocaleString()} attending
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-                    <Button size="default" className="w-full sm:w-auto" asChild>
-                      <Link href={`/shows/${featuredShow.id}`}>
-                        <span className="hidden sm:inline">View Setlist Predictions</span>
-                        <span className="sm:hidden">View Predictions</span>
-                        <ChevronRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
-                    <div className="text-white">
-                      <span className="font-bold text-xl sm:text-2xl">
-                        {(featuredShow.votesCount / 1000).toFixed(0)}K
+                  {/* Overlay content */}
+                  <div className="absolute right-0 bottom-0 left-0 p-4 sm:p-6 md:p-8">
+                    <Badge className="mb-3 border-0 bg-primary/90 backdrop-blur-sm">
+                      <Trophy className="mr-1 h-3 w-3" />
+                      Most Voted Show This Week
+                    </Badge>
+                    <h3 className="mb-2 font-bold text-lg text-white sm:text-xl md:text-2xl lg:text-3xl">
+                      {featuredShow.name}
+                    </h3>
+                    <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-white/80 sm:mb-4 sm:gap-4 sm:text-sm">
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-4 w-4" />
+                        {featuredShow.venue}
                       </span>
-                      <span className="ml-1 text-xs text-white/70 sm:text-sm">
-                        votes cast
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        {new Date(featuredShow.date).toLocaleDateString()}
                       </span>
+                      <span className="flex items-center gap-1">
+                        <Users className="h-4 w-4" />
+                        {featuredShow.attendees.toLocaleString()} attending
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+                      <Button size="default" className="w-full sm:w-auto" asChild>
+                        <Link href={`/shows/${featuredShow.id}`}>
+                          <span className="hidden sm:inline">View Setlist Predictions</span>
+                          <span className="sm:hidden">View Predictions</span>
+                          <ChevronRight className="ml-2 h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <div className="text-white">
+                        <span className="font-bold text-xl sm:text-2xl">
+                          {(featuredShow.votesCount / 1000).toFixed(0)}K
+                        </span>
+                        <span className="ml-1 text-xs text-white/70 sm:text-sm">
+                          votes cast
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            )}
           </motion.div>
 
           {/* Top voted songs */}
@@ -300,7 +302,7 @@ function FeaturedContent() {
                                   {show.venue}
                                 </p>
                               </div>
-                              {show.ticketsLeft < 100 && (
+                              {show.ticketsLeft !== undefined && show.ticketsLeft < 100 && (
                                 <Badge
                                   variant="destructive"
                                   className="text-xs"

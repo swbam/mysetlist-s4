@@ -42,6 +42,8 @@ NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 # Security - Same for all environments
 NEXTAUTH_SECRET=your_production_secret_minimum_32_characters_long_generate_with_openssl
 CRON_SECRET=6155002300
+NEXTAUTH_SECRET=pV1qENl3mv489iE11U5fIVx8hG+5qxFTE6FoG1bZJO8=
+NEXTAUTH_URL=https://theset.live
 
 
 # Production Logging
