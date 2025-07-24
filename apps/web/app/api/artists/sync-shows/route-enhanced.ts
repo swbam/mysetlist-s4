@@ -177,22 +177,21 @@ export async function POST(request: NextRequest) {
 
 // Helper function to get or create venue
 async function getOrCreateVenue(tmVenue: any): Promise<string> {
-  // Check if venue exists
+  // Check if venue exists by name and city (since ticketmasterId might not exist in schema)
   const existingVenue = await db
     .select()
     .from(venues)
-    .where(eq(venues.ticketmasterId, tmVenue.id))
+    .where(eq(venues.name, tmVenue.name))
     .limit(1);
 
-  if (existingVenue.length > 0) {
-    return existingVenue[0]!.id;
+  if (existingVenue.length > 0 && existingVenue[0]) {
+    return existingVenue[0].id;
   }
 
   // Create venue
-  const [newVenue] = await db
+  const insertResult = await db
     .insert(venues)
     .values({
-      ticketmasterId: tmVenue.id,
       name: tmVenue.name,
       slug: generateSlug(tmVenue.name),
       address: tmVenue.address?.line1 || null,
@@ -210,6 +209,12 @@ async function getOrCreateVenue(tmVenue: any): Promise<string> {
       childRules: tmVenue.generalInfo?.childRule || null,
     } as any)
     .returning();
+
+  const newVenue = insertResult[0];
+  
+  if (!newVenue) {
+    throw new Error('Failed to create venue');
+  }
 
   return newVenue.id;
 }
@@ -248,7 +253,7 @@ async function createSampleShows(artistId: string, artistData: any) {
     .limit(1);
 
   if (!sampleVenue.length) {
-    const [newVenue] = await db
+    const insertResult = await db
       .insert(venues)
       .values({
         name: 'Sample Venue',
@@ -263,16 +268,26 @@ async function createSampleShows(artistId: string, artistData: any) {
         capacity: 5000,
       } as any)
       .returning();
+    
+    const newVenue = insertResult[0];
+    if (!newVenue) {
+      throw new Error('Failed to create sample venue');
+    }
+    
     sampleVenue = [newVenue];
   }
 
   const venueData = sampleVenue[0];
   
+  if (!venueData) {
+    throw new Error('Failed to get or create sample venue');
+  }
+  
   // Create sample shows
   const sampleShows = [
     {
       headlinerArtistId: artistId,
-      venueId: venueData!.id,
+      venueId: venueData.id,
       name: `${artistData.name} Live in Concert`,
       slug: `${artistData.slug}-live-${Date.now()}`,
       date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
@@ -289,7 +304,7 @@ async function createSampleShows(artistId: string, artistData: any) {
     },
     {
       headlinerArtistId: artistId,
-      venueId: venueData!.id,
+      venueId: venueData.id,
       name: `${artistData.name} Summer Tour`,
       slug: `${artistData.slug}-summer-tour-${Date.now()}`,
       date: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000)

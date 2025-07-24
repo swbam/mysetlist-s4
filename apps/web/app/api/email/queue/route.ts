@@ -16,7 +16,7 @@ import { createClient } from '~/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Check authentication for non-system requests
     const {
@@ -244,7 +244,7 @@ export async function POST(request: NextRequest) {
 // GET endpoint to check email queue status
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { session },
     } = await supabase.auth.getSession();
