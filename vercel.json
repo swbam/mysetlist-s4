@@ -4,7 +4,6 @@
   "outputDirectory": "apps/web/.next",
   "installCommand": "pnpm install --frozen-lockfile",
   "framework": "nextjs",
-  "rootDirectory": "apps/web",
   "regions": ["iad1"],
   "git": {
     "deploymentEnabled": {
