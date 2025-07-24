@@ -1,6 +1,4 @@
-import { keys } from '../../keys';
-
-const env = keys();
+import { env } from '@repo/env';
 
 export const authConfig = {
   // Supabase configuration

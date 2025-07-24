@@ -1,7 +1,5 @@
 import type { SpotifyTokens, SpotifyProfile } from '../types/auth';
-import { keys } from '../keys';
-
-const env = keys();
+import { env } from '@repo/env';
 
 export class SpotifyService {
   private readonly clientId = env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;

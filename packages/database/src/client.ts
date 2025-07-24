@@ -8,15 +8,17 @@ import * as schema from './schema';
 let _db: ReturnType<typeof drizzle> | null = null;
 let _client: postgres.Sql | null = null;
 
-// Get database URL with fallback
+// Get database URL from environment variables
 function getDatabaseUrl(): string {
   // Try env first
-  let url = process.env['DATABASE_URL'] || process.env['DIRECT_URL'];
+  const url = process.env['DATABASE_URL'] || process.env['DIRECT_URL'];
   
-  // If not found, use the provided Supabase URL
+  // Throw error if not found - never use hardcoded credentials
   if (!url) {
-    console.warn('DATABASE_URL not found in environment, using fallback connection');
-    url = 'postgresql://postgres.yzwkimtdaabyjbpykquu:Bambseth1590@aws-0-us-east-1.pooler.supabase.com:6543/postgres';
+    throw new Error(
+      'DATABASE_URL or DIRECT_URL must be set in environment variables. ' +
+      'Please check your .env.local file and ensure database credentials are properly configured.'
+    );
   }
   
   return url;

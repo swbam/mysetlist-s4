@@ -63,17 +63,11 @@ export const SignUp = () => {
     setLoading(true);
 
     try {
-<<<<<<< HEAD
-      await signUp(email, password, {
-        displayName: displayName.trim() || undefined,
-      });
-=======
       await signUp(
         email,
         password,
         displayName.trim() ? { displayName: displayName.trim() } : undefined
       );
->>>>>>> main
       
       setSuccess('Account created successfully! Please check your email to verify your account.');
       

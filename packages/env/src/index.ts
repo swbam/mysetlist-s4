@@ -24,6 +24,7 @@ export const env = createEnv({
     
     // Security
     CRON_SECRET: z.string().optional(),
+    JWT_SECRET: z.string().optional(),
     
     // Node environment
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -57,6 +58,7 @@ export const env = createEnv({
     SETLISTFM_API_KEY: process.env['SETLISTFM_API_KEY'],
     RESEND_API_KEY: process.env['RESEND_API_KEY'],
     CRON_SECRET: process.env['CRON_SECRET'],
+    JWT_SECRET: process.env['JWT_SECRET'],
     NODE_ENV: process.env['NODE_ENV'],
     
     // Client
