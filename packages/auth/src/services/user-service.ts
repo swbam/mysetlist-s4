@@ -295,10 +295,10 @@ export class UserService {
       return {
         emailPreferences: emailPreferences || currentPrefs?.emailPreferences || this.getDefaultEmailPreferences(userId),
         privacySettings: privacySettings || currentPrefs?.privacySettings || this.getDefaultPrivacySettings(),
-        musicPreferences: data.musicPreferences || currentPrefs?.musicPreferences || {
-          favoriteGenres: [],
-          preferredVenues: [],
-          notificationRadius: 50,
+        musicPreferences: {
+          favoriteGenres: data.musicPreferences?.favoriteGenres || currentPrefs?.musicPreferences?.favoriteGenres || [],
+          preferredVenues: data.musicPreferences?.preferredVenues || currentPrefs?.musicPreferences?.preferredVenues || [],
+          notificationRadius: data.musicPreferences?.notificationRadius || currentPrefs?.musicPreferences?.notificationRadius || 50,
         },
       };
     } catch (error) {

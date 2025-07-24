@@ -2,8 +2,61 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { keys } from '../../keys';
 import type { AuthSession, AuthUser } from '../types';
+import type { User } from '@supabase/supabase-js';
 
 const env = keys();
+
+// Helper function to map Supabase user to AuthUser
+function mapSupabaseUserToAuthUser(user: User): AuthUser {
+  return {
+    ...user,
+    profile: {
+      id: '',
+      userId: user.id,
+      displayName: user.user_metadata?.['displayName'] || user.email?.split('@')[0] || '',
+      isPublic: true,
+      showAttendedShows: true,
+      showVotedSongs: true,
+      showsAttended: 0,
+      songsVoted: 0,
+      artistsFollowed: 0,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    },
+    preferences: {
+      emailPreferences: {
+        id: '',
+        userId: user.id,
+        emailEnabled: true,
+        showReminders: true,
+        showReminderFrequency: 'daily',
+        newShowNotifications: true,
+        newShowFrequency: 'daily',
+        setlistUpdates: true,
+        setlistUpdateFrequency: 'immediately',
+        weeklyDigest: false,
+        marketingEmails: false,
+        securityEmails: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      privacySettings: {
+        showProfile: true,
+        showVotingHistory: true,
+        showAttendanceHistory: true,
+        allowFollowing: true,
+        showOnlineStatus: false,
+      },
+      musicPreferences: {
+        favoriteGenres: [],
+        preferredVenues: [],
+        notificationRadius: 50,
+      },
+    },
+    emailVerified: !!user.email_confirmed_at,
+    spotifyConnected: false,
+  } as AuthUser;
+}
 
 export async function createServerSession() {
   const cookieStore = await cookies();
@@ -47,28 +100,16 @@ export async function getServerAuthSession(): Promise<{
       return { user: null, session: null };
     }
 
+    const authUser = mapSupabaseUserToAuthUser(session.user);
+
     return {
-      user: {
-        id: session.user.id,
-        email: session.user.email || '',
-        emailVerified: !!session.user.email_confirmed_at,
-        lastSignIn: session.user.last_sign_in_at || '',
-        metadata: session.user.user_metadata || {},
-        appMetadata: session.user.app_metadata || {},
-      },
+      user: authUser,
       session: {
-        accessToken: session.access_token,
-        refreshToken: session.refresh_token,
-        expiresAt: session.expires_at || 0,
-        user: {
-          id: session.user.id,
-          email: session.user.email || '',
-          emailVerified: !!session.user.email_confirmed_at,
-          lastSignIn: session.user.last_sign_in_at || '',
-          metadata: session.user.user_metadata || {},
-          appMetadata: session.user.app_metadata || {},
-        },
-      },
+        access_token: session.access_token,
+        refresh_token: session.refresh_token,
+        expires_at: session.expires_at || 0,
+        user: authUser,
+      } as AuthSession,
     };
   } catch (_error) {
     return { user: null, session: null };
@@ -92,7 +133,7 @@ export async function requireServerRole(
   requiredRole: 'user' | 'moderator' | 'admin'
 ): Promise<AuthUser> {
   const user = await requireServerAuth();
-  const userRole = user.appMetadata?.['role'] || 'user';
+  const userRole = user.app_metadata?.['role'] || 'user';
 
   const roleHierarchy = { user: 0, moderator: 1, admin: 2 };
   const userLevel = roleHierarchy[userRole as keyof typeof roleHierarchy] ?? 0;

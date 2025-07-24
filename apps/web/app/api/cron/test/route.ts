@@ -2,9 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@repo/database';
 import { sql } from 'drizzle-orm';
 
-const CRON_SECRET = process.env['CRON_SECRET'] || '6155002300';
+const CRON_SECRET = process.env['CRON_SECRET'];
 
 export async function GET(request: NextRequest) {
+  // Check if CRON_SECRET is configured
+  if (!CRON_SECRET) {
+    return NextResponse.json({ 
+      error: 'Server configuration error', 
+      message: 'CRON_SECRET environment variable is not set' 
+    }, { status: 500 });
+  }
+
   // Check authorization
   const authHeader = request.headers.get('authorization');
   if (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`) {
@@ -77,7 +85,7 @@ export async function GET(request: NextRequest) {
       },
       testInstructions: {
         message: 'To test a specific cron job, make a GET or POST request to the endpoint with Authorization header',
-        example: `curl -X GET ${process.env['NEXT_PUBLIC_APP_URL']}/api/cron/calculate-trending -H "Authorization: Bearer ${CRON_SECRET}"`,
+        example: `curl -X GET ${process.env['NEXT_PUBLIC_APP_URL']}/api/cron/calculate-trending -H "Authorization: Bearer YOUR_CRON_SECRET"`,
       },
     });
   } catch (error) {

@@ -30,14 +30,14 @@ export function ProtectedRoute({
     }
 
     // Email verification required but not verified
-    if (requireEmailVerification && !user.emailVerified) {
+    if (requireEmailVerification && !user.email_confirmed_at) {
       router.push('/auth/verify-email');
       return;
     }
 
     // Role-based access control
     if (allowedRoles && allowedRoles.length > 0) {
-      const userRole = user.user_metadata?.role || 'user';
+      const userRole = user.user_metadata?.['role'] || 'user';
       if (!allowedRoles.includes(userRole)) {
         router.push('/unauthorized');
         return;
@@ -56,9 +56,9 @@ export function ProtectedRoute({
 
   // Don't render children if not authenticated or requirements not met
   if (!user) return null;
-  if (requireEmailVerification && !user.emailVerified) return null;
+  if (requireEmailVerification && !user.email_confirmed_at) return null;
   if (allowedRoles && allowedRoles.length > 0) {
-    const userRole = user.user_metadata?.role || 'user';
+    const userRole = user.user_metadata?.['role'] || 'user';
     if (!allowedRoles.includes(userRole)) return null;
   }
 
@@ -133,7 +133,7 @@ export function ConditionalAuth({
   }
 
   // Check email verification requirement
-  if (requireEmailVerification && (!user || !user.emailVerified)) {
+  if (requireEmailVerification && (!user || !user.email_confirmed_at)) {
     return <>{fallback}</>;
   }
 
@@ -141,7 +141,7 @@ export function ConditionalAuth({
   if (allowedRoles && allowedRoles.length > 0) {
     if (!user) return <>{fallback}</>;
     
-    const userRole = user.user_metadata?.role || 'user';
+    const userRole = user.user_metadata?.['role'] || 'user';
     if (!allowedRoles.includes(userRole)) {
       return <>{fallback}</>;
     }

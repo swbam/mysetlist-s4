@@ -4,6 +4,7 @@ import { ChevronRight, Music, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import React, { memo } from 'react';
 import { SearchBar } from '~/components/search-bar';
+import { motion } from 'framer-motion';
 
 function HomeHero() {
   return (
@@ -87,7 +88,7 @@ function HomeHero() {
           </div>
 
           {/* CTA buttons */}
-          <div
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
