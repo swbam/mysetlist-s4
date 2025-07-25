@@ -68,11 +68,14 @@ export async function GET(request: NextRequest) {
             const interactions = artist.follower_count || artist.followers || 0;
             const trendingScore = artist.trending_score || 0;
 
-            // Calculate growth based on trending score and activity
-            const growth = Math.min(
-              50,
-              Math.random() * 20 + trendingScore / 50
-            );
+            // Calculate growth based on real trending score and recency
+            const hoursOld = artist.updated_at
+              ? Math.max(0, (Date.now() - new Date(artist.updated_at).getTime()) / (1000 * 60 * 60))
+              : 168; // Default to 7 days old if no updated_at
+            
+            const recencyBonus = Math.max(0, (24 - Math.min(24, hoursOld)) / 24 * 15); // Up to 15% for recent updates
+            const scoreBonus = Math.min(25, trendingScore / 20); // Up to 25% based on trending score
+            const growth = Math.min(50, recencyBonus + scoreBonus);
 
             // Calculate comprehensive score
             const score =
@@ -137,8 +140,13 @@ export async function GET(request: NextRequest) {
               (show.vote_count || 0) + (show.attendee_count || 0);
             const trendingScore = show.trending_score || 0;
 
-            // Calculate growth based on activity and recency
-            const growth = Math.min(40, Math.random() * 15 + interactions / 10);
+            // Calculate growth based on real activity and show recency
+            const showDate = new Date(show.date);
+            const daysUntilShow = Math.max(0, (showDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+            const proximityBonus = daysUntilShow <= 7 ? Math.max(0, (7 - daysUntilShow) / 7 * 20) : 0; // Up to 20% for shows within a week
+            const activityBonus = Math.min(15, interactions / 10); // Up to 15% based on interactions
+            const trendingBonus = Math.min(15, trendingScore / 30); // Up to 15% based on trending score
+            const growth = Math.min(40, proximityBonus + activityBonus + trendingBonus);
 
             // Calculate comprehensive score
             const score =
@@ -200,8 +208,10 @@ export async function GET(request: NextRequest) {
             const views = showCount * 2;
             const interactions = showCount;
 
-            // Calculate growth based on recent activity
-            const growth = Math.min(30, Math.random() * 10 + interactions / 5);
+            // Calculate growth based on venue activity and upcoming shows
+            const capacityUtilization = Math.min(20, (venue.capacity || 1000) / 100); // Up to 20% for large venues
+            const activityBonus = Math.min(10, interactions / 5); // Up to 10% based on show count
+            const growth = Math.min(30, capacityUtilization + activityBonus);
 
             // Calculate score based on activity and capacity utilization
             const score =

@@ -2,7 +2,8 @@ import { createMetadata } from '@repo/seo/metadata';
 import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
 import { ErrorBoundaryWrapper } from '~/components/error-boundary-wrapper';
-import { VenueGridSkeleton as VenueGridLoadingSkeleton } from '~/components/loading-states';
+import { ResponsiveGrid } from '~/components/layout/responsive-grid';
+import { VenueSearch } from './components/venue-search';
 import { getVenues } from './actions';
 import { VenueGridClient } from './components/venue-grid-client';
 
@@ -33,13 +34,29 @@ const VenuesContent = async ({ searchParams }: { searchParams: any }) => {
     ...(searchParams.lng && { userLng: Number.parseFloat(searchParams.lng) }),
   });
 
+  const formattedVenues = venues.map((venue) => ({
+    id: venue.id,
+    name: venue.name,
+    slug: venue.slug,
+    address: venue.address,
+    city: venue.city,
+    state: venue.state,
+    country: venue.country,
+    capacity: venue.capacity,
+    venueType: venue.venueType,
+    imageUrl: venue.imageUrl,
+    avgRating: venue.avgRating ?? 0,
+    reviewCount: venue.reviewCount,
+    upcomingShowCount: venue.upcomingShowCount,
+    distance: venue.distance,
+    amenities: venue.amenities,
+  }));
+
   return (
-    <VenueGridClient
-      venues={venues.map((venue) => ({
-        ...venue,
-        avgRating: venue.avgRating ?? 0,
-      }))}
-    />
+    <div className="space-y-6">
+      <VenueSearch />
+      <VenueGridClient venues={formattedVenues} />
+    </div>
   );
 };
 
@@ -61,7 +78,12 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
               </p>
             </div>
 
-            <Suspense fallback={<VenueGridLoadingSkeleton count={6} />}>
+            <Suspense fallback={
+              <div className="space-y-6">
+                <div className="h-12 bg-muted rounded animate-pulse" />
+                <ResponsiveGrid variant="venues" loading={true} loadingCount={9} />
+              </div>
+            }>
               <VenuesContent searchParams={resolvedSearchParams} />
             </Suspense>
           </div>

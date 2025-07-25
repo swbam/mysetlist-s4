@@ -12,6 +12,7 @@ import { ErrorBoundaryWrapper } from '~/components/error-boundary-wrapper';
 import { ShowListSkeleton } from '~/components/loading-states';
 import { ShowsFilter } from './components/shows-filter';
 import { ShowsList } from './components/shows-list';
+import { ShowsSearch } from './components/shows-search';
 
 // Force dynamic rendering to ensure data is fresh
 export const dynamic = 'force-dynamic';
@@ -39,6 +40,8 @@ const ShowsPage = () => {
                 Discover live music happening near you and around the world
               </p>
             </div>
+
+            <ShowsSearch />
 
             <Suspense fallback={<div className="h-12" />}>
               <ShowsFilter />

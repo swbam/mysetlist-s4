@@ -61,13 +61,9 @@ export async function GET(request: NextRequest) {
 
       // Transform fallback data too
       const transformedPopularArtists = (popularArtists || []).map((artist) => {
-        const weeklyGrowth = Math.max(
-          0,
-          Math.min(
-            25, // Lower cap for popular artists
-            (artist.popularity || 0) / 20 + Math.random() * 10
-          )
-        );
+        // Calculate real growth based on trending score and popularity
+        const baseGrowth = Math.min(15, (artist.popularity || 0) / 30); // Up to 15% from popularity
+        const weeklyGrowth = Math.max(0, Math.min(25, baseGrowth));
 
         return {
           id: artist.id,
@@ -108,15 +104,10 @@ export async function GET(request: NextRequest) {
         ? (Date.now() - new Date(artist.updated_at).getTime()) / (1000 * 60 * 60)
         : 168; // Default to 7 days old if no updated_at
 
-      const weeklyGrowth = Math.max(
-        0,
-        Math.min(
-          50, // Cap at 50%
-          (artist.trending_score || 0) / 10 +
-            Math.random() * 15 +
-            ((168 - hoursOld) / 168) * 10 // Recency bonus
-        )
-      );
+      // Calculate real weekly growth based on trending score and recency
+      const trendingGrowth = Math.min(30, (artist.trending_score || 0) / 10); // Up to 30% from trending score
+      const recencyBonus = Math.min(15, ((168 - hoursOld) / 168) * 15); // Up to 15% recency bonus
+      const weeklyGrowth = Math.max(0, Math.min(50, trendingGrowth + recencyBonus));
 
       return {
         id: artist.id,

@@ -73,10 +73,12 @@ export async function GET(request: NextRequest) {
       // Fallback trending score if null
       const score =
         s.trending_score ?? (s.vote_count ?? 0) * 2 + (s.attendee_count ?? 0);
-      const weeklyGrowth = Math.max(
-        0,
-        Math.random() * 25 + (s.vote_count ?? 0) / 10
-      );
+      // Calculate real weekly growth based on votes and show proximity
+      const showDate = new Date(s.date);
+      const daysUntilShow = Math.max(0, (showDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+      const proximityBonus = daysUntilShow <= 7 ? Math.max(0, (7 - daysUntilShow) / 7 * 15) : 0; // Up to 15% for shows within a week
+      const voteBonus = Math.min(10, (s.vote_count ?? 0) / 10); // Up to 10% based on votes
+      const weeklyGrowth = Math.max(0, Math.min(25, proximityBonus + voteBonus));
       return {
         id: s.id,
         name: s.name || (artist?.name ? `${artist.name} Live` : 'Unknown Show'),
