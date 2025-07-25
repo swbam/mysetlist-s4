@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { createClient } from '~/lib/supabase/server';
+import { createServiceClient } from '~/lib/supabase/server';
 import { parseGenres } from '~/lib/utils';
 
 export async function GET(request: NextRequest) {
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const genre = searchParams.get('genre');
     const sort = searchParams.get('sort') || 'trending'; // trending, popular, alphabetical
 
-    const supabase = await createClient();
+    const supabase = createServiceClient();
 
     // Build query
     let query = supabase

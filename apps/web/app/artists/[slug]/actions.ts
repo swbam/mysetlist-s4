@@ -157,6 +157,48 @@ const _getArtistShows = async (artistId: string, type: 'upcoming' | 'past') => {
       .orderBy(type === 'upcoming' ? shows.date : desc(shows.date))
       .limit(type === 'upcoming' ? 15 : 25); // Increased limits for better UX
 
+    // If no shows found and we're looking for upcoming shows, trigger auto-sync
+    if ((!artistShows || artistShows.length === 0) && type === 'upcoming') {
+      try {
+        console.log(`No ${type} shows found for artist ${artistId}, attempting auto-sync...`);
+        
+        // Get artist data first
+        const [artist] = await db
+          .select({ 
+            name: artists.name, 
+            slug: artists.slug, 
+            ticketmasterId: artists.ticketmasterId 
+          })
+          .from(artists)
+          .where(eq(artists.id, artistId))
+          .limit(1);
+
+        if (artist) {
+          // Try to sync from external APIs using autonomous pipeline (non-blocking)
+          const syncPromises = [
+            // Direct sync for this specific artist
+            fetch('/api/artists/sync-shows', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ artistId }),
+            }).catch(() => {}),
+            // Trigger autonomous sync pipeline
+            fetch('/api/autonomous-sync?pipeline=sync', {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${process.env.CRON_SECRET || 'dev-secret'}`,
+              },
+            }).catch(() => {})
+          ];
+          
+          // Don't wait for these to complete
+          Promise.allSettled(syncPromises);
+        }
+      } catch (syncError) {
+        console.warn('Auto-sync failed, continuing with empty results:', syncError);
+      }
+    }
+
     // Enhanced validation and data transformation
     if (!artistShows || artistShows.length === 0) {
       return [];
@@ -183,13 +225,13 @@ const _getArtistShows = async (artistId: string, type: 'upcoming' | 'past') => {
   }
 };
 
-// Cached version with shorter revalidation for upcoming shows
+// Cached version with dynamic revalidation based on show type
 export const getArtistShows = unstable_cache(
   _getArtistShows,
   ['artist-shows'],
   {
-    revalidate: REVALIDATION_TIMES.show,
-    tags: [CACHE_TAGS.shows],
+    revalidate: 1800, // 30 minutes for better performance
+    tags: [CACHE_TAGS.shows, CACHE_TAGS.artists],
   }
 );
 

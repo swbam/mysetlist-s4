@@ -1,33 +1,34 @@
-import { db } from '@repo/database';
-import { artistStats, artists } from '@repo/database/src/schema';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Button } from '@repo/design-system/components/ui/button';
 import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { desc, eq } from 'drizzle-orm';
 import { Music, TrendingUp, Users } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { parseGenres } from '~/lib/utils';
+import { absoluteUrl } from '~/lib/absolute-url';
 
 async function getTrendingArtists() {
-  const trendingArtists = await db
-    .select({
-      id: artists.id,
-      name: artists.name,
-      slug: artists.slug,
-      imageUrl: artists.imageUrl,
-      smallImageUrl: artists.smallImageUrl,
-      genres: artists.genres,
-      followers: artists.followers,
-      trendingScore: artists.trendingScore,
-      totalShows: artistStats.totalShows,
-    })
-    .from(artists)
-    .leftJoin(artistStats, eq(artistStats.artistId, artists.id))
-    .orderBy(desc(artists.trendingScore))
-    .limit(4);
+  try {
+    const res = await fetch(
+      absoluteUrl('/api/trending/artists?limit=4'),
+      { 
+        next: { revalidate: 300 },
+        headers: {
+          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
+        },
+      }
+    );
 
-  return trendingArtists;
+    if (!res.ok) {
+      console.warn(`Failed to fetch trending artists: ${res.status} ${res.statusText}`);
+      return [];
+    }
+
+    const data = await res.json();
+    return data.artists || [];
+  } catch (error) {
+    console.error('Error fetching trending artists:', error);
+    return [];
+  }
 }
 
 export async function TrendingArtists() {
@@ -105,9 +106,9 @@ export async function TrendingArtists() {
                   </h3>
                 </Link>
 
-                {artist.genres && (
+                {artist.genres && Array.isArray(artist.genres) && artist.genres.length > 0 && (
                   <div className="mb-3 flex gap-2">
-                    {parseGenres(artist.genres).slice(0, 2).map((genre: string) => (
+                    {artist.genres.slice(0, 2).map((genre: string) => (
                       <Badge
                         key={genre}
                         variant="outline"

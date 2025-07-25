@@ -67,8 +67,8 @@ const HeaderContent = React.memo(() => {
   ], [user]);
 
   return (
-    <header className="sticky top-0 left-0 z-40 w-full border-b bg-background/95 backdrop-blur-sm">
-      <div className="container relative mx-auto flex min-h-16 flex-row items-center justify-between gap-2 px-4 sm:gap-4 lg:min-h-20 lg:grid lg:grid-cols-3">
+    <header className="sticky top-0 left-0 z-40 w-full border-b bg-background">
+      <div className="container relative mx-auto flex min-h-20 flex-row items-center gap-4 lg:grid lg:grid-cols-3">
         <div className="hidden flex-row items-center justify-start gap-4 lg:flex">
           <NavigationMenu className="flex items-start justify-start">
             <NavigationMenuList className="flex flex-row justify-start gap-4">
@@ -141,44 +141,42 @@ const HeaderContent = React.memo(() => {
         <div className="flex items-center gap-2 lg:justify-center">
           <SafeLink
             href="/"
-            className="flex items-center gap-2 transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md p-1"
+            className="flex items-center gap-2 transition-opacity hover:opacity-80"
             prefetch
-            aria-label="MySetlist Home"
           >
             <Image
               src={Logo}
-              alt="MySetlist Logo"
-              width={28}
-              height={28}
+              alt="Logo"
+              width={24}
+              height={24}
               className="dark:invert"
-              priority
             />
-            <p className="whitespace-nowrap font-semibold text-base sm:text-lg">MySetlist</p>
+            <p className="whitespace-nowrap font-semibold">MySetlist</p>
           </SafeLink>
         </div>
-        <div className="flex items-center justify-end gap-1 sm:gap-2 lg:gap-4">
+        <div className="flex w-full justify-end gap-4">
           <div className="hidden max-w-md flex-1 lg:block">
             <SearchBar />
           </div>
-          <div className="max-w-[160px] flex-1 sm:max-w-[200px] lg:hidden">
+          <div className="max-w-md flex-1 lg:hidden">
             <MobileSearch />
           </div>
           {!user && (
             <>
-              <Button variant="ghost" className="hidden xl:inline-flex" size="sm" asChild>
+              <Button variant="ghost" className="hidden md:inline" asChild>
                 <SafeLink href="/contact">Contact</SafeLink>
               </Button>
               <Button
                 variant="outline"
                 size="sm"
-                className="hidden sm:inline-flex transition-colors hover:bg-muted/80 font-medium text-xs sm:text-sm"
+                className="transition-colors hover:bg-muted/80 font-medium"
                 asChild
               >
                 <SafeLink href="/auth/sign-in">Sign in</SafeLink>
               </Button>
               <Button 
                 size="sm" 
-                className="hidden sm:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm text-xs sm:text-sm"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
                 asChild
               >
                 <SafeLink href="/auth/sign-up">Get Started</SafeLink>
@@ -186,15 +184,15 @@ const HeaderContent = React.memo(() => {
             </>
           )}
           {user && (
-            <Button variant="ghost" className="hidden xl:inline-flex" size="sm" asChild>
+            <Button variant="ghost" className="hidden md:inline" asChild>
               <SafeLink href="/contact">Contact</SafeLink>
             </Button>
           )}
-          <div className="hidden border-r xl:inline" />
-          <div className="hidden xl:inline">
+          <div className="hidden border-r md:inline" />
+          <div className="hidden md:inline">
             <ModeToggle />
           </div>
-          <div className="hidden xl:inline">
+          <div className="hidden md:inline">
             <RealtimeStatus />
           </div>
           <UserMenu />

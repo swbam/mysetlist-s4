@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '~/lib/supabase/server';
+import { createServiceClient } from '~/lib/supabase/server';
 import { db } from '@repo/database';
 import { artists, shows, venues } from '@repo/database';
 import { sql } from 'drizzle-orm';
@@ -49,7 +49,7 @@ export async function GET() {
 
   // Test 2: Supabase client connection
   try {
-    const supabase = await createClient();
+    const supabase = createServiceClient();
     const { count, error } = await supabase
       .from('artists')
       .select('*', { count: 'exact', head: true });
@@ -93,7 +93,7 @@ export async function GET() {
 
   // Test 4: Data availability check
   try {
-    const supabase = await createClient();
+    const supabase = createServiceClient();
     
     // Check for trending artists
     const { data: trendingArtists } = await supabase

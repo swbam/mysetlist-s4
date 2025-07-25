@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { createClient } from '~/lib/supabase/server';
+import { createServiceClient } from '~/lib/supabase/server';
 import { TicketmasterClient } from '@repo/external-apis';
 
 const ticketmaster = new TicketmasterClient({
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     let supabase;
     try {
-      supabase = await createClient();
+      supabase = createServiceClient();
     } catch (error) {
       console.error('Failed to create Supabase client:', error);
       return NextResponse.json({ 
@@ -123,22 +123,22 @@ export async function GET(request: NextRequest) {
         .select(`
           id,
           slug,
-          show_date,
+          date,
           name,
           status,
           headliner_artist_id,
           venue_id
         `)
         .ilike('name', `%${query}%`)
-        .order('show_date', { ascending: true })
+        .order('date', { ascending: true })
         .limit(Math.min(limit, 3));
 
       // Apply date filters
       if (dateFrom) {
-        showsQuery = showsQuery.gte('show_date', dateFrom);
+        showsQuery = showsQuery.gte('date', dateFrom);
       }
       if (dateTo) {
-        showsQuery = showsQuery.lte('show_date', dateTo);
+        showsQuery = showsQuery.lte('date', dateTo);
       }
 
       // Apply location filter - simplified for now
@@ -171,10 +171,10 @@ export async function GET(request: NextRequest) {
               id: show.id,
               type: 'show',
               title: show.name || (artist ? `${artist.name} Live` : 'Unknown Show'),
-              subtitle: venue ? `${venue.name}, ${venue.city} • ${new Date(show.show_date).toLocaleDateString()}` : new Date(show.show_date).toLocaleDateString(),
+              subtitle: venue ? `${venue.name}, ${venue.city} • ${new Date(show.date).toLocaleDateString()}` : new Date(show.date).toLocaleDateString(),
               imageUrl: artist?.image_url || undefined,
               slug: show.slug,
-              date: show.show_date,
+              date: show.date,
               artistName: artist?.name,
               venueName: venue?.name,
               location: venue ? `${venue.city}, ${venue.state || venue.country}` : 'Unknown Location',

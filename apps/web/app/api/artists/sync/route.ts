@@ -169,7 +169,8 @@ export async function POST(request: NextRequest) {
     if (!artistRecord) {
       return NextResponse.json({
         success: false,
-        error: 'Failed to create or update artist record'
+        error: 'Failed to create or update artist record',
+        artist: null
       }, { status: 500 });
     }
 

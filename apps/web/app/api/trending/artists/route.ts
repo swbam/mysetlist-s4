@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { CACHE_HEADERS } from '~/lib/cache';
 import { parseGenres } from '~/lib/utils';
-import { createClient } from '~/lib/supabase/server';
+import { createServiceClient } from '~/lib/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     let supabase;
     try {
-      supabase = await createClient();
+      supabase = createServiceClient();
     } catch (error) {
       console.error('Failed to create Supabase client:', error);
       // Return empty array instead of throwing

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { type NextRequest, NextResponse } from 'next/server';
-import { createClient } from '~/lib/api/supabase/server';
+import { createServiceClient } from '~/lib/api/supabase/server';
 
 // Force dynamic rendering for API routes
 export const dynamic = 'force-dynamic';
@@ -73,7 +73,7 @@ interface SyncLogData {
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createServiceClient();
 
     // Check authentication
     const {

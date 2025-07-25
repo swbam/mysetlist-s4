@@ -51,8 +51,8 @@ const ShowPage = async ({ params }: ShowPageProps) => {
     async (showSlug: string) => getShowDetails(showSlug),
     ['show-details'],
     {
-      revalidate: 1800, // 30 minutes for upcoming shows
-      tags: [`show-${slug}`, 'shows'],
+      revalidate: 900, // 15 minutes for better UX
+      tags: [`show-${slug}`, 'shows', 'setlists'],
     }
   );
 
