@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@t3-oss/env-nextjs": "^0.13.4",
+    "@repo/database": "workspace:*",
     "@upstash/redis": "^1.28.0",
     "axios": "^1.6.0",
     "commander": "^11.1.0",

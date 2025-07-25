@@ -16,31 +16,96 @@ import { CACHE_TAGS, REVALIDATION_TIMES } from '~/lib/cache';
 
 const _getArtist = async (slug: string) => {
   try {
+    // First try with Drizzle for better performance
     const [artist] = await db
-      .select()
+      .select({
+        id: artists.id,
+        spotifyId: artists.spotifyId,
+        ticketmasterId: artists.ticketmasterId,
+        name: artists.name,
+        slug: artists.slug,
+        imageUrl: artists.imageUrl,
+        smallImageUrl: artists.smallImageUrl,
+        genres: artists.genres,
+        popularity: artists.popularity,
+        followers: artists.followers,
+        followerCount: artists.followerCount,
+        monthlyListeners: artists.monthlyListeners,
+        verified: artists.verified,
+        bio: artists.bio,
+        externalUrls: artists.externalUrls,
+        lastSyncedAt: artists.lastSyncedAt,
+        songCatalogSyncedAt: artists.songCatalogSyncedAt,
+        totalAlbums: artists.totalAlbums,
+        totalSongs: artists.totalSongs,
+        lastFullSyncAt: artists.lastFullSyncAt,
+        trendingScore: artists.trendingScore,
+        totalShows: artists.totalShows,
+        upcomingShows: artists.upcomingShows,
+        totalSetlists: artists.totalSetlists,
+        createdAt: artists.createdAt,
+        updatedAt: artists.updatedAt,
+      })
       .from(artists)
       .where(eq(artists.slug, slug))
       .limit(1);
-    return artist;
-  } catch (err: unknown) {
-    const error = err as Partial<{ code: string; message: string }>;
-    // If column "mbid" (or any other missing column) does not exist, attempt to patch schema on the fly.
-    if (error?.code === '42703') {
-      // Add mbid column if it is missing
-      try {
-        await db.execute(
-          drizzleSql`ALTER TABLE artists ADD COLUMN IF NOT EXISTS mbid TEXT UNIQUE;`
-        );
-        // retry once
-        const [artistRetry] = await db
-          .select()
-          .from(artists)
-          .where(eq(artists.slug, slug))
-          .limit(1);
-        return artistRetry;
-      } catch (_patchErr) {}
+    
+    if (artist) {
+      return artist;
     }
-    throw err;
+
+    // If not found with Drizzle, try Supabase client as fallback
+    try {
+      const { createServiceClient } = await import('~/lib/supabase/server');
+      const supabase = await createServiceClient();
+      
+      const { data, error } = await supabase
+        .from('artists')
+        .select('*')
+        .eq('slug', slug)
+        .single();
+      
+      if (error || !data) {
+        console.warn('Artist not found in Supabase:', slug);
+        return null;
+      }
+
+      // Transform snake_case to camelCase
+      return {
+        id: data.id,
+        spotifyId: data.spotify_id,
+        ticketmasterId: data.ticketmaster_id,
+        name: data.name,
+        slug: data.slug,
+        imageUrl: data.image_url,
+        smallImageUrl: data.small_image_url,
+        genres: data.genres,
+        popularity: data.popularity,
+        followers: data.followers,
+        followerCount: data.follower_count,
+        monthlyListeners: data.monthly_listeners,
+        verified: data.verified,
+        bio: data.bio,
+        externalUrls: data.external_urls,
+        lastSyncedAt: data.last_synced_at,
+        songCatalogSyncedAt: data.song_catalog_synced_at,
+        totalAlbums: data.total_albums,
+        totalSongs: data.total_songs,
+        lastFullSyncAt: data.last_full_sync_at,
+        trendingScore: data.trending_score,
+        totalShows: data.total_shows,
+        upcomingShows: data.upcoming_shows,
+        totalSetlists: data.total_setlists,
+        createdAt: data.created_at,
+        updatedAt: data.updated_at,
+      };
+    } catch (supabaseError) {
+      console.error('Supabase fallback error:', supabaseError);
+      return null;
+    }
+  } catch (err: unknown) {
+    console.error('Error fetching artist:', err);
+    return null;
   }
 };
 

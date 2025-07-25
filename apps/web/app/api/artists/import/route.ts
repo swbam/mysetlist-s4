@@ -71,8 +71,13 @@ export async function POST(request: NextRequest) {
       const spotify = new SpotifyClient({});
       await spotify.authenticate();
       const spotifyResults = await spotify.searchArtists(artistName, 1);
-      if (spotifyResults.length > 0) {
-        const spotifyArtist = spotifyResults[0];
+      // Handle different possible return types from SpotifyClient
+      const artists = Array.isArray(spotifyResults) 
+        ? spotifyResults 
+        : (spotifyResults as any)?.artists?.items || [];
+      
+      if (artists.length > 0) {
+        const spotifyArtist = artists[0];
         spotifyId = spotifyArtist.id;
         spotifyData = {
           followers: spotifyArtist.followers?.total || 0,

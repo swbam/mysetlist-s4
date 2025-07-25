@@ -139,9 +139,27 @@ export const SearchBar = React.memo(({
               <Link
                 key={`${result.type}-${result.id}`}
                 href={getSearchResultHref(result)}
-                onClick={() => {
+                onClick={async () => {
                   setQuery('');
                   setIsOpen(false);
+                  
+                  // If this is a Ticketmaster artist that needs sync, trigger it
+                  if (result.requiresSync && result.source === 'ticketmaster') {
+                    try {
+                      // Trigger artist import in the background
+                      fetch('/api/sync/artist-import', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          ticketmasterId: result.ticketmasterId,
+                          name: result.title,
+                          imageUrl: result.imageUrl,
+                        }),
+                      });
+                    } catch (error) {
+                      console.error('Failed to trigger artist sync:', error);
+                    }
+                  }
                 }}
                 role="option"
                 aria-selected={false}

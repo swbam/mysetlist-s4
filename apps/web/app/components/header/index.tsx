@@ -22,7 +22,7 @@ import {
   SafeLink,
 } from '~/components/navigation/navigation-error-boundary';
 import { RealtimeStatus } from '~/components/realtime-status';
-import { SearchBar } from '../search-bar';
+import { SearchBar } from '~/components/search-bar';
 import Logo from './logo.svg';
 import { UserMenu } from './user-menu';
 
@@ -167,10 +167,11 @@ const HeaderContent = React.memo(() => {
                 <SafeLink href="/contact">Contact</SafeLink>
               </Button>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 className="transition-colors hover:bg-muted/80"
                 asChild
+                className="font-medium"
               >
                 <SafeLink href="/auth/sign-in">Sign in</SafeLink>
               </Button>

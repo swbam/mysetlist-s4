@@ -46,7 +46,7 @@ export async function requireRole(
   requiredRole: 'user' | 'moderator' | 'admin'
 ) {
   const session = await requireAuth();
-  const userRole = session.user.appMetadata?.['role'] || 'user';
+  const userRole = session.user.app_metadata?.['role'] || 'user';
 
   if (!hasRole(userRole, requiredRole)) {
     throw new Error('Insufficient permissions');
@@ -69,11 +69,14 @@ export function mapSupabaseUser(user: any): AuthUser {
   return {
     id: user.id,
     email: user.email,
-    emailVerified: !!user.email_confirmed_at,
-    lastSignIn: user.last_sign_in_at,
-    metadata: user.user_metadata || {},
-    appMetadata: user.app_metadata || {},
-  };
+    email_confirmed_at: user.email_confirmed_at,
+    user_metadata: user.user_metadata || {},
+    app_metadata: user.app_metadata || {},
+    aud: user.aud || '',
+    role: user.role,
+    created_at: user.created_at,
+    updated_at: user.updated_at,
+  } as AuthUser;
 }
 
 // Client-side helpers

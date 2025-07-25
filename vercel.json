@@ -5,6 +5,12 @@
   "installCommand": "pnpm install",
   "ignoreCommand": "git diff --quiet HEAD^ HEAD .",
   "framework": "nextjs",
+  "regions": ["iad1"],
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
   "functions": {
     "apps/web/app/api/*/route.ts": {
       "maxDuration": 30
@@ -50,6 +56,7 @@
     {
       "source": "/healthz",
       "destination": "/api/health"
+
     }
   ],
   "headers": [
@@ -75,6 +82,10 @@
         {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.vercel-analytics.com *.vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: *.spotify.com *.scdn.co; connect-src 'self' *.supabase.co *.spotify.com api.setlist.fm app.ticketmaster.com *.vercel-analytics.com wss:; font-src 'self' data:; frame-src 'self' accounts.spotify.com;"
         },
         {
           "key": "Permissions-Policy",

@@ -1,14 +1,14 @@
-import { getUser } from '@repo/auth/server';
-import { db } from '@repo/database';
-import { setlistSongs, votes } from '@repo/database';
-import { and, eq } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
+import { createClient } from '~/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUser();
-
-    if (!user) {
+    const supabase = createClient();
+    
+    // Check authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -44,65 +44,63 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user has already voted on this song
-    const existingVote = await db
-      .select()
-      .from(votes)
-      .where(
-        and(eq(votes.userId, user.id), eq(votes.setlistSongId, setlistSongId))
-      )
-      .limit(1);
+    const { data: existingVote } = await supabase
+      .from('votes')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('setlist_song_id', setlistSongId)
+      .single();
 
     if (voteType === null) {
       // Remove vote
-      if (existingVote.length > 0) {
-        await db
-          .delete(votes)
-          .where(
-            and(
-              eq(votes.userId, user.id),
-              eq(votes.setlistSongId, setlistSongId)
-            )
-          );
+      if (existingVote) {
+        await supabase
+          .from('votes')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('setlist_song_id', setlistSongId);
       }
-    } else if (existingVote.length > 0) {
+    } else if (existingVote) {
       // Update existing vote
-      await db
-        .update(votes)
-        .set({
-          voteType,
-          updatedAt: new Date(),
+      await supabase
+        .from('votes')
+        .update({
+          vote_type: voteType,
+          updated_at: new Date().toISOString(),
         })
-        .where(
-          and(eq(votes.userId, user.id), eq(votes.setlistSongId, setlistSongId))
-        );
+        .eq('user_id', user.id)
+        .eq('setlist_song_id', setlistSongId);
     } else {
       // Create new vote
-      await db.insert(votes).values({
-        userId: user.id,
-        setlistSongId,
-        voteType,
-      });
+      await supabase
+        .from('votes')
+        .insert({
+          user_id: user.id,
+          setlist_song_id: setlistSongId,
+          vote_type: voteType,
+        });
     }
 
-    // Update vote counts on setlist_songs table
-    const allVotes = await db
-      .select()
-      .from(votes)
-      .where(eq(votes.setlistSongId, setlistSongId));
+    // Get updated vote counts
+    const { data: allVotes } = await supabase
+      .from('votes')
+      .select('vote_type')
+      .eq('setlist_song_id', setlistSongId);
 
-    const upvotes = allVotes.filter((v) => v.voteType === 'up').length;
-    const downvotes = allVotes.filter((v) => v.voteType === 'down').length;
+    const upvotes = allVotes?.filter((v) => v.vote_type === 'up').length || 0;
+    const downvotes = allVotes?.filter((v) => v.vote_type === 'down').length || 0;
     const netVotes = upvotes - downvotes;
 
-    await db
-      .update(setlistSongs)
-      .set({
+    // Update vote counts on setlist_songs table
+    await supabase
+      .from('setlist_songs')
+      .update({
         upvotes,
         downvotes,
-        netVotes,
-        updatedAt: new Date(),
+        net_votes: netVotes,
+        updated_at: new Date().toISOString(),
       })
-      .where(eq(setlistSongs.id, setlistSongId));
+      .eq('id', setlistSongId);
 
     return NextResponse.json({
       success: true,
@@ -111,7 +109,8 @@ export async function POST(request: NextRequest) {
       downvotes,
       netVotes,
     });
-  } catch (_error) {
+  } catch (error) {
+    console.error('Vote error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -121,7 +120,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getUser();
+    const supabase = createClient();
     const { searchParams } = new URL(request.url);
     const setlistSongId = searchParams.get('setlistSongId');
 
@@ -133,39 +132,37 @@ export async function GET(request: NextRequest) {
     }
 
     // Get vote counts
-    const song = await db
-      .select({
-        upvotes: setlistSongs.upvotes,
-        downvotes: setlistSongs.downvotes,
-        netVotes: setlistSongs.netVotes,
-      })
-      .from(setlistSongs)
-      .where(eq(setlistSongs.id, setlistSongId))
-      .limit(1);
+    const { data: song } = await supabase
+      .from('setlist_songs')
+      .select('upvotes, downvotes, net_votes')
+      .eq('id', setlistSongId)
+      .single();
 
-    if (song.length === 0) {
+    if (!song) {
       return NextResponse.json({ error: 'Song not found' }, { status: 404 });
     }
 
     // Get user's vote if authenticated
     let userVote: 'up' | 'down' | null = null;
+    const { data: { user } } = await supabase.auth.getUser();
+    
     if (user) {
-      const vote = await db
-        .select({ voteType: votes.voteType })
-        .from(votes)
-        .where(
-          and(eq(votes.userId, user.id), eq(votes.setlistSongId, setlistSongId))
-        )
-        .limit(1);
+      const { data: vote } = await supabase
+        .from('votes')
+        .select('vote_type')
+        .eq('user_id', user.id)
+        .eq('setlist_song_id', setlistSongId)
+        .single();
 
-      userVote = vote.length > 0 ? vote[0]?.['voteType'] || null : null;
+      userVote = vote?.vote_type || null;
     }
 
     return NextResponse.json({
-      ...song[0],
+      ...song,
       userVote,
     });
-  } catch (_error) {
+  } catch (error) {
+    console.error('Get vote error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

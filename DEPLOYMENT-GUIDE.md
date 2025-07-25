@@ -1,64 +1,114 @@
-# 🚀 MySetlist Deployment Guide
+# 🚀 MySetlist Deployment Guide - Consolidated
 
-**Version**: 1.0.0  
+**Version**: 2.0.0  
 **Deployment Target**: Vercel + Supabase  
 **Last Updated**: January 2025
+
+> **Note**: This guide consolidates all deployment documentation into a single source of truth.
+
+## 🎯 Quick Start
+
+```bash
+# For production deployment
+pnpm build && vercel --prod
+
+# For preview deployment
+vercel
+```
 
 ## 📋 Prerequisites
 
 Before deploying MySetlist, ensure you have:
 
-- Node.js 20.x or higher
-- pnpm 8.x or higher
-- Git
-- Vercel account
-- Supabase account
-- GitHub account (for CI/CD)
-- Domain name (optional)
+- **Node.js**: 20.x or higher
+- **pnpm**: 8.x or higher (included via `packageManager` in package.json)
+- **Accounts Required**:
+  - Vercel account (deployment platform)
+  - Supabase account (database & auth)
+  - GitHub account (version control & CI/CD)
+  - External API accounts (Spotify, Ticketmaster, Setlist.fm)
+- **Domain**: Custom domain (optional, Vercel provides subdomain)
 
 ## 🔧 Environment Setup
 
-### 1. **Clone the Repository**
+### 1. **Clone and Install**
 ```bash
 git clone https://github.com/your-org/mysetlist.git
 cd mysetlist
-pnpm install
+pnpm install --frozen-lockfile
 ```
 
-### 2. **Environment Variables**
-Copy the example environment file and configure:
+### 2. **Environment Variables Configuration**
+
+#### Local Development
 ```bash
-cp .env.example .env.local
+cp apps/web/.env.example apps/web/.env.local
 ```
 
-Required environment variables:
+#### Vercel Dashboard Configuration
+Navigate to your Vercel project → Settings → Environment Variables
+
+**Required Variables** (grouped by service):
+
+##### Core Application
 ```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-key
+NODE_ENV=production
+NEXT_PUBLIC_APP_URL=https://your-domain.vercel.app
+NEXT_PUBLIC_WEB_URL=https://your-domain.vercel.app  
+NEXT_PUBLIC_API_URL=https://your-domain.vercel.app/api
+```
 
-# External APIs
-SPOTIFY_CLIENT_ID=your-spotify-client-id
-SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
-TICKETMASTER_API_KEY=your-ticketmaster-key
-SETLIST_FM_API_KEY=your-setlistfm-key
+##### Supabase (Database & Auth)
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+SUPABASE_JWT_SECRET=your_jwt_secret
+DATABASE_URL=postgresql://postgres:[password]@[host]:6543/postgres
+```
 
-# Redis (Upstash)
-UPSTASH_REDIS_REST_URL=your-redis-url
-UPSTASH_REDIS_REST_TOKEN=your-redis-token
+##### External APIs
+```env
+# Spotify
+SPOTIFY_CLIENT_ID=your_client_id
+SPOTIFY_CLIENT_SECRET=your_client_secret
+NEXT_PUBLIC_SPOTIFY_CLIENT_ID=your_client_id
+
+# Ticketmaster
+TICKETMASTER_API_KEY=your_api_key
+
+# Setlist.fm
+SETLISTFM_API_KEY=your_api_key
+```
+
+##### Security & Authentication
+```env
+NEXTAUTH_SECRET=your_32_char_minimum_secret
+NEXTAUTH_URL=https://your-domain.vercel.app
+CSRF_SECRET=your_csrf_secret
+CRON_SECRET=your_cron_secret
+ADMIN_USER_IDS=admin_id_1,admin_id_2
+```
+
+##### Optional Services
+```env
+# Redis Cache (Upstash)
+UPSTASH_REDIS_REST_URL=your_redis_url
+UPSTASH_REDIS_REST_TOKEN=your_redis_token
 
 # Email (Resend)
-RESEND_API_KEY=your-resend-key
+RESEND_API_KEY=your_resend_key
 EMAIL_FROM=noreply@yourdomain.com
 
-# Sentry (Optional)
-SENTRY_DSN=your-sentry-dsn
-SENTRY_AUTH_TOKEN=your-sentry-token
+# Analytics & Monitoring
+NEXT_PUBLIC_SENTRY_DSN=your_sentry_dsn
+NEXT_PUBLIC_POSTHOG_KEY=your_posthog_key
+```
 
-# App Config
-NEXT_PUBLIC_APP_URL=https://yourdomain.com
-NEXT_PUBLIC_APP_NAME=MySetlist
+### 3. **Validate Environment**
+```bash
+pnpm check:env              # Validate all environment variables
+pnpm check:env --test-apis  # Test external API connections
 ```
 
 ## 🗄️ Database Setup
@@ -94,38 +144,41 @@ CREATE EXTENSION IF NOT EXISTS "unaccent";
 ### 4. **Configure Row Level Security**
 RLS policies are automatically applied via migrations.
 
-## ☁️ Vercel Deployment
+## ☁️ Deployment Options
 
-### 1. **Install Vercel CLI**
+### Option 1: Vercel CLI (Recommended)
 ```bash
-npm install -g vercel
-```
-
-### 2. **Deploy to Vercel**
-```bash
-# Login to Vercel
+# First-time setup
 vercel login
+vercel link  # Link to existing project or create new
 
-# Deploy (follow prompts)
+# Deploy to preview
 vercel
 
-# Or deploy to production
+# Deploy to production
 vercel --prod
 ```
 
-### 3. **Configure Environment Variables**
-1. Go to Vercel Dashboard
-2. Select your project
-3. Go to Settings → Environment Variables
-4. Add all variables from `.env.local`
+### Option 2: Git-Based Deployment
+1. Push code to GitHub/GitLab/Bitbucket
+2. Import project in Vercel Dashboard
+3. Configure environment variables
+4. Auto-deploy on push to `main`
 
-### 4. **Configure Build Settings**
+### Option 3: Quick Deploy Script
+```bash
+# Use the built-in deployment script
+pnpm final
+```
+
+### Build Configuration (auto-detected)
 ```json
 {
-  "buildCommand": "pnpm build",
+  "buildCommand": "cd apps/web && pnpm build",
   "outputDirectory": "apps/web/.next",
-  "installCommand": "pnpm install",
-  "framework": "nextjs"
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": "nextjs",
+  "nodeVersion": "20.x"
 }
 ```
 
@@ -286,128 +339,102 @@ Cron jobs are automatically configured via Vercel:
 curl -X POST https://yourdomain.com/api/admin/cache-warm
 ```
 
+## 🚦 Health Checks & Monitoring
+
+### Health Check Endpoints
+```bash
+# Basic health check
+curl https://your-domain.vercel.app/api/health
+
+# Comprehensive health check (includes all services)
+curl https://your-domain.vercel.app/api/health/comprehensive
+
+# Database connectivity
+curl https://your-domain.vercel.app/api/health/db
+```
+
+### Cron Jobs (Configured in vercel.json)
+- **Trending Update**: Every 6 hours
+- **Popular Artists Sync**: Daily at 2 AM
+- **Daily Data Sync**: Daily at 1 AM
+- **Health Check**: Every 5 minutes
+
 ## 🆘 Troubleshooting
 
-### Common Issues:
-
-1. **Build Failures**
-   ```bash
-   # Clear cache and rebuild
-   rm -rf .next node_modules
-   pnpm install
-   pnpm build
-   ```
-
-2. **Database Connection Issues**
-   - Check Supabase service is running
-   - Verify connection string
-   - Check connection pool settings
-
-3. **Redis Connection Issues**
-   - Verify Upstash credentials
-   - Check Redis memory usage
-   - Monitor connection limits
-
-4. **API Rate Limiting**
-   - Check rate limit headers
-   - Monitor Redis for rate limit keys
-   - Adjust limits if needed
-
-## 📈 Scaling Considerations
-
-### 1. **Vertical Scaling**
-- Upgrade Vercel plan for more resources
-- Increase Supabase compute resources
-- Upgrade Redis memory
-
-### 2. **Horizontal Scaling**
-- Enable Vercel auto-scaling
-- Add read replicas in Supabase
-- Implement database sharding
-
-### 3. **Performance Optimization**
-- Enable ISR for static pages
-- Implement aggressive caching
-- Use CDN for assets
-
-## 🔄 Rollback Procedures
-
-### 1. **Instant Rollback**
+### Build Failures
 ```bash
-# Via Vercel CLI
-vercel rollback
+# TypeScript errors
+pnpm typecheck
 
-# Or use Vercel Dashboard
-```
-
-### 2. **Database Rollback**
-```bash
-# Revert last migration
-supabase db reset --version [previous-version]
-```
-
-## 📊 Production Metrics
-
-Monitor these KPIs post-deployment:
-
-- **Performance**: Core Web Vitals
-- **Availability**: Uptime percentage
-- **Errors**: Error rate and types
-- **Usage**: DAU, votes per day
-- **Infrastructure**: CPU, memory, bandwidth
-
-## 🎉 Launch Checklist
-
-- [ ] All tests passing
-- [ ] Environment variables configured
-- [ ] Database migrations complete
-- [ ] DNS configured
-- [ ] SSL enabled
-- [ ] Monitoring active
-- [ ] Backups configured
-- [ ] Rate limiting enabled
-- [ ] Cron jobs scheduled
-- [ ] Admin users created
-- [ ] Email sending verified
-- [ ] Performance benchmarks met
-- [ ] Security scan completed
-- [ ] Documentation updated
-- [ ] Team access configured
-
-## 📚 Additional Resources
-
-- [Vercel Documentation](https://vercel.com/docs)
-- [Supabase Documentation](https://supabase.com/docs)
-- [Next.js Deployment](https://nextjs.org/docs/deployment)
-- [Project README](./README.md)
-- [Architecture Overview](./ARCHITECTURE-OVERVIEW.md)
-- [API Documentation](./docs/api/README.md)
-
-## 🚀 Quick Deploy Script
-
-```bash
-#!/bin/bash
-# deploy.sh - Quick deployment script
-
-echo "🚀 Starting MySetlist deployment..."
-
-# Check prerequisites
-command -v pnpm >/dev/null 2>&1 || { echo "pnpm required"; exit 1; }
-command -v vercel >/dev/null 2>&1 || { echo "vercel CLI required"; exit 1; }
-
-# Build and test
-echo "📦 Building application..."
+# Clear cache and rebuild
+rm -rf apps/web/.next
 pnpm build
-
-echo "🧪 Running tests..."
-pnpm test
-
-echo "🚀 Deploying to Vercel..."
-vercel --prod
-
-echo "✅ Deployment complete!"
 ```
+
+### Environment Variable Issues
+```bash
+# Validate environment
+pnpm check:env
+
+# Test API connections
+pnpm check:env --test-apis
+```
+
+### Database Connection Issues
+- Verify Supabase URL and keys in Vercel dashboard
+- Check database connection string format
+- Ensure RLS policies are configured
+
+### Performance Issues
+- Check Vercel Analytics for insights
+- Review bundle size: `pnpm analyze:web`
+- Monitor API response times
+
+## 📈 Production Readiness
+
+### Quick Deployment Checklist
+- [ ] Environment variables configured in Vercel
+- [ ] Database migrations applied
+- [ ] TypeScript builds without errors
+- [ ] External API keys validated
+- [ ] Health checks passing
+
+### Performance Targets
+- **Lighthouse Score**: ≥90
+- **Bundle Size**: <500KB initial
+- **API Response**: <500ms p95
+
+### Rollback
+```bash
+# Instant rollback via Vercel Dashboard or CLI
+vercel rollback
+```
+
+## 🚀 Quick Reference
+
+```bash
+# Development
+pnpm dev
+
+# Build & Test
+pnpm build
+pnpm typecheck
+pnpm check:env
+
+# Deploy
+vercel          # Preview
+vercel --prod   # Production
+
+# Health Check
+curl https://your-domain.vercel.app/api/health
+```
+
+## 📚 Related Documentation
+
+- [API Documentation](./docs/api/README.md)
+- [Database Schema](./mysetlist-docs/02-database-schema-and-models.md)
+- [Environment Setup](./ENVIRONMENT_SETUP.md)
 
 ---
 
-**Need Help?** Contact the development team or check the [troubleshooting guide](./docs/troubleshooting.md).
+**Support**: For deployment issues, check Vercel logs or contact the development team.

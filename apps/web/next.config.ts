@@ -3,9 +3,9 @@ import type { NextConfig } from 'next';
 // Production-ready configuration with full optimizations
 const nextConfig: NextConfig = {
   // TypeScript configuration
-  // TODO: Fix remaining design system component type issues
+  // Now enforcing TypeScript strict mode
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
     ignoreDuringBuilds: false,
@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
       '@supabase/supabase-js',
       '@supabase/auth-helpers-nextjs',
     ],
-    reactCompiler: false,
+    reactCompiler: true,
     optimizeCss: true,
   },
 

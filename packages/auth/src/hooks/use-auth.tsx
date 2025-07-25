@@ -84,9 +84,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
     initializeAuth();
 
     // Listen for auth state changes
-    const {
-      data: { subscription },
-    } = authProvider.onAuthStateChange(async (event, session) => {
+    const unsubscribe = authProvider.onAuthStateChange(async (event, session) => {
       setSession(session);
       setUser(session?.user || null);
       setLoading(false);
@@ -102,7 +100,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
       router.refresh();
     });
 
-    return () => subscription.unsubscribe();
+    return () => unsubscribe();
   }, [initialSession, router]);
 
   const signIn = useCallback(async (email: string, password: string) => {

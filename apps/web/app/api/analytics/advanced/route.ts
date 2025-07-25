@@ -512,6 +512,7 @@ async function analyzeUserSegments(segments: string[], startDate: string, endDat
   
   const segmentAnalysis = await Promise.all(
     segments.map(async (segment) => {
+      const supabase = await createClient();
       const { data: users, error } = await supabase
         .from('users')
         .select('id, created_at')

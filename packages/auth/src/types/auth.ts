@@ -139,8 +139,8 @@ export interface IAuthProvider {
   signIn(email: string, password: string): Promise<AuthUser>;
   signUp(email: string, password: string, metadata?: Record<string, any>): Promise<AuthUser>;
   signOut(): Promise<void>;
-  signInWithGoogle(config?: OAuthConfig): Promise<AuthUser>;
-  signInWithSpotify(config?: OAuthConfig): Promise<AuthUser>;
+  signInWithGoogle(config?: OAuthConfig): Promise<void>;
+  signInWithSpotify(config?: OAuthConfig): Promise<void>;
   resetPassword(email: string): Promise<void>;
   updateProfile(metadata: Record<string, any>): Promise<AuthUser>;
   onAuthStateChange(callback: (event: string, session: AuthSession | null) => void): () => void;

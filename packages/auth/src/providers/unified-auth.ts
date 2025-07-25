@@ -75,9 +75,8 @@ export class UnifiedAuthProvider {
       }
 
       // Create user profile and preferences
-      await this.userService.createUserProfile(authData.user.id, {
-        displayName: data.displayName,
-      });
+      const profileData = data.displayName ? { displayName: data.displayName } : {};
+      await this.userService.createUserProfile(authData.user.id, profileData);
 
       await this.userService.createEmailPreferences(authData.user.id);
 
@@ -99,7 +98,7 @@ export class UnifiedAuthProvider {
         provider: 'google',
         options: {
           redirectTo: config?.redirectTo || `${window.location.origin}/auth/callback`,
-          queryParams: config?.queryParams,
+          ...(config?.queryParams && { queryParams: config.queryParams }),
         },
       });
 
@@ -124,7 +123,7 @@ export class UnifiedAuthProvider {
         options: {
           scopes,
           redirectTo: config?.redirectTo || `${window.location.origin}/auth/callback`,
-          queryParams: config?.queryParams,
+          ...(config?.queryParams && { queryParams: config.queryParams }),
         },
       });
 

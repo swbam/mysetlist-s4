@@ -4,7 +4,7 @@ import {
   createSupabaseAdmin,
   createSupabaseClient,
 } from '../config/supabase';
-import type { IAuthProvider, AuthSession, AuthUser } from '../types';
+import type { IAuthProvider, AuthSession, AuthUser, OAuthConfig } from '../types';
 
 export class SupabaseAuthProvider implements IAuthProvider {
   private client = createSupabaseClient();
@@ -71,6 +71,36 @@ export class SupabaseAuthProvider implements IAuthProvider {
     }
 
     return data;
+  }
+
+  async signInWithGoogle(config?: OAuthConfig): Promise<void> {
+    const { error } = await this.client.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: config?.redirectTo || `${window.location.origin}${AUTH_CONFIG.redirectUrls.callback}`,
+        scopes: config?.scopes || AUTH_CONFIG.oauth.google.scopes,
+        ...(config?.queryParams && { queryParams: config.queryParams }),
+      },
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
+  }
+
+  async signInWithSpotify(config?: OAuthConfig): Promise<void> {
+    const { error } = await this.client.auth.signInWithOAuth({
+      provider: 'spotify',
+      options: {
+        redirectTo: config?.redirectTo || `${window.location.origin}${AUTH_CONFIG.redirectUrls.callback}`,
+        scopes: config?.scopes || AUTH_CONFIG.oauth.spotify.scopes,
+        ...(config?.queryParams && { queryParams: config.queryParams }),
+      },
+    });
+
+    if (error) {
+      throw new Error(error.message);
+    }
   }
 
   async signInWithMagicLink(email: string): Promise<void> {

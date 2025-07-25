@@ -1,14 +1,12 @@
 import { Resend } from 'resend';
-import { keys } from '../keys';
-
-const env = keys();
+import { env } from '@repo/env';
 
 export class EmailService {
   private resend: Resend;
 
   constructor() {
     // Initialize Resend with API key from environment
-    this.resend = new Resend(process.env.RESEND_API_KEY);
+    this.resend = new Resend(env.RESEND_API_KEY);
   }
 
   /**
@@ -42,7 +40,7 @@ export class EmailService {
     try {
       // Generate a secure reset token (in production, this should be stored in database)
       const resetToken = this.generateSecureToken();
-      const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
+      const resetUrl = `${env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
       const { data, error } = await this.resend.emails.send({
         from: 'MySetlist <security@mysetlist.com>',
@@ -161,7 +159,7 @@ export class EmailService {
               </ul>
               
               <div style="text-align: center;">
-                <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" class="button">Explore MySetlist</a>
+                <a href="${env.NEXT_PUBLIC_APP_URL}/dashboard" class="button">Explore MySetlist</a>
               </div>
               
               <p>If you have any questions, feel free to reach out to our support team. We're here to help!</p>
@@ -171,7 +169,7 @@ export class EmailService {
             
             <div class="footer">
               <p>You're receiving this email because you signed up for MySetlist.</p>
-              <p>MySetlist • <a href="${process.env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
+              <p>MySetlist • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
             </div>
           </div>
         </body>
@@ -235,7 +233,7 @@ export class EmailService {
             
             <div class="footer">
               <p>This is an automated security email from MySetlist.</p>
-              <p>MySetlist • <a href="${process.env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
+              <p>MySetlist • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
             </div>
           </div>
         </body>
@@ -294,7 +292,7 @@ export class EmailService {
             
             <div class="footer">
               <p>You're receiving this email because you signed up for MySetlist.</p>
-              <p>MySetlist • <a href="${process.env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
+              <p>MySetlist • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
             </div>
           </div>
         </body>
@@ -351,7 +349,7 @@ export class EmailService {
             
             <div class="footer">
               <p>This is an automated security notification from MySetlist.</p>
-              <p>MySetlist • <a href="${process.env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
+              <p>MySetlist • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
             </div>
           </div>
         </body>
