@@ -77,10 +77,11 @@ const VoteButtonComponent = function VoteButton({
     });
   }, [isVoting, disabled, isPending, currentVote, onVote, setlistSongId]);
 
+  // Updated touch targets for mobile accessibility (minimum 44px per Apple guidelines)
   const buttonSize =
-    size === 'sm' ? 'h-6 w-6' : size === 'lg' ? 'h-10 w-10' : 'h-8 w-8';
+    size === 'sm' ? 'h-8 w-8' : size === 'lg' ? 'h-12 w-12' : 'h-11 w-11';
   const iconSize =
-    size === 'sm' ? 'h-3 w-3' : size === 'lg' ? 'h-5 w-5' : 'h-4 w-4';
+    size === 'sm' ? 'h-4 w-4' : size === 'lg' ? 'h-6 w-6' : 'h-5 w-5';
 
   if (variant === 'compact') {
     return (
