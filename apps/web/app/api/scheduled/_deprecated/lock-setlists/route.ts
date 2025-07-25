@@ -1,5 +1,5 @@
 import type { NextRequest } from 'next/server';
-import { createClient } from '~/lib/api/supabase/server';
+import { createServiceClient } from '~/lib/api/supabase/server';
 
 export async function GET(request: NextRequest) {
   try {
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
       return new Response('Unauthorized', { status: 401 });
     }
 
-    const supabase = await createClient();
+    const supabase = createServiceClient();
     const now = new Date();
 
     // Find shows that have started but haven't been locked yet

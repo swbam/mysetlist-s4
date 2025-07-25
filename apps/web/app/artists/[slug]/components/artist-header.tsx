@@ -8,7 +8,6 @@ import React, { Suspense } from 'react';
 import { parseGenres } from '~/lib/utils';
 import { FollowButton } from './follow-button';
 import { FollowerCount } from './follower-count';
-import { SyncShowsButton } from './sync-shows-button';
 
 interface ArtistHeaderProps {
   artist: {
@@ -135,10 +134,6 @@ export const ArtistHeader = React.memo(function ArtistHeader({ artist }: ArtistH
                 {/* Action Buttons */}
                 <div className="flex gap-3">
                   <FollowButton />
-                  <SyncShowsButton
-                    artistId={artist.id}
-                    artistName={artist.name}
-                  />
                   {externalUrls.spotify && (
                     <Button variant="outline" size="lg" asChild>
                       <Link href={externalUrls.spotify} target="_blank">

@@ -11,9 +11,9 @@ import {
 } from '@repo/design-system/components/ui/card';
 import { Skeleton } from '@repo/design-system/components/ui/skeleton';
 import { format } from 'date-fns';
-import { Calendar, MapPin, RefreshCw, Ticket } from 'lucide-react';
+import { Calendar, MapPin, Ticket } from 'lucide-react';
 import Link from 'next/link';
-import React, { useState, useCallback } from 'react';
+import React, { useEffect } from 'react';
 
 interface Show {
   show: {
@@ -59,39 +59,24 @@ function ShowSkeleton() {
 }
 
 export const UpcomingShows = React.memo(function UpcomingShows({
-  shows: initialShows,
+  shows,
   artistName,
   artistId,
 }: UpcomingShowsProps) {
-  const [shows, _setShows] = useState(initialShows);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const refreshShows = useCallback(async () => {
-    if (!artistId) {
-      return;
-    }
-
-    setIsRefreshing(true);
-    try {
-      // Trigger sync
-      const response = await fetch('/api/artists/sync-shows', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ artistId }),
+  // Trigger background sync when component mounts if shows are empty or stale
+  useEffect(() => {
+    if (artistId && shows.length === 0) {
+      // Trigger autonomous sync in background (non-blocking)
+      fetch('/api/autonomous-sync?pipeline=sync', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || 'dev-secret'}`,
+        },
+      }).catch(() => {
+        // Silent fail - sync will happen via scheduled cron jobs
       });
-
-      if (response.ok) {
-        // Wait a bit for sync to complete
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-
-        // Refresh the page to get new data
-        window.location.reload();
-      }
-    } catch (_error) {
-    } finally {
-      setIsRefreshing(false);
     }
-  }, [artistId]);
+  }, [artistId, shows.length]);
 
   if (shows.length === 0) {
     return (
@@ -99,30 +84,15 @@ export const UpcomingShows = React.memo(function UpcomingShows({
         <CardHeader>
           <CardTitle>Upcoming Shows</CardTitle>
           <CardDescription>
-            No upcoming shows found for {artistName}
+            No upcoming shows scheduled for {artistName}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="py-8 text-center">
             <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <p className="mb-4 text-muted-foreground">
-              Check back later for new tour dates or sync shows from
-              Ticketmaster
+            <p className="text-muted-foreground">
+              Check back later for new tour dates. Shows are automatically updated from Ticketmaster.
             </p>
-            {artistId && (
-              <Button
-                onClick={refreshShows}
-                disabled={isRefreshing}
-                variant="outline"
-                size="sm"
-                className="gap-2"
-              >
-                <RefreshCw
-                  className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
-                />
-                Sync Shows from Ticketmaster
-              </Button>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -131,34 +101,14 @@ export const UpcomingShows = React.memo(function UpcomingShows({
 
   return (
     <div className="space-y-4">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4">
         <h2 className="font-bold text-2xl">Upcoming Shows</h2>
-        {artistId && (
-          <Button
-            onClick={refreshShows}
-            disabled={isRefreshing}
-            variant="ghost"
-            size="sm"
-            className="gap-2"
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`}
-            />
-            Refresh
-          </Button>
-        )}
+        <p className="text-muted-foreground text-sm mt-1">
+          Shows automatically updated from Ticketmaster
+        </p>
       </div>
 
-      {isRefreshing && (
-        <div className="space-y-4">
-          <ShowSkeleton />
-          <ShowSkeleton />
-          <ShowSkeleton />
-        </div>
-      )}
-
-      {!isRefreshing &&
-        shows.map(({ show, venue, isHeadliner }) => (
+      {shows.map(({ show, venue, isHeadliner }) => (
           <Card key={show.id} className="transition-shadow hover:shadow-lg">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">

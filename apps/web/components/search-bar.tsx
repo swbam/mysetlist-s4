@@ -151,10 +151,13 @@ export function SearchBar({
               }),
             });
             const data = await resp.json();
-            if (resp.ok && data.artist?.slug) {
+            if (resp.ok && data.success && data.artist?.slug) {
               router.push(`/artists/${data.artist.slug}`);
             } else {
-              throw new Error('Sync failed');
+              // If sync fails, try direct navigation to artist page
+              console.warn('Artist sync failed, attempting direct navigation:', data.error);
+              const fallbackSlug = result.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+              router.push(`/artists/${fallbackSlug}`);
             }
           } else {
             router.push(`/artists/${result.slug || result.id}`);

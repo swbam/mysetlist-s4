@@ -183,7 +183,7 @@ export const MobileNavigation = React.memo(function MobileNavigation({
                 damping: 30,
                 duration: 0.3,
               }}
-              className="fixed top-0 left-0 z-50 h-full w-80 max-w-[85vw] bg-background shadow-xl md:hidden"
+              className="fixed top-0 left-0 z-50 h-full w-80 max-w-[90vw] bg-background shadow-xl md:hidden overflow-y-auto"
             >
               <div className="flex h-full flex-col">
                 {/* Header */}

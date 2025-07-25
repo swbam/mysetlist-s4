@@ -251,48 +251,58 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
             </TabsList>
 
             <TabsContent value="shows" className="space-y-4">
-              {React.createElement(UpcomingShows as any, {
-                shows: transformedUpcomingShows,
-                artistName: artist.name,
-                artistId: artist.id,
-              })}
+              <React.Suspense fallback={<div className="h-64 animate-pulse rounded-lg bg-muted" />}>
+                {React.createElement(UpcomingShows as any, {
+                  shows: transformedUpcomingShows,
+                  artistName: artist.name,
+                  artistId: artist.id,
+                })}
+              </React.Suspense>
             </TabsContent>
 
             <TabsContent value="past" className="space-y-4">
-              {React.createElement(PastShows as any, {
-                shows: transformedPastShows,
-                artistName: artist.name,
-                artistId: artist.id,
-              })}
+              <React.Suspense fallback={<div className="h-64 animate-pulse rounded-lg bg-muted" />}>
+                {React.createElement(PastShows as any, {
+                  shows: transformedPastShows,
+                  artistName: artist.name,
+                  artistId: artist.id,
+                })}
+              </React.Suspense>
             </TabsContent>
 
             <TabsContent value="setlists" className="space-y-4">
-              <ArtistSetlistsView
-                setlists={(artistSetlists || []) as any}
-                artistName={artist.name}
-                artistId={artist.id}
-              />
+              <React.Suspense fallback={<div className="h-64 animate-pulse rounded-lg bg-muted" />}>
+                <ArtistSetlistsView
+                  setlists={(artistSetlists || []) as any}
+                  artistName={artist.name}
+                  artistId={artist.id}
+                />
+              </React.Suspense>
             </TabsContent>
 
             <TabsContent value="music" className="space-y-4">
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                <ArtistTopTracks
-                  artistId={artist.id}
-                  spotifyId={artist.spotifyId}
-                />
-                {React.createElement(ArtistSongCatalog as any, {
-                  artistId: artist.id,
-                  artistSlug: artist.slug,
-                  artistName: artist.name,
-                })}
-              </div>
+              <React.Suspense fallback={<div className="h-96 animate-pulse rounded-lg bg-muted" />}>
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  <ArtistTopTracks
+                    artistId={artist.id}
+                    spotifyId={artist.spotifyId}
+                  />
+                  {React.createElement(ArtistSongCatalog as any, {
+                    artistId: artist.id,
+                    artistSlug: artist.slug,
+                    artistName: artist.name,
+                  })}
+                </div>
+              </React.Suspense>
             </TabsContent>
 
             <TabsContent value="about" className="space-y-6">
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                {artist.bio && <ArtistBio bio={artist.bio} />}
-                <SimilarArtists artistId={artist.id} genres={artist.genres} />
-              </div>
+              <React.Suspense fallback={<div className="h-64 animate-pulse rounded-lg bg-muted" />}>
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                  {artist.bio && <ArtistBio bio={artist.bio} />}
+                  <SimilarArtists artistId={artist.id} genres={artist.genres} />
+                </div>
+              </React.Suspense>
             </TabsContent>
           </Tabs>
         </div>

@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         id,
         name,
         slug,
-        show_date,
+        date,
         status,
         vote_count,
         attendee_count,
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
           country
         )
       `)
-      .or(`show_date.gte.${startDate.toISOString().substring(0, 10)},attendee_count.gt.0,view_count.gt.0`)
+      .or(`date.gte.${startDate.toISOString().substring(0, 10)},attendee_count.gt.0,view_count.gt.0`)
       .order('trending_score', { ascending: false, nullsFirst: false })
       .order('attendee_count', { ascending: false, nullsFirst: false })
       .order('view_count', { ascending: false, nullsFirst: false })
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
         id: s.id,
         name: s.name || (artist?.name ? `${artist.name} Live` : 'Unknown Show'),
         slug: s.slug,
-        date: s.show_date,
+        date: s.date,
         status: s.status || 'confirmed',
         artist: {
           name: artist?.name || 'Unknown Artist',

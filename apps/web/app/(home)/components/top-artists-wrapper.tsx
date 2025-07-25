@@ -1,6 +1,6 @@
 import React from 'react';
 import { absoluteUrl } from '~/lib/absolute-url';
-import TopArtistsSlider from './top-artists-slider';
+import OptimizedTopArtistsSliderWithBoundary from './optimized-top-artists-slider';
 
 interface TrendingArtist {
   id: string;
@@ -62,7 +62,7 @@ export default async function TopArtistsWrapper() {
       );
     }
 
-    return <TopArtistsSlider artists={artists} />;
+    return <OptimizedTopArtistsSliderWithBoundary artists={artists} />;
   } catch (error) {
     console.error('Error fetching trending artists:', error);
     // Return minimal error state instead of null to prevent layout shift
