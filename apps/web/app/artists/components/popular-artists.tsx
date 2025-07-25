@@ -3,10 +3,10 @@ import { Card, CardContent } from '@repo/design-system/components/ui/card';
 import { Calendar, Star, Users } from 'lucide-react';
 import Link from 'next/link';
 import { parseGenres } from '~/lib/parse-genres';
-import { createClient } from '~/lib/supabase/server';
+import { createServiceClient } from '~/lib/supabase/server';
 
 async function getPopularArtists() {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   
   // Get artists ordered by their overall popularity
   const { data: popularArtists, error } = await supabase

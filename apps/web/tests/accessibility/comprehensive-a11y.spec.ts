@@ -45,7 +45,9 @@ test.describe('Accessibility Tests', () => {
     
     // First heading should be h1
     const firstHeading = headings[0];
-    expect(await firstHeading.tagName()).toBe('H1');
+    if (firstHeading) {
+      expect(await firstHeading.evaluate(el => el.tagName)).toBe('H1');
+    }
   });
 
   test('voting interface should be accessible', async ({ page }) => {

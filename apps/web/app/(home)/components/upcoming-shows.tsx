@@ -5,79 +5,90 @@ import { format } from 'date-fns';
 import { Calendar, ChevronRight, Clock, MapPin } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { createServiceClient } from '~/lib/supabase/server';
 
-// Sample data for demonstration - In production, this would come from the database
-const sampleUpcomingShows = [
-  {
-    id: '1',
-    name: 'Summer Tour 2024',
-    slug: 'summer-tour-2024-nashville',
-    date: '2024-08-15',
-    startTime: '20:00',
-    status: 'upcoming',
-    artist: {
-      id: '1',
-      name: 'Taylor Swift',
-      slug: 'taylor-swift',
-      imageUrl:
-        'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100&h=100&fit=crop',
-    },
-    venue: {
-      id: '1',
-      name: 'Nissan Stadium',
-      slug: 'nissan-stadium',
-      city: 'Nashville',
-      state: 'TN',
-    },
-  },
-  {
-    id: '2',
-    name: 'World Tour',
-    slug: 'world-tour-los-angeles',
-    date: '2024-08-22',
-    startTime: '19:30',
-    status: 'upcoming',
-    artist: {
-      id: '2',
-      name: 'The Weeknd',
-      slug: 'the-weeknd',
-      imageUrl:
-        'https://images.unsplash.com/photo-1547355253-ff0740f6e8c1?w=100&h=100&fit=crop',
-    },
-    venue: {
-      id: '2',
-      name: 'SoFi Stadium',
-      slug: 'sofi-stadium',
-      city: 'Los Angeles',
-      state: 'CA',
-    },
-  },
-  {
-    id: '3',
-    name: 'Arena Tour',
-    slug: 'arena-tour-chicago',
-    date: '2024-09-05',
-    startTime: '20:00',
-    status: 'upcoming',
-    artist: {
-      id: '3',
-      name: 'Billie Eilish',
-      slug: 'billie-eilish',
-      imageUrl:
-        'https://images.unsplash.com/photo-1520872024865-3ff2805d8bb3?w=100&h=100&fit=crop',
-    },
-    venue: {
-      id: '3',
-      name: 'United Center',
-      slug: 'united-center',
-      city: 'Chicago',
-      state: 'IL',
-    },
-  },
-];
+type UpcomingShow = {
+  id: string;
+  name: string;
+  slug: string;
+  date: string;
+  startTime: string | null;
+  status: string;
+  artist: {
+    id: string;
+    name: string;
+    slug: string;
+    imageUrl: string | null;
+  };
+  venue: {
+    id: string;
+    name: string;
+    slug: string;
+    city: string;
+    state: string | null;
+  } | null;
+};
 
-export function UpcomingShows() {
-  const upcomingShows = sampleUpcomingShows;
+async function getUpcomingShows(): Promise<UpcomingShow[]> {
+  try {
+    const supabase = createServiceClient();
+    
+    const { data: shows, error } = await supabase
+      .from('shows')
+      .select(`
+        id,
+        name,
+        slug,
+        date,
+        start_time,
+        status,
+        headlinerArtist:artists!shows_headliner_artist_id_fkey(
+          id,
+          name,
+          slug,
+          image_url
+        ),
+        venue:venues!shows_venue_id_fkey(
+          id,
+          name,
+          slug,
+          city,
+          state
+        )
+      `)
+      .eq('status', 'upcoming')
+      .gte('date', new Date().toISOString().split('T')[0])
+      .order('date', { ascending: true })
+      .limit(3);
+
+    if (error) {
+      console.error('Error fetching upcoming shows:', error);
+      return [];
+    }
+
+    return (shows || []).map((show: any) => ({
+      id: show.id,
+      name: show.name,
+      slug: show.slug,
+      date: show.date,
+      startTime: show.start_time,
+      status: show.status,
+      artist: {
+        id: show.headlinerArtist?.id || '',
+        name: show.headlinerArtist?.name || '',
+        slug: show.headlinerArtist?.slug || '',
+        imageUrl: show.headlinerArtist?.image_url || null,
+      },
+      venue: show.venue || null,
+    }));
+  } catch (error) {
+    console.error('Error fetching upcoming shows:', error);
+    return [];
+  }
+}
+
+export async function UpcomingShows() {
+  const upcomingShows = await getUpcomingShows();
   return (
     <section className="bg-muted/50 py-16 md:py-24">
       <div className="container mx-auto px-4">

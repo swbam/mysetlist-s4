@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { createClient } from '~/lib/supabase/server';
+import { createServiceClient } from '~/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const supabase = await createClient();
+    const supabase = createServiceClient();
 
     // ARTIST-ONLY SEARCH as per PRD requirements
     // Core flow: Search artists → Click artist → Triggers data sync → View shows
