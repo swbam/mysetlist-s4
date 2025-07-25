@@ -8,18 +8,21 @@ import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import * as dotenv from 'dotenv';
 
-// Load environment variables
+// Load environment variables in priority order
 const envPaths = [
-  '.env.local',
-  '.env.production',
   '.env',
-  'apps/web/.env.local',
+  '.env.production',
   'apps/web/.env.production',
+  '.env.production.local',
+  'apps/web/.env.production.local',
+  '.env.local',  // Highest priority
+  'apps/web/.env.local',
 ];
 
-for (const path of envPaths) {
+// Load in reverse order so higher priority files override
+for (const path of envPaths.reverse()) {
   if (existsSync(path)) {
-    dotenv.config({ path, override: false });
+    dotenv.config({ path, override: true });
   }
 }
 
