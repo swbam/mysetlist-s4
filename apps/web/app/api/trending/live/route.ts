@@ -144,8 +144,8 @@ export async function GET(request: NextRequest) {
             const score =
               trendingScore + searches * 2 + views * 1.5 + interactions * 3;
 
-            const artistName = show.headliner_artist?.name || show.name || 'Unnamed Show';
-            const artistImage = show.headliner_artist?.image_url;
+            const artistName = show.headliner_artist?.[0]?.name || show.name || 'Unnamed Show';
+            const artistImage = show.headliner_artist?.[0]?.image_url;
 
             trending.push({
               id: show.id,

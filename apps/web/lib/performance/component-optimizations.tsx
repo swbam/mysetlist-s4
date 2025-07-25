@@ -11,15 +11,20 @@ import { optimizeComponent } from './optimize-component';
  */
 
 // Optimized props comparator for analytics charts
-export const analyticsChartComparator = <T extends { type: string; height?: number; period?: string }>(
-  prevProps: T,
-  nextProps: T
+export const analyticsChartComparator = (
+  prevProps: any,
+  nextProps: any
 ): boolean => {
-  return (
-    prevProps.type === nextProps.type &&
-    prevProps.height === nextProps.height &&
-    prevProps.period === nextProps.period
-  );
+  // Check if props have the expected properties
+  if ('type' in prevProps && 'type' in nextProps) {
+    return (
+      prevProps.type === nextProps.type &&
+      prevProps.height === nextProps.height &&
+      prevProps.period === nextProps.period
+    );
+  }
+  // Fallback to shallow equality for other props
+  return Object.keys(prevProps).every(key => prevProps[key] === nextProps[key]);
 };
 
 // Custom hook for memoized chart data generation

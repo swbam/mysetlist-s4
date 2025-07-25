@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     let artistId: string;
 
-    if (existingArtist.length > 0) {
+    if (existingArtist.length > 0 && existingArtist[0]) {
       artistId = existingArtist[0].id;
     } else {
       // Create new artist
@@ -42,6 +42,10 @@ export async function POST(request: NextRequest) {
           lastSyncedAt: new Date(),
         })
         .returning();
+
+      if (!newArtist) {
+        return NextResponse.json({ error: 'Failed to create artist' }, { status: 500 });
+      }
 
       artistId = newArtist.id;
     }

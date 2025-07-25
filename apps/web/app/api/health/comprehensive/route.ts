@@ -64,7 +64,7 @@ async function checkSpotifyAPI(): Promise<HealthCheck> {
   const start = Date.now();
   try {
     // Try to search for a common artist
-    const artists = await spotify.searchArtists('test', 1);
+    const searchResult = await spotify.searchArtists('test', 1);
     
     return {
       service: 'spotify_api',
@@ -72,7 +72,7 @@ async function checkSpotifyAPI(): Promise<HealthCheck> {
       responseTime: Date.now() - start,
       details: {
         endpoint: 'search/artists',
-        results: artists.length,
+        results: searchResult.artists.items.length,
       },
     };
   } catch (error) {
@@ -117,10 +117,7 @@ async function checkSetlistFmAPI(): Promise<HealthCheck> {
   const start = Date.now();
   try {
     // Try to search for artists
-    const artists = await setlistfm.searchArtists({
-      artistName: 'test',
-      p: 1,
-    });
+    const artists = await setlistfm.searchArtists('test', 1);
     
     return {
       service: 'setlistfm_api',

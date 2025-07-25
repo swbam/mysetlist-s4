@@ -378,7 +378,9 @@ export function SongDropdown({
                         initialDownvotes={setlistSong.downvotes}
                         isAuthenticated={!!session}
                         onVote={async (voteType) => {
-                          await handleVote(setlistSong.id, voteType);
+                          if (voteType) {
+                            await handleVote(setlistSong.id, voteType);
+                          }
                         }}
                         variant="compact"
                         size="sm"

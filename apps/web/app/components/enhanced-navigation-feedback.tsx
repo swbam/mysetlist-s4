@@ -48,7 +48,10 @@ function generateBreadcrumbs(pathname: string): BreadcrumbItem[] {
 
   // Mark the last item as current
   if (breadcrumbs.length > 0) {
-    breadcrumbs[breadcrumbs.length - 1].current = true;
+    const lastItem = breadcrumbs[breadcrumbs.length - 1];
+    if (lastItem) {
+      lastItem.current = true;
+    }
   }
 
   return breadcrumbs;

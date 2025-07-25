@@ -2,7 +2,16 @@ import { db } from '@repo/database';
 import { artists, setlistSongs, setlists, shows, venues } from '@repo/database';
 import { eq } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
-import { SpotifyClient, TicketmasterClient, SetlistFmClient } from '@repo/external-apis';
+import { 
+  SpotifyClient, 
+  TicketmasterClient, 
+  SetlistFmClient,
+  type SetlistFmArtist,
+  type SetlistFmVenue,
+  type SetlistFmSong,
+  type SetlistFmSet,
+  type SetlistFmSetlist
+} from '@repo/external-apis';
 
 // Types for external API responses
 interface SpotifyAuthResponse {
@@ -68,44 +77,7 @@ interface TicketmasterSearchResponse {
   };
 }
 
-interface SetlistFmArtist {
-  mbid: string;
-  name: string;
-}
-
-interface SetlistFmVenue {
-  id: string;
-  name: string;
-  city: {
-    name: string;
-    stateCode?: string;
-    country: { code: string };
-    coords?: { lat: number; long: number };
-  };
-}
-
-interface SetlistFmSong {
-  name: string;
-  info?: string;
-  tape?: boolean;
-  cover?: { name: string };
-}
-
-interface SetlistFmSet {
-  song: SetlistFmSong[];
-  encore?: boolean;
-}
-
-interface SetlistFmSetlist {
-  id: string;
-  eventDate: string;
-  tour?: { name: string };
-  info?: string;
-  lastUpdated: string;
-  artist: SetlistFmArtist;
-  venue: SetlistFmVenue;
-  sets: { set: SetlistFmSet[] };
-}
+// SetlistFm types are imported from @repo/external-apis
 
 interface SetlistFmSearchResponse {
   setlist?: SetlistFmSetlist[];
@@ -172,7 +144,7 @@ class ArtistSyncService {
   private spotifyClient: SpotifyClient;
 
   constructor() {
-    this.spotifyClient = new SpotifyClient();
+    this.spotifyClient = new SpotifyClient({});
   }
 
   async syncArtistFromSpotify(spotifyId: string) {
@@ -219,7 +191,9 @@ class ShowSyncService {
   private ticketmasterClient: TicketmasterClient;
 
   constructor() {
-    this.ticketmasterClient = new TicketmasterClient();
+    this.ticketmasterClient = new TicketmasterClient({
+      apiKey: process.env.TICKETMASTER_API_KEY!,
+    });
   }
 
   async syncUpcomingShows(
@@ -401,7 +375,9 @@ class SetlistSyncService {
   private setlistFmClient: SetlistFmClient;
 
   constructor() {
-    this.setlistFmClient = new SetlistFmClient();
+    this.setlistFmClient = new SetlistFmClient({
+      apiKey: process.env.SETLISTFM_API_KEY!,
+    });
   }
 
   async syncSetlistsForArtist(artistName: string, maxPages = 5) {
@@ -499,7 +475,7 @@ class SetlistSyncService {
             setlistId,
             songName: song.name,
             position,
-            isEncore: set.encore === true,
+            isEncore: set.encore !== undefined && set.encore > 0,
             info: song.info || null,
             isTape: song.tape === true,
             coverArtist: song.cover?.name || null,
@@ -618,7 +594,7 @@ export async function POST(request: NextRequest) {
     switch (action) {
       case 'sync-artist': {
         const artistSync = new ArtistSyncService();
-        const spotifyClient = new SpotifyClient();
+        const spotifyClient = new SpotifyClient({});
 
         // Search for artist on Spotify first
         const searchResults = await spotifyClient.searchArtists(artistName, 1);
@@ -656,9 +632,13 @@ export async function POST(request: NextRequest) {
       }
       default: {
         // Test all APIs
-        const spotifyTest = new SpotifyClient();
-        const ticketmasterTest = new TicketmasterClient();
-        const setlistfmTest = new SetlistFmClient();
+        const spotifyTest = new SpotifyClient({});
+        const ticketmasterTest = new TicketmasterClient({
+          apiKey: process.env.TICKETMASTER_API_KEY!,
+        });
+        const setlistfmTest = new SetlistFmClient({
+          apiKey: process.env.SETLISTFM_API_KEY!,
+        });
 
         const [spotifyResult, ticketmasterResult, setlistfmResult] =
           await Promise.allSettled([

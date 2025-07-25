@@ -4,7 +4,7 @@ import { createClient } from '~/lib/supabase/server';
 
 export async function POST(request: Request) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { code, secret } = await request.json();
     
     // Get the current user

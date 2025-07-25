@@ -321,7 +321,6 @@ export function RealtimeSetlistViewer({
                             session &&
                             !setlist.isLocked &&
                             setlist.type === 'predicted' && (
-                              /* @ts-expect-error - React 19 memo type issue */
                               <VoteButton
                                 setlistSongId={song.id}
                                 currentVote={song.userVote}

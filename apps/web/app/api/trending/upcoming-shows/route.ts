@@ -28,15 +28,22 @@ export async function GET(_request: NextRequest) {
 
     // Transform to expected format
     const shows = upcomingShows
-      .filter(show => show.artist)
+      .filter(show => show.artist && show.artist.length > 0)
       .slice(0, 3)
-      .map(show => ({
-        id: show.id,
-        artist: show.artist.name,
-        venue: show.venue?.name || 'Venue TBA',
-        date: show.date,
-        ticketsLeft: show.ticket_url ? Math.floor(Math.random() * 1000) + 50 : undefined,
-      }));
+      .map(show => {
+        const firstArtist = show.artist![0];
+        if (!firstArtist) {
+          return null;
+        }
+        return {
+          id: show.id,
+          artist: firstArtist.name,
+          venue: show.venue?.[0]?.name || 'Venue TBA',
+          date: show.date,
+          ticketsLeft: show.ticket_url ? Math.floor(Math.random() * 1000) + 50 : undefined,
+        };
+      })
+      .filter(show => show !== null);
 
     return NextResponse.json({ shows });
   } catch (_error) {

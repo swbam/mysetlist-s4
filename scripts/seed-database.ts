@@ -64,7 +64,7 @@ class SpotifyClient {
   }
 }
 
-const spotify = new SpotifyClient();
+const spotify = new SpotifyClient({});
 
 // Popular artists to seed with - focusing on those likely to have upcoming shows
 const popularArtists = [

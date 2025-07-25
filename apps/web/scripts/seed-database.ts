@@ -5,7 +5,7 @@ import { eq } from 'drizzle-orm';
 import { SpotifyClient } from '@repo/external-apis';
 import { db } from './db-client';
 
-const spotify = new SpotifyClient();
+const spotify = new SpotifyClient({});
 
 // Popular artists to seed with - focusing on those likely to have upcoming shows
 const popularArtists = [
@@ -29,12 +29,15 @@ const popularArtists = [
 async function seedArtist(artistName: string) {
   try {
     await spotify.authenticate();
-    const searchResults = await spotify.searchArtists(artistName, { limit: 1 });
+    const searchResults = await spotify.searchArtists(artistName, 1);
     if (!searchResults.artists?.items?.length) {
       return null;
     }
 
     const spotifyArtist = searchResults.artists.items[0];
+    if (!spotifyArtist) {
+      return null;
+    }
 
     // Generate slug
     const slug = spotifyArtist.name

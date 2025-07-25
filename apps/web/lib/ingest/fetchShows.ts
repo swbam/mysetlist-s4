@@ -1,18 +1,24 @@
-import { fetchAttractionEvents } from './ticketmaster';
+import { TicketmasterClient } from '@repo/external-apis';
 
 export async function fetchShows(tmId: string) {
   try {
+    const ticketmasterClient = new TicketmasterClient({ 
+      apiKey: process.env.TICKETMASTER_API_KEY || '' 
+    });
+    
     const events: any[] = [];
     let page = 0;
     let totalPages = 1;
     
     // Fetch all pages of events (with a reasonable limit)
     while (page < totalPages && page < 5) { // Limit to 5 pages max
-      const response = await fetchAttractionEvents(tmId, {
-        page,
-        size: 200, // Max allowed by Ticketmaster
-        includePast: false, // Only upcoming shows
-      });
+      // Use makeRequest directly to include attractionId parameter
+      const response = await (ticketmasterClient as any).makeRequest(
+        `events.json?attractionId=${tmId}&page=${page}&size=200`,
+        {},
+        `ticketmaster:attraction-events:${tmId}:${page}`,
+        900
+      );
       
       if (response._embedded?.events) {
         events.push(...response._embedded.events);

@@ -51,8 +51,8 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({
         show: {
           id: anyShow.id,
-          name: `${anyShow.artist?.name || 'Artist'} at ${anyShow.venue?.name || 'Venue'}`,
-          venue: `${anyShow.venue?.name || 'Venue'}, ${anyShow.venue?.city || 'City'}`,
+          name: `${anyShow.artist?.[0]?.name || 'Artist'} at ${anyShow.venue?.[0]?.name || 'Venue'}`,
+          venue: `${anyShow.venue?.[0]?.name || 'Venue'}, ${anyShow.venue?.[0]?.city || 'City'}`,
           date: anyShow.date,
           imageUrl: anyShow.image_url || '/api/placeholder/800/600',
           attendees: 0,
@@ -70,8 +70,8 @@ export async function GET(_request: NextRequest) {
     return NextResponse.json({
       show: {
         id: topShow.id,
-        name: `${topShow.artist?.name || 'Artist'} at ${topShow.venue?.name || 'Venue'}`,
-        venue: `${topShow.venue?.name || 'Venue'}, ${topShow.venue?.city || 'City'}`,
+        name: `${topShow.artist?.[0]?.name || 'Artist'} at ${topShow.venue?.[0]?.name || 'Venue'}`,
+        venue: `${topShow.venue?.[0]?.name || 'Venue'}, ${topShow.venue?.[0]?.city || 'City'}`,
         date: topShow.date,
         imageUrl: topShow.image_url || '/api/placeholder/800/600',
         attendees: topShow.attendance_count || 0,

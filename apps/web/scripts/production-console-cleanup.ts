@@ -163,7 +163,7 @@ function applyFixes(fixes: ConsoleFix[]): void {
     if (!acc[fix.filePath]) {
       acc[fix.filePath] = [];
     }
-    acc[fix.filePath].push(fix);
+    acc[fix.filePath]!.push(fix); // Non-null assertion - we just initialized it above
     return acc;
   }, {} as Record<string, ConsoleFix[]>);
 

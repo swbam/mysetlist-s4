@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { expect } from 'vitest';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

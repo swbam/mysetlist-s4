@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // ARTIST-ONLY SEARCH as per PRD requirements
     // Core flow: Search artists → Click artist → Triggers data sync → View shows

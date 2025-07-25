@@ -36,9 +36,9 @@ export async function GET(request: NextRequest) {
     const dbTest = await db.execute(sql`SELECT NOW() as current_time`);
     
     // Get cron job status from Supabase
-    let cronJobStatus = null;
+    let cronJobStatus: any = null;
     try {
-      const { data: cronJobs } = await db.execute(sql`
+      const cronJobs = await db.execute(sql`
         SELECT jobname, schedule, active, 
                (SELECT COUNT(*) FROM cron.job_run_details WHERE jobid = j.jobid AND status = 'succeeded') as successful_runs,
                (SELECT COUNT(*) FROM cron.job_run_details WHERE jobid = j.jobid AND status = 'failed') as failed_runs,
@@ -52,9 +52,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Get sync log entries
-    let syncLogs = null;
+    let syncLogs: any = null;
     try {
-      const { data: logs } = await db.execute(sql`
+      const logs = await db.execute(sql`
         SELECT sync_type, status, started_at, completed_at, records_processed, error_message
         FROM sync_log
         ORDER BY started_at DESC
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
       database: {
         connected: !!dbTest,
-        currentTime: dbTest?.rows?.[0]?.current_time,
+        currentTime: (dbTest as any)?.[0]?.current_time,
       },
       cronEndpoints: cronEndpoints.map(ep => ({
         ...ep,

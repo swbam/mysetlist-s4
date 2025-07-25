@@ -71,9 +71,9 @@ export default function HealthDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'healthy':
-        return <Badge variant="success">Healthy</Badge>;
+        return <Badge variant="default">Healthy</Badge>;
       case 'degraded':
-        return <Badge variant="warning">Degraded</Badge>;
+        return <Badge variant="secondary">Degraded</Badge>;
       case 'unhealthy':
         return <Badge variant="destructive">Unhealthy</Badge>;
       default:

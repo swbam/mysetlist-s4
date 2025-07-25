@@ -6,9 +6,16 @@ export async function GET() {
     const supabase = createServiceClient();
     
     // Get table schema information
-    const { data: columns, error: schemaError } = await supabase
-      .rpc('get_table_columns', { table_name: 'artists' })
-      .catch(() => ({ data: null, error: null }));
+    let columns: any = null;
+    let schemaError: any = null;
+    try {
+      const result = await supabase
+        .rpc('get_table_columns', { table_name: 'artists' });
+      columns = result.data;
+      schemaError = result.error;
+    } catch (error) {
+      schemaError = error;
+    }
     
     // Try a simple query
     const { data: artist, error: queryError } = await supabase

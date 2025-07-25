@@ -113,7 +113,7 @@ export const ArtistHeader = React.memo(function ArtistHeader({ artist }: ArtistH
                     <div className="flex items-center gap-1">
                       <Users className="h-4 w-4" />
                       <Suspense fallback={<span>Loading...</span>}>
-                        <FollowerCount artistId={artist.id} />
+                        <FollowerCount />
                       </Suspense>
                     </div>
                     {artist.monthlyListeners && (
@@ -134,7 +134,7 @@ export const ArtistHeader = React.memo(function ArtistHeader({ artist }: ArtistH
 
                 {/* Action Buttons */}
                 <div className="flex gap-3">
-                  <FollowButton artistId={artist.id} artistName={artist.name} />
+                  <FollowButton />
                   <SyncShowsButton
                     artistId={artist.id}
                     artistName={artist.name}

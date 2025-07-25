@@ -104,11 +104,11 @@ export async function GET(request: NextRequest) {
         if (syncResult.success) {
           results.phases.popularArtists.synced++;
           results.phases.artistData.synced += syncResult.artistUpdated ? 1 : 0;
-          results.phases.shows.synced += syncResult.showsSync.synced;
-          results.phases.setlists.synced += syncResult.setlistsSync.synced;
+          results.phases.shows.synced += syncResult.showsSync?.synced || 0;
+          results.phases.setlists.synced += syncResult.setlistsSync?.synced || 0;
           results.summary.artistsUpdated += syncResult.artistUpdated ? 1 : 0;
-          results.summary.showsCreated += syncResult.showsSync.synced;
-          results.summary.setlistsCreated += syncResult.setlistsSync.synced;
+          results.summary.showsCreated += syncResult.showsSync?.synced || 0;
+          results.summary.setlistsCreated += syncResult.setlistsSync?.synced || 0;
         } else {
           results.phases.popularArtists.errors++;
           results.errors.push(`Artist ${artist.name}: ${syncResult.error}`);

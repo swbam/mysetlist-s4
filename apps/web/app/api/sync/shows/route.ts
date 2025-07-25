@@ -30,6 +30,9 @@ export async function POST(request: NextRequest) {
     }
 
     const artistData = artist[0];
+    if (!artistData) {
+      return NextResponse.json({ error: 'Artist data not found' }, { status: 404 });
+    }
 
     // Check if sync is needed (last synced < 4 hours ago)
     const fourHoursAgo = new Date(Date.now() - 4 * 60 * 60 * 1000);
@@ -81,12 +84,16 @@ export async function POST(request: NextRequest) {
       console.log(`[Shows Sync] Fetching shows for artist ${artistData.name} (${tmId})`);
       
       // Fetch shows from Ticketmaster API
-      const tmShows = await ticketmaster.getArtistEvents(tmId, {
+      const searchResult = await ticketmaster.searchEvents({
+        keyword: tmId,
         size: 50,
         sort: 'date,asc',
+        classificationName: 'Music'
       });
 
-      if (!tmShows || tmShows.length === 0) {
+      const tmShows = searchResult._embedded?.events || [];
+
+      if (tmShows.length === 0) {
         return NextResponse.json({
           success: true,
           message: 'No upcoming shows found on Ticketmaster',
@@ -96,7 +103,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      const syncedShows = [];
+      const syncedShows: any[] = [];
       
       for (const tmShow of tmShows) {
         // Check if show already exists
@@ -127,15 +134,15 @@ export async function POST(request: NextRequest) {
           slug: generateSlug(tmShow.name),
           date: tmShow.dates.start.localDate,
           startTime: tmShow.dates.start.localTime || '20:00',
-          doorsTime: tmShow.dates.doorsTimes?.[0]?.localTime || '19:00',
+          doorsTime: '19:00', // Default doors time (Ticketmaster API doesn't provide this)
           status: mapTicketmasterStatus(tmShow.dates.status?.code),
-          description: tmShow.info || tmShow.pleaseNote || null,
+          description: null, // Ticketmaster API doesn't provide description in event data
           ticketUrl: tmShow.url,
           minPrice: tmShow.priceRanges?.[0]?.min || null,
           maxPrice: tmShow.priceRanges?.[0]?.max || null,
           currency: tmShow.priceRanges?.[0]?.currency || 'USD',
           imageUrl: tmShow.images?.[0]?.url || null,
-          seatmapUrl: tmShow.seatmap?.staticUrl || null,
+          seatmapUrl: null, // Ticketmaster API doesn't provide seatmap in event data
         };
 
         const [insertedShow] = await db
@@ -143,16 +150,18 @@ export async function POST(request: NextRequest) {
           .values(showData as any)
           .returning();
 
-        // Create show-artist relationship
-        await db.insert(showArtists).values({
-          showId: insertedShow.id,
-          artistId: artistId,
-          orderIndex: 0,
-          setLength: 90,
-          isHeadliner: true,
-        });
+        if (insertedShow) {
+          // Create show-artist relationship
+          await db.insert(showArtists).values({
+            showId: insertedShow.id,
+            artistId: artistId,
+            orderIndex: 0,
+            setLength: 90,
+            isHeadliner: true,
+          });
 
-        syncedShows.push(insertedShow);
+          syncedShows.push(insertedShow);
+        }
       }
 
       // Update artist's last sync timestamp
@@ -218,17 +227,23 @@ async function getOrCreateVenue(tmVenue: any): Promise<string> {
           timezone: 'America/New_York',
         } as any)
         .returning();
+      
+      if (!newVenue) {
+        throw new Error('Failed to create default venue');
+      }
+      
       return newVenue.id;
     }
     
     return defaultVenue[0]!.id;
   }
 
-  // Check if venue exists
+  // Check if venue exists by slug
+  const venueSlug = generateSlug(tmVenue.name);
   const existingVenue = await db
     .select()
     .from(venues)
-    .where(eq(venues.ticketmasterId, tmVenue.id))
+    .where(eq(venues.slug, venueSlug))
     .limit(1);
 
   if (existingVenue.length > 0) {
@@ -239,7 +254,6 @@ async function getOrCreateVenue(tmVenue: any): Promise<string> {
   const [newVenue] = await db
     .insert(venues)
     .values({
-      ticketmasterId: tmVenue.id,
       name: tmVenue.name,
       slug: generateSlug(tmVenue.name),
       address: tmVenue.address?.line1 || null,
@@ -251,12 +265,12 @@ async function getOrCreateVenue(tmVenue: any): Promise<string> {
       longitude: tmVenue.location?.longitude ? parseFloat(tmVenue.location.longitude) : null,
       timezone: tmVenue.timezone || 'America/New_York',
       website: tmVenue.url || null,
-      parkingInfo: tmVenue.parkingDetail || null,
-      accessibilityInfo: tmVenue.accessibleSeatingDetail || null,
-      generalRules: tmVenue.generalInfo?.generalRule || null,
-      childRules: tmVenue.generalInfo?.childRule || null,
     } as any)
     .returning();
+
+  if (!newVenue) {
+    throw new Error('Failed to create venue');
+  }
 
   return newVenue.id;
 }
@@ -311,6 +325,11 @@ async function createSampleShows(artistId: string, artistData: any) {
         capacity: 5000,
       } as any)
       .returning();
+    
+    if (!newVenue) {
+      throw new Error('Failed to create sample venue');
+    }
+    
     sampleVenue = [newVenue];
   }
 

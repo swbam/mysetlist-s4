@@ -4,7 +4,7 @@ import { createClient } from '~/lib/supabase/server';
 // This API allows triggering specific email notifications based on events
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const body = await request.json();
     const { event, data, systemToken } = body;
 

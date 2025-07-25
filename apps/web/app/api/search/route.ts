@@ -2,7 +2,9 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { createClient } from '~/lib/supabase/server';
 import { TicketmasterClient } from '@repo/external-apis';
 
-const ticketmaster = new TicketmasterClient();
+const ticketmaster = new TicketmasterClient({
+  apiKey: process.env.TICKETMASTER_API_KEY!,
+});
 
 interface SearchResult {
   id: string;
@@ -81,7 +83,7 @@ export async function GET(request: NextRequest) {
           const ticketmasterResponse = await ticketmaster.searchAttractions({
             keyword: query,
             size: limit - results.length,
-            classificationName: ['music'],
+            classificationName: 'music',
             sort: 'relevance,desc'
           });
           const ticketmasterArtists = ticketmasterResponse._embedded?.attractions || [];
@@ -98,7 +100,7 @@ export async function GET(request: NextRequest) {
                 title: attraction.name,
                 subtitle: attraction.classifications?.[0]?.genre?.name || 'Artist',
                 imageUrl: attraction.images?.[0]?.url || null,
-                slug: null,
+                slug: undefined,
                 verified: false,
                 popularity: 0,
                 source: 'ticketmaster',
@@ -158,8 +160,8 @@ export async function GET(request: NextRequest) {
           venueIds.length > 0 ? supabase.from('venues').select('id, name, city, state, country').in('id', venueIds) : { data: [] }
         ]);
         
-        const artistsMap = new Map((artistsData.data || []).map(a => [a.id, a]));
-        const venuesMap = new Map((venuesData.data || []).map(v => [v.id, v]));
+        const artistsMap = new Map<string, { id: string; name: string; image_url: string | null }>((artistsData.data || []).map(a => [a.id, a]));
+        const venuesMap = new Map<string, { id: string; name: string; city: string; state: string | null; country: string | null }>((venuesData.data || []).map(v => [v.id, v]));
         
         results.push(
           ...shows.map((show): SearchResult => {
@@ -170,7 +172,7 @@ export async function GET(request: NextRequest) {
               type: 'show',
               title: show.name || (artist ? `${artist.name} Live` : 'Unknown Show'),
               subtitle: venue ? `${venue.name}, ${venue.city} • ${new Date(show.show_date).toLocaleDateString()}` : new Date(show.show_date).toLocaleDateString(),
-              imageUrl: artist?.image_url,
+              imageUrl: artist?.image_url || undefined,
               slug: show.slug,
               date: show.show_date,
               artistName: artist?.name,

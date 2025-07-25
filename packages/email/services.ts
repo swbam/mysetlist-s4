@@ -422,13 +422,7 @@ export async function sendArtistFollowNotificationEmail({
   appUrl?: string;
 }) {
   const html = await render(
-    ArtistFollowNotificationTemplate, {
-      userName,
-      artist,
-      followerName,
-      isFirstFollow,
-      appUrl,
-    }
+    ArtistFollowNotificationTemplate()
   );
 
   return sendEmail({

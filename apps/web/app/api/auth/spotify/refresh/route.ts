@@ -3,7 +3,7 @@ import { createClient } from '~/lib/supabase/server';
 
 export async function POST() {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Refresh the session to get a new Spotify token
     const { data, error } = await supabase.auth.refreshSession();

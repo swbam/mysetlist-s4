@@ -1,6 +1,6 @@
 'use server';
 
-import { keys, resend } from '@repo/email';
+import { keys, getResendClient } from '@repo/email';
 import { ContactTemplate } from '@repo/email/templates/contact';
 import { parseError } from '@repo/observability/error';
 
@@ -16,6 +16,7 @@ export const contact = async (
 
     const emailKeys = keys();
     const fromEmail = emailKeys.RESEND_FROM || 'noreply@example.com';
+    const resend = getResendClient();
     await resend.emails.send({
       from: fromEmail,
       to: fromEmail,

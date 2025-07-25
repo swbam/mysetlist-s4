@@ -73,7 +73,6 @@ export function TrendingDataProvider({
   };
 
   return (
-    // @ts-expect-error - React 19 Context Provider type issue
     <TrendingContext.Provider value={value}>
       {children}
     </TrendingContext.Provider>

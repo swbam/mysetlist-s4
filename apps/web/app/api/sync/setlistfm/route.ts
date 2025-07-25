@@ -27,7 +27,9 @@ async function syncSetlistFmData(request: NextRequest): Promise<NextResponse> {
       );
     }
 
-    const setlistFmClient = new SetlistFmClient();
+    const setlistFmClient = new SetlistFmClient({
+      apiKey: process.env.SETLISTFM_API_KEY!,
+    });
     const results = {
       setlistsSynced: 0,
       songsAdded: 0,
@@ -39,7 +41,20 @@ async function syncSetlistFmData(request: NextRequest): Promise<NextResponse> {
     let mbid = body.artistMbid;
     if (!mbid && body.artistName) {
       const mbidTimer = monitor.startTimer('setlistfm_find_mbid');
-      mbid = await setlistFmClient.findArtistMbid(body.artistName) || undefined;
+      try {
+        const searchResult = await setlistFmClient.searchArtists(body.artistName);
+        if (searchResult.artist && searchResult.artist.length > 0) {
+          // Find best match or use first result
+          const artist = searchResult.artist.find(
+            a => a.name.toLowerCase() === body.artistName?.toLowerCase()
+          ) || searchResult.artist[0];
+          if (artist) {
+            mbid = artist.mbid;
+          }
+        }
+      } catch (error) {
+        console.error('Error searching for artist on Setlist.fm:', error);
+      }
       mbidTimer();
       
       if (!mbid) {
@@ -60,11 +75,13 @@ async function syncSetlistFmData(request: NextRequest): Promise<NextResponse> {
 
     // Get recent setlists
     const setlistsTimer = monitor.startTimer('setlistfm_get_setlists');
-    const setlists = await setlistFmClient.getRecentSetlists(
+    const setlistResponse = await setlistFmClient.getArtistSetlists(
       mbid!,
-      body.days || 30
+      1
     );
     setlistsTimer();
+
+    const setlists = setlistResponse.setlist || [];
 
     monitor.log('Retrieved setlists from Setlist.fm', {
       artistName: body.artistName,
@@ -127,9 +144,6 @@ async function syncSetlistFmData(request: NextRequest): Promise<NextResponse> {
           continue;
         }
 
-        // Format setlist data
-        const formattedSetlist = setlistFmClient.formatSetlistForDb(setlist);
-
         // Create or update setlist
         const { data: setlistRecord, error: setlistError } = await supabase
           .from('setlists')
@@ -157,41 +171,44 @@ async function syncSetlistFmData(request: NextRequest): Promise<NextResponse> {
 
         // Add songs to setlist
         let songPosition = 0;
-        for (const song of formattedSetlist.songs) {
-          // Get or create song
-          const { data: songRecord, error: songError } = await supabase
-            .from('songs')
-            .upsert({
-              title: song.name,
-              artist_id: artist.id,
-              external_ids: {}
-            }, {
-              onConflict: 'title,artist_id'
-            })
-            .select('id')
-            .single();
+        for (const set of setlist.sets.set || []) {
+          const setName = set.name || (set.encore ? `Encore ${set.encore}` : 'Main Set');
+          for (const song of set.song || []) {
+            // Get or create song
+            const { data: songRecord, error: songError } = await supabase
+              .from('songs')
+              .upsert({
+                title: song.name,
+                artist_id: artist.id,
+                external_ids: {}
+              }, {
+                onConflict: 'title,artist_id'
+              })
+              .select('id')
+              .single();
 
-          if (songError) {
-            results.errors.push(`Song creation error: ${songError.message}`);
-            continue;
-          }
+            if (songError) {
+              results.errors.push(`Song creation error: ${songError.message}`);
+              continue;
+            }
 
-          // Add song to setlist
-          const { error: setlistSongError } = await supabase
-            .from('setlist_songs')
-            .upsert({
-              setlist_id: setlistRecord.id,
-              song_id: songRecord.id,
-              position: songPosition++,
-              set_name: song.setName
-            }, {
-              onConflict: 'setlist_id,song_id'
-            });
+            // Add song to setlist
+            const { error: setlistSongError } = await supabase
+              .from('setlist_songs')
+              .upsert({
+                setlist_id: setlistRecord.id,
+                song_id: songRecord.id,
+                position: songPosition++,
+                set_name: setName
+              }, {
+                onConflict: 'setlist_id,song_id'
+              });
 
-          if (setlistSongError) {
-            results.errors.push(`Setlist song error: ${setlistSongError.message}`);
-          } else {
-            results.songsAdded++;
+            if (setlistSongError) {
+              results.errors.push(`Setlist song error: ${setlistSongError.message}`);
+            } else {
+              results.songsAdded++;
+            }
           }
         }
 

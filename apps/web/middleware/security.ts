@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { rateLimit } from '@repo/rate-limit';
+import { createRateLimiter } from '@repo/rate-limit';
 
 // Security headers configuration
 const securityHeaders = {
@@ -136,7 +136,7 @@ const detectSuspiciousActivity = (request: NextRequest): boolean => {
 export async function securityMiddleware(request: NextRequest): Promise<NextResponse | null> {
   const response = NextResponse.next();
   const pathname = request.nextUrl.pathname;
-  const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
   
   // Apply security headers
   Object.entries(securityHeaders).forEach(([key, value]) => {
@@ -168,13 +168,15 @@ export async function securityMiddleware(request: NextRequest): Promise<NextResp
     
     const config = rateLimitConfig[rateLimitKey as keyof typeof rateLimitConfig];
     
-    try {
-      await rateLimit({
-        key: `${rateLimitKey}:${ip}`,
-        limit: config.requests,
-        window: config.window,
-      });
-    } catch (error) {
+    const limiter = createRateLimiter({
+      limit: config.requests,
+      window: config.window,
+      prefix: rateLimitKey,
+    });
+    
+    const { success } = await limiter.limit(ip);
+    
+    if (!success) {
       return new NextResponse('Too Many Requests', { 
         status: 429,
         headers: {

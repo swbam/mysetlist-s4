@@ -169,9 +169,8 @@ const HeaderContent = React.memo(() => {
               <Button
                 variant="outline"
                 size="sm"
-                className="transition-colors hover:bg-muted/80"
+                className="transition-colors hover:bg-muted/80 font-medium"
                 asChild
-                className="font-medium"
               >
                 <SafeLink href="/auth/sign-in">Sign in</SafeLink>
               </Button>

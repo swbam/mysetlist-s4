@@ -544,7 +544,7 @@ class EmailAutomationEngine {
             to: [{ email: user.email, name: personalizedData.userName }],
             userName: personalizedData.userName,
             weekOf: new Date().toLocaleDateString(),
-            popularArtists: personalizedData.preferences.favoriteArtists.map(a => ({
+            followedArtists: personalizedData.preferences.favoriteArtists.map(a => ({
               id: a.id,
               name: a.name,
               upcomingShows: Math.floor(Math.random() * 5) + 1
@@ -670,8 +670,7 @@ class EmailAutomationEngine {
       .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString());
 
     for (const show of newShows || []) {
-      // Get users interested in this genre (replaces followers)
-      const artistGenres = show.artists?.[0]?.genres || [];
+      // Get users who might be interested in this show
       const { data: interestedUsers } = await supabase
         .from('users')
         .select('id, email, display_name')
@@ -719,7 +718,7 @@ class EmailAutomationEngine {
         to: [{ email: user.users?.[0]?.email, name: personalizedData.userName }],
         userName: personalizedData.userName,
         weekOf: new Date().toLocaleDateString(),
-        popularArtists: personalizedData.preferences.favoriteArtists.map(a => ({
+        followedArtists: personalizedData.preferences.favoriteArtists.map(a => ({
           id: a.id,
           name: a.name,
           upcomingShows: Math.floor(Math.random() * 5) + 1

@@ -514,7 +514,6 @@ export function SetlistEditor({
                             <div className="flex items-center gap-2">
                               {/* Voting */}
                               {canVote && !isEditing && !setlist.isLocked && (
-                                /* @ts-expect-error - React 19 memo type issue */
                                 <VoteButton
                                   setlistSongId={song.id}
                                   currentVote={song.userVote}

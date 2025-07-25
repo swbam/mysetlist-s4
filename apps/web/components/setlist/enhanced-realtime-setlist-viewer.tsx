@@ -44,8 +44,8 @@ export function EnhancedRealtimeSetlistViewer({
   // Use the real-time setlist hook
   const { setlists: realtimeSetlists, isConnected } = useRealtimeSetlist({
     showId,
-    onSetlistUpdate: (update) => {
-      console.log('Setlist updated:', update);
+    onEvent: (event) => {
+      console.log('Setlist event:', event);
     },
   });
 
@@ -285,7 +285,6 @@ export function EnhancedRealtimeSetlistViewer({
                               session &&
                               !setlist.isLocked &&
                               setlist.type === 'predicted' && (
-                                /* @ts-expect-error - React 19 memo type issue */
                                 <VoteButton
                                   setlistSongId={song.id}
                                   currentVote={voteData.userVote}

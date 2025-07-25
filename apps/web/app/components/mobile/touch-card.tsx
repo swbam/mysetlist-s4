@@ -176,7 +176,7 @@ export function TouchCard({
   };
 
   // Setup touch gestures hook for additional gesture support
-  useTouchGestures(cardRef, {
+  useTouchGestures(cardRef as React.RefObject<HTMLElement>, {
     onSwipeLeft: () => {
       if (swipeActions?.left && onSwipeLeft) {
         onSwipeLeft();

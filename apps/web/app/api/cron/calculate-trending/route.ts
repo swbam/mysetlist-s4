@@ -179,7 +179,7 @@ async function calculateArtistTrendingScores(mode: TrendingMode) {
         createdAt: artists.createdAt,
       })
       .from(artists)
-      .where(sql`${artists.id} IN (${sql.join(recentActivityArtists.map(a => a.artistId).filter(Boolean), sql`, `)})`);
+      .where(sql`${artists.id} IN (${sql.join(recentActivityArtists.map(a => a.artistId).filter((id): id is string => Boolean(id)), sql`, `)})`);
   }
 
   let updated = 0;
@@ -284,7 +284,7 @@ async function calculateShowTrendingScores(mode: TrendingMode) {
         createdAt: shows.createdAt,
       })
       .from(shows)
-      .where(sql`${shows.id} IN (${sql.join(recentActivityShows.map(s => s.showId).filter(Boolean), sql`, `)})`);
+      .where(sql`${shows.id} IN (${sql.join(recentActivityShows.map(s => s.showId).filter((id): id is string => Boolean(id)), sql`, `)})`);
   }
 
   let updated = 0;

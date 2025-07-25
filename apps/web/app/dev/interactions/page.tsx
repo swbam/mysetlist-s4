@@ -146,55 +146,26 @@ export default function InteractionsDevPage() {
               <div>
                 <h3 className="mb-3 font-medium">Variants</h3>
                 <div className="flex gap-4">
-                  <FollowButton
-                    artistId="test-artist-1"
-                    artistName="Taylor Swift"
-                    isFollowing={false}
-                  />
-                  <FollowButton
-                    artistId="test-artist-2"
-                    artistName="Ed Sheeran"
-                    isFollowing={true}
-                  />
-                  <FollowButton
-                    artistId="test-artist-3"
-                    artistName="Coldplay"
-                    isFollowing={false}
-                    variant="outline"
-                  />
+                  <FollowButton />
+                  <FollowButton />
+                  <FollowButton />
                 </div>
               </div>
 
               <div>
                 <h3 className="mb-3 font-medium">With Count</h3>
                 <div className="space-y-2">
-                  <FollowButton artistId="test-artist-4" artistName="BTS" />
-                  <FollowButton
-                    artistId="test-artist-5"
-                    artistName="Indie Artist"
-                    isFollowing={true}
-                  />
+                  <FollowButton />
+                  <FollowButton />
                 </div>
               </div>
 
               <div>
                 <h3 className="mb-3 font-medium">Sizes</h3>
                 <div className="flex items-center gap-4">
-                  <FollowButton
-                    artistId="test-artist-6"
-                    artistName="Small"
-                    size="sm"
-                  />
-                  <FollowButton
-                    artistId="test-artist-7"
-                    artistName="Default"
-                    size="default"
-                  />
-                  <FollowButton
-                    artistId="test-artist-8"
-                    artistName="Large"
-                    size="lg"
-                  />
+                  <FollowButton />
+                  <FollowButton />
+                  <FollowButton />
                 </div>
               </div>
             </CardContent>

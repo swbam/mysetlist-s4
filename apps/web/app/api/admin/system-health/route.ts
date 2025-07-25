@@ -155,7 +155,7 @@ async function getSystemMetrics() {
 
 export async function GET(_request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Check admin authorization
     const {

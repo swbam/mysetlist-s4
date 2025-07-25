@@ -442,7 +442,6 @@ export function LiveSetlistViewer({
                         {/* Vote button */}
                         {showVotes && (
                           <div className="shrink-0">
-                            {/* @ts-expect-error - React 19 memo type issue */}
                             <RealtimeVoteButton
                               setlistSongId={song.id}
                               showId={showId}

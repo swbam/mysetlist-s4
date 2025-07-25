@@ -138,7 +138,7 @@ export class SyncServiceError extends Error {
     message: string,
     public readonly service: string,
     public readonly operation: string,
-    public readonly cause?: Error
+    public readonly rootCause?: Error
   ) {
     super(message);
     this.name = 'SyncServiceError';

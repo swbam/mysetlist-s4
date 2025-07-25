@@ -8,14 +8,18 @@ export async function GET(request: NextRequest) {
     const artist = searchParams.get('artist') || 'Taylor Swift';
 
     // Test all APIs in parallel
-    const spotifyClient = new SpotifyClient();
+    const spotifyClient = new SpotifyClient({});
     await spotifyClient.authenticate();
-    const ticketmasterClient = new TicketmasterClient();
-    const setlistfmClient = new SetlistFmClient();
+    const ticketmasterClient = new TicketmasterClient({
+      apiKey: process.env.TICKETMASTER_API_KEY!,
+    });
+    const setlistfmClient = new SetlistFmClient({
+      apiKey: process.env.SETLISTFM_API_KEY!,
+    });
 
     const [spotifyResult, ticketmasterResult, setlistfmResult] =
       await Promise.allSettled([
-        spotifyClient.searchArtists(artist, { limit: 5 }),
+        spotifyClient.searchArtists(artist, 5),
         ticketmasterClient.searchEvents({ keyword: artist, size: 5 }),
         setlistfmClient.searchArtists(artist, 1),
       ]);

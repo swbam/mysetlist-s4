@@ -40,23 +40,27 @@ export async function GET(_request: NextRequest) {
     // Calculate vote counts and percentages
     const songsWithVotes = await Promise.all(
       topSongs
-        .filter(item => item.song)
+        .filter(item => item.song && item.song.length > 0)
         .slice(0, 4)
         .map(async (item, index) => {
+          const firstSong = item.song![0];
+          if (!firstSong) {
+            return null;
+          }
           const { count } = await supabase
             .from('user_votes')
             .select('*', { count: 'exact', head: true })
-            .eq('song_id', item.song.id);
+            .eq('song_id', firstSong.id);
 
           return {
-            id: item.song.id,
-            title: item.song.title,
-            artist: item.song.artist,
+            id: firstSong.id,
+            title: firstSong.title,
+            artist: firstSong.artist,
             votes: count || 0,
             percentage: 100 - index * 10,
           };
         })
-    );
+    ).then(results => results.filter(r => r !== null));
 
     return NextResponse.json({
       songs: songsWithVotes,

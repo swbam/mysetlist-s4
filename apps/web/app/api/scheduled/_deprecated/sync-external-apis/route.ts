@@ -48,7 +48,7 @@ class ArtistSyncService {
   private spotifyClient: SpotifyClient;
 
   constructor() {
-    this.spotifyClient = new SpotifyClient();
+    this.spotifyClient = new SpotifyClient({});
   }
 
   async syncPopularArtists() {
@@ -86,30 +86,32 @@ class ArtistSyncService {
                 (a: any) => a.name.toLowerCase() === artist.name.toLowerCase()
               ) || searchResult.artists.items[0];
 
-            // Update artist with Spotify data
-            await db
-              .update(artists)
-              .set({
-                spotifyId: spotifyArtist.id,
-                imageUrl: spotifyArtist.images[0]?.url || artist.imageUrl,
-                smallImageUrl:
-                  spotifyArtist.images[2]?.url || artist.smallImageUrl,
-                genres: JSON.stringify(spotifyArtist.genres),
-                popularity: spotifyArtist.popularity,
-                followers: spotifyArtist.followers.total,
+            if (spotifyArtist) {
+              // Update artist with Spotify data
+              await db
+                .update(artists)
+                .set({
+                  spotifyId: spotifyArtist.id,
+                  imageUrl: spotifyArtist.images[0]?.url || artist.imageUrl,
+                  smallImageUrl:
+                    spotifyArtist.images[2]?.url || artist.smallImageUrl,
+                  genres: JSON.stringify(spotifyArtist.genres),
+                  popularity: spotifyArtist.popularity,
+                  followers: spotifyArtist.followers.total,
                 externalUrls: JSON.stringify(spotifyArtist.external_urls),
                 lastSyncedAt: new Date(),
                 updatedAt: new Date(),
               })
               .where(eq(artists.id, artist.id));
 
-            results.synced++;
-            results.details.push({
-              artistName: artist.name,
-              spotifyId: spotifyArtist.id,
-              popularity: spotifyArtist.popularity,
-              followers: spotifyArtist.followers.total,
-            });
+              results.synced++;
+              results.details.push({
+                artistName: artist.name,
+                spotifyId: spotifyArtist.id,
+                popularity: spotifyArtist.popularity,
+                followers: spotifyArtist.followers.total,
+              });
+            }
           } else {
           }
 
@@ -131,7 +133,9 @@ class ShowSyncService {
   private ticketmasterClient: TicketmasterClient;
 
   constructor() {
-    this.ticketmasterClient = new TicketmasterClient();
+    this.ticketmasterClient = new TicketmasterClient({
+      apiKey: process.env.TICKETMASTER_API_KEY!,
+    });
   }
 
   async syncUpcomingShows() {

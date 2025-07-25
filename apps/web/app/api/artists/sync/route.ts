@@ -6,7 +6,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { env } from '@repo/env';
 import { createServiceClient } from '~/lib/supabase/server';
 
-const spotify = new SpotifyClient();
+const spotify = new SpotifyClient({});
 
 // Function to find Ticketmaster ID for an artist
 async function findTicketmasterId(artistName: string): Promise<string | null> {
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       spotifyArtist = await spotify.getArtist(spotifyId);
     } else {
       // Search for artist by name
-      const searchResults = await spotify.searchArtists({ query: artistName, limit: 1 });
+      const searchResults = await spotify.searchArtists(artistName, 1);
       if (!searchResults.artists?.items?.length) {
         return NextResponse.json(
           { error: 'Artist not found on Spotify' },
@@ -295,28 +295,29 @@ export async function GET() {
         const searchResults = await spotify.searchArtists(artist.name, 1);
         if (searchResults.artists?.items?.length > 0) {
           const spotifyArtist = searchResults.artists.items[0];
+          if (spotifyArtist) {
+            // Sync this artist with both Spotify and Ticketmaster IDs
+            const syncResponse = await fetch(
+              `${env["NEXT_PUBLIC_APP_URL"]}/api/artists/sync`,
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  spotifyId: spotifyArtist.id,
+                  artistName: artist.name,
+                }),
+              }
+            );
 
-          // Sync this artist with both Spotify and Ticketmaster IDs
-          const syncResponse = await fetch(
-            `${env["NEXT_PUBLIC_APP_URL"]}/api/artists/sync`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                spotifyId: spotifyArtist.id,
-                artistName: artist.name,
-              }),
+            if (syncResponse.ok) {
+              const result = await syncResponse.json();
+              syncedArtists.push({
+                ...result.artist,
+                showCount: artist.showCount,
+              });
+            } else {
+              errors.push(`Failed to sync ${artist.name}`);
             }
-          );
-
-          if (syncResponse.ok) {
-            const result = await syncResponse.json();
-            syncedArtists.push({
-              ...result.artist,
-              showCount: artist.showCount,
-            });
-          } else {
-            errors.push(`Failed to sync ${artist.name}`);
           }
         } else {
           errors.push(`${artist.name} not found on Spotify`);
