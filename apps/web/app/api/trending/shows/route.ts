@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '~/lib/supabase/server';
 import type { TrendingShow, TrendingShowsResponse } from '~/types/api';
+import { calculateShowGrowth } from '@repo/database';
 
 // Force dynamic rendering for API route
 export const dynamic = 'force-dynamic';
@@ -41,8 +42,13 @@ export async function GET(request: NextRequest) {
         attendee_count,
         view_count,
         trending_score,
+        setlist_count,
         headliner_artist_id,
         venue_id,
+        previous_view_count,
+        previous_attendee_count,
+        previous_vote_count,
+        previous_setlist_count,
         artists!inner(
           id,
           name,
@@ -73,12 +79,20 @@ export async function GET(request: NextRequest) {
       // Fallback trending score if null
       const score =
         s.trending_score ?? (s.vote_count ?? 0) * 2 + (s.attendee_count ?? 0);
-      // Calculate real weekly growth based on votes and show proximity
-      const showDate = new Date(s.date);
-      const daysUntilShow = Math.max(0, (showDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-      const proximityBonus = daysUntilShow <= 7 ? Math.max(0, (7 - daysUntilShow) / 7 * 15) : 0; // Up to 15% for shows within a week
-      const voteBonus = Math.min(10, (s.vote_count ?? 0) / 10); // Up to 10% based on votes
-      const weeklyGrowth = Math.max(0, Math.min(25, proximityBonus + voteBonus));
+      // Calculate real growth using historical data (no fake calculations)
+      const realGrowth = calculateShowGrowth({
+        viewCount: s.view_count ?? 0,
+        previousViewCount: s.previous_view_count,
+        attendeeCount: s.attendee_count ?? 0,
+        previousAttendeeCount: s.previous_attendee_count,
+        voteCount: s.vote_count ?? 0,
+        previousVoteCount: s.previous_vote_count,
+        setlistCount: s.setlist_count ?? 0,
+        previousSetlistCount: s.previous_setlist_count,
+      });
+      
+      // Use real growth data only (0 if no historical data available)
+      const weeklyGrowth = realGrowth.overallGrowth;
       return {
         id: s.id,
         name: s.name || (artist?.name ? `${artist.name} Live` : 'Unknown Show'),

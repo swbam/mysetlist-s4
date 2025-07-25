@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { CACHE_HEADERS } from '~/lib/cache';
 import { parseGenres } from '~/lib/utils';
 import { createServiceClient } from '~/lib/supabase/server';
+import { calculateArtistGrowth } from '@repo/database';
 
 export async function GET(request: NextRequest) {
   try {
@@ -61,9 +62,20 @@ export async function GET(request: NextRequest) {
 
       // Transform fallback data too
       const transformedPopularArtists = (popularArtists || []).map((artist) => {
-        // Calculate real growth based on trending score and popularity
-        const baseGrowth = Math.min(15, (artist.popularity || 0) / 30); // Up to 15% from popularity
-        const weeklyGrowth = Math.max(0, Math.min(25, baseGrowth));
+        // Calculate real growth using historical data (no fake calculations)
+        const realGrowth = calculateArtistGrowth({
+          followers: artist.followers || 0,
+          previousFollowers: artist.previous_followers,
+          popularity: artist.popularity || 0,
+          previousPopularity: artist.previous_popularity,
+          monthlyListeners: artist.monthly_listeners,
+          previousMonthlyListeners: artist.previous_monthly_listeners,
+          followerCount: artist.follower_count || 0,
+          previousFollowerCount: artist.previous_follower_count,
+        });
+        
+        // Use real growth data only (0 if no historical data available)
+        const weeklyGrowth = realGrowth.overallGrowth;
 
         return {
           id: artist.id,
@@ -99,15 +111,20 @@ export async function GET(request: NextRequest) {
 
     // Transform the data to match frontend expectations
     const transformedArtists = (trendingArtists || []).map((artist) => {
-      // Calculate weeklyGrowth based on trending score and recency
-      const hoursOld = artist.updated_at
-        ? (Date.now() - new Date(artist.updated_at).getTime()) / (1000 * 60 * 60)
-        : 168; // Default to 7 days old if no updated_at
-
-      // Calculate real weekly growth based on trending score and recency
-      const trendingGrowth = Math.min(30, (artist.trending_score || 0) / 10); // Up to 30% from trending score
-      const recencyBonus = Math.min(15, ((168 - hoursOld) / 168) * 15); // Up to 15% recency bonus
-      const weeklyGrowth = Math.max(0, Math.min(50, trendingGrowth + recencyBonus));
+      // Calculate real growth using historical data (no fake calculations)
+      const realGrowth = calculateArtistGrowth({
+        followers: artist.followers || 0,
+        previousFollowers: artist.previous_followers,
+        popularity: artist.popularity || 0,
+        previousPopularity: artist.previous_popularity,
+        monthlyListeners: artist.monthly_listeners,
+        previousMonthlyListeners: artist.previous_monthly_listeners,
+        followerCount: artist.follower_count || 0,
+        previousFollowerCount: artist.previous_follower_count,
+      });
+      
+      // Use real growth data only (0 if no historical data available)
+      const weeklyGrowth = realGrowth.overallGrowth;
 
       return {
         id: artist.id,

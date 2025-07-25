@@ -24,9 +24,7 @@
     "test:a11y": "playwright test accessibility",
     "lighthouse": "lighthouse http://localhost:3001 --view",
     "lighthouse:ci": "lhci autorun",
-    "seed:dev": "tsx scripts/seed-development-data.ts",
     "test:e2e": "tsx scripts/comprehensive-e2e-test.ts",
-    "seed": "tsx scripts/seed-comprehensive.ts",
     "qa:security": "tsx scripts/security-audit.ts",
     "qa:accessibility": "npx playwright test tests/accessibility/comprehensive-a11y.spec.ts"
   },

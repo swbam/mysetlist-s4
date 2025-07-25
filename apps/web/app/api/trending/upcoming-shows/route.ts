@@ -40,7 +40,7 @@ export async function GET(_request: NextRequest) {
           artist: firstArtist.name,
           venue: show.venue?.[0]?.name || 'Venue TBA',
           date: show.date,
-          ticketsLeft: show.ticket_url ? Math.floor(Math.random() * 1000) + 50 : undefined,
+          ticketsLeft: show.ticket_url ? null : undefined, // TODO: Integrate with real ticket availability API
         };
       })
       .filter(show => show !== null);

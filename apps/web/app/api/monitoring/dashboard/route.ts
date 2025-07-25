@@ -110,12 +110,12 @@ export async function GET(_request: NextRequest) {
 }
 
 async function getPerformanceMetrics() {
-  // Mock implementation - in production, integrate with actual metrics
+  // TODO: Integrate with real monitoring system (Vercel Analytics, DataDog, etc.)
   return {
-    response_time_avg: Math.random() * 500 + 200, // 200-700ms
-    error_rate: Math.random() * 0.05, // 0-5%
-    throughput: Math.random() * 1000 + 500, // 500-1500 req/min
-    success_rate: 0.95 + Math.random() * 0.05, // 95-100%
+    response_time_avg: 350, // Placeholder - integrate with real response time monitoring
+    error_rate: 0.02, // Placeholder - integrate with real error rate monitoring
+    throughput: 850, // Placeholder - integrate with real throughput monitoring
+    success_rate: 0.98, // Placeholder - integrate with real success rate monitoring
   };
 }
 
@@ -123,10 +123,10 @@ async function getInfrastructureMetrics() {
   const memoryUsage = process.memoryUsage();
   
   return {
-    memory_usage: (memoryUsage.rss / 1024 / 1024), // MB
-    cpu_usage: Math.random() * 80 + 10, // 10-90%
-    database_connections: Math.floor(Math.random() * 20 + 5), // 5-25 connections
-    cache_hit_rate: 0.8 + Math.random() * 0.2, // 80-100%
+    memory_usage: (memoryUsage.rss / 1024 / 1024), // Real memory usage in MB
+    cpu_usage: 45, // Placeholder - integrate with real CPU monitoring
+    database_connections: 12, // Placeholder - integrate with real DB connection monitoring
+    cache_hit_rate: 0.85, // Placeholder - integrate with real cache monitoring
   };
 }
 
@@ -138,11 +138,11 @@ async function getBusinessMetrics(supabase: any) {
       .select('count')
       .gte('last_sign_in_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
 
-    // Get API calls in last 24 hours (mock)
-    const apiCalls24h = Math.floor(Math.random() * 50000 + 10000);
+    // TODO: Implement real API call tracking
+    const apiCalls24h = 25000; // Placeholder - integrate with real API monitoring
 
-    // Get searches in last 24 hours (mock)
-    const searches24h = Math.floor(Math.random() * 5000 + 1000);
+    // TODO: Implement real search tracking
+    const searches24h = 3000; // Placeholder - integrate with real search analytics
 
     // Get votes in last 24 hours
     const { data: votes } = await supabase
@@ -248,8 +248,8 @@ async function getActiveAlerts() {
     });
   }
 
-  // Response time alert
-  const responseTime = Math.random() * 1000;
+  // TODO: Implement real response time monitoring
+  const responseTime = 350; // Placeholder - integrate with real response time monitoring
   if (responseTime > 800) {
     alerts.push({
       id: 'response-time-high',

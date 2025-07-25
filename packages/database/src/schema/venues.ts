@@ -28,6 +28,19 @@ export const venues = pgTable('venues', {
   imageUrl: text('image_url'),
   description: text('description'),
   amenities: text('amenities'), // JSON array
+  
+  // Analytics fields
+  totalShows: integer('total_shows').default(0),
+  upcomingShows: integer('upcoming_shows').default(0),
+  totalAttendance: integer('total_attendance').default(0),
+  averageRating: doublePrecision('average_rating'),
+  
+  // Historical tracking for real growth calculations
+  previousTotalShows: integer('previous_total_shows'),
+  previousUpcomingShows: integer('previous_upcoming_shows'),
+  previousTotalAttendance: integer('previous_total_attendance'),
+  lastGrowthCalculated: timestamp('last_growth_calculated'),
+  
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });

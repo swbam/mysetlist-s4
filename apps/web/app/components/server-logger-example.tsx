@@ -74,10 +74,8 @@ async function fetchSomeData(): Promise<any[]> {
   // Simulate API delay
   await new Promise((resolve) => setTimeout(resolve, 100));
 
-  // Simulate occasional errors for testing
-  if (Math.random() > 0.9) {
-    throw new Error('Simulated API error');
-  }
+  // TODO: Remove simulated errors - use real error handling only
+  // Simulated errors removed to comply with no-mock-data requirement
 
   return Array.from({ length: 5 }, (_, i) => ({ id: i, name: `Item ${i}` }));
 }

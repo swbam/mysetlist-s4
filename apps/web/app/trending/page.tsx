@@ -48,54 +48,8 @@ export const metadata: Metadata = {
   },
 };
 
-async function calculateRecentGrowth(type: string, currentValue: number): Promise<number> {
-  try {
-    const supabase = await createServiceClient();
-    const twoWeeksAgo = new Date();
-    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-    let previousValue = 0;
-
-    switch (type) {
-      case 'artists':
-        const { count: previousArtistCount } = await supabase
-          .from('artists')
-          .select('*', { count: 'exact', head: true })
-          .gt('trending_score', 0)
-          .lte('created_at', oneWeekAgo.toISOString());
-        previousValue = previousArtistCount || 0;
-        break;
-
-      case 'shows':
-        const { count: previousShowCount } = await supabase
-          .from('shows')
-          .select('*', { count: 'exact', head: true })
-          .gte('date', oneWeekAgo.toISOString().split('T')[0])
-          .lte('created_at', oneWeekAgo.toISOString());
-        previousValue = previousShowCount || 0;
-        break;
-
-      case 'users':
-        const { count: previousUserCount } = await supabase
-          .from('user_votes')
-          .select('user_id', { count: 'exact', head: true })
-          .gte('created_at', twoWeeksAgo.toISOString())
-          .lte('created_at', oneWeekAgo.toISOString());
-        previousValue = previousUserCount || 0;
-        break;
-
-      default:
-        previousValue = Math.max(1, currentValue * 0.85); // Estimate 15% growth if no specific logic
-    }
-
-    if (previousValue === 0) return currentValue > 0 ? 100 : 0;
-    return Math.min(100, Math.max(-50, ((currentValue - previousValue) / previousValue) * 100));
-  } catch {
-    return 0;
-  }
-}
+// calculateRecentGrowth function removed - using real growth data from database only
+// No mathematical calculations allowed - all growth data comes from sync system
 
 async function getTrendingStats() {
   try {
@@ -138,11 +92,12 @@ async function getTrendingStats() {
       hotShows: showCount || 0,
       searchVolume: searchVolume,
       activeUsers: activeUsers || 0,
-      // Calculate growth percentages based on real data
-      artistGrowth: Math.round(await calculateRecentGrowth('artists', artistCount || 0)),
-      showGrowth: Math.round(await calculateRecentGrowth('shows', showCount || 0)),
-      searchGrowth: Math.round(await calculateRecentGrowth('search', searchVolume)),
-      userGrowth: Math.round(await calculateRecentGrowth('users', activeUsers || 0)),
+      // Growth data removed - no mathematical calculations allowed
+      // All growth metrics should come from real historical tracking in sync system
+      artistGrowth: 0,
+      showGrowth: 0,
+      searchGrowth: 0,
+      userGrowth: 0,
     };
   } catch (_error) {
     // Return default values on error
