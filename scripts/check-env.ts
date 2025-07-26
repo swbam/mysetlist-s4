@@ -47,13 +47,15 @@ if (allPresent) {
   process.exit(1);
 }
 
-// Optional: Test API connections
-if (process.argv.includes('--test-apis')) {
-  console.log('🔍 Testing API connections...');
-  
-  // Test Spotify
-  try {
-    const spotifyResponse = await fetch(
+// Main function to run checks
+async function main() {
+  // Optional: Test API connections
+  if (process.argv.includes('--test-apis')) {
+    console.log('🔍 Testing API connections...');
+    
+    // Test Spotify
+    try {
+      const spotifyResponse = await fetch(
       'https://accounts.spotify.com/api/token',
       {
         method: 'POST',
@@ -90,4 +92,8 @@ if (process.argv.includes('--test-apis')) {
   } catch (error) {
     console.log('❌ Ticketmaster API: Error -', error);
   }
+  }
 }
+
+// Run the main function
+main().catch(console.error);

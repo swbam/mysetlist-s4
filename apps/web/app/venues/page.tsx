@@ -25,7 +25,6 @@ interface VenuesPageProps {
     lng?: string;
   }>;
 }
-};
 
 const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
   const resolvedSearchParams = (await searchParams) || {};
