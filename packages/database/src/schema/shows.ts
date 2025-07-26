@@ -45,6 +45,13 @@ export const shows = pgTable('shows', {
   setlistCount: integer('setlist_count').default(0),
   voteCount: integer('vote_count').default(0),
   trendingScore: doublePrecision('trending_score').default(0),
+  
+  // Historical tracking for real growth calculations
+  previousViewCount: integer('previous_view_count'),
+  previousAttendeeCount: integer('previous_attendee_count'),
+  previousVoteCount: integer('previous_vote_count'),
+  previousSetlistCount: integer('previous_setlist_count'),
+  lastGrowthCalculated: timestamp('last_growth_calculated'),
 
   // Featured/promoted content
   isFeatured: boolean('is_featured').default(false),

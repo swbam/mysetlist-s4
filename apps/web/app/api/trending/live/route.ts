@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '~/lib/supabase/server';
+import { calculateArtistGrowth, calculateShowGrowth, calculateVenueGrowth } from '@repo/database';
 
 interface LiveTrendingItem {
   id: string;
@@ -54,7 +55,7 @@ export async function GET(request: NextRequest) {
       try {
         const { data: trendingArtists } = await supabase
           .from('artists')
-          .select('id, name, slug, image_url, popularity, followers, follower_count, trending_score, updated_at')
+          .select('id, name, slug, image_url, popularity, followers, follower_count, monthly_listeners, trending_score, updated_at, previous_followers, previous_popularity, previous_follower_count, previous_monthly_listeners')
           .or('trending_score.gt.0,popularity.gt.0,followers.gt.0')
           .order('trending_score', { ascending: false })
           .order('popularity', { ascending: false })
@@ -68,11 +69,20 @@ export async function GET(request: NextRequest) {
             const interactions = artist.follower_count || artist.followers || 0;
             const trendingScore = artist.trending_score || 0;
 
-            // Calculate growth based on trending score and activity
-            const growth = Math.min(
-              50,
-              Math.random() * 20 + trendingScore / 50
-            );
+            // Calculate real growth using historical data (no fake calculations)
+            const realGrowth = calculateArtistGrowth({
+              followers: artist.followers || 0,
+              previousFollowers: artist.previous_followers,
+              popularity: artist.popularity || 0,
+              previousPopularity: artist.previous_popularity,
+              monthlyListeners: artist.monthly_listeners,
+              previousMonthlyListeners: artist.previous_monthly_listeners,
+              followerCount: artist.follower_count || 0,
+              previousFollowerCount: artist.previous_follower_count,
+            });
+            
+            // Use real growth data only (0 if no historical data available)
+            const growth = realGrowth.overallGrowth;
 
             // Calculate comprehensive score
             const score =
@@ -115,9 +125,14 @@ export async function GET(request: NextRequest) {
             view_count,
             vote_count,
             attendee_count,
+            setlist_count,
             trending_score,
             updated_at,
             date,
+            previous_view_count,
+            previous_attendee_count,
+            previous_vote_count,
+            previous_setlist_count,
             headliner_artist:artists!shows_headliner_artist_id_fkey(
               name,
               image_url
@@ -137,8 +152,20 @@ export async function GET(request: NextRequest) {
               (show.vote_count || 0) + (show.attendee_count || 0);
             const trendingScore = show.trending_score || 0;
 
-            // Calculate growth based on activity and recency
-            const growth = Math.min(40, Math.random() * 15 + interactions / 10);
+            // Calculate real growth using historical data (no fake calculations)
+            const realGrowth = calculateShowGrowth({
+              viewCount: show.view_count || 0,
+              previousViewCount: show.previous_view_count,
+              attendeeCount: show.attendee_count || 0,
+              previousAttendeeCount: show.previous_attendee_count,
+              voteCount: show.vote_count || 0,
+              previousVoteCount: show.previous_vote_count,
+              setlistCount: show.setlist_count || 0,
+              previousSetlistCount: show.previous_setlist_count,
+            });
+            
+            // Use real growth data only (0 if no historical data available)
+            const growth = realGrowth.overallGrowth;
 
             // Calculate comprehensive score
             const score =
@@ -174,7 +201,7 @@ export async function GET(request: NextRequest) {
     // -----------------------------
     if (type === 'all' || type === 'venue') {
       try {
-        // Get venues with show count
+        // Get venues with real analytics and historical data
         const { data: trendingVenues } = await supabase
           .from('venues')
           .select(`
@@ -185,23 +212,41 @@ export async function GET(request: NextRequest) {
             capacity,
             city,
             state,
-            shows!shows_venue_id_fkey(count)
+            total_shows,
+            upcoming_shows,
+            total_attendance,
+            previous_total_shows,
+            previous_upcoming_shows,
+            previous_total_attendance
           `)
           .not('capacity', 'is', null)
           .gt('capacity', 0)
+          .order('total_shows', { ascending: false, nullsFirst: false })
           .order('capacity', { ascending: false })
           .limit(type === 'venue' ? limit : Math.floor(limit / 3));
 
         
         if (trendingVenues && trendingVenues.length > 0) {
           trendingVenues.forEach((venue) => {
-            const showCount = venue.shows?.[0]?.count || 0;
-            const searches = Math.round(showCount * 0.5);
-            const views = showCount * 2;
-            const interactions = showCount;
+            // Use real venue data (not fake show counts)
+            const totalShows = venue.total_shows || 0;
+            const upcomingShows = venue.upcoming_shows || 0;
+            const searches = Math.round(totalShows * 0.5);
+            const views = totalShows * 2;
+            const interactions = totalShows + upcomingShows;
 
-            // Calculate growth based on recent activity
-            const growth = Math.min(30, Math.random() * 10 + interactions / 5);
+            // Calculate real growth using historical data (no fake calculations)
+            const realGrowth = calculateVenueGrowth({
+              totalShows: venue.total_shows || 0,
+              previousTotalShows: venue.previous_total_shows,
+              upcomingShows: venue.upcoming_shows || 0,
+              previousUpcomingShows: venue.previous_upcoming_shows,
+              totalAttendance: venue.total_attendance || 0,
+              previousTotalAttendance: venue.previous_total_attendance,
+            });
+            
+            // Use real growth data only (0 if no historical data available)
+            const growth = realGrowth.overallGrowth;
 
             // Calculate score based on activity and capacity utilization
             const score =

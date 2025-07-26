@@ -8,6 +8,9 @@ export { testConnection } from './src/index';
 // Re-export all schema tables
 export * from './src/schema';
 
+// Re-export growth calculation utilities
+export * from './src/utils/growth-calculation';
+
 // Re-export realtime functionality
 export { realtimeManager } from './src/realtime';
 export type { RealtimeManager } from './src/realtime';

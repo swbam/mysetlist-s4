@@ -48,6 +48,9 @@ export const metadata: Metadata = {
   },
 };
 
+// calculateRecentGrowth function removed - using real growth data from database only
+// No mathematical calculations allowed - all growth data comes from sync system
+
 async function getTrendingStats() {
   try {
     const supabase = await createServiceClient();
@@ -89,11 +92,12 @@ async function getTrendingStats() {
       hotShows: showCount || 0,
       searchVolume: searchVolume,
       activeUsers: activeUsers || 0,
-      // Calculate growth percentages (simplified)
-      artistGrowth: 12,
-      showGrowth: 23,
-      searchGrowth: 31,
-      userGrowth: 18,
+      // Growth data removed - no mathematical calculations allowed
+      // All growth metrics should come from real historical tracking in sync system
+      artistGrowth: 0,
+      showGrowth: 0,
+      searchGrowth: 0,
+      userGrowth: 0,
     };
   } catch (_error) {
     // Return default values on error

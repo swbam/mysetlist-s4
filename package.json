@@ -24,6 +24,7 @@
     "deploy:preview": "vercel",
     "deploy:quick": "vercel --prod",
     "analyze": "cd apps/web && ANALYZE=true pnpm build"
+
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

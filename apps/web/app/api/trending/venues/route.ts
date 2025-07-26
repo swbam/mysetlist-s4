@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '~/lib/supabase/server';
 import type { TrendingVenue, TrendingVenuesResponse } from '~/types/api';
+import { calculateVenueGrowth } from '@repo/database';
 
 // Force dynamic rendering for API route
 export const dynamic = 'force-dynamic';
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
     
     const supabase = await createServiceClient();
 
-    // Get venues with show counts using proper column names
+    // Get venues with real analytics and historical data
     const { data: raw, error } = await supabase
       .from('venues')
       .select(`
@@ -23,21 +24,43 @@ export async function GET(request: NextRequest) {
         city,
         state,
         country,
-        capacity
+        capacity,
+        total_shows,
+        upcoming_shows,
+        total_attendance,
+        average_rating,
+        previous_total_shows,
+        previous_upcoming_shows,
+        previous_total_attendance
       `)
       .not('capacity', 'is', null)
+      .order('total_shows', { ascending: false, nullsFirst: false })
       .order('capacity', { ascending: false })
       .limit(limit);
 
     if (error) throw error;
 
     const formatted: TrendingVenue[] = ((raw || []) as any[]).map((v, idx) => {
-      // Calculate a simple score based on capacity
-      const score = (v.capacity || 1000) / 100;
-      const weeklyGrowth = Math.max(
-        0,
-        Math.random() * 20 + Math.random() * 5
-      );
+      // Calculate real growth using historical data (no fake calculations)
+      const realGrowth = calculateVenueGrowth({
+        totalShows: v.total_shows ?? 0,
+        previousTotalShows: v.previous_total_shows,
+        upcomingShows: v.upcoming_shows ?? 0,
+        previousUpcomingShows: v.previous_upcoming_shows,
+        totalAttendance: v.total_attendance ?? 0,
+        previousTotalAttendance: v.previous_total_attendance,
+      });
+      
+      // Use real growth data only (0 if no historical data available)
+      const weeklyGrowth = realGrowth.overallGrowth;
+      
+      // Calculate trending score based on real metrics
+      const score = 
+        (v.total_shows ?? 0) * 10 +
+        (v.upcoming_shows ?? 0) * 15 +
+        ((v.total_attendance ?? 0) / 100) +
+        (v.capacity ?? 1000) / 100;
+      
       return {
         id: v.id,
         name: v.name,
@@ -46,8 +69,8 @@ export async function GET(request: NextRequest) {
         state: v.state,
         country: v.country,
         capacity: v.capacity ?? null,
-        upcomingShows: Math.floor(Math.random() * 5) + 1, // Placeholder until we add show count query
-        totalShows: Math.floor(Math.random() * 20) + 5, // Placeholder until we add show count query
+        upcomingShows: v.upcoming_shows ?? 0, // Real data from database
+        totalShows: v.total_shows ?? 0, // Real data from database
         trendingScore: score,
         weeklyGrowth: Number(weeklyGrowth.toFixed(1)),
         rank: idx + 1,

@@ -82,7 +82,7 @@ export const EnhancedSetlistViewer = ({
 
       if (message) {
         const newEvent = {
-          id: Math.random().toString(36).substr(2, 9),
+          id: `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
           message,
           timestamp: event.timestamp,
         };

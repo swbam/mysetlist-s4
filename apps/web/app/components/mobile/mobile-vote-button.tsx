@@ -101,7 +101,8 @@ export function MobileVoteButton({
   };
 
   const getButtonStyle = (type: 'up' | 'down') => {
-    const baseClasses = compact ? 'h-8 w-8 p-0' : 'h-10 w-10 p-0 md:h-8 md:w-8';
+    // Updated for optimal mobile touch targets (minimum 44px)
+    const baseClasses = compact ? 'h-10 w-10 p-0' : 'h-12 w-12 p-0 md:h-10 md:w-10';
 
     const activeClasses =
       votes.userVote === type

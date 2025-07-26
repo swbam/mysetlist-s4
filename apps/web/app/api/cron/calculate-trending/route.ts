@@ -6,7 +6,11 @@ import {
   venues,
   userActivityLog,
   events,
-  artistAnalytics 
+  artistAnalytics,
+  calculateArtistGrowth,
+  calculateShowGrowth,
+  calculateVenueGrowth,
+  createHistoricalSnapshot 
 } from '@repo/database';
 import { sql, and, gte, eq, desc, asc } from 'drizzle-orm';
 import { type NextRequest, NextResponse } from 'next/server';
@@ -135,6 +139,51 @@ async function updateArtistStats() {
   `);
 }
 
+async function createHistoricalSnapshots() {
+  // Store current values as previous values for next growth calculation cycle
+  // This must be done BEFORE updating current values
+  
+  // Artists historical snapshot
+  await db.execute(sql`
+    UPDATE ${artists} 
+    SET 
+      previous_followers = followers,
+      previous_popularity = popularity,
+      previous_monthly_listeners = monthly_listeners,
+      previous_follower_count = follower_count,
+      last_growth_calculated = NOW()
+    WHERE followers IS NOT NULL 
+    OR popularity IS NOT NULL 
+    OR monthly_listeners IS NOT NULL 
+    OR follower_count IS NOT NULL
+  `);
+  
+  // Shows historical snapshot
+  await db.execute(sql`
+    UPDATE ${shows} 
+    SET 
+      previous_view_count = view_count,
+      previous_attendee_count = attendee_count,
+      previous_vote_count = vote_count,
+      previous_setlist_count = setlist_count,
+      last_growth_calculated = NOW()
+    WHERE view_count IS NOT NULL 
+    OR attendee_count IS NOT NULL 
+    OR vote_count IS NOT NULL 
+    OR setlist_count IS NOT NULL
+  `);
+  
+  // Venues historical snapshot (need to calculate current values first)
+  await db.execute(sql`
+    UPDATE ${venues} v
+    SET 
+      previous_total_shows = COALESCE(v.total_shows, 0),
+      previous_upcoming_shows = COALESCE(v.upcoming_shows, 0),
+      previous_total_attendance = COALESCE(v.total_attendance, 0),
+      last_growth_calculated = NOW()
+  `);
+}
+
 async function calculateArtistTrendingScores(mode: TrendingMode) {
   let artistsToProcess;
   
@@ -146,9 +195,15 @@ async function calculateArtistTrendingScores(mode: TrendingMode) {
         followers: artists.followers,
         popularity: artists.popularity,
         followerCount: artists.followerCount,
+        monthlyListeners: artists.monthlyListeners,
         totalShows: artists.totalShows,
         upcomingShows: artists.upcomingShows,
         createdAt: artists.createdAt,
+        // Historical data for real growth calculations
+        previousFollowers: artists.previousFollowers,
+        previousPopularity: artists.previousPopularity,
+        previousFollowerCount: artists.previousFollowerCount,
+        previousMonthlyListeners: artists.previousMonthlyListeners,
       })
       .from(artists);
   } else {
@@ -174,9 +229,15 @@ async function calculateArtistTrendingScores(mode: TrendingMode) {
         followers: artists.followers,
         popularity: artists.popularity,
         followerCount: artists.followerCount,
+        monthlyListeners: artists.monthlyListeners,
         totalShows: artists.totalShows,
         upcomingShows: artists.upcomingShows,
         createdAt: artists.createdAt,
+        // Historical data for real growth calculations
+        previousFollowers: artists.previousFollowers,
+        previousPopularity: artists.previousPopularity,
+        previousFollowerCount: artists.previousFollowerCount,
+        previousMonthlyListeners: artists.previousMonthlyListeners,
       })
       .from(artists)
       .where(sql`${artists.id} IN (${sql.join(recentActivityArtists.map(a => a.artistId).filter((id): id is string => Boolean(id)), sql`, `)})`);
@@ -205,8 +266,20 @@ async function calculateArtistTrendingScores(mode: TrendingMode) {
 
         const recentShowCount = recentShowsResult[0]?.count || 0;
 
-        // Calculate follower growth (simplified - in production would use historical data)
-        const followerGrowth = Math.random() * 100; // TODO: Replace with actual growth calculation
+        // Calculate real growth using historical data
+        const realGrowth = calculateArtistGrowth({
+          followers: artist.followers || 0,
+          previousFollowers: artist.previousFollowers,
+          popularity: artist.popularity || 0,
+          previousPopularity: artist.previousPopularity,
+          monthlyListeners: artist.monthlyListeners,
+          previousMonthlyListeners: artist.previousMonthlyListeners,
+          followerCount: artist.followerCount || 0,
+          previousFollowerCount: artist.previousFollowerCount,
+        });
+        
+        // Use real overall growth percentage (not fake random numbers)
+        const followerGrowth = realGrowth.overallGrowth;
 
         // Calculate comprehensive trending score
         const baseScore = 
@@ -420,7 +493,20 @@ export async function GET(request: NextRequest) {
       shows: { updated: 0 },
       trending: null as any,
       timeDecay: null as any,
+      historicalSnapshots: { created: false },
     };
+
+    // 0. Create historical snapshots FIRST (for next cycle's growth calculations)
+    if (mode.fullRecalc) {
+      console.log('Creating historical snapshots for growth tracking...');
+      try {
+        await createHistoricalSnapshots();
+        results.historicalSnapshots.created = true;
+      } catch (error) {
+        console.error('Failed to create historical snapshots:', error);
+        // Continue with calculation even if snapshots fail
+      }
+    }
 
     // 1. Update artist statistics (always run for daily)
     if (mode.fullRecalc && (typeParam === 'all' || typeParam === 'artists')) {

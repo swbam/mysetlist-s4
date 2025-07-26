@@ -1,7 +1,24 @@
 'use server';
 
 import { cache } from 'react';
-import { createServiceClient } from '~/lib/supabase/server';
+import { 
+  artists,
+  db,
+  shows,
+  venues,
+  showArtists
+} from '@repo/database';
+import { 
+  and, 
+  asc, 
+  desc, 
+  eq, 
+  gte, 
+  lte, 
+  ilike, 
+  sql,
+  inArray
+} from 'drizzle-orm';
 
 export type ShowWithDetails = {
   id: string;
@@ -87,6 +104,49 @@ export const fetchShows = cache(
     } = params;
 
     try {
+      // Build base query with joins
+      let query = db
+        .select({
+          id: shows.id,
+          name: shows.name,
+          slug: shows.slug,
+          date: shows.date,
+          startTime: shows.startTime,
+          doorsTime: shows.doorsTime,
+          status: shows.status,
+          description: shows.description,
+          ticketUrl: shows.ticketUrl,
+          minPrice: shows.minPrice,
+          maxPrice: shows.maxPrice,
+          currency: shows.currency,
+          viewCount: shows.viewCount,
+          attendeeCount: shows.attendeeCount,
+          setlistCount: shows.setlistCount,
+          voteCount: shows.voteCount,  
+          trendingScore: shows.trendingScore,
+          isFeatured: shows.isFeatured,
+          isVerified: shows.isVerified,
+          headlinerArtist: {
+            id: artists.id,
+            name: artists.name,
+            slug: artists.slug,
+            imageUrl: artists.imageUrl,
+            genres: artists.genres,
+            verified: artists.verified,
+          },
+          venue: {
+            id: venues.id,
+            name: venues.name,
+            slug: venues.slug,
+            city: venues.city,
+            state: venues.state,
+            country: venues.country,
+            capacity: venues.capacity,
+          },
+        })
+        .from(shows)
+        .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
+        .leftJoin(venues, eq(shows.venueId, venues.id));
       const supabase = createServiceClient();
 
       // Build the query
@@ -118,96 +178,158 @@ export const fetchShows = cache(
       );
 
       // Apply filters
+      const conditions = [];
+
       if (status) {
-        query = query.eq('status', status);
+        conditions.push(eq(shows.status, status));
       }
 
       if (artistId) {
-        query = query.eq('headliner_artist_id', artistId);
+        conditions.push(eq(shows.headlinerArtistId, artistId));
       }
 
       if (venueId) {
-        query = query.eq('venue_id', venueId);
+        conditions.push(eq(shows.venueId, venueId));
       }
 
       if (dateFrom) {
-        query = query.gte('date', dateFrom);
+        conditions.push(gte(shows.date, dateFrom));
       }
 
       if (dateTo) {
-        query = query.lte('date', dateTo);
+        conditions.push(lte(shows.date, dateTo));
       }
 
       if (featured) {
-        query = query.eq('is_featured', true);
+        conditions.push(eq(shows.isFeatured, true));
       }
 
       if (city) {
-        query = query.eq('venue.city', city);
+        conditions.push(ilike(venues.city, `%${city}%`));
+      }
+
+      // Default to upcoming shows if no specific status filter
+      if (!dateFrom && status === 'upcoming') {
+        conditions.push(gte(shows.date, new Date().toISOString().substring(0, 10)));
+      }
+
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
       }
 
       // Apply ordering
       switch (orderBy) {
         case 'trending':
-          query = query.order('trending_score', { ascending: false });
+          query = query.orderBy(desc(shows.trendingScore));
           break;
         case 'popularity':
-          query = query.order('view_count', { ascending: false });
+          query = query.orderBy(desc(shows.viewCount));
           break;
         default:
-          query = query.order('date', { ascending: true });
+          query = query.orderBy(asc(shows.date));
           break;
       }
 
       // Apply pagination
-      query = query.range(offset, offset + limit - 1);
+      query = query.limit(limit).offset(offset);
 
-      const { data, error, count } = await query;
+      // Execute query
+      const showsData = await query;
 
-      if (error) {
-        throw new Error('Failed to fetch shows');
+      // Get total count for pagination
+      let countQuery = db
+        .select({ count: sql<number>`count(*)` })
+        .from(shows)
+        .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
+        .leftJoin(venues, eq(shows.venueId, venues.id));
+
+      if (conditions.length > 0) {
+        countQuery = countQuery.where(and(...conditions));
       }
 
-      // Transform the data to match our type
-      const shows: ShowWithDetails[] = (data || []).map((show) => ({
+      const countResult = await countQuery;
+      const totalCount = countResult[0]?.count || 0;
+
+      // Get supporting artists for each show (separate query for performance)
+      const showIds = showsData.map(show => show.id);
+      const supportingArtistsData = showIds.length > 0 ? await db
+        .select({
+          showId: showArtists.showId,
+          id: showArtists.id,
+          artistId: showArtists.artistId,
+          orderIndex: showArtists.orderIndex,
+          setLength: showArtists.setLength,
+          artist: {
+            id: artists.id,
+            name: artists.name,
+            slug: artists.slug,
+          }
+        })
+        .from(showArtists)
+        .innerJoin(artists, eq(showArtists.artistId, artists.id))
+        .where(inArray(showArtists.showId, showIds))
+        .orderBy(showArtists.orderIndex) : [];
+
+      // Group supporting artists by show
+      const supportingArtistsByShow = supportingArtistsData.reduce((acc, sa) => {
+        if (!acc[sa.showId]) {
+          acc[sa.showId] = [];
+        }
+        acc[sa.showId].push({
+          id: sa.id,
+          artistId: sa.artistId,
+          orderIndex: sa.orderIndex,
+          setLength: sa.setLength,
+          artist: sa.artist,
+        });
+        return acc;
+      }, {} as Record<string, any[]>);
+
+      // Safe JSON parse function
+      const safeJsonParse = (jsonString: string | null) => {
+        if (!jsonString) return null;
+        try {
+          return JSON.parse(jsonString);
+        } catch {
+          return null;
+        }
+      };
+
+      // Format response data
+      const formattedShows: ShowWithDetails[] = showsData.map(show => ({
         id: show.id,
         name: show.name,
         slug: show.slug,
         date: show.date,
-        startTime: show.start_time,
-        doorsTime: show.doors_time,
+        startTime: show.startTime,
+        doorsTime: show.doorsTime,
         status: show.status,
         description: show.description,
-        ticketUrl: show.ticket_url,
-        minPrice: show.min_price,
-        maxPrice: show.max_price,
+        ticketUrl: show.ticketUrl,
+        minPrice: show.minPrice,
+        maxPrice: show.maxPrice,
         currency: show.currency,
-        viewCount: show.view_count,
-        attendeeCount: show.attendee_count,
-        setlistCount: show.setlist_count,
-        voteCount: show.vote_count,
-        trendingScore: show.trending_score,
-        isFeatured: show.is_featured,
-        isVerified: show.is_verified,
+        viewCount: show.viewCount,
+        attendeeCount: show.attendeeCount,
+        setlistCount: show.setlistCount,
+        voteCount: show.voteCount,
+        trendingScore: show.trendingScore,
+        isFeatured: show.isFeatured,
+        isVerified: show.isVerified,
         headlinerArtist: {
-          id: show.headlinerArtist.id,
-          name: show.headlinerArtist.name,
-          slug: show.headlinerArtist.slug,
-          imageUrl: show.headlinerArtist.imageUrl,
-          genres: show.headlinerArtist.genres
-            ? JSON.parse(show.headlinerArtist.genres)
-            : null,
-          verified: show.headlinerArtist.verified,
+          ...show.headlinerArtist,
+          genres: safeJsonParse(show.headlinerArtist.genres),
         },
         venue: show.venue,
-        supportingArtists: show.supportingArtists || [],
+        supportingArtists: supportingArtistsByShow[show.id] || [],
       }));
 
       return {
-        shows,
-        totalCount: count || 0,
+        shows: formattedShows,
+        totalCount,
       };
-    } catch (_error) {
+    } catch (error) {
+      console.error('Error fetching shows:', error);
       return {
         shows: [],
         totalCount: 0,
@@ -218,21 +340,17 @@ export const fetchShows = cache(
 
 export const fetchCities = cache(async (): Promise<string[]> => {
   try {
-    const supabase = createServiceClient();
-
-    const { data, error } = await supabase
-      .from('venues')
-      .select('city')
-      .order('city');
-
-    if (error) {
-      return [];
-    }
+    const data = await db
+      .select({ city: venues.city })
+      .from(venues)
+      .where(sql`${venues.city} IS NOT NULL`)
+      .orderBy(venues.city);
 
     // Get unique cities
-    const uniqueCities = [...new Set(data?.map((v) => v.city) || [])];
+    const uniqueCities = [...new Set(data.map((v) => v.city).filter(Boolean))];
     return uniqueCities;
-  } catch (_error) {
+  } catch (error) {
+    console.error('Error fetching cities:', error);
     return [];
   }
 });

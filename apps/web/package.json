@@ -22,6 +22,7 @@
     "test:all": "pnpm test:unit && pnpm test:integration && pnpm test:e2e && pnpm test:a11y",
     "lighthouse": "lighthouse http://localhost:3001 --view",
     "lighthouse:ci": "lhci autorun",
+    "test:e2e": "tsx scripts/comprehensive-e2e-test.ts",
     "seed:dev": "tsx scripts/seed-development-data.ts",
     "test:e2e:comprehensive": "tsx scripts/comprehensive-e2e-test.ts",
     "seed": "tsx scripts/seed-comprehensive.ts",
@@ -109,6 +110,7 @@
     "tailwindcss": "^4.1.7",
     "typescript": "^5.8.3",
     "vitest": "^3.1.4",
-    "wait-on": "^7.2.0"
+    "wait-on": "^7.2.0",
+    "webpack-bundle-analyzer": "^4.10.2"
   }
 }

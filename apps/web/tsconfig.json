@@ -1,7 +1,6 @@
 {
   "extends": [
-    "../../packages/typescript-config/nextjs.json",
-    "../../packages/cms/typescript-config.json"
+    "../../packages/typescript-config/nextjs.json"
   ],
   "compilerOptions": {
     "baseUrl": ".",
@@ -20,6 +19,11 @@
     "noImplicitReturns": false,
     "noPropertyAccessFromIndexSignature": false,
     "exactOptionalPropertyTypes": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
     "paths": {
       "~/*": ["./*"],
       "@repo/*": ["../../packages/*"]

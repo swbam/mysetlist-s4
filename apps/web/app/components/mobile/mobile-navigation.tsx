@@ -86,8 +86,8 @@ export const MobileNavigation = React.memo(({ user, className }: MobileNavigatio
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10"
-            aria-label="Open navigation menu"
+            className="h-12 w-12"
+            aria-label="Toggle menu"
             data-testid="mobile-menu"
           >
             <Menu className="h-5 w-5" />

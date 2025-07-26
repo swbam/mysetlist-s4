@@ -78,6 +78,7 @@ export function UnifiedSearch({
   const [isOpen, setIsOpen] = useState(false);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [importingArtistId, setImportingArtistId] = useState<string | null>(null);
 
   const debouncedQuery = useDebounce(query, 300);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -184,30 +185,52 @@ export function UnifiedSearch({
     }
 
     try {
-      setIsLoading(true);
+      setImportingArtistId(result.id);
       
       // Handle different result types
       switch (result.type) {
         case 'artist':
-          if (result.requiresSync) {
-            // For external artists, trigger auto-import
-            const resp = await fetch('/api/artists/auto-import', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                artistName: result.title,
-                spotifyId: result.source === 'spotify' ? result.id : undefined,
-                ticketmasterId: result.source === 'ticketmaster' ? result.externalId : undefined,
-              }),
-            });
-            
-            const data = await resp.json();
-            if (resp.ok && data.artist?.slug) {
-              router.push(`/artists/${data.artist.slug}`);
+          if (result.requiresSync || result.source === 'ticketmaster') {
+            // For Ticketmaster artists, use the import endpoint
+            if (result.source === 'ticketmaster') {
+              const resp = await fetch('/api/artists/import-ticketmaster', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  ticketmasterId: result.externalId || result.id,
+                  name: result.title,
+                  imageUrl: result.imageUrl,
+                  genres: result.genres,
+                }),
+              });
+              
+              const data = await resp.json();
+              if (resp.ok && data.artist?.slug) {
+                router.push(`/artists/${data.artist.slug}`);
+              } else {
+                console.warn('Artist import failed:', data.error);
+                // Fallback to search page
+                router.push(`/artists?search=${encodeURIComponent(result.title)}`);
+              }
             } else {
-              console.warn('Artist import failed:', data.error);
-              // Fallback to search page
-              router.push(`/artists?search=${encodeURIComponent(result.title)}`);
+              // For other external sources, use auto-import
+              const resp = await fetch('/api/artists/auto-import', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  artistName: result.title,
+                  spotifyId: result.source === 'spotify' ? result.id : undefined,
+                }),
+              });
+              
+              const data = await resp.json();
+              if (resp.ok && data.artist?.slug) {
+                router.push(`/artists/${data.artist.slug}`);
+              } else {
+                console.warn('Artist import failed:', data.error);
+                // Fallback to search page
+                router.push(`/artists?search=${encodeURIComponent(result.title)}`);
+              }
             }
           } else {
             router.push(`/artists/${result.slug || result.id}`);
@@ -231,14 +254,15 @@ export function UnifiedSearch({
     } catch (error) {
       console.error('Navigation error:', error);
       setError(`Failed to navigate to ${result.type}. Please try again.`);
-      setIsLoading(false);
+      setImportingArtistId(null);
       return;
+    } finally {
+      setImportingArtistId(null);
     }
 
     setQuery('');
     setResults([]);
     setIsOpen(false);
-    setIsLoading(false);
   };
 
   const clearSearch = () => {
@@ -277,8 +301,20 @@ export function UnifiedSearch({
         </div>
 
         {error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
-            {error}
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700 dark:border-red-800 dark:bg-red-950/50 dark:text-red-400">
+            <p className="font-medium">Search Error</p>
+            <p className="text-sm mt-1">{error}</p>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="mt-2 text-red-700 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+              onClick={() => {
+                setError(null);
+                performSearch(query);
+              }}
+            >
+              Try Again
+            </Button>
           </div>
         )}
 
@@ -314,14 +350,14 @@ export function UnifiedSearch({
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      {isLoading ? (
+                      {importingArtistId === result.id ? (
                         <Button size="sm" disabled>
                           <Loader2 className="h-4 w-4 animate-spin" />
-                          Loading...
+                          Importing...
                         </Button>
                       ) : (
                         <Button size="sm" variant="default">
-                          View
+                          {result.source === 'ticketmaster' ? 'Import & View' : 'View'}
                         </Button>
                       )}
                     </div>
@@ -384,6 +420,7 @@ export function UnifiedSearch({
             query={query}
             onSelect={handleSelect}
             searched={searched}
+            importingArtistId={importingArtistId}
           />
         </PopoverContent>
       </Popover>
@@ -423,6 +460,7 @@ export function UnifiedSearch({
           query={query}
           onSelect={handleSelect}
           searched={searched}
+          importingArtistId={importingArtistId}
         />
       </PopoverContent>
     </Popover>
@@ -435,12 +473,14 @@ function SearchResultsDropdown({
   query,
   onSelect,
   searched,
+  importingArtistId,
 }: {
   results: SearchResult[];
   isLoading: boolean;
   query: string;
   onSelect: (result: SearchResult) => void;
   searched: boolean;
+  importingArtistId: string | null;
 }) {
   const getResultIcon = (type: string) => {
     switch (type) {
@@ -539,8 +579,11 @@ function SearchResultsDropdown({
                 return (
                   <CommandItem
                     key={result.id}
-                    onSelect={() => onSelect(result)}
-                    className="flex cursor-pointer items-center gap-3 p-3"
+                    onSelect={() => importingArtistId !== result.id ? onSelect(result) : undefined}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-3 p-3",
+                      importingArtistId === result.id && "opacity-70 cursor-wait"
+                    )}
                   >
                     {result.imageUrl ? (
                       <Avatar className="h-10 w-10">
@@ -572,15 +615,22 @@ function SearchResultsDropdown({
                       )}
                     </div>
 
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        'text-xs capitalize',
-                        getResultBadgeColor(result.type)
-                      )}
-                    >
-                      {result.type}
-                    </Badge>
+                    {importingArtistId === result.id ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        <span className="text-xs text-muted-foreground">Importing...</span>
+                      </div>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          'text-xs capitalize',
+                          getResultBadgeColor(result.type)
+                        )}
+                      >
+                        {result.type}
+                      </Badge>
+                    )}
                   </CommandItem>
                 );
               })}
