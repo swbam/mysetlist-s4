@@ -5,12 +5,13 @@ import {
   TabsTrigger,
 } from '@repo/design-system/components/ui/tabs';
 import { createMetadata } from '@repo/seo/metadata';
-import { List } from 'lucide-react';
+import { Grid3X3, List } from 'lucide-react';
 import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
 import { ErrorBoundaryWrapper } from '~/components/error-boundary-wrapper';
 import { ShowListSkeleton } from '~/components/loading-states';
 import { ShowsFilter } from './components/shows-filter';
+import { ShowsGrid } from './components/shows-grid';
 import { ShowsList } from './components/shows-list';
 import { ShowsSearch } from './components/shows-search';
 
@@ -47,13 +48,22 @@ const ShowsPage = () => {
               <ShowsFilter />
             </Suspense>
 
-            <Tabs defaultValue="list" className="w-full">
-              <TabsList className="w-full max-w-[200px]">
+            <Tabs defaultValue="grid" className="w-full">
+              <TabsList className="w-full max-w-[400px]">
+                <TabsTrigger value="grid" className="gap-2">
+                  <Grid3X3 className="h-4 w-4" />
+                  Grid View
+                </TabsTrigger>
                 <TabsTrigger value="list" className="gap-2">
                   <List className="h-4 w-4" />
                   List View
                 </TabsTrigger>
               </TabsList>
+              <TabsContent value="grid" className="mt-6">
+                <Suspense fallback={<ShowListSkeleton count={8} />}>
+                  <ShowsGrid />
+                </Suspense>
+              </TabsContent>
               <TabsContent value="list" className="mt-6">
                 <Suspense fallback={<ShowListSkeleton count={5} />}>
                   <ShowsList />

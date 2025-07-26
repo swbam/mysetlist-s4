@@ -156,7 +156,7 @@ jobs:
         uses: ./.github/actions/setup-node-pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
+        run: pnpm install
 
       - name: Generate database types
         if: matrix.test-type != 'lint'

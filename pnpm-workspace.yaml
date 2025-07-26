@@ -1,7 +1,13 @@
 packages:
   - apps/*
   - packages/*
+
 onlyBuiltDependencies:
+  - '@biomejs/biome'
+  - '@sentry/cli'
   - '@tailwindcss/oxide'
+  - core-js-pure
+  - cypress
   - es5-ext
   - esbuild
+  - sharp

@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
         verified,
         spotify_id
       `)
-      .or(`name.ilike.%${query}%,name.ilike.${query}%`)
+      .ilike('name', `%${query}%`)
       .order('popularity', { ascending: false })
       .limit(limit);
 
