@@ -47,11 +47,39 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
   const touchStartX = useRef<number>(0);
   const touchEndX = useRef<number>(0);
 
-  // Handle swipe gestures for mobile menu
+  // Handle body scroll lock when mobile menu is open
   useEffect(() => {
-    if (!isMobileMenuOpen || !mobileMenuRef.current) {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
+
+  // Handle click outside and escape key to close mobile menu
+  useEffect(() => {
+    if (!isMobileMenuOpen) {
       return;
     }
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target as Node)
+      ) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMobileMenuOpen(false);
+      }
+    };
 
     const handleTouchStart = (e: TouchEvent) => {
       if (e.changedTouches[0]) {
@@ -76,13 +104,26 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
       }
     };
 
-    const menuElement = mobileMenuRef.current;
-    menuElement.addEventListener('touchstart', handleTouchStart);
-    menuElement.addEventListener('touchend', handleTouchEnd);
+    // Add event listeners
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscapeKey);
+    
+    if (mobileMenuRef.current) {
+      const menuElement = mobileMenuRef.current;
+      menuElement.addEventListener('touchstart', handleTouchStart);
+      menuElement.addEventListener('touchend', handleTouchEnd);
+
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('keydown', handleEscapeKey);
+        menuElement.removeEventListener('touchstart', handleTouchStart);
+        menuElement.removeEventListener('touchend', handleTouchEnd);
+      };
+    }
 
     return () => {
-      menuElement.removeEventListener('touchstart', handleTouchStart);
-      menuElement.removeEventListener('touchend', handleTouchEnd);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
     };
   }, [isMobileMenuOpen]);
 
@@ -165,7 +206,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
       )}
     >
       <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
+        <div className="flex h-16 items-center justify-between lg:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <Music className="h-8 w-8 text-primary" />
@@ -173,7 +214,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden items-center space-x-6 lg:flex">
+          <nav className="hidden items-center space-x-4 lg:flex xl:space-x-6">
             {authenticatedNavigation.map((item) => {
               const Icon = item.icon;
               return (
@@ -181,21 +222,22 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    'flex items-center space-x-1 font-medium text-sm transition-colors hover:text-primary',
+                    'flex items-center space-x-2 rounded-lg px-3 py-2 font-medium text-sm transition-all duration-200',
+                    'hover:bg-muted/50 focus:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
                     isActivePath(item.href)
-                      ? 'text-primary'
-                      : 'text-muted-foreground'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:text-foreground'
                   )}
                 >
                   <Icon className="h-4 w-4" />
-                  <span>{item.name}</span>
+                  <span className="hidden xl:inline">{item.name}</span>
                 </Link>
               );
             })}
           </nav>
 
           {/* Desktop Search */}
-          <div className="mx-6 hidden max-w-md flex-1 md:flex">
+          <div className="mx-4 hidden max-w-sm flex-1 lg:mx-6 lg:max-w-md xl:flex">
             <SearchBox
               placeholder="Search artists, shows, venues..."
               onSearch={handleSearch}
@@ -314,16 +356,16 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="min-h-[36px] min-w-[36px] lg:hidden"
+              className="min-h-[44px] min-w-[44px] touch-manipulation lg:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-menu"
             >
               {isMobileMenuOpen ? (
-                <X className="h-5 w-5" />
+                <X className="h-6 w-6" />
               ) : (
-                <Menu className="h-5 w-5" />
+                <Menu className="h-6 w-6" />
               )}
             </Button>
           </div>
@@ -347,69 +389,114 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
         {isMobileMenuOpen && (
           <div
             ref={mobileMenuRef}
-            className="border-t bg-background lg:hidden"
+            className="absolute left-0 right-0 top-full z-50 border-t bg-background/95 backdrop-blur-md shadow-lg lg:hidden"
             id="mobile-menu"
             role="navigation"
             aria-label="Mobile navigation"
           >
-            <div className="space-y-2 px-4 py-4">
-              {authenticatedNavigation.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className={cn(
-                      'flex items-center space-x-3 rounded-lg px-3 py-3 font-medium text-sm transition-colors',
-                      'min-h-[44px] touch-manipulation', // iOS touch target
-                      isActivePath(item.href)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-muted hover:text-foreground active:bg-muted/80'
-                    )}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    <Icon className="h-5 w-5 flex-shrink-0" />
-                    <span>{item.name}</span>
-                  </Link>
-                );
-              })}
-
-              {/* Mobile Theme Toggle */}
-              <div className="flex items-center space-x-3 px-3 py-3">
-                <div className="flex h-5 w-5 items-center justify-center">
-                  <svg
-                    className="h-4 w-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <ThemeToggle variant="text" className="flex-1 justify-start" />
+            <div className="container mx-auto max-h-[calc(100vh-4rem)] overflow-y-auto px-4 py-6">
+              <div className="space-y-1">
+                {authenticatedNavigation.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={cn(
+                        'flex items-center space-x-3 rounded-xl px-4 py-4 font-medium text-base transition-all duration-200',
+                        'min-h-[56px] touch-manipulation active:scale-[0.98]', // iOS touch target
+                        isActivePath(item.href)
+                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          : 'text-foreground hover:bg-muted/80 active:bg-muted'
+                      )}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <Icon className="h-6 w-6 flex-shrink-0" />
+                      <span className="text-lg">{item.name}</span>
+                    </Link>
+                  );
+                })}
               </div>
 
+              {/* Mobile Theme Toggle */}
+              <div className="mt-6 border-t pt-6">
+                <div className="flex items-center justify-between px-4 py-3">
+                  <span className="font-medium text-base">Theme</span>
+                  <ThemeToggle />
+                </div>
+              </div>
+
+              {/* Mobile Auth Section */}
               {!user && (
-                <div className="space-y-2 border-border/50 border-t pt-4">
+                <div className="mt-6 space-y-3 border-t pt-6">
                   <Link
                     href="/auth/sign-in"
-                    className="flex min-h-[44px] touch-manipulation items-center space-x-3 rounded-lg px-3 py-3 font-medium text-muted-foreground text-sm hover:bg-muted hover:text-foreground active:bg-muted/80"
+                    className="flex min-h-[56px] touch-manipulation items-center justify-center rounded-xl border border-border bg-background px-6 py-4 font-medium text-foreground text-lg transition-all duration-200 hover:bg-muted active:scale-[0.98]"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <User className="h-5 w-5 flex-shrink-0" />
-                    <span>Sign In</span>
+                    Sign In
                   </Link>
                   <Link
                     href="/auth/sign-up"
-                    className="flex min-h-[44px] touch-manipulation items-center space-x-3 rounded-lg bg-primary px-3 py-3 font-medium text-primary-foreground text-sm hover:bg-primary/90 active:bg-primary/80"
+                    className="flex min-h-[56px] touch-manipulation items-center justify-center rounded-xl bg-primary px-6 py-4 font-medium text-primary-foreground text-lg shadow-sm transition-all duration-200 hover:bg-primary/90 active:scale-[0.98]"
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    <User className="h-5 w-5 flex-shrink-0" />
-                    <span>Sign Up</span>
+                    Get Started
                   </Link>
+                </div>
+              )}
+
+              {/* User Section for Authenticated Users */}
+              {user && (
+                <div className="mt-6 space-y-3 border-t pt-6">
+                  <div className="flex items-center space-x-3 px-4">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage
+                        src={user.user_metadata?.['avatar_url']}
+                        alt={user.email || ''}
+                      />
+                      <AvatarFallback>
+                        {user.email?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-base">
+                        {user.user_metadata?.['full_name'] || 'User'}
+                      </p>
+                      <p className="text-muted-foreground text-sm truncate">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <Link
+                    href="/profile"
+                    className="flex min-h-[56px] touch-manipulation items-center space-x-3 rounded-xl px-4 py-4 font-medium text-base transition-all duration-200 hover:bg-muted active:scale-[0.98]"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <User className="h-6 w-6" />
+                    <span>Profile</span>
+                  </Link>
+                  
+                  <Link
+                    href="/settings"
+                    className="flex min-h-[56px] touch-manipulation items-center space-x-3 rounded-xl px-4 py-4 font-medium text-base transition-all duration-200 hover:bg-muted active:scale-[0.98]"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    <Settings className="h-6 w-6" />
+                    <span>Settings</span>
+                  </Link>
+                  
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      handleSignOut();
+                    }}
+                    className="flex min-h-[56px] w-full touch-manipulation items-center space-x-3 rounded-xl px-4 py-4 font-medium text-base text-destructive transition-all duration-200 hover:bg-destructive/10 active:scale-[0.98]"
+                  >
+                    <LogOut className="h-6 w-6" />
+                    <span>Sign Out</span>
+                  </button>
                 </div>
               )}
             </div>

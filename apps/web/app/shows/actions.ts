@@ -93,7 +93,7 @@ export const fetchShows = cache(
       let query = supabase.from('shows').select(
         `
         *,
-        headlinerArtist:artists!shows_headliner_artist_id_fkey(
+        headlinerArtist:artists!shows_headliner_artist_id_artists_id_fk(
           id,
           name,
           slug,
@@ -101,13 +101,13 @@ export const fetchShows = cache(
           genres,
           verified
         ),
-        venue:venues!shows_venue_id_fkey(*),
-        supportingArtists:show_artists!show_artists_show_id_fkey(
+        venue:venues!shows_venue_id_venues_id_fk(*),
+        supportingArtists:show_artists!show_artists_show_id_shows_id_fk(
           id,
           artistId:artist_id,
           orderIndex:order_index,
           setLength:set_length,
-          artist:artists(
+          artist:artists!show_artists_artist_id_artists_id_fk(
             id,
             name,
             slug
