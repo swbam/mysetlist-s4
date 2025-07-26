@@ -5,6 +5,7 @@ import { ErrorBoundaryWrapper } from '~/components/error-boundary-wrapper';
 import { VenueGridSkeleton as VenueGridLoadingSkeleton } from '~/components/loading-states';
 import { getVenues } from './actions';
 import { VenueGridClient } from './components/venue-grid-client';
+import { VenueSearch } from './components/venue-search';
 import { VenueGridServer } from './components/venue-grid-server';
 
 export const generateMetadata = async (): Promise<Metadata> => {
@@ -44,7 +45,12 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
               </p>
             </div>
 
-            <VenueGridServer searchParams={resolvedSearchParams} />
+            <VenueSearch />
+
+            <Suspense fallback={<VenueGridLoadingSkeleton count={6} />}>
+              <VenuesContent searchParams={resolvedSearchParams} />
+            </Suspense>
+
           </div>
         </div>
       </div>

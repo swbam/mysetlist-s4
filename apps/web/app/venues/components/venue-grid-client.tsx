@@ -1,16 +1,7 @@
 'use client';
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-} from '@repo/design-system/components/ui/card';
-import { Car, Heart, MapPin, Star, Users } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useState } from 'react';
+import { MapPin } from 'lucide-react';
+import { VenueCard } from './venue-card';
 
 interface Venue {
   id: string;
@@ -33,45 +24,6 @@ interface VenueGridClientProps {
 }
 
 export function VenueGridClient({ venues }: VenueGridClientProps) {
-  const [favoriteVenues, setFavoriteVenues] = useState<string[]>([]);
-
-  const toggleFavorite = (venueId: string) => {
-    setFavoriteVenues((prev) =>
-      prev.includes(venueId)
-        ? prev.filter((id) => id !== venueId)
-        : [...prev, venueId]
-    );
-  };
-
-  const formatCapacity = (capacity: number) => {
-    if (capacity >= 1000) {
-      return `${(capacity / 1000).toFixed(1)}k`;
-    }
-    return capacity.toString();
-  };
-
-  const formatDistance = (distance?: number) => {
-    if (!distance) {
-      return null;
-    }
-    if (distance < 1) {
-      return `${Math.round(distance * 1000)}m`;
-    }
-    return `${distance.toFixed(1)}km`;
-  };
-
-  const venueTypeLabels: Record<string, string> = {
-    arena: 'Arena',
-    stadium: 'Stadium',
-    theater: 'Theater',
-    club: 'Club',
-    'outdoor-amphitheater': 'Outdoor Amphitheater',
-    'indoor-amphitheater': 'Indoor Amphitheater',
-    ballroom: 'Ballroom',
-    festival: 'Festival Grounds',
-    other: 'Other',
-  };
-
   if (venues.length === 0) {
     return (
       <div className="py-12 text-center">
@@ -85,6 +37,11 @@ export function VenueGridClient({ venues }: VenueGridClientProps) {
   }
 
   return (
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {venues.map((venue) => (
+        <VenueCard key={venue.id} venue={venue} />
+      ))}
+
     <div className="grid gap-4">
       {venues.map((venue) => {
         const hasParking = false;
