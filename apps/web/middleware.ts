@@ -1,20 +1,8 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { rateLimitMiddleware } from '~/middleware/rate-limit';
-import { createServerClient } from '@supabase/ssr';
-import { csrfProtection } from '~/lib/csrf';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next();
-    
-  // Skip middleware for health check endpoints to avoid circular dependencies
-  if (request.nextUrl.pathname.startsWith('/api/health')) {
-    return res;
-  }
-  
-  // Skip middleware for cron endpoints to avoid authentication issues
-  if (request.nextUrl.pathname.startsWith('/api/cron')) {
-    return res;
-  }
   
   const supabase = createServerClient(
     process.env['NEXT_PUBLIC_SUPABASE_URL']!,
@@ -88,15 +76,14 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Match all API routes
-    '/api/:path*',
-    // Match protected routes
-    '/dashboard/:path*',
-    '/vote/:path*',
-    '/profile/:path*',
-    '/admin/:path*',
-    '/settings/:path*',
-    '/my-artists/:path*',
-    '/notifications/:path*',
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     * - api routes (let them handle their own middleware)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico|public).*)',
   ],
 };
