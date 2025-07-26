@@ -6,6 +6,7 @@ import { VenueGridSkeleton as VenueGridLoadingSkeleton } from '~/components/load
 import { getVenues } from './actions';
 import { VenueGridClient } from './components/venue-grid-client';
 import { VenueSearch } from './components/venue-search';
+import { VenueGridServer } from './components/venue-grid-server';
 
 export const generateMetadata = async (): Promise<Metadata> => {
   return createMetadata({
@@ -24,24 +25,6 @@ interface VenuesPageProps {
     lng?: string;
   }>;
 }
-
-const VenuesContent = async ({ searchParams }: { searchParams: any }) => {
-  const venues = await getVenues({
-    ...(searchParams.q && { search: searchParams.q }),
-    ...(searchParams.types && { types: searchParams.types.split(',').filter(Boolean) }),
-    ...(searchParams.capacity && { capacity: searchParams.capacity }),
-    ...(searchParams.lat && { userLat: Number.parseFloat(searchParams.lat) }),
-    ...(searchParams.lng && { userLng: Number.parseFloat(searchParams.lng) }),
-  });
-
-  return (
-    <VenueGridClient
-      venues={venues.map((venue) => ({
-        ...venue,
-        avgRating: venue.avgRating ?? 0,
-      }))}
-    />
-  );
 };
 
 const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
@@ -67,6 +50,7 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
             <Suspense fallback={<VenueGridLoadingSkeleton count={6} />}>
               <VenuesContent searchParams={resolvedSearchParams} />
             </Suspense>
+
           </div>
         </div>
       </div>

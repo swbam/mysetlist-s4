@@ -190,7 +190,7 @@ export async function GET(request: NextRequest) {
       let venuesQuery = supabase
         .from('venues')
         .select('id, slug, name, city, state, country, capacity')
-        .or(`name.ilike.%${query}%,city.ilike.%${query}%`)
+        .ilike('name', `%${query}%`)
         .order('capacity', { ascending: false })
         .limit(Math.min(limit, 2));
 
