@@ -8,15 +8,13 @@ import { SearchBar } from '~/components/search-bar';
 function HomeHero() {
   return (
     <section 
-      className="relative overflow-hidden pt-32 pb-40"
+      className="relative overflow-hidden pt-32 pb-40 bg-background"
       aria-label="Homepage hero section"
       role="banner"
     >
-      {/* Gradient background with subtle mesh pattern */}
+      {/* Simple background */}
       <div className="-z-10 absolute inset-0 animate-fade-in">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_800px_at_50%_-100px,rgba(120,0,255,0.1),transparent)]" />
-        <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:radial-gradient(white,transparent_70%)]" />
+        <div className="absolute inset-0" />
       </div>
 
       <div className="container mx-auto px-4">
@@ -25,7 +23,7 @@ function HomeHero() {
           <div className="space-y-6 animate-slide-up">
             {/* Badge */}
             <div 
-              className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-primary"
+              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2"
               role="status"
               aria-label="Live statistics"
             >
@@ -37,12 +35,12 @@ function HomeHero() {
 
             {/* Main heading */}
             <h1 
-              className="bg-gradient-to-b from-white via-white/90 to-white/60 bg-clip-text font-extrabold text-6xl text-transparent leading-[0.95] tracking-tight md:text-8xl"
+              className="font-extrabold text-6xl leading-[0.95] tracking-tight md:text-8xl"
               id="main-heading"
             >
               Crowd-Curated
               <br />
-              <span className="bg-gradient-to-r from-gray-100 via-gray-400 to-gray-500 bg-clip-text">
+              <span className="text-muted-foreground">
                 Setlists
               </span>
             </h1>
@@ -58,14 +56,11 @@ function HomeHero() {
           <div className="mt-12 space-y-4 px-4 sm:px-0 animate-slide-up-delay-1">
             {/* Search container with glow effect */}
             <div className="relative mx-auto w-full max-w-2xl">
-              <div className="absolute inset-0 bg-gradient-to-r from-gray-400/20 via-gray-600/20 to-gray-800/20 opacity-50 blur-3xl" />
-              <div className="relative">
-                <SearchBar
-                  variant="hero"
-                  placeholder="Search artists..."
-                  className="w-full shadow-2xl"
-                />
-              </div>
+              <SearchBar
+                variant="hero"
+                placeholder="Search artists..."
+                className="w-full"
+              />
             </div>
 
             {/* Quick search suggestions */}
@@ -77,7 +72,7 @@ function HomeHero() {
                   <Link
                     key={artist}
                     href={`/artists/${artist.toLowerCase().replace(' ', '-')}`}
-                    className="rounded-full bg-muted/50 px-3 py-1.5 text-xs transition-all duration-200 hover:bg-muted hover:scale-105 sm:text-sm"
+                    className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-muted sm:text-sm"
                   >
                     {artist}
                   </Link>
@@ -115,7 +110,7 @@ function HomeHero() {
           >
             <div className="text-center">
               <div 
-                className="font-bold text-2xl text-white sm:text-3xl md:text-4xl"
+                className="font-bold text-2xl sm:text-3xl md:text-4xl"
                 aria-label="Ten thousand plus"
               >
                 10K+
@@ -125,7 +120,7 @@ function HomeHero() {
               </div>
             </div>
             <div className="text-center">
-              <div className="font-bold text-2xl text-white sm:text-3xl md:text-4xl">
+              <div className="font-bold text-2xl sm:text-3xl md:text-4xl">
                 50M+
               </div>
               <div className="mt-1 text-muted-foreground text-xs sm:text-sm">
@@ -133,7 +128,7 @@ function HomeHero() {
               </div>
             </div>
             <div className="col-span-2 text-center md:col-span-1">
-              <div className="font-bold text-2xl text-white sm:text-3xl md:text-4xl">
+              <div className="font-bold text-2xl sm:text-3xl md:text-4xl">
                 100K+
               </div>
               <div className="mt-1 text-muted-foreground text-xs sm:text-sm">
