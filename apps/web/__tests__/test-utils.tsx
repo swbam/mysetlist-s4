@@ -1,9 +1,21 @@
+/**
+ * @fileoverview Consolidated test utilities for MySetlist app
+ * This file provides unified testing utilities following Next-Forge patterns
+ */
+
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { type RenderOptions, render } from '@testing-library/react';
 import { SessionProvider } from 'next-auth/react';
 import type React from 'react';
 import type { ReactElement } from 'react';
 import { vi } from 'vitest';
+
+// Import and re-export utilities from test-utils package
+export * from '../test-utils';
+export * from '../test-utils/auth';
+export * from '../test-utils/api';
+export * from '../test-utils/performance';
+export * from '../test-utils/accessibility';
 
 // Mock Next.js router
 vi.mock('next/navigation', () => ({
@@ -96,99 +108,6 @@ const customRender = (
     ),
     ...renderOptions,
   });
-};
-
-// Mock fetch for API calls
-export const mockFetch = (response: any, ok = true) => {
-  global.fetch = vi.fn().mockResolvedValue({
-    ok,
-    json: async () => response,
-    status: ok ? 200 : 400,
-    statusText: ok ? 'OK' : 'Bad Request',
-  });
-  return global.fetch;
-};
-
-// Mock authenticated user
-export const mockAuthenticatedUser = (overrides = {}) => ({
-  id: 'test-user-id',
-  email: 'test@example.com',
-  user_metadata: {
-    full_name: 'Test User',
-    ...overrides,
-  },
-});
-
-// Test data factories
-export const createTestArtist = (overrides = {}) => ({
-  id: 'test-artist-id',
-  name: 'Test Artist',
-  slug: 'test-artist',
-  spotifyId: 'spotify-test-id',
-  ticketmasterId: 'tm-test-id',
-  imageUrl: 'https://example.com/artist.jpg',
-  genres: ['rock', 'alternative'],
-  popularity: 75,
-  followers: 10000,
-  verified: true,
-  ...overrides,
-});
-
-export const createTestShow = (overrides = {}) => ({
-  id: 'test-show-id',
-  name: 'Test Show',
-  date: new Date().toISOString(),
-  venueId: 'test-venue-id',
-  headlinerArtistId: 'test-artist-id',
-  ticketmasterId: 'tm-show-id',
-  status: 'active',
-  ...overrides,
-});
-
-export const createTestVenue = (overrides = {}) => ({
-  id: 'test-venue-id',
-  name: 'Test Venue',
-  slug: 'test-venue',
-  city: 'Test City',
-  state: 'Test State',
-  country: 'Test Country',
-  latitude: 40.7128,
-  longitude: -74.006,
-  capacity: 5000,
-  ...overrides,
-});
-
-export const createTestSong = (overrides = {}) => ({
-  id: 'test-song-id',
-  name: 'Test Song',
-  artistId: 'test-artist-id',
-  spotifyId: 'spotify-song-id',
-  previewUrl: 'https://example.com/preview.mp3',
-  duration: 180000,
-  ...overrides,
-});
-
-// Mock Supabase for vote button tests
-export const mockSupabase = () => {
-  global.fetch = vi.fn();
-  return {
-    auth: {
-      getUser: vi.fn().mockResolvedValue({
-        data: { user: { id: 'test-user' } },
-        error: null,
-      }),
-    },
-    from: vi.fn(() => ({
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      delete: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn(),
-      limit: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-    })),
-  };
 };
 
 // Re-export everything
