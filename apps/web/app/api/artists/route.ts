@@ -51,7 +51,16 @@ export async function GET(request: NextRequest) {
     const { data: artists, error, count } = await query;
 
     if (error) {
-      throw error;
+      console.error('Artists API error:', error);
+      return NextResponse.json(
+        {
+          error: 'Failed to fetch artists',
+          message: error instanceof Error ? error.message : 'Unknown error',
+          artists: [],
+          success: false,
+        },
+        { status: 500 }
+      );
     }
 
     // Transform artists data

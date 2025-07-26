@@ -17,15 +17,15 @@
     "analyze": "turbo analyze",
     "translate": "turbo translate",
     "boundaries": "turbo boundaries",
-    "bump-deps": "npx npm-check-updates --deep -u -x react-day-picker",
-    "bump-ui": "npx shadcn@latest add --all --overwrite -c packages/design-system",
+    "bump-deps": "pnpm dlx npm-check-updates --deep -u -x react-day-picker",
+    "bump-ui": "pnpm dlx shadcn@latest add --all --overwrite -c packages/design-system",
+    "perf:lighthouse": "pnpm dlx lighthouse https://localhost:3001 --view",
     "db:push": "cd packages/database && pnpm push",
     "db:generate": "cd packages/database && pnpm generate",
     "db:migrate": "cd packages/database && pnpm migrate",
     "db:studio": "cd packages/database && pnpm studio",
     "clean": "git clean -xdf node_modules",
     "analyze:web": "cd apps/web && ANALYZE=true pnpm build",
-    "perf:lighthouse": "npx lighthouse https://localhost:3001 --view",
     "perf:check": "pnpm build && pnpm typecheck && pnpm test",
     "deploy": "./scripts/deploy.sh",
     "deploy:prod": "tsx scripts/deploy-production.ts",
@@ -92,7 +92,7 @@
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "pnpm@10.12.4",
+  "packageManager": "pnpm@10.13.1",
   "dependencies": {
     "@clack/prompts": "^0.11.0",
     "@react-email/components": "0.0.25",

@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
       .from(shows)
       .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
       .leftJoin(venues, eq(shows.venueId, venues.id))
-      .where(gte(shows.date, new Date().toISOString().substring(0, 10)))
+      .where(gte(shows.date, new Date().toISOString().split('T')[0]))
       .orderBy(
         actualFilter === 'popular' 
           ? artists.trendingScore 
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(shows)
-      .where(gte(shows.date, new Date().toISOString().substring(0, 10)));
+      .where(gte(shows.date, new Date().toISOString().split('T')[0]!))
     
     const count = countResult[0]?.count || 0;
 

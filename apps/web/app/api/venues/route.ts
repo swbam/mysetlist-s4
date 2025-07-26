@@ -60,6 +60,19 @@ export async function GET(request: NextRequest) {
     const { data: venues, error, count } = await query;
 
     if (error) {
+      console.error('Venues API error:', error);
+      return NextResponse.json(
+        {
+          error: 'Failed to fetch venues',
+          message: error instanceof Error ? error.message : 'Unknown error',
+          venues: [],
+          success: false,
+        },
+        { status: 500 }
+      );
+    }
+
+    if (error) {
       throw error;
     }
 

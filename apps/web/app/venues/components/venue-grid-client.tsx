@@ -16,18 +16,16 @@ interface Venue {
   id: string;
   name: string;
   slug: string;
-  address: string | null;
   city: string;
   state: string | null;
   country: string;
   capacity: number | null;
-  venueType: string | null;
-  imageUrl: string | null;
+  latitude: number | null;
+  longitude: number | null;
   avgRating?: number;
   reviewCount?: number;
   upcomingShowCount?: number;
   distance?: number;
-  amenities: string | null;
 }
 
 interface VenueGridClientProps {
@@ -89,10 +87,7 @@ export function VenueGridClient({ venues }: VenueGridClientProps) {
   return (
     <div className="grid gap-4">
       {venues.map((venue) => {
-        const amenitiesList = venue.amenities
-          ? JSON.parse(venue.amenities)
-          : [];
-        const hasParking = amenitiesList.includes('parking');
+        const hasParking = false;
 
         return (
           <Card
@@ -100,18 +95,6 @@ export function VenueGridClient({ venues }: VenueGridClientProps) {
             className="overflow-hidden transition-shadow hover:shadow-lg"
           >
             <div className="flex">
-              {/* Venue Image */}
-              {venue.imageUrl && (
-                <div className="relative h-full w-48 flex-shrink-0">
-                  <Image
-                    src={venue.imageUrl}
-                    alt={venue.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-
               <div className="flex-1">
                 <CardHeader>
                   <div className="flex items-start justify-between">
@@ -122,12 +105,18 @@ export function VenueGridClient({ venues }: VenueGridClientProps) {
                         </h3>
                       </Link>
                       <div className="mt-1 flex flex-wrap items-center gap-2">
-                        {venue.venueType && (
-                          <Badge variant="outline">
-                            {venueTypeLabels[venue.venueType] ||
-                              venue.venueType}
+                        {venue.capacity && (
+                          <span className="text-muted-foreground text-sm">
+                            Capacity: {formatCapacity(venue.capacity)}
+                          </span>
+                        )}
+                        {venue.distance !== undefined && (
+                          <Badge variant="secondary">
+                            {formatDistance(venue.distance)} away
                           </Badge>
                         )}
+                      </div>
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
                         {venue.capacity && (
                           <span className="text-muted-foreground text-sm">
                             Capacity: {formatCapacity(venue.capacity)}

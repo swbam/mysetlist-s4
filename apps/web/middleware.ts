@@ -6,6 +6,16 @@ import { csrfProtection } from '~/lib/csrf';
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next();
   
+  // Skip middleware for health check endpoints to avoid circular dependencies
+  if (request.nextUrl.pathname.startsWith('/api/health')) {
+    return res;
+  }
+  
+  // Skip middleware for cron endpoints to avoid authentication issues
+  if (request.nextUrl.pathname.startsWith('/api/cron')) {
+    return res;
+  }
+  
   const supabase = createServerClient(
     process.env['NEXT_PUBLIC_SUPABASE_URL']!,
     process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!,
