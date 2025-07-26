@@ -10,7 +10,7 @@
 ### Project Documentation
 - **[README.md](./README.md)** - Project overview and getting started
 - **[CLAUDE.md](./CLAUDE.md)** - Claude Code project instructions
-- **[CRITICAL_FIXES_SUMMARY.md](./CRITICAL_FIXES_SUMMARY.md)** - Current issues and fixes needed
+- **[ENVIRONMENT_URLS.md](./ENVIRONMENT_URLS.md)** - Environment URL configurations
 
 ### Core Documentation
 - **[mysetlist-docs/](./mysetlist-docs/)** - Comprehensive project documentation
@@ -24,13 +24,20 @@
 ### Technical Documentation
 - **[docs/](./docs/)** - Technical guides
   - `DATA_INITIALIZATION.md` - Data setup guide
+  - `DEPLOYMENT_GUIDE.md` - Technical deployment information
+  - `PRODUCTION_READINESS_CHECKLIST.md` - Production checklist
   - `SYNC_SYSTEM.md` - Data synchronization system
   - `TRENDING_SYSTEM.md` - Trending algorithm documentation
 
 ### Testing & QA
-- **[apps/web/FINAL_QA_SUMMARY.md](./apps/web/FINAL_QA_SUMMARY.md)** - Final QA report
-- **[apps/web/QA_TESTING_PERFORMANCE_REPORT.md](./apps/web/QA_TESTING_PERFORMANCE_REPORT.md)** - Testing infrastructure
-- **[apps/web/docs/QA_STRATEGY.md](./apps/web/docs/QA_STRATEGY.md)** - QA strategy guide
+- **[apps/web/docs/](./apps/web/docs/)** - Application-specific documentation
+  - `QA_STRATEGY.md` - QA strategy guide
+  - `testing-guide.md` - Testing infrastructure
+  - `UI-UX-PERFORMANCE-IMPROVEMENTS.md` - UI/UX improvements
+  - `email-and-cron-setup.md` - Email and cron setup
+  - `realtime-features.md` - Real-time features guide
+  - `sentry-logging.md` - Error logging setup
+  - `spotify-auth-setup.md` - Spotify authentication setup
 
 ### Package Documentation
 - Individual README files in each package directory
@@ -60,4 +67,9 @@ pnpm db:studio  # Open Prisma Studio
 ```
 
 ## Archived Documentation
-Old reports and redundant guides have been moved to `docs-archive/` for reference.
+
+Historical reports and analysis have been moved to `docs-archive/` for reference:
+- `docs-archive/status-reports/` - Project status reports and completion summaries
+- `docs-archive/analysis-reports/` - Performance and technical analysis reports
+- `docs-archive/deployment-guides/` - Superseded deployment documentation
+- `docs-archive/project-planning/` - Early project planning and requirements
