@@ -181,121 +181,25 @@ export async function GET(request: NextRequest) {
     );
 
     return response;
-  } catch (_error) {
-    // Return mock data as fallback
-    const mockActivities = generateMockActivities(limit);
-
+  } catch (error) {
+    console.error('Failed to fetch recent activity:', error);
+    
+    // Return empty state instead of fake data
     return NextResponse.json(
       {
-        activities: mockActivities,
-        total: mockActivities.length,
+        activities: [],
+        total: 0,
         hasMore: false,
         generatedAt: new Date().toISOString(),
-        fallback: true,
-        error: 'Using fallback data',
+        error: 'Failed to load recent activity',
       },
       {
+        status: 500,
         headers: {
-          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+          'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
         },
       }
     );
   }
 }
 
-// Keep the mock data generator as fallback
-function generateMockActivities(count: number): ActivityItem[] {
-  const activityTypes = [
-    'vote',
-    'setlist_create',
-  ] as const;
-
-  const mockUsers = [
-    {
-      id: '1',
-      displayName: 'Alex Johnson',
-      avatarUrl: 'https://i.pravatar.cc/150?u=alex',
-    },
-    {
-      id: '2',
-      displayName: 'Maria Garcia',
-      avatarUrl: 'https://i.pravatar.cc/150?u=maria',
-    },
-    {
-      id: '3',
-      displayName: 'James Chen',
-      avatarUrl: 'https://i.pravatar.cc/150?u=james',
-    },
-    {
-      id: '4',
-      displayName: 'Sarah Miller',
-      avatarUrl: 'https://i.pravatar.cc/150?u=sarah',
-    },
-  ];
-
-  const mockTargets = [
-    {
-      id: '1',
-      name: 'The Weeknd',
-      slug: 'the-weeknd',
-      type: 'artist' as const,
-    },
-    {
-      id: '2',
-      name: 'Taylor Swift',
-      slug: 'taylor-swift',
-      type: 'artist' as const,
-    },
-    {
-      id: '3',
-      name: 'Madison Square Garden Show',
-      slug: 'msg-2024',
-      type: 'show' as const,
-    },
-    {
-      id: '4',
-      name: 'Hollywood Bowl',
-      slug: 'hollywood-bowl',
-      type: 'venue' as const,
-    },
-  ];
-
-  const activities: ActivityItem[] = [];
-  const now = new Date();
-
-  for (let i = 0; i < count; i++) {
-    const activityType =
-      activityTypes[Math.floor(Math.random() * activityTypes.length)] ?? 'vote';
-    const user = mockUsers[Math.floor(Math.random() * mockUsers.length)]!;
-    const target = mockTargets[Math.floor(Math.random() * mockTargets.length)]!;
-    const minutesAgo = Math.floor(Math.random() * 1440);
-    const createdAt = new Date(now.getTime() - minutesAgo * 60 * 1000);
-
-    const metadata =
-      activityType === 'vote'
-        ? { voteType: Math.random() > 0.7 ? 'down' : 'up' as 'up' | 'down' }
-        : { songCount: Math.floor(Math.random() * 15) + 10 };
-
-    activities.push({
-      id: `mock-${i}-${Date.now()}`,
-      type: activityType,
-      user: {
-        id: user.id,
-        displayName: user.displayName,
-        avatarUrl: user.avatarUrl,
-      },
-      target: {
-        id: target.id,
-        name: target.name,
-        slug: target.slug,
-        type: target.type,
-      },
-      createdAt: createdAt.toISOString(),
-      ...(metadata && { metadata }),
-    });
-  }
-
-  return activities.sort(
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-  );
-}

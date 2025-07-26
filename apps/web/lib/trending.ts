@@ -31,22 +31,8 @@ const DEFAULT_CONFIG: TrendingConfig = {
   limit: 10,
 };
 
-export async function calculateTrendingScore(
-  votes: number,
-  attendees: number,
-  createdAt: Date,
-  config: TrendingConfig = DEFAULT_CONFIG
-): Promise<number> {
-  const hoursOld = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60);
-  const recencyFactor = Math.max(0, 1 - hoursOld / config.timeWindow);
-
-  const score =
-    votes * config.weightVotes +
-    attendees * config.weightAttendees +
-    recencyFactor * config.weightRecency * 10;
-
-  return Math.round(score * 100) / 100;
-}
+// calculateTrendingScore function removed - using real trending_score from database only
+// No mathematical calculations allowed - all trending scores come from sync system
 
 export async function getTrendingShows(
   config: TrendingConfig = DEFAULT_CONFIG
@@ -152,8 +138,8 @@ export async function getTrendingArtists(
 
     // Transform artists to trending items
     const trendingArtists = artists.map((artist) => {
-      // Use real metrics from database
-      const votes = Math.floor((artist.popularity || 0) / 2); // Scale popularity for display
+      // Use real metrics from database only (no mathematical scaling)
+      const votes = artist.popularity || 0; // Direct popularity value from Spotify
       const attendees = artist.follower_count || 0; // App followers
 
       return {

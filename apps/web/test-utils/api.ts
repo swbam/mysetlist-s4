@@ -249,7 +249,7 @@ export const mockSearchResponse = <T>(results: T[], query: string, total?: numbe
   results,
   query,
   total: total || results.length,
-  took: Math.floor(Math.random() * 100) + 10, // Random response time
+  took: 25, // Fixed response time for testing
 });
 
 // API error response helpers

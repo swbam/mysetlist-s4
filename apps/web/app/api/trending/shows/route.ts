@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServiceClient } from '~/lib/supabase/server';
 import type { TrendingShow, TrendingShowsResponse } from '~/types/api';
+import { calculateShowGrowth } from '@repo/database';
 
 // Force dynamic rendering for API route
 export const dynamic = 'force-dynamic';
@@ -41,8 +42,13 @@ export async function GET(request: NextRequest) {
         attendee_count,
         view_count,
         trending_score,
+        setlist_count,
         headliner_artist_id,
         venue_id,
+        previous_view_count,
+        previous_attendee_count,
+        previous_vote_count,
+        previous_setlist_count,
         artists!inner(
           id,
           name,
@@ -73,10 +79,20 @@ export async function GET(request: NextRequest) {
       // Fallback trending score if null
       const score =
         s.trending_score ?? (s.vote_count ?? 0) * 2 + (s.attendee_count ?? 0);
-      const weeklyGrowth = Math.max(
-        0,
-        Math.random() * 25 + (s.vote_count ?? 0) / 10
-      );
+      // Calculate real growth using historical data (no fake calculations)
+      const realGrowth = calculateShowGrowth({
+        viewCount: s.view_count ?? 0,
+        previousViewCount: s.previous_view_count,
+        attendeeCount: s.attendee_count ?? 0,
+        previousAttendeeCount: s.previous_attendee_count,
+        voteCount: s.vote_count ?? 0,
+        previousVoteCount: s.previous_vote_count,
+        setlistCount: s.setlist_count ?? 0,
+        previousSetlistCount: s.previous_setlist_count,
+      });
+      
+      // Use real growth data only (0 if no historical data available)
+      const weeklyGrowth = realGrowth.overallGrowth;
       return {
         id: s.id,
         name: s.name || (artist?.name ? `${artist.name} Live` : 'Unknown Show'),

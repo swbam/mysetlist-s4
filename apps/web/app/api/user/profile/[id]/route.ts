@@ -69,7 +69,7 @@ export async function GET(
       name: item.artists?.name || 'Unknown Artist',
       imageUrl: item.artists?.image_url || '',
       genres: item.artists?.genres || [],
-      upcomingShows: Math.floor(Math.random() * 5), // Placeholder
+      upcomingShows: 0, // TODO: Calculate real upcoming shows for this artist
     }));
 
     return NextResponse.json({

@@ -1,0 +1,240 @@
+/* Mobile-Specific CSS Optimizations for MySetlist */
+
+/* iOS Safe Area Support */
+@supports (padding: env(safe-area-inset-top)) {
+  .ios-safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .ios-safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .ios-safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+  
+  .ios-safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Touch-Optimized Scrolling */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Prevent Horizontal Scrolling on Mobile */
+.mobile-container {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+/* Touch Target Minimum Sizes */
+.touch-target-sm {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.touch-target-md {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+.touch-target-lg {
+  min-height: 56px;
+  min-width: 56px;
+}
+
+/* Mobile-Specific Animations */
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-tap-animation {
+    transition: transform 0.1s ease-out, box-shadow 0.1s ease-out;
+  }
+  
+  .mobile-tap-animation:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Haptic Feedback Support */
+.haptic-button {
+  touch-action: manipulation;
+}
+
+/* Mobile Typography */
+@media (max-width: 768px) {
+  .mobile-text-optimization {
+    /* Ensure text is at least 16px to prevent zoom on iOS */
+    font-size: max(16px, 1em);
+  }
+  
+  /* Better line height for mobile reading */
+  .mobile-paragraph {
+    line-height: 1.6;
+  }
+}
+
+/* Mobile Form Optimizations */
+.mobile-input {
+  /* Prevent iOS zoom on input focus */
+  font-size: 16px;
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+/* Mobile Navigation Optimizations */
+.mobile-nav-overlay {
+  /* Ensure overlay covers entire screen including safe areas */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile browsers */
+}
+
+/* Prevent Body Scroll When Mobile Menu Open */
+.mobile-menu-open {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+/* Mobile Voting Button Optimizations */
+.mobile-vote-container {
+  /* Ensure adequate spacing between vote buttons */
+  gap: 12px;
+}
+
+.mobile-vote-button {
+  /* Optimal touch target with visual feedback */
+  min-height: 48px;
+  min-width: 48px;
+  border-radius: 12px;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+/* Mobile Performance Optimizations */
+.mobile-performance {
+  /* GPU acceleration for smooth animations */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Mobile Accessibility */
+@media (prefers-color-scheme: dark) {
+  .mobile-high-contrast {
+    /* Ensure sufficient contrast in dark mode */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Mobile Network Optimizations */
+@media (max-width: 768px) and (max-resolution: 150dpi) {
+  /* Reduce image quality for low-DPI mobile devices on slow networks */
+  .mobile-image-optimization {
+    image-rendering: -webkit-optimize-contrast;
+  }
+}
+
+/* Landscape Mode Optimizations */
+@media (max-height: 500px) and (orientation: landscape) {
+  .mobile-landscape-compact {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  
+  /* Reduce header height in landscape */
+  .mobile-header-landscape {
+    min-height: 56px;
+  }
+}
+
+/* Pull-to-Refresh Prevention (where not wanted) */
+.prevent-pull-refresh {
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Mobile Focus States */
+.mobile-focus:focus-visible {
+  outline: 2px solid #007AFF;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Mobile Sticky Elements */
+.mobile-sticky {
+  position: -webkit-sticky;
+  position: sticky;
+  /* Account for potential notch */
+  top: env(safe-area-inset-top, 0);
+}
+
+/* Progressive Enhancement for Touch Devices */
+@media (hover: none) and (pointer: coarse) {
+  /* Touch device specific styles */
+  .touch-device-only {
+    display: block;
+  }
+  
+  .hover-device-only {
+    display: none;
+  }
+  
+  /* Larger touch targets on actual touch devices */
+  .progressive-touch-target {
+    min-height: 48px;
+    min-width: 48px;
+    padding: 12px;
+  }
+}
+
+/* Mobile Search Optimizations */
+.mobile-search-overlay {
+  /* Ensure search overlay is accessible */
+  z-index: 9999;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Mobile Card Optimizations */
+.mobile-card {
+  /* Prevent cards from being too narrow on mobile */
+  min-width: 280px;
+  margin: 8px;
+  border-radius: 12px;
+  /* Smooth scrolling for card containers */
+  scroll-snap-align: start;
+}
+
+/* Mobile Bottom Sheet Optimizations */
+.mobile-bottom-sheet {
+  /* Smooth bottom sheet animation */
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  /* Handle indicator */
+  position: relative;
+}
+
+.mobile-bottom-sheet::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 4px;
+  background-color: currentColor;
+  opacity: 0.3;
+  border-radius: 2px;
+}

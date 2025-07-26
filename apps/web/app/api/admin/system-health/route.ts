@@ -140,16 +140,16 @@ async function checkAuthService(supabase: any): Promise<HealthCheck> {
 }
 
 async function getSystemMetrics() {
-  // In a real implementation, these would come from actual monitoring tools
-  // like CloudWatch, Datadog, New Relic, etc.
+  // TODO: Integrate with real monitoring tools (CloudWatch, Datadog, New Relic, etc.)
+  // For now, return placeholder values until real monitoring is implemented
   return {
-    cpuUsage: Math.floor(Math.random() * 50) + 20, // 20-70%
-    memoryUsage: Math.floor(Math.random() * 40) + 30, // 30-70%
-    diskUsage: Math.floor(Math.random() * 30) + 15, // 15-45%
-    apiResponseTime: Math.floor(Math.random() * 100) + 100, // 100-200ms
-    activeConnections: Math.floor(Math.random() * 50) + 20, // 20-70
-    requestsPerMinute: Math.floor(Math.random() * 500) + 500, // 500-1000
-    errorRate: (Math.random() * 0.05).toFixed(3), // 0-5%
+    cpuUsage: 45, // Placeholder - integrate with real CPU monitoring
+    memoryUsage: 60, // Placeholder - integrate with real memory monitoring
+    diskUsage: 25, // Placeholder - integrate with real disk monitoring
+    apiResponseTime: 150, // Placeholder - integrate with real latency monitoring
+    activeConnections: 35, // Placeholder - integrate with real connection monitoring
+    requestsPerMinute: 750, // Placeholder - integrate with real request monitoring
+    errorRate: "0.012", // Placeholder - integrate with real error monitoring
   };
 }
 

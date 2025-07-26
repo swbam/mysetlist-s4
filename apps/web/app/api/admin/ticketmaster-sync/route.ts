@@ -143,14 +143,15 @@ async function syncUpcomingShows(
   const {
     limit = 100,
   } = options;
-  // Mock Ticketmaster API call - in real implementation, use actual API
-  const mockShows = generateMockShows(limit);
+  // TODO: Implement real Ticketmaster API integration
+  // For now, return empty results until API integration is complete
+  const shows: ShowData[] = [];
 
   let createdShows = 0;
   let updatedShows = 0;
   let skippedShows = 0;
 
-  for (const showData of mockShows) {
+  for (const showData of shows) {
     try {
       // Check if show already exists
       const { data: existingShow, error: existingShowError } = await supabase
@@ -245,31 +246,11 @@ async function syncVenueInfo(
     throw venuesError;
   }
 
-  for (const venue of venues || []) {
-    try {
-      // Mock Ticketmaster venue lookup
-      const venueData = generateMockVenueData(venue);
-
-      const { error: updateError } = await supabase
-        .from('venues')
-        .update({
-          ticketmaster_id: venueData.ticketmaster_id,
-          capacity: venueData.capacity,
-          latitude: venueData.latitude,
-          longitude: venueData.longitude,
-          website: venueData.website,
-          phone: venueData.phone,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', venue.id);
-
-      if (updateError) {
-        throw updateError;
-      }
-      updatedVenues++;
-    } catch (_error) {
-      failedVenues++;
-    }
+  // TODO: Implement real Ticketmaster venue lookup
+  // Skip all venue updates until API integration is complete
+  for (const _venue of venues || []) {
+    // All venue processing skipped until real Ticketmaster API integration
+    failedVenues++;
   }
 
   // Log sync operation
@@ -313,8 +294,9 @@ async function syncArtistShows(
     return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
   }
 
-  // Mock Ticketmaster artist shows lookup
-  const artistShows = generateMockArtistShows(artist, limit);
+  // TODO: Implement real Ticketmaster artist shows lookup
+  // For now, return empty results until API integration is complete
+  const artistShows: ShowData[] = [];
 
   let createdShows = 0;
   let updatedShows = 0;
@@ -410,89 +392,12 @@ async function updateShowStatuses(
   });
 }
 
-// Mock data generators for demonstration
-function generateMockShows(count: number): ShowData[] {
-  const shows: ShowData[] = [];
-  const artists = [
-    'The Killers',
-    'Coldplay',
-    'Imagine Dragons',
-    'Arctic Monkeys',
-    'Red Hot Chili Peppers',
-  ];
-  const venues = [
-    'Madison Square Garden',
-    'Wembley Stadium',
-    'Hollywood Bowl',
-    'Red Rocks',
-    'Royal Albert Hall',
-  ];
-
-  for (let i = 0; i < count; i++) {
-    const date = new Date();
-    date.setDate(date.getDate() + Math.floor(Math.random() * 180)); // Next 6 months
-
-    shows.push({
-      ticketmaster_id: `TM_${Date.now()}_${i}`,
-      title: `${artists[Math.floor(Math.random() * artists.length)]} World Tour`,
-      date: date.toISOString().split('T')[0]!,
-      time: `${19 + Math.floor(Math.random() * 3)}:00`,
-      status: 'upcoming',
-      ticket_url: `https://ticketmaster.com/event/${Date.now()}_${i}`,
-      price_range_min: 50 + Math.floor(Math.random() * 100),
-      price_range_max: 150 + Math.floor(Math.random() * 200),
-      venue_name: venues[Math.floor(Math.random() * venues.length)]!,
-      artist_name: artists[Math.floor(Math.random() * artists.length)]!,
-    });
-  }
-
-  return shows;
-}
-
-function generateMockVenueData(venue: VenueData): VenueUpdateData {
-  return {
-    ticketmaster_id: `TM_VENUE_${Date.now()}_${venue.id}`,
-    capacity: 1000 + Math.floor(Math.random() * 49000), // 1K to 50K capacity
-    latitude: 40.7589 + (Math.random() - 0.5) * 10, // Around NYC with variation
-    longitude: -73.9851 + (Math.random() - 0.5) * 10,
-    website: `https://${venue.name.toLowerCase().replace(/\s+/g, '')}.com`,
-    phone: `+1-555-${Math.floor(Math.random() * 9000 + 1000)}`,
-  };
-}
-
-function generateMockArtistShows(
-  artist: ArtistData,
-  count: number
-): ShowData[] {
-  const shows: ShowData[] = [];
-  const venues = [
-    'Madison Square Garden',
-    'Staples Center',
-    'TD Garden',
-    'United Center',
-  ];
-
-  for (let i = 0; i < count; i++) {
-    const date = new Date();
-    date.setDate(date.getDate() + Math.floor(Math.random() * 365));
-
-    shows.push({
-      ticketmaster_id: `TM_${artist.id}_${Date.now()}_${i}`,
-      title: `${artist.name} Live`,
-      date: date.toISOString().split('T')[0]!,
-      time: '20:00',
-      status: 'upcoming',
-      artist_id: artist.id,
-      venue_name: venues[Math.floor(Math.random() * venues.length)]!,
-      artist_name: artist.name,
-      ticket_url: `https://ticketmaster.com/event/${artist.id}_${Date.now()}_${i}`,
-      price_range_min: 50 + Math.floor(Math.random() * 100),
-      price_range_max: 150 + Math.floor(Math.random() * 200),
-    });
-  }
-
-  return shows;
-}
+// TODO: Implement real Ticketmaster API integration
+// All mock data generation functions removed to comply with real-data-only requirement
+// Integration should use actual Ticketmaster Discovery API endpoints:
+// - Events API: https://app.ticketmaster.com/discovery/v2/events
+// - Venues API: https://app.ticketmaster.com/discovery/v2/venues
+// - Artists API: https://app.ticketmaster.com/discovery/v2/attractions
 
 async function logSyncOperation(
   supabase: SupabaseClient,

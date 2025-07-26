@@ -3,9 +3,9 @@ import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
 import { PageErrorBoundary } from '~/components/error-boundary-wrapper';
 import {
-  ArtistGridSkeleton,
   TrendingListSkeleton,
 } from '~/components/loading-states';
+import { ResponsiveGrid } from '~/components/layout/responsive-grid';
 import { ArtistSearch } from './components/artist-search';
 import { PopularArtists } from './components/popular-artists';
 import { TrendingArtists } from './components/trending-artists';
@@ -51,7 +51,7 @@ export default function ArtistsPage() {
             <div className="mt-12">
               <h2 className="mb-6 font-semibold text-2xl">Popular Artists</h2>
               {React.createElement(Suspense as any, {
-                fallback: <ArtistGridSkeleton count={8} />
+                fallback: <ResponsiveGrid variant="artists" loading={true} loadingCount={12} />
               }, <PopularArtists />)}
             </div>
 

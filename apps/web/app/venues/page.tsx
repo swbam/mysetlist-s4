@@ -2,7 +2,8 @@ import { createMetadata } from '@repo/seo/metadata';
 import type { Metadata } from 'next';
 import React, { Suspense } from 'react';
 import { ErrorBoundaryWrapper } from '~/components/error-boundary-wrapper';
-import { VenueGridSkeleton as VenueGridLoadingSkeleton } from '~/components/loading-states';
+import { ResponsiveGrid } from '~/components/layout/responsive-grid';
+import { VenueSearch } from './components/venue-search';
 import { getVenues } from './actions';
 import { VenueGridClient } from './components/venue-grid-client';
 import { VenueSearch } from './components/venue-search';
@@ -25,6 +26,41 @@ interface VenuesPageProps {
     lng?: string;
   }>;
 }
+
+const VenuesContent = async ({ searchParams }: { searchParams: any }) => {
+  const venues = await getVenues({
+    ...(searchParams.q && { search: searchParams.q }),
+    ...(searchParams.types && { types: searchParams.types.split(',').filter(Boolean) }),
+    ...(searchParams.capacity && { capacity: searchParams.capacity }),
+    ...(searchParams.lat && { userLat: Number.parseFloat(searchParams.lat) }),
+    ...(searchParams.lng && { userLng: Number.parseFloat(searchParams.lng) }),
+  });
+
+  const formattedVenues = venues.map((venue) => ({
+    id: venue.id,
+    name: venue.name,
+    slug: venue.slug,
+    address: venue.address,
+    city: venue.city,
+    state: venue.state,
+    country: venue.country,
+    capacity: venue.capacity,
+    venueType: venue.venueType,
+    imageUrl: venue.imageUrl,
+    avgRating: venue.avgRating ?? 0,
+    reviewCount: venue.reviewCount,
+    upcomingShowCount: venue.upcomingShowCount,
+    distance: venue.distance,
+    amenities: venue.amenities,
+  }));
+
+  return (
+    <div className="space-y-6">
+      <VenueSearch />
+      <VenueGridClient venues={formattedVenues} />
+    </div>
+  );
+
 };
 
 const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
@@ -45,6 +81,12 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
               </p>
             </div>
 
+            <Suspense fallback={
+              <div className="space-y-6">
+                <div className="h-12 bg-muted rounded animate-pulse" />
+                <ResponsiveGrid variant="venues" loading={true} loadingCount={9} />
+              </div>
+            }>
             <VenueSearch />
 
             <Suspense fallback={<VenueGridLoadingSkeleton count={6} />}>

@@ -1,4 +1,6 @@
-@import "@repo/design-system/styles/globals.css";
+/* Temporarily removed imports for debugging server hanging */
+/* @import "@repo/design-system/styles/globals.css"; */
+/* @import "./styles/mobile-optimizations.css"; */
 
 /* Performance optimized animations */
 @keyframes fade-in {

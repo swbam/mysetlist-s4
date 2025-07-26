@@ -31,6 +31,14 @@ export const artists = pgTable('artists', {
   totalAlbums: integer('total_albums').default(0),
   totalSongs: integer('total_songs').default(0),
   lastFullSyncAt: timestamp('last_full_sync_at'),
+  
+  // Historical tracking for real growth calculations
+  previousFollowers: integer('previous_followers'),
+  previousPopularity: integer('previous_popularity'),
+  previousMonthlyListeners: integer('previous_monthly_listeners'),
+  previousFollowerCount: integer('previous_follower_count'),
+  lastGrowthCalculated: timestamp('last_growth_calculated'),
+  
   trendingScore: doublePrecision('trending_score').default(0),
   totalShows: integer('total_shows').default(0),
   upcomingShows: integer('upcoming_shows').default(0),
