@@ -116,7 +116,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.cache.outputs.cache-hit != 'true'
-        run: pnpm install --frozen-lockfile --prefer-offline
+        run: pnpm install
 
   build-and-typecheck:
     name: 🔨 Build & TypeCheck

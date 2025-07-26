@@ -173,7 +173,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
       
-      - run: pnpm install --frozen-lockfile
+      - run: pnpm install 
       
       - name: Run migrations
         env:
