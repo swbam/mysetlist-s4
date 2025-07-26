@@ -5,7 +5,7 @@ import { csrfProtection } from '~/lib/csrf';
 
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next();
-  
+    
   // Skip middleware for health check endpoints to avoid circular dependencies
   if (request.nextUrl.pathname.startsWith('/api/health')) {
     return res;
