@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServiceClient } from '~/lib/supabase/server';
+import { createSupabaseAdminClient } from '@repo/database';
 import { spotify } from '@repo/external-apis';
 import { ticketmaster } from '@repo/external-apis';
 import { setlistfm } from '@repo/external-apis';
@@ -33,7 +33,7 @@ const startTime = Date.now();
 async function checkDatabase(): Promise<HealthCheck> {
   const start = Date.now();
   try {
-    const supabase = createServiceClient();
+    const supabase = createSupabaseAdminClient();
     const { data, error } = await supabase
       .from('artists')
       .select('id')
@@ -170,7 +170,7 @@ async function checkRedisCache(): Promise<HealthCheck> {
 async function checkRealtimeConnection(): Promise<HealthCheck> {
   const start = Date.now();
   try {
-    const supabase = createServiceClient();
+    const supabase = createSupabaseAdminClient();
     
     // Try to create a test channel
     const channel = supabase.channel('health-check');

@@ -6,7 +6,7 @@ import {
   getFunnelAnalysis,
   getRFMAnalysis
 } from '~/lib/analytics/advanced-analytics';
-import { createServiceClient } from '~/lib/supabase/server';
+import { createSupabaseAdminClient } from '@repo/database';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -323,7 +323,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const supabase = createServiceClient();
+    const supabase = createSupabaseAdminClient();
     
     switch (updateType) {
       case 'cohort_settings':
@@ -512,7 +512,7 @@ async function analyzeUserSegments(segments: string[], startDate: string, endDat
   
   const segmentAnalysis = await Promise.all(
     segments.map(async (segment) => {
-      const supabaseLocal = createServiceClient();
+      const supabaseLocal = createSupabaseAdminClient();
       const { data: users, error } = await supabaseLocal
         .from('users')
         .select('id, created_at')
