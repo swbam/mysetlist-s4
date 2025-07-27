@@ -8,7 +8,7 @@ import {
   resumePipeline,
   cleanPipeline
 } from '~/lib/data-pipeline/pipeline-engine';
-import { createServiceClient } from '~/lib/supabase/server';
+import { createSupabaseAdminClient } from '@repo/database';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
           });
         } else {
           // Get all pipeline statuses
-          const supabase = createServiceClient();
+          const supabase = createSupabaseAdminClient();
           const { data: pipelines } = await supabase
             .from('pipeline_configs')
             .select('id, name, active')
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
         };
 
         try {
-          const supabase = createServiceClient();
+          const supabase = createSupabaseAdminClient();
           const { data: pipelineConfigs } = await supabase
             .from('pipeline_configs')
             .select('id, active');
@@ -259,7 +259,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const supabase = createServiceClient();
+    const supabase = createSupabaseAdminClient();
     
     // Update pipeline configuration
     const { data: updatedConfig, error: updateError } = await supabase
@@ -311,7 +311,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const supabase = createServiceClient();
+    const supabase = createSupabaseAdminClient();
     
     // First, pause the pipeline
     try {

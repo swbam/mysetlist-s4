@@ -19,7 +19,7 @@ interface SearchBarProps {
 }
 
 export function SearchBar({
-  placeholder = 'Search artists, shows, venues...',
+  placeholder = 'Search artists...',
   className,
   variant = 'default',
   showFilters = false,
@@ -29,7 +29,7 @@ export function SearchBar({
     <UnifiedSearch
       placeholder={placeholder}
       className={className}
-      variant={variant}
+      variant="artists-only"
       showFilters={showFilters}
       limit={8}
     />

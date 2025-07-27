@@ -57,7 +57,7 @@ export function MobileSearch({
   onSearch,
   onResultSelect,
   className,
-  placeholder = 'Search artists, shows, venues...',
+  placeholder = 'Search artists...',
   recentSearches = mockRecentSearches,
   trendingSearches = mockTrendingSearches,
 }: MobileSearchProps) {
@@ -90,18 +90,18 @@ export function MobileSearch({
         searchResults = await onSearch(searchQuery);
       } else {
         const res = await fetch(
-          `/api/search?q=${encodeURIComponent(searchQuery)}&limit=8`
+          `/api/artists/search?q=${encodeURIComponent(searchQuery)}&limit=8`
         );
         if (res.ok) {
           const data = await res.json();
-          searchResults = (data.results || []).map(
-            (result: any) => ({
-              id: result.slug || result.id,
-              type: result.type,
-              title: result.title,
-              imageUrl: result.imageUrl,
-              subtitle: result.subtitle,
-              trending: result.trending || false,
+          searchResults = (data.artists || []).map(
+            (artist: any) => ({
+              id: artist.slug || artist.id,
+              type: 'artist' as const,
+              title: artist.name,
+              imageUrl: artist.imageUrl,
+              subtitle: artist.genres?.slice(0, 2).join(', ') || 'Artist',
+              trending: artist.trending || false,
             })
           );
         }
