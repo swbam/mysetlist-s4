@@ -6,7 +6,6 @@ import { ResponsiveGrid } from '~/components/layout/responsive-grid';
 import { VenueSearch } from './components/venue-search';
 import { getVenues } from './actions';
 import { VenueGridClient } from './components/venue-grid-client';
-import { VenueSearch } from './components/venue-search';
 import { VenueGridServer } from './components/venue-grid-server';
 
 export const generateMetadata = async (): Promise<Metadata> => {
@@ -87,9 +86,6 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
                 <ResponsiveGrid variant="venues" loading={true} loadingCount={9} />
               </div>
             }>
-            <VenueSearch />
-
-            <Suspense fallback={<VenueGridLoadingSkeleton count={6} />}>
               <VenuesContent searchParams={resolvedSearchParams} />
             </Suspense>
 
