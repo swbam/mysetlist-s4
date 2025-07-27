@@ -5,6 +5,8 @@ import { createSupabaseAdminClient } from '@repo/database';
 export async function createClient() {
   // Check if we're in a request context or build time
   try {
+    const cookieStore = await cookies();
+    
     const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'] || 
       'https://yzwkimtdaabyjbpykquu.supabase.co';
     const supabaseAnonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'] || 
