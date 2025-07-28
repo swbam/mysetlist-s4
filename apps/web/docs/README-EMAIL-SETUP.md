@@ -5,6 +5,7 @@ This guide covers the setup and configuration of the comprehensive email notific
 ## Overview
 
 The email notification system provides:
+
 - Welcome emails for new users
 - Show reminders for upcoming concerts
 - New show announcements when artists announce tours
@@ -49,6 +50,7 @@ Run the email notifications migration:
 ```
 
 This creates:
+
 - `email_preferences` - User email preferences and frequency settings
 - `email_unsubscribes` - Unsubscribe tokens and preferences
 - `email_queue` - Scheduled email queue with retry logic
@@ -59,16 +61,19 @@ This creates:
 The system includes three automated cron jobs:
 
 ### 1. Email Processing (Every 5 minutes)
+
 - **Path**: `/api/cron/email-processing`
 - **Schedule**: `*/5 * * * *`
 - **Function**: Processes queued emails and handles retries
 
 ### 2. Daily Show Reminders (9 AM daily)
+
 - **Path**: `/api/cron/daily-reminders`
 - **Schedule**: `0 9 * * *`
 - **Function**: Sends show reminders for tomorrow's concerts
 
 ### 3. Weekly Digest (8 AM Mondays)
+
 - **Path**: `/api/cron/weekly-digest`
 - **Schedule**: `0 8 * * 1`
 - **Function**: Sends weekly summary emails
@@ -114,8 +119,8 @@ import {
   triggerNewShowNotifications,
   triggerSetlistUpdateNotifications,
   triggerEmailVerification,
-  triggerPasswordReset
-} from '@/lib/email-triggers';
+  triggerPasswordReset,
+} from "@/lib/email-triggers";
 
 // Welcome new user
 await triggerWelcomeEmail(userId);
@@ -124,11 +129,7 @@ await triggerWelcomeEmail(userId);
 await triggerNewShowNotifications(showId);
 
 // Setlist updated
-await triggerSetlistUpdateNotifications(
-  showId, 
-  newSongs, 
-  'updated'
-);
+await triggerSetlistUpdateNotifications(showId, newSongs, "updated");
 
 // Email verification
 await triggerEmailVerification(userId, verificationToken);
@@ -150,6 +151,7 @@ The system includes a complete unsubscribe flow:
 ## Email Queue System
 
 Features:
+
 - **Scheduled delivery** for frequency-based notifications
 - **Retry logic** with exponential backoff
 - **Error tracking** and logging
@@ -159,6 +161,7 @@ Features:
 ## Monitoring and Analytics
 
 The system logs:
+
 - **Delivery status** (sent, delivered, bounced, failed)
 - **User engagement** (opens, clicks)
 - **Queue performance** (processing times, retry counts)
@@ -250,17 +253,24 @@ const prefs = await getUserEmailPreferences();
 console.log(prefs);
 
 // Check email queue
-const queue = await database.select().from(emailQueue).where(eq(emailQueue.userId, userId));
+const queue = await database
+  .select()
+  .from(emailQueue)
+  .where(eq(emailQueue.userId, userId));
 console.log(queue);
 
 // Check email logs
-const logs = await database.select().from(emailLogs).where(eq(emailLogs.userId, userId));
+const logs = await database
+  .select()
+  .from(emailLogs)
+  .where(eq(emailLogs.userId, userId));
 console.log(logs);
 ```
 
 ## Support
 
 For issues with the email system:
+
 1. Check the email logs in the database
 2. Review cron job execution logs
 3. Verify environment variables are set correctly

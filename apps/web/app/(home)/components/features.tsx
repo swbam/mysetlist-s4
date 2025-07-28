@@ -1,5 +1,5 @@
-import { Calendar, Music, Vote, Zap } from 'lucide-react';
-import React from 'react';
+import { Calendar, Music, Vote, Zap } from "lucide-react";
+import React from "react";
 
 function Features() {
   return (
@@ -21,7 +21,9 @@ function Features() {
             <div className="flex aspect-square h-full flex-col justify-between rounded-lg bg-muted p-4 transition-colors hover:bg-muted/80 sm:p-6 lg:col-span-2 lg:aspect-auto">
               <Music className="h-6 w-6 stroke-1 text-primary sm:h-8 sm:w-8" />
               <div className="flex flex-col">
-                <h3 className="text-lg tracking-tight sm:text-xl">Artist Discovery</h3>
+                <h3 className="text-lg tracking-tight sm:text-xl">
+                  Artist Discovery
+                </h3>
                 <p className="mt-2 text-sm text-muted-foreground sm:max-w-xs sm:text-base">
                   Find your favorite artists and discover new ones through our
                   Spotify integration
@@ -31,7 +33,9 @@ function Features() {
             <div className="flex aspect-square flex-col justify-between rounded-lg bg-muted p-4 transition-colors hover:bg-muted/80 sm:p-6">
               <Calendar className="h-6 w-6 stroke-1 text-primary sm:h-8 sm:w-8" />
               <div className="flex flex-col">
-                <h3 className="text-lg tracking-tight sm:text-xl">Show Tracking</h3>
+                <h3 className="text-lg tracking-tight sm:text-xl">
+                  Show Tracking
+                </h3>
                 <p className="mt-2 text-sm text-muted-foreground sm:max-w-xs sm:text-base">
                   Never miss a concert with our comprehensive show tracking and
                   notifications
@@ -42,7 +46,9 @@ function Features() {
             <div className="flex aspect-square flex-col justify-between rounded-lg bg-muted p-4 transition-colors hover:bg-muted/80 sm:p-6">
               <Vote className="h-6 w-6 stroke-1 text-primary sm:h-8 sm:w-8" />
               <div className="flex flex-col">
-                <h3 className="text-lg tracking-tight sm:text-xl">Setlist Voting</h3>
+                <h3 className="text-lg tracking-tight sm:text-xl">
+                  Setlist Voting
+                </h3>
                 <p className="mt-2 text-sm text-muted-foreground sm:max-w-xs sm:text-base">
                   Vote on which songs you want to hear at upcoming shows
                 </p>
@@ -51,7 +57,9 @@ function Features() {
             <div className="flex aspect-square h-full flex-col justify-between rounded-lg bg-muted p-4 transition-colors hover:bg-muted/80 sm:p-6 lg:col-span-2 lg:aspect-auto">
               <Zap className="h-6 w-6 stroke-1 text-primary sm:h-8 sm:w-8" />
               <div className="flex flex-col">
-                <h3 className="text-lg tracking-tight sm:text-xl">Real-time Updates</h3>
+                <h3 className="text-lg tracking-tight sm:text-xl">
+                  Real-time Updates
+                </h3>
                 <p className="mt-2 text-sm text-muted-foreground sm:max-w-xs sm:text-base">
                   Get instant updates on setlists, votes, and show changes as
                   they happen

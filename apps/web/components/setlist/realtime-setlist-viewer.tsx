@@ -1,24 +1,23 @@
-'use client';
+"use client";
 
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Badge } from '@repo/design-system/components/ui/badge';
+} from "@repo/design-system/components/ui/alert";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { cn } from '@repo/design-system/lib/utils';
-import { Music2, TrendingUp, Wifi, WifiOff } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { useAuth } from '~/app/providers/auth-provider';
-import { VoteButton } from '../voting/vote-button';
-import { VoteSummary } from '../voting/vote-summary';
-
+} from "@repo/design-system/components/ui/card";
+import { cn } from "@repo/design-system/lib/utils";
+import { Music2, TrendingUp, Wifi, WifiOff } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { useAuth } from "~/app/providers/auth-provider";
+import { VoteButton } from "../voting/vote-button";
+import { VoteSummary } from "../voting/vote-summary";
 
 interface RealtimeSetlistViewerProps {
   showId: string;
@@ -58,7 +57,7 @@ export function RealtimeSetlistViewer({
       const response = await fetch(`/api/setlists/${showId}`);
 
       if (!response.ok) {
-        throw new Error('Failed to fetch setlists');
+        throw new Error("Failed to fetch setlists");
       }
 
       const data = await response.json();
@@ -76,7 +75,7 @@ export function RealtimeSetlistViewer({
           });
           return acc;
         },
-        { total: 0, upvotes: 0, downvotes: 0 }
+        { total: 0, upvotes: 0, downvotes: 0 },
       );
 
       setTotalVotes(votes);
@@ -87,12 +86,12 @@ export function RealtimeSetlistViewer({
 
   const handleVote = async (
     setlistSongId: string,
-    voteType: 'up' | 'down' | null
+    voteType: "up" | "down" | null,
   ) => {
-    const response = await fetch('/api/votes', {
-      method: 'POST',
+    const response = await fetch("/api/votes", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         setlistSongId,
@@ -101,7 +100,7 @@ export function RealtimeSetlistViewer({
     });
 
     if (!response.ok) {
-      throw new Error('Failed to vote');
+      throw new Error("Failed to vote");
     }
 
     // Optimistically update local state
@@ -115,18 +114,18 @@ export function RealtimeSetlistViewer({
             let downvotes = song.downvotes;
 
             // Remove previous vote
-            if (currentVote === 'up') {
+            if (currentVote === "up") {
               upvotes--;
             }
-            if (currentVote === 'down') {
+            if (currentVote === "down") {
               downvotes--;
             }
 
             // Add new vote
-            if (voteType === 'up') {
+            if (voteType === "up") {
               upvotes++;
             }
-            if (voteType === 'down') {
+            if (voteType === "down") {
               downvotes++;
             }
 
@@ -140,7 +139,7 @@ export function RealtimeSetlistViewer({
           }
           return song;
         }),
-      }))
+      })),
     );
 
     // Refresh data to ensure consistency
@@ -149,12 +148,12 @@ export function RealtimeSetlistViewer({
 
   const formatDuration = (ms?: number) => {
     if (!ms) {
-      return '';
+      return "";
     }
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   const formatLastUpdate = (date: Date) => {
@@ -191,7 +190,7 @@ export function RealtimeSetlistViewer({
   return (
     <div className="space-y-6">
       {/* Connection Status */}
-      <Alert className={cn(!isConnected && 'border-red-200 bg-red-50')}>
+      <Alert className={cn(!isConnected && "border-red-200 bg-red-50")}>
         <div className="flex items-center gap-2">
           {isConnected ? (
             <Wifi className="h-4 w-4 text-green-600" />
@@ -201,7 +200,7 @@ export function RealtimeSetlistViewer({
           <AlertDescription>
             {isConnected ? (
               <>
-                Live updates enabled • Last updated{' '}
+                Live updates enabled • Last updated{" "}
                 {formatLastUpdate(lastUpdate)}
                 {isLive && (
                   <Badge variant="destructive" className="ml-2">
@@ -210,7 +209,7 @@ export function RealtimeSetlistViewer({
                 )}
               </>
             ) : (
-              'Connection lost. Retrying...'
+              "Connection lost. Retrying..."
             )}
           </AlertDescription>
         </div>
@@ -228,7 +227,7 @@ export function RealtimeSetlistViewer({
                     {setlist.name}
                     <Badge
                       variant={
-                        setlist.type === 'actual' ? 'default' : 'secondary'
+                        setlist.type === "actual" ? "default" : "secondary"
                       }
                     >
                       {setlist.type}
@@ -249,10 +248,10 @@ export function RealtimeSetlistViewer({
                         <div
                           key={song.id}
                           className={cn(
-                            'flex items-center gap-3 rounded-lg p-3 transition-colors',
-                            'hover:bg-muted/50',
+                            "flex items-center gap-3 rounded-lg p-3 transition-colors",
+                            "hover:bg-muted/50",
                             song.isPlayed &&
-                              'border border-green-200 bg-green-50'
+                              "border border-green-200 bg-green-50",
                           )}
                         >
                           {/* Position */}
@@ -320,7 +319,7 @@ export function RealtimeSetlistViewer({
                           {showVotes &&
                             session &&
                             !setlist.isLocked &&
-                            setlist.type === 'predicted' && (
+                            setlist.type === "predicted" && (
                               <VoteButton
                                 setlistSongId={song.id}
                                 currentVote={song.userVote}
@@ -338,17 +337,17 @@ export function RealtimeSetlistViewer({
                           {showVotes &&
                             (!session ||
                               setlist.isLocked ||
-                              setlist.type === 'actual') && (
+                              setlist.type === "actual") && (
                               <div className="flex items-center gap-1 text-sm">
                                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                                 <span
                                   className={cn(
-                                    'font-medium',
-                                    song.netVotes > 0 && 'text-green-600',
-                                    song.netVotes < 0 && 'text-red-600'
+                                    "font-medium",
+                                    song.netVotes > 0 && "text-green-600",
+                                    song.netVotes < 0 && "text-red-600",
                                   )}
                                 >
-                                  {song.netVotes > 0 ? '+' : ''}
+                                  {song.netVotes > 0 ? "+" : ""}
                                   {song.netVotes}
                                 </span>
                               </div>

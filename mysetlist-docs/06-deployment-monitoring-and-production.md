@@ -1,6 +1,7 @@
 # MySetlist - Deployment, Monitoring & Production
 
 ## Table of Contents
+
 1. [Deployment Architecture](#deployment-architecture)
 2. [Next-Forge Production Setup](#next-forge-production-setup)
 3. [Vercel Deployment Configuration](#vercel-deployment-configuration)
@@ -17,6 +18,7 @@
 MySetlist leverages Next-Forge's production-ready deployment strategy with Vercel for frontend hosting, Supabase for backend services, and additional monitoring tools for production reliability.
 
 ### Production Infrastructure
+
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    Production Stack                      │
@@ -41,6 +43,7 @@ MySetlist leverages Next-Forge's production-ready deployment strategy with Verce
 ```
 
 ### Deployment Environments
+
 - **Development**: Local development with hot reload
 - **Preview**: Branch-based preview deployments on Vercel
 - **Staging**: Production-like environment for testing
@@ -49,18 +52,19 @@ MySetlist leverages Next-Forge's production-ready deployment strategy with Verce
 ## Next-Forge Production Setup
 
 ### Project Configuration
+
 ```typescript
 // next.config.js
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Performance optimizations
   experimental: {
-    optimizePackageImports: ['@repo/ui', '@repo/database'],
+    optimizePackageImports: ["@repo/ui", "@repo/database"],
     turbo: {
       rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
+        "*.svg": {
+          loaders: ["@svgr/webpack"],
+          as: "*.js",
         },
       },
     },
@@ -69,34 +73,34 @@ const nextConfig = {
   // Image optimization
   images: {
     domains: [
-      'i.scdn.co', // Spotify images
-      's1.ticketm.net', // Ticketmaster images
-      'images.unsplash.com', // Placeholder images
+      "i.scdn.co", // Spotify images
+      "s1.ticketm.net", // Ticketmaster images
+      "images.unsplash.com", // Placeholder images
     ],
-    formats: ['image/webp', 'image/avif'],
+    formats: ["image/webp", "image/avif"],
   },
 
   // Security headers
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: "/(.*)",
         headers: [
           {
-            key: 'X-Frame-Options',
-            value: 'DENY',
+            key: "X-Frame-Options",
+            value: "DENY",
           },
           {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff',
+            key: "X-Content-Type-Options",
+            value: "nosniff",
           },
           {
-            key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin',
+            key: "Referrer-Policy",
+            value: "origin-when-cross-origin",
           },
           {
-            key: 'Permissions-Policy',
-            value: 'camera=(), microphone=(), geolocation=(self)',
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(self)",
           },
         ],
       },
@@ -107,26 +111,26 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: '/login',
-        destination: '/auth/signin',
+        source: "/login",
+        destination: "/auth/signin",
         permanent: true,
       },
       {
-        source: '/register',
-        destination: '/auth/signup',
+        source: "/register",
+        destination: "/auth/signup",
         permanent: true,
       },
     ];
   },
 
   // Bundle analyzer
-  ...(process.env.ANALYZE === 'true' && {
+  ...(process.env.ANALYZE === "true" && {
     webpack: (config) => {
       config.plugins.push(
-        new (require('webpack-bundle-analyzer').BundleAnalyzerPlugin)({
-          analyzerMode: 'server',
+        new (require("webpack-bundle-analyzer").BundleAnalyzerPlugin)({
+          analyzerMode: "server",
           openAnalyzer: true,
-        })
+        }),
       );
       return config;
     },
@@ -137,6 +141,7 @@ module.exports = nextConfig;
 ```
 
 ### Package Scripts
+
 ```json
 // apps/web/package.json
 {
@@ -159,6 +164,7 @@ module.exports = nextConfig;
 ## Vercel Deployment Configuration
 
 ### Vercel Configuration
+
 ```json
 // vercel.json
 {
@@ -212,6 +218,7 @@ module.exports = nextConfig;
 ```
 
 ### Environment Variables Setup
+
 ```bash
 # .env.example
 # App Configuration
@@ -245,15 +252,19 @@ NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
 ## Environment Management
 
 ### Environment-Specific Configurations
+
 ```typescript
 // lib/config.ts
 const config = {
   app: {
-    name: 'MySetlist',
+    name: "MySetlist",
     url: process.env.NEXT_PUBLIC_APP_URL!,
-    env: process.env.NEXT_PUBLIC_APP_ENV as 'development' | 'staging' | 'production',
+    env: process.env.NEXT_PUBLIC_APP_ENV as
+      | "development"
+      | "staging"
+      | "production",
   },
-  
+
   supabase: {
     url: process.env.NEXT_PUBLIC_SUPABASE_URL!,
     anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -289,9 +300,9 @@ const config = {
   },
 
   features: {
-    enableAnalytics: config.app.env === 'production',
-    enableDebugLogs: config.app.env !== 'production',
-    enableExperimentalFeatures: config.app.env === 'development',
+    enableAnalytics: config.app.env === "production",
+    enableDebugLogs: config.app.env !== "production",
+    enableExperimentalFeatures: config.app.env === "development",
   },
 } as const;
 
@@ -299,14 +310,15 @@ export default config;
 ```
 
 ### Feature Flags
+
 ```typescript
 // lib/feature-flags.ts
 export const FEATURE_FLAGS = {
-  SPOTIFY_INTEGRATION: process.env.NEXT_PUBLIC_ENABLE_SPOTIFY === 'true',
-  REAL_TIME_UPDATES: process.env.NEXT_PUBLIC_ENABLE_REALTIME === 'true',
-  PUSH_NOTIFICATIONS: process.env.NEXT_PUBLIC_ENABLE_PUSH === 'true',
-  ADVANCED_SEARCH: process.env.NEXT_PUBLIC_ENABLE_ADVANCED_SEARCH === 'true',
-  USER_GENERATED_CONTENT: process.env.NEXT_PUBLIC_ENABLE_UGC === 'true',
+  SPOTIFY_INTEGRATION: process.env.NEXT_PUBLIC_ENABLE_SPOTIFY === "true",
+  REAL_TIME_UPDATES: process.env.NEXT_PUBLIC_ENABLE_REALTIME === "true",
+  PUSH_NOTIFICATIONS: process.env.NEXT_PUBLIC_ENABLE_PUSH === "true",
+  ADVANCED_SEARCH: process.env.NEXT_PUBLIC_ENABLE_ADVANCED_SEARCH === "true",
+  USER_GENERATED_CONTENT: process.env.NEXT_PUBLIC_ENABLE_UGC === "true",
 } as const;
 
 export function isFeatureEnabled(flag: keyof typeof FEATURE_FLAGS): boolean {
@@ -317,31 +329,32 @@ export function isFeatureEnabled(flag: keyof typeof FEATURE_FLAGS): boolean {
 ## Database Management & Migrations
 
 ### Production Migration Strategy
+
 ```typescript
 // packages/database/src/migrate-production.ts
-import { migrate } from 'drizzle-orm/postgres-js/migrator';
-import { db, migrationClient } from './client';
-import { sql } from 'drizzle-orm';
+import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { db, migrationClient } from "./client";
+import { sql } from "drizzle-orm";
 
 async function runProductionMigrations() {
-  console.log('🚀 Starting production migrations...');
-  
+  console.log("🚀 Starting production migrations...");
+
   try {
     // Check if database is accessible
     await db.execute(sql`SELECT 1`);
-    console.log('✅ Database connection established');
+    console.log("✅ Database connection established");
 
     // Run migrations with transaction
     await migrationClient.begin(async (tx) => {
-      await migrate(db, { 
-        migrationsFolder: './migrations',
-        migrationsTable: 'drizzle_migrations',
+      await migrate(db, {
+        migrationsFolder: "./migrations",
+        migrationsTable: "drizzle_migrations",
       });
     });
 
-    console.log('✅ Migrations completed successfully');
+    console.log("✅ Migrations completed successfully");
   } catch (error) {
-    console.error('❌ Migration failed:', error);
+    console.error("❌ Migration failed:", error);
     process.exit(1);
   } finally {
     await migrationClient.end();
@@ -355,30 +368,30 @@ if (require.main === module) {
 ```
 
 ### Database Backup Automation
+
 ```typescript
 // scripts/backup-database.ts
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { exec } from "child_process";
+import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
 async function backupDatabase() {
-  const timestamp = new Date().toISOString().split('T')[0];
+  const timestamp = new Date().toISOString().split("T")[0];
   const backupName = `MySetlist-backup-${timestamp}.sql`;
-  
+
   try {
-    console.log('🔄 Starting database backup...');
-    
+    console.log("🔄 Starting database backup...");
+
     const command = `pg_dump ${process.env.DATABASE_URL} > backups/${backupName}`;
     await execAsync(command);
-    
+
     console.log(`✅ Backup created: ${backupName}`);
-    
+
     // Upload to cloud storage (implementation depends on provider)
     await uploadToCloudStorage(backupName);
-    
   } catch (error) {
-    console.error('❌ Backup failed:', error);
+    console.error("❌ Backup failed:", error);
     // Send alert notification
     await sendBackupAlert(error);
   }
@@ -394,7 +407,7 @@ async function sendBackupAlert(error: Error) {
 }
 
 // Schedule daily backups
-if (process.env.NODE_ENV === 'production') {
+if (process.env.NODE_ENV === "production") {
   setInterval(backupDatabase, 24 * 60 * 60 * 1000); // Daily
 }
 ```
@@ -402,23 +415,24 @@ if (process.env.NODE_ENV === 'production') {
 ## Monitoring & Analytics
 
 ### Error Tracking with Sentry
+
 ```typescript
 // lib/sentry.ts
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from "@sentry/nextjs";
 
 const SENTRY_DSN = process.env.SENTRY_DSN;
 
 Sentry.init({
   dsn: SENTRY_DSN,
   environment: process.env.NEXT_PUBLIC_APP_ENV,
-  tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-  debug: process.env.NODE_ENV === 'development',
-  
+  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
+  debug: process.env.NODE_ENV === "development",
+
   beforeSend(event) {
     // Filter out known non-critical errors
     if (event.exception) {
       const error = event.exception.values?.[0];
-      if (error?.type === 'ChunkLoadError') {
+      if (error?.type === "ChunkLoadError") {
         return null; // Don't send chunk load errors
       }
     }
@@ -427,7 +441,7 @@ Sentry.init({
 
   integrations: [
     new Sentry.BrowserTracing({
-      tracingOrigins: ['localhost', 'MySetlist.app'],
+      tracingOrigins: ["localhost", "MySetlist.app"],
     }),
   ],
 });
@@ -436,31 +450,29 @@ export { Sentry };
 ```
 
 ### Application Metrics
+
 ```typescript
 // lib/metrics.ts
-import { PostHog } from 'posthog-node';
+import { PostHog } from "posthog-node";
 
 class MetricsService {
   private posthog: PostHog;
 
   constructor() {
-    this.posthog = new PostHog(
-      process.env.NEXT_PUBLIC_POSTHOG_KEY!,
-      {
-        host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-      }
-    );
+    this.posthog = new PostHog(process.env.NEXT_PUBLIC_POSTHOG_KEY!, {
+      host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    });
   }
 
   trackEvent(
     userId: string | null,
     event: string,
-    properties?: Record<string, any>
+    properties?: Record<string, any>,
   ) {
-    if (process.env.NODE_ENV !== 'production') return;
+    if (process.env.NODE_ENV !== "production") return;
 
     this.posthog.capture({
-      distinctId: userId || 'anonymous',
+      distinctId: userId || "anonymous",
       event,
       properties: {
         ...properties,
@@ -471,7 +483,7 @@ class MetricsService {
   }
 
   trackPageView(userId: string | null, path: string) {
-    this.trackEvent(userId, '$pageview', { path });
+    this.trackEvent(userId, "$pageview", { path });
   }
 
   trackUserAction(userId: string, action: string, data?: Record<string, any>) {
@@ -479,7 +491,7 @@ class MetricsService {
   }
 
   trackAPICall(endpoint: string, duration: number, status: number) {
-    this.trackEvent(null, 'api_call', {
+    this.trackEvent(null, "api_call", {
       endpoint,
       duration,
       status,
@@ -495,59 +507,65 @@ export const metrics = new MetricsService();
 ```
 
 ### Performance Monitoring
+
 ```typescript
 // lib/performance.ts
 export class PerformanceMonitor {
   static measureAsyncOperation<T>(
     operation: () => Promise<T>,
-    operationName: string
+    operationName: string,
   ): Promise<T> {
     return new Promise(async (resolve, reject) => {
       const startTime = performance.now();
-      
+
       try {
         const result = await operation();
         const endTime = performance.now();
         const duration = endTime - startTime;
-        
+
         console.log(`⏱️ ${operationName} took ${duration.toFixed(2)}ms`);
-        
+
         // Track in analytics
-        metrics.trackEvent(null, 'performance_metric', {
+        metrics.trackEvent(null, "performance_metric", {
           operation: operationName,
           duration: Math.round(duration),
         });
-        
+
         resolve(result);
       } catch (error) {
         const endTime = performance.now();
         const duration = endTime - startTime;
-        
-        console.error(`❌ ${operationName} failed after ${duration.toFixed(2)}ms:`, error);
-        
-        metrics.trackEvent(null, 'performance_error', {
+
+        console.error(
+          `❌ ${operationName} failed after ${duration.toFixed(2)}ms:`,
+          error,
+        );
+
+        metrics.trackEvent(null, "performance_error", {
           operation: operationName,
           duration: Math.round(duration),
           error: error.message,
         });
-        
+
         reject(error);
       }
     });
   }
 
   static measurePageLoad() {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
-    window.addEventListener('load', () => {
-      const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
-      
+    window.addEventListener("load", () => {
+      const navigation = performance.getEntriesByType(
+        "navigation",
+      )[0] as PerformanceNavigationTiming;
+
       const pageLoadTime = navigation.loadEventEnd - navigation.fetchStart;
       const dnsTime = navigation.domainLookupEnd - navigation.domainLookupStart;
       const tcpTime = navigation.connectEnd - navigation.connectStart;
       const ttfb = navigation.responseStart - navigation.requestStart;
-      
-      metrics.trackEvent(null, 'page_performance', {
+
+      metrics.trackEvent(null, "page_performance", {
         pageLoadTime: Math.round(pageLoadTime),
         dnsTime: Math.round(dnsTime),
         tcpTime: Math.round(tcpTime),
@@ -562,38 +580,40 @@ export class PerformanceMonitor {
 ## Performance Optimization
 
 ### Caching Strategy
+
 ```typescript
 // lib/cache-control.ts
 export const CACHE_STRATEGIES = {
   // Static content - cache for 1 year with revalidation
-  STATIC: 'public, max-age=31536000, immutable',
-  
+  STATIC: "public, max-age=31536000, immutable",
+
   // API responses - cache for 5 minutes
-  API_SHORT: 'public, max-age=300, stale-while-revalidate=3600',
-  
+  API_SHORT: "public, max-age=300, stale-while-revalidate=3600",
+
   // Artist/venue data - cache for 1 hour
-  CONTENT_MEDIUM: 'public, max-age=3600, stale-while-revalidate=86400',
-  
+  CONTENT_MEDIUM: "public, max-age=3600, stale-while-revalidate=86400",
+
   // Search results - cache for 10 minutes
-  SEARCH: 'public, max-age=600, stale-while-revalidate=1800',
-  
+  SEARCH: "public, max-age=600, stale-while-revalidate=1800",
+
   // User-specific content - no cache
-  PRIVATE: 'private, no-cache, no-store, must-revalidate',
-  
+  PRIVATE: "private, no-cache, no-store, must-revalidate",
+
   // Real-time data - minimal cache
-  REALTIME: 'public, max-age=60, stale-while-revalidate=300',
+  REALTIME: "public, max-age=60, stale-while-revalidate=300",
 } as const;
 
 export function setCacheHeaders(
   response: Response,
-  strategy: keyof typeof CACHE_STRATEGIES
+  strategy: keyof typeof CACHE_STRATEGIES,
 ): Response {
-  response.headers.set('Cache-Control', CACHE_STRATEGIES[strategy]);
+  response.headers.set("Cache-Control", CACHE_STRATEGIES[strategy]);
   return response;
 }
 ```
 
 ### Image Optimization
+
 ```typescript
 // components/optimized-image.tsx
 import Image from 'next/image';
@@ -646,7 +666,7 @@ export function OptimizedImage({
           <span className="text-muted-foreground">Image unavailable</span>
         </div>
       )}
-      
+
       {isLoading && (
         <div className="absolute inset-0 bg-muted animate-pulse" />
       )}
@@ -658,22 +678,26 @@ export function OptimizedImage({
 ## Security & Compliance
 
 ### Security Headers Middleware
+
 ```typescript
 // middleware.ts
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
   // Security headers
-  response.headers.set('X-DNS-Prefetch-Control', 'on');
-  response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
-  response.headers.set('X-XSS-Protection', '1; mode=block');
-  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
-  response.headers.set('X-Content-Type-Options', 'nosniff');
-  response.headers.set('Referrer-Policy', 'origin-when-cross-origin');
-  
+  response.headers.set("X-DNS-Prefetch-Control", "on");
+  response.headers.set(
+    "Strict-Transport-Security",
+    "max-age=63072000; includeSubDomains; preload",
+  );
+  response.headers.set("X-XSS-Protection", "1; mode=block");
+  response.headers.set("X-Frame-Options", "SAMEORIGIN");
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("Referrer-Policy", "origin-when-cross-origin");
+
   // CSP Header
   const cspHeader = `
     default-src 'self';
@@ -686,21 +710,22 @@ export function middleware(request: NextRequest) {
     form-action 'self';
     frame-ancestors 'none';
     upgrade-insecure-requests;
-  `.replace(/\s{2,}/g, ' ').trim();
-  
-  response.headers.set('Content-Security-Policy', cspHeader);
+  `
+    .replace(/\s{2,}/g, " ")
+    .trim();
+
+  response.headers.set("Content-Security-Policy", cspHeader);
 
   return response;
 }
 
 export const config = {
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
 ```
 
 ### GDPR Compliance
+
 ```typescript
 // components/cookie-consent.tsx
 'use client';
@@ -722,7 +747,7 @@ export function CookieConsent() {
   const acceptCookies = () => {
     localStorage.setItem('cookie-consent', 'accepted');
     setShowBanner(false);
-    
+
     // Initialize analytics after consent
     if (typeof window !== 'undefined') {
       window.gtag?.('consent', 'update', {
@@ -744,7 +769,7 @@ export function CookieConsent() {
       <Card className="p-4 shadow-lg">
         <h3 className="font-semibold mb-2">Cookie Consent</h3>
         <p className="text-sm text-muted-foreground mb-4">
-          We use cookies to enhance your experience and analyze our traffic. 
+          We use cookies to enhance your experience and analyze our traffic.
           By clicking "Accept", you consent to our use of cookies.
         </p>
         <div className="flex gap-2">
@@ -764,10 +789,11 @@ export function CookieConsent() {
 ## Backup & Disaster Recovery
 
 ### Automated Backup System
+
 ```typescript
 // scripts/disaster-recovery.ts
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { exec } from "child_process";
+import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
@@ -779,16 +805,16 @@ export class DisasterRecoveryService {
     try {
       // Database backup
       await this.backupDatabase(backupName);
-      
+
       // File storage backup
       await this.backupStorage(backupName);
-      
+
       // Configuration backup
       await this.backupConfiguration(backupName);
-      
+
       console.log(`✅ Full backup completed: ${backupName}`);
     } catch (error) {
-      console.error('❌ Backup failed:', error);
+      console.error("❌ Backup failed:", error);
       throw error;
     }
   }
@@ -810,20 +836,20 @@ export class DisasterRecoveryService {
       environment: process.env.NODE_ENV,
       version: process.env.npm_package_version,
     };
-    
+
     // Store configuration backup
   }
 
   async restoreFromBackup(backupName: string): Promise<void> {
     console.log(`🔄 Restoring from backup: ${backupName}`);
-    
+
     try {
       await this.restoreDatabase(backupName);
       await this.restoreStorage(backupName);
-      
+
       console.log(`✅ Restore completed: ${backupName}`);
     } catch (error) {
-      console.error('❌ Restore failed:', error);
+      console.error("❌ Restore failed:", error);
       throw error;
     }
   }
@@ -842,6 +868,7 @@ export class DisasterRecoveryService {
 ## Development Workflow
 
 ### CI/CD Pipeline
+
 ```yaml
 # .github/workflows/deploy.yml
 name: Deploy to Production
@@ -857,25 +884,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-          cache: 'npm'
-      
+          node-version: "18"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run type check
         run: npm run type-check
-      
+
       - name: Run linting
         run: npm run lint
-      
+
       - name: Run tests
         run: npm run test
-      
+
       - name: Run E2E tests
         run: npm run test:e2e
 
@@ -884,16 +911,16 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-          cache: 'npm'
-      
+          node-version: "18"
+          cache: "npm"
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Build application
         run: npm run build
         env:
@@ -906,26 +933,27 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
-      
+
       - name: Deploy to Vercel
         uses: amondnet/vercel-action@v20
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
+          vercel-args: "--prod"
 ```
 
 ### Health Checks
+
 ```typescript
 // app/api/health/route.ts
-import { NextResponse } from 'next/server';
-import { db } from '@repo/database';
-import { sql } from 'drizzle-orm';
+import { NextResponse } from "next/server";
+import { db } from "@repo/database";
+import { sql } from "drizzle-orm";
 
 export async function GET() {
   const healthCheck = {
-    status: 'healthy',
+    status: "healthy",
     timestamp: new Date().toISOString(),
     services: {} as Record<string, any>,
   };
@@ -935,7 +963,7 @@ export async function GET() {
     const dbStart = Date.now();
     await db.execute(sql`SELECT 1`);
     healthCheck.services.database = {
-      status: 'healthy',
+      status: "healthy",
       responseTime: Date.now() - dbStart,
     };
 
@@ -943,15 +971,15 @@ export async function GET() {
     const redisStart = Date.now();
     // Add Redis ping check
     healthCheck.services.redis = {
-      status: 'healthy',
+      status: "healthy",
       responseTime: Date.now() - redisStart,
     };
 
     return NextResponse.json(healthCheck);
   } catch (error) {
-    healthCheck.status = 'unhealthy';
+    healthCheck.status = "unhealthy";
     healthCheck.services.error = error.message;
-    
+
     return NextResponse.json(healthCheck, { status: 500 });
   }
 }

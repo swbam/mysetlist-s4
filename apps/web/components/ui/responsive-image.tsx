@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import Image from 'next/image';
-import React, { useState } from 'react';
-import { cn } from '@repo/design-system/lib/utils';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
+import Image from "next/image";
+import React, { useState } from "react";
+import { cn } from "@repo/design-system/lib/utils";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 
 interface ResponsiveImageProps {
   src: string;
@@ -17,15 +17,15 @@ interface ResponsiveImageProps {
   className?: string;
   fallbackSrc?: string;
   showSkeleton?: boolean;
-  aspectRatio?: 'square' | 'video' | 'portrait' | 'wide' | string;
-  objectFit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down';
+  aspectRatio?: "square" | "video" | "portrait" | "wide" | string;
+  objectFit?: "cover" | "contain" | "fill" | "none" | "scale-down";
 }
 
 const aspectRatioClasses = {
-  square: 'aspect-square',
-  video: 'aspect-video',
-  portrait: 'aspect-[3/4]',
-  wide: 'aspect-[16/9]',
+  square: "aspect-square",
+  video: "aspect-video",
+  portrait: "aspect-[3/4]",
+  wide: "aspect-[16/9]",
 };
 
 export const ResponsiveImage = React.memo(function ResponsiveImage({
@@ -34,14 +34,14 @@ export const ResponsiveImage = React.memo(function ResponsiveImage({
   width,
   height,
   fill = false,
-  sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw',
+  sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
   priority = false,
   quality = 75,
   className,
   fallbackSrc,
   showSkeleton = true,
   aspectRatio,
-  objectFit = 'cover',
+  objectFit = "cover",
 }: ResponsiveImageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
@@ -55,7 +55,7 @@ export const ResponsiveImage = React.memo(function ResponsiveImage({
   const handleError = () => {
     setIsLoading(false);
     setHasError(true);
-    
+
     if (fallbackSrc && currentSrc !== fallbackSrc) {
       setCurrentSrc(fallbackSrc);
       setIsLoading(true);
@@ -64,8 +64,11 @@ export const ResponsiveImage = React.memo(function ResponsiveImage({
   };
 
   const getAspectRatioClass = () => {
-    if (!aspectRatio) return '';
-    return aspectRatioClasses[aspectRatio as keyof typeof aspectRatioClasses] || aspectRatio;
+    if (!aspectRatio) return "";
+    return (
+      aspectRatioClasses[aspectRatio as keyof typeof aspectRatioClasses] ||
+      aspectRatio
+    );
   };
 
   const imageProps = {
@@ -77,18 +80,18 @@ export const ResponsiveImage = React.memo(function ResponsiveImage({
     onLoad: handleLoad,
     onError: handleError,
     className: cn(
-      'transition-opacity duration-300',
-      isLoading && 'opacity-0',
-      !isLoading && 'opacity-100',
+      "transition-opacity duration-300",
+      isLoading && "opacity-0",
+      !isLoading && "opacity-100",
       `object-${objectFit}`,
-      className
+      className,
     ),
   };
 
   const containerClass = cn(
-    'relative overflow-hidden',
+    "relative overflow-hidden",
     getAspectRatioClass(),
-    fill && 'h-full w-full'
+    fill && "h-full w-full",
   );
 
   if (hasError && !fallbackSrc) {
@@ -110,7 +113,7 @@ export const ResponsiveImage = React.memo(function ResponsiveImage({
       {isLoading && showSkeleton && (
         <Skeleton className="absolute inset-0 h-full w-full" />
       )}
-      
+
       {/* Image */}
       {fill ? (
         <Image {...imageProps} fill />

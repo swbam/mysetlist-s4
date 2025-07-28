@@ -1,24 +1,24 @@
-import { db } from '@repo/database';
-import { setlistSongs, setlists, songs, users, votes } from '@repo/database';
-import { and, desc, eq, sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { setlistSongs, setlists, songs, users, votes } from "@repo/database";
+import { and, desc, eq, sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const showId = searchParams.get('showId');
-    const setlistId = searchParams.get('setlistId');
+    const showId = searchParams.get("showId");
+    const setlistId = searchParams.get("setlistId");
 
     if (!showId) {
       return NextResponse.json(
-        { error: 'Missing showId parameter' },
-        { status: 400 }
+        { error: "Missing showId parameter" },
+        { status: 400 },
       );
     }
 
     // Build conditions for setlist songs query
     const conditions = [eq(setlists.showId, showId)];
-    
+
     if (setlistId) {
       conditions.push(eq(setlistSongs.setlistId, setlistId));
     }
@@ -98,11 +98,13 @@ export async function GET(request: NextRequest) {
       if (!voterStats.has(userId)) {
         voterStats.set(userId, {
           id: userId,
-          displayName: vote.user?.displayName || 'Anonymous',
+          displayName: vote.user?.displayName || "Anonymous",
           totalVotes: 0,
           upvotes: 0,
           downvotes: 0,
-          ...(vote.user?.createdAt && { joinedDate: vote.user.createdAt.toISOString() }),
+          ...(vote.user?.createdAt && {
+            joinedDate: vote.user.createdAt.toISOString(),
+          }),
           recentVotes: 0,
         });
       }
@@ -110,9 +112,9 @@ export async function GET(request: NextRequest) {
       const stats = voterStats.get(userId)!;
       stats.totalVotes++;
 
-      if (vote.voteType === 'up') {
+      if (vote.voteType === "up") {
         stats.upvotes++;
-      } else if (vote.voteType === 'down') {
+      } else if (vote.voteType === "down") {
         stats.downvotes++;
       }
 
@@ -241,8 +243,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

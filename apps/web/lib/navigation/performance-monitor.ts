@@ -8,7 +8,7 @@ interface NavigationMetrics {
   startTime: number;
   endTime: number;
   duration: number;
-  loadState: 'loading' | 'loaded' | 'error';
+  loadState: "loading" | "loaded" | "error";
   errorMessage?: string;
   performanceEntry?: PerformanceNavigationTiming;
 }
@@ -34,50 +34,50 @@ class NavigationPerformanceMonitor {
 
   private setupPerformanceObservers() {
     // Navigation timing observer
-    if ('PerformanceObserver' in window) {
+    if ("PerformanceObserver" in window) {
       const navigationObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         entries.forEach((entry) => {
-          if (entry.entryType === 'navigation') {
+          if (entry.entryType === "navigation") {
             this.recordNavigationTiming(entry as PerformanceNavigationTiming);
           }
         });
       });
 
-      navigationObserver.observe({ entryTypes: ['navigation'] });
+      navigationObserver.observe({ entryTypes: ["navigation"] });
       this.observers.push(navigationObserver);
 
       // Paint timing observer
       const paintObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         entries.forEach((entry) => {
-          if (entry.name === 'first-contentful-paint') {
+          if (entry.name === "first-contentful-paint") {
             this.recordPaintTiming(entry);
           }
         });
       });
 
-      paintObserver.observe({ entryTypes: ['paint'] });
+      paintObserver.observe({ entryTypes: ["paint"] });
       this.observers.push(paintObserver);
     }
   }
 
   private setupNavigationListeners() {
     // Listen for Next.js route changes
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       // Route change start
-      window.addEventListener('beforeunload', () => {
+      window.addEventListener("beforeunload", () => {
         this.startNavigation(window.location.pathname);
       });
 
       // Route change complete
-      window.addEventListener('load', () => {
-        this.endNavigation('loaded');
+      window.addEventListener("load", () => {
+        this.endNavigation("loaded");
       });
 
       // Route change error
-      window.addEventListener('error', (event) => {
-        this.endNavigation('error', event.error?.message);
+      window.addEventListener("error", (event) => {
+        this.endNavigation("error", event.error?.message);
       });
     }
   }
@@ -86,11 +86,11 @@ class NavigationPerformanceMonitor {
     this.currentNavigation = {
       route,
       startTime: performance.now(),
-      loadState: 'loading',
+      loadState: "loading",
     };
   }
 
-  endNavigation(loadState: 'loaded' | 'error', errorMessage?: string): void {
+  endNavigation(loadState: "loaded" | "error", errorMessage?: string): void {
     if (!this.currentNavigation) {
       return;
     }
@@ -99,7 +99,7 @@ class NavigationPerformanceMonitor {
     const duration = endTime - (this.currentNavigation.startTime || 0);
 
     const metric: NavigationMetrics = {
-      route: this.currentNavigation.route || 'unknown',
+      route: this.currentNavigation.route || "unknown",
       startTime: this.currentNavigation.startTime || 0,
       endTime,
       duration,
@@ -125,32 +125,32 @@ class NavigationPerformanceMonitor {
 
     // Check performance thresholds
     if (duration > this.thresholds.error) {
-      this.reportPerformanceIssue('error', metric);
+      this.reportPerformanceIssue("error", metric);
     } else if (duration > this.thresholds.warning) {
-      this.reportPerformanceIssue('warning', metric);
+      this.reportPerformanceIssue("warning", metric);
     }
 
     // Log successful fast navigation
-    if (loadState === 'loaded' && duration < 1000) {
+    if (loadState === "loaded" && duration < 1000) {
     }
   }
 
   private reportPerformanceIssue(
-    level: 'warning' | 'error',
-    metric: NavigationMetrics
+    level: "warning" | "error",
+    metric: NavigationMetrics,
   ): void {
     // TODO: Implement performance issue reporting
     this._sendToAnalytics(level, metric);
   }
 
   private _sendToAnalytics(
-    level: 'warning' | 'error',
-    metric: NavigationMetrics
+    level: "warning" | "error",
+    metric: NavigationMetrics,
   ): void {
     // Send to Google Analytics
-    if (typeof window !== 'undefined' && (window as any).gtag) {
-      (window as any).gtag('event', 'navigation_performance', {
-        event_category: 'Performance',
+    if (typeof window !== "undefined" && (window as any).gtag) {
+      (window as any).gtag("event", "navigation_performance", {
+        event_category: "Performance",
         event_label: metric.route,
         value: Math.round(metric.duration),
         custom_map: {
@@ -161,9 +161,9 @@ class NavigationPerformanceMonitor {
     }
 
     // Send to other analytics services
-    if (typeof window !== 'undefined' && (window as any).dataLayer) {
+    if (typeof window !== "undefined" && (window as any).dataLayer) {
       (window as any).dataLayer.push({
-        event: 'navigation_performance',
+        event: "navigation_performance",
         performance_level: level,
         route: metric.route,
         duration: metric.duration,
@@ -185,8 +185,8 @@ class NavigationPerformanceMonitor {
     if (this.metrics.length === 0) {
       return {
         averageDuration: 0,
-        slowestRoute: '',
-        fastestRoute: '',
+        slowestRoute: "",
+        fastestRoute: "",
         errorRate: 0,
       };
     }
@@ -195,13 +195,13 @@ class NavigationPerformanceMonitor {
     const averageDuration = totalDuration / this.metrics.length;
 
     const sortedByDuration = [...this.metrics].sort(
-      (a, b) => a.duration - b.duration
+      (a, b) => a.duration - b.duration,
     );
-    const fastestRoute = sortedByDuration[0]?.route || '';
-    const slowestRoute = sortedByDuration.at(-1)?.route || '';
+    const fastestRoute = sortedByDuration[0]?.route || "";
+    const slowestRoute = sortedByDuration.at(-1)?.route || "";
 
     const errorCount = this.metrics.filter(
-      (m) => m.loadState === 'error'
+      (m) => m.loadState === "error",
     ).length;
     const errorRate = errorCount / this.metrics.length;
 
@@ -232,7 +232,7 @@ class NavigationPerformanceMonitor {
 ⚡ Recent Performance (Last 10):
 ${recentMetrics
   .map((m) => `• ${m.route}: ${m.duration.toFixed(2)}ms (${m.loadState})`)
-  .join('\n')}
+  .join("\n")}
 
 🎯 Performance Thresholds:
 • Warning: >${this.thresholds.warning}ms
@@ -247,19 +247,19 @@ ${this.getPerformanceRecommendations()}
     const recommendations: string[] = [];
 
     if (stats.averageDuration > this.thresholds.warning) {
-      recommendations.push('• Consider implementing route preloading');
-      recommendations.push('• Review bundle sizes and code splitting');
-      recommendations.push('• Optimize database queries');
+      recommendations.push("• Consider implementing route preloading");
+      recommendations.push("• Review bundle sizes and code splitting");
+      recommendations.push("• Optimize database queries");
     }
 
     if (stats.errorRate > 0.1) {
-      recommendations.push('• Implement better error handling');
-      recommendations.push('• Add retry mechanisms');
-      recommendations.push('• Review error boundary coverage');
+      recommendations.push("• Implement better error handling");
+      recommendations.push("• Add retry mechanisms");
+      recommendations.push("• Review error boundary coverage");
     }
 
     const slowRoutes = this.metrics.filter(
-      (m) => m.duration > this.thresholds.warning
+      (m) => m.duration > this.thresholds.warning,
     );
     if (slowRoutes.length > 0) {
       const routeCounts = slowRoutes.reduce(
@@ -267,7 +267,7 @@ ${this.getPerformanceRecommendations()}
           acc[m.route] = (acc[m.route] || 0) + 1;
           return acc;
         },
-        {} as Record<string, number>
+        {} as Record<string, number>,
       );
 
       const problemRoutes = Object.entries(routeCounts)
@@ -275,13 +275,13 @@ ${this.getPerformanceRecommendations()}
         .slice(0, 3);
 
       recommendations.push(
-        `• Focus optimization on: ${problemRoutes.map(([route]) => route).join(', ')}`
+        `• Focus optimization on: ${problemRoutes.map(([route]) => route).join(", ")}`,
       );
     }
 
     return recommendations.length > 0
-      ? `\n💡 Recommendations:\n${recommendations.join('\n')}`
-      : '\n✅ Performance is within acceptable thresholds';
+      ? `\n💡 Recommendations:\n${recommendations.join("\n")}`
+      : "\n✅ Performance is within acceptable thresholds";
   }
 
   setThresholds(thresholds: Partial<PerformanceThresholds>): void {
@@ -314,7 +314,7 @@ export function useNavigationPerformance() {
 
   return {
     startNavigation: (route: string) => monitor.startNavigation(route),
-    endNavigation: (loadState: 'loaded' | 'error', errorMessage?: string) =>
+    endNavigation: (loadState: "loaded" | "error", errorMessage?: string) =>
       monitor.endNavigation(loadState, errorMessage),
     getMetrics: () => monitor.getMetrics(),
     getReport: () => monitor.getPerformanceReport(),
@@ -325,7 +325,7 @@ export function useNavigationPerformance() {
 // Utility function for manual performance tracking
 export function trackNavigation<T>(
   route: string,
-  navigationFn: () => Promise<T>
+  navigationFn: () => Promise<T>,
 ): Promise<T> {
   const monitor = getNavigationPerformanceMonitor();
 
@@ -333,19 +333,19 @@ export function trackNavigation<T>(
 
   return navigationFn()
     .then((result) => {
-      monitor.endNavigation('loaded');
+      monitor.endNavigation("loaded");
       return result;
     })
     .catch((error) => {
-      monitor.endNavigation('error', error.message);
+      monitor.endNavigation("error", error.message);
       throw error;
     });
 }
 
 // Auto-initialization
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   // Initialize on page load
-  window.addEventListener('load', () => {
+  window.addEventListener("load", () => {
     getNavigationPerformanceMonitor();
   });
 }

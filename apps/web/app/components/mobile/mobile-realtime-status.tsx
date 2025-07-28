@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { cn } from "@repo/design-system/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
   CheckCircle,
@@ -14,12 +14,12 @@ import {
   SignalLow,
   SignalMedium,
   WifiOff,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { createClient } from "~/lib/supabase/client";
 
 interface ConnectionStatus {
-  status: 'connecting' | 'connected' | 'disconnected' | 'error';
+  status: "connecting" | "connected" | "disconnected" | "error";
   latency?: number;
   lastUpdate?: Date;
   activeSubscriptions: number;
@@ -28,13 +28,13 @@ interface ConnectionStatus {
 
 export function MobileRealtimeStatus() {
   const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>({
-    status: 'connecting',
+    status: "connecting",
     activeSubscriptions: 0,
     reconnectAttempts: 0,
   });
   const [isExpanded, setIsExpanded] = useState(false);
-  const [networkStatus, setNetworkStatus] = useState<'online' | 'offline'>(
-    'online'
+  const [networkStatus, setNetworkStatus] = useState<"online" | "offline">(
+    "online",
   );
 
   const supabase = createClient();
@@ -44,71 +44,71 @@ export function MobileRealtimeStatus() {
     let reconnectTimer: NodeJS.Timeout | undefined;
 
     // Monitor network status
-    const handleOnline = () => setNetworkStatus('online');
-    const handleOffline = () => setNetworkStatus('offline');
+    const handleOnline = () => setNetworkStatus("online");
+    const handleOffline = () => setNetworkStatus("offline");
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     // Monitor Supabase realtime connection
-    const channel = supabase.channel('connection-monitor');
+    const channel = supabase.channel("connection-monitor");
 
     // Track connection events
     channel
-      .on('system', { event: 'realtime' }, (payload) => {
+      .on("system", { event: "realtime" }, (payload) => {
         switch (payload.type) {
-          case 'connected':
+          case "connected":
             setConnectionStatus((prev) => ({
               ...prev,
-              status: 'connected',
+              status: "connected",
               lastUpdate: new Date(),
               reconnectAttempts: 0,
             }));
             break;
-          case 'connecting':
+          case "connecting":
             setConnectionStatus((prev) => ({
               ...prev,
-              status: 'connecting',
+              status: "connecting",
             }));
             break;
-          case 'disconnected':
+          case "disconnected":
             setConnectionStatus((prev) => ({
               ...prev,
-              status: 'disconnected',
+              status: "disconnected",
               reconnectAttempts: prev.reconnectAttempts + 1,
             }));
             break;
-          case 'error':
+          case "error":
             setConnectionStatus((prev) => ({
               ...prev,
-              status: 'error',
+              status: "error",
             }));
             break;
         }
       })
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
+        if (status === "SUBSCRIBED") {
           setConnectionStatus((prev) => ({
             ...prev,
-            status: 'connected',
+            status: "connected",
             activeSubscriptions: prev.activeSubscriptions + 1,
             lastUpdate: new Date(),
           }));
-        } else if (status === 'CHANNEL_ERROR') {
+        } else if (status === "CHANNEL_ERROR") {
           setConnectionStatus((prev) => ({
             ...prev,
-            status: 'error',
+            status: "error",
           }));
         }
       });
 
     // Measure latency periodically
-    if (connectionStatus.status === 'connected') {
+    if (connectionStatus.status === "connected") {
       latencyInterval = setInterval(async () => {
         const start = Date.now();
         try {
           // Simple ping by getting current time
-          await supabase.from('shows').select('count').limit(1).single();
+          await supabase.from("shows").select("count").limit(1).single();
           const latency = Date.now() - start;
 
           setConnectionStatus((prev) => ({
@@ -121,8 +121,8 @@ export function MobileRealtimeStatus() {
     }
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
 
       if (latencyInterval) {
         clearInterval(latencyInterval);
@@ -136,12 +136,12 @@ export function MobileRealtimeStatus() {
   }, [connectionStatus.status]);
 
   const getStatusIcon = () => {
-    if (networkStatus === 'offline') {
+    if (networkStatus === "offline") {
       return WifiOff;
     }
 
     switch (connectionStatus.status) {
-      case 'connected': {
+      case "connected": {
         if (connectionStatus.latency) {
           if (connectionStatus.latency < 100) {
             return SignalHigh;
@@ -153,11 +153,11 @@ export function MobileRealtimeStatus() {
         }
         return CheckCircle;
       }
-      case 'connecting':
+      case "connecting":
         return Loader2;
-      case 'disconnected':
+      case "disconnected":
         return Radio;
-      case 'error':
+      case "error":
         return AlertCircle;
       default:
         return Signal;
@@ -165,55 +165,55 @@ export function MobileRealtimeStatus() {
   };
 
   const getStatusColor = () => {
-    if (networkStatus === 'offline') {
-      return 'bg-gray-500';
+    if (networkStatus === "offline") {
+      return "bg-gray-500";
     }
 
     switch (connectionStatus.status) {
-      case 'connected': {
+      case "connected": {
         if (connectionStatus.latency) {
           if (connectionStatus.latency < 100) {
-            return 'bg-green-500';
+            return "bg-green-500";
           }
           if (connectionStatus.latency < 300) {
-            return 'bg-yellow-500';
+            return "bg-yellow-500";
           }
-          return 'bg-orange-500';
+          return "bg-orange-500";
         }
-        return 'bg-green-500';
+        return "bg-green-500";
       }
-      case 'connecting':
-        return 'bg-blue-500';
-      case 'disconnected':
-        return 'bg-red-500';
-      case 'error':
-        return 'bg-red-600';
+      case "connecting":
+        return "bg-blue-500";
+      case "disconnected":
+        return "bg-red-500";
+      case "error":
+        return "bg-red-600";
       default:
-        return 'bg-gray-500';
+        return "bg-gray-500";
     }
   };
 
   const getStatusText = () => {
-    if (networkStatus === 'offline') {
-      return 'Offline';
+    if (networkStatus === "offline") {
+      return "Offline";
     }
 
     switch (connectionStatus.status) {
-      case 'connected':
-        return 'Live';
-      case 'connecting':
-        return 'Connecting...';
-      case 'disconnected':
-        return 'Disconnected';
-      case 'error':
-        return 'Error';
+      case "connected":
+        return "Live";
+      case "connecting":
+        return "Connecting...";
+      case "disconnected":
+        return "Disconnected";
+      case "error":
+        return "Error";
       default:
-        return 'Unknown';
+        return "Unknown";
     }
   };
 
   const handleRetry = async () => {
-    setConnectionStatus((prev) => ({ ...prev, status: 'connecting' }));
+    setConnectionStatus((prev) => ({ ...prev, status: "connecting" }));
 
     try {
       // Force reconnection
@@ -221,7 +221,7 @@ export function MobileRealtimeStatus() {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await supabase.realtime.connect();
     } catch (_error) {
-      setConnectionStatus((prev) => ({ ...prev, status: 'error' }));
+      setConnectionStatus((prev) => ({ ...prev, status: "error" }));
     }
   };
 
@@ -242,24 +242,24 @@ export function MobileRealtimeStatus() {
             size="sm"
             onClick={() => setIsExpanded(!isExpanded)}
             className={cn(
-              'h-8 gap-1 border px-2 shadow-lg backdrop-blur-sm',
-              'md:h-6 md:gap-0.5 md:px-1.5',
-              connectionStatus.status === 'connected' &&
-                'border-green-200 bg-green-50 hover:bg-green-100',
-              connectionStatus.status === 'error' &&
-                'border-red-200 bg-red-50 hover:bg-red-100',
-              connectionStatus.status === 'disconnected' &&
-                'border-red-200 bg-red-50 hover:bg-red-100',
-              networkStatus === 'offline' &&
-                'border-gray-200 bg-gray-50 hover:bg-gray-100'
+              "h-8 gap-1 border px-2 shadow-lg backdrop-blur-sm",
+              "md:h-6 md:gap-0.5 md:px-1.5",
+              connectionStatus.status === "connected" &&
+                "border-green-200 bg-green-50 hover:bg-green-100",
+              connectionStatus.status === "error" &&
+                "border-red-200 bg-red-50 hover:bg-red-100",
+              connectionStatus.status === "disconnected" &&
+                "border-red-200 bg-red-50 hover:bg-red-100",
+              networkStatus === "offline" &&
+                "border-gray-200 bg-gray-50 hover:bg-gray-100",
             )}
           >
             {/* Animated Status Dot */}
             <div className="relative">
               <motion.div
-                className={cn('h-2 w-2 rounded-full', getStatusColor())}
+                className={cn("h-2 w-2 rounded-full", getStatusColor())}
                 animate={
-                  connectionStatus.status === 'connecting'
+                  connectionStatus.status === "connecting"
                     ? { scale: [1, 1.2, 1], opacity: [1, 0.7, 1] }
                     : {}
                 }
@@ -267,7 +267,7 @@ export function MobileRealtimeStatus() {
               />
 
               {/* Connection strength rings for connected state */}
-              {connectionStatus.status === 'connected' && (
+              {connectionStatus.status === "connected" && (
                 <motion.div
                   className="absolute inset-0 h-2 w-2 rounded-full border border-green-400"
                   animate={{ scale: [1, 2], opacity: [0.5, 0] }}
@@ -279,8 +279,8 @@ export function MobileRealtimeStatus() {
             {/* Status Icon (mobile only) */}
             <StatusIcon
               className={cn(
-                'h-3 w-3 md:hidden',
-                connectionStatus.status === 'connecting' && 'animate-spin'
+                "h-3 w-3 md:hidden",
+                connectionStatus.status === "connecting" && "animate-spin",
               )}
             />
 
@@ -291,7 +291,7 @@ export function MobileRealtimeStatus() {
 
             {/* Latency (if available) */}
             {connectionStatus.latency &&
-              connectionStatus.status === 'connected' && (
+              connectionStatus.status === "connected" && (
                 <Badge variant="secondary" className="h-4 px-1 text-xs md:h-3">
                   {connectionStatus.latency}ms
                 </Badge>
@@ -312,9 +312,9 @@ export function MobileRealtimeStatus() {
                     <span className="font-medium">Connection Status</span>
                     <Badge
                       variant={
-                        connectionStatus.status === 'connected'
-                          ? 'default'
-                          : 'destructive'
+                        connectionStatus.status === "connected"
+                          ? "default"
+                          : "destructive"
                       }
                       className="text-xs"
                     >
@@ -335,10 +335,10 @@ export function MobileRealtimeStatus() {
                     <span>Network</span>
                     <span
                       className={cn(
-                        'capitalize',
-                        networkStatus === 'online'
-                          ? 'text-green-600'
-                          : 'text-red-600'
+                        "capitalize",
+                        networkStatus === "online"
+                          ? "text-green-600"
+                          : "text-red-600",
                       )}
                     >
                       {networkStatus}
@@ -361,21 +361,21 @@ export function MobileRealtimeStatus() {
                     </div>
                   )}
 
-                  {connectionStatus.status !== 'connected' &&
-                    networkStatus === 'online' && (
+                  {connectionStatus.status !== "connected" &&
+                    networkStatus === "online" && (
                       <Button
                         size="sm"
                         onClick={handleRetry}
                         className="h-7 w-full text-xs"
-                        disabled={connectionStatus.status === 'connecting'}
+                        disabled={connectionStatus.status === "connecting"}
                       >
-                        {connectionStatus.status === 'connecting' ? (
+                        {connectionStatus.status === "connecting" ? (
                           <>
                             <Loader2 className="mr-1 h-3 w-3 animate-spin" />
                             Connecting...
                           </>
                         ) : (
-                          'Retry Connection'
+                          "Retry Connection"
                         )}
                       </Button>
                     )}

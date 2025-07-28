@@ -1,13 +1,13 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '~/lib/supabase/server';
+import { type NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('query')?.toLowerCase().trim();
-    const limit = Number.parseInt(searchParams.get('limit') || '8');
+    const query = searchParams.get("query")?.toLowerCase().trim();
+    const limit = Number.parseInt(searchParams.get("limit") || "8");
 
     if (!query || query.length < 2) {
       return NextResponse.json({
@@ -21,8 +21,9 @@ export async function GET(request: NextRequest) {
     // ARTIST-ONLY SEARCH as per PRD requirements
     // Core flow: Search artists → Click artist → Triggers data sync → View shows
     const { data: artists, error } = await supabase
-      .from('artists')
-      .select(`
+      .from("artists")
+      .select(
+        `
         id,
         name,
         image_url,
@@ -31,9 +32,10 @@ export async function GET(request: NextRequest) {
         followers,
         genres,
         verified
-      `)
+      `,
+      )
       .or(`name.ilike.%${query}%,genres.ilike.%${query}%`)
-      .order('followers', { ascending: false })
+      .order("followers", { ascending: false })
       .limit(limit);
 
     if (error) {
@@ -44,11 +46,11 @@ export async function GET(request: NextRequest) {
     }
 
     const suggestions = (artists || []).map((artist: any) => ({
-      type: 'artist' as const,
+      type: "artist" as const,
       id: artist.id,
       title: artist.name,
       subtitle: artist.genres
-        ? JSON.parse(artist.genres).slice(0, 2).join(', ')
+        ? JSON.parse(artist.genres).slice(0, 2).join(", ")
         : undefined,
       href: `/artists/${artist.slug}`,
       imageUrl: artist.small_image_url || artist.image_url,
@@ -61,9 +63,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       suggestions,
       count: suggestions.length,
-      searchType: 'artists-only',
+      searchType: "artists-only",
     });
   } catch (_error) {
-    return NextResponse.json({ error: 'Search failed' }, { status: 500 });
+    return NextResponse.json({ error: "Search failed" }, { status: 500 });
   }
 }

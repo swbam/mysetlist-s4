@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '~/lib/supabase/server';
+import { NextResponse } from "next/server";
+import { createClient } from "~/lib/supabase/server";
 
 export async function GET() {
   try {
@@ -12,7 +12,7 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get the user's session to access the provider token
@@ -23,8 +23,8 @@ export async function GET() {
 
     if (sessionError || !session?.provider_token) {
       return NextResponse.json(
-        { error: 'No Spotify session found' },
-        { status: 401 }
+        { error: "No Spotify session found" },
+        { status: 401 },
       );
     }
 
@@ -32,22 +32,22 @@ export async function GET() {
 
     // Fetch user's top artists
     const topArtistsResponse = await fetch(
-      'https://api.spotify.com/v1/me/top/artists?limit=50',
+      "https://api.spotify.com/v1/me/top/artists?limit=50",
       {
         headers: {
           Authorization: `Bearer ${spotifyToken}`,
         },
-      }
+      },
     );
 
     // Fetch user's followed artists
     const followedArtistsResponse = await fetch(
-      'https://api.spotify.com/v1/me/following?type=artist&limit=50',
+      "https://api.spotify.com/v1/me/following?type=artist&limit=50",
       {
         headers: {
           Authorization: `Bearer ${spotifyToken}`,
         },
-      }
+      },
     );
 
     if (!topArtistsResponse.ok || !followedArtistsResponse.ok) {
@@ -57,8 +57,8 @@ export async function GET() {
 
       if (refreshError || !refreshData.session?.provider_token) {
         return NextResponse.json(
-          { error: 'Failed to refresh Spotify token' },
-          { status: 401 }
+          { error: "Failed to refresh Spotify token" },
+          { status: 401 },
         );
       }
 
@@ -66,27 +66,27 @@ export async function GET() {
       const newToken = refreshData.session.provider_token;
 
       const retryTopResponse = await fetch(
-        'https://api.spotify.com/v1/me/top/artists?limit=50',
+        "https://api.spotify.com/v1/me/top/artists?limit=50",
         {
           headers: {
             Authorization: `Bearer ${newToken}`,
           },
-        }
+        },
       );
 
       const retryFollowedResponse = await fetch(
-        'https://api.spotify.com/v1/me/following?type=artist&limit=50',
+        "https://api.spotify.com/v1/me/following?type=artist&limit=50",
         {
           headers: {
             Authorization: `Bearer ${newToken}`,
           },
-        }
+        },
       );
 
       if (!retryTopResponse.ok || !retryFollowedResponse.ok) {
         return NextResponse.json(
-          { error: 'Failed to fetch Spotify data' },
-          { status: 500 }
+          { error: "Failed to fetch Spotify data" },
+          { status: 500 },
         );
       }
 
@@ -106,7 +106,7 @@ export async function GET() {
     await storeUserSpotifyData(
       user.id,
       topArtistsData.items,
-      followedArtistsData.artists?.items || []
+      followedArtistsData.artists?.items || [],
     );
 
     return NextResponse.json({
@@ -115,8 +115,8 @@ export async function GET() {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -124,13 +124,13 @@ export async function GET() {
 async function storeUserSpotifyData(
   userId: string,
   topArtists: any[],
-  followedArtists: any[]
+  followedArtists: any[],
 ) {
   try {
     const supabase = await createClient();
 
     // Store user's music preferences
-    const { error } = await supabase.from('user_music_preferences').upsert(
+    const { error } = await supabase.from("user_music_preferences").upsert(
       {
         user_id: userId,
         top_artists: topArtists.map((a) => ({
@@ -146,8 +146,8 @@ async function storeUserSpotifyData(
         updated_at: new Date().toISOString(),
       },
       {
-        onConflict: 'user_id',
-      }
+        onConflict: "user_id",
+      },
     );
 
     if (error) {

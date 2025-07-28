@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { format } from 'date-fns';
-import Link from 'next/link';
-import { useRealtimeShow } from '~/hooks/use-realtime-show';
+import { Button } from "@repo/design-system/components/ui/button";
+import { format } from "date-fns";
+import Link from "next/link";
+import { useRealtimeShow } from "~/hooks/use-realtime-show";
 
 type ShowHeaderProps = {
   show: {
@@ -13,7 +13,7 @@ type ShowHeaderProps = {
     date: string;
     start_time?: string;
     doors_time?: string;
-    status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+    status: "upcoming" | "ongoing" | "completed" | "cancelled";
     headliner_artist: {
       id: string;
       name: string;
@@ -41,10 +41,8 @@ export function ShowHeader({ show }: ShowHeaderProps) {
   // Use real-time show status
   const { showStatus: _showStatus } = useRealtimeShow({
     showId: show.id,
-    initialStatus: show.status as 'upcoming' | 'ongoing' | 'completed',
+    initialStatus: show.status as "upcoming" | "ongoing" | "completed",
   });
-
-
 
   const bg = show.headliner_artist.image_url ?? undefined;
 
@@ -65,8 +63,8 @@ export function ShowHeader({ show }: ShowHeaderProps) {
           {show.headliner_artist.name}
         </h1>
         <p className="text-muted-foreground text-sm md:text-base">
-          {show.venue?.name ? `${show.venue.name} · ` : ''}
-          {format(showDate, 'MMM d, yyyy')}
+          {show.venue?.name ? `${show.venue.name} · ` : ""}
+          {format(showDate, "MMM d, yyyy")}
         </p>
         <div className="mt-4 flex gap-3">
           <Button size="sm" asChild>

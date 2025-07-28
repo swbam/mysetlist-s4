@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/avatar";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,11 +13,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { LogOut, Music, Settings, Shield, User } from 'lucide-react';
-import Link from 'next/link';
-import { useState } from 'react';
-import { useAuth } from '../hooks/use-auth';
+} from "@repo/design-system/components/ui/dropdown-menu";
+import { LogOut, Music, Settings, Shield, User } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { useAuth } from "../hooks/use-auth";
 
 export function UserProfileDropdown() {
   const { user, signOut, loading, hasRole } = useAuth();
@@ -51,12 +51,13 @@ export function UserProfileDropdown() {
   }
 
   const displayName =
-    user.user_metadata?.['displayName'] || user.email?.split('@')[0] || 'User';
-  const avatarUrl = user.user_metadata?.['avatar'] || user.user_metadata?.['avatar_url'];
+    user.user_metadata?.["displayName"] || user.email?.split("@")[0] || "User";
+  const avatarUrl =
+    user.user_metadata?.["avatar"] || user.user_metadata?.["avatar_url"];
   const initials = displayName
-    .split(' ')
+    .split(" ")
     .map((name: string) => name[0])
-    .join('')
+    .join("")
     .toUpperCase()
     .slice(0, 2);
 
@@ -104,7 +105,7 @@ export function UserProfileDropdown() {
           </Link>
         </DropdownMenuItem>
 
-        {hasRole('admin') && (
+        {hasRole("admin") && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
@@ -124,7 +125,7 @@ export function UserProfileDropdown() {
           disabled={isSigningOut}
         >
           <LogOut className="mr-2 h-4 w-4" />
-          {isSigningOut ? 'Signing out...' : 'Sign out'}
+          {isSigningOut ? "Signing out..." : "Sign out"}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

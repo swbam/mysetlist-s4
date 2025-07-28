@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
 // import { useAuth } from '@repo/auth';
-import { ArtistGrid as UIArtistGrid } from '@repo/design-system';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { ArtistGrid as UIArtistGrid } from "@repo/design-system";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Artist {
   id: string;
@@ -26,11 +26,11 @@ interface ArtistGridProps {
   initialArtists?: Artist[];
   title?: string;
   showFollowButtons?: boolean;
-  variant?: 'grid' | 'list' | 'compact';
+  variant?: "grid" | "list" | "compact";
   fetchUrl?: string;
   searchQuery?: string;
   genre?: string;
-  sortBy?: 'name' | 'popularity' | 'followers' | 'trending';
+  sortBy?: "name" | "popularity" | "followers" | "trending";
   filterBy?: string;
   pageSize?: number;
   className?: string;
@@ -40,12 +40,12 @@ export function ArtistGrid({
   initialArtists = [],
   title,
   showFollowButtons = true,
-  variant = 'grid',
-  fetchUrl = '/api/artists',
+  variant = "grid",
+  fetchUrl = "/api/artists",
   searchQuery,
   genre,
-  sortBy = 'popularity',
-  filterBy = 'all',
+  sortBy = "popularity",
+  filterBy = "all",
   pageSize = 20,
   className,
 }: ArtistGridProps) {
@@ -80,18 +80,18 @@ export function ArtistGrid({
 
   const buildFetchUrl = (pageNum: number, _reset = false) => {
     const params = new URLSearchParams();
-    params.set('page', pageNum.toString());
-    params.set('limit', pageSize.toString());
-    params.set('sort', currentSort);
+    params.set("page", pageNum.toString());
+    params.set("limit", pageSize.toString());
+    params.set("sort", currentSort);
 
-    if (currentFilter !== 'all') {
-      params.set('filter', currentFilter);
+    if (currentFilter !== "all") {
+      params.set("filter", currentFilter);
     }
     if (searchQuery) {
-      params.set('q', searchQuery);
+      params.set("q", searchQuery);
     }
     if (genre) {
-      params.set('genre', genre);
+      params.set("genre", genre);
     }
 
     return `${fetchUrl}?${params.toString()}`;
@@ -123,10 +123,10 @@ export function ArtistGrid({
           checkFollowingStatus(newArtists);
         }
       } else {
-        throw new Error('Failed to fetch artists');
+        throw new Error("Failed to fetch artists");
       }
     } catch (_error) {
-      toast.error('Failed to load artists');
+      toast.error("Failed to load artists");
     } finally {
       setLoading(false);
     }
@@ -134,7 +134,7 @@ export function ArtistGrid({
 
   const checkFollowingStatus = async (_artistsToCheck: Artist[]) => {
     try {
-      const response = await fetch('/api/user/following');
+      const response = await fetch("/api/user/following");
       if (response.ok) {
         const data = await response.json();
         const followingIds = new Set(data.artistIds || []);
@@ -143,7 +143,7 @@ export function ArtistGrid({
           prev.map((artist) => ({
             ...artist,
             isFollowing: followingIds.has(artist.id),
-          }))
+          })),
         );
       }
     } catch (_error) {}
@@ -155,18 +155,18 @@ export function ArtistGrid({
 
   const handleFollow = async (
     artistId: string,
-    currentlyFollowing: boolean
+    currentlyFollowing: boolean,
   ) => {
     if (!user) {
-      toast.error('Please sign in to follow artists');
-      router.push('/auth/sign-in');
+      toast.error("Please sign in to follow artists");
+      router.push("/auth/sign-in");
       return;
     }
 
     try {
       const response = await fetch(`/api/artists/${artistId}/follow`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ following: !currentlyFollowing }),
       });
 
@@ -175,21 +175,21 @@ export function ArtistGrid({
           prev.map((artist) =>
             artist.id === artistId
               ? { ...artist, isFollowing: !currentlyFollowing }
-              : artist
-          )
+              : artist,
+          ),
         );
 
         toast.success(
-          currentlyFollowing ? 'Unfollowed artist' : 'Following artist'
+          currentlyFollowing ? "Unfollowed artist" : "Following artist",
         );
       } else if (response.status === 401) {
-        toast.error('Please sign in to follow artists');
-        router.push('/auth/sign-in');
+        toast.error("Please sign in to follow artists");
+        router.push("/auth/sign-in");
       } else {
-        throw new Error('Failed to update follow status');
+        throw new Error("Failed to update follow status");
       }
     } catch (_error) {
-      toast.error('Failed to update follow status');
+      toast.error("Failed to update follow status");
     }
   };
 
@@ -204,7 +204,7 @@ export function ArtistGrid({
   };
 
   const handleSortChange = (newSort: string) => {
-    setCurrentSort(newSort as 'name' | 'popularity' | 'followers' | 'trending');
+    setCurrentSort(newSort as "name" | "popularity" | "followers" | "trending");
     setPage(1);
   };
 
@@ -216,11 +216,11 @@ export function ArtistGrid({
   const getEmptyState = () => {
     if (searchQuery) {
       return {
-        title: 'No artists found',
+        title: "No artists found",
         description: `No artists match your search for "${searchQuery}". Try different keywords or browse by genre.`,
         action: {
-          label: 'Browse All Artists',
-          onClick: () => router.push('/artists'),
+          label: "Browse All Artists",
+          onClick: () => router.push("/artists"),
         },
       };
     }
@@ -230,19 +230,19 @@ export function ArtistGrid({
         title: `No ${genre} artists found`,
         description: `We couldn't find any artists in the ${genre} genre. Try exploring other genres or search for specific artists.`,
         action: {
-          label: 'Explore All Genres',
-          onClick: () => router.push('/discover'),
+          label: "Explore All Genres",
+          onClick: () => router.push("/discover"),
         },
       };
     }
 
     return {
-      title: 'No artists found',
+      title: "No artists found",
       description:
-        'Start by searching for your favorite artists or explore trending musicians.',
+        "Start by searching for your favorite artists or explore trending musicians.",
       action: {
-        label: 'Discover Artists',
-        onClick: () => router.push('/discover'),
+        label: "Discover Artists",
+        onClick: () => router.push("/discover"),
       },
     };
   };
@@ -256,7 +256,7 @@ export function ArtistGrid({
       onRefresh={handleRefresh}
       loading={loading}
       hasMore={hasMore}
-      title={title ?? ''}
+      title={title ?? ""}
       showFollowButtons={showFollowButtons}
       variant={variant}
       sortBy={currentSort}
@@ -264,7 +264,7 @@ export function ArtistGrid({
       filterBy={currentFilter}
       onFilterChange={handleFilterChange}
       emptyState={getEmptyState()}
-      className={className ?? ''}
+      className={className ?? ""}
     />
   );
 }

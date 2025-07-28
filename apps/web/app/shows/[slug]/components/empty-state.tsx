@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from "lucide-react";
 
 type EmptyStateProps = {
   icon: LucideIcon;

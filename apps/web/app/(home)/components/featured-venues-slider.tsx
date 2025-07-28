@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { motion } from 'framer-motion';
-import { Building2, Calendar, MapPin, Users } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import React from 'react';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { motion } from "framer-motion";
+import { Building2, Calendar, MapPin, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import React from "react";
 import {
   ContentSlider,
   ContentSliderItem,
-} from '~/components/ui/content-slider';
+} from "~/components/ui/content-slider";
 
 interface FeaturedVenue {
   id: string;
@@ -40,9 +40,7 @@ const formatCapacity = (num: number) => {
   return num.toString();
 };
 
-function FeaturedVenuesSlider({
-  venues,
-}: FeaturedVenuesSliderProps) {
+function FeaturedVenuesSlider({ venues }: FeaturedVenuesSliderProps) {
   if (!venues || venues.length === 0) {
     return null;
   }
@@ -93,7 +91,7 @@ function FeaturedVenuesSlider({
                     <motion.div
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      transition={{ delay: index * 0.1, type: 'spring' }}
+                      transition={{ delay: index * 0.1, type: "spring" }}
                       className="absolute top-2 right-2"
                     >
                       <Badge className="border-0 bg-gradient-to-r from-purple-500 to-primary px-2 py-0.5 text-xs shadow-lg">
@@ -133,14 +131,18 @@ function FeaturedVenuesSlider({
                   <div className="mt-1 flex items-center gap-1 text-muted-foreground">
                     <MapPin className="h-3 w-3" />
                     <p className="text-xs sm:text-sm">
-                      {venue.city}{venue.state && `, ${venue.state}`}, {venue.country}
+                      {venue.city}
+                      {venue.state && `, ${venue.state}`}, {venue.country}
                     </p>
                   </div>
 
                   {/* Show weekly growth */}
                   {venue.weeklyGrowth > 0 && (
                     <div className="mt-2 flex items-center gap-1">
-                      <Badge variant="secondary" className="px-1.5 py-0 text-xs">
+                      <Badge
+                        variant="secondary"
+                        className="px-1.5 py-0 text-xs"
+                      >
                         +{venue.weeklyGrowth}% this week
                       </Badge>
                     </div>

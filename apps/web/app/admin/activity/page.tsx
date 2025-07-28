@@ -14,8 +14,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '~/components/ui-exports';
-import { format, subDays } from 'date-fns';
+} from "~/components/ui-exports";
+import { format, subDays } from "date-fns";
 import {
   Activity,
   AlertTriangle,
@@ -27,22 +27,25 @@ import {
   Star,
   User,
   XCircle,
-} from 'lucide-react';
-import { createClient } from '~/lib/supabase/server';
+} from "lucide-react";
+import { createClient } from "~/lib/supabase/server";
 
 // Force dynamic rendering due to user-specific data fetching
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function ActivityPage({
   params,
-}: { params: Promise<{ locale: string }> }) {
+}: {
+  params: Promise<{ locale: string }>;
+}) {
   const supabase = await createClient();
   await params; // Params accessed for Next.js compatibility
 
   // Fetch moderation logs with moderator info
   const { data: logs } = await supabase
-    .from('moderation_logs')
-    .select(`
+    .from("moderation_logs")
+    .select(
+      `
       *,
       moderator:users!moderation_logs_moderator_id_fkey(
         display_name,
@@ -50,8 +53,9 @@ export default async function ActivityPage({
         avatar_url,
         role
       )
-    `)
-    .order('created_at', { ascending: false })
+    `,
+    )
+    .order("created_at", { ascending: false })
     .limit(100);
 
   // Get activity stats
@@ -59,9 +63,9 @@ export default async function ActivityPage({
   const weekAgo = subDays(today, 7);
 
   await supabase
-    .from('moderation_logs')
-    .select('action', { count: 'exact', head: true })
-    .gte('created_at', weekAgo.toISOString());
+    .from("moderation_logs")
+    .select("action", { count: "exact", head: true })
+    .gte("created_at", weekAgo.toISOString());
 
   // Group logs by action type
   const actionCounts =
@@ -70,23 +74,23 @@ export default async function ActivityPage({
         acc[log.action] = (acc[log.action] || 0) + 1;
         return acc;
       },
-      {} as Record<string, number>
+      {} as Record<string, number>,
     ) ?? {};
 
   const getActionIcon = (action: string) => {
     switch (action) {
-      case 'approve':
-      case 'verify_artist':
+      case "approve":
+      case "verify_artist":
         return CheckCircle;
-      case 'reject':
-      case 'unverify_artist':
+      case "reject":
+      case "unverify_artist":
         return XCircle;
-      case 'delete':
-      case 'ban_user':
+      case "delete":
+      case "ban_user":
         return Ban;
-      case 'warn_user':
+      case "warn_user":
         return AlertTriangle;
-      case 'feature_content':
+      case "feature_content":
         return Star;
       default:
         return Shield;
@@ -95,24 +99,24 @@ export default async function ActivityPage({
 
   const getActionColor = (action: string) => {
     switch (action) {
-      case 'approve':
-      case 'verify_artist':
-        return 'text-green-600';
-      case 'reject':
-      case 'delete':
-      case 'ban_user':
-        return 'text-red-600';
-      case 'warn_user':
-        return 'text-yellow-600';
-      case 'feature_content':
-        return 'text-blue-600';
+      case "approve":
+      case "verify_artist":
+        return "text-green-600";
+      case "reject":
+      case "delete":
+      case "ban_user":
+        return "text-red-600";
+      case "warn_user":
+        return "text-yellow-600";
+      case "feature_content":
+        return "text-blue-600";
       default:
-        return 'text-gray-600';
+        return "text-gray-600";
     }
   };
 
   const formatAction = (action: string) => {
-    return action.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+    return action.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
   return (
@@ -160,14 +164,14 @@ export default async function ActivityPage({
           <CardContent>
             <div className="font-bold text-2xl">
               {Object.entries(actionCounts).sort(
-                ([, a], [, b]) => (b as number) - (a as number)
+                ([, a], [, b]) => (b as number) - (a as number),
               )[0]?.[0]
                 ? formatAction(
                     Object.entries(actionCounts).sort(
-                      ([, a], [, b]) => (b as number) - (a as number)
-                    )[0]?.[0] ?? 'unknown'
+                      ([, a], [, b]) => (b as number) - (a as number),
+                    )[0]?.[0] ?? "unknown",
                   )
-                : 'N/A'}
+                : "N/A"}
             </div>
             <p className="text-muted-foreground text-xs">action type</p>
           </CardContent>
@@ -255,7 +259,7 @@ export default async function ActivityPage({
                     <span className="text-sm font-medium">
                       {log.moderator?.display_name?.[0] ||
                         log.moderator?.email?.[0] ||
-                        'M'}
+                        "M"}
                     </span>
                   </div>
 
@@ -266,16 +270,16 @@ export default async function ActivityPage({
                       </p>
                       <Badge
                         variant={
-                          log.moderator?.role === 'admin'
-                            ? 'destructive'
-                            : 'default'
+                          log.moderator?.role === "admin"
+                            ? "destructive"
+                            : "default"
                         }
                       >
                         {log.moderator?.role}
                       </Badge>
                       <span className="text-muted-foreground text-sm">•</span>
                       <span className="text-muted-foreground text-sm">
-                        {format(new Date(log.created_at), 'MMM d, h:mm a')}
+                        {format(new Date(log.created_at), "MMM d, h:mm a")}
                       </span>
                     </div>
 

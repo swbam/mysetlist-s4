@@ -1,6 +1,7 @@
 # Supabase Edge Functions Cleanup Checklist
 
 ## Date: 2025-07-24
+
 ## Project ID: yzwkimtdaabyjbpykquu
 
 ### ✅ Completed Tasks
@@ -67,6 +68,7 @@ Please delete the following 9 unused edge functions from the Supabase Dashboard:
 ### 🔍 Verification
 
 After deletion, verify that only these 7 functions remain:
+
 - scheduled-sync
 - sync-artists
 - sync-artist-shows

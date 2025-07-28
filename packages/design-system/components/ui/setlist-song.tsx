@@ -18,7 +18,7 @@ const SetlistSong = React.forwardRef<HTMLDivElement, SetlistSongProps>(
         ref={ref}
         className={cn(
           "rounded-lg border bg-card text-card-foreground shadow-sm p-4",
-          className
+          className,
         )}
         {...props}
       >
@@ -40,8 +40,8 @@ const SetlistSong = React.forwardRef<HTMLDivElement, SetlistSongProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 SetlistSong.displayName = "SetlistSong";
 
-export { SetlistSong }; 
+export { SetlistSong };

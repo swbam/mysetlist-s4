@@ -1,10 +1,10 @@
-import { formatDistanceToNow } from 'date-fns';
-import { type NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '~/lib/supabase/server';
+import { formatDistanceToNow } from "date-fns";
+import { type NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 export interface ActivityItem {
   id: string;
-  type: 'new_show' | 'setlist_added' | 'show_update' | 'artist_update';
+  type: "new_show" | "setlist_added" | "show_update" | "artist_update";
   timestamp: string;
   artistId: string;
   artistName: string;
@@ -24,25 +24,25 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const searchParams = request.nextUrl.searchParams;
-    const limit = Number.parseInt(searchParams.get('limit') || '20');
-    const offset = Number.parseInt(searchParams.get('offset') || '0');
-    const timeWindow = Number.parseInt(searchParams.get('days') || '30');
+    const limit = Number.parseInt(searchParams.get("limit") || "20");
+    const offset = Number.parseInt(searchParams.get("offset") || "0");
+    const timeWindow = Number.parseInt(searchParams.get("days") || "30");
 
     // Get user's followed artists
     const { data: followedArtists } = await supabase
-      .from('user_follows_artists')
-      .select('artist_id')
-      .eq('user_id', user.id);
+      .from("user_follows_artists")
+      .select("artist_id")
+      .eq("user_id", user.id);
 
     if (!followedArtists || followedArtists.length === 0) {
       return NextResponse.json({
         activities: [],
         hasMore: false,
-        message: 'Follow some artists to see activity',
+        message: "Follow some artists to see activity",
       });
     }
 
@@ -55,18 +55,20 @@ export async function GET(request: NextRequest) {
 
     // 1. New shows from followed artists
     const { data: newShows } = await supabase
-      .from('shows')
-      .select(`
+      .from("shows")
+      .select(
+        `
         id,
         slug,
         show_date,
         created_at,
         artists!inner(id, name, slug, image_url),
         venues!inner(id, name, city)
-      `)
-      .in('artist_id', artistIds)
-      .gte('created_at', cutoffDate.toISOString())
-      .order('created_at', { ascending: false })
+      `,
+      )
+      .in("artist_id", artistIds)
+      .gte("created_at", cutoffDate.toISOString())
+      .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (newShows) {
@@ -78,7 +80,7 @@ export async function GET(request: NextRequest) {
         if (artist && venue) {
           activities.push({
             id: `show-${show.id}`,
-            type: 'new_show',
+            type: "new_show",
             timestamp: show.created_at,
             artistId: artist.id,
             artistName: artist.name,
@@ -98,8 +100,9 @@ export async function GET(request: NextRequest) {
 
     // 2. Recent setlists added to shows
     const { data: recentSetlists } = await supabase
-      .from('setlist_songs')
-      .select(`
+      .from("setlist_songs")
+      .select(
+        `
         id,
         created_at,
         setlists!inner(
@@ -113,10 +116,11 @@ export async function GET(request: NextRequest) {
             venues!inner(id, name, city)
           )
         )
-      `)
-      .in('setlists.shows.artist_id', artistIds)
-      .gte('created_at', cutoffDate.toISOString())
-      .order('created_at', { ascending: false })
+      `,
+      )
+      .in("setlists.shows.artist_id", artistIds)
+      .gte("created_at", cutoffDate.toISOString())
+      .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (recentSetlists) {
@@ -151,7 +155,7 @@ export async function GET(request: NextRequest) {
           if (artist && venue) {
             activities.push({
               id: `setlist-${setlistId}`,
-              type: 'setlist_added',
+              type: "setlist_added",
               timestamp: setlist.created_at,
               artistId: artist.id,
               artistName: artist.name,
@@ -171,8 +175,9 @@ export async function GET(request: NextRequest) {
 
     // 3. Show updates (high vote activity)
     const { data: activeShows } = await supabase
-      .from('show_votes')
-      .select(`
+      .from("show_votes")
+      .select(
+        `
         id,
         created_at,
         shows!inner(
@@ -183,10 +188,11 @@ export async function GET(request: NextRequest) {
           artists!inner(id, name, slug, image_url),
           venues!inner(id, name, city)
         )
-      `)
-      .in('shows.artist_id', artistIds)
-      .gte('created_at', cutoffDate.toISOString())
-      .order('created_at', { ascending: false });
+      `,
+      )
+      .in("shows.artist_id", artistIds)
+      .gte("created_at", cutoffDate.toISOString())
+      .order("created_at", { ascending: false });
 
     if (activeShows) {
       // Group votes by show and count recent activity
@@ -212,7 +218,7 @@ export async function GET(request: NextRequest) {
           // Threshold for "trending"
           activities.push({
             id: `trending-${showId}`,
-            type: 'show_update',
+            type: "show_update",
             timestamp: activity.latestActivity,
             artistId: activity.show.artists.id,
             artistName: activity.show.artists.name,
@@ -233,7 +239,7 @@ export async function GET(request: NextRequest) {
     // Sort all activities by timestamp
     activities.sort(
       (a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
     );
 
     // Paginate
@@ -256,8 +262,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to fetch activity feed' },
-      { status: 500 }
+      { error: "Failed to fetch activity feed" },
+      { status: 500 },
     );
   }
 }

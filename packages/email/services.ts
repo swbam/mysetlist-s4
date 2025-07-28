@@ -1,19 +1,19 @@
-import { render } from '@react-email/components';
-import { getResendClient } from './index';
-import { keys } from './keys';
+import { render } from "@react-email/components";
+import { getResendClient } from "./index";
+import { keys } from "./keys";
 
-import { ArtistFollowNotificationTemplate } from './templates/artist-follow-notification';
+import { ArtistFollowNotificationTemplate } from "./templates/artist-follow-notification";
 // Import all email templates
-import { ContactTemplate } from './templates/contact';
-import { EmailVerificationTemplate } from './templates/email-verification';
-import { LiveShowAlertTemplate } from './templates/live-show-alert';
-import { NewShowNotificationTemplate } from './templates/new-show-notification';
-import { PasswordResetTemplate } from './templates/password-reset';
-import { SetlistUpdateTemplate } from './templates/setlist-update';
-import { ShowReminderTemplate } from './templates/show-reminder';
-import { VoteMilestoneTemplate } from './templates/vote-milestone';
-import { WeeklyDigestTemplate } from './templates/weekly-digest';
-import { WelcomeTemplate } from './templates/welcome';
+import { ContactTemplate } from "./templates/contact";
+import { EmailVerificationTemplate } from "./templates/email-verification";
+import { LiveShowAlertTemplate } from "./templates/live-show-alert";
+import { NewShowNotificationTemplate } from "./templates/new-show-notification";
+import { PasswordResetTemplate } from "./templates/password-reset";
+import { SetlistUpdateTemplate } from "./templates/setlist-update";
+import { ShowReminderTemplate } from "./templates/show-reminder";
+import { VoteMilestoneTemplate } from "./templates/vote-milestone";
+import { WeeklyDigestTemplate } from "./templates/weekly-digest";
+import { WelcomeTemplate } from "./templates/welcome";
 
 // Types
 export type EmailAddress = {
@@ -67,14 +67,14 @@ async function sendEmail({
 
   try {
     const emailOptions: any = {
-      from: environment.RESEND_FROM || 'noreply@example.com',
+      from: environment.RESEND_FROM || "noreply@example.com",
       to: to.map((addr) =>
-        addr.name ? `${addr.name} <${addr.email}>` : addr.email
+        addr.name ? `${addr.name} <${addr.email}>` : addr.email,
       ),
       subject,
       text: html, // Use text instead of html to match API requirements
     };
-    
+
     // Only add replyTo if it's defined
     if (replyTo) {
       emailOptions.replyTo = replyTo;
@@ -114,7 +114,7 @@ export async function sendContactEmail({
 export async function sendWelcomeEmail({
   to,
   name,
-  appUrl = 'https://MySetlist.app',
+  appUrl = "https://MySetlist.app",
 }: {
   to: EmailAddress[];
   name: string;
@@ -124,7 +124,7 @@ export async function sendWelcomeEmail({
 
   return sendEmail({
     to,
-    subject: 'Welcome to MySetlist! 🎵',
+    subject: "Welcome to MySetlist! 🎵",
     html,
   });
 }
@@ -135,7 +135,7 @@ export async function sendShowReminderEmail({
   userName,
   show,
   daysUntilShow,
-  appUrl = 'https://MySetlist.app',
+  appUrl = "https://MySetlist.app",
 }: {
   to: EmailAddress[];
   userName: string;
@@ -144,14 +144,14 @@ export async function sendShowReminderEmail({
   appUrl?: string;
 }) {
   const html = await render(
-    ShowReminderTemplate({ userName, show, appUrl, daysUntilShow })
+    ShowReminderTemplate({ userName, show, appUrl, daysUntilShow }),
   );
 
   const timeText =
     daysUntilShow === 0
-      ? 'today'
+      ? "today"
       : daysUntilShow === 1
-        ? 'tomorrow'
+        ? "tomorrow"
         : `in ${daysUntilShow} days`;
 
   return sendEmail({
@@ -166,7 +166,7 @@ export async function sendNewShowNotificationEmail({
   to,
   userName,
   show,
-  appUrl = 'https://MySetlist.app',
+  appUrl = "https://MySetlist.app",
 }: {
   to: EmailAddress[];
   userName: string;
@@ -174,7 +174,7 @@ export async function sendNewShowNotificationEmail({
   appUrl?: string;
 }) {
   const html = await render(
-    NewShowNotificationTemplate({ userName, show, appUrl })
+    NewShowNotificationTemplate({ userName, show, appUrl }),
   );
 
   return sendEmail({
@@ -191,15 +191,15 @@ export async function sendSetlistUpdateEmail({
   show,
   newSongs,
   totalSongs,
-  updateType = 'updated',
-  appUrl = 'https://MySetlist.app',
+  updateType = "updated",
+  appUrl = "https://MySetlist.app",
 }: {
   to: EmailAddress[];
   userName: string;
   show: Show;
   newSongs: Song[];
   totalSongs: number;
-  updateType?: 'new' | 'complete' | 'updated';
+  updateType?: "new" | "complete" | "updated";
   appUrl?: string;
 }) {
   const html = await render(
@@ -210,16 +210,16 @@ export async function sendSetlistUpdateEmail({
       totalSongs,
       appUrl,
       updateType,
-    })
+    }),
   );
 
   const getSubjectText = () => {
     switch (updateType) {
-      case 'new':
+      case "new":
         return `🎵 New setlist: ${show.artistName} at ${show.venue}`;
-      case 'complete':
+      case "complete":
         return `✅ Complete setlist: ${show.artistName} at ${show.venue}`;
-      case 'updated':
+      case "updated":
         return `🔄 Setlist updated: ${show.artistName} at ${show.venue}`;
       default:
         return `🎵 Setlist update: ${show.artistName} at ${show.venue}`;
@@ -242,7 +242,7 @@ export async function sendWeeklyDigestEmail({
   upcomingShows,
   newSetlists,
   totalFollowedArtists,
-  appUrl = 'https://MySetlist.app',
+  appUrl = "https://MySetlist.app",
 }: {
   to: EmailAddress[];
   userName: string;
@@ -262,7 +262,7 @@ export async function sendWeeklyDigestEmail({
       newSetlists,
       appUrl,
       totalFollowedArtists,
-    })
+    }),
   );
 
   return sendEmail({
@@ -278,7 +278,7 @@ export async function sendPasswordResetEmail({
   name,
   resetUrl,
   expirationHours = 24,
-  appUrl = 'https://MySetlist.app',
+  appUrl = "https://MySetlist.app",
 }: {
   to: EmailAddress[];
   name: string;
@@ -287,12 +287,12 @@ export async function sendPasswordResetEmail({
   appUrl?: string;
 }) {
   const html = await render(
-    PasswordResetTemplate({ name, resetUrl, appUrl, expirationHours })
+    PasswordResetTemplate({ name, resetUrl, appUrl, expirationHours }),
   );
 
   return sendEmail({
     to,
-    subject: 'Reset your MySetlist password',
+    subject: "Reset your MySetlist password",
     html,
   });
 }
@@ -303,7 +303,7 @@ export async function sendEmailVerificationEmail({
   name,
   verificationUrl,
   expirationHours = 24,
-  appUrl = 'https://MySetlist.app',
+  appUrl = "https://MySetlist.app",
 }: {
   to: EmailAddress[];
   name: string;
@@ -317,12 +317,12 @@ export async function sendEmailVerificationEmail({
       verificationUrl,
       appUrl,
       expirationHours,
-    })
+    }),
   );
 
   return sendEmail({
     to,
-    subject: 'Verify your MySetlist email address',
+    subject: "Verify your MySetlist email address",
     html,
   });
 }
@@ -351,7 +351,7 @@ export async function sendBatchEmails<T extends Record<string, any>>({
       try {
         const html = template(emailData);
         const result = await sendEmail({
-          to: emailData.name 
+          to: emailData.name
             ? [{ email: emailData.email, name: emailData.name }]
             : [{ email: emailData.email }],
           subject: getSubject(emailData),
@@ -375,12 +375,12 @@ export async function sendBatchEmails<T extends Record<string, any>>({
     const batchResults = await Promise.allSettled(batchPromises);
 
     batchResults.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
+      if (result.status === "fulfilled") {
         results.push(result.value);
       } else {
         results.push({
           success: false,
-          email: batch[index]?.email || 'unknown',
+          email: batch[index]?.email || "unknown",
           error: new Error(result.reason),
         });
       }
@@ -406,7 +406,7 @@ export async function sendArtistFollowNotificationEmail({
   artist,
   followerName,
   isFirstFollow = false,
-  appUrl = 'https://MySetlist.app',
+  appUrl = "https://MySetlist.app",
 }: {
   to: EmailAddress[];
   userName: string;
@@ -421,9 +421,7 @@ export async function sendArtistFollowNotificationEmail({
   isFirstFollow?: boolean;
   appUrl?: string;
 }) {
-  const html = await render(
-    ArtistFollowNotificationTemplate()
-  );
+  const html = await render(ArtistFollowNotificationTemplate());
 
   return sendEmail({
     to,
@@ -442,7 +440,7 @@ export async function sendVoteMilestoneEmail({
   song,
   milestone,
   totalVotes,
-  appUrl = 'https://MySetlist.app',
+  appUrl = "https://MySetlist.app",
 }: {
   to: EmailAddress[];
   userName: string;
@@ -460,7 +458,7 @@ export async function sendVoteMilestoneEmail({
       milestone,
       totalVotes,
       appUrl,
-    })
+    }),
   );
 
   return sendEmail({
@@ -476,15 +474,15 @@ export async function sendLiveShowAlertEmail({
   userName,
   show,
   alertType,
-  appUrl = 'https://MySetlist.app',
+  appUrl = "https://MySetlist.app",
 }: {
   to: EmailAddress[];
   userName: string;
   show: Show & {
-    setlistStatus: 'empty' | 'partial' | 'live' | 'complete';
+    setlistStatus: "empty" | "partial" | "live" | "complete";
     estimatedDuration?: string;
   };
-  alertType: 'starting-soon' | 'live-now' | 'setlist-live';
+  alertType: "starting-soon" | "live-now" | "setlist-live";
   appUrl?: string;
 }) {
   const html = await render(
@@ -493,16 +491,16 @@ export async function sendLiveShowAlertEmail({
       show,
       alertType,
       appUrl,
-    })
+    }),
   );
 
   const getSubject = () => {
     switch (alertType) {
-      case 'starting-soon':
+      case "starting-soon":
         return `⏰ ${show.artistName} starts in 30 minutes!`;
-      case 'live-now':
+      case "live-now":
         return `🔴 LIVE: ${show.artistName} just took the stage!`;
-      case 'setlist-live':
+      case "setlist-live":
         return `📝 Live setlist: ${show.artistName} at ${show.venue}`;
       default:
         return `🎵 Live update: ${show.artistName}`;
@@ -519,19 +517,19 @@ export async function sendLiveShowAlertEmail({
 // Unsubscribe token generation and validation
 export function generateUnsubscribeToken(
   userId: string,
-  emailType: string
+  emailType: string,
 ): string {
   // In production, use a proper JWT or signed token
   // For now, using a simple base64 encoding
   const payload = JSON.stringify({ userId, emailType, timestamp: Date.now() });
-  return Buffer.from(payload).toString('base64url');
+  return Buffer.from(payload).toString("base64url");
 }
 
 export function validateUnsubscribeToken(
-  token: string
+  token: string,
 ): { userId: string; emailType: string } | null {
   try {
-    const payload = JSON.parse(Buffer.from(token, 'base64url').toString());
+    const payload = JSON.parse(Buffer.from(token, "base64url").toString());
 
     // Check if token is not too old (e.g., 30 days)
     const maxAge = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds

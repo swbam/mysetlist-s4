@@ -1,4 +1,4 @@
-'use server';
+"use server";
 
 import {
   artistStats,
@@ -8,11 +8,11 @@ import {
   showArtists,
   shows,
   venues,
-} from '@repo/database';
-import { spotify } from '@repo/external-apis';
-import { and, desc, sql as drizzleSql, eq, gte, lt, or } from 'drizzle-orm';
-import { unstable_cache } from 'next/cache';
-import { CACHE_TAGS, REVALIDATION_TIMES } from '~/lib/cache';
+} from "@repo/database";
+import { spotify } from "@repo/external-apis";
+import { and, desc, sql as drizzleSql, eq, gte, lt, or } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
+import { CACHE_TAGS, REVALIDATION_TIMES } from "~/lib/cache";
 
 const _getArtist = async (slug: string) => {
   try {
@@ -49,24 +49,24 @@ const _getArtist = async (slug: string) => {
       .from(artists)
       .where(eq(artists.slug, slug))
       .limit(1);
-    
+
     if (artist) {
       return artist;
     }
 
     // If not found with Drizzle, try Supabase client as fallback
     try {
-      const { createServiceClient } = await import('~/lib/supabase/server');
+      const { createServiceClient } = await import("~/lib/supabase/server");
       const supabase = await createServiceClient();
-      
+
       const { data, error } = await supabase
-        .from('artists')
-        .select('*')
-        .eq('slug', slug)
+        .from("artists")
+        .select("*")
+        .eq("slug", slug)
         .single();
-      
+
       if (error || !data) {
-        console.warn('Artist not found in Supabase:', slug);
+        console.warn("Artist not found in Supabase:", slug);
         return null;
       }
 
@@ -100,22 +100,22 @@ const _getArtist = async (slug: string) => {
         updatedAt: data.updated_at,
       };
     } catch (supabaseError) {
-      console.error('Supabase fallback error:', supabaseError);
+      console.error("Supabase fallback error:", supabaseError);
       return null;
     }
   } catch (err: unknown) {
-    console.error('Error fetching artist:', err);
+    console.error("Error fetching artist:", err);
     return null;
   }
 };
 
 // Cached version with tags
-export const getArtist = unstable_cache(_getArtist, ['artist-by-slug'], {
+export const getArtist = unstable_cache(_getArtist, ["artist-by-slug"], {
   revalidate: REVALIDATION_TIMES.artist,
   tags: [CACHE_TAGS.artists],
 });
 
-const _getArtistShows = async (artistId: string, type: 'upcoming' | 'past') => {
+const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
   const now = new Date();
 
   try {
@@ -147,27 +147,35 @@ const _getArtistShows = async (artistId: string, type: 'upcoming' | 'past') => {
         and(
           or(
             eq(shows.headlinerArtistId, artistId),
-            eq(showArtists.artistId, artistId)
+            eq(showArtists.artistId, artistId),
           ),
-          type === 'upcoming'
-            ? gte(shows.date, now.toISOString().split('T')[0] || now.toISOString())
-            : lt(shows.date, now.toISOString().split('T')[0] || now.toISOString())
-        )
+          type === "upcoming"
+            ? gte(
+                shows.date,
+                now.toISOString().split("T")[0] || now.toISOString(),
+              )
+            : lt(
+                shows.date,
+                now.toISOString().split("T")[0] || now.toISOString(),
+              ),
+        ),
       )
-      .orderBy(type === 'upcoming' ? shows.date : desc(shows.date))
-      .limit(type === 'upcoming' ? 15 : 25); // Increased limits for better UX
+      .orderBy(type === "upcoming" ? shows.date : desc(shows.date))
+      .limit(type === "upcoming" ? 15 : 25); // Increased limits for better UX
 
     // If no shows found and we're looking for upcoming shows, trigger auto-sync
-    if ((!artistShows || artistShows.length === 0) && type === 'upcoming') {
+    if ((!artistShows || artistShows.length === 0) && type === "upcoming") {
       try {
-        console.log(`No ${type} shows found for artist ${artistId}, attempting auto-sync...`);
-        
+        console.log(
+          `No ${type} shows found for artist ${artistId}, attempting auto-sync...`,
+        );
+
         // Get artist data first
         const [artist] = await db
-          .select({ 
-            name: artists.name, 
-            slug: artists.slug, 
-            ticketmasterId: artists.ticketmasterId 
+          .select({
+            name: artists.name,
+            slug: artists.slug,
+            ticketmasterId: artists.ticketmasterId,
           })
           .from(artists)
           .where(eq(artists.id, artistId))
@@ -177,25 +185,28 @@ const _getArtistShows = async (artistId: string, type: 'upcoming' | 'past') => {
           // Try to sync from external APIs using autonomous pipeline (non-blocking)
           const syncPromises = [
             // Direct sync for this specific artist
-            fetch('/api/artists/sync-shows', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+            fetch("/api/artists/sync-shows", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ artistId }),
             }).catch(() => {}),
             // Trigger autonomous sync pipeline
-            fetch('/api/autonomous-sync?pipeline=sync', {
-              method: 'GET',
+            fetch("/api/autonomous-sync?pipeline=sync", {
+              method: "GET",
               headers: {
-                'Authorization': `Bearer ${process.env.CRON_SECRET || 'dev-secret'}`,
+                Authorization: `Bearer ${process.env.CRON_SECRET || "dev-secret"}`,
               },
-            }).catch(() => {})
+            }).catch(() => {}),
           ];
-          
+
           // Don't wait for these to complete
           Promise.allSettled(syncPromises);
         }
       } catch (syncError) {
-        console.warn('Auto-sync failed, continuing with empty results:', syncError);
+        console.warn(
+          "Auto-sync failed, continuing with empty results:",
+          syncError,
+        );
       }
     }
 
@@ -207,20 +218,33 @@ const _getArtistShows = async (artistId: string, type: 'upcoming' | 'past') => {
     // Transform and validate each show record
     return artistShows
       .filter(({ show }) => show && show.id) // Ensure valid show data
-      .map(({ show, venue, orderIndex, isHeadliner, setlistCount, voteCount }) => ({
-        show: {
-          ...show,
-          setlistCount: setlistCount || 0,
-          voteCount: voteCount || 0,
-          ticketUrl: show.ticketUrl || undefined,
-          status: show.status || (type === 'upcoming' ? 'confirmed' : 'completed'),
-        },
-        venue: venue || undefined,
-        orderIndex: orderIndex || 0,
-        isHeadliner: isHeadliner || false,
-      }));
+      .map(
+        ({
+          show,
+          venue,
+          orderIndex,
+          isHeadliner,
+          setlistCount,
+          voteCount,
+        }) => ({
+          show: {
+            ...show,
+            setlistCount: setlistCount || 0,
+            voteCount: voteCount || 0,
+            ticketUrl: show.ticketUrl || undefined,
+            status:
+              show.status || (type === "upcoming" ? "confirmed" : "completed"),
+          },
+          venue: venue || undefined,
+          orderIndex: orderIndex || 0,
+          isHeadliner: isHeadliner || false,
+        }),
+      );
   } catch (error) {
-    console.error(`Error fetching ${type} shows for artist ${artistId}:`, error);
+    console.error(
+      `Error fetching ${type} shows for artist ${artistId}:`,
+      error,
+    );
     return [];
   }
 };
@@ -228,11 +252,11 @@ const _getArtistShows = async (artistId: string, type: 'upcoming' | 'past') => {
 // Cached version with dynamic revalidation based on show type
 export const getArtistShows = unstable_cache(
   _getArtistShows,
-  ['artist-shows'],
+  ["artist-shows"],
   {
     revalidate: 1800, // 30 minutes for better performance
     tags: [CACHE_TAGS.shows, CACHE_TAGS.artists],
-  }
+  },
 );
 
 const _getArtistStats = async (artistId: string) => {
@@ -248,11 +272,11 @@ const _getArtistStats = async (artistId: string) => {
 // Cached version
 export const getArtistStats = unstable_cache(
   _getArtistStats,
-  ['artist-stats'],
+  ["artist-stats"],
   {
     revalidate: REVALIDATION_TIMES.stats,
     tags: [CACHE_TAGS.stats],
-  }
+  },
 );
 
 const _getSimilarArtists = async (artistId: string, _genres: string | null) => {
@@ -262,10 +286,7 @@ const _getSimilarArtists = async (artistId: string, _genres: string | null) => {
     .select()
     .from(artists)
     .where(
-      and(
-        eq(artists.verified, true),
-        drizzleSql`${artists.id} != ${artistId}`
-      )
+      and(eq(artists.verified, true), drizzleSql`${artists.id} != ${artistId}`),
     )
     .orderBy(desc(artists.popularity))
     .limit(5);
@@ -276,11 +297,11 @@ const _getSimilarArtists = async (artistId: string, _genres: string | null) => {
 // Cached version
 export const getSimilarArtists = unstable_cache(
   _getSimilarArtists,
-  ['similar-artists'],
+  ["similar-artists"],
   {
     revalidate: REVALIDATION_TIMES.artist,
     tags: [CACHE_TAGS.artists],
-  }
+  },
 );
 
 export async function getArtistTopTracks(spotifyId: string) {
@@ -335,15 +356,18 @@ const _getArtistSetlists = async (artistId: string, limit: number = 10) => {
 
 export const getArtistSetlists = unstable_cache(
   _getArtistSetlists,
-  ['artist-setlists'],
+  ["artist-setlists"],
   {
     revalidate: REVALIDATION_TIMES.show,
     tags: [CACHE_TAGS.shows],
-  }
+  },
 );
 
 // Enhanced action for artist songs with setlist integration
-const _getArtistSongsWithSetlistData = async (artistId: string, limit: number = 50) => {
+const _getArtistSongsWithSetlistData = async (
+  artistId: string,
+  limit: number = 50,
+) => {
   try {
     const artistSongs = await db
       .select({
@@ -355,26 +379,34 @@ const _getArtistSongsWithSetlistData = async (artistId: string, limit: number = 
         `,
       })
       .from(drizzleSql`songs`)
-      .leftJoin(drizzleSql`setlist_songs`, drizzleSql`setlist_songs.song_id = songs.id`)
+      .leftJoin(
+        drizzleSql`setlist_songs`,
+        drizzleSql`setlist_songs.song_id = songs.id`,
+      )
       .leftJoin(setlists, drizzleSql`setlist_songs.setlist_id = setlists.id`)
       .leftJoin(drizzleSql`votes`, drizzleSql`votes.setlist_id = setlists.id`)
-      .where(drizzleSql`songs.artist = (SELECT name FROM artists WHERE id = ${artistId})`)
+      .where(
+        drizzleSql`songs.artist = (SELECT name FROM artists WHERE id = ${artistId})`,
+      )
       .groupBy(drizzleSql`songs.id`)
       .orderBy(drizzleSql`COUNT(setlist_songs.song_id) DESC`)
       .limit(limit);
 
     return artistSongs;
   } catch (error) {
-    console.error(`Error fetching songs with setlist data for artist ${artistId}:`, error);
+    console.error(
+      `Error fetching songs with setlist data for artist ${artistId}:`,
+      error,
+    );
     return [];
   }
 };
 
 export const getArtistSongsWithSetlistData = unstable_cache(
   _getArtistSongsWithSetlistData,
-  ['artist-songs-with-setlist-data'],
+  ["artist-songs-with-setlist-data"],
   {
     revalidate: REVALIDATION_TIMES.stats,
     tags: [CACHE_TAGS.stats],
-  }
+  },
 );

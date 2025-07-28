@@ -1,17 +1,17 @@
-import { db } from '@repo/database';
-import { artists, setlistSongs, setlists, shows, venues } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
-import { 
-  SpotifyClient, 
-  TicketmasterClient, 
+import { db } from "@repo/database";
+import { artists, setlistSongs, setlists, shows, venues } from "@repo/database";
+import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
+import {
+  SpotifyClient,
+  TicketmasterClient,
   SetlistFmClient,
   type SetlistFmArtist,
   type SetlistFmVenue,
   type SetlistFmSong,
   type SetlistFmSet,
-  type SetlistFmSetlist
-} from '@repo/external-apis';
+  type SetlistFmSetlist,
+} from "@repo/external-apis";
 
 // Types for external API responses
 interface SpotifyAuthResponse {
@@ -116,7 +116,6 @@ interface VenueInsert {
   website?: string | null;
 }
 
-
 interface SetlistInsert {
   setlistfmId: string;
   artistId: string;
@@ -136,8 +135,6 @@ interface SetlistSongInsert {
   isTape: boolean;
   coverArtist?: string | null;
 }
-
-
 
 // Sync Services
 class ArtistSyncService {
@@ -182,8 +179,8 @@ class ArtistSyncService {
   private generateSlug(name: string): string {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
   }
 }
 
@@ -197,7 +194,7 @@ class ShowSyncService {
   }
 
   async syncUpcomingShows(
-    options: { city?: string; stateCode?: string; limit?: number } = {}
+    options: { city?: string; stateCode?: string; limit?: number } = {},
   ) {
     const now = new Date();
     const futureDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year ahead
@@ -206,13 +203,13 @@ class ShowSyncService {
       startDateTime: now.toISOString(),
       endDateTime: futureDate.toISOString(),
       size: options.limit || 200,
-      countryCode: 'US',
+      countryCode: "US",
     };
-    
+
     if (options.city) {
       searchParams.city = options.city;
     }
-    
+
     if (options.stateCode) {
       searchParams.stateCode = options.stateCode;
     }
@@ -244,9 +241,9 @@ class ShowSyncService {
 
       // Find or create artist
       const artist = await this.findOrCreateArtist(tmEvent);
-      
+
       if (!artist) {
-        throw new Error('Failed to find or create artist');
+        throw new Error("Failed to find or create artist");
       }
 
       // Create or update show
@@ -262,7 +259,7 @@ class ShowSyncService {
         ticketUrl: tmEvent.url,
         minPrice: tmEvent.priceRanges?.[0]?.min || null,
         maxPrice: tmEvent.priceRanges?.[0]?.max || null,
-        currency: tmEvent.priceRanges?.[0]?.currency || 'USD',
+        currency: tmEvent.priceRanges?.[0]?.currency || "USD",
       };
 
       const [show] = await db
@@ -327,11 +324,12 @@ class ShowSyncService {
     const attractionName =
       tmEvent._embedded?.attractions?.[0]?.name || tmEvent.name;
 
-    let artist = await db.select()
+    let artist = await db
+      .select()
       .from(artists)
       .where(eq(artists.name, attractionName))
       .limit(1)
-      .then(results => results[0]);
+      .then((results) => results[0]);
 
     if (!artist) {
       const [newArtist] = await db
@@ -350,24 +348,24 @@ class ShowSyncService {
   }
 
   private mapEventStatus(
-    statusCode: string
-  ): 'upcoming' | 'cancelled' | 'completed' {
+    statusCode: string,
+  ): "upcoming" | "cancelled" | "completed" {
     switch (statusCode) {
-      case 'onsale':
-      case 'offsale':
-        return 'upcoming';
-      case 'cancelled':
-        return 'cancelled';
+      case "onsale":
+      case "offsale":
+        return "upcoming";
+      case "cancelled":
+        return "cancelled";
       default:
-        return 'upcoming';
+        return "upcoming";
     }
   }
 
   private generateSlug(name: string): string {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
   }
 }
 
@@ -420,9 +418,9 @@ class SetlistSyncService {
 
       // Find or create venue
       const venue = await this.findOrCreateVenue(setlistData.venue);
-      
+
       if (!artist || !venue) {
-        throw new Error('Failed to find or create artist or venue');
+        throw new Error("Failed to find or create artist or venue");
       }
 
       // Create or update setlist
@@ -461,7 +459,7 @@ class SetlistSyncService {
 
   private async syncSetlistSongs(
     setlistId: string,
-    sets: { set: SetlistFmSet[] }
+    sets: { set: SetlistFmSet[] },
   ) {
     // Clear existing songs for this setlist
     await db.delete(setlistSongs).where(eq(setlistSongs.setlistId, setlistId));
@@ -489,11 +487,12 @@ class SetlistSyncService {
   }
 
   private async findOrCreateArtist(artistData: SetlistFmArtist) {
-    let artist = await db.select()
+    let artist = await db
+      .select()
       .from(artists)
       .where(eq(artists.name, artistData.name))
       .limit(1)
-      .then(results => results[0]);
+      .then((results) => results[0]);
 
     if (!artist) {
       const [newArtist] = await db
@@ -513,11 +512,12 @@ class SetlistSyncService {
   }
 
   private async findOrCreateVenue(venueData: SetlistFmVenue) {
-    let venue = await db.select()
+    let venue = await db
+      .select()
       .from(venues)
       .where(eq(venues.name, venueData.name))
       .limit(1)
-      .then(results => results[0]);
+      .then((results) => results[0]);
 
     if (!venue) {
       const [newVenue] = await db
@@ -530,7 +530,7 @@ class SetlistSyncService {
           country: venueData.city.country.code,
           latitude: venueData.city.coords?.lat || null,
           longitude: venueData.city.coords?.long || null,
-          timezone: 'UTC', // Default timezone
+          timezone: "UTC", // Default timezone
         } as any)
         .returning();
 
@@ -543,8 +543,8 @@ class SetlistSyncService {
   private generateSlug(name: string): string {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
   }
 }
 
@@ -580,10 +580,10 @@ interface SyncResults {
 export async function POST(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const action = searchParams.get('action') || 'test';
-    const artistName = searchParams.get('artist') || 'Taylor Swift';
-    const city = searchParams.get('city') || undefined;
-    const state = searchParams.get('state') || undefined;
+    const action = searchParams.get("action") || "test";
+    const artistName = searchParams.get("artist") || "Taylor Swift";
+    const city = searchParams.get("city") || undefined;
+    const state = searchParams.get("state") || undefined;
 
     const results: SyncResults = {
       action,
@@ -592,7 +592,7 @@ export async function POST(request: NextRequest) {
     };
 
     switch (action) {
-      case 'sync-artist': {
+      case "sync-artist": {
         const artistSync = new ArtistSyncService();
         const spotifyClient = new SpotifyClient({});
 
@@ -601,7 +601,9 @@ export async function POST(request: NextRequest) {
         if (searchResults.artists.items.length > 0) {
           const firstArtist = searchResults.artists.items[0];
           if (firstArtist) {
-            const artist = await artistSync.syncArtistFromSpotify(firstArtist.id);
+            const artist = await artistSync.syncArtistFromSpotify(
+              firstArtist.id,
+            );
             if (artist) {
               results.results.artist = artist;
             }
@@ -610,22 +612,22 @@ export async function POST(request: NextRequest) {
         break;
       }
 
-      case 'sync-shows': {
+      case "sync-shows": {
         const showSync = new ShowSyncService();
         const showSyncOptions: any = { limit: 50 };
         if (city) showSyncOptions.city = city;
         if (state) showSyncOptions.stateCode = state;
-        
+
         const syncdShows = await showSync.syncUpcomingShows(showSyncOptions);
         results.results.shows = syncdShows;
         break;
       }
 
-      case 'sync-setlists': {
+      case "sync-setlists": {
         const setlistSync = new SetlistSyncService();
         const syncdSetlists = await setlistSync.syncSetlistsForArtist(
           artistName,
-          3
+          3,
         );
         results.results.setlists = syncdSetlists;
         break;
@@ -649,7 +651,7 @@ export async function POST(request: NextRequest) {
 
         results.results = {
           spotify:
-            spotifyResult.status === 'fulfilled'
+            spotifyResult.status === "fulfilled"
               ? {
                   success: true,
                   artistCount: spotifyResult.value.artists.items.length,
@@ -665,8 +667,8 @@ export async function POST(request: NextRequest) {
                   success: false,
                   error: (spotifyResult.reason as Error).message,
                 },
-          ticketmaster: 
-            ticketmasterResult.status === 'fulfilled'
+          ticketmaster:
+            ticketmasterResult.status === "fulfilled"
               ? {
                   success: true,
                   eventCount:
@@ -685,7 +687,7 @@ export async function POST(request: NextRequest) {
                   error: (ticketmasterResult.reason as Error).message,
                 },
           setlistfm:
-            setlistfmResult.status === 'fulfilled'
+            setlistfmResult.status === "fulfilled"
               ? {
                   success: true,
                   artistCount: setlistfmResult.value.artist?.length || 0,
@@ -712,10 +714,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

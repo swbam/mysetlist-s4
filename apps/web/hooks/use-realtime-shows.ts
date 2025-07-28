@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import { useCallback, useEffect, useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import { useCallback, useEffect, useState } from "react";
+import { createClient } from "~/lib/supabase/client";
 
 interface Show {
   id: string;
   name: string;
   date: string;
-  status: 'upcoming' | 'ongoing' | 'completed';
+  status: "upcoming" | "ongoing" | "completed";
   artist_id: string;
   venue_id: string;
   created_at: string;
@@ -28,7 +28,7 @@ interface Show {
 interface UseRealtimeShowsOptions {
   artistId?: string;
   venueId?: string;
-  status?: Show['status'];
+  status?: Show["status"];
   onNewShow?: (show: Show) => void;
   onShowUpdated?: (show: Show) => void;
   limit?: number;
@@ -51,23 +51,25 @@ export function useRealtimeShows({
     try {
       setIsLoading(true);
       let query = supabase
-        .from('shows')
-        .select(`
+        .from("shows")
+        .select(
+          `
           *,
           artist:artists(id, name, slug),
           venue:venues(id, name, city, country)
-        `)
-        .order('date', { ascending: false })
+        `,
+        )
+        .order("date", { ascending: false })
         .limit(limit);
 
       if (artistId) {
-        query = query.eq('artist_id', artistId);
+        query = query.eq("artist_id", artistId);
       }
       if (venueId) {
-        query = query.eq('venue_id', venueId);
+        query = query.eq("venue_id", venueId);
       }
       if (status) {
-        query = query.eq('status', status);
+        query = query.eq("status", status);
       }
 
       const { data, error } = await query;
@@ -98,29 +100,31 @@ export function useRealtimeShows({
     }
 
     // Subscribe to new shows
-    const channel = supabase.channel('shows-realtime').on(
-      'postgres_changes',
+    const channel = supabase.channel("shows-realtime").on(
+      "postgres_changes",
       {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'shows',
+        event: "INSERT",
+        schema: "public",
+        table: "shows",
         ...(Object.keys(filters).length > 0 && {
           filter: Object.entries(filters)
             .map(([k, v]) => `${k}=${v}`)
-            .join(','),
+            .join(","),
         }),
       },
       async (payload: RealtimePostgresChangesPayload<Show>) => {
-        if (payload.new && 'id' in payload.new) {
+        if (payload.new && "id" in payload.new) {
           // Fetch the full show data with relations
           const { data: fullShow } = await supabase
-            .from('shows')
-            .select(`
+            .from("shows")
+            .select(
+              `
                 *,
                 artist:artists(id, name, slug),
                 venue:venues(id, name, city, country)
-              `)
-            .eq('id', payload.new.id)
+              `,
+            )
+            .eq("id", payload.new.id)
             .single();
 
           if (fullShow) {
@@ -128,37 +132,37 @@ export function useRealtimeShows({
             onNewShow?.(fullShow);
           }
         }
-      }
+      },
     );
 
     // Subscribe to show updates
     channel.on(
-      'postgres_changes',
+      "postgres_changes",
       {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'shows',
+        event: "UPDATE",
+        schema: "public",
+        table: "shows",
       },
       async (payload: RealtimePostgresChangesPayload<Show>) => {
-        if (payload.new && 'id' in payload.new) {
+        if (payload.new && "id" in payload.new) {
           // Check if this show matches our filters
           if (
             artistId &&
-            'artist_id' in payload.new &&
+            "artist_id" in payload.new &&
             payload.new.artist_id !== artistId
           ) {
             return;
           }
           if (
             venueId &&
-            'venue_id' in payload.new &&
+            "venue_id" in payload.new &&
             payload.new.venue_id !== venueId
           ) {
             return;
           }
           if (
             status &&
-            'status' in payload.new &&
+            "status" in payload.new &&
             payload.new.status !== status
           ) {
             return;
@@ -166,13 +170,15 @@ export function useRealtimeShows({
 
           // Fetch the full show data with relations
           const { data: fullShow } = await supabase
-            .from('shows')
-            .select(`
+            .from("shows")
+            .select(
+              `
               *,
               artist:artists(id, name, slug),
               venue:venues(id, name, city, country)
-            `)
-            .eq('id', payload.new.id)
+            `,
+            )
+            .eq("id", payload.new.id)
             .single();
 
           if (fullShow) {
@@ -188,7 +194,7 @@ export function useRealtimeShows({
             onShowUpdated?.(fullShow);
           }
         }
-      }
+      },
     );
 
     channel.subscribe();

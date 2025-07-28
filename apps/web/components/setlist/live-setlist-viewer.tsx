@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card } from '@repo/design-system/components/ui/card';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card } from "@repo/design-system/components/ui/card";
+import { cn } from "@repo/design-system/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Clock,
   Disc3,
@@ -15,13 +15,13 @@ import {
   VolumeX,
   Wifi,
   WifiOff,
-} from 'lucide-react';
-import { useCallback, useMemo, useState } from 'react';
-import { toast } from 'sonner';
-import { useAuth } from '~/app/providers/auth-provider';
-import { useRealtimeConnection } from '~/app/providers/realtime-provider';
-import { RealtimeVoteButton } from '~/components/voting/realtime-vote-button';
-import { useRealtimeSetlist } from '~/hooks/use-realtime-setlist';
+} from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { useAuth } from "~/app/providers/auth-provider";
+import { useRealtimeConnection } from "~/app/providers/realtime-provider";
+import { RealtimeVoteButton } from "~/components/voting/realtime-vote-button";
+import { useRealtimeSetlist } from "~/hooks/use-realtime-setlist";
 
 interface LiveSetlistViewerProps {
   showId: string;
@@ -45,16 +45,14 @@ export function LiveSetlistViewer({
   className,
 }: LiveSetlistViewerProps) {
   const { session } = useAuth();
-  const {
-    isConnected,
-    connectionStatus: _connectionStatus,
-  } = useRealtimeConnection();
+  const { isConnected, connectionStatus: _connectionStatus } =
+    useRealtimeConnection();
 
   // State for view preferences
   const [soundEnabled, setSoundEnabled] = useState(soundEffects);
   const [lastPlayedSong, setLastPlayedSong] = useState<string | null>(null);
   const [recentlyUpdatedSongs, setRecentlyUpdatedSongs] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   // Real-time setlist data with event handling
@@ -67,13 +65,13 @@ export function LiveSetlistViewer({
     showId,
     onEvent: (event) => {
       switch (event.type) {
-        case 'song_played':
+        case "song_played":
           handleSongPlayed(event.data.songId);
           break;
-        case 'vote_update':
+        case "vote_update":
           handleVoteUpdate(event.data);
           break;
-        case 'setlist_update':
+        case "setlist_update":
           handleSetlistUpdate(event.data);
           break;
       }
@@ -83,15 +81,15 @@ export function LiveSetlistViewer({
   // Extract songs from the appropriate setlist
   const songs = useMemo(() => {
     if (!setlists || setlists.length === 0) return [];
-    
+
     // If setlistId is provided, find that specific setlist
     if (setlistId) {
-      const targetSetlist = setlists.find(s => s.id === setlistId);
+      const targetSetlist = setlists.find((s) => s.id === setlistId);
       return targetSetlist?.songs || [];
     }
-    
+
     // Otherwise, use the first setlist (or the actual setlist if available)
-    const actualSetlist = setlists.find(s => s.type === 'actual');
+    const actualSetlist = setlists.find((s) => s.type === "actual");
     return actualSetlist?.songs || setlists[0]?.songs || [];
   }, [setlists, setlistId]);
 
@@ -110,9 +108,9 @@ export function LiveSetlistViewer({
       setLastPlayedSong(songId);
 
       // Play sound effect
-      if (soundEnabled && typeof Audio !== 'undefined') {
+      if (soundEnabled && typeof Audio !== "undefined") {
         try {
-          const audio = new Audio('/sounds/song-start.mp3');
+          const audio = new Audio("/sounds/song-start.mp3");
           audio.volume = 0.3;
           audio.play().catch(() => {
             // Ignore audio play errors (user interaction required)
@@ -134,10 +132,10 @@ export function LiveSetlistViewer({
       // Auto-scroll to current song if enabled
       if (autoScroll) {
         const element = document.getElementById(`song-${songId}`);
-        element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element?.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     },
-    [songs, soundEnabled, autoScroll]
+    [songs, soundEnabled, autoScroll],
   );
 
   // Handle vote updates
@@ -159,8 +157,8 @@ export function LiveSetlistViewer({
 
   // Handle setlist structure updates
   const handleSetlistUpdate = useCallback((_data: any) => {
-    toast.info('Setlist updated', {
-      description: 'New songs added to the setlist',
+    toast.info("Setlist updated", {
+      description: "New songs added to the setlist",
       duration: 2000,
     });
   }, []);
@@ -170,9 +168,7 @@ export function LiveSetlistViewer({
     if (!isLive) {
       return null;
     }
-    return (
-      songs.find((song) => song.isPlayed && song.playTime) || songs.at(-1)
-    ); // Fallback to last song
+    return songs.find((song) => song.isPlayed && song.playTime) || songs.at(-1); // Fallback to last song
   }, [songs, isLive]);
 
   // Get attendance count
@@ -184,13 +180,13 @@ export function LiveSetlistViewer({
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   // Loading state
   if (isLoading && songs.length === 0) {
     return (
-      <Card className={cn('p-6', className)}>
+      <Card className={cn("p-6", className)}>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="h-6 w-32 animate-pulse rounded bg-muted" />
@@ -207,7 +203,7 @@ export function LiveSetlistViewer({
   // Empty state
   if (songs.length === 0) {
     return (
-      <Card className={cn('p-8 text-center', className)}>
+      <Card className={cn("p-8 text-center", className)}>
         <Music className="mx-auto mb-3 h-12 w-12 text-muted-foreground" />
         <p className="text-muted-foreground">No songs in the setlist yet</p>
         {isLive && (
@@ -220,13 +216,13 @@ export function LiveSetlistViewer({
   }
 
   return (
-    <Card className={cn('overflow-hidden', className)}>
+    <Card className={cn("overflow-hidden", className)}>
       {/* Header */}
       <div className="border-b bg-muted/50 p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h3 className="font-semibold text-lg">
-              {isLive ? 'Live Setlist' : 'Setlist'}
+              {isLive ? "Live Setlist" : "Setlist"}
             </h3>
 
             {isLive && (
@@ -299,24 +295,24 @@ export function LiveSetlistViewer({
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
                 transition={{
-                  type: 'spring',
+                  type: "spring",
                   stiffness: 300,
                   damping: 30,
                   delay: index * 0.05,
                 }}
                 className={cn(
-                  'relative border-muted/50 border-b transition-all duration-300 last:border-b-0',
+                  "relative border-muted/50 border-b transition-all duration-300 last:border-b-0",
                   isCurrentlyPlaying &&
-                    'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20',
-                  isRecentlyUpdated && 'bg-blue-50 dark:bg-blue-900/20',
-                  isJustPlayed && 'bg-yellow-50 dark:bg-yellow-900/20'
+                    "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20",
+                  isRecentlyUpdated && "bg-blue-50 dark:bg-blue-900/20",
+                  isJustPlayed && "bg-yellow-50 dark:bg-yellow-900/20",
                 )}
               >
                 {/* Currently playing indicator */}
                 {isCurrentlyPlaying && (
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: '100%' }}
+                    animate={{ width: "100%" }}
                     className="absolute top-0 left-0 h-1 bg-gradient-to-r from-green-500 to-green-600"
                   />
                 )}
@@ -326,10 +322,10 @@ export function LiveSetlistViewer({
                     {/* Position indicator */}
                     <div
                       className={cn(
-                        'flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-medium text-sm',
+                        "flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-medium text-sm",
                         isCurrentlyPlaying
-                          ? 'bg-green-500 text-white'
-                          : 'bg-muted text-muted-foreground'
+                          ? "bg-green-500 text-white"
+                          : "bg-muted text-muted-foreground",
                       )}
                     >
                       {song.position}
@@ -432,7 +428,7 @@ export function LiveSetlistViewer({
                             <div className="mt-2 flex items-center gap-1 text-muted-foreground text-xs">
                               <Clock className="h-3 w-3" />
                               <span>
-                                Played at{' '}
+                                Played at{" "}
                                 {new Date(song.playTime).toLocaleTimeString()}
                               </span>
                             </div>
@@ -445,7 +441,9 @@ export function LiveSetlistViewer({
                             <RealtimeVoteButton
                               setlistSongId={song.id}
                               showId={showId}
-                              {...(session?.user?.id && { userId: session.user.id })}
+                              {...(session?.user?.id && {
+                                userId: session.user.id,
+                              })}
                               variant="compact"
                               size="sm"
                               showConnection={false}
@@ -483,7 +481,7 @@ export function LiveSetlistViewer({
             )}
             {showVotes && (
               <span>
-                {songs.reduce((sum, s) => sum + s.upvotes + s.downvotes, 0)}{' '}
+                {songs.reduce((sum, s) => sum + s.upvotes + s.downvotes, 0)}{" "}
                 votes
               </span>
             )}
@@ -491,7 +489,7 @@ export function LiveSetlistViewer({
 
           <div className="flex items-center gap-2">
             {!isConnected && <span className="text-warning">Offline mode</span>}
-            <span>Live updates {isConnected ? 'active' : 'paused'}</span>
+            <span>Live updates {isConnected ? "active" : "paused"}</span>
           </div>
         </div>
       </div>

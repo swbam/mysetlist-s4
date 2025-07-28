@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { cn } from '@repo/design-system/lib/utils';
-import { motion } from 'framer-motion';
-import { useRef, useState } from 'react';
-import { useTouchGestures } from '~/hooks/use-touch-gestures';
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { cn } from "@repo/design-system/lib/utils";
+import { motion } from "framer-motion";
+import { useRef, useState } from "react";
+import { useTouchGestures } from "~/hooks/use-touch-gestures";
 
 interface TouchCardProps {
   children: React.ReactNode;
@@ -17,13 +17,13 @@ interface TouchCardProps {
     left?: {
       label: string;
       action: () => void;
-      variant?: 'destructive' | 'default' | 'secondary';
+      variant?: "destructive" | "default" | "secondary";
       icon?: React.ReactNode;
     };
     right?: {
       label: string;
       action: () => void;
-      variant?: 'destructive' | 'default' | 'secondary';
+      variant?: "destructive" | "default" | "secondary";
       icon?: React.ReactNode;
     };
   };
@@ -45,14 +45,14 @@ export function TouchCard({
   const [isPressed, setIsPressed] = useState(false);
   const [isPressedLong, setIsPressedLong] = useState(false);
   const [_swipeDirection, setSwipeDirection] = useState<
-    'left' | 'right' | null
+    "left" | "right" | null
   >(null);
   const [swipeDistance, setSwipeDistance] = useState(0);
 
   const cardRef = useRef<HTMLDivElement>(null);
   const longPressTimer = useRef<NodeJS.Timeout | undefined>(undefined);
   const touchStart = useRef<{ x: number; y: number; time: number } | null>(
-    null
+    null,
   );
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -79,7 +79,7 @@ export function TouchCard({
         onLongPress();
 
         // Haptic feedback if available
-        if ('vibrate' in navigator) {
+        if ("vibrate" in navigator) {
           navigator.vibrate(50);
         }
       }, 500);
@@ -111,15 +111,15 @@ export function TouchCard({
       const maxSwipe = 120;
       const constrainedDistance = Math.max(
         -maxSwipe,
-        Math.min(maxSwipe, deltaX)
+        Math.min(maxSwipe, deltaX),
       );
 
       setSwipeDistance(constrainedDistance);
 
       if (deltaX > 20) {
-        setSwipeDirection('right');
+        setSwipeDirection("right");
       } else if (deltaX < -20) {
-        setSwipeDirection('left');
+        setSwipeDirection("left");
       } else {
         setSwipeDirection(null);
       }
@@ -202,12 +202,12 @@ export function TouchCard({
           {swipeActions.left && (
             <motion.div
               className={cn(
-                'absolute top-0 right-0 flex h-full items-center px-4',
-                swipeActions.left.variant === 'destructive' && 'bg-destructive',
-                swipeActions.left.variant === 'secondary' && 'bg-secondary',
+                "absolute top-0 right-0 flex h-full items-center px-4",
+                swipeActions.left.variant === "destructive" && "bg-destructive",
+                swipeActions.left.variant === "secondary" && "bg-secondary",
                 (!swipeActions.left.variant ||
-                  swipeActions.left.variant === 'default') &&
-                  'bg-primary'
+                  swipeActions.left.variant === "default") &&
+                  "bg-primary",
               )}
               style={{
                 width: Math.max(0, -swipeDistance),
@@ -227,13 +227,13 @@ export function TouchCard({
           {swipeActions.right && (
             <motion.div
               className={cn(
-                'absolute top-0 left-0 flex h-full items-center px-4',
-                swipeActions.right.variant === 'destructive' &&
-                  'bg-destructive',
-                swipeActions.right.variant === 'secondary' && 'bg-secondary',
+                "absolute top-0 left-0 flex h-full items-center px-4",
+                swipeActions.right.variant === "destructive" &&
+                  "bg-destructive",
+                swipeActions.right.variant === "secondary" && "bg-secondary",
                 (!swipeActions.right.variant ||
-                  swipeActions.right.variant === 'default') &&
-                  'bg-primary'
+                  swipeActions.right.variant === "default") &&
+                  "bg-primary",
               )}
               style={{
                 width: Math.max(0, swipeDistance),
@@ -263,7 +263,7 @@ export function TouchCard({
           x: swipeDistance,
         }}
         transition={{
-          type: 'spring',
+          type: "spring",
           stiffness: 400,
           damping: 30,
         }}
@@ -273,15 +273,15 @@ export function TouchCard({
       >
         <Card
           className={cn(
-            'relative transition-all duration-150',
-            pressable && 'cursor-pointer select-none',
-            isPressed && 'shadow-sm',
-            isPressedLong && 'ring-2 ring-primary/50',
-            disabled && 'cursor-not-allowed opacity-50',
-            className
+            "relative transition-all duration-150",
+            pressable && "cursor-pointer select-none",
+            isPressed && "shadow-sm",
+            isPressedLong && "ring-2 ring-primary/50",
+            disabled && "cursor-not-allowed opacity-50",
+            className,
           )}
           style={{
-            touchAction: swipeActions ? 'pan-y' : 'manipulation',
+            touchAction: swipeActions ? "pan-y" : "manipulation",
           }}
         >
           <CardContent className="p-0">{children}</CardContent>

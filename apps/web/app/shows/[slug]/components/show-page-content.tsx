@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useRealtimeUpdates } from '../hooks/use-realtime-updates';
-import { SetlistSection } from './setlist-section';
-import { ShareButtons } from './share-buttons';
-import { ShowHeader } from './show-header';
-import { SupportingActs } from './supporting-acts';
-import { TicketInfo } from './ticket-info';
-import { VenueDetails } from './venue-details';
+import { useRealtimeUpdates } from "../hooks/use-realtime-updates";
+import { SetlistSection } from "./setlist-section";
+import { ShareButtons } from "./share-buttons";
+import { ShowHeader } from "./show-header";
+import { SupportingActs } from "./supporting-acts";
+import { TicketInfo } from "./ticket-info";
+import { VenueDetails } from "./venue-details";
 
 type ShowPageContentProps = {
   show: any;
@@ -14,12 +14,12 @@ type ShowPageContentProps = {
 
 export function ShowPageContent({ show }: ShowPageContentProps) {
   const actualSetlists =
-    show.setlists?.filter((s: any) => s.type === 'actual') || [];
+    show.setlists?.filter((s: any) => s.type === "actual") || [];
   const predictedSetlists =
-    show.setlists?.filter((s: any) => s.type === 'predicted') || [];
+    show.setlists?.filter((s: any) => s.type === "predicted") || [];
 
   // Enable real-time updates for ongoing shows
-  useRealtimeUpdates(show.id, show.status === 'ongoing');
+  useRealtimeUpdates(show.id, show.status === "ongoing");
 
   return (
     <div className="grid gap-8 lg:grid-cols-3">
@@ -30,7 +30,7 @@ export function ShowPageContent({ show }: ShowPageContentProps) {
         <div className="flex flex-wrap gap-4">
           <ShareButtons
             url={`/shows/${show.slug}`}
-            title={`${show.headliner_artist.name} at ${show.venue?.name || 'TBA'}`}
+            title={`${show.headliner_artist.name} at ${show.venue?.name || "TBA"}`}
           />
         </div>
 
@@ -65,7 +65,6 @@ export function ShowPageContent({ show }: ShowPageContentProps) {
         />
 
         {show.venue && <VenueDetails venue={show.venue} />}
-
       </div>
     </div>
   );

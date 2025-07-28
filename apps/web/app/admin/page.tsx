@@ -4,8 +4,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { endOfDay, format, startOfDay, subDays } from 'date-fns';
+} from "@repo/design-system/components/ui/card";
+import { endOfDay, format, startOfDay, subDays } from "date-fns";
 import {
   AlertCircle,
   BarChart3,
@@ -15,12 +15,12 @@ import {
   Shield,
   TrendingUp,
   Users,
-} from 'lucide-react';
-import Link from 'next/link';
-import { createClient } from '~/lib/supabase/server';
+} from "lucide-react";
+import Link from "next/link";
+import { createClient } from "~/lib/supabase/server";
 
 // Force dynamic rendering due to user-specific data fetching
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface StatsCardProps {
   title: string;
@@ -58,12 +58,12 @@ function StatsCard({
         {trend && (
           <div className="mt-2 flex items-center">
             <TrendingUp
-              className={`mr-1 h-4 w-4 ${trend.isPositive ? 'text-green-500' : 'text-red-500'}`}
+              className={`mr-1 h-4 w-4 ${trend.isPositive ? "text-green-500" : "text-red-500"}`}
             />
             <span
-              className={`text-xs ${trend.isPositive ? 'text-green-500' : 'text-red-500'}`}
+              className={`text-xs ${trend.isPositive ? "text-green-500" : "text-red-500"}`}
             >
-              {trend.isPositive ? '+' : ''}
+              {trend.isPositive ? "+" : ""}
               {trend.value}%
             </span>
             <span className="ml-1 text-muted-foreground text-xs">
@@ -88,7 +88,9 @@ function StatsCard({
 
 export default async function AdminDashboard({
   params,
-}: { params: Promise<{ locale: string }> }) {
+}: {
+  params: Promise<{ locale: string }>;
+}) {
   const supabase = await createClient();
   const { locale } = await params;
 
@@ -108,33 +110,33 @@ export default async function AdminDashboard({
     { data: platformStats },
   ] = await Promise.all([
     supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .eq('deleted_at', null),
-    supabase.from('shows').select('*', { count: 'exact', head: true }),
-    supabase.from('artists').select('*', { count: 'exact', head: true }),
-    supabase.from('venues').select('*', { count: 'exact', head: true }),
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .eq("deleted_at", null),
+    supabase.from("shows").select("*", { count: "exact", head: true }),
+    supabase.from("artists").select("*", { count: "exact", head: true }),
+    supabase.from("venues").select("*", { count: "exact", head: true }),
     supabase
-      .from('reports')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'pending'),
+      .from("reports")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "pending"),
     supabase
-      .from('content_moderation')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'pending'),
+      .from("content_moderation")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "pending"),
     supabase
-      .from('moderation_logs')
+      .from("moderation_logs")
       .select(
-        '*, moderator:users!moderation_logs_moderator_id_fkey(display_name, email)'
+        "*, moderator:users!moderation_logs_moderator_id_fkey(display_name, email)",
       )
-      .order('created_at', { ascending: false })
+      .order("created_at", { ascending: false })
       .limit(5),
     supabase
-      .from('platform_stats')
-      .select('*')
-      .gte('stat_date', format(weekAgo, 'yyyy-MM-dd'))
-      .lte('stat_date', format(today, 'yyyy-MM-dd'))
-      .order('stat_date', { ascending: false }),
+      .from("platform_stats")
+      .select("*")
+      .gte("stat_date", format(weekAgo, "yyyy-MM-dd"))
+      .lte("stat_date", format(today, "yyyy-MM-dd"))
+      .order("stat_date", { ascending: false }),
   ]);
 
   // Calculate trends
@@ -153,7 +155,7 @@ export default async function AdminDashboard({
       ? {
           value: calculateTrend(
             latestStats.total_users,
-            weekAgoStats.total_users
+            weekAgoStats.total_users,
           ),
           isPositive: latestStats.total_users >= weekAgoStats.total_users,
         }
@@ -161,16 +163,16 @@ export default async function AdminDashboard({
 
   // Get new content today
   const { count: newUsersToday } = await supabase
-    .from('users')
-    .select('*', { count: 'exact', head: true })
-    .gte('created_at', startOfDay(today).toISOString())
-    .lte('created_at', endOfDay(today).toISOString());
+    .from("users")
+    .select("*", { count: "exact", head: true })
+    .gte("created_at", startOfDay(today).toISOString())
+    .lte("created_at", endOfDay(today).toISOString());
 
   const { count: newShowsToday } = await supabase
-    .from('shows')
-    .select('*', { count: 'exact', head: true })
-    .gte('created_at', startOfDay(today).toISOString())
-    .lte('created_at', endOfDay(today).toISOString());
+    .from("shows")
+    .select("*", { count: "exact", head: true })
+    .gte("created_at", startOfDay(today).toISOString())
+    .lte("created_at", endOfDay(today).toISOString());
 
   return (
     <div className="space-y-8">
@@ -272,8 +274,8 @@ export default async function AdminDashboard({
                         <span className="font-medium">
                           {activity.moderator?.display_name ||
                             activity.moderator?.email}
-                        </span>{' '}
-                        {activity.action.replace('_', ' ')}{' '}
+                        </span>{" "}
+                        {activity.action.replace("_", " ")}{" "}
                         {activity.target_type}
                       </p>
                       {activity.reason && (
@@ -282,7 +284,7 @@ export default async function AdminDashboard({
                         </p>
                       )}
                       <p className="text-muted-foreground text-xs">
-                        {format(new Date(activity.created_at), 'MMM d, h:mm a')}
+                        {format(new Date(activity.created_at), "MMM d, h:mm a")}
                       </p>
                     </div>
                   </div>
@@ -307,7 +309,7 @@ export default async function AdminDashboard({
               <div className="flex items-center justify-between">
                 <span className="font-medium text-sm">Active Users (7d)</span>
                 <span className="text-muted-foreground text-sm">
-                  {latestStats?.active_users?.toLocaleString() ?? 'N/A'}
+                  {latestStats?.active_users?.toLocaleString() ?? "N/A"}
                 </span>
               </div>
               <div className="flex items-center justify-between">

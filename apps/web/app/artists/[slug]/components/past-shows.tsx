@@ -1,15 +1,15 @@
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Calendar, MapPin, Music2, Users } from 'lucide-react';
-import Link from 'next/link';
-import React from 'react';
-import { formatDate } from '~/lib/utils';
+} from "@repo/design-system/components/ui/card";
+import { Calendar, MapPin, Music2, Users } from "lucide-react";
+import Link from "next/link";
+import React from "react";
+import { formatDate } from "~/lib/utils";
 
 interface Show {
   show: {
@@ -41,10 +41,10 @@ interface PastShowsProps {
   artistId?: string;
 }
 
-export const PastShows = React.memo(function PastShows({ 
-  shows, 
-  artistName, 
-  artistId: _artistId 
+export const PastShows = React.memo(function PastShows({
+  shows,
+  artistName,
+  artistId: _artistId,
 }: PastShowsProps) {
   if (shows.length === 0) {
     return (

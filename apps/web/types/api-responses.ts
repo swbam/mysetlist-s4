@@ -68,7 +68,7 @@ export interface SearchResponse {
 
 // Sync Response Types
 export interface SyncProgress {
-  status: 'idle' | 'syncing' | 'completed' | 'error';
+  status: "idle" | "syncing" | "completed" | "error";
   progress: number;
   message: string;
   totalItems?: number;
@@ -123,21 +123,21 @@ export interface ErrorResponse {
 // Type Guards
 export function isApiError(error: unknown): error is ApiError {
   return (
-    typeof error === 'object' &&
+    typeof error === "object" &&
     error !== null &&
-    'error' in error &&
-    typeof (error as ApiError).error === 'string'
+    "error" in error &&
+    typeof (error as ApiError).error === "string"
   );
 }
 
 export function isErrorResponse(response: unknown): response is ErrorResponse {
   return (
-    typeof response === 'object' &&
+    typeof response === "object" &&
     response !== null &&
-    'error' in response &&
-    'statusCode' in response &&
-    typeof (response as ErrorResponse).error === 'string' &&
-    typeof (response as ErrorResponse).statusCode === 'number'
+    "error" in response &&
+    "statusCode" in response &&
+    typeof (response as ErrorResponse).error === "string" &&
+    typeof (response as ErrorResponse).statusCode === "number"
   );
 }
 
@@ -152,8 +152,8 @@ export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
-  if (typeof error === 'string') {
+  if (typeof error === "string") {
     return error;
   }
-  return 'An unexpected error occurred';
+  return "An unexpected error occurred";
 }

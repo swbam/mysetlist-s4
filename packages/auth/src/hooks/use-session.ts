@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import { useAuth } from './use-auth';
+import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "./use-auth";
 
 export function useSession() {
   const { session, refreshSession, loading: authLoading } = useAuth();

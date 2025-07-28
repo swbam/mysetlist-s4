@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 
 interface AutoImportResult {
   success: boolean;
@@ -37,24 +37,24 @@ export function useArtistAutoImport() {
       setError(null);
 
       try {
-        const response = await fetch('/api/artists/auto-import', {
-          method: 'POST',
+        const response = await fetch("/api/artists/auto-import", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify(params),
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to import artist data');
+          throw new Error(errorData.error || "Failed to import artist data");
         }
 
         const result = await response.json();
         return result;
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : 'An error occurred';
+          err instanceof Error ? err.message : "An error occurred";
         setError(errorMessage);
         return {
           success: false,
@@ -64,7 +64,7 @@ export function useArtistAutoImport() {
         setLoading(false);
       }
     },
-    []
+    [],
   );
 
   return {

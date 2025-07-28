@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { createClient } from '~/lib/supabase/server';
+import { type NextRequest, NextResponse } from "next/server";
+import { createClient } from "~/lib/supabase/server";
 
 // This API allows triggering specific email notifications based on events
 export async function POST(request: NextRequest) {
@@ -9,41 +9,42 @@ export async function POST(request: NextRequest) {
     const { event, data, systemToken } = body;
 
     // Validate system token for automated triggers
-    if (systemToken !== process.env['EMAIL_SYSTEM_TOKEN']) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (systemToken !== process.env["EMAIL_SYSTEM_TOKEN"]) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     if (!event || !data) {
       return NextResponse.json(
-        { error: 'Missing event or data' },
-        { status: 400 }
+        { error: "Missing event or data" },
+        { status: 400 },
       );
     }
 
     const emailQueue: any[] = [];
 
     switch (event) {
-      case 'user.welcome':
+      case "user.welcome":
         {
           const { name, email } = data;
 
           emailQueue.push({
-            type: 'welcome',
+            type: "welcome",
             recipients: [{ email, name }],
             data: { name },
-            priority: 'high',
+            priority: "high",
           });
         }
         break;
 
-      case 'show.announced':
+      case "show.announced":
         {
           const { showId, artistId } = data;
 
           // Get followers of the artist who want new show notifications
           const { data: followers } = await supabase
-            .from('artist_followers')
-            .select(`
+            .from("artist_followers")
+            .select(
+              `
               user_id,
               users!inner (
                 email,
@@ -53,18 +54,21 @@ export async function POST(request: NextRequest) {
                   email_notifications
                 )
               )
-            `)
-            .eq('artist_id', artistId);
+            `,
+            )
+            .eq("artist_id", artistId);
 
           // Get show details
           const { data: show } = await supabase
-            .from('shows')
-            .select(`
+            .from("shows")
+            .select(
+              `
               *,
               venues (name, city, country),
               artists (name)
-            `)
-            .eq('id', showId)
+            `,
+            )
+            .eq("id", showId)
             .single();
 
           if (show && followers) {
@@ -82,10 +86,10 @@ export async function POST(request: NextRequest) {
 
             if (notificationRecipients.length > 0) {
               emailQueue.push({
-                type: 'new-show-notification',
+                type: "new-show-notification",
                 recipients: notificationRecipients,
                 data: {
-                  userName: '', // Will be personalized per recipient
+                  userName: "", // Will be personalized per recipient
                   show: {
                     id: show.id,
                     name: show.name,
@@ -97,21 +101,22 @@ export async function POST(request: NextRequest) {
                     announcedAt: new Date().toLocaleDateString(),
                   },
                 },
-                priority: 'high',
+                priority: "high",
               });
             }
           }
         }
         break;
 
-      case 'setlist.updated':
+      case "setlist.updated":
         {
           const { showId, newSongs, updateType } = data;
 
           // Get users who are following this show or artist
           const { data: show } = await supabase
-            .from('shows')
-            .select(`
+            .from("shows")
+            .select(
+              `
               *,
               venues (name),
               artists (name, id),
@@ -126,8 +131,9 @@ export async function POST(request: NextRequest) {
                   )
                 )
               )
-            `)
-            .eq('id', showId)
+            `,
+            )
+            .eq("id", showId)
             .single();
 
           if (show) {
@@ -143,10 +149,10 @@ export async function POST(request: NextRequest) {
 
             if (recipients.length > 0) {
               emailQueue.push({
-                type: 'setlist-update',
+                type: "setlist-update",
                 recipients,
                 data: {
-                  userName: '', // Will be personalized per recipient
+                  userName: "", // Will be personalized per recipient
                   show: {
                     id: show.id,
                     name: show.name,
@@ -158,20 +164,21 @@ export async function POST(request: NextRequest) {
                   totalSongs: newSongs.length,
                   updateType,
                 },
-                priority: 'medium',
+                priority: "medium",
               });
             }
           }
         }
         break;
 
-      case 'show.starting':
+      case "show.starting":
         {
           const { showId, alertType } = data;
 
           const { data: show } = await supabase
-            .from('shows')
-            .select(`
+            .from("shows")
+            .select(
+              `
               *,
               venues (name),
               artists (name),
@@ -186,8 +193,9 @@ export async function POST(request: NextRequest) {
                   )
                 )
               )
-            `)
-            .eq('id', showId)
+            `,
+            )
+            .eq("id", showId)
             .single();
 
           if (show) {
@@ -203,10 +211,10 @@ export async function POST(request: NextRequest) {
 
             if (recipients.length > 0) {
               emailQueue.push({
-                type: 'live-show-alert',
+                type: "live-show-alert",
                 recipients,
                 data: {
-                  userName: '', // Will be personalized per recipient
+                  userName: "", // Will be personalized per recipient
                   show: {
                     id: show.id,
                     name: show.name,
@@ -214,39 +222,42 @@ export async function POST(request: NextRequest) {
                     venue: show.venues.name,
                     date: new Date(show.date).toLocaleDateString(),
                     time: show.time,
-                    setlistStatus: 'live',
-                    estimatedDuration: '2 hours',
+                    setlistStatus: "live",
+                    estimatedDuration: "2 hours",
                   },
                   alertType,
                 },
-                priority: 'high',
+                priority: "high",
               });
             }
           }
         }
         break;
 
-      case 'vote.milestone':
+      case "vote.milestone":
         {
           const { songId, milestone, userId } = data;
 
           // Get user details and song/show info
           const { data: user } = await supabase
-            .from('users')
-            .select(`
+            .from("users")
+            .select(
+              `
               email,
               full_name,
               user_email_preferences (
                 vote_milestones,
                 email_notifications
               )
-            `)
-            .eq('id', userId)
+            `,
+            )
+            .eq("id", userId)
             .single();
 
           const { data: song } = await supabase
-            .from('setlist_songs')
-            .select(`
+            .from("setlist_songs")
+            .select(
+              `
               *,
               songs (title, artist),
               setlists!inner (
@@ -258,8 +269,9 @@ export async function POST(request: NextRequest) {
                   venues (name)
                 )
               )
-            `)
-            .eq('id', songId)
+            `,
+            )
+            .eq("id", songId)
             .single();
 
           if (
@@ -271,7 +283,7 @@ export async function POST(request: NextRequest) {
             const show = song.setlists.shows;
 
             emailQueue.push({
-              type: 'vote-milestone',
+              type: "vote-milestone",
               recipients: [{ email: user.email, name: user.full_name }],
               data: {
                 userName: user.full_name,
@@ -291,20 +303,21 @@ export async function POST(request: NextRequest) {
                 milestone,
                 totalVotes: 0, // Would need to calculate from related data
               },
-              priority: 'low',
+              priority: "low",
             });
           }
         }
         break;
 
-      case 'artist.new_follower':
+      case "artist.new_follower":
         {
           const { artistId, followerId, isFirstFollow } = data;
 
           // Get artist owner/manager details
           const { data: artist } = await supabase
-            .from('artists')
-            .select(`
+            .from("artists")
+            .select(
+              `
               *,
               artist_managers!inner (
                 user_id,
@@ -317,14 +330,15 @@ export async function POST(request: NextRequest) {
                   )
                 )
               )
-            `)
-            .eq('id', artistId)
+            `,
+            )
+            .eq("id", artistId)
             .single();
 
           const { data: follower } = await supabase
-            .from('users')
-            .select('full_name, email')
-            .eq('id', followerId)
+            .from("users")
+            .select("full_name, email")
+            .eq("id", followerId)
             .single();
 
           if (artist && follower) {
@@ -343,21 +357,21 @@ export async function POST(request: NextRequest) {
 
             if (managers.length > 0) {
               emailQueue.push({
-                type: 'artist-follow-notification',
+                type: "artist-follow-notification",
                 recipients: managers,
                 data: {
-                  userName: '', // Will be personalized per recipient
+                  userName: "", // Will be personalized per recipient
                   artist: {
                     id: artist.id,
                     name: artist.name,
                     genre: artist.genres?.[0],
                     upcomingShows: 0, // Would need to calculate
-                    recentActivity: 'Active on MySetlist',
+                    recentActivity: "Active on MySetlist",
                   },
                   followerName: follower.full_name || follower.email,
                   isFirstFollow,
                 },
-                priority: 'low',
+                priority: "low",
               });
             }
           }
@@ -367,7 +381,7 @@ export async function POST(request: NextRequest) {
       default:
         return NextResponse.json(
           { error: `Unknown event type: ${event}` },
-          { status: 400 }
+          { status: 400 },
         );
     }
 
@@ -377,30 +391,30 @@ export async function POST(request: NextRequest) {
       try {
         // Personalize emails for each recipient
         if (
-          emailData.type === 'new-show-notification' &&
+          emailData.type === "new-show-notification" &&
           emailData.recipients.length > 1
         ) {
           // Send individual emails for personalization
           for (const recipient of emailData.recipients) {
             const personalizedData = {
               ...emailData.data,
-              userName: recipient.name || recipient.email.split('@')[0],
+              userName: recipient.name || recipient.email.split("@")[0],
             };
 
             const response = await fetch(
               `${request.nextUrl.origin}/api/email/queue`,
               {
-                method: 'POST',
+                method: "POST",
                 headers: {
-                  'Content-Type': 'application/json',
+                  "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
                   ...emailData,
                   recipients: [recipient],
                   data: personalizedData,
-                  systemToken: process.env['EMAIL_SYSTEM_TOKEN'],
+                  systemToken: process.env["EMAIL_SYSTEM_TOKEN"],
                 }),
-              }
+              },
             );
 
             const result = await response.json();
@@ -416,15 +430,15 @@ export async function POST(request: NextRequest) {
           const response = await fetch(
             `${request.nextUrl.origin}/api/email/queue`,
             {
-              method: 'POST',
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify({
                 ...emailData,
-                systemToken: process.env['EMAIL_SYSTEM_TOKEN'],
+                systemToken: process.env["EMAIL_SYSTEM_TOKEN"],
               }),
-            }
+            },
           );
 
           const result = await response.json();
@@ -439,7 +453,7 @@ export async function POST(request: NextRequest) {
         results.push({
           type: emailData.type,
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         });
       }
     }
@@ -452,8 +466,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

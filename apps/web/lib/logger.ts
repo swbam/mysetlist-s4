@@ -1,6 +1,6 @@
-import * as Sentry from '@sentry/nextjs';
+import * as Sentry from "@sentry/nextjs";
 
-export type LogLevel = 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'fatal';
+export type LogLevel = "trace" | "debug" | "info" | "warn" | "error" | "fatal";
 
 export interface LogContext {
   userId?: string;
@@ -12,50 +12,50 @@ export interface LogContext {
 }
 
 class Logger {
-  private isDevelopment = process.env["NODE_ENV"] === 'development';
+  private isDevelopment = process.env["NODE_ENV"] === "development";
   private sentryLogger = Sentry.logger;
 
   private consoleLog(level: LogLevel, message: string, context?: LogContext) {
     // Always log to console in development
     if (this.isDevelopment) {
       const consoleMethod =
-        level === 'error' || level === 'fatal'
-          ? 'error'
-          : level === 'warn'
-            ? 'warn'
-            : 'log';
-      
+        level === "error" || level === "fatal"
+          ? "error"
+          : level === "warn"
+            ? "warn"
+            : "log";
+
       // Log to console with context
       console[consoleMethod](
         `[${level.toUpperCase()}] ${message}`,
-        context ? JSON.stringify(context, null, 2) : ''
+        context ? JSON.stringify(context, null, 2) : "",
       );
     }
   }
 
   trace(message: string, context?: LogContext) {
-    this.consoleLog('trace', message, context);
+    this.consoleLog("trace", message, context);
 
     // Use Sentry's new logging API
     this.sentryLogger.trace(message, context);
   }
 
   debug(message: string, context?: LogContext) {
-    this.consoleLog('debug', message, context);
+    this.consoleLog("debug", message, context);
 
     // Use Sentry's new logging API
     this.sentryLogger.debug(message, context);
   }
 
   info(message: string, context?: LogContext) {
-    this.consoleLog('info', message, context);
+    this.consoleLog("info", message, context);
 
     // Use Sentry's new logging API
     this.sentryLogger.info(message, context);
   }
 
   warn(message: string, context?: LogContext) {
-    this.consoleLog('warn', message, context);
+    this.consoleLog("warn", message, context);
 
     // Use Sentry's new logging API
     this.sentryLogger.warn(message, context);
@@ -69,12 +69,12 @@ class Logger {
   error(
     message: string,
     errorOrContext?: Error | LogContext,
-    context?: LogContext
+    context?: LogContext,
   ) {
     if (errorOrContext instanceof Error) {
       // Handle error object
       const error = errorOrContext;
-      this.consoleLog('error', message, context);
+      this.consoleLog("error", message, context);
 
       // Use Sentry's new logging API for structured error logging
       this.sentryLogger.error(message, {
@@ -92,7 +92,7 @@ class Logger {
     } else {
       // Handle context object
       const ctx = errorOrContext as LogContext;
-      this.consoleLog('error', message, ctx);
+      this.consoleLog("error", message, ctx);
 
       // Use Sentry's new logging API
       this.sentryLogger.error(message, ctx);
@@ -102,12 +102,12 @@ class Logger {
   fatal(
     message: string,
     errorOrContext?: Error | LogContext,
-    context?: LogContext
+    context?: LogContext,
   ) {
     if (errorOrContext instanceof Error) {
       // Handle error object
       const error = errorOrContext;
-      this.consoleLog('fatal', message, context);
+      this.consoleLog("fatal", message, context);
 
       // Use Sentry's new logging API for structured error logging
       this.sentryLogger.fatal(message, {
@@ -118,7 +118,7 @@ class Logger {
 
       // Also capture the exception for additional error tracking
       Sentry.captureException(error, {
-        level: 'fatal',
+        level: "fatal",
         contexts: {
           log: { message, context },
         },
@@ -126,7 +126,7 @@ class Logger {
     } else {
       // Handle context object
       const ctx = errorOrContext as LogContext;
-      this.consoleLog('fatal', message, ctx);
+      this.consoleLog("fatal", message, ctx);
 
       // Use Sentry's new logging API
       this.sentryLogger.fatal(message, ctx);
@@ -162,11 +162,11 @@ class Logger {
   // Performance timing utility
   time(label: string): () => void {
     const startTime = performance.now();
-    
+
     return () => {
       const duration = performance.now() - startTime;
       this.info(`Performance: ${label}`, {
-        action: 'performance_measurement',
+        action: "performance_measurement",
         duration: Math.round(duration),
         label,
       });
@@ -175,7 +175,7 @@ class Logger {
       if (duration > 1000) {
         Sentry.addBreadcrumb({
           message: `Slow operation: ${label}`,
-          level: 'warning',
+          level: "warning",
           data: { duration, label },
         });
       }
@@ -190,11 +190,11 @@ class Logger {
     endpoint: string,
     status: number,
     duration: number,
-    context?: LogContext
+    context?: LogContext,
   ) {
     const apiContext = {
       ...context,
-      action: 'api_call',
+      action: "api_call",
       method,
       endpoint,
       status,
@@ -217,8 +217,8 @@ class Logger {
     // Track API metrics
     Sentry.addBreadcrumb({
       message: `API ${method} ${endpoint}`,
-      level: status >= 400 ? 'error' : 'info',
-      category: 'http',
+      level: status >= 400 ? "error" : "info",
+      category: "http",
       data: apiContext,
     });
   }
@@ -230,11 +230,11 @@ class Logger {
     duration: number,
     rowCount?: number,
     error?: Error,
-    context?: LogContext
+    context?: LogContext,
   ) {
     const dbContext = {
       ...context,
-      action: 'database_operation',
+      action: "database_operation",
       operation,
       table,
       duration: Math.round(duration),
@@ -243,7 +243,7 @@ class Logger {
     };
 
     const message = `DB ${operation} ${table} (${duration}ms${
-      rowCount !== undefined ? `, ${rowCount} rows` : ''
+      rowCount !== undefined ? `, ${rowCount} rows` : ""
     })`;
 
     if (error) {
@@ -256,10 +256,14 @@ class Logger {
   }
 
   // User action tracking
-  userAction(action: string, metadata?: Record<string, any>, context?: LogContext) {
+  userAction(
+    action: string,
+    metadata?: Record<string, any>,
+    context?: LogContext,
+  ) {
     const userContext = {
       ...context,
-      action: 'user_action',
+      action: "user_action",
       userAction: action,
       ...metadata,
     };
@@ -269,8 +273,8 @@ class Logger {
     // Track in Sentry as breadcrumb
     Sentry.addBreadcrumb({
       message: `User: ${action}`,
-      level: 'info',
-      category: 'user',
+      level: "info",
+      category: "user",
       data: userContext,
     });
   }
@@ -278,13 +282,13 @@ class Logger {
   // Security event logging
   security(
     event: string,
-    severity: 'low' | 'medium' | 'high' | 'critical',
+    severity: "low" | "medium" | "high" | "critical",
     details?: Record<string, any>,
-    context?: LogContext
+    context?: LogContext,
   ) {
     const securityContext = {
       ...context,
-      action: 'security_event',
+      action: "security_event",
       securityEvent: event,
       severity,
       ...details,
@@ -292,9 +296,9 @@ class Logger {
 
     const message = `Security event: ${event} (${severity})`;
 
-    if (severity === 'critical' || severity === 'high') {
+    if (severity === "critical" || severity === "high") {
       this.error(message, securityContext);
-    } else if (severity === 'medium') {
+    } else if (severity === "medium") {
       this.warn(message, securityContext);
     } else {
       this.info(message, securityContext);
@@ -303,8 +307,13 @@ class Logger {
     // Always track security events in Sentry
     Sentry.addBreadcrumb({
       message: `Security: ${event}`,
-      level: severity === 'low' ? 'info' : severity === 'medium' ? 'warning' : 'error',
-      category: 'security',
+      level:
+        severity === "low"
+          ? "info"
+          : severity === "medium"
+            ? "warning"
+            : "error",
+      category: "security",
       data: securityContext,
     });
   }
@@ -314,11 +323,11 @@ class Logger {
     event: string,
     value?: number,
     metadata?: Record<string, any>,
-    context?: LogContext
+    context?: LogContext,
   ) {
     const businessContext = {
       ...context,
-      action: 'business_event',
+      action: "business_event",
       businessEvent: event,
       value,
       ...metadata,
@@ -329,8 +338,8 @@ class Logger {
     // Track business metrics
     Sentry.addBreadcrumb({
       message: `Business: ${event}`,
-      level: 'info',
-      category: 'business',
+      level: "info",
+      category: "business",
       data: businessContext,
     });
   }
@@ -340,12 +349,22 @@ class Logger {
     const childLogger = new Logger();
     // Store the child context for use in all logging methods
     (childLogger as any).childContext = childContext;
-    
+
     // Override logging methods to include child context
-    const originalMethods = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'];
-    originalMethods.forEach(method => {
+    const originalMethods = [
+      "trace",
+      "debug",
+      "info",
+      "warn",
+      "error",
+      "fatal",
+    ];
+    originalMethods.forEach((method) => {
       const originalMethod = (childLogger as any)[method];
-      (childLogger as any)[method] = (message: string, context?: LogContext) => {
+      (childLogger as any)[method] = (
+        message: string,
+        context?: LogContext,
+      ) => {
         const mergedContext = { ...childContext, ...context };
         originalMethod.call(childLogger, message, mergedContext);
       };

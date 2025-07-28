@@ -1,25 +1,25 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '~/lib/supabase/server';
-import type { TrendingShow, TrendingShowsResponse } from '~/types/api';
-import { calculateShowGrowth } from '@repo/database';
+import { type NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "~/lib/supabase/server";
+import type { TrendingShow, TrendingShowsResponse } from "~/types/api";
+import { calculateShowGrowth } from "@repo/database";
 
 // Force dynamic rendering for API route
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = Number.parseInt(searchParams.get('limit') || '20');
-    const timeframe = searchParams.get('timeframe') || 'week'; // day, week, month
+    const limit = Number.parseInt(searchParams.get("limit") || "20");
+    const timeframe = searchParams.get("timeframe") || "week"; // day, week, month
 
     // Determine timeframe start date
     const now = new Date();
     let startDate: Date;
     switch (timeframe) {
-      case 'day':
+      case "day":
         startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
         break;
-      case 'month':
+      case "month":
         startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         break;
       default:
@@ -31,8 +31,9 @@ export async function GET(request: NextRequest) {
 
     // Get trending shows with artist and venue information using proper column names
     const { data: raw, error } = await supabase
-      .from('shows')
-      .select(`
+      .from("shows")
+      .select(
+        `
         id,
         name,
         slug,
@@ -62,11 +63,14 @@ export async function GET(request: NextRequest) {
           state,
           country
         )
-      `)
-      .or(`date.gte.${startDate.toISOString().substring(0, 10)},attendee_count.gt.0,view_count.gt.0`)
-      .order('trending_score', { ascending: false, nullsFirst: false })
-      .order('attendee_count', { ascending: false, nullsFirst: false })
-      .order('view_count', { ascending: false, nullsFirst: false })
+      `,
+      )
+      .or(
+        `date.gte.${startDate.toISOString().substring(0, 10)},attendee_count.gt.0,view_count.gt.0`,
+      )
+      .order("trending_score", { ascending: false, nullsFirst: false })
+      .order("attendee_count", { ascending: false, nullsFirst: false })
+      .order("view_count", { ascending: false, nullsFirst: false })
       .limit(limit);
 
     if (error) throw error;
@@ -75,7 +79,7 @@ export async function GET(request: NextRequest) {
       // Get the first artist from the array (headliner)
       const artist = Array.isArray(s.artists) ? s.artists[0] : s.artists;
       const venue = Array.isArray(s.venues) ? s.venues[0] : s.venues;
-      
+
       // Fallback trending score if null
       const score =
         s.trending_score ?? (s.vote_count ?? 0) * 2 + (s.attendee_count ?? 0);
@@ -90,18 +94,18 @@ export async function GET(request: NextRequest) {
         setlistCount: s.setlist_count ?? 0,
         previousSetlistCount: s.previous_setlist_count,
       });
-      
+
       // Use real growth data only (0 if no historical data available)
       const weeklyGrowth = realGrowth.overallGrowth;
       return {
         id: s.id,
-        name: s.name || (artist?.name ? `${artist.name} Live` : 'Unknown Show'),
+        name: s.name || (artist?.name ? `${artist.name} Live` : "Unknown Show"),
         slug: s.slug,
         date: s.date,
-        status: s.status || 'confirmed',
+        status: s.status || "confirmed",
         artist: {
-          name: artist?.name || 'Unknown Artist',
-          slug: artist?.slug || '',
+          name: artist?.name || "Unknown Artist",
+          slug: artist?.slug || "",
           imageUrl: artist?.image_url || null,
         },
         venue: {
@@ -128,8 +132,8 @@ export async function GET(request: NextRequest) {
 
     // Add cache headers
     response.headers.set(
-      'Cache-Control',
-      'public, s-maxage=300, stale-while-revalidate=600'
+      "Cache-Control",
+      "public, s-maxage=300, stale-while-revalidate=600",
     );
 
     return response;
@@ -137,17 +141,17 @@ export async function GET(request: NextRequest) {
     // Return empty array with fallback data instead of error
     const fallbackPayload: TrendingShowsResponse = {
       shows: [],
-      timeframe: request.nextUrl.searchParams.get('timeframe') || 'week',
+      timeframe: request.nextUrl.searchParams.get("timeframe") || "week",
       total: 0,
       generatedAt: new Date().toISOString(),
       fallback: true,
-      error: 'Unable to load trending shows at this time',
+      error: "Unable to load trending shows at this time",
     };
 
     return NextResponse.json(fallbackPayload, {
       status: 200, // Return 200 to prevent UI crashes
       headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
       },
     });
   }

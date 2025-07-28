@@ -1,9 +1,9 @@
-import { cache } from 'react';
-import { createClient } from '~/lib/supabase/server';
+import { cache } from "react";
+import { createClient } from "~/lib/supabase/server";
 
 export interface RecommendedItem {
   id: string;
-  type: 'show' | 'artist' | 'venue';
+  type: "show" | "artist" | "venue";
   name: string;
   reason: string;
   score: number;
@@ -43,15 +43,15 @@ export const getUserPreferences = cache(
 
     // Get user's voted shows
     const { data: votedShows } = await supabase
-      .from('show_votes')
-      .select('show_id')
-      .eq('user_id', userId);
+      .from("show_votes")
+      .select("show_id")
+      .eq("user_id", userId);
 
     // Get user's attended shows
     const { data: attendedShows } = await supabase
-      .from('show_attendees')
-      .select('show_id')
-      .eq('user_id', userId);
+      .from("show_attendees")
+      .select("show_id")
+      .eq("user_id", userId);
 
     // Get favorite artists from votes and attendance
     const showIds = [
@@ -65,13 +65,15 @@ export const getUserPreferences = cache(
 
     if (showIds.length > 0) {
       const { data: shows } = await supabase
-        .from('shows')
-        .select(`
+        .from("shows")
+        .select(
+          `
         artist_id,
         venue_id,
         artists!inner(id, name, genres)
-      `)
-        .in('id', showIds);
+      `,
+        )
+        .in("id", showIds);
 
       if (shows) {
         favoriteArtists = [...new Set(shows.map((s) => s.artist_id))];
@@ -80,14 +82,14 @@ export const getUserPreferences = cache(
         // Extract genres from artists
         const allGenres = shows.flatMap((s) => {
           const artists = Array.isArray(s.artists) ? s.artists : [s.artists];
-          return artists.flatMap(artist => artist?.genres || []);
+          return artists.flatMap((artist) => artist?.genres || []);
         });
         const genreCounts = allGenres.reduce(
           (acc, genre) => {
             acc[genre] = (acc[genre] || 0) + 1;
             return acc;
           },
-          {} as Record<string, number>
+          {} as Record<string, number>,
         );
 
         // Get top genres
@@ -106,12 +108,12 @@ export const getUserPreferences = cache(
       votedShows: votedShows?.map((v) => v.show_id) || [],
       // Following feature removed
     };
-  }
+  },
 );
 
 export async function getRecommendedShows(
   userId: string,
-  config: RecommendationConfig = DEFAULT_CONFIG
+  config: RecommendationConfig = DEFAULT_CONFIG,
 ): Promise<RecommendedItem[]> {
   const supabase = await createClient();
   const preferences = await getUserPreferences(userId);
@@ -124,33 +126,37 @@ export async function getRecommendedShows(
 
   // 1. Popular shows by trending artists (replaces followed artists)
   const { data: popularShows } = await supabase
-    .from('shows')
-    .select(`
+    .from("shows")
+    .select(
+      `
       id,
       slug,
       show_date,
       artists!inner(id, name, image_url, trending_score),
       venues!inner(id, name, city)
-    `)
-    .not('id', 'in', `(${Array.from(seenShowIds).join(',')})`)
+    `,
+    )
+    .not("id", "in", `(${Array.from(seenShowIds).join(",")})`)
     .gte(
-      'show_date',
-      config.includeUpcoming ? new Date().toISOString() : '1970-01-01'
+      "show_date",
+      config.includeUpcoming ? new Date().toISOString() : "1970-01-01",
     )
     .lte(
-      'show_date',
-      config.includePast ? '2100-01-01' : new Date().toISOString()
+      "show_date",
+      config.includePast ? "2100-01-01" : new Date().toISOString(),
     )
-    .order('artists.trending_score', { ascending: false })
+    .order("artists.trending_score", { ascending: false })
     .limit(10);
 
   if (popularShows) {
     popularShows.forEach((show) => {
-      const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
+      const artist = Array.isArray(show.artists)
+        ? show.artists[0]
+        : show.artists;
       const venue = Array.isArray(show.venues) ? show.venues[0] : show.venues;
       recommendations.push({
         id: show.id,
-        type: 'show',
+        type: "show",
         name: `${artist?.name} at ${venue?.name}`,
         reason: `Popular trending show`,
         score: 0.9,
@@ -168,34 +174,38 @@ export async function getRecommendedShows(
   // 2. Shows at favorite venues
   if (preferences.favoriteVenues.length > 0) {
     const { data: venueShows } = await supabase
-      .from('shows')
-      .select(`
+      .from("shows")
+      .select(
+        `
         id,
         slug,
         show_date,
         artists!inner(id, name, image_url),
         venues!inner(id, name, city)
-      `)
-      .in('venue_id', preferences.favoriteVenues)
-      .not('id', 'in', `(${Array.from(seenShowIds).join(',')})`)
+      `,
+      )
+      .in("venue_id", preferences.favoriteVenues)
+      .not("id", "in", `(${Array.from(seenShowIds).join(",")})`)
       .gte(
-        'show_date',
-        config.includeUpcoming ? new Date().toISOString() : '1970-01-01'
+        "show_date",
+        config.includeUpcoming ? new Date().toISOString() : "1970-01-01",
       )
       .lte(
-        'show_date',
-        config.includePast ? '2100-01-01' : new Date().toISOString()
+        "show_date",
+        config.includePast ? "2100-01-01" : new Date().toISOString(),
       )
-      .order('show_date', { ascending: true })
+      .order("show_date", { ascending: true })
       .limit(10);
 
     if (venueShows) {
       venueShows.forEach((show) => {
-        const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
+        const artist = Array.isArray(show.artists)
+          ? show.artists[0]
+          : show.artists;
         const venue = Array.isArray(show.venues) ? show.venues[0] : show.venues;
         recommendations.push({
           id: show.id,
-          type: 'show',
+          type: "show",
           name: `${artist?.name} at ${venue?.name}`,
           reason: `At your favorite venue: ${venue?.name}`,
           score: 0.8,
@@ -214,51 +224,57 @@ export async function getRecommendedShows(
   // 3. Shows by similar artists (based on genres)
   if (preferences.favoriteGenres.length > 0) {
     const { data: genreArtists } = await supabase
-      .from('artists')
-      .select('id')
-      .contains('genres', preferences.favoriteGenres)
-      .not('id', 'in', `(${preferences.favoriteArtists.join(',')})`);
+      .from("artists")
+      .select("id")
+      .contains("genres", preferences.favoriteGenres)
+      .not("id", "in", `(${preferences.favoriteArtists.join(",")})`);
 
     if (genreArtists && genreArtists.length > 0) {
       const { data: genreShows } = await supabase
-        .from('shows')
-        .select(`
+        .from("shows")
+        .select(
+          `
           id,
           slug,
           show_date,
           artists!inner(id, name, image_url, genres),
           venues!inner(id, name, city)
-        `)
-        .in(
-          'artist_id',
-          genreArtists.map((a) => a.id)
+        `,
         )
-        .not('id', 'in', `(${Array.from(seenShowIds).join(',')})`)
+        .in(
+          "artist_id",
+          genreArtists.map((a) => a.id),
+        )
+        .not("id", "in", `(${Array.from(seenShowIds).join(",")})`)
         .gte(
-          'show_date',
-          config.includeUpcoming ? new Date().toISOString() : '1970-01-01'
+          "show_date",
+          config.includeUpcoming ? new Date().toISOString() : "1970-01-01",
         )
         .lte(
-          'show_date',
-          config.includePast ? '2100-01-01' : new Date().toISOString()
+          "show_date",
+          config.includePast ? "2100-01-01" : new Date().toISOString(),
         )
-        .order('show_date', { ascending: true })
+        .order("show_date", { ascending: true })
         .limit(10);
 
       if (genreShows) {
         genreShows.forEach((show) => {
-          const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
-          const venue = Array.isArray(show.venues) ? show.venues[0] : show.venues;
+          const artist = Array.isArray(show.artists)
+            ? show.artists[0]
+            : show.artists;
+          const venue = Array.isArray(show.venues)
+            ? show.venues[0]
+            : show.venues;
           const matchingGenres =
             artist?.genres?.filter((g: string) =>
-              preferences.favoriteGenres.includes(g)
+              preferences.favoriteGenres.includes(g),
             ) || [];
 
           recommendations.push({
             id: show.id,
-            type: 'show',
+            type: "show",
             name: `${artist?.name} at ${venue?.name}`,
-            reason: `Similar to your taste: ${matchingGenres.join(', ')}`,
+            reason: `Similar to your taste: ${matchingGenres.join(", ")}`,
             score: 0.7,
             image_url: artist?.image_url,
             slug: show.slug,
@@ -276,7 +292,7 @@ export async function getRecommendedShows(
 
   // Remove duplicates and sort by score
   const uniqueRecommendations = Array.from(
-    new Map(recommendations.map((item) => [item.id, item])).values()
+    new Map(recommendations.map((item) => [item.id, item])).values(),
   );
 
   return uniqueRecommendations
@@ -286,7 +302,7 @@ export async function getRecommendedShows(
 
 export async function getRecommendedArtists(
   userId: string,
-  config: RecommendationConfig = DEFAULT_CONFIG
+  config: RecommendationConfig = DEFAULT_CONFIG,
 ): Promise<RecommendedItem[]> {
   const supabase = await createClient();
   const preferences = await getUserPreferences(userId);
@@ -300,32 +316,34 @@ export async function getRecommendedArtists(
   // 1. Popular artists by trending score (replaces followed artists similarity)
   if (preferences.favoriteGenres.length > 0) {
     const { data: similarArtists } = await supabase
-      .from('artists')
-      .select(`
+      .from("artists")
+      .select(
+        `
         id,
         name,
         slug,
         image_url,
         genres,
         trending_score
-      `)
-      .contains('genres', preferences.favoriteGenres)
-      .not('id', 'in', `(${Array.from(seenArtistIds).join(',')})`)
-      .order('trending_score', { ascending: false })
+      `,
+      )
+      .contains("genres", preferences.favoriteGenres)
+      .not("id", "in", `(${Array.from(seenArtistIds).join(",")})`)
+      .order("trending_score", { ascending: false })
       .limit(15);
 
     if (similarArtists) {
       similarArtists.forEach((artist) => {
         const matchingGenres =
           artist.genres?.filter((g: string) =>
-            preferences.favoriteGenres.includes(g)
+            preferences.favoriteGenres.includes(g),
           ) || [];
 
         recommendations.push({
           id: artist.id,
-          type: 'artist',
+          type: "artist",
           name: artist.name,
-          reason: `Similar genres: ${matchingGenres.join(', ')}`,
+          reason: `Similar genres: ${matchingGenres.join(", ")}`,
           score: 0.8 + (artist.trending_score || 0) / 100,
           image_url: artist.image_url,
           slug: artist.slug,
@@ -341,33 +359,39 @@ export async function getRecommendedArtists(
   // 2. Artists who performed at favorite venues
   if (preferences.favoriteVenues.length > 0) {
     const { data: venueArtists } = await supabase
-      .from('shows')
-      .select(`
+      .from("shows")
+      .select(
+        `
         artists!inner(id, name, slug, image_url)
-      `)
-      .in('venue_id', preferences.favoriteVenues)
-      .not('artist_id', 'in', `(${Array.from(seenArtistIds).join(',')})`)
+      `,
+      )
+      .in("venue_id", preferences.favoriteVenues)
+      .not("artist_id", "in", `(${Array.from(seenArtistIds).join(",")})`)
       .gte(
-        'show_date',
-        new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString()
+        "show_date",
+        new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
       ) // Last year
       .limit(20);
 
     if (venueArtists) {
       const uniqueArtists = Array.from(
-        new Map(venueArtists.map((va) => {
-          const artist = Array.isArray(va.artists) ? va.artists[0] : va.artists;
-          return [artist?.id, artist];
-        })).values()
+        new Map(
+          venueArtists.map((va) => {
+            const artist = Array.isArray(va.artists)
+              ? va.artists[0]
+              : va.artists;
+            return [artist?.id, artist];
+          }),
+        ).values(),
       );
 
       uniqueArtists.forEach((artist) => {
         if (artist?.id) {
           recommendations.push({
             id: artist.id,
-            type: 'artist',
+            type: "artist",
             name: artist.name,
-            reason: 'Performed at venues you like',
+            reason: "Performed at venues you like",
             score: 0.7,
             image_url: artist.image_url,
             slug: artist.slug,
@@ -379,7 +403,7 @@ export async function getRecommendedArtists(
 
   // Remove duplicates and sort by score
   const uniqueRecommendations = Array.from(
-    new Map(recommendations.map((item) => [item.id, item])).values()
+    new Map(recommendations.map((item) => [item.id, item])).values(),
   );
 
   return uniqueRecommendations
@@ -389,7 +413,7 @@ export async function getRecommendedArtists(
 
 export async function getRecommendedVenues(
   userId: string,
-  config: RecommendationConfig = DEFAULT_CONFIG
+  config: RecommendationConfig = DEFAULT_CONFIG,
 ): Promise<RecommendedItem[]> {
   const supabase = await createClient();
   const preferences = await getUserPreferences(userId);
@@ -401,9 +425,9 @@ export async function getRecommendedVenues(
   let favoriteCities: string[] = [];
   if (preferences.favoriteVenues.length > 0) {
     const { data: venues } = await supabase
-      .from('venues')
-      .select('city')
-      .in('id', preferences.favoriteVenues);
+      .from("venues")
+      .select("city")
+      .in("id", preferences.favoriteVenues);
 
     if (venues) {
       favoriteCities = [...new Set(venues.map((v) => v.city))];
@@ -413,8 +437,9 @@ export async function getRecommendedVenues(
   // 1. Venues in favorite cities
   if (favoriteCities.length > 0) {
     const { data: cityVenues } = await supabase
-      .from('venues')
-      .select(`
+      .from("venues")
+      .select(
+        `
         id,
         name,
         slug,
@@ -422,17 +447,18 @@ export async function getRecommendedVenues(
         image_url,
         capacity,
         shows(count)
-      `)
-      .in('city', favoriteCities)
-      .not('id', 'in', `(${Array.from(seenVenueIds).join(',')})`)
-      .order('shows.count', { ascending: false })
+      `,
+      )
+      .in("city", favoriteCities)
+      .not("id", "in", `(${Array.from(seenVenueIds).join(",")})`)
+      .order("shows.count", { ascending: false })
       .limit(15);
 
     if (cityVenues) {
       cityVenues.forEach((venue) => {
         recommendations.push({
           id: venue.id,
-          type: 'venue',
+          type: "venue",
           name: venue.name,
           reason: `In ${venue.city} where you attend shows`,
           score: 0.8 + (venue.shows?.[0]?.count || 0) / 1000,
@@ -451,33 +477,37 @@ export async function getRecommendedVenues(
   // 2. Venues that host your favorite artists
   if (preferences.favoriteArtists.length > 0) {
     const { data: artistVenues } = await supabase
-      .from('shows')
-      .select(`
+      .from("shows")
+      .select(
+        `
         venues!inner(id, name, slug, city, image_url, capacity)
-      `)
-      .in('artist_id', preferences.favoriteArtists)
-      .not('venue_id', 'in', `(${Array.from(seenVenueIds).join(',')})`)
+      `,
+      )
+      .in("artist_id", preferences.favoriteArtists)
+      .not("venue_id", "in", `(${Array.from(seenVenueIds).join(",")})`)
       .gte(
-        'show_date',
-        new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString()
+        "show_date",
+        new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString(),
       )
       .limit(20);
 
     if (artistVenues) {
       const uniqueVenues = Array.from(
-        new Map(artistVenues.map((av) => {
-          const venue = Array.isArray(av.venues) ? av.venues[0] : av.venues;
-          return [venue?.id, venue];
-        })).values()
+        new Map(
+          artistVenues.map((av) => {
+            const venue = Array.isArray(av.venues) ? av.venues[0] : av.venues;
+            return [venue?.id, venue];
+          }),
+        ).values(),
       );
 
       uniqueVenues.forEach((venue) => {
         if (venue?.id) {
           recommendations.push({
             id: venue.id,
-            type: 'venue',
+            type: "venue",
             name: venue.name,
-            reason: 'Hosts artists you follow',
+            reason: "Hosts artists you follow",
             score: 0.7,
             image_url: venue.image_url,
             slug: venue.slug,
@@ -493,7 +523,7 @@ export async function getRecommendedVenues(
 
   // Remove duplicates and sort by score
   const uniqueRecommendations = Array.from(
-    new Map(recommendations.map((item) => [item.id, item])).values()
+    new Map(recommendations.map((item) => [item.id, item])).values(),
   );
 
   return uniqueRecommendations
@@ -503,7 +533,7 @@ export async function getRecommendedVenues(
 
 export async function getPersonalizedRecommendations(
   userId: string,
-  config: RecommendationConfig = DEFAULT_CONFIG
+  config: RecommendationConfig = DEFAULT_CONFIG,
 ): Promise<{
   shows: RecommendedItem[];
   artists: RecommendedItem[];

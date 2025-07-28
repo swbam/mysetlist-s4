@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import { useCallback, useEffect, useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+import { useCallback, useEffect, useState } from "react";
+import { createClient } from "~/lib/supabase/client";
 
 interface ArtistFollower {
   artist_id: string;
@@ -30,9 +30,9 @@ export function useRealtimeArtist({
     try {
       setIsLoading(true);
       const { count, error } = await supabase
-        .from('user_follows_artists')
-        .select('*', { count: 'exact', head: true })
-        .eq('artist_id', artistId);
+        .from("user_follows_artists")
+        .select("*", { count: "exact", head: true })
+        .eq("artist_id", artistId);
 
       if (!error && count !== null) {
         setFollowerCount(count);
@@ -52,28 +52,28 @@ export function useRealtimeArtist({
     const channel = supabase
       .channel(`artist-followers-${artistId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'user_follows_artists',
+          event: "*",
+          schema: "public",
+          table: "user_follows_artists",
           filter: `artist_id=eq.${artistId}`,
         },
         (payload: RealtimePostgresChangesPayload<ArtistFollower>) => {
-          if (payload.eventType === 'INSERT') {
+          if (payload.eventType === "INSERT") {
             setFollowerCount((prev) => {
               const newCount = prev + 1;
               onFollowerChange?.(newCount);
               return newCount;
             });
-          } else if (payload.eventType === 'DELETE') {
+          } else if (payload.eventType === "DELETE") {
             setFollowerCount((prev) => {
               const newCount = Math.max(0, prev - 1);
               onFollowerChange?.(newCount);
               return newCount;
             });
           }
-        }
+        },
       )
       .subscribe();
 

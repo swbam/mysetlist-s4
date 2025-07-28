@@ -1,7 +1,13 @@
-'use client';
+"use client";
 
-import { cn } from '@repo/design-system/lib/utils';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { cn } from "@repo/design-system/lib/utils";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 interface VirtualizedListProps<T> {
   items: T[];
@@ -50,7 +56,7 @@ export const VirtualizedList = React.memo(function VirtualizedList<T>({
       positions[i] = cumulativeHeight;
 
       const height =
-        typeof itemHeight === 'function' ? itemHeight(i) : itemHeight;
+        typeof itemHeight === "function" ? itemHeight(i) : itemHeight;
 
       heights[i] = height;
       cumulativeHeight += height;
@@ -134,7 +140,7 @@ export const VirtualizedList = React.memo(function VirtualizedList<T>({
         setIsScrolling(false);
       }, 150);
     },
-    [onScroll, onEndReached, endReachedThreshold]
+    [onScroll, onEndReached, endReachedThreshold],
   );
 
   // Cleanup on unmount
@@ -155,54 +161,54 @@ export const VirtualizedList = React.memo(function VirtualizedList<T>({
 
       const container = containerRef.current;
       const itemHeightValue =
-        typeof itemHeight === 'function' ? estimatedItemHeight : itemHeight;
+        typeof itemHeight === "function" ? estimatedItemHeight : itemHeight;
 
       switch (e.key) {
-        case 'ArrowDown': {
+        case "ArrowDown": {
           e.preventDefault();
           container.scrollTop = Math.min(
             container.scrollTop + itemHeightValue,
-            itemMetrics.totalHeight - containerHeight
+            itemMetrics.totalHeight - containerHeight,
           );
           break;
         }
-        case 'ArrowUp': {
+        case "ArrowUp": {
           e.preventDefault();
           container.scrollTop = Math.max(
             container.scrollTop - itemHeightValue,
-            0
+            0,
           );
           break;
         }
-        case 'PageDown': {
+        case "PageDown": {
           e.preventDefault();
           container.scrollTop = Math.min(
             container.scrollTop + containerHeight * 0.8,
-            itemMetrics.totalHeight - containerHeight
+            itemMetrics.totalHeight - containerHeight,
           );
           break;
         }
-        case 'PageUp': {
+        case "PageUp": {
           e.preventDefault();
           container.scrollTop = Math.max(
             container.scrollTop - containerHeight * 0.8,
-            0
+            0,
           );
           break;
         }
-        case 'Home': {
+        case "Home": {
           e.preventDefault();
           container.scrollTop = 0;
           break;
         }
-        case 'End': {
+        case "End": {
           e.preventDefault();
           container.scrollTop = itemMetrics.totalHeight - containerHeight;
           break;
         }
       }
     },
-    [itemHeight, estimatedItemHeight, itemMetrics.totalHeight, containerHeight]
+    [itemHeight, estimatedItemHeight, itemMetrics.totalHeight, containerHeight],
   );
 
   // Render visible items
@@ -216,7 +222,7 @@ export const VirtualizedList = React.memo(function VirtualizedList<T>({
 
       const item = items[i];
       if (!item) continue;
-      
+
       const top = itemMetrics.positions[i] ?? 0;
       const height = itemMetrics.heights[i] ?? estimatedItemHeight;
 
@@ -224,19 +230,19 @@ export const VirtualizedList = React.memo(function VirtualizedList<T>({
         <div
           key={i}
           style={{
-            position: 'absolute',
+            position: "absolute",
             top,
             left: 0,
             right: 0,
             height,
           }}
           className={cn(
-            'transition-opacity duration-150',
-            isScrolling && 'pointer-events-none'
+            "transition-opacity duration-150",
+            isScrolling && "pointer-events-none",
           )}
         >
           {renderItem(item, i)}
-        </div>
+        </div>,
       );
     }
 
@@ -247,7 +253,7 @@ export const VirtualizedList = React.memo(function VirtualizedList<T>({
   if (items.length === 0 && !isLoading) {
     return (
       <div
-        className={cn('flex items-center justify-center', className)}
+        className={cn("flex items-center justify-center", className)}
         style={{ height: containerHeight }}
       >
         {emptyComponent || (
@@ -263,8 +269,8 @@ export const VirtualizedList = React.memo(function VirtualizedList<T>({
     <div
       ref={containerRef}
       className={cn(
-        'scrollbar-thin scrollbar-thumb-border scrollbar-track-background relative overflow-auto',
-        className
+        "scrollbar-thin scrollbar-thumb-border scrollbar-track-background relative overflow-auto",
+        className,
       )}
       style={{ height: containerHeight }}
       onScroll={handleScroll}
@@ -277,7 +283,7 @@ export const VirtualizedList = React.memo(function VirtualizedList<T>({
       <div
         style={{
           height: itemMetrics.totalHeight,
-          position: 'relative',
+          position: "relative",
         }}
       >
         {/* Visible items */}
@@ -287,7 +293,7 @@ export const VirtualizedList = React.memo(function VirtualizedList<T>({
         {isLoading && loadingComponent && (
           <div
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: itemMetrics.totalHeight,
               left: 0,
               right: 0,
@@ -303,8 +309,8 @@ export const VirtualizedList = React.memo(function VirtualizedList<T>({
       {/* Scroll indicator */}
       <div
         className={cn(
-          'absolute top-1 right-1 bottom-1 w-1 rounded-full bg-muted transition-opacity duration-300',
-          isScrolling ? 'opacity-100' : 'opacity-0'
+          "absolute top-1 right-1 bottom-1 w-1 rounded-full bg-muted transition-opacity duration-300",
+          isScrolling ? "opacity-100" : "opacity-0",
         )}
       >
         <div
@@ -336,7 +342,9 @@ interface Show {
 // Specialized list components
 export const ArtistList = React.memo(function ArtistList({
   artists: _artists,
-}: { artists: Artist[] }) {
+}: {
+  artists: Artist[];
+}) {
   return (
     <VirtualizedList
       items={_artists}
@@ -344,16 +352,18 @@ export const ArtistList = React.memo(function ArtistList({
       renderItem={(artist, _index) => {
         const typedArtist = artist as Artist;
         return (
-        <div className="border-b p-4 transition-colors hover:bg-muted/50">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-full bg-muted" />
-            <div>
-              <h3 className="font-medium">{typedArtist.name}</h3>
-              <p className="text-muted-foreground text-sm">{typedArtist.genre}</p>
+          <div className="border-b p-4 transition-colors hover:bg-muted/50">
+            <div className="flex items-center gap-3">
+              <div className="h-12 w-12 rounded-full bg-muted" />
+              <div>
+                <h3 className="font-medium">{typedArtist.name}</h3>
+                <p className="text-muted-foreground text-sm">
+                  {typedArtist.genre}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      );
+        );
       }}
     />
   );
@@ -361,7 +371,9 @@ export const ArtistList = React.memo(function ArtistList({
 
 export const ShowList = React.memo(function ShowList({
   shows: _shows,
-}: { shows: Show[] }) {
+}: {
+  shows: Show[];
+}) {
   return (
     <VirtualizedList
       items={_shows}
@@ -369,19 +381,21 @@ export const ShowList = React.memo(function ShowList({
       renderItem={(show, _index) => {
         const typedShow = show as Show;
         return (
-        <div className="border-b p-4 transition-colors hover:bg-muted/50">
-          <div className="flex items-start gap-3">
-            <div className="h-16 w-16 rounded bg-muted" />
-            <div className="flex-1">
-              <h3 className="font-medium">{typedShow.name}</h3>
-              <p className="text-muted-foreground text-sm">{typedShow.artist}</p>
-              <p className="text-muted-foreground text-sm">
-                {typedShow.venue} • {typedShow.date}
-              </p>
+          <div className="border-b p-4 transition-colors hover:bg-muted/50">
+            <div className="flex items-start gap-3">
+              <div className="h-16 w-16 rounded bg-muted" />
+              <div className="flex-1">
+                <h3 className="font-medium">{typedShow.name}</h3>
+                <p className="text-muted-foreground text-sm">
+                  {typedShow.artist}
+                </p>
+                <p className="text-muted-foreground text-sm">
+                  {typedShow.venue} • {typedShow.date}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      );
+        );
       }}
     />
   );

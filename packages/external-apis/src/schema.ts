@@ -10,4 +10,4 @@ export {
   showArtists,
   showStatusEnum,
   setlistTypeEnum,
-} from '@repo/database';
+} from "@repo/database";

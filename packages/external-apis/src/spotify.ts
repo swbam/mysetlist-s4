@@ -1,7 +1,7 @@
-import 'server-only';
-import axios from 'axios';
-import { keys } from '../keys';
-import { CacheManager, cacheKeys } from './utils/cache';
+import "server-only";
+import axios from "axios";
+import { keys } from "../keys";
+import { CacheManager, cacheKeys } from "./utils/cache";
 
 const env = keys();
 
@@ -60,7 +60,7 @@ class SpotifyAPI {
 
   constructor() {
     this.cache = new CacheManager({
-      keyPrefix: 'spotify',
+      keyPrefix: "spotify",
       defaultTTL: 3600, // 1 hour cache for most Spotify data
     });
   }
@@ -71,18 +71,18 @@ class SpotifyAPI {
     }
 
     const credentials = Buffer.from(
-      `${env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`
-    ).toString('base64');
+      `${env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID}:${env.SPOTIFY_CLIENT_SECRET}`,
+    ).toString("base64");
 
     const response = await axios.post<SpotifyTokenResponse>(
-      'https://accounts.spotify.com/api/token',
-      'grant_type=client_credentials',
+      "https://accounts.spotify.com/api/token",
+      "grant_type=client_credentials",
       {
         headers: {
           Authorization: `Basic ${credentials}`,
-          'Content-Type': 'application/x-www-form-urlencoded',
+          "Content-Type": "application/x-www-form-urlencoded",
         },
-      }
+      },
     );
 
     this.accessToken = response.data.access_token;
@@ -93,7 +93,7 @@ class SpotifyAPI {
 
   async searchArtists(query: string, limit = 10): Promise<SpotifyArtist[]> {
     const cacheKey = cacheKeys.spotify.searchArtists(query, limit);
-    
+
     // Try cache first
     const cached = await this.cache.get<SpotifyArtist[]>(cacheKey);
     if (cached) {
@@ -108,20 +108,20 @@ class SpotifyAPI {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     const artists = response.data.artists.items;
-    
+
     // Cache for 30 minutes (search results change frequently)
     await this.cache.set(cacheKey, artists, 1800);
-    
+
     return artists;
   }
 
   async getArtist(artistId: string): Promise<SpotifyArtist> {
     const cacheKey = cacheKeys.spotify.artist(artistId);
-    
+
     // Try cache first
     const cached = await this.cache.get<SpotifyArtist>(cacheKey);
     if (cached) {
@@ -136,23 +136,23 @@ class SpotifyAPI {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     const artist = response.data;
-    
+
     // Cache for 2 hours (artist data doesn't change frequently)
     await this.cache.set(cacheKey, artist, 7200);
-    
+
     return artist;
   }
 
   async getArtistTopTracks(
     artistId: string,
-    market = 'US'
+    market = "US",
   ): Promise<SpotifyTrack[]> {
     const cacheKey = cacheKeys.spotify.artistTopTracks(artistId, market);
-    
+
     // Try cache first
     const cached = await this.cache.get<SpotifyTrack[]>(cacheKey);
     if (cached) {
@@ -167,20 +167,20 @@ class SpotifyAPI {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     const tracks = response.data.tracks;
-    
+
     // Cache for 6 hours (top tracks change slowly)
     await this.cache.set(cacheKey, tracks, 21600);
-    
+
     return tracks;
   }
 
   async searchTracks(query: string, limit = 20): Promise<SpotifyTrack[]> {
     const cacheKey = cacheKeys.spotify.searchTracks(query, limit);
-    
+
     // Try cache first
     const cached = await this.cache.get<SpotifyTrack[]>(cacheKey);
     if (cached) {
@@ -195,14 +195,14 @@ class SpotifyAPI {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     const tracks = response.data.tracks.items;
-    
+
     // Cache for 30 minutes (search results change frequently)
     await this.cache.set(cacheKey, tracks, 1800);
-    
+
     return tracks;
   }
 
@@ -215,7 +215,7 @@ class SpotifyAPI {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     return response.data;
@@ -230,14 +230,14 @@ class SpotifyAPI {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     return response.data;
   }
 
   async getUserProfile(accessToken: string) {
-    const response = await axios.get('https://api.spotify.com/v1/me', {
+    const response = await axios.get("https://api.spotify.com/v1/me", {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -248,8 +248,8 @@ class SpotifyAPI {
 
   async getUserTopTracks(
     accessToken: string,
-    timeRange = 'medium_term',
-    limit = 20
+    timeRange = "medium_term",
+    limit = 20,
   ) {
     const response = await axios.get(
       `https://api.spotify.com/v1/me/top/tracks?time_range=${timeRange}&limit=${limit}`,
@@ -257,7 +257,7 @@ class SpotifyAPI {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      }
+      },
     );
 
     return response.data.items;
@@ -265,8 +265,8 @@ class SpotifyAPI {
 
   async getUserTopArtists(
     accessToken: string,
-    timeRange = 'medium_term',
-    limit = 20
+    timeRange = "medium_term",
+    limit = 20,
   ) {
     const response = await axios.get(
       `https://api.spotify.com/v1/me/top/artists?time_range=${timeRange}&limit=${limit}`,
@@ -274,7 +274,7 @@ class SpotifyAPI {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-      }
+      },
     );
 
     return response.data.items;

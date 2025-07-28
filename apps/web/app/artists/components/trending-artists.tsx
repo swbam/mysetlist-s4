@@ -2,42 +2,43 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Card } from '@repo/design-system/components/ui/card';
-import { Calendar, TrendingUp, Users } from 'lucide-react';
-import Link from 'next/link';
-import { parseGenres } from '~/lib/parse-genres';
-import { createServiceClient } from '~/lib/supabase/server';
+} from "@repo/design-system/components/ui/avatar";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Card } from "@repo/design-system/components/ui/card";
+import { Calendar, TrendingUp, Users } from "lucide-react";
+import Link from "next/link";
+import { parseGenres } from "~/lib/parse-genres";
+import { createServiceClient } from "~/lib/supabase/server";
 
 async function getTrendingArtists() {
   const supabase = createServiceClient();
-  
+
   // Get artists with high trending scores
   const { data: trendingArtists, error } = await supabase
-    .from('artists')
-    .select('*')
-    .gt('trending_score', 0)
-    .order('trending_score', { ascending: false })
+    .from("artists")
+    .select("*")
+    .gt("trending_score", 0)
+    .order("trending_score", { ascending: false })
     .limit(5);
 
   if (error) {
-    console.error('Error fetching trending artists:', error);
+    console.error("Error fetching trending artists:", error);
     return [];
   }
 
   // Process the data to match the expected format
-  const processedArtists = trendingArtists?.map(artist => ({
-    id: artist.id,
-    name: artist.name,
-    slug: artist.slug,
-    imageUrl: artist.image_url,
-    genres: artist.genres,
-    verified: artist.verified,
-    trendingScore: artist.trending_score,
-    upcomingShows: 0, // Simplified for now
-    totalAttendees: 0  // Simplified for now
-  })) || [];
+  const processedArtists =
+    trendingArtists?.map((artist) => ({
+      id: artist.id,
+      name: artist.name,
+      slug: artist.slug,
+      imageUrl: artist.image_url,
+      genres: artist.genres,
+      verified: artist.verified,
+      trendingScore: artist.trending_score,
+      upcomingShows: 0, // Simplified for now
+      totalAttendees: 0, // Simplified for now
+    })) || [];
 
   return processedArtists;
 }

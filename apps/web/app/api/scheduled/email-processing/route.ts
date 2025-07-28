@@ -1,18 +1,18 @@
-import { db } from '@repo/database';
-import { emailLogs, emailQueue } from '@repo/database';
-import { lte } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { emailLogs, emailQueue } from "@repo/database";
+import { lte } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 import {
   processQueuedEmails,
   sendDailyShowReminders,
   sendWeeklyDigests,
-} from '~/actions/email-notifications';
-import { processEmailAutomation } from '~/lib/email/automation-engine';
+} from "~/actions/email-notifications";
+import { processEmailAutomation } from "~/lib/email/automation-engine";
 
 // Protect the cron endpoint
 function isValidCronRequest(request: NextRequest): boolean {
-  const authHeader = request.headers.get('authorization');
-  const cronSecret = process.env['CRON_SECRET'];
+  const authHeader = request.headers.get("authorization");
+  const cronSecret = process.env["CRON_SECRET"];
 
   if (!cronSecret) {
     return false;
@@ -25,7 +25,7 @@ function isValidCronRequest(request: NextRequest): boolean {
 export async function GET(request: NextRequest) {
   // Check authorization for cron jobs
   if (!isValidCronRequest(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -46,14 +46,14 @@ export async function GET(request: NextRequest) {
         processed: automationResult.processed,
         sent: automationResult.sent,
         failed: automationResult.failed,
-        errors: automationResult.errors
+        errors: automationResult.errors,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     return NextResponse.json(
-      { error: 'Email processing failed', details: (error as Error).message },
-      { status: 500 }
+      { error: "Email processing failed", details: (error as Error).message },
+      { status: 500 },
     );
   }
 }
@@ -62,49 +62,49 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   // Check authorization
   if (!isValidCronRequest(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { action } = await request.json();
 
   try {
     switch (action) {
-      case 'process_queue': {
+      case "process_queue": {
         const queueResult = await processQueuedEmails();
         return NextResponse.json(queueResult);
       }
 
-      case 'process_automation': {
+      case "process_automation": {
         const automationResult = await processEmailAutomation();
         return NextResponse.json(automationResult);
       }
 
-      case 'daily_reminders': {
+      case "daily_reminders": {
         const reminderResult = await sendDailyShowReminders();
         return NextResponse.json(reminderResult);
       }
 
-      case 'weekly_digest': {
+      case "weekly_digest": {
         const digestResult = await sendWeeklyDigests();
         return NextResponse.json(digestResult);
       }
 
-      case 'full_processing': {
+      case "full_processing": {
         // Run both legacy and new automation systems
         const [queueResult, automationResult] = await Promise.all([
           processQueuedEmails(),
-          processEmailAutomation()
+          processEmailAutomation(),
         ]);
 
         return NextResponse.json({
           success: true,
           legacy_queue: queueResult,
           automation_engine: automationResult,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
 
-      case 'cleanup': {
+      case "cleanup": {
         // Clean up old email logs (older than 90 days)
         const ninetyDaysAgo = new Date();
         ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
@@ -129,12 +129,12 @@ export async function POST(request: NextRequest) {
       }
 
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
   } catch (error) {
     return NextResponse.json(
       { error: `Action '${action}' failed`, details: (error as Error).message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

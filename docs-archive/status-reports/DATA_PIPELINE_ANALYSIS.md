@@ -1,4 +1,5 @@
 # DATA PIPELINE & API INTEGRATION ANALYSIS REPORT
+
 ## Sub-Agent 2: Complete Analysis & Fix Plan
 
 ### 🔍 EXECUTIVE SUMMARY
@@ -18,6 +19,7 @@ After thorough analysis of the codebase, I've identified the following critical 
 ### 1. **MOCK DATA IN HOMEPAGE COMPONENTS** 🔥
 
 #### **Location**: `/apps/web/app/(home)/components/`
+
 - **featured-content.tsx**: Lines 26-89 contain hardcoded mock data
   - Featured show: Taylor Swift concert (hardcoded)
   - Top voted songs: Static array with fake vote counts
@@ -31,12 +33,14 @@ After thorough analysis of the codebase, I've identified the following critical 
 ### 2. **API ROUTES STATUS** ✅
 
 #### **Search API**: `/apps/web/app/api/search/`
+
 - ✅ `/api/search/artists/route.ts` - Properly queries Supabase `artists` table
 - ✅ Uses fuzzy matching with `ilike` operator
 - ✅ Orders by popularity
 - ✅ Returns real data from database
 
 #### **Sync API**: `/apps/web/app/api/sync/`
+
 - ✅ `/api/sync/artist/route.ts` - Triggers artist data sync
 - ✅ `/api/sync/shows/route.ts` - Syncs show data
 - ✅ `/api/sync/songs/route.ts` - Syncs song catalog
@@ -45,12 +49,14 @@ After thorough analysis of the codebase, I've identified the following critical 
 ### 3. **DATABASE QUERIES** ✅
 
 #### **Artist Pages**: Working correctly
+
 - ✅ `getArtist()` - Fetches from database
 - ✅ `getArtistShows()` - Real show data with venue joins
 - ✅ `getArtistStats()` - Real statistics
 - ✅ Proper caching with `unstable_cache`
 
 #### **Trending Page**: Queries exist but may return empty data
+
 - ✅ `getTrendingStats()` - Queries real Supabase data
 - ✅ Counts artists with `trending_score > 0`
 - ✅ Gets upcoming shows count
@@ -59,11 +65,13 @@ After thorough analysis of the codebase, I've identified the following critical 
 ### 4. **SUPABASE INFRASTRUCTURE** ✅
 
 #### **Cron Jobs**: Properly configured
+
 - ✅ `20250705001_schedule_cron_jobs.sql` - Schedules hourly sync
 - ✅ Uses `pg_cron` extension
 - ✅ Calls `scheduled-sync` edge function
 
 #### **Edge Functions**: All sync functions exist
+
 - ✅ `scheduled-sync/` - Main orchestrator
 - ✅ `sync-artists/` - Artist data sync
 - ✅ `sync-artist-shows/` - Show data sync
@@ -77,6 +85,7 @@ After thorough analysis of the codebase, I've identified the following critical 
 ### 1. **REMOVE MOCK DATA FROM HOMEPAGE**
 
 #### **featured-content.tsx** - Replace hardcoded data with API calls:
+
 ```tsx
 // Remove lines 26-89 mock data
 // Add data fetching:
@@ -92,6 +101,7 @@ useEffect(() => {
 ```
 
 #### **hero.tsx** - Replace hardcoded data:
+
 ```tsx
 // Remove hardcoded popular artists (line 91)
 // Fetch from /api/trending/popular-artists
@@ -103,6 +113,7 @@ useEffect(() => {
 ### 2. **CREATE MISSING API ENDPOINTS**
 
 Need to create:
+
 - `/api/trending/featured/route.ts` - Featured show data
 - `/api/trending/top-songs/route.ts` - Top voted songs
 - `/api/trending/upcoming-shows/route.ts` - Upcoming highlights
@@ -112,6 +123,7 @@ Need to create:
 ### 3. **VERIFY DATA POPULATION**
 
 Check if database has data:
+
 1. Artists table - Should have artists with Spotify IDs
 2. Shows table - Should have upcoming shows
 3. Venues table - Should have venue data
@@ -120,6 +132,7 @@ Check if database has data:
 ### 4. **TRIGGER INITIAL DATA SYNC**
 
 If database is empty:
+
 1. Manually trigger `/api/sync/artists` for popular artists
 2. Run trending score calculation
 3. Ensure cron jobs are active in Supabase

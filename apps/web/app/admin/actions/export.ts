@@ -1,6 +1,6 @@
-'use server';
+"use server";
 
-import { createClient } from '~/lib/supabase/server';
+import { createClient } from "~/lib/supabase/server";
 
 export async function exportUserData() {
   const supabase = await createClient();
@@ -10,21 +10,21 @@ export async function exportUserData() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { error: 'Unauthorized' };
+    return { error: "Unauthorized" };
   }
 
   const { data: userData } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
     .single();
 
-  if (userData?.role !== 'admin') {
-    return { error: 'Unauthorized' };
+  if (userData?.role !== "admin") {
+    return { error: "Unauthorized" };
   }
 
   // Fetch all user data
-  const { data: users, error } = await supabase.from('users').select(`
+  const { data: users, error } = await supabase.from("users").select(`
       *,
       user_profiles (*),
       votes (*),
@@ -43,7 +43,7 @@ export async function exportUserData() {
 
   return {
     data: json,
-    filename: `users-export-${new Date().toISOString().split('T')[0]}.json`,
+    filename: `users-export-${new Date().toISOString().split("T")[0]}.json`,
   };
 }
 
@@ -55,25 +55,25 @@ export async function exportContentData() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { error: 'Unauthorized' };
+    return { error: "Unauthorized" };
   }
 
   const { data: userData } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
     .single();
 
-  if (userData?.role !== 'admin') {
-    return { error: 'Unauthorized' };
+  if (userData?.role !== "admin") {
+    return { error: "Unauthorized" };
   }
 
   // Fetch all content data
   const [shows, artists, venues, setlists] = await Promise.all([
-    supabase.from('shows').select('*'),
-    supabase.from('artists').select('*'),
-    supabase.from('venues').select('*'),
-    supabase.from('setlists').select('*, setlist_songs(*)'),
+    supabase.from("shows").select("*"),
+    supabase.from("artists").select("*"),
+    supabase.from("venues").select("*"),
+    supabase.from("setlists").select("*, setlist_songs(*)"),
   ]);
 
   const data = {
@@ -87,7 +87,7 @@ export async function exportContentData() {
 
   return {
     data: json,
-    filename: `content-export-${new Date().toISOString().split('T')[0]}.json`,
+    filename: `content-export-${new Date().toISOString().split("T")[0]}.json`,
   };
 }
 
@@ -99,36 +99,36 @@ export async function exportAnalyticsData() {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { error: 'Unauthorized' };
+    return { error: "Unauthorized" };
   }
 
   const { data: userData } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user.id)
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
     .single();
 
-  if (userData?.role !== 'admin') {
-    return { error: 'Unauthorized' };
+  if (userData?.role !== "admin") {
+    return { error: "Unauthorized" };
   }
 
   // Fetch analytics data
   const { data: stats, error } = await supabase
-    .from('platform_stats')
-    .select('*')
-    .order('stat_date', { ascending: false });
+    .from("platform_stats")
+    .select("*")
+    .order("stat_date", { ascending: false });
 
   if (error) {
     return { error: error.message };
   }
 
   // Convert to CSV format
-  const headers = Object.keys(stats[0] || {}).join(',');
-  const rows = stats.map((row) => Object.values(row).join(','));
-  const csv = [headers, ...rows].join('\n');
+  const headers = Object.keys(stats[0] || {}).join(",");
+  const rows = stats.map((row) => Object.values(row).join(","));
+  const csv = [headers, ...rows].join("\n");
 
   return {
     data: csv,
-    filename: `analytics-export-${new Date().toISOString().split('T')[0]}.csv`,
+    filename: `analytics-export-${new Date().toISOString().split("T")[0]}.csv`,
   };
 }

@@ -1,6 +1,6 @@
-import { eq, sql } from 'drizzle-orm';
-import { db } from '../client';
-import { emailPreferences, users } from '../schema';
+import { eq, sql } from "drizzle-orm";
+import { db } from "../client";
+import { emailPreferences, users } from "../schema";
 
 export async function getUserById(userId: string) {
   const result = await db
@@ -30,10 +30,7 @@ export async function getUserByEmail(email: string) {
   return result[0] || null;
 }
 
-export async function createUser(userData: {
-  id: string;
-  email: string;
-}) {
+export async function createUser(userData: { id: string; email: string }) {
   const [user] = await db
     .insert(users)
     .values({
@@ -50,11 +47,11 @@ export async function createUser(userData: {
         userId: user.id,
         emailEnabled: true,
         showReminders: true,
-        showReminderFrequency: 'daily',
+        showReminderFrequency: "daily",
         newShowNotifications: true,
-        newShowFrequency: 'immediately',
+        newShowFrequency: "immediately",
         setlistUpdates: true,
-        setlistUpdateFrequency: 'immediately',
+        setlistUpdateFrequency: "immediately",
         weeklyDigest: true,
         marketingEmails: false,
         securityEmails: true,
@@ -69,7 +66,7 @@ export async function updateUser(
   userId: string,
   userData: {
     email?: string;
-  }
+  },
 ) {
   const [updatedUser] = await db
     .update(users)
@@ -103,7 +100,6 @@ export async function getUserStats(userId: string) {
   );
 }
 
-
 export async function getUserPreferences(userId: string) {
   const prefs = await db
     .select()
@@ -119,11 +115,11 @@ export async function getUserPreferences(userId: string) {
         userId,
         emailEnabled: true,
         showReminders: true,
-        showReminderFrequency: 'daily',
+        showReminderFrequency: "daily",
         newShowNotifications: true,
-        newShowFrequency: 'immediately',
+        newShowFrequency: "immediately",
         setlistUpdates: true,
-        setlistUpdateFrequency: 'immediately',
+        setlistUpdateFrequency: "immediately",
         weeklyDigest: true,
         marketingEmails: false,
         securityEmails: true,
@@ -138,7 +134,7 @@ export async function getUserPreferences(userId: string) {
 
 export async function updateUserPreferences(
   userId: string,
-  preferences: Partial<typeof emailPreferences.$inferInsert>
+  preferences: Partial<typeof emailPreferences.$inferInsert>,
 ) {
   const [updated] = await db
     .update(emailPreferences)

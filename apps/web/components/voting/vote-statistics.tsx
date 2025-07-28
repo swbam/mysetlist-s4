@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { cn } from '@repo/design-system/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
-import { AnimatePresence, motion } from 'framer-motion';
+} from "@repo/design-system/components/ui/card";
+import { cn } from "@repo/design-system/lib/utils";
+import { formatDistanceToNow } from "date-fns";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Activity,
   Award,
@@ -19,8 +19,8 @@ import {
   TrendingUp,
   Users,
   Zap,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface VoteStatisticsProps {
   showId: string;
@@ -48,7 +48,7 @@ interface VoteStats {
   recentActivity: Array<{
     id: string;
     songTitle: string;
-    voteType: 'up' | 'down';
+    voteType: "up" | "down";
     timestamp: string;
     username?: string;
   }>;
@@ -73,7 +73,7 @@ export function VoteStatistics({
     try {
       const params = new URLSearchParams({ showId });
       if (setlistId) {
-        params.set('setlistId', setlistId);
+        params.set("setlistId", setlistId);
       }
 
       const response = await fetch(`/api/votes/statistics?${params}`);
@@ -143,10 +143,10 @@ export function VoteStatistics({
   const upvotePercentage =
     totalVotes > 0 ? (totalUpvotes / totalVotes) * 100 : 0;
   const participationRate =
-    uniqueVoters > 0 ? (totalVotes / uniqueVoters).toFixed(1) : '0';
+    uniqueVoters > 0 ? (totalVotes / uniqueVoters).toFixed(1) : "0";
 
   return (
-    <div className={cn('space-y-6', className)}>
+    <div className={cn("space-y-6", className)}>
       {/* Header with Live Indicator */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -257,7 +257,7 @@ export function VoteStatistics({
                       className="bg-green-500"
                       initial={{ width: 0 }}
                       animate={{ width: `${upvotePercentage}%` }}
-                      transition={{ duration: 0.8, ease: 'easeOut' }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
                     />
                     <motion.div
                       className="bg-red-500"
@@ -265,7 +265,7 @@ export function VoteStatistics({
                       animate={{ width: `${100 - upvotePercentage}%` }}
                       transition={{
                         duration: 0.8,
-                        ease: 'easeOut',
+                        ease: "easeOut",
                         delay: 0.2,
                       }}
                     />
@@ -284,12 +284,12 @@ export function VoteStatistics({
                   <div>
                     <div
                       className={cn(
-                        'font-semibold text-lg',
-                        netVotes > 0 && 'text-green-600',
-                        netVotes < 0 && 'text-red-600'
+                        "font-semibold text-lg",
+                        netVotes > 0 && "text-green-600",
+                        netVotes < 0 && "text-red-600",
                       )}
                     >
-                      {netVotes > 0 ? '+' : ''}
+                      {netVotes > 0 ? "+" : ""}
                       {netVotes}
                     </div>
                     <div className="text-muted-foreground text-xs">
@@ -331,10 +331,10 @@ export function VoteStatistics({
                       <div className="flex min-w-0 flex-1 items-center gap-2">
                         <div
                           className={cn(
-                            'h-2 w-2 rounded-full',
-                            activity.voteType === 'up'
-                              ? 'bg-green-500'
-                              : 'bg-red-500'
+                            "h-2 w-2 rounded-full",
+                            activity.voteType === "up"
+                              ? "bg-green-500"
+                              : "bg-red-500",
                           )}
                         />
                         <span className="truncate">{activity.songTitle}</span>
@@ -402,13 +402,13 @@ export function VoteStatistics({
                     <Badge
                       variant={
                         song.netVotes > 0
-                          ? 'default'
+                          ? "default"
                           : song.netVotes < 0
-                            ? 'destructive'
-                            : 'secondary'
+                            ? "destructive"
+                            : "secondary"
                       }
                     >
-                      {song.netVotes > 0 ? '+' : ''}
+                      {song.netVotes > 0 ? "+" : ""}
                       {song.netVotes}
                     </Badge>
                     <div className="text-right text-muted-foreground text-xs">

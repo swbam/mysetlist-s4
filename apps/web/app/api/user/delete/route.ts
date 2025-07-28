@@ -1,5 +1,5 @@
-import { getUser } from '@repo/auth/server';
-import { db } from '@repo/database';
+import { getUser } from "@repo/auth/server";
+import { db } from "@repo/database";
 import {
   emailLogs,
   emailPreferences,
@@ -8,17 +8,17 @@ import {
   users,
   venueReviews,
   votes,
-} from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '~/lib/supabase/server';
+} from "@repo/database";
+import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 export async function DELETE(request: NextRequest) {
   try {
     const user = await getUser();
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Verify password or require recent authentication
@@ -26,8 +26,8 @@ export async function DELETE(request: NextRequest) {
 
     if (!password) {
       return NextResponse.json(
-        { error: 'Password confirmation required' },
-        { status: 400 }
+        { error: "Password confirmation required" },
+        { status: 400 },
       );
     }
 
@@ -39,7 +39,7 @@ export async function DELETE(request: NextRequest) {
     });
 
     if (authError) {
-      return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
+      return NextResponse.json({ error: "Invalid password" }, { status: 401 });
     }
 
     // Delete all user data in the correct order (respecting foreign key constraints)
@@ -68,7 +68,7 @@ export async function DELETE(request: NextRequest) {
 
       // Delete the Supabase auth user
       const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(
-        user.id
+        user.id,
       );
 
       if (deleteAuthError) {
@@ -81,18 +81,18 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({
         success: true,
         message:
-          'Your account and all associated data has been permanently deleted.',
+          "Your account and all associated data has been permanently deleted.",
       });
     } catch (_error) {
       return NextResponse.json(
-        { error: 'Failed to delete account. Please contact support.' },
-        { status: 500 }
+        { error: "Failed to delete account. Please contact support." },
+        { status: 500 },
       );
     }
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Account deletion failed' },
-      { status: 500 }
+      { error: "Account deletion failed" },
+      { status: 500 },
     );
   }
 }

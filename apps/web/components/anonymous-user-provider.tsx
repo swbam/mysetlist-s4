@@ -1,11 +1,13 @@
-'use client';
-import { useAuth } from '~/app/providers/auth-provider';
-import { useAnonymousSync } from '~/hooks/use-anonymous-sync';
-import { AnonymousUserBanner } from './anonymous-user-banner';
+"use client";
+import { useAuth } from "~/app/providers/auth-provider";
+import { useAnonymousSync } from "~/hooks/use-anonymous-sync";
+import { AnonymousUserBanner } from "./anonymous-user-banner";
 
 export function AnonymousUserProvider({
   children,
-}: { children: React.ReactNode }) {
+}: {
+  children: React.ReactNode;
+}) {
   const { session } = useAuth();
   const isAuthenticated = !!session;
 

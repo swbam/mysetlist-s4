@@ -1,11 +1,6 @@
-import { and, asc, desc, eq, gte, ilike, lte, or, sql } from 'drizzle-orm';
-import { db } from '../client';
-import {
-  artists,
-  showArtists,
-  shows,
-  venues,
-} from '../schema';
+import { and, asc, desc, eq, gte, ilike, lte, or, sql } from "drizzle-orm";
+import { db } from "../client";
+import { artists, showArtists, shows, venues } from "../schema";
 
 export async function getShowById(showId: string) {
   const result = await db
@@ -97,7 +92,7 @@ export async function getShowsByArtist(
   options?: {
     limit?: number;
     onlyUpcoming?: boolean;
-  }
+  },
 ) {
   const { limit = 50, onlyUpcoming = false } = options || {};
 
@@ -129,7 +124,7 @@ export async function getShowsByVenue(
   options?: {
     limit?: number;
     onlyUpcoming?: boolean;
-  }
+  },
 ) {
   const { limit = 50, onlyUpcoming = false } = options || {};
 
@@ -155,20 +150,19 @@ export async function getShowsByVenue(
   return results;
 }
 
-
 export async function searchShows(
   query: string,
   options?: {
     limit?: number;
     onlyUpcoming?: boolean;
-  }
+  },
 ) {
   const { limit = 20, onlyUpcoming = true } = options || {};
 
   const searchConditions = or(
     ilike(shows.name, `%${query}%`),
     ilike(artists.name, `%${query}%`),
-    venues.name ? ilike(venues.name, `%${query}%`) : undefined
+    venues.name ? ilike(venues.name, `%${query}%`) : undefined,
   );
 
   const conditions = [searchConditions];
@@ -192,4 +186,3 @@ export async function searchShows(
 
   return results;
 }
-

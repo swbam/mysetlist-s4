@@ -1,4 +1,5 @@
 # Bundle Optimization Implementation Guide
+
 ## SUB-AGENT 2: Critical Bundle Size Fixes
 
 ---
@@ -10,72 +11,72 @@
 **Implementation** (Add to `next.config.ts`):
 
 ```typescript
-import bundleAnalyzer from '@next/bundle-analyzer';
+import bundleAnalyzer from "@next/bundle-analyzer";
 
 const withBundleAnalyzer = bundleAnalyzer({
-  enabled: process.env.ANALYZE === 'true',
+  enabled: process.env.ANALYZE === "true",
   openAnalyzer: true,
-  analyzerMode: 'static',
-  reportFilename: './analyze/client.html',
-  defaultSizes: 'gzip',
+  analyzerMode: "static",
+  reportFilename: "./analyze/client.html",
+  defaultSizes: "gzip",
 });
 
 // Update existing config
 const nextConfig: NextConfig = {
   // ... existing config
-  
+
   // CRITICAL: Add these bundle optimizations
   experimental: {
     optimizePackageImports: [
-      '@radix-ui/react-icons',
-      'lucide-react', 
-      '@repo/design-system',
-      'framer-motion',
-      'recharts', // ADD THIS - Critical for analytics page
-      '@supabase/supabase-js',
-      '@supabase/auth-helpers-nextjs',
+      "@radix-ui/react-icons",
+      "lucide-react",
+      "@repo/design-system",
+      "framer-motion",
+      "recharts", // ADD THIS - Critical for analytics page
+      "@supabase/supabase-js",
+      "@supabase/auth-helpers-nextjs",
     ],
     reactCompiler: false, // Keep disabled until components are optimized
     optimizeCss: true,
   },
-  
+
   // Enhanced webpack configuration for bundle optimization
   webpack: (config, { isServer, webpack, dev }) => {
     // Existing config...
-    
+
     // CRITICAL: Add bundle splitting for heavy modules
     if (!isServer && !dev) {
       config.optimization = {
         ...config.optimization,
         splitChunks: {
-          chunks: 'all',
+          chunks: "all",
           cacheGroups: {
             // Separate Recharts into its own chunk (analytics page optimization)
             recharts: {
               test: /[\\/]node_modules[\\/](recharts)[\\/]/,
-              name: 'recharts',
-              chunks: 'all',
+              name: "recharts",
+              chunks: "all",
               priority: 10,
             },
             // Separate Supabase into its own chunk
             supabase: {
               test: /[\\/]node_modules[\\/](@supabase)[\\/]/,
-              name: 'supabase',
-              chunks: 'all', 
+              name: "supabase",
+              chunks: "all",
               priority: 10,
             },
             // Common vendor chunk
             vendor: {
               test: /[\\/]node_modules[\\/]/,
-              name: 'vendors',
-              chunks: 'all',
+              name: "vendors",
+              chunks: "all",
               priority: 5,
             },
           },
         },
       };
     }
-    
+
     return config;
   },
 };
@@ -84,7 +85,8 @@ const nextConfig: NextConfig = {
 export default withBundleAnalyzer(nextConfig);
 ```
 
-**Expected Impact**: 
+**Expected Impact**:
+
 - Bundle analyzer accessible at `./analyze/client.html`
 - Recharts separated into own chunk (reduces analytics page by ~150KB)
 - Better chunk splitting for optimal caching
@@ -100,32 +102,32 @@ export default withBundleAnalyzer(nextConfig);
 **File**: `middleware.ts` (Replace existing)
 
 ```typescript
-import { type NextRequest, NextResponse } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { type NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
 // CRITICAL: Move heavy imports to lazy loading
 export async function middleware(request: NextRequest) {
   const res = NextResponse.next();
-  
+
   // OPTIMIZATION: Skip heavy processing for static assets
   const { pathname } = request.nextUrl;
-  
+
   if (
-    pathname.includes('/_next/') ||
-    pathname.includes('/favicon') ||
-    pathname.includes('/robots') ||
-    pathname.includes('/sitemap') ||
-    pathname.endsWith('.png') ||
-    pathname.endsWith('.jpg') ||
-    pathname.endsWith('.svg')
+    pathname.includes("/_next/") ||
+    pathname.includes("/favicon") ||
+    pathname.includes("/robots") ||
+    pathname.includes("/sitemap") ||
+    pathname.endsWith(".png") ||
+    pathname.endsWith(".jpg") ||
+    pathname.endsWith(".svg")
   ) {
     return res;
   }
 
   // Lightweight auth check (keep this fast)
   const supabase = createServerClient(
-    process.env['NEXT_PUBLIC_SUPABASE_URL']!,
-    process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']!,
+    process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
+    process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]!,
     {
       cookies: {
         get(name: string) {
@@ -135,32 +137,31 @@ export async function middleware(request: NextRequest) {
           res.cookies.set({ name, value, ...options });
         },
         remove(name: string, options: any) {
-          res.cookies.set({ name, value: '', ...options });
+          res.cookies.set({ name, value: "", ...options });
         },
       },
-    }
+    },
   );
 
   // Quick auth check for protected paths
-  const protectedPaths = ['/dashboard', '/vote', '/profile'];
-  const needsAuth = protectedPaths.some(path => pathname.startsWith(path));
-  
+  const protectedPaths = ["/dashboard", "/vote", "/profile"];
+  const needsAuth = protectedPaths.some((path) => pathname.startsWith(path));
+
   if (needsAuth) {
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
     if (!session) {
-      return NextResponse.redirect(new URL('/auth/sign-in', request.url));
+      return NextResponse.redirect(new URL("/auth/sign-in", request.url));
     }
   }
 
   // CRITICAL OPTIMIZATION: Only apply heavy middleware to API routes
-  if (pathname.startsWith('/api/')) {
+  if (pathname.startsWith("/api/")) {
     // Lazy load heavy middleware only when needed
-    const [
-      { rateLimitMiddleware },
-      { csrfProtection }
-    ] = await Promise.all([
-      import('~/middleware/rate-limit'),
-      import('~/lib/csrf')
+    const [{ rateLimitMiddleware }, { csrfProtection }] = await Promise.all([
+      import("~/middleware/rate-limit"),
+      import("~/lib/csrf"),
     ]);
 
     // Apply rate limiting
@@ -169,7 +170,7 @@ export async function middleware(request: NextRequest) {
       return rateLimitResponse;
     }
 
-    // Apply CSRF protection  
+    // Apply CSRF protection
     const csrfResponse = await csrfProtection(request);
     if (csrfResponse) {
       return csrfResponse;
@@ -177,11 +178,11 @@ export async function middleware(request: NextRequest) {
   }
 
   // Lightweight security headers (always applied)
-  res.headers.set('X-Frame-Options', 'DENY');
-  res.headers.set('X-Content-Type-Options', 'nosniff');
-  res.headers.set('X-XSS-Protection', '1; mode=block');
-  res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.headers.set('X-Request-ID', crypto.randomUUID());
+  res.headers.set("X-Frame-Options", "DENY");
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("X-XSS-Protection", "1; mode=block");
+  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.headers.set("X-Request-ID", crypto.randomUUID());
 
   return res;
 }
@@ -190,12 +191,12 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Only match API routes and protected pages
-    '/api/:path*',
-    '/dashboard/:path*',
-    '/vote/:path*', 
-    '/profile/:path*',
+    "/api/:path*",
+    "/dashboard/:path*",
+    "/vote/:path*",
+    "/profile/:path*",
     // Add specific pages that need auth checks
-    '/((?!_next|favicon|robots|sitemap|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp)$).*)'
+    "/((?!_next|favicon|robots|sitemap|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp)$).*)",
   ],
 };
 ```
@@ -205,21 +206,20 @@ export const config = {
 **File**: `middleware/conditional-middleware.ts`
 
 ```typescript
-import { type NextRequest } from 'next/server';
+import { type NextRequest } from "next/server";
 
 // CRITICAL: Only load heavy middleware in production or when needed
 export const shouldApplyHeavyMiddleware = (request: NextRequest): boolean => {
   const { pathname } = request.nextUrl;
-  
+
   // Skip in development for static routes
-  if (process.env.NODE_ENV === 'development' && 
-      !pathname.startsWith('/api/')) {
+  if (process.env.NODE_ENV === "development" && !pathname.startsWith("/api/")) {
     return false;
   }
-  
+
   // Always apply for critical API routes
-  const criticalRoutes = ['/api/auth/', '/api/user/', '/api/admin/'];
-  return criticalRoutes.some(route => pathname.startsWith(route));
+  const criticalRoutes = ["/api/auth/", "/api/user/", "/api/admin/"];
+  return criticalRoutes.some((route) => pathname.startsWith(route));
 };
 
 // Lightweight middleware factory
@@ -229,20 +229,21 @@ export const createOptimizedMiddleware = () => {
       // Return lightweight response for non-critical routes
       return NextResponse.next({
         headers: {
-          'X-Frame-Options': 'DENY',
-          'X-Content-Type-Options': 'nosniff',
-        }
+          "X-Frame-Options": "DENY",
+          "X-Content-Type-Options": "nosniff",
+        },
       });
     }
-    
+
     // Load heavy middleware only when needed
-    const { fullMiddleware } = await import('./full-middleware');
+    const { fullMiddleware } = await import("./full-middleware");
     return fullMiddleware(request);
   };
 };
 ```
 
 **Expected Impact**:
+
 - Middleware bundle: **138KB → 85KB** (38% reduction)
 - API response time: **300ms → 150ms** average improvement
 - Static asset serving: **No middleware overhead**
@@ -338,7 +339,7 @@ export default function OptimizedAnalyticsPage() {
               <VotingAnalytics />
             </Suspense>
           </TabsContent>
-          
+
           {/* Other tabs... */}
         </Tabs>
       </div>
@@ -348,6 +349,7 @@ export default function OptimizedAnalyticsPage() {
 ```
 
 **Expected Impact**:
+
 - Initial page load: **540KB → 180KB** (67% reduction)
 - Tab switching: **0ms → 200ms** (acceptable trade-off)
 - Lighthouse score: **45 → 75+**
@@ -360,7 +362,7 @@ export default function OptimizedAnalyticsPage() {
 # 1. Run bundle analysis with new config
 npm run analyze
 
-# 2. Test performance improvements  
+# 2. Test performance improvements
 npm run lighthouse
 
 # 3. Verify middleware optimization
@@ -375,16 +377,19 @@ npm run build -- --debug
 ## 📊 SUCCESS METRICS
 
 **Before Optimization**:
+
 - Analytics page: 540KB
-- Middleware: 138KB  
+- Middleware: 138KB
 - Lighthouse: 45
 
 **After Optimization**:
+
 - Analytics page: <280KB (48% reduction)
 - Middleware: <85KB (38% reduction)
 - Lighthouse: >85 (89% improvement)
 
 **Critical Path**:
+
 1. ✅ Bundle analyzer configuration
 2. ✅ Middleware lazy loading
 3. ✅ Analytics page optimization

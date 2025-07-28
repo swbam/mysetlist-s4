@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { cn } from '@repo/design-system/lib/utils';
-import type React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { cn } from "@repo/design-system/lib/utils";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface SwipeAction {
   id: string;
   label: string;
   icon?: React.ReactNode;
-  color?: 'primary' | 'secondary' | 'destructive' | 'success';
+  color?: "primary" | "secondary" | "destructive" | "success";
   onAction: () => void;
 }
 
@@ -32,16 +32,16 @@ export function SwipeActions({
   const [swipeDistance, setSwipeDistance] = useState(0);
   const [isSwipeActive, setIsSwipeActive] = useState(false);
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(
-    null
+    null,
   );
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number>(0);
 
   const colorClasses = {
-    primary: 'bg-primary text-primary-foreground',
-    secondary: 'bg-secondary text-secondary-foreground',
-    destructive: 'bg-destructive text-destructive-foreground',
-    success: 'bg-green-600 text-white',
+    primary: "bg-primary text-primary-foreground",
+    secondary: "bg-secondary text-secondary-foreground",
+    destructive: "bg-destructive text-destructive-foreground",
+    success: "bg-green-600 text-white",
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -132,20 +132,20 @@ export function SwipeActions({
     };
   }, []);
 
-  const renderActions = (actions: SwipeAction[], side: 'left' | 'right') => {
+  const renderActions = (actions: SwipeAction[], side: "left" | "right") => {
     if (actions.length === 0) {
       return null;
     }
 
-    const isVisible = side === 'left' ? swipeDistance > 0 : swipeDistance < 0;
+    const isVisible = side === "left" ? swipeDistance > 0 : swipeDistance < 0;
     const opacity = Math.min(Math.abs(swipeDistance) / threshold, 1);
 
     return (
       <div
         className={cn(
-          'absolute top-0 bottom-0 flex items-center',
-          side === 'left' ? 'left-0' : 'right-0',
-          'transition-opacity duration-100'
+          "absolute top-0 bottom-0 flex items-center",
+          side === "left" ? "left-0" : "right-0",
+          "transition-opacity duration-100",
         )}
         style={{
           opacity: isVisible ? opacity : 0,
@@ -156,14 +156,14 @@ export function SwipeActions({
           <div
             key={action.id}
             className={cn(
-              'flex flex-col items-center justify-center',
-              'h-full min-w-[80px] px-4',
-              colorClasses[action.color || 'primary'],
-              'font-medium text-sm'
+              "flex flex-col items-center justify-center",
+              "h-full min-w-[80px] px-4",
+              colorClasses[action.color || "primary"],
+              "font-medium text-sm",
             )}
             style={{
               width: threshold,
-              transform: `translateX(${side === 'right' ? -index * threshold : index * threshold}px)`,
+              transform: `translateX(${side === "right" ? -index * threshold : index * threshold}px)`,
             }}
           >
             {action.icon && <div className="mb-1">{action.icon}</div>}
@@ -177,13 +177,13 @@ export function SwipeActions({
   return (
     <div
       ref={containerRef}
-      className={cn('relative overflow-hidden', className)}
+      className={cn("relative overflow-hidden", className)}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      {renderActions(leftActions, 'left')}
-      {renderActions(rightActions, 'right')}
+      {renderActions(leftActions, "left")}
+      {renderActions(rightActions, "right")}
 
       <div
         className="relative z-10 transition-transform duration-100"

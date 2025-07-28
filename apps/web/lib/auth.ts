@@ -1,6 +1,6 @@
-'use server';
+"use server";
 
-import { createClient } from '~/lib/supabase/server';
+import { createClient } from "~/lib/supabase/server";
 
 export async function getCurrentUser() {
   const supabase = await createClient();
@@ -16,9 +16,9 @@ export async function getCurrentUser() {
 
   // Get the profile data
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
     .single();
 
   return {

@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+} from "@repo/design-system/components/ui/card";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
 
 interface ArtistBioProps {
   bio: string;

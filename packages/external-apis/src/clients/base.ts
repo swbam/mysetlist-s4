@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis';
+import { Redis } from "@upstash/redis";
 
 export interface APIClientConfig {
   baseURL: string;
@@ -25,12 +25,12 @@ export abstract class BaseAPIClient {
 
     // Only initialize Redis if environment variables are available
     if (
-      process.env['UPSTASH_REDIS_REST_URL'] &&
-      process.env['UPSTASH_REDIS_REST_TOKEN']
+      process.env["UPSTASH_REDIS_REST_URL"] &&
+      process.env["UPSTASH_REDIS_REST_TOKEN"]
     ) {
       this.cache = new Redis({
-        url: process.env['UPSTASH_REDIS_REST_URL'],
-        token: process.env['UPSTASH_REDIS_REST_TOKEN'],
+        url: process.env["UPSTASH_REDIS_REST_URL"],
+        token: process.env["UPSTASH_REDIS_REST_TOKEN"],
       });
     } else {
       this.cache = null;
@@ -41,7 +41,7 @@ export abstract class BaseAPIClient {
     endpoint: string,
     options: RequestInit = {},
     cacheKey?: string,
-    cacheTtl?: number
+    cacheTtl?: number,
   ): Promise<T> {
     // Check cache first if key provided and cache is available
     if (cacheKey && this.cache) {
@@ -64,7 +64,7 @@ export abstract class BaseAPIClient {
     const response = await fetch(url.toString(), {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...this.getAuthHeaders(),
         ...options.headers,
       },
@@ -74,7 +74,7 @@ export abstract class BaseAPIClient {
       throw new APIError(
         `API request failed: ${response.status} ${response.statusText}`,
         response.status,
-        endpoint
+        endpoint,
       );
     }
 
@@ -107,7 +107,7 @@ export abstract class BaseAPIClient {
     if (current > this.rateLimit.requests) {
       const ttl = await this.cache.ttl(key);
       throw new RateLimitError(
-        `Rate limit exceeded. Try again in ${ttl} seconds.`
+        `Rate limit exceeded. Try again in ${ttl} seconds.`,
       );
     }
   }
@@ -117,16 +117,16 @@ export class APIError extends Error {
   constructor(
     message: string,
     public statusCode: number,
-    public endpoint: string
+    public endpoint: string,
   ) {
     super(message);
-    this.name = 'APIError';
+    this.name = "APIError";
   }
 }
 
 export class RateLimitError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'RateLimitError';
+    this.name = "RateLimitError";
   }
 }

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React, { Suspense } from 'react';
+import React, { Suspense } from "react";
 import {
   EnhancedContentSlider,
   EnhancedContentSliderItem,
-} from '~/components/ui/enhanced-content-slider';
-import EnhancedLoadingSkeleton from '~/components/ui/enhanced-loading-skeleton';
-import EnhancedErrorBoundary from '~/components/ui/enhanced-error-boundary';
-import OptimizedArtistCard from '~/components/ui/optimized-artist-card';
+} from "~/components/ui/enhanced-content-slider";
+import EnhancedLoadingSkeleton from "~/components/ui/enhanced-loading-skeleton";
+import EnhancedErrorBoundary from "~/components/ui/enhanced-error-boundary";
+import OptimizedArtistCard from "~/components/ui/optimized-artist-card";
 
 interface TrendingArtist {
   id: string;
@@ -61,7 +61,9 @@ function OptimizedTopArtistsSlider({
             <h2 className="mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text font-bold text-3xl text-transparent tracking-tight md:text-4xl">
               Trending Artists
             </h2>
-            <p className="text-muted-foreground">No trending artists found. Check back soon for updates!</p>
+            <p className="text-muted-foreground">
+              No trending artists found. Check back soon for updates!
+            </p>
           </div>
         </div>
       </div>
@@ -103,10 +105,14 @@ function OptimizedTopArtistsSlider({
 }
 
 // Export with error boundary and suspense
-export default function OptimizedTopArtistsSliderWithBoundary(props: OptimizedTopArtistsSliderProps) {
+export default function OptimizedTopArtistsSliderWithBoundary(
+  props: OptimizedTopArtistsSliderProps,
+) {
   return (
     <EnhancedErrorBoundary level="section">
-      <Suspense fallback={<EnhancedLoadingSkeleton variant="artists" count={6} />}>
+      <Suspense
+        fallback={<EnhancedLoadingSkeleton variant="artists" count={6} />}
+      >
         <OptimizedTopArtistsSlider {...props} />
       </Suspense>
     </EnhancedErrorBoundary>

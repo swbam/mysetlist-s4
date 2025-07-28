@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
-import { ScrollArea } from '@repo/design-system/components/ui/scroll-area';
-import { Loader2, Music, Plus, Search } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { Input } from "@repo/design-system/components/ui/input";
+import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
+import { Loader2, Music, Plus, Search } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Song {
   id: string;
@@ -32,11 +32,11 @@ interface SongSelectorProps {
 export function SongSelector({
   onSongSelect,
   artistId,
-  placeholder = 'Search for songs...',
-  maxHeight = '300px',
+  placeholder = "Search for songs...",
+  maxHeight = "300px",
   disabled = false,
 }: SongSelectorProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [songs, setSongs] = useState<Song[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [addingSongId, setAddingSongId] = useState<string | null>(null);
@@ -63,23 +63,23 @@ export function SongSelector({
     try {
       const params = new URLSearchParams({
         q: query,
-        limit: '20',
+        limit: "20",
       });
 
       if (artistId) {
-        params.append('artistId', artistId);
+        params.append("artistId", artistId);
       }
 
       const response = await fetch(`/api/songs/search?${params}`);
 
       if (!response.ok) {
-        throw new Error('Failed to search songs');
+        throw new Error("Failed to search songs");
       }
 
       const data = await response.json();
       setSongs(data.songs || []);
     } catch (_error) {
-      toast.error('Failed to search songs');
+      toast.error("Failed to search songs");
       setSongs([]);
     } finally {
       setIsLoading(false);
@@ -94,7 +94,7 @@ export function SongSelector({
     setAddingSongId(song.id);
     try {
       await onSongSelect(song);
-      setQuery('');
+      setQuery("");
       setSongs([]);
     } catch (_error) {
     } finally {
@@ -104,12 +104,12 @@ export function SongSelector({
 
   const formatDuration = (ms?: number) => {
     if (!ms) {
-      return '';
+      return "";
     }
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   return (

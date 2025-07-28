@@ -1,4 +1,4 @@
-import { createClient } from '../../client';
+import { createClient } from "../../client";
 import type {
   AuthUser,
   AuthSession,
@@ -9,10 +9,10 @@ import type {
   SpotifyTokens,
   SpotifyProfile,
   OAuthConfig,
-} from '../types/auth';
-import { SpotifyService } from '../services/spotify-service';
-import { UserService } from '../services/user-service';
-import { EmailService } from '../services/email-service';
+} from "../types/auth";
+import { SpotifyService } from "../services/spotify-service";
+import { UserService } from "../services/user-service";
+import { EmailService } from "../services/email-service";
 
 export class UnifiedAuthProvider {
   private supabase = createClient();
@@ -25,22 +25,23 @@ export class UnifiedAuthProvider {
    */
   async signInWithEmail(data: SignInData): Promise<AuthSession> {
     try {
-      const { data: authData, error } = await this.supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      });
+      const { data: authData, error } =
+        await this.supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password,
+        });
 
       if (error) {
         throw this.formatAuthError(error);
       }
 
       if (!authData.session || !authData.user) {
-        throw new Error('Authentication failed');
+        throw new Error("Authentication failed");
       }
 
       // Enrich user data with profile and preferences
       const enrichedUser = await this.enrichUserData(authData.user);
-      
+
       return {
         ...authData.session,
         user: enrichedUser,
@@ -71,17 +72,22 @@ export class UnifiedAuthProvider {
       }
 
       if (!authData.user) {
-        throw new Error('User creation failed');
+        throw new Error("User creation failed");
       }
 
       // Create user profile and preferences
-      const profileData = data.displayName ? { displayName: data.displayName } : {};
+      const profileData = data.displayName
+        ? { displayName: data.displayName }
+        : {};
       await this.userService.createUserProfile(authData.user.id, profileData);
 
       await this.userService.createEmailPreferences(authData.user.id);
 
       // Send welcome email
-      await this.emailService.sendWelcomeEmail(authData.user.email!, data.displayName);
+      await this.emailService.sendWelcomeEmail(
+        authData.user.email!,
+        data.displayName,
+      );
 
       return await this.enrichUserData(authData.user);
     } catch (error) {
@@ -95,9 +101,10 @@ export class UnifiedAuthProvider {
   async signInWithGoogle(config?: OAuthConfig): Promise<void> {
     try {
       const { error } = await this.supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
-          redirectTo: config?.redirectTo || `${window.location.origin}/auth/callback`,
+          redirectTo:
+            config?.redirectTo || `${window.location.origin}/auth/callback`,
           ...(config?.queryParams && { queryParams: config.queryParams }),
         },
       });
@@ -115,14 +122,16 @@ export class UnifiedAuthProvider {
    */
   async signInWithSpotify(config?: OAuthConfig): Promise<void> {
     try {
-      const scopes = config?.scopes || 
-        'user-read-email user-read-private user-top-read user-read-recently-played user-library-read playlist-read-private';
+      const scopes =
+        config?.scopes ||
+        "user-read-email user-read-private user-top-read user-read-recently-played user-library-read playlist-read-private";
 
       const { error } = await this.supabase.auth.signInWithOAuth({
-        provider: 'spotify',
+        provider: "spotify",
         options: {
           scopes,
-          redirectTo: config?.redirectTo || `${window.location.origin}/auth/callback`,
+          redirectTo:
+            config?.redirectTo || `${window.location.origin}/auth/callback`,
           ...(config?.queryParams && { queryParams: config.queryParams }),
         },
       });
@@ -143,20 +152,24 @@ export class UnifiedAuthProvider {
       // This would typically be called after OAuth callback
       const session = await this.getCurrentSession();
       if (!session?.provider_token) {
-        throw new Error('No Spotify token available');
+        throw new Error("No Spotify token available");
       }
 
       const spotifyTokens: SpotifyTokens = {
         accessToken: session.provider_token,
-        refreshToken: session.provider_refresh_token || '',
-        expiresAt: Date.now() + (3600 * 1000), // 1 hour
-        scope: session.provider_token ? ['user-read-email', 'user-read-private', 'user-top-read'] : [],
+        refreshToken: session.provider_refresh_token || "",
+        expiresAt: Date.now() + 3600 * 1000, // 1 hour
+        scope: session.provider_token
+          ? ["user-read-email", "user-read-private", "user-top-read"]
+          : [],
       };
 
       // Store Spotify tokens and profile
       await this.userService.updateSpotifyTokens(userId, spotifyTokens);
-      
-      const spotifyProfile = await this.spotifyService.getUserProfile(spotifyTokens.accessToken);
+
+      const spotifyProfile = await this.spotifyService.getUserProfile(
+        spotifyTokens.accessToken,
+      );
       await this.userService.updateSpotifyProfile(userId, spotifyProfile);
 
       // Sync user's music preferences from Spotify
@@ -171,24 +184,32 @@ export class UnifiedAuthProvider {
   /**
    * Sync user's music preferences from Spotify
    */
-  async syncSpotifyMusicPreferences(userId: string, accessToken?: string): Promise<void> {
+  async syncSpotifyMusicPreferences(
+    userId: string,
+    accessToken?: string,
+  ): Promise<void> {
     try {
       let token = accessToken;
-      
+
       // Get access token if not provided
       if (!token) {
         const spotifyTokens = await this.userService.getSpotifyTokens(userId);
         if (!spotifyTokens) {
-          throw new Error('No Spotify tokens available');
+          throw new Error("No Spotify tokens available");
         }
-        
+
         // Check if token is expired and refresh if needed
         if (this.spotifyService.isTokenExpired(spotifyTokens)) {
           if (spotifyTokens.refreshToken) {
-            const newTokens = await this.refreshSpotifyTokens(userId, spotifyTokens.refreshToken);
+            const newTokens = await this.refreshSpotifyTokens(
+              userId,
+              spotifyTokens.refreshToken,
+            );
             token = newTokens.accessToken;
           } else {
-            throw new Error('Spotify token expired and no refresh token available');
+            throw new Error(
+              "Spotify token expired and no refresh token available",
+            );
           }
         } else {
           token = spotifyTokens.accessToken;
@@ -197,13 +218,13 @@ export class UnifiedAuthProvider {
 
       // Fetch user's music data from Spotify
       const [topArtists, topTracks] = await Promise.all([
-        this.spotifyService.getUserTopArtists(token, 'medium_term', 50),
-        this.spotifyService.getUserTopTracks(token, 'medium_term', 50),
+        this.spotifyService.getUserTopArtists(token, "medium_term", 50),
+        this.spotifyService.getUserTopTracks(token, "medium_term", 50),
       ]);
 
       // Extract genres from top artists
       const genres = new Set<string>();
-      topArtists.forEach(artist => {
+      topArtists.forEach((artist) => {
         if (artist.genres) {
           artist.genres.forEach((genre: string) => genres.add(genre));
         }
@@ -216,9 +237,11 @@ export class UnifiedAuthProvider {
         favoriteGenres: Array.from(genres).slice(0, 10), // Store top 10 genres
       });
 
-      console.log(`Successfully synced Spotify music preferences for user ${userId}`);
+      console.log(
+        `Successfully synced Spotify music preferences for user ${userId}`,
+      );
     } catch (error) {
-      console.error('Error syncing Spotify music preferences:', error);
+      console.error("Error syncing Spotify music preferences:", error);
       // Don't throw error to prevent breaking the auth flow
     }
   }
@@ -226,34 +249,45 @@ export class UnifiedAuthProvider {
   /**
    * Follow artist from Spotify data
    */
-  async followArtistFromSpotify(userId: string, spotifyArtistId: string): Promise<void> {
+  async followArtistFromSpotify(
+    userId: string,
+    spotifyArtistId: string,
+  ): Promise<void> {
     try {
       const spotifyTokens = await this.userService.getSpotifyTokens(userId);
       if (!spotifyTokens) {
-        throw new Error('No Spotify connection available');
+        throw new Error("No Spotify connection available");
       }
 
       let token = spotifyTokens.accessToken;
-      
+
       // Check if token is expired and refresh if needed
       if (this.spotifyService.isTokenExpired(spotifyTokens)) {
         if (spotifyTokens.refreshToken) {
-          const newTokens = await this.refreshSpotifyTokens(userId, spotifyTokens.refreshToken);
+          const newTokens = await this.refreshSpotifyTokens(
+            userId,
+            spotifyTokens.refreshToken,
+          );
           token = newTokens.accessToken;
         } else {
-          throw new Error('Spotify token expired and no refresh token available');
+          throw new Error(
+            "Spotify token expired and no refresh token available",
+          );
         }
       }
 
       // Get artist details from Spotify
-      const artist = await this.spotifyService.getArtist(token, spotifyArtistId);
-      
+      const artist = await this.spotifyService.getArtist(
+        token,
+        spotifyArtistId,
+      );
+
       // Follow the artist
       await this.userService.followArtist(
         userId,
         artist.id,
         artist.name,
-        artist.images?.[0]?.url
+        artist.images?.[0]?.url,
       );
     } catch (error) {
       throw this.handleAuthError(error);
@@ -263,7 +297,10 @@ export class UnifiedAuthProvider {
   /**
    * Refresh Spotify tokens
    */
-  async refreshSpotifyTokens(userId: string, refreshToken: string): Promise<SpotifyTokens> {
+  async refreshSpotifyTokens(
+    userId: string,
+    refreshToken: string,
+  ): Promise<SpotifyTokens> {
     try {
       const newTokens = await this.spotifyService.refreshTokens(refreshToken);
       await this.userService.updateSpotifyTokens(userId, newTokens);
@@ -278,9 +315,12 @@ export class UnifiedAuthProvider {
    */
   async resetPassword(data: PasswordResetData): Promise<void> {
     try {
-      const { error } = await this.supabase.auth.resetPasswordForEmail(data.email, {
-        redirectTo: `${window.location.origin}/auth/reset-password`,
-      });
+      const { error } = await this.supabase.auth.resetPasswordForEmail(
+        data.email,
+        {
+          redirectTo: `${window.location.origin}/auth/reset-password`,
+        },
+      );
 
       if (error) {
         throw this.formatAuthError(error);
@@ -329,8 +369,11 @@ export class UnifiedAuthProvider {
    */
   async getCurrentSession(): Promise<AuthSession | null> {
     try {
-      const { data: { session }, error } = await this.supabase.auth.getSession();
-      
+      const {
+        data: { session },
+        error,
+      } = await this.supabase.auth.getSession();
+
       if (error) {
         throw this.formatAuthError(error);
       }
@@ -340,13 +383,13 @@ export class UnifiedAuthProvider {
       }
 
       const enrichedUser = await this.enrichUserData(session.user);
-      
+
       return {
         ...session,
         user: enrichedUser,
       };
     } catch (error) {
-      console.error('Error getting current session:', error);
+      console.error("Error getting current session:", error);
       return null;
     }
   }
@@ -356,8 +399,11 @@ export class UnifiedAuthProvider {
    */
   async getCurrentUser(): Promise<AuthUser | null> {
     try {
-      const { data: { user }, error } = await this.supabase.auth.getUser();
-      
+      const {
+        data: { user },
+        error,
+      } = await this.supabase.auth.getUser();
+
       if (error) {
         throw this.formatAuthError(error);
       }
@@ -368,7 +414,7 @@ export class UnifiedAuthProvider {
 
       return await this.enrichUserData(user);
     } catch (error) {
-      console.error('Error getting current user:', error);
+      console.error("Error getting current user:", error);
       return null;
     }
   }
@@ -380,7 +426,7 @@ export class UnifiedAuthProvider {
     try {
       const { error } = await this.supabase.auth.verifyOtp({
         token,
-        type: 'email',
+        type: "email",
         email,
       });
 
@@ -398,7 +444,7 @@ export class UnifiedAuthProvider {
   async resendEmailVerification(email: string): Promise<void> {
     try {
       const { error } = await this.supabase.auth.resend({
-        type: 'signup',
+        type: "signup",
         email,
       });
 
@@ -424,15 +470,22 @@ export class UnifiedAuthProvider {
       let spotifyProfile: SpotifyProfile | undefined;
       if (spotifyTokens) {
         try {
-          spotifyProfile = await this.spotifyService.getUserProfile(spotifyTokens.accessToken);
+          spotifyProfile = await this.spotifyService.getUserProfile(
+            spotifyTokens.accessToken,
+          );
         } catch (error) {
           // Spotify token might be expired, try to refresh
           if (spotifyTokens.refreshToken) {
             try {
-              const newTokens = await this.refreshSpotifyTokens(user.id, spotifyTokens.refreshToken);
-              spotifyProfile = await this.spotifyService.getUserProfile(newTokens.accessToken);
+              const newTokens = await this.refreshSpotifyTokens(
+                user.id,
+                spotifyTokens.refreshToken,
+              );
+              spotifyProfile = await this.spotifyService.getUserProfile(
+                newTokens.accessToken,
+              );
             } catch (refreshError) {
-              console.error('Failed to refresh Spotify tokens:', refreshError);
+              console.error("Failed to refresh Spotify tokens:", refreshError);
             }
           }
         }
@@ -448,7 +501,7 @@ export class UnifiedAuthProvider {
         spotifyConnected: !!spotifyTokens,
       };
     } catch (error) {
-      console.error('Error enriching user data:', error);
+      console.error("Error enriching user data:", error);
       return {
         ...user,
         emailVerified: !!user.email_confirmed_at,
@@ -462,7 +515,7 @@ export class UnifiedAuthProvider {
    */
   private formatAuthError(error: any): AuthError {
     return {
-      message: error.message || 'Authentication error occurred',
+      message: error.message || "Authentication error occurred",
       code: error.code,
       details: error,
     };
@@ -480,7 +533,7 @@ export class UnifiedAuthProvider {
     }
 
     return {
-      message: 'An unexpected error occurred',
+      message: "An unexpected error occurred",
       details: error,
     };
   }

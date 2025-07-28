@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/avatar";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { cn } from '@repo/design-system/lib/utils';
+} from "@repo/design-system/components/ui/card";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { cn } from "@repo/design-system/lib/utils";
 import {
   Activity,
   Calendar,
@@ -26,13 +26,13 @@ import {
   Search,
   TrendingDown,
   TrendingUp,
-} from 'lucide-react';
-import Link from 'next/link';
-import React, { useCallback, useEffect, useState } from 'react';
+} from "lucide-react";
+import Link from "next/link";
+import React, { useCallback, useEffect, useState } from "react";
 
 interface LiveTrendingItem {
   id: string;
-  type: 'artist' | 'show' | 'venue';
+  type: "artist" | "show" | "venue";
   name: string;
   slug: string;
   imageUrl?: string;
@@ -43,12 +43,12 @@ interface LiveTrendingItem {
     interactions: number;
     growth: number;
   };
-  timeframe: '1h' | '6h' | '24h';
+  timeframe: "1h" | "6h" | "24h";
 }
 
 interface LiveTrendingProps {
-  timeframe?: '1h' | '6h' | '24h';
-  type?: 'artist' | 'show' | 'venue' | 'all';
+  timeframe?: "1h" | "6h" | "24h";
+  type?: "artist" | "show" | "venue" | "all";
   limit?: number;
   autoRefresh?: boolean;
   className?: string;
@@ -65,7 +65,7 @@ const TrendingItem = React.memo(function TrendingItem({
 }: {
   item: LiveTrendingItem;
   index: number;
-  getIcon: (type: LiveTrendingItem['type']) => React.ReactNode;
+  getIcon: (type: LiveTrendingItem["type"]) => React.ReactNode;
   getLink: (item: LiveTrendingItem) => string;
   getGrowthColor: (growth: number) => string;
   getGrowthIcon: (growth: number) => typeof TrendingUp;
@@ -122,10 +122,10 @@ const TrendingItem = React.memo(function TrendingItem({
       <div className="text-right">
         <div className="flex items-center gap-1 font-medium text-sm">
           <GrowthIcon
-            className={cn('h-3 w-3', getGrowthColor(item.metrics.growth))}
+            className={cn("h-3 w-3", getGrowthColor(item.metrics.growth))}
           />
           <span className={getGrowthColor(item.metrics.growth)}>
-            {item.metrics.growth > 0 ? '+' : ''}
+            {item.metrics.growth > 0 ? "+" : ""}
             {item.metrics.growth.toFixed(1)}%
           </span>
         </div>
@@ -138,8 +138,8 @@ const TrendingItem = React.memo(function TrendingItem({
 });
 
 export const LiveTrending = React.memo(function LiveTrending({
-  timeframe = '24h',
-  type = 'all',
+  timeframe = "24h",
+  type = "all",
   limit = 10,
   autoRefresh = true,
   className,
@@ -163,25 +163,25 @@ export const LiveTrending = React.memo(function LiveTrending({
         const params = new URLSearchParams({
           timeframe,
           limit: limit.toString(),
-          ...(type !== 'all' && { type }),
+          ...(type !== "all" && { type }),
         });
 
         const response = await fetch(`/api/trending/live?${params}`);
         if (!response.ok) {
-          throw new Error('Failed to fetch trending data');
+          throw new Error("Failed to fetch trending data");
         }
 
         const data = await response.json();
         setTrending(data.trending);
         setLastUpdate(new Date());
       } catch (_err) {
-        setError('Failed to load trending data');
+        setError("Failed to load trending data");
       } finally {
         setLoading(false);
         setIsRefreshing(false);
       }
     },
-    [timeframe, type, limit]
+    [timeframe, type, limit],
   );
 
   useEffect(() => {
@@ -198,45 +198,45 @@ export const LiveTrending = React.memo(function LiveTrending({
       () => {
         fetchTrending(true);
       },
-      5 * 60 * 1000
+      5 * 60 * 1000,
     ); // 5 minutes
 
     return () => clearInterval(interval);
   }, [autoRefresh, fetchTrending]);
 
-  const getIcon = useCallback((itemType: LiveTrendingItem['type']) => {
+  const getIcon = useCallback((itemType: LiveTrendingItem["type"]) => {
     switch (itemType) {
-      case 'artist':
+      case "artist":
         return <Music className="h-4 w-4" />;
-      case 'show':
+      case "show":
         return <Calendar className="h-4 w-4" />;
-      case 'venue':
+      case "venue":
         return <MapPin className="h-4 w-4" />;
     }
   }, []);
 
   const getLink = useCallback((item: LiveTrendingItem) => {
     switch (item.type) {
-      case 'artist':
+      case "artist":
         return `/artists/${item.slug}`;
-      case 'show':
+      case "show":
         return `/shows/${item.slug}`;
-      case 'venue':
+      case "venue":
         return `/venues/${item.slug}`;
     }
   }, []);
 
   const getGrowthColor = useCallback((growth: number) => {
     if (growth > 20) {
-      return 'text-red-500';
+      return "text-red-500";
     }
     if (growth > 10) {
-      return 'text-orange-500';
+      return "text-orange-500";
     }
     if (growth > 0) {
-      return 'text-green-500';
+      return "text-green-500";
     }
-    return 'text-gray-500';
+    return "text-gray-500";
   }, []);
 
   const getGrowthIcon = useCallback((growth: number) => {
@@ -245,12 +245,12 @@ export const LiveTrending = React.memo(function LiveTrending({
 
   const formatTimeframe = (tf: string) => {
     switch (tf) {
-      case '1h':
-        return 'Last Hour';
-      case '6h':
-        return 'Last 6 Hours';
-      case '24h':
-        return 'Last 24 Hours';
+      case "1h":
+        return "Last Hour";
+      case "6h":
+        return "Last 6 Hours";
+      case "24h":
+        return "Last 24 Hours";
       default:
         return tf;
     }
@@ -335,7 +335,7 @@ export const LiveTrending = React.memo(function LiveTrending({
               className="h-8 w-8 p-0"
             >
               <RefreshCw
-                className={cn('h-4 w-4', isRefreshing && 'animate-spin')}
+                className={cn("h-4 w-4", isRefreshing && "animate-spin")}
               />
             </Button>
           </div>

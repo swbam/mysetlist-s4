@@ -34,6 +34,7 @@ This guide provides comprehensive instructions for deploying MySetlist to produc
 Copy the variables from `.env.production.example` and configure in Vercel:
 
 #### **Application URLs (CRITICAL)**
+
 ```
 NEXT_PUBLIC_APP_URL=https://your-domain.vercel.app
 NEXT_PUBLIC_WEB_URL=https://your-domain.vercel.app
@@ -42,6 +43,7 @@ NODE_ENV=production
 ```
 
 #### **Supabase Configuration (REQUIRED)**
+
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
@@ -51,6 +53,7 @@ DATABASE_URL=postgresql://postgres:[password]@[host]:6543/postgres
 ```
 
 #### **External API Keys (REQUIRED)**
+
 ```
 SPOTIFY_CLIENT_ID=your_spotify_client_id
 SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
@@ -60,6 +63,7 @@ SETLISTFM_API_KEY=your_setlistfm_api_key
 ```
 
 #### **Authentication & Security (REQUIRED)**
+
 ```
 NEXTAUTH_SECRET=your_32_character_minimum_secret_string
 NEXTAUTH_URL=https://your-domain.vercel.app
@@ -71,6 +75,7 @@ ADMIN_USER_IDS=admin_user_id_1,admin_user_id_2
 ### Step 3: Optional Enhanced Features
 
 #### **Analytics & Monitoring**
+
 ```
 NEXT_PUBLIC_POSTHOG_KEY=your_posthog_project_api_key
 NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
@@ -80,6 +85,7 @@ SENTRY_PROJECT=your_sentry_project
 ```
 
 #### **Performance & Caching**
+
 ```
 UPSTASH_REDIS_REST_URL=your_upstash_redis_url
 UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_token
@@ -95,6 +101,7 @@ EDGE_CONFIG=your_vercel_edge_config_url
 3. **Migrations**: All 24 migrations are production-ready and will be applied automatically
 
 ### Migration Files Applied
+
 - Base schema with users, artists, venues, shows, songs, setlists
 - Trending algorithms and functions
 - Performance indexes and optimizations
@@ -187,7 +194,10 @@ The following cron jobs are configured in `vercel.json`:
       "message": "All API integrations healthy",
       "details": {
         "spotify": { "healthy": true, "message": "Spotify API accessible" },
-        "ticketmaster": { "healthy": true, "message": "Ticketmaster API accessible" }
+        "ticketmaster": {
+          "healthy": true,
+          "message": "Ticketmaster API accessible"
+        }
       },
       "responseTime": "200ms"
     }
@@ -226,7 +236,8 @@ The following cron jobs are configured in `vercel.json`:
 #### 1. Environment Variable Errors
 
 **Symptom**: Build fails with environment variable errors
-**Solution**: 
+**Solution**:
+
 - Verify all required variables are set in Vercel
 - Run `pnpm check:env` locally to validate
 - Check variable names match exactly
@@ -235,6 +246,7 @@ The following cron jobs are configured in `vercel.json`:
 
 **Symptom**: 500 errors on API routes
 **Solution**:
+
 - Verify Supabase URL and keys are correct
 - Check database connection string format
 - Ensure RLS policies are configured
@@ -243,6 +255,7 @@ The following cron jobs are configured in `vercel.json`:
 
 **Symptom**: Features not working (search, sync)
 **Solution**:
+
 - Test API keys using health check endpoint
 - Verify rate limits not exceeded
 - Check API key permissions
@@ -251,6 +264,7 @@ The following cron jobs are configured in `vercel.json`:
 
 **Symptom**: TypeScript or build failures
 **Solution**:
+
 - Ensure `ignoreBuildErrors: false` is set
 - Fix TypeScript errors before deployment
 - Check for missing dependencies

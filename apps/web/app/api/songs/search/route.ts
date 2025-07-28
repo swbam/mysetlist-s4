@@ -1,14 +1,14 @@
-import { db, songs } from '@repo/database';
-import { SpotifyClient } from '@repo/external-apis';
-import { ilike, or } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db, songs } from "@repo/database";
+import { SpotifyClient } from "@repo/external-apis";
+import { ilike, or } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Song search API with Spotify integration
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get('q');
-    const limit = Number.parseInt(searchParams.get('limit') || '20');
+    const query = searchParams.get("q");
+    const limit = Number.parseInt(searchParams.get("limit") || "20");
 
     if (!query || query.length < 2) {
       return NextResponse.json({ songs: [] });
@@ -22,8 +22,8 @@ export async function GET(request: NextRequest) {
         or(
           ilike(songs.title, `%${query}%`),
           ilike(songs.artist, `%${query}%`),
-          ilike(songs.album, `%${query}%`)
-        )
+          ilike(songs.album, `%${query}%`),
+        ),
       )
       .limit(Math.min(limit, 10));
 
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest) {
         is_explicit: song.isExplicit,
         preview_url: song.previewUrl,
         popularity: song.popularity,
-        source: 'database',
+        source: "database",
       }));
 
       return NextResponse.json({ songs: formattedSongs });
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
 
       const spotifyResults = await spotifyClient.searchTracks(
         query,
-        limit - dbSongs.length
+        limit - dbSongs.length,
       );
 
       // Transform Spotify data to our format
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
         id: track.id, // Use Spotify ID as temp ID
         spotify_id: track.id,
         title: track.name,
-        artist: track.artists.map((a: any) => a.name).join(', '),
+        artist: track.artists.map((a: any) => a.name).join(", "),
         album: track.album.name,
         album_art_url: track.album.images[0]?.url || null,
         duration_ms: track.duration_ms,
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
         preview_url: track.preview_url,
         external_urls: track.external_urls,
         popularity: track.popularity,
-        source: 'spotify',
+        source: "spotify",
       }));
 
       // Format database songs to match Spotify format
@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
         is_explicit: song.isExplicit,
         preview_url: song.previewUrl,
         popularity: song.popularity,
-        source: 'database',
+        source: "database",
       }));
 
       // Combine results, database first
@@ -104,15 +104,15 @@ export async function GET(request: NextRequest) {
         is_explicit: song.isExplicit,
         preview_url: song.previewUrl,
         popularity: song.popularity,
-        source: 'database',
+        source: "database",
       }));
 
       return NextResponse.json({ songs: formattedSongs });
     }
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to search songs' },
-      { status: 500 }
+      { error: "Failed to search songs" },
+      { status: 500 },
     );
   }
 }

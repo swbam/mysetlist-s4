@@ -1,4 +1,4 @@
-import { type APIClientConfig, BaseAPIClient } from './base';
+import { type APIClientConfig, BaseAPIClient } from "./base";
 
 export interface SetlistFmArtist {
   mbid: string;
@@ -59,25 +59,25 @@ export interface SetlistFmSetlist {
 }
 
 export class SetlistFmClient extends BaseAPIClient {
-  constructor(config: Omit<APIClientConfig, 'baseURL'>) {
+  constructor(config: Omit<APIClientConfig, "baseURL">) {
     super({
       ...config,
-      baseURL: 'https://api.setlist.fm/rest/1.0',
+      baseURL: "https://api.setlist.fm/rest/1.0",
       rateLimit: { requests: 60, window: 60 }, // 1 request per second
       cache: { defaultTTL: 3600 }, // 1 hour cache
     });
   }
 
   protected getAuthHeaders(): Record<string, string> {
-    const apiKey = process.env['SETLISTFM_API_KEY'];
+    const apiKey = process.env["SETLISTFM_API_KEY"];
 
     if (!apiKey) {
-      throw new Error('Setlist.fm API key not configured');
+      throw new Error("Setlist.fm API key not configured");
     }
 
     return {
-      'x-api-key': apiKey,
-      Accept: 'application/json',
+      "x-api-key": apiKey,
+      Accept: "application/json",
     };
   }
 
@@ -107,7 +107,7 @@ export class SetlistFmClient extends BaseAPIClient {
       `/search/setlists?${params}`,
       {},
       `setlistfm:search:${params.toString()}`,
-      1800
+      1800,
     );
   }
 
@@ -117,7 +117,7 @@ export class SetlistFmClient extends BaseAPIClient {
         `/setlist/${setlistId}`,
         {},
         `setlistfm:setlist:${setlistId}`,
-        3600
+        3600,
       );
     } catch (error: any) {
       if (error.status === 404) {
@@ -129,7 +129,7 @@ export class SetlistFmClient extends BaseAPIClient {
 
   async getArtistSetlists(
     artistMbid: string,
-    page = 1
+    page = 1,
   ): Promise<{
     setlist: SetlistFmSetlist[];
     total: number;
@@ -141,7 +141,7 @@ export class SetlistFmClient extends BaseAPIClient {
         `/artist/${artistMbid}/setlists?p=${page}`,
         {},
         `setlistfm:artist:${artistMbid}:setlists:${page}`,
-        1800
+        1800,
       );
     } catch (error: any) {
       if (error.status === 404) {
@@ -158,7 +158,7 @@ export class SetlistFmClient extends BaseAPIClient {
 
   async getVenueSetlists(
     venueId: string,
-    page = 1
+    page = 1,
   ): Promise<{
     setlist: SetlistFmSetlist[];
     total: number;
@@ -169,13 +169,13 @@ export class SetlistFmClient extends BaseAPIClient {
       `/venue/${venueId}/setlists?p=${page}`,
       {},
       `setlistfm:venue:${venueId}:setlists:${page}`,
-      1800
+      1800,
     );
   }
 
   async searchArtists(
     artistName: string,
-    page = 1
+    page = 1,
   ): Promise<{
     artist: SetlistFmArtist[];
     total: number;
@@ -191,7 +191,7 @@ export class SetlistFmClient extends BaseAPIClient {
       `/search/artists?${params}`,
       {},
       `setlistfm:search:artists:${artistName}:${page}`,
-      3600
+      3600,
     );
   }
 
@@ -219,7 +219,7 @@ export class SetlistFmClient extends BaseAPIClient {
       `/search/venues?${params}`,
       {},
       `setlistfm:search:venues:${params.toString()}`,
-      3600
+      3600,
     );
   }
 }

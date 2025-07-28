@@ -4,7 +4,7 @@ export const performanceConfig = {
   images: {
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    formats: ['image/webp', 'image/avif'],
+    formats: ["image/webp", "image/avif"],
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
     dangerouslyAllowSVG: false,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
@@ -12,7 +12,7 @@ export const performanceConfig = {
 
   // Bundle optimization
   bundleAnalyzer: {
-    enabled: process.env['ANALYZE'] === 'true',
+    enabled: process.env["ANALYZE"] === "true",
     openAnalyzer: true,
   },
 
@@ -58,7 +58,7 @@ export const performanceConfig = {
   // Code splitting
   splitting: {
     // Routes to preload
-    preloadRoutes: ['/trending', '/artists', '/shows'],
+    preloadRoutes: ["/trending", "/artists", "/shows"],
     // Chunk size limits
     maxInitialChunkSize: 250000, // 250KB
     maxAsyncChunkSize: 150000, // 150KB
@@ -67,15 +67,15 @@ export const performanceConfig = {
   // Service worker
   serviceWorker: {
     enabled: false, // Disabled due to conflicts
-    scope: '/',
+    scope: "/",
     skipWaiting: true,
     clientsClaim: true,
     runtimeCaching: [
       {
         urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-        handler: 'CacheFirst',
+        handler: "CacheFirst",
         options: {
-          cacheName: 'google-fonts',
+          cacheName: "google-fonts",
           expiration: {
             maxEntries: 10,
             maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
@@ -84,9 +84,9 @@ export const performanceConfig = {
       },
       {
         urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/.*/i,
-        handler: 'CacheFirst',
+        handler: "CacheFirst",
         options: {
-          cacheName: 'jsdelivr',
+          cacheName: "jsdelivr",
           expiration: {
             maxEntries: 30,
             maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
@@ -95,9 +95,9 @@ export const performanceConfig = {
       },
       {
         urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif)$/,
-        handler: 'CacheFirst',
+        handler: "CacheFirst",
         options: {
-          cacheName: 'images',
+          cacheName: "images",
           expiration: {
             maxEntries: 100,
             maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
@@ -136,14 +136,17 @@ export const performanceConfig = {
   resourceHints: {
     // DNS prefetch for external domains
     dnsPrefetch: [
-      'https://fonts.googleapis.com',
-      'https://www.googletagmanager.com',
-      'https://cdn.jsdelivr.net',
+      "https://fonts.googleapis.com",
+      "https://www.googletagmanager.com",
+      "https://cdn.jsdelivr.net",
     ],
     // Preconnect to critical origins
     preconnect: [
-      { url: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
-      { url: process.env['NEXT_PUBLIC_SUPABASE_URL'] || '', crossOrigin: 'anonymous' },
+      { url: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      {
+        url: process.env["NEXT_PUBLIC_SUPABASE_URL"] || "",
+        crossOrigin: "anonymous",
+      },
     ],
   },
 };

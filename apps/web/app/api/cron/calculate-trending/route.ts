@@ -1,8 +1,8 @@
-import { 
-  artists, 
-  artistStats, 
-  db, 
-  shows, 
+import {
+  artists,
+  artistStats,
+  db,
+  shows,
   venues,
   userActivityLog,
   events,
@@ -10,12 +10,12 @@ import {
   calculateArtistGrowth,
   calculateShowGrowth,
   calculateVenueGrowth,
-  createHistoricalSnapshot 
-} from '@repo/database';
-import { sql, and, gte, eq, desc, asc } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+  createHistoricalSnapshot,
+} from "@repo/database";
+import { sql, and, gte, eq, desc, asc } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
-const CRON_SECRET = process.env['CRON_SECRET'];
+const CRON_SECRET = process.env["CRON_SECRET"];
 
 // Enhanced trending score calculation weights
 const WEIGHTS = {
@@ -46,7 +46,7 @@ const TIME_DECAY_DAYS = 7;
 const RECENT_ACTIVITY_DAYS = 30;
 
 interface TrendingMode {
-  mode: 'daily' | 'hourly';
+  mode: "daily" | "hourly";
   fullRecalc: boolean;
 }
 
@@ -57,8 +57,10 @@ function calculateTimeDecay(date: Date, decayDays = TIME_DECAY_DAYS): number {
 }
 
 async function getRecentUserActivity(artistId?: string, showId?: string) {
-  const thirtyDaysAgo = new Date(Date.now() - RECENT_ACTIVITY_DAYS * 24 * 60 * 60 * 1000);
-  
+  const thirtyDaysAgo = new Date(
+    Date.now() - RECENT_ACTIVITY_DAYS * 24 * 60 * 60 * 1000,
+  );
+
   // Count recent user activities (follows, votes, views)
   const activityQuery = db
     .select({
@@ -70,22 +72,27 @@ async function getRecentUserActivity(artistId?: string, showId?: string) {
       and(
         gte(userActivityLog.createdAt, thirtyDaysAgo),
         artistId ? eq(userActivityLog.targetId, artistId) : sql`true`,
-        showId ? eq(userActivityLog.targetId, showId) : sql`true`
-      )
+        showId ? eq(userActivityLog.targetId, showId) : sql`true`,
+      ),
     )
     .groupBy(userActivityLog.action);
 
   const activities = await activityQuery;
-  
+
   // Calculate weighted activity score
   let activityScore = 0;
   for (const activity of activities) {
-    const weight = activity.action === 'artist_follow' ? 3 : 
-                  activity.action === 'song_vote' ? 2 :
-                  activity.action === 'artist_view' ? 1 : 0.5;
+    const weight =
+      activity.action === "artist_follow"
+        ? 3
+        : activity.action === "song_vote"
+          ? 2
+          : activity.action === "artist_view"
+            ? 1
+            : 0.5;
     activityScore += (activity.count || 0) * weight;
   }
-  
+
   return activityScore;
 }
 
@@ -123,9 +130,9 @@ async function updateArtistStats() {
       total_setlists = EXCLUDED.total_setlists,
       updated_at = EXCLUDED.updated_at
   `;
-  
+
   await db.execute(updateQuery);
-  
+
   // Also update the main artists table
   await db.execute(sql`
     UPDATE ${artists} 
@@ -142,7 +149,7 @@ async function updateArtistStats() {
 async function createHistoricalSnapshots() {
   // Store current values as previous values for next growth calculation cycle
   // This must be done BEFORE updating current values
-  
+
   // Artists historical snapshot
   await db.execute(sql`
     UPDATE ${artists} 
@@ -157,7 +164,7 @@ async function createHistoricalSnapshots() {
     OR monthly_listeners IS NOT NULL 
     OR follower_count IS NOT NULL
   `);
-  
+
   // Shows historical snapshot
   await db.execute(sql`
     UPDATE ${shows} 
@@ -172,7 +179,7 @@ async function createHistoricalSnapshots() {
     OR vote_count IS NOT NULL 
     OR setlist_count IS NOT NULL
   `);
-  
+
   // Venues historical snapshot (need to calculate current values first)
   await db.execute(sql`
     UPDATE ${venues} v
@@ -186,7 +193,7 @@ async function createHistoricalSnapshots() {
 
 async function calculateArtistTrendingScores(mode: TrendingMode) {
   let artistsToProcess;
-  
+
   if (mode.fullRecalc) {
     // Full recalculation - get all artists
     artistsToProcess = await db
@@ -214,15 +221,15 @@ async function calculateArtistTrendingScores(mode: TrendingMode) {
       .where(
         and(
           gte(userActivityLog.createdAt, new Date(Date.now() - 60 * 60 * 1000)), // Last hour
-          eq(userActivityLog.targetType, 'artist')
-        )
+          eq(userActivityLog.targetType, "artist"),
+        ),
       )
       .groupBy(userActivityLog.targetId);
-    
+
     if (recentActivityArtists.length === 0) {
-      return { updated: 0, message: 'No recent artist activity' };
+      return { updated: 0, message: "No recent artist activity" };
     }
-    
+
     artistsToProcess = await db
       .select({
         id: artists.id,
@@ -240,7 +247,14 @@ async function calculateArtistTrendingScores(mode: TrendingMode) {
         previousMonthlyListeners: artists.previousMonthlyListeners,
       })
       .from(artists)
-      .where(sql`${artists.id} IN (${sql.join(recentActivityArtists.map(a => a.artistId).filter((id): id is string => Boolean(id)), sql`, `)})`);
+      .where(
+        sql`${artists.id} IN (${sql.join(
+          recentActivityArtists
+            .map((a) => a.artistId)
+            .filter((id): id is string => Boolean(id)),
+          sql`, `,
+        )})`,
+      );
   }
 
   let updated = 0;
@@ -249,64 +263,68 @@ async function calculateArtistTrendingScores(mode: TrendingMode) {
   const batchSize = 50;
   for (let i = 0; i < artistsToProcess.length; i += batchSize) {
     const batch = artistsToProcess.slice(i, i + batchSize);
-    
-    await Promise.all(batch.map(async (artist) => {
-      try {
-        // Get recent user activity for this artist
-        const userActivityScore = await getRecentUserActivity(artist.id);
-        
-        // Get recent shows count (last 30 days)
-        const recentShowsResult = await db
-          .select({
-            count: sql<number>`count(*)::int`,
-          })
-          .from(shows)
-          .where(sql`${shows.headlinerArtistId} = ${artist.id} 
+
+    await Promise.all(
+      batch.map(async (artist) => {
+        try {
+          // Get recent user activity for this artist
+          const userActivityScore = await getRecentUserActivity(artist.id);
+
+          // Get recent shows count (last 30 days)
+          const recentShowsResult = await db
+            .select({
+              count: sql<number>`count(*)::int`,
+            })
+            .from(shows).where(sql`${shows.headlinerArtistId} = ${artist.id} 
             AND ${shows.date} >= CURRENT_DATE - INTERVAL '30 days'`);
 
-        const recentShowCount = recentShowsResult[0]?.count || 0;
+          const recentShowCount = recentShowsResult[0]?.count || 0;
 
-        // Calculate real growth using historical data
-        const realGrowth = calculateArtistGrowth({
-          followers: artist.followers || 0,
-          previousFollowers: artist.previousFollowers,
-          popularity: artist.popularity || 0,
-          previousPopularity: artist.previousPopularity,
-          monthlyListeners: artist.monthlyListeners,
-          previousMonthlyListeners: artist.previousMonthlyListeners,
-          followerCount: artist.followerCount || 0,
-          previousFollowerCount: artist.previousFollowerCount,
-        });
-        
-        // Use real overall growth percentage (not fake random numbers)
-        const followerGrowth = realGrowth.overallGrowth;
+          // Calculate real growth using historical data
+          const realGrowth = calculateArtistGrowth({
+            followers: artist.followers || 0,
+            previousFollowers: artist.previousFollowers,
+            popularity: artist.popularity || 0,
+            previousPopularity: artist.previousPopularity,
+            monthlyListeners: artist.monthlyListeners,
+            previousMonthlyListeners: artist.previousMonthlyListeners,
+            followerCount: artist.followerCount || 0,
+            previousFollowerCount: artist.previousFollowerCount,
+          });
 
-        // Calculate comprehensive trending score
-        const baseScore = 
-          ((artist.followers || 0) / 10000) * WEIGHTS.artist.followers +
-          (artist.popularity || 0) * WEIGHTS.artist.popularity +
-          recentShowCount * 10 * WEIGHTS.artist.recentShows +
-          followerGrowth * WEIGHTS.artist.followerGrowth +
-          (userActivityScore / 100) * WEIGHTS.artist.userActivity;
+          // Use real overall growth percentage (not fake random numbers)
+          const followerGrowth = realGrowth.overallGrowth;
 
-        // Apply time decay for older artists
-        const timeFactor = calculateTimeDecay(new Date(artist.createdAt));
-        const finalScore = baseScore * (0.7 + 0.3 * timeFactor);
+          // Calculate comprehensive trending score
+          const baseScore =
+            ((artist.followers || 0) / 10000) * WEIGHTS.artist.followers +
+            (artist.popularity || 0) * WEIGHTS.artist.popularity +
+            recentShowCount * 10 * WEIGHTS.artist.recentShows +
+            followerGrowth * WEIGHTS.artist.followerGrowth +
+            (userActivityScore / 100) * WEIGHTS.artist.userActivity;
 
-        // Update artist with new trending score
-        await db
-          .update(artists)
-          .set({ 
-            trendingScore: finalScore,
-            updatedAt: new Date()
-          })
-          .where(eq(artists.id, artist.id));
+          // Apply time decay for older artists
+          const timeFactor = calculateTimeDecay(new Date(artist.createdAt));
+          const finalScore = baseScore * (0.7 + 0.3 * timeFactor);
 
-        updated++;
-      } catch (error) {
-        console.error(`Error calculating score for artist ${artist.id}:`, error);
-      }
-    }));
+          // Update artist with new trending score
+          await db
+            .update(artists)
+            .set({
+              trendingScore: finalScore,
+              updatedAt: new Date(),
+            })
+            .where(eq(artists.id, artist.id));
+
+          updated++;
+        } catch (error) {
+          console.error(
+            `Error calculating score for artist ${artist.id}:`,
+            error,
+          );
+        }
+      }),
+    );
   }
 
   return { updated };
@@ -314,7 +332,7 @@ async function calculateArtistTrendingScores(mode: TrendingMode) {
 
 async function calculateShowTrendingScores(mode: TrendingMode) {
   let showsToProcess;
-  
+
   if (mode.fullRecalc) {
     // Get all upcoming/ongoing shows
     showsToProcess = await db
@@ -337,15 +355,15 @@ async function calculateShowTrendingScores(mode: TrendingMode) {
       .where(
         and(
           gte(userActivityLog.createdAt, new Date(Date.now() - 60 * 60 * 1000)),
-          eq(userActivityLog.targetType, 'show')
-        )
+          eq(userActivityLog.targetType, "show"),
+        ),
       )
       .groupBy(userActivityLog.targetId);
-    
+
     if (recentActivityShows.length === 0) {
-      return { updated: 0, message: 'No recent show activity' };
+      return { updated: 0, message: "No recent show activity" };
     }
-    
+
     showsToProcess = await db
       .select({
         id: shows.id,
@@ -357,7 +375,14 @@ async function calculateShowTrendingScores(mode: TrendingMode) {
         createdAt: shows.createdAt,
       })
       .from(shows)
-      .where(sql`${shows.id} IN (${sql.join(recentActivityShows.map(s => s.showId).filter((id): id is string => Boolean(id)), sql`, `)})`);
+      .where(
+        sql`${shows.id} IN (${sql.join(
+          recentActivityShows
+            .map((s) => s.showId)
+            .filter((id): id is string => Boolean(id)),
+          sql`, `,
+        )})`,
+      );
   }
 
   let updated = 0;
@@ -365,7 +390,7 @@ async function calculateShowTrendingScores(mode: TrendingMode) {
   for (const show of showsToProcess) {
     try {
       const recencyFactor = calculateTimeDecay(new Date(show.createdAt));
-      
+
       // Get recent social activity
       const socialActivity = await getRecentUserActivity(undefined, show.id);
 
@@ -381,9 +406,9 @@ async function calculateShowTrendingScores(mode: TrendingMode) {
       // Update show with new trending score
       await db
         .update(shows)
-        .set({ 
+        .set({
           trendingScore: score,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(shows.id, show.id));
 
@@ -417,22 +442,24 @@ async function identifyTrendingContent() {
       trendingScore: shows.trendingScore,
     })
     .from(shows)
-    .where(sql`${shows.trendingScore} > 0 AND ${shows.status} IN ('upcoming', 'ongoing')`)
+    .where(
+      sql`${shows.trendingScore} > 0 AND ${shows.status} IN ('upcoming', 'ongoing')`,
+    )
     .orderBy(desc(shows.trendingScore))
     .limit(50);
 
   return {
     trendingArtists: topTrendingArtists.length,
     trendingShows: topTrendingShows.length,
-    topArtist: topTrendingArtists[0]?.name || 'None',
-    topShow: topTrendingShows[0]?.name || 'None',
+    topArtist: topTrendingArtists[0]?.name || "None",
+    topShow: topTrendingShows[0]?.name || "None",
   };
 }
 
 async function applyTimeDecayToOldScores() {
   // Apply decay to trending scores older than 24 hours
   const decayFactor = 0.95; // 5% daily decay
-  
+
   await db.execute(sql`
     UPDATE ${artists} 
     SET trending_score = trending_score * ${decayFactor},
@@ -440,7 +467,7 @@ async function applyTimeDecayToOldScores() {
     WHERE updated_at < NOW() - INTERVAL '1 day'
     AND trending_score > 0
   `);
-  
+
   await db.execute(sql`
     UPDATE ${shows} 
     SET trending_score = trending_score * ${decayFactor},
@@ -451,11 +478,15 @@ async function applyTimeDecayToOldScores() {
   `);
 }
 
-async function logTrendingOperation(operation: string, results: any, mode: TrendingMode) {
+async function logTrendingOperation(
+  operation: string,
+  results: any,
+  mode: TrendingMode,
+) {
   try {
     await db.insert(userActivityLog).values({
       action: `trending_${operation}`,
-      targetType: 'system',
+      targetType: "system",
       details: {
         mode: mode.mode,
         fullRecalc: mode.fullRecalc,
@@ -464,28 +495,30 @@ async function logTrendingOperation(operation: string, results: any, mode: Trend
       },
     });
   } catch (error) {
-    console.error('Failed to log trending operation:', error);
+    console.error("Failed to log trending operation:", error);
   }
 }
 
 export async function GET(request: NextRequest) {
   // Verify cron secret
-  const authHeader = request.headers.get('authorization');
+  const authHeader = request.headers.get("authorization");
   if (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     const { searchParams } = new URL(request.url);
-    const modeParam = searchParams.get('mode') || 'daily'; // 'daily' or 'hourly'
-    const typeParam = searchParams.get('type') || 'all'; // 'all', 'artists', 'shows'
-    
+    const modeParam = searchParams.get("mode") || "daily"; // 'daily' or 'hourly'
+    const typeParam = searchParams.get("type") || "all"; // 'all', 'artists', 'shows'
+
     const mode: TrendingMode = {
-      mode: modeParam as 'daily' | 'hourly',
-      fullRecalc: modeParam === 'daily',
+      mode: modeParam as "daily" | "hourly",
+      fullRecalc: modeParam === "daily",
     };
 
-    console.log(`Starting trending calculation - Mode: ${mode.mode}, Type: ${typeParam}, Full recalc: ${mode.fullRecalc}`);
+    console.log(
+      `Starting trending calculation - Mode: ${mode.mode}, Type: ${typeParam}, Full recalc: ${mode.fullRecalc}`,
+    );
 
     const results = {
       artistStats: { updated: 0 },
@@ -498,53 +531,53 @@ export async function GET(request: NextRequest) {
 
     // 0. Create historical snapshots FIRST (for next cycle's growth calculations)
     if (mode.fullRecalc) {
-      console.log('Creating historical snapshots for growth tracking...');
+      console.log("Creating historical snapshots for growth tracking...");
       try {
         await createHistoricalSnapshots();
         results.historicalSnapshots.created = true;
       } catch (error) {
-        console.error('Failed to create historical snapshots:', error);
+        console.error("Failed to create historical snapshots:", error);
         // Continue with calculation even if snapshots fail
       }
     }
 
     // 1. Update artist statistics (always run for daily)
-    if (mode.fullRecalc && (typeParam === 'all' || typeParam === 'artists')) {
-      console.log('Updating artist statistics...');
+    if (mode.fullRecalc && (typeParam === "all" || typeParam === "artists")) {
+      console.log("Updating artist statistics...");
       await updateArtistStats();
       results.artistStats.updated = 1;
     }
 
     // 2. Calculate artist trending scores
-    if (typeParam === 'all' || typeParam === 'artists') {
-      console.log('Calculating artist trending scores...');
+    if (typeParam === "all" || typeParam === "artists") {
+      console.log("Calculating artist trending scores...");
       const artistResults = await calculateArtistTrendingScores(mode);
       results.artists = artistResults;
     }
 
     // 3. Calculate show trending scores
-    if (typeParam === 'all' || typeParam === 'shows') {
-      console.log('Calculating show trending scores...');
+    if (typeParam === "all" || typeParam === "shows") {
+      console.log("Calculating show trending scores...");
       const showResults = await calculateShowTrendingScores(mode);
       results.shows = showResults;
     }
 
     // 4. Identify trending content (daily only)
     if (mode.fullRecalc) {
-      console.log('Identifying trending content...');
+      console.log("Identifying trending content...");
       const trendingContent = await identifyTrendingContent();
       results.trending = trendingContent;
     }
 
     // 5. Apply time-based decay to old scores (daily only)
     if (mode.fullRecalc) {
-      console.log('Applying time decay to old scores...');
+      console.log("Applying time decay to old scores...");
       await applyTimeDecayToOldScores();
       results.timeDecay = { applied: true };
     }
 
     // 6. Log operation
-    await logTrendingOperation('calculate', results, mode);
+    await logTrendingOperation("calculate", results, mode);
 
     const responseData = {
       success: true,
@@ -556,19 +589,19 @@ export async function GET(request: NextRequest) {
       results,
     };
 
-    console.log('Trending calculation completed:', responseData);
+    console.log("Trending calculation completed:", responseData);
 
     return NextResponse.json(responseData);
   } catch (error) {
-    console.error('Trending calculation failed:', error);
-    
+    console.error("Trending calculation failed:", error);
+
     return NextResponse.json(
       {
-        error: 'Trending calculation failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Trending calculation failed",
+        details: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Carousel,
   type CarouselApi,
@@ -8,11 +8,11 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from '@repo/design-system/components/ui/carousel';
-import { Users } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+} from "@repo/design-system/components/ui/carousel";
+import { Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface Artist {
   id: string;
@@ -51,7 +51,7 @@ export default function TopArtistsCarousel({
 
   const formatFollowers = (count: number | undefined) => {
     if (!count) {
-      return '0';
+      return "0";
     }
     if (count >= 1_000_000) {
       return `${(count / 1_000_000).toFixed(1)}M`;
@@ -85,7 +85,7 @@ export default function TopArtistsCarousel({
         <div className="relative">
           <Carousel
             setApi={setApi}
-            opts={{ loop: true, align: 'start' }}
+            opts={{ loop: true, align: "start" }}
             className="w-full"
           >
             <CarouselContent>
@@ -95,7 +95,7 @@ export default function TopArtistsCarousel({
                   className="basis-2/3 sm:basis-1/3 md:basis-1/4 lg:basis-1/6"
                 >
                   <Link
-                    href={`/artists/${artist.slug ?? ''}`}
+                    href={`/artists/${artist.slug ?? ""}`}
                     className="group block overflow-hidden rounded-lg border border-border bg-background transition-shadow hover:shadow-lg"
                   >
                     <div className="relative aspect-square overflow-hidden">

@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, BellRing } from 'lucide-react';
-import { useState } from 'react';
-import { useRealtimeShows } from '~/hooks/use-realtime-shows';
-import { RealtimeShowCard } from './realtime-show-card';
+import { cn } from "@repo/design-system/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
+import { Bell, BellRing } from "lucide-react";
+import { useState } from "react";
+import { useRealtimeShows } from "~/hooks/use-realtime-shows";
+import { RealtimeShowCard } from "./realtime-show-card";
 
 interface RealtimeShowsFeedProps {
   limit?: number;
-  status?: 'upcoming' | 'ongoing' | 'completed';
+  status?: "upcoming" | "ongoing" | "completed";
   artistId?: string;
   venueId?: string;
   className?: string;
@@ -48,12 +48,12 @@ export function RealtimeShowsFeed({
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
 
-  const liveShows = sortedShows.filter((show) => show.status === 'ongoing');
+  const liveShows = sortedShows.filter((show) => show.status === "ongoing");
   const hasLiveShows = liveShows.length > 0;
 
   if (isLoading) {
     return (
-      <div className={cn('space-y-4', className)}>
+      <div className={cn("space-y-4", className)}>
         {[...new Array(3)].map((_, i) => (
           <div key={i} className="h-32 animate-pulse rounded-lg bg-muted" />
         ))}
@@ -62,7 +62,7 @@ export function RealtimeShowsFeed({
   }
 
   return (
-    <div className={cn('space-y-6', className)}>
+    <div className={cn("space-y-6", className)}>
       {/* New show notification */}
       <AnimatePresence>
         {hasNewShows && (
@@ -102,7 +102,7 @@ export function RealtimeShowsFeed({
         {!status && <h3 className="font-semibold text-lg">Recent Shows</h3>}
         <div className="grid gap-4 md:grid-cols-2">
           {sortedShows
-            .filter((show) => !hasLiveShows || show.status !== 'ongoing')
+            .filter((show) => !hasLiveShows || show.status !== "ongoing")
             .map((show) => (
               <RealtimeShowCard key={show.id} show={show} />
             ))}

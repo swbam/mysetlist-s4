@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
 import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from '@repo/design-system/components/ui/alert';
-import { Badge } from '@repo/design-system/components/ui/badge';
+} from "@repo/design-system/components/ui/alert";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Progress } from '@repo/design-system/components/ui/progress';
+} from "@repo/design-system/components/ui/card";
+import { Progress } from "@repo/design-system/components/ui/progress";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
-import { format } from 'date-fns';
+} from "@repo/design-system/components/ui/tabs";
+import { format } from "date-fns";
 import {
   Activity,
   AlertTriangle,
@@ -27,8 +27,8 @@ import {
   TrendingUp,
   Users,
   Zap,
-} from 'lucide-react';
-import { useState } from 'react';
+} from "lucide-react";
+import { useState } from "react";
 
 interface MonitoringDashboardProps {
   dbStats: any;
@@ -66,10 +66,10 @@ export function MonitoringDashboard({
             <Progress value={healthScore} className="mt-2" />
             <p className="mt-2 text-muted-foreground text-xs">
               {healthScore >= 90
-                ? 'Healthy'
+                ? "Healthy"
                 : healthScore >= 70
-                  ? 'Warning'
-                  : 'Critical'}
+                  ? "Warning"
+                  : "Critical"}
             </p>
           </CardContent>
         </Card>
@@ -126,9 +126,10 @@ export function MonitoringDashboard({
             <p className="text-muted-foreground text-xs">
               {
                 errorLogs.filter(
-                  (e) => new Date(e.created_at) > new Date(Date.now() - 3600000)
+                  (e) =>
+                    new Date(e.created_at) > new Date(Date.now() - 3600000),
                 ).length
-              }{' '}
+              }{" "}
               errors in last hour
             </p>
           </CardContent>
@@ -137,13 +138,13 @@ export function MonitoringDashboard({
 
       {/* Critical Alerts */}
       {healthScore < 90 && (
-        <Alert variant={healthScore < 70 ? 'destructive' : 'default'}>
+        <Alert variant={healthScore < 70 ? "destructive" : "default"}>
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>System Health Alert</AlertTitle>
           <AlertDescription>
             {healthScore < 70
-              ? 'Critical issues detected. Immediate action required.'
-              : 'System performance is degraded. Please investigate.'}
+              ? "Critical issues detected. Immediate action required."
+              : "System performance is degraded. Please investigate."}
           </AlertDescription>
         </Alert>
       )}
@@ -170,7 +171,7 @@ export function MonitoringDashboard({
                       Connection Pool
                     </dt>
                     <dd className="font-medium text-sm">
-                      {dbStats.activeConnections || 0} /{' '}
+                      {dbStats.activeConnections || 0} /{" "}
                       {dbStats.maxConnections || 100}
                     </dd>
                   </div>
@@ -195,7 +196,7 @@ export function MonitoringDashboard({
                       Database Size
                     </dt>
                     <dd className="font-medium text-sm">
-                      {dbStats.dbSize || 'N/A'}
+                      {dbStats.dbSize || "N/A"}
                     </dd>
                   </div>
                 </dl>
@@ -255,7 +256,7 @@ export function MonitoringDashboard({
                         <div className="flex items-center gap-2">
                           <Badge
                             variant={
-                              stats.errorRate > 5 ? 'destructive' : 'secondary'
+                              stats.errorRate > 5 ? "destructive" : "secondary"
                             }
                           >
                             {stats.errorRate}% errors
@@ -267,7 +268,7 @@ export function MonitoringDashboard({
                       </div>
                       <Progress value={100 - stats.errorRate} className="h-2" />
                     </div>
-                  )
+                  ),
                 )}
               </div>
             </CardContent>
@@ -288,10 +289,10 @@ export function MonitoringDashboard({
                   >
                     <div className="flex items-center justify-between">
                       <Badge variant="destructive">
-                        {error.level || 'ERROR'}
+                        {error.level || "ERROR"}
                       </Badge>
                       <span className="text-muted-foreground text-xs">
-                        {format(new Date(error.created_at), 'MMM d, HH:mm:ss')}
+                        {format(new Date(error.created_at), "MMM d, HH:mm:ss")}
                       </span>
                     </div>
                     <p className="font-medium text-sm">{error.message}</p>
@@ -359,7 +360,7 @@ export function MonitoringDashboard({
 function calculateHealthScore(
   dbStats: any,
   apiStats: any,
-  errorLogs: any[]
+  errorLogs: any[],
 ): number {
   let score = 100;
 
@@ -389,7 +390,7 @@ function calculateHealthScore(
 
   // Deduct points for recent errors
   const recentErrors = errorLogs.filter(
-    (e) => new Date(e.created_at) > new Date(Date.now() - 3600000)
+    (e) => new Date(e.created_at) > new Date(Date.now() - 3600000),
   ).length;
   if (recentErrors > 10) {
     score -= 10;

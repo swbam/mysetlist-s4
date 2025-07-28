@@ -1,12 +1,33 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import { Progress } from '@repo/design-system/components/ui/progress';
-import { Brain, Target, TrendingUp, Users, Music, Calendar, Eye, ThumbsUp, Filter } from 'lucide-react';
+import { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import { Progress } from "@repo/design-system/components/ui/progress";
+import {
+  Brain,
+  Target,
+  TrendingUp,
+  Users,
+  Music,
+  Calendar,
+  Eye,
+  ThumbsUp,
+  Filter,
+} from "lucide-react";
 
 interface RecommendationMetrics {
   totalRecommendations: number;
@@ -28,7 +49,7 @@ interface RecommendationMetrics {
     ctr: number;
   }>;
   topRecommendations: Array<{
-    type: 'artist' | 'show' | 'venue';
+    type: "artist" | "show" | "venue";
     name: string;
     description: string;
     clicks: number;
@@ -62,7 +83,7 @@ export function RecommendationAnalytics() {
   const fetchRecommendationMetrics = async () => {
     try {
       setLoading(true);
-      
+
       // Mock data - in production this would fetch from /api/analytics?metric=recommendations
       const mockData: RecommendationMetrics = {
         totalRecommendations: 45678,
@@ -72,107 +93,111 @@ export function RecommendationAnalytics() {
         accuracyScore: 82.5,
         algorithmPerformance: [
           {
-            algorithm: 'Collaborative Filtering',
+            algorithm: "Collaborative Filtering",
             accuracy: 85.2,
             engagement: 72.1,
-            usage: 45.3
+            usage: 45.3,
           },
           {
-            algorithm: 'Content-Based',
+            algorithm: "Content-Based",
             accuracy: 78.9,
             engagement: 68.4,
-            usage: 32.7
+            usage: 32.7,
           },
           {
-            algorithm: 'Hybrid ML',
+            algorithm: "Hybrid ML",
             accuracy: 88.1,
             engagement: 79.2,
-            usage: 22.0
-          }
+            usage: 22.0,
+          },
         ],
         categoryBreakdown: [
           {
-            category: 'Artists',
+            category: "Artists",
             recommendations: 18520,
             clicks: 2301,
             conversions: 847,
-            ctr: 12.4
+            ctr: 12.4,
           },
           {
-            category: 'Shows',
+            category: "Shows",
             recommendations: 15890,
             clicks: 1968,
             conversions: 723,
-            ctr: 12.4
+            ctr: 12.4,
           },
           {
-            category: 'Venues',
+            category: "Venues",
             recommendations: 11268,
             clicks: 1389,
             conversions: 512,
-            ctr: 12.3
-          }
+            ctr: 12.3,
+          },
         ],
         topRecommendations: [
           {
-            type: 'artist',
-            name: 'Taylor Swift',
-            description: 'Based on your listening history',
+            type: "artist",
+            name: "Taylor Swift",
+            description: "Based on your listening history",
             clicks: 1250,
             conversions: 487,
-            score: 94.2
+            score: 94.2,
           },
           {
-            type: 'show',
-            name: 'The Weeknd - After Hours Tour',
-            description: 'Similar to shows you\'ve attended',
+            type: "show",
+            name: "The Weeknd - After Hours Tour",
+            description: "Similar to shows you've attended",
             clicks: 1180,
             conversions: 445,
-            score: 91.8
+            score: 91.8,
           },
           {
-            type: 'venue',
-            name: 'Madison Square Garden',
-            description: 'Popular venue in your area',
+            type: "venue",
+            name: "Madison Square Garden",
+            description: "Popular venue in your area",
             clicks: 980,
             conversions: 367,
-            score: 89.5
-          }
+            score: 89.5,
+          },
         ],
         userSegmentPerformance: [
           {
-            segment: 'Power Users',
+            segment: "Power Users",
             users: 2340,
             avgRecommendations: 15.7,
             engagement: 84.2,
-            satisfaction: 4.6
+            satisfaction: 4.6,
           },
           {
-            segment: 'Regular Users',
+            segment: "Regular Users",
             users: 8950,
             avgRecommendations: 8.3,
             engagement: 67.8,
-            satisfaction: 4.1
+            satisfaction: 4.1,
           },
           {
-            segment: 'Casual Users',
+            segment: "Casual Users",
             users: 12680,
             avgRecommendations: 4.2,
             engagement: 45.6,
-            satisfaction: 3.8
-          }
+            satisfaction: 3.8,
+          },
         ],
         realTimeMetrics: {
           activeRecommendations: 3456,
           newRecommendations: 234,
           clicksLast24h: 892,
-          conversionLast24h: 167
-        }
+          conversionLast24h: 167,
+        },
       };
-      
+
       setMetrics(mockData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load recommendation analytics');
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load recommendation analytics",
+      );
     } finally {
       setLoading(false);
     }
@@ -247,7 +272,9 @@ export function RecommendationAnalytics() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.totalRecommendations.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              {metrics.totalRecommendations.toLocaleString()}
+            </div>
             <div className="text-sm text-muted-foreground">
               {metrics.realTimeMetrics.newRecommendations} new today
             </div>
@@ -262,7 +289,9 @@ export function RecommendationAnalytics() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.clickThroughRate}%</div>
+            <div className="text-2xl font-bold">
+              {metrics.clickThroughRate}%
+            </div>
             <div className="text-sm text-muted-foreground">
               {metrics.realTimeMetrics.clicksLast24h} clicks (24h)
             </div>
@@ -329,7 +358,9 @@ export function RecommendationAnalytics() {
               <div className="text-2xl font-bold text-green-600">
                 {metrics.realTimeMetrics.activeRecommendations}
               </div>
-              <div className="text-sm text-muted-foreground">Active Recommendations</div>
+              <div className="text-sm text-muted-foreground">
+                Active Recommendations
+              </div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
@@ -347,7 +378,9 @@ export function RecommendationAnalytics() {
               <div className="text-2xl font-bold text-purple-600">
                 {metrics.realTimeMetrics.conversionLast24h}
               </div>
-              <div className="text-sm text-muted-foreground">Conversions (24h)</div>
+              <div className="text-sm text-muted-foreground">
+                Conversions (24h)
+              </div>
             </div>
           </div>
         </CardContent>
@@ -432,15 +465,23 @@ export function RecommendationAnalytics() {
                     </div>
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div className="text-center">
-                        <div className="text-lg font-bold">{category.recommendations.toLocaleString()}</div>
-                        <div className="text-muted-foreground">Recommendations</div>
+                        <div className="text-lg font-bold">
+                          {category.recommendations.toLocaleString()}
+                        </div>
+                        <div className="text-muted-foreground">
+                          Recommendations
+                        </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold">{category.clicks.toLocaleString()}</div>
+                        <div className="text-lg font-bold">
+                          {category.clicks.toLocaleString()}
+                        </div>
                         <div className="text-muted-foreground">Clicks</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold">{category.conversions.toLocaleString()}</div>
+                        <div className="text-lg font-bold">
+                          {category.conversions.toLocaleString()}
+                        </div>
                         <div className="text-muted-foreground">Conversions</div>
                       </div>
                     </div>
@@ -465,17 +506,28 @@ export function RecommendationAnalytics() {
             <CardContent>
               <div className="space-y-4">
                 {metrics.topRecommendations.map((rec, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-muted/50 rounded-lg"
+                  >
                     <div className="flex items-center gap-4">
                       <Badge variant="secondary">#{index + 1}</Badge>
                       <div className="flex items-center gap-2">
-                        {rec.type === 'artist' && <Music className="h-4 w-4 text-purple-500" />}
-                        {rec.type === 'show' && <Calendar className="h-4 w-4 text-blue-500" />}
-                        {rec.type === 'venue' && <Target className="h-4 w-4 text-green-500" />}
+                        {rec.type === "artist" && (
+                          <Music className="h-4 w-4 text-purple-500" />
+                        )}
+                        {rec.type === "show" && (
+                          <Calendar className="h-4 w-4 text-blue-500" />
+                        )}
+                        {rec.type === "venue" && (
+                          <Target className="h-4 w-4 text-green-500" />
+                        )}
                       </div>
                       <div>
                         <div className="font-medium">{rec.name}</div>
-                        <div className="text-sm text-muted-foreground">{rec.description}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {rec.description}
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">
@@ -508,20 +560,32 @@ export function RecommendationAnalytics() {
                   <div key={index} className="p-4 bg-muted/50 rounded-lg">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-medium">{segment.segment}</h4>
-                      <Badge variant="outline">{segment.users.toLocaleString()} users</Badge>
+                      <Badge variant="outline">
+                        {segment.users.toLocaleString()} users
+                      </Badge>
                     </div>
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div className="text-center">
-                        <div className="text-lg font-bold">{segment.avgRecommendations}</div>
-                        <div className="text-muted-foreground">Avg Recommendations</div>
+                        <div className="text-lg font-bold">
+                          {segment.avgRecommendations}
+                        </div>
+                        <div className="text-muted-foreground">
+                          Avg Recommendations
+                        </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold">{segment.engagement}%</div>
+                        <div className="text-lg font-bold">
+                          {segment.engagement}%
+                        </div>
                         <div className="text-muted-foreground">Engagement</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold">{segment.satisfaction}/5</div>
-                        <div className="text-muted-foreground">Satisfaction</div>
+                        <div className="text-lg font-bold">
+                          {segment.satisfaction}/5
+                        </div>
+                        <div className="text-muted-foreground">
+                          Satisfaction
+                        </div>
                       </div>
                     </div>
                   </div>

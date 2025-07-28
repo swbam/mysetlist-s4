@@ -1,11 +1,11 @@
-import { createServiceClient } from '~/lib/supabase/server';
-import { type NextRequest, NextResponse } from 'next/server';
+import { createServiceClient } from "~/lib/supabase/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const query = searchParams.get('q') || '';
-    const limit = Number.parseInt(searchParams.get('limit') || '20', 10);
+    const query = searchParams.get("q") || "";
+    const limit = Number.parseInt(searchParams.get("limit") || "20", 10);
 
     if (!query || query.length < 2) {
       return NextResponse.json({ artists: [] });
@@ -15,8 +15,9 @@ export async function GET(request: NextRequest) {
 
     // Search artists by name with fuzzy matching
     const { data: searchResults, error } = await supabase
-      .from('artists')
-      .select(`
+      .from("artists")
+      .select(
+        `
         id,
         name,
         slug,
@@ -27,13 +28,14 @@ export async function GET(request: NextRequest) {
         followers,
         verified,
         spotify_id
-      `)
-      .ilike('name', `%${query}%`)
-      .order('popularity', { ascending: false })
+      `,
+      )
+      .ilike("name", `%${query}%`)
+      .order("popularity", { ascending: false })
       .limit(limit);
 
     if (error) {
-      console.error('Artist search error:', error);
+      console.error("Artist search error:", error);
       throw error;
     }
 
@@ -45,12 +47,12 @@ export async function GET(request: NextRequest) {
   } catch (_error) {
     return NextResponse.json(
       {
-        error: 'Artist search failed',
+        error: "Artist search failed",
         artists: [],
-        query: '',
+        query: "",
         total: 0,
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

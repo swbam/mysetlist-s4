@@ -1,6 +1,7 @@
 # MySetlist - Core Features & Components Architecture
 
 ## Table of Contents
+
 1. [Component Architecture Overview](#component-architecture-overview)
 2. [Next-Forge UI Package Extensions](#next-forge-ui-package-extensions)
 3. [Artist Discovery System](#artist-discovery-system)
@@ -15,13 +16,14 @@
 MySetlist builds upon Next-Forge's UI package structure, extending it with music-specific components while maintaining consistency with the design system. The architecture follows atomic design principles with shared components in the UI package and feature-specific components in the web app.
 
 ### Component Hierarchy
+
 ```
 @repo/ui (Shared Components)
 ├── Atoms
 │   ├── Button, Input, Badge, Avatar
 │   ├── LoadingSpinner, ProgressBar
 │   └── VoteButton, PlayButton
-├── Molecules  
+├── Molecules
 │   ├── SearchBox, FilterTabs
 │   ├── ArtistCard, VenueCard
 │   └── SetlistSong, VoteCounter
@@ -42,31 +44,32 @@ apps/web/components (Feature Components)
 ```
 
 ### Design System Extension
+
 ```typescript
 // packages/ui/src/lib/design-tokens.ts
 export const musicTokens = {
   colors: {
-    spotify: '#1DB954',
-    spotifyDark: '#1ed760',
-    vinyl: '#2a2a2a',
-    stage: '#ff6b35',
-    audience: '#4a90e2',
+    spotify: "#1DB954",
+    spotifyDark: "#1ed760",
+    vinyl: "#2a2a2a",
+    stage: "#ff6b35",
+    audience: "#4a90e2",
     vote: {
-      up: '#22c55e',
-      down: '#ef4444',
-      neutral: '#64748b',
+      up: "#22c55e",
+      down: "#ef4444",
+      neutral: "#64748b",
     },
   },
   spacing: {
-    setlistGap: '0.75rem',
-    cardPadding: '1.5rem',
-    searchRadius: '0.75rem',
+    setlistGap: "0.75rem",
+    cardPadding: "1.5rem",
+    searchRadius: "0.75rem",
   },
   typography: {
-    artistName: 'font-bold text-2xl tracking-tight',
-    showTitle: 'font-semibold text-lg',
-    songTitle: 'font-medium text-base',
-    venueName: 'font-medium text-sm text-muted-foreground',
+    artistName: "font-bold text-2xl tracking-tight",
+    showTitle: "font-semibold text-lg",
+    songTitle: "font-medium text-base",
+    venueName: "font-medium text-sm text-muted-foreground",
   },
 } as const;
 ```
@@ -74,6 +77,7 @@ export const musicTokens = {
 ## Next-Forge UI Package Extensions
 
 ### Music-Specific Components
+
 ```typescript
 // packages/ui/src/components/music/artist-card.tsx
 import { Card, CardContent, CardHeader } from '../card';
@@ -150,6 +154,7 @@ export function ArtistCard({ artist, onFollow, variant = 'default' }: ArtistCard
 ```
 
 ### Voting System Components
+
 ```typescript
 // packages/ui/src/components/music/vote-button.tsx
 'use client';
@@ -181,7 +186,7 @@ export function VoteButton({
 
   const handleVote = async (voteType: 'up' | 'down') => {
     if (isVoting || disabled) return;
-    
+
     setIsVoting(true);
     try {
       // Toggle vote if same type, otherwise switch
@@ -208,7 +213,7 @@ export function VoteButton({
       >
         <ChevronUp className="h-4 w-4" />
       </Button>
-      
+
       <span className={cn(
         'text-sm font-medium min-w-[2rem] text-center',
         netVotes > 0 && 'text-green-600',
@@ -217,7 +222,7 @@ export function VoteButton({
       )}>
         {netVotes > 0 ? `+${netVotes}` : netVotes}
       </span>
-      
+
       <Button
         variant="ghost"
         size="sm"
@@ -236,6 +241,7 @@ export function VoteButton({
 ```
 
 ### Search Components
+
 ```typescript
 // packages/ui/src/components/search/search-box.tsx
 'use client';
@@ -263,17 +269,17 @@ interface SearchBoxProps {
   className?: string;
 }
 
-export function SearchBox({ 
-  placeholder = 'Search artists, shows, venues...', 
-  onSearch, 
+export function SearchBox({
+  placeholder = 'Search artists, shows, venues...',
+  onSearch,
   onSelect,
-  className 
+  className
 }: SearchBoxProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  
+
   const debouncedQuery = useDebounce(query, 300);
 
   useEffect(() => {
@@ -385,6 +391,7 @@ export function SearchBox({
 ## Artist Discovery System
 
 ### Artist Profile Page
+
 ```typescript
 // apps/web/app/artists/[slug]/page.tsx
 import { Metadata } from 'next';
@@ -401,7 +408,7 @@ interface ArtistPageProps {
 
 export async function generateMetadata({ params }: ArtistPageProps): Promise<Metadata> {
   const artist = await getArtistBySlug(params.slug);
-  
+
   if (!artist) {
     return { title: 'Artist Not Found' };
   }
@@ -419,7 +426,7 @@ export async function generateMetadata({ params }: ArtistPageProps): Promise<Met
 
 export default async function ArtistPage({ params }: ArtistPageProps) {
   const artist = await getArtistBySlug(params.slug);
-  
+
   if (!artist) {
     notFound();
   }
@@ -427,13 +434,13 @@ export default async function ArtistPage({ params }: ArtistPageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <ArtistHeader artist={artist} />
-      
+
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
           <UpcomingShows artistId={artist.id} />
           <RecentShows artistId={artist.id} />
         </div>
-        
+
         <div className="space-y-8">
           <TopTracks artistId={artist.id} />
         </div>
@@ -444,17 +451,18 @@ export default async function ArtistPage({ params }: ArtistPageProps) {
 ```
 
 ### Artist Discovery Hook
+
 ```typescript
 // apps/web/hooks/use-artist-discovery.ts
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@repo/auth';
-import { SpotifyAuthProvider } from '@repo/auth/providers/spotify';
+import { useState, useEffect } from "react";
+import { useAuth } from "@repo/auth";
+import { SpotifyAuthProvider } from "@repo/auth/providers/spotify";
 
 interface DiscoveryOptions {
   genres?: string[];
-  popularity?: 'high' | 'medium' | 'low';
+  popularity?: "high" | "medium" | "low";
   location?: { lat: number; lng: number; radius: number };
   includeSpotifyRecommendations?: boolean;
 }
@@ -468,22 +476,25 @@ export function useArtistDiscovery(options: DiscoveryOptions = {}) {
     setLoading(true);
     try {
       // Fetch from our API which combines multiple sources
-      const response = await fetch('/api/artists/discover', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/artists/discover", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(options),
       });
-      
+
       const data = await response.json();
       setRecommendations(data.artists);
-      
+
       // If user has Spotify connected, enhance with Spotify recommendations
-      if (session?.provider === 'spotify' && options.includeSpotifyRecommendations) {
+      if (
+        session?.provider === "spotify" &&
+        options.includeSpotifyRecommendations
+      ) {
         const spotifyRecommendations = await getSpotifyRecommendations();
-        setRecommendations(prev => [...prev, ...spotifyRecommendations]);
+        setRecommendations((prev) => [...prev, ...spotifyRecommendations]);
       }
     } catch (error) {
-      console.error('Failed to get recommendations:', error);
+      console.error("Failed to get recommendations:", error);
     } finally {
       setLoading(false);
     }
@@ -491,18 +502,18 @@ export function useArtistDiscovery(options: DiscoveryOptions = {}) {
 
   const getSpotifyRecommendations = async () => {
     if (!session?.access_token) return [];
-    
+
     const spotify = new SpotifyAuthProvider(session.access_token);
     const topArtists = await spotify.getTopArtists();
-    
+
     // Use top artists as seeds for recommendations
-    const seedArtists = topArtists.items.slice(0, 5).map(artist => artist.id);
-    
-    return fetch('/api/spotify/recommendations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const seedArtists = topArtists.items.slice(0, 5).map((artist) => artist.id);
+
+    return fetch("/api/spotify/recommendations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ seedArtists }),
-    }).then(res => res.json());
+    }).then((res) => res.json());
   };
 
   useEffect(() => {
@@ -520,6 +531,7 @@ export function useArtistDiscovery(options: DiscoveryOptions = {}) {
 ## Show & Venue Management
 
 ### Show Detail Page
+
 ```typescript
 // apps/web/app/shows/[id]/page.tsx
 import { Metadata } from 'next';
@@ -536,7 +548,7 @@ interface ShowPageProps {
 
 export default async function ShowPage({ params }: ShowPageProps) {
   const show = await getShowById(params.id);
-  
+
   if (!show) {
     notFound();
   }
@@ -544,12 +556,12 @@ export default async function ShowPage({ params }: ShowPageProps) {
   return (
     <div className="container mx-auto px-4 py-8">
       <ShowHeader show={show} />
-      
+
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-3">
           <SetlistContainer showId={show.id} />
         </div>
-        
+
         <div className="space-y-6">
           <ShowInfo show={show} />
           <AttendeeList showId={show.id} />
@@ -561,6 +573,7 @@ export default async function ShowPage({ params }: ShowPageProps) {
 ```
 
 ### Venue Search
+
 **Note**: Map functionality to be implemented in future versions.
 
 ```typescript
@@ -606,6 +619,7 @@ export function VenueSearch() {
 ## Setlist Voting System
 
 ### Real-time Setlist Component
+
 ```typescript
 // apps/web/components/setlist/setlist-viewer.tsx
 'use client';
@@ -634,7 +648,7 @@ export function SetlistViewer({ showId, initialSetlist }: SetlistViewerProps) {
       if (payload.eventType === 'UPDATE') {
         setSetlist(prev => ({
           ...prev,
-          songs: prev.songs.map(song => 
+          songs: prev.songs.map(song =>
             song.id === payload.new.id ? { ...song, ...payload.new } : song
           ),
         }));
@@ -697,7 +711,7 @@ export function SetlistViewer({ showId, initialSetlist }: SetlistViewerProps) {
                 <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-medium">
                   {index + 1}
                 </div>
-                
+
                 <div className="flex-1">
                   <div className="font-medium">{song.song.title}</div>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
@@ -744,18 +758,19 @@ export function SetlistViewer({ showId, initialSetlist }: SetlistViewerProps) {
 ## Search & Discovery Features
 
 ### Global Search API
+
 ```typescript
 // apps/web/app/api/search/route.ts
-import { NextRequest } from 'next/server';
-import { db } from '@repo/database';
-import { artists, shows, venues, songs } from '@repo/database/schema';
-import { ilike, or, sql } from 'drizzle-orm';
+import { NextRequest } from "next/server";
+import { db } from "@repo/database";
+import { artists, shows, venues, songs } from "@repo/database/schema";
+import { ilike, or, sql } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const query = searchParams.get('q');
-  const type = searchParams.get('type'); // 'artist', 'show', 'venue', 'all'
-  const limit = parseInt(searchParams.get('limit') || '20');
+  const query = searchParams.get("q");
+  const type = searchParams.get("type"); // 'artist', 'show', 'venue', 'all'
+  const limit = parseInt(searchParams.get("limit") || "20");
 
   if (!query || query.length < 2) {
     return Response.json({ results: [] });
@@ -765,7 +780,7 @@ export async function GET(request: NextRequest) {
     const results = [];
 
     // Search artists
-    if (!type || type === 'artist' || type === 'all') {
+    if (!type || type === "artist" || type === "all") {
       const artistResults = await db
         .select({
           id: artists.id,
@@ -779,16 +794,16 @@ export async function GET(request: NextRequest) {
         .where(
           or(
             ilike(artists.name, `%${query}%`),
-            sql`${artists.genres}::text ILIKE ${'%' + query + '%'}`
-          )
+            sql`${artists.genres}::text ILIKE ${"%" + query + "%"}`,
+          ),
         )
-        .limit(type === 'artist' ? limit : Math.floor(limit / 3));
+        .limit(type === "artist" ? limit : Math.floor(limit / 3));
 
       results.push(...artistResults);
     }
 
     // Search shows
-    if (!type || type === 'show' || type === 'all') {
+    if (!type || type === "show" || type === "all") {
       const showResults = await db
         .select({
           id: shows.id,
@@ -802,13 +817,13 @@ export async function GET(request: NextRequest) {
         .leftJoin(artists, eq(shows.headlinerArtistId, artists.id))
         .leftJoin(venues, eq(shows.venueId, venues.id))
         .where(ilike(shows.name, `%${query}%`))
-        .limit(type === 'show' ? limit : Math.floor(limit / 3));
+        .limit(type === "show" ? limit : Math.floor(limit / 3));
 
       results.push(...showResults);
     }
 
     // Search venues
-    if (!type || type === 'venue' || type === 'all') {
+    if (!type || type === "venue" || type === "all") {
       const venueResults = await db
         .select({
           id: venues.id,
@@ -822,18 +837,18 @@ export async function GET(request: NextRequest) {
         .where(
           or(
             ilike(venues.name, `%${query}%`),
-            ilike(venues.city, `%${query}%`)
-          )
+            ilike(venues.city, `%${query}%`),
+          ),
         )
-        .limit(type === 'venue' ? limit : Math.floor(limit / 3));
+        .limit(type === "venue" ? limit : Math.floor(limit / 3));
 
       results.push(...venueResults);
     }
 
     return Response.json({ results });
   } catch (error) {
-    console.error('Search failed:', error);
-    return Response.json({ error: 'Search failed' }, { status: 500 });
+    console.error("Search failed:", error);
+    return Response.json({ error: "Search failed" }, { status: 500 });
   }
 }
 ```
@@ -841,17 +856,18 @@ export async function GET(request: NextRequest) {
 ## Real-time Updates
 
 ### WebSocket Integration
+
 ```typescript
 // apps/web/lib/websocket.ts
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
-import { supabase } from '@repo/database/supabase';
+import { useEffect, useRef } from "react";
+import { supabase } from "@repo/database/supabase";
 
 export function useRealtimeSubscription(
   table: string,
   filter?: string,
-  callback?: (payload: any) => void
+  callback?: (payload: any) => void,
 ) {
   const subscriptionRef = useRef(null);
 
@@ -859,16 +875,16 @@ export function useRealtimeSubscription(
     const channel = supabase
       .channel(`realtime:${table}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
+          event: "*",
+          schema: "public",
           table,
           ...(filter && { filter }),
         },
         (payload) => {
           callback?.(payload);
-        }
+        },
       )
       .subscribe();
 
@@ -888,36 +904,39 @@ export function useRealtimeSubscription(
 ## Mobile Responsive Features
 
 ### Responsive Design System
+
 The application uses a mobile-first responsive design approach with Tailwind CSS breakpoints:
 
 ```typescript
 // Responsive design patterns used throughout components
 const responsiveClasses = {
-  container: 'container mx-auto px-4 md:px-6 lg:px-8',
-  grid: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
-  navigation: 'hidden md:flex', // Desktop-only navigation
-  mobileMenu: 'flex md:hidden', // Mobile-only menu
-  searchBar: 'w-full md:max-w-md lg:max-w-lg',
+  container: "container mx-auto px-4 md:px-6 lg:px-8",
+  grid: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3",
+  navigation: "hidden md:flex", // Desktop-only navigation
+  mobileMenu: "flex md:hidden", // Mobile-only menu
+  searchBar: "w-full md:max-w-md lg:max-w-lg",
 };
 ```
 
 ### Touch-Optimized Interactions
+
 Components are optimized for touch interfaces with appropriate sizing and spacing:
 
 ```typescript
 // Touch-friendly button sizing and spacing
 const touchOptimized = {
-  buttons: 'min-h-[44px] min-w-[44px] touch-manipulation',
-  links: 'block py-3 px-4 touch-manipulation',
-  cards: 'rounded-lg shadow-sm hover:shadow-md transition-shadow',
+  buttons: "min-h-[44px] min-w-[44px] touch-manipulation",
+  links: "block py-3 px-4 touch-manipulation",
+  cards: "rounded-lg shadow-sm hover:shadow-md transition-shadow",
 };
 ```
 
 ### Mobile Navigation Patterns
+
 The header component includes a responsive navigation system that adapts to different screen sizes:
 
 - **Desktop**: Full horizontal navigation with all menu items visible
-- **Tablet**: Condensed navigation with dropdowns for secondary items  
+- **Tablet**: Condensed navigation with dropdowns for secondary items
 - **Mobile**: Hamburger menu with slide-out navigation drawer
 
 This architecture provides a solid foundation for MySetlist's core features while maintaining the Next-Forge structure and patterns. The components are designed to be reusable, performant, and provide excellent user experience across desktop and mobile devices with a focus on responsive web design rather than PWA functionality.

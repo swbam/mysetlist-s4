@@ -17,12 +17,14 @@ The trending system uses the following database fields:
 ### 2. Scoring Algorithm
 
 #### Artist Scoring Weights:
+
 - Followers: 30%
 - Popularity: 20%
 - Recent Shows: 30%
 - Follower Growth: 20%
 
 #### Show Scoring Weights:
+
 - View Count: 20%
 - Attendee Count: 30%
 - Vote Count: 25%
@@ -32,6 +34,7 @@ The trending system uses the following database fields:
 ### 3. API Endpoints
 
 #### Public Endpoints:
+
 - `GET /api/trending` - Get combined trending content
 - `GET /api/trending/artists` - Get trending artists
 - `GET /api/trending/shows` - Get trending shows
@@ -40,11 +43,13 @@ The trending system uses the following database fields:
 - `GET /api/trending/test` - Test endpoint to verify data availability
 
 #### Admin Endpoints:
+
 - `POST /api/admin/calculate-trending` - Calculate trending scores
 - `POST /api/admin/seed-trending` - Seed realistic trending data
 - `POST /api/admin/trending-init` - Initialize entire trending system
 
 #### Cron Jobs:
+
 - `/api/cron/trending-update` - Automated hourly update of trending scores
 
 ### 4. Analytics Tracking
@@ -64,6 +69,7 @@ curl -X POST http://localhost:3001/api/admin/trending-init \
 ```
 
 This will:
+
 1. Seed realistic metrics to existing data
 2. Calculate trending scores based on metrics
 3. Make the trending page show real data
@@ -71,12 +77,12 @@ This will:
 ### Track Views in Components
 
 ```tsx
-import { useTrackView } from '@/hooks/use-track-view';
+import { useTrackView } from "@/hooks/use-track-view";
 
 export function ArtistPage({ artistId }: { artistId: string }) {
   // Automatically tracks view after 1 second
-  useTrackView('artist', artistId);
-  
+  useTrackView("artist", artistId);
+
   return <div>Artist content...</div>;
 }
 ```
@@ -84,14 +90,14 @@ export function ArtistPage({ artistId }: { artistId: string }) {
 ### Fetch Trending Data
 
 ```tsx
-import { getTrendingArtists, getTrendingShows } from '@/lib/trending';
+import { getTrendingArtists, getTrendingShows } from "@/lib/trending";
 
 // In a server component
 const trendingArtists = await getTrendingArtists({ limit: 10 });
 const trendingShows = await getTrendingShows({ limit: 10 });
 
 // Via API
-const response = await fetch('/api/trending/artists?limit=10');
+const response = await fetch("/api/trending/artists?limit=10");
 const data = await response.json();
 ```
 
@@ -123,6 +129,7 @@ const DEFAULT_CONFIG: TrendingConfig = {
 ### Regular Updates
 
 The cron job at `/api/cron/trending-update` should run hourly to:
+
 - Recalculate trending scores
 - Apply time decay
 - Update rankings
@@ -145,6 +152,7 @@ curl http://localhost:3001/api/trending/test
 ```
 
 This returns statistics about:
+
 - Number of items with trending scores
 - Average and max scores
 - API endpoint health
@@ -154,11 +162,13 @@ This returns statistics about:
 ### No Trending Data Showing
 
 1. Check if data has trending scores:
+
    ```bash
    curl http://localhost:3001/api/trending/test
    ```
 
 2. Initialize the system:
+
    ```bash
    curl -X POST http://localhost:3001/api/admin/trending-init \
      -H "Authorization: Bearer YOUR_ADMIN_API_KEY"

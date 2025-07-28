@@ -1,4 +1,4 @@
-import { db } from '@repo/database';
+import { db } from "@repo/database";
 import {
   artists,
   emailQueue,
@@ -8,15 +8,15 @@ import {
   users,
   venues,
   votes,
-} from '@repo/database';
-import { and, eq, isNotNull } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
-import { triggerNewShowNotifications } from '~/lib/email-triggers';
+} from "@repo/database";
+import { and, eq, isNotNull } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
+import { triggerNewShowNotifications } from "~/lib/email-triggers";
 
 // Protect webhook endpoint
 function isValidWebhookRequest(request: NextRequest): boolean {
-  const webhookSecret = process.env['TICKETMASTER_WEBHOOK_SECRET'];
-  const signature = request.headers.get('x-ticketmaster-signature');
+  const webhookSecret = process.env["TICKETMASTER_WEBHOOK_SECRET"];
+  const signature = request.headers.get("x-ticketmaster-signature");
 
   if (!webhookSecret || !signature) {
     return false;
@@ -30,7 +30,7 @@ function isValidWebhookRequest(request: NextRequest): boolean {
 export async function POST(request: NextRequest) {
   // Verify webhook authenticity
   if (!isValidWebhookRequest(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -38,23 +38,23 @@ export async function POST(request: NextRequest) {
     const { event, data } = payload;
 
     switch (event) {
-      case 'show.created':
+      case "show.created":
         await handleShowCreated(data);
         break;
 
-      case 'show.updated':
+      case "show.updated":
         await handleShowUpdated(data);
         break;
 
-      case 'show.cancelled':
+      case "show.cancelled":
         await handleShowCancelled(data);
         break;
 
-      case 'artist.updated':
+      case "artist.updated":
         await handleArtistUpdated(data);
         break;
 
-      case 'venue.updated':
+      case "venue.updated":
         await handleVenueUpdated(data);
         break;
 
@@ -64,8 +64,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Webhook processing failed' },
-      { status: 500 }
+      { error: "Webhook processing failed" },
+      { status: 500 },
     );
   }
 }
@@ -103,7 +103,7 @@ async function handleShowCreated(data: any) {
           country: venueData.country,
           latitude: venueData.latitude,
           longitude: venueData.longitude,
-          timezone: venueData.timezone || 'UTC',
+          timezone: venueData.timezone || "UTC",
         })
         .returning();
       venue = [newVenue];
@@ -122,7 +122,7 @@ async function handleShowCreated(data: any) {
       headlinerArtistId: artistId,
       venueId: venue?.[0]?.id || null,
       ticketUrl,
-      status: 'upcoming',
+      status: "upcoming",
     })
     .returning();
 
@@ -150,7 +150,7 @@ async function handleShowCancelled(data: any) {
   await db
     .update(shows)
     .set({
-      status: 'cancelled',
+      status: "cancelled",
       updatedAt: new Date(),
     })
     .where(eq(shows.ticketmasterId, ticketmasterId));
@@ -168,7 +168,6 @@ async function handleShowCancelled(data: any) {
 
   const show = affectedShow[0];
   if (show) {
-
     // Get users who have interacted with this show
     const affectedUsers = await db
       .selectDistinct({
@@ -186,13 +185,13 @@ async function handleShowCancelled(data: any) {
     for (const user of affectedUsers) {
       await db.insert(emailQueue).values({
         userId: user.userId,
-        emailType: 'show_reminder', // Using closest available type
+        emailType: "show_reminder", // Using closest available type
         emailData: JSON.stringify({
           to: user.email!,
           subject: `Show Cancelled: ${show.name}`,
-          template: 'show-cancelled',
+          template: "show-cancelled",
           data: {
-            userName: user.displayName || 'there',
+            userName: user.displayName || "there",
             showName: show.name,
             showDate: show.date,
           },
@@ -233,6 +232,6 @@ async function handleVenueUpdated(data: any) {
 function createSlug(name: string): string {
   return name
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '');
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 }

@@ -5,7 +5,7 @@ export interface DatabaseUser {
   id: string;
   email: string;
   name?: string | null;
-  role?: 'admin' | 'moderator' | 'user' | null;
+  role?: "admin" | "moderator" | "user" | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -51,7 +51,7 @@ export interface DatabaseShow {
   title: string;
   date: string;
   time?: string | null;
-  status: 'upcoming' | 'in_progress' | 'completed' | 'cancelled';
+  status: "upcoming" | "in_progress" | "completed" | "cancelled";
   artist_id?: string | null;
   venue_id?: string | null;
   ticketmaster_id?: string | null;
@@ -114,15 +114,15 @@ export interface ActivityItem {
 export interface ModerationItem {
   id: string;
   type:
-    | 'setlist'
-    | 'review'
-    | 'photo'
-    | 'tip'
-    | 'user'
-    | 'venue'
-    | 'show'
-    | 'artist';
-  status: 'pending' | 'approved' | 'rejected';
+    | "setlist"
+    | "review"
+    | "photo"
+    | "tip"
+    | "user"
+    | "venue"
+    | "show"
+    | "artist";
+  status: "pending" | "approved" | "rejected";
   created_at: string;
   updated_at?: string;
   user?: DatabaseUser;
@@ -136,7 +136,7 @@ export interface Report {
   target_type: string;
   target_id: string;
   reason: string;
-  status: 'pending' | 'resolved' | 'dismissed';
+  status: "pending" | "resolved" | "dismissed";
   created_at: string;
   updated_at?: string;
   reporter?: DatabaseUser;
@@ -160,7 +160,7 @@ export interface SearchResult<T = unknown> {
 export interface SyncOperation {
   id: string;
   type: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
+  status: "pending" | "running" | "completed" | "failed";
   started_at: string;
   completed_at?: string | null;
   error?: string | null;
@@ -175,21 +175,21 @@ export function getEnvVar(key: string): string | undefined {
 // Type guards
 export function isValidUser(user: unknown): user is DatabaseUser {
   return (
-    typeof user === 'object' &&
+    typeof user === "object" &&
     user !== null &&
-    'id' in user &&
-    typeof (user as DatabaseUser).id === 'string'
+    "id" in user &&
+    typeof (user as DatabaseUser).id === "string"
   );
 }
 
 export function isValidArtist(artist: unknown): artist is DatabaseArtist {
   return (
-    typeof artist === 'object' &&
+    typeof artist === "object" &&
     artist !== null &&
-    'id' in artist &&
-    'name' in artist &&
-    typeof (artist as DatabaseArtist).id === 'string' &&
-    typeof (artist as DatabaseArtist).name === 'string'
+    "id" in artist &&
+    "name" in artist &&
+    typeof (artist as DatabaseArtist).id === "string" &&
+    typeof (artist as DatabaseArtist).name === "string"
   );
 }
 
@@ -198,10 +198,10 @@ export class ApiError extends Error {
   constructor(
     message: string,
     public statusCode = 500,
-    public code?: string
+    public code?: string,
   ) {
     super(message);
-    this.name = 'ApiError';
+    this.name = "ApiError";
   }
 }
 

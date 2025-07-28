@@ -1,54 +1,46 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Checkbox } from '@repo/design-system/components/ui/checkbox';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
+} from "@repo/design-system/components/ui/card";
+import { Checkbox } from "@repo/design-system/components/ui/checkbox";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@repo/design-system/components/ui/popover';
+} from "@repo/design-system/components/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/design-system/components/ui/select';
-import { Separator } from '@repo/design-system/components/ui/separator';
-import { cn } from '@repo/design-system/lib/utils';
-import {
-  Calendar,
-  Disc,
-  Filter,
-  MapPin,
-  Music,
-  Search,
-  X,
-} from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useDebounce } from '~/hooks/use-debounce';
+} from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import { cn } from "@repo/design-system/lib/utils";
+import { Calendar, Disc, Filter, MapPin, Music, Search, X } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { useCallback, useEffect, useState } from "react";
+import { useDebounce } from "~/hooks/use-debounce";
 
 interface SearchResult {
   id: string;
-  type: 'artist' | 'show' | 'venue' | 'song';
+  type: "artist" | "show" | "venue" | "song";
   title: string;
   subtitle?: string;
   imageUrl?: string;
   slug?: string;
   date?: string;
   verified?: boolean;
-  source: 'database' | 'ticketmaster';
+  source: "database" | "ticketmaster";
   location?: string;
   artistName?: string;
   venueName?: string;
@@ -72,74 +64,84 @@ interface EnhancedSearchProps {
 export function EnhancedSearch({
   className,
   showFilters = true,
-  placeholder = 'Search artists, shows, venues, songs...',
+  placeholder = "Search artists, shows, venues, songs...",
 }: EnhancedSearchProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  
-  const [query, setQuery] = useState(searchParams.get('q') || '');
+
+  const [query, setQuery] = useState(searchParams.get("q") || "");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [showFiltersPanel, setShowFiltersPanel] = useState(false);
-  
+
   const [filters, setFilters] = useState<SearchFilters>({
-    types: searchParams.get('types')?.split(',') || ['artist', 'show', 'venue', 'song'],
-    location: searchParams.get('location') || '',
-    genre: searchParams.get('genre') || '',
-    dateFrom: searchParams.get('dateFrom') || '',
-    dateTo: searchParams.get('dateTo') || '',
+    types: searchParams.get("types")?.split(",") || [
+      "artist",
+      "show",
+      "venue",
+      "song",
+    ],
+    location: searchParams.get("location") || "",
+    genre: searchParams.get("genre") || "",
+    dateFrom: searchParams.get("dateFrom") || "",
+    dateTo: searchParams.get("dateTo") || "",
   });
 
   const debouncedQuery = useDebounce(query, 500);
 
-  const performSearch = useCallback(async (searchQuery: string, searchFilters = filters) => {
-    if (searchQuery.length < 2) {
-      setResults([]);
-      setHasSearched(false);
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const params = new URLSearchParams({
-        q: searchQuery,
-        limit: '20',
-        types: searchFilters.types.join(','),
-      });
-
-      if (searchFilters.location) params.set('location', searchFilters.location);
-      if (searchFilters.genre) params.set('genre', searchFilters.genre);
-      if (searchFilters.dateFrom) params.set('dateFrom', searchFilters.dateFrom);
-      if (searchFilters.dateTo) params.set('dateTo', searchFilters.dateTo);
-
-      const response = await fetch(`/api/search?${params}`);
-      const data = await response.json();
-
-      if (response.ok) {
-        setResults(data.results || []);
-        setHasSearched(true);
-        
-        // Update URL with search params
-        const newParams = new URLSearchParams({
-          q: searchQuery,
-          ...Object.fromEntries(
-            Object.entries(searchFilters).filter(([_, value]) => 
-              Array.isArray(value) ? value.length > 0 : value
-            )
-          ),
-          types: searchFilters.types.join(','),
-        });
-        
-        router.replace(`/search?${newParams.toString()}`, { scroll: false });
+  const performSearch = useCallback(
+    async (searchQuery: string, searchFilters = filters) => {
+      if (searchQuery.length < 2) {
+        setResults([]);
+        setHasSearched(false);
+        return;
       }
-    } catch (error) {
-      console.error('Search failed:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [filters, router]);
+
+      setIsLoading(true);
+
+      try {
+        const params = new URLSearchParams({
+          q: searchQuery,
+          limit: "20",
+          types: searchFilters.types.join(","),
+        });
+
+        if (searchFilters.location)
+          params.set("location", searchFilters.location);
+        if (searchFilters.genre) params.set("genre", searchFilters.genre);
+        if (searchFilters.dateFrom)
+          params.set("dateFrom", searchFilters.dateFrom);
+        if (searchFilters.dateTo) params.set("dateTo", searchFilters.dateTo);
+
+        const response = await fetch(`/api/search?${params}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          setResults(data.results || []);
+          setHasSearched(true);
+
+          // Update URL with search params
+          const newParams = new URLSearchParams({
+            q: searchQuery,
+            ...Object.fromEntries(
+              Object.entries(searchFilters).filter(([_, value]) =>
+                Array.isArray(value) ? value.length > 0 : value,
+              ),
+            ),
+            types: searchFilters.types.join(","),
+          });
+
+          router.replace(`/search?${newParams.toString()}`, { scroll: false });
+        }
+      } catch (error) {
+        console.error("Search failed:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [filters, router],
+  );
 
   useEffect(() => {
     if (debouncedQuery) {
@@ -153,7 +155,7 @@ export function EnhancedSearch({
   const handleFilterChange = (key: keyof SearchFilters, value: any) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
-    
+
     if (query.length >= 2) {
       performSearch(query, newFilters);
     }
@@ -161,14 +163,14 @@ export function EnhancedSearch({
 
   const clearFilters = () => {
     const defaultFilters = {
-      types: ['artist', 'show', 'venue', 'song'],
-      location: '',
-      genre: '',
-      dateFrom: '',
-      dateTo: '',
+      types: ["artist", "show", "venue", "song"],
+      location: "",
+      genre: "",
+      dateFrom: "",
+      dateTo: "",
     };
     setFilters(defaultFilters);
-    
+
     if (query.length >= 2) {
       performSearch(query, defaultFilters);
     }
@@ -176,18 +178,20 @@ export function EnhancedSearch({
 
   const handleResultClick = (result: SearchResult) => {
     switch (result.type) {
-      case 'artist':
+      case "artist":
         router.push(`/artists/${result.slug || result.id}`);
         break;
-      case 'show':
+      case "show":
         router.push(`/shows/${result.slug || result.id}`);
         break;
-      case 'venue':
+      case "venue":
         router.push(`/venues/${result.slug || result.id}`);
         break;
-      case 'song':
+      case "song":
         if (result.artistName) {
-          router.push(`/artists?search=${encodeURIComponent(result.artistName)}`);
+          router.push(
+            `/artists?search=${encodeURIComponent(result.artistName)}`,
+          );
         }
         break;
     }
@@ -195,47 +199,70 @@ export function EnhancedSearch({
 
   const getResultIcon = (type: string) => {
     switch (type) {
-      case 'artist': return Music;
-      case 'show': return Calendar;
-      case 'venue': return MapPin;
-      case 'song': return Disc;
-      default: return Search;
+      case "artist":
+        return Music;
+      case "show":
+        return Calendar;
+      case "venue":
+        return MapPin;
+      case "song":
+        return Disc;
+      default:
+        return Search;
     }
   };
 
   const getTypeBadgeColor = (type: string) => {
     switch (type) {
-      case 'artist': return 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300';
-      case 'show': return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300';
-      case 'venue': return 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300';
-      case 'song': return 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300';
-      default: return 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300';
+      case "artist":
+        return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300";
+      case "show":
+        return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300";
+      case "venue":
+        return "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300";
+      case "song":
+        return "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300";
+      default:
+        return "bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300";
     }
   };
 
   // Group results by type
-  const groupedResults = results.reduce((acc, result) => {
-    if (!acc[result.type]) {
-      acc[result.type] = [];
-    }
-    acc[result.type]!.push(result);
-    return acc;
-  }, {} as Record<string, SearchResult[]>);
+  const groupedResults = results.reduce(
+    (acc, result) => {
+      if (!acc[result.type]) {
+        acc[result.type] = [];
+      }
+      acc[result.type]!.push(result);
+      return acc;
+    },
+    {} as Record<string, SearchResult[]>,
+  );
 
-  const activeFiltersCount = [
-    filters.location,
-    filters.genre,
-    filters.dateFrom,
-    filters.dateTo,
-  ].filter(Boolean).length + (filters.types.length < 4 ? 1 : 0);
+  const activeFiltersCount =
+    [filters.location, filters.genre, filters.dateFrom, filters.dateTo].filter(
+      Boolean,
+    ).length + (filters.types.length < 4 ? 1 : 0);
 
   const genreOptions = [
-    'Rock', 'Pop', 'Jazz', 'Blues', 'Country', 'Electronic', 'Hip Hop',
-    'R&B', 'Folk', 'Classical', 'Reggae', 'Punk', 'Metal', 'Alternative'
+    "Rock",
+    "Pop",
+    "Jazz",
+    "Blues",
+    "Country",
+    "Electronic",
+    "Hip Hop",
+    "R&B",
+    "Folk",
+    "Classical",
+    "Reggae",
+    "Punk",
+    "Metal",
+    "Alternative",
   ];
 
   return (
-    <div className={cn('w-full space-y-6', className)}>
+    <div className={cn("w-full space-y-6", className)}>
       {/* Search Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="relative flex-1">
@@ -255,7 +282,10 @@ export function EnhancedSearch({
                 <Filter className="h-4 w-4" />
                 Filters
                 {activeFiltersCount > 0 && (
-                  <Badge variant="secondary" className="ml-1 h-5 w-5 rounded-full p-0 text-xs">
+                  <Badge
+                    variant="secondary"
+                    className="ml-1 h-5 w-5 rounded-full p-0 text-xs"
+                  >
                     {activeFiltersCount}
                   </Badge>
                 )}
@@ -282,12 +312,15 @@ export function EnhancedSearch({
                   <Label className="text-sm font-medium">Content Types</Label>
                   <div className="grid grid-cols-2 gap-2">
                     {[
-                      { value: 'artist', label: 'Artists' },
-                      { value: 'show', label: 'Shows' },
-                      { value: 'venue', label: 'Venues' },
-                      { value: 'song', label: 'Songs' },
+                      { value: "artist", label: "Artists" },
+                      { value: "show", label: "Shows" },
+                      { value: "venue", label: "Venues" },
+                      { value: "song", label: "Songs" },
                     ].map((type) => (
-                      <div key={type.value} className="flex items-center space-x-2">
+                      <div
+                        key={type.value}
+                        className="flex items-center space-x-2"
+                      >
                         <Checkbox
                           id={type.value}
                           checked={filters.types.includes(type.value)}
@@ -295,7 +328,7 @@ export function EnhancedSearch({
                             const newTypes = checked
                               ? [...filters.types, type.value]
                               : filters.types.filter((t) => t !== type.value);
-                            handleFilterChange('types', newTypes);
+                            handleFilterChange("types", newTypes);
                           }}
                         />
                         <Label htmlFor={type.value} className="text-sm">
@@ -310,11 +343,15 @@ export function EnhancedSearch({
 
                 {/* Location */}
                 <div className="space-y-2">
-                  <Label htmlFor="location" className="text-sm font-medium">Location</Label>
+                  <Label htmlFor="location" className="text-sm font-medium">
+                    Location
+                  </Label>
                   <Input
                     id="location"
                     value={filters.location}
-                    onChange={(e) => handleFilterChange('location', e.target.value)}
+                    onChange={(e) =>
+                      handleFilterChange("location", e.target.value)
+                    }
                     placeholder="City, State, Country"
                   />
                 </div>
@@ -324,7 +361,9 @@ export function EnhancedSearch({
                   <Label className="text-sm font-medium">Genre</Label>
                   <Select
                     value={filters.genre}
-                    onValueChange={(value) => handleFilterChange('genre', value)}
+                    onValueChange={(value) =>
+                      handleFilterChange("genre", value)
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Any genre" />
@@ -348,7 +387,9 @@ export function EnhancedSearch({
                       <Input
                         type="date"
                         value={filters.dateFrom}
-                        onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+                        onChange={(e) =>
+                          handleFilterChange("dateFrom", e.target.value)
+                        }
                         placeholder="From"
                       />
                     </div>
@@ -356,7 +397,9 @@ export function EnhancedSearch({
                       <Input
                         type="date"
                         value={filters.dateTo}
-                        onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+                        onChange={(e) =>
+                          handleFilterChange("dateTo", e.target.value)
+                        }
                         placeholder="To"
                       />
                     </div>
@@ -373,12 +416,19 @@ export function EnhancedSearch({
         <div className="flex flex-wrap gap-2">
           {filters.types.length < 4 && (
             <Badge variant="secondary" className="gap-1">
-              Types: {filters.types.join(', ')}
+              Types: {filters.types.join(", ")}
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-auto p-0 hover:bg-transparent"
-                onClick={() => handleFilterChange('types', ['artist', 'show', 'venue', 'song'])}
+                onClick={() =>
+                  handleFilterChange("types", [
+                    "artist",
+                    "show",
+                    "venue",
+                    "song",
+                  ])
+                }
               >
                 <X className="h-3 w-3" />
               </Button>
@@ -391,7 +441,7 @@ export function EnhancedSearch({
                 variant="ghost"
                 size="sm"
                 className="h-auto p-0 hover:bg-transparent"
-                onClick={() => handleFilterChange('location', '')}
+                onClick={() => handleFilterChange("location", "")}
               >
                 <X className="h-3 w-3" />
               </Button>
@@ -404,7 +454,7 @@ export function EnhancedSearch({
                 variant="ghost"
                 size="sm"
                 className="h-auto p-0 hover:bg-transparent"
-                onClick={() => handleFilterChange('genre', '')}
+                onClick={() => handleFilterChange("genre", "")}
               >
                 <X className="h-3 w-3" />
               </Button>
@@ -412,14 +462,14 @@ export function EnhancedSearch({
           )}
           {(filters.dateFrom || filters.dateTo) && (
             <Badge variant="secondary" className="gap-1">
-              Date: {filters.dateFrom || '...'} to {filters.dateTo || '...'}
+              Date: {filters.dateFrom || "..."} to {filters.dateTo || "..."}
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-auto p-0 hover:bg-transparent"
                 onClick={() => {
-                  handleFilterChange('dateFrom', '');
-                  handleFilterChange('dateTo', '');
+                  handleFilterChange("dateFrom", "");
+                  handleFilterChange("dateTo", "");
                 }}
               >
                 <X className="h-3 w-3" />
@@ -450,23 +500,26 @@ export function EnhancedSearch({
 
         {!isLoading && results.length > 0 && (
           <>
-            {['artist', 'show', 'venue', 'song'].map((type) => {
+            {["artist", "show", "venue", "song"].map((type) => {
               const typeResults = groupedResults[type];
               if (!typeResults?.length) return null;
 
               const typeLabels = {
-                artist: 'Artists',
-                show: 'Shows',
-                venue: 'Venues',
-                song: 'Songs',
+                artist: "Artists",
+                show: "Shows",
+                venue: "Venues",
+                song: "Songs",
               };
 
               return (
                 <Card key={type}>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      {React.createElement(getResultIcon(type), { className: 'h-5 w-5' })}
-                      {typeLabels[type as keyof typeof typeLabels]} ({typeResults.length})
+                      {React.createElement(getResultIcon(type), {
+                        className: "h-5 w-5",
+                      })}
+                      {typeLabels[type as keyof typeof typeLabels]} (
+                      {typeResults.length})
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -502,8 +555,8 @@ export function EnhancedSearch({
                             <Badge
                               variant="outline"
                               className={cn(
-                                'text-xs capitalize',
-                                getTypeBadgeColor(result.type)
+                                "text-xs capitalize",
+                                getTypeBadgeColor(result.type),
                               )}
                             >
                               {result.type}

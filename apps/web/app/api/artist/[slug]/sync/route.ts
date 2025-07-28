@@ -1,7 +1,7 @@
-import { db } from '@repo/database';
-import { artists } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { artists } from "@repo/database";
+import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * Trigger artist sync when user clicks/visits an artist page
@@ -9,15 +9,15 @@ import { type NextRequest, NextResponse } from 'next/server';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
     const { slug } = await params;
 
     if (!slug) {
       return NextResponse.json(
-        { error: 'Artist slug required' },
-        { status: 400 }
+        { error: "Artist slug required" },
+        { status: 400 },
       );
     }
 
@@ -29,14 +29,14 @@ export async function POST(
       .limit(1);
 
     if (!artist.length) {
-      return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
     const artistData = artist[0];
-    
+
     // Type guard to ensure artistData is defined
     if (!artistData) {
-      return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
     // Check if sync is needed (avoid over-syncing)
@@ -48,7 +48,7 @@ export async function POST(
     if (!needsSync) {
       return NextResponse.json({
         success: true,
-        message: 'Artist data is current',
+        message: "Artist data is current",
         artist: {
           id: artistData.id,
           name: artistData.name,
@@ -60,19 +60,20 @@ export async function POST(
     }
 
     // Use the unified pipeline for comprehensive sync
-    const syncUrl = process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001';
-    
+    const syncUrl =
+      process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
+
     // Fire and forget the sync - don't make user wait
     fetch(`${syncUrl}/api/sync/unified-pipeline`, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'User-Agent': 'ArtistPageSync/1.0'
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "User-Agent": "ArtistPageSync/1.0",
       },
       body: JSON.stringify({
         artistId: artistData.id,
-        mode: 'single',
-        comprehensive: false // Light sync for user-initiated
+        mode: "single",
+        comprehensive: false, // Light sync for user-initiated
       }),
     }).catch(() => {
       // Silently handle errors to not block user experience
@@ -89,7 +90,7 @@ export async function POST(
 
     return NextResponse.json({
       success: true,
-      message: 'Artist sync initiated',
+      message: "Artist sync initiated",
       artist: {
         id: artistData.id,
         name: artistData.name,
@@ -97,16 +98,15 @@ export async function POST(
         lastSynced: new Date(),
       },
       synced: true,
-      note: 'Sync running in background'
+      note: "Sync running in background",
     });
-
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Artist sync failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Artist sync failed",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -114,15 +114,15 @@ export async function POST(
 // GET endpoint to check sync status
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
     const { slug } = await params;
 
     if (!slug) {
       return NextResponse.json(
-        { error: 'Artist slug required' },
-        { status: 400 }
+        { error: "Artist slug required" },
+        { status: 400 },
       );
     }
 
@@ -134,14 +134,14 @@ export async function GET(
       .limit(1);
 
     if (!artist.length) {
-      return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
     const artistData = artist[0];
-    
+
     // Type guard to ensure artistData is defined
     if (!artistData) {
-      return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
     return NextResponse.json({
@@ -151,18 +151,19 @@ export async function GET(
         name: artistData.name,
         slug: artistData.slug,
         lastSynced: artistData.lastSyncedAt,
-        needsSync: !artistData.lastSyncedAt || 
-                   new Date(artistData.lastSyncedAt) < new Date(Date.now() - 60 * 60 * 1000),
+        needsSync:
+          !artistData.lastSyncedAt ||
+          new Date(artistData.lastSyncedAt) <
+            new Date(Date.now() - 60 * 60 * 1000),
       },
     });
-
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Failed to get artist sync status',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Failed to get artist sync status",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

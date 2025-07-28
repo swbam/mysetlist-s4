@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useAuth } from '~/app/providers/auth-provider';
+import { useAuth } from "~/app/providers/auth-provider";
 // import { SetlistViewer as UISetlistViewer } from '@repo/design-system';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import type { Setlist } from '~/types/setlist';
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import type { Setlist } from "~/types/setlist";
 
 interface Vote {
   userId: string;
   setlistSongId: string;
-  voteType: 'up' | 'down';
+  voteType: "up" | "down";
 }
 
 interface SetlistViewerProps {
@@ -25,7 +25,9 @@ export function SetlistViewer({
 }: SetlistViewerProps) {
   const { user } = useAuth();
   const [setlist, setSetlist] = useState<Setlist | undefined>(initialSetlist);
-  const [_userVotes, setUserVotes] = useState<Record<string, 'up' | 'down'>>({});
+  const [_userVotes, setUserVotes] = useState<Record<string, "up" | "down">>(
+    {},
+  );
   const [loading, setLoading] = useState(!initialSetlist);
 
   useEffect(() => {
@@ -48,9 +50,9 @@ export function SetlistViewer({
 
     eventSource.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (data.type === 'setlist_update') {
+      if (data.type === "setlist_update") {
         setSetlist(data.setlist);
-      } else if (data.type === 'vote_update') {
+      } else if (data.type === "vote_update") {
         // Update specific song vote counts
         setSetlist((prev) => {
           if (!prev) {
@@ -61,7 +63,7 @@ export function SetlistViewer({
             songs: prev.songs.map((song) =>
               song.id === data.songId
                 ? { ...song, upvotes: data.upvotes, downvotes: data.downvotes }
-                : song
+                : song,
             ),
           };
         });
@@ -79,7 +81,7 @@ export function SetlistViewer({
         setSetlist(data);
       }
     } catch (_error) {
-      toast.error('Failed to load setlist');
+      toast.error("Failed to load setlist");
     } finally {
       setLoading(false);
     }
@@ -94,7 +96,7 @@ export function SetlistViewer({
       const response = await fetch(`/api/votes?showId=${showId}`);
       if (response.ok) {
         const data = await response.json();
-        const votesMap: Record<string, 'up' | 'down'> = {};
+        const votesMap: Record<string, "up" | "down"> = {};
         data.votes?.forEach((vote: Vote) => {
           votesMap[vote.setlistSongId] = vote.voteType;
         });
@@ -108,7 +110,9 @@ export function SetlistViewer({
     <div>
       {loading && <div>Loading...</div>}
       {!loading && !setlist && <div>No setlist available</div>}
-      {!loading && setlist && <div>SetlistViewer component not implemented</div>}
+      {!loading && setlist && (
+        <div>SetlistViewer component not implemented</div>
+      )}
     </div>
   );
 }

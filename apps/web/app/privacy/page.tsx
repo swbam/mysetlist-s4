@@ -3,14 +3,14 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import type { Metadata } from 'next';
-import { createPageMetadata } from '~/lib/seo-metadata';
+} from "@repo/design-system/components/ui/card";
+import type { Metadata } from "next";
+import { createPageMetadata } from "~/lib/seo-metadata";
 
 export const metadata: Metadata = createPageMetadata({
-  title: 'Privacy Policy | MySetlist',
+  title: "Privacy Policy | MySetlist",
   description:
-    'Learn how MySetlist collects, uses, and protects your personal information.',
+    "Learn how MySetlist collects, uses, and protects your personal information.",
 });
 
 const PrivacyPage = () => {

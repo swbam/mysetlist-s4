@@ -1,6 +1,6 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { createSupabaseAdminClient } from '@repo/database';
-import { generateSlug } from '../../../../lib/utils/slug';
+import { type NextRequest, NextResponse } from "next/server";
+import { createSupabaseAdminClient } from "@repo/database";
+import { generateSlug } from "../../../../lib/utils/slug";
 
 interface ImportTicketmasterArtistRequest {
   ticketmasterId: string;
@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
 
     if (!ticketmasterId || !name) {
       return NextResponse.json(
-        { error: 'ticketmasterId and name are required' },
-        { status: 400 }
+        { error: "ticketmasterId and name are required" },
+        { status: 400 },
       );
     }
 
@@ -25,9 +25,9 @@ export async function POST(request: NextRequest) {
 
     // Check if artist already exists by Ticketmaster ID
     const { data: existingArtist } = await supabase
-      .from('artists')
-      .select('*')
-      .eq('ticketmaster_id', ticketmasterId)
+      .from("artists")
+      .select("*")
+      .eq("ticketmaster_id", ticketmasterId)
       .single();
 
     if (existingArtist) {
@@ -47,22 +47,22 @@ export async function POST(request: NextRequest) {
 
     // Check if artist exists by name (case-insensitive)
     const { data: artistByName } = await supabase
-      .from('artists')
-      .select('*')
-      .ilike('name', name)
+      .from("artists")
+      .select("*")
+      .ilike("name", name)
       .single();
 
     if (artistByName) {
       // Update the existing artist with Ticketmaster ID
       const { data: updatedArtist, error: updateError } = await supabase
-        .from('artists')
+        .from("artists")
         .update({
           ticketmaster_id: ticketmasterId,
           image_url: imageUrl || artistByName.image_url,
           genres: genres && genres.length > 0 ? genres : artistByName.genres,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', artistByName.id)
+        .eq("id", artistByName.id)
         .select()
         .single();
 
@@ -87,25 +87,25 @@ export async function POST(request: NextRequest) {
 
     // Create new artist
     const slug = generateSlug(name);
-    
+
     // Ensure unique slug
     let finalSlug = slug;
     let counter = 1;
     while (true) {
       const { data: existingSlug } = await supabase
-        .from('artists')
-        .select('id')
-        .eq('slug', finalSlug)
+        .from("artists")
+        .select("id")
+        .eq("slug", finalSlug)
         .single();
-      
+
       if (!existingSlug) break;
-      
+
       finalSlug = `${slug}-${counter}`;
       counter++;
     }
 
     const { data: newArtist, error: insertError } = await supabase
-      .from('artists')
+      .from("artists")
       .insert({
         name,
         slug: finalSlug,
@@ -128,18 +128,21 @@ export async function POST(request: NextRequest) {
     // Trigger background sync for shows
     setImmediate(async () => {
       try {
-        await fetch(`${process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001'}/api/artists/sync-shows`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-cron-secret': process.env.CRON_SECRET || '',
+        await fetch(
+          `${process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001"}/api/artists/sync-shows`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-cron-secret": process.env.CRON_SECRET || "",
+            },
+            body: JSON.stringify({
+              artistId: newArtist.id,
+            }),
           },
-          body: JSON.stringify({
-            artistId: newArtist.id,
-          }),
-        });
+        );
       } catch (error) {
-        console.error('Failed to trigger show sync:', error);
+        console.error("Failed to trigger show sync:", error);
       }
     });
 
@@ -156,13 +159,13 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Artist import error:', error);
+    console.error("Artist import error:", error);
     return NextResponse.json(
       {
-        error: 'Failed to import artist',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Failed to import artist",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

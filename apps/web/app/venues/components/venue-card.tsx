@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { Car, Heart, MapPin, Star, Users } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useState } from 'react';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { Car, Heart, MapPin, Star, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
 
 interface VenueCardProps {
   venue: {
@@ -46,19 +46,19 @@ export function VenueCard({ venue }: VenueCardProps) {
   };
 
   const venueTypeLabels: Record<string, string> = {
-    arena: 'Arena',
-    stadium: 'Stadium',
-    theater: 'Theater',
-    club: 'Club',
-    'outdoor-amphitheater': 'Outdoor Amphitheater',
-    'indoor-amphitheater': 'Indoor Amphitheater',
-    ballroom: 'Ballroom',
-    festival: 'Festival Grounds',
-    other: 'Other',
+    arena: "Arena",
+    stadium: "Stadium",
+    theater: "Theater",
+    club: "Club",
+    "outdoor-amphitheater": "Outdoor Amphitheater",
+    "indoor-amphitheater": "Indoor Amphitheater",
+    ballroom: "Ballroom",
+    festival: "Festival Grounds",
+    other: "Other",
   };
 
   const amenitiesList = venue.amenities ? JSON.parse(venue.amenities) : [];
-  const hasParking = amenitiesList.includes('parking');
+  const hasParking = amenitiesList.includes("parking");
 
   return (
     <Card className="overflow-hidden transition-shadow hover:shadow-lg">
@@ -107,7 +107,7 @@ export function VenueCard({ venue }: VenueCardProps) {
             className="h-8 w-8 flex-shrink-0"
           >
             <Heart
-              className={`h-4 w-4 ${isFavorite ? 'fill-current text-red-500' : ''}`}
+              className={`h-4 w-4 ${isFavorite ? "fill-current text-red-500" : ""}`}
             />
           </Button>
         </div>

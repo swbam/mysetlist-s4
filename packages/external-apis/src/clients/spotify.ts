@@ -1,4 +1,4 @@
-import { type APIClientConfig, BaseAPIClient } from './base';
+import { type APIClientConfig, BaseAPIClient } from "./base";
 
 export interface SpotifyArtist {
   id: string;
@@ -58,10 +58,10 @@ interface SpotifyTokenResponse {
 export class SpotifyClient extends BaseAPIClient {
   private accessToken?: string;
 
-  constructor(config: Omit<APIClientConfig, 'baseURL'>) {
+  constructor(config: Omit<APIClientConfig, "baseURL">) {
     super({
       ...config,
-      baseURL: 'https://api.spotify.com/v1',
+      baseURL: "https://api.spotify.com/v1",
       rateLimit: { requests: 100, window: 60 }, // 100 requests per minute
       cache: { defaultTTL: 3600 }, // 1 hour default cache
     });
@@ -69,29 +69,29 @@ export class SpotifyClient extends BaseAPIClient {
 
   async authenticate(): Promise<void> {
     const clientId =
-      process.env['SPOTIFY_CLIENT_ID'] ||
-      process.env['NEXT_PUBLIC_SPOTIFY_CLIENT_ID'];
-    const clientSecret = process.env['SPOTIFY_CLIENT_SECRET'];
+      process.env["SPOTIFY_CLIENT_ID"] ||
+      process.env["NEXT_PUBLIC_SPOTIFY_CLIENT_ID"];
+    const clientSecret = process.env["SPOTIFY_CLIENT_SECRET"];
 
     if (!clientId || !clientSecret) {
-      throw new Error('Spotify credentials not configured');
+      throw new Error("Spotify credentials not configured");
     }
 
-    const response = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
+    const response = await fetch("https://accounts.spotify.com/api/token", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        "Content-Type": "application/x-www-form-urlencoded",
         Authorization: `Basic ${Buffer.from(
-          `${clientId}:${clientSecret}`
-        ).toString('base64')}`,
+          `${clientId}:${clientSecret}`,
+        ).toString("base64")}`,
       },
-      body: 'grant_type=client_credentials',
+      body: "grant_type=client_credentials",
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(
-        `Spotify authentication failed: ${response.status} ${errorText}`
+        `Spotify authentication failed: ${response.status} ${errorText}`,
       );
     }
 
@@ -101,7 +101,7 @@ export class SpotifyClient extends BaseAPIClient {
 
   protected getAuthHeaders(): Record<string, string> {
     if (!this.accessToken) {
-      throw new Error('Spotify client not authenticated');
+      throw new Error("Spotify client not authenticated");
     }
     return {
       Authorization: `Bearer ${this.accessToken}`,
@@ -111,7 +111,7 @@ export class SpotifyClient extends BaseAPIClient {
   async searchArtists(query: string, limit = 20): Promise<SpotifySearchResult> {
     const params = new URLSearchParams({
       q: query,
-      type: 'artist',
+      type: "artist",
       limit: limit.toString(),
     });
 
@@ -119,7 +119,7 @@ export class SpotifyClient extends BaseAPIClient {
       `/search?${params}`,
       {},
       `spotify:search:artists:${query}:${limit}`,
-      1800 // 30 minutes cache
+      1800, // 30 minutes cache
     );
   }
 
@@ -128,19 +128,19 @@ export class SpotifyClient extends BaseAPIClient {
       `/artists/${artistId}`,
       {},
       `spotify:artist:${artistId}`,
-      3600 // 1 hour cache
+      3600, // 1 hour cache
     );
   }
 
   async getArtistTopTracks(
     artistId: string,
-    market = 'US'
+    market = "US",
   ): Promise<{ tracks: SpotifyTrack[] }> {
     return this.makeRequest<{ tracks: SpotifyTrack[] }>(
       `/artists/${artistId}/top-tracks?market=${market}`,
       {},
       `spotify:artist:${artistId}:top-tracks:${market}`,
-      1800 // 30 minutes cache
+      1800, // 30 minutes cache
     );
   }
 
@@ -151,11 +151,11 @@ export class SpotifyClient extends BaseAPIClient {
       market?: string;
       limit?: number;
       offset?: number;
-    } = {}
+    } = {},
   ): Promise<any> {
     const params = new URLSearchParams({
-      include_groups: options.include_groups || 'album,single',
-      market: options.market || 'US',
+      include_groups: options.include_groups || "album,single",
+      market: options.market || "US",
       limit: (options.limit || 20).toString(),
       offset: (options.offset || 0).toString(),
     });
@@ -164,7 +164,7 @@ export class SpotifyClient extends BaseAPIClient {
       `/artists/${artistId}/albums?${params}`,
       {},
       `spotify:artist:${artistId}:albums:${params.toString()}`,
-      1800
+      1800,
     );
   }
 
@@ -179,7 +179,7 @@ export class SpotifyClient extends BaseAPIClient {
 
     Object.entries(options).forEach(([key, value]) => {
       if (Array.isArray(value)) {
-        params.append(key, value.join(','));
+        params.append(key, value.join(","));
       } else if (value !== undefined) {
         params.append(key, value.toString());
       }
@@ -189,29 +189,29 @@ export class SpotifyClient extends BaseAPIClient {
       `/recommendations?${params}`,
       {},
       `spotify:recommendations:${params.toString()}`,
-      900 // 15 minutes cache for recommendations
+      900, // 15 minutes cache for recommendations
     );
   }
 
   async getAudioFeatures(
-    trackIds: string[]
+    trackIds: string[],
   ): Promise<{ audio_features: any[] }> {
-    const ids = trackIds.join(',');
+    const ids = trackIds.join(",");
     return this.makeRequest(
       `/audio-features?ids=${ids}`,
       {},
       `spotify:audio-features:${ids}`,
-      3600
+      3600,
     );
   }
 
   async searchTracks(
     query: string,
-    limit = 20
+    limit = 20,
   ): Promise<{ tracks: { items: SpotifyTrack[]; total: number } }> {
     const params = new URLSearchParams({
       q: query,
-      type: 'track',
+      type: "track",
       limit: limit.toString(),
     });
 
@@ -221,7 +221,7 @@ export class SpotifyClient extends BaseAPIClient {
       `/search?${params}`,
       {},
       `spotify:search:tracks:${query}:${limit}`,
-      1800 // 30 minutes cache
+      1800, // 30 minutes cache
     );
   }
 }

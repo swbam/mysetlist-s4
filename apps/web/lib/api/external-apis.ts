@@ -1,1 +1,1 @@
-export * from '@repo/external-apis';
+export * from "@repo/external-apis";

@@ -1,7 +1,7 @@
-import fs from 'node:fs';
-import path from 'node:path';
-import { createClient } from '@supabase/supabase-js';
-import { env } from '@repo/env';
+import fs from "node:fs";
+import path from "node:path";
+import { createClient } from "@supabase/supabase-js";
+import { env } from "@repo/env";
 
 async function applyNewMigrations() {
   const supabase = createClient(
@@ -12,26 +12,26 @@ async function applyNewMigrations() {
         persistSession: false,
         autoRefreshToken: false,
       },
-    }
+    },
   );
 
   const migrations = [
-    '0018_add_artist_songs_table.sql',
-    '0019_add_mbid_to_artists.sql',
+    "0018_add_artist_songs_table.sql",
+    "0019_add_mbid_to_artists.sql",
   ];
 
   for (const migrationFile of migrations) {
     const migrationPath = path.join(
       __dirname,
-      '..',
-      'migrations',
-      migrationFile
+      "..",
+      "migrations",
+      migrationFile,
     );
 
     if (fs.existsSync(migrationPath)) {
       try {
-        const sql = fs.readFileSync(migrationPath, 'utf8');
-        const { error } = await supabase.rpc('exec_sql', { sql });
+        const sql = fs.readFileSync(migrationPath, "utf8");
+        const { error } = await supabase.rpc("exec_sql", { sql });
 
         if (error) {
         } else {

@@ -1,17 +1,17 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import { type NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '~/lib/api/supabase/server';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { type NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "~/lib/api/supabase/server";
 
 // Force dynamic rendering for API routes
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // Type definitions
 interface SyncRequest {
   action:
-    | 'sync_upcoming_shows'
-    | 'sync_venue_info'
-    | 'sync_artist_shows'
-    | 'update_show_status';
+    | "sync_upcoming_shows"
+    | "sync_venue_info"
+    | "sync_artist_shows"
+    | "update_show_status";
   options?: SyncOptions;
 }
 
@@ -25,7 +25,7 @@ interface SyncOptions {
 }
 
 interface UserData {
-  role: 'admin' | 'moderator' | 'user';
+  role: "admin" | "moderator" | "user";
 }
 
 interface VenueData {
@@ -70,7 +70,6 @@ interface SyncLogData {
   results: Record<string, number>;
 }
 
-
 export async function POST(request: NextRequest) {
   try {
     const supabase = createServiceClient();
@@ -80,24 +79,24 @@ export async function POST(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check if user is admin or moderator
     const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
       .single<UserData>();
 
     if (
       userError ||
       !userData ||
-      (userData.role !== 'admin' && userData.role !== 'moderator')
+      (userData.role !== "admin" && userData.role !== "moderator")
     ) {
       return NextResponse.json(
-        { error: 'Insufficient permissions' },
-        { status: 403 }
+        { error: "Insufficient permissions" },
+        { status: 403 },
       );
     }
 
@@ -105,32 +104,32 @@ export async function POST(request: NextRequest) {
     const { action, options } = requestData;
 
     switch (action) {
-      case 'sync_upcoming_shows':
+      case "sync_upcoming_shows":
         return await syncUpcomingShows(supabase, options || {}, user.id);
 
-      case 'sync_venue_info':
+      case "sync_venue_info":
         return await syncVenueInfo(supabase, options || {}, user.id);
 
-      case 'sync_artist_shows': {
+      case "sync_artist_shows": {
         if (!options?.artist_id) {
           return NextResponse.json(
-            { error: 'Artist ID is required' },
-            { status: 400 }
+            { error: "Artist ID is required" },
+            { status: 400 },
           );
         }
         return await syncArtistShows(supabase, options, user.id);
       }
 
-      case 'update_show_status':
+      case "update_show_status":
         return await updateShowStatuses(supabase, options || {}, user.id);
 
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
   } catch (error) {
     return NextResponse.json(
-      { error: 'Sync operation failed', details: (error as Error).message },
-      { status: 500 }
+      { error: "Sync operation failed", details: (error as Error).message },
+      { status: 500 },
     );
   }
 }
@@ -138,11 +137,9 @@ export async function POST(request: NextRequest) {
 async function syncUpcomingShows(
   supabase: SupabaseClient,
   options: SyncOptions,
-  userId: string
+  userId: string,
 ) {
-  const {
-    limit = 100,
-  } = options;
+  const { limit = 100 } = options;
   // TODO: Implement real Ticketmaster API integration
   // For now, return empty results until API integration is complete
   const shows: ShowData[] = [];
@@ -155,15 +152,15 @@ async function syncUpcomingShows(
     try {
       // Check if show already exists
       const { data: existingShow, error: existingShowError } = await supabase
-        .from('shows')
-        .select('id')
-        .eq('ticketmaster_id', showData.ticketmaster_id)
+        .from("shows")
+        .select("id")
+        .eq("ticketmaster_id", showData.ticketmaster_id)
         .single<{ id: string }>();
 
       if (!existingShowError && existingShow) {
         // Update existing show
         const { error: updateError } = await supabase
-          .from('shows')
+          .from("shows")
           .update({
             title: showData.title,
             date: showData.date,
@@ -174,7 +171,7 @@ async function syncUpcomingShows(
             price_range_max: showData.price_range_max,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', existingShow.id);
+          .eq("id", existingShow.id);
 
         if (updateError) {
           throw updateError;
@@ -182,7 +179,7 @@ async function syncUpcomingShows(
         updatedShows++;
       } else {
         // Create new show
-        const { error } = await supabase.from('shows').insert({
+        const { error } = await supabase.from("shows").insert({
           ...showData,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -201,7 +198,7 @@ async function syncUpcomingShows(
 
   // Log sync operation
   await logSyncOperation(supabase, {
-    sync_type: 'ticketmaster_shows',
+    sync_type: "ticketmaster_shows",
     user_id: userId,
     results: {
       created: createdShows,
@@ -224,7 +221,7 @@ async function syncUpcomingShows(
 async function syncVenueInfo(
   supabase: SupabaseClient,
   options: SyncOptions,
-  userId: string
+  userId: string,
 ) {
   const { venue_ids = [] } = options;
   let updatedVenues = 0;
@@ -232,12 +229,12 @@ async function syncVenueInfo(
 
   // Get venues that need updating
   const query = supabase
-    .from('venues')
-    .select('id, name, city, state')
-    .is('ticketmaster_id', null);
+    .from("venues")
+    .select("id, name, city, state")
+    .is("ticketmaster_id", null);
 
   if (venue_ids.length > 0) {
-    query.in('id', venue_ids);
+    query.in("id", venue_ids);
   }
 
   const { data: venues, error: venuesError } = await query;
@@ -255,7 +252,7 @@ async function syncVenueInfo(
 
   // Log sync operation
   await logSyncOperation(supabase, {
-    sync_type: 'ticketmaster_venues',
+    sync_type: "ticketmaster_venues",
     user_id: userId,
     results: {
       updated: updatedVenues,
@@ -276,22 +273,22 @@ async function syncVenueInfo(
 async function syncArtistShows(
   supabase: SupabaseClient,
   options: SyncOptions,
-  _userId: string
+  _userId: string,
 ) {
   const { artist_id, limit = 50 } = options;
 
   if (!artist_id) {
-    throw new Error('Artist ID is required');
+    throw new Error("Artist ID is required");
   }
   // Get artist info
   const { data: artist, error: artistError } = await supabase
-    .from('artists')
-    .select('id, name')
-    .eq('id', artist_id)
+    .from("artists")
+    .select("id, name")
+    .eq("id", artist_id)
     .single<ArtistData>();
 
   if (artistError || !artist) {
-    return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
+    return NextResponse.json({ error: "Artist not found" }, { status: 404 });
   }
 
   // TODO: Implement real Ticketmaster artist shows lookup
@@ -304,26 +301,26 @@ async function syncArtistShows(
   for (const showData of artistShows) {
     try {
       const { data: existingShow, error: existingShowError } = await supabase
-        .from('shows')
-        .select('id')
-        .eq('ticketmaster_id', showData.ticketmaster_id)
+        .from("shows")
+        .select("id")
+        .eq("ticketmaster_id", showData.ticketmaster_id)
         .single<{ id: string }>();
 
       if (!existingShowError && existingShow) {
         const { error: updateError } = await supabase
-          .from('shows')
+          .from("shows")
           .update({
             ...showData,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', existingShow.id);
+          .eq("id", existingShow.id);
 
         if (updateError) {
           throw updateError;
         }
         updatedShows++;
       } else {
-        const { error: insertError } = await supabase.from('shows').insert({
+        const { error: insertError } = await supabase.from("shows").insert({
           ...showData,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -350,18 +347,18 @@ async function syncArtistShows(
 async function updateShowStatuses(
   supabase: SupabaseClient,
   _options: SyncOptions,
-  _userId: string
+  _userId: string,
 ) {
   const now = new Date();
   let updatedShows = 0;
 
   // Update shows that have passed to 'completed' status
   const { data: pastShows, error: pastShowsError } = await supabase
-    .from('shows')
-    .update({ status: 'completed', updated_at: now.toISOString() })
-    .lt('date', now.toISOString().split('T')[0])
-    .eq('status', 'upcoming')
-    .select('id');
+    .from("shows")
+    .update({ status: "completed", updated_at: now.toISOString() })
+    .lt("date", now.toISOString().split("T")[0])
+    .eq("status", "upcoming")
+    .select("id");
 
   if (pastShowsError) {
     throw pastShowsError;
@@ -369,14 +366,14 @@ async function updateShowStatuses(
   updatedShows += pastShows?.length || 0;
 
   // Update shows happening today to 'in_progress' status if they have a time
-  const today = now.toISOString().split('T')[0];
+  const today = now.toISOString().split("T")[0];
   const { data: todayShows, error: todayShowsError } = await supabase
-    .from('shows')
-    .update({ status: 'in_progress', updated_at: now.toISOString() })
-    .eq('date', today)
-    .eq('status', 'upcoming')
-    .not('time', 'is', null)
-    .select('id');
+    .from("shows")
+    .update({ status: "in_progress", updated_at: now.toISOString() })
+    .eq("date", today)
+    .eq("status", "upcoming")
+    .not("time", "is", null)
+    .select("id");
 
   if (todayShowsError) {
     throw todayShowsError;
@@ -401,9 +398,9 @@ async function updateShowStatuses(
 
 async function logSyncOperation(
   supabase: SupabaseClient,
-  operation: SyncLogData
+  operation: SyncLogData,
 ): Promise<void> {
-  const { error } = await supabase.from('sync_logs').insert({
+  const { error } = await supabase.from("sync_logs").insert({
     sync_type: operation.sync_type,
     initiated_by: operation.user_id,
     results: operation.results,

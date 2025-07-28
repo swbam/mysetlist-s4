@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { cn } from '@repo/design-system/lib/utils';
-import type React from 'react';
-import { useEffect, useState } from 'react';
+import { cn } from "@repo/design-system/lib/utils";
+import type React from "react";
+import { useEffect, useState } from "react";
 
 // Screen reader only text component
 interface ScreenReaderOnlyProps {
@@ -17,8 +17,8 @@ export function ScreenReaderOnly({
   return (
     <span
       className={cn(
-        '-m-px sr-only absolute h-px w-px overflow-hidden whitespace-nowrap border-0 p-0',
-        className
+        "-m-px sr-only absolute h-px w-px overflow-hidden whitespace-nowrap border-0 p-0",
+        className,
       )}
     >
       {children}
@@ -67,7 +67,7 @@ export function FocusTrap({
     setTimeout(focusInitialElement, 0);
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Tab') {
+      if (event.key === "Tab") {
         const focusableElements = getFocusableElements();
         const firstElement = focusableElements[0];
         const lastElement = focusableElements.at(-1);
@@ -88,10 +88,10 @@ export function FocusTrap({
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
 
       // Restore focus to previously focused element
       if (restoreFocus && previouslyFocusedElement) {
@@ -102,14 +102,14 @@ export function FocusTrap({
 
   const getFocusableElements = (): HTMLElement[] => {
     const selectors = [
-      'button:not(:disabled)',
-      'input:not(:disabled)',
-      'textarea:not(:disabled)',
-      'select:not(:disabled)',
-      'a[href]',
+      "button:not(:disabled)",
+      "input:not(:disabled)",
+      "textarea:not(:disabled)",
+      "select:not(:disabled)",
+      "a[href]",
       '[tabindex]:not([tabindex="-1"])',
       '[contenteditable="true"]',
-    ].join(', ');
+    ].join(", ");
 
     return Array.from(document.querySelectorAll(selectors)) as HTMLElement[];
   };
@@ -128,7 +128,7 @@ export function FocusTrap({
 // Live region for announcing dynamic content changes
 interface LiveRegionProps {
   children: React.ReactNode;
-  politeness?: 'polite' | 'assertive' | 'off';
+  politeness?: "polite" | "assertive" | "off";
   atomic?: boolean;
   relevant?: string;
   className?: string;
@@ -136,14 +136,14 @@ interface LiveRegionProps {
 
 export function LiveRegion({
   children,
-  politeness = 'polite',
+  politeness = "polite",
   atomic = false,
-  relevant = 'additions text',
+  relevant = "additions text",
   className,
 }: LiveRegionProps) {
   return (
     <div
-      className={cn('sr-only', className)}
+      className={cn("sr-only", className)}
       aria-live={politeness}
       aria-atomic={atomic}
       aria-relevant={relevant as any}
@@ -161,21 +161,21 @@ interface SkipLinkProps {
 }
 
 export function SkipLink({
-  href = '#main-content',
-  children = 'Skip to main content',
+  href = "#main-content",
+  children = "Skip to main content",
   className,
 }: SkipLinkProps) {
   return (
     <a
       href={href}
       className={cn(
-        'fixed top-4 left-4 z-[9999] rounded-md px-4 py-2',
-        'bg-primary font-medium text-primary-foreground',
-        '-translate-y-full transform opacity-0',
-        'focus:translate-y-0 focus:opacity-100',
-        'transition-all duration-200',
-        'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
-        className
+        "fixed top-4 left-4 z-[9999] rounded-md px-4 py-2",
+        "bg-primary font-medium text-primary-foreground",
+        "-translate-y-full transform opacity-0",
+        "focus:translate-y-0 focus:opacity-100",
+        "transition-all duration-200",
+        "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+        className,
       )}
     >
       {children}
@@ -207,26 +207,26 @@ export function KeyboardNavigation({
 }: KeyboardNavigationProps) {
   const handleKeyDown = (event: React.KeyboardEvent) => {
     switch (event.key) {
-      case 'Escape':
+      case "Escape":
         onEscape?.();
         break;
-      case 'Enter':
+      case "Enter":
         onEnter?.();
         break;
-      case 'ArrowUp': {
+      case "ArrowUp": {
         event.preventDefault();
         onArrowUp?.();
         break;
       }
-      case 'ArrowDown': {
+      case "ArrowDown": {
         event.preventDefault();
         onArrowDown?.();
         break;
       }
-      case 'ArrowLeft':
+      case "ArrowLeft":
         onArrowLeft?.();
         break;
-      case 'ArrowRight':
+      case "ArrowRight":
         onArrowRight?.();
         break;
     }
@@ -249,15 +249,15 @@ export function ReducedMotion({ children, fallback }: ReducedMotionProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
     setPrefersReducedMotion(mediaQuery.matches);
 
     const handleChange = (event: MediaQueryListEvent) => {
       setPrefersReducedMotion(event.matches);
     };
 
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
   return prefersReducedMotion && fallback ? fallback : children;
@@ -268,15 +268,15 @@ export function useHighContrast() {
   const [isHighContrast, setIsHighContrast] = useState(false);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-contrast: high)');
+    const mediaQuery = window.matchMedia("(prefers-contrast: high)");
     setIsHighContrast(mediaQuery.matches);
 
     const handleChange = (event: MediaQueryListEvent) => {
       setIsHighContrast(event.matches);
     };
 
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
   return isHighContrast;
@@ -284,18 +284,18 @@ export function useHighContrast() {
 
 // Color scheme detector
 export function useColorScheme() {
-  const [colorScheme, setColorScheme] = useState<'light' | 'dark'>('light');
+  const [colorScheme, setColorScheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    setColorScheme(mediaQuery.matches ? 'dark' : 'light');
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    setColorScheme(mediaQuery.matches ? "dark" : "light");
 
     const handleChange = (event: MediaQueryListEvent) => {
-      setColorScheme(event.matches ? 'dark' : 'light');
+      setColorScheme(event.matches ? "dark" : "light");
     };
 
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
   return colorScheme;
@@ -305,18 +305,18 @@ export function useColorScheme() {
 interface AccessibleButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "primary" | "secondary" | "outline" | "ghost";
+  size?: "sm" | "md" | "lg";
   loading?: boolean;
   loadingText?: string;
 }
 
 export function AccessibleButton({
   children,
-  variant = 'primary',
-  size = 'md',
+  variant = "primary",
+  size = "md",
   loading = false,
-  loadingText = 'Loading...',
+  loadingText = "Loading...",
   className,
   disabled,
   ...props
@@ -326,29 +326,29 @@ export function AccessibleButton({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center rounded-md font-medium transition-colors',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-        'disabled:pointer-events-none disabled:opacity-50',
-        'touch-manipulation select-none',
+        "inline-flex items-center justify-center rounded-md font-medium transition-colors",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        "disabled:pointer-events-none disabled:opacity-50",
+        "touch-manipulation select-none",
         // Size variants
         {
-          'h-8 px-3 text-sm': size === 'sm',
-          'h-10 px-4 py-2': size === 'md',
-          'h-12 px-6 text-lg': size === 'lg',
+          "h-8 px-3 text-sm": size === "sm",
+          "h-10 px-4 py-2": size === "md",
+          "h-12 px-6 text-lg": size === "lg",
         },
         // Color variants
         {
-          'bg-primary text-primary-foreground hover:bg-primary/90':
-            variant === 'primary',
-          'bg-secondary text-secondary-foreground hover:bg-secondary/80':
-            variant === 'secondary',
-          'border border-input hover:bg-accent hover:text-accent-foreground':
-            variant === 'outline',
-          'hover:bg-accent hover:text-accent-foreground': variant === 'ghost',
+          "bg-primary text-primary-foreground hover:bg-primary/90":
+            variant === "primary",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80":
+            variant === "secondary",
+          "border border-input hover:bg-accent hover:text-accent-foreground":
+            variant === "outline",
+          "hover:bg-accent hover:text-accent-foreground": variant === "ghost",
         },
         // High contrast mode
-        isHighContrast && 'ring-2 ring-current',
-        className
+        isHighContrast && "ring-2 ring-current",
+        className,
       )}
       disabled={disabled || loading}
       aria-disabled={disabled || loading}

@@ -1,10 +1,15 @@
-import type { Session, User } from '@supabase/supabase-js';
+import type { Session, User } from "@supabase/supabase-js";
 import {
   AUTH_CONFIG,
   createSupabaseAdmin,
   createSupabaseClient,
-} from '../config/supabase';
-import type { IAuthProvider, AuthSession, AuthUser, OAuthConfig } from '../types';
+} from "../config/supabase";
+import type {
+  IAuthProvider,
+  AuthSession,
+  AuthUser,
+  OAuthConfig,
+} from "../types";
 
 export class SupabaseAuthProvider implements IAuthProvider {
   private client = createSupabaseClient();
@@ -21,7 +26,7 @@ export class SupabaseAuthProvider implements IAuthProvider {
     }
 
     if (!data.user) {
-      throw new Error('Authentication failed');
+      throw new Error("Authentication failed");
     }
 
     return this.mapUser(data.user);
@@ -30,7 +35,7 @@ export class SupabaseAuthProvider implements IAuthProvider {
   async signUp(
     email: string,
     password: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ): Promise<AuthUser> {
     const { data, error } = await this.client.auth.signUp({
       email,
@@ -46,15 +51,15 @@ export class SupabaseAuthProvider implements IAuthProvider {
     }
 
     if (!data.user) {
-      throw new Error('Sign up failed');
+      throw new Error("Sign up failed");
     }
 
     return this.mapUser(data.user);
   }
 
-  async signInWithOAuth(provider: 'spotify' | 'google'): Promise<any> {
+  async signInWithOAuth(provider: "spotify" | "google"): Promise<any> {
     const scopes =
-      provider === 'spotify'
+      provider === "spotify"
         ? AUTH_CONFIG.oauth.spotify.scopes
         : AUTH_CONFIG.oauth.google.scopes;
 
@@ -75,9 +80,11 @@ export class SupabaseAuthProvider implements IAuthProvider {
 
   async signInWithGoogle(config?: OAuthConfig): Promise<void> {
     const { error } = await this.client.auth.signInWithOAuth({
-      provider: 'google',
+      provider: "google",
       options: {
-        redirectTo: config?.redirectTo || `${window.location.origin}${AUTH_CONFIG.redirectUrls.callback}`,
+        redirectTo:
+          config?.redirectTo ||
+          `${window.location.origin}${AUTH_CONFIG.redirectUrls.callback}`,
         scopes: config?.scopes || AUTH_CONFIG.oauth.google.scopes,
         ...(config?.queryParams && { queryParams: config.queryParams }),
       },
@@ -90,9 +97,11 @@ export class SupabaseAuthProvider implements IAuthProvider {
 
   async signInWithSpotify(config?: OAuthConfig): Promise<void> {
     const { error } = await this.client.auth.signInWithOAuth({
-      provider: 'spotify',
+      provider: "spotify",
       options: {
-        redirectTo: config?.redirectTo || `${window.location.origin}${AUTH_CONFIG.redirectUrls.callback}`,
+        redirectTo:
+          config?.redirectTo ||
+          `${window.location.origin}${AUTH_CONFIG.redirectUrls.callback}`,
         scopes: config?.scopes || AUTH_CONFIG.oauth.spotify.scopes,
         ...(config?.queryParams && { queryParams: config.queryParams }),
       },
@@ -193,7 +202,7 @@ export class SupabaseAuthProvider implements IAuthProvider {
     }
 
     if (!data.user) {
-      throw new Error('Profile update failed');
+      throw new Error("Profile update failed");
     }
 
     return this.mapUser(data.user);
@@ -223,7 +232,7 @@ export class SupabaseAuthProvider implements IAuthProvider {
 
   async updateUserRole(
     userId: string,
-    role: 'user' | 'moderator' | 'admin'
+    role: "user" | "moderator" | "admin",
   ): Promise<void> {
     const { error } = await this.adminClient.auth.admin.updateUserById(userId, {
       app_metadata: { role },
@@ -236,12 +245,12 @@ export class SupabaseAuthProvider implements IAuthProvider {
 
   // Event listener for auth state changes
   onAuthStateChange(
-    callback: (event: string, session: AuthSession | null) => void
-  ): (() => void) {
+    callback: (event: string, session: AuthSession | null) => void,
+  ): () => void {
     const { data } = this.client.auth.onAuthStateChange((event, session) => {
       callback(event, session ? this.mapSession(session) : null);
     });
-    
+
     return () => {
       data.subscription.unsubscribe();
     };
@@ -251,9 +260,12 @@ export class SupabaseAuthProvider implements IAuthProvider {
     return {
       ...user,
       profile: {
-        id: '',
+        id: "",
         userId: user.id,
-        displayName: user.user_metadata?.['displayName'] || user.email?.split('@')[0] || '',
+        displayName:
+          user.user_metadata?.["displayName"] ||
+          user.email?.split("@")[0] ||
+          "",
         isPublic: true,
         showAttendedShows: true,
         showVotedSongs: true,
@@ -265,15 +277,15 @@ export class SupabaseAuthProvider implements IAuthProvider {
       },
       preferences: {
         emailPreferences: {
-          id: '',
+          id: "",
           userId: user.id,
           emailEnabled: true,
           showReminders: true,
-          showReminderFrequency: 'daily',
+          showReminderFrequency: "daily",
           newShowNotifications: true,
-          newShowFrequency: 'daily',
+          newShowFrequency: "daily",
           setlistUpdates: true,
-          setlistUpdateFrequency: 'immediately',
+          setlistUpdateFrequency: "immediately",
           weeklyDigest: false,
           marketingEmails: false,
           securityEmails: true,

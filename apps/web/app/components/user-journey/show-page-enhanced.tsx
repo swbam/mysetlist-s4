@@ -1,28 +1,38 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import { Input } from '@repo/design-system/components/ui/input';
-import { 
-  Calendar, 
-  MapPin, 
-  Music, 
-  Users, 
-  ExternalLink, 
+import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import { Input } from "@repo/design-system/components/ui/input";
+import {
+  Calendar,
+  MapPin,
+  Music,
+  Users,
+  ExternalLink,
   Clock,
   Plus,
   Search,
   TrendingUp,
   Lock,
-  Unlock
-} from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { RealtimeVoting } from '../realtime-voting';
-import { useRealtimeConnection } from '~/app/providers/realtime-provider';
+  Unlock,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState, useEffect } from "react";
+import { RealtimeVoting } from "../realtime-voting";
+import { useRealtimeConnection } from "~/app/providers/realtime-provider";
 
 interface Show {
   id: string;
@@ -31,7 +41,7 @@ interface Show {
   date: string;
   startTime?: string;
   doorsTime?: string;
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  status: "upcoming" | "ongoing" | "completed" | "cancelled";
   description?: string;
   ticketUrl?: string;
   minPrice?: number;
@@ -73,12 +83,12 @@ interface SetlistSong {
   upvotes: number;
   downvotes: number;
   netVotes: number;
-  userVote?: 'up' | 'down' | null;
+  userVote?: "up" | "down" | null;
 }
 
 interface Setlist {
   id: string;
-  type: 'predicted' | 'actual';
+  type: "predicted" | "actual";
   name: string;
   isLocked: boolean;
   totalVotes: number;
@@ -94,8 +104,8 @@ interface ShowPageEnhancedProps {
 export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('setlist');
-  const [songSearch, setSongSearch] = useState('');
+  const [activeTab, setActiveTab] = useState("setlist");
+  const [songSearch, setSongSearch] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const { isConnected } = useRealtimeConnection();
@@ -110,7 +120,7 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
           setSetlists(data.setlists || []);
         }
       } catch (error) {
-        console.error('Error loading setlists:', error);
+        console.error("Error loading setlists:", error);
       } finally {
         setIsLoading(false);
       }
@@ -129,13 +139,15 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
 
       setIsSearching(true);
       try {
-        const response = await fetch(`/api/songs/search?q=${encodeURIComponent(songSearch)}&artist=${encodeURIComponent(show.artist.name)}`);
+        const response = await fetch(
+          `/api/songs/search?q=${encodeURIComponent(songSearch)}&artist=${encodeURIComponent(show.artist.name)}`,
+        );
         if (response.ok) {
           const data = await response.json();
           setSearchResults(data.songs || []);
         }
       } catch (error) {
-        console.error('Error searching songs:', error);
+        console.error("Error searching songs:", error);
       } finally {
         setIsSearching(false);
       }
@@ -147,15 +159,15 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
 
   const addSongToSetlist = async (songId: string, setlistId: string) => {
     if (!userId) {
-      window.location.href = '/auth/sign-in';
+      window.location.href = "/auth/sign-in";
       return;
     }
 
     try {
-      const response = await fetch('/api/setlists/songs', {
-        method: 'POST',
+      const response = await fetch("/api/setlists/songs", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           setlistId,
@@ -170,38 +182,38 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
           const data = await setlistsResponse.json();
           setSetlists(data.setlists || []);
         }
-        setSongSearch('');
+        setSongSearch("");
         setSearchResults([]);
       }
     } catch (error) {
-      console.error('Error adding song:', error);
+      console.error("Error adding song:", error);
     }
   };
 
   const formatDuration = (ms?: number) => {
-    if (!ms) return '';
+    if (!ms) return "";
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'upcoming':
-        return 'bg-blue-500';
-      case 'ongoing':
-        return 'bg-green-500';
-      case 'completed':
-        return 'bg-gray-500';
-      case 'cancelled':
-        return 'bg-red-500';
+      case "upcoming":
+        return "bg-blue-500";
+      case "ongoing":
+        return "bg-green-500";
+      case "completed":
+        return "bg-gray-500";
+      case "cancelled":
+        return "bg-red-500";
       default:
-        return 'bg-gray-500';
+        return "bg-gray-500";
     }
   };
 
-  const predictedSetlist = setlists.find(s => s.type === 'predicted');
-  const actualSetlist = setlists.find(s => s.type === 'actual');
+  const predictedSetlist = setlists.find((s) => s.type === "predicted");
+  const actualSetlist = setlists.find((s) => s.type === "actual");
 
   return (
     <div className="min-h-screen bg-background">
@@ -233,7 +245,9 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
               <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-2">
-                    <div className={`w-3 h-3 rounded-full ${getStatusColor(show.status)}`} />
+                    <div
+                      className={`w-3 h-3 rounded-full ${getStatusColor(show.status)}`}
+                    />
                     <Badge variant="secondary">{show.status}</Badge>
                     {isConnected && (
                       <Badge variant="outline" className="gap-1">
@@ -242,8 +256,10 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
                       </Badge>
                     )}
                   </div>
-                  <h1 className="text-3xl font-bold md:text-4xl">{show.name}</h1>
-                  <Link 
+                  <h1 className="text-3xl font-bold md:text-4xl">
+                    {show.name}
+                  </h1>
+                  <Link
                     href={`/artists/${show.artist.slug}`}
                     className="text-xl text-primary hover:underline"
                   >
@@ -254,7 +270,11 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
                 <div className="flex gap-2">
                   {show.ticketUrl && (
                     <Button asChild>
-                      <a href={show.ticketUrl} target="_blank" rel="noopener noreferrer">
+                      <a
+                        href={show.ticketUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
                         Get Tickets
                       </a>
                     </Button>
@@ -272,11 +292,11 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Calendar className="h-4 w-4" />
-                    {new Date(show.date).toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
+                    {new Date(show.date).toLocaleDateString("en-US", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
                     })}
                   </div>
                   {show.startTime && (
@@ -288,7 +308,7 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
                   )}
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <MapPin className="h-4 w-4" />
-                    <Link 
+                    <Link
                       href={`/venues/${show.venue.slug}`}
                       className="hover:underline"
                     >
@@ -300,8 +320,11 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
                 <div className="space-y-2">
                   {show.minPrice && (
                     <div className="text-muted-foreground">
-                      Tickets: {show.currency}{show.minPrice}
-                      {show.maxPrice && show.maxPrice !== show.minPrice && ` - ${show.currency}${show.maxPrice}`}
+                      Tickets: {show.currency}
+                      {show.minPrice}
+                      {show.maxPrice &&
+                        show.maxPrice !== show.minPrice &&
+                        ` - ${show.currency}${show.maxPrice}`}
                     </div>
                   )}
                   <div className="flex gap-4 text-sm text-muted-foreground">
@@ -313,7 +336,9 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
               </div>
 
               {show.description && (
-                <p className="text-muted-foreground leading-relaxed">{show.description}</p>
+                <p className="text-muted-foreground leading-relaxed">
+                  {show.description}
+                </p>
               )}
             </div>
           </div>
@@ -396,13 +421,18 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
                               <div>
                                 <div className="font-medium">{song.title}</div>
                                 <div className="text-sm text-muted-foreground">
-                                  {song.album} {song.durationMs && `• ${formatDuration(song.durationMs)}`}
+                                  {song.album}{" "}
+                                  {song.durationMs &&
+                                    `• ${formatDuration(song.durationMs)}`}
                                 </div>
                               </div>
                             </div>
                             <Button
                               size="sm"
-                              onClick={() => predictedSetlist && addSongToSetlist(song.id, predictedSetlist.id)}
+                              onClick={() =>
+                                predictedSetlist &&
+                                addSongToSetlist(song.id, predictedSetlist.id)
+                              }
                             >
                               Add
                             </Button>
@@ -442,49 +472,59 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
                   {predictedSetlist.songs
                     .sort((a, b) => b.netVotes - a.netVotes)
                     .map((setlistSong, index) => (
-                    <Card key={setlistSong.id} className="hover:shadow-sm transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-sm font-medium">
-                              {index + 1}
-                            </div>
-                            {setlistSong.song.albumArtUrl ? (
-                              <Image
-                                src={setlistSong.song.albumArtUrl}
-                                alt={setlistSong.song.album || setlistSong.song.title}
-                                width={40}
-                                height={40}
-                                className="rounded"
-                              />
-                            ) : (
-                              <div className="w-10 h-10 bg-muted rounded flex items-center justify-center">
-                                <Music className="h-4 w-4" />
+                      <Card
+                        key={setlistSong.id}
+                        className="hover:shadow-sm transition-shadow"
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted text-sm font-medium">
+                                {index + 1}
                               </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium truncate">{setlistSong.song.title}</div>
-                              <div className="text-sm text-muted-foreground truncate">
-                                {setlistSong.song.album}
-                                {setlistSong.song.durationMs && ` • ${formatDuration(setlistSong.song.durationMs)}`}
-                                {setlistSong.notes && ` • ${setlistSong.notes}`}
+                              {setlistSong.song.albumArtUrl ? (
+                                <Image
+                                  src={setlistSong.song.albumArtUrl}
+                                  alt={
+                                    setlistSong.song.album ||
+                                    setlistSong.song.title
+                                  }
+                                  width={40}
+                                  height={40}
+                                  className="rounded"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 bg-muted rounded flex items-center justify-center">
+                                  <Music className="h-4 w-4" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium truncate">
+                                  {setlistSong.song.title}
+                                </div>
+                                <div className="text-sm text-muted-foreground truncate">
+                                  {setlistSong.song.album}
+                                  {setlistSong.song.durationMs &&
+                                    ` • ${formatDuration(setlistSong.song.durationMs)}`}
+                                  {setlistSong.notes &&
+                                    ` • ${setlistSong.notes}`}
+                                </div>
                               </div>
                             </div>
+                            <RealtimeVoting
+                              setlistSongId={setlistSong.id}
+                              initialVotes={{
+                                upvotes: setlistSong.upvotes,
+                                downvotes: setlistSong.downvotes,
+                                netVotes: setlistSong.netVotes,
+                                userVote: setlistSong.userVote || null,
+                              }}
+                              userId={userId}
+                            />
                           </div>
-                          <RealtimeVoting
-                            setlistSongId={setlistSong.id}
-                            initialVotes={{
-                              upvotes: setlistSong.upvotes,
-                              downvotes: setlistSong.downvotes,
-                              netVotes: setlistSong.netVotes,
-                              userVote: setlistSong.userVote || null,
-                            }}
-                            userId={userId}
-                          />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    ))}
                 </div>
               ) : (
                 <Card>
@@ -496,7 +536,8 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
                     </p>
                     {userId ? (
                       <p className="text-sm text-muted-foreground">
-                        Use the search above to add songs to the predicted setlist.
+                        Use the search above to add songs to the predicted
+                        setlist.
                       </p>
                     ) : (
                       <Button asChild>
@@ -522,7 +563,9 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
                             {index + 1}
                           </div>
                           <div className="flex-1">
-                            <div className="font-medium">{setlistSong.song.title}</div>
+                            <div className="font-medium">
+                              {setlistSong.song.title}
+                            </div>
                             <div className="text-sm text-muted-foreground">
                               {setlistSong.song.album}
                               {setlistSong.notes && ` • ${setlistSong.notes}`}
@@ -540,9 +583,12 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
                 <Card>
                   <CardContent className="flex flex-col items-center justify-center py-12 text-center">
                     <Music className="h-12 w-12 text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No Actual Setlist Yet</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                      No Actual Setlist Yet
+                    </h3>
                     <p className="text-muted-foreground">
-                      The actual setlist will be updated during or after the show.
+                      The actual setlist will be updated during or after the
+                      show.
                     </p>
                   </CardContent>
                 </Card>
@@ -571,7 +617,9 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
                   </div>
                   <div className="flex justify-between">
                     <span>Trending Score</span>
-                    <span className="font-semibold">{show.trendingScore.toFixed(1)}</span>
+                    <span className="font-semibold">
+                      {show.trendingScore.toFixed(1)}
+                    </span>
                   </div>
                 </CardContent>
               </Card>

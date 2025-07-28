@@ -1,5 +1,5 @@
-import { createMetadata } from '@repo/seo/metadata';
-import type { Metadata } from 'next';
+import { createMetadata } from "@repo/seo/metadata";
+import type { Metadata } from "next";
 
 interface BaseMetadataProps {
   title: string;
@@ -30,7 +30,7 @@ export function createPageMetadata(props: BaseMetadataProps): Metadata {
         : undefined,
     },
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       title: props.title,
       description: props.description,
       images: props.image ? [props.image] : undefined,
@@ -71,15 +71,15 @@ export function createShowMetadata(show: {
   slug: string;
   image?: string;
 }): Metadata {
-  const formattedDate = show.date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  const formattedDate = show.date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 
   const location = show.venue
-    ? `${show.venue}${show.city ? ` in ${show.city}` : ''}`
-    : show.city || 'TBA';
+    ? `${show.venue}${show.city ? ` in ${show.city}` : ""}`
+    : show.city || "TBA";
 
   return createPageMetadata({
     title: `${show.headliner} - ${formattedDate} at ${location} | MySetlist`,
@@ -106,7 +106,7 @@ export function createVenueMetadata(venue: {
 
   const description =
     venue.description ||
-    `Concert venue in ${location}. ${venue.capacity ? `Capacity: ${venue.capacity.toLocaleString()}. ` : ''}${venue.upcomingShowCount ? `${venue.upcomingShowCount} upcoming shows. ` : ''}Get insider tips, parking info, and plan your perfect show experience.`;
+    `Concert venue in ${location}. ${venue.capacity ? `Capacity: ${venue.capacity.toLocaleString()}. ` : ""}${venue.upcomingShowCount ? `${venue.upcomingShowCount} upcoming shows. ` : ""}Get insider tips, parking info, and plan your perfect show experience.`;
 
   return createPageMetadata({
     title: `${venue.name} - ${location} | MySetlist`,
@@ -119,11 +119,11 @@ export function createVenueMetadata(venue: {
 export function createSearchMetadata(query?: string): Metadata {
   const title = query
     ? `Search results for "${query}" | MySetlist`
-    : 'Search Artists, Shows & Venues | MySetlist';
+    : "Search Artists, Shows & Venues | MySetlist";
 
   const description = query
     ? `Find artists, concerts, and venues matching "${query}". Discover setlists, upcoming shows, and connect with fans.`
-    : 'Search for your favorite artists, upcoming shows, and concert venues. Find setlists, vote on songs, and discover new music.';
+    : "Search for your favorite artists, upcoming shows, and concert venues. Find setlists, vote on songs, and discover new music.";
 
   return createPageMetadata({
     title,

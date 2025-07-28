@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/avatar";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
+} from "@repo/design-system/components/ui/tabs";
 import {
   Activity,
   Calendar,
@@ -28,11 +28,11 @@ import {
   Music,
   Settings,
   User,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { ProtectedRoute } from '../components/protected-route';
-import { useAuth } from '../providers/auth-provider';
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { ProtectedRoute } from "../components/protected-route";
+import { useAuth } from "../providers/auth-provider";
 
 interface UserProfile {
   id: string;
@@ -48,7 +48,7 @@ interface UserProfile {
 
 interface UserActivity {
   id: string;
-  type: 'follow' | 'vote' | 'setlist_create' | 'show_attend';
+  type: "follow" | "vote" | "setlist_create" | "show_attend";
   artist?: string;
   show?: string;
   timestamp: string;
@@ -94,22 +94,22 @@ export default function ProfilePage() {
   }, [user?.id]);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'follow':
+      case "follow":
         return <Heart className="h-4 w-4" />;
-      case 'vote':
+      case "vote":
         return <Activity className="h-4 w-4" />;
-      case 'setlist_create':
+      case "setlist_create":
         return <Music className="h-4 w-4" />;
-      case 'show_attend':
+      case "show_attend":
         return <Calendar className="h-4 w-4" />;
       default:
         return <Activity className="h-4 w-4" />;
@@ -153,8 +153,8 @@ export default function ProfilePage() {
                 <div>
                   <h1 className="font-bold text-2xl md:text-3xl">
                     {profile?.displayName ||
-                      user?.email?.split('@')[0] ||
-                      'Music Fan'}
+                      user?.email?.split("@")[0] ||
+                      "Music Fan"}
                   </h1>
                   <p className="text-muted-foreground">{user?.email}</p>
                   {profile?.bio && (
@@ -199,7 +199,7 @@ export default function ProfilePage() {
                 <div className="font-bold text-2xl">
                   {followedArtists.reduce(
                     (sum, artist) => sum + artist.upcomingShows,
-                    0
+                    0,
                   )}
                 </div>
                 <div className="text-muted-foreground text-sm">
@@ -208,11 +208,11 @@ export default function ProfilePage() {
               </div>
               <div className="text-center">
                 <Badge
-                  variant={profile?.spotifyConnected ? 'default' : 'outline'}
+                  variant={profile?.spotifyConnected ? "default" : "outline"}
                 >
                   {profile?.spotifyConnected
-                    ? 'Spotify Connected'
-                    : 'Connect Spotify'}
+                    ? "Spotify Connected"
+                    : "Connect Spotify"}
                 </Badge>
               </div>
             </div>
@@ -297,7 +297,7 @@ export default function ProfilePage() {
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-medium">{artist.name}</p>
                           <p className="text-muted-foreground text-xs">
-                            {artist.genres.slice(0, 2).join(', ')}
+                            {artist.genres.slice(0, 2).join(", ")}
                           </p>
                         </div>
                         {artist.upcomingShows > 0 && (
@@ -357,7 +357,7 @@ export default function ProfilePage() {
                             {artist.name}
                           </h3>
                           <p className="text-muted-foreground text-sm">
-                            {artist.genres.slice(0, 2).join(', ')}
+                            {artist.genres.slice(0, 2).join(", ")}
                           </p>
                         </div>
                       </div>

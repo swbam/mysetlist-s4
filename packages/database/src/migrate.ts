@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import 'dotenv/config';
-import { readFile, readdir } from 'node:fs/promises';
-import { join } from 'node:path';
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { createClient } from '@supabase/supabase-js';
+import "dotenv/config";
+import { readFile, readdir } from "node:fs/promises";
+import { join } from "node:path";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { createClient } from "@supabase/supabase-js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -30,12 +30,14 @@ class SupabaseMigrationRunner {
 
   constructor() {
     this.supabaseUrl =
-      process.env['NEXT_PUBLIC_SUPABASE_URL'] || process.env['SUPABASE_URL'] || '';
-    this.supabaseServiceKey = process.env['SUPABASE_SERVICE_ROLE_KEY'] || '';
+      process.env["NEXT_PUBLIC_SUPABASE_URL"] ||
+      process.env["SUPABASE_URL"] ||
+      "";
+    this.supabaseServiceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"] || "";
 
     if (!this.supabaseUrl || !this.supabaseServiceKey) {
       throw new Error(
-        'Missing required environment variables: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY'
+        "Missing required environment variables: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY",
       );
     }
 
@@ -60,7 +62,7 @@ class SupabaseMigrationRunner {
 
       // Filter pending migrations
       const pendingMigrations = migrationFiles.filter(
-        (m) => !executedMigrations.includes(m.version)
+        (m) => !executedMigrations.includes(m.version),
       );
 
       if (pendingMigrations.length === 0) {
@@ -78,11 +80,11 @@ class SupabaseMigrationRunner {
 
   private async getExecutedMigrations(): Promise<string[]> {
     const { data, error } = await this.client
-      .from('schema_migrations')
-      .select('version')
-      .order('version');
+      .from("schema_migrations")
+      .select("version")
+      .order("version");
 
-    if (error && error.code !== 'PGRST116') {
+    if (error && error.code !== "PGRST116") {
       // Table doesn't exist error
       throw error;
     }
@@ -91,17 +93,17 @@ class SupabaseMigrationRunner {
   }
 
   private async getMigrationFiles(
-    migrationsDir: string
+    migrationsDir: string,
   ): Promise<MigrationFile[]> {
     const files = await readdir(migrationsDir);
-    const sqlFiles = files.filter((f) => f.endsWith('.sql')).sort();
+    const sqlFiles = files.filter((f) => f.endsWith(".sql")).sort();
 
     const migrations: MigrationFile[] = [];
 
     for (const filename of sqlFiles) {
       const filepath = join(migrationsDir, filename);
-      const sql = await readFile(filepath, 'utf-8');
-      const version = filename.replace('.sql', '');
+      const sql = await readFile(filepath, "utf-8");
+      const version = filename.replace(".sql", "");
 
       migrations.push({ filename, version, sql });
     }
@@ -115,7 +117,7 @@ class SupabaseMigrationRunner {
 
     // Record migration as executed
     const { error } = await this.client
-      .from('schema_migrations')
+      .from("schema_migrations")
       .insert({ version: migration.version });
 
     if (error) {
@@ -132,12 +134,12 @@ class SupabaseMigrationRunner {
 
     for (const statement of statements) {
       // Skip empty statements and comments
-      if (!statement || statement.startsWith('--')) {
+      if (!statement || statement.startsWith("--")) {
         continue;
       }
 
       // Use Supabase's rpc to execute raw SQL
-      const { error } = await this.client.rpc('exec_sql', {
+      const { error } = await this.client.rpc("exec_sql", {
         sql: `${statement};`,
       });
 
@@ -170,7 +172,7 @@ async function main() {
     await runner.executeSql(CREATE_EXEC_SQL_FUNCTION);
   } catch (_error) {}
 
-  const migrationsDir = join(__dirname, '..', 'migrations');
+  const migrationsDir = join(__dirname, "..", "migrations");
   await runner.runMigrations(migrationsDir);
 }
 

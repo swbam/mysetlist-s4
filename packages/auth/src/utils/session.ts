@@ -1,8 +1,8 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { keys } from '../../keys';
-import type { AuthSession, AuthUser } from '../types';
-import type { User } from '@supabase/supabase-js';
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { keys } from "../../keys";
+import type { AuthSession, AuthUser } from "../types";
+import type { User } from "@supabase/supabase-js";
 
 const env = keys();
 
@@ -11,9 +11,10 @@ function mapSupabaseUserToAuthUser(user: User): AuthUser {
   return {
     ...user,
     profile: {
-      id: '',
+      id: "",
       userId: user.id,
-      displayName: user.user_metadata?.['displayName'] || user.email?.split('@')[0] || '',
+      displayName:
+        user.user_metadata?.["displayName"] || user.email?.split("@")[0] || "",
       isPublic: true,
       showAttendedShows: true,
       showVotedSongs: true,
@@ -25,15 +26,15 @@ function mapSupabaseUserToAuthUser(user: User): AuthUser {
     },
     preferences: {
       emailPreferences: {
-        id: '',
+        id: "",
         userId: user.id,
         emailEnabled: true,
         showReminders: true,
-        showReminderFrequency: 'daily',
+        showReminderFrequency: "daily",
         newShowNotifications: true,
-        newShowFrequency: 'daily',
+        newShowFrequency: "daily",
         setlistUpdates: true,
-        setlistUpdateFrequency: 'immediately',
+        setlistUpdateFrequency: "immediately",
         weeklyDigest: false,
         marketingEmails: false,
         securityEmails: true,
@@ -72,7 +73,7 @@ export async function createServerSession() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {
             // The `setAll` method was called from a Server Component.
@@ -81,7 +82,7 @@ export async function createServerSession() {
           }
         },
       },
-    }
+    },
   );
 }
 
@@ -124,23 +125,23 @@ export async function validateServerSession(): Promise<AuthUser | null> {
 export async function requireServerAuth(): Promise<AuthUser> {
   const user = await validateServerSession();
   if (!user) {
-    throw new Error('Authentication required');
+    throw new Error("Authentication required");
   }
   return user;
 }
 
 export async function requireServerRole(
-  requiredRole: 'user' | 'moderator' | 'admin'
+  requiredRole: "user" | "moderator" | "admin",
 ): Promise<AuthUser> {
   const user = await requireServerAuth();
-  const userRole = user.app_metadata?.['role'] || 'user';
+  const userRole = user.app_metadata?.["role"] || "user";
 
   const roleHierarchy = { user: 0, moderator: 1, admin: 2 };
   const userLevel = roleHierarchy[userRole as keyof typeof roleHierarchy] ?? 0;
   const requiredLevel = roleHierarchy[requiredRole] ?? 0;
 
   if (userLevel < requiredLevel) {
-    throw new Error('Insufficient permissions');
+    throw new Error("Insufficient permissions");
   }
 
   return user;
@@ -153,7 +154,7 @@ export function isSessionExpired(expiresAt: number): boolean {
 
 export function isSessionExpiringSoon(
   expiresAt: number,
-  thresholdMinutes = 5
+  thresholdMinutes = 5,
 ): boolean {
   const threshold = thresholdMinutes * 60; // Convert to seconds
   const timeLeft = expiresAt - Date.now() / 1000;
@@ -168,7 +169,7 @@ export function formatSessionTimeLeft(expiresAt: number): string {
   const timeLeft = getSessionTimeLeft(expiresAt);
 
   if (timeLeft <= 0) {
-    return 'Expired';
+    return "Expired";
   }
 
   const hours = Math.floor(timeLeft / 3600);

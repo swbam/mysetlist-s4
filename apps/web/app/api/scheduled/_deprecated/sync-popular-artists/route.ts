@@ -1,8 +1,8 @@
-import { db } from '@repo/database';
-import { artists } from '@repo/database';
-import { desc, isNull, lte, or, sql } from 'drizzle-orm';
-import { headers } from 'next/headers';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { artists } from "@repo/database";
+import { desc, isNull, lte, or, sql } from "drizzle-orm";
+import { headers } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * Cron job to sync popular artists data
@@ -11,10 +11,10 @@ import { type NextRequest, NextResponse } from 'next/server';
 export async function GET(_request: NextRequest) {
   // Verify cron secret
   const headersList = await headers();
-  const cronSecret = headersList.get('x-cron-secret');
+  const cronSecret = headersList.get("x-cron-secret");
 
-  if (process.env['CRON_SECRET'] && cronSecret !== process.env['CRON_SECRET']) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (process.env["CRON_SECRET"] && cronSecret !== process.env["CRON_SECRET"]) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -40,13 +40,13 @@ export async function GET(_request: NextRequest) {
         or(
           isNull(artists.lastFullSyncAt),
           lte(artists.lastFullSyncAt, staleDate),
-          sql`${artists.trendingScore} > 0.5`
-        )
+          sql`${artists.trendingScore} > 0.5`,
+        ),
       )
       .orderBy(
         desc(artists.popularity),
         desc(artists.trendingScore),
-        desc(artists.followerCount)
+        desc(artists.followerCount),
       )
       .limit(20); // Limit to prevent timeout
 
@@ -56,13 +56,13 @@ export async function GET(_request: NextRequest) {
     for (const artist of artistsToSync) {
       try {
         const syncUrl =
-          process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001';
+          process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
         const response = await fetch(`${syncUrl}/api/sync/unified-pipeline`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             artistId: artist.id,
-            mode: 'single',
+            mode: "single",
           }),
         });
 
@@ -87,7 +87,7 @@ export async function GET(_request: NextRequest) {
         results.details.push({
           artist: artist.name,
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         });
       }
 
@@ -106,10 +106,10 @@ export async function GET(_request: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Cron sync failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Cron sync failed",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

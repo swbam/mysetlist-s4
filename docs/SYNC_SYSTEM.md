@@ -32,11 +32,13 @@ NEXT_PUBLIC_APP_URL=http://localhost:3001
 ### 1. Artist Sync API (`/api/artists/sync`)
 
 The main sync endpoint that:
+
 - Accepts artist data from Spotify and/or Ticketmaster
 - Creates or updates artist records in the database
 - Triggers background jobs for song catalog and show syncing
 
 **POST endpoint:**
+
 ```bash
 curl -X POST http://localhost:3001/api/artists/sync \
   -H "Content-Type: application/json" \
@@ -44,6 +46,7 @@ curl -X POST http://localhost:3001/api/artists/sync \
 ```
 
 **GET endpoint:**
+
 ```bash
 # Automatically syncs top 10 trending artists with upcoming US shows
 curl http://localhost:3001/api/artists/sync
@@ -52,11 +55,13 @@ curl http://localhost:3001/api/artists/sync
 ### 2. Edge Functions
 
 #### `sync-song-catalog`
+
 - Fetches an artist's complete discography from Spotify
 - Imports all songs, albums, and metadata
 - Updates artist statistics
 
 #### `sync-artist-shows`
+
 - Fetches upcoming shows from Ticketmaster
 - Creates venue records as needed
 - Links shows to artists and venues
@@ -64,36 +69,42 @@ curl http://localhost:3001/api/artists/sync
 ### 3. Sync Scripts
 
 #### `sync-trending-artists.ts`
+
 ```bash
 # Sync top 10 trending artists with upcoming shows
 pnpm sync:artists
 ```
 
 This script:
+
 1. Queries Ticketmaster for upcoming music events in the US
 2. Identifies the most popular artists by show count
 3. Matches artists with Spotify for additional metadata
 4. Syncs each artist through the API
 
 #### `comprehensive-e2e-test.ts`
+
 ```bash
 # Run comprehensive tests on synced data
 pnpm test:e2e
 ```
 
 This script verifies:
+
 - Artists exist with proper data
 - Shows are properly linked to artists and venues
 - API endpoints return correct data
 - Data integrity is maintained
 
 ### 4. All-in-One Command
+
 ```bash
 # Sync artists and run tests
 pnpm allofit
 ```
 
 This runs:
+
 1. `sync:artists` - Syncs trending artists
 2. Waits 5 seconds for background jobs
 3. `test:e2e` - Runs comprehensive tests
@@ -114,6 +125,7 @@ This runs:
    - Edge Function: `sync-artist-shows` → Import shows and venues
 
 4. **Data Storage**
+
    ```
    artists (table)
    ├── Basic info from Spotify
@@ -160,6 +172,7 @@ This runs:
 ### Monitoring Sync Progress
 
 1. **Check database counts:**
+
    ```sql
    SELECT COUNT(*) FROM artists;
    SELECT COUNT(*) FROM shows WHERE status = 'upcoming';
@@ -168,6 +181,7 @@ This runs:
    ```
 
 2. **View sync logs:**
+
    ```bash
    # Supabase edge function logs
    supabase functions logs sync-song-catalog
@@ -176,8 +190,8 @@ This runs:
 
 3. **Check artist sync status:**
    ```sql
-   SELECT name, last_synced_at, song_catalog_synced_at 
-   FROM artists 
+   SELECT name, last_synced_at, song_catalog_synced_at
+   FROM artists
    ORDER BY last_synced_at DESC;
    ```
 

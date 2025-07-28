@@ -85,4 +85,4 @@ export const cacheManager = {
   },
 };
 
-export const getCacheKey = (...parts: string[]) => parts.join(':');
+export const getCacheKey = (...parts: string[]) => parts.join(":");

@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/alert";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Progress } from '@repo/design-system/components/ui/progress';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
+} from "@repo/design-system/components/ui/card";
+import { Progress } from "@repo/design-system/components/ui/progress";
+import { cn } from "@repo/design-system/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   AlertCircle,
   CheckCircle,
@@ -26,10 +26,10 @@ import {
   Volume2,
   Wifi,
   WifiOff,
-} from 'lucide-react';
-import React, { useState } from 'react';
-import { VoteButton } from '~/components/voting/vote-button';
-import { useRealtimeSetlist } from '~/hooks/use-realtime-setlist';
+} from "lucide-react";
+import React, { useState } from "react";
+import { VoteButton } from "~/components/voting/vote-button";
+import { useRealtimeSetlist } from "~/hooks/use-realtime-setlist";
 
 type EnhancedSetlistViewerProps = {
   showId: string;
@@ -38,7 +38,7 @@ type EnhancedSetlistViewerProps = {
 export const EnhancedSetlistViewer = ({
   showId,
 }: EnhancedSetlistViewerProps) => {
-  const [activeSetlist, setActiveSetlist] = useState<string>('predicted');
+  const [activeSetlist, setActiveSetlist] = useState<string>("predicted");
   const [realtimeEvents, setRealtimeEvents] = useState<
     Array<{ id: string; message: string; timestamp: Date }>
   >([]);
@@ -55,10 +55,10 @@ export const EnhancedSetlistViewer = ({
     showId,
     onEvent: (event) => {
       // Handle real-time events
-      let message = '';
+      let message = "";
 
       switch (event.type) {
-        case 'song_played': {
+        case "song_played": {
           const playedSong = setlists
             .flatMap((s) => s.songs)
             .find((s) => s.id === event.data.songId);
@@ -67,15 +67,15 @@ export const EnhancedSetlistViewer = ({
           }
           break;
         }
-        case 'vote_update':
-          message = 'Vote counts updated';
+        case "vote_update":
+          message = "Vote counts updated";
           break;
-        case 'setlist_update':
-          message = 'Setlist updated';
+        case "setlist_update":
+          message = "Setlist updated";
           break;
-        case 'connection_change':
-          if (event.data?.status === 'connected') {
-            message = 'Live updates connected';
+        case "connection_change":
+          if (event.data?.status === "connected") {
+            message = "Live updates connected";
           }
           break;
       }
@@ -100,13 +100,13 @@ export const EnhancedSetlistViewer = ({
 
   const handleVote = async (
     setlistSongId: string,
-    voteType: 'up' | 'down' | null
+    voteType: "up" | "down" | null,
   ) => {
     try {
-      const response = await fetch('/api/votes', {
-        method: 'POST',
+      const response = await fetch("/api/votes", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           setlistSongId,
@@ -121,20 +121,20 @@ export const EnhancedSetlistViewer = ({
 
   const formatDuration = (durationMs?: number) => {
     if (!durationMs) {
-      return '?:??';
+      return "?:??";
     }
     const minutes = Math.floor(durationMs / 60000);
     const seconds = Math.floor((durationMs % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   const getConnectionIcon = () => {
     switch (connectionStatus) {
-      case 'connected':
+      case "connected":
         return <Wifi className="h-4 w-4 text-green-500" />;
-      case 'connecting':
+      case "connecting":
         return <Wifi className="h-4 w-4 animate-pulse text-yellow-500" />;
-      case 'error':
+      case "error":
         return <AlertCircle className="h-4 w-4 text-red-500" />;
       default:
         return <WifiOff className="h-4 w-4 text-muted-foreground" />;
@@ -143,14 +143,14 @@ export const EnhancedSetlistViewer = ({
 
   const getConnectionMessage = () => {
     switch (connectionStatus) {
-      case 'connected':
-        return 'Live updates active';
-      case 'connecting':
-        return 'Connecting...';
-      case 'error':
-        return 'Connection error';
+      case "connected":
+        return "Live updates active";
+      case "connecting":
+        return "Connecting...";
+      case "error":
+        return "Connection error";
       default:
-        return 'Disconnected';
+        return "Disconnected";
     }
   };
 
@@ -189,7 +189,7 @@ export const EnhancedSetlistViewer = ({
   const currentlyPlaying = songs.find(
     (s) =>
       s.isPlayed &&
-      songs.findIndex((song) => song.isPlayed) === songs.lastIndexOf(s)
+      songs.findIndex((song) => song.isPlayed) === songs.lastIndexOf(s),
   );
 
   return (
@@ -262,13 +262,13 @@ export const EnhancedSetlistViewer = ({
                   key={setlist.id}
                   onClick={() => setActiveSetlist(setlist.type)}
                   className={cn(
-                    'rounded-md px-3 py-1 text-sm transition-colors',
+                    "rounded-md px-3 py-1 text-sm transition-colors",
                     activeSetlist === setlist.type
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80",
                   )}
                 >
-                  {setlist.type === 'predicted' ? 'Predicted' : 'Actual'}
+                  {setlist.type === "predicted" ? "Predicted" : "Actual"}
                 </button>
               ))}
             </div>
@@ -293,11 +293,11 @@ export const EnhancedSetlistViewer = ({
                   key={setlistSong.id}
                   layout
                   className={cn(
-                    'p-4 transition-all duration-300',
+                    "p-4 transition-all duration-300",
                     setlistSong.isPlayed &&
-                      'bg-green-50/50 dark:bg-green-950/20',
+                      "bg-green-50/50 dark:bg-green-950/20",
                     isCurrentlyPlaying &&
-                      'border-primary border-l-4 bg-primary/5'
+                      "border-primary border-l-4 bg-primary/5",
                   )}
                 >
                   <div className="flex items-center justify-between">
@@ -318,8 +318,8 @@ export const EnhancedSetlistViewer = ({
                         <div className="mb-1 flex items-center gap-2">
                           <h3
                             className={cn(
-                              'font-semibold transition-colors',
-                              isCurrentlyPlaying && 'text-primary'
+                              "font-semibold transition-colors",
+                              isCurrentlyPlaying && "text-primary",
                             )}
                           >
                             {setlistSong.song.title}
@@ -345,9 +345,9 @@ export const EnhancedSetlistViewer = ({
                             <>
                               <span>•</span>
                               <span>
-                                Played at{' '}
+                                Played at{" "}
                                 {new Date(
-                                  setlistSong.playTime
+                                  setlistSong.playTime,
                                 ).toLocaleTimeString()}
                               </span>
                             </>
@@ -369,13 +369,18 @@ export const EnhancedSetlistViewer = ({
                       {/* Vote Button */}
                       {React.createElement(VoteButton as any, {
                         setlistSongId: setlistSong.id,
-                        ...(setlistSong.userVote !== undefined && { currentVote: setlistSong.userVote }),
+                        ...(setlistSong.userVote !== undefined && {
+                          currentVote: setlistSong.userVote,
+                        }),
                         upvotes: setlistSong.upvotes,
                         downvotes: setlistSong.downvotes,
-                        onVote: (voteType: any) => handleVote(setlistSong.id, voteType),
-                        disabled: !setlistSong.isPlayed && currentSetlist.type === 'actual',
+                        onVote: (voteType: any) =>
+                          handleVote(setlistSong.id, voteType),
+                        disabled:
+                          !setlistSong.isPlayed &&
+                          currentSetlist.type === "actual",
                         variant: "compact",
-                        size: "sm"
+                        size: "sm",
                       })}
                     </div>
                   </div>
@@ -387,12 +392,12 @@ export const EnhancedSetlistViewer = ({
       </Card>
 
       {/* Connection Issues Alert */}
-      {connectionStatus === 'error' && (
+      {connectionStatus === "error" && (
         <Alert variant="destructive" className="mt-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             Real-time updates are unavailable. The page will automatically
-            reconnect when possible. You can also{' '}
+            reconnect when possible. You can also{" "}
             <Button variant="link" className="h-auto p-0" onClick={refetch}>
               refresh manually
             </Button>

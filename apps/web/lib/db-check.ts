@@ -9,19 +9,19 @@ export async function checkDatabaseConnection() {
 
   // Check 1: Environment variables
   checks.hasEnvVars = !!(
-    process.env['DATABASE_URL'] &&
-    process.env['NEXT_PUBLIC_SUPABASE_URL'] &&
-    process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY']
+    process.env["DATABASE_URL"] &&
+    process.env["NEXT_PUBLIC_SUPABASE_URL"] &&
+    process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]
   );
 
   if (!checks.hasEnvVars) {
     checks.error = {
-      message: 'Missing required environment variables',
+      message: "Missing required environment variables",
       details: {
-        DATABASE_URL: !!process.env['DATABASE_URL'],
-        NEXT_PUBLIC_SUPABASE_URL: !!process.env['NEXT_PUBLIC_SUPABASE_URL'],
+        DATABASE_URL: !!process.env["DATABASE_URL"],
+        NEXT_PUBLIC_SUPABASE_URL: !!process.env["NEXT_PUBLIC_SUPABASE_URL"],
         NEXT_PUBLIC_SUPABASE_ANON_KEY:
-          !!process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'],
+          !!process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"],
       },
     };
     return checks;
@@ -29,7 +29,7 @@ export async function checkDatabaseConnection() {
 
   try {
     // Check 2: Can import database package
-    const dbModule = await import('@repo/database');
+    const dbModule = await import("@repo/database");
     checks.canImportPackage = true;
 
     // Check 3: Can execute a query
@@ -38,14 +38,15 @@ export async function checkDatabaseConnection() {
       checks.canConnectToDb = true;
     } else {
       checks.error = {
-        message: 'Database module imported but db instance is undefined',
+        message: "Database module imported but db instance is undefined",
       };
     }
   } catch (error: any) {
     checks.error = {
       message: error.message,
       code: error.code,
-      stack: process.env['NODE_ENV'] === 'development' ? error.stack : undefined,
+      stack:
+        process.env["NODE_ENV"] === "development" ? error.stack : undefined,
     };
   }
 

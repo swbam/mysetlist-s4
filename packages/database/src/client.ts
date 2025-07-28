@@ -1,8 +1,8 @@
 // Remove server-only import to allow client usage
 // import 'server-only';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import * as schema from './schema';
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import * as schema from "./schema";
 
 // Lazy initialization to avoid errors during build time
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -11,16 +11,16 @@ let _client: postgres.Sql | null = null;
 // Get database URL from environment variables
 function getDatabaseUrl(): string {
   // Try env first
-  const url = process.env['DATABASE_URL'] || process.env['DIRECT_URL'];
-  
+  const url = process.env["DATABASE_URL"] || process.env["DIRECT_URL"];
+
   // Throw error if not found - never use hardcoded credentials
   if (!url) {
     throw new Error(
-      'DATABASE_URL or DIRECT_URL must be set in environment variables. ' +
-      'Please check your .env.local file and ensure database credentials are properly configured.'
+      "DATABASE_URL or DIRECT_URL must be set in environment variables. " +
+        "Please check your .env.local file and ensure database credentials are properly configured.",
     );
   }
-  
+
   return url;
 }
 
@@ -35,13 +35,13 @@ export function getDb() {
     max: 10,
     idle_timeout: 20,
     connect_timeout: 10,
-    ssl: 'require',
+    ssl: "require",
     prepare: false, // Disable prepared statements for Supabase pooler
   });
 
   _db = drizzle(_client, {
     schema,
-    logger: process.env['NODE_ENV'] === 'development',
+    logger: process.env["NODE_ENV"] === "development",
   });
 
   return _db;
@@ -54,7 +54,7 @@ export const db = new Proxy({} as ReturnType<typeof drizzle>, {
     const value = Reflect.get(actualDb, prop, receiver);
 
     // If it's a function, bind it to the actual db instance
-    if (typeof value === 'function') {
+    if (typeof value === "function") {
       return value.bind(actualDb);
     }
 
@@ -92,7 +92,7 @@ export const migrationClient = new Proxy({} as postgres.Sql, {
 
       _migrationClient = postgres(connectionString, {
         max: 1,
-        ssl: 'require', // Always use SSL for Supabase
+        ssl: "require", // Always use SSL for Supabase
         prepare: false, // Disable prepared statements for Supabase pooler
       });
     }
@@ -112,6 +112,6 @@ export {
   ilike,
   isNull,
   isNotNull,
-} from 'drizzle-orm';
+} from "drizzle-orm";
 
 export type Database = ReturnType<typeof getDb>;

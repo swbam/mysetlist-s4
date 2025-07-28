@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface PerformanceMetrics {
   // Core Web Vitals
@@ -64,41 +64,41 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
         console.log(`Performance metric updated: ${key} = ${value}`);
       }
     },
-    [onMetricUpdate, debug]
+    [onMetricUpdate, debug],
   );
 
   // Core Web Vitals tracking
   useEffect(() => {
-    if (!trackCoreWebVitals || !('PerformanceObserver' in window)) {
+    if (!trackCoreWebVitals || !("PerformanceObserver" in window)) {
       return;
     }
 
     const observer = new PerformanceObserver((list) => {
       list.getEntries().forEach((entry) => {
-        if (entry.entryType === 'paint') {
-          if (entry.name === 'first-contentful-paint') {
-            updateMetric('fcp', entry.startTime);
+        if (entry.entryType === "paint") {
+          if (entry.name === "first-contentful-paint") {
+            updateMetric("fcp", entry.startTime);
           }
-        } else if (entry.entryType === 'largest-contentful-paint') {
-          updateMetric('lcp', entry.startTime);
-        } else if (entry.entryType === 'first-input') {
-          updateMetric('fid', (entry as any).processingStart - entry.startTime);
-        } else if (entry.entryType === 'layout-shift') {
+        } else if (entry.entryType === "largest-contentful-paint") {
+          updateMetric("lcp", entry.startTime);
+        } else if (entry.entryType === "first-input") {
+          updateMetric("fid", (entry as any).processingStart - entry.startTime);
+        } else if (entry.entryType === "layout-shift") {
           const layoutShiftEntry = entry as any;
           if (!layoutShiftEntry.hadRecentInput) {
             const currentCLS = metricsRef.current.cls || 0;
-            updateMetric('cls', currentCLS + layoutShiftEntry.value);
+            updateMetric("cls", currentCLS + layoutShiftEntry.value);
           }
-        } else if (entry.entryType === 'navigation') {
+        } else if (entry.entryType === "navigation") {
           const navEntry = entry as PerformanceNavigationTiming;
-          updateMetric('ttfb', navEntry.responseStart - navEntry.requestStart);
+          updateMetric("ttfb", navEntry.responseStart - navEntry.requestStart);
           updateMetric(
-            'domContentLoaded',
-            navEntry.domContentLoadedEventEnd - navEntry.startTime
+            "domContentLoaded",
+            navEntry.domContentLoadedEventEnd - navEntry.startTime,
           );
           updateMetric(
-            'loadComplete',
-            navEntry.loadEventEnd - navEntry.startTime
+            "loadComplete",
+            navEntry.loadEventEnd - navEntry.startTime,
           );
         }
       });
@@ -107,17 +107,17 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
     try {
       observer.observe({
         entryTypes: [
-          'paint',
-          'largest-contentful-paint',
-          'first-input',
-          'layout-shift',
-          'navigation',
+          "paint",
+          "largest-contentful-paint",
+          "first-input",
+          "layout-shift",
+          "navigation",
         ],
       });
       observerRef.current = observer;
     } catch (_error) {
       if (debug) {
-        console.warn('PerformanceObserver not supported:', _error);
+        console.warn("PerformanceObserver not supported:", _error);
       }
     }
 
@@ -134,11 +134,11 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
 
     const trackMemoryUsage = () => {
       // Memory usage (Chrome only)
-      if ('memory' in performance) {
+      if ("memory" in performance) {
         const memory = (performance as any).memory;
-        updateMetric('jsHeapUsed', memory.usedJSHeapSize);
-        updateMetric('jsHeapTotal', memory.totalJSHeapSize);
-        updateMetric('jsHeapLimit', memory.jsHeapSizeLimit);
+        updateMetric("jsHeapUsed", memory.usedJSHeapSize);
+        updateMetric("jsHeapTotal", memory.totalJSHeapSize);
+        updateMetric("jsHeapLimit", memory.jsHeapSizeLimit);
       }
     };
 
@@ -154,14 +154,14 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
 
   // Network information tracking
   useEffect(() => {
-    if (!trackNetworkInfo || !('connection' in navigator)) {
+    if (!trackNetworkInfo || !("connection" in navigator)) {
       return;
     }
 
     const connection = (navigator as any).connection;
 
     const updateNetworkInfo = () => {
-      updateMetric('downlink', connection.downlink);
+      updateMetric("downlink", connection.downlink);
       setMetrics((prev) => ({
         ...prev,
         connectionType: connection.type,
@@ -170,10 +170,10 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
     };
 
     updateNetworkInfo();
-    connection.addEventListener('change', updateNetworkInfo);
+    connection.addEventListener("change", updateNetworkInfo);
 
     return () => {
-      connection.removeEventListener('change', updateNetworkInfo);
+      connection.removeEventListener("change", updateNetworkInfo);
     };
   }, [trackNetworkInfo, updateMetric]);
 
@@ -194,13 +194,15 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
   const markComponentMount = useCallback(
     (_componentName: string) => {
       const startTime = performance.now();
-      updateMetric('componentMountTime', startTime);
+      updateMetric("componentMountTime", startTime);
 
       if (debug) {
-        console.log(`Component mount tracked: ${_componentName} at ${startTime}ms`);
+        console.log(
+          `Component mount tracked: ${_componentName} at ${startTime}ms`,
+        );
       }
     },
-    [updateMetric, debug]
+    [updateMetric, debug],
   );
 
   const measureRenderTime = useCallback(
@@ -210,7 +212,7 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
       const endTime = performance.now();
       const renderTime = endTime - startTime;
 
-      updateMetric('renderTime', renderTime);
+      updateMetric("renderTime", renderTime);
 
       if (debug) {
         console.log(`Render time measured: ${renderTime}ms`);
@@ -218,7 +220,7 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
 
       return renderTime;
     },
-    [updateMetric, debug]
+    [updateMetric, debug],
   );
 
   const getPerformanceScore = useCallback(() => {
@@ -254,7 +256,7 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
     };
 
     const validScores = Object.values(scores).filter(
-      (score) => score !== null
+      (score) => score !== null,
     ) as number[];
 
     if (validScores.length === 0) {
@@ -305,12 +307,15 @@ export function usePerformanceMonitor(options: PerformanceMonitorOptions = {}) {
 // Hook for monitoring specific component performance
 export function useComponentPerformance(
   componentName: string,
-  deps: any[] = []
+  deps: any[] = [],
 ) {
-  const { markComponentMount, measureRenderTime: _measureRenderTime, metrics } =
-    usePerformanceMonitor({
-      debug: process.env["NODE_ENV"] === 'development',
-    });
+  const {
+    markComponentMount,
+    measureRenderTime: _measureRenderTime,
+    metrics,
+  } = usePerformanceMonitor({
+    debug: process.env["NODE_ENV"] === "development",
+  });
 
   const mountTimeRef = useRef<number>(0);
   const renderCountRef = useRef(0);
@@ -324,8 +329,10 @@ export function useComponentPerformance(
   useEffect(() => {
     renderCountRef.current += 1;
 
-    if (process.env["NODE_ENV"] === 'development') {
-      console.log(`Component ${componentName} rendered #${renderCountRef.current}`);
+    if (process.env["NODE_ENV"] === "development") {
+      console.log(
+        `Component ${componentName} rendered #${renderCountRef.current}`,
+      );
     }
   }, deps);
 
@@ -335,13 +342,15 @@ export function useComponentPerformance(
       operation();
       const duration = performance.now() - startTime;
 
-      if (process.env["NODE_ENV"] === 'development') {
-        console.log(`${componentName} operation ${_operationName}: ${duration}ms`);
+      if (process.env["NODE_ENV"] === "development") {
+        console.log(
+          `${componentName} operation ${_operationName}: ${duration}ms`,
+        );
       }
 
       return duration;
     },
-    [componentName]
+    [componentName],
   );
 
   return {

@@ -5,6 +5,7 @@ This directory contains scripts to seed the MySetlist database with realistic te
 ## Available Scripts
 
 ### 1. Comprehensive Seed (`seed-comprehensive.ts`)
+
 The most complete seeding script that creates a rich dataset with all entities and relationships.
 
 ```bash
@@ -16,6 +17,7 @@ tsx scripts/seed-comprehensive.ts
 ```
 
 **Creates:**
+
 - 20+ users (admin, moderator, regular users)
 - 20 popular artists with varying popularity levels
 - 15 real-world venues across major cities
@@ -26,6 +28,7 @@ tsx scripts/seed-comprehensive.ts
 - Realistic trending scores based on recency and popularity
 
 **Features:**
+
 - Idempotent - clears database before seeding
 - Consistent data using faker seed
 - Realistic relationships between entities
@@ -33,6 +36,7 @@ tsx scripts/seed-comprehensive.ts
 - Time-based trending decay
 
 ### 2. Quick Seed (`seed-quick.ts`)
+
 A faster SQL-based seeding script for rapid database population.
 
 ```bash
@@ -44,6 +48,7 @@ tsx scripts/seed-quick.ts
 ```
 
 **Creates:**
+
 - 5 users
 - 10 popular artists
 - 10 venues
@@ -52,12 +57,14 @@ tsx scripts/seed-quick.ts
 - Basic setlists and votes
 
 **Features:**
+
 - Uses direct SQL for speed
 - Good for quick testing
 - Smaller dataset
 - Focus on trending data
 
 ### 3. Artist-Only Seed (`seed-database.ts`)
+
 Seeds only artists from Spotify API.
 
 ```bash
@@ -69,6 +76,7 @@ tsx scripts/seed-database.ts
 ```
 
 **Creates:**
+
 - 15 popular artists from Spotify
 - Real artist data (images, genres, popularity)
 - Requires Spotify API credentials
@@ -86,6 +94,7 @@ function calculateTrendingScore(date, popularity) {
 ```
 
 This ensures:
+
 - Recent shows have higher trending scores
 - Popular artists trend higher
 - Scores decay over time
@@ -94,6 +103,7 @@ This ensures:
 ## Database Schema
 
 The scripts populate these main tables:
+
 - `users` - User accounts with different roles
 - `artists` - Musicians and bands
 - `venues` - Concert venues
@@ -113,6 +123,7 @@ The scripts populate these main tables:
 ## Environment Requirements
 
 Ensure your `.env.local` has:
+
 ```env
 DATABASE_URL=your-database-connection-string
 # For artist seeding:
@@ -132,19 +143,23 @@ To modify the seed data:
 ## Troubleshooting
 
 **Error: "Cannot find module '@repo/database'"**
+
 - Ensure you've built the database package: `pnpm build` from root
 
 **Error: "Database connection failed"**
+
 - Check your DATABASE_URL in `.env.local`
 - Ensure database is running
 
 **Error: "Spotify authentication failed"**
+
 - Check SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET
 - Only needed for `seed:artists` script
 
 ## Next Steps
 
 After seeding:
+
 1. Visit `/trending` to see trending content
 2. Check `/artists` for the artist catalog
 3. View individual artist pages

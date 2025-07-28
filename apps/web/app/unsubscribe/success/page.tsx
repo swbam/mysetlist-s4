@@ -1,16 +1,16 @@
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { ArrowLeft, CheckCircle, Settings } from 'lucide-react';
-import Link from 'next/link';
+} from "@repo/design-system/components/ui/card";
+import { ArrowLeft, CheckCircle, Settings } from "lucide-react";
+import Link from "next/link";
 
 // Force dynamic rendering due to searchParams usage
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface UnsubscribeSuccessPageProps {
   searchParams: Promise<{
@@ -25,20 +25,20 @@ export default async function UnsubscribeSuccessPage({
 
   const getEmailTypeDisplay = (emailType?: string) => {
     switch (emailType) {
-      case 'show_reminders':
-        return 'show reminders';
-      case 'new_shows':
-        return 'new show announcements';
-      case 'setlist_updates':
-        return 'setlist updates';
-      case 'weekly_digest':
-        return 'weekly digest emails';
-      case 'marketing':
-        return 'marketing emails';
-      case 'all':
-        return 'all emails';
+      case "show_reminders":
+        return "show reminders";
+      case "new_shows":
+        return "new show announcements";
+      case "setlist_updates":
+        return "setlist updates";
+      case "weekly_digest":
+        return "weekly digest emails";
+      case "marketing":
+        return "marketing emails";
+      case "all":
+        return "all emails";
       default:
-        return 'emails';
+        return "emails";
     }
   };
 
@@ -56,8 +56,8 @@ export default async function UnsubscribeSuccessPage({
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-center text-muted-foreground text-sm">
-              {type === 'all'
-                ? 'You will no longer receive any email notifications from MySetlist, except for important security emails.'
+              {type === "all"
+                ? "You will no longer receive any email notifications from MySetlist, except for important security emails."
                 : `You will no longer receive ${getEmailTypeDisplay(type)} from MySetlist.`}
             </div>
 

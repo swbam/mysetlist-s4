@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/avatar";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -15,11 +15,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@repo/design-system/components/ui/dialog';
-import { Label } from '@repo/design-system/components/ui/label';
-import { Textarea } from '@repo/design-system/components/ui/textarea';
-import { toast } from '@repo/design-system/components/ui/use-toast';
-import { format } from 'date-fns';
+} from "@repo/design-system/components/ui/dialog";
+import { Label } from "@repo/design-system/components/ui/label";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { toast } from "@repo/design-system/components/ui/use-toast";
+import { format } from "date-fns";
 import {
   AlertTriangle,
   CheckCircle,
@@ -29,10 +29,10 @@ import {
   Image,
   Lightbulb,
   MessageSquare,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { createClient } from "~/lib/supabase/client";
 
 interface ReportItemProps {
   report: any;
@@ -45,23 +45,23 @@ export default function ReportItem({
 }: ReportItemProps) {
   const [loading, setLoading] = useState(false);
   const [resolveDialogOpen, setResolveDialogOpen] = useState(false);
-  const [resolutionNotes, setResolutionNotes] = useState('');
+  const [resolutionNotes, setResolutionNotes] = useState("");
   const [selectedAction, setSelectedAction] = useState<
-    'dismiss' | 'warn' | 'delete' | 'ban'
-  >('dismiss');
+    "dismiss" | "warn" | "delete" | "ban"
+  >("dismiss");
 
   const router = useRouter();
   const supabase = createClient();
 
   const getContentIcon = () => {
     switch (report.content_type) {
-      case 'setlist':
+      case "setlist":
         return FileText;
-      case 'review':
+      case "review":
         return MessageSquare;
-      case 'photo':
+      case "photo":
         return Image;
-      case 'tip':
+      case "tip":
         return Lightbulb;
       default:
         return AlertTriangle;
@@ -70,18 +70,18 @@ export default function ReportItem({
 
   const getReasonBadgeColor = () => {
     switch (report.reason) {
-      case 'spam':
-        return 'secondary';
-      case 'inappropriate_content':
-        return 'destructive';
-      case 'harassment':
-        return 'destructive';
-      case 'misinformation':
-        return 'outline';
-      case 'copyright':
-        return 'outline';
+      case "spam":
+        return "secondary";
+      case "inappropriate_content":
+        return "destructive";
+      case "harassment":
+        return "destructive";
+      case "misinformation":
+        return "outline";
+      case "copyright":
+        return "outline";
       default:
-        return 'secondary';
+        return "secondary";
     }
   };
 
@@ -90,14 +90,14 @@ export default function ReportItem({
     try {
       // Update report status
       const { error: reportError } = await supabase
-        .from('reports')
+        .from("reports")
         .update({
-          status: selectedAction === 'dismiss' ? 'resolved' : 'approved',
+          status: selectedAction === "dismiss" ? "resolved" : "approved",
           resolved_by: (await supabase.auth.getUser()).data.user?.id,
           resolved_at: new Date().toISOString(),
           resolution_notes: resolutionNotes,
         })
-        .eq('id', report.id);
+        .eq("id", report.id);
 
       if (reportError) {
         throw reportError;
@@ -105,12 +105,12 @@ export default function ReportItem({
 
       // Take action based on selection
       switch (selectedAction) {
-        case 'delete': {
+        case "delete": {
           // Update content moderation status
-          await supabase.from('content_moderation').upsert({
+          await supabase.from("content_moderation").upsert({
             content_type: report.content_type,
             content_id: report.content_id,
-            status: 'deleted',
+            status: "deleted",
             reviewed_by: (await supabase.auth.getUser()).data.user?.id,
             reviewed_at: new Date().toISOString(),
             review_notes: `Deleted due to report: ${report.reason}`,
@@ -118,66 +118,66 @@ export default function ReportItem({
 
           // Delete the actual content
           const table =
-            report.content_type === 'setlist'
-              ? 'setlists'
-              : report.content_type === 'review'
-                ? 'venue_reviews'
-                : report.content_type === 'photo'
-                  ? 'venue_photos'
-                  : 'venue_insider_tips';
+            report.content_type === "setlist"
+              ? "setlists"
+              : report.content_type === "review"
+                ? "venue_reviews"
+                : report.content_type === "photo"
+                  ? "venue_photos"
+                  : "venue_insider_tips";
 
           await supabase
             .from(table)
-            .update({ moderation_status: 'deleted' })
-            .eq('id', report.content_id);
+            .update({ moderation_status: "deleted" })
+            .eq("id", report.content_id);
           break;
         }
 
-        case 'warn':
+        case "warn":
           if (report.reported_user_id) {
             // Update user warning count
-            await supabase.rpc('increment_user_warnings', {
+            await supabase.rpc("increment_user_warnings", {
               user_id: report.reported_user_id,
             });
 
             // Log moderation action
-            await supabase.from('moderation_logs').insert({
+            await supabase.from("moderation_logs").insert({
               moderator_id: (await supabase.auth.getUser()).data.user?.id,
-              action: 'warn_user',
-              target_type: 'user',
+              action: "warn_user",
+              target_type: "user",
               target_id: report.reported_user_id,
               reason: `Warning issued for ${report.reason}: ${resolutionNotes}`,
             });
           }
           break;
 
-        case 'ban':
+        case "ban":
           if (report.reported_user_id) {
             // Create ban record
-            await supabase.from('user_bans').insert({
+            await supabase.from("user_bans").insert({
               user_id: report.reported_user_id,
               banned_by: (await supabase.auth.getUser()).data.user?.id,
               reason: `Banned due to report: ${report.reason} - ${resolutionNotes}`,
-              ban_type: 'temporary',
+              ban_type: "temporary",
               banned_until: new Date(
-                Date.now() + 7 * 24 * 60 * 60 * 1000
+                Date.now() + 7 * 24 * 60 * 60 * 1000,
               ).toISOString(), // 7 days
             });
 
             // Update user record
             await supabase
-              .from('users')
+              .from("users")
               .update({
                 is_banned: true,
                 ban_reason: `Banned due to report: ${report.reason}`,
               })
-              .eq('id', report.reported_user_id);
+              .eq("id", report.reported_user_id);
 
             // Log moderation action
-            await supabase.from('moderation_logs').insert({
+            await supabase.from("moderation_logs").insert({
               moderator_id: (await supabase.auth.getUser()).data.user?.id,
-              action: 'ban_user',
-              target_type: 'user',
+              action: "ban_user",
+              target_type: "user",
               target_id: report.reported_user_id,
               reason: `Banned due to report: ${report.reason}`,
             });
@@ -186,17 +186,17 @@ export default function ReportItem({
       }
 
       // Log report resolution
-      await supabase.from('moderation_logs').insert({
+      await supabase.from("moderation_logs").insert({
         moderator_id: (await supabase.auth.getUser()).data.user?.id,
-        action: 'resolve_report',
-        target_type: 'report',
+        action: "resolve_report",
+        target_type: "report",
         target_id: report.id,
         reason: resolutionNotes,
         metadata: { action: selectedAction },
       });
 
       toast({
-        title: 'Report resolved',
+        title: "Report resolved",
         description: `The report has been resolved with action: ${selectedAction}.`,
       });
 
@@ -204,9 +204,9 @@ export default function ReportItem({
       router.refresh();
     } catch (_error) {
       toast({
-        title: 'Error',
-        description: 'Failed to resolve report. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to resolve report. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -217,7 +217,7 @@ export default function ReportItem({
 
   return (
     <>
-      <Card className={isResolved ? 'opacity-75' : ''}>
+      <Card className={isResolved ? "opacity-75" : ""}>
         <CardContent className="p-6">
           <div className="space-y-4">
             {/* Report Header */}
@@ -232,7 +232,7 @@ export default function ReportItem({
                       Report #{report.id.slice(0, 8)}
                     </h4>
                     <Badge variant={getReasonBadgeColor()}>
-                      {report.reason.replace('_', ' ')}
+                      {report.reason.replace("_", " ")}
                     </Badge>
                     {isResolved && (
                       <Badge variant="outline" className="text-green-600">
@@ -242,7 +242,7 @@ export default function ReportItem({
                     )}
                   </div>
                   <p className="mt-1 text-muted-foreground text-sm">
-                    {format(new Date(report.created_at), 'MMM d, yyyy h:mm a')}
+                    {format(new Date(report.created_at), "MMM d, yyyy h:mm a")}
                   </p>
                 </div>
               </div>
@@ -261,12 +261,12 @@ export default function ReportItem({
                 <AvatarFallback>
                   {report.reporter?.display_name?.[0] ||
                     report.reporter?.email?.[0] ||
-                    'R'}
+                    "R"}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <p className="font-medium text-sm">
-                  Reported by{' '}
+                  Reported by{" "}
                   {report.reporter?.display_name || report.reporter?.email}
                 </p>
                 {report.description && (
@@ -290,11 +290,11 @@ export default function ReportItem({
                       <Avatar className="h-5 w-5">
                         <AvatarImage src={report.reported_user?.avatar_url} />
                         <AvatarFallback>
-                          {report.reported_user?.display_name?.[0] || 'U'}
+                          {report.reported_user?.display_name?.[0] || "U"}
                         </AvatarFallback>
                       </Avatar>
                       <span className="text-muted-foreground text-sm">
-                        by{' '}
+                        by{" "}
                         {report.reported_user?.display_name ||
                           report.reported_user?.email}
                       </span>
@@ -312,18 +312,18 @@ export default function ReportItem({
             {isResolved && report.resolved_by && (
               <div className="rounded-md bg-green-50 p-3 dark:bg-green-950/20">
                 <p className="text-sm">
-                  <span className="font-medium">Resolved by:</span>{' '}
+                  <span className="font-medium">Resolved by:</span>{" "}
                   {report.resolved_by_user?.display_name ||
                     report.resolved_by_user?.email}
                 </p>
                 {report.resolution_notes && (
                   <p className="mt-1 text-sm">
-                    <span className="font-medium">Notes:</span>{' '}
+                    <span className="font-medium">Notes:</span>{" "}
                     {report.resolution_notes}
                   </p>
                 )}
                 <p className="mt-1 text-muted-foreground text-xs">
-                  {format(new Date(report.resolved_at), 'MMM d, yyyy h:mm a')}
+                  {format(new Date(report.resolved_at), "MMM d, yyyy h:mm a")}
                 </p>
               </div>
             )}
@@ -348,7 +348,7 @@ export default function ReportItem({
                   <input
                     type="radio"
                     value="dismiss"
-                    checked={selectedAction === 'dismiss'}
+                    checked={selectedAction === "dismiss"}
                     onChange={(e) => setSelectedAction(e.target.value as any)}
                   />
                   <div className="flex-1">
@@ -363,7 +363,7 @@ export default function ReportItem({
                   <input
                     type="radio"
                     value="warn"
-                    checked={selectedAction === 'warn'}
+                    checked={selectedAction === "warn"}
                     onChange={(e) => setSelectedAction(e.target.value as any)}
                   />
                   <div className="flex-1">
@@ -378,7 +378,7 @@ export default function ReportItem({
                   <input
                     type="radio"
                     value="delete"
-                    checked={selectedAction === 'delete'}
+                    checked={selectedAction === "delete"}
                     onChange={(e) => setSelectedAction(e.target.value as any)}
                   />
                   <div className="flex-1">
@@ -393,7 +393,7 @@ export default function ReportItem({
                   <input
                     type="radio"
                     value="ban"
-                    checked={selectedAction === 'ban'}
+                    checked={selectedAction === "ban"}
                     onChange={(e) => setSelectedAction(e.target.value as any)}
                   />
                   <div className="flex-1">
@@ -429,7 +429,7 @@ export default function ReportItem({
               onClick={handleResolve}
               disabled={loading || !resolutionNotes}
             >
-              {loading ? 'Resolving...' : 'Resolve Report'}
+              {loading ? "Resolving..." : "Resolve Report"}
             </Button>
           </DialogFooter>
         </DialogContent>

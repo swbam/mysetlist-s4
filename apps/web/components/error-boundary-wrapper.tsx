@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
-import Link from 'next/link';
-import React, { Component, type ReactNode } from 'react';
+} from "@repo/design-system/components/ui/card";
+import { AlertTriangle, Home, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import React, { Component, type ReactNode } from "react";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -28,7 +28,7 @@ export class ErrorBoundaryWrapper extends Component<
   ErrorBoundaryState
 > {
   refs: any = {};
-  
+
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -51,7 +51,7 @@ export class ErrorBoundaryWrapper extends Component<
     this.props.onError?.(error, errorInfo.componentStack);
 
     // Report to error tracking service
-    if (typeof window !== 'undefined' && (window as any).Sentry) {
+    if (typeof window !== "undefined" && (window as any).Sentry) {
       (window as any).Sentry.captureException(error, {
         contexts: {
           react: {
@@ -89,22 +89,23 @@ export class ErrorBoundaryWrapper extends Component<
                 again.
               </p>
 
-              {process.env['NODE_ENV'] === 'development' && this.state.error && (
-                <details className="text-left text-xs">
-                  <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-                    Error Details (Development)
-                  </summary>
-                  <pre className="mt-2 overflow-auto rounded bg-muted p-2 text-xs">
-                    {this.state.error.message}
-                    {this.state.errorInfo && (
-                      <>
-                        {'\n\nComponent Stack:'}
-                        {this.state.errorInfo}
-                      </>
-                    )}
-                  </pre>
-                </details>
-              )}
+              {process.env["NODE_ENV"] === "development" &&
+                this.state.error && (
+                  <details className="text-left text-xs">
+                    <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                      Error Details (Development)
+                    </summary>
+                    <pre className="mt-2 overflow-auto rounded bg-muted p-2 text-xs">
+                      {this.state.error.message}
+                      {this.state.errorInfo && (
+                        <>
+                          {"\n\nComponent Stack:"}
+                          {this.state.errorInfo}
+                        </>
+                      )}
+                    </pre>
+                  </details>
+                )}
 
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
                 <Button onClick={this.retry} className="gap-2">
@@ -131,7 +132,7 @@ export class ErrorBoundaryWrapper extends Component<
 // Higher-order component for easy wrapping
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
-  errorBoundaryProps?: Omit<ErrorBoundaryProps, 'children'>
+  errorBoundaryProps?: Omit<ErrorBoundaryProps, "children">,
 ) {
   return function WithErrorBoundaryComponent(props: P) {
     const Wrapper = ErrorBoundaryWrapper as any;
@@ -196,7 +197,7 @@ export function ComponentErrorBoundary({
           <CardContent className="p-6 text-center">
             <AlertTriangle className="mx-auto mb-4 h-8 w-8 text-red-600 dark:text-red-400" />
             <h3 className="mb-2 font-semibold">
-              {componentName ? `${componentName} Error` : 'Component Error'}
+              {componentName ? `${componentName} Error` : "Component Error"}
             </h3>
             <p className="mb-4 text-muted-foreground text-sm">
               This component encountered an error and couldn't render properly.

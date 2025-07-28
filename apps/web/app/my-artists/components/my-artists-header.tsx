@@ -1,7 +1,7 @@
-import { db, shows } from '@repo/database';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { gte, sql } from 'drizzle-orm';
-import { Calendar, Heart, TrendingUp } from 'lucide-react';
+import { db, shows } from "@repo/database";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { gte, sql } from "drizzle-orm";
+import { Calendar, Heart, TrendingUp } from "lucide-react";
 
 interface MyArtistsHeaderProps {
   userId?: string; // userId not used anymore, kept for compatibility
@@ -16,22 +16,22 @@ export async function MyArtistsHeader({ userId }: MyArtistsHeaderProps) {
 
   const stats = [
     {
-      label: 'Following',
+      label: "Following",
       value: 0, // No following functionality available
       icon: Heart,
-      color: 'text-pink-600',
+      color: "text-pink-600",
     },
     {
-      label: 'Upcoming Shows',
+      label: "Upcoming Shows",
       value: upcomingShowsCount[0]?.count || 0,
       icon: Calendar,
-      color: 'text-blue-600',
+      color: "text-blue-600",
     },
     {
-      label: 'This Month',
+      label: "This Month",
       value: 0, // Would calculate shows this month
       icon: TrendingUp,
-      color: 'text-green-600',
+      color: "text-green-600",
     },
   ];
 

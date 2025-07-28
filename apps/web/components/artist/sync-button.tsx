@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { AlertCircle, Check, RefreshCw } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { Button } from '@repo/design-system/components/ui/button';
+import { AlertCircle, Check, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@repo/design-system/components/ui/button";
 
 interface SyncButtonProps {
   artistId: string;
@@ -17,34 +17,34 @@ export function ArtistSyncButton({
   lastSyncedAt,
 }: SyncButtonProps) {
   const [isSyncing, setIsSyncing] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<'idle' | 'success' | 'error'>(
-    'idle'
+  const [syncStatus, setSyncStatus] = useState<"idle" | "success" | "error">(
+    "idle",
   );
 
   const handleSync = async () => {
     setIsSyncing(true);
-    setSyncStatus('idle');
+    setSyncStatus("idle");
 
     try {
-      const response = await fetch('/api/sync/unified-pipeline', {
-        method: 'POST',
+      const response = await fetch("/api/sync/unified-pipeline", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           artistId,
-          mode: 'single',
+          mode: "single",
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Sync failed');
+        throw new Error("Sync failed");
       }
 
       const result = await response.json();
 
       if (result.success) {
-        setSyncStatus('success');
+        setSyncStatus("success");
         toast.success(`Successfully synced ${artistName}`, {
           description: `Synced ${result.results.catalogSync?.songs || 0} songs, ${result.results.shows?.synced || 0} shows, and ${result.results.setlists?.synced || 0} setlists`,
         });
@@ -54,15 +54,15 @@ export function ArtistSyncButton({
           window.location.reload();
         }, 2000);
       } else {
-        throw new Error(result.error || 'Sync failed');
+        throw new Error(result.error || "Sync failed");
       }
     } catch (error) {
-      setSyncStatus('error');
-      toast.error('Sync failed', {
+      setSyncStatus("error");
+      toast.error("Sync failed", {
         description:
           error instanceof Error
             ? error.message
-            : 'An unexpected error occurred',
+            : "An unexpected error occurred",
       });
     } finally {
       setIsSyncing(false);
@@ -80,14 +80,14 @@ export function ArtistSyncButton({
     }
 
     switch (syncStatus) {
-      case 'success':
+      case "success":
         return (
           <>
             <Check className="h-4 w-4" />
             Synced!
           </>
         );
-      case 'error':
+      case "error":
         return (
           <>
             <AlertCircle className="h-4 w-4" />
@@ -106,7 +106,7 @@ export function ArtistSyncButton({
 
   const getLastSyncText = () => {
     if (!lastSyncedAt) {
-      return 'Never synced';
+      return "Never synced";
     }
 
     const now = new Date();
@@ -116,12 +116,12 @@ export function ArtistSyncButton({
     const diffDays = Math.floor(diffHours / 24);
 
     if (diffDays > 0) {
-      return `Last synced ${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+      return `Last synced ${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
     }
     if (diffHours > 0) {
-      return `Last synced ${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+      return `Last synced ${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
     }
-    return 'Recently synced';
+    return "Recently synced";
   };
 
   return (
@@ -129,7 +129,7 @@ export function ArtistSyncButton({
       <Button
         onClick={handleSync}
         disabled={isSyncing}
-        variant={syncStatus === 'error' ? 'destructive' : 'outline'}
+        variant={syncStatus === "error" ? "destructive" : "outline"}
         size="sm"
       >
         {getButtonContent()}

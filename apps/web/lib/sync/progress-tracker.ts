@@ -1,31 +1,31 @@
-import { Redis } from '@upstash/redis';
-import { env } from '@repo/env';
+import { Redis } from "@upstash/redis";
+import { env } from "@repo/env";
 
 export interface SyncProgress {
   artistId: string;
   artistName: string;
-  status: 'pending' | 'syncing' | 'completed' | 'failed';
+  status: "pending" | "syncing" | "completed" | "failed";
   startedAt: Date;
   completedAt?: Date;
   steps: {
     artist: {
-      status: 'pending' | 'syncing' | 'completed' | 'failed';
+      status: "pending" | "syncing" | "completed" | "failed";
       count?: number;
     };
     albums: {
-      status: 'pending' | 'syncing' | 'completed' | 'failed';
+      status: "pending" | "syncing" | "completed" | "failed";
       count?: number;
     };
     songs: {
-      status: 'pending' | 'syncing' | 'completed' | 'failed';
+      status: "pending" | "syncing" | "completed" | "failed";
       count?: number;
     };
     shows: {
-      status: 'pending' | 'syncing' | 'completed' | 'failed';
+      status: "pending" | "syncing" | "completed" | "failed";
       count?: number;
     };
     setlists: {
-      status: 'pending' | 'syncing' | 'completed' | 'failed';
+      status: "pending" | "syncing" | "completed" | "failed";
       count?: number;
     };
   };
@@ -34,7 +34,7 @@ export interface SyncProgress {
 
 export class SyncProgressTracker {
   private redis: Redis | null;
-  private keyPrefix = 'sync:progress:';
+  private keyPrefix = "sync:progress:";
   private ttl = 3600; // 1 hour TTL
 
   constructor() {
@@ -52,14 +52,14 @@ export class SyncProgressTracker {
     const progress: SyncProgress = {
       artistId,
       artistName,
-      status: 'pending',
+      status: "pending",
       startedAt: new Date(),
       steps: {
-        artist: { status: 'pending' },
-        albums: { status: 'pending' },
-        songs: { status: 'pending' },
-        shows: { status: 'pending' },
-        setlists: { status: 'pending' },
+        artist: { status: "pending" },
+        albums: { status: "pending" },
+        songs: { status: "pending" },
+        shows: { status: "pending" },
+        setlists: { status: "pending" },
       },
     };
 
@@ -67,16 +67,16 @@ export class SyncProgressTracker {
       await this.redis.setex(
         `${this.keyPrefix}${artistId}`,
         this.ttl,
-        JSON.stringify(progress)
+        JSON.stringify(progress),
       );
     }
   }
 
   async updateStepStatus(
     artistId: string,
-    step: keyof SyncProgress['steps'],
-    status: 'pending' | 'syncing' | 'completed' | 'failed',
-    count?: number
+    step: keyof SyncProgress["steps"],
+    status: "pending" | "syncing" | "completed" | "failed",
+    count?: number,
   ): Promise<void> {
     if (!this.redis) {
       return;
@@ -94,13 +94,13 @@ export class SyncProgressTracker {
 
       // Update overall status
       const allSteps = Object.values(progress.steps);
-      if (allSteps.some((s) => s.status === 'failed')) {
-        progress.status = 'failed';
-      } else if (allSteps.every((s) => s.status === 'completed')) {
-        progress.status = 'completed';
+      if (allSteps.some((s) => s.status === "failed")) {
+        progress.status = "failed";
+      } else if (allSteps.every((s) => s.status === "completed")) {
+        progress.status = "completed";
         progress.completedAt = new Date();
-      } else if (allSteps.some((s) => s.status === 'syncing')) {
-        progress.status = 'syncing';
+      } else if (allSteps.some((s) => s.status === "syncing")) {
+        progress.status = "syncing";
       }
 
       await this.redis.setex(key, this.ttl, JSON.stringify(progress));
@@ -126,7 +126,7 @@ export class SyncProgressTracker {
 
     if (data) {
       const progress = JSON.parse(data as string) as SyncProgress;
-      progress.status = 'failed';
+      progress.status = "failed";
       progress.error = error;
       progress.completedAt = new Date();
 

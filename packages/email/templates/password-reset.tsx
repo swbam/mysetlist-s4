@@ -10,7 +10,7 @@ import {
   Section,
   Tailwind,
   Text,
-} from '@react-email/components';
+} from "@react-email/components";
 
 type PasswordResetTemplateProps = {
   readonly name: string;
@@ -48,7 +48,7 @@ export const PasswordResetTemplate = ({
                   ⚠️ Security Notice
                 </Text>
                 <Text className="text-amber-700 text-sm">
-                  This password reset link will expire in {expirationHours}{' '}
+                  This password reset link will expire in {expirationHours}{" "}
                   hours for security reasons. If you didn't request this reset,
                   please ignore this email or contact support if you're
                   concerned.
@@ -82,7 +82,7 @@ export const PasswordResetTemplate = ({
 
               <Text className="mt-4 text-sm text-zinc-500">
                 For security questions or if you need help, contact our support
-                team at{' '}
+                team at{" "}
                 <Link
                   href={`${appUrl}/contact`}
                   className="text-zinc-700 underline"
@@ -108,9 +108,9 @@ export const PasswordResetTemplate = ({
 );
 
 PasswordResetTemplate.PreviewProps = {
-  name: 'Alex',
-  resetUrl: 'https://MySetlist.app/auth/reset-password?token=abc123def456',
-  appUrl: 'https://MySetlist.app',
+  name: "Alex",
+  resetUrl: "https://MySetlist.app/auth/reset-password?token=abc123def456",
+  appUrl: "https://MySetlist.app",
   expirationHours: 24,
 };
 

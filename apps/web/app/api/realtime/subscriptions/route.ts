@@ -1,5 +1,5 @@
-import { realtimeManager } from '@repo/database';
-import { type NextRequest, NextResponse } from 'next/server';
+import { realtimeManager } from "@repo/database";
+import { type NextRequest, NextResponse } from "next/server";
 
 // GET /api/realtime/subscriptions - Get active subscriptions
 export async function GET(_request: NextRequest) {
@@ -14,8 +14,8 @@ export async function GET(_request: NextRequest) {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to get subscription status' },
-      { status: 500 }
+      { error: "Failed to get subscription status" },
+      { status: 500 },
     );
   }
 }
@@ -27,13 +27,13 @@ export async function POST(request: NextRequest) {
     const { action, type, id } = body;
 
     switch (action) {
-      case 'subscribe':
+      case "subscribe":
         switch (type) {
-          case 'setlist': {
+          case "setlist": {
             if (!id) {
               return NextResponse.json(
-                { error: 'Show ID required for setlist subscription' },
-                { status: 400 }
+                { error: "Show ID required for setlist subscription" },
+                { status: 400 },
               );
             }
 
@@ -42,101 +42,101 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({
               message: `Subscribed to setlist updates for show ${id}`,
               channelName: `setlist:${id}`,
-              type: 'setlist',
+              type: "setlist",
               id,
             });
           }
 
-          case 'votes': {
+          case "votes": {
             if (!id) {
               return NextResponse.json(
-                { error: 'Setlist song ID required for vote subscription' },
-                { status: 400 }
+                { error: "Setlist song ID required for vote subscription" },
+                { status: 400 },
               );
             }
 
             return NextResponse.json({
               message: `Subscribed to vote updates for setlist song ${id}`,
               channelName: `votes:${id}`,
-              type: 'votes',
+              type: "votes",
               id,
             });
           }
 
-          case 'show': {
+          case "show": {
             if (!id) {
               return NextResponse.json(
-                { error: 'Show ID required for show subscription' },
-                { status: 400 }
+                { error: "Show ID required for show subscription" },
+                { status: 400 },
               );
             }
 
             return NextResponse.json({
               message: `Subscribed to show updates for ${id}`,
               channelName: `show:${id}`,
-              type: 'show',
+              type: "show",
               id,
             });
           }
 
-          case 'attendance': {
+          case "attendance": {
             if (!id) {
               return NextResponse.json(
-                { error: 'Show ID required for attendance subscription' },
-                { status: 400 }
+                { error: "Show ID required for attendance subscription" },
+                { status: 400 },
               );
             }
 
             return NextResponse.json({
               message: `Subscribed to attendance updates for show ${id}`,
               channelName: `attendance:${id}`,
-              type: 'attendance',
+              type: "attendance",
               id,
             });
           }
 
-          case 'artist_followers': {
+          case "artist_followers": {
             if (!id) {
               return NextResponse.json(
-                { error: 'Artist ID required for follower subscription' },
-                { status: 400 }
+                { error: "Artist ID required for follower subscription" },
+                { status: 400 },
               );
             }
 
             return NextResponse.json({
               message: `Subscribed to follower updates for artist ${id}`,
               channelName: `artist_followers:${id}`,
-              type: 'artist_followers',
+              type: "artist_followers",
               id,
             });
           }
 
-          case 'trending':
+          case "trending":
             return NextResponse.json({
-              message: 'Subscribed to trending updates',
-              channelName: 'trending_updates',
-              type: 'trending',
+              message: "Subscribed to trending updates",
+              channelName: "trending_updates",
+              type: "trending",
             });
 
-          case 'global_activity':
+          case "global_activity":
             return NextResponse.json({
-              message: 'Subscribed to global activity feed',
-              channelName: 'global_activity',
-              type: 'global_activity',
+              message: "Subscribed to global activity feed",
+              channelName: "global_activity",
+              type: "global_activity",
             });
 
           default:
             return NextResponse.json(
-              { error: 'Invalid subscription type' },
-              { status: 400 }
+              { error: "Invalid subscription type" },
+              { status: 400 },
             );
         }
 
-      case 'unsubscribe': {
+      case "unsubscribe": {
         if (!type || !id) {
           return NextResponse.json(
-            { error: 'Type and ID required for unsubscription' },
-            { status: 400 }
+            { error: "Type and ID required for unsubscription" },
+            { status: 400 },
           );
         }
 
@@ -149,19 +149,19 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      case 'unsubscribe_all': {
+      case "unsubscribe_all": {
         realtimeManager.unsubscribeAll();
 
         return NextResponse.json({
-          message: 'Unsubscribed from all channels',
+          message: "Unsubscribed from all channels",
         });
       }
 
-      case 'reconnect': {
+      case "reconnect": {
         realtimeManager.reconnect();
 
         return NextResponse.json({
-          message: 'Reconnecting to realtime service',
+          message: "Reconnecting to realtime service",
           connectionStatus: realtimeManager.getConnectionStatus(),
         });
       }
@@ -170,15 +170,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error:
-              'Invalid action. Valid actions: subscribe, unsubscribe, unsubscribe_all, reconnect',
+              "Invalid action. Valid actions: subscribe, unsubscribe, unsubscribe_all, reconnect",
           },
-          { status: 400 }
+          { status: 400 },
         );
     }
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to manage subscription' },
-      { status: 500 }
+      { error: "Failed to manage subscription" },
+      { status: 500 },
     );
   }
 }
@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const channelName = searchParams.get('channel');
+    const channelName = searchParams.get("channel");
 
     if (channelName) {
       realtimeManager.unsubscribe(channelName);
@@ -197,12 +197,12 @@ export async function DELETE(request: NextRequest) {
     }
     realtimeManager.unsubscribeAll();
     return NextResponse.json({
-      message: 'Unsubscribed from all channels',
+      message: "Unsubscribed from all channels",
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to unsubscribe' },
-      { status: 500 }
+      { error: "Failed to unsubscribe" },
+      { status: 500 },
     );
   }
 }

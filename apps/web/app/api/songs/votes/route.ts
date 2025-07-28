@@ -1,23 +1,23 @@
-import { getUser } from '@repo/auth/server';
-import { db } from '@repo/database';
-import { votes } from '@repo/database';
-import { and, eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { getUser } from "@repo/auth/server";
+import { db } from "@repo/database";
+import { votes } from "@repo/database";
+import { and, eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const user = await getUser();
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { setlistSongId, voteType } = await request.json();
 
-    if (!setlistSongId || (voteType && !['up', 'down'].includes(voteType))) {
+    if (!setlistSongId || (voteType && !["up", "down"].includes(voteType))) {
       return NextResponse.json(
-        { error: 'Invalid request data' },
-        { status: 400 }
+        { error: "Invalid request data" },
+        { status: 400 },
       );
     }
 
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       .select()
       .from(votes)
       .where(
-        and(eq(votes.setlistSongId, setlistSongId), eq(votes.userId, user.id))
+        and(eq(votes.setlistSongId, setlistSongId), eq(votes.userId, user.id)),
       )
       .limit(1);
 
@@ -38,8 +38,8 @@ export async function POST(request: NextRequest) {
           .where(
             and(
               eq(votes.setlistSongId, setlistSongId),
-              eq(votes.userId, user.id)
-            )
+              eq(votes.userId, user.id),
+            ),
           );
       }
     } else if (existingVote.length > 0) {
@@ -48,7 +48,10 @@ export async function POST(request: NextRequest) {
         .update(votes)
         .set({ voteType })
         .where(
-          and(eq(votes.setlistSongId, setlistSongId), eq(votes.userId, user.id))
+          and(
+            eq(votes.setlistSongId, setlistSongId),
+            eq(votes.userId, user.id),
+          ),
         );
     } else {
       // Create new vote
@@ -62,8 +65,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to process vote' },
-      { status: 500 }
+      { error: "Failed to process vote" },
+      { status: 500 },
     );
   }
 }

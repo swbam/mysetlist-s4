@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
-import { Music, Plus, Vote } from 'lucide-react';
-import Link from 'next/link';
-import { useState } from 'react';
-import { LiveIndicator } from '~/components/live-indicator';
-import { RealtimeSetlistViewer } from '~/components/setlist/realtime-setlist-viewer';
-import { CreateSetlistDialog } from './create-setlist-dialog';
-import { EmptyState } from './empty-state';
-import { SetlistViewer } from './setlist-viewer';
-import { SongDropdown } from './song-dropdown';
+} from "@repo/design-system/components/ui/tabs";
+import { Music, Plus, Vote } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { LiveIndicator } from "~/components/live-indicator";
+import { RealtimeSetlistViewer } from "~/components/setlist/realtime-setlist-viewer";
+import { CreateSetlistDialog } from "./create-setlist-dialog";
+import { EmptyState } from "./empty-state";
+import { SetlistViewer } from "./setlist-viewer";
+import { SongDropdown } from "./song-dropdown";
 
 type SetlistSectionProps = {
   show: any;
@@ -31,18 +31,18 @@ export function SetlistSection({
   currentUser,
 }: SetlistSectionProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [_setlistType, _setSetlistType] = useState<'predicted' | 'actual'>(
-    'predicted'
+  const [_setlistType, _setSetlistType] = useState<"predicted" | "actual">(
+    "predicted",
   );
 
-  const canCreateSetlist = currentUser && show.status !== 'cancelled';
+  const canCreateSetlist = currentUser && show.status !== "cancelled";
   const hasActualSetlists = actualSetlists.length > 0;
   const hasPredictedSetlists = predictedSetlists.length > 0;
   const hasAnySetlists = hasActualSetlists || hasPredictedSetlists;
 
   const showDate = new Date(show.date);
   const isPastShow = showDate < new Date();
-  const isLive = show.status === 'ongoing';
+  const isLive = show.status === "ongoing";
 
   return (
     <div className="space-y-6">
@@ -93,7 +93,7 @@ export function SetlistSection({
 
       {hasAnySetlists ? (
         <Tabs
-          defaultValue={hasActualSetlists ? 'actual' : 'predicted'}
+          defaultValue={hasActualSetlists ? "actual" : "predicted"}
           className="w-full"
         >
           <TabsList className="grid w-full grid-cols-2">
@@ -101,7 +101,7 @@ export function SetlistSection({
               Actual {hasActualSetlists && `(${actualSetlists.length})`}
             </TabsTrigger>
             <TabsTrigger value="predicted" disabled={!hasPredictedSetlists}>
-              Predicted{' '}
+              Predicted{" "}
               {hasPredictedSetlists && `(${predictedSetlists.length})`}
             </TabsTrigger>
           </TabsList>
@@ -136,8 +136,8 @@ export function SetlistSection({
           title="No setlists yet"
           description={
             isPastShow
-              ? 'Be the first to add the actual setlist from this show'
-              : 'Be the first to predict what songs will be played'
+              ? "Be the first to add the actual setlist from this show"
+              : "Be the first to predict what songs will be played"
           }
           action={
             canCreateSetlist && (
@@ -146,7 +146,7 @@ export function SetlistSection({
                 className="gap-2"
               >
                 <Plus className="h-4 w-4" />
-                Create {isPastShow ? 'Actual' : 'Predicted'} Setlist
+                Create {isPastShow ? "Actual" : "Predicted"} Setlist
               </Button>
             )
           }
@@ -159,7 +159,7 @@ export function SetlistSection({
           show={show}
           open={showCreateDialog}
           onOpenChange={setShowCreateDialog}
-          defaultType={isPastShow ? 'actual' : 'predicted'}
+          defaultType={isPastShow ? "actual" : "predicted"}
         />
       )}
     </div>

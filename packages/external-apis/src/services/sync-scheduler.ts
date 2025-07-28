@@ -1,8 +1,8 @@
-import { ArtistSyncService } from './artist-sync';
-import { SetlistSyncService } from './setlist-sync';
-import { ShowSyncService } from './show-sync';
-import { VenueSyncService } from './venue-sync';
-import { SpotifyClient } from '../clients/spotify';
+import { ArtistSyncService } from "./artist-sync";
+import { SetlistSyncService } from "./setlist-sync";
+import { ShowSyncService } from "./show-sync";
+import { VenueSyncService } from "./venue-sync";
+import { SpotifyClient } from "../clients/spotify";
 
 export interface SyncOptions {
   artists?: boolean;
@@ -19,7 +19,7 @@ export interface SyncOptions {
 export interface SyncJob {
   id: string;
   type: string;
-  status: 'running' | 'completed' | 'failed' | 'pending';
+  status: "running" | "completed" | "failed" | "pending";
   startTime: Date;
   endTime?: Date;
   progress?: number;
@@ -61,23 +61,23 @@ export class SyncScheduler {
     await this.artistSync.syncPopularArtists();
     await this.venueSync.syncMajorVenues();
     const majorCities = [
-      { city: 'New York', stateCode: 'NY' },
-      { city: 'Los Angeles', stateCode: 'CA' },
-      { city: 'Chicago', stateCode: 'IL' },
-      { city: 'San Francisco', stateCode: 'CA' },
-      { city: 'Austin', stateCode: 'TX' },
-      { city: 'Seattle', stateCode: 'WA' },
-      { city: 'Denver', stateCode: 'CO' },
-      { city: 'Nashville', stateCode: 'TN' },
-      { city: 'Portland', stateCode: 'OR' },
-      { city: 'Atlanta', stateCode: 'GA' },
+      { city: "New York", stateCode: "NY" },
+      { city: "Los Angeles", stateCode: "CA" },
+      { city: "Chicago", stateCode: "IL" },
+      { city: "San Francisco", stateCode: "CA" },
+      { city: "Austin", stateCode: "TX" },
+      { city: "Seattle", stateCode: "WA" },
+      { city: "Denver", stateCode: "CO" },
+      { city: "Nashville", stateCode: "TN" },
+      { city: "Portland", stateCode: "OR" },
+      { city: "Atlanta", stateCode: "GA" },
     ];
 
     for (const { city, stateCode } of majorCities) {
       await this.showSync.syncUpcomingShows({
         city,
         stateCode,
-        classificationName: 'Music',
+        classificationName: "Music",
       });
       // Rate limit between cities
       await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -92,7 +92,7 @@ export class SyncScheduler {
     const endDateTime = endDate.toISOString();
 
     await this.showSync.syncUpcomingShows({
-      classificationName: 'Music',
+      classificationName: "Music",
       startDateTime,
       endDateTime,
     });
@@ -106,7 +106,7 @@ export class SyncScheduler {
     await this.showSync.syncUpcomingShows({
       city,
       ...(stateCode && { stateCode }),
-      classificationName: 'Music',
+      classificationName: "Music",
     });
   }
 
@@ -148,7 +148,7 @@ export class SyncScheduler {
         ...(options.stateCode && { stateCode: options.stateCode }),
         ...(options.startDate && { startDateTime: options.startDate }),
         ...(options.endDate && { endDateTime: options.endDate }),
-        classificationName: 'Music',
+        classificationName: "Music",
       });
     }
 
@@ -168,7 +168,7 @@ export class SyncScheduler {
     const job: SyncJob = {
       id,
       type,
-      status: 'pending',
+      status: "pending",
       startTime: new Date(),
     };
     this.jobs.set(id, job);
@@ -176,19 +176,19 @@ export class SyncScheduler {
   }
 
   private startJob(job: SyncJob): void {
-    job.status = 'running';
+    job.status = "running";
     job.startTime = new Date();
   }
 
   private completeJob(job: SyncJob, result?: any): void {
-    job.status = 'completed';
+    job.status = "completed";
     job.endTime = new Date();
     job.result = result;
     this.lastSyncTime = new Date();
   }
 
   private failJob(job: SyncJob, error: string): void {
-    job.status = 'failed';
+    job.status = "failed";
     job.endTime = new Date();
     job.error = error;
     if (!this.currentErrors.includes(error)) {
@@ -208,15 +208,15 @@ export class SyncScheduler {
     const jobs = Array.from(this.jobs.values());
     return {
       totalJobs: jobs.length,
-      runningJobs: jobs.filter((j) => j.status === 'running').length,
-      completedJobs: jobs.filter((j) => j.status === 'completed').length,
-      failedJobs: jobs.filter((j) => j.status === 'failed').length,
-      pendingJobs: jobs.filter((j) => j.status === 'pending').length,
+      runningJobs: jobs.filter((j) => j.status === "running").length,
+      completedJobs: jobs.filter((j) => j.status === "completed").length,
+      failedJobs: jobs.filter((j) => j.status === "failed").length,
+      pendingJobs: jobs.filter((j) => j.status === "pending").length,
     };
   }
 
   getHealthStatus(): HealthStatus {
-    const failedJobs = this.getAllJobs().filter((j) => j.status === 'failed');
+    const failedJobs = this.getAllJobs().filter((j) => j.status === "failed");
     const recentErrors = failedJobs
       .slice(-5)
       .map((j) => j.error)
@@ -242,7 +242,7 @@ export class SyncScheduler {
   // Scheduler control methods
   async startScheduler(): Promise<void> {
     // Create a job for the initial sync
-    const job = this.createJob('initial-sync');
+    const job = this.createJob("initial-sync");
     this.startJob(job);
 
     try {
@@ -251,7 +251,7 @@ export class SyncScheduler {
     } catch (error) {
       this.failJob(
         job,
-        error instanceof Error ? error.message : 'Unknown error'
+        error instanceof Error ? error.message : "Unknown error",
       );
       throw error;
     }
@@ -260,9 +260,9 @@ export class SyncScheduler {
   async stopScheduler(): Promise<void> {
     // Mark all running jobs as stopped
     for (const job of this.jobs.values()) {
-      if (job.status === 'running') {
-        job.status = 'failed';
-        job.error = 'Scheduler stopped';
+      if (job.status === "running") {
+        job.status = "failed";
+        job.error = "Scheduler stopped";
         job.endTime = new Date();
       }
     }
@@ -274,7 +274,7 @@ export class SyncScheduler {
       throw new Error(`Job ${jobId} not found`);
     }
 
-    if (job.status === 'running') {
+    if (job.status === "running") {
       throw new Error(`Job ${jobId} is already running`);
     }
 
@@ -283,10 +283,10 @@ export class SyncScheduler {
     try {
       // Run the appropriate sync based on job type
       switch (job.type) {
-        case 'initial-sync':
+        case "initial-sync":
           await this.runInitialSync();
           break;
-        case 'daily-sync':
+        case "daily-sync":
           await this.runDailySync();
           break;
         default:
@@ -296,7 +296,7 @@ export class SyncScheduler {
     } catch (error) {
       this.failJob(
         job,
-        error instanceof Error ? error.message : 'Unknown error'
+        error instanceof Error ? error.message : "Unknown error",
       );
       throw error;
     }
@@ -308,8 +308,8 @@ export class SyncScheduler {
       return false;
     }
 
-    if (job.status === 'failed') {
-      job.status = 'pending';
+    if (job.status === "failed") {
+      job.status = "pending";
       delete job.error;
     }
     return true;
@@ -321,13 +321,13 @@ export class SyncScheduler {
       return false;
     }
 
-    if (job.status === 'running') {
-      job.status = 'failed';
-      job.error = 'Job disabled';
+    if (job.status === "running") {
+      job.status = "failed";
+      job.error = "Job disabled";
       job.endTime = new Date();
-    } else if (job.status === 'pending') {
-      job.status = 'failed';
-      job.error = 'Job disabled';
+    } else if (job.status === "pending") {
+      job.status = "failed";
+      job.error = "Job disabled";
     }
     return true;
   }

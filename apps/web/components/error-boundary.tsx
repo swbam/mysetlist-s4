@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { captureException } from '@sentry/nextjs';
-import { Button } from '@repo/design-system/components/ui/button';
+import { captureException } from "@sentry/nextjs";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import Link from 'next/link';
-import React, { Component, type ReactNode } from 'react';
+} from "@repo/design-system/components/ui/card";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import Link from "next/link";
+import React, { Component, type ReactNode } from "react";
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -30,7 +30,10 @@ interface ErrorBoundaryProps {
   resetOnPropsChange?: boolean;
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   private resetTimeoutId: number | null = null;
   refs: {} = {};
 
@@ -61,14 +64,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         },
       },
       tags: {
-        source: 'react-error-boundary',
+        source: "react-error-boundary",
         retryCount: this.state.retryCount.toString(),
       },
       extra: {
         errorInfo,
         timestamp: new Date().toISOString(),
-        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown',
-        url: typeof window !== 'undefined' ? window.location.href : 'unknown',
+        userAgent:
+          typeof navigator !== "undefined" ? navigator.userAgent : "unknown",
+        url: typeof window !== "undefined" ? window.location.href : "unknown",
       },
     });
 
@@ -80,11 +84,11 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     // Development logging
-    if (process.env["NODE_ENV"] === 'development') {
-      console.group('🚨 React Error Boundary');
-      console.error('Error:', error);
-      console.error('Error Info:', errorInfo);
-      console.error('Sentry Event ID:', errorId);
+    if (process.env["NODE_ENV"] === "development") {
+      console.group("🚨 React Error Boundary");
+      console.error("Error:", error);
+      console.error("Error Info:", errorInfo);
+      console.error("Sentry Event ID:", errorId);
       console.groupEnd();
     }
   }
@@ -96,7 +100,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     // Reset error boundary when resetKeys change
     if (hasError && resetKeys && prevProps.resetKeys) {
       const hasResetKeyChanged = resetKeys.some(
-        (key, index) => key !== prevProps.resetKeys?.[index]
+        (key, index) => key !== prevProps.resetKeys?.[index],
       );
 
       if (hasResetKeyChanged) {
@@ -127,14 +131,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     const { retryCount } = this.state;
 
     if (retryCount < maxRetries) {
-      this.setState(
-        (prevState) => ({
-          retryCount: prevState.retryCount + 1,
-          hasError: false,
-          error: null,
-          errorId: null,
-        })
-      );
+      this.setState((prevState) => ({
+        retryCount: prevState.retryCount + 1,
+        hasError: false,
+        error: null,
+        errorId: null,
+      }));
 
       // Auto-retry after a delay
       this.resetTimeoutId = window.setTimeout(() => {
@@ -145,24 +147,29 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   handleReportProblem = () => {
     const { error, errorId } = this.state;
-    
+
     if (error && errorId) {
       // Open feedback dialog or redirect to support
       const subject = encodeURIComponent(`Error Report: ${error.name}`);
       const body = encodeURIComponent(
-        `Error ID: ${errorId}\nError: ${error.message}\nStack: ${error.stack}\nURL: ${window.location.href}\nUser Agent: ${navigator.userAgent}`
+        `Error ID: ${errorId}\nError: ${error.message}\nStack: ${error.stack}\nURL: ${window.location.href}\nUser Agent: ${navigator.userAgent}`,
       );
-      
+
       window.open(
         `mailto:support@mysetlist.com?subject=${subject}&body=${body}`,
-        '_blank'
+        "_blank",
       );
     }
   };
 
   override render(): React.ReactNode {
     const { hasError, error, errorId, retryCount } = this.state;
-    const { children, fallback, showErrorDetails = false, maxRetries = 3 } = this.props;
+    const {
+      children,
+      fallback,
+      showErrorDetails = false,
+      maxRetries = 3,
+    } = this.props;
 
     if (hasError) {
       // Use custom fallback if provided
@@ -178,9 +185,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
                 <AlertTriangle className="h-6 w-6 text-destructive" />
               </div>
-              <CardTitle className="text-2xl font-bold">Something went wrong</CardTitle>
+              <CardTitle className="text-2xl font-bold">
+                Something went wrong
+              </CardTitle>
               <CardDescription>
-                We're sorry, but something unexpected happened. Our team has been notified.
+                We're sorry, but something unexpected happened. Our team has
+                been notified.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -198,16 +208,24 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
               <div className="flex flex-col gap-2 sm:flex-row">
                 {retryCount < maxRetries ? (
-                  <Button onClick={this.handleRetry} className="flex-1" variant="default">
+                  <Button
+                    onClick={this.handleRetry}
+                    className="flex-1"
+                    variant="default"
+                  >
                     <RefreshCw className="mr-2 h-4 w-4" />
                     Try Again ({maxRetries - retryCount} left)
                   </Button>
                 ) : (
-                  <Button onClick={this.handleReportProblem} className="flex-1" variant="outline">
+                  <Button
+                    onClick={this.handleReportProblem}
+                    className="flex-1"
+                    variant="outline"
+                  >
                     Report Problem
                   </Button>
                 )}
-                
+
                 <Button asChild className="flex-1" variant="outline">
                   <Link href="/">
                     <Home className="mr-2 h-4 w-4" />
@@ -216,7 +234,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                 </Button>
               </div>
 
-              {process.env["NODE_ENV"] === 'development' && error && (
+              {process.env["NODE_ENV"] === "development" && error && (
                 <details className="mt-4">
                   <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
                     Developer Details
@@ -241,7 +259,7 @@ export function useErrorHandler() {
   return (error: Error, errorInfo?: any) => {
     captureException(error, {
       tags: {
-        source: 'manual-error-handler',
+        source: "manual-error-handler",
       },
       extra: errorInfo,
     });
@@ -255,13 +273,13 @@ interface WithErrorBoundaryProps {
   showErrorDetails?: boolean;
 }
 
-export function WithErrorBoundary({ 
-  children, 
-  onError, 
-  showErrorDetails = process.env["NODE_ENV"] === 'development' 
+export function WithErrorBoundary({
+  children,
+  onError,
+  showErrorDetails = process.env["NODE_ENV"] === "development",
 }: WithErrorBoundaryProps) {
   return (
-    <ErrorBoundary 
+    <ErrorBoundary
       {...(onError && { onError })}
       showErrorDetails={showErrorDetails}
       maxRetries={3}

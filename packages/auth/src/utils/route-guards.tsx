@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '../../provider';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../../provider";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -13,7 +13,7 @@ interface ProtectedRouteProps {
 
 export function ProtectedRoute({
   children,
-  redirectTo = '/sign-in',
+  redirectTo = "/sign-in",
   requireEmailVerification = false,
   allowedRoles,
 }: ProtectedRouteProps) {
@@ -31,19 +31,26 @@ export function ProtectedRoute({
 
     // Email verification required but not verified
     if (requireEmailVerification && !user.email_confirmed_at) {
-      router.push('/auth/verify-email');
+      router.push("/auth/verify-email");
       return;
     }
 
     // Role-based access control
     if (allowedRoles && allowedRoles.length > 0) {
-      const userRole = user.user_metadata?.['role'] || 'user';
+      const userRole = user.user_metadata?.["role"] || "user";
       if (!allowedRoles.includes(userRole)) {
-        router.push('/unauthorized');
+        router.push("/unauthorized");
         return;
       }
     }
-  }, [user, loading, router, redirectTo, requireEmailVerification, allowedRoles]);
+  }, [
+    user,
+    loading,
+    router,
+    redirectTo,
+    requireEmailVerification,
+    allowedRoles,
+  ]);
 
   // Show loading state
   if (loading) {
@@ -58,7 +65,7 @@ export function ProtectedRoute({
   if (!user) return null;
   if (requireEmailVerification && !user.email_confirmed_at) return null;
   if (allowedRoles && allowedRoles.length > 0) {
-    const userRole = user.user_metadata?.['role'] || 'user';
+    const userRole = user.user_metadata?.["role"] || "user";
     if (!allowedRoles.includes(userRole)) return null;
   }
 
@@ -72,7 +79,7 @@ interface PublicOnlyRouteProps {
 
 export function PublicOnlyRoute({
   children,
-  redirectTo = '/dashboard',
+  redirectTo = "/dashboard",
 }: PublicOnlyRouteProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -140,8 +147,8 @@ export function ConditionalAuth({
   // Check role-based access
   if (allowedRoles && allowedRoles.length > 0) {
     if (!user) return <>{fallback}</>;
-    
-    const userRole = user.user_metadata?.['role'] || 'user';
+
+    const userRole = user.user_metadata?.["role"] || "user";
     if (!allowedRoles.includes(userRole)) {
       return <>{fallback}</>;
     }

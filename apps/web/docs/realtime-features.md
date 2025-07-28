@@ -30,6 +30,7 @@ The MySetlist app now includes comprehensive real-time features powered by Supab
 ### 1. Live Show Status
 
 Shows automatically update their status:
+
 - **Upcoming** → **Ongoing** → **Completed**
 - Live shows display a pulsing "LIVE" indicator
 - Status changes are reflected instantly across all views
@@ -43,6 +44,7 @@ Shows automatically update their status:
 ### 3. Live Setlists
 
 During live shows:
+
 - Songs appear as they're added to the setlist
 - Position changes update in real-time
 - Special indicators for covers and debuts
@@ -67,10 +69,6 @@ During live shows:
 
 ## Implementation Guide
 
-
-
-
-
 ### Connection Status
 
 The connection status is available globally:
@@ -80,11 +78,11 @@ import { useRealtimeConnection } from '@/app/[locale]/providers/realtime-provide
 
 function MyComponent() {
   const { isConnected, connectionStatus } = useRealtimeConnection();
-  
+
   if (!isConnected) {
     return <p>Real-time updates unavailable</p>;
   }
-  
+
   return <p>Connected!</p>;
 }
 ```

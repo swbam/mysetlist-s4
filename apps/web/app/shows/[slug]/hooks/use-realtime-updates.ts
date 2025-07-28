@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { createClient } from '~/lib/supabase/client';
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { createClient } from "~/lib/supabase/client";
 
 export function useRealtimeUpdates(showId: string, isLive: boolean) {
   const router = useRouter();
@@ -17,16 +17,16 @@ export function useRealtimeUpdates(showId: string, isLive: boolean) {
     const setlistChannel = supabase
       .channel(`show-setlists-${showId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'setlist_songs',
+          event: "*",
+          schema: "public",
+          table: "setlist_songs",
           filter: `setlist_id=in.(select id from setlists where show_id=eq.${showId})`,
         },
         (_payload) => {
           router.refresh();
-        }
+        },
       )
       .subscribe();
 

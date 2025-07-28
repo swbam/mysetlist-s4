@@ -1,5 +1,5 @@
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { VenueGridSkeleton } from '~/components/loading-states';
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { VenueGridSkeleton } from "~/components/loading-states";
 
 export default function VenuesLoading() {
   return (

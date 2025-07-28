@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Carousel,
@@ -7,12 +7,12 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from '@repo/design-system/components/ui/carousel';
-import { cn } from '@repo/design-system/lib/utils';
-import { motion } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
-import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+} from "@repo/design-system/components/ui/carousel";
+import { cn } from "@repo/design-system/lib/utils";
+import { motion } from "framer-motion";
+import { ChevronRight } from "lucide-react";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface EnhancedContentSliderProps {
   title: string;
@@ -40,7 +40,7 @@ export function EnhancedContentSlider({
   title,
   subtitle,
   viewAllLink,
-  viewAllText = 'View All',
+  viewAllText = "View All",
   autoPlay = false,
   autoPlayInterval = 4000,
   className,
@@ -71,7 +71,7 @@ export function EnhancedContentSlider({
     setCount(api.scrollSnapList().length);
     setCurrent(api.selectedScrollSnap());
 
-    api.on('select', () => {
+    api.on("select", () => {
       setCurrent(api.selectedScrollSnap());
     });
   }, [api]);
@@ -121,15 +121,13 @@ export function EnhancedContentSlider({
 
   if (error) {
     return (
-      <section className={cn('relative py-16 md:py-24', className)}>
+      <section className={cn("relative py-16 md:py-24", className)}>
         <div className="container relative mx-auto px-4">
           <div className="text-center">
             <h2 className="mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text font-bold text-3xl text-transparent tracking-tight md:text-4xl">
               {title}
             </h2>
-            <p className="text-muted-foreground">
-              {error}
-            </p>
+            <p className="text-muted-foreground">{error}</p>
           </div>
         </div>
       </section>
@@ -137,7 +135,7 @@ export function EnhancedContentSlider({
   }
 
   return (
-    <section className={cn('relative py-16 md:py-24', className)}>
+    <section className={cn("relative py-16 md:py-24", className)}>
       {/* Background gradient effect */}
       {gradientOverlay && (
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
@@ -162,7 +160,7 @@ export function EnhancedContentSlider({
           {viewAllLink && !isLoading && (
             <motion.div
               whileHover={{ x: 5 }}
-              transition={{ type: 'spring', stiffness: 300 }}
+              transition={{ type: "spring", stiffness: 300 }}
             >
               <Link
                 href={viewAllLink}
@@ -187,9 +185,9 @@ export function EnhancedContentSlider({
         >
           <Carousel
             setApi={setApi}
-            opts={{ 
-              loop, 
-              align: 'start',
+            opts={{
+              loop,
+              align: "start",
               skipSnaps: false,
               dragFree: true,
             }}
@@ -221,10 +219,10 @@ export function EnhancedContentSlider({
                   key={index}
                   onClick={() => api?.scrollTo(index)}
                   className={cn(
-                    'h-2 w-2 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                    "h-2 w-2 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
                     index === current
-                      ? 'w-8 bg-primary'
-                      : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                      ? "w-8 bg-primary"
+                      : "bg-muted-foreground/30 hover:bg-muted-foreground/50",
                   )}
                   aria-label={`Go to slide ${index + 1}`}
                 />
@@ -250,15 +248,16 @@ export function EnhancedContentSliderItem({
   return (
     <CarouselItem
       className={cn(
-        'pl-1 sm:pl-2 md:pl-4',
-        basis || 'basis-4/5 sm:basis-2/5 md:basis-1/3 lg:basis-1/4 xl:basis-1/6',
-        className
+        "pl-1 sm:pl-2 md:pl-4",
+        basis ||
+          "basis-4/5 sm:basis-2/5 md:basis-1/3 lg:basis-1/4 xl:basis-1/6",
+        className,
       )}
     >
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
         className="h-full focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 rounded-lg"
       >
         {children}

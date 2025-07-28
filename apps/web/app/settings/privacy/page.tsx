@@ -1,9 +1,9 @@
-import { redirect } from 'next/navigation';
-import { createClient } from '~/lib/supabase/server';
-import { PrivacySettings } from './components/privacy-settings';
+import { redirect } from "next/navigation";
+import { createClient } from "~/lib/supabase/server";
+import { PrivacySettings } from "./components/privacy-settings";
 
 // Force dynamic rendering due to user-specific data fetching
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function PrivacySettingsPage() {
   const supabase = await createClient();
@@ -12,13 +12,13 @@ export default async function PrivacySettingsPage() {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect('/auth/sign-in');
+    redirect("/auth/sign-in");
   }
 
   const { data: privacySettings } = await supabase
-    .from('user_privacy_settings')
-    .select('*')
-    .eq('user_id', user.id)
+    .from("user_privacy_settings")
+    .select("*")
+    .eq("user_id", user.id)
     .single();
 
   return (
@@ -27,7 +27,7 @@ export default async function PrivacySettingsPage() {
 
       <PrivacySettings
         userId={user.id}
-        email={user.email || ''}
+        email={user.email || ""}
         currentSettings={privacySettings}
       />
     </div>

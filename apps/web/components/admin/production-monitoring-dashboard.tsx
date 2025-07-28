@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Activity,
@@ -11,26 +11,26 @@ import {
   TrendingUp,
   Users,
   Zap,
-} from 'lucide-react';
-import type React from 'react';
-import { useEffect, useState } from 'react';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { usePerformanceMonitor } from '~/hooks/use-performance-monitor';
+} from "@repo/design-system/components/ui/card";
+import { usePerformanceMonitor } from "~/hooks/use-performance-monitor";
 
 interface MetricCardProps {
   title: string;
   value: string | number;
   unit?: string;
-  status: 'good' | 'warning' | 'critical';
-  trend?: 'up' | 'down' | 'stable';
+  status: "good" | "warning" | "critical";
+  trend?: "up" | "down" | "stable";
   icon: React.ReactNode;
 }
 
@@ -44,27 +44,27 @@ const MetricCard: React.FC<MetricCardProps> = ({
 }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'good':
-        return 'text-green-500';
-      case 'warning':
-        return 'text-yellow-500';
-      case 'critical':
-        return 'text-red-500';
+      case "good":
+        return "text-green-500";
+      case "warning":
+        return "text-yellow-500";
+      case "critical":
+        return "text-red-500";
       default:
-        return 'text-gray-500';
+        return "text-gray-500";
     }
   };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'good':
-        return 'bg-green-500';
-      case 'warning':
-        return 'bg-yellow-500';
-      case 'critical':
-        return 'bg-red-500';
+      case "good":
+        return "bg-green-500";
+      case "warning":
+        return "bg-yellow-500";
+      case "critical":
+        return "bg-red-500";
       default:
-        return 'bg-gray-500';
+        return "bg-gray-500";
     }
   };
 
@@ -85,9 +85,9 @@ const MetricCard: React.FC<MetricCardProps> = ({
           </Badge>
           {trend && (
             <span
-              className={`text-xs ${trend === 'up' ? 'text-green-500' : trend === 'down' ? 'text-red-500' : 'text-gray-500'}`}
+              className={`text-xs ${trend === "up" ? "text-green-500" : trend === "down" ? "text-red-500" : "text-gray-500"}`}
             >
-              {trend === 'up' ? '↗' : trend === 'down' ? '↘' : '→'}
+              {trend === "up" ? "↗" : trend === "down" ? "↘" : "→"}
             </span>
           )}
         </div>
@@ -101,7 +101,7 @@ interface AlertBannerProps {
     id: string;
     type: string;
     message: string;
-    severity: 'warning' | 'critical';
+    severity: "warning" | "critical";
     timestamp: string;
   }>;
   onDismiss: (id: string) => void;
@@ -118,18 +118,18 @@ const AlertBanner: React.FC<AlertBannerProps> = ({ alerts, onDismiss }) => {
         <div
           key={alert.id}
           className={`rounded-lg border-l-4 p-4 ${
-            alert.severity === 'critical'
-              ? 'border-red-500 bg-red-50'
-              : 'border-yellow-500 bg-yellow-50'
+            alert.severity === "critical"
+              ? "border-red-500 bg-red-50"
+              : "border-yellow-500 bg-yellow-50"
           }`}
         >
           <div className="flex items-start justify-between">
             <div className="flex items-start space-x-3">
               <AlertTriangle
                 className={`mt-0.5 h-5 w-5 ${
-                  alert.severity === 'critical'
-                    ? 'text-red-500'
-                    : 'text-yellow-500'
+                  alert.severity === "critical"
+                    ? "text-red-500"
+                    : "text-yellow-500"
                 }`}
               />
               <div>
@@ -207,7 +207,7 @@ const PerformanceChart: React.FC<PerformanceChartProps> = ({
                       ((point.value - minValue) / (maxValue - minValue)) * 80;
                     return `${x},${y}`;
                   })
-                  .join(' ')}
+                  .join(" ")}
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
@@ -248,7 +248,7 @@ export const ProductionMonitoringDashboard: React.FC = () => {
   useEffect(() => {
     const fetchMonitoringData = async () => {
       try {
-        const response = await fetch('/api/admin/monitoring');
+        const response = await fetch("/api/admin/monitoring");
         const data = await response.json();
 
         setMetrics(data.metrics || {});
@@ -280,87 +280,87 @@ export const ProductionMonitoringDashboard: React.FC = () => {
 
     const threshold = thresholds[metric as keyof typeof thresholds];
     if (!threshold) {
-      return 'good';
+      return "good";
     }
 
     if (value <= threshold.good) {
-      return 'good';
+      return "good";
     }
     if (value <= threshold.warning) {
-      return 'warning';
+      return "warning";
     }
-    return 'critical';
+    return "critical";
   };
 
   const systemMetrics = [
     {
-      title: 'System Status',
-      value: metrics.systemStatus || 'Healthy',
-      status: metrics.systemStatus === 'Healthy' ? 'good' : 'warning',
+      title: "System Status",
+      value: metrics.systemStatus || "Healthy",
+      status: metrics.systemStatus === "Healthy" ? "good" : "warning",
       icon: <CheckCircle className="h-4 w-4" />,
     },
     {
-      title: 'Uptime',
-      value: metrics.uptime || '99.9',
-      unit: '%',
-      status: (metrics.uptime || 99.9) >= 99.9 ? 'good' : 'warning',
+      title: "Uptime",
+      value: metrics.uptime || "99.9",
+      unit: "%",
+      status: (metrics.uptime || 99.9) >= 99.9 ? "good" : "warning",
       icon: <Activity className="h-4 w-4" />,
     },
     {
-      title: 'Response Time',
+      title: "Response Time",
       value: metrics.averageResponseTime || 150,
-      unit: 'ms',
-      status: getPerformanceStatus('ttfb', metrics.averageResponseTime || 150),
+      unit: "ms",
+      status: getPerformanceStatus("ttfb", metrics.averageResponseTime || 150),
       icon: <Clock className="h-4 w-4" />,
     },
     {
-      title: 'Error Rate',
+      title: "Error Rate",
       value: metrics.errorRate || 0.05,
-      unit: '%',
-      status: (metrics.errorRate || 0.05) < 0.1 ? 'good' : 'critical',
+      unit: "%",
+      status: (metrics.errorRate || 0.05) < 0.1 ? "good" : "critical",
       icon: <AlertTriangle className="h-4 w-4" />,
     },
     {
-      title: 'Active Users',
+      title: "Active Users",
       value: metrics.activeUsers || 1234,
-      status: 'good',
+      status: "good",
       icon: <Users className="h-4 w-4" />,
     },
     {
-      title: 'Database Queries',
+      title: "Database Queries",
       value: metrics.databaseQueries || 45,
-      unit: 'q/s',
-      status: (metrics.databaseQueries || 45) < 100 ? 'good' : 'warning',
+      unit: "q/s",
+      status: (metrics.databaseQueries || 45) < 100 ? "good" : "warning",
       icon: <Database className="h-4 w-4" />,
     },
   ];
 
   const performanceMetricsData = [
     {
-      title: 'Largest Contentful Paint',
+      title: "Largest Contentful Paint",
       value: Math.round(performanceMetrics.lcp || 0),
-      unit: 'ms',
-      status: getPerformanceStatus('lcp', performanceMetrics.lcp || 0),
+      unit: "ms",
+      status: getPerformanceStatus("lcp", performanceMetrics.lcp || 0),
       icon: <TrendingUp className="h-4 w-4" />,
     },
     {
-      title: 'First Contentful Paint',
+      title: "First Contentful Paint",
       value: Math.round(performanceMetrics.fcp || 0),
-      unit: 'ms',
-      status: getPerformanceStatus('fcp', performanceMetrics.fcp || 0),
+      unit: "ms",
+      status: getPerformanceStatus("fcp", performanceMetrics.fcp || 0),
       icon: <Zap className="h-4 w-4" />,
     },
     {
-      title: 'Cumulative Layout Shift',
+      title: "Cumulative Layout Shift",
       value: (performanceMetrics.cls || 0).toFixed(3),
-      status: getPerformanceStatus('cls', performanceMetrics.cls || 0),
+      status: getPerformanceStatus("cls", performanceMetrics.cls || 0),
       icon: <Globe className="h-4 w-4" />,
     },
     {
-      title: 'Time to First Byte',
+      title: "Time to First Byte",
       value: Math.round(performanceMetrics.ttfb || 0),
-      unit: 'ms',
-      status: getPerformanceStatus('ttfb', performanceMetrics.ttfb || 0),
+      unit: "ms",
+      status: getPerformanceStatus("ttfb", performanceMetrics.ttfb || 0),
       icon: <Server className="h-4 w-4" />,
     },
   ];
@@ -400,8 +400,8 @@ export const ProductionMonitoringDashboard: React.FC = () => {
           >
             Refresh
           </Button>
-          <Badge variant={isMonitoring ? 'default' : 'secondary'}>
-            {isMonitoring ? 'Monitoring Active' : 'Monitoring Inactive'}
+          <Badge variant={isMonitoring ? "default" : "secondary"}>
+            {isMonitoring ? "Monitoring Active" : "Monitoring Inactive"}
           </Badge>
         </div>
       </div>
@@ -418,8 +418,8 @@ export const ProductionMonitoringDashboard: React.FC = () => {
               key={index}
               title={metric.title}
               value={metric.value}
-              unit={metric.unit ?? ''}
-              status={metric.status as 'good' | 'warning' | 'critical'}
+              unit={metric.unit ?? ""}
+              status={metric.status as "good" | "warning" | "critical"}
               icon={metric.icon}
             />
           ))}
@@ -435,8 +435,8 @@ export const ProductionMonitoringDashboard: React.FC = () => {
               key={index}
               title={metric.title}
               value={metric.value}
-              unit={metric.unit ?? ''}
-              status={metric.status as 'good' | 'warning' | 'critical'}
+              unit={metric.unit ?? ""}
+              status={metric.status as "good" | "warning" | "critical"}
               icon={metric.icon}
             />
           ))}
@@ -463,7 +463,7 @@ export const ProductionMonitoringDashboard: React.FC = () => {
           <MetricCard
             title="Memory Usage"
             value={Math.round(
-              (performanceMetrics.jsHeapUsed || 0) / 1024 / 1024
+              (performanceMetrics.jsHeapUsed || 0) / 1024 / 1024,
             )}
             unit="MB"
             status="good"
@@ -471,13 +471,13 @@ export const ProductionMonitoringDashboard: React.FC = () => {
           />
           <MetricCard
             title="Network Type"
-            value={performanceMetrics.connectionType || 'Unknown'}
+            value={performanceMetrics.connectionType || "Unknown"}
             status="good"
             icon={<Globe className="h-4 w-4" />}
           />
           <MetricCard
             title="Effective Type"
-            value={performanceMetrics.effectiveType || 'Unknown'}
+            value={performanceMetrics.effectiveType || "Unknown"}
             status="good"
             icon={<Activity className="h-4 w-4" />}
           />

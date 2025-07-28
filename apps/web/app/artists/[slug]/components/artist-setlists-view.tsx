@@ -1,22 +1,16 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { 
-  Calendar, 
-  MapPin, 
-  Music2, 
-  Vote,
-  ExternalLink 
-} from 'lucide-react';
-import Link from 'next/link';
-import { formatDate } from '~/lib/utils';
+} from "@repo/design-system/components/ui/card";
+import { Calendar, MapPin, Music2, Vote, ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { formatDate } from "~/lib/utils";
 
 interface Setlist {
   setlist: {
@@ -50,10 +44,10 @@ interface ArtistSetlistsViewProps {
   artistId: string;
 }
 
-export function ArtistSetlistsView({ 
-  setlists, 
-  artistName, 
-  artistId: _artistId 
+export function ArtistSetlistsView({
+  setlists,
+  artistName,
+  artistId: _artistId,
 }: ArtistSetlistsViewProps) {
   if (setlists.length === 0) {
     return (

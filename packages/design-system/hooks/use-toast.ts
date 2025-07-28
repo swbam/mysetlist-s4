@@ -1,18 +1,18 @@
-import { toast } from 'sonner';
+import { toast } from "sonner";
 
 export const useToast = () => {
   return {
     toast: (props: {
       title?: string;
       description?: string;
-      variant?: 'default' | 'destructive';
+      variant?: "default" | "destructive";
     }) => {
-      if (props.variant === 'destructive') {
-        toast.error(props.title || 'Error', {
+      if (props.variant === "destructive") {
+        toast.error(props.title || "Error", {
           description: props.description,
         });
       } else {
-        toast.success(props.title || 'Success', {
+        toast.success(props.title || "Success", {
           description: props.description,
         });
       }

@@ -1,19 +1,19 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import { type NextRequest, NextResponse } from 'next/server';
-import { createClient } from '~/lib/api/supabase/server';
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { type NextRequest, NextResponse } from "next/server";
+import { createClient } from "~/lib/api/supabase/server";
 
 // Force dynamic rendering for API routes
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // Type definitions
 interface BulkActionRequest {
   action:
-    | 'approve_content'
-    | 'reject_content'
-    | 'ban_users'
-    | 'verify_venues'
-    | 'update_show_status'
-    | 'delete_content';
+    | "approve_content"
+    | "reject_content"
+    | "ban_users"
+    | "verify_venues"
+    | "update_show_status"
+    | "delete_content";
   items: BulkActionItem[];
   options?: BulkActionOptions;
 }
@@ -27,19 +27,19 @@ interface BulkActionItem {
 interface BulkActionOptions {
   reason?: string;
   duration_days?: number;
-  status?: 'upcoming' | 'cancelled' | 'completed' | 'in_progress';
+  status?: "upcoming" | "cancelled" | "completed" | "in_progress";
   hard_delete?: boolean;
 }
 
 type ContentType =
-  | 'setlist'
-  | 'review'
-  | 'photo'
-  | 'tip'
-  | 'user'
-  | 'venue'
-  | 'show'
-  | 'artist';
+  | "setlist"
+  | "review"
+  | "photo"
+  | "tip"
+  | "user"
+  | "venue"
+  | "show"
+  | "artist";
 
 interface BulkActionResult {
   id: string;
@@ -62,7 +62,7 @@ interface ModerationAction {
 }
 
 interface UserData {
-  role: 'admin' | 'moderator' | 'user';
+  role: "admin" | "moderator" | "user";
 }
 
 export async function POST(request: NextRequest) {
@@ -74,24 +74,24 @@ export async function POST(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check if user is admin or moderator
     const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
       .single<UserData>();
 
     if (
       userError ||
       !userData ||
-      (userData.role !== 'admin' && userData.role !== 'moderator')
+      (userData.role !== "admin" && userData.role !== "moderator")
     ) {
       return NextResponse.json(
-        { error: 'Insufficient permissions' },
-        { status: 403 }
+        { error: "Insufficient permissions" },
+        { status: 403 },
       );
     }
 
@@ -99,45 +99,45 @@ export async function POST(request: NextRequest) {
     const { action, items, options } = requestData;
 
     switch (action) {
-      case 'approve_content':
+      case "approve_content":
         return await approveContent(supabase, items, user.id);
 
-      case 'reject_content': {
+      case "reject_content": {
         if (!options?.reason) {
           return NextResponse.json(
-            { error: 'Reason is required for rejection' },
-            { status: 400 }
+            { error: "Reason is required for rejection" },
+            { status: 400 },
           );
         }
         return await rejectContent(supabase, items, options, user.id);
       }
 
-      case 'ban_users':
+      case "ban_users":
         return await banUsers(supabase, items, options || {}, user.id);
 
-      case 'verify_venues':
+      case "verify_venues":
         return await verifyVenues(supabase, items, user.id);
 
-      case 'update_show_status': {
+      case "update_show_status": {
         if (!options?.status) {
           return NextResponse.json(
-            { error: 'Status is required for update' },
-            { status: 400 }
+            { error: "Status is required for update" },
+            { status: 400 },
           );
         }
         return await updateShowStatus(supabase, items, options, user.id);
       }
 
-      case 'delete_content':
+      case "delete_content":
         return await deleteContent(supabase, items, options || {}, user.id);
 
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
   } catch (error) {
     return NextResponse.json(
-      { error: 'Operation failed', details: (error as Error).message },
-      { status: 500 }
+      { error: "Operation failed", details: (error as Error).message },
+      { status: 500 },
     );
   }
 }
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest) {
 async function approveContent(
   supabase: SupabaseClient,
   items: BulkActionItem[],
-  userId: string
+  userId: string,
 ): Promise<NextResponse<BulkActionResponse>> {
   const results: BulkActionResult[] = [];
 
@@ -156,11 +156,11 @@ async function approveContent(
       const { error } = await supabase
         .from(tableName)
         .update({
-          moderation_status: 'approved',
+          moderation_status: "approved",
           moderated_at: new Date().toISOString(),
           moderated_by: userId,
         })
-        .eq('id', item.id);
+        .eq("id", item.id);
 
       if (error) {
         throw error;
@@ -169,17 +169,17 @@ async function approveContent(
       // Log moderation action
       await logModerationAction(supabase, {
         moderator_id: userId,
-        action: 'approved',
+        action: "approved",
         target_type: item.type,
         target_id: item.id,
-        reason: 'Bulk approval',
+        reason: "Bulk approval",
       });
 
-      results.push({ id: item.id, status: 'approved' });
+      results.push({ id: item.id, status: "approved" });
     } catch (error) {
       results.push({
         id: item.id,
-        status: 'error',
+        status: "error",
         error: (error as Error).message,
       });
     }
@@ -188,7 +188,7 @@ async function approveContent(
   return NextResponse.json({
     success: true,
     results,
-    message: `${results.filter((r) => r.status === 'approved').length} items approved`,
+    message: `${results.filter((r) => r.status === "approved").length} items approved`,
   });
 }
 
@@ -196,9 +196,9 @@ async function rejectContent(
   supabase: SupabaseClient,
   items: BulkActionItem[],
   options: BulkActionOptions,
-  userId: string
+  userId: string,
 ): Promise<NextResponse<BulkActionResponse>> {
-  const { reason = 'No reason provided' } = options;
+  const { reason = "No reason provided" } = options;
   const results: BulkActionResult[] = [];
 
   for (const item of items) {
@@ -207,12 +207,12 @@ async function rejectContent(
       const { error } = await supabase
         .from(tableName)
         .update({
-          moderation_status: 'rejected',
+          moderation_status: "rejected",
           moderated_at: new Date().toISOString(),
           moderated_by: userId,
           rejection_reason: reason,
         })
-        .eq('id', item.id);
+        .eq("id", item.id);
 
       if (error) {
         throw error;
@@ -221,17 +221,17 @@ async function rejectContent(
       // Log moderation action
       await logModerationAction(supabase, {
         moderator_id: userId,
-        action: 'rejected',
+        action: "rejected",
         target_type: item.type,
         target_id: item.id,
-        reason: reason || 'Bulk rejection',
+        reason: reason || "Bulk rejection",
       });
 
-      results.push({ id: item.id, status: 'rejected' });
+      results.push({ id: item.id, status: "rejected" });
     } catch (error) {
       results.push({
         id: item.id,
-        status: 'error',
+        status: "error",
         error: (error as Error).message,
       });
     }
@@ -240,7 +240,7 @@ async function rejectContent(
   return NextResponse.json({
     success: true,
     results,
-    message: `${results.filter((r) => r.status === 'rejected').length} items rejected`,
+    message: `${results.filter((r) => r.status === "rejected").length} items rejected`,
   });
 }
 
@@ -248,7 +248,7 @@ async function banUsers(
   supabase: SupabaseClient,
   items: BulkActionItem[],
   options: BulkActionOptions,
-  userId: string
+  userId: string,
 ): Promise<NextResponse<BulkActionResponse>> {
   const { reason, duration_days } = options;
   const results: BulkActionResult[] = [];
@@ -256,20 +256,20 @@ async function banUsers(
   for (const item of items) {
     try {
       if (!item.user_id) {
-        throw new Error('User ID is required for ban action');
+        throw new Error("User ID is required for ban action");
       }
 
       // Create user ban record
       const banExpiry = duration_days
         ? new Date(
-            Date.now() + duration_days * 24 * 60 * 60 * 1000
+            Date.now() + duration_days * 24 * 60 * 60 * 1000,
           ).toISOString()
         : null;
 
-      const { error: banError } = await supabase.from('user_bans').insert({
+      const { error: banError } = await supabase.from("user_bans").insert({
         user_id: item.user_id,
         banned_by: userId,
-        reason: reason || 'Bulk ban action',
+        reason: reason || "Bulk ban action",
         expires_at: banExpiry,
       });
 
@@ -279,10 +279,10 @@ async function banUsers(
 
       // Update user warning count
       const { error: rpcError } = await supabase.rpc(
-        'increment_user_warnings',
+        "increment_user_warnings",
         {
           target_user_id: item.user_id,
-        }
+        },
       );
 
       if (rpcError) {
@@ -292,17 +292,17 @@ async function banUsers(
       // Log moderation action
       await logModerationAction(supabase, {
         moderator_id: userId,
-        action: 'banned_user',
-        target_type: 'user',
+        action: "banned_user",
+        target_type: "user",
         target_id: item.user_id,
-        reason: reason || 'Bulk ban action',
+        reason: reason || "Bulk ban action",
       });
 
-      results.push({ id: item.user_id, status: 'banned' });
+      results.push({ id: item.user_id, status: "banned" });
     } catch (error) {
       results.push({
         id: item.user_id || item.id,
-        status: 'error',
+        status: "error",
         error: (error as Error).message,
       });
     }
@@ -311,27 +311,27 @@ async function banUsers(
   return NextResponse.json({
     success: true,
     results,
-    message: `${results.filter((r) => r.status === 'banned').length} users banned`,
+    message: `${results.filter((r) => r.status === "banned").length} users banned`,
   });
 }
 
 async function verifyVenues(
   supabase: SupabaseClient,
   items: BulkActionItem[],
-  userId: string
+  userId: string,
 ): Promise<NextResponse<BulkActionResponse>> {
   const results: BulkActionResult[] = [];
 
   for (const item of items) {
     try {
       const { error } = await supabase
-        .from('venues')
+        .from("venues")
         .update({
           verified: true,
           verified_at: new Date().toISOString(),
           verified_by: userId,
         })
-        .eq('id', item.id);
+        .eq("id", item.id);
 
       if (error) {
         throw error;
@@ -340,17 +340,17 @@ async function verifyVenues(
       // Log moderation action
       await logModerationAction(supabase, {
         moderator_id: userId,
-        action: 'verified_venue',
-        target_type: 'venue',
+        action: "verified_venue",
+        target_type: "venue",
         target_id: item.id,
-        reason: 'Bulk venue verification',
+        reason: "Bulk venue verification",
       });
 
-      results.push({ id: item.id, status: 'verified' });
+      results.push({ id: item.id, status: "verified" });
     } catch (error) {
       results.push({
         id: item.id,
-        status: 'error',
+        status: "error",
         error: (error as Error).message,
       });
     }
@@ -359,7 +359,7 @@ async function verifyVenues(
   return NextResponse.json({
     success: true,
     results,
-    message: `${results.filter((r) => r.status === 'verified').length} venues verified`,
+    message: `${results.filter((r) => r.status === "verified").length} venues verified`,
   });
 }
 
@@ -367,11 +367,11 @@ async function updateShowStatus(
   supabase: SupabaseClient,
   items: BulkActionItem[],
   options: BulkActionOptions,
-  userId: string
+  userId: string,
 ): Promise<NextResponse<BulkActionResponse>> {
   const { status } = options;
   if (!status) {
-    throw new Error('Status is required');
+    throw new Error("Status is required");
   }
 
   const results: BulkActionResult[] = [];
@@ -379,12 +379,12 @@ async function updateShowStatus(
   for (const item of items) {
     try {
       const { error } = await supabase
-        .from('shows')
+        .from("shows")
         .update({
           status: status,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', item.id);
+        .eq("id", item.id);
 
       if (error) {
         throw error;
@@ -393,17 +393,17 @@ async function updateShowStatus(
       // Log moderation action
       await logModerationAction(supabase, {
         moderator_id: userId,
-        action: 'updated_show_status',
-        target_type: 'show',
+        action: "updated_show_status",
+        target_type: "show",
         target_id: item.id,
         reason: `Updated status to ${status}`,
       });
 
-      results.push({ id: item.id, status: 'updated' });
+      results.push({ id: item.id, status: "updated" });
     } catch (error) {
       results.push({
         id: item.id,
-        status: 'error',
+        status: "error",
         error: (error as Error).message,
       });
     }
@@ -412,7 +412,7 @@ async function updateShowStatus(
   return NextResponse.json({
     success: true,
     results,
-    message: `${results.filter((r) => r.status === 'updated').length} shows updated`,
+    message: `${results.filter((r) => r.status === "updated").length} shows updated`,
   });
 }
 
@@ -420,7 +420,7 @@ async function deleteContent(
   supabase: SupabaseClient,
   items: BulkActionItem[],
   options: BulkActionOptions,
-  userId: string
+  userId: string,
 ): Promise<NextResponse<BulkActionResponse>> {
   const { hard_delete = false } = options;
   const results: BulkActionResult[] = [];
@@ -434,7 +434,7 @@ async function deleteContent(
         const { error } = await supabase
           .from(tableName)
           .delete()
-          .eq('id', item.id);
+          .eq("id", item.id);
         if (error) {
           throw error;
         }
@@ -446,7 +446,7 @@ async function deleteContent(
             deleted_at: new Date().toISOString(),
             deleted_by: userId,
           })
-          .eq('id', item.id);
+          .eq("id", item.id);
         if (error) {
           throw error;
         }
@@ -455,17 +455,17 @@ async function deleteContent(
       // Log moderation action
       await logModerationAction(supabase, {
         moderator_id: userId,
-        action: hard_delete ? 'hard_deleted' : 'soft_deleted',
+        action: hard_delete ? "hard_deleted" : "soft_deleted",
         target_type: item.type,
         target_id: item.id,
-        reason: `Bulk ${hard_delete ? 'hard' : 'soft'} delete`,
+        reason: `Bulk ${hard_delete ? "hard" : "soft"} delete`,
       });
 
-      results.push({ id: item.id, status: 'deleted' });
+      results.push({ id: item.id, status: "deleted" });
     } catch (error) {
       results.push({
         id: item.id,
-        status: 'error',
+        status: "error",
         error: (error as Error).message,
       });
     }
@@ -474,20 +474,20 @@ async function deleteContent(
   return NextResponse.json({
     success: true,
     results,
-    message: `${results.filter((r) => r.status === 'deleted').length} items deleted`,
+    message: `${results.filter((r) => r.status === "deleted").length} items deleted`,
   });
 }
 
 function getTableName(contentType: ContentType): string {
   const tableMap: Record<ContentType, string> = {
-    setlist: 'setlists',
-    review: 'venue_reviews',
-    photo: 'venue_photos',
-    tip: 'venue_insider_tips',
-    user: 'users',
-    venue: 'venues',
-    show: 'shows',
-    artist: 'artists',
+    setlist: "setlists",
+    review: "venue_reviews",
+    photo: "venue_photos",
+    tip: "venue_insider_tips",
+    user: "users",
+    venue: "venues",
+    show: "shows",
+    artist: "artists",
   };
 
   const tableName = tableMap[contentType];
@@ -499,9 +499,9 @@ function getTableName(contentType: ContentType): string {
 
 async function logModerationAction(
   supabase: SupabaseClient,
-  action: ModerationAction
+  action: ModerationAction,
 ): Promise<void> {
-  const { error } = await supabase.from('moderation_logs').insert({
+  const { error } = await supabase.from("moderation_logs").insert({
     moderator_id: action.moderator_id,
     action: action.action,
     target_type: action.target_type,

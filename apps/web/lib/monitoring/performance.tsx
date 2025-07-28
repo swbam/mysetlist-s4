@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from "react";
 
 interface PerformanceMetric {
   name: string;
@@ -22,7 +22,7 @@ class PerformanceMonitor {
   private observer?: PerformanceObserver;
 
   constructor() {
-    if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
+    if (typeof window !== "undefined" && "PerformanceObserver" in window) {
       this.initializeObserver();
     }
   }
@@ -48,12 +48,12 @@ class PerformanceMonitor {
       if (lastEntry) {
         this.vitalMetrics.LCP = lastEntry.renderTime || lastEntry.loadTime;
         if (this.vitalMetrics.LCP !== undefined) {
-          this.reportMetric('LCP', this.vitalMetrics.LCP, 'ms');
+          this.reportMetric("LCP", this.vitalMetrics.LCP, "ms");
         }
       }
     });
 
-    observer.observe({ entryTypes: ['largest-contentful-paint'] });
+    observer.observe({ entryTypes: ["largest-contentful-paint"] });
   }
 
   private observeFID() {
@@ -62,12 +62,12 @@ class PerformanceMonitor {
       entries.forEach((entry: any) => {
         this.vitalMetrics.FID = entry.processingStart - entry.startTime;
         if (this.vitalMetrics.FID !== undefined) {
-          this.reportMetric('FID', this.vitalMetrics.FID, 'ms');
+          this.reportMetric("FID", this.vitalMetrics.FID, "ms");
         }
       });
     });
 
-    observer.observe({ entryTypes: ['first-input'] });
+    observer.observe({ entryTypes: ["first-input"] });
   }
 
   private observeCLS() {
@@ -85,27 +85,27 @@ class PerformanceMonitor {
 
       this.vitalMetrics.CLS = clsValue;
       if (this.vitalMetrics.CLS !== undefined) {
-        this.reportMetric('CLS', this.vitalMetrics.CLS, 'score');
+        this.reportMetric("CLS", this.vitalMetrics.CLS, "score");
       }
     });
 
-    observer.observe({ entryTypes: ['layout-shift'] });
+    observer.observe({ entryTypes: ["layout-shift"] });
   }
 
   private observePaintTiming() {
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
       entries.forEach((entry) => {
-        if (entry.name === 'first-contentful-paint') {
+        if (entry.name === "first-contentful-paint") {
           this.vitalMetrics.FCP = entry.startTime;
           if (this.vitalMetrics.FCP !== undefined) {
-            this.reportMetric('FCP', this.vitalMetrics.FCP, 'ms');
+            this.reportMetric("FCP", this.vitalMetrics.FCP, "ms");
           }
         }
       });
     });
 
-    observer.observe({ entryTypes: ['paint'] });
+    observer.observe({ entryTypes: ["paint"] });
   }
 
   public reportMetric(name: string, value: number, unit: string) {
@@ -123,16 +123,16 @@ class PerformanceMonitor {
 
   private sendToAnalytics(metric: PerformanceMetric) {
     // Send to analytics service
-    if (process.env["NODE_ENV"] === 'production') {
-      fetch('/api/analytics/performance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+    if (process.env["NODE_ENV"] === "production") {
+      fetch("/api/analytics/performance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(metric),
       }).catch(console.error);
     }
 
     // Log in development
-    if (process.env["NODE_ENV"] === 'development') {
+    if (process.env["NODE_ENV"] === "development") {
     }
   }
 
@@ -148,22 +148,22 @@ class PerformanceMonitor {
     const threshold = thresholds[metric.name];
     if (threshold && metric.value > threshold) {
       // Report to error tracking
-      if (typeof window !== 'undefined' && 'Sentry' in window) {
+      if (typeof window !== "undefined" && "Sentry" in window) {
         (window as any).Sentry.captureMessage(
           `Performance threshold exceeded: ${metric.name}`,
-          'warning'
+          "warning",
         );
       }
     }
   }
 
   measureNavigation() {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
 
     const navigation = performance.getEntriesByType(
-      'navigation'
+      "navigation",
     )[0] as PerformanceNavigationTiming;
 
     const metrics = {
@@ -179,7 +179,7 @@ class PerformanceMonitor {
     };
 
     Object.entries(metrics).forEach(([name, value]) => {
-      this.reportMetric(name, value, 'ms');
+      this.reportMetric(name, value, "ms");
     });
   }
 
@@ -192,13 +192,13 @@ class PerformanceMonitor {
       const endTime = performance.now();
       const duration = endTime - startTime;
 
-      this.reportMetric(`Component:${componentName}`, duration, 'ms');
+      this.reportMetric(`Component:${componentName}`, duration, "ms");
     }
   }
 
   async measureAsyncOperation<T>(
     operationName: string,
-    fn: () => Promise<T>
+    fn: () => Promise<T>,
   ): Promise<T> {
     const startTime = performance.now();
 
@@ -209,7 +209,7 @@ class PerformanceMonitor {
       const endTime = performance.now();
       const duration = endTime - startTime;
 
-      this.reportMetric(`Async:${operationName}`, duration, 'ms');
+      this.reportMetric(`Async:${operationName}`, duration, "ms");
     }
   }
 
@@ -248,7 +248,7 @@ export function usePerformanceMonitor(componentName: string) {
       performanceMonitor.reportMetric(
         `Component:${componentName}:Mount`,
         duration,
-        'ms'
+        "ms",
       );
     };
   }, [componentName]);
@@ -257,7 +257,7 @@ export function usePerformanceMonitor(componentName: string) {
 // HOC for performance monitoring
 export function withPerformanceMonitoring<P extends object>(
   Component: React.ComponentType<P>,
-  componentName: string
+  componentName: string,
 ) {
   return React.memo((props: P) => {
     usePerformanceMonitor(componentName);

@@ -1,4 +1,4 @@
-import { db } from '@repo/database';
+import { db } from "@repo/database";
 import {
   artists,
   setlistSongs,
@@ -7,9 +7,9 @@ import {
   shows,
   songs,
   venues,
-} from '@repo/database';
-import { and, eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+} from "@repo/database";
+import { and, eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(_request: NextRequest) {
   try {
@@ -17,16 +17,16 @@ export async function POST(_request: NextRequest) {
     const dispatchArtist = await db
       .select()
       .from(artists)
-      .where(eq(artists.slug, 'dispatch'))
+      .where(eq(artists.slug, "dispatch"))
       .limit(1);
 
     if (!dispatchArtist[0]) {
       return NextResponse.json(
         {
           error:
-            'Dispatch not found. Please search for Dispatch in the app first.',
+            "Dispatch not found. Please search for Dispatch in the app first.",
         },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -36,13 +36,13 @@ export async function POST(_request: NextRequest) {
     const msgVenue = await db
       .select()
       .from(venues)
-      .where(eq(venues.slug, 'madison-square-garden'))
+      .where(eq(venues.slug, "madison-square-garden"))
       .limit(1);
 
     if (!msgVenue[0]) {
       return NextResponse.json(
-        { error: 'Madison Square Garden not found' },
-        { status: 404 }
+        { error: "Madison Square Garden not found" },
+        { status: 404 },
       );
     }
 
@@ -50,28 +50,28 @@ export async function POST(_request: NextRequest) {
 
     // Create Dispatch songs if they don't exist
     const dispatchSongs = [
-      'The General',
-      'Bang Bang',
-      'Elias',
-      'Bats in the Belfry',
-      'Out Loud',
-      'Flying Horses',
-      'Open Up',
-      'Circles Around the Sun',
-      'Two Coins',
-      'Skin the Rabbit',
-      'Mission',
-      'Drive',
-      'Carry You',
-      'Only the Wild Ones',
-      'Midnight Lorry',
-      'Passerby',
+      "The General",
+      "Bang Bang",
+      "Elias",
+      "Bats in the Belfry",
+      "Out Loud",
+      "Flying Horses",
+      "Open Up",
+      "Circles Around the Sun",
+      "Two Coins",
+      "Skin the Rabbit",
+      "Mission",
+      "Drive",
+      "Carry You",
+      "Only the Wild Ones",
+      "Midnight Lorry",
+      "Passerby",
     ];
 
     const createdSongs: any[] = [];
     for (let i = 0; i < dispatchSongs.length; i++) {
       const songTitle = dispatchSongs[i];
-      
+
       if (!songTitle) continue;
 
       // Check if song exists
@@ -89,7 +89,7 @@ export async function POST(_request: NextRequest) {
           .values({
             title: songTitle,
             artist: dispatch.name,
-            album: i < 8 ? 'Bang Bang' : 'America, Location 12',
+            album: i < 8 ? "Bang Bang" : "America, Location 12",
             durationMs: 180000 + Math.floor(Math.random() * 120000),
             popularity: 70 + Math.floor(Math.random() * 30),
             isPlayable: true,
@@ -104,22 +104,22 @@ export async function POST(_request: NextRequest) {
     // Create upcoming and past shows for Dispatch
     const showsData = [
       {
-        name: 'Dispatch at Madison Square Garden',
+        name: "Dispatch at Madison Square Garden",
         date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-        status: 'upcoming' as const,
-        slug: 'dispatch-madison-square-garden-2025',
+        status: "upcoming" as const,
+        slug: "dispatch-madison-square-garden-2025",
       },
       {
-        name: 'Dispatch Summer Tour - NYC',
+        name: "Dispatch Summer Tour - NYC",
         date: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000), // 60 days ago
-        status: 'completed' as const,
-        slug: 'dispatch-summer-tour-nyc-2024',
+        status: "completed" as const,
+        slug: "dispatch-summer-tour-nyc-2024",
       },
       {
-        name: 'Dispatch Acoustic Set',
+        name: "Dispatch Acoustic Set",
         date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-        status: 'upcoming' as const,
-        slug: 'dispatch-acoustic-set-2025',
+        status: "upcoming" as const,
+        slug: "dispatch-acoustic-set-2025",
       },
     ];
 
@@ -147,14 +147,14 @@ export async function POST(_request: NextRequest) {
           slug: showData.slug!,
           date:
             showData.date instanceof Date
-              ? showData.date.toISOString().split('T')[0]!
+              ? showData.date.toISOString().split("T")[0]!
               : showData.date!,
-          startTime: '20:00:00',
-          doorsTime: '19:00:00',
+          startTime: "20:00:00",
+          doorsTime: "19:00:00",
           status: showData.status!,
           viewCount: Math.floor(Math.random() * 1000),
           voteCount: 0,
-          trendingScore: showData.status === 'upcoming' ? 85 : 60,
+          trendingScore: showData.status === "upcoming" ? 85 : 60,
           isFeatured: false,
           isVerified: true,
           minPrice: 75,
@@ -182,8 +182,8 @@ export async function POST(_request: NextRequest) {
         .values({
           showId: show.id,
           artistId: dispatch.id,
-          type: showData.status === 'upcoming' ? 'predicted' : 'actual',
-          name: 'Main Set',
+          type: showData.status === "upcoming" ? "predicted" : "actual",
+          name: "Main Set",
           orderIndex: 0,
           totalVotes: 0,
           isLocked: false,
@@ -221,13 +221,13 @@ export async function POST(_request: NextRequest) {
         artist: dispatch.name,
         songsCount: createdSongs.length,
         showsCount: createdShows.length,
-        message: 'Successfully added Dispatch shows and setlists!',
+        message: "Successfully added Dispatch shows and setlists!",
       },
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to seed Dispatch data' },
-      { status: 500 }
+      { error: "Failed to seed Dispatch data" },
+      { status: 500 },
     );
   }
 }

@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { useAuth } from '../src/hooks/use-auth';
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useAuth } from "../src/hooks/use-auth";
 
 export const SignUp = () => {
   const router = useRouter();
   const { signUp, signInWithGoogle, signInWithSpotify } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [displayName, setDisplayName] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -24,16 +24,16 @@ export const SignUp = () => {
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
 
     if (password.length < minLength) {
-      return 'Password must be at least 8 characters long';
+      return "Password must be at least 8 characters long";
     }
     if (!hasUpperCase || !hasLowerCase) {
-      return 'Password must contain both uppercase and lowercase letters';
+      return "Password must contain both uppercase and lowercase letters";
     }
     if (!hasNumbers) {
-      return 'Password must contain at least one number';
+      return "Password must contain at least one number";
     }
     if (!hasSpecialChar) {
-      return 'Password must contain at least one special character';
+      return "Password must contain at least one special character";
     }
     return null;
   };
@@ -45,12 +45,12 @@ export const SignUp = () => {
 
     // Validation
     if (!acceptTerms) {
-      setError('Please accept the Terms of Service and Privacy Policy');
+      setError("Please accept the Terms of Service and Privacy Policy");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
@@ -66,17 +66,19 @@ export const SignUp = () => {
       await signUp(
         email,
         password,
-        displayName.trim() ? { displayName: displayName.trim() } : undefined
+        displayName.trim() ? { displayName: displayName.trim() } : undefined,
       );
-      
-      setSuccess('Account created successfully! Please check your email to verify your account.');
-      
+
+      setSuccess(
+        "Account created successfully! Please check your email to verify your account.",
+      );
+
       // Redirect after a short delay to show success message
       setTimeout(() => {
-        router.push('/auth/verify-email?email=' + encodeURIComponent(email));
+        router.push("/auth/verify-email?email=" + encodeURIComponent(email));
       }, 2000);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -89,7 +91,7 @@ export const SignUp = () => {
     try {
       await signInWithGoogle();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
     }
   };
@@ -101,7 +103,7 @@ export const SignUp = () => {
     try {
       await signInWithSpotify();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
     }
   };
@@ -167,7 +169,9 @@ export const SignUp = () => {
               <div className="w-full border-gray-300 border-t" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-2 text-gray-500">Or create account with email</span>
+              <span className="bg-white px-2 text-gray-500">
+                Or create account with email
+              </span>
             </div>
           </div>
         </div>
@@ -175,7 +179,10 @@ export const SignUp = () => {
         {/* Email/Password Form */}
         <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="displayName" className="block font-medium text-sm leading-6">
+            <label
+              htmlFor="displayName"
+              className="block font-medium text-sm leading-6"
+            >
               Display Name (Optional)
             </label>
             <div className="mt-2">
@@ -193,7 +200,10 @@ export const SignUp = () => {
           </div>
 
           <div>
-            <label htmlFor="email" className="block font-medium text-sm leading-6">
+            <label
+              htmlFor="email"
+              className="block font-medium text-sm leading-6"
+            >
               Email address
             </label>
             <div className="mt-2">
@@ -212,7 +222,10 @@ export const SignUp = () => {
           </div>
 
           <div>
-            <label htmlFor="password" className="block font-medium text-sm leading-6">
+            <label
+              htmlFor="password"
+              className="block font-medium text-sm leading-6"
+            >
               Password
             </label>
             <div className="mt-2">
@@ -229,12 +242,16 @@ export const SignUp = () => {
               />
             </div>
             <p className="mt-1 text-gray-500 text-xs">
-              Must be 8+ characters with uppercase, lowercase, number, and special character
+              Must be 8+ characters with uppercase, lowercase, number, and
+              special character
             </p>
           </div>
 
           <div>
-            <label htmlFor="confirm-password" className="block font-medium text-sm leading-6">
+            <label
+              htmlFor="confirm-password"
+              className="block font-medium text-sm leading-6"
+            >
               Confirm Password
             </label>
             <div className="mt-2">
@@ -265,12 +282,18 @@ export const SignUp = () => {
             </div>
             <div className="ml-3 text-sm leading-6">
               <label htmlFor="accept-terms" className="text-gray-900">
-                I agree to the{' '}
-                <a href="/terms" className="font-semibold text-indigo-600 hover:text-indigo-500">
+                I agree to the{" "}
+                <a
+                  href="/terms"
+                  className="font-semibold text-indigo-600 hover:text-indigo-500"
+                >
                   Terms of Service
-                </a>{' '}
-                and{' '}
-                <a href="/privacy" className="font-semibold text-indigo-600 hover:text-indigo-500">
+                </a>{" "}
+                and{" "}
+                <a
+                  href="/privacy"
+                  className="font-semibold text-indigo-600 hover:text-indigo-500"
+                >
                   Privacy Policy
                 </a>
               </label>
@@ -281,8 +304,16 @@ export const SignUp = () => {
             <div className="rounded-md bg-red-50 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
+                  <svg
+                    className="h-5 w-5 text-red-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
                 <div className="ml-3">
@@ -296,8 +327,16 @@ export const SignUp = () => {
             <div className="rounded-md bg-green-50 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.236 4.53L7.53 10.23a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
+                  <svg
+                    className="h-5 w-5 text-green-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.236 4.53L7.53 10.23a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
                 <div className="ml-3">
@@ -315,21 +354,36 @@ export const SignUp = () => {
             >
               {loading ? (
                 <div className="flex items-center">
-                  <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  <svg
+                    className="mr-2 h-4 w-4 animate-spin"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
                   </svg>
                   Creating account...
                 </div>
               ) : (
-                'Create account'
+                "Create account"
               )}
             </button>
           </div>
         </form>
 
         <p className="mt-10 text-center text-gray-500 text-sm">
-          Already have an account?{' '}
+          Already have an account?{" "}
           <a
             href="/sign-in"
             className="font-semibold text-indigo-600 leading-6 hover:text-indigo-500"

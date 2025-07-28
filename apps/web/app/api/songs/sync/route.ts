@@ -1,7 +1,7 @@
-import { songs, artistSongs, db } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
+import { songs, artistSongs, db } from "@repo/database";
+import { eq } from "drizzle-orm";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 const songSchema = z.object({
   spotifyId: z.string().optional(),
@@ -20,9 +20,12 @@ const songSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // Check for service role key
-    const serviceRole = request.headers.get('x-supabase-service-role');
-    if (!serviceRole || serviceRole !== process.env['SUPABASE_SERVICE_ROLE_KEY']) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const serviceRole = request.headers.get("x-supabase-service-role");
+    if (
+      !serviceRole ||
+      serviceRole !== process.env["SUPABASE_SERVICE_ROLE_KEY"]
+    ) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
@@ -86,7 +89,10 @@ export async function POST(request: NextRequest) {
 
     // Ensure song exists before creating relationship
     if (!song) {
-      return NextResponse.json({ error: 'Failed to create or update song' }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to create or update song" },
+        { status: 500 },
+      );
     }
 
     // Create artist-song relationship if it doesn't exist
@@ -105,16 +111,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, song });
   } catch (error) {
-    console.error('Song sync error:', error);
+    console.error("Song sync error:", error);
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid song data', details: error.errors },
-        { status: 400 }
+        { error: "Invalid song data", details: error.errors },
+        { status: 400 },
       );
     }
-    return NextResponse.json(
-      { error: 'Failed to sync song' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to sync song" }, { status: 500 });
   }
 }

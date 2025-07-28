@@ -101,11 +101,13 @@ pnpm final --parallel --quick --yes
 ## Command Line Flags
 
 ### Environment Flags
+
 - `--prod` / `--production` - Production environment
 - `--staging` - Staging environment
 - (default) - Development environment
 
 ### Execution Flags
+
 - `--parallel` - Enable parallel execution where safe
 - `--yes` / `-y` - Auto-accept all prompts
 - `--force` - Ignore validation failures
@@ -113,6 +115,7 @@ pnpm final --parallel --quick --yes
 - `--dry-run` - Simulation mode (no actual deployment)
 
 ### Skip Flags
+
 - `--skip-tests` - Skip code quality validation
 - `--skip-build` - Skip application build
 - `--skip-db` - Skip database operations
@@ -120,6 +123,7 @@ pnpm final --parallel --quick --yes
 - `--skip-vercel` - Skip Vercel deployment
 
 ### Utility Flags
+
 - `--quick` - Fast deployment (skip non-essential steps)
 - `--validate-only` - Run validation without deployment
 - `--rollback` - Rollback last deployment
@@ -329,37 +333,41 @@ pnpm perf:lighthouse
 ### Common Issues
 
 1. **Environment Variables Missing**
+
    ```bash
    # Check configuration
    pnpm check:env
-   
+
    # Validate specific variables
    echo $SUPABASE_URL
    ```
 
 2. **Database Connection Failures**
+
    ```bash
    # Test database connection
    pnpm db:studio
-   
+
    # Check health endpoint
    curl https://your-app.vercel.app/api/health
    ```
 
 3. **Build Failures**
+
    ```bash
    # Clean build cache
    rm -rf apps/web/.next .turbo
-   
+
    # Rebuild
    pnpm build
    ```
 
 4. **Function Deployment Issues**
+
    ```bash
    # Check Supabase CLI
    supabase --version
-   
+
    # Manual function deployment
    supabase functions deploy scheduled-sync
    ```
@@ -379,6 +387,7 @@ pnpm final --validate-only --verbose
 ### Log Files
 
 Deployment logs are stored in:
+
 - `logs/deployment-{timestamp}.log`
 - Console output with colored formatting
 - Structured JSON logging for CI/CD integration

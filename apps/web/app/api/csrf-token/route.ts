@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { getCSRFToken } from '~/lib/csrf';
+import { NextResponse } from "next/server";
+import { getCSRFToken } from "~/lib/csrf";
 
 export async function GET() {
   try {
@@ -7,12 +7,12 @@ export async function GET() {
 
     return NextResponse.json({
       token,
-      message: 'CSRF token generated successfully',
+      message: "CSRF token generated successfully",
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to generate CSRF token' },
-      { status: 500 }
+      { error: "Failed to generate CSRF token" },
+      { status: 500 },
     );
   }
 }

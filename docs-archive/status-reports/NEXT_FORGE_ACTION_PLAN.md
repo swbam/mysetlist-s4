@@ -5,6 +5,7 @@
 ### 🔴 Critical Issues (Fix Immediately)
 
 - [ ] **Fix TypeScript Errors**
+
   ```bash
   cd apps/web && pnpm typecheck
   # Fix all errors, then update next.config.ts:
@@ -24,6 +25,7 @@
 ### 🟡 High Priority (Week 1)
 
 - [ ] **Update Test Suite**
+
   ```bash
   # Update tests for Supabase Auth
   cd apps/web && pnpm test
@@ -31,6 +33,7 @@
   ```
 
 - [ ] **Clean Monorepo**
+
   ```bash
   # Remove unused packages
   rm -rf packages/ai       # If not used
@@ -76,12 +79,13 @@
 ## Implementation Commands
 
 ### Phase 1: Fix Critical Issues
+
 ```bash
 # 1. TypeScript Fixes
 pnpm typecheck
 # Fix all errors in:
 # - packages/database
-# - packages/auth  
+# - packages/auth
 # - apps/web
 
 # 2. Update Configuration
@@ -94,6 +98,7 @@ pnpm build
 ```
 
 ### Phase 2: Optimize Performance
+
 ```bash
 # 1. Bundle Analysis
 cd apps/web && pnpm analyze
@@ -107,6 +112,7 @@ pnpm perf:lighthouse
 ```
 
 ### Phase 3: Complete Features
+
 ```bash
 # 1. Install Missing Packages
 cd packages/payments
@@ -124,18 +130,21 @@ cd packages/cms
 ## Success Metrics
 
 ### Week 1 Goals
+
 - ✅ Zero TypeScript errors
 - ✅ All navigation working
 - ✅ Performance score > 90
 - ✅ All tests passing
 
 ### Week 2 Goals
+
 - ✅ Bundle size reduced by 20%
 - ✅ Payment system functional
 - ✅ Feature flags implemented
 - ✅ Security headers A+ rating
 
 ### Month 1 Goals
+
 - ✅ Full next-forge feature parity
 - ✅ 90%+ test coverage
 - ✅ Production deployment stable
@@ -159,6 +168,7 @@ Add these to package.json for easy execution:
 ## Monitoring Progress
 
 Track progress with:
+
 ```bash
 # Check TypeScript status
 pnpm typecheck | grep -c "error"

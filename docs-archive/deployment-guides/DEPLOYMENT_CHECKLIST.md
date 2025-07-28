@@ -5,6 +5,7 @@ This checklist ensures that MySetlist is 100% production-ready before deployment
 ## 🚨 Critical Pre-Deployment Checks
 
 ### Environment Configuration
+
 - [ ] All required environment variables are set in `.env.production`
 - [ ] Vercel environment variables are synchronized
 - [ ] Database connection string is valid
@@ -13,6 +14,7 @@ This checklist ensures that MySetlist is 100% production-ready before deployment
 - [ ] NEXT_PUBLIC_SITE_URL matches production domain
 
 ### Code Quality
+
 - [ ] TypeScript compilation passes with no errors
 - [ ] ESLint passes with no errors
 - [ ] All tests pass
@@ -21,6 +23,7 @@ This checklist ensures that MySetlist is 100% production-ready before deployment
 - [ ] Loading states are implemented
 
 ### Database
+
 - [ ] All migrations have been run
 - [ ] Database schema is up to date
 - [ ] Indexes are created for performance
@@ -28,6 +31,7 @@ This checklist ensures that MySetlist is 100% production-ready before deployment
 - [ ] Backup strategy is in place
 
 ### Build & Performance
+
 - [ ] Production build completes successfully
 - [ ] Bundle size is optimized
 - [ ] Images are optimized
@@ -36,6 +40,7 @@ This checklist ensures that MySetlist is 100% production-ready before deployment
 - [ ] All pages load in < 3 seconds
 
 ### Security
+
 - [ ] Authentication is working correctly
 - [ ] CSRF protection is enabled
 - [ ] Security headers are configured
@@ -45,6 +50,7 @@ This checklist ensures that MySetlist is 100% production-ready before deployment
 ## 🚀 Deployment Process
 
 ### 1. Run Pre-Deployment Verification
+
 ```bash
 # Quick check
 ./scripts/quick-production-check.sh
@@ -54,6 +60,7 @@ pnpm deploy:checklist
 ```
 
 ### 2. Build and Test Locally
+
 ```bash
 # Build the application
 pnpm build
@@ -66,6 +73,7 @@ pnpm deploy:verify
 ```
 
 ### 3. Deploy to Production
+
 ```bash
 # Interactive deployment guide
 pnpm deploy:guide
@@ -75,6 +83,7 @@ pnpm vercel:prod
 ```
 
 ### 4. Post-Deployment Verification
+
 ```bash
 # Set production URL
 export NEXT_PUBLIC_SITE_URL=https://mysetlist-sonnet.vercel.app
@@ -89,6 +98,7 @@ pnpm deploy:health
 ## ✅ Post-Deployment Checklist
 
 ### Immediate Verification (0-5 minutes)
+
 - [ ] Homepage loads without errors
 - [ ] Search functionality works
 - [ ] Artist pages load
@@ -98,6 +108,7 @@ pnpm deploy:health
 - [ ] No console errors in browser
 
 ### Short-term Monitoring (5-30 minutes)
+
 - [ ] Monitor error logs for any issues
 - [ ] Check database query performance
 - [ ] Verify API response times
@@ -106,6 +117,7 @@ pnpm deploy:health
 - [ ] Verify caching is working
 
 ### Long-term Monitoring (24-48 hours)
+
 - [ ] Monitor Sentry for errors
 - [ ] Check performance metrics
 - [ ] Review user feedback
@@ -118,6 +130,7 @@ pnpm deploy:health
 If critical issues are discovered:
 
 ### 1. Immediate Rollback
+
 ```bash
 # Rollback to previous deployment
 vercel rollback
@@ -128,6 +141,7 @@ pnpm deploy:guide
 ```
 
 ### 2. Identify Previous Working Deployment
+
 ```bash
 # List recent deployments
 vercel ls --limit 10
@@ -137,6 +151,7 @@ vercel alias set <deployment-url> <production-domain>
 ```
 
 ### 3. Post-Rollback Actions
+
 - [ ] Document the issue that caused rollback
 - [ ] Create hotfix branch
 - [ ] Test fix thoroughly in staging
@@ -157,6 +172,7 @@ The deployment is considered successful when:
 ## 🛠️ Troubleshooting Common Issues
 
 ### Build Failures
+
 ```bash
 # Clear cache and rebuild
 rm -rf apps/web/.next
@@ -166,6 +182,7 @@ pnpm build
 ```
 
 ### Environment Variable Issues
+
 ```bash
 # Verify all variables
 pnpm check:env
@@ -178,6 +195,7 @@ pnpm validate:env
 ```
 
 ### Database Connection Issues
+
 ```bash
 # Test database connection
 pnpm tsx scripts/check-database.ts
@@ -187,6 +205,7 @@ curl https://status.supabase.com
 ```
 
 ### Performance Issues
+
 ```bash
 # Run Lighthouse audit
 pnpm perf:lighthouse

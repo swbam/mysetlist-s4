@@ -1,40 +1,42 @@
-import { Badge } from '@repo/design-system/components/ui/badge';
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
-import { AlertTriangle, CheckCircle, Clock, Flag } from 'lucide-react';
-import { createClient } from '~/lib/supabase/server';
-import ReportItem from './components/report-item';
+} from "@repo/design-system/components/ui/tabs";
+import { AlertTriangle, CheckCircle, Clock, Flag } from "lucide-react";
+import { createClient } from "~/lib/supabase/server";
+import ReportItem from "./components/report-item";
 
 // Force dynamic rendering due to user-specific data fetching
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function ReportsPage() {
   const supabase = await createClient();
 
   // Fetch reports with related data
   const { data: reports } = await supabase
-    .from('reports')
-    .select(`
+    .from("reports")
+    .select(
+      `
       *,
       reporter:users!reports_reporter_id_fkey(display_name, email, avatar_url),
       reported_user:users!reports_reported_user_id_fkey(display_name, email, avatar_url),
       resolved_by_user:users!reports_resolved_by_fkey(display_name, email)
-    `)
-    .order('created_at', { ascending: false });
+    `,
+    )
+    .order("created_at", { ascending: false });
 
-  const pendingReports = reports?.filter((r) => r.status === 'pending') ?? [];
-  const resolvedReports = reports?.filter((r) => r.status !== 'pending') ?? [];
+  const pendingReports = reports?.filter((r) => r.status === "pending") ?? [];
+  const resolvedReports = reports?.filter((r) => r.status !== "pending") ?? [];
 
   // Get report statistics
   const reportsByReason =
@@ -43,7 +45,7 @@ export default async function ReportsPage() {
         acc[report.reason] = (acc[report.reason] || 0) + 1;
         return acc;
       },
-      {} as Record<string, number>
+      {} as Record<string, number>,
     ) ?? {};
 
   const reportsByType =
@@ -52,7 +54,7 @@ export default async function ReportsPage() {
         acc[report.content_type] = (acc[report.content_type] || 0) + 1;
         return acc;
       },
-      {} as Record<string, number>
+      {} as Record<string, number>,
     ) ?? {};
 
   return (
@@ -94,7 +96,7 @@ export default async function ReportsPage() {
                   (r) =>
                     r.resolved_at &&
                     new Date(r.resolved_at).toDateString() ===
-                      new Date().toDateString()
+                      new Date().toDateString(),
                 ).length
               }
             </div>
@@ -110,8 +112,8 @@ export default async function ReportsPage() {
           <CardContent>
             <div className="font-bold text-2xl">
               {Object.entries(reportsByReason).sort(
-                ([, a], [, b]) => (b as number) - (a as number)
-              )[0]?.[0] || 'N/A'}
+                ([, a], [, b]) => (b as number) - (a as number),
+              )[0]?.[0] || "N/A"}
             </div>
             <p className="text-muted-foreground text-xs">report reason</p>
           </CardContent>
@@ -156,7 +158,7 @@ export default async function ReportsPage() {
               {Object.entries(reportsByReason).map(([reason, count]) => (
                 <div key={reason} className="flex items-center justify-between">
                   <span className="text-sm capitalize">
-                    {reason.replace('_', ' ')}
+                    {reason.replace("_", " ")}
                   </span>
                   <Badge variant="secondary">{String(count)}</Badge>
                 </div>
@@ -211,11 +213,7 @@ export default async function ReportsPage() {
                 </div>
               ) : (
                 resolvedReports.map((report) => (
-                  <ReportItem
-                    key={report.id}
-                    report={report}
-                    isResolved
-                  />
+                  <ReportItem key={report.id} report={report} isResolved />
                 ))
               )}
             </TabsContent>

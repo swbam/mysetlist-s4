@@ -1,7 +1,7 @@
-import { createHash } from 'node:crypto';
-import { db } from '@repo/database';
-import { apiKeys } from '@repo/database';
-import { and, eq, gte } from 'drizzle-orm';
+import { createHash } from "node:crypto";
+import { db } from "@repo/database";
+import { apiKeys } from "@repo/database";
+import { and, eq, gte } from "drizzle-orm";
 
 // Validate API key format
 function isValidApiKeyFormat(key: string): boolean {
@@ -19,7 +19,7 @@ export async function validateApiKey(key: string): Promise<{
     return { valid: false };
   }
 
-  const hash = createHash('sha256').update(key).digest('hex');
+  const hash = createHash("sha256").update(key).digest("hex");
 
   const [apiKey] = await db
     .select()
@@ -28,8 +28,8 @@ export async function validateApiKey(key: string): Promise<{
       and(
         eq(apiKeys.keyHash, hash),
         eq(apiKeys.isActive, true),
-        gte(apiKeys.expiresAt, new Date())
-      )
+        gte(apiKeys.expiresAt, new Date()),
+      ),
     )
     .limit(1);
 

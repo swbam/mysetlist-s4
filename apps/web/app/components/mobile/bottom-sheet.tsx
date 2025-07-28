@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, type PanInfo, motion } from 'framer-motion';
-import { X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Button } from "@repo/design-system/components/ui/button";
+import { cn } from "@repo/design-system/lib/utils";
+import { AnimatePresence, type PanInfo, motion } from "framer-motion";
+import { X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface BottomSheetProps {
   isOpen: boolean;
@@ -13,7 +13,7 @@ interface BottomSheetProps {
   title?: string;
   description?: string;
   className?: string;
-  height?: 'auto' | 'half' | 'full';
+  height?: "auto" | "half" | "full";
   draggable?: boolean;
   showHandle?: boolean;
   showCloseButton?: boolean;
@@ -28,7 +28,7 @@ export function BottomSheet({
   title,
   description,
   className,
-  height = 'auto',
+  height = "auto",
   draggable = true,
   showHandle = true,
   showCloseButton = true,
@@ -41,31 +41,31 @@ export function BottomSheet({
 
   // Calculate height based on props and snap points
   const getHeight = () => {
-    if (height === 'full') {
-      return '100vh';
+    if (height === "full") {
+      return "100vh";
     }
-    if (height === 'half') {
-      return '50vh';
+    if (height === "half") {
+      return "50vh";
     }
     if (snapPoints && snapPoints.length > 0) {
       return `${snapPoints[currentSnapIndex]}vh`;
     }
-    return 'auto';
+    return "auto";
   };
 
   // Prevent body scroll when sheet is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
     } else {
-      document.body.style.overflow = 'unset';
-      document.body.style.touchAction = 'auto';
+      document.body.style.overflow = "unset";
+      document.body.style.touchAction = "auto";
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
-      document.body.style.touchAction = 'auto';
+      document.body.style.overflow = "unset";
+      document.body.style.touchAction = "auto";
     };
   }, [isOpen]);
 
@@ -130,9 +130,9 @@ export function BottomSheet({
 
   const variants = {
     hidden: {
-      y: '100%',
+      y: "100%",
       transition: {
-        type: 'spring',
+        type: "spring",
         stiffness: 300,
         damping: 30,
       },
@@ -140,7 +140,7 @@ export function BottomSheet({
     visible: {
       y: 0,
       transition: {
-        type: 'spring',
+        type: "spring",
         stiffness: 300,
         damping: 30,
       },
@@ -167,16 +167,16 @@ export function BottomSheet({
             initial="hidden"
             animate="visible"
             exit="hidden"
-            drag={draggable ? 'y' : false}
+            drag={draggable ? "y" : false}
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={0.1}
             onDragStart={() => setIsDragging(true)}
             onDragEnd={handleDragEnd}
             className={cn(
-              'fixed right-0 bottom-0 left-0 z-50 rounded-t-xl border-t bg-background shadow-xl',
-              'flex max-h-[95vh] flex-col',
-              isDragging && 'cursor-grabbing',
-              className
+              "fixed right-0 bottom-0 left-0 z-50 rounded-t-xl border-t bg-background shadow-xl",
+              "flex max-h-[95vh] flex-col",
+              isDragging && "cursor-grabbing",
+              className,
             )}
             style={{
               height: getHeight(),
@@ -225,10 +225,10 @@ export function BottomSheet({
                   <div
                     key={index}
                     className={cn(
-                      'h-1.5 w-1.5 rounded-full transition-colors',
+                      "h-1.5 w-1.5 rounded-full transition-colors",
                       index === currentSnapIndex
-                        ? 'bg-primary'
-                        : 'bg-muted-foreground/30'
+                        ? "bg-primary"
+                        : "bg-muted-foreground/30",
                     )}
                   />
                 ))}

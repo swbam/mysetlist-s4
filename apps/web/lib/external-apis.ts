@@ -1,4 +1,4 @@
-import { SpotifyClient, TicketmasterClient } from '@repo/external-apis';
+import { SpotifyClient, TicketmasterClient } from "@repo/external-apis";
 
 // Create singleton instances
 export const spotify = new SpotifyClient({});

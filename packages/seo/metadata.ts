@@ -1,21 +1,23 @@
-import merge from 'lodash.merge';
-import type { Metadata } from 'next';
+import merge from "lodash.merge";
+import type { Metadata } from "next";
 
-type MetadataGenerator = Omit<Metadata, 'description' | 'title'> & {
+type MetadataGenerator = Omit<Metadata, "description" | "title"> & {
   title: string;
   description: string;
   image?: string;
 };
 
-const applicationName = 'MySetlist';
-const author: Metadata['authors'] = {
-  name: 'MySetlist',
-  url: 'https://mysetlist.com/',
+const applicationName = "MySetlist";
+const author: Metadata["authors"] = {
+  name: "MySetlist",
+  url: "https://mysetlist.com/",
 };
-const publisher = 'MySetlist';
-const twitterHandle = '@mysetlist';
-const protocol = process.env['NODE_ENV'] === 'production' ? 'https' : 'http';
-const productionUrl = process.env['VERCEL_PROJECT_PRODUCTION_URL'] || process.env['NEXT_PUBLIC_SITE_URL'];
+const publisher = "MySetlist";
+const twitterHandle = "@mysetlist";
+const protocol = process.env["NODE_ENV"] === "production" ? "https" : "http";
+const productionUrl =
+  process.env["VERCEL_PROJECT_PRODUCTION_URL"] ||
+  process.env["NEXT_PUBLIC_SITE_URL"];
 
 export const createMetadata = ({
   title,
@@ -38,19 +40,19 @@ export const createMetadata = ({
     },
     appleWebApp: {
       capable: true,
-      statusBarStyle: 'default',
+      statusBarStyle: "default",
       title: parsedTitle,
     },
     openGraph: {
       title: parsedTitle,
       description,
-      type: 'website',
+      type: "website",
       siteName: applicationName,
-      locale: 'en_US',
+      locale: "en_US",
     },
     publisher,
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       creator: twitterHandle,
     },
   };

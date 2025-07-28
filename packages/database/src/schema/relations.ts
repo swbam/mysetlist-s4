@@ -1,18 +1,18 @@
-import { relations } from 'drizzle-orm';
-import { artistSongs, artistStats, artists } from './artists';
+import { relations } from "drizzle-orm";
+import { artistSongs, artistStats, artists } from "./artists";
 import {
   emailLogs,
   emailPreferences,
   emailQueue,
   emailUnsubscribes,
-} from './email-preferences';
-import { setlistSongs, setlists, songs, votes } from './setlists';
-import { showArtists, showComments, shows } from './shows';
+} from "./email-preferences";
+import { setlistSongs, setlists, songs, votes } from "./setlists";
+import { showArtists, showComments, shows } from "./shows";
 // import { userFollowsArtists } from './user-follows-artists'; // Table removed
-import { userProfiles } from './user-profiles';
-import { users } from './users';
-import { venueInsiderTips, venuePhotos, venueReviews } from './venue-reviews';
-import { venueTips, venues } from './venues';
+import { userProfiles } from "./user-profiles";
+import { users } from "./users";
+import { venueInsiderTips, venuePhotos, venueReviews } from "./venue-reviews";
+import { venueTips, venues } from "./venues";
 
 export const usersRelations = relations(users, ({ many, one }) => ({
   profile: one(userProfiles, {
@@ -116,7 +116,7 @@ export const setlistSongsRelations = relations(
       references: [songs.id],
     }),
     votes: many(votes),
-  })
+  }),
 );
 
 export const songsRelations = relations(songs, ({ many }) => ({
@@ -168,7 +168,7 @@ export const venueInsiderTipsRelations = relations(
       fields: [venueInsiderTips.userId],
       references: [users.id],
     }),
-  })
+  }),
 );
 
 // Table removed - userFollowsArtists relations
@@ -237,7 +237,7 @@ export const emailPreferencesRelations = relations(
       fields: [emailPreferences.userId],
       references: [users.id],
     }),
-  })
+  }),
 );
 
 export const emailUnsubscribesRelations = relations(
@@ -247,7 +247,7 @@ export const emailUnsubscribesRelations = relations(
       fields: [emailUnsubscribes.userId],
       references: [users.id],
     }),
-  })
+  }),
 );
 
 export const emailQueueRelations = relations(emailQueue, ({ one }) => ({

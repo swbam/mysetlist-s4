@@ -6,9 +6,9 @@
 /// <reference types="framer-motion" />
 
 // React namespace augmentation for version compatibility
-declare module 'react' {
+declare module "react" {
   namespace React {
-    type ReactNode = import('react').ReactNode;
+    type ReactNode = import("react").ReactNode;
   }
 
   namespace JSX {
@@ -34,25 +34,25 @@ declare global {
 
   // React namespace for global access
   namespace React {
-    type ReactNode = import('react').ReactNode;
-    type FC<P = Record<string, unknown>> = import('react').FC<P>;
+    type ReactNode = import("react").ReactNode;
+    type FC<P = Record<string, unknown>> = import("react").FC<P>;
     type Component<
       P = Record<string, unknown>,
       S = Record<string, unknown>,
-    > = import('react').Component<P, S>;
+    > = import("react").Component<P, S>;
   }
 }
 
-declare module '*.svg' {
+declare module "*.svg" {
   const content: string;
   export default content;
 }
 
-declare module 'framer-motion' {
-  export * from 'framer-motion';
+declare module "framer-motion" {
+  export * from "framer-motion";
 }
 
-declare module 'next/link' {
+declare module "next/link" {
   export interface LinkProps
     extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
     href: string | URL;
@@ -62,10 +62,10 @@ declare module 'next/link' {
   export default Link;
 }
 
-declare module 'next/image' {
-  import type { StaticImport } from 'next/dist/shared/lib/get-img-props';
+declare module "next/image" {
+  import type { StaticImport } from "next/dist/shared/lib/get-img-props";
 
-  type Layout = 'fill' | 'fixed' | 'intrinsic' | 'responsive' | undefined;
+  type Layout = "fill" | "fixed" | "intrinsic" | "responsive" | undefined;
   export interface ImageProps
     extends React.ImgHTMLAttributes<HTMLImageElement> {
     src: string | StaticImport;
@@ -73,7 +73,7 @@ declare module 'next/image' {
     height?: number;
     layout?: Layout;
     priority?: boolean;
-    placeholder?: 'blur' | 'empty';
+    placeholder?: "blur" | "empty";
     blurDataURL?: string;
   }
   const Image: React.FC<ImageProps>;
@@ -81,8 +81,8 @@ declare module 'next/image' {
 }
 
 // drizzle-orm type compatibility
-declare module 'drizzle-orm' {
-  export * from 'drizzle-orm';
+declare module "drizzle-orm" {
+  export * from "drizzle-orm";
 }
 
 // Deno global for edge functions

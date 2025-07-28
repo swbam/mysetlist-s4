@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { Music } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { ShowCard } from './show-card';
-import { type ShowWithDetails, fetchShows } from '../actions';
-import { Card } from '@repo/design-system/components/ui/card';
+import { Music } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { ShowCard } from "./show-card";
+import { type ShowWithDetails, fetchShows } from "../actions";
+import { Card } from "@repo/design-system/components/ui/card";
 
 export const ShowsGrid = () => {
   const [shows, setShows] = useState<ShowWithDetails[]>([]);
@@ -16,15 +16,15 @@ export const ShowsGrid = () => {
     const loadShows = async () => {
       setLoading(true);
       try {
-        const city = searchParams.get('city') || undefined;
-        const dateFrom = searchParams.get('dateFrom') || undefined;
-        const dateTo = searchParams.get('dateTo') || undefined;
+        const city = searchParams.get("city") || undefined;
+        const dateFrom = searchParams.get("dateFrom") || undefined;
+        const dateTo = searchParams.get("dateTo") || undefined;
         const orderBy =
-          (searchParams.get('orderBy') as 'date' | 'trending' | 'popularity') ||
-          'date';
+          (searchParams.get("orderBy") as "date" | "trending" | "popularity") ||
+          "date";
 
         const { shows: fetchedShows } = await fetchShows({
-          status: 'upcoming',
+          status: "upcoming",
           ...(city && { city }),
           ...(dateFrom && { dateFrom }),
           ...(dateTo && { dateTo }),

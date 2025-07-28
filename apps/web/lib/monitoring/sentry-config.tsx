@@ -1,8 +1,8 @@
-import * as Sentry from '@sentry/nextjs';
-import React from 'react';
+import * as Sentry from "@sentry/nextjs";
+import React from "react";
 
 export function initSentry() {
-  const SENTRY_DSN = process.env['NEXT_PUBLIC_SENTRY_DSN'];
+  const SENTRY_DSN = process.env["NEXT_PUBLIC_SENTRY_DSN"];
 
   if (!SENTRY_DSN) {
     return;
@@ -10,10 +10,10 @@ export function initSentry() {
 
   Sentry.init({
     dsn: SENTRY_DSN,
-    environment: process.env['NODE_ENV'],
+    environment: process.env["NODE_ENV"],
 
     // Performance Monitoring
-    tracesSampleRate: process.env['NODE_ENV'] === 'production' ? 0.1 : 1.0,
+    tracesSampleRate: process.env["NODE_ENV"] === "production" ? 0.1 : 1.0,
 
     // Session Replay
     replaysSessionSampleRate: 0.1,
@@ -27,23 +27,23 @@ export function initSentry() {
     // Configure error filtering
     beforeSend(event, hint) {
       // Filter out non-error events in production
-      if (process.env['NODE_ENV'] === 'production') {
+      if (process.env["NODE_ENV"] === "production") {
         const error = hint.originalException;
 
         // Ignore certain errors
         if (error && error instanceof Error) {
           // Ignore network errors that are expected
-          if (error.message?.includes('Network request failed')) {
+          if (error.message?.includes("Network request failed")) {
             return null;
           }
 
           // Ignore user cancellations
-          if (error.name === 'AbortError') {
+          if (error.name === "AbortError") {
             return null;
           }
 
           // Ignore ResizeObserver errors (common browser issue)
-          if (error.message?.includes('ResizeObserver loop limit exceeded')) {
+          if (error.message?.includes("ResizeObserver loop limit exceeded")) {
             return null;
           }
         }
@@ -64,12 +64,12 @@ export function initSentry() {
     // Configure breadcrumbs
     beforeBreadcrumb(breadcrumb) {
       // Filter out noisy breadcrumbs
-      if (breadcrumb.category === 'console' && breadcrumb.level === 'debug') {
+      if (breadcrumb.category === "console" && breadcrumb.level === "debug") {
         return null;
       }
 
       // Add custom breadcrumbs for important actions
-      if (breadcrumb.category === 'navigation') {
+      if (breadcrumb.category === "navigation") {
         breadcrumb.data = {
           ...breadcrumb.data,
           timestamp: new Date().toISOString(),
@@ -83,12 +83,12 @@ export function initSentry() {
 
 // Helper to get user context
 function getUserContext() {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return null;
   }
 
   try {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem("user");
     return userStr ? JSON.parse(userStr) : null;
   } catch {
     return null;
@@ -96,13 +96,10 @@ function getUserContext() {
 }
 
 // Custom error boundary - simplified to avoid type conflicts
-export function withSentryErrorBoundary(
-  Component: any,
-  fallback?: any
-) {
+export function withSentryErrorBoundary(Component: any, fallback?: any) {
   return Sentry.withErrorBoundary(Component, {
     fallback: fallback || ErrorFallback,
-    showDialog: process.env['NODE_ENV'] !== 'production',
+    showDialog: process.env["NODE_ENV"] !== "production",
   });
 }
 
@@ -134,7 +131,7 @@ export function measureDatabaseQuery(queryName: string) {
   return () => {};
 }
 
-export function measureApiCall(endpoint: string, method = 'GET') {
+export function measureApiCall(endpoint: string, method = "GET") {
   // Simplified implementation that just returns a no-op function
   // Full implementation would require updated Sentry APIs
   console.log(`API Call: ${method} ${endpoint}`);
@@ -144,7 +141,7 @@ export function measureApiCall(endpoint: string, method = 'GET') {
 export function capturePerformanceMetric(
   name: string,
   value: number,
-  unit = 'ms'
+  unit = "ms",
 ) {
   // Simplified implementation for performance metrics
   console.log(`Performance Metric: ${name} = ${value}${unit}`);

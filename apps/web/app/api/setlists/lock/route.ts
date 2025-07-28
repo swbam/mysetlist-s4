@@ -1,23 +1,23 @@
-import { getUser } from '@repo/auth/server';
-import { db } from '@repo/database';
-import { setlists } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { getUser } from "@repo/auth/server";
+import { db } from "@repo/database";
+import { setlists } from "@repo/database";
+import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function PUT(request: NextRequest) {
   try {
     const user = await getUser();
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { setlistId, isLocked } = await request.json();
 
-    if (!setlistId || typeof isLocked !== 'boolean') {
+    if (!setlistId || typeof isLocked !== "boolean") {
       return NextResponse.json(
-        { error: 'Missing required fields: setlistId, isLocked' },
-        { status: 400 }
+        { error: "Missing required fields: setlistId, isLocked" },
+        { status: 400 },
       );
     }
 
@@ -31,13 +31,13 @@ export async function PUT(request: NextRequest) {
       .limit(1);
 
     if (setlist.length === 0) {
-      return NextResponse.json({ error: 'Setlist not found' }, { status: 404 });
+      return NextResponse.json({ error: "Setlist not found" }, { status: 404 });
     }
 
-    if (setlist[0]!['createdBy'] !== user.id) {
+    if (setlist[0]!["createdBy"] !== user.id) {
       return NextResponse.json(
-        { error: 'Cannot modify this setlist' },
-        { status: 403 }
+        { error: "Cannot modify this setlist" },
+        { status: 403 },
       );
     }
 
@@ -50,8 +50,8 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to update setlist lock status' },
-      { status: 500 }
+      { error: "Failed to update setlist lock status" },
+      { status: 500 },
     );
   }
 }

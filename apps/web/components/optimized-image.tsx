@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { cn } from '@repo/design-system/lib/utils';
-import { AlertCircle, ImageIcon, Loader2 } from 'lucide-react';
-import Image from 'next/image';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { cn } from "@repo/design-system/lib/utils";
+import { AlertCircle, ImageIcon, Loader2 } from "lucide-react";
+import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface OptimizedImageProps {
   src: string;
@@ -11,9 +11,9 @@ interface OptimizedImageProps {
   width?: number;
   height?: number;
   className?: string;
-  aspectRatio?: 'square' | 'video' | 'portrait' | 'landscape' | string;
+  aspectRatio?: "square" | "video" | "portrait" | "landscape" | string;
   priority?: boolean;
-  placeholder?: 'blur' | 'empty';
+  placeholder?: "blur" | "empty";
   blurDataURL?: string;
   fallbackSrc?: string;
   lazy?: boolean;
@@ -29,13 +29,13 @@ export function OptimizedImage({
   width,
   height,
   className,
-  aspectRatio = 'square',
+  aspectRatio = "square",
   priority = false,
-  placeholder = 'empty',
+  placeholder = "empty",
   blurDataURL,
   fallbackSrc,
   lazy = true,
-  sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw',
+  sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
   quality = 80,
   onLoad,
   onError,
@@ -64,9 +64,9 @@ export function OptimizedImage({
         });
       },
       {
-        rootMargin: '50px', // Start loading 50px before entering viewport
+        rootMargin: "50px", // Start loading 50px before entering viewport
         threshold: 0.1,
-      }
+      },
     );
 
     if (imgRef.current) {
@@ -105,21 +105,21 @@ export function OptimizedImage({
 
       onError?.(error);
     },
-    [fallbackSrc, currentSrc, onError]
+    [fallbackSrc, currentSrc, onError],
   );
 
   const getAspectRatioClass = () => {
     switch (aspectRatio) {
-      case 'square':
-        return 'aspect-square';
-      case 'video':
-        return 'aspect-video';
-      case 'portrait':
-        return 'aspect-[3/4]';
-      case 'landscape':
-        return 'aspect-[4/3]';
+      case "square":
+        return "aspect-square";
+      case "video":
+        return "aspect-video";
+      case "portrait":
+        return "aspect-[3/4]";
+      case "landscape":
+        return "aspect-[4/3]";
       default:
-        return aspectRatio.startsWith('aspect-')
+        return aspectRatio.startsWith("aspect-")
           ? aspectRatio
           : `aspect-[${aspectRatio}]`;
     }
@@ -132,14 +132,14 @@ export function OptimizedImage({
     }
 
     // Simple 1x1 pixel blur for placeholder
-    return 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q==';
+    return "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxUf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q==";
   };
 
   // Container classes
   const containerClasses = cn(
-    'relative overflow-hidden bg-muted',
+    "relative overflow-hidden bg-muted",
     !width && !height && getAspectRatioClass(),
-    className
+    className,
   );
 
   // Don't render image until in view (for lazy loading)
@@ -179,13 +179,13 @@ export function OptimizedImage({
     priority,
     quality,
     placeholder: placeholder as any,
-    blurDataURL: placeholder === 'blur' ? getBlurDataURL() : undefined,
+    blurDataURL: placeholder === "blur" ? getBlurDataURL() : undefined,
     onLoad: handleLoad,
     onError: handleError,
     className: cn(
-      'object-cover transition-all duration-300',
-      isLoading && 'scale-110 opacity-0 blur-sm',
-      !isLoading && 'scale-100 opacity-100 blur-0'
+      "object-cover transition-all duration-300",
+      isLoading && "scale-110 opacity-0 blur-sm",
+      !isLoading && "scale-100 opacity-100 blur-0",
     ),
   };
 
@@ -209,7 +209,7 @@ export function OptimizedImage({
       <Image {...imageProps} />
 
       {/* Progressive enhancement overlay */}
-      {isLoading && placeholder === 'blur' && (
+      {isLoading && placeholder === "blur" && (
         <div
           className="absolute inset-0 bg-center bg-cover opacity-50 blur-sm filter"
           style={{
@@ -222,7 +222,7 @@ export function OptimizedImage({
 }
 
 // Convenience wrapper for common image types
-export function ArtistImage(props: Omit<OptimizedImageProps, 'aspectRatio'>) {
+export function ArtistImage(props: Omit<OptimizedImageProps, "aspectRatio">) {
   return (
     <OptimizedImage
       {...props}
@@ -232,7 +232,7 @@ export function ArtistImage(props: Omit<OptimizedImageProps, 'aspectRatio'>) {
   );
 }
 
-export function VenueImage(props: Omit<OptimizedImageProps, 'aspectRatio'>) {
+export function VenueImage(props: Omit<OptimizedImageProps, "aspectRatio">) {
   return (
     <OptimizedImage
       {...props}
@@ -242,7 +242,7 @@ export function VenueImage(props: Omit<OptimizedImageProps, 'aspectRatio'>) {
   );
 }
 
-export function ShowImage(props: Omit<OptimizedImageProps, 'aspectRatio'>) {
+export function ShowImage(props: Omit<OptimizedImageProps, "aspectRatio">) {
   return (
     <OptimizedImage
       {...props}

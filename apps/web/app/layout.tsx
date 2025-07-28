@@ -1,21 +1,22 @@
-import { Inter } from 'next/font/google';
-import { Metadata } from 'next';
-import { AuthProvider } from './providers/auth-provider';
-import { ResponsiveHeader } from '../components/layout/responsive-header';
-import { Footer } from './components/footer';
-import { ThemeProvider } from '../components/ui/theme-provider';
-import { Toaster } from '@repo/design-system/components/ui/sonner';
-import '@repo/design-system/styles/globals.css';
+import { Inter } from "next/font/google";
+import { Metadata } from "next";
+import { AuthProvider } from "./providers/auth-provider";
+import { ResponsiveHeader } from "../components/layout/responsive-header";
+import { Footer } from "./components/footer";
+import { ThemeProvider } from "../components/ui/theme-provider";
+import { Toaster } from "@repo/design-system/components/ui/sonner";
+import "@repo/design-system/styles/globals.css";
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | MySetlist',
-    default: 'MySetlist - Concert Setlist Voting Platform',
+    template: "%s | MySetlist",
+    default: "MySetlist - Concert Setlist Voting Platform",
   },
-  description: 'Vote on concert setlists, discover new artists, and connect with music fans.',
-  keywords: ['concert', 'setlist', 'music', 'voting', 'artists', 'shows'],
+  description:
+    "Vote on concert setlists, discover new artists, and connect with music fans.",
+  keywords: ["concert", "setlist", "music", "voting", "artists", "shows"],
 };
 
 export default function RootLayout({
@@ -34,9 +35,7 @@ export default function RootLayout({
           <AuthProvider>
             <div className="min-h-screen flex flex-col">
               <ResponsiveHeader />
-              <main className="flex-1">
-                {children}
-              </main>
+              <main className="flex-1">{children}</main>
               <Footer />
             </div>
             <Toaster />

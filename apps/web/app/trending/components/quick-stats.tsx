@@ -3,14 +3,14 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Clock, Eye, TrendingUp, Users } from 'lucide-react';
-import { createServiceClient } from '~/lib/supabase/server';
+} from "@repo/design-system/components/ui/card";
+import { Clock, Eye, TrendingUp, Users } from "lucide-react";
+import { createServiceClient } from "~/lib/supabase/server";
 
 async function fetchStats() {
   try {
     const supabase = await createServiceClient();
-    const { data } = await supabase.rpc('admin_dashboard_stats'); // assumes view exists and function returns row
+    const { data } = await supabase.rpc("admin_dashboard_stats"); // assumes view exists and function returns row
 
     // Fallback shape if view/function not present
     return {

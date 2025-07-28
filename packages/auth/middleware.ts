@@ -1,6 +1,6 @@
-import { createServerClient } from '@supabase/ssr';
-import { type NextRequest, NextResponse } from 'next/server';
-import { keys } from './keys';
+import { createServerClient } from "@supabase/ssr";
+import { type NextRequest, NextResponse } from "next/server";
+import { keys } from "./keys";
 
 const env = keys();
 
@@ -19,17 +19,17 @@ export async function authMiddleware(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
+            request.cookies.set(name, value),
           );
           response = NextResponse.next({
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
+            response.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
   await supabase.auth.getUser();

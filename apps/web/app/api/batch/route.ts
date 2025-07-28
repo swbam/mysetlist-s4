@@ -1,17 +1,17 @@
-import { db } from '@repo/database';
-import { artists, setlists, shows, songs, venues } from '@repo/database';
-import { inArray, sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '~/lib/supabase/server';
-import { withRateLimit } from '~/middleware/rate-limit';
+import { db } from "@repo/database";
+import { artists, setlists, shows, songs, venues } from "@repo/database";
+import { inArray, sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "~/lib/supabase/server";
+import { withRateLimit } from "~/middleware/rate-limit";
 
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 export const maxDuration = 30; // 30 seconds for batch operations
 
 interface BatchOperation {
   id: string;
-  type: 'create' | 'update' | 'delete' | 'upsert';
-  resource: 'artists' | 'shows' | 'venues' | 'songs' | 'setlists';
+  type: "create" | "update" | "delete" | "upsert";
+  resource: "artists" | "shows" | "venues" | "songs" | "setlists";
   data: any;
 }
 
@@ -30,7 +30,7 @@ interface BatchResult {
 
 async function processBatchOperations(
   operations: BatchOperation[],
-  options: { transactional: boolean; continueOnError: boolean }
+  options: { transactional: boolean; continueOnError: boolean },
 ): Promise<BatchResult[]> {
   const results: BatchResult[] = [];
 
@@ -55,7 +55,7 @@ async function processBatchOperations(
           results.push({
             id: op.id,
             success: false,
-            error: 'Transaction rolled back',
+            error: "Transaction rolled back",
           });
         }
       }
@@ -77,22 +77,22 @@ async function processBatchOperations(
 
 async function processOperation(
   operation: BatchOperation,
-  dbClient: any
+  dbClient: any,
 ): Promise<BatchResult> {
   try {
     let result;
 
     switch (operation.type) {
-      case 'create':
+      case "create":
         result = await handleCreate(operation, dbClient);
         break;
-      case 'update':
+      case "update":
         result = await handleUpdate(operation, dbClient);
         break;
-      case 'delete':
+      case "delete":
         result = await handleDelete(operation, dbClient);
         break;
-      case 'upsert':
+      case "upsert":
         result = await handleUpsert(operation, dbClient);
         break;
       default:
@@ -108,7 +108,7 @@ async function processOperation(
     return {
       id: operation.id,
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -163,7 +163,7 @@ async function handleDelete(operation: BatchOperation, dbClient: any) {
   if (Array.isArray(operation.data)) {
     // Batch delete by IDs
     const ids = operation.data.map((item: any) =>
-      typeof item === 'string' ? item : item.id
+      typeof item === "string" ? item : item.id,
     );
 
     return await dbClient
@@ -173,7 +173,7 @@ async function handleDelete(operation: BatchOperation, dbClient: any) {
   }
   // Single delete
   const id =
-    typeof operation.data === 'string' ? operation.data : operation.data.id;
+    typeof operation.data === "string" ? operation.data : operation.data.id;
 
   const [result] = await dbClient
     .delete(table)
@@ -245,7 +245,7 @@ async function handler(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body: BatchRequest = await request.json();
@@ -253,15 +253,15 @@ async function handler(request: NextRequest) {
     // Validate request
     if (!body.operations || !Array.isArray(body.operations)) {
       return NextResponse.json(
-        { error: 'Invalid request: operations array required' },
-        { status: 400 }
+        { error: "Invalid request: operations array required" },
+        { status: 400 },
       );
     }
 
     if (body.operations.length > 100) {
       return NextResponse.json(
-        { error: 'Too many operations: maximum 100 per request' },
-        { status: 400 }
+        { error: "Too many operations: maximum 100 per request" },
+        { status: 400 },
       );
     }
 
@@ -287,15 +287,15 @@ async function handler(request: NextRequest) {
 
     // No caching for batch operations
     response.headers.set(
-      'Cache-Control',
-      'no-cache, no-store, must-revalidate'
+      "Cache-Control",
+      "no-cache, no-store, must-revalidate",
     );
 
     return response;
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to process batch operations' },
-      { status: 500 }
+      { error: "Failed to process batch operations" },
+      { status: 500 },
     );
   }
 }

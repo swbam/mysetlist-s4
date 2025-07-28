@@ -1,4 +1,4 @@
-import { db } from '@repo/database';
+import { db } from "@repo/database";
 import {
   artists,
   artistStats,
@@ -7,16 +7,16 @@ import {
   venues,
   songs,
   artistSongs,
-} from '@repo/database';
-import { eq, sql, and, desc } from 'drizzle-orm';
-import { SyncProgressTracker } from '~/lib/sync-progress-tracker';
+} from "@repo/database";
+import { eq, sql, and, desc } from "drizzle-orm";
+import { SyncProgressTracker } from "~/lib/sync-progress-tracker";
 import {
   ArtistSyncService,
   ShowSyncService,
   SetlistSyncService,
   VenueSyncService,
   SyncScheduler,
-} from '@repo/external-apis';
+} from "@repo/external-apis";
 
 // Rate limiting utility
 export class RateLimiter {
@@ -28,7 +28,7 @@ export class RateLimiter {
   static async checkLimit(
     key: string,
     maxRequests: number,
-    windowMs: number
+    windowMs: number,
   ): Promise<boolean> {
     const now = Date.now();
     const current = RateLimiter.requestCounts.get(key);
@@ -91,7 +91,7 @@ export class UnifiedSyncService {
         .limit(1);
 
       if (!artist) {
-        throw new Error('Artist not found');
+        throw new Error("Artist not found");
       }
 
       results.artist.data = artist;
@@ -101,7 +101,7 @@ export class UnifiedSyncService {
 
       // Step 1: Sync artist data using SyncScheduler
       await this.progressTracker.updateProgress(artistId, {
-        currentStep: 'Syncing artist data',
+        currentStep: "Syncing artist data",
         completedSteps: 1,
       });
 
@@ -125,7 +125,7 @@ export class UnifiedSyncService {
         .from(songs)
         .innerJoin(artistSongs, eq(artistSongs.songId, songs.id))
         .where(eq(artistSongs.artistId, artistId));
-      
+
       results.songs.synced = Number(songCount[0]?.count || 0);
 
       // Step 3: Count synced shows
@@ -133,7 +133,7 @@ export class UnifiedSyncService {
         .select({ count: sql<number>`count(*)` })
         .from(shows)
         .where(eq(shows.headlinerArtistId, artistId));
-      
+
       results.shows.synced = Number(showCount[0]?.count || 0);
 
       // Step 4: Count synced venues (through shows)
@@ -143,10 +143,10 @@ export class UnifiedSyncService {
         .where(
           and(
             eq(shows.headlinerArtistId, artistId),
-            sql`${shows.venueId} IS NOT NULL`
-          )
+            sql`${shows.venueId} IS NOT NULL`,
+          ),
         );
-      
+
       results.venues.synced = Number(venueCount[0]?.count || 0);
 
       // Step 5: Count synced setlists
@@ -154,12 +154,12 @@ export class UnifiedSyncService {
         .select({ count: sql<number>`count(*)` })
         .from(setlists)
         .where(eq(setlists.artistId, artistId));
-      
+
       results.setlists.synced = Number(setlistCount[0]?.count || 0);
 
       // Step 6: Calculate artist stats
       await this.progressTracker.updateProgress(artistId, {
-        currentStep: 'Calculating artist statistics',
+        currentStep: "Calculating artist statistics",
         completedSteps: 3,
       });
 
@@ -186,11 +186,10 @@ export class UnifiedSyncService {
           setlists: results.setlists,
         },
       });
-
     } catch (error) {
       await this.progressTracker.completeSync(
         artistId,
-        error instanceof Error ? error.message : 'Unknown error'
+        error instanceof Error ? error.message : "Unknown error",
       );
       throw error;
     }
@@ -213,7 +212,10 @@ export class UnifiedSyncService {
       .select({ count: sql<number>`count(*)` })
       .from(shows)
       .where(
-        and(eq(shows.headlinerArtistId, artistId), eq(shows.status, 'upcoming'))
+        and(
+          eq(shows.headlinerArtistId, artistId),
+          eq(shows.status, "upcoming"),
+        ),
       );
 
     const upcomingShows = Number(upcomingShowsCount[0]?.count || 0);
@@ -300,7 +302,7 @@ export class UnifiedSyncService {
         results.details.push({
           artistId,
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         });
       }
 

@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { VoteButton } from '@repo/design-system';
-import { Badge } from '@repo/design-system/components/ui/badge';
+import { VoteButton } from "@repo/design-system";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Progress } from '@repo/design-system/components/ui/progress';
+} from "@repo/design-system/components/ui/card";
+import { Progress } from "@repo/design-system/components/ui/progress";
 import {
   CheckCircle,
   Clock,
@@ -16,9 +16,9 @@ import {
   Sparkles,
   Wifi,
   WifiOff,
-} from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+} from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import { createClient } from "~/lib/supabase/client";
 
 type SetlistViewerProps = {
   showId: string;
@@ -41,20 +41,20 @@ type SetlistSong = {
   upvotes: number;
   downvotes: number;
   netVotes: number;
-  userVote?: 'up' | 'down' | null;
+  userVote?: "up" | "down" | null;
 };
 
 type Setlist = {
   id: string;
   name: string;
-  type: 'predicted' | 'actual';
+  type: "predicted" | "actual";
   songs: SetlistSong[];
 };
 
 export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeSetlist, setActiveSetlist] = useState<string>('predicted');
+  const [activeSetlist, setActiveSetlist] = useState<string>("predicted");
   const [isConnected, setIsConnected] = useState(false);
   const supabase = createClient();
   const subscriptionRef = useRef<any>(null);
@@ -89,33 +89,33 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
         const channel = supabase
           .channel(`setlist-${showId}`)
           .on(
-            'postgres_changes',
+            "postgres_changes",
             {
-              event: '*',
-              schema: 'public',
-              table: 'votes',
-              filter: `setlist_song_id=in.(${setlists.flatMap((s) => s.songs.map((song) => song.id)).join(',')})`,
+              event: "*",
+              schema: "public",
+              table: "votes",
+              filter: `setlist_song_id=in.(${setlists.flatMap((s) => s.songs.map((song) => song.id)).join(",")})`,
             },
             (payload) => {
               handleRealtimeVoteUpdate(payload);
-            }
+            },
           )
           .on(
-            'postgres_changes',
+            "postgres_changes",
             {
-              event: '*',
-              schema: 'public',
-              table: 'setlist_songs',
+              event: "*",
+              schema: "public",
+              table: "setlist_songs",
             },
             (payload) => {
               handleRealtimeSetlistUpdate(payload);
-            }
+            },
           )
           .subscribe((status) => {
-            setIsConnected(status === 'SUBSCRIBED');
+            setIsConnected(status === "SUBSCRIBED");
 
-            if (status === 'SUBSCRIBED') {
-            } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
+            if (status === "SUBSCRIBED") {
+            } else if (status === "CLOSED" || status === "CHANNEL_ERROR") {
               setIsConnected(false);
             }
           });
@@ -154,7 +154,7 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
 
   const handleRealtimeSetlistUpdate = (payload: any) => {
     // Handle setlist song updates (like when a song is marked as played)
-    if (payload.eventType === 'UPDATE') {
+    if (payload.eventType === "UPDATE") {
       setSetlists((prev) =>
         prev.map((setlist) => ({
           ...setlist,
@@ -164,12 +164,12 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
                   ...song,
                   isPlayed: payload.new.is_played,
                   ...(payload.new.play_time && {
-                    playTime: new Date(payload.new.play_time)
+                    playTime: new Date(payload.new.play_time),
                   }),
                 }
-              : song
+              : song,
           ),
-        }))
+        })),
       );
 
       // Log when a song is played
@@ -187,13 +187,13 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
 
   const handleVote = async (
     setlistSongId: string,
-    voteType: 'up' | 'down' | null
+    voteType: "up" | "down" | null,
   ) => {
     try {
-      const response = await fetch('/api/votes', {
-        method: 'POST',
+      const response = await fetch("/api/votes", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           setlistSongId,
@@ -217,9 +217,9 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
                     netVotes: result.netVotes,
                     userVote: result.userVote,
                   }
-                : song
+                : song,
             ),
-          }))
+          })),
         );
       }
     } catch (_error) {}
@@ -227,11 +227,11 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
 
   const formatDuration = (durationMs?: number) => {
     if (!durationMs) {
-      return '?:??';
+      return "?:??";
     }
     const minutes = Math.floor(durationMs / 60000);
     const seconds = Math.floor((durationMs % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   if (loading) {
@@ -273,7 +273,7 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
             {/* Real-time connection indicator */}
             <div
               className="flex items-center gap-1"
-              title={isConnected ? 'Live updates connected' : 'No live updates'}
+              title={isConnected ? "Live updates connected" : "No live updates"}
             >
               {isConnected ? (
                 <Wifi className="h-4 w-4 text-green-500" />
@@ -298,11 +298,11 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
                 onClick={() => setActiveSetlist(setlist.type)}
                 className={`rounded-md px-3 py-1 text-sm transition-colors ${
                   activeSetlist === setlist.type
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
-                {setlist.type === 'predicted' ? 'Predicted' : 'Actual'}
+                {setlist.type === "predicted" ? "Predicted" : "Actual"}
               </button>
             ))}
           </div>
@@ -314,7 +314,7 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
             <div
               key={setlistSong.id}
               className={`p-4 transition-colors ${
-                setlistSong.isPlayed ? 'bg-green-50/50' : ''
+                setlistSong.isPlayed ? "bg-green-50/50" : ""
               }`}
             >
               <div className="flex items-center justify-between">
@@ -347,9 +347,9 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
                         <>
                           <span>•</span>
                           <span>
-                            Played at{' '}
+                            Played at{" "}
                             {new Date(
-                              setlistSong.playTime
+                              setlistSong.playTime,
                             ).toLocaleTimeString()}
                           </span>
                         </>
@@ -361,11 +361,14 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
                 <div className="flex items-center gap-4">
                   {React.createElement(VoteButton as any, {
                     songId: setlistSong.id,
-                    ...(setlistSong.userVote !== undefined && { currentVote: setlistSong.userVote }),
+                    ...(setlistSong.userVote !== undefined && {
+                      currentVote: setlistSong.userVote,
+                    }),
                     upvotes: setlistSong.upvotes,
                     downvotes: setlistSong.downvotes,
                     onVote: handleVote,
-                    disabled: !setlistSong.isPlayed && currentSetlist.type === 'actual'
+                    disabled:
+                      !setlistSong.isPlayed && currentSetlist.type === "actual",
                   })}
                 </div>
               </div>

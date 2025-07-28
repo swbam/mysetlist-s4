@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { ExternalLink, Music, TrendingUp, Users } from 'lucide-react';
-import Link from 'next/link';
-import React, { useCallback, useEffect, useState } from 'react';
+} from "@repo/design-system/components/ui/avatar";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { ExternalLink, Music, TrendingUp, Users } from "lucide-react";
+import Link from "next/link";
+import React, { useCallback, useEffect, useState } from "react";
 
 interface TrendingArtist {
   id: string;
@@ -36,7 +36,7 @@ const ArtistRow = React.memo(function ArtistRow({
   index: number;
   formatFollowers: (count: number) => string;
   getGrowthBadge: (growth: number) => {
-    variant: 'default' | 'secondary' | 'outline';
+    variant: "default" | "secondary" | "outline";
     text: string;
     color: string;
   };
@@ -97,7 +97,7 @@ const ArtistRow = React.memo(function ArtistRow({
       <div className="text-right">
         <div className="flex items-center gap-1 font-medium text-sm">
           <TrendingUp className={`h-3 w-3 ${growthBadge.color}`} />
-          {artist.weeklyGrowth > 0 ? '+' : ''}
+          {artist.weeklyGrowth > 0 ? "+" : ""}
           {artist.weeklyGrowth.toFixed(1)}%
         </div>
         <div className="text-muted-foreground text-xs">
@@ -126,15 +126,15 @@ export function TrendingArtists() {
 
   const fetchTrendingArtists = async () => {
     try {
-      const response = await fetch('/api/trending/artists');
+      const response = await fetch("/api/trending/artists");
       if (!response.ok) {
-        throw new Error('Failed to fetch trending artists');
+        throw new Error("Failed to fetch trending artists");
       }
 
       const data = await response.json();
       setArtists(data.artists || []);
     } catch (_err) {
-      setError('Failed to load trending artists');
+      setError("Failed to load trending artists");
     } finally {
       setLoading(false);
     }
@@ -153,29 +153,29 @@ export function TrendingArtists() {
   const getGrowthBadge = useCallback((growth: number) => {
     if (growth > 20) {
       return {
-        variant: 'default' as const,
-        text: 'Hot',
-        color: 'text-red-500',
+        variant: "default" as const,
+        text: "Hot",
+        color: "text-red-500",
       };
     }
     if (growth > 10) {
       return {
-        variant: 'secondary' as const,
-        text: 'Rising',
-        color: 'text-orange-500',
+        variant: "secondary" as const,
+        text: "Rising",
+        color: "text-orange-500",
       };
     }
     if (growth > 0) {
       return {
-        variant: 'outline' as const,
-        text: 'Growing',
-        color: 'text-green-500',
+        variant: "outline" as const,
+        text: "Growing",
+        color: "text-green-500",
       };
     }
     return {
-      variant: 'outline' as const,
-      text: 'Stable',
-      color: 'text-gray-500',
+      variant: "outline" as const,
+      text: "Stable",
+      color: "text-gray-500",
     };
   }, []);
 

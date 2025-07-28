@@ -3,10 +3,10 @@ export class AppError extends Error {
   constructor(
     message: string,
     public code?: string,
-    public statusCode?: number
+    public statusCode?: number,
   ) {
     super(message);
-    this.name = 'AppError';
+    this.name = "AppError";
   }
 }
 
@@ -18,20 +18,20 @@ export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
-  if (typeof error === 'string') {
+  if (typeof error === "string") {
     return error;
   }
-  if (error && typeof error === 'object' && 'message' in error) {
+  if (error && typeof error === "object" && "message" in error) {
     return String(error.message);
   }
-  return 'An unexpected error occurred';
+  return "An unexpected error occurred";
 }
 
 export function getErrorCode(error: unknown): string | undefined {
   if (isAppError(error)) {
     return error.code;
   }
-  if (error && typeof error === 'object' && 'code' in error) {
+  if (error && typeof error === "object" && "code" in error) {
     return String(error.code);
   }
   return undefined;
@@ -51,7 +51,7 @@ export function handleApiError(error: unknown): Response {
     }),
     {
       status: statusCode,
-      headers: { 'Content-Type': 'application/json' },
-    }
+      headers: { "Content-Type": "application/json" },
+    },
   );
 }

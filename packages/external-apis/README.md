@@ -1,6 +1,7 @@
 # External APIs Package
 
 This package provides integrations with external APIs for the MySetlist application:
+
 - **Spotify API**: Artist data, tracks, albums, and music information
 - **Ticketmaster API**: Venue and show/event information
 - **Setlist.fm API**: Historical setlist data
@@ -17,6 +18,7 @@ This package provides integrations with external APIs for the MySetlist applicat
 ## Setup
 
 1. Ensure environment variables are set:
+
 ```env
 # Spotify
 NEXT_PUBLIC_SPOTIFY_CLIENT_ID=your_client_id
@@ -34,6 +36,7 @@ UPSTASH_REDIS_REST_TOKEN=your_redis_token
 ```
 
 2. Install dependencies:
+
 ```bash
 pnpm install
 ```
@@ -43,25 +46,25 @@ pnpm install
 ### Direct API Client Usage
 
 ```typescript
-import { spotify, ticketmaster, setlistfm } from '@repo/external-apis';
+import { spotify, ticketmaster, setlistfm } from "@repo/external-apis";
 
 // Spotify
 await spotify.authenticate();
-const artist = await spotify.getArtist('artistId');
-const topTracks = await spotify.getArtistTopTracks('artistId');
+const artist = await spotify.getArtist("artistId");
+const topTracks = await spotify.getArtistTopTracks("artistId");
 
 // Ticketmaster
-const events = await ticketmaster.searchEvents({ city: 'New York' });
-const venue = await ticketmaster.getVenue('venueId');
+const events = await ticketmaster.searchEvents({ city: "New York" });
+const venue = await ticketmaster.getVenue("venueId");
 
 // Setlist.fm
-const setlists = await setlistfm.searchSetlists({ artistName: 'Radiohead' });
+const setlists = await setlistfm.searchSetlists({ artistName: "Radiohead" });
 ```
 
 ### Sync Services
 
 ```typescript
-import { SyncScheduler } from '@repo/external-apis';
+import { SyncScheduler } from "@repo/external-apis";
 
 const scheduler = new SyncScheduler();
 
@@ -69,10 +72,10 @@ const scheduler = new SyncScheduler();
 await scheduler.runInitialSync();
 
 // Sync by location
-await scheduler.syncByLocation('San Francisco', 'CA');
+await scheduler.syncByLocation("San Francisco", "CA");
 
 // Sync artist data
-await scheduler.syncArtistData('Taylor Swift');
+await scheduler.syncArtistData("Taylor Swift");
 ```
 
 ### CLI Commands
@@ -97,6 +100,7 @@ pnpm tsx src/cli.ts custom --venues --shows -c "Austin" -s "TX"
 ## API Clients
 
 ### SpotifyClient
+
 - `authenticate()`: Get access token
 - `searchArtists(query, limit)`: Search for artists
 - `getArtist(artistId)`: Get artist details
@@ -105,6 +109,7 @@ pnpm tsx src/cli.ts custom --venues --shows -c "Austin" -s "TX"
 - `searchTracks(query, limit)`: Search for tracks
 
 ### TicketmasterClient
+
 - `searchEvents(options)`: Search for events
 - `getEvent(eventId)`: Get event details
 - `searchVenues(options)`: Search for venues
@@ -113,6 +118,7 @@ pnpm tsx src/cli.ts custom --venues --shows -c "Austin" -s "TX"
 - `getAttraction(attractionId)`: Get attraction details
 
 ### SetlistFmClient
+
 - `searchSetlists(options)`: Search for setlists
 - `getSetlist(setlistId)`: Get setlist details
 - `getArtistSetlists(artistMbid, page)`: Get artist's setlists
@@ -123,6 +129,7 @@ pnpm tsx src/cli.ts custom --venues --shows -c "Austin" -s "TX"
 ## Rate Limiting
 
 Each API has different rate limits:
+
 - **Spotify**: 100 requests per minute
 - **Ticketmaster**: 5000 requests per day
 - **Setlist.fm**: 1 request per second
@@ -132,6 +139,7 @@ The clients automatically handle rate limiting using Redis (or memory fallback).
 ## Caching
 
 Responses are cached to reduce API calls:
+
 - Artist data: 1 hour
 - Venue data: 1 hour
 - Event/show data: 15-30 minutes
@@ -140,17 +148,20 @@ Responses are cached to reduce API calls:
 ## Error Handling
 
 The clients provide specific error types:
+
 - `APIError`: General API errors with status codes
 - `RateLimitError`: Rate limit exceeded errors
 
 ## Development
 
 Run tests:
+
 ```bash
 pnpm test
 ```
 
 Type checking:
+
 ```bash
 pnpm typecheck
 ```

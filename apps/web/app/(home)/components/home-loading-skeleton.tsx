@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 
 export function HomeLoadingSkeleton() {
   return (
@@ -16,19 +16,19 @@ export function HomeLoadingSkeleton() {
             >
               {/* Title skeleton */}
               <div className="mx-auto h-16 w-3/4 rounded-lg bg-gradient-to-r from-muted via-muted/50 to-muted" />
-              
+
               {/* Subtitle skeleton */}
               <div className="mx-auto h-6 w-1/2 rounded-lg bg-muted/70" />
-              
+
               {/* Search skeleton */}
               <div className="mx-auto mt-12 h-14 w-full max-w-2xl rounded-lg bg-muted/60" />
-              
+
               {/* Buttons skeleton */}
               <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
                 <div className="h-12 w-full min-w-[200px] rounded-lg bg-primary/20 sm:w-auto" />
                 <div className="h-12 w-full min-w-[200px] rounded-lg bg-muted/60 sm:w-auto" />
               </div>
-              
+
               {/* Stats skeleton */}
               <div className="mx-auto mt-16 grid max-w-2xl grid-cols-2 gap-6 md:grid-cols-3 md:gap-8">
                 {[...Array(3)].map((_, i) => (
@@ -53,7 +53,7 @@ export function HomeLoadingSkeleton() {
             </div>
             <div className="h-6 w-24 rounded bg-muted/50" />
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
             {[...Array(7)].map((_, i) => (
               <motion.div
@@ -81,7 +81,7 @@ export function HomeLoadingSkeleton() {
             </div>
             <div className="h-6 w-24 rounded bg-muted/50" />
           </div>
-          
+
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <motion.div

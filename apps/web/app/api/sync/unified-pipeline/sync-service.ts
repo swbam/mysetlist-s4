@@ -1,4 +1,4 @@
-import { db } from '@repo/database';
+import { db } from "@repo/database";
 import {
   artistSongs,
   artistStats,
@@ -9,16 +9,16 @@ import {
   shows,
   songs,
   venues,
-} from '@repo/database';
-import { and, desc, eq, isNull, sql } from 'drizzle-orm';
-import { SyncProgressTracker } from '~/lib/sync-progress-tracker';
+} from "@repo/database";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { SyncProgressTracker } from "~/lib/sync-progress-tracker";
 import {
   ArtistSyncService,
   ShowSyncService,
   SetlistSyncService,
   VenueSyncService,
   SyncScheduler,
-} from '@repo/external-apis';
+} from "@repo/external-apis";
 
 // Rate limiting and caching utilities
 export class RateLimiter {
@@ -30,7 +30,7 @@ export class RateLimiter {
   static async checkLimit(
     key: string,
     maxRequests: number,
-    windowMs: number
+    windowMs: number,
   ): Promise<boolean> {
     const now = Date.now();
     const current = RateLimiter.requestCounts.get(key);
@@ -73,13 +73,17 @@ export class UnifiedSyncService {
     this.venueSyncService = new VenueSyncService();
     this.syncScheduler = new SyncScheduler();
     this.progressTracker = new SyncProgressTracker();
-    
+
     // Import TicketmasterClient dynamically to avoid circular dependencies
-    import('@repo/external-apis').then(({ TicketmasterClient }) => {
-      this.ticketmasterClient = new TicketmasterClient({ apiKey: process.env.TICKETMASTER_API_KEY! });
-    }).catch(err => {
-      console.error('Failed to initialize TicketmasterClient:', err);
-    });
+    import("@repo/external-apis")
+      .then(({ TicketmasterClient }) => {
+        this.ticketmasterClient = new TicketmasterClient({
+          apiKey: process.env.TICKETMASTER_API_KEY!,
+        });
+      })
+      .catch((err) => {
+        console.error("Failed to initialize TicketmasterClient:", err);
+      });
   }
 
   async syncArtistCatalog(artistId: string) {
@@ -101,7 +105,7 @@ export class UnifiedSyncService {
         .limit(1);
 
       if (!artist) {
-        throw new Error('Artist not found');
+        throw new Error("Artist not found");
       }
 
       results.artist.data = artist;
@@ -113,21 +117,21 @@ export class UnifiedSyncService {
       if (artist.spotifyId) {
         try {
           await this.progressTracker.updateProgress(artistId, {
-            currentStep: 'Syncing artist from Spotify',
+            currentStep: "Syncing artist from Spotify",
             completedSteps: 1,
           });
 
           // Use the ArtistSyncService to sync from Spotify
           await this.artistSyncService.syncArtist(artist.spotifyId);
           results.artist.updated = true;
-          
+
           // Update song sync results
           const songCount = await db
             .select({ count: sql<number>`count(*)` })
             .from(songs)
             .innerJoin(artistSongs, eq(artistSongs.songId, songs.id))
             .where(eq(artistSongs.artistId, artistId));
-          
+
           results.songs.synced = Number(songCount[0]?.count || 0);
 
           // Update progress with song sync details
@@ -141,7 +145,7 @@ export class UnifiedSyncService {
           });
         } catch (error) {
           results.artist.updated = false;
-          console.error('Artist sync error:', error);
+          console.error("Artist sync error:", error);
         }
       }
 
@@ -149,7 +153,7 @@ export class UnifiedSyncService {
       if (artist.ticketmasterId) {
         try {
           await this.progressTracker.updateProgress(artistId, {
-            currentStep: 'Syncing shows from Ticketmaster',
+            currentStep: "Syncing shows from Ticketmaster",
             completedSteps: 2,
           });
 
@@ -162,18 +166,18 @@ export class UnifiedSyncService {
             // Limit to 20 pages for safety
             // Wait for ticketmasterClient to be initialized
             if (!this.ticketmasterClient) {
-              await new Promise(resolve => setTimeout(resolve, 100));
+              await new Promise((resolve) => setTimeout(resolve, 100));
             }
-            
+
             const events = await this.ticketmasterClient.searchEvents({
               attractionId: artist.ticketmasterId,
               size: 100, // Max page size
               page,
-              startDateTime: `${new Date().toISOString().split('.')[0]}Z`,
+              startDateTime: `${new Date().toISOString().split(".")[0]}Z`,
               endDateTime: `${
                 new Date(Date.now() + 730 * 24 * 60 * 60 * 1000)
                   .toISOString()
-                  .split('.')[0]
+                  .split(".")[0]
               }Z`, // 2 years ahead
             });
 
@@ -217,19 +221,19 @@ export class UnifiedSyncService {
                         ticketUrl: event.url,
                         updatedAt: new Date(),
                       })
-                      .where(eq(shows.id, existingShow[0]!['id']));
+                      .where(eq(shows.id, existingShow[0]!["id"]));
 
                     // Update supporting artists for existing show
                     // First, check if we already have the headliner in show_artists
                     const existingShowArtists = await db
                       .select()
                       .from(showArtists)
-                      .where(eq(showArtists.showId, existingShow[0]!['id']));
+                      .where(eq(showArtists.showId, existingShow[0]!["id"]));
 
                     if (existingShowArtists.length === 0) {
                       // Add headliner if missing
                       await db.insert(showArtists).values({
-                        showId: existingShow[0]!['id'],
+                        showId: existingShow[0]!["id"],
                         artistId: artistId,
                         orderIndex: 0,
                         isHeadliner: true,
@@ -250,7 +254,7 @@ export class UnifiedSyncService {
 
                         // Check if this supporting act already exists for this show
                         const existingSupport = existingShowArtists.find(
-                          (sa) => sa.orderIndex === i
+                          (sa) => sa.orderIndex === i,
                         );
 
                         if (!existingSupport) {
@@ -264,7 +268,7 @@ export class UnifiedSyncService {
                             .limit(1);
 
                           if (existingSupportArtist.length > 0) {
-                            supportArtistId = existingSupportArtist[0]!['id'];
+                            supportArtistId = existingSupportArtist[0]!["id"];
                           } else {
                             // Create a basic artist record for the supporting act
                             const [newSupportArtist] = await db
@@ -283,7 +287,7 @@ export class UnifiedSyncService {
 
                           // Add supporting artist to show_artists
                           await db.insert(showArtists).values({
-                            showId: existingShow[0]!['id'],
+                            showId: existingShow[0]!["id"],
                             artistId: supportArtistId,
                             orderIndex: i,
                             isHeadliner: false,
@@ -307,7 +311,7 @@ export class UnifiedSyncService {
                       ticketUrl: event.url,
                       minPrice: event.priceRanges?.[0]?.min || null,
                       maxPrice: event.priceRanges?.[0]?.max || null,
-                      currency: event.priceRanges?.[0]?.currency || 'USD',
+                      currency: event.priceRanges?.[0]?.currency || "USD",
                       isVerified: true, // Ticketmaster shows are verified
                     };
 
@@ -347,7 +351,7 @@ export class UnifiedSyncService {
                           .limit(1);
 
                         if (existingSupportArtist.length > 0) {
-                          supportArtistId = existingSupportArtist[0]!['id'];
+                          supportArtistId = existingSupportArtist[0]!["id"];
                         } else {
                           // Create a basic artist record for the supporting act
                           const [newSupportArtist] = await db
@@ -381,7 +385,7 @@ export class UnifiedSyncService {
 
               // Check if there are more pages
               const totalPages = Math.ceil(
-                (events.page?.totalElements || 0) / (events.page?.size || 100)
+                (events.page?.totalElements || 0) / (events.page?.size || 100),
               );
               hasMore = page < totalPages - 1;
               page++;
@@ -409,24 +413,24 @@ export class UnifiedSyncService {
       if (artist.mbid) {
         try {
           await this.progressTracker.updateProgress(artistId, {
-            currentStep: 'Syncing setlists from Setlist.fm',
+            currentStep: "Syncing setlists from Setlist.fm",
             completedSteps: 3,
           });
 
           // Get recent setlists using the mbid
           const mbid = artist.mbid;
-          
+
           // TODO: Implement setlist sync using setlistSyncService
           // For now, just update the results to indicate no setlists synced
           results.setlists.synced = 0;
         } catch (_error) {
-          console.error('Setlist sync error:', _error);
+          console.error("Setlist sync error:", _error);
         }
       }
 
       // Calculate artist stats after all sync operations
       await this.progressTracker.updateProgress(artistId, {
-        currentStep: 'Calculating artist statistics',
+        currentStep: "Calculating artist statistics",
         completedSteps: 3,
       });
 
@@ -449,7 +453,7 @@ export class UnifiedSyncService {
     } catch (error) {
       await this.progressTracker.completeSync(
         artistId,
-        error instanceof Error ? error.message : 'Unknown error'
+        error instanceof Error ? error.message : "Unknown error",
       );
       throw error;
     }
@@ -475,9 +479,9 @@ export class UnifiedSyncService {
         name: tmVenue.name,
         slug: this.generateSlug(tmVenue.name),
         address: tmVenue.address?.line1 || null,
-        city: tmVenue.city?.name || 'Unknown',
+        city: tmVenue.city?.name || "Unknown",
         state: tmVenue.state?.stateCode || null,
-        country: tmVenue.country?.countryCode || 'US',
+        country: tmVenue.country?.countryCode || "US",
         postalCode: tmVenue.postalCode || null,
         latitude: tmVenue.location?.latitude
           ? Number.parseFloat(tmVenue.location.latitude)
@@ -485,7 +489,7 @@ export class UnifiedSyncService {
         longitude: tmVenue.location?.longitude
           ? Number.parseFloat(tmVenue.location.longitude)
           : null,
-        timezone: tmVenue.timezone || 'America/New_York',
+        timezone: tmVenue.timezone || "America/New_York",
         capacity: tmVenue.capacity || null,
         website: tmVenue.url || null,
       };
@@ -501,27 +505,27 @@ export class UnifiedSyncService {
   private generateSlug(name: string): string {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
   }
 
   private determineShowStatus(
-    event: any
-  ): 'upcoming' | 'ongoing' | 'completed' | 'cancelled' {
+    event: any,
+  ): "upcoming" | "ongoing" | "completed" | "cancelled" {
     const now = new Date();
     const eventDate = new Date(
-      event.dates.start.dateTime || event.dates.start.localDate
+      event.dates.start.dateTime || event.dates.start.localDate,
     );
 
-    if (event.dates.status?.code === 'cancelled') {
-      return 'cancelled';
+    if (event.dates.status?.code === "cancelled") {
+      return "cancelled";
     }
 
     if (eventDate < now) {
-      return 'completed';
+      return "completed";
     }
 
-    return 'upcoming';
+    return "upcoming";
   }
 
   private async calculateArtistStats(artistId: string): Promise<void> {
@@ -538,7 +542,10 @@ export class UnifiedSyncService {
       .select({ count: sql<number>`count(*)` })
       .from(shows)
       .where(
-        and(eq(shows.headlinerArtistId, artistId), eq(shows.status, 'upcoming'))
+        and(
+          eq(shows.headlinerArtistId, artistId),
+          eq(shows.status, "upcoming"),
+        ),
       );
 
     const upcomingShows = Number(upcomingShowsCount[0]?.count || 0);
@@ -563,7 +570,7 @@ export class UnifiedSyncService {
             JOIN ${setlistSongs} ss ON s.id = ss.setlist_id
             WHERE s.artist_id = ${artistId}
             GROUP BY s.id
-          ) as setlist_lengths`
+          ) as setlist_lengths`,
       );
 
     const avgSetlistLength = avgLengthResult[0]?.avg || 0;
@@ -582,12 +589,12 @@ export class UnifiedSyncService {
     const mostPlayedResult = await db
       .select({
         songTitle: songs.title,
-        playCount: sql<number>`count(*)`.as('play_count'),
+        playCount: sql<number>`count(*)`.as("play_count"),
       })
       .from(setlistSongs)
       .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
       .innerJoin(songs, eq(setlistSongs.songId, songs.id))
-      .where(and(eq(setlists.artistId, artistId), eq(setlists.type, 'actual')))
+      .where(and(eq(setlists.artistId, artistId), eq(setlists.type, "actual")))
       .groupBy(songs.title)
       .orderBy(desc(sql`count(*)`))
       .limit(1);
@@ -601,8 +608,8 @@ export class UnifiedSyncService {
       .where(
         and(
           eq(shows.headlinerArtistId, artistId),
-          eq(shows.status, 'completed')
-        )
+          eq(shows.status, "completed"),
+        ),
       )
       .orderBy(desc(shows.date))
       .limit(1);
@@ -677,7 +684,7 @@ export class UnifiedSyncService {
         results.details.push({
           artistId,
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         });
       }
 

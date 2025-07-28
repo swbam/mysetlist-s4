@@ -1,7 +1,5 @@
 {
-  "extends": [
-    "../../packages/typescript-config/nextjs.json"
-  ],
+  "extends": ["../../packages/typescript-config/nextjs.json"],
   "compilerOptions": {
     "baseUrl": ".",
     "jsx": "preserve",
@@ -38,5 +36,12 @@
     "vitest-env.d.ts",
     "tests/types/**/*.d.ts"
   ],
-  "exclude": ["__tests__", "cypress", "supabase", "test-utils", "*.setup.ts", "vitest.*"]
+  "exclude": [
+    "__tests__",
+    "cypress",
+    "supabase",
+    "test-utils",
+    "*.setup.ts",
+    "vitest.*"
+  ]
 }

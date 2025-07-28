@@ -1,11 +1,11 @@
-import { db } from '@repo/database';
-import { artists, shows } from '@repo/database';
-import { gt, sql, desc } from 'drizzle-orm';
-import { NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { artists, shows } from "@repo/database";
+import { gt, sql, desc } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 export async function POST() {
   try {
-    console.log('Initializing trending scores...');
+    console.log("Initializing trending scores...");
 
     // Update trending scores for artists based on popularity and followers
     const artistsUpdated = await db
@@ -65,7 +65,7 @@ export async function POST() {
 
     return NextResponse.json({
       success: true,
-      message: 'Trending scores initialized',
+      message: "Trending scores initialized",
       stats: {
         artistsUpdated,
         showsUpdated,
@@ -74,13 +74,13 @@ export async function POST() {
       },
     });
   } catch (error) {
-    console.error('Error initializing trending scores:', error);
+    console.error("Error initializing trending scores:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -130,13 +130,13 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error('Error getting trending stats:', error);
+    console.error("Error getting trending stats:", error);
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

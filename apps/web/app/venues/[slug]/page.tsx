@@ -3,21 +3,17 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { BreadcrumbNavigation } from '~/components/breadcrumb-navigation';
-import { createVenueMetadata } from '~/lib/seo-metadata';
-import {
-  getNearbyVenues,
-  getVenueBySlug,
-  getVenueShows,
-} from './actions';
-import { NearbyVenues } from './components/nearby-venues';
-import { PastShows } from './components/past-shows';
-import { UpcomingShows } from './components/upcoming-shows';
-import { VenueDetails } from './components/venue-details';
-import { VenueHeader } from './components/venue-header';
+} from "@repo/design-system/components/ui/tabs";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { BreadcrumbNavigation } from "~/components/breadcrumb-navigation";
+import { createVenueMetadata } from "~/lib/seo-metadata";
+import { getNearbyVenues, getVenueBySlug, getVenueShows } from "./actions";
+import { NearbyVenues } from "./components/nearby-venues";
+import { PastShows } from "./components/past-shows";
+import { UpcomingShows } from "./components/upcoming-shows";
+import { VenueDetails } from "./components/venue-details";
+import { VenueHeader } from "./components/venue-header";
 
 type VenuePageProps = {
   params: Promise<{
@@ -34,20 +30,20 @@ export const generateMetadata = async ({
 
   if (!venue) {
     return createVenueMetadata({
-      name: 'Venue Not Found',
-      city: 'Unknown',
-      slug: 'not-found',
-      description: 'The venue you are looking for does not exist.',
+      name: "Venue Not Found",
+      city: "Unknown",
+      slug: "not-found",
+      description: "The venue you are looking for does not exist.",
     });
   }
 
   return createVenueMetadata({
     name: venue.name,
     city: venue.city,
-    state: venue.state || '',
+    state: venue.state || "",
     country: venue.country,
-    description: venue.description || '',
-    imageUrl: venue.imageUrl || '',
+    description: venue.description || "",
+    imageUrl: venue.imageUrl || "",
     slug: venue.slug,
     capacity: venue.capacity || 0,
   });
@@ -62,15 +58,14 @@ const VenuePage = async ({ params }: VenuePageProps) => {
   }
 
   // Fetch basic venue data in parallel
-  const [upcomingShows, pastShows, nearbyVenues] =
-    await Promise.all([
-      getVenueShows(venue.id, 'upcoming'),
-      getVenueShows(venue.id, 'past'),
-      getNearbyVenues(venue.id, venue.latitude, venue.longitude),
-    ]);
+  const [upcomingShows, pastShows, nearbyVenues] = await Promise.all([
+    getVenueShows(venue.id, "upcoming"),
+    getVenueShows(venue.id, "past"),
+    getNearbyVenues(venue.id, venue.latitude, venue.longitude),
+  ]);
 
   const breadcrumbItems = [
-    { label: 'Venues', href: '/venues' },
+    { label: "Venues", href: "/venues" },
     { label: venue.name, isCurrentPage: true },
   ];
 
@@ -80,10 +75,7 @@ const VenuePage = async ({ params }: VenuePageProps) => {
         <BreadcrumbNavigation items={breadcrumbItems} className="mb-6" />
         <div className="flex flex-col gap-8">
           {/* Venue Header */}
-          <VenueHeader
-            venue={venue}
-            upcomingShowCount={upcomingShows.length}
-          />
+          <VenueHeader venue={venue} upcomingShowCount={upcomingShows.length} />
 
           {/* Venue Details */}
           <VenueDetails venue={venue} />
@@ -102,7 +94,9 @@ const VenuePage = async ({ params }: VenuePageProps) => {
                   date: new Date(show.date),
                   artist: {
                     ...show.artist,
-                    genres: show.artist.genres ? JSON.parse(show.artist.genres) : [],
+                    genres: show.artist.genres
+                      ? JSON.parse(show.artist.genres)
+                      : [],
                   },
                 }))}
                 venueId={venue.id}
@@ -116,7 +110,9 @@ const VenuePage = async ({ params }: VenuePageProps) => {
                   date: new Date(show.date),
                   artist: {
                     ...show.artist,
-                    genres: show.artist.genres ? JSON.parse(show.artist.genres) : [],
+                    genres: show.artist.genres
+                      ? JSON.parse(show.artist.genres)
+                      : [],
                   },
                 }))}
                 venueId={venue.id}

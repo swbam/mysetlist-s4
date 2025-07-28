@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { cn } from '@repo/design-system/lib/utils';
-import { ExternalLink, GripVertical, Music, Trash2 } from 'lucide-react';
-import Image from 'next/image';
-import { useTransition } from 'react';
-import { toast } from 'sonner';
-import { useAuth } from '~/app/providers/auth-provider';
-import { MobileVoteButton } from '~/components/mobile/mobile-vote-button';
-import { AnonymousVoteButton } from '~/components/voting/anonymous-vote-button';
-import { useRealtimeVotes } from '~/hooks/use-realtime-votes';
-import { voteSong } from '../actions';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { cn } from "@repo/design-system/lib/utils";
+import { ExternalLink, GripVertical, Music, Trash2 } from "lucide-react";
+import Image from "next/image";
+import { useTransition } from "react";
+import { toast } from "sonner";
+import { useAuth } from "~/app/providers/auth-provider";
+import { MobileVoteButton } from "~/components/mobile/mobile-vote-button";
+import { AnonymousVoteButton } from "~/components/voting/anonymous-vote-button";
+import { useRealtimeVotes } from "~/hooks/use-realtime-votes";
+import { voteSong } from "../actions";
 
 type SongItemProps = {
   item: {
     id: string;
     upvotes: number;
     downvotes: number;
-    userVote: 'up' | 'down' | null;
+    userVote: "up" | "down" | null;
     notes?: string;
     song: {
       id: string;
@@ -64,10 +64,10 @@ export function SongItem({
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  const handleVote = (voteType: 'up' | 'down') => {
+  const handleVote = (voteType: "up" | "down") => {
     if (!canVote) {
       return;
     }
@@ -78,10 +78,10 @@ export function SongItem({
         await voteSong(item.id, voteType);
         // Don't manually update state - real-time hook will handle it
       } catch (error: any) {
-        if (error.message.includes('logged in')) {
-          toast.error('Please sign in to vote');
+        if (error.message.includes("logged in")) {
+          toast.error("Please sign in to vote");
         } else {
-          toast.error('Failed to vote');
+          toast.error("Failed to vote");
         }
       }
     });
@@ -90,9 +90,9 @@ export function SongItem({
   return (
     <div
       className={cn(
-        'flex items-center gap-3 rounded-lg p-3 transition-colors',
-        'hover:bg-muted/50',
-        isEditing && 'cursor-move'
+        "flex items-center gap-3 rounded-lg p-3 transition-colors",
+        "hover:bg-muted/50",
+        isEditing && "cursor-move",
       )}
     >
       {/* Drag Handle */}
@@ -164,10 +164,10 @@ export function SongItem({
                 initialDownvotes={downvotes}
                 isAuthenticated={!!session}
                 onVote={async (voteType) => {
-                  if (voteType === 'up') {
-                    await handleVote('up');
-                  } else if (voteType === 'down') {
-                    await handleVote('down');
+                  if (voteType === "up") {
+                    await handleVote("up");
+                  } else if (voteType === "down") {
+                    await handleVote("down");
                   }
                 }}
                 variant="compact"
@@ -181,10 +181,10 @@ export function SongItem({
               <MobileVoteButton
                 songId={item.id}
                 onVote={async (_songId, voteType) => {
-                  if (voteType === 'up') {
-                    await handleVote('up');
-                  } else if (voteType === 'down') {
-                    await handleVote('down');
+                  if (voteType === "up") {
+                    await handleVote("up");
+                  } else if (voteType === "down") {
+                    await handleVote("down");
                   }
                 }}
                 compact={true}

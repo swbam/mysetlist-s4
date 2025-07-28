@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { cn } from '@repo/design-system/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Clock, Edit, Lock, Music, Plus, Users } from 'lucide-react';
-import { useState } from 'react';
-import { useAuth } from '~/app/providers/auth-provider';
-import { useRealtimeSetlist } from '~/hooks/use-realtime-setlist';
-import { RealtimeVoteButton } from './realtime-vote-button';
+} from "@repo/design-system/components/ui/card";
+import { cn } from "@repo/design-system/lib/utils";
+import { formatDistanceToNow } from "date-fns";
+import { AnimatePresence, motion } from "framer-motion";
+import { Clock, Edit, Lock, Music, Plus, Users } from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "~/app/providers/auth-provider";
+import { useRealtimeSetlist } from "~/hooks/use-realtime-setlist";
+import { RealtimeVoteButton } from "./realtime-vote-button";
 
 interface Setlist {
   id: string;
@@ -64,17 +64,17 @@ export function EnhancedSetlistViewer({
   const { setlists, loading: isLoading } = useRealtimeSetlist({
     showId,
   });
-  
+
   // Get songs from initial setlist or first setlist from real-time data
   const songs = initialSetlist?.songs || setlists[0]?.songs || [];
 
-  const handleVote = async (songId: string, voteType: 'up' | 'down' | null) => {
+  const handleVote = async (songId: string, voteType: "up" | "down" | null) => {
     if (!user) {
       return;
     }
-    const response = await fetch('/api/votes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("/api/votes", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         setlistSongId: songId,
         voteType,
@@ -82,26 +82,26 @@ export function EnhancedSetlistViewer({
     });
 
     if (!response.ok) {
-      throw new Error('Vote failed');
+      throw new Error("Vote failed");
     }
   };
 
   const formatDuration = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   const totalDuration = songs.reduce(
     (acc, song) =>
       acc +
       ((song.song as any)?.durationMs || (song.song as any)?.duration_ms || 0),
-    0
+    0,
   );
   const totalVotes = songs.reduce(
     (acc, song) =>
       acc + ((song as any).upvotes || 0) + ((song as any).downvotes || 0),
-    0
+    0,
   );
 
   if (isLoading && songs.length === 0) {
@@ -121,11 +121,11 @@ export function EnhancedSetlistViewer({
           <div>
             <CardTitle className="flex items-center gap-2">
               <Music className="h-5 w-5" />
-              {initialSetlist?.name || 'Community Setlist'}
+              {initialSetlist?.name || "Community Setlist"}
               {initialSetlist?.type && (
                 <Badge
                   variant={
-                    initialSetlist.type === 'actual' ? 'default' : 'secondary'
+                    initialSetlist.type === "actual" ? "default" : "secondary"
                   }
                 >
                   {initialSetlist.type}
@@ -154,12 +154,12 @@ export function EnhancedSetlistViewer({
                 <>
                   <span>•</span>
                   <span>
-                    Updated{' '}
+                    Updated{" "}
                     {formatDistanceToNow(
                       new Date(
-                        initialSetlist.updatedAt || initialSetlist.createdAt
-                      )
-                    )}{' '}
+                        initialSetlist.updatedAt || initialSetlist.createdAt,
+                      ),
+                    )}{" "}
                     ago
                   </span>
                 </>
@@ -214,8 +214,8 @@ export function EnhancedSetlistViewer({
                   exit={{ opacity: 0, y: -20 }}
                   transition={{ duration: 0.2 }}
                   className={cn(
-                    'flex items-center gap-4 p-4 transition-colors hover:bg-muted/50',
-                    selectedSongId === song.id && 'bg-muted/50'
+                    "flex items-center gap-4 p-4 transition-colors hover:bg-muted/50",
+                    selectedSongId === song.id && "bg-muted/50",
                   )}
                   onClick={() => setSelectedSongId(song.id)}
                 >
@@ -228,7 +228,7 @@ export function EnhancedSetlistViewer({
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium">
-                        {song.song?.title || 'Unknown Song'}
+                        {song.song?.title || "Unknown Song"}
                       </h4>
                       {(song as any).is_cover && (
                         <Badge variant="secondary" className="text-xs">
@@ -246,7 +246,7 @@ export function EnhancedSetlistViewer({
                     </div>
                     <div className="flex items-center gap-2 text-muted-foreground text-sm">
                       <span>
-                        {(song.song as any)?.artist || 'Unknown Artist'}
+                        {(song.song as any)?.artist || "Unknown Artist"}
                       </span>
                       {((song.song as any)?.durationMs ||
                         (song.song as any)?.duration_ms) && (
@@ -255,7 +255,7 @@ export function EnhancedSetlistViewer({
                           <span>
                             {formatDuration(
                               (song.song as any)?.durationMs ||
-                                (song.song as any)?.duration_ms
+                                (song.song as any)?.duration_ms,
                             )}
                           </span>
                         </>

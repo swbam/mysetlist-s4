@@ -10,4 +10,4 @@ export {
   ilike,
   isNull,
   isNotNull,
-} from '@repo/database';
+} from "@repo/database";

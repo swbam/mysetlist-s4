@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { cn } from '@repo/design-system/lib/utils';
-import { ChevronDown, RefreshCw } from 'lucide-react';
-import type React from 'react';
-import { useCallback, useRef, useState } from 'react';
+import { cn } from "@repo/design-system/lib/utils";
+import { ChevronDown, RefreshCw } from "lucide-react";
+import type React from "react";
+import { useCallback, useRef, useState } from "react";
 
 interface PullToRefreshProps {
   children: React.ReactNode;
@@ -20,9 +20,9 @@ export function PullToRefresh({
   onRefresh,
   threshold = 100,
   disabled = false,
-  refreshText = 'Pull to refresh',
-  releaseText = 'Release to refresh',
-  loadingText = 'Refreshing...',
+  refreshText = "Pull to refresh",
+  releaseText = "Release to refresh",
+  loadingText = "Refreshing...",
 }: PullToRefreshProps) {
   const [pullDistance, setPullDistance] = useState(0);
   const [isPulling, setIsPulling] = useState(false);
@@ -44,7 +44,7 @@ export function PullToRefresh({
       setTouchStart(e.touches[0]?.clientY || 0);
       setIsPulling(true);
     },
-    [disabled, isRefreshing]
+    [disabled, isRefreshing],
   );
 
   const handleTouchMove = useCallback(
@@ -66,7 +66,7 @@ export function PullToRefresh({
         setPullDistance(distance);
       }
     },
-    [touchStart, isPulling, disabled, isRefreshing, threshold]
+    [touchStart, isPulling, disabled, isRefreshing, threshold],
   );
 
   const handleTouchEnd = useCallback(async () => {
@@ -145,11 +145,11 @@ export function PullToRefresh({
       {/* Pull indicator */}
       <div
         className={cn(
-          'absolute top-0 right-0 left-0 z-50',
-          'flex flex-col items-center justify-center',
-          'bg-background/90 backdrop-blur-sm',
-          'transition-all duration-200',
-          pullDistance > 0 ? 'opacity-100' : 'opacity-0'
+          "absolute top-0 right-0 left-0 z-50",
+          "flex flex-col items-center justify-center",
+          "bg-background/90 backdrop-blur-sm",
+          "transition-all duration-200",
+          pullDistance > 0 ? "opacity-100" : "opacity-0",
         )}
         style={{
           height: Math.max(pullDistance, 0),

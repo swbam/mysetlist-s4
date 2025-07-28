@@ -1,5 +1,5 @@
-import { Resend } from 'resend';
-import { env } from '@repo/env';
+import { Resend } from "resend";
+import { env } from "@repo/env";
 
 export class EmailService {
   private resend: Resend;
@@ -15,20 +15,20 @@ export class EmailService {
   async sendWelcomeEmail(email: string, displayName?: string): Promise<void> {
     try {
       const { data, error } = await this.resend.emails.send({
-        from: 'MySetlist <welcome@mysetlist.com>',
+        from: "MySetlist <welcome@mysetlist.com>",
         to: [email],
-        subject: 'Welcome to MySetlist! 🎵',
-        html: this.getWelcomeEmailTemplate(displayName || 'Music Fan'),
+        subject: "Welcome to MySetlist! 🎵",
+        html: this.getWelcomeEmailTemplate(displayName || "Music Fan"),
       });
 
       if (error) {
-        console.error('Error sending welcome email:', error);
+        console.error("Error sending welcome email:", error);
         throw new Error(`Failed to send welcome email: ${error.message}`);
       }
 
-      console.log('Welcome email sent successfully:', data?.id);
+      console.log("Welcome email sent successfully:", data?.id);
     } catch (error) {
-      console.error('Error in sendWelcomeEmail:', error);
+      console.error("Error in sendWelcomeEmail:", error);
       // Don't throw error to prevent signup failure
     }
   }
@@ -43,20 +43,22 @@ export class EmailService {
       const resetUrl = `${env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
       const { data, error } = await this.resend.emails.send({
-        from: 'MySetlist <security@mysetlist.com>',
+        from: "MySetlist <security@mysetlist.com>",
         to: [email],
-        subject: 'Reset Your MySetlist Password',
+        subject: "Reset Your MySetlist Password",
         html: this.getPasswordResetEmailTemplate(resetUrl),
       });
 
       if (error) {
-        console.error('Error sending password reset email:', error);
-        throw new Error(`Failed to send password reset email: ${error.message}`);
+        console.error("Error sending password reset email:", error);
+        throw new Error(
+          `Failed to send password reset email: ${error.message}`,
+        );
       }
 
-      console.log('Password reset email sent successfully:', data?.id);
+      console.log("Password reset email sent successfully:", data?.id);
     } catch (error) {
-      console.error('Error in sendPasswordResetEmail:', error);
+      console.error("Error in sendPasswordResetEmail:", error);
       throw error;
     }
   }
@@ -64,23 +66,26 @@ export class EmailService {
   /**
    * Send email verification email
    */
-  async sendEmailVerificationEmail(email: string, verificationUrl: string): Promise<void> {
+  async sendEmailVerificationEmail(
+    email: string,
+    verificationUrl: string,
+  ): Promise<void> {
     try {
       const { data, error } = await this.resend.emails.send({
-        from: 'MySetlist <verify@mysetlist.com>',
+        from: "MySetlist <verify@mysetlist.com>",
         to: [email],
-        subject: 'Verify Your MySetlist Email Address',
+        subject: "Verify Your MySetlist Email Address",
         html: this.getEmailVerificationTemplate(verificationUrl),
       });
 
       if (error) {
-        console.error('Error sending email verification:', error);
+        console.error("Error sending email verification:", error);
         throw new Error(`Failed to send email verification: ${error.message}`);
       }
 
-      console.log('Email verification sent successfully:', data?.id);
+      console.log("Email verification sent successfully:", data?.id);
     } catch (error) {
-      console.error('Error in sendEmailVerificationEmail:', error);
+      console.error("Error in sendEmailVerificationEmail:", error);
       throw error;
     }
   }
@@ -88,23 +93,29 @@ export class EmailService {
   /**
    * Send security notification email
    */
-  async sendSecurityNotificationEmail(email: string, action: string, details: string): Promise<void> {
+  async sendSecurityNotificationEmail(
+    email: string,
+    action: string,
+    details: string,
+  ): Promise<void> {
     try {
       const { data, error } = await this.resend.emails.send({
-        from: 'MySetlist <security@mysetlist.com>',
+        from: "MySetlist <security@mysetlist.com>",
         to: [email],
-        subject: 'Security Alert - MySetlist Account Activity',
+        subject: "Security Alert - MySetlist Account Activity",
         html: this.getSecurityNotificationTemplate(action, details),
       });
 
       if (error) {
-        console.error('Error sending security notification:', error);
-        throw new Error(`Failed to send security notification: ${error.message}`);
+        console.error("Error sending security notification:", error);
+        throw new Error(
+          `Failed to send security notification: ${error.message}`,
+        );
       }
 
-      console.log('Security notification sent successfully:', data?.id);
+      console.log("Security notification sent successfully:", data?.id);
     } catch (error) {
-      console.error('Error in sendSecurityNotificationEmail:', error);
+      console.error("Error in sendSecurityNotificationEmail:", error);
       // Don't throw error for security notifications
     }
   }
@@ -113,8 +124,8 @@ export class EmailService {
    * Generate secure token for password reset
    */
   private generateSecureToken(): string {
-    const crypto = require('crypto');
-    return crypto.randomBytes(32).toString('hex');
+    const crypto = require("crypto");
+    return crypto.randomBytes(32).toString("hex");
   }
 
   /**
@@ -303,7 +314,10 @@ export class EmailService {
   /**
    * Security notification template
    */
-  private getSecurityNotificationTemplate(action: string, details: string): string {
+  private getSecurityNotificationTemplate(
+    action: string,
+    details: string,
+  ): string {
     return `
       <!DOCTYPE html>
       <html>

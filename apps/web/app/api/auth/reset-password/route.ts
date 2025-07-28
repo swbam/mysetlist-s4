@@ -1,11 +1,11 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
+import { type NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import {
   authRateLimitMiddleware,
   passwordResetRateLimiter,
-} from '~/lib/auth-rate-limit';
-import { validateCSRFToken } from '~/lib/csrf';
-import { createClient } from '~/lib/supabase/server';
+} from "~/lib/auth-rate-limit";
+import { validateCSRFToken } from "~/lib/csrf";
+import { createClient } from "~/lib/supabase/server";
 
 const resetPasswordSchema = z.object({
   email: z.string().email(),
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     // Apply rate limiting
     const rateLimitResponse = await authRateLimitMiddleware(
       request,
-      passwordResetRateLimiter
+      passwordResetRateLimiter,
     );
     if (rateLimitResponse) {
       return rateLimitResponse;
@@ -26,8 +26,8 @@ export async function POST(request: NextRequest) {
     const isValidCSRF = await validateCSRFToken(request);
     if (!isValidCSRF) {
       return NextResponse.json(
-        { error: 'Invalid CSRF token' },
-        { status: 403 }
+        { error: "Invalid CSRF token" },
+        { status: 403 },
       );
     }
 
@@ -38,10 +38,10 @@ export async function POST(request: NextRequest) {
     if (!validationResult.success) {
       return NextResponse.json(
         {
-          error: 'Invalid request data',
+          error: "Invalid request data",
           issues: validationResult.error.issues,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -55,12 +55,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       message:
-        'If an account exists with this email, you will receive a password reset link.',
+        "If an account exists with this email, you will receive a password reset link.",
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

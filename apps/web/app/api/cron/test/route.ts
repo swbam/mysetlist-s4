@@ -1,40 +1,43 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@repo/database';
-import { sql } from 'drizzle-orm';
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@repo/database";
+import { sql } from "drizzle-orm";
 
-const CRON_SECRET = process.env['CRON_SECRET'];
+const CRON_SECRET = process.env["CRON_SECRET"];
 
 export async function GET(request: NextRequest) {
   // Check if CRON_SECRET is configured
   if (!CRON_SECRET) {
-    return NextResponse.json({ 
-      error: 'Server configuration error', 
-      message: 'CRON_SECRET environment variable is not set' 
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Server configuration error",
+        message: "CRON_SECRET environment variable is not set",
+      },
+      { status: 500 },
+    );
   }
 
   // Check authorization
-  const authHeader = request.headers.get('authorization');
+  const authHeader = request.headers.get("authorization");
   if (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
     // Get list of all cron endpoints
     const cronEndpoints = [
-      { name: 'calculate-trending', path: '/api/cron/calculate-trending' },
-      { name: 'sync-popular-artists', path: '/api/cron/sync-popular-artists' },
-      { name: 'show-lifecycle', path: '/api/cron/show-lifecycle' },
-      { name: 'hourly-update', path: '/api/cron/hourly-update' },
-      { name: 'daily-sync', path: '/api/cron/daily-sync' },
-      { name: 'email-processing', path: '/api/cron/email-processing' },
-      { name: 'data-maintenance', path: '/api/cron/data-maintenance' },
-      { name: 'weekly-digest', path: '/api/cron/weekly-digest' },
+      { name: "calculate-trending", path: "/api/cron/calculate-trending" },
+      { name: "sync-popular-artists", path: "/api/cron/sync-popular-artists" },
+      { name: "show-lifecycle", path: "/api/cron/show-lifecycle" },
+      { name: "hourly-update", path: "/api/cron/hourly-update" },
+      { name: "daily-sync", path: "/api/cron/daily-sync" },
+      { name: "email-processing", path: "/api/cron/email-processing" },
+      { name: "data-maintenance", path: "/api/cron/data-maintenance" },
+      { name: "weekly-digest", path: "/api/cron/weekly-digest" },
     ];
 
     // Test database connection
     const dbTest = await db.execute(sql`SELECT NOW() as current_time`);
-    
+
     // Get cron job status from Supabase
     let cronJobStatus: any = null;
     try {
@@ -48,7 +51,7 @@ export async function GET(request: NextRequest) {
       `);
       cronJobStatus = cronJobs;
     } catch (error) {
-      console.error('Failed to get cron job status:', error);
+      console.error("Failed to get cron job status:", error);
     }
 
     // Get sync log entries
@@ -62,40 +65,41 @@ export async function GET(request: NextRequest) {
       `);
       syncLogs = logs;
     } catch (error) {
-      console.error('Failed to get sync logs:', error);
+      console.error("Failed to get sync logs:", error);
     }
 
     return NextResponse.json({
-      status: 'OK',
+      status: "OK",
       timestamp: new Date().toISOString(),
       database: {
         connected: !!dbTest,
         currentTime: (dbTest as any)?.[0]?.current_time,
       },
-      cronEndpoints: cronEndpoints.map(ep => ({
+      cronEndpoints: cronEndpoints.map((ep) => ({
         ...ep,
-        testUrl: `${process.env['NEXT_PUBLIC_APP_URL']}${ep.path}`,
+        testUrl: `${process.env["NEXT_PUBLIC_APP_URL"]}${ep.path}`,
       })),
       supabaseCronJobs: cronJobStatus,
       recentSyncLogs: syncLogs,
       configuration: {
-        appUrl: process.env['NEXT_PUBLIC_APP_URL'],
-        cronSecretConfigured: !!process.env['CRON_SECRET'],
-        supabaseConfigured: !!process.env['SUPABASE_URL'],
+        appUrl: process.env["NEXT_PUBLIC_APP_URL"],
+        cronSecretConfigured: !!process.env["CRON_SECRET"],
+        supabaseConfigured: !!process.env["SUPABASE_URL"],
       },
       testInstructions: {
-        message: 'To test a specific cron job, make a GET or POST request to the endpoint with Authorization header',
-        example: `curl -X GET ${process.env['NEXT_PUBLIC_APP_URL']}/api/cron/calculate-trending -H "Authorization: Bearer YOUR_CRON_SECRET"`,
+        message:
+          "To test a specific cron job, make a GET or POST request to the endpoint with Authorization header",
+        example: `curl -X GET ${process.env["NEXT_PUBLIC_APP_URL"]}/api/cron/calculate-trending -H "Authorization: Bearer YOUR_CRON_SECRET"`,
       },
     });
   } catch (error) {
-    console.error('Cron test error:', error);
+    console.error("Cron test error:", error);
     return NextResponse.json(
       {
-        error: 'Failed to test cron system',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Failed to test cron system",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
 import {
   Avatar,
   AvatarFallback,
-} from '@repo/design-system/components/ui/avatar';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/avatar";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,11 +12,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { Heart, Loader2, LogOut, Music2, Settings } from 'lucide-react';
-import Link from 'next/link';
-import React, { useState, useMemo } from 'react';
-import { useAuth } from '../../providers/auth-provider';
+} from "@repo/design-system/components/ui/dropdown-menu";
+import { Heart, Loader2, LogOut, Music2, Settings } from "lucide-react";
+import Link from "next/link";
+import React, { useState, useMemo } from "react";
+import { useAuth } from "../../providers/auth-provider";
 
 export const UserMenu = React.memo(function UserMenu() {
   const { user, signOut, loading } = useAuth();
@@ -55,20 +55,20 @@ export const UserMenu = React.memo(function UserMenu() {
 
   const initials = useMemo(() => {
     const email = user?.email;
-    if (!email) return 'U';
-    
-    const atIndex = email.indexOf('@');
-    if (atIndex === -1) return 'U';
-    
+    if (!email) return "U";
+
+    const atIndex = email.indexOf("@");
+    if (atIndex === -1) return "U";
+
     const username = email.substring(0, atIndex);
-    const parts = username.split('.');
+    const parts = username.split(".");
     const initials = parts
-      .map((n) => n[0] || '')
-      .join('')
+      .map((n) => n[0] || "")
+      .join("")
       .toUpperCase()
       .slice(0, 2);
-    
-    return initials || 'U';
+
+    return initials || "U";
   }, [user]);
 
   return (

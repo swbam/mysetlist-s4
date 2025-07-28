@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card } from '@repo/design-system/components/ui/card';
-import { AlertTriangle, ChevronLeft, Home, RefreshCw } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import React, { Component, type ReactNode } from 'react';
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card } from "@repo/design-system/components/ui/card";
+import { AlertTriangle, ChevronLeft, Home, RefreshCw } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React, { Component, type ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -62,8 +62,8 @@ interface ErrorFallbackProps {
 function ErrorFallback({
   error,
   onReset,
-  title = 'Something went wrong',
-  description = 'We encountered an error while loading this page. This might be a temporary issue.',
+  title = "Something went wrong",
+  description = "We encountered an error while loading this page. This might be a temporary issue.",
   showBackButton = true,
 }: ErrorFallbackProps) {
   const router = useRouter();
@@ -103,7 +103,7 @@ function ErrorFallback({
             )}
 
             <Button
-              onClick={() => router.push('/')}
+              onClick={() => router.push("/")}
               variant="outline"
               className="flex items-center gap-2"
             >
@@ -112,7 +112,7 @@ function ErrorFallback({
             </Button>
           </div>
 
-          {process.env["NODE_ENV"] === 'development' && error && (
+          {process.env["NODE_ENV"] === "development" && error && (
             <details className="mt-6 w-full max-w-md text-left">
               <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
                 Error details (development only)

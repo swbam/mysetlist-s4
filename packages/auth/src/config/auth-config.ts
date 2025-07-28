@@ -1,4 +1,4 @@
-import { env } from '@repo/env';
+import { env } from "@repo/env";
 
 export const authConfig = {
   // Supabase configuration
@@ -13,12 +13,12 @@ export const authConfig = {
     clientId: env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID,
     clientSecret: env.SPOTIFY_CLIENT_SECRET,
     scopes: [
-      'user-read-email',
-      'user-read-private',
-      'user-top-read',
-      'user-read-recently-played',
-      'user-library-read',
-      'playlist-read-private',
+      "user-read-email",
+      "user-read-private",
+      "user-top-read",
+      "user-read-recently-played",
+      "user-library-read",
+      "playlist-read-private",
     ],
     redirectUri: `${env.NEXT_PUBLIC_APP_URL}/auth/callback`,
   },
@@ -27,22 +27,22 @@ export const authConfig = {
   email: {
     resendApiKey: env.RESEND_API_KEY,
     fromAddresses: {
-      welcome: 'MySetlist <welcome@mysetlist.com>',
-      security: 'MySetlist <security@mysetlist.com>',
-      verify: 'MySetlist <verify@mysetlist.com>',
+      welcome: "MySetlist <welcome@mysetlist.com>",
+      security: "MySetlist <security@mysetlist.com>",
+      verify: "MySetlist <verify@mysetlist.com>",
     },
   },
 
   // JWT configuration
   jwt: {
     secret: env.JWT_SECRET,
-    expiresIn: '7d',
+    expiresIn: "7d",
   },
 
   // App configuration
   app: {
     url: env.NEXT_PUBLIC_APP_URL,
-    name: 'MySetlist',
+    name: "MySetlist",
   },
 
   // Password requirements
@@ -57,10 +57,10 @@ export const authConfig = {
 
   // Session configuration
   session: {
-    cookieName: 'mysetlist-auth',
+    cookieName: "mysetlist-auth",
     maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax' as const,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
   },
 
   // Rate limiting
@@ -81,12 +81,12 @@ export const authConfig = {
 
   // Redirect URLs
   redirects: {
-    afterSignIn: '/dashboard',
-    afterSignUp: '/auth/verify-email',
-    afterSignOut: '/',
-    afterPasswordReset: '/sign-in',
-    unauthorized: '/unauthorized',
-    emailVerification: '/auth/verify-email',
+    afterSignIn: "/dashboard",
+    afterSignUp: "/auth/verify-email",
+    afterSignOut: "/",
+    afterPasswordReset: "/sign-in",
+    unauthorized: "/unauthorized",
+    emailVerification: "/auth/verify-email",
   },
 
   // Feature flags

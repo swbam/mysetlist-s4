@@ -1,6 +1,6 @@
-import { createBrowserClient } from '@supabase/ssr';
-import { createClient } from '@supabase/supabase-js';
-import { keys } from '../../keys';
+import { createBrowserClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
+import { keys } from "../../keys";
 
 // Client-side Supabase instance
 export function createSupabaseClient() {
@@ -14,7 +14,7 @@ export function createSupabaseClient() {
         persistSession: true,
         detectSessionInUrl: true,
       },
-    }
+    },
   );
 }
 
@@ -29,23 +29,23 @@ export function createSupabaseAdmin() {
         autoRefreshToken: false,
         persistSession: false,
       },
-    }
+    },
   );
 }
 
 export const AUTH_CONFIG = {
   redirectUrls: {
-    signIn: '/dashboard',
-    signOut: '/',
-    callback: '/auth/callback',
+    signIn: "/dashboard",
+    signOut: "/",
+    callback: "/auth/callback",
   },
   oauth: {
     spotify: {
       scopes:
-        'user-read-email user-read-private user-library-read user-top-read user-read-recently-played',
+        "user-read-email user-read-private user-library-read user-top-read user-read-recently-played",
     },
     google: {
-      scopes: 'email profile',
+      scopes: "email profile",
     },
   },
   session: {

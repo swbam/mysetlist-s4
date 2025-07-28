@@ -2,32 +2,32 @@ import {
   Card,
   CardContent,
   CardHeader,
-} from '@repo/design-system/components/ui/card';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { cn } from '@repo/design-system/lib/utils';
-import { Activity } from 'lucide-react';
+} from "@repo/design-system/components/ui/card";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { cn } from "@repo/design-system/lib/utils";
+import { Activity } from "lucide-react";
 
 interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   className?: string;
 }
 
 export function LoadingSpinner({
-  size = 'md',
+  size = "md",
   className,
 }: LoadingSpinnerProps) {
   const sizeClasses = {
-    sm: 'h-4 w-4',
-    md: 'h-6 w-6',
-    lg: 'h-8 w-8',
+    sm: "h-4 w-4",
+    md: "h-6 w-6",
+    lg: "h-8 w-8",
   };
 
   return (
     <div
       className={cn(
-        'animate-spin rounded-full border-2 border-muted border-t-primary',
+        "animate-spin rounded-full border-2 border-muted border-t-primary",
         sizeClasses[size],
-        className
+        className,
       )}
       role="status"
       aria-label="Loading"
@@ -42,15 +42,15 @@ interface LoadingStateProps {
 }
 
 export function LoadingState({
-  message = 'Loading...',
+  message = "Loading...",
   icon: Icon = Activity,
   className,
 }: LoadingStateProps) {
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center py-8 text-center sm:py-12',
-        className
+        "flex flex-col items-center justify-center py-8 text-center sm:py-12",
+        className,
       )}
       role="status"
       aria-live="polite"

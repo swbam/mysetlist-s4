@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface RouteGuardProps {
   children: React.ReactNode;

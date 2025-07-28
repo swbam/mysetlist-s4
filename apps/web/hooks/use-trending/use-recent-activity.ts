@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 
 export interface RecentActivityItem {
   id: string;
-  type: 'vote' | 'attendance' | 'comment' | 'follow';
+  type: "vote" | "attendance" | "comment" | "follow";
   user: {
     name: string;
     avatar?: string;
   };
   target: {
-    type: 'show' | 'artist' | 'venue';
+    type: "show" | "artist" | "venue";
     name: string;
     slug: string;
   };
@@ -47,7 +47,7 @@ export function useRecentActivity(options: UseRecentActivityOptions = {}) {
 
       const response = await fetch(`/api/activity-feed?${params}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch recent activity');
+        throw new Error("Failed to fetch recent activity");
       }
 
       const data = await response.json();
@@ -58,7 +58,7 @@ export function useRecentActivity(options: UseRecentActivityOptions = {}) {
           id: activity.id,
           type: activity.type,
           user: {
-            name: activity.userName || 'Anonymous',
+            name: activity.userName || "Anonymous",
             avatar: activity.userAvatar,
           },
           target: {
@@ -76,7 +76,7 @@ export function useRecentActivity(options: UseRecentActivityOptions = {}) {
       setActivities(transformedActivities);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to load recent activity'
+        err instanceof Error ? err.message : "Failed to load recent activity",
       );
     } finally {
       setLoading(false);

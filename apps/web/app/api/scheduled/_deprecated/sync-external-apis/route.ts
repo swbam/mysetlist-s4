@@ -1,8 +1,8 @@
-import { db } from '@repo/database';
-import { artists, shows, venues } from '@repo/database';
-import { eq, gte, isNull, or } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
-import { SpotifyClient, TicketmasterClient } from '@repo/external-apis';
+import { db } from "@repo/database";
+import { artists, shows, venues } from "@repo/database";
+import { eq, gte, isNull, or } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
+import { SpotifyClient, TicketmasterClient } from "@repo/external-apis";
 
 // Rate limiting and caching utilities
 class RateLimiter {
@@ -14,7 +14,7 @@ class RateLimiter {
   static async checkLimit(
     key: string,
     maxRequests: number,
-    windowMs: number
+    windowMs: number,
   ): Promise<boolean> {
     const now = Date.now();
     const current = RateLimiter.requestCounts.get(key);
@@ -40,9 +40,6 @@ class RateLimiter {
   }
 }
 
-
-
-
 // Sync Services
 class ArtistSyncService {
   private spotifyClient: SpotifyClient;
@@ -66,8 +63,8 @@ class ArtistSyncService {
           or(
             isNull(artists.spotifyId),
             isNull(artists.lastSyncedAt),
-            gte(artists.lastSyncedAt, threeDaysAgo)
-          )
+            gte(artists.lastSyncedAt, threeDaysAgo),
+          ),
         )
         .limit(50); // Process in batches
 
@@ -76,14 +73,14 @@ class ArtistSyncService {
           // Search for artist on Spotify
           const searchResult = await this.spotifyClient.searchArtists(
             artist.name,
-            5
+            5,
           );
 
           if (searchResult.artists.items.length > 0) {
             // Find best match (exact name match preferred)
             const spotifyArtist =
               searchResult.artists.items.find(
-                (a: any) => a.name.toLowerCase() === artist.name.toLowerCase()
+                (a: any) => a.name.toLowerCase() === artist.name.toLowerCase(),
               ) || searchResult.artists.items[0];
 
             if (spotifyArtist) {
@@ -98,11 +95,11 @@ class ArtistSyncService {
                   genres: JSON.stringify(spotifyArtist.genres),
                   popularity: spotifyArtist.popularity,
                   followers: spotifyArtist.followers.total,
-                externalUrls: JSON.stringify(spotifyArtist.external_urls),
-                lastSyncedAt: new Date(),
-                updatedAt: new Date(),
-              })
-              .where(eq(artists.id, artist.id));
+                  externalUrls: JSON.stringify(spotifyArtist.external_urls),
+                  lastSyncedAt: new Date(),
+                  updatedAt: new Date(),
+                })
+                .where(eq(artists.id, artist.id));
 
               results.synced++;
               results.details.push({
@@ -147,16 +144,16 @@ class ShowSyncService {
 
       // Get events from major US cities
       const cities = [
-        { city: 'New York', stateCode: 'NY' },
-        { city: 'Los Angeles', stateCode: 'CA' },
-        { city: 'Chicago', stateCode: 'IL' },
-        { city: 'Houston', stateCode: 'TX' },
-        { city: 'Phoenix', stateCode: 'AZ' },
-        { city: 'Philadelphia', stateCode: 'PA' },
-        { city: 'San Antonio', stateCode: 'TX' },
-        { city: 'San Diego', stateCode: 'CA' },
-        { city: 'Dallas', stateCode: 'TX' },
-        { city: 'San Jose', stateCode: 'CA' },
+        { city: "New York", stateCode: "NY" },
+        { city: "Los Angeles", stateCode: "CA" },
+        { city: "Chicago", stateCode: "IL" },
+        { city: "Houston", stateCode: "TX" },
+        { city: "Phoenix", stateCode: "AZ" },
+        { city: "Philadelphia", stateCode: "PA" },
+        { city: "San Antonio", stateCode: "TX" },
+        { city: "San Diego", stateCode: "CA" },
+        { city: "Dallas", stateCode: "TX" },
+        { city: "San Jose", stateCode: "CA" },
       ];
 
       for (const location of cities.slice(0, 3)) {
@@ -168,7 +165,7 @@ class ShowSyncService {
             startDateTime: now.toISOString(),
             endDateTime: futureDate.toISOString(),
             size: 50,
-            countryCode: 'US',
+            countryCode: "US",
           });
 
           if (events._embedded?.events) {
@@ -230,11 +227,11 @@ class ShowSyncService {
         slug: this.generateSlug(tmEvent.name),
         date: tmEvent.dates.start.localDate,
         startTime: tmEvent.dates.start.localTime || null,
-        status: 'upcoming' as const,
+        status: "upcoming" as const,
         ticketUrl: tmEvent.url,
         minPrice: tmEvent.priceRanges?.[0]?.min || null,
         maxPrice: tmEvent.priceRanges?.[0]?.max || null,
-        currency: tmEvent.priceRanges?.[0]?.currency || 'USD',
+        currency: tmEvent.priceRanges?.[0]?.currency || "USD",
       };
 
       const [_show] = await db.insert(shows).values(showData).returning();
@@ -321,8 +318,8 @@ class ShowSyncService {
   private generateSlug(name: string): string {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
   }
 }
 
@@ -330,15 +327,15 @@ class ShowSyncService {
 export async function GET(request: NextRequest) {
   try {
     // Verify cron secret
-    const authHeader = request.headers.get('authorization');
-    const expectedAuth = `Bearer ${process.env['CRON_SECRET']}`;
+    const authHeader = request.headers.get("authorization");
+    const expectedAuth = `Bearer ${process.env["CRON_SECRET"]}`;
 
     if (authHeader !== expectedAuth) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const action = searchParams.get('action') || 'all';
+    const action = searchParams.get("action") || "all";
 
     const results: any = {
       action,
@@ -347,13 +344,13 @@ export async function GET(request: NextRequest) {
     };
 
     switch (action) {
-      case 'artists': {
+      case "artists": {
         const artistSync = new ArtistSyncService();
         results.results.artists = await artistSync.syncPopularArtists();
         break;
       }
 
-      case 'shows': {
+      case "shows": {
         const showSync = new ShowSyncService();
         results.results.shows = await showSync.syncUpcomingShows();
         break;
@@ -368,12 +365,12 @@ export async function GET(request: NextRequest) {
         ]);
 
         results.results.artists =
-          artistResults.status === 'fulfilled'
+          artistResults.status === "fulfilled"
             ? artistResults.value
             : { synced: 0, errors: 1, error: artistResults.reason?.message };
 
         results.results.shows =
-          showResults.status === 'fulfilled'
+          showResults.status === "fulfilled"
             ? showResults.value
             : { synced: 0, errors: 1, error: showResults.reason?.message };
         break;
@@ -388,10 +385,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

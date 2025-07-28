@@ -5,13 +5,13 @@
  * Runs all testing suites and generates unified report
  */
 
-import { execSync } from 'child_process';
-import { writeFileSync } from 'fs';
-import { join } from 'path';
+import { execSync } from "child_process";
+import { writeFileSync } from "fs";
+import { join } from "path";
 
 interface TestResult {
   name: string;
-  status: 'pass' | 'fail' | 'skip';
+  status: "pass" | "fail" | "skip";
   duration: number;
   output: string;
   error?: string;
@@ -40,8 +40,8 @@ class ComprehensiveQARunner {
   private startTime: number = Date.now();
 
   async runAllTests(): Promise<void> {
-    console.log('🚀 Starting Comprehensive Quality Assurance Suite...\n');
-    console.log('=' .repeat(60));
+    console.log("🚀 Starting Comprehensive Quality Assurance Suite...\n");
+    console.log("=".repeat(60));
 
     // Run all test suites
     await this.runUnitTests();
@@ -57,290 +57,296 @@ class ComprehensiveQARunner {
   }
 
   private async runUnitTests(): Promise<void> {
-    console.log('\n🧪 Running Unit Tests...');
-    console.log('-'.repeat(30));
+    console.log("\n🧪 Running Unit Tests...");
+    console.log("-".repeat(30));
 
     const startTime = Date.now();
     try {
-      const output = execSync('npm run test', { 
-        encoding: 'utf8',
-        stdio: 'pipe'
+      const output = execSync("npm run test", {
+        encoding: "utf8",
+        stdio: "pipe",
       });
-      
+
       this.results.push({
-        name: 'Unit Tests',
-        status: 'pass',
+        name: "Unit Tests",
+        status: "pass",
         duration: Date.now() - startTime,
         output,
       });
-      
-      console.log('✅ Unit tests passed');
+
+      console.log("✅ Unit tests passed");
     } catch (error) {
       this.results.push({
-        name: 'Unit Tests',
-        status: 'fail',
+        name: "Unit Tests",
+        status: "fail",
         duration: Date.now() - startTime,
-        output: '',
+        output: "",
         error: String(error),
       });
-      
-      console.log('❌ Unit tests failed');
+
+      console.log("❌ Unit tests failed");
     }
   }
 
   private async runIntegrationTests(): Promise<void> {
-    console.log('\n🔗 Running Integration Tests...');
-    console.log('-'.repeat(30));
+    console.log("\n🔗 Running Integration Tests...");
+    console.log("-".repeat(30));
 
     const startTime = Date.now();
     try {
-      const output = execSync('npm run test:integration', { 
-        encoding: 'utf8',
-        stdio: 'pipe'
+      const output = execSync("npm run test:integration", {
+        encoding: "utf8",
+        stdio: "pipe",
       });
-      
+
       this.results.push({
-        name: 'Integration Tests',
-        status: 'pass',
+        name: "Integration Tests",
+        status: "pass",
         duration: Date.now() - startTime,
         output,
       });
-      
-      console.log('✅ Integration tests passed');
+
+      console.log("✅ Integration tests passed");
     } catch (error) {
       this.results.push({
-        name: 'Integration Tests',
-        status: 'fail',
+        name: "Integration Tests",
+        status: "fail",
         duration: Date.now() - startTime,
-        output: '',
+        output: "",
         error: String(error),
       });
-      
-      console.log('❌ Integration tests failed');
+
+      console.log("❌ Integration tests failed");
     }
   }
 
   private async runAccessibilityTests(): Promise<void> {
-    console.log('\n♿ Running Accessibility Tests...');
-    console.log('-'.repeat(30));
+    console.log("\n♿ Running Accessibility Tests...");
+    console.log("-".repeat(30));
 
     const startTime = Date.now();
     try {
-      const output = execSync('npx playwright test tests/accessibility/comprehensive-a11y.spec.ts', { 
-        encoding: 'utf8',
-        stdio: 'pipe'
-      });
-      
+      const output = execSync(
+        "npx playwright test tests/accessibility/comprehensive-a11y.spec.ts",
+        {
+          encoding: "utf8",
+          stdio: "pipe",
+        },
+      );
+
       this.results.push({
-        name: 'Accessibility Tests',
-        status: 'pass',
+        name: "Accessibility Tests",
+        status: "pass",
         duration: Date.now() - startTime,
         output,
       });
-      
-      console.log('✅ Accessibility tests passed');
+
+      console.log("✅ Accessibility tests passed");
     } catch (error) {
       this.results.push({
-        name: 'Accessibility Tests',
-        status: 'fail',
+        name: "Accessibility Tests",
+        status: "fail",
         duration: Date.now() - startTime,
-        output: '',
+        output: "",
         error: String(error),
       });
-      
-      console.log('❌ Accessibility tests failed');
+
+      console.log("❌ Accessibility tests failed");
     }
   }
 
   private async runPerformanceTests(): Promise<void> {
-    console.log('\n⚡ Running Performance Tests...');
-    console.log('-'.repeat(30));
+    console.log("\n⚡ Running Performance Tests...");
+    console.log("-".repeat(30));
 
     const startTime = Date.now();
     try {
       // Check if server is running
-      const serverCheck = execSync('curl -f http://localhost:3001 || echo "Server not running"', { 
-        encoding: 'utf8',
-        stdio: 'pipe'
-      });
+      const serverCheck = execSync(
+        'curl -f http://localhost:3001 || echo "Server not running"',
+        {
+          encoding: "utf8",
+          stdio: "pipe",
+        },
+      );
 
-      if (serverCheck.includes('Server not running')) {
+      if (serverCheck.includes("Server not running")) {
         this.results.push({
-          name: 'Performance Tests',
-          status: 'skip',
+          name: "Performance Tests",
+          status: "skip",
           duration: Date.now() - startTime,
-          output: 'Server not running - skipping performance tests',
+          output: "Server not running - skipping performance tests",
         });
-        
-        console.log('⏭️  Performance tests skipped (server not running)');
+
+        console.log("⏭️  Performance tests skipped (server not running)");
         return;
       }
 
-      const output = execSync('k6 run k6/load-test.js', { 
-        encoding: 'utf8',
-        stdio: 'pipe'
+      const output = execSync("k6 run k6/load-test.js", {
+        encoding: "utf8",
+        stdio: "pipe",
       });
-      
+
       this.results.push({
-        name: 'Performance Tests',
-        status: 'pass',
+        name: "Performance Tests",
+        status: "pass",
         duration: Date.now() - startTime,
         output,
       });
-      
-      console.log('✅ Performance tests passed');
+
+      console.log("✅ Performance tests passed");
     } catch (error) {
       this.results.push({
-        name: 'Performance Tests',
-        status: 'fail',
+        name: "Performance Tests",
+        status: "fail",
         duration: Date.now() - startTime,
-        output: '',
+        output: "",
         error: String(error),
       });
-      
-      console.log('❌ Performance tests failed');
+
+      console.log("❌ Performance tests failed");
     }
   }
 
   private async runSecurityTests(): Promise<void> {
-    console.log('\n🔒 Running Security Tests...');
-    console.log('-'.repeat(30));
+    console.log("\n🔒 Running Security Tests...");
+    console.log("-".repeat(30));
 
     const startTime = Date.now();
     try {
-      const output = execSync('tsx scripts/security-audit.ts', { 
-        encoding: 'utf8',
-        stdio: 'pipe'
+      const output = execSync("tsx scripts/security-audit.ts", {
+        encoding: "utf8",
+        stdio: "pipe",
       });
-      
+
       this.results.push({
-        name: 'Security Tests',
-        status: 'pass',
+        name: "Security Tests",
+        status: "pass",
         duration: Date.now() - startTime,
         output,
       });
-      
-      console.log('✅ Security audit passed');
+
+      console.log("✅ Security audit passed");
     } catch (error) {
       this.results.push({
-        name: 'Security Tests',
-        status: 'fail',
+        name: "Security Tests",
+        status: "fail",
         duration: Date.now() - startTime,
-        output: '',
+        output: "",
         error: String(error),
       });
-      
-      console.log('❌ Security audit failed');
+
+      console.log("❌ Security audit failed");
     }
   }
 
   private async runE2ETests(): Promise<void> {
-    console.log('\n🎭 Running E2E Tests...');
-    console.log('-'.repeat(30));
+    console.log("\n🎭 Running E2E Tests...");
+    console.log("-".repeat(30));
 
     const startTime = Date.now();
     try {
-      const output = execSync('npm run cypress:headless', { 
-        encoding: 'utf8',
-        stdio: 'pipe'
+      const output = execSync("npm run cypress:headless", {
+        encoding: "utf8",
+        stdio: "pipe",
       });
-      
+
       this.results.push({
-        name: 'E2E Tests',
-        status: 'pass',
+        name: "E2E Tests",
+        status: "pass",
         duration: Date.now() - startTime,
         output,
       });
-      
-      console.log('✅ E2E tests passed');
+
+      console.log("✅ E2E tests passed");
     } catch (error) {
       this.results.push({
-        name: 'E2E Tests',
-        status: 'fail',
+        name: "E2E Tests",
+        status: "fail",
         duration: Date.now() - startTime,
-        output: '',
+        output: "",
         error: String(error),
       });
-      
-      console.log('❌ E2E tests failed');
+
+      console.log("❌ E2E tests failed");
     }
   }
 
   private async runLighthouseTests(): Promise<void> {
-    console.log('\n🏰 Running Lighthouse Tests...');
-    console.log('-'.repeat(30));
+    console.log("\n🏰 Running Lighthouse Tests...");
+    console.log("-".repeat(30));
 
     const startTime = Date.now();
     try {
-      const output = execSync('npm run lighthouse:ci', { 
-        encoding: 'utf8',
-        stdio: 'pipe'
+      const output = execSync("npm run lighthouse:ci", {
+        encoding: "utf8",
+        stdio: "pipe",
       });
-      
+
       this.results.push({
-        name: 'Lighthouse Tests',
-        status: 'pass',
+        name: "Lighthouse Tests",
+        status: "pass",
         duration: Date.now() - startTime,
         output,
       });
-      
-      console.log('✅ Lighthouse tests passed');
+
+      console.log("✅ Lighthouse tests passed");
     } catch (error) {
       this.results.push({
-        name: 'Lighthouse Tests',
-        status: 'fail',
+        name: "Lighthouse Tests",
+        status: "fail",
         duration: Date.now() - startTime,
-        output: '',
+        output: "",
         error: String(error),
       });
-      
-      console.log('❌ Lighthouse tests failed');
+
+      console.log("❌ Lighthouse tests failed");
     }
   }
 
   private async runProductionReadinessCheck(): Promise<void> {
-    console.log('\n🚀 Running Production Readiness Check...');
-    console.log('-'.repeat(30));
+    console.log("\n🚀 Running Production Readiness Check...");
+    console.log("-".repeat(30));
 
     const startTime = Date.now();
     try {
-      const output = execSync('tsx scripts/production-readiness-check.ts', { 
-        encoding: 'utf8',
-        stdio: 'pipe'
+      const output = execSync("tsx scripts/production-readiness-check.ts", {
+        encoding: "utf8",
+        stdio: "pipe",
       });
-      
+
       this.results.push({
-        name: 'Production Readiness',
-        status: 'pass',
+        name: "Production Readiness",
+        status: "pass",
         duration: Date.now() - startTime,
         output,
       });
-      
-      console.log('✅ Production readiness check passed');
+
+      console.log("✅ Production readiness check passed");
     } catch (error) {
       this.results.push({
-        name: 'Production Readiness',
-        status: 'fail',
+        name: "Production Readiness",
+        status: "fail",
         duration: Date.now() - startTime,
-        output: '',
+        output: "",
         error: String(error),
       });
-      
-      console.log('❌ Production readiness check failed');
+
+      console.log("❌ Production readiness check failed");
     }
   }
 
   private generateUnifiedReport(): void {
     const totalDuration = Date.now() - this.startTime;
-    const passed = this.results.filter(r => r.status === 'pass').length;
-    const failed = this.results.filter(r => r.status === 'fail').length;
-    const skipped = this.results.filter(r => r.status === 'skip').length;
+    const passed = this.results.filter((r) => r.status === "pass").length;
+    const failed = this.results.filter((r) => r.status === "fail").length;
+    const skipped = this.results.filter((r) => r.status === "skip").length;
 
     const report: QAReport = {
       timestamp: new Date().toISOString(),
       environment: {
         node: process.version,
-        npm: this.getPackageVersion('npm'),
+        npm: this.getPackageVersion("npm"),
         os: process.platform,
       },
       summary: {
@@ -355,9 +361,9 @@ class ComprehensiveQARunner {
     };
 
     // Console summary
-    console.log('\n' + '='.repeat(60));
-    console.log('📊 COMPREHENSIVE QA REPORT SUMMARY');
-    console.log('='.repeat(60));
+    console.log("\n" + "=".repeat(60));
+    console.log("📊 COMPREHENSIVE QA REPORT SUMMARY");
+    console.log("=".repeat(60));
     console.log(`\n⏱️  Total Duration: ${this.formatDuration(totalDuration)}`);
     console.log(`📋 Total Test Suites: ${report.summary.total}`);
     console.log(`✅ Passed: ${passed}`);
@@ -368,43 +374,48 @@ class ComprehensiveQARunner {
     console.log(`\n🎯 Success Rate: ${successRate.toFixed(1)}%`);
 
     // Detailed results
-    console.log('\n📋 DETAILED RESULTS:');
-    console.log('-'.repeat(40));
-    
+    console.log("\n📋 DETAILED RESULTS:");
+    console.log("-".repeat(40));
+
     this.results.forEach((result, index) => {
-      const icon = result.status === 'pass' ? '✅' : result.status === 'fail' ? '❌' : '⏭️';
+      const icon =
+        result.status === "pass"
+          ? "✅"
+          : result.status === "fail"
+            ? "❌"
+            : "⏭️";
       const duration = this.formatDuration(result.duration);
-      
+
       console.log(`${index + 1}. ${icon} ${result.name} (${duration})`);
-      
+
       if (result.error) {
-        console.log(`   Error: ${result.error.split('\n')[0]}`);
+        console.log(`   Error: ${result.error.split("\n")[0]}`);
       }
     });
 
     // Recommendations
     if (report.recommendations.length > 0) {
-      console.log('\n💡 RECOMMENDATIONS:');
-      console.log('-'.repeat(40));
-      
+      console.log("\n💡 RECOMMENDATIONS:");
+      console.log("-".repeat(40));
+
       report.recommendations.forEach((rec, index) => {
         console.log(`${index + 1}. ${rec}`);
       });
     }
 
     // Overall status
-    console.log('\n' + '='.repeat(60));
+    console.log("\n" + "=".repeat(60));
     if (failed === 0) {
-      console.log('🎉 ALL TESTS PASSED - READY FOR PRODUCTION!');
+      console.log("🎉 ALL TESTS PASSED - READY FOR PRODUCTION!");
     } else if (failed <= 2) {
-      console.log('⚠️  SOME TESTS FAILED - REVIEW BEFORE PRODUCTION');
+      console.log("⚠️  SOME TESTS FAILED - REVIEW BEFORE PRODUCTION");
     } else {
-      console.log('🚨 MULTIPLE TEST FAILURES - NOT READY FOR PRODUCTION');
+      console.log("🚨 MULTIPLE TEST FAILURES - NOT READY FOR PRODUCTION");
     }
-    console.log('='.repeat(60));
+    console.log("=".repeat(60));
 
     // Save report
-    const reportPath = join(process.cwd(), 'comprehensive-qa-report.json');
+    const reportPath = join(process.cwd(), "comprehensive-qa-report.json");
     writeFileSync(reportPath, JSON.stringify(report, null, 2));
     console.log(`\n📄 Detailed report saved to: ${reportPath}`);
 
@@ -414,38 +425,38 @@ class ComprehensiveQARunner {
 
   private generateRecommendations(): string[] {
     const recommendations: any[] = [];
-    
-    const failedTests = this.results.filter(r => r.status === 'fail');
-    
-    if (failedTests.some(t => t.name === 'Unit Tests')) {
-      recommendations.push('Fix failing unit tests before deployment');
+
+    const failedTests = this.results.filter((r) => r.status === "fail");
+
+    if (failedTests.some((t) => t.name === "Unit Tests")) {
+      recommendations.push("Fix failing unit tests before deployment");
     }
-    
-    if (failedTests.some(t => t.name === 'Security Tests')) {
-      recommendations.push('Address security vulnerabilities immediately');
+
+    if (failedTests.some((t) => t.name === "Security Tests")) {
+      recommendations.push("Address security vulnerabilities immediately");
     }
-    
-    if (failedTests.some(t => t.name === 'Accessibility Tests')) {
-      recommendations.push('Fix accessibility issues to ensure compliance');
+
+    if (failedTests.some((t) => t.name === "Accessibility Tests")) {
+      recommendations.push("Fix accessibility issues to ensure compliance");
     }
-    
-    if (failedTests.some(t => t.name === 'Performance Tests')) {
-      recommendations.push('Optimize performance to meet targets');
+
+    if (failedTests.some((t) => t.name === "Performance Tests")) {
+      recommendations.push("Optimize performance to meet targets");
     }
-    
-    if (failedTests.some(t => t.name === 'E2E Tests')) {
-      recommendations.push('Fix end-to-end test failures');
+
+    if (failedTests.some((t) => t.name === "E2E Tests")) {
+      recommendations.push("Fix end-to-end test failures");
     }
-    
-    if (failedTests.some(t => t.name === 'Production Readiness')) {
-      recommendations.push('Complete production readiness checklist');
+
+    if (failedTests.some((t) => t.name === "Production Readiness")) {
+      recommendations.push("Complete production readiness checklist");
     }
-    
-    const skippedTests = this.results.filter(r => r.status === 'skip');
+
+    const skippedTests = this.results.filter((r) => r.status === "skip");
     if (skippedTests.length > 0) {
-      recommendations.push('Run skipped tests in appropriate environment');
+      recommendations.push("Run skipped tests in appropriate environment");
     }
-    
+
     return recommendations;
   }
 
@@ -517,26 +528,34 @@ class ComprehensiveQARunner {
 
         <div class="results">
             <h2>📋 Test Results</h2>
-            ${report.results.map(result => `
+            ${report.results
+              .map(
+                (result) => `
                 <div class="result ${result.status}">
-                    <div class="result-icon">${result.status === 'pass' ? '✅' : result.status === 'fail' ? '❌' : '⏭️'}</div>
+                    <div class="result-icon">${result.status === "pass" ? "✅" : result.status === "fail" ? "❌" : "⏭️"}</div>
                     <div class="result-info">
                         <div class="result-name">${result.name}</div>
                         <div class="result-duration">${this.formatDuration(result.duration)}</div>
-                        ${result.error ? `<div style="color: #dc3545; margin-top: 5px;">${result.error.split('\n')[0]}</div>` : ''}
+                        ${result.error ? `<div style="color: #dc3545; margin-top: 5px;">${result.error.split("\n")[0]}</div>` : ""}
                     </div>
                 </div>
-            `).join('')}
+            `,
+              )
+              .join("")}
         </div>
 
-        ${report.recommendations.length > 0 ? `
+        ${
+          report.recommendations.length > 0
+            ? `
             <div class="recommendations">
                 <h3>💡 Recommendations</h3>
                 <ul>
-                    ${report.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                    ${report.recommendations.map((rec) => `<li>${rec}</li>`).join("")}
                 </ul>
             </div>
-        ` : ''}
+        `
+            : ""
+        }
 
         <div class="footer">
             <p>Environment: Node ${report.environment.node} | NPM ${report.environment.npm} | OS ${report.environment.os}</p>
@@ -546,7 +565,7 @@ class ComprehensiveQARunner {
 </html>
     `;
 
-    const htmlPath = join(process.cwd(), 'comprehensive-qa-report.html');
+    const htmlPath = join(process.cwd(), "comprehensive-qa-report.html");
     writeFileSync(htmlPath, html);
     console.log(`📄 HTML report saved to: ${htmlPath}`);
   }
@@ -559,10 +578,10 @@ class ComprehensiveQARunner {
 
   private getPackageVersion(packageName: string): string {
     try {
-      const output = execSync(`${packageName} --version`, { encoding: 'utf8' });
+      const output = execSync(`${packageName} --version`, { encoding: "utf8" });
       return output.trim();
     } catch (error) {
-      return 'unknown';
+      return "unknown";
     }
   }
 }

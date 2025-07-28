@@ -8,13 +8,13 @@ MySetlist uses a comprehensive CI/CD pipeline built with GitHub Actions, providi
 
 ### Workflows Overview
 
-| Workflow | Trigger | Purpose |
-|----------|---------|---------|
-| `ci-cd-production.yml` | Push to main/production, PRs | Main CI/CD pipeline with full validation and deployment |
-| `pr-validation.yml` | Pull requests | PR validation, preview deployments, and automated feedback |
-| `hotfix-deployment.yml` | Hotfix branches, manual trigger | Emergency deployment with minimal validation |
-| `scheduled-maintenance.yml` | Scheduled cron jobs | Automated health checks, dependency audits, performance monitoring |
-| `setup-branch-protection.yml` | Manual trigger | Repository security configuration and branch protection setup |
+| Workflow                      | Trigger                         | Purpose                                                            |
+| ----------------------------- | ------------------------------- | ------------------------------------------------------------------ |
+| `ci-cd-production.yml`        | Push to main/production, PRs    | Main CI/CD pipeline with full validation and deployment            |
+| `pr-validation.yml`           | Pull requests                   | PR validation, preview deployments, and automated feedback         |
+| `hotfix-deployment.yml`       | Hotfix branches, manual trigger | Emergency deployment with minimal validation                       |
+| `scheduled-maintenance.yml`   | Scheduled cron jobs             | Automated health checks, dependency audits, performance monitoring |
+| `setup-branch-protection.yml` | Manual trigger                  | Repository security configuration and branch protection setup      |
 
 ### Pipeline Stages
 
@@ -92,6 +92,7 @@ Run the branch protection setup workflow:
 5. Click `Run workflow`
 
 This configures:
+
 - **Main branch**: 1 approval required, code owner reviews
 - **Production branch**: 2 approvals required, extended validation
 - **Repository settings**: Optimized merge strategies
@@ -125,6 +126,7 @@ Create a staging environment:
 ### Main CI/CD Pipeline (`ci-cd-production.yml`)
 
 **Triggers:**
+
 - Push to `main` or `production` branches
 - Pull requests targeting `main` or `production`
 - Manual workflow dispatch
@@ -141,6 +143,7 @@ Create a staging environment:
 8. **Post-Deployment Monitoring** - Health checks, performance validation, alerting
 
 **Key Features:**
+
 - **Parallel execution** for independent tasks
 - **Smart caching** for dependencies and build artifacts
 - **Performance budgets** enforcement
@@ -150,10 +153,12 @@ Create a staging environment:
 ### PR Validation Pipeline (`pr-validation.yml`)
 
 **Triggers:**
+
 - Pull request opened, synchronized, or reopened
 - Pull request reviews submitted
 
 **Features:**
+
 - **Change analysis** with complexity scoring
 - **Preview deployments** for every PR
 - **Security scanning** for sensitive changes
@@ -162,30 +167,36 @@ Create a staging environment:
 - **Environment cleanup** on PR closure
 
 **PR Comment Example:**
+
 ```markdown
 ## 🔍 PR Validation Results
 
 ### 📊 Change Analysis
+
 - **Complexity Score**: 4/10
 - **Performance Impact**: medium
 - **Breaking Changes**: ✅ No
 - **Security Review**: 🔒 Required
 
 ### ✅ Test Results
+
 - **Validation Tests**: ✅ Passed
 - **Security Analysis**: 🔒 Passed
 
 ### 🚀 Preview Deployment
+
 🌐 **Live Preview**: https://preview-url.vercel.app
 ```
 
 ### Hotfix Pipeline (`hotfix-deployment.yml`)
 
 **Triggers:**
+
 - Push to `hotfix/**` branches
 - Manual workflow dispatch for emergencies
 
 **Features:**
+
 - **Minimal validation** for emergency deployments
 - **Critical tests only** option
 - **Immediate rollback** capability
@@ -193,6 +204,7 @@ Create a staging environment:
 - **Emergency notifications** to team
 
 **Emergency Deployment Process:**
+
 1. Create hotfix branch: `hotfix/critical-security-fix`
 2. Pipeline automatically triggers
 3. Minimal build and critical tests
@@ -203,11 +215,13 @@ Create a staging environment:
 ### Scheduled Maintenance (`scheduled-maintenance.yml`)
 
 **Schedule:**
+
 - **Daily**: Health checks at 6 AM UTC
 - **Weekly**: Dependency audit on Mondays at 9 AM UTC
 - **Monthly**: Performance audit on 1st of month at 10 AM UTC
 
 **Maintenance Tasks:**
+
 - **Health monitoring** of all critical endpoints
 - **Dependency vulnerability scanning**
 - **Performance baseline tracking**
@@ -254,6 +268,7 @@ Create a staging environment:
 ### Slack Notifications
 
 The pipeline sends notifications for:
+
 - **Deployment success/failure**
 - **Security vulnerabilities detected**
 - **Performance degradation**
@@ -306,6 +321,7 @@ GET /artists
 #### 1. Build Failures
 
 **TypeScript Errors:**
+
 ```bash
 # Local fix
 pnpm typecheck
@@ -313,6 +329,7 @@ pnpm typecheck
 ```
 
 **Dependency Issues:**
+
 ```bash
 # Clear cache and reinstall
 rm -rf node_modules pnpm-lock.yaml
@@ -322,6 +339,7 @@ pnpm install
 #### 2. Test Failures
 
 **Unit Test Failures:**
+
 ```bash
 # Run tests locally
 pnpm test
@@ -329,6 +347,7 @@ pnpm test
 ```
 
 **E2E Test Failures:**
+
 ```bash
 # Run E2E tests locally
 pnpm exec playwright test
@@ -338,11 +357,13 @@ pnpm exec playwright test
 #### 3. Deployment Issues
 
 **Vercel Deployment Fails:**
+
 - Check Vercel dashboard for detailed logs
 - Verify environment variables are set
 - Check build output for errors
 
 **Health Check Failures:**
+
 - Verify database connectivity
 - Check API endpoint responses
 - Review application logs
@@ -350,6 +371,7 @@ pnpm exec playwright test
 #### 4. Security Scan Failures
 
 **Dependency Vulnerabilities:**
+
 ```bash
 # Check vulnerabilities
 pnpm audit
@@ -358,6 +380,7 @@ pnpm update
 ```
 
 **Code Security Issues:**
+
 - Review Semgrep findings in Security tab
 - Fix identified security patterns
 - Request security team review if needed
@@ -393,6 +416,7 @@ Use manual workflow dispatch with `force_deploy: true` for critical fixes that d
 ### Development Workflow
 
 1. **Feature Development:**
+
    ```bash
    git checkout -b feature/new-feature
    # Develop feature
@@ -401,6 +425,7 @@ Use manual workflow dispatch with `force_deploy: true` for critical fixes that d
    ```
 
 2. **Hotfix Workflow:**
+
    ```bash
    git checkout -b hotfix/critical-fix
    # Fix critical issue
@@ -473,7 +498,7 @@ Use manual workflow dispatch with `force_deploy: true` for critical fixes that d
 ### Support Contacts
 
 - **CI/CD Issues**: DevOps team
-- **Security Concerns**: Security team  
+- **Security Concerns**: Security team
 - **Performance Problems**: Performance team
 - **Infrastructure**: Platform team
 

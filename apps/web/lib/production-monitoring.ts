@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { MonitoringService } from './monitoring';
+import { MonitoringService } from "./monitoring";
 
 /**
  * Production-ready monitoring service with comprehensive metrics
@@ -24,9 +24,9 @@ export class ProductionMonitoringService extends MonitoringService {
   };
 
   private static alertChannels = {
-    slack: process.env['SLACK_WEBHOOK_URL'],
-    pagerduty: process.env['PAGERDUTY_INTEGRATION_KEY'],
-    email: process.env['ALERT_EMAIL'],
+    slack: process.env["SLACK_WEBHOOK_URL"],
+    pagerduty: process.env["PAGERDUTY_INTEGRATION_KEY"],
+    email: process.env["ALERT_EMAIL"],
   };
 
   /**
@@ -45,23 +45,23 @@ export class ProductionMonitoringService extends MonitoringService {
    */
   private static setupErrorTracking(): void {
     // Global error handler
-    if (typeof window !== 'undefined') {
-      window.addEventListener('error', (event) => {
+    if (typeof window !== "undefined") {
+      window.addEventListener("error", (event) => {
         ProductionMonitoringService.handleError(event.error, {
-          type: 'javascript_error',
+          type: "javascript_error",
           filename: event.filename,
           lineno: event.lineno,
           colno: event.colno,
         });
       });
 
-      window.addEventListener('unhandledrejection', (event) => {
+      window.addEventListener("unhandledrejection", (event) => {
         ProductionMonitoringService.handleError(
-          new Error(event.reason?.toString() || 'Unhandled promise rejection'),
+          new Error(event.reason?.toString() || "Unhandled promise rejection"),
           {
-            type: 'unhandled_promise_rejection',
+            type: "unhandled_promise_rejection",
             reason: event.reason,
-          }
+          },
         );
       });
     }
@@ -86,13 +86,13 @@ export class ProductionMonitoringService extends MonitoringService {
 
         // Track API performance
         ProductionMonitoringService.trackMetric({
-          name: 'api.response_time',
+          name: "api.response_time",
           value: duration,
-          unit: 'ms',
+          unit: "ms",
           tags: {
             url,
             status: response.status.toString(),
-            method: args[1]?.method || 'GET',
+            method: args[1]?.method || "GET",
           },
         });
 
@@ -116,18 +116,18 @@ export class ProductionMonitoringService extends MonitoringService {
   private static handleAPIError(
     error: any,
     duration: number,
-    url: string
+    url: string,
   ): void {
     const errorData = {
       url,
       duration,
-      status: error.status || 'network_error',
-      message: error.message || 'API request failed',
+      status: error.status || "network_error",
+      message: error.message || "API request failed",
     };
 
     ProductionMonitoringService.trackError(
       error instanceof Error ? error : new Error(errorData.message),
-      errorData
+      errorData,
     );
 
     // Check if error rate exceeds threshold
@@ -138,7 +138,7 @@ export class ProductionMonitoringService extends MonitoringService {
    * Setup performance monitoring
    */
   private static setupPerformanceMonitoring(): void {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
 
@@ -156,7 +156,7 @@ export class ProductionMonitoringService extends MonitoringService {
    * Setup Core Web Vitals monitoring
    */
   private static setupCoreWebVitals(): void {
-    if ('PerformanceObserver' in window) {
+    if ("PerformanceObserver" in window) {
       // LCP monitoring
       const lcpObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
@@ -164,20 +164,20 @@ export class ProductionMonitoringService extends MonitoringService {
 
         if (lastEntry) {
           ProductionMonitoringService.trackMetric({
-            name: 'performance.lcp',
+            name: "performance.lcp",
             value: lastEntry.startTime,
-            unit: 'ms',
+            unit: "ms",
             tags: { page: window.location.pathname },
           });
 
           ProductionMonitoringService.checkPerformanceBudget(
-            'LCP',
-            lastEntry.startTime
+            "LCP",
+            lastEntry.startTime,
           );
         }
       });
 
-      lcpObserver.observe({ entryTypes: ['largest-contentful-paint'] });
+      lcpObserver.observe({ entryTypes: ["largest-contentful-paint"] });
 
       // FID monitoring
       const fidObserver = new PerformanceObserver((list) => {
@@ -185,17 +185,17 @@ export class ProductionMonitoringService extends MonitoringService {
           const fid = (entry as any).processingStart - entry.startTime;
 
           ProductionMonitoringService.trackMetric({
-            name: 'performance.fid',
+            name: "performance.fid",
             value: fid,
-            unit: 'ms',
+            unit: "ms",
             tags: { page: window.location.pathname },
           });
 
-          ProductionMonitoringService.checkPerformanceBudget('FID', fid);
+          ProductionMonitoringService.checkPerformanceBudget("FID", fid);
         });
       });
 
-      fidObserver.observe({ entryTypes: ['first-input'] });
+      fidObserver.observe({ entryTypes: ["first-input"] });
 
       // CLS monitoring
       let clsValue = 0;
@@ -207,16 +207,16 @@ export class ProductionMonitoringService extends MonitoringService {
         });
 
         ProductionMonitoringService.trackMetric({
-          name: 'performance.cls',
+          name: "performance.cls",
           value: clsValue,
-          unit: 'score',
+          unit: "score",
           tags: { page: window.location.pathname },
         });
 
-        ProductionMonitoringService.checkPerformanceBudget('CLS', clsValue);
+        ProductionMonitoringService.checkPerformanceBudget("CLS", clsValue);
       });
 
-      clsObserver.observe({ entryTypes: ['layout-shift'] });
+      clsObserver.observe({ entryTypes: ["layout-shift"] });
     }
   }
 
@@ -224,24 +224,24 @@ export class ProductionMonitoringService extends MonitoringService {
    * Setup resource timing monitoring
    */
   private static setupResourceTimingMonitoring(): void {
-    if ('PerformanceObserver' in window) {
+    if ("PerformanceObserver" in window) {
       const resourceObserver = new PerformanceObserver((list) => {
         list.getEntries().forEach((entry) => {
           const resource = entry as PerformanceResourceTiming;
 
           ProductionMonitoringService.trackMetric({
-            name: 'performance.resource_load_time',
+            name: "performance.resource_load_time",
             value: resource.responseEnd - resource.startTime,
-            unit: 'ms',
+            unit: "ms",
             tags: {
               resource_type: resource.initiatorType,
-              resource_name: resource.name.split('/').pop() || 'unknown',
+              resource_name: resource.name.split("/").pop() || "unknown",
             },
           });
         });
       });
 
-      resourceObserver.observe({ entryTypes: ['resource'] });
+      resourceObserver.observe({ entryTypes: ["resource"] });
     }
   }
 
@@ -249,9 +249,9 @@ export class ProductionMonitoringService extends MonitoringService {
    * Setup navigation timing monitoring
    */
   private static setupNavigationTimingMonitoring(): void {
-    window.addEventListener('load', () => {
+    window.addEventListener("load", () => {
       const navigation = performance.getEntriesByType(
-        'navigation'
+        "navigation",
       )[0] as PerformanceNavigationTiming;
 
       if (navigation) {
@@ -259,8 +259,7 @@ export class ProductionMonitoringService extends MonitoringService {
           dns_lookup: navigation.domainLookupEnd - navigation.domainLookupStart,
           tcp_connect: navigation.connectEnd - navigation.connectStart,
           ttfb: navigation.responseStart - navigation.requestStart,
-          dom_content_loaded:
-            navigation.domContentLoadedEventEnd,
+          dom_content_loaded: navigation.domContentLoadedEventEnd,
           page_load: navigation.loadEventEnd,
         };
 
@@ -268,14 +267,14 @@ export class ProductionMonitoringService extends MonitoringService {
           ProductionMonitoringService.trackMetric({
             name: `performance.${name}`,
             value,
-            unit: 'ms',
+            unit: "ms",
             tags: { page: window.location.pathname },
           });
         });
 
         ProductionMonitoringService.checkPerformanceBudget(
-          'TTFB',
-          metrics.ttfb
+          "TTFB",
+          metrics.ttfb,
         );
       }
     });
@@ -285,7 +284,7 @@ export class ProductionMonitoringService extends MonitoringService {
    * Setup resource monitoring
    */
   private static setupResourceMonitoring(): void {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
 
@@ -303,16 +302,16 @@ export class ProductionMonitoringService extends MonitoringService {
    * Setup memory monitoring
    */
   private static setupMemoryMonitoring(): void {
-    if ('memory' in performance) {
+    if ("memory" in performance) {
       const monitorMemory = () => {
         const memory = (performance as any).memory;
         const usagePercent =
           (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
 
         ProductionMonitoringService.trackMetric({
-          name: 'system.memory_usage',
+          name: "system.memory_usage",
           value: usagePercent,
-          unit: 'percent',
+          unit: "percent",
           tags: {
             used: memory.usedJSHeapSize.toString(),
             total: memory.totalJSHeapSize.toString(),
@@ -325,7 +324,7 @@ export class ProductionMonitoringService extends MonitoringService {
           usagePercent >
           ProductionMonitoringService.alertThresholds.memoryUsage * 100
         ) {
-          ProductionMonitoringService.sendAlert('HIGH_MEMORY_USAGE', {
+          ProductionMonitoringService.sendAlert("HIGH_MEMORY_USAGE", {
             usage: usagePercent,
             threshold:
               ProductionMonitoringService.alertThresholds.memoryUsage * 100,
@@ -343,14 +342,14 @@ export class ProductionMonitoringService extends MonitoringService {
    * Setup network monitoring
    */
   private static setupNetworkMonitoring(): void {
-    if ('connection' in navigator) {
+    if ("connection" in navigator) {
       const connection = (navigator as any).connection;
 
       const monitorNetwork = () => {
         ProductionMonitoringService.trackMetric({
-          name: 'network.downlink',
+          name: "network.downlink",
           value: connection.downlink,
-          unit: 'mbps',
+          unit: "mbps",
           tags: {
             type: connection.type,
             effective_type: connection.effectiveType,
@@ -358,7 +357,7 @@ export class ProductionMonitoringService extends MonitoringService {
         });
       };
 
-      connection.addEventListener('change', monitorNetwork);
+      connection.addEventListener("change", monitorNetwork);
       monitorNetwork(); // Initial check
     }
   }
@@ -367,21 +366,21 @@ export class ProductionMonitoringService extends MonitoringService {
    * Setup battery monitoring
    */
   private static setupBatteryMonitoring(): void {
-    if ('getBattery' in navigator) {
+    if ("getBattery" in navigator) {
       (navigator as any).getBattery().then((battery: any) => {
         const monitorBattery = () => {
           ProductionMonitoringService.trackMetric({
-            name: 'device.battery_level',
+            name: "device.battery_level",
             value: battery.level * 100,
-            unit: 'percent',
+            unit: "percent",
             tags: {
               charging: battery.charging.toString(),
             },
           });
         };
 
-        battery.addEventListener('chargingchange', monitorBattery);
-        battery.addEventListener('levelchange', monitorBattery);
+        battery.addEventListener("chargingchange", monitorBattery);
+        battery.addEventListener("levelchange", monitorBattery);
         monitorBattery(); // Initial check
       });
     }
@@ -402,7 +401,7 @@ export class ProductionMonitoringService extends MonitoringService {
    * Initialize alert counters
    */
   private static initializeAlertCounters(): void {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.monitoringAlerts = {
         errorCount: 0,
         lastErrorTime: 0,
@@ -429,7 +428,7 @@ export class ProductionMonitoringService extends MonitoringService {
       ];
 
     if (budget && value > budget) {
-      ProductionMonitoringService.sendAlert('PERFORMANCE_BUDGET_EXCEEDED', {
+      ProductionMonitoringService.sendAlert("PERFORMANCE_BUDGET_EXCEEDED", {
         metric,
         value,
         budget,
@@ -442,7 +441,7 @@ export class ProductionMonitoringService extends MonitoringService {
    * Check error rate threshold
    */
   private static checkErrorRateThreshold(): void {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
 
@@ -461,10 +460,10 @@ export class ProductionMonitoringService extends MonitoringService {
     // Check if error rate exceeds threshold
     const errorRate = alerts.errorCount / 60; // errors per second
     if (errorRate > ProductionMonitoringService.alertThresholds.errorRate) {
-      ProductionMonitoringService.sendAlert('HIGH_ERROR_RATE', {
+      ProductionMonitoringService.sendAlert("HIGH_ERROR_RATE", {
         errorRate,
         threshold: ProductionMonitoringService.alertThresholds.errorRate,
-        timeWindow: '1 minute',
+        timeWindow: "1 minute",
       });
     }
   }
@@ -495,7 +494,7 @@ export class ProductionMonitoringService extends MonitoringService {
 
     // Track alert as metric
     ProductionMonitoringService.trackMetric({
-      name: 'alerts.sent',
+      name: "alerts.sent",
       value: 1,
       tags: {
         type,
@@ -522,15 +521,15 @@ export class ProductionMonitoringService extends MonitoringService {
             value: String(value),
             short: true,
           })),
-          footer: 'MySetlist Production Monitoring',
+          footer: "MySetlist Production Monitoring",
           ts: Math.floor(Date.now() / 1000),
         },
       ],
     };
 
     fetch(ProductionMonitoringService.alertChannels.slack, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     }).catch(console.error);
   }
@@ -545,18 +544,18 @@ export class ProductionMonitoringService extends MonitoringService {
 
     const payload = {
       routing_key: ProductionMonitoringService.alertChannels.pagerduty,
-      event_action: 'trigger',
+      event_action: "trigger",
       payload: {
         summary: `MySetlist Alert: ${type}`,
         severity: ProductionMonitoringService.getAlertSeverity(type),
-        source: 'MySetlist Production',
+        source: "MySetlist Production",
         custom_details: data,
       },
     };
 
-    fetch('https://events.pagerduty.com/v2/enqueue', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch("https://events.pagerduty.com/v2/enqueue", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     }).catch(console.error);
   }
@@ -574,8 +573,8 @@ export class ProductionMonitoringService extends MonitoringService {
    * Get alert severity
    */
   private static getAlertSeverity(type: string): string {
-    const criticalAlerts = ['HIGH_ERROR_RATE', 'PERFORMANCE_BUDGET_EXCEEDED'];
-    return criticalAlerts.includes(type) ? 'critical' : 'warning';
+    const criticalAlerts = ["HIGH_ERROR_RATE", "PERFORMANCE_BUDGET_EXCEEDED"];
+    return criticalAlerts.includes(type) ? "critical" : "warning";
   }
 
   /**
@@ -583,7 +582,7 @@ export class ProductionMonitoringService extends MonitoringService {
    */
   private static getAlertColor(type: string): string {
     const severity = ProductionMonitoringService.getAlertSeverity(type);
-    return severity === 'critical' ? 'danger' : 'warning';
+    return severity === "critical" ? "danger" : "warning";
   }
 
   /**
@@ -605,19 +604,19 @@ export class ProductionMonitoringService extends MonitoringService {
   private static performHealthCheck(): void {
     const startTime = performance.now();
 
-    fetch('/api/health')
+    fetch("/api/health")
       .then((response) => {
         const duration = performance.now() - startTime;
 
         ProductionMonitoringService.trackMetric({
-          name: 'health.check_duration',
+          name: "health.check_duration",
           value: duration,
-          unit: 'ms',
+          unit: "ms",
           tags: { status: response.status.toString() },
         });
 
         if (!response.ok) {
-          ProductionMonitoringService.sendAlert('HEALTH_CHECK_FAILED', {
+          ProductionMonitoringService.sendAlert("HEALTH_CHECK_FAILED", {
             status: response.status,
             duration,
           });
@@ -627,11 +626,11 @@ export class ProductionMonitoringService extends MonitoringService {
         const duration = performance.now() - startTime;
 
         ProductionMonitoringService.trackError(error, {
-          type: 'health_check_error',
+          type: "health_check_error",
           duration,
         });
 
-        ProductionMonitoringService.sendAlert('HEALTH_CHECK_ERROR', {
+        ProductionMonitoringService.sendAlert("HEALTH_CHECK_ERROR", {
           error: error.message,
           duration,
         });
@@ -656,7 +655,7 @@ export class ProductionMonitoringService extends MonitoringService {
 
     // Send critical errors immediately
     if (ProductionMonitoringService.isCriticalError(error)) {
-      ProductionMonitoringService.sendAlert('CRITICAL_ERROR', {
+      ProductionMonitoringService.sendAlert("CRITICAL_ERROR", {
         message: error.message,
         stack: error.stack,
         ...errorData,
@@ -683,21 +682,21 @@ export class ProductionMonitoringService extends MonitoringService {
    * Get session ID
    */
   private static getSessionId(): string {
-    return sessionStorage.getItem('sessionId') || 'anonymous';
+    return sessionStorage.getItem("sessionId") || "anonymous";
   }
 
   /**
    * Get user ID
    */
   private static getUserId(): string {
-    return localStorage.getItem('userId') || 'anonymous';
+    return localStorage.getItem("userId") || "anonymous";
   }
 
   private static alertThrottleMap = new Map<string, number>();
 }
 
 // Initialize production monitoring
-if (typeof window !== 'undefined' && process.env["NODE_ENV"] === 'production') {
+if (typeof window !== "undefined" && process.env["NODE_ENV"] === "production") {
   ProductionMonitoringService.initializeProduction();
 }
 

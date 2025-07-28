@@ -5,7 +5,9 @@ This directory contains historical documentation that has been superseded by cur
 ## Archive Structure
 
 ### Status Reports (`status-reports/`)
+
 Project completion summaries, progress reports, and sub-agent implementation reports from different phases of development:
+
 - Critical fixes summaries
 - Data pipeline analysis reports
 - MySetlist app completion summaries
@@ -15,19 +17,25 @@ Project completion summaries, progress reports, and sub-agent implementation rep
 - UI improvements summaries
 
 ### Analysis Reports (`analysis-reports/`)
+
 Technical analysis and performance optimization guides:
+
 - Database migration strategy documents
 - Next-Forge performance optimization guides
 - Technical analysis reports
 
 ### Deployment Guides (`deployment-guides/`)
+
 Superseded deployment documentation that has been consolidated:
+
 - Original deployment guides
 - Deployment checklists
 - Configuration guides
 
 ### Project Planning (`project-planning/`)
+
 Early project planning documents and requirements:
+
 - Original design documents
 - Requirements specifications
 - Implementation task lists
@@ -35,6 +43,7 @@ Early project planning documents and requirements:
 ## Current Documentation
 
 For current, up-to-date documentation, see:
+
 - [`/README.md`](../README.md) - Main project overview
 - [`/CLAUDE.md`](../CLAUDE.md) - Claude Code project instructions
 - [`/DEPLOYMENT-GUIDE.md`](../DEPLOYMENT-GUIDE.md) - Current deployment guide
@@ -45,12 +54,14 @@ For current, up-to-date documentation, see:
 ## Archive Policy
 
 Documents are archived when:
+
 1. They become outdated due to code changes
 2. They are superseded by newer, more comprehensive documentation
 3. They represent completed phases of development
 4. They are historical status reports or analysis
 
 Archived documents are preserved to:
+
 - Maintain project history
 - Provide reference for debugging
 - Document decision-making processes
@@ -58,4 +69,4 @@ Archived documents are preserved to:
 
 ---
 
-*Last updated: July 26, 2025*
+_Last updated: July 26, 2025_

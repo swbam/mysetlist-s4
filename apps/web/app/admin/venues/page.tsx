@@ -1,11 +1,11 @@
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +13,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { Input } from '@repo/design-system/components/ui/input';
+} from "@repo/design-system/components/ui/dropdown-menu";
+import { Input } from "@repo/design-system/components/ui/input";
 import {
   Table,
   TableBody,
@@ -22,8 +22,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@repo/design-system/components/ui/table';
-import { format } from 'date-fns';
+} from "@repo/design-system/components/ui/table";
+import { format } from "date-fns";
 import {
   AlertTriangle,
   Calendar,
@@ -42,24 +42,26 @@ import {
   Star,
   Trash2,
   Users,
-} from 'lucide-react';
-import Link from 'next/link';
-import { createClient } from '~/lib/supabase/server';
+} from "lucide-react";
+import Link from "next/link";
+import { createClient } from "~/lib/supabase/server";
 
 // Force dynamic rendering due to user-specific data fetching
-export const dynamic = 'force-dynamic';
-
+export const dynamic = "force-dynamic";
 
 export default async function VenuesManagementPage({
   params,
-}: { params: Promise<{ locale: string }> }) {
+}: {
+  params: Promise<{ locale: string }>;
+}) {
   const supabase = await createClient();
   const { locale } = await params;
 
   // Fetch venues with related data
   const { data: venues } = await supabase
-    .from('venues')
-    .select(`
+    .from("venues")
+    .select(
+      `
       id,
       name,
       address,
@@ -77,8 +79,9 @@ export default async function VenuesManagementPage({
       created_at,
       updated_at,
       shows (count)
-    `)
-    .order('created_at', { ascending: false })
+    `,
+    )
+    .order("created_at", { ascending: false })
     .limit(100);
 
   // Calculate venue stats
@@ -92,23 +95,23 @@ export default async function VenuesManagementPage({
 
   // Get quick stats
   const { count: totalVenues } = await supabase
-    .from('venues')
-    .select('*', { count: 'exact', head: true });
+    .from("venues")
+    .select("*", { count: "exact", head: true });
 
   const { count: verifiedVenues } = await supabase
-    .from('venues')
-    .select('*', { count: 'exact', head: true })
-    .eq('verified', true);
+    .from("venues")
+    .select("*", { count: "exact", head: true })
+    .eq("verified", true);
 
   const { count: venuesWithShows } = await supabase
-    .from('venues')
-    .select('id')
-    .not('shows', 'is', null);
+    .from("venues")
+    .select("id")
+    .not("shows", "is", null);
 
   const { count: venuesNeedingInfo } = await supabase
-    .from('venues')
-    .select('*', { count: 'exact', head: true })
-    .or('capacity.is.null,latitude.is.null,longitude.is.null');
+    .from("venues")
+    .select("*", { count: "exact", head: true })
+    .or("capacity.is.null,latitude.is.null,longitude.is.null");
 
   return (
     <div className="space-y-6">
@@ -273,7 +276,7 @@ export default async function VenuesManagementPage({
                       </p>
                       {venue.latitude && venue.longitude && (
                         <p className="mt-1 text-muted-foreground text-xs">
-                          {venue.latitude.toFixed(4)},{' '}
+                          {venue.latitude.toFixed(4)},{" "}
                           {venue.longitude.toFixed(4)}
                         </p>
                       )}
@@ -291,7 +294,7 @@ export default async function VenuesManagementPage({
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      <Badge variant={venue.verified ? 'default' : 'secondary'}>
+                      <Badge variant={venue.verified ? "default" : "secondary"}>
                         {venue.verified ? (
                           <>
                             <CheckCircle className="mr-1 h-3 w-3" />
@@ -349,7 +352,7 @@ export default async function VenuesManagementPage({
                     </div>
                   </TableCell>
                   <TableCell>
-                    {format(new Date(venue.created_at), 'MMM d, yyyy')}
+                    {format(new Date(venue.created_at), "MMM d, yyyy")}
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>

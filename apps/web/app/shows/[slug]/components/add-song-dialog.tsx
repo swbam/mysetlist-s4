@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@repo/design-system/components/ui/dialog';
-import { Input } from '@repo/design-system/components/ui/input';
-import { ScrollArea } from '@repo/design-system/components/ui/scroll-area';
-import { Loader2, Music, Plus, Search } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
-import { toast } from 'sonner';
-import { addSongToSetlist, searchSongs } from '../actions';
+} from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
+import { Loader2, Music, Plus, Search } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
+import { toast } from "sonner";
+import { addSongToSetlist, searchSongs } from "../actions";
 
 type AddSongDialogProps = {
   setlistId: string;
@@ -32,7 +32,7 @@ export function AddSongDialog({
   onOpenChange,
 }: AddSongDialogProps) {
   const router = useRouter();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [addingSongId, setAddingSongId] = useState<string | null>(null);
@@ -61,7 +61,7 @@ export function AddSongDialog({
       const songs = await searchSongs(query, artistId);
       setResults(songs);
     } catch (_error) {
-      toast.error('Failed to search songs');
+      toast.error("Failed to search songs");
     } finally {
       setIsSearching(false);
     }
@@ -76,19 +76,19 @@ export function AddSongDialog({
         const position = 999; // Will be adjusted by the server
         await addSongToSetlist(setlistId, songId, position);
 
-        toast.success('Song added to setlist');
+        toast.success("Song added to setlist");
 
         // Clear search and close if only adding one song
-        setQuery('');
+        setQuery("");
         setResults([]);
 
         router.refresh();
       } catch (error: any) {
-        if (error.message.includes('logged in')) {
-          toast.error('Please sign in to add songs');
-          router.push('/auth/sign-in');
+        if (error.message.includes("logged in")) {
+          toast.error("Please sign in to add songs");
+          router.push("/auth/sign-in");
         } else {
-          toast.error('Failed to add song');
+          toast.error("Failed to add song");
         }
       } finally {
         setAddingSongId(null);
@@ -100,7 +100,7 @@ export function AddSongDialog({
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   return (

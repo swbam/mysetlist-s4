@@ -1,22 +1,22 @@
-import React, { ComponentType, memo, PropsWithChildren } from 'react';
+import React, { ComponentType, memo, PropsWithChildren } from "react";
 
 // Type-safe memoization helper with display name
 export function withMemo<P extends object>(
   Component: ComponentType<P>,
-  propsAreEqual?: (prevProps: Readonly<P>, nextProps: Readonly<P>) => boolean
+  propsAreEqual?: (prevProps: Readonly<P>, nextProps: Readonly<P>) => boolean,
 ) {
   const MemoizedComponent = memo(Component, propsAreEqual);
-  
+
   // Preserve display name for debugging
-  MemoizedComponent.displayName = `Memo(${Component.displayName || Component.name || 'Component'})`;
-  
+  MemoizedComponent.displayName = `Memo(${Component.displayName || Component.name || "Component"})`;
+
   return MemoizedComponent;
 }
 
 // Shallow comparison that ignores functions (useful for event handlers)
 export function arePropsEqualIgnoreFunctions<P extends object>(
   prevProps: Readonly<P>,
-  nextProps: Readonly<P>
+  nextProps: Readonly<P>,
 ): boolean {
   const prevKeys = Object.keys(prevProps) as Array<keyof P>;
   const nextKeys = Object.keys(nextProps) as Array<keyof P>;
@@ -30,7 +30,7 @@ export function arePropsEqualIgnoreFunctions<P extends object>(
     const nextValue = nextProps[key];
 
     // Skip function comparisons
-    if (typeof prevValue === 'function' && typeof nextValue === 'function') {
+    if (typeof prevValue === "function" && typeof nextValue === "function") {
       continue;
     }
 
@@ -44,7 +44,7 @@ export function arePropsEqualIgnoreFunctions<P extends object>(
 
 // Deep comparison for specific props only
 export function createPropsComparator<P extends object>(
-  keysToCompare: Array<keyof P>
+  keysToCompare: Array<keyof P>,
 ) {
   return (prevProps: Readonly<P>, nextProps: Readonly<P>): boolean => {
     for (const key of keysToCompare) {
@@ -62,23 +62,25 @@ interface PerformanceWrapperProps extends PropsWithChildren {
   threshold?: number; // Log if render takes longer than threshold (ms)
 }
 
-export function PerformanceWrapper({ 
-  name, 
+export function PerformanceWrapper({
+  name,
   threshold = 16, // One frame at 60fps
-  children 
+  children,
 }: PerformanceWrapperProps) {
-  if (process.env["NODE_ENV"] === 'production') {
+  if (process.env["NODE_ENV"] === "production") {
     return <>{children}</>;
   }
 
   const startTime = performance.now();
-  
+
   // Use requestIdleCallback to log after render
-  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+  if (typeof window !== "undefined" && "requestIdleCallback" in window) {
     (window as any).requestIdleCallback(() => {
       const renderTime = performance.now() - startTime;
       if (renderTime > threshold) {
-        console.warn(`[Performance] ${name} took ${renderTime.toFixed(2)}ms to render`);
+        console.warn(
+          `[Performance] ${name} took ${renderTime.toFixed(2)}ms to render`,
+        );
       }
     });
   }
@@ -89,11 +91,12 @@ export function PerformanceWrapper({
 // Higher-order component for automatic performance tracking
 export function withPerformanceTracking<P extends object>(
   Component: ComponentType<P>,
-  componentName?: string
+  componentName?: string,
 ) {
   const WrappedComponent = (props: P) => {
-    const name = componentName || Component.displayName || Component.name || 'Component';
-    
+    const name =
+      componentName || Component.displayName || Component.name || "Component";
+
     return (
       <PerformanceWrapper name={name}>
         <Component {...props} />
@@ -101,8 +104,8 @@ export function withPerformanceTracking<P extends object>(
     );
   };
 
-  WrappedComponent.displayName = `WithPerformance(${Component.displayName || Component.name || 'Component'})`;
-  
+  WrappedComponent.displayName = `WithPerformance(${Component.displayName || Component.name || "Component"})`;
+
   return WrappedComponent;
 }
 
@@ -110,10 +113,13 @@ export function withPerformanceTracking<P extends object>(
 export function optimizeComponent<P extends object>(
   Component: ComponentType<P>,
   options?: {
-    propsComparator?: (prevProps: Readonly<P>, nextProps: Readonly<P>) => boolean;
+    propsComparator?: (
+      prevProps: Readonly<P>,
+      nextProps: Readonly<P>,
+    ) => boolean;
     trackPerformance?: boolean;
     componentName?: string;
-  }
+  },
 ) {
   let OptimizedComponent = Component;
 
@@ -121,8 +127,11 @@ export function optimizeComponent<P extends object>(
   OptimizedComponent = withMemo(Component, options?.propsComparator);
 
   // Apply performance tracking if requested
-  if (options?.trackPerformance && process.env["NODE_ENV"] !== 'production') {
-    OptimizedComponent = withPerformanceTracking(OptimizedComponent, options.componentName);
+  if (options?.trackPerformance && process.env["NODE_ENV"] !== "production") {
+    OptimizedComponent = withPerformanceTracking(
+      OptimizedComponent,
+      options.componentName,
+    );
   }
 
   return OptimizedComponent;

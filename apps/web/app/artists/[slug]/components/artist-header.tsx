@@ -1,13 +1,13 @@
-import { Button } from '@repo/design-system';
-import { Badge } from '@repo/design-system';
-import { Card, CardContent } from '@repo/design-system';
-import { Avatar, AvatarFallback, AvatarImage } from '@repo/design-system';
-import { Calendar, ExternalLink, Music, Users, Verified } from 'lucide-react';
-import Link from 'next/link';
-import React, { Suspense } from 'react';
-import { parseGenres } from '~/lib/utils';
-import { FollowButton } from './follow-button';
-import { FollowerCount } from './follower-count';
+import { Button } from "@repo/design-system";
+import { Badge } from "@repo/design-system";
+import { Card, CardContent } from "@repo/design-system";
+import { Avatar, AvatarFallback, AvatarImage } from "@repo/design-system";
+import { Calendar, ExternalLink, Music, Users, Verified } from "lucide-react";
+import Link from "next/link";
+import React, { Suspense } from "react";
+import { parseGenres } from "~/lib/utils";
+import { FollowButton } from "./follow-button";
+import { FollowerCount } from "./follower-count";
 
 interface ArtistHeaderProps {
   artist: {
@@ -30,7 +30,9 @@ interface ArtistHeaderProps {
   };
 }
 
-export const ArtistHeader = React.memo(function ArtistHeader({ artist }: ArtistHeaderProps) {
+export const ArtistHeader = React.memo(function ArtistHeader({
+  artist,
+}: ArtistHeaderProps) {
   // Safe genre parsing with utility function
   const genres = React.useMemo(() => {
     return parseGenres(artist.genres);
@@ -40,7 +42,7 @@ export const ArtistHeader = React.memo(function ArtistHeader({ artist }: ArtistH
     try {
       return artist.externalUrls ? JSON.parse(artist.externalUrls) : {};
     } catch (error) {
-      console.warn('Failed to parse external URLs:', error);
+      console.warn("Failed to parse external URLs:", error);
       return {};
     }
   }, [artist.externalUrls]);

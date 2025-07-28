@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { Music, Play } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { getArtistTopTracks } from '../actions';
+} from "@repo/design-system/components/ui/card";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { Music, Play } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { getArtistTopTracks } from "../actions";
 
 interface Track {
   id: string;
@@ -45,8 +45,15 @@ export function ArtistTopTracks({ artistId, spotifyId }: ArtistTopTracksProps) {
         if (spotifyId) {
           // Try to fetch from Spotify via server action first
           const spotifyTracks = await getArtistTopTracks(spotifyId);
-          if (spotifyTracks && (Array.isArray(spotifyTracks) ? spotifyTracks.length > 0 : spotifyTracks.tracks?.length > 0)) {
-            const tracks = Array.isArray(spotifyTracks) ? spotifyTracks : spotifyTracks.tracks;
+          if (
+            spotifyTracks &&
+            (Array.isArray(spotifyTracks)
+              ? spotifyTracks.length > 0
+              : spotifyTracks.tracks?.length > 0)
+          ) {
+            const tracks = Array.isArray(spotifyTracks)
+              ? spotifyTracks
+              : spotifyTracks.tracks;
             setTracks(tracks as unknown as Track[]);
             return;
           }
@@ -59,7 +66,7 @@ export function ArtistTopTracks({ artistId, spotifyId }: ArtistTopTracksProps) {
           const apiTracks = data.tracks.map((track: any) => ({
             ...track,
             album: {
-              name: track.album || 'Unknown Album',
+              name: track.album || "Unknown Album",
               images: track.album_images || [],
             },
           }));
@@ -77,7 +84,7 @@ export function ArtistTopTracks({ artistId, spotifyId }: ArtistTopTracksProps) {
   const formatDuration = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
     const seconds = ((ms % 60000) / 1000).toFixed(0);
-    return `${minutes}:${seconds.padStart(2, '0')}`;
+    return `${minutes}:${seconds.padStart(2, "0")}`;
   };
 
   if (!loading && tracks.length === 0) {

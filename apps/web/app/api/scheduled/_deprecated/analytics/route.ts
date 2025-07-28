@@ -1,13 +1,13 @@
-import { db } from '@repo/database';
-import { sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 // import { CacheService } from '~/lib/cache';
-import { MonitoringService } from '~/lib/monitoring';
+import { MonitoringService } from "~/lib/monitoring";
 
 // Verify cron secret to prevent unauthorized access
 function verifyCronSecret(request: NextRequest): boolean {
-  const authHeader = request.headers.get('authorization');
-  const cronSecret = process.env['CRON_SECRET'];
+  const authHeader = request.headers.get("authorization");
+  const cronSecret = process.env["CRON_SECRET"];
 
   if (!cronSecret) {
     return false;
@@ -18,13 +18,13 @@ function verifyCronSecret(request: NextRequest): boolean {
 
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const startTime = Date.now();
 
   try {
-    MonitoringService.startMeasurement('analytics-processing');
+    MonitoringService.startMeasurement("analytics-processing");
 
     // Generate daily analytics summary
     const analyticsData = await generateDailyAnalytics();
@@ -38,10 +38,10 @@ export async function GET(request: NextRequest) {
     // Generate performance metrics summary
     await generatePerformanceMetrics();
 
-    const duration = MonitoringService.endMeasurement('analytics-processing');
+    const duration = MonitoringService.endMeasurement("analytics-processing");
 
     MonitoringService.trackMetric({
-      name: 'cron.analytics.success',
+      name: "cron.analytics.success",
       value: 1,
       tags: {
         duration: duration.toString(),
@@ -59,12 +59,12 @@ export async function GET(request: NextRequest) {
     const duration = Date.now() - startTime;
 
     MonitoringService.trackError(error as Error, {
-      operation: 'analytics-processing',
+      operation: "analytics-processing",
       duration,
     });
 
     MonitoringService.trackMetric({
-      name: 'cron.analytics.failure',
+      name: "cron.analytics.failure",
       value: 1,
       tags: {
         error: (error as Error).message,
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
         duration,
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -126,11 +126,11 @@ async function generateDailyAnalytics() {
       ]);
 
     const analyticsData = {
-      date: yesterday.toISOString().split('T')[0],
-      searches: Number(searchCount[0]?.['count']) || 0,
-      newUsers: Number(userSignups[0]?.['count']) || 0,
-      newShows: Number(showsCreated[0]?.['count']) || 0,
-      votes: Number(votesCount[0]?.['count']) || 0,
+      date: yesterday.toISOString().split("T")[0],
+      searches: Number(searchCount[0]?.["count"]) || 0,
+      newUsers: Number(userSignups[0]?.["count"]) || 0,
+      newShows: Number(showsCreated[0]?.["count"]) || 0,
+      votes: Number(votesCount[0]?.["count"]) || 0,
       totalRecords: 0,
     };
 
@@ -151,7 +151,7 @@ async function generateDailyAnalytics() {
     return analyticsData;
   } catch (error) {
     return {
-      date: yesterday.toISOString().split('T')[0],
+      date: yesterday.toISOString().split("T")[0],
       searches: 0,
       newUsers: 0,
       newShows: 0,
@@ -193,39 +193,36 @@ async function updateTrendingData(): Promise<void> {
     // const trendingArtists = await db.execute(sql`
     //   SELECT artist_id, COUNT(*) as activity_count
     //   FROM (
-    //     SELECT artist_id FROM search_analytics 
+    //     SELECT artist_id FROM search_analytics
     //     WHERE created_at >= NOW() - INTERVAL '24 hours'
     //     UNION ALL
-    //     SELECT artist_id FROM show_views 
+    //     SELECT artist_id FROM show_views
     //     WHERE created_at >= NOW() - INTERVAL '24 hours'
     //   ) combined
     //   GROUP BY artist_id
     //   ORDER BY activity_count DESC
     //   LIMIT 50
     // `);
-
     // TODO: Fix CacheService.set method
     // await CacheService.set(
     //   'trending:artists',
     //   trendingArtists,
     //   { ttl: 3600 } // Cache for 1 hour
     // );
-
     // TODO: Calculate trending shows
     // const trendingShows = await db.execute(sql`
     //   SELECT show_id, COUNT(*) as activity_count
     //   FROM (
-    //     SELECT show_id FROM show_views 
+    //     SELECT show_id FROM show_views
     //     WHERE created_at >= NOW() - INTERVAL '24 hours'
     //     UNION ALL
-    //     SELECT show_id FROM votes 
+    //     SELECT show_id FROM votes
     //     WHERE created_at >= NOW() - INTERVAL '24 hours'
     //   ) combined
     //   GROUP BY show_id
     //   ORDER BY activity_count DESC
     //   LIMIT 50
     // `);
-
     // TODO: Fix CacheService.set method
     // await CacheService.set(
     //   'trending:shows',
@@ -292,7 +289,7 @@ export async function HEAD(request: NextRequest) {
   return new NextResponse(null, {
     status: 200,
     headers: {
-      'Cache-Control': 'no-cache',
+      "Cache-Control": "no-cache",
     },
   });
 }

@@ -1,9 +1,9 @@
-import { log } from './log';
+import { log } from "./log";
 
 // Optional Sentry import
 let captureException: ((error: unknown) => void) | undefined;
 try {
-  const sentry = require('@sentry/nextjs');
+  const sentry = require("@sentry/nextjs");
   captureException = sentry.captureException;
 } catch {
   // Sentry not available, use fallback
@@ -11,11 +11,11 @@ try {
 }
 
 export const parseError = (error: unknown): string => {
-  let message = 'An error occurred';
+  let message = "An error occurred";
 
   if (error instanceof Error) {
     message = error.message;
-  } else if (error && typeof error === 'object' && 'message' in error) {
+  } else if (error && typeof error === "object" && "message" in error) {
     message = error.message as string;
   } else {
     message = String(error);
@@ -29,7 +29,7 @@ export const parseError = (error: unknown): string => {
     log.error(`Parsing error: ${message}`);
   } catch (newError) {
     // biome-ignore lint/suspicious/noConsole: Need console here
-    console.error('Error parsing error:', newError);
+    console.error("Error parsing error:", newError);
   }
 
   return message;

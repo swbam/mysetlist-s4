@@ -1,9 +1,23 @@
-'use client';
+"use client";
 
-import React, { memo, useCallback, useRef, useState } from 'react';
-import { motion, PanInfo, useAnimation, useMotionValue, useSpring } from 'framer-motion';
-import { cn } from '@repo/design-system/lib/utils';
-import { ChevronLeft, ChevronRight, Heart, Star, Trash2, Share, X } from 'lucide-react';
+import React, { memo, useCallback, useRef, useState } from "react";
+import {
+  motion,
+  PanInfo,
+  useAnimation,
+  useMotionValue,
+  useSpring,
+} from "framer-motion";
+import { cn } from "@repo/design-system/lib/utils";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  Star,
+  Trash2,
+  Share,
+  X,
+} from "lucide-react";
 
 interface GestureAction {
   id: string;
@@ -24,49 +38,49 @@ interface AdvancedGestureHandlerProps {
   snapBackDuration?: number;
   threshold?: number;
   className?: string;
-  onGestureStart?: (direction: 'left' | 'right') => void;
-  onGestureEnd?: (direction: 'left' | 'right', triggered: boolean) => void;
+  onGestureStart?: (direction: "left" | "right") => void;
+  onGestureEnd?: (direction: "left" | "right", triggered: boolean) => void;
 }
 
 const defaultLeftActions: GestureAction[] = [
   {
-    id: 'favorite',
-    label: 'Favorite',
+    id: "favorite",
+    label: "Favorite",
     icon: Heart,
-    color: 'bg-red-500',
+    color: "bg-red-500",
     threshold: 80,
     hapticPattern: [10, 50, 10],
-    onTrigger: () => console.log('Favorited'),
+    onTrigger: () => console.log("Favorited"),
   },
   {
-    id: 'star',
-    label: 'Star',
+    id: "star",
+    label: "Star",
     icon: Star,
-    color: 'bg-yellow-500',
+    color: "bg-yellow-500",
     threshold: 120,
     hapticPattern: [25],
-    onTrigger: () => console.log('Starred'),
+    onTrigger: () => console.log("Starred"),
   },
 ];
 
 const defaultRightActions: GestureAction[] = [
   {
-    id: 'share',
-    label: 'Share',
+    id: "share",
+    label: "Share",
     icon: Share,
-    color: 'bg-blue-500',
+    color: "bg-blue-500",
     threshold: 80,
     hapticPattern: [10, 50, 10],
-    onTrigger: () => console.log('Shared'),
+    onTrigger: () => console.log("Shared"),
   },
   {
-    id: 'delete',
-    label: 'Delete',
+    id: "delete",
+    label: "Delete",
     icon: Trash2,
-    color: 'bg-red-600',
+    color: "bg-red-600",
     threshold: 120,
     hapticPattern: [50, 100, 50],
-    onTrigger: () => console.log('Deleted'),
+    onTrigger: () => console.log("Deleted"),
   },
 ];
 
@@ -86,9 +100,9 @@ const ActionButton = memo(function ActionButton({
   return (
     <motion.div
       className={cn(
-        'flex items-center justify-center rounded-full w-12 h-12 text-white',
+        "flex items-center justify-center rounded-full w-12 h-12 text-white",
         action.color,
-        isActive && 'shadow-lg'
+        isActive && "shadow-lg",
       )}
       style={{
         scale,
@@ -105,18 +119,18 @@ const GestureBackground = memo(function GestureBackground({
   progress,
   action,
 }: {
-  direction: 'left' | 'right';
+  direction: "left" | "right";
   progress: number;
   action?: GestureAction;
 }) {
   const backgroundOpacity = Math.min(progress / 100, 0.3);
-  
+
   return (
     <div
       className={cn(
-        'absolute inset-0 flex items-center',
-        direction === 'left' ? 'justify-start pl-4' : 'justify-end pr-4',
-        action?.color.replace('bg-', 'bg-opacity-20 bg-')
+        "absolute inset-0 flex items-center",
+        direction === "left" ? "justify-start pl-4" : "justify-end pr-4",
+        action?.color.replace("bg-", "bg-opacity-20 bg-"),
       )}
       style={{ opacity: backgroundOpacity }}
     >
@@ -143,33 +157,43 @@ const AdvancedGestureHandlerComponent = function AdvancedGestureHandler({
   onGestureEnd,
 }: AdvancedGestureHandlerProps) {
   const [isDragging, setIsDragging] = useState(false);
-  const [currentAction, setCurrentAction] = useState<GestureAction | null>(null);
-  const [dragDirection, setDragDirection] = useState<'left' | 'right' | null>(null);
-  
+  const [currentAction, setCurrentAction] = useState<GestureAction | null>(
+    null,
+  );
+  const [dragDirection, setDragDirection] = useState<"left" | "right" | null>(
+    null,
+  );
+
   const containerRef = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
   const controls = useAnimation();
   const lastHapticThreshold = useRef(0);
 
   // Haptic feedback function
-  const triggerHaptic = useCallback((pattern: number[] = [10]) => {
-    if (enableHapticFeedback && 'vibrate' in navigator) {
-      navigator.vibrate(pattern);
-    }
-  }, [enableHapticFeedback]);
+  const triggerHaptic = useCallback(
+    (pattern: number[] = [10]) => {
+      if (enableHapticFeedback && "vibrate" in navigator) {
+        navigator.vibrate(pattern);
+      }
+    },
+    [enableHapticFeedback],
+  );
 
   // Get action based on drag distance and direction
-  const getActionForDistance = useCallback((distance: number, direction: 'left' | 'right') => {
-    const actions = direction === 'left' ? leftActions : rightActions;
-    const absDistance = Math.abs(distance);
-    
-    // Find the action with the highest threshold that's been exceeded
-    const activeAction = actions
-      .filter(action => absDistance >= action.threshold)
-      .sort((a, b) => b.threshold - a.threshold)[0];
-    
-    return activeAction || null;
-  }, [leftActions, rightActions]);
+  const getActionForDistance = useCallback(
+    (distance: number, direction: "left" | "right") => {
+      const actions = direction === "left" ? leftActions : rightActions;
+      const absDistance = Math.abs(distance);
+
+      // Find the action with the highest threshold that's been exceeded
+      const activeAction = actions
+        .filter((action) => absDistance >= action.threshold)
+        .sort((a, b) => b.threshold - a.threshold)[0];
+
+      return activeAction || null;
+    },
+    [leftActions, rightActions],
+  );
 
   // Handle drag start
   const handleDragStart = useCallback(() => {
@@ -179,93 +203,114 @@ const AdvancedGestureHandlerComponent = function AdvancedGestureHandler({
   }, [triggerHaptic]);
 
   // Handle drag
-  const handleDrag = useCallback((_event: any, info: PanInfo) => {
-    const { offset } = info;
-    const direction = offset.x > 0 ? 'right' : 'left';
-    
-    if (dragDirection !== direction) {
-      setDragDirection(direction);
-      onGestureStart?.(direction);
-    }
+  const handleDrag = useCallback(
+    (_event: any, info: PanInfo) => {
+      const { offset } = info;
+      const direction = offset.x > 0 ? "right" : "left";
 
-    const action = getActionForDistance(offset.x, direction);
-    
-    if (action !== currentAction) {
-      setCurrentAction(action);
-      
-      // Haptic feedback when crossing action threshold
-      if (action && action.hapticPattern) {
-        const distanceFromLast = Math.abs(Math.abs(offset.x) - lastHapticThreshold.current);
-        if (distanceFromLast >= action.threshold) {
-          triggerHaptic(action.hapticPattern);
-          lastHapticThreshold.current = Math.abs(offset.x);
+      if (dragDirection !== direction) {
+        setDragDirection(direction);
+        onGestureStart?.(direction);
+      }
+
+      const action = getActionForDistance(offset.x, direction);
+
+      if (action !== currentAction) {
+        setCurrentAction(action);
+
+        // Haptic feedback when crossing action threshold
+        if (action && action.hapticPattern) {
+          const distanceFromLast = Math.abs(
+            Math.abs(offset.x) - lastHapticThreshold.current,
+          );
+          if (distanceFromLast >= action.threshold) {
+            triggerHaptic(action.hapticPattern);
+            lastHapticThreshold.current = Math.abs(offset.x);
+          }
         }
       }
-    }
-  }, [currentAction, dragDirection, getActionForDistance, onGestureStart, triggerHaptic]);
+    },
+    [
+      currentAction,
+      dragDirection,
+      getActionForDistance,
+      onGestureStart,
+      triggerHaptic,
+    ],
+  );
 
   // Handle drag end
-  const handleDragEnd = useCallback((_event: any, info: PanInfo) => {
-    const { offset } = info;
-    const direction = offset.x > 0 ? 'right' : 'left';
-    const action = getActionForDistance(offset.x, direction);
-    
-    setIsDragging(false);
-    
-    if (action) {
-      // Trigger action
-      action.onTrigger();
-      triggerHaptic(action.hapticPattern || [25]);
-      onGestureEnd?.(direction, true);
-    } else {
-      onGestureEnd?.(direction, false);
-    }
-    
-    // Snap back animation
-    controls.start({
-      x: 0,
-      transition: { 
-        type: 'spring',
-        stiffness: 400,
-        damping: 30,
-        duration: snapBackDuration
+  const handleDragEnd = useCallback(
+    (_event: any, info: PanInfo) => {
+      const { offset } = info;
+      const direction = offset.x > 0 ? "right" : "left";
+      const action = getActionForDistance(offset.x, direction);
+
+      setIsDragging(false);
+
+      if (action) {
+        // Trigger action
+        action.onTrigger();
+        triggerHaptic(action.hapticPattern || [25]);
+        onGestureEnd?.(direction, true);
+      } else {
+        onGestureEnd?.(direction, false);
       }
-    });
-    
-    // Reset state
-    setTimeout(() => {
-      setCurrentAction(null);
-      setDragDirection(null);
-    }, snapBackDuration * 1000);
-  }, [controls, getActionForDistance, onGestureEnd, snapBackDuration, triggerHaptic]);
+
+      // Snap back animation
+      controls.start({
+        x: 0,
+        transition: {
+          type: "spring",
+          stiffness: 400,
+          damping: 30,
+          duration: snapBackDuration,
+        },
+      });
+
+      // Reset state
+      setTimeout(() => {
+        setCurrentAction(null);
+        setDragDirection(null);
+      }, snapBackDuration * 1000);
+    },
+    [
+      controls,
+      getActionForDistance,
+      onGestureEnd,
+      snapBackDuration,
+      triggerHaptic,
+    ],
+  );
 
   // Drag constraints
   const dragConstraints = {
-    left: -Math.max(...rightActions.map(a => a.threshold)) - 50,
-    right: Math.max(...leftActions.map(a => a.threshold)) + 50,
+    left: -Math.max(...rightActions.map((a) => a.threshold)) - 50,
+    right: Math.max(...leftActions.map((a) => a.threshold)) + 50,
     top: 0,
     bottom: 0,
   };
 
   return (
-    <div className={cn('relative overflow-hidden', className)} ref={containerRef}>
+    <div
+      className={cn("relative overflow-hidden", className)}
+      ref={containerRef}
+    >
       {/* Background action indicators */}
       {enableVisualFeedback && isDragging && (
         <>
-          {dragDirection === 'left' && (
+          {dragDirection === "left" &&
             React.createElement(GestureBackground as any, {
               direction: "left",
               progress: Math.abs(x.get()),
               action: currentAction,
-            })
-          )}
-          {dragDirection === 'right' && (
+            })}
+          {dragDirection === "right" &&
             React.createElement(GestureBackground as any, {
               direction: "right",
               progress: Math.abs(x.get()),
               action: currentAction,
-            })
-          )}
+            })}
         </>
       )}
 
@@ -279,7 +324,11 @@ const AdvancedGestureHandlerComponent = function AdvancedGestureHandler({
                 key={action.id}
                 action={action}
                 isActive={currentAction?.id === action.id}
-                progress={dragDirection === 'right' ? Math.min(Math.abs(x.get()) / action.threshold, 1) : 0}
+                progress={
+                  dragDirection === "right"
+                    ? Math.min(Math.abs(x.get()) / action.threshold, 1)
+                    : 0
+                }
               />
             ))}
           </div>
@@ -291,7 +340,11 @@ const AdvancedGestureHandlerComponent = function AdvancedGestureHandler({
                 key={action.id}
                 action={action}
                 isActive={currentAction?.id === action.id}
-                progress={dragDirection === 'left' ? Math.min(Math.abs(x.get()) / action.threshold, 1) : 0}
+                progress={
+                  dragDirection === "left"
+                    ? Math.min(Math.abs(x.get()) / action.threshold, 1)
+                    : 0
+                }
               />
             ))}
           </div>
@@ -309,8 +362,8 @@ const AdvancedGestureHandlerComponent = function AdvancedGestureHandler({
         animate={controls}
         style={{ x }}
         className={cn(
-          'relative z-20 cursor-grab active:cursor-grabbing',
-          isDragging && 'select-none'
+          "relative z-20 cursor-grab active:cursor-grabbing",
+          isDragging && "select-none",
         )}
         whileDrag={{ scale: 0.98 }}
       >
@@ -339,76 +392,76 @@ export const GesturePresets = {
   socialMedia: {
     leftActions: [
       {
-        id: 'like',
-        label: 'Like',
+        id: "like",
+        label: "Like",
         icon: Heart,
-        color: 'bg-red-500',
+        color: "bg-red-500",
         threshold: 80,
         hapticPattern: [10, 50, 10],
-        onTrigger: () => console.log('Liked'),
+        onTrigger: () => console.log("Liked"),
       },
       {
-        id: 'share',
-        label: 'Share',
+        id: "share",
+        label: "Share",
         icon: Share,
-        color: 'bg-blue-500',
+        color: "bg-blue-500",
         threshold: 120,
         hapticPattern: [25],
-        onTrigger: () => console.log('Shared'),
+        onTrigger: () => console.log("Shared"),
       },
     ],
     rightActions: [
       {
-        id: 'delete',
-        label: 'Delete',
+        id: "delete",
+        label: "Delete",
         icon: Trash2,
-        color: 'bg-red-600',
+        color: "bg-red-600",
         threshold: 100,
         hapticPattern: [50, 100, 50],
-        onTrigger: () => console.log('Deleted'),
+        onTrigger: () => console.log("Deleted"),
       },
     ],
   },
-  
+
   music: {
     leftActions: [
       {
-        id: 'favorite',
-        label: 'Favorite',
+        id: "favorite",
+        label: "Favorite",
         icon: Heart,
-        color: 'bg-red-500',
+        color: "bg-red-500",
         threshold: 80,
         hapticPattern: [10, 50, 10],
-        onTrigger: () => console.log('Added to favorites'),
+        onTrigger: () => console.log("Added to favorites"),
       },
       {
-        id: 'queue',
-        label: 'Add to Queue',
+        id: "queue",
+        label: "Add to Queue",
         icon: Star,
-        color: 'bg-purple-500',
+        color: "bg-purple-500",
         threshold: 120,
         hapticPattern: [25],
-        onTrigger: () => console.log('Added to queue'),
+        onTrigger: () => console.log("Added to queue"),
       },
     ],
     rightActions: [
       {
-        id: 'share',
-        label: 'Share',
+        id: "share",
+        label: "Share",
         icon: Share,
-        color: 'bg-blue-500',
+        color: "bg-blue-500",
         threshold: 80,
         hapticPattern: [10, 50, 10],
-        onTrigger: () => console.log('Shared'),
+        onTrigger: () => console.log("Shared"),
       },
       {
-        id: 'remove',
-        label: 'Remove',
+        id: "remove",
+        label: "Remove",
         icon: X,
-        color: 'bg-gray-500',
+        color: "bg-gray-500",
         threshold: 120,
         hapticPattern: [50, 100, 50],
-        onTrigger: () => console.log('Removed'),
+        onTrigger: () => console.log("Removed"),
       },
     ],
   },
@@ -416,12 +469,17 @@ export const GesturePresets = {
 
 // Hook for custom gesture actions
 export function useGestureActions() {
-  const createAction = useCallback((config: Omit<GestureAction, 'onTrigger'> & { onTrigger: () => void }): GestureAction => {
-    return {
-      ...config,
-      hapticPattern: config.hapticPattern || [25],
-    };
-  }, []);
+  const createAction = useCallback(
+    (
+      config: Omit<GestureAction, "onTrigger"> & { onTrigger: () => void },
+    ): GestureAction => {
+      return {
+        ...config,
+        hapticPattern: config.hapticPattern || [25],
+      };
+    },
+    [],
+  );
 
   return { createAction };
 }
@@ -433,7 +491,7 @@ export function withGestureSupport<P extends object>(
     leftActions?: GestureAction[];
     rightActions?: GestureAction[];
     enableHapticFeedback?: boolean;
-  }
+  },
 ) {
   return memo(function GestureEnabledComponent(props: P) {
     const gestureProps: any = {};
@@ -446,7 +504,7 @@ export function withGestureSupport<P extends object>(
     if (gestureConfig?.enableHapticFeedback !== undefined) {
       gestureProps.enableHapticFeedback = gestureConfig.enableHapticFeedback;
     }
-    
+
     return (
       <AdvancedGestureHandler {...gestureProps}>
         <Component {...props} />

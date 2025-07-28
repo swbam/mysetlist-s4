@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/alert";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -12,24 +12,24 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
-import { CheckCircle, Mail } from 'lucide-react';
-import { useState } from 'react';
-import { useAuth } from '../hooks/use-auth';
-import { handleAuthError, magicLinkSchema } from '../utils';
+} from "@repo/design-system/components/ui/card";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import { CheckCircle, Mail } from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "../hooks/use-auth";
+import { handleAuthError, magicLinkSchema } from "../utils";
 
 export function MagicLinkForm() {
   const { signInWithMagicLink } = useAuth();
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
@@ -41,7 +41,7 @@ export function MagicLinkForm() {
     } catch (err: any) {
       if (err.errors) {
         // Zod validation errors
-        setError(err.errors[0]?.message || 'Invalid email address');
+        setError(err.errors[0]?.message || "Invalid email address");
       } else {
         // Auth errors
         const authError = handleAuthError(err);
@@ -76,7 +76,7 @@ export function MagicLinkForm() {
             className="w-full"
             onClick={() => {
               setSent(false);
-              setEmail('');
+              setEmail("");
             }}
           >
             Send another link
@@ -113,14 +113,14 @@ export function MagicLinkForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={error ? 'border-red-500' : ''}
+              className={error ? "border-red-500" : ""}
               placeholder="Enter your email"
             />
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
             <Mail className="mr-2 h-4 w-4" />
-            {loading ? 'Sending...' : 'Send magic link'}
+            {loading ? "Sending..." : "Send magic link"}
           </Button>
         </form>
       </CardContent>

@@ -1,21 +1,21 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/design-system/components/ui/select';
-import { cn } from '@repo/design-system/lib/utils';
-import { motion } from 'framer-motion';
+} from "@repo/design-system/components/ui/select";
+import { cn } from "@repo/design-system/lib/utils";
+import { motion } from "framer-motion";
 import {
   Activity,
   BarChart3,
@@ -23,8 +23,8 @@ import {
   TrendingDown,
   TrendingUp,
   Zap,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface VoteTrendsProps {
   showId: string;
@@ -45,14 +45,14 @@ interface TrendData {
     peakHour: string;
     quietHour: string;
     averageVotesPerHour: number;
-    currentTrend: 'up' | 'down' | 'stable';
+    currentTrend: "up" | "down" | "stable";
     momentumScore: number;
   };
   topMoments: Array<{
     time: string;
     event: string;
     votes: number;
-    impact: 'high' | 'medium' | 'low';
+    impact: "high" | "medium" | "low";
   }>;
   predictions: {
     nextHourVotes: number;
@@ -64,14 +64,14 @@ interface TrendData {
 export function VoteTrends({ showId, setlistId, className }: VoteTrendsProps) {
   const [data, setData] = useState<TrendData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [timeframe, setTimeframe] = useState('24h');
+  const [timeframe, setTimeframe] = useState("24h");
 
   useEffect(() => {
     const fetchTrends = async () => {
       try {
         const params = new URLSearchParams({ showId, timeframe });
         if (setlistId) {
-          params.set('setlistId', setlistId);
+          params.set("setlistId", setlistId);
         }
 
         const response = await fetch(`/api/votes/trends?${params}`);
@@ -129,9 +129,9 @@ export function VoteTrends({ showId, setlistId, className }: VoteTrendsProps) {
   const maxVotes = Math.max(...data.hourly.map((h) => h.votes), 1);
   const getTrendIcon = () => {
     switch (data.summary.currentTrend) {
-      case 'up':
+      case "up":
         return <TrendingUp className="h-4 w-4 text-green-600" />;
-      case 'down':
+      case "down":
         return <TrendingDown className="h-4 w-4 text-red-600" />;
       default:
         return <Activity className="h-4 w-4 text-blue-600" />;
@@ -140,16 +140,16 @@ export function VoteTrends({ showId, setlistId, className }: VoteTrendsProps) {
 
   const getMomentumColor = (score: number) => {
     if (score >= 0.7) {
-      return 'text-green-600';
+      return "text-green-600";
     }
     if (score >= 0.4) {
-      return 'text-yellow-600';
+      return "text-yellow-600";
     }
-    return 'text-red-600';
+    return "text-red-600";
   };
 
   return (
-    <div className={cn('space-y-6', className)}>
+    <div className={cn("space-y-6", className)}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -182,11 +182,11 @@ export function VoteTrends({ showId, setlistId, className }: VoteTrendsProps) {
             <Badge
               variant="outline"
               className={cn(
-                'mt-1 text-xs',
-                data.summary.currentTrend === 'up' &&
-                  'border-green-600 text-green-600',
-                data.summary.currentTrend === 'down' &&
-                  'border-red-600 text-red-600'
+                "mt-1 text-xs",
+                data.summary.currentTrend === "up" &&
+                  "border-green-600 text-green-600",
+                data.summary.currentTrend === "down" &&
+                  "border-red-600 text-red-600",
               )}
             >
               {data.summary.currentTrend}
@@ -222,8 +222,8 @@ export function VoteTrends({ showId, setlistId, className }: VoteTrendsProps) {
           <CardContent className="p-4 text-center">
             <div
               className={cn(
-                'font-bold text-2xl',
-                getMomentumColor(data.summary.momentumScore)
+                "font-bold text-2xl",
+                getMomentumColor(data.summary.momentumScore),
               )}
             >
               {(data.summary.momentumScore * 100).toFixed(0)}%
@@ -273,7 +273,7 @@ export function VoteTrends({ showId, setlistId, className }: VoteTrendsProps) {
                           width:
                             hour.votes > 0
                               ? `${(hour.upvotes / hour.votes) * 100}%`
-                              : '0%',
+                              : "0%",
                         }}
                       />
                     </motion.div>
@@ -333,10 +333,10 @@ export function VoteTrends({ showId, setlistId, className }: VoteTrendsProps) {
                   >
                     <div
                       className={cn(
-                        'h-2 w-2 rounded-full',
-                        moment.impact === 'high' && 'bg-red-500',
-                        moment.impact === 'medium' && 'bg-yellow-500',
-                        moment.impact === 'low' && 'bg-green-500'
+                        "h-2 w-2 rounded-full",
+                        moment.impact === "high" && "bg-red-500",
+                        moment.impact === "medium" && "bg-yellow-500",
+                        moment.impact === "low" && "bg-green-500",
                       )}
                     />
 
@@ -350,13 +350,13 @@ export function VoteTrends({ showId, setlistId, className }: VoteTrendsProps) {
                     <Badge
                       variant="outline"
                       className={cn(
-                        'text-xs',
-                        moment.impact === 'high' &&
-                          'border-red-500 text-red-600',
-                        moment.impact === 'medium' &&
-                          'border-yellow-500 text-yellow-600',
-                        moment.impact === 'low' &&
-                          'border-green-500 text-green-600'
+                        "text-xs",
+                        moment.impact === "high" &&
+                          "border-red-500 text-red-600",
+                        moment.impact === "medium" &&
+                          "border-yellow-500 text-yellow-600",
+                        moment.impact === "low" &&
+                          "border-green-500 text-green-600",
                       )}
                     >
                       {moment.impact}

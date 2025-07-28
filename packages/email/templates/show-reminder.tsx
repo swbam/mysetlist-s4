@@ -10,7 +10,7 @@ import {
   Section,
   Tailwind,
   Text,
-} from '@react-email/components';
+} from "@react-email/components";
 
 type Show = {
   id: string;
@@ -37,9 +37,9 @@ export const ShowReminderTemplate = ({
 }: ShowReminderTemplateProps) => {
   const timeText =
     daysUntilShow === 0
-      ? 'today'
+      ? "today"
       : daysUntilShow === 1
-        ? 'tomorrow'
+        ? "tomorrow"
         : `in ${daysUntilShow} days`;
 
   return (
@@ -104,9 +104,9 @@ export const ShowReminderTemplate = ({
                 <Hr className="my-6" />
 
                 <Text className="text-sm text-zinc-500">
-                  You're receiving this reminder because you follow{' '}
+                  You're receiving this reminder because you follow{" "}
                   {show.artistName}. You can manage your notification
-                  preferences{' '}
+                  preferences{" "}
                   <Link
                     href={`${appUrl}/settings`}
                     className="text-zinc-700 underline"
@@ -125,17 +125,17 @@ export const ShowReminderTemplate = ({
 };
 
 ShowReminderTemplate.PreviewProps = {
-  userName: 'Alex',
+  userName: "Alex",
   show: {
-    id: '123',
-    name: 'Summer Tour 2024',
-    artistName: 'The Midnight',
-    venue: 'Red Rocks Amphitheatre',
-    date: 'July 15, 2024',
-    time: '8:00 PM',
-    ticketUrl: 'https://example.com/tickets',
+    id: "123",
+    name: "Summer Tour 2024",
+    artistName: "The Midnight",
+    venue: "Red Rocks Amphitheatre",
+    date: "July 15, 2024",
+    time: "8:00 PM",
+    ticketUrl: "https://example.com/tickets",
   },
-  appUrl: 'https://MySetlist.app',
+  appUrl: "https://MySetlist.app",
   daysUntilShow: 1,
 };
 

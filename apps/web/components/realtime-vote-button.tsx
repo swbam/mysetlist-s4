@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { cn } from '@repo/design-system/lib/utils';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { useAuth } from '~/app/providers/auth-provider';
-import { useRealtimeVotes } from '~/hooks/use-realtime-votes';
+import { Button } from "@repo/design-system/components/ui/button";
+import { cn } from "@repo/design-system/lib/utils";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useAuth } from "~/app/providers/auth-provider";
+import { useRealtimeVotes } from "~/hooks/use-realtime-votes";
 
 interface RealtimeVoteButtonProps {
   songId: string;
-  onVote: (songId: string, voteType: 'up' | 'down' | null) => Promise<void>;
+  onVote: (songId: string, voteType: "up" | "down" | null) => Promise<void>;
   disabled?: boolean;
   className?: string;
 }
@@ -32,13 +32,13 @@ export function RealtimeVoteButton({
 
   const netVotes = votes.upvotes - votes.downvotes;
 
-  const handleVote = async (voteType: 'up' | 'down') => {
+  const handleVote = async (voteType: "up" | "down") => {
     if (isVoting || disabled) {
       return;
     }
 
     if (!session) {
-      toast.error('Please sign in to vote');
+      toast.error("Please sign in to vote");
       return;
     }
 
@@ -48,23 +48,23 @@ export function RealtimeVoteButton({
       const newVote = votes.userVote === voteType ? null : voteType;
       await onVote(songId, newVote);
     } catch (_error) {
-      toast.error('Failed to vote. Please try again.');
+      toast.error("Failed to vote. Please try again.");
     } finally {
       setIsVoting(false);
     }
   };
 
   return (
-    <div className={cn('flex items-center gap-1', className)}>
+    <div className={cn("flex items-center gap-1", className)}>
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => handleVote('up')}
+        onClick={() => handleVote("up")}
         disabled={isVoting || disabled}
         className={cn(
-          'h-8 w-8 p-0 transition-all',
-          votes.userVote === 'up' &&
-            'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400'
+          "h-8 w-8 p-0 transition-all",
+          votes.userVote === "up" &&
+            "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400",
         )}
         aria-label={`Upvote (${votes.upvotes} upvotes)`}
       >
@@ -73,10 +73,10 @@ export function RealtimeVoteButton({
 
       <span
         className={cn(
-          'min-w-[2rem] text-center font-medium text-sm tabular-nums',
-          netVotes > 0 && 'text-green-600 dark:text-green-400',
-          netVotes < 0 && 'text-red-600 dark:text-red-400',
-          netVotes === 0 && 'text-muted-foreground'
+          "min-w-[2rem] text-center font-medium text-sm tabular-nums",
+          netVotes > 0 && "text-green-600 dark:text-green-400",
+          netVotes < 0 && "text-red-600 dark:text-red-400",
+          netVotes === 0 && "text-muted-foreground",
         )}
       >
         {netVotes > 0 ? `+${netVotes}` : netVotes}
@@ -85,12 +85,12 @@ export function RealtimeVoteButton({
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => handleVote('down')}
+        onClick={() => handleVote("down")}
         disabled={isVoting || disabled}
         className={cn(
-          'h-8 w-8 p-0 transition-all',
-          votes.userVote === 'down' &&
-            'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400'
+          "h-8 w-8 p-0 transition-all",
+          votes.userVote === "down" &&
+            "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400",
         )}
         aria-label={`Downvote (${votes.downvotes} downvotes)`}
       >

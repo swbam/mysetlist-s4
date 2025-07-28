@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 // Component disabled - react-window not installed
 

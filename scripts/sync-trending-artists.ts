@@ -4,15 +4,15 @@
  * This fetches real data from Ticketmaster and Spotify APIs
  */
 
-import 'dotenv/config';
-import { TicketmasterClient } from '../packages/external-apis/src/clients/ticketmaster';
+import "dotenv/config";
+import { TicketmasterClient } from "../packages/external-apis/src/clients/ticketmaster";
 
 // API configuration - these should be in your .env file
 const requiredEnvVars = [
-  'TICKETMASTER_API_KEY',
-  'NEXT_PUBLIC_SPOTIFY_CLIENT_ID',
-  'SPOTIFY_CLIENT_SECRET',
-  'NEXT_PUBLIC_APP_URL',
+  "TICKETMASTER_API_KEY",
+  "NEXT_PUBLIC_SPOTIFY_CLIENT_ID",
+  "SPOTIFY_CLIENT_SECRET",
+  "NEXT_PUBLIC_APP_URL",
 ];
 
 // Check for required environment variables
@@ -22,7 +22,7 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 
 interface TrendingArtist {
   name: string;
@@ -38,15 +38,15 @@ async function getTrendingArtistsFromTicketmaster(): Promise<TrendingArtist[]> {
   const _trendingArtists: TrendingArtist[] = [];
   // Get music events in the US sorted by popularity
   const eventsResponse = await tmClient.searchEvents({
-    countryCode: 'US',
-    classificationName: 'Music',
+    countryCode: "US",
+    classificationName: "Music",
     size: 200, // Get more events to find unique artists
-    sort: 'relevance,desc',
-    startDateTime: `${new Date().toISOString().split('.')[0]}Z`,
+    sort: "relevance,desc",
+    startDateTime: `${new Date().toISOString().split(".")[0]}Z`,
     endDateTime: `${
       new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
         .toISOString()
-        .split('.')[0]
+        .split(".")[0]
     }Z`, // Next 6 months
   });
 
@@ -64,8 +64,8 @@ async function getTrendingArtistsFromTicketmaster(): Promise<TrendingArtist[]> {
 
     for (const attraction of event._embedded.attractions) {
       if (
-        attraction.type?.toLowerCase() !== 'artist' &&
-        attraction.classifications?.[0]?.segment?.name !== 'Music'
+        attraction.type?.toLowerCase() !== "artist" &&
+        attraction.classifications?.[0]?.segment?.name !== "Music"
       ) {
         continue;
       }
@@ -116,9 +116,9 @@ async function getTrendingArtistsFromTicketmaster(): Promise<TrendingArtist[]> {
 async function syncArtist(artist: TrendingArtist): Promise<boolean> {
   try {
     const response = await fetch(`${APP_URL}/api/artists/sync`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         spotifyId: artist.spotifyId,

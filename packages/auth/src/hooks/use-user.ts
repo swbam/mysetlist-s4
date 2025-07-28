@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import type { UserProfile } from '../types';
-import { useAuth } from './use-auth';
+import { useEffect, useState } from "react";
+import type { UserProfile } from "../types";
+import { useAuth } from "./use-auth";
 
 export function useUser() {
   const { user, isAuthenticated } = useAuth();
@@ -23,19 +23,19 @@ export function useUser() {
         setError(null);
 
         // Fetch user profile from your API
-        const response = await fetch('/api/user/profile', {
-          credentials: 'include',
+        const response = await fetch("/api/user/profile", {
+          credentials: "include",
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch user profile');
+          throw new Error("Failed to fetch user profile");
         }
 
         const userProfile = await response.json();
         setProfile(userProfile);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : 'Failed to load user profile'
+          err instanceof Error ? err.message : "Failed to load user profile",
         );
         setProfile(null);
       } finally {
@@ -48,31 +48,31 @@ export function useUser() {
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!isAuthenticated) {
-      throw new Error('User must be authenticated to update profile');
+      throw new Error("User must be authenticated to update profile");
     }
 
     try {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/api/user/profile', {
-        method: 'PATCH',
+      const response = await fetch("/api/user/profile", {
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify(updates),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update profile');
+        throw new Error("Failed to update profile");
       }
 
       const updatedProfile = await response.json();
       setProfile(updatedProfile);
       return updatedProfile;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update profile');
+      setError(err instanceof Error ? err.message : "Failed to update profile");
       throw err;
     } finally {
       setLoading(false);

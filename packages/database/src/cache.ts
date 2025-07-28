@@ -1,4 +1,4 @@
-import { LRUCache } from 'lru-cache';
+import { LRUCache } from "lru-cache";
 
 // Types for cache configuration
 interface CacheConfig {
@@ -62,7 +62,7 @@ const caches = new Map<string, LRUCache<string, any>>();
 // Get or create a cache instance for a specific type
 function getCache(type: string): LRUCache<string, any> {
   if (!caches.has(type)) {
-    const config = cacheConfigs[type] || cacheConfigs['default'];
+    const config = cacheConfigs[type] || cacheConfigs["default"];
     caches.set(type, new LRUCache(config));
   }
   return caches.get(type)!;
@@ -71,7 +71,7 @@ function getCache(type: string): LRUCache<string, any> {
 // Generate a cache key from query parameters
 function generateCacheKey(
   queryType: string,
-  params: Record<string, any>
+  params: Record<string, any>,
 ): string {
   const sortedParams = Object.keys(params)
     .sort()
@@ -80,7 +80,7 @@ function generateCacheKey(
         acc[key] = params[key];
         return acc;
       },
-      {} as Record<string, any>
+      {} as Record<string, any>,
     );
 
   return `${queryType}:${JSON.stringify(sortedParams)}`;
@@ -94,7 +94,7 @@ export async function withCache<T>(
   options?: {
     ttl?: number;
     force?: boolean;
-  }
+  },
 ): Promise<T> {
   const cache = getCache(queryType);
   const cacheKey = generateCacheKey(queryType, params);
@@ -104,7 +104,7 @@ export async function withCache<T>(
     const cached = cache.get(cacheKey);
     if (cached !== undefined) {
       // Track cache hit for monitoring
-      if (process.env['NODE_ENV'] === 'development') {
+      if (process.env["NODE_ENV"] === "development") {
       }
       return cached;
     }
@@ -122,7 +122,7 @@ export async function withCache<T>(
     }
 
     // Track cache miss for monitoring
-    if (process.env['NODE_ENV'] === 'development') {
+    if (process.env["NODE_ENV"] === "development") {
     }
 
     return result;
@@ -139,7 +139,7 @@ export async function withCache<T>(
 // Invalidate cache entries
 export function invalidateCache(
   queryType?: string,
-  params?: Record<string, any>
+  params?: Record<string, any>,
 ) {
   if (!queryType) {
     // Clear all caches
@@ -177,8 +177,8 @@ export function getCacheStats() {
     stats[type] = {
       size: cache.size,
       calculatedSize: cache.calculatedSize,
-      hits: cache.size > 0 ? 'tracking-enabled' : 0,
-      misses: cache.size > 0 ? 'tracking-enabled' : 0,
+      hits: cache.size > 0 ? "tracking-enabled" : 0,
+      misses: cache.size > 0 ? "tracking-enabled" : 0,
     };
   });
 
@@ -191,28 +191,28 @@ export async function warmCache(
     type: string;
     params: Record<string, any>;
     fn: () => Promise<any>;
-  }>
+  }>,
 ) {
   const results = await Promise.allSettled(
-    queries.map(({ type, params, fn }) => withCache(type, params, fn))
+    queries.map(({ type, params, fn }) => withCache(type, params, fn)),
   );
 
-  const successful = results.filter((r) => r.status === 'fulfilled').length;
-  const failed = results.filter((r) => r.status === 'rejected').length;
+  const successful = results.filter((r) => r.status === "fulfilled").length;
+  const failed = results.filter((r) => r.status === "rejected").length;
 
   return { successful, failed, total: queries.length };
 }
 
 // Export cache types for use in queries
 export const CacheTypes = {
-  ARTISTS: 'artists',
-  VENUES: 'venues',
-  SHOWS: 'shows',
-  SETLISTS: 'setlists',
-  VOTES: 'votes',
-  TRENDING: 'trending',
-  SEARCH: 'search',
-  USER: 'user',
+  ARTISTS: "artists",
+  VENUES: "venues",
+  SHOWS: "shows",
+  SETLISTS: "setlists",
+  VOTES: "votes",
+  TRENDING: "trending",
+  SEARCH: "search",
+  USER: "user",
 } as const;
 
 export type CacheType = (typeof CacheTypes)[keyof typeof CacheTypes];

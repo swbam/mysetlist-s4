@@ -1,5 +1,5 @@
-import { createServiceClient } from '~/lib/supabase/server';
-import { type NextRequest, NextResponse } from 'next/server';
+import { createServiceClient } from "~/lib/supabase/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -7,8 +7,9 @@ export async function GET(_request: NextRequest) {
 
     // Get upcoming shows with high activity
     const { data: upcomingShows } = await supabase
-      .from('shows')
-      .select(`
+      .from("shows")
+      .select(
+        `
         id,
         name,
         date,
@@ -16,10 +17,11 @@ export async function GET(_request: NextRequest) {
         artist:artists!shows_headliner_artist_id_fkey(name, slug),
         venue:venues(name, city, state),
         view_count
-      `)
-      .gte('date', new Date().toISOString().split('T')[0])
-      .order('view_count', { ascending: false })
-      .order('date', { ascending: true })
+      `,
+      )
+      .gte("date", new Date().toISOString().split("T")[0])
+      .order("view_count", { ascending: false })
+      .order("date", { ascending: true })
       .limit(6);
 
     if (!upcomingShows || upcomingShows.length === 0) {
@@ -28,9 +30,9 @@ export async function GET(_request: NextRequest) {
 
     // Transform to expected format
     const shows = upcomingShows
-      .filter(show => show.artist && show.artist.length > 0)
+      .filter((show) => show.artist && show.artist.length > 0)
       .slice(0, 3)
-      .map(show => {
+      .map((show) => {
         const firstArtist = show.artist![0];
         if (!firstArtist) {
           return null;
@@ -38,12 +40,12 @@ export async function GET(_request: NextRequest) {
         return {
           id: show.id,
           artist: firstArtist.name,
-          venue: show.venue?.[0]?.name || 'Venue TBA',
+          venue: show.venue?.[0]?.name || "Venue TBA",
           date: show.date,
           ticketsLeft: show.ticket_url ? null : undefined, // TODO: Integrate with real ticket availability API
         };
       })
-      .filter(show => show !== null);
+      .filter((show) => show !== null);
 
     return NextResponse.json({ shows });
   } catch (_error) {

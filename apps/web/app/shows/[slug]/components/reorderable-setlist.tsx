@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
 import {
   DragDropContext,
   Draggable,
   type DropResult,
   Droppable,
-} from '@hello-pangea/dnd';
-import { Button } from '@repo/design-system/components/ui/button';
-import { GripVertical, Save, X } from 'lucide-react';
-import { useState, useTransition } from 'react';
-import { toast } from 'sonner';
-import { reorderSetlistSongs } from '../actions';
-import { SongItem } from './song-item';
+} from "@hello-pangea/dnd";
+import { Button } from "@repo/design-system/components/ui/button";
+import { GripVertical, Save, X } from "lucide-react";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { reorderSetlistSongs } from "../actions";
+import { SongItem } from "./song-item";
 
 type ReorderableSetlistProps = {
   setlist: any;
@@ -43,7 +43,7 @@ export function ReorderableSetlist({
 
     // Update positions
     const updatedItems = items.map((item, index) => ({
-      ...(typeof item === 'object' && item !== null ? item : {}),
+      ...(typeof item === "object" && item !== null ? item : {}),
       position: index + 1,
     }));
 
@@ -62,11 +62,11 @@ export function ReorderableSetlist({
 
         await reorderSetlistSongs(setlist.id, reorderData);
 
-        toast.success('Setlist reordered successfully');
+        toast.success("Setlist reordered successfully");
         setHasChanges(false);
         onReorder?.(songs);
       } catch (_error) {
-        toast.error('Failed to reorder setlist');
+        toast.error("Failed to reorder setlist");
       }
     });
   };
@@ -116,7 +116,7 @@ export function ReorderableSetlist({
               {...provided.droppableProps}
               ref={provided.innerRef}
               className={`space-y-2 ${
-                snapshot.isDraggingOver ? 'rounded-lg bg-muted/20 p-2' : ''
+                snapshot.isDraggingOver ? "rounded-lg bg-muted/20 p-2" : ""
               }`}
             >
               {songs.map((item: any, index: number) => (
@@ -131,8 +131,8 @@ export function ReorderableSetlist({
                       {...provided.draggableProps}
                       className={`${
                         snapshot.isDragging
-                          ? 'rotate-1 transform opacity-70 shadow-lg'
-                          : ''
+                          ? "rotate-1 transform opacity-70 shadow-lg"
+                          : ""
                       }`}
                     >
                       <div className="flex items-center gap-2 rounded-lg border bg-card p-3 transition-all hover:shadow-sm">

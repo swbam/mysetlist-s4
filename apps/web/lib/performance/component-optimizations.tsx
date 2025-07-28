@@ -1,8 +1,8 @@
 // Performance optimization implementations for critical MySetlist components
 // SUB-AGENT 2: Component Performance Specialist
 
-import React, { memo, useMemo, useCallback } from 'react';
-import { optimizeComponent } from './optimize-component';
+import React, { memo, useMemo, useCallback } from "react";
+import { optimizeComponent } from "./optimize-component";
 
 /**
  * CRITICAL FIX #1: Memoized AnalyticsCharts
@@ -13,10 +13,10 @@ import { optimizeComponent } from './optimize-component';
 // Optimized props comparator for analytics charts
 export const analyticsChartComparator = (
   prevProps: any,
-  nextProps: any
+  nextProps: any,
 ): boolean => {
   // Check if props have the expected properties
-  if ('type' in prevProps && 'type' in nextProps) {
+  if ("type" in prevProps && "type" in nextProps) {
     return (
       prevProps.type === nextProps.type &&
       prevProps.height === nextProps.height &&
@@ -24,31 +24,36 @@ export const analyticsChartComparator = (
     );
   }
   // Fallback to shallow equality for other props
-  return Object.keys(prevProps).every(key => prevProps[key] === nextProps[key]);
+  return Object.keys(prevProps).every(
+    (key) => prevProps[key] === nextProps[key],
+  );
 };
 
 // Custom hook for memoized chart data generation
 export const useOptimizedChartData = (type: string, period: string) => {
   return useMemo(() => {
     // Move expensive mock data generation to memoized hook
-    const days = period === 'month' ? 30 : period === 'week' ? 7 : 1;
+    const days = period === "month" ? 30 : period === "week" ? 7 : 1;
     const baseValue = getBaseValueForType(type);
-    
+
     return Array.from({ length: days }, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - (days - 1 - i));
-      
+
       const variance = 0.2;
-      const trend = type.includes('growth') ? 1.05 : 1.0;
-      const value = Math.floor(baseValue * trend ** i * (1 + (Math.random() - 0.5) * variance));
-      
+      const trend = type.includes("growth") ? 1.05 : 1.0;
+      const value = Math.floor(
+        baseValue * trend ** i * (1 + (Math.random() - 0.5) * variance),
+      );
+
       return {
         period: date.toLocaleDateString(),
         date: date.toISOString(),
         value,
-        previousValue: i > 0 ? Math.floor(baseValue * trend ** (i-1)) : baseValue,
+        previousValue:
+          i > 0 ? Math.floor(baseValue * trend ** (i - 1)) : baseValue,
         change: i > 0 ? Math.random() * 10 - 5 : 0,
-        label: getChartLabel(type, value)
+        label: getChartLabel(type, value),
       };
     });
   }, [type, period]); // Only recalculate when type or period changes
@@ -58,22 +63,22 @@ export const useOptimizedChartData = (type: string, period: string) => {
 export const useChartConfig = (type: string) => {
   return useMemo(() => {
     const configs: Record<string, any> = {
-      'growth': {
-        title: 'User Growth',
-        description: 'New user registrations over time',
-        color: '#3b82f6',
-        chartType: 'line' as const
+      growth: {
+        title: "User Growth",
+        description: "New user registrations over time",
+        color: "#3b82f6",
+        chartType: "line" as const,
       },
-      'engagement': {
-        title: 'User Engagement', 
-        description: 'Daily active users and engagement metrics',
-        color: '#10b981',
-        chartType: 'area' as const
-      }
+      engagement: {
+        title: "User Engagement",
+        description: "Daily active users and engagement metrics",
+        color: "#10b981",
+        chartType: "area" as const,
+      },
       // ... other configs
     };
-    
-    return configs[type] || configs['growth'];
+
+    return configs[type] || configs["growth"];
   }, [type]);
 };
 
@@ -82,17 +87,20 @@ export const useChartConfig = (type: string) => {
  * Current Issue: Frequent socket re-renders affecting all connected components
  */
 
-export const RealtimeOptimizedComponent = memo(function RealtimeComponent({ 
-  data, 
-  onUpdate 
+export const RealtimeOptimizedComponent = memo(function RealtimeComponent({
+  data,
+  onUpdate,
 }: {
   data: any;
   onUpdate: (data: any) => void;
 }) {
   // Memoize callback to prevent re-renders in parent components
-  const handleUpdate = useCallback((newData: any) => {
-    onUpdate(newData);
-  }, [onUpdate]);
+  const handleUpdate = useCallback(
+    (newData: any) => {
+      onUpdate(newData);
+    },
+    [onUpdate],
+  );
 
   // Memoize expensive data processing
   const processedData = useMemo(() => {
@@ -100,7 +108,7 @@ export const RealtimeOptimizedComponent = memo(function RealtimeComponent({
     return data.map((item: any) => ({
       ...item,
       processed: true,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     }));
   }, [data]);
 
@@ -126,23 +134,26 @@ interface OverviewMetrics {
 }
 
 export const OptimizedAnalyticsOverview = memo(function AnalyticsOverview({
-  period = 'week'
+  period = "week",
 }: {
-  period?: 'day' | 'week' | 'month';
+  period?: "day" | "week" | "month";
 }) {
   // Memoize the fetch function to prevent unnecessary API calls
   const fetchMetrics = useCallback(async (): Promise<OverviewMetrics> => {
-    const response = await fetch(`/api/analytics?metric=overview&period=${period}`, {
-      // Add cache headers for better performance
-      headers: {
-        'Cache-Control': 'max-age=300', // 5 minute cache
-      }
-    });
-    
+    const response = await fetch(
+      `/api/analytics?metric=overview&period=${period}`,
+      {
+        // Add cache headers for better performance
+        headers: {
+          "Cache-Control": "max-age=300", // 5 minute cache
+        },
+      },
+    );
+
     if (!response.ok) {
-      throw new Error('Failed to fetch metrics');
+      throw new Error("Failed to fetch metrics");
     }
-    
+
     return response.json();
   }, [period]);
 
@@ -161,11 +172,14 @@ export const OptimizedAnalyticsOverview = memo(function AnalyticsOverview({
   // Memoize metric calculations
   const calculatedMetrics = useMemo(() => {
     if (!metrics) return null;
-    
+
     return {
       ...metrics,
-      userGrowthRate: ((metrics.newUsers / metrics.totalUsers) * 100),
-      engagementRate: (metrics.totalUsers > 0 ? (metrics.newUsers / metrics.totalUsers) * 100 : 0)
+      userGrowthRate: (metrics.newUsers / metrics.totalUsers) * 100,
+      engagementRate:
+        metrics.totalUsers > 0
+          ? (metrics.newUsers / metrics.totalUsers) * 100
+          : 0,
     };
   }, [metrics]);
 
@@ -185,29 +199,29 @@ export const OptimizedAnalyticsOverview = memo(function AnalyticsOverview({
 // Helper functions moved outside component to prevent re-creation
 function getBaseValueForType(type: string): number {
   const baseValues: Record<string, number> = {
-    'growth': 1000,
-    'user-growth': 1000,
-    'engagement': 75,
-    'engagement-trends': 75,
-    'trending-performance': 85,
-    'retention': 60,
-    'user-segments': 25
+    growth: 1000,
+    "user-growth": 1000,
+    engagement: 75,
+    "engagement-trends": 75,
+    "trending-performance": 85,
+    retention: 60,
+    "user-segments": 25,
   };
-  
+
   return baseValues[type] || 100;
 }
 
 function getChartLabel(type: string, value: number): string {
   const labelMap: Record<string, string> = {
-    'growth': `${value} users`,
-    'user-growth': `${value} users`,
-    'engagement': `${value}% engaged`,
-    'engagement-trends': `${value}% engaged`,
-    'trending-performance': `${value}% accuracy`,
-    'retention': `${value}% retained`,
-    'user-segments': `${value}% segment`
+    growth: `${value} users`,
+    "user-growth": `${value} users`,
+    engagement: `${value}% engaged`,
+    "engagement-trends": `${value}% engaged`,
+    "trending-performance": `${value}% accuracy`,
+    retention: `${value}% retained`,
+    "user-segments": `${value}% segment`,
   };
-  
+
   return labelMap[type] || `${value}`;
 }
 
@@ -216,12 +230,12 @@ function getChartLabel(type: string, value: number): string {
  */
 export function withAnalyticsOptimization<P extends object>(
   Component: React.ComponentType<P>,
-  displayName?: string
+  displayName?: string,
 ) {
   return optimizeComponent(Component, {
     propsComparator: analyticsChartComparator,
-    trackPerformance: process.env.NODE_ENV === 'development',
-    componentName: displayName || Component.displayName || Component.name
+    trackPerformance: process.env.NODE_ENV === "development",
+    componentName: displayName || Component.displayName || Component.name,
   });
 }
 
@@ -240,20 +254,26 @@ export class PerformanceTracker {
 
   static endMeasure(measureName: string, componentName: string) {
     performance.mark(`${measureName}-end`);
-    performance.measure(measureName, `${measureName}-start`, `${measureName}-end`);
-    
+    performance.measure(
+      measureName,
+      `${measureName}-start`,
+      `${measureName}-end`,
+    );
+
     const measure = performance.getEntriesByName(measureName)[0];
     if (measure) {
       const measurements = this.measurements.get(componentName) || [];
       measurements.push(measure.duration);
       this.measurements.set(componentName, measurements);
-      
+
       // Log slow renders in development
-      if (process.env.NODE_ENV === 'development' && measure.duration > 16) {
-        console.warn(`[Performance] ${componentName} rendered in ${measure.duration.toFixed(2)}ms`);
+      if (process.env.NODE_ENV === "development" && measure.duration > 16) {
+        console.warn(
+          `[Performance] ${componentName} rendered in ${measure.duration.toFixed(2)}ms`,
+        );
       }
     }
-    
+
     // Cleanup
     performance.clearMarks(`${measureName}-start`);
     performance.clearMarks(`${measureName}-end`);
@@ -263,21 +283,27 @@ export class PerformanceTracker {
   static getAverageRenderTime(componentName: string): number {
     const measurements = this.measurements.get(componentName) || [];
     if (measurements.length === 0) return 0;
-    
+
     const sum = measurements.reduce((a, b) => a + b, 0);
     return sum / measurements.length;
   }
 
-  static getReport(): Record<string, { avgRenderTime: number; renderCount: number }> {
-    const report: Record<string, { avgRenderTime: number; renderCount: number }> = {};
-    
+  static getReport(): Record<
+    string,
+    { avgRenderTime: number; renderCount: number }
+  > {
+    const report: Record<
+      string,
+      { avgRenderTime: number; renderCount: number }
+    > = {};
+
     for (const [componentName, measurements] of this.measurements) {
       report[componentName] = {
         avgRenderTime: this.getAverageRenderTime(componentName),
-        renderCount: measurements.length
+        renderCount: measurements.length,
       };
     }
-    
+
     return report;
   }
 }

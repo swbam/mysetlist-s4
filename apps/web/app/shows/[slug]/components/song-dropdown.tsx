@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,17 +9,30 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import { ChevronDown, Loader2, Music, Plus, Search, Vote, TrendingUp } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { useAuth } from '~/app/providers/auth-provider';
-import { AnonymousVoteButton } from '~/components/voting/anonymous-vote-button';
-import { useDebounce } from '~/hooks/use-debounce';
-import { createClient } from '~/lib/supabase/client';
-import { voteSong } from '../actions';
+} from "@repo/design-system/components/ui/dropdown-menu";
+import { Input } from "@repo/design-system/components/ui/input";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import {
+  ChevronDown,
+  Loader2,
+  Music,
+  Plus,
+  Search,
+  Vote,
+  TrendingUp,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useAuth } from "~/app/providers/auth-provider";
+import { AnonymousVoteButton } from "~/components/voting/anonymous-vote-button";
+import { useDebounce } from "~/hooks/use-debounce";
+import { createClient } from "~/lib/supabase/client";
+import { voteSong } from "../actions";
 
 type SongDropdownProps = {
   show: any;
@@ -44,7 +57,7 @@ interface SetlistSong {
   position: number;
   upvotes: number;
   downvotes: number;
-  userVote: 'up' | 'down' | null;
+  userVote: "up" | "down" | null;
   notes?: string;
   song: Song;
 }
@@ -59,33 +72,38 @@ export function SongDropdown({
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState<string | null>(null);
   const [voting, setVoting] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'predicted' | 'catalog'>('predicted');
+  const [activeTab, setActiveTab] = useState<"predicted" | "catalog">(
+    "predicted",
+  );
   const [realtimeSetlistData, setRealtimeSetlistData] = useState(null);
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // Get the primary setlist for adding songs
   const primarySetlist =
-    setlists.find((s) => s.type === 'predicted') || setlists[0];
+    setlists.find((s) => s.type === "predicted") || setlists[0];
 
   // Use real-time data if available, otherwise fall back to props
   const currentSetlistData = realtimeSetlistData || primarySetlist;
 
   // Get predicted setlist songs with vote counts
-  const predictedSongs: SetlistSong[] = currentSetlistData?.setlist_songs?.map((item: any) => ({
-    id: item.id,
-    position: item.position,
-    upvotes: item.upvotes || 0,
-    downvotes: item.downvotes || 0,
-    userVote: item.userVote || null,
-    notes: item.notes,
-    song: item.song,
-  })).sort((a: SetlistSong, b: SetlistSong) => a.position - b.position) || [];
+  const predictedSongs: SetlistSong[] =
+    currentSetlistData?.setlist_songs
+      ?.map((item: any) => ({
+        id: item.id,
+        position: item.position,
+        upvotes: item.upvotes || 0,
+        downvotes: item.downvotes || 0,
+        userVote: item.userVote || null,
+        notes: item.notes,
+        song: item.song,
+      }))
+      .sort((a: SetlistSong, b: SetlistSong) => a.position - b.position) || [];
 
   const fetchSongs = useCallback(
-    async (query = '') => {
+    async (query = "") => {
       if (!show.headliner_artist?.slug) {
         return;
       }
@@ -94,12 +112,12 @@ export function SongDropdown({
       try {
         const url = new URL(
           `/api/artists/${show.headliner_artist.slug}/songs`,
-          window.location.origin
+          window.location.origin,
         );
         if (query) {
-          url.searchParams.set('q', query);
+          url.searchParams.set("q", query);
         }
-        url.searchParams.set('limit', '20');
+        url.searchParams.set("limit", "20");
 
         const response = await fetch(url.toString());
         if (response.ok) {
@@ -114,18 +132,18 @@ export function SongDropdown({
         setLoading(false);
       }
     },
-    [show.headliner_artist?.slug]
+    [show.headliner_artist?.slug],
   );
 
   useEffect(() => {
-    if (isOpen && activeTab === 'catalog') {
+    if (isOpen && activeTab === "catalog") {
       fetchSongs(debouncedSearchQuery);
     }
   }, [debouncedSearchQuery, isOpen, activeTab, fetchSongs]);
 
-  const handleVote = async (setlistSongId: string, voteType: 'up' | 'down') => {
+  const handleVote = async (setlistSongId: string, voteType: "up" | "down") => {
     if (!session) {
-      toast.error('Please sign in to vote');
+      toast.error("Please sign in to vote");
       return;
     }
 
@@ -133,9 +151,9 @@ export function SongDropdown({
     try {
       await voteSong(setlistSongId, voteType);
       // The real-time system will handle updating the UI
-      toast.success(`Vote ${voteType === 'up' ? 'added' : 'noted'}!`);
+      toast.success(`Vote ${voteType === "up" ? "added" : "noted"}!`);
     } catch (error: any) {
-      toast.error(error.message || 'Failed to vote');
+      toast.error(error.message || "Failed to vote");
     } finally {
       setVoting(null);
     }
@@ -149,26 +167,28 @@ export function SongDropdown({
     const channel = supabase
       .channel(`setlist-dropdown-${primarySetlist.id}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'votes',
-          filter: `setlist_song_id=in.(${predictedSongs.map(s => s.id).join(',')})`,
+          event: "*",
+          schema: "public",
+          table: "votes",
+          filter: `setlist_song_id=in.(${predictedSongs.map((s) => s.id).join(",")})`,
         },
         async () => {
           // Refresh setlist data when votes change
           const { data, error } = await supabase
-            .from('setlists')
-            .select(`
+            .from("setlists")
+            .select(
+              `
               *,
               setlist_songs(
                 *,
                 song:songs(*),
                 votes(*)
               )
-            `)
-            .eq('id', primarySetlist.id)
+            `,
+            )
+            .eq("id", primarySetlist.id)
             .single();
 
           if (!error && data) {
@@ -178,38 +198,43 @@ export function SongDropdown({
               setlist_songs: data.setlist_songs?.map((item: any) => ({
                 ...item,
                 upvotes:
-                  item.votes?.filter((v: any) => v.vote_type === 'up').length || 0,
+                  item.votes?.filter((v: any) => v.vote_type === "up").length ||
+                  0,
                 downvotes:
-                  item.votes?.filter((v: any) => v.vote_type === 'down').length || 0,
+                  item.votes?.filter((v: any) => v.vote_type === "down")
+                    .length || 0,
                 userVote:
-                  item.votes?.find((v: any) => v.user_id === session?.user?.id)?.vote_type || null,
+                  item.votes?.find((v: any) => v.user_id === session?.user?.id)
+                    ?.vote_type || null,
               })),
             };
             setRealtimeSetlistData(processedData);
           }
-        }
+        },
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'setlist_songs',
+          event: "*",
+          schema: "public",
+          table: "setlist_songs",
           filter: `setlist_id=eq.${primarySetlist.id}`,
         },
         async () => {
           // Refresh when setlist songs are added/removed
           const { data, error } = await supabase
-            .from('setlists')
-            .select(`
+            .from("setlists")
+            .select(
+              `
               *,
               setlist_songs(
                 *,
                 song:songs(*),
                 votes(*)
               )
-            `)
-            .eq('id', primarySetlist.id)
+            `,
+            )
+            .eq("id", primarySetlist.id)
             .single();
 
           if (!error && data) {
@@ -218,16 +243,19 @@ export function SongDropdown({
               setlist_songs: data.setlist_songs?.map((item: any) => ({
                 ...item,
                 upvotes:
-                  item.votes?.filter((v: any) => v.vote_type === 'up').length || 0,
+                  item.votes?.filter((v: any) => v.vote_type === "up").length ||
+                  0,
                 downvotes:
-                  item.votes?.filter((v: any) => v.vote_type === 'down').length || 0,
+                  item.votes?.filter((v: any) => v.vote_type === "down")
+                    .length || 0,
                 userVote:
-                  item.votes?.find((v: any) => v.user_id === session?.user?.id)?.vote_type || null,
+                  item.votes?.find((v: any) => v.user_id === session?.user?.id)
+                    ?.vote_type || null,
               })),
             };
             setRealtimeSetlistData(processedData);
           }
-        }
+        },
       )
       .subscribe();
 
@@ -238,7 +266,7 @@ export function SongDropdown({
 
   const addSongToSetlist = async (song: Song) => {
     if (!primarySetlist) {
-      toast.error('No setlist available to add songs to');
+      toast.error("No setlist available to add songs to");
       return;
     }
 
@@ -246,9 +274,9 @@ export function SongDropdown({
 
     try {
       // First, upsert the song to our database
-      const songResponse = await fetch('/api/songs/upsert', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const songResponse = await fetch("/api/songs/upsert", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           spotifyId: song.spotifyId,
           title: song.title,
@@ -262,15 +290,15 @@ export function SongDropdown({
       });
 
       if (!songResponse.ok) {
-        throw new Error('Failed to save song');
+        throw new Error("Failed to save song");
       }
 
       const songData = await songResponse.json();
 
       // Then add to setlist
-      const setlistResponse = await fetch('/api/setlists/songs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const setlistResponse = await fetch("/api/setlists/songs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           setlistId: primarySetlist.id,
           songId: songData.song.id,
@@ -279,15 +307,15 @@ export function SongDropdown({
 
       if (!setlistResponse.ok) {
         const errorData = await setlistResponse.json();
-        throw new Error(errorData.error || 'Failed to add song to setlist');
+        throw new Error(errorData.error || "Failed to add song to setlist");
       }
 
       toast.success(`Added "${song.title}" to setlist`);
       onSongAdded();
-      setSearchQuery(''); // Clear search after successful add
+      setSearchQuery(""); // Clear search after successful add
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : 'Failed to add song'
+        error instanceof Error ? error.message : "Failed to add song",
       );
     } finally {
       setAdding(null);
@@ -297,7 +325,7 @@ export function SongDropdown({
   const formatDuration = (ms: number) => {
     const minutes = Math.floor(ms / 60000);
     const seconds = Math.floor((ms % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   if (!primarySetlist) {
@@ -315,12 +343,18 @@ export function SongDropdown({
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-[500px]" align="end">
         <DropdownMenuLabel className="flex items-center gap-2">
-          <Vote className="h-4 w-4" />
-          "{primarySetlist.name || 'Predicted Setlist'}" - Vote & Add Songs
+          <Vote className="h-4 w-4" />"
+          {primarySetlist.name || "Predicted Setlist"}" - Vote & Add Songs
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'predicted' | 'catalog')} className="w-full">
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) =>
+            setActiveTab(value as "predicted" | "catalog")
+          }
+          className="w-full"
+        >
           <TabsList className="grid w-full grid-cols-2 mx-2 mb-2">
             <TabsTrigger value="predicted" className="gap-2">
               <TrendingUp className="h-3 w-3" />
@@ -347,19 +381,27 @@ export function SongDropdown({
 
                     {/* Song Info */}
                     <div className="min-w-0 flex-1">
-                      <div className="truncate font-medium">{setlistSong.song.title}</div>
+                      <div className="truncate font-medium">
+                        {setlistSong.song.title}
+                      </div>
                       <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                        <span className="truncate">{setlistSong.song.artist}</span>
+                        <span className="truncate">
+                          {setlistSong.song.artist}
+                        </span>
                         {setlistSong.song.album && (
                           <>
                             <span>•</span>
-                            <span className="truncate">{setlistSong.song.album}</span>
+                            <span className="truncate">
+                              {setlistSong.song.album}
+                            </span>
                           </>
                         )}
                         {setlistSong.song.durationMs && (
                           <>
                             <span>•</span>
-                            <span>{formatDuration(setlistSong.song.durationMs)}</span>
+                            <span>
+                              {formatDuration(setlistSong.song.durationMs)}
+                            </span>
                           </>
                         )}
                       </div>
@@ -394,7 +436,9 @@ export function SongDropdown({
               <div className="p-6 text-center text-muted-foreground">
                 <Music className="mx-auto mb-2 h-8 w-8 opacity-50" />
                 <p className="text-sm">No songs in predicted setlist yet</p>
-                <p className="text-xs mt-1">Switch to "Add Songs" to start building the setlist</p>
+                <p className="text-xs mt-1">
+                  Switch to "Add Songs" to start building the setlist
+                </p>
               </div>
             )}
           </TabsContent>
@@ -409,7 +453,7 @@ export function SongDropdown({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-8"
-                  autoFocus={activeTab === 'catalog'}
+                  autoFocus={activeTab === "catalog"}
                 />
               </div>
             </div>
@@ -417,15 +461,17 @@ export function SongDropdown({
             {loading ? (
               <div className="p-4 text-center">
                 <Loader2 className="mx-auto mb-2 h-6 w-6 animate-spin" />
-                <p className="text-muted-foreground text-sm">Loading songs...</p>
+                <p className="text-muted-foreground text-sm">
+                  Loading songs...
+                </p>
               </div>
             ) : songs.length === 0 ? (
               <div className="p-4 text-center text-muted-foreground">
                 <Music className="mx-auto mb-2 h-8 w-8 opacity-50" />
                 <p className="text-sm">
                   {searchQuery
-                    ? 'No songs found matching your search'
-                    : 'Search for songs to add to the setlist'}
+                    ? "No songs found matching your search"
+                    : "Search for songs to add to the setlist"}
                 </p>
               </div>
             ) : (

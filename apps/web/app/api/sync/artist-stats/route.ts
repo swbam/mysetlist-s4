@@ -1,4 +1,4 @@
-import { db } from '@repo/database';
+import { db } from "@repo/database";
 import {
   artistSongs,
   artistStats,
@@ -6,9 +6,9 @@ import {
   setlists,
   shows,
   songs,
-} from '@repo/database';
-import { desc, eq, sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+} from "@repo/database";
+import { desc, eq, sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 // POST /api/sync/artist-stats
 // Body: { artistId: string }
@@ -19,8 +19,8 @@ export async function POST(request: NextRequest) {
 
     if (!artistId) {
       return NextResponse.json(
-        { error: 'Artist ID required' },
-        { status: 400 }
+        { error: "Artist ID required" },
+        { status: 400 },
       );
     }
 
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (!artist.length) {
-      return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
     const artistData = artist[0];
@@ -62,16 +62,16 @@ export async function POST(request: NextRequest) {
         db
           .select({
             setlistId: setlists.id,
-            song_count: sql<number>`count(*)`.as('song_count'),
+            song_count: sql<number>`count(*)`.as("song_count"),
           })
           .from(setlists)
           .leftJoin(
             sql`setlist_songs`,
-            sql`setlist_songs.setlist_id = ${setlists.id}`
+            sql`setlist_songs.setlist_id = ${setlists.id}`,
           )
           .where(eq(setlists.artistId, artistId))
           .groupBy(setlists.id)
-          .as('subquery')
+          .as("subquery"),
       );
 
     const avgSetlistLength = avgLengthResult[0]?.avgLength || 0;
@@ -133,17 +133,17 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Artist stats updated',
+      message: "Artist stats updated",
       artist: artistData,
       stats: stats[0],
     });
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Artist stats sync failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Artist stats sync failed",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

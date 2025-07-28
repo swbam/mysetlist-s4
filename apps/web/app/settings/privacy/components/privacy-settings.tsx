@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/alert";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Label } from '@repo/design-system/components/ui/label';
-import { Switch } from '@repo/design-system/components/ui/switch';
-import { toast } from '@repo/design-system/components/ui/use-toast';
-import { Download, Eye, Shield, UserX } from 'lucide-react';
-import { useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+} from "@repo/design-system/components/ui/card";
+import { Label } from "@repo/design-system/components/ui/label";
+import { Switch } from "@repo/design-system/components/ui/switch";
+import { toast } from "@repo/design-system/components/ui/use-toast";
+import { Download, Eye, Shield, UserX } from "lucide-react";
+import { useState } from "react";
+import { createClient } from "~/lib/supabase/client";
 
 interface PrivacySettingsProps {
   userId: string;
@@ -31,7 +31,7 @@ export function PrivacySettings({
   currentSettings,
 }: PrivacySettingsProps) {
   const [settings, setSettings] = useState({
-    profileVisibility: currentSettings?.profile_visibility || 'public',
+    profileVisibility: currentSettings?.profile_visibility || "public",
     showAttendedShows: currentSettings?.show_attended_shows ?? true,
     showFollowedArtists: currentSettings?.show_followed_artists ?? true,
     showVotingHistory: currentSettings?.show_voting_history ?? false,
@@ -47,7 +47,7 @@ export function PrivacySettings({
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.from('user_privacy_settings').upsert({
+      const { error } = await supabase.from("user_privacy_settings").upsert({
         user_id: userId,
         profile_visibility: settings.profileVisibility,
         show_attended_shows: settings.showAttendedShows,
@@ -71,22 +71,22 @@ export function PrivacySettings({
           marketing: settings.allowMarketing,
         };
         document.cookie = `MySetlist-cookie-consent=${encodeURIComponent(
-          JSON.stringify(consent)
+          JSON.stringify(consent),
         )}; max-age=${365 * 24 * 60 * 60}; path=/; SameSite=Strict`;
 
         window.dispatchEvent(
-          new CustomEvent('cookieConsentUpdated', { detail: consent })
+          new CustomEvent("cookieConsentUpdated", { detail: consent }),
         );
       }
 
       toast({
-        title: 'Privacy settings updated successfully',
-        variant: 'success',
+        title: "Privacy settings updated successfully",
+        variant: "success",
       });
     } catch (_error) {
       toast({
-        title: 'Failed to update privacy settings',
-        variant: 'destructive',
+        title: "Failed to update privacy settings",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -105,14 +105,14 @@ export function PrivacySettings({
         { data: votes },
         { data: reviews },
       ] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', userId).single(),
-        supabase.from('user_shows').select('*, shows(*)').eq('user_id', userId),
+        supabase.from("profiles").select("*").eq("id", userId).single(),
+        supabase.from("user_shows").select("*, shows(*)").eq("user_id", userId),
         supabase
-          .from('user_artists')
-          .select('*, artists(*)')
-          .eq('user_id', userId),
-        supabase.from('song_votes').select('*, songs(*)').eq('user_id', userId),
-        supabase.from('venue_reviews').select('*').eq('user_id', userId),
+          .from("user_artists")
+          .select("*, artists(*)")
+          .eq("user_id", userId),
+        supabase.from("song_votes").select("*, songs(*)").eq("user_id", userId),
+        supabase.from("venue_reviews").select("*").eq("user_id", userId),
       ]);
 
       const userData = {
@@ -126,25 +126,25 @@ export function PrivacySettings({
 
       // Create and download JSON file
       const blob = new Blob([JSON.stringify(userData, null, 2)], {
-        type: 'application/json',
+        type: "application/json",
       });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
-      a.download = `MySetlist-data-export-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `MySetlist-data-export-${new Date().toISOString().split("T")[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
       toast({
-        title: 'Your data has been exported successfully',
-        variant: 'success',
+        title: "Your data has been exported successfully",
+        variant: "success",
       });
     } catch (_error) {
       toast({
-        title: 'Failed to export data',
-        variant: 'destructive',
+        title: "Failed to export data",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -154,7 +154,7 @@ export function PrivacySettings({
   const deleteAccount = async () => {
     if (
       !confirm(
-        'Are you sure you want to delete your account? This action cannot be undone.'
+        "Are you sure you want to delete your account? This action cannot be undone.",
       )
     ) {
       return;
@@ -163,7 +163,7 @@ export function PrivacySettings({
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.rpc('delete_user_account', {
+      const { error } = await supabase.rpc("delete_user_account", {
         p_user_id: userId,
       });
 
@@ -172,14 +172,14 @@ export function PrivacySettings({
       }
 
       toast({
-        title: 'Your account has been deleted',
-        variant: 'success',
+        title: "Your account has been deleted",
+        variant: "success",
       });
-      window.location.href = '/';
+      window.location.href = "/";
     } catch (_error) {
       toast({
-        title: 'Failed to delete account',
-        variant: 'destructive',
+        title: "Failed to delete account",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);

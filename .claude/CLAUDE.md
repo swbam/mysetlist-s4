@@ -9,6 +9,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 ## CORE FEATURES
 
 ### 1. NAVIGATION & ROUTING SYSTEM (**SUB-AGENT 1**)
+
 - **CRITICAL FIX**: Eliminate all top navigation crashes immediately
 - Implement bulletproof next-forge routing patterns
 - Ensure seamless page transitions with proper error boundaries
@@ -16,6 +17,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 - **ULTRATHINK**: Audit every route and navigation component 3x
 
 ### 2. COMPREHENSIVE DATA SYNC SYSTEM (**SUB-AGENT 2**)
+
 - **CRITICAL FIX**: Complete artist/show/venue/song catalog synchronization
 - **API CONSOLIDATION**: Remove apps/api folder, migrate all sync functionality to apps/web/app/api
 - Automated data import when artist is clicked in search results
@@ -24,6 +26,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 - **ULTRATHINK**: Validate entire sync pipeline works with consolidated API architecture
 
 ### 3. TRENDING PAGE FUNCTIONALITY (**SUB-AGENT 3**)
+
 - **CRITICAL FIX**: Resolve trending page data loading failures
 - **API INTEGRATION**: Implement trending endpoints within apps/web/app/api structure
 - Implement proper data fetching using next-forge patterns
@@ -32,6 +35,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 - **ULTRATHINK**: Review all database queries and data flow with new API architecture
 
 ### 4. ARTIST PAGE COMPLETE IMPLEMENTATION (**SUB-AGENT 5**)
+
 - **CRITICAL FIX**: Artist page show/data loading issues
 - Full artist-to-shows data relationship display
 - Complete show catalog population for each artist
@@ -39,6 +43,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 - **ULTRATHINK**: Verify complete data binding and relationships
 
 ### 5. HOMEPAGE ENHANCEMENT (**SUB-AGENT 4**)
+
 - **CRITICAL IMPLEMENTATION**: Centered search input in top hero section
 - Next-forge slider component for displaying artists and shows
 - Trending content showcase using proper next-forge patterns
@@ -46,6 +51,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 - **ULTRATHINK**: Integrate components with design system
 
 ### 6. PERFORMANCE & CONFIGURATION OPTIMIZATION (**SUB-AGENT 6**)
+
 - **CRITICAL AUDIT**: All configuration files and environment variables
 - Performance optimizations and caching strategies
 - Production-ready deployment configuration
@@ -55,6 +61,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 ## TECHNICAL REQUIREMENTS
 
 ### Architecture Standards
+
 - **Framework**: Next.js with next-forge starter structure (MANDATORY)
 - **API Structure**: **CRITICAL CHANGE** - Remove separate API app from apps folder, consolidate ALL API functionality into apps/web/app/api routes
 - **Styling**: Tailwind CSS with design system implementation
@@ -64,6 +71,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 - **Performance**: Bundle optimization and load time targets
 
 ### API Consolidation Requirements
+
 - **IMPERATIVE**: Eliminate apps/api folder completely
 - **ULTRATHINK**: Migrate all API functionality to apps/web/app/api structure
 - Ensure all database operations use unified API routes within web app
@@ -71,12 +79,14 @@ MySetlist is a setlist voting web application that enables users to search for a
 - Validate all sync functions work with consolidated API structure
 
 ### Development Methodology
+
 - **ULTRATHINKING**: Every decision analyzed 3x before implementation
 - **Parallel Development**: 6 specialized sub-agents working simultaneously
 - **Code Conflict Prevention**: Clear domain boundaries and coordination protocols
 - **Quality Gates**: Continuous validation at each implementation phase
 
 ### Sub-Agent Coordination Requirements
+
 1. **Navigation Agent**: Route handlers, middleware, layout files only
 2. **Database Agent**: **UPDATED SCOPE** - Database models, sync utilities, cron jobs, AND consolidation of apps/api into apps/web/app/api structure
 3. **Frontend Data Agent**: **UPDATED SCOPE** - Unified API routes within apps/web/app/api, data hooks, state management, server actions
@@ -85,6 +95,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 6. **Performance Agent**: Config files, environment setup, optimization, build process only
 
 ### API Consolidation Mandate
+
 - **SUB-AGENT 2 & 3 COORDINATION**: Remove entire apps/api folder and migrate ALL functionality to apps/web/app/api
 - **ULTRATHINK**: Ensure zero functionality loss during API consolidation
 - Validate all existing API endpoints are properly migrated to unified structure
@@ -94,6 +105,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 ## SUCCESS CRITERIA
 
 ### Functional Requirements
+
 - **Zero navigation crashes** - All routes and links function perfectly
 - **Complete data sync flow** - Artist click → full data synchronization → display
 - **Trending page loads data** - Real-time trending content display
@@ -102,6 +114,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 - **API consolidation complete** - Single unified API structure in apps/web/app/api
 
 ### Performance Targets
+
 - **Sub-second page load times** across all pages
 - **Optimal bundle size** with proper code splitting
 - **Responsive design** functioning on all device types
@@ -109,6 +122,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 - **100% TypeScript coverage** with strict mode
 
 ### Quality Standards
+
 - **World-class engineering quality** with next-forge patterns
 - **Professional code organization** ready for team collaboration
 - **Comprehensive testing** with unit and accessibility tests
@@ -118,15 +132,18 @@ MySetlist is a setlist voting web application that enables users to search for a
 ## PARALLEL IMPLEMENTATION STRATEGY
 
 ### 6 SUB-AGENTS WORKING SIMULTANEOUSLY
+
 **IMPERATIVE**: Deploy specialized agents in parallel with strict domain boundaries
 
 #### COORDINATION CHECKPOINTS
+
 1. **Initial Audit Phase**: All agents report findings and plan
 2. **API Consolidation Phase**: Sub-Agents 2 & 3 coordinate apps/api removal
 3. **Integration Phase**: Validate all components work together
 4. **Final Testing Phase**: End-to-end testing and quality assurance
 
 #### QUALITY ASSURANCE PROTOCOLS
+
 - **ULTRATHINK** every decision 3x before implementation
 - **Domain isolation** - agents avoid overlapping file modifications
 - **Integration testing** after each major milestone
@@ -135,6 +152,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 ## DELIVERABLE EXPECTATIONS
 
 ### Immediate Outputs
+
 - **Functional navigation system** with zero crashes
 - **Working data sync pipeline** with consolidated API
 - **Loading trending page** with real data display
@@ -143,6 +161,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 - **Optimized performance** meeting all speed targets
 
 ### Final Application State
+
 - **Production-ready** MySetlist web application
 - **Single unified codebase** with apps/web containing all functionality
 - **World-class user experience** with seamless interactions
@@ -152,8 +171,8 @@ MySetlist is a setlist voting web application that enables users to search for a
 
 **EXECUTE PARALLEL STRATEGY IMMEDIATELY - NO DELAYS, NO COMPROMISES**
 
+# 🔍 **ULTRATHINK 3x COMPREHENSIVE ANALYSIS**
 
-# 🔍 **ULTRATHINK 3x COMPREHENSIVE ANALYSIS** 
 # MySetlist Web App - Critical Issues & Implementation Gaps
 
 ---
@@ -169,9 +188,11 @@ After exhaustive analysis of the codebase, documentation, database schema, and c
 ### 1. **NAVIGATION & USER EXPERIENCE FAILURES**
 
 #### **Logo Not Linked to Homepage** ⚠️
+
 - **Location**: `apps/web/app/components/header/index.tsx:127-130`
 - **Issue**: Logo is just an Image component, not wrapped in Link
-- **Fix Required**: 
+- **Fix Required**:
+
 ```tsx
 <Link href="/" className="flex items-center gap-2">
   <Image src={Logo} alt="Logo" width={24} height={24} className="dark:invert" />
@@ -180,11 +201,13 @@ After exhaustive analysis of the codebase, documentation, database schema, and c
 ```
 
 #### **Auth Navigation Visibility** ⚠️
+
 - **Issue**: Sign-in/Sign-up only visible in user menu dropdown, not prominent in main nav
 - **Impact**: Poor UX for new users
 - **Solution**: Add auth buttons to main header when user not authenticated
 
 #### **Page Route Failures** 🔥
+
 - **Status**: `/shows` and `/artists` returning 404s according to CURRENTSTATUS.md
 - **Root Cause**: Unknown - requires investigation
 - **Files Exist**: Components and pages are present but not accessible
@@ -192,6 +215,7 @@ After exhaustive analysis of the codebase, documentation, database schema, and c
 ### 2. **PERFORMANCE BOTTLENECKS** 🔥
 
 #### **App Slower Than Next-Forge Starter**
+
 - **Symptoms**: Navigation lag, slow page loads
 - **Potential Causes**:
   - Unoptimized database queries
@@ -201,13 +225,15 @@ After exhaustive analysis of the codebase, documentation, database schema, and c
   - Service worker cache conflicts
 
 #### **Service Worker Cache Issues**
+
 - **Problem**: Legacy PWA service worker causing stale content
 - **Status**: Partial fix implemented (`DisableServiceWorker` component)
 - **Remaining**: Some users still affected, need cache invalidation strategy
 
 ### 3. **TECHNICAL DEBT AVALANCHE** 🔥
 
-#### **TypeScript Errors** 
+#### **TypeScript Errors**
+
 - **Scale**: "Hundreds of tsc errors across mono-repo"
 - **Priority Areas**:
   1. `packages/database` - Core functionality
@@ -215,11 +241,13 @@ After exhaustive analysis of the codebase, documentation, database schema, and c
   3. `apps/web` pages - User-facing
 
 #### **Critical Dependency Warnings**
+
 - **Issue**: Webpack/Next warnings for OpenTelemetry imports
 - **Impact**: Build performance, potential production issues
 - **Status**: "Benign but should be silenced before prod"
 
 #### **Environment Schema Misalignment**
+
 - **Problem**: `packages/*/env.ts` out of sync with `.env.example`
 - **Command Exists**: `pnpm check-env` script
 - **Action Required**: Run validation and update schemas
@@ -227,6 +255,7 @@ After exhaustive analysis of the codebase, documentation, database schema, and c
 ### 4. **BROKEN TEST INFRASTRUCTURE** 🔥
 
 #### **Cypress & React Testing Library Failures**
+
 - **Root Cause**: Tests reference removed Clerk authentication flows
 - **Impact**: No quality assurance coverage
 - **Scope**: "Many tests" need rewrite for Supabase Auth
@@ -235,11 +264,13 @@ After exhaustive analysis of the codebase, documentation, database schema, and c
 ### 5. **BUILD SYSTEM INSTABILITY** ⚠️
 
 #### **Cache Corruption Issues**
+
 - **Symptoms**: Missing chunks `zod@3.25.71.js`, `./8258.js` after hot-reload
 - **Current Fix**: Manual `rm -rf apps/web/.next` and restart
 - **Needed**: Automated cache management in CI/CD
 
 #### **Apps/API Consolidation Status**
+
 - **Requirement**: Remove `apps/api` folder, migrate to `apps/web/app/api`
 - **Status**: Unclear completion - needs verification
 - **Risk**: Duplicate API endpoints, deployment confusion
@@ -249,18 +280,21 @@ After exhaustive analysis of the codebase, documentation, database schema, and c
 ## 📊 **DATABASE & BACKEND STATUS**
 
 ### ✅ **EXCELLENT: Database Schema**
+
 - **20+ Tables**: Comprehensive schema with proper relationships
 - **Core Entities**: users, artists, venues, shows, songs, setlists, votes
 - **Advanced Features**: artist_stats, email system, user_profiles, show_comments
 - **External IDs**: Proper integration fields for Spotify, Ticketmaster, SetlistFM
 
 ### ✅ **GOOD: Authentication System**
+
 - **Supabase Auth**: Properly configured with email/password + OAuth
 - **Auth Pages**: Complete set exists (`/auth/sign-in`, `/auth/sign-up`, etc.)
 - **Providers**: Auth and Realtime providers implemented
 - **Security**: Row Level Security enabled
 
 ### ⚠️ **PARTIAL: API Integrations**
+
 - **Environment**: All API keys configured (Spotify, Ticketmaster, SetlistFM)
 - **Documentation**: Comprehensive integration docs exist
 - **Implementation**: Unknown completion status of actual API calls
@@ -270,17 +304,20 @@ After exhaustive analysis of the codebase, documentation, database schema, and c
 ## 🎨 **FRONTEND COMPONENT STATUS**
 
 ### ✅ **IMPLEMENTED: Core UI Components**
+
 - **Design System**: Tailwind + shadcn/ui components properly configured
 - **Color Scheme**: Black, white, dark grey gradients ([[memory:2512991]])
 - **Layout**: Header, Footer, Navigation working
 - **Mobile**: Comprehensive mobile navigation with auth
 
 ### ⚠️ **NEEDS REVIEW: Page Components**
+
 - **Files Exist**: Artist and show page components present
 - **404 Issue**: Routes not accessible despite component existence
 - **Investigation**: Requires routing/build configuration check
 
 ### ❌ **MISSING: Performance Optimizations**
+
 - **React.memo()**: Heavy components need memoization
 - **Image Optimization**: Verify Next.js Image component usage
 - **Code Splitting**: Bundle analysis needed
@@ -291,7 +328,9 @@ After exhaustive analysis of the codebase, documentation, database schema, and c
 ## 🔧 **SUPABASE INTEGRATION ANALYSIS**
 
 ### ✅ **EXCELLENT: Database Structure**
+
 Based on MCP analysis, the Supabase database is **fully operational** with:
+
 - **Users Table**: Complete with roles, verification, timestamps
 - **Artists Table**: Rich metadata, Spotify integration, trending scores
 - **Venues Table**: Geographic data, capacity, amenities
@@ -300,6 +339,7 @@ Based on MCP analysis, the Supabase database is **fully operational** with:
 - **Email System**: Full email queue, preferences, logs
 
 ### ✅ **GOOD: Real-time Features**
+
 - **RealtimeProvider**: Implemented in layout
 - **RealtimeStatus**: Component showing connection status
 - **Subscriptions**: Ready for live voting updates
@@ -309,11 +349,13 @@ Based on MCP analysis, the Supabase database is **fully operational** with:
 ## 🚀 **INFRASTRUCTURE & DEPLOYMENT**
 
 ### ✅ **GOOD: Monorepo Structure**
+
 - **Next-Forge**: Proper package organization
 - **Build System**: Turborepo configuration
 - **Package Isolation**: Clean dependencies
 
 ### ⚠️ **NEEDS ATTENTION: CI/CD Pipeline**
+
 - **Build Failures**: Cache issues affecting CI
 - **Test Coverage**: No passing test suite
 - **Lighthouse Requirement**: ≥90 score target not verified
@@ -383,13 +425,15 @@ Based on MCP analysis, the Supabase database is **fully operational** with:
 ## 🎯 **SUCCESS METRICS**
 
 ### **Technical Targets**
+
 - ✅ **Lighthouse Score**: ≥90 overall
-- ✅ **Largest Contentful Paint**: <2.5 seconds  
+- ✅ **Largest Contentful Paint**: <2.5 seconds
 - ✅ **TypeScript Errors**: Zero across monorepo
 - ✅ **Test Coverage**: ≥90% for new code
 - ✅ **Build Process**: Zero errors/warnings
 
 ### **User Experience Targets**
+
 - ✅ **Navigation**: Instant page transitions
 - ✅ **Authentication**: Seamless Spotify OAuth
 - ✅ **Mobile Experience**: Native app-like performance
@@ -402,13 +446,13 @@ Based on MCP analysis, the Supabase database is **fully operational** with:
 The MySetlist application has **excellent foundational architecture** with a comprehensive database schema, proper authentication system, and solid component structure. However, **critical performance issues**, **broken routing**, and **substantial technical debt** prevent it from being production-ready.
 
 The **most urgent priorities** are:
+
 1. Fix navigation and routing failures
-2. Resolve performance bottlenecks  
+2. Resolve performance bottlenecks
 3. Clean up TypeScript errors
 4. Restore test infrastructure
 
 With focused effort on these issues, the application can reach production readiness within **3-4 weeks** of dedicated development work.
-
 
 # MySetlist App Completion - Requirements Document
 

@@ -1,15 +1,21 @@
-import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
+import { onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
 
 // Types for web vitals metrics
-type MetricName = 'CLS' | 'FCP' | 'INP' | 'LCP' | 'TTFB';
+type MetricName = "CLS" | "FCP" | "INP" | "LCP" | "TTFB";
 
 interface Metric {
   name: MetricName;
   value: number;
-  rating: 'good' | 'needs-improvement' | 'poor';
+  rating: "good" | "needs-improvement" | "poor";
   delta: number;
   id: string;
-  navigationType: 'navigate' | 'reload' | 'back-forward' | 'back-forward-cache' | 'prerender' | 'restore';
+  navigationType:
+    | "navigate"
+    | "reload"
+    | "back-forward"
+    | "back-forward-cache"
+    | "prerender"
+    | "restore";
 }
 
 // Thresholds for performance metrics (in milliseconds or score)
@@ -24,22 +30,22 @@ const thresholds = {
 // Get performance rating based on metric value and thresholds
 function getMetricRating(
   name: MetricName,
-  value: number
-): 'good' | 'needs-improvement' | 'poor' {
+  value: number,
+): "good" | "needs-improvement" | "poor" {
   const threshold = thresholds[name];
   if (value <= threshold.good) {
-    return 'good';
+    return "good";
   }
   if (value <= threshold.poor) {
-    return 'needs-improvement';
+    return "needs-improvement";
   }
-  return 'poor';
+  return "poor";
 }
 
 // Send metrics to analytics endpoint
 async function sendToAnalytics(metric: Metric) {
   // Only send in production
-  if (process.env["NODE_ENV"] !== 'production') {
+  if (process.env["NODE_ENV"] !== "production") {
     return;
   }
 
@@ -57,13 +63,13 @@ async function sendToAnalytics(metric: Metric) {
 
   // Use sendBeacon for reliability
   if (navigator.sendBeacon) {
-    const blob = new Blob([JSON.stringify(body)], { type: 'application/json' });
-    navigator.sendBeacon('/api/analytics/vitals', blob);
+    const blob = new Blob([JSON.stringify(body)], { type: "application/json" });
+    navigator.sendBeacon("/api/analytics/vitals", blob);
   } else {
     // Fallback to fetch
-    fetch('/api/analytics/vitals', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    fetch("/api/analytics/vitals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
       keepalive: true,
     }).catch(() => {
@@ -77,41 +83,41 @@ export function initWebVitals() {
   onCLS((metric) =>
     sendToAnalytics({
       ...metric,
-      name: 'CLS',
-      rating: getMetricRating('CLS', metric.value),
-    })
+      name: "CLS",
+      rating: getMetricRating("CLS", metric.value),
+    }),
   );
 
   onFCP((metric) =>
     sendToAnalytics({
       ...metric,
-      name: 'FCP',
-      rating: getMetricRating('FCP', metric.value),
-    })
+      name: "FCP",
+      rating: getMetricRating("FCP", metric.value),
+    }),
   );
 
   onINP((metric) =>
     sendToAnalytics({
       ...metric,
-      name: 'INP',
-      rating: getMetricRating('INP', metric.value),
-    })
+      name: "INP",
+      rating: getMetricRating("INP", metric.value),
+    }),
   );
 
   onLCP((metric) =>
     sendToAnalytics({
       ...metric,
-      name: 'LCP',
-      rating: getMetricRating('LCP', metric.value),
-    })
+      name: "LCP",
+      rating: getMetricRating("LCP", metric.value),
+    }),
   );
 
   onTTFB((metric) =>
     sendToAnalytics({
       ...metric,
-      name: 'TTFB',
-      rating: getMetricRating('TTFB', metric.value),
-    })
+      name: "TTFB",
+      rating: getMetricRating("TTFB", metric.value),
+    }),
   );
 }
 
@@ -119,14 +125,14 @@ export function initWebVitals() {
 export const performanceUtils = {
   // Mark a performance timestamp
   mark(name: string) {
-    if (typeof window !== 'undefined' && window.performance) {
+    if (typeof window !== "undefined" && window.performance) {
       performance.mark(name);
     }
   },
 
   // Measure between two marks
   measure(name: string, startMark: string, endMark?: string) {
-    if (typeof window !== 'undefined' && window.performance) {
+    if (typeof window !== "undefined" && window.performance) {
       try {
         if (endMark) {
           performance.measure(name, startMark, endMark);
@@ -134,10 +140,10 @@ export const performanceUtils = {
           performance.measure(name, startMark);
         }
 
-        const entries = performance.getEntriesByName(name, 'measure');
+        const entries = performance.getEntriesByName(name, "measure");
         const lastEntry = entries.at(-1);
 
-        if (lastEntry && process.env["NODE_ENV"] === 'development') {
+        if (lastEntry && process.env["NODE_ENV"] === "development") {
         }
 
         return lastEntry?.duration;
@@ -150,9 +156,9 @@ export const performanceUtils = {
 
   // Get navigation timing
   getNavigationTiming() {
-    if (typeof window !== 'undefined' && window.performance) {
+    if (typeof window !== "undefined" && window.performance) {
       const navigation = performance.getEntriesByType(
-        'navigation'
+        "navigation",
       )[0] as PerformanceNavigationTiming;
 
       if (navigation) {
@@ -171,12 +177,12 @@ export const performanceUtils = {
   },
 
   // Track custom metrics
-  trackMetric(name: string, value: number, unit = 'ms') {
-    if (process.env["NODE_ENV"] === 'development') {
+  trackMetric(name: string, value: number, unit = "ms") {
+    if (process.env["NODE_ENV"] === "development") {
     }
 
     // Send to analytics in production
-    if (process.env["NODE_ENV"] === 'production' && navigator.sendBeacon) {
+    if (process.env["NODE_ENV"] === "production" && navigator.sendBeacon) {
       const data = {
         name,
         value,
@@ -186,16 +192,16 @@ export const performanceUtils = {
       };
 
       const blob = new Blob([JSON.stringify(data)], {
-        type: 'application/json',
+        type: "application/json",
       });
-      navigator.sendBeacon('/api/analytics/metrics', blob);
+      navigator.sendBeacon("/api/analytics/metrics", blob);
     }
   },
 };
 
 // Resource hints for critical resources
 export function addResourceHints() {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
 
@@ -203,28 +209,28 @@ export function addResourceHints() {
 
   // Preconnect to critical origins
   const preconnectOrigins = [
-    'https://yzwkimtdaabyjbpykquu.supabase.co',
-    'https://i.scdn.co',
-    'https://s1.ticketm.net',
+    "https://yzwkimtdaabyjbpykquu.supabase.co",
+    "https://i.scdn.co",
+    "https://s1.ticketm.net",
   ];
 
   preconnectOrigins.forEach((origin) => {
-    const link = document.createElement('link');
-    link.rel = 'preconnect';
+    const link = document.createElement("link");
+    link.rel = "preconnect";
     link.href = origin;
-    link.crossOrigin = 'anonymous';
+    link.crossOrigin = "anonymous";
     head.appendChild(link);
   });
 
   // DNS prefetch for other origins
   const dnsPrefetchOrigins = [
-    'https://api.spotify.com',
-    'https://app.ticketmaster.com',
+    "https://api.spotify.com",
+    "https://app.ticketmaster.com",
   ];
 
   dnsPrefetchOrigins.forEach((origin) => {
-    const link = document.createElement('link');
-    link.rel = 'dns-prefetch';
+    const link = document.createElement("link");
+    link.rel = "dns-prefetch";
     link.href = origin;
     head.appendChild(link);
   });
@@ -239,12 +245,12 @@ export function initPerformanceMonitoring() {
   addResourceHints();
 
   // Track initial page load
-  if (typeof window !== 'undefined') {
-    window.addEventListener('load', () => {
+  if (typeof window !== "undefined") {
+    window.addEventListener("load", () => {
       const timing = performanceUtils.getNavigationTiming();
       if (timing) {
-        performanceUtils.trackMetric('page-load-total', timing.total);
-        performanceUtils.trackMetric('dom-ready', timing.dom);
+        performanceUtils.trackMetric("page-load-total", timing.total);
+        performanceUtils.trackMetric("dom-ready", timing.dom);
       }
     });
   }

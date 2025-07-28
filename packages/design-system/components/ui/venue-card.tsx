@@ -1,7 +1,7 @@
-import { Card, CardContent, CardHeader } from './card';
-import { Avatar, AvatarFallback, AvatarImage } from './avatar';
-import { Button } from './button';
-import { MapPin, Calendar, Users, ExternalLink } from 'lucide-react';
+import { Card, CardContent, CardHeader } from "./card";
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
+import { Button } from "./button";
+import { MapPin, Calendar, Users, ExternalLink } from "lucide-react";
 
 interface VenueCardProps {
   venue: {
@@ -17,12 +17,12 @@ interface VenueCardProps {
     website?: string;
   };
   onVisit?: (venueId: string) => void;
-  variant?: 'default' | 'compact' | 'detailed';
+  variant?: "default" | "compact" | "detailed";
 }
 
 export function VenueCard({ venue }: VenueCardProps) {
   const formatCapacity = (capacity?: number) => {
-    if (!capacity) return 'Unknown capacity';
+    if (!capacity) return "Unknown capacity";
     if (capacity >= 1000) return `${(capacity / 1000).toFixed(1)}K capacity`;
     return `${capacity} capacity`;
   };
@@ -59,7 +59,7 @@ export function VenueCard({ venue }: VenueCardProps) {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => window.open(venue.website, '_blank')}
+              onClick={() => window.open(venue.website, "_blank")}
             >
               <ExternalLink className="h-4 w-4 mr-1" />
               Visit
@@ -85,4 +85,4 @@ export function VenueCard({ venue }: VenueCardProps) {
       </CardContent>
     </Card>
   );
-} 
+}

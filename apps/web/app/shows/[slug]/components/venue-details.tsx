@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Globe, MapPin, Phone, Users } from 'lucide-react';
-import Link from 'next/link';
+} from "@repo/design-system/components/ui/card";
+import { Globe, MapPin, Phone, Users } from "lucide-react";
+import Link from "next/link";
 
 type VenueDetailsProps = {
   venue: {
@@ -44,7 +44,7 @@ export function VenueDetails({ venue }: VenueDetailsProps) {
       parts.push(venue.postal_code);
     }
     parts.push(venue.country);
-    return parts.join(', ');
+    return parts.join(", ");
   };
 
   const getMapUrl = () => {
@@ -102,7 +102,7 @@ export function VenueDetails({ venue }: VenueDetailsProps) {
               <div>
                 <p className="mb-1 font-medium">Type</p>
                 <p className="text-muted-foreground capitalize">
-                  {venue.venue_type.replace('_', ' ')}
+                  {venue.venue_type.replace("_", " ")}
                 </p>
               </div>
             )}

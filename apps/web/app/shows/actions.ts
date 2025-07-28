@@ -1,24 +1,8 @@
-'use server';
+"use server";
 
-import { cache } from 'react';
-import { 
-  artists,
-  db,
-  shows,
-  venues,
-  showArtists
-} from '@repo/database';
-import { 
-  and, 
-  asc, 
-  desc, 
-  eq, 
-  gte, 
-  lte, 
-  ilike, 
-  sql,
-  inArray
-} from 'drizzle-orm';
+import { cache } from "react";
+import { artists, db, shows, venues, showArtists } from "@repo/database";
+import { and, asc, desc, eq, gte, lte, ilike, sql, inArray } from "drizzle-orm";
 
 export type ShowWithDetails = {
   id: string;
@@ -27,7 +11,7 @@ export type ShowWithDetails = {
   date: string;
   startTime: string | null;
   doorsTime: string | null;
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  status: "upcoming" | "ongoing" | "completed" | "cancelled";
   description: string | null;
   ticketUrl: string | null;
   minPrice: number | null;
@@ -71,34 +55,34 @@ export type ShowWithDetails = {
 };
 
 type FetchShowsParams = {
-  status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  status?: "upcoming" | "ongoing" | "completed" | "cancelled";
   city?: string;
   artistId?: string;
   venueId?: string;
   dateFrom?: string;
   dateTo?: string;
   featured?: boolean;
-  orderBy?: 'date' | 'trending' | 'popularity';
+  orderBy?: "date" | "trending" | "popularity";
   limit?: number;
   offset?: number;
 };
 
 export const fetchShows = cache(
   async (
-    params: FetchShowsParams = {}
+    params: FetchShowsParams = {},
   ): Promise<{
     shows: ShowWithDetails[];
     totalCount: number;
   }> => {
     const {
-      status = 'upcoming',
+      status = "upcoming",
       city,
       artistId,
       venueId,
       dateFrom,
       dateTo,
       featured,
-      orderBy = 'date',
+      orderBy = "date",
       limit = 20,
       offset = 0,
     } = params;
@@ -122,7 +106,7 @@ export const fetchShows = cache(
           viewCount: shows.viewCount,
           attendeeCount: shows.attendeeCount,
           setlistCount: shows.setlistCount,
-          voteCount: shows.voteCount,  
+          voteCount: shows.voteCount,
           trendingScore: shows.trendingScore,
           isFeatured: shows.isFeatured,
           isVerified: shows.isVerified,
@@ -150,7 +134,7 @@ export const fetchShows = cache(
       const supabase = createServiceClient();
 
       // Build the query
-      let query = supabase.from('shows').select(
+      let query = supabase.from("shows").select(
         `
         *,
         headlinerArtist:artists!shows_headliner_artist_id_artists_id_fk(
@@ -174,7 +158,7 @@ export const fetchShows = cache(
           )
         )
       `,
-        { count: 'exact' }
+        { count: "exact" },
       );
 
       // Apply filters
@@ -209,8 +193,10 @@ export const fetchShows = cache(
       }
 
       // Default to upcoming shows if no specific status filter
-      if (!dateFrom && status === 'upcoming') {
-        conditions.push(gte(shows.date, new Date().toISOString().substring(0, 10)));
+      if (!dateFrom && status === "upcoming") {
+        conditions.push(
+          gte(shows.date, new Date().toISOString().substring(0, 10)),
+        );
       }
 
       if (conditions.length > 0) {
@@ -219,10 +205,10 @@ export const fetchShows = cache(
 
       // Apply ordering
       switch (orderBy) {
-        case 'trending':
+        case "trending":
           query = query.orderBy(desc(shows.trendingScore));
           break;
-        case 'popularity':
+        case "popularity":
           query = query.orderBy(desc(shows.viewCount));
           break;
         default:
@@ -251,39 +237,45 @@ export const fetchShows = cache(
       const totalCount = countResult[0]?.count || 0;
 
       // Get supporting artists for each show (separate query for performance)
-      const showIds = showsData.map(show => show.id);
-      const supportingArtistsData = showIds.length > 0 ? await db
-        .select({
-          showId: showArtists.showId,
-          id: showArtists.id,
-          artistId: showArtists.artistId,
-          orderIndex: showArtists.orderIndex,
-          setLength: showArtists.setLength,
-          artist: {
-            id: artists.id,
-            name: artists.name,
-            slug: artists.slug,
-          }
-        })
-        .from(showArtists)
-        .innerJoin(artists, eq(showArtists.artistId, artists.id))
-        .where(inArray(showArtists.showId, showIds))
-        .orderBy(showArtists.orderIndex) : [];
+      const showIds = showsData.map((show) => show.id);
+      const supportingArtistsData =
+        showIds.length > 0
+          ? await db
+              .select({
+                showId: showArtists.showId,
+                id: showArtists.id,
+                artistId: showArtists.artistId,
+                orderIndex: showArtists.orderIndex,
+                setLength: showArtists.setLength,
+                artist: {
+                  id: artists.id,
+                  name: artists.name,
+                  slug: artists.slug,
+                },
+              })
+              .from(showArtists)
+              .innerJoin(artists, eq(showArtists.artistId, artists.id))
+              .where(inArray(showArtists.showId, showIds))
+              .orderBy(showArtists.orderIndex)
+          : [];
 
       // Group supporting artists by show
-      const supportingArtistsByShow = supportingArtistsData.reduce((acc, sa) => {
-        if (!acc[sa.showId]) {
-          acc[sa.showId] = [];
-        }
-        acc[sa.showId].push({
-          id: sa.id,
-          artistId: sa.artistId,
-          orderIndex: sa.orderIndex,
-          setLength: sa.setLength,
-          artist: sa.artist,
-        });
-        return acc;
-      }, {} as Record<string, any[]>);
+      const supportingArtistsByShow = supportingArtistsData.reduce(
+        (acc, sa) => {
+          if (!acc[sa.showId]) {
+            acc[sa.showId] = [];
+          }
+          acc[sa.showId].push({
+            id: sa.id,
+            artistId: sa.artistId,
+            orderIndex: sa.orderIndex,
+            setLength: sa.setLength,
+            artist: sa.artist,
+          });
+          return acc;
+        },
+        {} as Record<string, any[]>,
+      );
 
       // Safe JSON parse function
       const safeJsonParse = (jsonString: string | null) => {
@@ -296,7 +288,7 @@ export const fetchShows = cache(
       };
 
       // Format response data
-      const formattedShows: ShowWithDetails[] = showsData.map(show => ({
+      const formattedShows: ShowWithDetails[] = showsData.map((show) => ({
         id: show.id,
         name: show.name,
         slug: show.slug,
@@ -329,13 +321,13 @@ export const fetchShows = cache(
         totalCount,
       };
     } catch (error) {
-      console.error('Error fetching shows:', error);
+      console.error("Error fetching shows:", error);
       return {
         shows: [],
         totalCount: 0,
       };
     }
-  }
+  },
 );
 
 export const fetchCities = cache(async (): Promise<string[]> => {
@@ -350,7 +342,7 @@ export const fetchCities = cache(async (): Promise<string[]> => {
     const uniqueCities = [...new Set(data.map((v) => v.city).filter(Boolean))];
     return uniqueCities;
   } catch (error) {
-    console.error('Error fetching cities:', error);
+    console.error("Error fetching cities:", error);
     return [];
   }
 });

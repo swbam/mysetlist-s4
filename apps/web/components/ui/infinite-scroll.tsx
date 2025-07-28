@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { cn } from '@repo/design-system/lib/utils';
-import React, { useEffect, useRef, useCallback } from 'react';
-import { LoadingSpinner } from '~/components/loading-states';
+import { cn } from "@repo/design-system/lib/utils";
+import React, { useEffect, useRef, useCallback } from "react";
+import { LoadingSpinner } from "~/components/loading-states";
 
 interface InfiniteScrollProps {
   children: React.ReactNode;
@@ -25,7 +25,7 @@ export function InfiniteScroll({
   loadingComponent,
   endMessage,
   className,
-  role = 'feed',
+  role = "feed",
 }: InfiniteScrollProps) {
   const loaderRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -37,7 +37,7 @@ export function InfiniteScroll({
         onLoadMore();
       }
     },
-    [hasMore, isLoading, onLoadMore]
+    [hasMore, isLoading, onLoadMore],
   );
 
   useEffect(() => {
@@ -74,7 +74,7 @@ export function InfiniteScroll({
   );
 
   return (
-    <div className={cn('w-full', className)} role={role}>
+    <div className={cn("w-full", className)} role={role}>
       {children}
 
       {hasMore && (
@@ -131,7 +131,7 @@ export function useInfiniteScroll<T>({
         }
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load more data');
+      setError(err instanceof Error ? err.message : "Failed to load more data");
     } finally {
       setIsLoading(false);
     }

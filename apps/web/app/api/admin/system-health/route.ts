@@ -1,9 +1,9 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '~/lib/api/supabase/server';
+import { type NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "~/lib/api/supabase/server";
 
 interface HealthCheck {
   service: string;
-  status: 'healthy' | 'degraded' | 'down';
+  status: "healthy" | "degraded" | "down";
   responseTime: number;
   uptime?: number;
   lastCheck: Date;
@@ -14,29 +14,29 @@ async function checkDatabaseHealth(supabase: any): Promise<HealthCheck> {
   const startTime = Date.now();
 
   try {
-    await supabase.from('users').select('id').limit(1);
+    await supabase.from("users").select("id").limit(1);
     const responseTime = Date.now() - startTime;
 
     return {
-      service: 'Database',
+      service: "Database",
       status:
         responseTime < 100
-          ? 'healthy'
+          ? "healthy"
           : responseTime < 500
-            ? 'degraded'
-            : 'down',
+            ? "degraded"
+            : "down",
       responseTime,
       uptime: 99.9,
       lastCheck: new Date(),
     };
   } catch (error) {
     return {
-      service: 'Database',
-      status: 'down',
+      service: "Database",
+      status: "down",
       responseTime: Date.now() - startTime,
       lastCheck: new Date(),
       metadata: {
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       },
     };
   }
@@ -49,34 +49,34 @@ async function checkExternalAPIs(): Promise<HealthCheck[]> {
   const spotifyStart = Date.now();
   try {
     const response = await fetch(
-      'https://api.spotify.com/v1/browse/featured-playlists?limit=1',
+      "https://api.spotify.com/v1/browse/featured-playlists?limit=1",
       {
         headers: {
-          Authorization: `Bearer ${process.env['SPOTIFY_ACCESS_TOKEN'] || 'dummy'}`,
+          Authorization: `Bearer ${process.env["SPOTIFY_ACCESS_TOKEN"] || "dummy"}`,
         },
-      }
+      },
     );
 
     const spotifyTime = Date.now() - spotifyStart;
     checks.push({
-      service: 'Spotify API',
+      service: "Spotify API",
       status: response.ok
         ? spotifyTime < 1000
-          ? 'healthy'
-          : 'degraded'
-        : 'down',
+          ? "healthy"
+          : "degraded"
+        : "down",
       responseTime: spotifyTime,
       lastCheck: new Date(),
       metadata: { statusCode: response.status },
     });
   } catch (error) {
     checks.push({
-      service: 'Spotify API',
-      status: 'down',
+      service: "Spotify API",
+      status: "down",
       responseTime: Date.now() - spotifyStart,
       lastCheck: new Date(),
       metadata: {
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       },
     });
   }
@@ -85,25 +85,25 @@ async function checkExternalAPIs(): Promise<HealthCheck[]> {
   const tmStart = Date.now();
   try {
     const response = await fetch(
-      `https://app.ticketmaster.com/discovery/v2/events.json?size=1&apikey=${process.env['TICKETMASTER_API_KEY'] || 'dummy'}`
+      `https://app.ticketmaster.com/discovery/v2/events.json?size=1&apikey=${process.env["TICKETMASTER_API_KEY"] || "dummy"}`,
     );
 
     const tmTime = Date.now() - tmStart;
     checks.push({
-      service: 'Ticketmaster API',
-      status: response.ok ? (tmTime < 1000 ? 'healthy' : 'degraded') : 'down',
+      service: "Ticketmaster API",
+      status: response.ok ? (tmTime < 1000 ? "healthy" : "degraded") : "down",
       responseTime: tmTime,
       lastCheck: new Date(),
       metadata: { statusCode: response.status },
     });
   } catch (error) {
     checks.push({
-      service: 'Ticketmaster API',
-      status: 'down',
+      service: "Ticketmaster API",
+      status: "down",
       responseTime: Date.now() - tmStart,
       lastCheck: new Date(),
       metadata: {
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       },
     });
   }
@@ -120,20 +120,20 @@ async function checkAuthService(supabase: any): Promise<HealthCheck> {
     const responseTime = Date.now() - startTime;
 
     return {
-      service: 'Authentication',
-      status: responseTime < 200 ? 'healthy' : 'degraded',
+      service: "Authentication",
+      status: responseTime < 200 ? "healthy" : "degraded",
       responseTime,
       uptime: 100,
       lastCheck: new Date(),
     };
   } catch (error) {
     return {
-      service: 'Authentication',
-      status: 'down',
+      service: "Authentication",
+      status: "down",
       responseTime: Date.now() - startTime,
       lastCheck: new Date(),
       metadata: {
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       },
     };
   }
@@ -162,20 +162,20 @@ export async function GET(_request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { data: userData } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
       .single();
 
     if (
       !userData ||
-      (userData.role !== 'admin' && userData.role !== 'moderator')
+      (userData.role !== "admin" && userData.role !== "moderator")
     ) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Perform health checks in parallel
@@ -191,26 +191,26 @@ export async function GET(_request: NextRequest) {
 
     // Calculate overall system status
     const healthyServices = allServices.filter(
-      (s) => s.status === 'healthy'
+      (s) => s.status === "healthy",
     ).length;
     const degradedServices = allServices.filter(
-      (s) => s.status === 'degraded'
+      (s) => s.status === "degraded",
     ).length;
-    const downServices = allServices.filter((s) => s.status === 'down').length;
+    const downServices = allServices.filter((s) => s.status === "down").length;
 
-    let overallStatus: 'healthy' | 'degraded' | 'down';
+    let overallStatus: "healthy" | "degraded" | "down";
     if (downServices > 0) {
-      overallStatus = 'down';
+      overallStatus = "down";
     } else if (degradedServices > 0) {
-      overallStatus = 'degraded';
+      overallStatus = "degraded";
     } else {
-      overallStatus = 'healthy';
+      overallStatus = "healthy";
     }
 
     // Store health check results in database for historical tracking
     try {
       for (const service of allServices) {
-        await supabase.from('system_health').upsert(
+        await supabase.from("system_health").upsert(
           {
             service_name: service.service,
             status: service.status,
@@ -220,8 +220,8 @@ export async function GET(_request: NextRequest) {
             updated_at: new Date().toISOString(),
           },
           {
-            onConflict: 'service_name',
-          }
+            onConflict: "service_name",
+          },
         );
       }
     } catch (_error) {}
@@ -243,10 +243,10 @@ export async function GET(_request: NextRequest) {
         ...(degradedServices > 0
           ? [
               {
-                level: 'warning',
+                level: "warning",
                 message: `${degradedServices} service(s) experiencing degraded performance`,
                 services: allServices
-                  .filter((s) => s.status === 'degraded')
+                  .filter((s) => s.status === "degraded")
                   .map((s) => s.service),
               },
             ]
@@ -254,10 +254,10 @@ export async function GET(_request: NextRequest) {
         ...(downServices > 0
           ? [
               {
-                level: 'critical',
+                level: "critical",
                 message: `${downServices} service(s) are down`,
                 services: allServices
-                  .filter((s) => s.status === 'down')
+                  .filter((s) => s.status === "down")
                   .map((s) => s.service),
               },
             ]
@@ -268,8 +268,8 @@ export async function GET(_request: NextRequest) {
     return NextResponse.json(healthReport);
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to perform health check' },
-      { status: 500 }
+      { error: "Failed to perform health check" },
+      { status: 500 },
     );
   }
 }

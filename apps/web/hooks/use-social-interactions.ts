@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { useAuth } from '~/app/providers/auth-provider';
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { useAuth } from "~/app/providers/auth-provider";
 
 interface SocialStatus {
   liked: boolean;
@@ -10,7 +10,7 @@ interface SocialStatus {
 }
 
 interface UseSocialInteractionsOptions {
-  targetType: 'show' | 'artist' | 'venue' | 'setlist';
+  targetType: "show" | "artist" | "venue" | "setlist";
   targetId: string;
   onLike?: () => void;
   onUnlike?: () => void;
@@ -44,7 +44,7 @@ export function useSocialInteractions({
     const fetchStatus = async () => {
       try {
         const response = await fetch(
-          `/api/social?type=${targetType}&ids=${targetId}`
+          `/api/social?type=${targetType}&ids=${targetId}`,
         );
 
         if (response.ok) {
@@ -63,19 +63,19 @@ export function useSocialInteractions({
   }, [user, targetType, targetId]);
 
   const handleAction = useCallback(
-    async (action: 'like' | 'unlike' | 'save' | 'unsave') => {
+    async (action: "like" | "unlike" | "save" | "unsave") => {
       if (!user) {
-        toast.error('Please sign in to continue');
+        toast.error("Please sign in to continue");
         return;
       }
 
       setLoading(true);
 
       try {
-        const response = await fetch('/api/social', {
-          method: 'POST',
+        const response = await fetch("/api/social", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             action,
@@ -91,51 +91,51 @@ export function useSocialInteractions({
           setStatus((prev) => ({
             ...prev,
             liked:
-              action === 'like'
+              action === "like"
                 ? true
-                : action === 'unlike'
+                : action === "unlike"
                   ? false
                   : prev.liked,
             saved:
-              action === 'save'
+              action === "save"
                 ? true
-                : action === 'unsave'
+                : action === "unsave"
                   ? false
                   : prev.saved,
           }));
 
           // Call callbacks
-          if (action === 'like') {
+          if (action === "like") {
             onLike?.();
-            toast.success('Added to likes');
-          } else if (action === 'unlike') {
+            toast.success("Added to likes");
+          } else if (action === "unlike") {
             onUnlike?.();
-            toast.success('Removed from likes');
-          } else if (action === 'save') {
+            toast.success("Removed from likes");
+          } else if (action === "save") {
             onSave?.();
-            toast.success('Saved for later');
-          } else if (action === 'unsave') {
+            toast.success("Saved for later");
+          } else if (action === "unsave") {
             onUnsave?.();
-            toast.success('Removed from saved');
+            toast.success("Removed from saved");
           }
         } else {
-          throw new Error('Failed to update');
+          throw new Error("Failed to update");
         }
       } catch (_error) {
-        toast.error('Something went wrong. Please try again.');
+        toast.error("Something went wrong. Please try again.");
       } finally {
         setLoading(false);
       }
     },
-    [user, targetType, targetId, onLike, onUnlike, onSave, onUnsave]
+    [user, targetType, targetId, onLike, onUnlike, onSave, onUnsave],
   );
 
   const toggleLike = useCallback(() => {
-    handleAction(status.liked ? 'unlike' : 'like');
+    handleAction(status.liked ? "unlike" : "like");
   }, [status.liked, handleAction]);
 
   const toggleSave = useCallback(() => {
-    handleAction(status.saved ? 'unsave' : 'save');
+    handleAction(status.saved ? "unsave" : "save");
   }, [status.saved, handleAction]);
 
   return {
@@ -150,8 +150,8 @@ export function useSocialInteractions({
 
 // Hook for multiple items
 export function useSocialInteractionsBatch(
-  targetType: 'show' | 'artist' | 'venue' | 'setlist',
-  targetIds: string[]
+  targetType: "show" | "artist" | "venue" | "setlist",
+  targetIds: string[],
 ) {
   const { user } = useAuth();
   const [statuses, setStatuses] = useState<Record<string, SocialStatus>>({});
@@ -166,7 +166,7 @@ export function useSocialInteractionsBatch(
     const fetchStatuses = async () => {
       try {
         const response = await fetch(
-          `/api/social?type=${targetType}&ids=${targetIds.join(',')}`
+          `/api/social?type=${targetType}&ids=${targetIds.join(",")}`,
         );
 
         if (response.ok) {
@@ -180,7 +180,7 @@ export function useSocialInteractionsBatch(
     };
 
     fetchStatuses();
-  }, [user, targetType, targetIds.join(',')]);
+  }, [user, targetType, targetIds.join(",")]);
 
   const updateStatus = useCallback(
     (targetId: string, updates: Partial<SocialStatus>) => {
@@ -194,7 +194,7 @@ export function useSocialInteractionsBatch(
         },
       }));
     },
-    []
+    [],
   );
 
   return {

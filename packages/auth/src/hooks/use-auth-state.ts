@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { createClient } from '../../client';
-import type { AuthUser, AuthSession } from '../types/auth';
-import { UnifiedAuthProvider } from '../providers/unified-auth';
+import { useEffect, useState } from "react";
+import { createClient } from "../../client";
+import type { AuthUser, AuthSession } from "../types/auth";
+import { UnifiedAuthProvider } from "../providers/unified-auth";
 
 export function useAuthState() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -20,7 +20,7 @@ export function useAuthState() {
     const getInitialSession = async () => {
       try {
         const currentSession = await authProvider.getCurrentSession();
-        
+
         if (mounted) {
           setSession(currentSession);
           setUser(currentSession?.user || null);
@@ -28,7 +28,9 @@ export function useAuthState() {
         }
       } catch (err) {
         if (mounted) {
-          setError(err instanceof Error ? err.message : 'Failed to get session');
+          setError(
+            err instanceof Error ? err.message : "Failed to get session",
+          );
           setSession(null);
           setUser(null);
         }
@@ -47,18 +49,20 @@ export function useAuthState() {
       if (!mounted) return;
 
       try {
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
           const enrichedSession = await authProvider.getCurrentSession();
           setSession(enrichedSession);
           setUser(enrichedSession?.user || null);
           setError(null);
-        } else if (event === 'SIGNED_OUT') {
+        } else if (event === "SIGNED_OUT") {
           setSession(null);
           setUser(null);
           setError(null);
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Auth state change error');
+        setError(
+          err instanceof Error ? err.message : "Auth state change error",
+        );
       }
     });
 
@@ -76,7 +80,9 @@ export function useAuthState() {
       setUser(currentSession?.user || null);
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to refresh session');
+      setError(
+        err instanceof Error ? err.message : "Failed to refresh session",
+      );
     } finally {
       setLoading(false);
     }

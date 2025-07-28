@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { formatDistanceToNow } from 'date-fns';
+} from "@repo/design-system/components/ui/card";
+import { formatDistanceToNow } from "date-fns";
 import {
   Activity,
   Calendar,
@@ -16,13 +16,13 @@ import {
   RefreshCw,
   TrendingUp,
   Users,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { createClient } from "~/lib/supabase/client";
 
 interface QuickInsight {
   id: string;
-  type: 'trending_up' | 'trending_down' | 'activity' | 'milestone';
+  type: "trending_up" | "trending_down" | "activity" | "milestone";
   title: string;
   description: string;
   value?: string | number;
@@ -62,19 +62,19 @@ export function QuickInsights({
         { count: totalArtists },
       ] = await Promise.all([
         supabase
-          .from('shows')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', oneHourAgo.toISOString()),
+          .from("shows")
+          .select("*", { count: "exact", head: true })
+          .gte("created_at", oneHourAgo.toISOString()),
         supabase
-          .from('votes')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', oneHourAgo.toISOString()),
+          .from("votes")
+          .select("*", { count: "exact", head: true })
+          .gte("created_at", oneHourAgo.toISOString()),
         supabase
-          .from('attendance')
-          .select('*', { count: 'exact', head: true })
-          .gte('created_at', oneHourAgo.toISOString()),
-        supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('artists').select('*', { count: 'exact', head: true }),
+          .from("attendance")
+          .select("*", { count: "exact", head: true })
+          .gte("created_at", oneHourAgo.toISOString()),
+        supabase.from("profiles").select("*", { count: "exact", head: true }),
+        supabase.from("artists").select("*", { count: "exact", head: true }),
       ]);
 
       const insights: QuickInsight[] = [];
@@ -82,89 +82,89 @@ export function QuickInsights({
       // Recent activity insights
       if (recentVotes && recentVotes > 10) {
         insights.push({
-          id: 'recent-votes',
-          type: 'activity',
-          title: 'High Voting Activity',
+          id: "recent-votes",
+          type: "activity",
+          title: "High Voting Activity",
           description: `${recentVotes} votes cast in the last hour`,
           value: recentVotes,
           timestamp: now,
           icon: TrendingUp,
-          color: 'text-green-600',
+          color: "text-green-600",
         });
       }
 
       if (recentShows && recentShows > 0) {
         insights.push({
-          id: 'new-shows',
-          type: 'activity',
-          title: 'New Shows Added',
-          description: `${recentShows} new show${recentShows !== 1 ? 's' : ''} added recently`,
+          id: "new-shows",
+          type: "activity",
+          title: "New Shows Added",
+          description: `${recentShows} new show${recentShows !== 1 ? "s" : ""} added recently`,
           value: recentShows,
           timestamp: now,
           icon: Calendar,
-          color: 'text-blue-600',
+          color: "text-blue-600",
         });
       }
 
       if (recentAttendance && recentAttendance > 5) {
         insights.push({
-          id: 'attendance-spike',
-          type: 'trending_up',
-          title: 'Attendance Spike',
+          id: "attendance-spike",
+          type: "trending_up",
+          title: "Attendance Spike",
           description: `${recentAttendance} people marked attending shows`,
           value: recentAttendance,
           timestamp: now,
           icon: Users,
-          color: 'text-purple-600',
+          color: "text-purple-600",
         });
       }
 
       // Milestone insights
       if (totalUsers && totalUsers % 1000 < 50 && totalUsers > 1000) {
         insights.push({
-          id: 'user-milestone',
-          type: 'milestone',
-          title: 'Community Milestone',
+          id: "user-milestone",
+          type: "milestone",
+          title: "Community Milestone",
           description: `Approaching ${Math.ceil(totalUsers / 1000) * 1000} users!`,
           value: totalUsers,
           timestamp: now,
           icon: Users,
-          color: 'text-orange-600',
+          color: "text-orange-600",
         });
       }
 
       if (totalArtists && totalArtists % 500 < 25 && totalArtists > 500) {
         insights.push({
-          id: 'artist-milestone',
-          type: 'milestone',
-          title: 'Artist Database Growing',
+          id: "artist-milestone",
+          type: "milestone",
+          title: "Artist Database Growing",
           description: `Nearly ${Math.ceil(totalArtists / 500) * 500} artists tracked!`,
           value: totalArtists,
           timestamp: now,
           icon: Music,
-          color: 'text-pink-600',
+          color: "text-pink-600",
         });
       }
 
       // Trending insights based on recent data
       const { data: trendingArtists } = await supabase
-        .from('artists')
-        .select('name, trending_score')
-        .order('trending_score', { ascending: false })
+        .from("artists")
+        .select("name, trending_score")
+        .order("trending_score", { ascending: false })
         .limit(1);
 
       if (trendingArtists && trendingArtists.length > 0) {
         const topArtist = trendingArtists[0];
         if (topArtist?.trending_score && topArtist.trending_score > 80) {
           insights.push({
-            id: 'trending-artist',
-            type: 'trending_up',
-            title: 'Hot Artist Alert',
-            description: `${topArtist.name ?? 'Artist'} is trending with score ${topArtist.trending_score ?? 0}`,
+            id: "trending-artist",
+            type: "trending_up",
+            title: "Hot Artist Alert",
+            description: `${topArtist.name ?? "Artist"} is trending with score ${topArtist.trending_score ?? 0}`,
             value: topArtist.trending_score ?? 0,
             timestamp: now,
             icon: TrendingUp,
-            color: 'text-red-600',
+            color: "text-red-600",
           });
         }
       }
@@ -240,7 +240,7 @@ export function QuickInsights({
               className="h-8 w-8 p-0"
             >
               <RefreshCw
-                className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}
+                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
               />
             </Button>
           </div>
@@ -268,7 +268,7 @@ export function QuickInsights({
                     <div className="mb-1 flex items-center gap-2">
                       <h4 className="font-medium text-sm">{insight.title}</h4>
                       <Badge variant="outline" className="text-xs">
-                        {insight.type.replace('_', ' ')}
+                        {insight.type.replace("_", " ")}
                       </Badge>
                     </div>
                     <p className="text-muted-foreground text-sm">
@@ -278,7 +278,7 @@ export function QuickInsights({
                       <div
                         className={`mt-1 font-medium text-xs ${insight.color}`}
                       >
-                        {typeof insight.value === 'number'
+                        {typeof insight.value === "number"
                           ? insight.value.toLocaleString()
                           : insight.value}
                       </div>

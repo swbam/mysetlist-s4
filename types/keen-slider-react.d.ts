@@ -1,4 +1,4 @@
-declare module 'keen-slider/react' {
+declare module "keen-slider/react" {
   export interface KeenSliderInstance {
     update(): void;
     destroy(): void;
@@ -9,13 +9,13 @@ declare module 'keen-slider/react' {
       perView?: number;
       spacing?: number;
     };
-    mode?: 'free' | 'free-snap' | 'snap';
+    mode?: "free" | "free-snap" | "snap";
     breakpoints?: Record<string, KeenSliderOptions>;
   }
 
   // React hook signature
   export function useKeenSlider<T extends HTMLElement = HTMLElement>(
-    options?: KeenSliderOptions
+    options?: KeenSliderOptions,
   ): [(node: T | null) => void, KeenSliderInstance | null];
 
   // This lib also exports a plain CSS class util but we only need hook typings.

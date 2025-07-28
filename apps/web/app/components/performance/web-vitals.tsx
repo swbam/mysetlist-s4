@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { onCLS, onINP, onFCP, onLCP, onTTFB } from 'web-vitals';
+import { useEffect } from "react";
+import { onCLS, onINP, onFCP, onLCP, onTTFB } from "web-vitals";
 
 interface WebVitalMetric {
   name: string;
   value: number;
-  rating: 'good' | 'needs-improvement' | 'poor';
+  rating: "good" | "needs-improvement" | "poor";
   delta: number;
   id: string;
 }
@@ -14,10 +14,10 @@ interface WebVitalMetric {
 // Send metrics to analytics endpoint
 const sendToAnalytics = async (metric: WebVitalMetric) => {
   try {
-    await fetch('/api/analytics/vitals', {
-      method: 'POST',
+    await fetch("/api/analytics/vitals", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         name: metric.name,
@@ -31,63 +31,66 @@ const sendToAnalytics = async (metric: WebVitalMetric) => {
       }),
     });
   } catch (error) {
-    console.error('Failed to send web vital:', error);
+    console.error("Failed to send web vital:", error);
   }
 };
 
 // Performance observer for custom metrics
 const observePerformance = () => {
   // Observe navigation timing
-  if ('PerformanceObserver' in window) {
+  if ("PerformanceObserver" in window) {
     try {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          if (entry.entryType === 'navigation') {
+          if (entry.entryType === "navigation") {
             const navEntry = entry as PerformanceNavigationTiming;
-            
+
             // Send custom navigation metrics
             sendToAnalytics({
-              name: 'DOM_CONTENT_LOADED',
-              value: navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart,
-              rating: 'good', // We'll determine this based on thresholds
+              name: "DOM_CONTENT_LOADED",
+              value:
+                navEntry.domContentLoadedEventEnd -
+                navEntry.domContentLoadedEventStart,
+              rating: "good", // We'll determine this based on thresholds
               delta: 0,
-              id: 'nav-' + Date.now(),
+              id: "nav-" + Date.now(),
             });
           }
         }
       });
 
-      observer.observe({ entryTypes: ['navigation'] });
+      observer.observe({ entryTypes: ["navigation"] });
     } catch (error) {
-      console.error('Performance observer error:', error);
+      console.error("Performance observer error:", error);
     }
   }
 };
 
 // Resource loading performance
 const observeResourceTiming = () => {
-  if ('PerformanceObserver' in window) {
+  if ("PerformanceObserver" in window) {
     try {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           const resourceEntry = entry as PerformanceResourceTiming;
-          
+
           // Track slow resources
-          if (resourceEntry.duration > 1000) { // > 1 second
+          if (resourceEntry.duration > 1000) {
+            // > 1 second
             sendToAnalytics({
-              name: 'SLOW_RESOURCE',
+              name: "SLOW_RESOURCE",
               value: resourceEntry.duration,
-              rating: 'poor',
+              rating: "poor",
               delta: 0,
-              id: 'resource-' + Date.now(),
+              id: "resource-" + Date.now(),
             });
           }
         }
       });
 
-      observer.observe({ entryTypes: ['resource'] });
+      observer.observe({ entryTypes: ["resource"] });
     } catch (error) {
-      console.error('Resource observer error:', error);
+      console.error("Resource observer error:", error);
     }
   }
 };
@@ -106,26 +109,27 @@ export function WebVitalsReporter() {
     observeResourceTiming();
 
     // Memory usage (if available)
-    if ('memory' in performance) {
+    if ("memory" in performance) {
       const memoryInfo = (performance as any).memory;
       sendToAnalytics({
-        name: 'MEMORY_USAGE',
+        name: "MEMORY_USAGE",
         value: memoryInfo.usedJSHeapSize,
-        rating: memoryInfo.usedJSHeapSize > 50000000 ? 'poor' : 'good', // 50MB threshold
+        rating: memoryInfo.usedJSHeapSize > 50000000 ? "poor" : "good", // 50MB threshold
         delta: 0,
-        id: 'memory-' + Date.now(),
+        id: "memory-" + Date.now(),
       });
     }
 
     // Connection information
-    if ('connection' in navigator) {
+    if ("connection" in navigator) {
       const connection = (navigator as any).connection;
       sendToAnalytics({
-        name: 'CONNECTION_TYPE',
+        name: "CONNECTION_TYPE",
         value: connection.downlink || 0,
-        rating: connection.effectiveType === '4g' ? 'good' : 'needs-improvement',
+        rating:
+          connection.effectiveType === "4g" ? "good" : "needs-improvement",
         delta: 0,
-        id: 'connection-' + Date.now(),
+        id: "connection-" + Date.now(),
       });
     }
   }, []);
@@ -135,11 +139,17 @@ export function WebVitalsReporter() {
 
 // Hook for manual performance tracking
 export function usePerformanceTracking() {
-  const trackCustomMetric = (name: string, value: number, rating?: 'good' | 'needs-improvement' | 'poor') => {
+  const trackCustomMetric = (
+    name: string,
+    value: number,
+    rating?: "good" | "needs-improvement" | "poor",
+  ) => {
     sendToAnalytics({
       name: name.toUpperCase(),
       value,
-      rating: rating || (value < 100 ? 'good' : value < 300 ? 'needs-improvement' : 'poor'),
+      rating:
+        rating ||
+        (value < 100 ? "good" : value < 300 ? "needs-improvement" : "poor"),
       delta: 0,
       id: `custom-${name}-${Date.now()}`,
     });
@@ -156,13 +166,15 @@ export function usePerformanceTracking() {
   };
 
   const trackPageLoad = () => {
-    if (document.readyState === 'complete') {
-      const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
-      trackCustomMetric('PAGE_LOAD_TIME', loadTime);
+    if (document.readyState === "complete") {
+      const loadTime =
+        performance.timing.loadEventEnd - performance.timing.navigationStart;
+      trackCustomMetric("PAGE_LOAD_TIME", loadTime);
     } else {
-      window.addEventListener('load', () => {
-        const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
-        trackCustomMetric('PAGE_LOAD_TIME', loadTime);
+      window.addEventListener("load", () => {
+        const loadTime =
+          performance.timing.loadEventEnd - performance.timing.navigationStart;
+        trackCustomMetric("PAGE_LOAD_TIME", loadTime);
       });
     }
   };

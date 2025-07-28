@@ -1,22 +1,26 @@
-import { db } from '@repo/database';
-import { setlistSongs } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { setlistSongs } from "@repo/database";
+import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 import {
   canPerformAnonymousAction,
   getAnonymousLimitsStatus,
   getAnonymousSessionId,
   incrementAnonymousAction,
-} from '~/lib/anonymous-limits';
+} from "~/lib/anonymous-limits";
 
 export async function POST(request: NextRequest) {
   try {
-    const { setlistSongId, voteType, sessionId: _sessionId } = await request.json();
+    const {
+      setlistSongId,
+      voteType,
+      sessionId: _sessionId,
+    } = await request.json();
 
     if (!setlistSongId) {
       return NextResponse.json(
-        { error: 'Invalid request data' },
-        { status: 400 }
+        { error: "Invalid request data" },
+        { status: 400 },
       );
     }
 
@@ -25,18 +29,18 @@ export async function POST(request: NextRequest) {
 
     // Check if anonymous user can vote
     const { allowed, remaining, resetTime } =
-      await canPerformAnonymousAction('votes');
+      await canPerformAnonymousAction("votes");
 
     if (!allowed) {
       const status = await getAnonymousLimitsStatus();
       return NextResponse.json(
         {
-          error: 'Anonymous vote limit reached',
+          error: "Anonymous vote limit reached",
           limits: status.limits,
           usage: status.usage,
           resetTime: status.resetTime,
         },
-        { status: 429 }
+        { status: 429 },
       );
     }
 
@@ -52,11 +56,11 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (song.length === 0) {
-      return NextResponse.json({ error: 'Song not found' }, { status: 404 });
+      return NextResponse.json({ error: "Song not found" }, { status: 404 });
     }
 
     // Increment the anonymous action count
-    await incrementAnonymousAction('votes');
+    await incrementAnonymousAction("votes");
 
     // Return the vote data without modifying the database
     // The client will handle the optimistic update
@@ -73,8 +77,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -82,12 +86,12 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const setlistSongId = searchParams.get('setlistSongId');
+    const setlistSongId = searchParams.get("setlistSongId");
 
     if (!setlistSongId) {
       return NextResponse.json(
-        { error: 'Missing parameters' },
-        { status: 400 }
+        { error: "Missing parameters" },
+        { status: 400 },
       );
     }
 
@@ -103,7 +107,7 @@ export async function GET(request: NextRequest) {
       .limit(1);
 
     if (song.length === 0) {
-      return NextResponse.json({ error: 'Song not found' }, { status: 404 });
+      return NextResponse.json({ error: "Song not found" }, { status: 404 });
     }
 
     // Get anonymous limits status
@@ -119,8 +123,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

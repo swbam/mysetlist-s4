@@ -5,21 +5,21 @@
  * Validates build output against performance budgets
  */
 
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Performance budgets (in KB)
 const BUDGETS = {
-  'First Load JS': {
+  "First Load JS": {
     warning: 150,
     error: 200,
   },
-  'Page JS': {
+  "Page JS": {
     warning: 100,
     error: 150,
   },
@@ -44,26 +44,26 @@ const _IMAGE_BUDGETS = {
 function parseBuildOutput() {
   const buildOutputPath = join(
     __dirname,
-    '../apps/web/.next/build-manifest.json'
+    "../apps/web/.next/build-manifest.json",
   );
 
   if (!existsSync(buildOutputPath)) {
     process.exit(1);
   }
 
-  const buildManifest = JSON.parse(readFileSync(buildOutputPath, 'utf-8'));
+  const buildManifest = JSON.parse(readFileSync(buildOutputPath, "utf-8"));
   return buildManifest;
 }
 
 // Calculate bundle sizes
 function calculateBundleSizes() {
-  const statsPath = join(__dirname, '../apps/web/.next/stats.json');
+  const statsPath = join(__dirname, "../apps/web/.next/stats.json");
 
   if (!existsSync(statsPath)) {
     return null;
   }
 
-  const stats = JSON.parse(readFileSync(statsPath, 'utf-8'));
+  const stats = JSON.parse(readFileSync(statsPath, "utf-8"));
 
   const results = {
     js: 0,
@@ -77,9 +77,9 @@ function calculateBundleSizes() {
   stats.assets.forEach((asset) => {
     const sizeInKB = asset.size / 1024;
 
-    if (asset.name.endsWith('.js')) {
+    if (asset.name.endsWith(".js")) {
       results.js += sizeInKB;
-    } else if (asset.name.endsWith('.css')) {
+    } else if (asset.name.endsWith(".css")) {
       results.css += sizeInKB;
     } else if (/\.(jpg|jpeg|png|gif|svg|webp|avif)$/.test(asset.name)) {
       results.images += sizeInKB;
@@ -99,35 +99,35 @@ function checkBudgets(sizes) {
   const warnings = [];
 
   // Check JS budget
-  if (sizes.js > BUDGETS['First Load JS'].error) {
+  if (sizes.js > BUDGETS["First Load JS"].error) {
     failures.push(
-      `JS bundle size (${sizes.js.toFixed(2)}KB) exceeds error budget (${BUDGETS['First Load JS'].error}KB)`
+      `JS bundle size (${sizes.js.toFixed(2)}KB) exceeds error budget (${BUDGETS["First Load JS"].error}KB)`,
     );
-  } else if (sizes.js > BUDGETS['First Load JS'].warning) {
+  } else if (sizes.js > BUDGETS["First Load JS"].warning) {
     warnings.push(
-      `JS bundle size (${sizes.js.toFixed(2)}KB) exceeds warning budget (${BUDGETS['First Load JS'].warning}KB)`
+      `JS bundle size (${sizes.js.toFixed(2)}KB) exceeds warning budget (${BUDGETS["First Load JS"].warning}KB)`,
     );
   }
 
   // Check CSS budget
   if (sizes.css > BUDGETS.CSS.error) {
     failures.push(
-      `CSS size (${sizes.css.toFixed(2)}KB) exceeds error budget (${BUDGETS.CSS.error}KB)`
+      `CSS size (${sizes.css.toFixed(2)}KB) exceeds error budget (${BUDGETS.CSS.error}KB)`,
     );
   } else if (sizes.css > BUDGETS.CSS.warning) {
     warnings.push(
-      `CSS size (${sizes.css.toFixed(2)}KB) exceeds warning budget (${BUDGETS.CSS.warning}KB)`
+      `CSS size (${sizes.css.toFixed(2)}KB) exceeds warning budget (${BUDGETS.CSS.warning}KB)`,
     );
   }
 
   // Check total budget
   if (sizes.total > BUDGETS.Total.error) {
     failures.push(
-      `Total size (${sizes.total.toFixed(2)}KB) exceeds error budget (${BUDGETS.Total.error}KB)`
+      `Total size (${sizes.total.toFixed(2)}KB) exceeds error budget (${BUDGETS.Total.error}KB)`,
     );
   } else if (sizes.total > BUDGETS.Total.warning) {
     warnings.push(
-      `Total size (${sizes.total.toFixed(2)}KB) exceeds warning budget (${BUDGETS.Total.warning}KB)`
+      `Total size (${sizes.total.toFixed(2)}KB) exceeds warning budget (${BUDGETS.Total.warning}KB)`,
     );
   }
 
@@ -137,11 +137,11 @@ function checkBudgets(sizes) {
 // Generate report
 function generateReport(sizes, budgetCheck) {
   if (budgetCheck.warnings.length > 0) {
-    budgetCheck.warnings.forEach((_warning) => );
+    budgetCheck.warnings.forEach((_warning) => {});
   }
 
   if (budgetCheck.failures.length > 0) {
-    budgetCheck.failures.forEach((_failure) => );
+    budgetCheck.failures.forEach((_failure) => {});
   }
 
   if (budgetCheck.failures.length === 0 && budgetCheck.warnings.length === 0) {
@@ -149,10 +149,10 @@ function generateReport(sizes, budgetCheck) {
 
   // Optimization suggestions
   if (
-    sizes.js > BUDGETS['First Load JS'].warning ||
+    sizes.js > BUDGETS["First Load JS"].warning ||
     sizes.total > BUDGETS.Total.warning
   ) {
-    if (sizes.js > BUDGETS['First Load JS'].warning) {
+    if (sizes.js > BUDGETS["First Load JS"].warning) {
     }
 
     if (sizes.css > BUDGETS.CSS.warning) {

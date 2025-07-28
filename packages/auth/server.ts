@@ -1,8 +1,8 @@
-import 'server-only';
+import "server-only";
 
-import { type CookieOptions, createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { keys } from './keys';
+import { type CookieOptions, createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { keys } from "./keys";
 
 const env = keys();
 
@@ -20,7 +20,7 @@ export async function createClient() {
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
+              cookieStore.set(name, value, options),
             );
           } catch {
             // The `setAll` method was called from a Server Component.
@@ -29,7 +29,7 @@ export async function createClient() {
           }
         },
       },
-    }
+    },
   );
 }
 
@@ -55,7 +55,7 @@ export async function createServiceClient() {
         autoRefreshToken: false,
         persistSession: false,
       },
-    }
+    },
   );
 }
 
@@ -83,4 +83,4 @@ export async function getSession() {
   return session;
 }
 
-export type { Session, User } from '@supabase/supabase-js';
+export type { Session, User } from "@supabase/supabase-js";

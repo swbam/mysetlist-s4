@@ -1,5 +1,5 @@
-import { render } from '@testing-library/react';
-import { axe, toHaveNoViolations } from 'jest-axe';
+import { render } from "@testing-library/react";
+import { axe, toHaveNoViolations } from "jest-axe";
 
 expect.extend(toHaveNoViolations);
 
@@ -15,24 +15,24 @@ export async function testAccessibility(component: React.ReactElement) {
 export function assertKeyboardNavigable(element: HTMLElement) {
   // Check if element is focusable
   const focusableElements = element.querySelectorAll(
-    'a[href], button, textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select'
+    'a[href], button, textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select',
   );
 
   focusableElements.forEach((el) => {
-    expect(el).toHaveAttribute('tabindex', expect.stringMatching(/^-?\d+$/));
+    expect(el).toHaveAttribute("tabindex", expect.stringMatching(/^-?\d+$/));
   });
 }
 
 export function assertARIACompliant(element: HTMLElement) {
   // Check for proper ARIA labels
   const interactiveElements = element.querySelectorAll(
-    'button, a, input, select, textarea'
+    "button, a, input, select, textarea",
   );
 
   interactiveElements.forEach((el) => {
     const hasLabel =
-      el.hasAttribute('aria-label') ||
-      el.hasAttribute('aria-labelledby') ||
+      el.hasAttribute("aria-label") ||
+      el.hasAttribute("aria-labelledby") ||
       el.textContent?.trim() ||
       (el as HTMLInputElement).labels?.length > 0;
 
@@ -41,7 +41,7 @@ export function assertARIACompliant(element: HTMLElement) {
 
   // Check for proper heading hierarchy
   const headings = Array.from(
-    element.querySelectorAll('h1, h2, h3, h4, h5, h6')
+    element.querySelectorAll("h1, h2, h3, h4, h5, h6"),
   );
   let previousLevel = 0;
 
@@ -54,7 +54,7 @@ export function assertARIACompliant(element: HTMLElement) {
 
 export function assertColorContrast(element: HTMLElement) {
   // This is a simplified check - in real implementation, use axe-core
-  const elementsWithText = element.querySelectorAll('*');
+  const elementsWithText = element.querySelectorAll("*");
 
   elementsWithText.forEach((el) => {
     if (el.textContent?.trim()) {

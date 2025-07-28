@@ -1,1 +1,1 @@
-export { createSupabaseBrowserClient as createClient } from '@repo/database/client';
+export { createSupabaseBrowserClient as createClient } from "@repo/database/client";

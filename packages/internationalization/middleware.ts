@@ -1,15 +1,15 @@
-import { match as matchLocale } from '@formatjs/intl-localematcher';
-import Negotiator from 'negotiator';
-import { createI18nMiddleware } from 'next-international/middleware';
-import type { NextRequest } from 'next/server';
-import languine from './languine.json';
+import { match as matchLocale } from "@formatjs/intl-localematcher";
+import Negotiator from "negotiator";
+import { createI18nMiddleware } from "next-international/middleware";
+import type { NextRequest } from "next/server";
+import languine from "./languine.json";
 
 const locales = [languine.locale.source, ...languine.locale.targets];
 
 const I18nMiddleware = createI18nMiddleware({
   locales,
-  defaultLocale: 'en',
-  urlMappingStrategy: 'rewriteDefault',
+  defaultLocale: "en",
+  urlMappingStrategy: "rewriteDefault",
   resolveLocaleFromRequest: (request: NextRequest) => {
     try {
       const headers = Object.fromEntries(request.headers.entries());
@@ -29,13 +29,13 @@ const I18nMiddleware = createI18nMiddleware({
 
       // If no valid languages, return default
       if (validLanguages.length === 0) {
-        return 'en';
+        return "en";
       }
 
-      const matchedLocale = matchLocale(validLanguages, locales, 'en');
+      const matchedLocale = matchLocale(validLanguages, locales, "en");
       return matchedLocale;
     } catch (_error) {
-      return 'en';
+      return "en";
     }
   },
 });
@@ -45,7 +45,7 @@ export function internationalizationMiddleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
 
 //https://nextjs.org/docs/app/building-your-application/routing/internationalization

@@ -1,9 +1,9 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { SyncProgressTracker } from '~/lib/sync/progress-tracker';
+import { type NextRequest, NextResponse } from "next/server";
+import { SyncProgressTracker } from "~/lib/sync/progress-tracker";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ artistId: string }> }
+  { params }: { params: Promise<{ artistId: string }> },
 ) {
   try {
     const { artistId } = await params;
@@ -12,8 +12,8 @@ export async function GET(
 
     if (!progress) {
       return NextResponse.json(
-        { error: 'No sync in progress for this artist' },
-        { status: 404 }
+        { error: "No sync in progress for this artist" },
+        { status: 404 },
       );
     }
 
@@ -23,8 +23,8 @@ export async function GET(
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to get sync progress' },
-      { status: 500 }
+      { error: "Failed to get sync progress" },
+      { status: 500 },
     );
   }
 }

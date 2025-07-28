@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { createClient } from '~/lib/supabase/server';
+import { type NextRequest, NextResponse } from "next/server";
+import { createClient } from "~/lib/supabase/server";
 
 export interface EmailPreferences {
   id?: string;
@@ -13,7 +13,7 @@ export interface EmailPreferences {
   vote_milestones: boolean;
   live_show_alerts: boolean;
   marketing_emails: boolean;
-  frequency: 'instant' | 'daily' | 'weekly';
+  frequency: "instant" | "daily" | "weekly";
   updated_at?: string;
 }
 
@@ -26,25 +26,25 @@ export async function GET(_request: NextRequest) {
     } = await supabase.auth.getSession();
 
     if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { data: preferences, error } = await supabase
-      .from('user_email_preferences')
-      .select('*')
-      .eq('user_id', session.user.id)
+      .from("user_email_preferences")
+      .select("*")
+      .eq("user_id", session.user.id)
       .single();
 
-    if (error && error.code !== 'PGRST116') {
+    if (error && error.code !== "PGRST116") {
       return NextResponse.json(
-        { error: 'Failed to fetch preferences' },
-        { status: 500 }
+        { error: "Failed to fetch preferences" },
+        { status: 500 },
       );
     }
 
     // If no preferences exist, return defaults
     if (!preferences) {
-      const defaultPreferences: Omit<EmailPreferences, 'id' | 'updated_at'> = {
+      const defaultPreferences: Omit<EmailPreferences, "id" | "updated_at"> = {
         user_id: session.user.id,
         email_notifications: true,
         new_show_notifications: true,
@@ -55,7 +55,7 @@ export async function GET(_request: NextRequest) {
         vote_milestones: true,
         live_show_alerts: true,
         marketing_emails: false,
-        frequency: 'instant',
+        frequency: "instant",
       };
 
       return NextResponse.json(defaultPreferences);
@@ -64,8 +64,8 @@ export async function GET(_request: NextRequest) {
     return NextResponse.json(preferences);
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -79,23 +79,23 @@ export async function PUT(request: NextRequest) {
     } = await supabase.auth.getSession();
 
     if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
 
     // Validate required fields
     const allowedFields = [
-      'email_notifications',
-      'new_show_notifications',
-      'show_reminders',
-      'setlist_updates',
-      'weekly_digest',
-      'artist_follow_notifications',
-      'vote_milestones',
-      'live_show_alerts',
-      'marketing_emails',
-      'frequency',
+      "email_notifications",
+      "new_show_notifications",
+      "show_reminders",
+      "setlist_updates",
+      "weekly_digest",
+      "artist_follow_notifications",
+      "vote_milestones",
+      "live_show_alerts",
+      "marketing_emails",
+      "frequency",
     ];
 
     const updateData: Partial<EmailPreferences> = {
@@ -113,34 +113,34 @@ export async function PUT(request: NextRequest) {
     // Validate frequency if provided
     if (
       updateData.frequency &&
-      !['instant', 'daily', 'weekly'].includes(updateData.frequency)
+      !["instant", "daily", "weekly"].includes(updateData.frequency)
     ) {
       return NextResponse.json(
-        { error: 'Invalid frequency value' },
-        { status: 400 }
+        { error: "Invalid frequency value" },
+        { status: 400 },
       );
     }
 
     // Check if preferences exist
     const { data: existingPreferences } = await supabase
-      .from('user_email_preferences')
-      .select('id')
-      .eq('user_id', session.user.id)
+      .from("user_email_preferences")
+      .select("id")
+      .eq("user_id", session.user.id)
       .single();
 
     let result;
     if (existingPreferences) {
       // Update existing preferences
       result = await supabase
-        .from('user_email_preferences')
+        .from("user_email_preferences")
         .update(updateData)
-        .eq('user_id', session.user.id)
+        .eq("user_id", session.user.id)
         .select()
         .single();
     } else {
       // Insert new preferences
       result = await supabase
-        .from('user_email_preferences')
+        .from("user_email_preferences")
         .insert(updateData)
         .select()
         .single();
@@ -148,19 +148,19 @@ export async function PUT(request: NextRequest) {
 
     if (result.error) {
       return NextResponse.json(
-        { error: 'Failed to update preferences' },
-        { status: 500 }
+        { error: "Failed to update preferences" },
+        { status: 500 },
       );
     }
 
     return NextResponse.json({
-      message: 'Preferences updated successfully',
+      message: "Preferences updated successfully",
       preferences: result.data,
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -174,15 +174,15 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getSession();
 
     if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
     const { preferences, action } = body;
 
-    if (action === 'reset') {
+    if (action === "reset") {
       // Reset to defaults
-      const defaultPreferences: Omit<EmailPreferences, 'id' | 'updated_at'> = {
+      const defaultPreferences: Omit<EmailPreferences, "id" | "updated_at"> = {
         user_id: session.user.id,
         email_notifications: true,
         new_show_notifications: true,
@@ -193,11 +193,11 @@ export async function POST(request: NextRequest) {
         vote_milestones: true,
         live_show_alerts: true,
         marketing_emails: false,
-        frequency: 'instant',
+        frequency: "instant",
       };
 
       const { data, error } = await supabase
-        .from('user_email_preferences')
+        .from("user_email_preferences")
         .upsert({
           ...defaultPreferences,
           updated_at: new Date().toISOString(),
@@ -207,18 +207,18 @@ export async function POST(request: NextRequest) {
 
       if (error) {
         return NextResponse.json(
-          { error: 'Failed to reset preferences' },
-          { status: 500 }
+          { error: "Failed to reset preferences" },
+          { status: 500 },
         );
       }
 
       return NextResponse.json({
-        message: 'Preferences reset to defaults',
+        message: "Preferences reset to defaults",
         preferences: data,
       });
     }
 
-    if (action === 'disable-all') {
+    if (action === "disable-all") {
       // Disable all email notifications
       const disabledPreferences = {
         user_id: session.user.id,
@@ -231,34 +231,34 @@ export async function POST(request: NextRequest) {
         vote_milestones: false,
         live_show_alerts: false,
         marketing_emails: false,
-        frequency: 'instant',
+        frequency: "instant",
         updated_at: new Date().toISOString(),
       };
 
       const { data, error } = await supabase
-        .from('user_email_preferences')
+        .from("user_email_preferences")
         .upsert(disabledPreferences)
         .select()
         .single();
 
       if (error) {
         return NextResponse.json(
-          { error: 'Failed to disable preferences' },
-          { status: 500 }
+          { error: "Failed to disable preferences" },
+          { status: 500 },
         );
       }
 
       return NextResponse.json({
-        message: 'All email notifications disabled',
+        message: "All email notifications disabled",
         preferences: data,
       });
     }
 
     // Regular bulk update
-    if (!preferences || typeof preferences !== 'object') {
+    if (!preferences || typeof preferences !== "object") {
       return NextResponse.json(
-        { error: 'Invalid preferences data' },
-        { status: 400 }
+        { error: "Invalid preferences data" },
+        { status: 400 },
       );
     }
 
@@ -269,26 +269,26 @@ export async function POST(request: NextRequest) {
     };
 
     const { data, error } = await supabase
-      .from('user_email_preferences')
+      .from("user_email_preferences")
       .upsert(updateData)
       .select()
       .single();
 
     if (error) {
       return NextResponse.json(
-        { error: 'Failed to update preferences' },
-        { status: 500 }
+        { error: "Failed to update preferences" },
+        { status: 500 },
       );
     }
 
     return NextResponse.json({
-      message: 'Preferences updated successfully',
+      message: "Preferences updated successfully",
       preferences: data,
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

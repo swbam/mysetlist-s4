@@ -1,30 +1,30 @@
-import { db } from '@repo/database';
-import { setlistSongs, setlists, votes } from '@repo/database';
-import { eachHourOfInterval, format, subHours } from 'date-fns';
-import { and, desc, eq, gte, sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { setlistSongs, setlists, votes } from "@repo/database";
+import { eachHourOfInterval, format, subHours } from "date-fns";
+import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const showId = searchParams.get('showId');
-    const setlistId = searchParams.get('setlistId');
-    const timeframe = searchParams.get('timeframe') || '24h';
+    const showId = searchParams.get("showId");
+    const setlistId = searchParams.get("setlistId");
+    const timeframe = searchParams.get("timeframe") || "24h";
 
     if (!showId) {
       return NextResponse.json(
-        { error: 'Missing showId parameter' },
-        { status: 400 }
+        { error: "Missing showId parameter" },
+        { status: 400 },
       );
     }
 
     // Parse timeframe
-    const hours = Number.parseInt(timeframe.replace('h', ''));
+    const hours = Number.parseInt(timeframe.replace("h", ""));
     const startTime = subHours(new Date(), hours);
 
     // Build conditions for setlist songs query
     const conditions = [eq(setlists.showId, showId)];
-    
+
     if (setlistId) {
       conditions.push(eq(setlistSongs.setlistId, setlistId));
     }
@@ -46,10 +46,10 @@ export async function GET(request: NextRequest) {
         hourly: [],
         summary: {
           totalVotes: 0,
-          peakHour: '00:00',
-          quietHour: '00:00',
+          peakHour: "00:00",
+          quietHour: "00:00",
           averageVotesPerHour: 0,
-          currentTrend: 'stable' as const,
+          currentTrend: "stable" as const,
           momentumScore: 0,
         },
         topMoments: [],
@@ -75,8 +75,8 @@ export async function GET(request: NextRequest) {
       .where(
         and(
           sql`${votes.setlistSongId} = ANY(${setlistSongIds})`,
-          gte(votes.createdAt, startTime)
-        )
+          gte(votes.createdAt, startTime),
+        ),
       )
       .orderBy(desc(votes.createdAt));
 
@@ -89,14 +89,14 @@ export async function GET(request: NextRequest) {
       const intervalEnd = new Date(intervalStart.getTime() + 60 * 60 * 1000);
       const hourVotes = votesData.filter(
         (vote) =>
-          vote.createdAt >= intervalStart && vote.createdAt < intervalEnd
+          vote.createdAt >= intervalStart && vote.createdAt < intervalEnd,
       );
 
-      const upvotes = hourVotes.filter((v) => v.voteType === 'up').length;
-      const downvotes = hourVotes.filter((v) => v.voteType === 'down').length;
+      const upvotes = hourVotes.filter((v) => v.voteType === "up").length;
+      const downvotes = hourVotes.filter((v) => v.voteType === "down").length;
 
       return {
-        hour: format(intervalStart, 'HH:mm'),
+        hour: format(intervalStart, "HH:mm"),
         votes: hourVotes.length,
         upvotes,
         downvotes,
@@ -112,9 +112,9 @@ export async function GET(request: NextRequest) {
     const maxVotes = Math.max(...hourlyData.map((h) => h.votes), 0);
     const minVotes = Math.min(...hourlyData.map((h) => h.votes), 0);
     const peakHour =
-      hourlyData.find((h) => h.votes === maxVotes)?.hour || '00:00';
+      hourlyData.find((h) => h.votes === maxVotes)?.hour || "00:00";
     const quietHour =
-      hourlyData.find((h) => h.votes === minVotes)?.hour || '00:00';
+      hourlyData.find((h) => h.votes === minVotes)?.hour || "00:00";
 
     // Calculate current trend (last 3 hours vs previous 3 hours)
     const recentHours = hourlyData.slice(-3);
@@ -126,11 +126,11 @@ export async function GET(request: NextRequest) {
       previousHours.reduce((sum, h) => sum + h.votes, 0) /
       Math.max(1, previousHours.length);
 
-    let currentTrend: 'up' | 'down' | 'stable' = 'stable';
+    let currentTrend: "up" | "down" | "stable" = "stable";
     if (recentAvg > previousAvg * 1.2) {
-      currentTrend = 'up';
+      currentTrend = "up";
     } else if (recentAvg < previousAvg * 0.8) {
-      currentTrend = 'down';
+      currentTrend = "down";
     }
 
     // Calculate momentum score (0-1, based on consistency and growth)
@@ -154,10 +154,10 @@ export async function GET(request: NextRequest) {
         votes: h.votes,
         impact:
           h.votes > averageVotes * 3
-            ? ('high' as const)
+            ? ("high" as const)
             : h.votes > averageVotes * 2
-              ? ('medium' as const)
-              : ('low' as const),
+              ? ("medium" as const)
+              : ("low" as const),
       }))
       .sort((a, b) => b.votes - a.votes)
       .slice(0, 5);
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
     // Simple prediction for next hour (based on recent trend and time patterns)
     const lastHourVotes = hourlyData.at(-1)?.votes || 0;
     const trendMultiplier =
-      currentTrend === 'up' ? 1.2 : currentTrend === 'down' ? 0.8 : 1.0;
+      currentTrend === "up" ? 1.2 : currentTrend === "down" ? 0.8 : 1.0;
     const timeOfDay = new Date().getHours();
 
     // Adjust for typical activity patterns (simplified)
@@ -181,7 +181,7 @@ export async function GET(request: NextRequest) {
     const predictedVotes = Math.round(
       (lastHourVotes * 0.4 + averageVotes * 0.6) *
         trendMultiplier *
-        timeMultiplier
+        timeMultiplier,
     );
 
     // Confidence based on data consistency and recency
@@ -189,19 +189,19 @@ export async function GET(request: NextRequest) {
     const confidence = Math.min(0.95, Math.max(0.3, dataPoints / hours));
 
     const predictionFactors: string[] = [];
-    if (currentTrend !== 'stable') {
+    if (currentTrend !== "stable") {
       predictionFactors.push(
-        `${currentTrend === 'up' ? 'Upward' : 'Downward'} trend detected`
+        `${currentTrend === "up" ? "Upward" : "Downward"} trend detected`,
       );
     }
     if (timeOfDay >= 18 && timeOfDay <= 23) {
-      predictionFactors.push('Peak evening activity period');
+      predictionFactors.push("Peak evening activity period");
     }
     if (momentumScore > 0.7) {
-      predictionFactors.push('High engagement momentum');
+      predictionFactors.push("High engagement momentum");
     }
     if (lastHourVotes > averageVotes * 1.5) {
-      predictionFactors.push('Recent high activity');
+      predictionFactors.push("Recent high activity");
     }
 
     return NextResponse.json({
@@ -223,8 +223,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

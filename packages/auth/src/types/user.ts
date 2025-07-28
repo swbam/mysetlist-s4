@@ -8,13 +8,13 @@ export interface UserProfile {
   website?: string;
   spotifyConnected: boolean;
   spotifyUserId?: string;
-  role: 'user' | 'moderator' | 'admin';
+  role: "user" | "moderator" | "admin";
   createdAt: string;
   updatedAt: string;
 }
 
 export interface UserPreferences {
-  theme: 'light' | 'dark' | 'system';
+  theme: "light" | "dark" | "system";
   emailNotifications: boolean;
   pushNotifications: boolean;
   language: string;

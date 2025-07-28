@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis';
+import { Redis } from "@upstash/redis";
 
 export interface CacheOptions {
   defaultTTL?: number; // seconds
@@ -18,12 +18,12 @@ export class CacheManager {
 
     // Initialize Redis if environment variables are available
     if (
-      process.env['UPSTASH_REDIS_REST_URL'] &&
-      process.env['UPSTASH_REDIS_REST_TOKEN']
+      process.env["UPSTASH_REDIS_REST_URL"] &&
+      process.env["UPSTASH_REDIS_REST_TOKEN"]
     ) {
       this.redis = new Redis({
-        url: process.env['UPSTASH_REDIS_REST_URL'],
-        token: process.env['UPSTASH_REDIS_REST_TOKEN'],
+        url: process.env["UPSTASH_REDIS_REST_URL"],
+        token: process.env["UPSTASH_REDIS_REST_TOKEN"],
       });
     } else {
       this.redis = null;
@@ -130,7 +130,7 @@ export class CacheManager {
 export const cacheKeys = {
   spotify: {
     artist: (id: string) => `spotify:artist:${id}`,
-    artistTopTracks: (id: string, market = 'US') =>
+    artistTopTracks: (id: string, market = "US") =>
       `spotify:artist:${id}:top-tracks:${market}`,
     searchArtists: (query: string, limit: number) =>
       `spotify:search:artists:${query}:${limit}`,

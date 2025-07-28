@@ -1,13 +1,13 @@
-import { createSupabaseAdmin } from '../config/supabase';
-import type { AuthUser } from '../types';
+import { createSupabaseAdmin } from "../config/supabase";
+import type { AuthUser } from "../types";
 
 // Server-side authentication helpers
 export async function getServerSession() {
-  const { cookies } = await import('next/headers');
+  const { cookies } = await import("next/headers");
   const cookieStore = await cookies();
 
-  const accessToken = cookieStore.get('supabase-access-token')?.value;
-  const refreshToken = cookieStore.get('supabase-refresh-token')?.value;
+  const accessToken = cookieStore.get("supabase-access-token")?.value;
+  const refreshToken = cookieStore.get("supabase-refresh-token")?.value;
 
   if (!accessToken) {
     return null;
@@ -37,19 +37,19 @@ export async function getServerSession() {
 export async function requireAuth() {
   const session = await getServerSession();
   if (!session) {
-    throw new Error('Authentication required');
+    throw new Error("Authentication required");
   }
   return session;
 }
 
 export async function requireRole(
-  requiredRole: 'user' | 'moderator' | 'admin'
+  requiredRole: "user" | "moderator" | "admin",
 ) {
   const session = await requireAuth();
-  const userRole = session.user.app_metadata?.['role'] || 'user';
+  const userRole = session.user.app_metadata?.["role"] || "user";
 
   if (!hasRole(userRole, requiredRole)) {
-    throw new Error('Insufficient permissions');
+    throw new Error("Insufficient permissions");
   }
 
   return session;
@@ -72,7 +72,7 @@ export function mapSupabaseUser(user: any): AuthUser {
     email_confirmed_at: user.email_confirmed_at,
     user_metadata: user.user_metadata || {},
     app_metadata: user.app_metadata || {},
-    aud: user.aud || '',
+    aud: user.aud || "",
     role: user.role,
     created_at: user.created_at,
     updated_at: user.updated_at,
@@ -80,11 +80,11 @@ export function mapSupabaseUser(user: any): AuthUser {
 }
 
 // Client-side helpers
-export function getRedirectUrl(path = '/'): string {
+export function getRedirectUrl(path = "/"): string {
   const baseUrl =
-    typeof window !== 'undefined'
+    typeof window !== "undefined"
       ? window.location.origin
-      : process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001';
+      : process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
 
   return `${baseUrl}${path}`;
 }
@@ -102,14 +102,14 @@ export function isPasswordStrong(password: string): boolean {
 
 export function generateSecurePassword(length = 12): string {
   const chars =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@$!%*?&';
-  let password = '';
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@$!%*?&";
+  let password = "";
 
   // Ensure at least one of each required character type
-  password += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'[Math.floor(Math.random() * 26)]; // uppercase
-  password += 'abcdefghijklmnopqrstuvwxyz'[Math.floor(Math.random() * 26)]; // lowercase
-  password += '0123456789'[Math.floor(Math.random() * 10)]; // number
-  password += '@$!%*?&'[Math.floor(Math.random() * 7)]; // special char
+  password += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[Math.floor(Math.random() * 26)]; // uppercase
+  password += "abcdefghijklmnopqrstuvwxyz"[Math.floor(Math.random() * 26)]; // lowercase
+  password += "0123456789"[Math.floor(Math.random() * 10)]; // number
+  password += "@$!%*?&"[Math.floor(Math.random() * 7)]; // special char
 
   // Fill remaining length with random characters
   for (let i = 4; i < length; i++) {
@@ -118,9 +118,9 @@ export function generateSecurePassword(length = 12): string {
 
   // Shuffle the password
   return password
-    .split('')
+    .split("")
     .sort(() => Math.random() - 0.5)
-    .join('');
+    .join("");
 }
 
 // Error handling
@@ -128,10 +128,10 @@ export class AuthError extends Error {
   constructor(
     message: string,
     public code?: string,
-    public statusCode?: number
+    public statusCode?: number,
   ) {
     super(message);
-    this.name = 'AuthError';
+    this.name = "AuthError";
   }
 }
 
@@ -142,22 +142,22 @@ export function handleAuthError(error: any): AuthError {
 
   // Map common Supabase errors to friendly messages
   const errorMappings: Record<string, string> = {
-    'Invalid login credentials': 'Invalid email or password. Please try again.',
-    'Email not confirmed':
-      'Please check your email and click the confirmation link.',
-    'Signup not allowed for this instance':
-      'Account registration is currently disabled.',
-    'Password should be at least 6 characters':
-      'Password must be at least 6 characters long.',
-    'User already exists': 'An account with this email already exists.',
-    'Token has expired or is invalid':
-      'Your session has expired. Please sign in again.',
+    "Invalid login credentials": "Invalid email or password. Please try again.",
+    "Email not confirmed":
+      "Please check your email and click the confirmation link.",
+    "Signup not allowed for this instance":
+      "Account registration is currently disabled.",
+    "Password should be at least 6 characters":
+      "Password must be at least 6 characters long.",
+    "User already exists": "An account with this email already exists.",
+    "Token has expired or is invalid":
+      "Your session has expired. Please sign in again.",
   };
 
   const message =
     errorMappings[error.message] ||
     error.message ||
-    'An unexpected error occurred';
+    "An unexpected error occurred";
 
   return new AuthError(message, error.code, error.statusCode);
 }

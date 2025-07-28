@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,15 +16,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { Input } from '@repo/design-system/components/ui/input';
+} from "@repo/design-system/components/ui/dropdown-menu";
+import { Input } from "@repo/design-system/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/design-system/components/ui/select';
+} from "@repo/design-system/components/ui/select";
 import {
   Table,
   TableBody,
@@ -32,7 +32,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@repo/design-system/components/ui/table';
+} from "@repo/design-system/components/ui/table";
 import {
   Calendar,
   CheckCircle,
@@ -49,17 +49,17 @@ import {
   Search,
   Trash2,
   XCircle,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { createClient } from "~/lib/supabase/client";
 
 interface Show {
   id: string;
   title: string;
   date: string;
   time: string;
-  status: 'upcoming' | 'in_progress' | 'completed' | 'cancelled';
+  status: "upcoming" | "in_progress" | "completed" | "cancelled";
   venue: {
     name: string;
     city: string;
@@ -78,28 +78,28 @@ interface Show {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'upcoming':
-      return 'default';
-    case 'in_progress':
-      return 'secondary';
-    case 'completed':
-      return 'outline';
-    case 'cancelled':
-      return 'destructive';
+    case "upcoming":
+      return "default";
+    case "in_progress":
+      return "secondary";
+    case "completed":
+      return "outline";
+    case "cancelled":
+      return "destructive";
     default:
-      return 'outline';
+      return "outline";
   }
 };
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case 'upcoming':
+    case "upcoming":
       return Clock;
-    case 'in_progress':
+    case "in_progress":
       return Calendar;
-    case 'completed':
+    case "completed":
       return CheckCircle;
-    case 'cancelled':
+    case "cancelled":
       return XCircle;
     default:
       return Clock;
@@ -122,8 +122,9 @@ export default function ShowsManagementPage() {
 
     // Fetch shows with related data
     const { data: showsData } = await supabase
-      .from('shows')
-      .select(`
+      .from("shows")
+      .select(
+        `
 				id,
 				title,
 				date,
@@ -143,30 +144,31 @@ export default function ShowsManagementPage() {
 				),
 				setlists (count),
 				attendees (count)
-			`)
-      .order('date', { ascending: false })
+			`,
+      )
+      .order("date", { ascending: false })
       .limit(100);
 
     // Get quick stats
     const { count: total } = await supabase
-      .from('shows')
-      .select('*', { count: 'exact', head: true });
+      .from("shows")
+      .select("*", { count: "exact", head: true });
 
     const { count: upcoming } = await supabase
-      .from('shows')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'upcoming');
+      .from("shows")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "upcoming");
 
     const { count: completed } = await supabase
-      .from('shows')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'completed');
+      .from("shows")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "completed");
 
     // Transform the data to match the expected structure
     const transformedShows = (showsData || []).map((show: any) => ({
       ...show,
-      venue: show.venue?.[0] || { name: '', city: '', state: '' },
-      artist: show.artist?.[0] || { name: '', image_url: '' },
+      venue: show.venue?.[0] || { name: "", city: "", state: "" },
+      artist: show.artist?.[0] || { name: "", image_url: "" },
       setlists_count: show.setlists?.[0]?.count || 0,
       attendees_count: show.attendees?.[0]?.count || 0,
     }));
@@ -362,7 +364,7 @@ export default function ShowsManagementPage() {
                           {new Date(show.date).toLocaleDateString()}
                         </div>
                         <div className="text-muted-foreground text-sm">
-                          {show.time || 'Time TBA'}
+                          {show.time || "Time TBA"}
                         </div>
                       </div>
                     </TableCell>
@@ -377,7 +379,7 @@ export default function ShowsManagementPage() {
                     <TableCell>
                       <Badge variant={getStatusColor(show.status)}>
                         <StatusIcon className="mr-1 h-3 w-3" />
-                        {show.status.replace('_', ' ')}
+                        {show.status.replace("_", " ")}
                       </Badge>
                     </TableCell>
                     <TableCell>

@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
-import { cn } from '@repo/design-system/lib/utils';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { Input } from "@repo/design-system/components/ui/input";
+import { cn } from "@repo/design-system/lib/utils";
 import {
   Calendar,
   Clock,
@@ -14,20 +14,20 @@ import {
   Search,
   TrendingUp,
   Users,
-} from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { useDebounce } from '~/hooks/use-debounce';
+} from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useDebounce } from "~/hooks/use-debounce";
 
 interface SearchSuggestion {
   id: string;
   type:
-    | 'artist'
-    | 'show'
-    | 'venue'
-    | 'genre'
-    | 'location'
-    | 'recent'
-    | 'trending';
+    | "artist"
+    | "show"
+    | "venue"
+    | "genre"
+    | "location"
+    | "recent"
+    | "trending";
   title: string;
   subtitle?: string;
   imageUrl?: string;
@@ -55,7 +55,7 @@ export function SearchAutocomplete({
   onChange,
   onSelect,
   onSearch,
-  placeholder = 'Search artists, shows, venues...',
+  placeholder = "Search artists, shows, venues...",
   className,
   disabled,
 }: SearchAutocompleteProps) {
@@ -72,7 +72,7 @@ export function SearchAutocomplete({
 
   // Load recent searches from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('mysetlist-recent-searches');
+    const saved = localStorage.getItem("mysetlist-recent-searches");
     if (saved) {
       try {
         setRecentSearches(JSON.parse(saved).slice(0, 5));
@@ -88,10 +88,10 @@ export function SearchAutocomplete({
 
     const updated = [query, ...recentSearches.filter((s) => s !== query)].slice(
       0,
-      5
+      5,
     );
     setRecentSearches(updated);
-    localStorage.setItem('mysetlist-recent-searches', JSON.stringify(updated));
+    localStorage.setItem("mysetlist-recent-searches", JSON.stringify(updated));
   };
 
   // Fetch suggestions
@@ -105,7 +105,7 @@ export function SearchAutocomplete({
       setLoading(true);
       try {
         const response = await fetch(
-          `/api/search/suggestions?q=${encodeURIComponent(debouncedValue)}&limit=8`
+          `/api/search/suggestions?q=${encodeURIComponent(debouncedValue)}&limit=8`,
         );
 
         if (response.ok) {
@@ -129,21 +129,21 @@ export function SearchAutocomplete({
     }
 
     switch (e.key) {
-      case 'ArrowDown': {
+      case "ArrowDown": {
         e.preventDefault();
         setSelectedIndex((prev) =>
-          prev < suggestions.length - 1 ? prev + 1 : 0
+          prev < suggestions.length - 1 ? prev + 1 : 0,
         );
         break;
       }
-      case 'ArrowUp': {
+      case "ArrowUp": {
         e.preventDefault();
         setSelectedIndex((prev) =>
-          prev > 0 ? prev - 1 : suggestions.length - 1
+          prev > 0 ? prev - 1 : suggestions.length - 1,
         );
         break;
       }
-      case 'Enter': {
+      case "Enter": {
         e.preventDefault();
         if (selectedIndex >= 0 && suggestions[selectedIndex]) {
           handleSelectSuggestion(suggestions[selectedIndex]);
@@ -152,7 +152,7 @@ export function SearchAutocomplete({
         }
         break;
       }
-      case 'Escape': {
+      case "Escape": {
         setShowSuggestions(false);
         setSelectedIndex(-1);
         inputRef.current?.blur();
@@ -182,9 +182,9 @@ export function SearchAutocomplete({
       // Show recent searches when focused with empty input
       const recentSuggestions = recentSearches.map((search, index) => ({
         id: `recent-${index}`,
-        type: 'recent' as const,
+        type: "recent" as const,
         title: search,
-        subtitle: 'Recent search',
+        subtitle: "Recent search",
       }));
       setSuggestions(recentSuggestions);
     }
@@ -200,42 +200,42 @@ export function SearchAutocomplete({
     }, 150);
   };
 
-  const getIcon = (type: SearchSuggestion['type']) => {
+  const getIcon = (type: SearchSuggestion["type"]) => {
     switch (type) {
-      case 'artist':
+      case "artist":
         return <Music className="h-4 w-4" />;
-      case 'show':
+      case "show":
         return <Calendar className="h-4 w-4" />;
-      case 'venue':
+      case "venue":
         return <MapPin className="h-4 w-4" />;
-      case 'trending':
+      case "trending":
         return <TrendingUp className="h-4 w-4" />;
-      case 'recent':
+      case "recent":
         return <History className="h-4 w-4" />;
       default:
         return <Search className="h-4 w-4" />;
     }
   };
 
-  const getBadgeVariant = (type: SearchSuggestion['type']) => {
+  const getBadgeVariant = (type: SearchSuggestion["type"]) => {
     switch (type) {
-      case 'artist':
-        return 'default';
-      case 'show':
-        return 'secondary';
-      case 'venue':
-        return 'outline';
-      case 'trending':
-        return 'destructive';
-      case 'recent':
-        return 'outline';
+      case "artist":
+        return "default";
+      case "show":
+        return "secondary";
+      case "venue":
+        return "outline";
+      case "trending":
+        return "destructive";
+      case "recent":
+        return "outline";
       default:
-        return 'outline';
+        return "outline";
     }
   };
 
   return (
-    <div className={cn('relative w-full', className)}>
+    <div className={cn("relative w-full", className)}>
       <div className="relative">
         <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
         <Input
@@ -284,8 +284,8 @@ export function SearchAutocomplete({
                 <div
                   key={suggestion.id}
                   className={cn(
-                    'flex cursor-pointer items-center gap-3 border-b p-3 transition-colors last:border-b-0',
-                    index === selectedIndex ? 'bg-muted' : 'hover:bg-muted/50'
+                    "flex cursor-pointer items-center gap-3 border-b p-3 transition-colors last:border-b-0",
+                    index === selectedIndex ? "bg-muted" : "hover:bg-muted/50",
                   )}
                   onClick={() => handleSelectSuggestion(suggestion)}
                 >
@@ -329,7 +329,7 @@ export function SearchAutocomplete({
                         {suggestion.metadata.capacity && (
                           <span className="flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
-                            {suggestion.metadata.capacity.toLocaleString()}{' '}
+                            {suggestion.metadata.capacity.toLocaleString()}{" "}
                             capacity
                           </span>
                         )}
@@ -343,7 +343,7 @@ export function SearchAutocomplete({
                     )}
                   </div>
 
-                  {suggestion.type === 'trending' && (
+                  {suggestion.type === "trending" && (
                     <TrendingUp className="h-4 w-4 text-orange-500" />
                   )}
                 </div>

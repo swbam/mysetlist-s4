@@ -1,29 +1,29 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { 
+import { Button } from "@repo/design-system/components/ui/button";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
-} from '@repo/design-system/components/ui/command';
+} from "@repo/design-system/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@repo/design-system/components/ui/popover';
-import { Search, Filter, X, Music, MapPin, Calendar } from 'lucide-react';
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
-import { useDebounce } from '~/hooks/use-debounce';
+} from "@repo/design-system/components/ui/popover";
+import { Search, Filter, X, Music, MapPin, Calendar } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { useDebounce } from "~/hooks/use-debounce";
 
 interface SearchResult {
   id: string;
-  type: 'artist' | 'show' | 'venue' | 'song';
+  type: "artist" | "show" | "venue" | "song";
   title: string;
   subtitle?: string;
   imageUrl?: string;
@@ -36,7 +36,7 @@ interface SearchResult {
 }
 
 interface SearchFilters {
-  type: 'all' | 'artist' | 'show' | 'venue' | 'song';
+  type: "all" | "artist" | "show" | "venue" | "song";
   dateRange?: {
     start: string;
     end: string;
@@ -52,53 +52,60 @@ interface EnhancedSearchProps {
   className?: string;
 }
 
-export function EnhancedSearch({ 
+export function EnhancedSearch({
   placeholder = "Search artists, shows, venues...",
   showFilters = true,
   onResultSelect,
-  className = ""
+  className = "",
 }: EnhancedSearchProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [filters, setFilters] = useState<SearchFilters>({ type: 'all' });
+  const [filters, setFilters] = useState<SearchFilters>({ type: "all" });
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const router = useRouter();
 
   const debouncedQuery = useDebounce(query, 300);
 
   // Search function with filters
-  const performSearch = useCallback(async (searchQuery: string, searchFilters: SearchFilters) => {
-    if (!searchQuery.trim() || searchQuery.length < 2) {
-      setResults([]);
-      return;
-    }
+  const performSearch = useCallback(
+    async (searchQuery: string, searchFilters: SearchFilters) => {
+      if (!searchQuery.trim() || searchQuery.length < 2) {
+        setResults([]);
+        return;
+      }
 
-    setIsLoading(true);
-    try {
-      const params = new URLSearchParams({
-        q: searchQuery,
-        limit: '10',
-        ...(searchFilters.type !== 'all' && { type: searchFilters.type }),
-        ...(searchFilters.location && { location: searchFilters.location }),
-        ...(searchFilters.genre && { genre: searchFilters.genre }),
-        ...(searchFilters.dateRange?.start && { startDate: searchFilters.dateRange.start }),
-        ...(searchFilters.dateRange?.end && { endDate: searchFilters.dateRange.end }),
-      });
+      setIsLoading(true);
+      try {
+        const params = new URLSearchParams({
+          q: searchQuery,
+          limit: "10",
+          ...(searchFilters.type !== "all" && { type: searchFilters.type }),
+          ...(searchFilters.location && { location: searchFilters.location }),
+          ...(searchFilters.genre && { genre: searchFilters.genre }),
+          ...(searchFilters.dateRange?.start && {
+            startDate: searchFilters.dateRange.start,
+          }),
+          ...(searchFilters.dateRange?.end && {
+            endDate: searchFilters.dateRange.end,
+          }),
+        });
 
-      const response = await fetch(`/api/search?${params}`);
-      if (!response.ok) throw new Error('Search failed');
-      
-      const data = await response.json();
-      setResults(data.results || []);
-    } catch (error) {
-      console.error('Search error:', error);
-      setResults([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+        const response = await fetch(`/api/search?${params}`);
+        if (!response.ok) throw new Error("Search failed");
+
+        const data = await response.json();
+        setResults(data.results || []);
+      } catch (error) {
+        console.error("Search error:", error);
+        setResults([]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
 
   // Trigger search when query or filters change
   useEffect(() => {
@@ -106,38 +113,41 @@ export function EnhancedSearch({
   }, [debouncedQuery, filters, performSearch]);
 
   // Handle result selection
-  const handleResultSelect = useCallback((result: SearchResult) => {
-    setIsOpen(false);
-    setQuery('');
-    
-    if (onResultSelect) {
-      onResultSelect(result);
-    } else {
-      // Default navigation behavior
-      switch (result.type) {
-        case 'artist':
-          router.push(`/artists/${result.slug}`);
-          break;
-        case 'show':
-          router.push(`/shows/${result.slug}`);
-          break;
-        case 'venue':
-          router.push(`/venues/${result.slug}`);
-          break;
-        default:
-          break;
+  const handleResultSelect = useCallback(
+    (result: SearchResult) => {
+      setIsOpen(false);
+      setQuery("");
+
+      if (onResultSelect) {
+        onResultSelect(result);
+      } else {
+        // Default navigation behavior
+        switch (result.type) {
+          case "artist":
+            router.push(`/artists/${result.slug}`);
+            break;
+          case "show":
+            router.push(`/shows/${result.slug}`);
+            break;
+          case "venue":
+            router.push(`/venues/${result.slug}`);
+            break;
+          default:
+            break;
+        }
       }
-    }
-  }, [onResultSelect, router]);
+    },
+    [onResultSelect, router],
+  );
 
   // Get icon for result type
   const getResultIcon = (type: string) => {
     switch (type) {
-      case 'artist':
+      case "artist":
         return <Music className="h-4 w-4" />;
-      case 'show':
+      case "show":
         return <Calendar className="h-4 w-4" />;
-      case 'venue':
+      case "venue":
         return <MapPin className="h-4 w-4" />;
       default:
         return <Search className="h-4 w-4" />;
@@ -147,7 +157,7 @@ export function EnhancedSearch({
   // Active filters count
   const activeFiltersCount = useMemo(() => {
     let count = 0;
-    if (filters.type !== 'all') count++;
+    if (filters.type !== "all") count++;
     if (filters.location) count++;
     if (filters.genre) count++;
     if (filters.dateRange) count++;
@@ -170,13 +180,13 @@ export function EnhancedSearch({
               />
             </div>
           </PopoverTrigger>
-          <PopoverContent 
-            className="w-[400px] p-0" 
+          <PopoverContent
+            className="w-[400px] p-0"
             align="start"
             onOpenAutoFocus={(e) => e.preventDefault()}
           >
             <Command>
-              <CommandInput 
+              <CommandInput
                 placeholder={placeholder}
                 value={query}
                 onValueChange={setQuery}
@@ -213,7 +223,9 @@ export function EnhancedSearch({
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium truncate">{result.title}</span>
+                            <span className="font-medium truncate">
+                              {result.title}
+                            </span>
                             <Badge variant="secondary" className="text-xs">
                               {result.type}
                             </Badge>
@@ -253,8 +265,8 @@ export function EnhancedSearch({
               <Button variant="outline" size="icon" className="relative">
                 <Filter className="h-4 w-4" />
                 {activeFiltersCount > 0 && (
-                  <Badge 
-                    variant="destructive" 
+                  <Badge
+                    variant="destructive"
                     className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs"
                   >
                     {activeFiltersCount}
@@ -269,7 +281,7 @@ export function EnhancedSearch({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setFilters({ type: 'all' })}
+                    onClick={() => setFilters({ type: "all" })}
                   >
                     Clear All
                   </Button>
@@ -278,12 +290,14 @@ export function EnhancedSearch({
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Type</label>
                   <div className="flex flex-wrap gap-2">
-                    {['all', 'artist', 'show', 'venue', 'song'].map((type) => (
+                    {["all", "artist", "show", "venue", "song"].map((type) => (
                       <Button
                         key={type}
-                        variant={filters.type === type ? 'default' : 'outline'}
+                        variant={filters.type === type ? "default" : "outline"}
                         size="sm"
-                        onClick={() => setFilters(prev => ({ ...prev, type: type as any }))}
+                        onClick={() =>
+                          setFilters((prev) => ({ ...prev, type: type as any }))
+                        }
                       >
                         {type.charAt(0).toUpperCase() + type.slice(1)}
                       </Button>
@@ -295,11 +309,13 @@ export function EnhancedSearch({
                   <label className="text-sm font-medium">Location</label>
                   <Input
                     placeholder="City, State"
-                    value={filters.location || ''}
-                    onChange={(e) => setFilters(prev => ({ 
-                      ...prev, 
-                      location: e.target.value || undefined 
-                    }))}
+                    value={filters.location || ""}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        location: e.target.value || undefined,
+                      }))
+                    }
                   />
                 </div>
 
@@ -307,11 +323,13 @@ export function EnhancedSearch({
                   <label className="text-sm font-medium">Genre</label>
                   <Input
                     placeholder="Rock, Pop, Jazz..."
-                    value={filters.genre || ''}
-                    onChange={(e) => setFilters(prev => ({ 
-                      ...prev, 
-                      genre: e.target.value || undefined 
-                    }))}
+                    value={filters.genre || ""}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        genre: e.target.value || undefined,
+                      }))
+                    }
                   />
                 </div>
               </div>
@@ -323,30 +341,34 @@ export function EnhancedSearch({
       {/* Active filters display */}
       {activeFiltersCount > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
-          {filters.type !== 'all' && (
+          {filters.type !== "all" && (
             <Badge variant="secondary" className="flex items-center gap-1">
               Type: {filters.type}
-              <X 
-                className="h-3 w-3 cursor-pointer" 
-                onClick={() => setFilters(prev => ({ ...prev, type: 'all' }))}
+              <X
+                className="h-3 w-3 cursor-pointer"
+                onClick={() => setFilters((prev) => ({ ...prev, type: "all" }))}
               />
             </Badge>
           )}
           {filters.location && (
             <Badge variant="secondary" className="flex items-center gap-1">
               Location: {filters.location}
-              <X 
-                className="h-3 w-3 cursor-pointer" 
-                onClick={() => setFilters(prev => ({ ...prev, location: undefined }))}
+              <X
+                className="h-3 w-3 cursor-pointer"
+                onClick={() =>
+                  setFilters((prev) => ({ ...prev, location: undefined }))
+                }
               />
             </Badge>
           )}
           {filters.genre && (
             <Badge variant="secondary" className="flex items-center gap-1">
               Genre: {filters.genre}
-              <X 
-                className="h-3 w-3 cursor-pointer" 
-                onClick={() => setFilters(prev => ({ ...prev, genre: undefined }))}
+              <X
+                className="h-3 w-3 cursor-pointer"
+                onClick={() =>
+                  setFilters((prev) => ({ ...prev, genre: undefined }))
+                }
               />
             </Badge>
           )}

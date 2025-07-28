@@ -3,13 +3,13 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import type { Metadata } from 'next';
-import { createPageMetadata } from '~/lib/seo-metadata';
+} from "@repo/design-system/components/ui/card";
+import type { Metadata } from "next";
+import { createPageMetadata } from "~/lib/seo-metadata";
 
 export const metadata: Metadata = createPageMetadata({
-  title: 'Terms of Service | MySetlist',
-  description: 'Read the terms and conditions for using MySetlist services.',
+  title: "Terms of Service | MySetlist",
+  description: "Read the terms and conditions for using MySetlist services.",
 });
 
 const TermsPage = () => {

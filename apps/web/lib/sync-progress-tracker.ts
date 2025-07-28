@@ -1,7 +1,7 @@
 export interface SyncProgress {
   artistId: string;
   artistName: string;
-  status: 'pending' | 'in-progress' | 'completed' | 'failed';
+  status: "pending" | "in-progress" | "completed" | "failed";
   startedAt: string;
   updatedAt: string;
   completedAt?: string;
@@ -41,7 +41,7 @@ export class SyncProgressTracker {
           }
         }
       },
-      10 * 60 * 1000
+      10 * 60 * 1000,
     );
   }
 
@@ -53,11 +53,11 @@ export class SyncProgressTracker {
     const progress: SyncProgress = {
       artistId,
       artistName,
-      status: 'in-progress',
+      status: "in-progress",
       startedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       progress: {
-        currentStep: 'Initializing',
+        currentStep: "Initializing",
         totalSteps: 4,
         completedSteps: 0,
         details: {
@@ -77,8 +77,8 @@ export class SyncProgressTracker {
     updates: {
       currentStep?: string;
       completedSteps?: number;
-      details?: Partial<SyncProgress['progress']['details']>;
-    }
+      details?: Partial<SyncProgress["progress"]["details"]>;
+    },
   ): Promise<void> {
     const current = await this.getProgress(artistId);
     if (!current) {
@@ -108,7 +108,7 @@ export class SyncProgressTracker {
       return;
     }
 
-    current.status = error ? 'failed' : 'completed';
+    current.status = error ? "failed" : "completed";
     current.completedAt = new Date().toISOString();
     current.updatedAt = new Date().toISOString();
 
@@ -137,7 +137,7 @@ export class SyncProgressTracker {
 
   private async setProgress(
     artistId: string,
-    progress: SyncProgress
+    progress: SyncProgress,
   ): Promise<void> {
     const key = this.getKey(artistId);
     this.memoryStore.set(key, progress);

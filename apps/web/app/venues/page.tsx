@@ -1,19 +1,17 @@
-import { createMetadata } from '@repo/seo/metadata';
-import type { Metadata } from 'next';
-import React, { Suspense } from 'react';
-import { ErrorBoundaryWrapper } from '~/components/error-boundary-wrapper';
-import { ResponsiveGrid } from '~/components/layout/responsive-grid';
-import { VenueSearch } from './components/venue-search';
-import { getVenues } from './actions';
-import { VenueGridClient } from './components/venue-grid-client';
-import { VenueSearch } from './components/venue-search';
-import { VenueGridServer } from './components/venue-grid-server';
+import { createMetadata } from "@repo/seo/metadata";
+import type { Metadata } from "next";
+import React, { Suspense } from "react";
+import { ErrorBoundaryWrapper } from "~/components/error-boundary-wrapper";
+import { ResponsiveGrid } from "~/components/layout/responsive-grid";
+import { VenueSearch } from "./components/venue-search";
+import { getVenues } from "./actions";
+import { VenueGridClient } from "./components/venue-grid-client";
 
 export const generateMetadata = async (): Promise<Metadata> => {
   return createMetadata({
-    title: 'Venues - MySetlist',
+    title: "Venues - MySetlist",
     description:
-      'Explore concert venues, get insider tips, and plan your perfect show experience',
+      "Explore concert venues, get insider tips, and plan your perfect show experience",
   });
 };
 
@@ -30,7 +28,9 @@ interface VenuesPageProps {
 const VenuesContent = async ({ searchParams }: { searchParams: any }) => {
   const venues = await getVenues({
     ...(searchParams.q && { search: searchParams.q }),
-    ...(searchParams.types && { types: searchParams.types.split(',').filter(Boolean) }),
+    ...(searchParams.types && {
+      types: searchParams.types.split(",").filter(Boolean),
+    }),
     ...(searchParams.capacity && { capacity: searchParams.capacity }),
     ...(searchParams.lat && { userLat: Number.parseFloat(searchParams.lat) }),
     ...(searchParams.lng && { userLng: Number.parseFloat(searchParams.lng) }),
@@ -60,7 +60,6 @@ const VenuesContent = async ({ searchParams }: { searchParams: any }) => {
       <VenueGridClient venues={formattedVenues} />
     </div>
   );
-
 };
 
 const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
@@ -81,18 +80,32 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
               </p>
             </div>
 
-            <Suspense fallback={
-              <div className="space-y-6">
-                <div className="h-12 bg-muted rounded animate-pulse" />
-                <ResponsiveGrid variant="venues" loading={true} loadingCount={9} />
-              </div>
-            }>
-            <VenueSearch />
-
-            <Suspense fallback={<VenueGridLoadingSkeleton count={6} />}>
-              <VenuesContent searchParams={resolvedSearchParams} />
+            <Suspense
+              fallback={
+                <div className="space-y-6">
+                  <div className="h-12 bg-muted rounded animate-pulse" />
+                  <ResponsiveGrid
+                    variant="venues"
+                    loading={true}
+                    loadingCount={9}
+                  />
+                </div>
+              }
+            >
+              <VenueSearch />
             </Suspense>
 
+            <Suspense
+              fallback={
+                <ResponsiveGrid
+                  variant="venues"
+                  loading={true}
+                  loadingCount={6}
+                />
+              }
+            >
+              <VenuesContent searchParams={resolvedSearchParams} />
+            </Suspense>
           </div>
         </div>
       </div>

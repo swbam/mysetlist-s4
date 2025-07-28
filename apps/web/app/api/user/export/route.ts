@@ -1,5 +1,5 @@
-import { getUser } from '@repo/auth/server';
-import { db } from '@repo/database';
+import { getUser } from "@repo/auth/server";
+import { db } from "@repo/database";
 import {
   artists,
   emailPreferences,
@@ -8,16 +8,16 @@ import {
   venueReviews,
   venues,
   votes,
-} from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+} from "@repo/database";
+import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(_request: NextRequest) {
   try {
     const user = await getUser();
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Collect all user data
@@ -27,14 +27,14 @@ export async function GET(_request: NextRequest) {
     return new NextResponse(JSON.stringify(userData, null, 2), {
       status: 200,
       headers: {
-        'Content-Type': 'application/json',
-        'Content-Disposition': `attachment; filename="mysetlist-export-${user.id}-${new Date().toISOString().split('T')[0]}.json"`,
+        "Content-Type": "application/json",
+        "Content-Disposition": `attachment; filename="mysetlist-export-${user.id}-${new Date().toISOString().split("T")[0]}.json"`,
       },
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to export user data' },
-      { status: 500 }
+      { error: "Failed to export user data" },
+      { status: 500 },
     );
   }
 }
@@ -47,7 +47,7 @@ async function collectUserData(userId: string) {
     .where(eq(users.id, userId));
 
   if (!userProfile) {
-    throw new Error('User profile not found');
+    throw new Error("User profile not found");
   }
 
   // Get email preferences
@@ -55,7 +55,6 @@ async function collectUserData(userId: string) {
     .select()
     .from(emailPreferences)
     .where(eq(emailPreferences.userId, userId));
-
 
   // Get votes
   const userVotes = await db

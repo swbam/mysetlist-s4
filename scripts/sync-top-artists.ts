@@ -4,18 +4,20 @@
  * Uses real data from Ticketmaster and Spotify APIs
  */
 
-import 'dotenv/config';
+import "dotenv/config";
 // Import from the actual files that have the exports
-const { ticketmaster } = await import('../packages/external-apis/src/ticketmaster');
-const { spotify } = await import('../packages/external-apis/src/spotify');
+const { ticketmaster } = await import(
+  "../packages/external-apis/src/ticketmaster"
+);
+const { spotify } = await import("../packages/external-apis/src/spotify");
 
 // Check for required environment variables
 const requiredEnvVars = [
-  'TICKETMASTER_API_KEY',
-  'SPOTIFY_CLIENT_ID',
-  'SPOTIFY_CLIENT_SECRET',
-  'NEXT_PUBLIC_SUPABASE_URL',
-  'SUPABASE_SERVICE_ROLE_KEY',
+  "TICKETMASTER_API_KEY",
+  "SPOTIFY_CLIENT_ID",
+  "SPOTIFY_CLIENT_SECRET",
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "SUPABASE_SERVICE_ROLE_KEY",
 ];
 
 for (const envVar of requiredEnvVars) {
@@ -25,15 +27,15 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
-const APP_URL = process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001';
+const APP_URL = process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
 
 // Top 5 trending artists in the US with upcoming shows (as of 2024)
 const TOP_US_ARTISTS = [
-  { name: 'Taylor Swift', spotifyId: '06HL4z0CvFAxyc27GXpf02' },
-  { name: 'Drake', spotifyId: '3TVXtAsR1Inumwj472S9r4' },
-  { name: 'Bad Bunny', spotifyId: '4q3ewBCX7sLwd24euuV69X' },
-  { name: 'The Weeknd', spotifyId: '1Xyo4u8uXC1ZmMpatF05PJ' },
-  { name: 'Post Malone', spotifyId: '246dkjvS1zLTtiykXe5h60' },
+  { name: "Taylor Swift", spotifyId: "06HL4z0CvFAxyc27GXpf02" },
+  { name: "Drake", spotifyId: "3TVXtAsR1Inumwj472S9r4" },
+  { name: "Bad Bunny", spotifyId: "4q3ewBCX7sLwd24euuV69X" },
+  { name: "The Weeknd", spotifyId: "1Xyo4u8uXC1ZmMpatF05PJ" },
+  { name: "Post Malone", spotifyId: "246dkjvS1zLTtiykXe5h60" },
 ];
 
 async function syncArtistData(artist: { name: string; spotifyId: string }) {
@@ -43,13 +45,13 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
     // 1. Sync artist data from Spotify
     console.log(`  📡 Fetching artist data from Spotify...`);
     const spotifyArtist = await spotify.getArtist(artist.spotifyId);
-    
+
     // Create/update artist via API
     const artistResponse = await fetch(`${APP_URL}/api/artists/sync`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'x-supabase-service-role': process.env['SUPABASE_SERVICE_ROLE_KEY']!,
+        "Content-Type": "application/json",
+        "x-supabase-service-role": process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
       },
       body: JSON.stringify({
         spotifyId: artist.spotifyId,
@@ -73,7 +75,9 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
     const upcomingEvents = await ticketmaster.getUpcomingEvents(artist.name, {
       size: 10,
       startDateTime: new Date().toISOString(),
-      endDateTime: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString(), // Next 6 months
+      endDateTime: new Date(
+        Date.now() + 180 * 24 * 60 * 60 * 1000,
+      ).toISOString(), // Next 6 months
     });
 
     console.log(`  📍 Found ${upcomingEvents.length} upcoming shows`);
@@ -83,23 +87,27 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
       if (!event._embedded?.venues?.[0]) continue;
 
       const venue = event._embedded.venues[0];
-      
+
       // Create/update venue
       const venueResponse = await fetch(`${APP_URL}/api/venues/sync`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'x-supabase-service-role': process.env['SUPABASE_SERVICE_ROLE_KEY']!,
+          "Content-Type": "application/json",
+          "x-supabase-service-role": process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
         },
         body: JSON.stringify({
           ticketmasterId: venue.id,
           name: venue.name,
-          city: venue.city?.name || 'Unknown',
+          city: venue.city?.name || "Unknown",
           state: venue.state?.name,
-          country: venue.country?.name || 'USA',
-          latitude: venue.location?.latitude ? parseFloat(venue.location.latitude) : null,
-          longitude: venue.location?.longitude ? parseFloat(venue.location.longitude) : null,
-          timezone: venue.timezone || 'America/New_York',
+          country: venue.country?.name || "USA",
+          latitude: venue.location?.latitude
+            ? parseFloat(venue.location.latitude)
+            : null,
+          longitude: venue.location?.longitude
+            ? parseFloat(venue.location.longitude)
+            : null,
+          timezone: venue.timezone || "America/New_York",
           capacity: venue.capacity,
         }),
       });
@@ -113,20 +121,20 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
 
       // Create/update show
       const showResponse = await fetch(`${APP_URL}/api/shows/sync`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'x-supabase-service-role': process.env['SUPABASE_SERVICE_ROLE_KEY']!,
+          "Content-Type": "application/json",
+          "x-supabase-service-role": process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
         },
         body: JSON.stringify({
           ticketmasterId: event.id,
           name: event.name,
           date: event.dates.start.localDate,
-          startTime: event.dates.start.localTime || '20:00:00',
+          startTime: event.dates.start.localTime || "20:00:00",
           headlinerArtistId: artistData.artist.id,
           venueId: venueData.venue.id,
           ticketUrl: event.url,
-          status: 'upcoming',
+          status: "upcoming",
         }),
       });
 
@@ -137,7 +145,7 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
 
     // 3. Sync song catalog
     console.log(`  🎵 Fetching song catalog from Spotify...`);
-    
+
     // Get top tracks
     const topTracks = await spotify.getArtistTopTracks(artist.spotifyId);
     console.log(`  🎶 Found ${topTracks.length} top tracks`);
@@ -152,12 +160,14 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
         totalSongs += albumTracks.length;
 
         // Sync songs from this album
-        for (const track of albumTracks.slice(0, 5)) { // Limit to 5 songs per album
+        for (const track of albumTracks.slice(0, 5)) {
+          // Limit to 5 songs per album
           await fetch(`${APP_URL}/api/songs/sync`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-              'x-supabase-service-role': process.env['SUPABASE_SERVICE_ROLE_KEY']!,
+              "Content-Type": "application/json",
+              "x-supabase-service-role":
+                process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
             },
             body: JSON.stringify({
               spotifyId: track.id,
@@ -182,10 +192,10 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
 
     // 4. Update trending score
     await fetch(`${APP_URL}/api/artists/${artistData.artist.id}/trending`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'x-supabase-service-role': process.env['SUPABASE_SERVICE_ROLE_KEY']!,
+        "Content-Type": "application/json",
+        "x-supabase-service-role": process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
       },
       body: JSON.stringify({
         trendingScore: spotifyArtist.popularity,
@@ -201,7 +211,7 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
 }
 
 async function main() {
-  console.log('🚀 Starting sync of top 5 US artists with upcoming shows...\n');
+  console.log("🚀 Starting sync of top 5 US artists with upcoming shows...\n");
 
   let successCount = 0;
 
@@ -215,18 +225,22 @@ async function main() {
     await new Promise((resolve) => setTimeout(resolve, 2000));
   }
 
-  console.log(`\n✨ Sync complete! Successfully synced ${successCount}/${TOP_US_ARTISTS.length} artists.`);
+  console.log(
+    `\n✨ Sync complete! Successfully synced ${successCount}/${TOP_US_ARTISTS.length} artists.`,
+  );
 
   if (successCount === TOP_US_ARTISTS.length) {
-    console.log('\n🎉 All artists synced successfully!');
-    console.log('📊 You can now run trending update: pnpm run update:trending');
+    console.log("\n🎉 All artists synced successfully!");
+    console.log("📊 You can now run trending update: pnpm run update:trending");
   } else {
-    console.log('\n⚠️  Some artists failed to sync. Check the logs above for details.');
+    console.log(
+      "\n⚠️  Some artists failed to sync. Check the logs above for details.",
+    );
   }
 }
 
 // Run the script
 main().catch((error) => {
-  console.error('Fatal error:', error);
+  console.error("Fatal error:", error);
   process.exit(1);
 });

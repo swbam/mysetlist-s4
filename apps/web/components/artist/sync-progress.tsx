@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Progress } from '@repo/design-system/components/ui/progress';
-import { CheckCircle2, Clock, Loader2, XCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import type { SyncProgress } from '~/lib/sync/progress-tracker';
+import { Progress } from "@repo/design-system/components/ui/progress";
+import { CheckCircle2, Clock, Loader2, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import type { SyncProgress } from "~/lib/sync/progress-tracker";
 
 interface SyncProgressDisplayProps {
   artistId: string;
@@ -26,17 +26,17 @@ export function SyncProgressDisplay({
           setProgress(data.progress);
 
           if (
-            (data.progress.status === 'completed' ||
-              data.progress.status === 'failed') &&
+            (data.progress.status === "completed" ||
+              data.progress.status === "failed") &&
             onComplete
           ) {
             onComplete();
           }
         } else if (response.status === 404) {
-          setError('No sync in progress');
+          setError("No sync in progress");
         }
       } catch (_err) {
-        setError('Failed to fetch progress');
+        setError("Failed to fetch progress");
       }
     };
 
@@ -64,11 +64,11 @@ export function SyncProgressDisplay({
 
   const getStepIcon = (status: string) => {
     switch (status) {
-      case 'completed':
+      case "completed":
         return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-      case 'failed':
+      case "failed":
         return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'syncing':
+      case "syncing":
         return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
       default:
         return <Clock className="h-4 w-4 text-gray-400" />;
@@ -77,7 +77,7 @@ export function SyncProgressDisplay({
 
   const getOverallProgress = () => {
     const steps = Object.values(progress.steps);
-    const completed = steps.filter((s) => s.status === 'completed').length;
+    const completed = steps.filter((s) => s.status === "completed").length;
     return (completed / steps.length) * 100;
   };
 
@@ -112,7 +112,7 @@ export function SyncProgressDisplay({
         </div>
       )}
 
-      {progress.status === 'completed' && (
+      {progress.status === "completed" && (
         <div className="rounded bg-green-50 p-2 text-green-600 text-sm">
           Sync completed successfully!
         </div>

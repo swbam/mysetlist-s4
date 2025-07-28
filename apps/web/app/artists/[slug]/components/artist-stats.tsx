@@ -1,5 +1,5 @@
-import { db, sql } from '@repo/database';
-import { Calendar, Music, TrendingUp, Users } from 'lucide-react';
+import { db, sql } from "@repo/database";
+import { Calendar, Music, TrendingUp, Users } from "lucide-react";
 
 interface ArtistStatsProps {
   artistId: string;
@@ -11,7 +11,7 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
     sql`SELECT total_shows, avg_setlist_length
      FROM artist_stats
      WHERE artist_id = ${artistId}
-     LIMIT 1`
+     LIMIT 1`,
   )) as unknown as {
     rows?: { total_shows: number | null; avg_setlist_length: number | null }[];
   };
@@ -23,7 +23,7 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
 
   // Fetch follower count
   const followersRes = (await db.execute(
-    sql`SELECT COUNT(*)::int AS cnt FROM user_follows_artists WHERE artist_id = ${artistId}`
+    sql`SELECT COUNT(*)::int AS cnt FROM user_follows_artists WHERE artist_id = ${artistId}`,
   )) as unknown as { rows?: { cnt: number }[] };
 
   const followerCount = followersRes.rows?.[0]?.cnt ?? 0;
@@ -33,7 +33,7 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
     sql`SELECT COUNT(DISTINCT ss.song_id)::int AS cnt
        FROM setlist_songs ss
        JOIN setlists s ON ss.setlist_id = s.id
-       WHERE s.artist_id = ${artistId}`
+       WHERE s.artist_id = ${artistId}`,
   )) as unknown as { rows?: { cnt: number }[] };
 
   const totalSongs = songCountRes.rows?.[0]?.cnt ?? 0;
@@ -72,7 +72,7 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
         <p className="font-bold text-2xl">
           {artistStatsData.avg_setlist_length
             ? Number(artistStatsData.avg_setlist_length).toFixed(1)
-            : '0'}
+            : "0"}
         </p>
       </div>
     </div>

@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { cn } from '@repo/design-system/lib/utils';
-import { ImageIcon, Loader2 } from 'lucide-react';
-import Image from 'next/image';
-import type React from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { cn } from "@repo/design-system/lib/utils";
+import { ImageIcon, Loader2 } from "lucide-react";
+import Image from "next/image";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface OptimizedImageProps {
   src: string;
@@ -14,18 +14,18 @@ interface OptimizedImageProps {
   fill?: boolean;
   className?: string;
   fallback?: React.ReactNode;
-  placeholder?: 'blur' | 'empty';
+  placeholder?: "blur" | "empty";
   blurDataURL?: string;
   priority?: boolean;
   sizes?: string;
   quality?: number;
-  loading?: 'lazy' | 'eager';
+  loading?: "lazy" | "eager";
   onLoad?: () => void;
   onError?: () => void;
   aspectRatio?: string;
   rounded?: boolean;
   overlay?: React.ReactNode;
-  objectFit?: 'contain' | 'cover' | 'fill' | 'none' | 'scale-down';
+  objectFit?: "contain" | "cover" | "fill" | "none" | "scale-down";
 }
 
 export function OptimizedImage({
@@ -36,18 +36,18 @@ export function OptimizedImage({
   fill = false,
   className,
   fallback,
-  placeholder = 'empty',
+  placeholder = "empty",
   blurDataURL,
   priority = false,
   sizes,
   quality = 80,
-  loading = 'lazy',
+  loading = "lazy",
   onLoad,
   onError,
   aspectRatio,
   rounded = false,
   overlay,
-  objectFit = 'cover',
+  objectFit = "cover",
   ...props
 }: OptimizedImageProps) {
   const [isLoading, setIsLoading] = useState(true);
@@ -57,7 +57,7 @@ export function OptimizedImage({
 
   // Intersection Observer for lazy loading
   useEffect(() => {
-    if (priority || loading === 'eager') {
+    if (priority || loading === "eager") {
       setIsInView(true);
       return;
     }
@@ -70,9 +70,9 @@ export function OptimizedImage({
         }
       },
       {
-        rootMargin: '50px',
+        rootMargin: "50px",
         threshold: 0.1,
-      }
+      },
     );
 
     if (imgRef.current) {
@@ -110,24 +110,24 @@ export function OptimizedImage({
   const responsiveSizes =
     sizes ||
     (fill
-      ? '100vw'
-      : '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw');
+      ? "100vw"
+      : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw");
 
   // Generate blur data URL for placeholder
   const defaultBlurDataURL =
     blurDataURL ||
-    (placeholder === 'blur'
-      ? 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=='
+    (placeholder === "blur"
+      ? "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWGRkqGx0f/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
       : undefined);
 
   return (
     <div
       ref={imgRef}
       className={cn(
-        'relative overflow-hidden bg-muted',
+        "relative overflow-hidden bg-muted",
         aspectRatio && `aspect-[${aspectRatio}]`,
-        rounded && 'rounded-lg',
-        className
+        rounded && "rounded-lg",
+        className,
       )}
       style={aspectRatio ? { aspectRatio } : undefined}
       {...props}
@@ -148,13 +148,13 @@ export function OptimizedImage({
           {...(!fill && height && { height })}
           {...(fill && { fill })}
           className={cn(
-            'transition-opacity duration-300',
-            isLoading ? 'opacity-0' : 'opacity-100',
-            objectFit === 'cover' && 'object-cover',
-            objectFit === 'contain' && 'object-contain',
-            objectFit === 'fill' && 'object-fill',
-            objectFit === 'none' && 'object-none',
-            objectFit === 'scale-down' && 'object-scale-down'
+            "transition-opacity duration-300",
+            isLoading ? "opacity-0" : "opacity-100",
+            objectFit === "cover" && "object-cover",
+            objectFit === "contain" && "object-contain",
+            objectFit === "fill" && "object-fill",
+            objectFit === "none" && "object-none",
+            objectFit === "scale-down" && "object-scale-down",
           )}
           placeholder={placeholder}
           {...(defaultBlurDataURL && { blurDataURL: defaultBlurDataURL })}
@@ -181,54 +181,54 @@ export function OptimizedImage({
 interface OptimizedAvatarProps {
   src?: string;
   alt: string;
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
   fallbackText?: string;
   className?: string;
-  indicator?: 'online' | 'offline' | 'away' | 'busy';
+  indicator?: "online" | "offline" | "away" | "busy";
 }
 
 export function OptimizedAvatar({
   src,
   alt,
-  size = 'md',
+  size = "md",
   fallbackText,
   className,
   indicator,
 }: OptimizedAvatarProps) {
   const sizeClasses = {
-    xs: 'h-6 w-6',
-    sm: 'h-8 w-8',
-    md: 'h-10 w-10',
-    lg: 'h-12 w-12',
-    xl: 'h-16 w-16',
+    xs: "h-6 w-6",
+    sm: "h-8 w-8",
+    md: "h-10 w-10",
+    lg: "h-12 w-12",
+    xl: "h-16 w-16",
   };
 
   const indicatorSizes = {
-    xs: 'h-1.5 w-1.5',
-    sm: 'h-2 w-2',
-    md: 'h-2.5 w-2.5',
-    lg: 'h-3 w-3',
-    xl: 'h-4 w-4',
+    xs: "h-1.5 w-1.5",
+    sm: "h-2 w-2",
+    md: "h-2.5 w-2.5",
+    lg: "h-3 w-3",
+    xl: "h-4 w-4",
   };
 
   const indicatorColors = {
-    online: 'bg-green-500',
-    offline: 'bg-gray-400',
-    away: 'bg-yellow-500',
-    busy: 'bg-red-500',
+    online: "bg-green-500",
+    offline: "bg-gray-400",
+    away: "bg-yellow-500",
+    busy: "bg-red-500",
   };
 
   const initials =
     fallbackText ||
     alt
-      .split(' ')
+      .split(" ")
       .map((n) => n[0])
-      .join('')
+      .join("")
       .toUpperCase()
       .slice(0, 2);
 
   return (
-    <div className={cn('relative flex-shrink-0', sizeClasses[size], className)}>
+    <div className={cn("relative flex-shrink-0", sizeClasses[size], className)}>
       {src ? (
         <OptimizedImage
           src={src}
@@ -236,7 +236,7 @@ export function OptimizedAvatar({
           fill
           className="rounded-full"
           objectFit="cover"
-          priority={size === 'lg' || size === 'xl'}
+          priority={size === "lg" || size === "xl"}
           sizes="(max-width: 640px) 64px, 128px"
           fallback={
             <div className="flex h-full w-full items-center justify-center rounded-full bg-muted font-medium text-muted-foreground">
@@ -254,9 +254,9 @@ export function OptimizedAvatar({
       {indicator && (
         <div
           className={cn(
-            'absolute right-0 bottom-0 rounded-full border-2 border-background',
+            "absolute right-0 bottom-0 rounded-full border-2 border-background",
             indicatorSizes[size],
-            indicatorColors[indicator]
+            indicatorColors[indicator],
           )}
           aria-label={`Status: ${indicator}`}
         />
@@ -281,7 +281,7 @@ interface ImageGalleryProps {
 export function ImageGallery({
   images,
   className,
-  aspectRatio = '16/9',
+  aspectRatio = "16/9",
   onImageClick,
 }: ImageGalleryProps) {
   if (images.length === 0) {
@@ -291,13 +291,10 @@ export function ImageGallery({
   if (images.length === 1) {
     const image = images[0];
     if (!image) return null;
-    
+
     return (
       <div className={className}>
-        <div 
-          onClick={() => onImageClick?.(0)}
-          className="cursor-pointer"
-        >
+        <div onClick={() => onImageClick?.(0)} className="cursor-pointer">
           <OptimizedImage
             src={image.src}
             alt={image.alt}
@@ -307,20 +304,18 @@ export function ImageGallery({
           />
         </div>
         {image.caption && (
-          <p className="mt-2 text-muted-foreground text-sm">
-            {image.caption}
-          </p>
+          <p className="mt-2 text-muted-foreground text-sm">{image.caption}</p>
         )}
       </div>
     );
   }
 
   return (
-    <div className={cn('grid gap-2', className)}>
+    <div className={cn("grid gap-2", className)}>
       {images.length === 2 && (
         <div className="grid grid-cols-2 gap-2">
           {images.map((image, index) => (
-            <div 
+            <div
               key={image.id}
               onClick={() => onImageClick?.(index)}
               className="cursor-pointer"
@@ -339,13 +334,10 @@ export function ImageGallery({
 
       {images.length === 3 && (
         <div className="grid grid-cols-2 gap-2">
-          <div 
-            onClick={() => onImageClick?.(0)}
-            className="cursor-pointer"
-          >
+          <div onClick={() => onImageClick?.(0)} className="cursor-pointer">
             <OptimizedImage
-              src={images[0]?.src || ''}
-              alt={images[0]?.alt || ''}
+              src={images[0]?.src || ""}
+              alt={images[0]?.alt || ""}
               fill
               aspectRatio={aspectRatio}
               rounded
@@ -377,13 +369,13 @@ export function ImageGallery({
             <div
               key={image.id}
               onClick={() => onImageClick?.(index)}
-              className={cn('cursor-pointer', index === 0 && 'col-span-2')}
+              className={cn("cursor-pointer", index === 0 && "col-span-2")}
             >
               <OptimizedImage
                 src={image.src}
                 alt={image.alt}
                 fill
-                aspectRatio={index === 0 ? aspectRatio : '1/1'}
+                aspectRatio={index === 0 ? aspectRatio : "1/1"}
                 rounded
               />
             </div>
@@ -391,13 +383,10 @@ export function ImageGallery({
 
           {images.length > 4 ? (
             <div className="relative">
-              <div
-                onClick={() => onImageClick?.(3)}
-                className="cursor-pointer"
-              >
+              <div onClick={() => onImageClick?.(3)} className="cursor-pointer">
                 <OptimizedImage
-                  src={images[3]?.src || ''}
-                  alt={images[3]?.alt || ''}
+                  src={images[3]?.src || ""}
+                  alt={images[3]?.alt || ""}
                   fill
                   aspectRatio="1/1"
                   rounded
@@ -413,13 +402,10 @@ export function ImageGallery({
               </div>
             </div>
           ) : (
-            <div
-              onClick={() => onImageClick?.(3)}
-              className="cursor-pointer"
-            >
+            <div onClick={() => onImageClick?.(3)} className="cursor-pointer">
               <OptimizedImage
-                src={images[3]?.src || ''}
-                alt={images[3]?.alt || ''}
+                src={images[3]?.src || ""}
+                alt={images[3]?.alt || ""}
                 fill
                 aspectRatio="1/1"
                 rounded

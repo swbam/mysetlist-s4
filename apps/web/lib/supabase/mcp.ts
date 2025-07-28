@@ -6,7 +6,7 @@ export async function mcp__supabase__execute_sql(params: {
 }) {
   // Import the MCP function dynamically to avoid server/client issues
   const { mcp__supabase__execute_sql: executeSql } = await import(
-    './mcp-functions'
+    "./mcp-functions"
   );
   return await executeSql(params);
 }

@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { ExternalLink, Ticket } from 'lucide-react';
+} from "@repo/design-system/components/ui/card";
+import { ExternalLink, Ticket } from "lucide-react";
 
 type TicketInfoProps = {
   ticketUrl?: string;
@@ -22,15 +22,15 @@ export function TicketInfo({
   ticketUrl,
   minPrice,
   maxPrice,
-  currency = 'USD',
+  currency = "USD",
   status,
 }: TicketInfoProps) {
-  const isUpcoming = status === 'upcoming';
+  const isUpcoming = status === "upcoming";
   const isSoldOut = false; // This could be determined by ticket availability
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
       currency: currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
@@ -74,12 +74,12 @@ export function TicketInfo({
             asChild
             className="w-full gap-2"
             size="lg"
-            variant={isSoldOut ? 'secondary' : 'default'}
+            variant={isSoldOut ? "secondary" : "default"}
             disabled={isSoldOut}
           >
             <a href={ticketUrl} target="_blank" rel="noopener noreferrer">
               {isSoldOut ? (
-                'Sold Out'
+                "Sold Out"
               ) : (
                 <>
                   Get Tickets
@@ -96,9 +96,9 @@ export function TicketInfo({
         ) : (
           <div className="text-center">
             <Badge variant="secondary">
-              {status === 'completed'
-                ? 'Show has ended'
-                : 'Tickets unavailable'}
+              {status === "completed"
+                ? "Show has ended"
+                : "Tickets unavailable"}
             </Badge>
           </div>
         )}

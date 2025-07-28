@@ -1,4 +1,7 @@
-import type { User as SupabaseUser, Session as SupabaseSession } from '@supabase/supabase-js';
+import type {
+  User as SupabaseUser,
+  Session as SupabaseSession,
+} from "@supabase/supabase-js";
 
 export interface SpotifyTokens {
   accessToken: string;
@@ -43,11 +46,11 @@ export interface EmailPreferences {
   userId: string;
   emailEnabled: boolean;
   showReminders: boolean;
-  showReminderFrequency: 'immediately' | 'daily' | 'weekly' | 'never';
+  showReminderFrequency: "immediately" | "daily" | "weekly" | "never";
   newShowNotifications: boolean;
-  newShowFrequency: 'immediately' | 'daily' | 'weekly' | 'never';
+  newShowFrequency: "immediately" | "daily" | "weekly" | "never";
   setlistUpdates: boolean;
-  setlistUpdateFrequency: 'immediately' | 'daily' | 'weekly' | 'never';
+  setlistUpdateFrequency: "immediately" | "daily" | "weekly" | "never";
   weeklyDigest: boolean;
   marketingEmails: boolean;
   securityEmails: boolean;
@@ -132,18 +135,24 @@ export interface UpdatePreferencesData {
   };
 }
 
-export type AuthProvider = 'email' | 'google' | 'spotify';
+export type AuthProvider = "email" | "google" | "spotify";
 
 // Interface for auth provider implementations
 export interface IAuthProvider {
   signIn(email: string, password: string): Promise<AuthUser>;
-  signUp(email: string, password: string, metadata?: Record<string, any>): Promise<AuthUser>;
+  signUp(
+    email: string,
+    password: string,
+    metadata?: Record<string, any>,
+  ): Promise<AuthUser>;
   signOut(): Promise<void>;
   signInWithGoogle(config?: OAuthConfig): Promise<void>;
   signInWithSpotify(config?: OAuthConfig): Promise<void>;
   resetPassword(email: string): Promise<void>;
   updateProfile(metadata: Record<string, any>): Promise<AuthUser>;
-  onAuthStateChange(callback: (event: string, session: AuthSession | null) => void): () => void;
+  onAuthStateChange(
+    callback: (event: string, session: AuthSession | null) => void,
+  ): () => void;
 }
 
 export interface OAuthConfig {
@@ -153,11 +162,15 @@ export interface OAuthConfig {
 }
 
 // Missing exports that were causing TypeScript errors
-export type AuthState = 'loading' | 'authenticated' | 'unauthenticated' | 'error';
+export type AuthState =
+  | "loading"
+  | "authenticated"
+  | "unauthenticated"
+  | "error";
 
-export type AuthEventType = 
-  | 'SIGNED_IN'
-  | 'SIGNED_OUT' 
-  | 'TOKEN_REFRESHED'
-  | 'USER_UPDATED'
-  | 'PASSWORD_RECOVERY';
+export type AuthEventType =
+  | "SIGNED_IN"
+  | "SIGNED_OUT"
+  | "TOKEN_REFRESHED"
+  | "USER_UPDATED"
+  | "PASSWORD_RECOVERY";

@@ -16,8 +16,8 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '~/components/ui-exports';
-import { endOfDay, format, startOfDay, subDays } from 'date-fns';
+} from "~/components/ui-exports";
+import { endOfDay, format, startOfDay, subDays } from "date-fns";
 import {
   Calendar,
   Download,
@@ -28,11 +28,11 @@ import {
   TrendingDown,
   TrendingUp,
   Users,
-} from 'lucide-react';
-import { createClient } from '~/lib/supabase/server';
+} from "lucide-react";
+import { createClient } from "~/lib/supabase/server";
 
 // Force dynamic rendering due to user-specific data fetching
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface AnalyticsData {
   metric: string;
@@ -66,51 +66,52 @@ export default async function AnalyticsPage() {
     { data: platformStats },
   ] = await Promise.all([
     // Basic counts
-    supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true }),
-    supabase.from('shows').select('*', { count: 'exact', head: true }),
-    supabase.from('artists').select('*', { count: 'exact', head: true }),
-    supabase.from('venues').select('*', { count: 'exact', head: true }),
+    supabase.from("users").select("*", { count: "exact", head: true }),
+    supabase.from("shows").select("*", { count: "exact", head: true }),
+    supabase.from("artists").select("*", { count: "exact", head: true }),
+    supabase.from("venues").select("*", { count: "exact", head: true }),
 
     // Today's activity
     supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .gte('last_login_at', startOfDay(today).toISOString())
-      .lte('last_login_at', endOfDay(today).toISOString()),
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .gte("last_login_at", startOfDay(today).toISOString())
+      .lte("last_login_at", endOfDay(today).toISOString()),
     supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', startOfDay(today).toISOString())
-      .lte('created_at', endOfDay(today).toISOString()),
+      .from("users")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", startOfDay(today).toISOString())
+      .lte("created_at", endOfDay(today).toISOString()),
     supabase
-      .from('shows')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', startOfDay(today).toISOString())
-      .lte('created_at', endOfDay(today).toISOString()),
+      .from("shows")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", startOfDay(today).toISOString())
+      .lte("created_at", endOfDay(today).toISOString()),
     supabase
-      .from('setlists')
-      .select('*', { count: 'exact', head: true })
-      .gte('created_at', startOfDay(today).toISOString())
-      .lte('created_at', endOfDay(today).toISOString()),
+      .from("setlists")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", startOfDay(today).toISOString())
+      .lte("created_at", endOfDay(today).toISOString()),
 
     // Top performing content
     supabase
-      .from('artists')
-      .select(`
+      .from("artists")
+      .select(
+        `
         id,
         name,
         image_url,
         followers,
         popularity,
         artist_stats (total_shows, total_followers)
-      `)
-      .order('popularity', { ascending: false })
+      `,
+      )
+      .order("popularity", { ascending: false })
       .limit(10),
     supabase
-      .from('venues')
-      .select(`
+      .from("venues")
+      .select(
+        `
         id,
         name,
         city,
@@ -118,25 +119,28 @@ export default async function AnalyticsPage() {
         capacity,
         venue_reviews (rating),
         shows (count)
-      `)
+      `,
+      )
       .limit(10),
 
     // Recent user activity
     supabase
-      .from('user_activity_log')
-      .select(`
+      .from("user_activity_log")
+      .select(
+        `
         *,
         user:users(display_name, email)
-      `)
-      .order('created_at', { ascending: false })
+      `,
+      )
+      .order("created_at", { ascending: false })
       .limit(20),
 
     // Historical platform stats
     supabase
-      .from('platform_stats')
-      .select('*')
-      .gte('stat_date', format(monthAgo, 'yyyy-MM-dd'))
-      .order('stat_date', { ascending: false }),
+      .from("platform_stats")
+      .select("*")
+      .gte("stat_date", format(monthAgo, "yyyy-MM-dd"))
+      .order("stat_date", { ascending: false }),
   ]);
 
   // Calculate trends
@@ -155,26 +159,26 @@ export default async function AnalyticsPage() {
 
   // Get yesterday's data for comparison
   const { count: activeUsersYesterday } = await supabase
-    .from('users')
-    .select('*', { count: 'exact', head: true })
-    .gte('last_login_at', startOfDay(yesterday).toISOString())
-    .lte('last_login_at', endOfDay(yesterday).toISOString());
+    .from("users")
+    .select("*", { count: "exact", head: true })
+    .gte("last_login_at", startOfDay(yesterday).toISOString())
+    .lte("last_login_at", endOfDay(yesterday).toISOString());
 
   const metrics: AnalyticsData[] = [
     {
-      metric: 'Active Users',
+      metric: "Active Users",
       ...calculateTrend(activeUsersToday || 0, activeUsersYesterday || 0),
     },
     {
-      metric: 'New Users',
+      metric: "New Users",
       ...calculateTrend(newUsersToday || 0, 0), // Would need yesterday's data
     },
     {
-      metric: 'New Shows',
+      metric: "New Shows",
       ...calculateTrend(newShowsToday || 0, 0),
     },
     {
-      metric: 'New Content',
+      metric: "New Content",
       ...calculateTrend(newContentToday || 0, 0),
     },
   ];
@@ -221,9 +225,9 @@ export default async function AnalyticsPage() {
               </div>
               <div className="mt-1 flex items-center gap-1">
                 <span
-                  className={`text-xs ${metric.isPositive ? 'text-green-500' : 'text-red-500'}`}
+                  className={`text-xs ${metric.isPositive ? "text-green-500" : "text-red-500"}`}
                 >
-                  {metric.isPositive ? '+' : ''}
+                  {metric.isPositive ? "+" : ""}
                   {metric.changePercent}%
                 </span>
                 <span className="text-muted-foreground text-xs">
@@ -363,7 +367,7 @@ export default async function AnalyticsPage() {
                       venue.venue_reviews?.length > 0
                         ? venue.venue_reviews.reduce(
                             (sum: number, review: any) => sum + review.rating,
-                            0
+                            0,
                           ) / venue.venue_reviews.length
                         : 0;
                     const showCount = venue.shows?.[0]?.count || 0;
@@ -431,13 +435,13 @@ export default async function AnalyticsPage() {
                             <span className="text-xs">
                               {activity.user?.display_name?.[0] ||
                                 activity.user?.email?.[0] ||
-                                '?'}
+                                "?"}
                             </span>
                           </div>
                           <span className="text-sm">
                             {activity.user?.display_name ||
                               activity.user?.email ||
-                              'Anonymous'}
+                              "Anonymous"}
                           </span>
                         </div>
                       </TableCell>
@@ -448,7 +452,7 @@ export default async function AnalyticsPage() {
                         {activity.details}
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">
-                        {format(new Date(activity.created_at), 'MMM d, h:mm a')}
+                        {format(new Date(activity.created_at), "MMM d, h:mm a")}
                       </TableCell>
                     </TableRow>
                   ))}
@@ -477,10 +481,10 @@ export default async function AnalyticsPage() {
                     >
                       <div className="text-sm">
                         <p className="font-medium">
-                          {format(new Date(stat.stat_date), 'MMM d')}
+                          {format(new Date(stat.stat_date), "MMM d")}
                         </p>
                         <p className="text-muted-foreground text-xs">
-                          {format(new Date(stat.stat_date), 'EEEE')}
+                          {format(new Date(stat.stat_date), "EEEE")}
                         </p>
                       </div>
                       <div className="text-right text-sm">
@@ -509,13 +513,13 @@ export default async function AnalyticsPage() {
                     >
                       <div className="text-sm">
                         <p className="font-medium">
-                          {format(new Date(stat.stat_date), 'MMM d')}
+                          {format(new Date(stat.stat_date), "MMM d")}
                         </p>
                       </div>
                       <div className="text-right text-sm">
                         <p>{stat.new_setlists || 0} setlists</p>
                         <p className="text-muted-foreground">
-                          {stat.new_reviews || 0} reviews,{' '}
+                          {stat.new_reviews || 0} reviews,{" "}
                           {stat.new_photos || 0} photos
                         </p>
                       </div>

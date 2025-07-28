@@ -22,15 +22,18 @@ curl -X POST http://localhost:3001/api/admin/initialize-data
 ## Available Endpoints
 
 ### 1. Complete Initialization
+
 ```bash
 POST /api/admin/initialize-data
 ```
+
 - Seeds mock data if database is empty
 - Initializes trending metrics
 - Calculates all trending scores
 - Returns summary of initialized data
 
 ### 2. Trending System Only
+
 ```bash
 # Initialize trending scores for existing data
 POST /api/admin/init-trending
@@ -46,6 +49,7 @@ POST /api/admin/trending-init
 ```
 
 ### 3. Real Artist Sync
+
 ```bash
 # Sync single artist from Spotify
 POST /api/artists/sync
@@ -62,6 +66,7 @@ GET /api/artists/sync
 ## Trending Score Algorithms
 
 ### Artist Trending Score
+
 ```
 score = (followers / 10000) * 0.3 +
         popularity * 0.2 +
@@ -70,6 +75,7 @@ score = (followers / 10000) * 0.3 +
 ```
 
 ### Show Trending Score
+
 ```
 score = viewCount * 0.2 +
         attendeeCount * 0.3 +
@@ -79,6 +85,7 @@ score = viewCount * 0.2 +
 ```
 
 ### Venue Trending Score
+
 ```
 score = showCount * 5 * 0.4 +
         (totalAttendance / 100) * 0.3 +
@@ -88,12 +95,14 @@ score = showCount * 5 * 0.4 +
 ## Automated Updates
 
 ### Supabase Edge Functions
+
 - `update-trending` - Recalculates trending scores
 - `sync-song-catalog` - Syncs artist song catalogs from Spotify
 - `sync-artist-shows` - Syncs shows from Ticketmaster
 - `scheduled-sync` - Orchestrates all sync operations
 
 ### Cron Jobs (via pg_cron)
+
 - **Daily Sync** - 2 AM UTC - Full data sync
 - **Hourly Trending** - Every hour - Updates trending scores
 - **Email Queue** - Every 5 minutes - Processes email notifications
@@ -101,7 +110,9 @@ score = showCount * 5 * 0.4 +
 ## Troubleshooting
 
 ### No Data Showing
+
 1. Check if database has data:
+
    ```bash
    curl http://localhost:3001/api/admin/init-trending
    ```
@@ -112,7 +123,9 @@ score = showCount * 5 * 0.4 +
    ```
 
 ### Trending Scores Not Updating
+
 1. Manually trigger calculation:
+
    ```bash
    curl -X POST http://localhost:3001/api/admin/calculate-trending
    ```
@@ -120,6 +133,7 @@ score = showCount * 5 * 0.4 +
 2. Check Supabase edge function logs for `update-trending`
 
 ### API Keys Not Working
+
 1. Ensure environment variables are set:
    - `SPOTIFY_CLIENT_ID`
    - `SPOTIFY_CLIENT_SECRET`
@@ -130,10 +144,12 @@ score = showCount * 5 * 0.4 +
 ## Mock Data Details
 
 ### Artists (10 total)
+
 - Taylor Swift, Drake, Bad Bunny, The Weeknd, Post Malone
 - Billie Eilish, Ed Sheeran, Ariana Grande, Bruno Mars, Dua Lipa
 
 ### Venues (5 total)
+
 - Madison Square Garden (NYC)
 - Staples Center (LA)
 - United Center (Chicago)
@@ -141,11 +157,13 @@ score = showCount * 5 * 0.4 +
 - American Airlines Arena (Miami)
 
 ### Shows
+
 - 25 shows (5 artists × 5 venues)
 - Random dates within next 180 days
 - Realistic attendance and vote counts
 
 ### Songs
+
 - 15-25 songs per artist
 - Total: ~200 songs
 - Random popularity scores
@@ -153,16 +171,18 @@ score = showCount * 5 * 0.4 +
 ## Development Tips
 
 1. **Quick Reset**: Drop all data and reinitialize
+
    ```sql
    -- In Supabase SQL editor
    TRUNCATE artists, venues, shows, songs CASCADE;
    ```
 
-2. **Test Specific Sync**: 
+2. **Test Specific Sync**:
+
    ```bash
    # Artists only
    curl -X POST http://localhost:3001/api/admin/seed-trending?type=artists
-   
+
    # Shows only
    curl -X POST http://localhost:3001/api/admin/seed-trending?type=shows
    ```

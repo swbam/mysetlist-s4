@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Card } from '@repo/design-system/components/ui/card';
-import { format } from 'date-fns';
-import { Calendar, Music } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Card } from "@repo/design-system/components/ui/card";
+import { format } from "date-fns";
+import { Calendar, Music } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 interface Show {
   id: string;
@@ -47,7 +47,7 @@ export function PastShows({ shows, venueId: _venueId }: PastShowsProps) {
       acc[year].push(show);
       return acc;
     },
-    {} as Record<number, Show[]>
+    {} as Record<number, Show[]>,
   );
 
   const years = Object.keys(showsByYear).sort((a, b) => Number(b) - Number(a));
@@ -96,7 +96,7 @@ export function PastShows({ shows, venueId: _venueId }: PastShowsProps) {
                       <div className="mt-1 flex items-center gap-2">
                         <Calendar className="h-3 w-3 text-muted-foreground" />
                         <span className="text-muted-foreground text-sm">
-                          {format(new Date(show.date), 'MMMM d, yyyy')}
+                          {format(new Date(show.date), "MMMM d, yyyy")}
                         </span>
                       </div>
                     </div>

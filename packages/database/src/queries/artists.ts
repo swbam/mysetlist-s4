@@ -1,6 +1,6 @@
-import { and, desc, eq, ilike, sql } from 'drizzle-orm';
-import { db } from '../client';
-import { artists, userFollowsArtists } from '../schema';
+import { and, desc, eq, ilike, sql } from "drizzle-orm";
+import { db } from "../client";
+import { artists, userFollowsArtists } from "../schema";
 
 export async function getArtistById(artistId: string) {
   const artist = await db
@@ -136,8 +136,8 @@ export async function isUserFollowingArtist(userId: string, artistId: string) {
     .where(
       and(
         eq(userFollowsArtists.userId, userId),
-        eq(userFollowsArtists.artistId, artistId)
-      )
+        eq(userFollowsArtists.artistId, artistId),
+      ),
     );
 
   return result[0]?.count ? result[0].count > 0 : false;
@@ -162,7 +162,7 @@ export async function getSimilarArtists(artistId: string, limit = 10) {
 
   // Find artists with similar genres
   const genreConditions = genres.map(
-    (genre) => sql`${artists.genres}::text ILIKE ${`%${genre}%`}`
+    (genre) => sql`${artists.genres}::text ILIKE ${`%${genre}%`}`,
   );
 
   const results = await db
@@ -178,8 +178,8 @@ export async function getSimilarArtists(artistId: string, limit = 10) {
     .where(
       and(
         sql`${artists.id} != ${artistId}`,
-        sql`(${genreConditions.reduce((acc, cond) => sql`${acc} OR ${cond}`)})`
-      )
+        sql`(${genreConditions.reduce((acc, cond) => sql`${acc} OR ${cond}`)})`,
+      ),
     )
     .orderBy(desc(artists.popularity))
     .limit(limit);

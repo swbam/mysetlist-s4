@@ -1,6 +1,6 @@
-import React from 'react';
-import { absoluteUrl } from '~/lib/absolute-url';
-import FeaturedVenuesSlider from './featured-venues-slider';
+import React from "react";
+import { absoluteUrl } from "~/lib/absolute-url";
+import FeaturedVenuesSlider from "./featured-venues-slider";
 
 interface FeaturedVenue {
   id: string;
@@ -21,17 +21,19 @@ interface FeaturedVenue {
 export default async function FeaturedVenuesWrapper() {
   try {
     const res = await fetch(
-      absoluteUrl('/api/trending/venues?timeframe=week&limit=10'),
-      { 
+      absoluteUrl("/api/trending/venues?timeframe=week&limit=10"),
+      {
         next: { revalidate: 60 },
         headers: {
-          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
         },
-      }
+      },
     );
 
     if (!res.ok) {
-      console.warn(`Failed to fetch featured venues: ${res.status} ${res.statusText}`);
+      console.warn(
+        `Failed to fetch featured venues: ${res.status} ${res.statusText}`,
+      );
       return (
         <div className="py-16 md:py-24">
           <div className="container mx-auto px-4">
@@ -39,7 +41,10 @@ export default async function FeaturedVenuesWrapper() {
               <h2 className="mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text font-bold text-3xl text-transparent tracking-tight md:text-4xl">
                 Featured Venues
               </h2>
-              <p className="text-muted-foreground">Unable to load featured venues at the moment. Please try again later.</p>
+              <p className="text-muted-foreground">
+                Unable to load featured venues at the moment. Please try again
+                later.
+              </p>
             </div>
           </div>
         </div>
@@ -57,7 +62,9 @@ export default async function FeaturedVenuesWrapper() {
               <h2 className="mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text font-bold text-3xl text-transparent tracking-tight md:text-4xl">
                 Featured Venues
               </h2>
-              <p className="text-muted-foreground">No featured venues found. Check back soon for updates!</p>
+              <p className="text-muted-foreground">
+                No featured venues found. Check back soon for updates!
+              </p>
             </div>
           </div>
         </div>
@@ -66,7 +73,7 @@ export default async function FeaturedVenuesWrapper() {
 
     return <FeaturedVenuesSlider venues={venues} />;
   } catch (error) {
-    console.error('Error fetching featured venues:', error);
+    console.error("Error fetching featured venues:", error);
     // Return minimal error state instead of null to prevent layout shift
     return (
       <div className="py-16 md:py-24">
@@ -75,7 +82,9 @@ export default async function FeaturedVenuesWrapper() {
             <h2 className="mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text font-bold text-3xl text-transparent tracking-tight md:text-4xl">
               Featured Venues
             </h2>
-            <p className="text-muted-foreground">Something went wrong. Please refresh the page.</p>
+            <p className="text-muted-foreground">
+              Something went wrong. Please refresh the page.
+            </p>
           </div>
         </div>
       </div>

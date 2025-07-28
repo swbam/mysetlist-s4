@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@repo/design-system/components/ui/tooltip';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
+} from "@repo/design-system/components/ui/tooltip";
+import { cn } from "@repo/design-system/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ChevronDown,
   ChevronUp,
@@ -16,19 +16,19 @@ import {
   Wifi,
   WifiOff,
   Zap,
-} from 'lucide-react';
-import { useCallback, useEffect, useRef, useState, memo } from 'react';
-import { toast } from 'sonner';
-import { useRealtimeConnection } from '~/app/providers/realtime-provider';
-import { useOptimisticVoting } from '~/hooks/use-optimistic-voting';
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState, memo } from "react";
+import { toast } from "sonner";
+import { useRealtimeConnection } from "~/app/providers/realtime-provider";
+import { useOptimisticVoting } from "~/hooks/use-optimistic-voting";
 
 interface RealtimeVoteButtonProps {
   setlistSongId: string;
   showId: string;
   userId?: string;
   disabled?: boolean;
-  size?: 'sm' | 'md' | 'lg';
-  variant?: 'default' | 'compact' | 'minimal';
+  size?: "sm" | "md" | "lg";
+  variant?: "default" | "compact" | "minimal";
   showLimits?: boolean;
   showConnection?: boolean;
   hapticFeedback?: boolean;
@@ -44,12 +44,12 @@ const buttonVariants = {
 const countVariants = {
   increase: {
     scale: [1, 1.2, 1],
-    color: ['currentColor', '#22c55e', 'currentColor'],
+    color: ["currentColor", "#22c55e", "currentColor"],
     transition: { duration: 0.3 },
   },
   decrease: {
     scale: [1, 1.2, 1],
-    color: ['currentColor', '#ef4444', 'currentColor'],
+    color: ["currentColor", "#ef4444", "currentColor"],
     transition: { duration: 0.3 },
   },
 };
@@ -59,8 +59,8 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
   showId: _showId,
   userId,
   disabled = false,
-  size = 'md',
-  variant = 'default',
+  size = "md",
+  variant = "default",
   showLimits = true,
   showConnection = true,
   hapticFeedback = true,
@@ -68,11 +68,12 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
 }: RealtimeVoteButtonProps) {
   const [voteLimits, setVoteLimits] = useState<any>(null);
   const [lastVoteAnimation, setLastVoteAnimation] = useState<
-    'increase' | 'decrease' | null
+    "increase" | "decrease" | null
   >(null);
   const previousNetVotes = useRef<number>(0);
 
-  const { isConnected, connectionStatus: _connectionStatus } = useRealtimeConnection();
+  const { isConnected, connectionStatus: _connectionStatus } =
+    useRealtimeConnection();
 
   // Use optimistic voting for instant feedback
   const {
@@ -98,7 +99,7 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
     },
     onVoteError: (_error) => {
       // Haptic feedback for errors on mobile
-      if (hapticFeedback && 'vibrate' in navigator) {
+      if (hapticFeedback && "vibrate" in navigator) {
         navigator.vibrate([50, 100, 50]); // Error vibration pattern
       }
     },
@@ -111,7 +112,7 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
   useEffect(() => {
     if (previousNetVotes.current !== netVotes) {
       const direction =
-        netVotes > previousNetVotes.current ? 'increase' : 'decrease';
+        netVotes > previousNetVotes.current ? "increase" : "decrease";
       setLastVoteAnimation(direction);
       previousNetVotes.current = netVotes;
 
@@ -124,20 +125,20 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
 
   const triggerHapticFeedback = useCallback(
     (pattern: number[] = [10]) => {
-      if (hapticFeedback && 'vibrate' in navigator) {
+      if (hapticFeedback && "vibrate" in navigator) {
         navigator.vibrate(pattern);
       }
     },
-    [hapticFeedback]
+    [hapticFeedback],
   );
 
-  const handleVote = async (voteType: 'up' | 'down') => {
+  const handleVote = async (voteType: "up" | "down") => {
     if (isVoting || disabled) {
       return;
     }
 
     if (!userId) {
-      toast.error('Please sign in to vote');
+      toast.error("Please sign in to vote");
       return;
     }
 
@@ -146,8 +147,8 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
 
     // Check connection status
     if (!isConnected) {
-      toast.warning('Connection lost - vote may not sync immediately', {
-        description: 'Your vote will be applied when connection is restored',
+      toast.warning("Connection lost - vote may not sync immediately", {
+        description: "Your vote will be applied when connection is restored",
       });
     }
 
@@ -156,9 +157,9 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
   };
 
   const buttonSize =
-    size === 'sm' ? 'h-6 w-6' : size === 'lg' ? 'h-10 w-10' : 'h-8 w-8';
+    size === "sm" ? "h-6 w-6" : size === "lg" ? "h-10 w-10" : "h-8 w-8";
   const iconSize =
-    size === 'sm' ? 'h-3 w-3' : size === 'lg' ? 'h-5 w-5' : 'h-4 w-4';
+    size === "sm" ? "h-3 w-3" : size === "lg" ? "h-5 w-5" : "h-4 w-4";
 
   const ConnectionIndicator = () => {
     if (!showConnection) {
@@ -166,16 +167,16 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
     }
 
     const Icon = isConnected ? Wifi : WifiOff;
-    const iconClass = isConnected ? 'text-green-500' : 'text-red-500';
+    const iconClass = isConnected ? "text-green-500" : "text-red-500";
 
     return (
       <Tooltip>
         <TooltipTrigger asChild>
-          <Icon className={cn('h-3 w-3', iconClass)} />
+          <Icon className={cn("h-3 w-3", iconClass)} />
         </TooltipTrigger>
         <TooltipContent>
           <div className="text-xs">
-            {isConnected ? 'Live updates active' : 'Connection lost'}
+            {isConnected ? "Live updates active" : "Connection lost"}
           </div>
         </TooltipContent>
       </Tooltip>
@@ -198,20 +199,20 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
     );
   };
 
-  if (variant === 'minimal') {
+  if (variant === "minimal") {
     return (
       <TooltipProvider>
-        <div className={cn('flex items-center gap-1', className)}>
+        <div className={cn("flex items-center gap-1", className)}>
           <motion.span
             className={cn(
-              'select-none font-medium text-sm tabular-nums',
-              netVotes > 0 && 'text-green-600 dark:text-green-400',
-              netVotes < 0 && 'text-red-600 dark:text-red-400',
-              netVotes === 0 && 'text-muted-foreground',
-              isOptimistic && 'opacity-80'
+              "select-none font-medium text-sm tabular-nums",
+              netVotes > 0 && "text-green-600 dark:text-green-400",
+              netVotes < 0 && "text-red-600 dark:text-red-400",
+              netVotes === 0 && "text-muted-foreground",
+              isOptimistic && "opacity-80",
             )}
             variants={countVariants}
-            animate={lastVoteAnimation || 'none'}
+            animate={lastVoteAnimation || "none"}
             aria-live="polite"
             aria-atomic="true"
           >
@@ -228,13 +229,13 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
     );
   }
 
-  if (variant === 'compact') {
+  if (variant === "compact") {
     return (
       <TooltipProvider>
         <div
           className={cn(
-            'flex touch-manipulation items-center gap-1',
-            className
+            "flex touch-manipulation items-center gap-1",
+            className,
           )}
         >
           <Tooltip>
@@ -247,30 +248,30 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleVote('up')}
+                  onClick={() => handleVote("up")}
                   disabled={
                     isVoting || disabled || (voteLimits && !voteLimits.canVote)
                   }
                   className={cn(
                     buttonSize,
-                    'touch-manipulation p-0 transition-all duration-150',
-                    'min-h-[32px] min-w-[32px]',
-                    'focus-visible:ring-2 focus-visible:ring-green-500/20',
-                    userVote === 'up' &&
-                      'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400',
-                    isOptimistic && 'opacity-80'
+                    "touch-manipulation p-0 transition-all duration-150",
+                    "min-h-[32px] min-w-[32px]",
+                    "focus-visible:ring-2 focus-visible:ring-green-500/20",
+                    userVote === "up" &&
+                      "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400",
+                    isOptimistic && "opacity-80",
                   )}
                   aria-label="Upvote this song"
                 >
                   <AnimatePresence mode="wait">
-                    {isVoting && votes.pendingVote === 'up' ? (
+                    {isVoting && votes.pendingVote === "up" ? (
                       <motion.div
                         key="loading"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                       >
-                        <Loader2 className={cn(iconSize, 'animate-spin')} />
+                        <Loader2 className={cn(iconSize, "animate-spin")} />
                       </motion.div>
                     ) : (
                       <motion.div
@@ -294,15 +295,15 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
 
           <motion.span
             className={cn(
-              'min-w-[2rem] text-center font-medium text-sm tabular-nums transition-all duration-150',
-              'select-none px-1',
-              netVotes > 0 && 'text-green-600 dark:text-green-400',
-              netVotes < 0 && 'text-red-600 dark:text-red-400',
-              netVotes === 0 && 'text-muted-foreground',
-              isOptimistic && 'opacity-80'
+              "min-w-[2rem] text-center font-medium text-sm tabular-nums transition-all duration-150",
+              "select-none px-1",
+              netVotes > 0 && "text-green-600 dark:text-green-400",
+              netVotes < 0 && "text-red-600 dark:text-red-400",
+              netVotes === 0 && "text-muted-foreground",
+              isOptimistic && "opacity-80",
             )}
             variants={countVariants}
-            animate={lastVoteAnimation || 'none'}
+            animate={lastVoteAnimation || "none"}
             aria-live="polite"
             aria-atomic="true"
           >
@@ -319,30 +320,30 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleVote('down')}
+                  onClick={() => handleVote("down")}
                   disabled={
                     isVoting || disabled || (voteLimits && !voteLimits.canVote)
                   }
                   className={cn(
                     buttonSize,
-                    'touch-manipulation p-0 transition-all duration-150',
-                    'min-h-[32px] min-w-[32px]',
-                    'focus-visible:ring-2 focus-visible:ring-red-500/20',
-                    userVote === 'down' &&
-                      'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400',
-                    isOptimistic && 'opacity-80'
+                    "touch-manipulation p-0 transition-all duration-150",
+                    "min-h-[32px] min-w-[32px]",
+                    "focus-visible:ring-2 focus-visible:ring-red-500/20",
+                    userVote === "down" &&
+                      "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400",
+                    isOptimistic && "opacity-80",
                   )}
                   aria-label="Downvote this song"
                 >
                   <AnimatePresence mode="wait">
-                    {isVoting && votes.pendingVote === 'down' ? (
+                    {isVoting && votes.pendingVote === "down" ? (
                       <motion.div
                         key="loading"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                       >
-                        <Loader2 className={cn(iconSize, 'animate-spin')} />
+                        <Loader2 className={cn(iconSize, "animate-spin")} />
                       </motion.div>
                     ) : (
                       <motion.div
@@ -387,8 +388,8 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
     <TooltipProvider>
       <div
         className={cn(
-          'flex touch-manipulation flex-col items-center gap-1',
-          className
+          "flex touch-manipulation flex-col items-center gap-1",
+          className,
         )}
       >
         <Tooltip>
@@ -401,29 +402,29 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleVote('up')}
+                onClick={() => handleVote("up")}
                 disabled={
                   isVoting || disabled || (voteLimits && !voteLimits.canVote)
                 }
                 className={cn(
                   buttonSize,
-                  'touch-manipulation p-0 transition-all duration-150',
-                  'focus-visible:ring-2 focus-visible:ring-green-500/20',
-                  userVote === 'up' &&
-                    'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400',
-                  isOptimistic && 'opacity-80'
+                  "touch-manipulation p-0 transition-all duration-150",
+                  "focus-visible:ring-2 focus-visible:ring-green-500/20",
+                  userVote === "up" &&
+                    "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400",
+                  isOptimistic && "opacity-80",
                 )}
                 aria-label="Upvote this song"
               >
                 <AnimatePresence mode="wait">
-                  {isVoting && userVote === 'up' ? (
+                  {isVoting && userVote === "up" ? (
                     <motion.div
                       key="loading"
                       initial={{ opacity: 0, rotate: 0 }}
                       animate={{ opacity: 1, rotate: 360 }}
                       exit={{ opacity: 0 }}
                     >
-                      <Loader2 className={cn(iconSize, 'animate-spin')} />
+                      <Loader2 className={cn(iconSize, "animate-spin")} />
                     </motion.div>
                   ) : (
                     <motion.div
@@ -447,15 +448,15 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
 
         <motion.span
           className={cn(
-            'font-medium text-sm tabular-nums transition-all duration-150',
-            'select-none px-1',
-            netVotes > 0 && 'text-green-600 dark:text-green-400',
-            netVotes < 0 && 'text-red-600 dark:text-red-400',
-            netVotes === 0 && 'text-muted-foreground',
-            isOptimistic && 'opacity-80'
+            "font-medium text-sm tabular-nums transition-all duration-150",
+            "select-none px-1",
+            netVotes > 0 && "text-green-600 dark:text-green-400",
+            netVotes < 0 && "text-red-600 dark:text-red-400",
+            netVotes === 0 && "text-muted-foreground",
+            isOptimistic && "opacity-80",
           )}
           variants={countVariants}
-          animate={lastVoteAnimation || 'none'}
+          animate={lastVoteAnimation || "none"}
           aria-live="polite"
           aria-atomic="true"
         >
@@ -472,29 +473,29 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleVote('down')}
+                onClick={() => handleVote("down")}
                 disabled={
                   isVoting || disabled || (voteLimits && !voteLimits.canVote)
                 }
                 className={cn(
                   buttonSize,
-                  'touch-manipulation p-0 transition-all duration-150',
-                  'focus-visible:ring-2 focus-visible:ring-red-500/20',
-                  userVote === 'down' &&
-                    'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400',
-                  isOptimistic && 'opacity-80'
+                  "touch-manipulation p-0 transition-all duration-150",
+                  "focus-visible:ring-2 focus-visible:ring-red-500/20",
+                  userVote === "down" &&
+                    "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400",
+                  isOptimistic && "opacity-80",
                 )}
                 aria-label="Downvote this song"
               >
                 <AnimatePresence mode="wait">
-                  {isVoting && userVote === 'down' ? (
+                  {isVoting && userVote === "down" ? (
                     <motion.div
                       key="loading"
                       initial={{ opacity: 0, rotate: 0 }}
                       animate={{ opacity: 1, rotate: 360 }}
                       exit={{ opacity: 0 }}
                     >
-                      <Loader2 className={cn(iconSize, 'animate-spin')} />
+                      <Loader2 className={cn(iconSize, "animate-spin")} />
                     </motion.div>
                   ) : (
                     <motion.div
@@ -535,18 +536,21 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
 };
 
 // Memoized export with custom comparison for better performance
-export const RealtimeVoteButton = memo(RealtimeVoteButtonComponent, (prevProps, nextProps) => {
-  // Custom comparison to prevent unnecessary re-renders
-  return (
-    prevProps.setlistSongId === nextProps.setlistSongId &&
-    prevProps.showId === nextProps.showId &&
-    prevProps.userId === nextProps.userId &&
-    prevProps.disabled === nextProps.disabled &&
-    prevProps.size === nextProps.size &&
-    prevProps.variant === nextProps.variant &&
-    prevProps.showLimits === nextProps.showLimits &&
-    prevProps.showConnection === nextProps.showConnection &&
-    prevProps.hapticFeedback === nextProps.hapticFeedback &&
-    prevProps.className === nextProps.className
-  );
-});
+export const RealtimeVoteButton = memo(
+  RealtimeVoteButtonComponent,
+  (prevProps, nextProps) => {
+    // Custom comparison to prevent unnecessary re-renders
+    return (
+      prevProps.setlistSongId === nextProps.setlistSongId &&
+      prevProps.showId === nextProps.showId &&
+      prevProps.userId === nextProps.userId &&
+      prevProps.disabled === nextProps.disabled &&
+      prevProps.size === nextProps.size &&
+      prevProps.variant === nextProps.variant &&
+      prevProps.showLimits === nextProps.showLimits &&
+      prevProps.showConnection === nextProps.showConnection &&
+      prevProps.hapticFeedback === nextProps.hapticFeedback &&
+      prevProps.className === nextProps.className
+    );
+  },
+);

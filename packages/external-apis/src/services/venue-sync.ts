@@ -1,10 +1,10 @@
-import { db } from '../database';
-import { venues } from '../schema';
-import { SetlistFmClient, type SetlistFmVenue } from '../clients/setlistfm';
+import { db } from "../database";
+import { venues } from "../schema";
+import { SetlistFmClient, type SetlistFmVenue } from "../clients/setlistfm";
 import {
   TicketmasterClient,
   type TicketmasterVenue,
-} from '../clients/ticketmaster';
+} from "../clients/ticketmaster";
 
 export class VenueSyncService {
   private ticketmasterClient: TicketmasterClient;
@@ -16,45 +16,63 @@ export class VenueSyncService {
   }
 
   async syncVenueFromTicketmaster(
-    ticketmasterVenue: TicketmasterVenue
+    ticketmasterVenue: TicketmasterVenue,
   ): Promise<void> {
     await db
       .insert(venues)
       .values({
         name: ticketmasterVenue.name,
         slug: this.generateSlug(ticketmasterVenue.name),
-        ...(ticketmasterVenue.address?.line1 && { address: ticketmasterVenue.address.line1 }),
-        city: ticketmasterVenue.city?.name || '',
-        ...(ticketmasterVenue.state?.name && { state: ticketmasterVenue.state.name }),
-        country: ticketmasterVenue.country?.name || '',
-        ...(ticketmasterVenue.postalCode && { postalCode: ticketmasterVenue.postalCode }),
+        ...(ticketmasterVenue.address?.line1 && {
+          address: ticketmasterVenue.address.line1,
+        }),
+        city: ticketmasterVenue.city?.name || "",
+        ...(ticketmasterVenue.state?.name && {
+          state: ticketmasterVenue.state.name,
+        }),
+        country: ticketmasterVenue.country?.name || "",
+        ...(ticketmasterVenue.postalCode && {
+          postalCode: ticketmasterVenue.postalCode,
+        }),
         latitude: ticketmasterVenue.location?.latitude
           ? Number.parseFloat(ticketmasterVenue.location.latitude)
           : null,
         longitude: ticketmasterVenue.location?.longitude
           ? Number.parseFloat(ticketmasterVenue.location.longitude)
           : null,
-        timezone: ticketmasterVenue.timezone || 'America/New_York',
-        ...(ticketmasterVenue.capacity && { capacity: ticketmasterVenue.capacity }),
+        timezone: ticketmasterVenue.timezone || "America/New_York",
+        ...(ticketmasterVenue.capacity && {
+          capacity: ticketmasterVenue.capacity,
+        }),
         venueType: ticketmasterVenue.type,
-        ...(ticketmasterVenue.images?.[0]?.url && { imageUrl: ticketmasterVenue.images[0].url }),
+        ...(ticketmasterVenue.images?.[0]?.url && {
+          imageUrl: ticketmasterVenue.images[0].url,
+        }),
         amenities: JSON.stringify(ticketmasterVenue.generalInfo || {}),
       })
       .onConflictDoUpdate({
         target: venues.slug,
         set: {
-          ...(ticketmasterVenue.address?.line1 && { address: ticketmasterVenue.address.line1 }),
-          city: ticketmasterVenue.city?.name || '',
-          ...(ticketmasterVenue.state?.name && { state: ticketmasterVenue.state.name }),
-          country: ticketmasterVenue.country?.name || '',
-          ...(ticketmasterVenue.postalCode && { postalCode: ticketmasterVenue.postalCode }),
+          ...(ticketmasterVenue.address?.line1 && {
+            address: ticketmasterVenue.address.line1,
+          }),
+          city: ticketmasterVenue.city?.name || "",
+          ...(ticketmasterVenue.state?.name && {
+            state: ticketmasterVenue.state.name,
+          }),
+          country: ticketmasterVenue.country?.name || "",
+          ...(ticketmasterVenue.postalCode && {
+            postalCode: ticketmasterVenue.postalCode,
+          }),
           latitude: ticketmasterVenue.location?.latitude
             ? Number.parseFloat(ticketmasterVenue.location.latitude)
             : null,
           longitude: ticketmasterVenue.location?.longitude
             ? Number.parseFloat(ticketmasterVenue.location.longitude)
             : null,
-          ...(ticketmasterVenue.capacity && { capacity: ticketmasterVenue.capacity }),
+          ...(ticketmasterVenue.capacity && {
+            capacity: ticketmasterVenue.capacity,
+          }),
           updatedAt: new Date(),
         },
       });
@@ -73,7 +91,7 @@ export class VenueSyncService {
         longitude: setlistFmVenue.city.coords.long,
         timezone: this.getTimezone(
           setlistFmVenue.city.country.code,
-          setlistFmVenue.city.stateCode
+          setlistFmVenue.city.stateCode,
         ),
       })
       .onConflictDoUpdate({
@@ -92,7 +110,7 @@ export class VenueSyncService {
   async syncVenuesByCity(
     city: string,
     stateCode?: string,
-    countryCode = 'US'
+    countryCode = "US",
   ): Promise<void> {
     // Sync from Ticketmaster
     const ticketmasterResult = await this.ticketmasterClient.searchVenues({
@@ -124,38 +142,38 @@ export class VenueSyncService {
 
   async syncMajorVenues(): Promise<void> {
     const majorCities = [
-      { city: 'New York', stateCode: 'NY' },
-      { city: 'Los Angeles', stateCode: 'CA' },
-      { city: 'Chicago', stateCode: 'IL' },
-      { city: 'Houston', stateCode: 'TX' },
-      { city: 'Phoenix', stateCode: 'AZ' },
-      { city: 'Philadelphia', stateCode: 'PA' },
-      { city: 'San Antonio', stateCode: 'TX' },
-      { city: 'San Diego', stateCode: 'CA' },
-      { city: 'Dallas', stateCode: 'TX' },
-      { city: 'San Jose', stateCode: 'CA' },
-      { city: 'Austin', stateCode: 'TX' },
-      { city: 'Jacksonville', stateCode: 'FL' },
-      { city: 'San Francisco', stateCode: 'CA' },
-      { city: 'Indianapolis', stateCode: 'IN' },
-      { city: 'Columbus', stateCode: 'OH' },
-      { city: 'Fort Worth', stateCode: 'TX' },
-      { city: 'Charlotte', stateCode: 'NC' },
-      { city: 'Detroit', stateCode: 'MI' },
-      { city: 'Seattle', stateCode: 'WA' },
-      { city: 'Denver', stateCode: 'CO' },
-      { city: 'Washington', stateCode: 'DC' },
-      { city: 'Boston', stateCode: 'MA' },
-      { city: 'El Paso', stateCode: 'TX' },
-      { city: 'Nashville', stateCode: 'TN' },
-      { city: 'Portland', stateCode: 'OR' },
-      { city: 'Las Vegas', stateCode: 'NV' },
-      { city: 'Memphis', stateCode: 'TN' },
-      { city: 'Louisville', stateCode: 'KY' },
-      { city: 'Baltimore', stateCode: 'MD' },
-      { city: 'Milwaukee', stateCode: 'WI' },
-      { city: 'Atlanta', stateCode: 'GA' },
-      { city: 'Miami', stateCode: 'FL' },
+      { city: "New York", stateCode: "NY" },
+      { city: "Los Angeles", stateCode: "CA" },
+      { city: "Chicago", stateCode: "IL" },
+      { city: "Houston", stateCode: "TX" },
+      { city: "Phoenix", stateCode: "AZ" },
+      { city: "Philadelphia", stateCode: "PA" },
+      { city: "San Antonio", stateCode: "TX" },
+      { city: "San Diego", stateCode: "CA" },
+      { city: "Dallas", stateCode: "TX" },
+      { city: "San Jose", stateCode: "CA" },
+      { city: "Austin", stateCode: "TX" },
+      { city: "Jacksonville", stateCode: "FL" },
+      { city: "San Francisco", stateCode: "CA" },
+      { city: "Indianapolis", stateCode: "IN" },
+      { city: "Columbus", stateCode: "OH" },
+      { city: "Fort Worth", stateCode: "TX" },
+      { city: "Charlotte", stateCode: "NC" },
+      { city: "Detroit", stateCode: "MI" },
+      { city: "Seattle", stateCode: "WA" },
+      { city: "Denver", stateCode: "CO" },
+      { city: "Washington", stateCode: "DC" },
+      { city: "Boston", stateCode: "MA" },
+      { city: "El Paso", stateCode: "TX" },
+      { city: "Nashville", stateCode: "TN" },
+      { city: "Portland", stateCode: "OR" },
+      { city: "Las Vegas", stateCode: "NV" },
+      { city: "Memphis", stateCode: "TN" },
+      { city: "Louisville", stateCode: "KY" },
+      { city: "Baltimore", stateCode: "MD" },
+      { city: "Milwaukee", stateCode: "WI" },
+      { city: "Atlanta", stateCode: "GA" },
+      { city: "Miami", stateCode: "FL" },
     ];
 
     for (const { city, stateCode } of majorCities) {
@@ -170,38 +188,38 @@ export class VenueSyncService {
   private generateSlug(name: string): string {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
   }
 
   private getTimezone(countryCode: string, stateCode?: string): string {
     // Simple timezone mapping - in production, use a proper timezone library
     const timezoneMap: Record<string, string> = {
-      'US-NY': 'America/New_York',
-      'US-CA': 'America/Los_Angeles',
-      'US-IL': 'America/Chicago',
-      'US-TX': 'America/Chicago',
-      'US-AZ': 'America/Phoenix',
-      'US-CO': 'America/Denver',
-      'US-WA': 'America/Los_Angeles',
-      'US-OR': 'America/Los_Angeles',
-      'US-NV': 'America/Los_Angeles',
-      'US-FL': 'America/New_York',
-      'US-GA': 'America/New_York',
-      'US-MA': 'America/New_York',
-      'US-DC': 'America/New_York',
-      'US-PA': 'America/New_York',
-      'US-OH': 'America/New_York',
-      'US-MI': 'America/Detroit',
-      'US-IN': 'America/Indiana/Indianapolis',
-      'US-NC': 'America/New_York',
-      'US-TN': 'America/Chicago',
-      'US-KY': 'America/New_York',
-      'US-MD': 'America/New_York',
-      'US-WI': 'America/Chicago',
+      "US-NY": "America/New_York",
+      "US-CA": "America/Los_Angeles",
+      "US-IL": "America/Chicago",
+      "US-TX": "America/Chicago",
+      "US-AZ": "America/Phoenix",
+      "US-CO": "America/Denver",
+      "US-WA": "America/Los_Angeles",
+      "US-OR": "America/Los_Angeles",
+      "US-NV": "America/Los_Angeles",
+      "US-FL": "America/New_York",
+      "US-GA": "America/New_York",
+      "US-MA": "America/New_York",
+      "US-DC": "America/New_York",
+      "US-PA": "America/New_York",
+      "US-OH": "America/New_York",
+      "US-MI": "America/Detroit",
+      "US-IN": "America/Indiana/Indianapolis",
+      "US-NC": "America/New_York",
+      "US-TN": "America/Chicago",
+      "US-KY": "America/New_York",
+      "US-MD": "America/New_York",
+      "US-WI": "America/Chicago",
     };
 
     const key = stateCode ? `${countryCode}-${stateCode}` : countryCode;
-    return timezoneMap[key] || 'America/New_York';
+    return timezoneMap[key] || "America/New_York";
   }
 }

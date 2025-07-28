@@ -1,7 +1,7 @@
-import { db } from '@repo/database';
-import { artistSongs, artists, songs } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { artistSongs, artists, songs } from "@repo/database";
+import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 // POST /api/sync/songs
 // Body: { artistId: string }
@@ -12,8 +12,8 @@ export async function POST(request: NextRequest) {
 
     if (!artistId) {
       return NextResponse.json(
-        { error: 'Artist ID required' },
-        { status: 400 }
+        { error: "Artist ID required" },
+        { status: 400 },
       );
     }
 
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (!artist.length) {
-      return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
     const artistData = artist[0];
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     if (existingSongs.length > 0) {
       return NextResponse.json({
         success: true,
-        message: 'Song catalog already synced',
+        message: "Song catalog already synced",
         artist: artistData,
         songsCount: existingSongs.length,
         songs: existingSongs.map((s) => s.song),
@@ -53,55 +53,55 @@ export async function POST(request: NextRequest) {
     // In production, this would call Spotify API or other music data sources
     const sampleSongs = [
       {
-        title: 'Greatest Hit #1',
+        title: "Greatest Hit #1",
         artist: artistData!.name,
-        album: 'Best Of Collection',
-        albumType: 'album' as const,
-        releaseDate: '2023-01-01',
+        album: "Best Of Collection",
+        albumType: "album" as const,
+        releaseDate: "2023-01-01",
         durationMs: 210000, // 3:30
         popularity: 85,
         isExplicit: false,
         isPlayable: true,
       },
       {
-        title: 'Fan Favorite',
+        title: "Fan Favorite",
         artist: artistData!.name,
-        album: 'Live Sessions',
-        albumType: 'album' as const,
-        releaseDate: '2023-06-15',
+        album: "Live Sessions",
+        albumType: "album" as const,
+        releaseDate: "2023-06-15",
         durationMs: 195000, // 3:15
         popularity: 78,
         isExplicit: false,
         isPlayable: true,
       },
       {
-        title: 'Acoustic Dreams',
+        title: "Acoustic Dreams",
         artist: artistData!.name,
-        album: 'Unplugged',
-        albumType: 'album' as const,
-        releaseDate: '2023-09-20',
+        album: "Unplugged",
+        albumType: "album" as const,
+        releaseDate: "2023-09-20",
         durationMs: 240000, // 4:00
         popularity: 72,
         isExplicit: false,
         isPlayable: true,
       },
       {
-        title: 'Electric Nights',
+        title: "Electric Nights",
         artist: artistData!.name,
-        album: 'Dance Collection',
-        albumType: 'album' as const,
-        releaseDate: '2024-01-10',
+        album: "Dance Collection",
+        albumType: "album" as const,
+        releaseDate: "2024-01-10",
         durationMs: 180000, // 3:00
         popularity: 80,
         isExplicit: false,
         isPlayable: true,
       },
       {
-        title: 'Summer Vibes',
+        title: "Summer Vibes",
         artist: artistData!.name,
-        album: 'Seasonal Hits',
-        albumType: 'single' as const,
-        releaseDate: '2024-07-01',
+        album: "Seasonal Hits",
+        albumType: "single" as const,
+        releaseDate: "2024-07-01",
         durationMs: 200000, // 3:20
         popularity: 75,
         isExplicit: false,
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Song catalog sync completed',
+      message: "Song catalog sync completed",
       artist: artistData,
       songsCount: insertedSongs.length,
       songs: insertedSongs,
@@ -144,10 +144,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Songs sync failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Songs sync failed",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

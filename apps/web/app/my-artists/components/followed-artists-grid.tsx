@@ -1,23 +1,16 @@
-import {
-  artistStats,
-  artists,
-  db,
-  shows,
-} from '@repo/database';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { desc, eq, sql } from 'drizzle-orm';
-import { Calendar, Music, Users } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { artistStats, artists, db, shows } from "@repo/database";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { desc, eq, sql } from "drizzle-orm";
+import { Calendar, Music, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 interface PopularArtistsGridProps {
   userId?: string; // userId not used anymore, kept for compatibility
 }
 
-export async function FollowedArtistsGrid({
-  userId,
-}: PopularArtistsGridProps) {
+export async function FollowedArtistsGrid({ userId }: PopularArtistsGridProps) {
   // Show popular artists instead of followed artists since userFollowsArtists table doesn't exist
   const popularArtists = await db
     .select({
@@ -33,15 +26,12 @@ export async function FollowedArtistsGrid({
     })
     .from(artists)
     .leftJoin(artistStats, eq(artists.id, artistStats.artistId))
-    .leftJoin(
-      shows,
-      eq(artists.id, shows.headlinerArtistId)
-    )
+    .leftJoin(shows, eq(artists.id, shows.headlinerArtistId))
     .groupBy(
       artists.id,
       artistStats.totalShows,
       artists.followerCount,
-      artists.trendingScore
+      artists.trendingScore,
     )
     .orderBy(desc(artists.trendingScore))
     .limit(20);
@@ -72,20 +62,20 @@ export async function FollowedArtistsGrid({
           <Link href={`/artists/${artist.slug}`}>
             <CardContent className="p-6">
               <div className="flex gap-4">
-            <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
-              {artist.imageUrl ? (
-                <Image
-                  src={artist.imageUrl}
-                  alt={artist.name}
-                  fill
-                  sizes="(max-width: 768px) 50vw, 200px"
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Music className="h-12 w-12 text-muted-foreground" />
-                </div>
-              )}
+                <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
+                  {artist.imageUrl ? (
+                    <Image
+                      src={artist.imageUrl}
+                      alt={artist.name}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 200px"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Music className="h-12 w-12 text-muted-foreground" />
+                    </div>
+                  )}
                 </div>
 
                 <div className="min-w-0 flex-1">
@@ -98,15 +88,18 @@ export async function FollowedArtistsGrid({
                       {(() => {
                         try {
                           const genres = JSON.parse(artist.genres);
-                          return Array.isArray(genres) && genres.slice(0, 2).map((genre) => (
-                            <Badge
-                              key={genre}
-                              variant="secondary"
-                              className="text-xs"
-                            >
-                              {genre}
-                            </Badge>
-                          ));
+                          return (
+                            Array.isArray(genres) &&
+                            genres.slice(0, 2).map((genre) => (
+                              <Badge
+                                key={genre}
+                                variant="secondary"
+                                className="text-xs"
+                              >
+                                {genre}
+                              </Badge>
+                            ))
+                          );
                         } catch {
                           return null;
                         }

@@ -1,7 +1,7 @@
-import { db } from '@repo/database';
-import { artists, shows, songs, venues, setlists } from '@repo/database';
-import { sql, desc, gte, and, or, isNull, lte } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { artists, shows, songs, venues, setlists } from "@repo/database";
+import { sql, desc, gte, and, or, isNull, lte } from "drizzle-orm";
+import { NextRequest, NextResponse } from "next/server";
 
 /**
  * 🚀 AUTONOMOUS SYNC ENGINE - UNIFIED PIPELINE
@@ -9,11 +9,11 @@ import { NextRequest, NextResponse } from 'next/server';
  * Achieves 5x performance improvement through batch processing
  */
 
-const CRON_SECRET = process.env['CRON_SECRET'];
+const CRON_SECRET = process.env["CRON_SECRET"];
 
 // Unified trending calculation (replaces 3 separate implementations)
 async function calculateTrendingBatch() {
-  console.log('🔥 Calculating trending scores (batch processing)...');
+  console.log("🔥 Calculating trending scores (batch processing)...");
   const startTime = Date.now();
 
   // ARTIST TRENDING - Single optimized batch query
@@ -36,7 +36,7 @@ async function calculateTrendingBatch() {
     ), updated_at = NOW()
   `);
 
-  // SHOW TRENDING - Single optimized batch query  
+  // SHOW TRENDING - Single optimized batch query
   await db.execute(sql`
     UPDATE shows SET trending_score = (
       -- Time proximity boost (40%)
@@ -61,29 +61,33 @@ async function calculateTrendingBatch() {
 
   const duration = Date.now() - startTime;
   console.log(`✅ Trending calculation complete in ${duration}ms`);
-  return { duration, type: 'trending' };
+  return { duration, type: "trending" };
 }
 
 // Autonomous sync pipeline - replaces multiple sync jobs
 async function autonomousSyncPipeline() {
-  console.log('🚀 Starting autonomous sync pipeline...');
+  console.log("🚀 Starting autonomous sync pipeline...");
   const startTime = Date.now();
-  
+
   // Get stale artists that need syncing (batch selection)
   const staleDate = new Date();
   staleDate.setDate(staleDate.getDate() - 7);
-  
+
   const artistsToSync = await db
-    .select({ id: artists.id, name: artists.name, spotifyId: artists.spotifyId })
+    .select({
+      id: artists.id,
+      name: artists.name,
+      spotifyId: artists.spotifyId,
+    })
     .from(artists)
     .where(
       and(
         or(
           isNull(artists.lastFullSyncAt),
-          lte(artists.lastFullSyncAt, staleDate)
+          lte(artists.lastFullSyncAt, staleDate),
         ),
-        gte(artists.trendingScore, 0.1) // Only sync trending artists
-      )
+        gte(artists.trendingScore, 0.1), // Only sync trending artists
+      ),
     )
     .orderBy(desc(artists.trendingScore))
     .limit(50); // Batch size optimized for performance
@@ -91,10 +95,10 @@ async function autonomousSyncPipeline() {
   const results = {
     processed: artistsToSync.length,
     synced: 0,
-    errors: 0
+    errors: 0,
   };
 
-  // PARALLEL PROCESSING - sync multiple artists simultaneously  
+  // PARALLEL PROCESSING - sync multiple artists simultaneously
   const syncPromises = artistsToSync.map(async (artist) => {
     try {
       // Direct database sync (no HTTP calls to self)
@@ -104,7 +108,7 @@ async function autonomousSyncPipeline() {
           .update(artists)
           .set({ lastFullSyncAt: new Date() })
           .where(sql`id = ${artist.id}`);
-        
+
         results.synced++;
         return { success: true, artist: artist.name };
       }
@@ -119,20 +123,20 @@ async function autonomousSyncPipeline() {
 
   const duration = Date.now() - startTime;
   console.log(`✅ Sync pipeline complete in ${duration}ms`);
-  return { duration, type: 'sync', results };
+  return { duration, type: "sync", results };
 }
 
 // Maintenance pipeline - replaces backup/cleanup jobs
 async function maintenancePipeline() {
-  console.log('🧹 Running maintenance pipeline...');
+  console.log("🧹 Running maintenance pipeline...");
   const startTime = Date.now();
-  
+
   // Cleanup stale data
   await db.execute(sql`
     DELETE FROM search_analytics 
     WHERE search_timestamp < NOW() - INTERVAL '30 days'
   `);
-  
+
   // Update artist stats
   await db.execute(sql`
     UPDATE artists SET 
@@ -144,33 +148,33 @@ async function maintenancePipeline() {
 
   const duration = Date.now() - startTime;
   console.log(`✅ Maintenance complete in ${duration}ms`);
-  return { duration, type: 'maintenance' };
+  return { duration, type: "maintenance" };
 }
 
 export async function GET(request: NextRequest) {
   // Verify cron authentication
-  const authHeader = request.headers.get('authorization');
+  const authHeader = request.headers.get("authorization");
   if (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { searchParams } = new URL(request.url);
-  const pipeline = searchParams.get('pipeline') || 'all';
+  const pipeline = searchParams.get("pipeline") || "all";
 
   try {
     const results: any[] = [];
     const overallStart = Date.now();
 
     // Execute pipelines based on schedule
-    if (pipeline === 'trending' || pipeline === 'all') {
+    if (pipeline === "trending" || pipeline === "all") {
       results.push(await calculateTrendingBatch());
     }
 
-    if (pipeline === 'sync' || pipeline === 'all') {
+    if (pipeline === "sync" || pipeline === "all") {
       results.push(await autonomousSyncPipeline());
     }
 
-    if (pipeline === 'maintenance' || pipeline === 'all') {
+    if (pipeline === "maintenance" || pipeline === "all") {
       results.push(await maintenancePipeline());
     }
 
@@ -183,21 +187,20 @@ export async function GET(request: NextRequest) {
       totalDuration: `${totalDuration}ms`,
       results,
       performance: {
-        target: '<5000ms',
+        target: "<5000ms",
         actual: `${totalDuration}ms`,
-        status: totalDuration < 5000 ? 'EXCELLENT' : 'NEEDS_OPTIMIZATION'
-      }
+        status: totalDuration < 5000 ? "EXCELLENT" : "NEEDS_OPTIMIZATION",
+      },
     });
-
   } catch (error) {
-    console.error('🚨 Autonomous sync failed:', error);
+    console.error("🚨 Autonomous sync failed:", error);
     return NextResponse.json(
       {
-        error: 'Autonomous sync pipeline failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
-        timestamp: new Date().toISOString()
+        error: "Autonomous sync pipeline failed",
+        details: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

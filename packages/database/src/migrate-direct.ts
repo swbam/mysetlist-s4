@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import 'dotenv/config';
-import { readFile, readdir } from 'node:fs/promises';
-import { join } from 'node:path';
-import { dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import postgres from 'postgres';
+import "dotenv/config";
+import { readFile, readdir } from "node:fs/promises";
+import { join } from "node:path";
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import postgres from "postgres";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -21,7 +21,7 @@ class DirectMigrationRunner {
   constructor(connectionString: string) {
     this.sql = postgres(connectionString, {
       max: 1,
-      ssl: 'require',
+      ssl: "require",
     });
   }
 
@@ -46,7 +46,7 @@ class DirectMigrationRunner {
 
       // Filter pending migrations
       const pendingMigrations = migrationFiles.filter(
-        (m) => !executedMigrations.includes(m.version)
+        (m) => !executedMigrations.includes(m.version),
       );
 
       if (pendingMigrations.length === 0) {
@@ -66,17 +66,17 @@ class DirectMigrationRunner {
   }
 
   private async getMigrationFiles(
-    migrationsDir: string
+    migrationsDir: string,
   ): Promise<MigrationFile[]> {
     const files = await readdir(migrationsDir);
-    const sqlFiles = files.filter((f) => f.endsWith('.sql')).sort();
+    const sqlFiles = files.filter((f) => f.endsWith(".sql")).sort();
 
     const migrations: MigrationFile[] = [];
 
     for (const filename of sqlFiles) {
       const filepath = join(migrationsDir, filename);
-      const sql = await readFile(filepath, 'utf-8');
-      const version = filename.replace('.sql', '');
+      const sql = await readFile(filepath, "utf-8");
+      const version = filename.replace(".sql", "");
 
       migrations.push({ filename, version, sql });
     }
@@ -101,14 +101,15 @@ class DirectMigrationRunner {
 
 // Run migrations
 async function main() {
-  const connectionString = process.env['DATABASE_URL'] || process.env['POSTGRES_URL'];
+  const connectionString =
+    process.env["DATABASE_URL"] || process.env["POSTGRES_URL"];
 
   if (!connectionString) {
     process.exit(1);
   }
 
   const runner = new DirectMigrationRunner(connectionString);
-  const migrationsDir = join(__dirname, '..', 'migrations');
+  const migrationsDir = join(__dirname, "..", "migrations");
   await runner.runMigrations(migrationsDir);
 }
 

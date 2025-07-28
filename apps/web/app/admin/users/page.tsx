@@ -1,11 +1,11 @@
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,8 +13,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { Input } from '@repo/design-system/components/ui/input';
+} from "@repo/design-system/components/ui/dropdown-menu";
+import { Input } from "@repo/design-system/components/ui/input";
 import {
   Table,
   TableBody,
@@ -22,22 +22,23 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@repo/design-system/components/ui/table';
-import { format } from 'date-fns';
-import { AlertTriangle, Ban, Download, Filter, Search } from 'lucide-react';
-import { createClient } from '~/lib/supabase/server';
-import UserActionsDialog from './components/user-actions-dialog';
+} from "@repo/design-system/components/ui/table";
+import { format } from "date-fns";
+import { AlertTriangle, Ban, Download, Filter, Search } from "lucide-react";
+import { createClient } from "~/lib/supabase/server";
+import UserActionsDialog from "./components/user-actions-dialog";
 
 // Force dynamic rendering due to user-specific data fetching
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function UsersPage() {
   const supabase = await createClient();
 
   // Fetch users with additional info
   const { data: users } = await supabase
-    .from('users')
-    .select(`
+    .from("users")
+    .select(
+      `
       *,
       user_profiles (
         concert_count,
@@ -47,15 +48,16 @@ export default async function UsersPage() {
       _setlists:setlists(count),
       _reviews:venue_reviews(count),
       _photos:venue_photos(count)
-    `)
-    .order('created_at', { ascending: false })
+    `,
+    )
+    .order("created_at", { ascending: false })
     .limit(50);
 
   // Get ban information
   const { data: activeBans } = await supabase
-    .from('user_bans')
-    .select('user_id')
-    .is('lifted_at', null);
+    .from("user_bans")
+    .select("user_id")
+    .is("lifted_at", null);
 
   const bannedUserIds = new Set(activeBans?.map((ban) => ban.user_id) ?? []);
 
@@ -153,7 +155,7 @@ export default async function UsersPage() {
                         )}
                         <div>
                           <p className="font-medium">
-                            {user.display_name || 'Anonymous'}
+                            {user.display_name || "Anonymous"}
                           </p>
                           <p className="text-muted-foreground text-sm">
                             {user.email}
@@ -164,11 +166,11 @@ export default async function UsersPage() {
                     <TableCell>
                       <Badge
                         variant={
-                          user.role === 'admin'
-                            ? 'destructive'
-                            : user.role === 'moderator'
-                              ? 'default'
-                              : 'secondary'
+                          user.role === "admin"
+                            ? "destructive"
+                            : user.role === "moderator"
+                              ? "default"
+                              : "secondary"
                         }
                       >
                         {user.role}
@@ -184,7 +186,7 @@ export default async function UsersPage() {
                         <Badge variant="outline" className="text-yellow-600">
                           <AlertTriangle className="mr-1 h-3 w-3" />
                           {user.warning_count} warning
-                          {user.warning_count > 1 ? 's' : ''}
+                          {user.warning_count > 1 ? "s" : ""}
                         </Badge>
                       ) : user.email_verified ? (
                         <Badge variant="outline" className="text-green-600">
@@ -198,24 +200,21 @@ export default async function UsersPage() {
                       <div className="text-sm">
                         <p>{user._setlists?.[0]?.count ?? 0} setlists</p>
                         <p className="text-muted-foreground">
-                          {user._reviews?.[0]?.count ?? 0} reviews,{' '}
+                          {user._reviews?.[0]?.count ?? 0} reviews,{" "}
                           {user._photos?.[0]?.count ?? 0} photos
                         </p>
                       </div>
                     </TableCell>
                     <TableCell>
-                      {format(new Date(user.created_at), 'MMM d, yyyy')}
+                      {format(new Date(user.created_at), "MMM d, yyyy")}
                     </TableCell>
                     <TableCell>
                       {user.last_login_at
-                        ? format(new Date(user.last_login_at), 'MMM d, yyyy')
-                        : 'Never'}
+                        ? format(new Date(user.last_login_at), "MMM d, yyyy")
+                        : "Never"}
                     </TableCell>
                     <TableCell className="text-right">
-                      <UserActionsDialog
-                        user={user}
-                        isBanned={isBanned}
-                      />
+                      <UserActionsDialog user={user} isBanned={isBanned} />
                     </TableCell>
                   </TableRow>
                 );

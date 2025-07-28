@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import type { ResolveMentionSuggestionsArgs } from '@liveblocks/client';
-import type { ResolveUsersArgs } from '@liveblocks/node';
+import type { ResolveMentionSuggestionsArgs } from "@liveblocks/client";
+import type { ResolveUsersArgs } from "@liveblocks/node";
 import {
   ClientSideSuspense,
   LiveblocksProvider,
   RoomProvider,
-} from '@liveblocks/react/suspense';
-import type { ComponentProps } from 'react';
-import type React from 'react';
+} from "@liveblocks/react/suspense";
+import type { ComponentProps } from "react";
+import type React from "react";
 
 type RoomProps = ComponentProps<typeof LiveblocksProvider> & {
   id: string;
@@ -16,10 +16,10 @@ type RoomProps = ComponentProps<typeof LiveblocksProvider> & {
   authEndpoint: string;
   fallback: React.ReactNode;
   resolveUsers?: (
-    args: ResolveUsersArgs
-  ) => Promise<Liveblocks['UserMeta']['info'][]>;
+    args: ResolveUsersArgs,
+  ) => Promise<Liveblocks["UserMeta"]["info"][]>;
   resolveMentionSuggestions?: (
-    args: ResolveMentionSuggestionsArgs
+    args: ResolveMentionSuggestionsArgs,
   ) => Promise<string[]>;
 };
 
@@ -32,7 +32,9 @@ export const Room = ({
 }: RoomProps) => (
   <LiveblocksProvider authEndpoint={authEndpoint} {...props}>
     <RoomProvider id={id} initialPresence={{ cursor: null }}>
-      <ClientSideSuspense fallback={fallback as any}>{children}</ClientSideSuspense>
+      <ClientSideSuspense fallback={fallback as any}>
+        {children}
+      </ClientSideSuspense>
     </RoomProvider>
   </LiveblocksProvider>
 );

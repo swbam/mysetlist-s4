@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from "react";
 
 interface TouchGestureOptions {
   onSwipeLeft?: () => void;
@@ -14,7 +14,7 @@ interface TouchGestureOptions {
 
 export function useTouchGestures(
   elementRef: React.RefObject<HTMLElement>,
-  options: TouchGestureOptions
+  options: TouchGestureOptions,
 ) {
   const {
     onSwipeLeft,
@@ -42,7 +42,7 @@ export function useTouchGestures(
         pullStartRef.current = e.touches[0]?.clientY ?? 0;
       }
     },
-    [onPullToRefresh]
+    [onPullToRefresh],
   );
 
   const handleTouchMove = useCallback(
@@ -64,10 +64,10 @@ export function useTouchGestures(
             isPullingRef.current = true;
 
             // Show pull to refresh indicator
-            const indicator = document.createElement('div');
-            indicator.id = 'pull-to-refresh-indicator';
+            const indicator = document.createElement("div");
+            indicator.id = "pull-to-refresh-indicator";
             indicator.className =
-              'fixed top-0 left-0 right-0 h-16 bg-primary/10 flex items-center justify-center z-50';
+              "fixed top-0 left-0 right-0 h-16 bg-primary/10 flex items-center justify-center z-50";
             indicator.innerHTML =
               '<div class="animate-spin h-6 w-6 border-2 border-primary border-t-transparent rounded-full"></div>';
             document.body.appendChild(indicator);
@@ -75,7 +75,7 @@ export function useTouchGestures(
         }
       }
     },
-    [onPullToRefresh, pullThreshold]
+    [onPullToRefresh, pullThreshold],
   );
 
   const handleTouchEnd = useCallback(
@@ -97,7 +97,7 @@ export function useTouchGestures(
         isPullingRef.current = false;
 
         // Remove indicator
-        const indicator = document.getElementById('pull-to-refresh-indicator');
+        const indicator = document.getElementById("pull-to-refresh-indicator");
         if (indicator) {
           indicator.remove();
         }
@@ -141,7 +141,7 @@ export function useTouchGestures(
       onSwipeDown,
       onPullToRefresh,
       threshold,
-    ]
+    ],
   );
 
   useEffect(() => {
@@ -150,14 +150,14 @@ export function useTouchGestures(
       return;
     }
 
-    element.addEventListener('touchstart', handleTouchStart, { passive: true });
-    element.addEventListener('touchmove', handleTouchMove, { passive: false });
-    element.addEventListener('touchend', handleTouchEnd);
+    element.addEventListener("touchstart", handleTouchStart, { passive: true });
+    element.addEventListener("touchmove", handleTouchMove, { passive: false });
+    element.addEventListener("touchend", handleTouchEnd);
 
     return () => {
-      element.removeEventListener('touchstart', handleTouchStart);
-      element.removeEventListener('touchmove', handleTouchMove);
-      element.removeEventListener('touchend', handleTouchEnd);
+      element.removeEventListener("touchstart", handleTouchStart);
+      element.removeEventListener("touchmove", handleTouchMove);
+      element.removeEventListener("touchend", handleTouchEnd);
     };
   }, [handleTouchStart, handleTouchMove, handleTouchEnd]);
 }

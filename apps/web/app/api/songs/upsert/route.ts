@@ -1,7 +1,7 @@
-import { db } from '@repo/database';
-import { songs } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { songs } from "@repo/database";
+import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
 
     if (!title || !artist) {
       return NextResponse.json(
-        { error: 'Missing required fields: title, artist' },
-        { status: 400 }
+        { error: "Missing required fields: title, artist" },
+        { status: 400 },
       );
     }
 
@@ -103,6 +103,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ song: newSong[0] });
   } catch (_error) {
-    return NextResponse.json({ error: 'Failed to save song' }, { status: 500 });
+    return NextResponse.json({ error: "Failed to save song" }, { status: 500 });
   }
 }

@@ -1,16 +1,16 @@
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
-import { Checkbox } from '@repo/design-system/components/ui/checkbox';
-import { Music } from 'lucide-react';
-import Link from 'next/link';
-import { signIn, signInWithProvider } from '../actions';
+} from "@repo/design-system/components/ui/alert";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import { Checkbox } from "@repo/design-system/components/ui/checkbox";
+import { Music } from "lucide-react";
+import Link from "next/link";
+import { signIn, signInWithProvider } from "../actions";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface SignInPageProps {
   searchParams: Promise<{
@@ -22,10 +22,10 @@ interface SignInPageProps {
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
   const params = await searchParams;
-  
+
   const handleSpotifySignIn = async () => {
-    'use server';
-    await signInWithProvider('spotify');
+    "use server";
+    await signInWithProvider("spotify");
   };
 
   return (
@@ -36,7 +36,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
             Sign in to your account
           </h2>
           <p className="mt-2 text-center text-muted-foreground text-sm">
-            Or{' '}
+            Or{" "}
             <Link
               href="/auth/sign-up"
               className="font-medium text-primary underline-offset-4 hover:underline"
@@ -62,7 +62,7 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           <input
             type="hidden"
             name="redirectTo"
-            value={params?.returnUrl || '/'}
+            value={params?.returnUrl || "/"}
           />
 
           <div className="space-y-4">
@@ -96,8 +96,8 @@ export default async function SignInPage({ searchParams }: SignInPageProps) {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <Checkbox id="remember" name="remember" />
-              <Label 
-                htmlFor="remember" 
+              <Label
+                htmlFor="remember"
                 className="text-sm font-normal cursor-pointer"
               >
                 Remember me

@@ -3,27 +3,27 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
-import { createMetadata } from '@repo/seo/metadata';
-import { Grid3X3, List } from 'lucide-react';
-import type { Metadata } from 'next';
-import React, { Suspense } from 'react';
-import { ErrorBoundaryWrapper } from '~/components/error-boundary-wrapper';
-import { ShowListSkeleton } from '~/components/loading-states';
-import { ShowsFilter } from './components/shows-filter';
-import { ShowsGrid } from './components/shows-grid';
-import { ShowsList } from './components/shows-list';
-import { ShowsSearch } from './components/shows-search';
+} from "@repo/design-system/components/ui/tabs";
+import { createMetadata } from "@repo/seo/metadata";
+import { Grid3X3, List } from "lucide-react";
+import type { Metadata } from "next";
+import React, { Suspense } from "react";
+import { ErrorBoundaryWrapper } from "~/components/error-boundary-wrapper";
+import { ShowListSkeleton } from "~/components/loading-states";
+import { ShowsFilter } from "./components/shows-filter";
+import { ShowsGrid } from "./components/shows-grid";
+import { ShowsList } from "./components/shows-list";
+import { ShowsSearch } from "./components/shows-search";
 
 // Force dynamic rendering to ensure data is fresh
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const generateMetadata = (): Metadata => {
   return createMetadata({
-    title: 'Shows - MySetlist',
+    title: "Shows - MySetlist",
     description:
-      'Find upcoming concerts and shows near you. Get tickets and plan your next live music experience.',
+      "Find upcoming concerts and shows near you. Get tickets and plan your next live music experience.",
   });
 };
 

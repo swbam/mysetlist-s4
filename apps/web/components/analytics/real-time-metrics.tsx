@@ -1,9 +1,14 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Activity, Users, Vote, Eye, Zap, TrendingUp } from 'lucide-react';
+import { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Activity, Users, Vote, Eye, Zap, TrendingUp } from "lucide-react";
 
 interface RealTimeData {
   activeUsers: number;
@@ -24,7 +29,7 @@ export function RealTimeMetrics() {
 
   useEffect(() => {
     fetchRealTimeData();
-    
+
     // Update every 30 seconds
     const interval = setInterval(fetchRealTimeData, 30000);
     return () => clearInterval(interval);
@@ -41,23 +46,23 @@ export function RealTimeMetrics() {
         activeShowsCount: Math.floor(Math.random() * 10) + 3,
         trending: {
           artists: [
-            { name: 'Taylor Swift', score: 95 },
-            { name: 'The Weeknd', score: 87 },
-            { name: 'Billie Eilish', score: 82 },
+            { name: "Taylor Swift", score: 95 },
+            { name: "The Weeknd", score: 87 },
+            { name: "Billie Eilish", score: 82 },
           ],
           shows: [
-            { name: 'Eras Tour', venue: 'Madison Square Garden', score: 98 },
-            { name: 'After Hours', venue: 'Staples Center', score: 89 },
-            { name: 'Happier Than Ever', venue: 'Red Rocks', score: 85 },
+            { name: "Eras Tour", venue: "Madison Square Garden", score: 98 },
+            { name: "After Hours", venue: "Staples Center", score: 89 },
+            { name: "Happier Than Ever", venue: "Red Rocks", score: 85 },
           ],
         },
       };
-      
+
       setData(mockData);
       setLastUpdate(new Date());
       setLoading(false);
     } catch (error) {
-      console.error('Failed to fetch real-time data:', error);
+      console.error("Failed to fetch real-time data:", error);
       setLoading(false);
     }
   };
@@ -67,9 +72,9 @@ export function RealTimeMetrics() {
   };
 
   const getStatusColor = (value: number, threshold: number) => {
-    if (value > threshold * 1.5) return 'bg-green-500';
-    if (value > threshold) return 'bg-yellow-500';
-    return 'bg-red-500';
+    if (value > threshold * 1.5) return "bg-green-500";
+    if (value > threshold) return "bg-yellow-500";
+    return "bg-red-500";
   };
 
   if (loading) {
@@ -116,57 +121,76 @@ export function RealTimeMetrics() {
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Users className="h-4 w-4 text-blue-500" />
-                <div className={`h-2 w-2 rounded-full ${getStatusColor(data.activeUsers, 150)}`} />
+                <div
+                  className={`h-2 w-2 rounded-full ${getStatusColor(data.activeUsers, 150)}`}
+                />
               </div>
               <div className="text-2xl font-bold">{data.activeUsers}</div>
               <div className="text-sm text-muted-foreground">Active Users</div>
             </div>
-            
+
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Vote className="h-4 w-4 text-purple-500" />
-                <div className={`h-2 w-2 rounded-full ${getStatusColor(data.votesLastMinute, 20)}`} />
+                <div
+                  className={`h-2 w-2 rounded-full ${getStatusColor(data.votesLastMinute, 20)}`}
+                />
               </div>
               <div className="text-2xl font-bold">{data.votesLastMinute}</div>
               <div className="text-sm text-muted-foreground">Votes/Min</div>
             </div>
-            
+
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Eye className="h-4 w-4 text-green-500" />
-                <div className={`h-2 w-2 rounded-full ${getStatusColor(data.pageViewsLastMinute, 100)}`} />
+                <div
+                  className={`h-2 w-2 rounded-full ${getStatusColor(data.pageViewsLastMinute, 100)}`}
+                />
               </div>
-              <div className="text-2xl font-bold">{data.pageViewsLastMinute}</div>
+              <div className="text-2xl font-bold">
+                {data.pageViewsLastMinute}
+              </div>
               <div className="text-sm text-muted-foreground">Views/Min</div>
             </div>
-            
+
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <TrendingUp className="h-4 w-4 text-orange-500" />
-                <div className={`h-2 w-2 rounded-full ${getStatusColor(data.newSignupsLastHour, 10)}`} />
+                <div
+                  className={`h-2 w-2 rounded-full ${getStatusColor(data.newSignupsLastHour, 10)}`}
+                />
               </div>
-              <div className="text-2xl font-bold">{data.newSignupsLastHour}</div>
+              <div className="text-2xl font-bold">
+                {data.newSignupsLastHour}
+              </div>
               <div className="text-sm text-muted-foreground">New Users/Hr</div>
             </div>
-            
+
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Zap className="h-4 w-4 text-red-500" />
-                <div className={`h-2 w-2 rounded-full ${getStatusColor(data.activeShowsCount, 5)}`} />
+                <div
+                  className={`h-2 w-2 rounded-full ${getStatusColor(data.activeShowsCount, 5)}`}
+                />
               </div>
               <div className="text-2xl font-bold">{data.activeShowsCount}</div>
               <div className="text-sm text-muted-foreground">Live Shows</div>
             </div>
-            
+
             <div className="text-center">
               <div className="flex items-center justify-center gap-2 mb-2">
                 <Activity className="h-4 w-4 text-cyan-500" />
                 <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
               </div>
               <div className="text-2xl font-bold">
-                {((data.votesLastMinute + data.pageViewsLastMinute) / 2).toFixed(0)}
+                {(
+                  (data.votesLastMinute + data.pageViewsLastMinute) /
+                  2
+                ).toFixed(0)}
               </div>
-              <div className="text-sm text-muted-foreground">Activity Score</div>
+              <div className="text-sm text-muted-foreground">
+                Activity Score
+              </div>
             </div>
           </div>
 
@@ -179,7 +203,10 @@ export function RealTimeMetrics() {
               </h3>
               <div className="space-y-2">
                 {data.trending.artists.map((artist, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-2 bg-muted/50 rounded"
+                  >
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="text-xs">
                         #{index + 1}
@@ -193,7 +220,7 @@ export function RealTimeMetrics() {
                 ))}
               </div>
             </div>
-            
+
             <div>
               <h3 className="font-semibold mb-3 flex items-center gap-2">
                 <Activity className="h-4 w-4" />
@@ -201,14 +228,19 @@ export function RealTimeMetrics() {
               </h3>
               <div className="space-y-2">
                 {data.trending.shows.map((show, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-2 bg-muted/50 rounded"
+                  >
                     <div className="flex items-center gap-2">
                       <Badge variant="secondary" className="text-xs">
                         #{index + 1}
                       </Badge>
                       <div>
                         <div className="text-sm font-medium">{show.name}</div>
-                        <div className="text-xs text-muted-foreground">{show.venue}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {show.venue}
+                        </div>
                       </div>
                     </div>
                     <div className="text-sm text-muted-foreground">

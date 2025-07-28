@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/alert";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Label } from '@repo/design-system/components/ui/label';
+} from "@repo/design-system/components/ui/card";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/design-system/components/ui/select';
-import { Separator } from '@repo/design-system/components/ui/separator';
-import { Switch } from '@repo/design-system/components/ui/switch';
-import { useToast } from '@repo/design-system/components/ui/use-toast';
+} from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import { Switch } from "@repo/design-system/components/ui/switch";
+import { useToast } from "@repo/design-system/components/ui/use-toast";
 import {
   AlertCircle,
   Bell,
@@ -32,31 +32,31 @@ import {
   Music,
   Shield,
   Users,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import {
   getUserEmailPreferences,
   updateEmailPreferences,
-} from '~/actions/email-notifications';
+} from "~/actions/email-notifications";
 
 type EmailPreferences = {
   emailEnabled: boolean;
   showReminders: boolean;
-  showReminderFrequency: 'immediately' | 'daily' | 'weekly' | 'never';
+  showReminderFrequency: "immediately" | "daily" | "weekly" | "never";
   newShowNotifications: boolean;
-  newShowFrequency: 'immediately' | 'daily' | 'weekly' | 'never';
+  newShowFrequency: "immediately" | "daily" | "weekly" | "never";
   setlistUpdates: boolean;
-  setlistUpdateFrequency: 'immediately' | 'daily' | 'weekly' | 'never';
+  setlistUpdateFrequency: "immediately" | "daily" | "weekly" | "never";
   weeklyDigest: boolean;
   marketingEmails: boolean;
   securityEmails: boolean;
 };
 
 const frequencyOptions = [
-  { value: 'immediately', label: 'Immediately' },
-  { value: 'daily', label: 'Daily digest' },
-  { value: 'weekly', label: 'Weekly digest' },
-  { value: 'never', label: 'Never' },
+  { value: "immediately", label: "Immediately" },
+  { value: "daily", label: "Daily digest" },
+  { value: "weekly", label: "Weekly digest" },
+  { value: "never", label: "Never" },
 ];
 
 export function EmailNotificationSettings() {
@@ -75,8 +75,8 @@ export function EmailNotificationSettings() {
       setPreferences(prefs as EmailPreferences);
     } catch (_error) {
       toast({
-        title: 'Failed to load email preferences',
-        variant: 'destructive',
+        title: "Failed to load email preferences",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -92,13 +92,13 @@ export function EmailNotificationSettings() {
     try {
       await updateEmailPreferences(preferences);
       toast({
-        title: 'Your email preferences have been updated',
-        variant: 'success',
+        title: "Your email preferences have been updated",
+        variant: "success",
       });
     } catch (_error) {
       toast({
-        title: 'Failed to save preferences',
-        variant: 'destructive',
+        title: "Failed to save preferences",
+        variant: "destructive",
       });
     } finally {
       setSaving(false);
@@ -177,7 +177,7 @@ export function EmailNotificationSettings() {
               id="email-enabled"
               checked={preferences.emailEnabled}
               onCheckedChange={(checked) =>
-                updatePreference('emailEnabled', checked)
+                updatePreference("emailEnabled", checked)
               }
             />
           </div>
@@ -185,7 +185,7 @@ export function EmailNotificationSettings() {
       </Card>
 
       {/* Show Reminders */}
-      <Card className={preferences.emailEnabled ? '' : 'opacity-50'}>
+      <Card className={preferences.emailEnabled ? "" : "opacity-50"}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
@@ -210,7 +210,7 @@ export function EmailNotificationSettings() {
               checked={preferences.showReminders}
               disabled={!preferences.emailEnabled}
               onCheckedChange={(checked) =>
-                updatePreference('showReminders', checked)
+                updatePreference("showReminders", checked)
               }
             />
           </div>
@@ -226,7 +226,7 @@ export function EmailNotificationSettings() {
               <Select
                 value={preferences.showReminderFrequency}
                 onValueChange={(value) =>
-                  updatePreference('showReminderFrequency', value)
+                  updatePreference("showReminderFrequency", value)
                 }
               >
                 <SelectTrigger>
@@ -246,7 +246,7 @@ export function EmailNotificationSettings() {
       </Card>
 
       {/* New Show Notifications */}
-      <Card className={preferences.emailEnabled ? '' : 'opacity-50'}>
+      <Card className={preferences.emailEnabled ? "" : "opacity-50"}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Music className="h-5 w-5" />
@@ -274,7 +274,7 @@ export function EmailNotificationSettings() {
               checked={preferences.newShowNotifications}
               disabled={!preferences.emailEnabled}
               onCheckedChange={(checked) =>
-                updatePreference('newShowNotifications', checked)
+                updatePreference("newShowNotifications", checked)
               }
             />
           </div>
@@ -290,7 +290,7 @@ export function EmailNotificationSettings() {
               <Select
                 value={preferences.newShowFrequency}
                 onValueChange={(value) =>
-                  updatePreference('newShowFrequency', value)
+                  updatePreference("newShowFrequency", value)
                 }
               >
                 <SelectTrigger>
@@ -310,7 +310,7 @@ export function EmailNotificationSettings() {
       </Card>
 
       {/* Setlist Updates */}
-      <Card className={preferences.emailEnabled ? '' : 'opacity-50'}>
+      <Card className={preferences.emailEnabled ? "" : "opacity-50"}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -335,7 +335,7 @@ export function EmailNotificationSettings() {
               checked={preferences.setlistUpdates}
               disabled={!preferences.emailEnabled}
               onCheckedChange={(checked) =>
-                updatePreference('setlistUpdates', checked)
+                updatePreference("setlistUpdates", checked)
               }
             />
           </div>
@@ -351,7 +351,7 @@ export function EmailNotificationSettings() {
               <Select
                 value={preferences.setlistUpdateFrequency}
                 onValueChange={(value) =>
-                  updatePreference('setlistUpdateFrequency', value)
+                  updatePreference("setlistUpdateFrequency", value)
                 }
               >
                 <SelectTrigger>
@@ -371,7 +371,7 @@ export function EmailNotificationSettings() {
       </Card>
 
       {/* Weekly Digest */}
-      <Card className={preferences.emailEnabled ? '' : 'opacity-50'}>
+      <Card className={preferences.emailEnabled ? "" : "opacity-50"}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5" />
@@ -396,7 +396,7 @@ export function EmailNotificationSettings() {
               checked={preferences.weeklyDigest}
               disabled={!preferences.emailEnabled}
               onCheckedChange={(checked) =>
-                updatePreference('weeklyDigest', checked)
+                updatePreference("weeklyDigest", checked)
               }
             />
           </div>
@@ -404,7 +404,7 @@ export function EmailNotificationSettings() {
       </Card>
 
       {/* Marketing Emails */}
-      <Card className={preferences.emailEnabled ? '' : 'opacity-50'}>
+      <Card className={preferences.emailEnabled ? "" : "opacity-50"}>
         <CardHeader>
           <CardTitle>Marketing & Promotional Emails</CardTitle>
           <CardDescription>
@@ -426,7 +426,7 @@ export function EmailNotificationSettings() {
               checked={preferences.marketingEmails}
               disabled={!preferences.emailEnabled}
               onCheckedChange={(checked) =>
-                updatePreference('marketingEmails', checked)
+                updatePreference("marketingEmails", checked)
               }
             />
           </div>
@@ -460,7 +460,7 @@ export function EmailNotificationSettings() {
       {/* Save Button */}
       <div className="flex justify-end">
         <Button onClick={handleSave} disabled={saving}>
-          {saving ? 'Saving...' : 'Save Preferences'}
+          {saving ? "Saving..." : "Save Preferences"}
         </Button>
       </div>
     </div>

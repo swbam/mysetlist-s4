@@ -1,4 +1,4 @@
-import { logger } from '~/lib/logger';
+import { logger } from "~/lib/logger";
 
 interface ServerLoggerExampleProps {
   userId?: string;
@@ -9,29 +9,29 @@ export async function ServerLoggerExample({
 }: ServerLoggerExampleProps) {
   // Log server component render with trace
   const logContext: any = {
-    component: 'ServerLoggerExample',
+    component: "ServerLoggerExample",
   };
   if (userId !== undefined) {
     logContext.userId = userId;
   }
-  logger.trace('Server component rendering started', logContext);
+  logger.trace("Server component rendering started", logContext);
 
   // Log server component render
   const infoContext: any = {
-    component: 'ServerLoggerExample',
+    component: "ServerLoggerExample",
     timestamp: new Date().toISOString(),
   };
   if (userId !== undefined) {
     infoContext.userId = userId;
   }
-  logger.info('Server component rendered', infoContext);
+  logger.info("Server component rendered", infoContext);
 
   try {
     // Simulate some server-side data fetching
     const data = await fetchSomeData();
 
-    logger.debug('Data fetched successfully', {
-      component: 'ServerLoggerExample',
+    logger.debug("Data fetched successfully", {
+      component: "ServerLoggerExample",
       dataCount: data.length,
     });
 
@@ -44,15 +44,15 @@ export async function ServerLoggerExample({
     );
   } catch (error) {
     const errorContext: any = {
-      component: 'ServerLoggerExample',
+      component: "ServerLoggerExample",
     };
     if (userId !== undefined) {
       errorContext.userId = userId;
     }
     if (error instanceof Error) {
-      logger.error('Failed to fetch data in server component', error);
+      logger.error("Failed to fetch data in server component", error);
     } else {
-      logger.error('Failed to fetch data in server component', errorContext);
+      logger.error("Failed to fetch data in server component", errorContext);
     }
 
     return (
@@ -67,8 +67,8 @@ export async function ServerLoggerExample({
 // Simulated data fetching function
 async function fetchSomeData(): Promise<any[]> {
   // Add breadcrumb for data fetching
-  logger.addBreadcrumb('Fetching data from API', 'data', {
-    endpoint: '/api/mock-data',
+  logger.addBreadcrumb("Fetching data from API", "data", {
+    endpoint: "/api/mock-data",
   });
 
   // Simulate API delay

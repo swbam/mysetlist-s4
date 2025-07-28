@@ -1,9 +1,9 @@
-import { toast as sonnerToast } from 'sonner';
+import { toast as sonnerToast } from "sonner";
 
 interface ToastOptions {
   title: string;
   description?: string;
-  variant?: 'default' | 'destructive' | 'success';
+  variant?: "default" | "destructive" | "success";
 }
 
 // Simple wrapper around sonner for consistency
@@ -11,10 +11,10 @@ export const useToast = () => {
   return {
     toast: (options: ToastOptions) => {
       const { title, description, variant } = options;
-      
-      if (variant === 'destructive') {
+
+      if (variant === "destructive") {
         sonnerToast.error(title, { description });
-      } else if (variant === 'success') {
+      } else if (variant === "success") {
         sonnerToast.success(title, { description });
       } else {
         sonnerToast(title, { description });
@@ -26,10 +26,10 @@ export const useToast = () => {
 // Export toast function directly for those who prefer it
 export const toast = (options: ToastOptions) => {
   const { title, description, variant } = options;
-  
-  if (variant === 'destructive') {
+
+  if (variant === "destructive") {
     sonnerToast.error(title, { description });
-  } else if (variant === 'success') {
+  } else if (variant === "success") {
     sonnerToast.success(title, { description });
   } else {
     sonnerToast(title, { description });

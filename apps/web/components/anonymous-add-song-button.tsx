@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@repo/design-system/components/ui/tooltip';
-import { Lock, Plus } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { anonymousUser } from '~/lib/anonymous-user';
+} from "@repo/design-system/components/ui/tooltip";
+import { Lock, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { anonymousUser } from "~/lib/anonymous-user";
 
 interface AnonymousAddSongButtonProps {
   setlistId: string;
@@ -56,7 +56,7 @@ export function AnonymousAddSongButton({
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={() => router.push('/auth/sign-up')}
+              onClick={() => router.push("/auth/sign-up")}
             >
               <Lock className="h-3 w-3" />
               Add Song
@@ -79,7 +79,7 @@ export function AnonymousAddSongButton({
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={() => router.push('/auth/sign-up')}
+              onClick={() => router.push("/auth/sign-up")}
               disabled
             >
               <Lock className="h-3 w-3" />

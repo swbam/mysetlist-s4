@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
-import { faker } from '@faker-js/faker';
-import { db, sql } from './db-client';
+import { faker } from "@faker-js/faker";
+import { db, sql } from "./db-client";
 
 // Set seed for consistent random data
 faker.seed(123);

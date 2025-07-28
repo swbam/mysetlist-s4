@@ -5,8 +5,9 @@ This application uses Sentry for centralized logging and error tracking, impleme
 ## ✨ What's New
 
 This implementation uses the latest Sentry Logs features:
+
 - **Structured logging** with the new `logger` API
-- **Enhanced log levels** including the new `trace` level  
+- **Enhanced log levels** including the new `trace` level
 - **Better performance** with optimized log transmission
 - **Integrated dashboard** experience in Sentry
 - **Backward compatibility** with existing logging patterns
@@ -28,7 +29,7 @@ SENTRY_AUTH_TOKEN=your_auth_token_here
 ### Sentry Configuration Files
 
 - `sentry.client.config.ts` - Client-side Sentry configuration
-- `sentry.server.config.ts` - Server-side Sentry configuration  
+- `sentry.server.config.ts` - Server-side Sentry configuration
 - `sentry.edge.config.ts` - Edge runtime Sentry configuration
 - `instrumentation.ts` - Loads appropriate config based on runtime
 
@@ -41,32 +42,32 @@ The application provides a centralized logger utility at `lib/logger.ts` that in
 #### Basic Logging
 
 ```typescript
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 // Trace level (new in Sentry Logs API)
-logger.trace('Starting database connection', { database: 'users' });
+logger.trace("Starting database connection", { database: "users" });
 
 // Debug level
-logger.debug('Debug message', { userId: '123', action: 'user-login' });
+logger.debug("Debug message", { userId: "123", action: "user-login" });
 
 // Info level
-logger.info('User logged in successfully', { userId: '123' });
+logger.info("User logged in successfully", { userId: "123" });
 
 // Warning level (use 'warn' method)
-logger.warn('API rate limit approaching', { remaining: 10 });
+logger.warn("API rate limit approaching", { remaining: 10 });
 
 // Backward compatibility (warning method still works)
-logger.warning('Legacy warning method', { data: 'example' });
+logger.warning("Legacy warning method", { data: "example" });
 
 // Error level with error object
 try {
   // some operation
 } catch (error) {
-  logger.error('Operation failed', error, { userId: '123' });
+  logger.error("Operation failed", error, { userId: "123" });
 }
 
 // Fatal level
-logger.fatal('Critical system failure', error, { service: 'database' });
+logger.fatal("Critical system failure", error, { service: "database" });
 ```
 
 #### User Context
@@ -87,14 +88,14 @@ logger.clearUser();
 
 ```typescript
 // Add breadcrumb for user action tracking
-logger.addBreadcrumb('User clicked button', 'ui', { buttonId: 'submit' });
+logger.addBreadcrumb("User clicked button", "ui", { buttonId: "submit" });
 ```
 
 #### Performance Monitoring
 
 ```typescript
 // Start a transaction
-const transaction = logger.startTransaction('api-call', 'http.server');
+const transaction = logger.startTransaction("api-call", "http.server");
 
 // Perform operation
 await someAsyncOperation();
@@ -138,6 +139,7 @@ This implementation uses the new Sentry Logs API (Beta) which provides:
 - **Integrated experience**: Logs appear alongside errors and performance data
 
 The logger automatically:
+
 - Filters debug logs in production
 - Adds console logging in development
 - Maintains backward compatibility with existing code
@@ -145,27 +147,27 @@ The logger automatically:
 ## Integration in API Routes
 
 ```typescript
-import { logger } from '@/lib/logger';
+import { logger } from "@/lib/logger";
 
 export async function GET(request: NextRequest) {
   try {
-    logger.info('API endpoint called', {
-      action: 'get-data',
-      endpoint: '/api/example',
+    logger.info("API endpoint called", {
+      action: "get-data",
+      endpoint: "/api/example",
     });
-    
+
     // Your logic here
-    
+
     return NextResponse.json({ success: true });
   } catch (error) {
-    logger.error('API endpoint failed', error, {
-      action: 'get-data-error',
-      endpoint: '/api/example',
+    logger.error("API endpoint failed", error, {
+      action: "get-data-error",
+      endpoint: "/api/example",
     });
-    
+
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
@@ -184,21 +186,21 @@ export function MyComponent() {
     logger.info('Component mounted', {
       component: 'MyComponent',
     });
-    
+
     return () => {
       logger.info('Component unmounted', {
         component: 'MyComponent',
       });
     };
   }, []);
-  
+
   const handleClick = () => {
     try {
       logger.info('Button clicked', {
         component: 'MyComponent',
         action: 'button-click',
       });
-      
+
       // Your logic
     } catch (error) {
       logger.error('Button click failed', error, {
@@ -207,7 +209,7 @@ export function MyComponent() {
       });
     }
   };
-  
+
   return <button onClick={handleClick}>Click me</button>;
 }
 ```
@@ -247,6 +249,7 @@ Use the `<LoggerExample />` component to test client-side logging.
 ## Monitoring
 
 Access your Sentry dashboard to:
+
 - View real-time logs and errors
 - Set up alerts for specific log patterns
 - Analyze performance metrics

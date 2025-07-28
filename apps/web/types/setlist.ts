@@ -26,7 +26,7 @@ export interface SetlistSong {
   song?: Song;
   upvotes: number;
   downvotes: number;
-  currentUserVote?: 'up' | 'down' | null;
+  currentUserVote?: "up" | "down" | null;
 }
 
 export interface Setlist {

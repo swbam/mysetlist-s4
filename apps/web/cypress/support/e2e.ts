@@ -14,14 +14,14 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands';
-import '@testing-library/cypress/add-commands';
+import "./commands";
+import "@testing-library/cypress/add-commands";
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
 // Add custom global configurations
-Cypress.on('uncaught:exception', (_err, _runnable) => {
+Cypress.on("uncaught:exception", (_err, _runnable) => {
   return false;
 });
 
@@ -33,5 +33,5 @@ beforeEach(() => {
   });
 
   // Set up any global test state
-  cy.visit('/');
+  cy.visit("/");
 });

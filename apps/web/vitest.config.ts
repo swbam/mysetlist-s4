@@ -1,37 +1,37 @@
-import path from 'node:path';
-import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vitest/config';
+import path from "node:path";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'jsdom',
-    setupFiles: ['./vitest.setup.ts'],
+    environment: "jsdom",
+    setupFiles: ["./vitest.setup.ts"],
     globals: true,
     include: [
-      '__tests__/**/*.{test,spec}.{ts,tsx}',
-      '!__tests__/**/integration/**',
-      '!__tests__/**/e2e/**',
+      "__tests__/**/*.{test,spec}.{ts,tsx}",
+      "!__tests__/**/integration/**",
+      "!__tests__/**/e2e/**",
     ],
     coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      provider: "v8",
+      reporter: ["text", "json", "html"],
       exclude: [
-        'node_modules/',
-        '.next/',
-        'coverage/',
-        '**/*.d.ts',
-        '**/*.config.{ts,js}',
-        '**/types/**',
-        '**/__tests__/**',
-        '**/*.test.{ts,tsx}',
-        '**/*.spec.{ts,tsx}',
-        'cypress/',
-        'tests/',
-        'test-results/',
-        'playwright-report/',
+        "node_modules/",
+        ".next/",
+        "coverage/",
+        "**/*.d.ts",
+        "**/*.config.{ts,js}",
+        "**/types/**",
+        "**/__tests__/**",
+        "**/*.test.{ts,tsx}",
+        "**/*.spec.{ts,tsx}",
+        "cypress/",
+        "tests/",
+        "test-results/",
+        "playwright-report/",
       ],
-      include: ['app/**', 'components/**', 'lib/**', 'hooks/**'],
+      include: ["app/**", "components/**", "lib/**", "hooks/**"],
       thresholds: {
         global: {
           branches: 75,
@@ -42,7 +42,7 @@ export default defineConfig({
       },
     },
     testTimeout: 10000,
-    pool: 'threads',
+    pool: "threads",
     poolOptions: {
       threads: {
         singleThread: false,
@@ -51,9 +51,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './'),
-      '~': path.resolve(__dirname, './'),
-      '@repo': path.resolve(__dirname, '../../packages'),
+      "@": path.resolve(__dirname, "./"),
+      "~": path.resolve(__dirname, "./"),
+      "@repo": path.resolve(__dirname, "../../packages"),
     },
   },
 });

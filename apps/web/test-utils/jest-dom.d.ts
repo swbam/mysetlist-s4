@@ -1,9 +1,9 @@
 /// <reference types="@testing-library/jest-dom" />
 
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom";
 
 // Extend Vitest matchers with jest-dom matchers
-declare module 'vitest' {
+declare module "vitest" {
   interface Assertion<T = any> extends jest.Matchers<void, T> {
     toBeInTheDocument(): void;
     toBeDisabled(): void;

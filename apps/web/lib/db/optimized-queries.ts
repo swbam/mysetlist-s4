@@ -1,4 +1,4 @@
-import { db } from '@repo/database';
+import { db } from "@repo/database";
 import {
   artists,
   setlistSongs,
@@ -6,9 +6,9 @@ import {
   shows,
   songs,
   venues,
-} from '@repo/database';
-import { asc, eq, inArray, sql } from 'drizzle-orm';
-import { cacheKeys, withCache } from '~/lib/cache/redis';
+} from "@repo/database";
+import { asc, eq, inArray, sql } from "drizzle-orm";
+import { cacheKeys, withCache } from "~/lib/cache/redis";
 
 // Optimized query helpers with caching
 export const optimizedQueries = {
@@ -150,7 +150,7 @@ export const optimizedQueries = {
     lat: number,
     lng: number,
     radiusMiles = 50,
-    limit = 20
+    limit = 20,
   ) {
     const radiusKm = radiusMiles * 1.60934;
 
@@ -212,27 +212,27 @@ export const optimizedQueries = {
 export const cachedQueries = {
   getTrendingShows: withCache(
     optimizedQueries.getTrendingShowsOptimized,
-    (limit, _hoursAgo) => cacheKeys.trending('custom', 'shows', limit || 20),
-    300 // 5 minutes
+    (limit, _hoursAgo) => cacheKeys.trending("custom", "shows", limit || 20),
+    300, // 5 minutes
   ),
 
   searchArtists: withCache(
     optimizedQueries.searchArtistsOptimized,
-    (searchTerm, _limit) => cacheKeys.searchResults(searchTerm, 'artists'),
-    600 // 10 minutes
+    (searchTerm, _limit) => cacheKeys.searchResults(searchTerm, "artists"),
+    600, // 10 minutes
   ),
 
   getArtistStats: withCache(
     optimizedQueries.getArtistStats,
     (artistId) => `artist:stats:${artistId}`,
-    900 // 15 minutes
+    900, // 15 minutes
   ),
 };
 
 // Query performance monitoring
 export async function withQueryMetrics<T>(
   _queryName: string,
-  queryFn: () => Promise<T>
+  queryFn: () => Promise<T>,
 ): Promise<T> {
   const start = Date.now();
 
@@ -246,8 +246,8 @@ export async function withQueryMetrics<T>(
 
     // Track metrics (could send to analytics)
     if (
-      typeof process !== 'undefined' &&
-      process.env["NODE_ENV"] === 'production'
+      typeof process !== "undefined" &&
+      process.env["NODE_ENV"] === "production"
     ) {
       // Track query performance metrics
     }

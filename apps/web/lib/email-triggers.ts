@@ -1,10 +1,10 @@
-import { db } from '@repo/database';
-import { users } from '@repo/database/src/schema';
-import { eq } from 'drizzle-orm';
+import { db } from "@repo/database";
+import { users } from "@repo/database/src/schema";
+import { eq } from "drizzle-orm";
 import {
   queueEmail,
   sendWelcomeEmailAction,
-} from '~/actions/email-notifications';
+} from "~/actions/email-notifications";
 
 // Trigger welcome email when user signs up
 export async function triggerWelcomeEmail(userId: string) {
@@ -24,7 +24,7 @@ export async function triggerNewShowNotifications(_showId: string) {
 export async function triggerSetlistUpdateNotifications(
   _showId: string,
   _newSongs: Array<{ title: string; artist?: string; encore?: boolean }>,
-  _updateType: 'new' | 'complete' | 'updated' = 'updated'
+  _updateType: "new" | "complete" | "updated" = "updated",
 ) {
   return;
 }
@@ -32,7 +32,7 @@ export async function triggerSetlistUpdateNotifications(
 // Trigger email verification
 export async function triggerEmailVerification(
   userId: string,
-  verificationToken: string
+  verificationToken: string,
 ) {
   try {
     const user = await db
@@ -47,14 +47,15 @@ export async function triggerEmailVerification(
       return;
     }
 
-    const appUrl = process.env['NEXT_PUBLIC_APP_URL'] || 'https://MySetlist.app';
+    const appUrl =
+      process.env["NEXT_PUBLIC_APP_URL"] || "https://MySetlist.app";
     const verificationUrl = `${appUrl}/auth/verify?token=${verificationToken}`;
 
     await queueEmail({
       userId,
-      emailType: 'email_verification',
+      emailType: "email_verification",
       emailData: {
-        name: 'Music Lover',
+        name: "Music Lover",
         verificationUrl,
         expirationHours: 24,
       },
@@ -78,14 +79,15 @@ export async function triggerPasswordReset(userId: string, resetToken: string) {
       return;
     }
 
-    const appUrl = process.env['NEXT_PUBLIC_APP_URL'] || 'https://MySetlist.app';
+    const appUrl =
+      process.env["NEXT_PUBLIC_APP_URL"] || "https://MySetlist.app";
     const resetUrl = `${appUrl}/auth/reset-password?token=${resetToken}`;
 
     await queueEmail({
       userId,
-      emailType: 'password_reset',
+      emailType: "password_reset",
       emailData: {
-        name: 'Music Lover',
+        name: "Music Lover",
         resetUrl,
         expirationHours: 24,
       },

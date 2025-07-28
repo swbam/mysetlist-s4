@@ -27,7 +27,7 @@ export class IntelligentCache {
     options: {
       refreshThreshold?: number; // Refresh when TTL is below this
       staleWhileRevalidate?: boolean;
-    } = {}
+    } = {},
   ): Promise<void> {
     const expiry = Date.now() + ttlSeconds * 1000;
 
@@ -71,7 +71,7 @@ export class IntelligentCache {
 
   async invalidatePattern(pattern: string): Promise<void> {
     // Simple pattern matching for in-memory cache
-    const regex = new RegExp(pattern.replace('*', '.*'));
+    const regex = new RegExp(pattern.replace("*", ".*"));
 
     for (const key of this.inMemoryCache.keys()) {
       if (regex.test(key)) {
@@ -108,11 +108,11 @@ export class IntelligentCache {
 export const intelligentCache = new IntelligentCache();
 
 // Cleanup expired entries every 10 minutes
-if (typeof setInterval !== 'undefined') {
+if (typeof setInterval !== "undefined") {
   setInterval(
     () => {
       intelligentCache.cleanup();
     },
-    10 * 60 * 1000
+    10 * 60 * 1000,
   );
 }

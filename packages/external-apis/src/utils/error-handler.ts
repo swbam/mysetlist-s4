@@ -16,7 +16,7 @@ export class SyncErrorHandler {
       maxRetries?: number;
       retryDelay?: number;
       onError?: (error: SyncError) => void;
-    } = {}
+    } = {},
   ) {
     if (options.maxRetries) this.maxRetries = options.maxRetries;
     if (options.retryDelay) this.retryDelay = options.retryDelay;
@@ -28,7 +28,7 @@ export class SyncErrorHandler {
       service: string;
       operation: string;
       context?: Record<string, any>;
-    }
+    },
   ): Promise<T | null> {
     let lastError: Error | null = null;
 
@@ -47,7 +47,7 @@ export class SyncErrorHandler {
         };
 
         this.errors.push(syncError);
-        
+
         if (this.options.onError) {
           this.options.onError(syncError);
         }
@@ -60,7 +60,7 @@ export class SyncErrorHandler {
         // Exponential backoff
         if (attempt < this.maxRetries) {
           const delay = this.retryDelay * Math.pow(2, attempt - 1);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
     }
@@ -78,14 +78,14 @@ export class SyncErrorHandler {
   private shouldNotRetry(error: Error): boolean {
     // Don't retry on certain errors
     const nonRetryableErrors = [
-      'Invalid credentials',
-      'Unauthorized',
-      'Forbidden',
-      'Not Found',
+      "Invalid credentials",
+      "Unauthorized",
+      "Forbidden",
+      "Not Found",
     ];
 
-    return nonRetryableErrors.some(msg => 
-      error.message.toLowerCase().includes(msg.toLowerCase())
+    return nonRetryableErrors.some((msg) =>
+      error.message.toLowerCase().includes(msg.toLowerCase()),
     );
   }
 
@@ -99,8 +99,8 @@ export class SyncErrorHandler {
 
   getErrorSummary(): Record<string, number> {
     const summary: Record<string, number> = {};
-    
-    this.errors.forEach(error => {
+
+    this.errors.forEach((error) => {
       const key = `${error.service}:${error.operation}`;
       summary[key] = (summary[key] || 0) + 1;
     });
@@ -113,10 +113,10 @@ export class SyncErrorHandler {
 export class RateLimitError extends Error {
   constructor(
     message: string,
-    public readonly retryAfter?: number
+    public readonly retryAfter?: number,
   ) {
     super(message);
-    this.name = 'RateLimitError';
+    this.name = "RateLimitError";
   }
 }
 
@@ -125,10 +125,10 @@ export class APIError extends Error {
   constructor(
     message: string,
     public readonly statusCode: number,
-    public readonly endpoint: string
+    public readonly endpoint: string,
   ) {
     super(message);
-    this.name = 'APIError';
+    this.name = "APIError";
   }
 }
 
@@ -138,9 +138,9 @@ export class SyncServiceError extends Error {
     message: string,
     public readonly service: string,
     public readonly operation: string,
-    public readonly rootCause?: Error
+    public readonly rootCause?: Error,
   ) {
     super(message);
-    this.name = 'SyncServiceError';
+    this.name = "SyncServiceError";
   }
 }

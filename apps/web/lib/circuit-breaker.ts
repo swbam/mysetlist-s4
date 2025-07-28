@@ -1,4 +1,4 @@
-import { CacheClient } from '~/lib/cache/redis';
+import { CacheClient } from "~/lib/cache/redis";
 
 export interface CircuitBreakerConfig {
   failureThreshold: number;
@@ -8,9 +8,9 @@ export interface CircuitBreakerConfig {
 }
 
 export enum CircuitState {
-  CLOSED = 'CLOSED',
-  OPEN = 'OPEN',
-  HALF_OPEN = 'HALF_OPEN',
+  CLOSED = "CLOSED",
+  OPEN = "OPEN",
+  HALF_OPEN = "HALF_OPEN",
 }
 
 export class CircuitBreaker {
@@ -31,7 +31,7 @@ export class CircuitBreaker {
 
   async execute<T>(
     fn: () => Promise<T>,
-    fallback?: () => Promise<T>
+    fallback?: () => Promise<T>,
   ): Promise<T> {
     const state = await this.getState();
 
@@ -198,12 +198,12 @@ export class CircuitBreakerFactory {
 
   static getBreaker(
     name: string,
-    config?: Partial<CircuitBreakerConfig>
+    config?: Partial<CircuitBreakerConfig>,
   ): CircuitBreaker {
     if (!CircuitBreakerFactory.breakers.has(name)) {
       CircuitBreakerFactory.breakers.set(
         name,
-        new CircuitBreaker(name, config)
+        new CircuitBreaker(name, config),
       );
     }
     return CircuitBreakerFactory.breakers.get(name)!;
@@ -221,12 +221,12 @@ export class CircuitBreakerFactory {
 // Decorator for applying circuit breaker to functions
 export function withCircuitBreaker(
   name: string,
-  config?: Partial<CircuitBreakerConfig>
+  config?: Partial<CircuitBreakerConfig>,
 ) {
   return (
     _target: any,
     _propertyKey: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) => {
     const originalMethod = descriptor.value;
     const breaker = CircuitBreakerFactory.getBreaker(name, config);

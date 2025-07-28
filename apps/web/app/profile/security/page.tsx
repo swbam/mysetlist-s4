@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/alert";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
-import { Switch } from '@repo/design-system/components/ui/switch';
-import { Loader2, Lock, Shield, Smartphone } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { useAuth } from '~/app/providers/auth-provider';
-import { createClient } from '~/lib/supabase/client';
+} from "@repo/design-system/components/ui/card";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import { Switch } from "@repo/design-system/components/ui/switch";
+import { Loader2, Lock, Shield, Smartphone } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useAuth } from "~/app/providers/auth-provider";
+import { createClient } from "~/lib/supabase/client";
 
 export default function SecurityPage() {
   const { user } = useAuth();
@@ -26,11 +26,11 @@ export default function SecurityPage() {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [showEnableTwoFactor, setShowEnableTwoFactor] = useState(false);
   const [showDisableTwoFactor, setShowDisableTwoFactor] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
-  const [qrCode, setQrCode] = useState('');
-  const [secret, setSecret] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [verificationCode, setVerificationCode] = useState("");
+  const [qrCode, setQrCode] = useState("");
+  const [secret, setSecret] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     checkTwoFactorStatus();
@@ -40,31 +40,31 @@ export default function SecurityPage() {
     try {
       const supabase = createClient();
       const { data, error: _error } = await supabase
-        .from('user_security_settings')
-        .select('two_factor_enabled')
-        .eq('user_id', user?.id)
+        .from("user_security_settings")
+        .select("two_factor_enabled")
+        .eq("user_id", user?.id)
         .single();
 
       if (data) {
         setTwoFactorEnabled(data.two_factor_enabled);
       }
     } catch (error) {
-      console.error('Error checking 2FA status:', error);
+      console.error("Error checking 2FA status:", error);
     }
   };
 
   const handleEnableTwoFactor = async () => {
     setLoading(true);
-    setError('');
-    
+    setError("");
+
     try {
       // Generate 2FA secret and QR code
-      const response = await fetch('/api/auth/2fa/setup', {
-        method: 'POST',
+      const response = await fetch("/api/auth/2fa/setup", {
+        method: "POST",
       });
 
       if (!response.ok) {
-        throw new Error('Failed to setup 2FA');
+        throw new Error("Failed to setup 2FA");
       }
 
       const data = await response.json();
@@ -72,7 +72,7 @@ export default function SecurityPage() {
       setSecret(data.secret);
       setShowEnableTwoFactor(true);
     } catch (error) {
-      setError('Failed to setup two-factor authentication');
+      setError("Failed to setup two-factor authentication");
     } finally {
       setLoading(false);
     }
@@ -80,13 +80,13 @@ export default function SecurityPage() {
 
   const handleVerifyAndEnable = async () => {
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch('/api/auth/2fa/verify', {
-        method: 'POST',
+      const response = await fetch("/api/auth/2fa/verify", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           code: verificationCode,
@@ -95,17 +95,17 @@ export default function SecurityPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Invalid verification code');
+        throw new Error("Invalid verification code");
       }
 
       setTwoFactorEnabled(true);
       setShowEnableTwoFactor(false);
-      setSuccess('Two-factor authentication has been enabled successfully');
-      setVerificationCode('');
-      setQrCode('');
-      setSecret('');
+      setSuccess("Two-factor authentication has been enabled successfully");
+      setVerificationCode("");
+      setQrCode("");
+      setSecret("");
     } catch (error) {
-      setError('Invalid verification code. Please try again.');
+      setError("Invalid verification code. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -113,13 +113,13 @@ export default function SecurityPage() {
 
   const handleDisableTwoFactor = async () => {
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
-      const response = await fetch('/api/auth/2fa/disable', {
-        method: 'POST',
+      const response = await fetch("/api/auth/2fa/disable", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           code: verificationCode,
@@ -127,15 +127,15 @@ export default function SecurityPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Invalid verification code');
+        throw new Error("Invalid verification code");
       }
 
       setTwoFactorEnabled(false);
       setShowDisableTwoFactor(false);
-      setSuccess('Two-factor authentication has been disabled');
-      setVerificationCode('');
+      setSuccess("Two-factor authentication has been disabled");
+      setVerificationCode("");
     } catch (error) {
-      setError('Invalid verification code. Please try again.');
+      setError("Invalid verification code. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -226,9 +226,9 @@ export default function SecurityPage() {
                   variant="outline"
                   onClick={() => {
                     setShowEnableTwoFactor(false);
-                    setVerificationCode('');
-                    setQrCode('');
-                    setSecret('');
+                    setVerificationCode("");
+                    setQrCode("");
+                    setSecret("");
                   }}
                   disabled={loading}
                 >
@@ -273,7 +273,7 @@ export default function SecurityPage() {
                   variant="outline"
                   onClick={() => {
                     setShowDisableTwoFactor(false);
-                    setVerificationCode('');
+                    setVerificationCode("");
                   }}
                   disabled={loading}
                 >

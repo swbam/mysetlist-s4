@@ -7,16 +7,19 @@ This guide covers the testing infrastructure and best practices for the MySetlis
 ## Test Types
 
 ### 1. Unit Tests (Jest)
+
 - Location: `*.test.ts`, `*.test.tsx` files
 - Run: `pnpm test`
 - Coverage: `pnpm test -- --coverage`
 
 ### 2. E2E Tests (Cypress)
+
 - Location: `cypress/e2e/*.cy.ts`
 - Run: `pnpm e2e` (headless) or `pnpm e2e:open` (interactive)
 - Component tests: `cypress/component/*.cy.ts`
 
 ### 3. Accessibility Tests (Playwright + Axe)
+
 - Location: `tests/accessibility/*.spec.ts`
 - Run: `pnpm test:a11y`
 
@@ -38,6 +41,7 @@ Always add `data-cy` attributes to interactive elements for reliable E2E testing
 ### Common Data Attributes
 
 #### Navigation
+
 - `data-cy="nav-home"` - Home navigation link
 - `data-cy="nav-trending"` - Trending navigation link
 - `data-cy="nav-artists"` - Artists navigation link
@@ -45,6 +49,7 @@ Always add `data-cy` attributes to interactive elements for reliable E2E testing
 - `data-cy="mobile-menu"` - Mobile menu container
 
 #### Search
+
 - `data-cy="search-input"` - Main search input
 - `data-cy="search-results"` - Search results container
 - `data-cy="search-result-item"` - Individual search result
@@ -52,6 +57,7 @@ Always add `data-cy` attributes to interactive elements for reliable E2E testing
 - `data-cy="search-error"` - Search error message
 
 #### Artist Pages
+
 - `data-cy="artist-page"` - Artist page container
 - `data-cy="artist-name"` - Artist name heading
 - `data-cy="artist-genres"` - Genres list
@@ -61,6 +67,7 @@ Always add `data-cy` attributes to interactive elements for reliable E2E testing
 - `data-cy="sync-indicator"` - Sync in progress indicator
 
 #### Shows
+
 - `data-cy="shows-section"` - Shows section container
 - `data-cy="show-item"` - Individual show item
 - `data-cy="show-date"` - Show date
@@ -69,6 +76,7 @@ Always add `data-cy` attributes to interactive elements for reliable E2E testing
 - `data-cy="view-setlist"` - View setlist button
 
 #### Setlists & Voting
+
 - `data-cy="setlist-page"` - Setlist page container
 - `data-cy="set-section"` - Set section (main, encore, etc.)
 - `data-cy="set-name"` - Set name
@@ -82,6 +90,7 @@ Always add `data-cy` attributes to interactive elements for reliable E2E testing
 - `data-cy="vote-error"` - Vote error message
 
 #### Loading & Error States
+
 - `data-cy="loading-spinner"` - Loading indicator
 - `data-cy="error-message"` - Error message
 - `data-cy="404-page"` - 404 page
@@ -89,6 +98,7 @@ Always add `data-cy` attributes to interactive elements for reliable E2E testing
 - `data-cy="back-to-search"` - Back to search link
 
 #### Authentication
+
 - `data-cy="auth-prompt"` - Authentication prompt
 - `data-cy="sign-in-button"` - Sign in button
 - `data-cy="sign-out-button"` - Sign out button
@@ -99,46 +109,48 @@ Always add `data-cy` attributes to interactive elements for reliable E2E testing
 ### E2E Test Example
 
 ```typescript
-describe('Artist Search Flow', () => {
-  it('should search for an artist and navigate to their page', () => {
+describe("Artist Search Flow", () => {
+  it("should search for an artist and navigate to their page", () => {
     // Visit homepage
-    cy.visit('/')
-    
+    cy.visit("/");
+
     // Search for artist
-    cy.get('[data-cy=search-input]').type('Radiohead')
-    cy.get('[data-cy=search-results]').should('be.visible')
-    
+    cy.get("[data-cy=search-input]").type("Radiohead");
+    cy.get("[data-cy=search-results]").should("be.visible");
+
     // Click first result
-    cy.get('[data-cy=search-result-item]').first().click()
-    
+    cy.get("[data-cy=search-result-item]").first().click();
+
     // Verify on artist page
-    cy.get('[data-cy=artist-page]').should('be.visible')
-    cy.get('[data-cy=artist-name]').should('contain', 'Radiohead')
-  })
-})
+    cy.get("[data-cy=artist-page]").should("be.visible");
+    cy.get("[data-cy=artist-name]").should("contain", "Radiohead");
+  });
+});
 ```
 
 ### Accessibility Test Example
 
 ```typescript
-test('Homepage should have no accessibility violations', async ({ page }) => {
-  await page.goto('/')
-  
-  const accessibilityScanResults = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa'])
-    .analyze()
+test("Homepage should have no accessibility violations", async ({ page }) => {
+  await page.goto("/");
 
-  expect(accessibilityScanResults.violations).toEqual([])
-})
+  const accessibilityScanResults = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa"])
+    .analyze();
+
+  expect(accessibilityScanResults.violations).toEqual([]);
+});
 ```
 
 ## CI/CD Integration
 
 Tests run automatically on:
+
 - Every push to `main` branch
 - Every pull request
 
 ### Test Jobs
+
 1. **Unit Tests** - Jest tests with coverage
 2. **E2E Tests** - Cypress tests on multiple browsers
 3. **Accessibility Tests** - Playwright + Axe tests
@@ -148,6 +160,7 @@ Tests run automatically on:
 ### Branch Protection
 
 PRs must have:
+
 - ✅ All tests passing
 - ✅ Valid branch name (e.g., `feature/add-search`)
 - ✅ Conventional commit PR title
@@ -171,11 +184,13 @@ pnpm lint          # Linting
 ## Test Reports
 
 Test results are automatically:
+
 - Posted as PR comments
 - Uploaded as artifacts
 - Tracked for trends
 
 View reports:
+
 - `test-report.md` - Markdown summary
 - `test-report.json` - JSON data
 - GitHub Actions summary - CI overview
@@ -193,6 +208,7 @@ View reports:
 ## Debugging Tests
 
 ### Cypress
+
 ```bash
 # Interactive mode
 pnpm e2e:open
@@ -202,6 +218,7 @@ pnpm cypress run --spec "cypress/e2e/01-search-flow.cy.ts"
 ```
 
 ### Jest
+
 ```bash
 # Debug mode
 node --inspect-brk node_modules/.bin/jest --runInBand

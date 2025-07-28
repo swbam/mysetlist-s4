@@ -1,22 +1,22 @@
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/alert";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { ArrowLeft, Mail } from 'lucide-react';
-import Link from 'next/link';
-import React, { Suspense } from 'react';
-import { handleUnsubscribe } from '~/actions/email-notifications';
+} from "@repo/design-system/components/ui/card";
+import { ArrowLeft, Mail } from "lucide-react";
+import Link from "next/link";
+import React, { Suspense } from "react";
+import { handleUnsubscribe } from "~/actions/email-notifications";
 
 // Force dynamic rendering due to searchParams usage
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface UnsubscribePageProps {
   searchParams: Promise<{
@@ -57,20 +57,20 @@ async function UnsubscribeContent({ searchParams }: UnsubscribePageProps) {
 
   const getEmailTypeDisplay = (emailType?: string) => {
     switch (emailType) {
-      case 'show_reminders':
-        return 'show reminders';
-      case 'new_shows':
-        return 'new show announcements';
-      case 'setlist_updates':
-        return 'setlist updates';
-      case 'weekly_digest':
-        return 'weekly digest emails';
-      case 'marketing':
-        return 'marketing emails';
-      case 'all':
-        return 'all emails';
+      case "show_reminders":
+        return "show reminders";
+      case "new_shows":
+        return "new show announcements";
+      case "setlist_updates":
+        return "setlist updates";
+      case "weekly_digest":
+        return "weekly digest emails";
+      case "marketing":
+        return "marketing emails";
+      case "all":
+        return "all emails";
       default:
-        return 'emails';
+        return "emails";
     }
   };
 
@@ -93,8 +93,8 @@ async function UnsubscribeContent({ searchParams }: UnsubscribePageProps) {
           <CardContent className="space-y-4">
             <Alert>
               <AlertDescription>
-                {type === 'all'
-                  ? 'This will disable all email notifications from MySetlist, except for important security emails.'
+                {type === "all"
+                  ? "This will disable all email notifications from MySetlist, except for important security emails."
                   : `This will stop you from receiving ${getEmailTypeDisplay(type)} from MySetlist. You can always re-enable these in your settings.`}
               </AlertDescription>
             </Alert>
@@ -121,19 +121,21 @@ async function UnsubscribeContent({ searchParams }: UnsubscribePageProps) {
 }
 
 export default function UnsubscribePage(props: UnsubscribePageProps) {
-  return React.createElement(Suspense as any, {
-    fallback: (
-      <div className="container mx-auto px-4 py-16">
-        <div className="mx-auto max-w-md">
-          <Card>
-            <CardHeader className="text-center">
-              <CardTitle>Loading...</CardTitle>
-            </CardHeader>
-          </Card>
+  return React.createElement(
+    Suspense as any,
+    {
+      fallback: (
+        <div className="container mx-auto px-4 py-16">
+          <div className="mx-auto max-w-md">
+            <Card>
+              <CardHeader className="text-center">
+                <CardTitle>Loading...</CardTitle>
+              </CardHeader>
+            </Card>
+          </div>
         </div>
-      </div>
-    )
-  },
-    React.createElement(UnsubscribeContent, props)
+      ),
+    },
+    React.createElement(UnsubscribeContent, props),
   );
 }

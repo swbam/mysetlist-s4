@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { type ReactNode, createContext, useContext } from 'react';
+import { type ReactNode, createContext, useContext } from "react";
 import {
   type UseLiveTrendingOptions,
   type UseTrendingOptions,
@@ -10,7 +10,7 @@ import {
   useTrendingShows,
   useTrendingStats,
   useTrendingVenues,
-} from '~/hooks/use-trending';
+} from "~/hooks/use-trending";
 
 interface TrendingContextValue {
   shows: ReturnType<typeof useTrendingShows>;
@@ -83,7 +83,7 @@ export function useTrendingData() {
   const context = useContext(TrendingContext);
   if (!context) {
     throw new Error(
-      'useTrendingData must be used within a TrendingDataProvider'
+      "useTrendingData must be used within a TrendingDataProvider",
     );
   }
   return context;
@@ -94,7 +94,7 @@ export function useLiveTrendingData() {
   const context = useContext(TrendingContext);
   if (!context) {
     throw new Error(
-      'useLiveTrendingData must be used within a TrendingDataProvider'
+      "useLiveTrendingData must be used within a TrendingDataProvider",
     );
   }
   return context.liveTrending;

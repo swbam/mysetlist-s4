@@ -1,6 +1,6 @@
-import { and, asc, desc, eq, ilike, or, sql } from 'drizzle-orm';
-import { db } from '../client';
-import { venues } from '../schema';
+import { and, asc, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { db } from "../client";
+import { venues } from "../schema";
 
 export async function getVenueById(venueId: string) {
   const result = await db
@@ -54,7 +54,7 @@ export async function searchVenues(
     limit?: number;
     city?: string;
     state?: string;
-  }
+  },
 ) {
   const { limit = 20, city, state } = options || {};
 
@@ -62,7 +62,7 @@ export async function searchVenues(
     or(
       ilike(venues.name, `%${query}%`),
       ilike(venues.city, `%${query}%`),
-      venues.address ? ilike(venues.address, `%${query}%`) : undefined
+      venues.address ? ilike(venues.address, `%${query}%`) : undefined,
     ),
   ];
 
@@ -96,7 +96,7 @@ export async function searchVenues(
       SELECT COUNT(*)
       FROM shows s
       WHERE s.venue_id = ${venues.id}
-    )`)
+    )`),
     )
     .limit(limit);
 
@@ -108,7 +108,7 @@ export async function getVenuesByCity(
   options?: {
     limit?: number;
     onlyWithUpcomingShows?: boolean;
-  }
+  },
 ) {
   const { limit = 50, onlyWithUpcomingShows = false } = options || {};
 
@@ -120,7 +120,7 @@ export async function getVenuesByCity(
         SELECT 1 FROM shows s 
         WHERE s.venue_id = ${venues.id} 
         AND s.date >= CURRENT_DATE
-      )`
+      )`,
     );
   }
 
@@ -150,7 +150,7 @@ export async function getVenuesByCity(
 export async function getNearbyVenues(
   latitude: number,
   longitude: number,
-  radiusMiles = 25
+  radiusMiles = 25,
 ) {
   // Using PostgreSQL's earth_distance extension for geo queries
   // Assuming the extension is installed, otherwise use a simpler calculation
@@ -197,12 +197,11 @@ export async function getNearbyVenues(
             sin(radians(${latitude})) *
             sin(radians(${venues.latitude}))
           )
-        ) <= ${radiusMiles}`
-      )
+        ) <= ${radiusMiles}`,
+      ),
     )
     .orderBy(sql`distance`)
     .limit(20);
 
   return results;
 }
-

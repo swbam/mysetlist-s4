@@ -1,11 +1,11 @@
-import { artists, db, shows, venues } from '@repo/database';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { format, isThisWeek, isToday, isTomorrow } from 'date-fns';
-import { asc, desc, eq, gte } from 'drizzle-orm';
-import { Calendar, Clock, MapPin, Music, Ticket } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { artists, db, shows, venues } from "@repo/database";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { format, isThisWeek, isToday, isTomorrow } from "date-fns";
+import { asc, desc, eq, gte } from "drizzle-orm";
+import { Calendar, Clock, MapPin, Music, Ticket } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 interface UpcomingShowsTimelineProps {
   userId?: string; // userId not used anymore, kept for compatibility
@@ -60,29 +60,29 @@ export async function UpcomingShowsTimeline({
   const getDateLabel = (dateString: string) => {
     const date = new Date(dateString);
     if (isToday(date)) {
-      return 'Today';
+      return "Today";
     }
     if (isTomorrow(date)) {
-      return 'Tomorrow';
+      return "Tomorrow";
     }
     if (isThisWeek(date)) {
-      return format(date, 'EEEE');
+      return format(date, "EEEE");
     }
-    return format(date, 'MMM d');
+    return format(date, "MMM d");
   };
 
   const getDateColor = (dateString: string) => {
     const date = new Date(dateString);
     if (isToday(date)) {
-      return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300';
+      return "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300";
     }
     if (isTomorrow(date)) {
-      return 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300';
+      return "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300";
     }
     if (isThisWeek(date)) {
-      return 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300';
+      return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300";
     }
-    return 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300';
+    return "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
   };
 
   return (
@@ -99,10 +99,10 @@ export async function UpcomingShowsTimeline({
                 className={`flex w-24 flex-col items-center justify-center p-4 ${getDateColor(show.date)}`}
               >
                 <div className="font-bold text-2xl">
-                  {format(new Date(show.date), 'd')}
+                  {format(new Date(show.date), "d")}
                 </div>
                 <div className="text-sm uppercase">
-                  {format(new Date(show.date), 'MMM')}
+                  {format(new Date(show.date), "MMM")}
                 </div>
                 <div className="mt-1 text-xs">{getDateLabel(show.date)}</div>
               </div>

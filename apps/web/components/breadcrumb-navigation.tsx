@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { cn } from '@repo/design-system/lib/utils';
-import { ChevronRight, Home } from 'lucide-react';
-import Link from 'next/link';
+import { cn } from "@repo/design-system/lib/utils";
+import { ChevronRight, Home } from "lucide-react";
+import Link from "next/link";
 
 export interface BreadcrumbItem {
   label: string;
@@ -23,8 +23,8 @@ export function BreadcrumbNavigation({
     <nav
       aria-label="Breadcrumb"
       className={cn(
-        'flex items-center space-x-2 text-muted-foreground text-sm',
-        className
+        "flex items-center space-x-2 text-muted-foreground text-sm",
+        className,
       )}
     >
       {/* Home link */}
@@ -50,9 +50,9 @@ export function BreadcrumbNavigation({
           ) : (
             <span
               className={cn(
-                item.isCurrentPage && 'font-medium text-foreground'
+                item.isCurrentPage && "font-medium text-foreground",
               )}
-              aria-current={item.isCurrentPage ? 'page' : undefined}
+              aria-current={item.isCurrentPage ? "page" : undefined}
             >
               {item.label}
             </span>

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Card } from '@repo/design-system/components/ui/card';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Card } from "@repo/design-system/components/ui/card";
 import {
   Accessibility,
   Banknote,
@@ -22,8 +22,8 @@ import {
   Volume2,
   Wifi,
   Wine,
-} from 'lucide-react';
-import Link from 'next/link';
+} from "lucide-react";
+import Link from "next/link";
 
 interface VenueDetailsProps {
   venue: {
@@ -51,39 +51,39 @@ export function VenueDetails({ venue }: VenueDetailsProps) {
     food: Utensils,
     bar: Wine,
     accessible: Accessibility,
-    'live-music': Music,
+    "live-music": Music,
     security: Shield,
     cashless: CreditCard,
-    'coat-check': Users,
+    "coat-check": Users,
     merch: Banknote,
     atm: CreditCard,
-    'outdoor-area': Globe,
+    "outdoor-area": Globe,
   };
 
   const amenityLabels: Record<string, string> = {
-    wifi: 'Free WiFi',
-    parking: 'Parking Available',
-    food: 'Food & Concessions',
-    bar: 'Full Bar',
-    accessible: 'Wheelchair Accessible',
-    'live-music': 'Live Music Venue',
-    security: '24/7 Security',
-    cashless: 'Cashless Only',
-    'coat-check': 'Coat Check',
-    merch: 'Merchandise Stand',
-    atm: 'ATM Available',
-    'outdoor-area': 'Outdoor Area',
+    wifi: "Free WiFi",
+    parking: "Parking Available",
+    food: "Food & Concessions",
+    bar: "Full Bar",
+    accessible: "Wheelchair Accessible",
+    "live-music": "Live Music Venue",
+    security: "24/7 Security",
+    cashless: "Cashless Only",
+    "coat-check": "Coat Check",
+    merch: "Merchandise Stand",
+    atm: "ATM Available",
+    "outdoor-area": "Outdoor Area",
   };
 
   const formatTimezone = (tz: string) => {
     // Convert timezone to readable format
     try {
       const offset = new Date()
-        .toLocaleString('en-US', {
+        .toLocaleString("en-US", {
           timeZone: tz,
-          timeZoneName: 'short',
+          timeZoneName: "short",
         })
-        .split(' ')
+        .split(" ")
         .pop();
       return offset || tz;
     } catch {
@@ -157,7 +157,7 @@ export function VenueDetails({ venue }: VenueDetailsProps) {
                 rel="noopener noreferrer"
                 className="break-all text-primary text-sm hover:underline"
               >
-                {venue.website.replace(/^https?:\/\//, '')}
+                {venue.website.replace(/^https?:\/\//, "")}
               </Link>
             </div>
           </div>
@@ -245,9 +245,9 @@ export function VenueDetails({ venue }: VenueDetailsProps) {
               <div className="flex-1">
                 <p className="font-medium text-sm">Parking Information</p>
                 <p className="text-muted-foreground text-xs">
-                  {amenitiesList.includes('parking')
-                    ? 'Parking available - check venue for rates'
-                    : 'Limited parking - consider public transit'}
+                  {amenitiesList.includes("parking")
+                    ? "Parking available - check venue for rates"
+                    : "Limited parking - consider public transit"}
                 </p>
               </div>
             </div>
@@ -265,9 +265,9 @@ export function VenueDetails({ venue }: VenueDetailsProps) {
               <div className="flex-1">
                 <p className="font-medium text-sm">Accessibility</p>
                 <p className="text-muted-foreground text-xs">
-                  {amenitiesList.includes('accessible')
-                    ? 'Wheelchair accessible with ADA compliance'
-                    : 'Contact venue for accessibility information'}
+                  {amenitiesList.includes("accessible")
+                    ? "Wheelchair accessible with ADA compliance"
+                    : "Contact venue for accessibility information"}
                 </p>
               </div>
             </div>
@@ -305,9 +305,9 @@ export function VenueDetails({ venue }: VenueDetailsProps) {
             <div className="flex items-center gap-2">
               <Info className="h-3 w-3 text-muted-foreground" />
               <span className="text-muted-foreground text-xs">
-                {amenitiesList.includes('cashless')
-                  ? 'Cashless venue - cards and mobile payments only'
-                  : 'Cash and cards accepted'}
+                {amenitiesList.includes("cashless")
+                  ? "Cashless venue - cards and mobile payments only"
+                  : "Cash and cards accepted"}
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -322,7 +322,7 @@ export function VenueDetails({ venue }: VenueDetailsProps) {
                 Arrive early for security screening and best parking
               </span>
             </div>
-            {amenitiesList.includes('security') && (
+            {amenitiesList.includes("security") && (
               <div className="flex items-center gap-2">
                 <Shield className="h-3 w-3 text-muted-foreground" />
                 <span className="text-muted-foreground text-xs">

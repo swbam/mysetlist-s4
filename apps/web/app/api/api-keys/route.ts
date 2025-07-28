@@ -1,12 +1,12 @@
-import { createHash } from 'node:crypto';
-import { db } from '@repo/database';
-import { apiKeys } from '@repo/database';
-import { and, eq } from 'drizzle-orm';
-import { nanoid } from 'nanoid';
-import { type NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '~/lib/supabase/server';
+import { createHash } from "node:crypto";
+import { db } from "@repo/database";
+import { apiKeys } from "@repo/database";
+import { and, eq } from "drizzle-orm";
+import { nanoid } from "nanoid";
+import { type NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 
 interface CreateApiKeyRequest {
   name: string;
@@ -20,16 +20,15 @@ interface CreateApiKeyRequest {
 
 // Generate a secure API key
 function generateApiKey(): { key: string; hash: string } {
-  const prefix = 'msl_';
+  const prefix = "msl_";
   const randomPart = nanoid(32);
   const key = `${prefix}${randomPart}`;
 
   // Hash the key for storage
-  const hash = createHash('sha256').update(key).digest('hex');
+  const hash = createHash("sha256").update(key).digest("hex");
 
   return { key, hash };
 }
-
 
 export async function GET(_request: NextRequest) {
   try {
@@ -41,7 +40,7 @@ export async function GET(_request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get user's API keys
@@ -65,8 +64,8 @@ export async function GET(_request: NextRequest) {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to fetch API keys' },
-      { status: 500 }
+      { error: "Failed to fetch API keys" },
+      { status: 500 },
     );
   }
 }
@@ -81,7 +80,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body: CreateApiKeyRequest = await request.json();
@@ -89,8 +88,8 @@ export async function POST(request: NextRequest) {
     // Validate request
     if (!body.name || !body.scopes || !Array.isArray(body.scopes)) {
       return NextResponse.json(
-        { error: 'Invalid request: name and scopes are required' },
-        { status: 400 }
+        { error: "Invalid request: name and scopes are required" },
+        { status: 400 },
       );
     }
 
@@ -102,8 +101,8 @@ export async function POST(request: NextRequest) {
 
     if (existingKeys.length >= 10) {
       return NextResponse.json(
-        { error: 'API key limit reached. Maximum 10 keys allowed.' },
-        { status: 400 }
+        { error: "API key limit reached. Maximum 10 keys allowed." },
+        { status: 400 },
       );
     }
 
@@ -142,12 +141,12 @@ export async function POST(request: NextRequest) {
         key, // Only returned once on creation
       },
       message:
-        'API key created successfully. Store this key securely - it will not be shown again.',
+        "API key created successfully. Store this key securely - it will not be shown again.",
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to create API key' },
-      { status: 500 }
+      { error: "Failed to create API key" },
+      { status: 500 },
     );
   }
 }
@@ -162,16 +161,16 @@ export async function DELETE(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const searchParams = request.nextUrl.searchParams;
-    const keyId = searchParams.get('id');
+    const keyId = searchParams.get("id");
 
     if (!keyId) {
       return NextResponse.json(
-        { error: 'API key ID is required' },
-        { status: 400 }
+        { error: "API key ID is required" },
+        { status: 400 },
       );
     }
 
@@ -186,24 +185,23 @@ export async function DELETE(request: NextRequest) {
         and(
           eq(apiKeys.id, keyId),
           eq(apiKeys.userId, user.id),
-          eq(apiKeys.isActive, true)
-        )
+          eq(apiKeys.isActive, true),
+        ),
       )
       .returning({ id: apiKeys.id });
 
     if (!deleted) {
-      return NextResponse.json({ error: 'API key not found' }, { status: 404 });
+      return NextResponse.json({ error: "API key not found" }, { status: 404 });
     }
 
     return NextResponse.json({
-      message: 'API key revoked successfully',
+      message: "API key revoked successfully",
       id: deleted.id,
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to revoke API key' },
-      { status: 500 }
+      { error: "Failed to revoke API key" },
+      { status: 500 },
     );
   }
 }
-

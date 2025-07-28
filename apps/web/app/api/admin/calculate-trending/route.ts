@@ -1,6 +1,6 @@
-import { artists, db, shows, venues } from '@repo/database';
-import { sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { artists, db, shows, venues } from "@repo/database";
+import { sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Trending score calculation weights
 const WEIGHTS = {
@@ -52,8 +52,7 @@ async function calculateArtistScores() {
       .select({
         count: sql<number>`count(*)::int`,
       })
-      .from(shows)
-      .where(sql`${shows.headlinerArtistId} = ${artist.id} 
+      .from(shows).where(sql`${shows.headlinerArtistId} = ${artist.id} 
         AND ${shows.date} >= CURRENT_DATE - INTERVAL '30 days'`);
 
     const recentShowCount = recentShowsResult[0]?.count || 0;
@@ -133,7 +132,7 @@ async function calculateVenueScores() {
   //   const showCount = Number(venue['show_count']) || 0;
   //   const totalAttendance = Number(venue['total_attendance']) || 0;
   //   const avgRating = Number(venue['avg_rating']) || 0;
-  //   
+  //
   //   const score = showCount * 5 * WEIGHTS.venue.showCount +
   //     (totalAttendance / 100) * WEIGHTS.venue.totalAttendance +
   //     avgRating * 20 * WEIGHTS.venue.averageRating;
@@ -145,15 +144,15 @@ async function calculateVenueScores() {
 export async function POST(request: NextRequest) {
   try {
     // Check for admin authorization
-    const authHeader = request.headers.get('authorization');
-    const adminToken = process.env['ADMIN_API_KEY'];
+    const authHeader = request.headers.get("authorization");
+    const adminToken = process.env["ADMIN_API_KEY"];
 
     if (!authHeader || authHeader !== `Bearer ${adminToken}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') || 'all';
+    const type = searchParams.get("type") || "all";
 
     const results = {
       artists: { updated: 0 },
@@ -162,31 +161,31 @@ export async function POST(request: NextRequest) {
     };
 
     // Calculate scores based on type
-    if (type === 'all' || type === 'artists') {
+    if (type === "all" || type === "artists") {
       results.artists = await calculateArtistScores();
     }
 
-    if (type === 'all' || type === 'shows') {
+    if (type === "all" || type === "shows") {
       results.shows = await calculateShowScores();
     }
 
-    if (type === 'all' || type === 'venues') {
+    if (type === "all" || type === "venues") {
       results.venues = await calculateVenueScores();
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Trending scores calculated successfully',
+      message: "Trending scores calculated successfully",
       results,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Failed to calculate trending scores',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Failed to calculate trending scores",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

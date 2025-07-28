@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@repo/design-system/components/ui/dialog';
-import { Switch } from '@repo/design-system/components/ui/switch';
-import { BarChart3, Cookie, MapPin, Settings, Shield } from 'lucide-react';
-import { useEffect, useState } from 'react';
+} from "@repo/design-system/components/ui/dialog";
+import { Switch } from "@repo/design-system/components/ui/switch";
+import { BarChart3, Cookie, MapPin, Settings, Shield } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface CookiePreferences {
   necessary: boolean;
@@ -32,8 +32,8 @@ export function GDPRCookieConsent() {
 
   useEffect(() => {
     // Check if user has already made a choice
-    const consent = localStorage.getItem('mysetlist-cookie-consent');
-    const preferences = localStorage.getItem('mysetlist-cookie-preferences');
+    const consent = localStorage.getItem("mysetlist-cookie-consent");
+    const preferences = localStorage.getItem("mysetlist-cookie-preferences");
 
     if (consent) {
       // Load saved preferences
@@ -42,7 +42,7 @@ export function GDPRCookieConsent() {
       }
       // Initialize analytics based on saved preferences
       initializeAnalytics(
-        preferences ? JSON.parse(preferences) : { analytics: false }
+        preferences ? JSON.parse(preferences) : { analytics: false },
       );
       return; // Add explicit return for this path
     } else {
@@ -54,7 +54,7 @@ export function GDPRCookieConsent() {
 
   const initializeAnalytics = (prefs: CookiePreferences) => {
     // Initialize PostHog with consent
-    if (typeof window !== 'undefined' && window.posthog) {
+    if (typeof window !== "undefined" && window.posthog) {
       if (prefs.analytics) {
         (window.posthog as any).opt_in_capturing();
       } else {
@@ -63,16 +63,16 @@ export function GDPRCookieConsent() {
     }
 
     // Initialize Google Analytics with consent
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('consent', 'update', {
-        analytics_storage: prefs.analytics ? 'granted' : 'denied',
-        ad_storage: prefs.marketing ? 'granted' : 'denied',
-        personalization_storage: prefs.personalization ? 'granted' : 'denied',
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("consent", "update", {
+        analytics_storage: prefs.analytics ? "granted" : "denied",
+        ad_storage: prefs.marketing ? "granted" : "denied",
+        personalization_storage: prefs.personalization ? "granted" : "denied",
       });
     }
 
     // Initialize Sentry with consent
-    if (typeof window !== 'undefined' && window.Sentry) {
+    if (typeof window !== "undefined" && window.Sentry) {
       const client = window.Sentry.getCurrentHub().getClient();
       if (client) {
         const options = client.getOptions();
@@ -87,11 +87,11 @@ export function GDPRCookieConsent() {
   };
 
   const savePreferences = (prefs: CookiePreferences) => {
-    localStorage.setItem('mysetlist-cookie-consent', 'given');
-    localStorage.setItem('mysetlist-cookie-preferences', JSON.stringify(prefs));
+    localStorage.setItem("mysetlist-cookie-consent", "given");
+    localStorage.setItem("mysetlist-cookie-preferences", JSON.stringify(prefs));
     localStorage.setItem(
-      'mysetlist-cookie-consent-date',
-      new Date().toISOString()
+      "mysetlist-cookie-consent-date",
+      new Date().toISOString(),
     );
 
     setPreferences(prefs);
@@ -129,7 +129,7 @@ export function GDPRCookieConsent() {
   const updatePreference = (key: keyof CookiePreferences, value: boolean) => {
     setPreferences((prev) => ({
       ...prev,
-      [key]: key === 'necessary' ? true : value, // Necessary cookies can't be disabled
+      [key]: key === "necessary" ? true : value, // Necessary cookies can't be disabled
     }));
   };
 
@@ -177,11 +177,11 @@ export function GDPRCookieConsent() {
                     </Button>
                   </div>
                   <p className="mt-2 text-muted-foreground text-xs">
-                    By clicking \"Accept All\", you agree to our{' '}
+                    By clicking \"Accept All\", you agree to our{" "}
                     <a href="/privacy" className="underline hover:text-primary">
                       Privacy Policy
-                    </a>{' '}
-                    and{' '}
+                    </a>{" "}
+                    and{" "}
                     <a href="/terms" className="underline hover:text-primary">
                       Terms of Service
                     </a>
@@ -247,7 +247,7 @@ export function GDPRCookieConsent() {
                 <Switch
                   checked={preferences.analytics}
                   onCheckedChange={(checked) =>
-                    updatePreference('analytics', checked)
+                    updatePreference("analytics", checked)
                   }
                   aria-label="Analytics cookies"
                 />
@@ -273,7 +273,7 @@ export function GDPRCookieConsent() {
                 <Switch
                   checked={preferences.marketing}
                   onCheckedChange={(checked) =>
-                    updatePreference('marketing', checked)
+                    updatePreference("marketing", checked)
                   }
                   aria-label="Marketing cookies"
                 />
@@ -299,7 +299,7 @@ export function GDPRCookieConsent() {
                 <Switch
                   checked={preferences.personalization}
                   onCheckedChange={(checked) =>
-                    updatePreference('personalization', checked)
+                    updatePreference("personalization", checked)
                   }
                   aria-label="Personalization cookies"
                 />

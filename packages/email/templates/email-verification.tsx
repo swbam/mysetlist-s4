@@ -10,7 +10,7 @@ import {
   Section,
   Tailwind,
   Text,
-} from '@react-email/components';
+} from "@react-email/components";
 
 type EmailVerificationTemplateProps = {
   readonly name: string;
@@ -103,7 +103,7 @@ export const EmailVerificationTemplate = ({
               </Text>
 
               <Text className="mt-4 text-sm text-zinc-500">
-                Need help? Contact our support team at{' '}
+                Need help? Contact our support team at{" "}
                 <Link
                   href={`${appUrl}/contact`}
                   className="text-zinc-700 underline"
@@ -129,9 +129,9 @@ export const EmailVerificationTemplate = ({
 );
 
 EmailVerificationTemplate.PreviewProps = {
-  name: 'Alex',
-  verificationUrl: 'https://MySetlist.app/auth/verify?token=abc123def456',
-  appUrl: 'https://MySetlist.app',
+  name: "Alex",
+  verificationUrl: "https://MySetlist.app/auth/verify?token=abc123def456",
+  appUrl: "https://MySetlist.app",
   expirationHours: 24,
 };
 

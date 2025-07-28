@@ -10,7 +10,7 @@ import {
   Section,
   Tailwind,
   Text,
-} from '@react-email/components';
+} from "@react-email/components";
 
 type WelcomeTemplateProps = {
   readonly name: string;
@@ -65,19 +65,19 @@ export const WelcomeTemplate = ({ name, appUrl }: WelcomeTemplateProps) => (
                 </Button>
               </Section>
               <Text className="mt-6 text-sm text-zinc-500">
-                Need help getting started? Check out our{' '}
+                Need help getting started? Check out our{" "}
                 <Link
                   href={`${appUrl}/help`}
                   className="text-zinc-700 underline"
                 >
                   help center
-                </Link>{' '}
+                </Link>{" "}
                 or reply to this email.
               </Text>
               <Hr className="my-4" />
               <Text className="text-xs text-zinc-400">
                 You're receiving this email because you just signed up for
-                MySetlist. You can manage your email preferences{' '}
+                MySetlist. You can manage your email preferences{" "}
                 <Link
                   href={`${appUrl}/settings`}
                   className="text-zinc-600 underline"
@@ -95,8 +95,8 @@ export const WelcomeTemplate = ({ name, appUrl }: WelcomeTemplateProps) => (
 );
 
 WelcomeTemplate.PreviewProps = {
-  name: 'Alex',
-  appUrl: 'https://MySetlist.app',
+  name: "Alex",
+  appUrl: "https://MySetlist.app",
 };
 
 export default WelcomeTemplate;

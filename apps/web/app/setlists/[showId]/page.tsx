@@ -1,12 +1,12 @@
-import { db } from '@repo/database';
-import { artists, shows, venues } from '@repo/database/src/schema';
-import { createMetadata } from '@repo/seo/metadata';
-import { eq } from 'drizzle-orm';
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { RealtimeActivityFeed } from '~/components/realtime-activity-feed';
-import { EnhancedSetlistViewer } from './components/enhanced-setlist-viewer';
-import { ShowInfo } from './components/show-info';
+import { db } from "@repo/database";
+import { artists, shows, venues } from "@repo/database/src/schema";
+import { createMetadata } from "@repo/seo/metadata";
+import { eq } from "drizzle-orm";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { RealtimeActivityFeed } from "~/components/realtime-activity-feed";
+import { EnhancedSetlistViewer } from "./components/enhanced-setlist-viewer";
+import { ShowInfo } from "./components/show-info";
 
 type SetlistPageProps = {
   params: Promise<{
@@ -35,8 +35,8 @@ export const generateMetadata = async ({
 
   if (show.length === 0 || !show[0]) {
     return createMetadata({
-      title: 'Show Not Found - MySetlist',
-      description: 'The requested show could not be found.',
+      title: "Show Not Found - MySetlist",
+      description: "The requested show could not be found.",
     });
   }
 

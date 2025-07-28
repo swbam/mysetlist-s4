@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
 import type {
   RealtimeChannel,
   RealtimePostgresChangesPayload,
-} from '@supabase/supabase-js';
-import { useEffect, useRef, useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+} from "@supabase/supabase-js";
+import { useEffect, useRef, useState } from "react";
+import { createClient } from "~/lib/supabase/client";
 
 type VoteData = {
   upvotes: number;
   downvotes: number;
   netVotes: number;
-  userVote?: 'up' | 'down' | null;
+  userVote?: "up" | "down" | null;
 };
 
 type VoteUpdate = {
@@ -19,7 +19,7 @@ type VoteUpdate = {
   upvotes: number;
   downvotes: number;
   netVotes: number;
-  userVote?: 'up' | 'down' | null;
+  userVote?: "up" | "down" | null;
 };
 
 interface UseRealtimeVotesOptions {
@@ -65,42 +65,43 @@ export function useRealtimeVotes({
 
       // Create new subscription
       const channel = supabase
-        .channel(`votes-${effectiveSongIds.join('-')}`)
+        .channel(`votes-${effectiveSongIds.join("-")}`)
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: '*',
-            schema: 'public',
-            table: 'votes',
-            filter: `setlist_song_id=in.(${effectiveSongIds.join(',')})`,
+            event: "*",
+            schema: "public",
+            table: "votes",
+            filter: `setlist_song_id=in.(${effectiveSongIds.join(",")})`,
           },
           async (payload: RealtimePostgresChangesPayload<any>) => {
             // When a vote changes, fetch the updated counts
             const setlistSongId =
-              (payload.new as any)?.['setlist_song_id'] || (payload.old as any)?.['setlist_song_id'];
+              (payload.new as any)?.["setlist_song_id"] ||
+              (payload.old as any)?.["setlist_song_id"];
             if (setlistSongId) {
               await fetchVoteCounts(setlistSongId);
             }
-          }
+          },
         )
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'setlist_songs',
-            filter: `id=in.(${effectiveSongIds.join(',')})`,
+            event: "UPDATE",
+            schema: "public",
+            table: "setlist_songs",
+            filter: `id=in.(${effectiveSongIds.join(",")})`,
           },
           async (payload: RealtimePostgresChangesPayload<any>) => {
             // When setlist_songs vote counts update, fetch the updated counts
-            const setlistSongId = (payload.new as any)?.['id'];
+            const setlistSongId = (payload.new as any)?.["id"];
             if (setlistSongId) {
               await fetchVoteCounts(setlistSongId);
             }
-          }
+          },
         )
         .subscribe((status) => {
-          setIsSubscribed(status === 'SUBSCRIBED');
+          setIsSubscribed(status === "SUBSCRIBED");
         });
 
       channelRef.current = channel;
@@ -116,7 +117,9 @@ export function useRealtimeVotes({
     const fetchVoteCounts = async (setlistSongId: string) => {
       try {
         // Fetch vote counts from the API
-        const response = await fetch(`/api/votes?setlistSongId=${setlistSongId}`);
+        const response = await fetch(
+          `/api/votes?setlistSongId=${setlistSongId}`,
+        );
         if (response.ok) {
           const data = await response.json();
           const update: VoteUpdate = {
@@ -162,16 +165,16 @@ export function useRealtimeVotes({
         supabase.removeChannel(channelRef.current);
       }
     };
-  }, [effectiveSongIds.join(','), userId, supabase]);
+  }, [effectiveSongIds.join(","), userId, supabase]);
 
   const vote = async (
     setlistSongId: string,
-    voteType: 'up' | 'down' | null
+    voteType: "up" | "down" | null,
   ) => {
-    const response = await fetch('/api/votes', {
-      method: 'POST',
+    const response = await fetch("/api/votes", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         setlistSongId,

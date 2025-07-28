@@ -1,6 +1,6 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import { chromium } from '@playwright/test';
+import fs from "node:fs/promises";
+import path from "node:path";
+import { chromium } from "@playwright/test";
 
 interface PerformanceMetrics {
   url: string;
@@ -24,11 +24,11 @@ interface PerformanceMetrics {
 }
 
 const URLS_TO_MONITOR = [
-  'http://localhost:3001/',
-  'http://localhost:3001/artists',
-  'http://localhost:3001/shows',
-  'http://localhost:3001/trending',
-  'http://localhost:3001/artists/dispatch',
+  "http://localhost:3001/",
+  "http://localhost:3001/artists",
+  "http://localhost:3001/shows",
+  "http://localhost:3001/trending",
+  "http://localhost:3001/artists/dispatch",
 ];
 
 async function measurePerformance(url: string): Promise<PerformanceMetrics> {
@@ -46,70 +46,68 @@ async function measurePerformance(url: string): Promise<PerformanceMetrics> {
   };
 
   // Track errors
-  page.on('console', (msg) => {
-    if (msg.type() === 'error') {
+  page.on("console", (msg) => {
+    if (msg.type() === "error") {
       errors.push(msg.text());
     }
   });
 
   // Track resource sizes
-  page.on('response', (response) => {
+  page.on("response", (response) => {
     const url = response.url();
-    const contentLengthHeader = response.headers()['content-length'];
-    const size = contentLengthHeader
-      ? Number.parseInt(contentLengthHeader)
-      : 0;
+    const contentLengthHeader = response.headers()["content-length"];
+    const size = contentLengthHeader ? Number.parseInt(contentLengthHeader) : 0;
 
     resources.totalSize += size;
 
     if (
-      url.endsWith('.js') ||
-      response.headers()['content-type']?.includes('javascript')
+      url.endsWith(".js") ||
+      response.headers()["content-type"]?.includes("javascript")
     ) {
       resources.jsSize += size;
     } else if (
-      url.endsWith('.css') ||
-      response.headers()['content-type']?.includes('css')
+      url.endsWith(".css") ||
+      response.headers()["content-type"]?.includes("css")
     ) {
       resources.cssSize += size;
-    } else if (response.headers()['content-type']?.includes('image')) {
+    } else if (response.headers()["content-type"]?.includes("image")) {
       resources.imageSize += size;
-    } else if (response.headers()['content-type']?.includes('font')) {
+    } else if (response.headers()["content-type"]?.includes("font")) {
       resources.fontSize += size;
     }
   });
 
   // Navigate and wait for load
-  await page.goto(url, { waitUntil: 'networkidle' });
+  await page.goto(url, { waitUntil: "networkidle" });
 
   // Get performance metrics
   const performanceData = await page.evaluate(() => {
     const getMetric = (name: string) => {
       const entry =
         performance.getEntriesByName(name)[0] ||
-        performance.getEntriesByType('paint').find((e) => e.name === name);
+        performance.getEntriesByType("paint").find((e) => e.name === name);
       return entry ? entry.startTime : 0;
     };
 
     const navigation = performance.getEntriesByType(
-      'navigation'
+      "navigation",
     )[0] as PerformanceNavigationTiming;
 
     // Calculate metrics
-    const FCP = getMetric('first-contentful-paint');
+    const FCP = getMetric("first-contentful-paint");
 
     // Get LCP from PerformanceObserver data
     let LCP = 0;
     const observer = new PerformanceObserver(() => {});
-    observer.observe({ entryTypes: ['largest-contentful-paint'] });
-    const lcpEntries = performance.getEntriesByType('largest-contentful-paint');
+    observer.observe({ entryTypes: ["largest-contentful-paint"] });
+    const lcpEntries = performance.getEntriesByType("largest-contentful-paint");
     if (lcpEntries.length > 0) {
       LCP = lcpEntries[lcpEntries.length - 1]!.startTime;
     }
 
     // Calculate CLS
     let CLS = 0;
-    const clsEntries = performance.getEntriesByType('layout-shift') as any[];
+    const clsEntries = performance.getEntriesByType("layout-shift") as any[];
     clsEntries.forEach((entry) => {
       if (!entry.hadRecentInput) {
         CLS += entry.value;
@@ -119,7 +117,7 @@ async function measurePerformance(url: string): Promise<PerformanceMetrics> {
     // Calculate Total Blocking Time (simplified)
     const TBT = Math.max(
       0,
-      navigation.loadEventEnd - navigation.domInteractive - 50
+      navigation.loadEventEnd - navigation.domInteractive - 50,
     );
 
     // Speed Index (simplified calculation)
@@ -195,13 +193,13 @@ async function generateReport(results: PerformanceMetrics[]) {
     
     <h2>Summary</h2>
     <div>
-        <div class="metric ${report.summary.averageMetrics.FCP < 1500 ? 'good' : report.summary.averageMetrics.FCP < 2500 ? 'warning' : 'bad'}">
+        <div class="metric ${report.summary.averageMetrics.FCP < 1500 ? "good" : report.summary.averageMetrics.FCP < 2500 ? "warning" : "bad"}">
             <strong>Avg FCP:</strong> ${report.summary.averageMetrics.FCP.toFixed(0)}ms
         </div>
-        <div class="metric ${report.summary.averageMetrics.LCP < 2500 ? 'good' : report.summary.averageMetrics.LCP < 4000 ? 'warning' : 'bad'}">
+        <div class="metric ${report.summary.averageMetrics.LCP < 2500 ? "good" : report.summary.averageMetrics.LCP < 4000 ? "warning" : "bad"}">
             <strong>Avg LCP:</strong> ${report.summary.averageMetrics.LCP.toFixed(0)}ms
         </div>
-        <div class="metric ${report.summary.averageMetrics.CLS < 0.1 ? 'good' : report.summary.averageMetrics.CLS < 0.25 ? 'warning' : 'bad'}">
+        <div class="metric ${report.summary.averageMetrics.CLS < 0.1 ? "good" : report.summary.averageMetrics.CLS < 0.25 ? "warning" : "bad"}">
             <strong>Avg CLS:</strong> ${report.summary.averageMetrics.CLS.toFixed(3)}
         </div>
     </div>
@@ -223,17 +221,17 @@ async function generateReport(results: PerformanceMetrics[]) {
             (r) => `
         <tr>
             <td>${r.url}</td>
-            <td class="${r.metrics.FCP < 1500 ? 'good' : r.metrics.FCP < 2500 ? 'warning' : 'bad'}">${r.metrics.FCP.toFixed(0)}</td>
-            <td class="${r.metrics.LCP < 2500 ? 'good' : r.metrics.LCP < 4000 ? 'warning' : 'bad'}">${r.metrics.LCP.toFixed(0)}</td>
-            <td class="${r.metrics.CLS < 0.1 ? 'good' : r.metrics.CLS < 0.25 ? 'warning' : 'bad'}">${r.metrics.CLS.toFixed(3)}</td>
+            <td class="${r.metrics.FCP < 1500 ? "good" : r.metrics.FCP < 2500 ? "warning" : "bad"}">${r.metrics.FCP.toFixed(0)}</td>
+            <td class="${r.metrics.LCP < 2500 ? "good" : r.metrics.LCP < 4000 ? "warning" : "bad"}">${r.metrics.LCP.toFixed(0)}</td>
+            <td class="${r.metrics.CLS < 0.1 ? "good" : r.metrics.CLS < 0.25 ? "warning" : "bad"}">${r.metrics.CLS.toFixed(3)}</td>
             <td>${r.metrics.TBT.toFixed(0)}</td>
             <td>${r.metrics.TTI.toFixed(0)}</td>
             <td>${(r.resources.totalSize / 1024).toFixed(0)}</td>
             <td>${r.errors.length}</td>
         </tr>
-        `
+        `,
           )
-          .join('')}
+          .join("")}
     </table>
     
     <h2>Resource Breakdown</h2>
@@ -255,26 +253,26 @@ async function generateReport(results: PerformanceMetrics[]) {
             <td>${(r.resources.imageSize / 1024).toFixed(0)}</td>
             <td>${(r.resources.fontSize / 1024).toFixed(0)}</td>
         </tr>
-        `
+        `,
           )
-          .join('')}
+          .join("")}
     </table>
 </body>
 </html>
   `;
 
   // Save reports
-  const reportsDir = path.join(process.cwd(), 'performance-reports');
+  const reportsDir = path.join(process.cwd(), "performance-reports");
   await fs.mkdir(reportsDir, { recursive: true });
 
-  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   await fs.writeFile(
     path.join(reportsDir, `performance-${timestamp}.json`),
-    JSON.stringify(report, null, 2)
+    JSON.stringify(report, null, 2),
   );
   await fs.writeFile(
     path.join(reportsDir, `performance-${timestamp}.html`),
-    html
+    html,
   );
 }
 

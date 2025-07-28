@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
+import { Button } from "@repo/design-system/components/ui/button";
+import { cn } from "@repo/design-system/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Bell,
   Music,
@@ -11,14 +11,14 @@ import {
   UserPlus,
   Volume2,
   X,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 export type NotificationType =
-  | 'song_played'
-  | 'vote_update'
-  | 'user_joined'
-  | 'setlist_update';
+  | "song_played"
+  | "vote_update"
+  | "user_joined"
+  | "setlist_update";
 
 export interface RealtimeNotification {
   id: string;
@@ -32,7 +32,7 @@ export interface RealtimeNotification {
 interface RealtimeNotificationsProps {
   notifications: RealtimeNotification[];
   onDismiss?: (id: string) => void;
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
+  position?: "top-right" | "top-left" | "bottom-right" | "bottom-left";
   autoHideDuration?: number;
   maxVisible?: number;
 }
@@ -40,7 +40,7 @@ interface RealtimeNotificationsProps {
 export function RealtimeNotifications({
   notifications,
   onDismiss,
-  position = 'top-right',
+  position = "top-right",
   autoHideDuration = 5000,
   maxVisible = 3,
 }: RealtimeNotificationsProps) {
@@ -59,13 +59,13 @@ export function RealtimeNotifications({
 
   const getIcon = (type: NotificationType) => {
     switch (type) {
-      case 'song_played':
+      case "song_played":
         return PlayCircle;
-      case 'vote_update':
+      case "vote_update":
         return ThumbsUp;
-      case 'user_joined':
+      case "user_joined":
         return UserPlus;
-      case 'setlist_update':
+      case "setlist_update":
         return Music;
       default:
         return Bell;
@@ -74,24 +74,24 @@ export function RealtimeNotifications({
 
   const getNotificationColor = (type: NotificationType) => {
     switch (type) {
-      case 'song_played':
-        return 'from-green-500 to-green-600';
-      case 'vote_update':
-        return 'from-blue-500 to-blue-600';
-      case 'user_joined':
-        return 'from-blue-500 to-purple-600';
-      case 'setlist_update':
-        return 'from-orange-500 to-orange-600';
+      case "song_played":
+        return "from-green-500 to-green-600";
+      case "vote_update":
+        return "from-blue-500 to-blue-600";
+      case "user_joined":
+        return "from-blue-500 to-purple-600";
+      case "setlist_update":
+        return "from-orange-500 to-orange-600";
       default:
-        return 'from-gray-500 to-gray-600';
+        return "from-gray-500 to-gray-600";
     }
   };
 
   const positionClasses = {
-    'top-right': 'top-4 right-4',
-    'top-left': 'top-4 left-4',
-    'bottom-right': 'bottom-4 right-4',
-    'bottom-left': 'bottom-4 left-4',
+    "top-right": "top-4 right-4",
+    "top-left": "top-4 left-4",
+    "bottom-right": "bottom-4 right-4",
+    "bottom-left": "bottom-4 left-4",
   };
 
   useEffect(() => {
@@ -113,8 +113,8 @@ export function RealtimeNotifications({
   return (
     <div
       className={cn(
-        'pointer-events-none fixed z-50',
-        positionClasses[position]
+        "pointer-events-none fixed z-50",
+        positionClasses[position],
       )}
     >
       <AnimatePresence>
@@ -127,7 +127,7 @@ export function RealtimeNotifications({
               key={notification.id}
               initial={{
                 opacity: 0,
-                x: position.includes('right') ? 100 : -100,
+                x: position.includes("right") ? 100 : -100,
                 scale: 0.8,
               }}
               animate={{
@@ -138,11 +138,11 @@ export function RealtimeNotifications({
               }}
               exit={{
                 opacity: 0,
-                x: position.includes('right') ? 100 : -100,
+                x: position.includes("right") ? 100 : -100,
                 scale: 0.8,
               }}
               transition={{
-                type: 'spring',
+                type: "spring",
                 stiffness: 300,
                 damping: 30,
               }}
@@ -152,8 +152,8 @@ export function RealtimeNotifications({
                 {/* Gradient background */}
                 <div
                   className={cn(
-                    'absolute inset-0 bg-gradient-to-r opacity-90',
-                    gradientColor
+                    "absolute inset-0 bg-gradient-to-r opacity-90",
+                    gradientColor,
                   )}
                 />
 
@@ -201,11 +201,11 @@ export function RealtimeNotifications({
 // Hook for managing notifications
 export function useRealtimeNotifications() {
   const [notifications, setNotifications] = useState<RealtimeNotification[]>(
-    []
+    [],
   );
 
   const addNotification = (
-    notification: Omit<RealtimeNotification, 'id' | 'timestamp'>
+    notification: Omit<RealtimeNotification, "id" | "timestamp">,
   ) => {
     const newNotification: RealtimeNotification = {
       ...notification,

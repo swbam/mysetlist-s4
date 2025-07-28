@@ -1,5 +1,5 @@
-import { createServiceClient } from '~/lib/supabase/server';
-import { type NextRequest, NextResponse } from 'next/server';
+import { createServiceClient } from "~/lib/supabase/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -14,24 +14,18 @@ export async function GET(_request: NextRequest) {
     ] = await Promise.all([
       // Active shows (upcoming)
       supabase
-        .from('shows')
-        .select('*', { count: 'exact', head: true })
-        .gte('date', new Date().toISOString().split('T')[0]),
-      
+        .from("shows")
+        .select("*", { count: "exact", head: true })
+        .gte("date", new Date().toISOString().split("T")[0]),
+
       // Total artists
-      supabase
-        .from('artists')
-        .select('*', { count: 'exact', head: true }),
-      
+      supabase.from("artists").select("*", { count: "exact", head: true }),
+
       // Total votes
-      supabase
-        .from('user_votes')
-        .select('*', { count: 'exact', head: true }),
-      
+      supabase.from("user_votes").select("*", { count: "exact", head: true }),
+
       // Total users
-      supabase
-        .from('users')
-        .select('*', { count: 'exact', head: true }),
+      supabase.from("users").select("*", { count: "exact", head: true }),
     ]);
 
     return NextResponse.json({

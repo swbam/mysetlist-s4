@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@repo/design-system/components/ui/dialog';
-import { Music } from 'lucide-react';
-import { useTransition } from 'react';
-import { toast } from 'sonner';
-import { SongSelector } from './song-selector';
+} from "@repo/design-system/components/ui/dialog";
+import { Music } from "lucide-react";
+import { useTransition } from "react";
+import { toast } from "sonner";
+import { SongSelector } from "./song-selector";
 
 interface Song {
   id: string;
@@ -45,10 +45,10 @@ export function AddSongModal({
     startTransition(async () => {
       try {
         // First, check if song exists in our database, if not create it
-        const songResponse = await fetch('/api/songs/upsert', {
-          method: 'POST',
+        const songResponse = await fetch("/api/songs/upsert", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             spotify_id: song.spotify_id,
@@ -62,16 +62,16 @@ export function AddSongModal({
         });
 
         if (!songResponse.ok) {
-          throw new Error('Failed to save song');
+          throw new Error("Failed to save song");
         }
 
         const { song: savedSong } = await songResponse.json();
 
         // Then add to setlist
-        const setlistResponse = await fetch('/api/setlists/songs', {
-          method: 'POST',
+        const setlistResponse = await fetch("/api/setlists/songs", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             setlistId,
@@ -82,7 +82,7 @@ export function AddSongModal({
 
         if (!setlistResponse.ok) {
           const error = await setlistResponse.text();
-          throw new Error(error || 'Failed to add song to setlist');
+          throw new Error(error || "Failed to add song to setlist");
         }
 
         toast.success(`"${song.title}" added to setlist`);
@@ -91,7 +91,7 @@ export function AddSongModal({
         // Keep modal open for adding more songs
         // onOpenChange(false);
       } catch (error: any) {
-        toast.error(error.message || 'Failed to add song');
+        toast.error(error.message || "Failed to add song");
       }
     });
   };

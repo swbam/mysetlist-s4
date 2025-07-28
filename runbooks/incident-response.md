@@ -5,20 +5,21 @@
 **On-Call Phone**: +1-xxx-xxx-xxxx  
 **PagerDuty**: [mysetlist.pagerduty.com](https://mysetlist.pagerduty.com)  
 **Status Page**: [status.mysetlist.app](https://status.mysetlist.app)  
-**War Room**: Slack #incidents  
+**War Room**: Slack #incidents
 
 ## Severity Definitions
 
-| Severity | Description | Response Time | Examples |
-|----------|-------------|---------------|----------|
-| SEV1 | Complete outage, data loss, security breach | 15 min | Site down, database corruption |
-| SEV2 | Major feature broken, partial outage | 30 min | Search broken, voting disabled |
-| SEV3 | Minor feature broken, degraded performance | 2 hours | Slow page loads, UI glitches |
-| SEV4 | Cosmetic issues, non-critical bugs | Next business day | Typos, styling issues |
+| Severity | Description                                 | Response Time     | Examples                       |
+| -------- | ------------------------------------------- | ----------------- | ------------------------------ |
+| SEV1     | Complete outage, data loss, security breach | 15 min            | Site down, database corruption |
+| SEV2     | Major feature broken, partial outage        | 30 min            | Search broken, voting disabled |
+| SEV3     | Minor feature broken, degraded performance  | 2 hours           | Slow page loads, UI glitches   |
+| SEV4     | Cosmetic issues, non-critical bugs          | Next business day | Typos, styling issues          |
 
 ## Initial Response Checklist
 
 ### 1. Acknowledge Alert (0-5 min)
+
 ```bash
 # Acknowledge in PagerDuty
 # Join #incidents channel
@@ -27,6 +28,7 @@
 ```
 
 ### 2. Assess Impact (5-10 min)
+
 - [ ] Check monitoring dashboards
 - [ ] Verify error rates
 - [ ] Check user reports
@@ -34,6 +36,7 @@
 - [ ] Estimate user impact
 
 ### 3. Communicate (10-15 min)
+
 - [ ] Update status page
 - [ ] Notify stakeholders
 - [ ] Create incident channel if SEV1/2
@@ -42,11 +45,12 @@
 ## Diagnostic Commands
 
 ### Health Checks
+
 ```bash
 # API Health
 curl -s https://mysetlist.app/api/health | jq
 
-# Database Health  
+# Database Health
 curl -s https://mysetlist.app/api/health/db | jq
 
 # Check all endpoints
@@ -57,6 +61,7 @@ done
 ```
 
 ### Service Status
+
 ```bash
 # Vercel deployment status
 vercel ls --token=$VERCEL_TOKEN
@@ -69,23 +74,25 @@ vercel logs --token=$VERCEL_TOKEN --follow
 ```
 
 ### Database Diagnostics
+
 ```bash
 # Connection count
 psql $DATABASE_URL -c "SELECT count(*) FROM pg_stat_activity;"
 
 # Active queries
-psql $DATABASE_URL -c "SELECT pid, age(clock_timestamp(), query_start), usename, query 
-FROM pg_stat_activity 
-WHERE state != 'idle' AND query NOT ILIKE '%pg_stat_activity%' 
+psql $DATABASE_URL -c "SELECT pid, age(clock_timestamp(), query_start), usename, query
+FROM pg_stat_activity
+WHERE state != 'idle' AND query NOT ILIKE '%pg_stat_activity%'
 ORDER BY query_start desc;"
 
 # Table sizes
 psql $DATABASE_URL -c "SELECT schemaname,tablename,pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS size
-FROM pg_tables 
+FROM pg_tables
 ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC LIMIT 10;"
 ```
 
 ### Error Investigation
+
 ```bash
 # Recent errors from Sentry
 curl -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
@@ -103,6 +110,7 @@ curl -H "Authorization: Bearer $CLOUDFLARE_TOKEN" \
 **Symptoms**: 5xx errors, error rate alerts
 
 **Investigation**:
+
 ```bash
 # Check recent deployments
 vercel ls --limit=10
@@ -115,6 +123,7 @@ psql $DATABASE_URL -c "SELECT count(*) FROM pg_stat_activity WHERE state = 'idle
 ```
 
 **Solutions**:
+
 1. Rollback recent deployment: `vercel rollback`
 2. Restart stale connections: `SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE state = 'idle in transaction' AND age(clock_timestamp(), query_start) > interval '5 minutes';`
 3. Scale up if resource constrained
@@ -124,11 +133,12 @@ psql $DATABASE_URL -c "SELECT count(*) FROM pg_stat_activity WHERE state = 'idle
 **Symptoms**: Slow response times, timeout alerts
 
 **Investigation**:
+
 ```bash
 # Check slow queries
-psql $DATABASE_URL -c "SELECT query, mean_exec_time, calls 
-FROM pg_stat_statements 
-ORDER BY mean_exec_time DESC 
+psql $DATABASE_URL -c "SELECT query, mean_exec_time, calls
+FROM pg_stat_statements
+ORDER BY mean_exec_time DESC
 LIMIT 10;"
 
 # CDN cache hit rate
@@ -137,6 +147,7 @@ curl -H "Authorization: Bearer $CLOUDFLARE_TOKEN" \
 ```
 
 **Solutions**:
+
 1. Clear CDN cache if stale
 2. Optimize slow queries
 3. Enable emergency caching
@@ -147,6 +158,7 @@ curl -H "Authorization: Bearer $CLOUDFLARE_TOKEN" \
 **Symptoms**: Site unreachable, all health checks failing
 
 **Investigation**:
+
 ```bash
 # DNS resolution
 dig mysetlist.app
@@ -159,6 +171,7 @@ curl https://www.vercel-status.com/api/v2/status.json
 ```
 
 **Solutions**:
+
 1. Check provider status pages
 2. Verify DNS configuration
 3. Failover to backup region
@@ -169,10 +182,11 @@ curl https://www.vercel-status.com/api/v2/status.json
 **Symptoms**: Connection errors, query timeouts
 
 **Investigation**:
+
 ```bash
 # Check connections
-psql $DATABASE_URL -c "SELECT state, count(*) 
-FROM pg_stat_activity 
+psql $DATABASE_URL -c "SELECT state, count(*)
+FROM pg_stat_activity
 GROUP BY state;"
 
 # Check locks
@@ -184,7 +198,7 @@ psql $DATABASE_URL -c "SELECT blocked_locks.pid AS blocked_pid,
        blocking_activity.query AS current_statement_in_blocking_process
 FROM pg_catalog.pg_locks blocked_locks
 JOIN pg_catalog.pg_stat_activity blocked_activity ON blocked_activity.pid = blocked_locks.pid
-JOIN pg_catalog.pg_locks blocking_locks 
+JOIN pg_catalog.pg_locks blocking_locks
     ON blocking_locks.locktype = blocked_locks.locktype
     AND blocking_locks.database IS NOT DISTINCT FROM blocked_locks.database
     AND blocking_locks.relation IS NOT DISTINCT FROM blocked_locks.relation
@@ -201,6 +215,7 @@ WHERE NOT blocked_locks.granted;"
 ```
 
 **Solutions**:
+
 1. Kill blocking queries
 2. Increase connection pool size
 3. Failover to read replica
@@ -209,6 +224,7 @@ WHERE NOT blocked_locks.granted;"
 ## Rollback Procedures
 
 ### Application Rollback
+
 ```bash
 # List recent deployments
 vercel ls --limit=5
@@ -221,12 +237,14 @@ vercel rollback <deployment-url>
 ```
 
 ### Database Rollback
+
 ```bash
 # Use disaster recovery script
 pnpm tsx scripts/disaster-recovery.ts restore --backup-id=<backup-id>
 ```
 
 ### Emergency Cache Clear
+
 ```bash
 # Cloudflare cache
 curl -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/purge_cache" \
@@ -243,24 +261,28 @@ vercel --prod --force
 ### Status Page Updates
 
 **Investigating**
+
 ```
-We are investigating reports of [issue description]. 
+We are investigating reports of [issue description].
 We will provide updates as more information becomes available.
 ```
 
 **Identified**
+
 ```
-We have identified the issue causing [problem description]. 
+We have identified the issue causing [problem description].
 Our team is working on implementing a fix.
 ```
 
 **Monitoring**
+
 ```
-A fix has been implemented and we are monitoring the results. 
+A fix has been implemented and we are monitoring the results.
 Service is operating normally.
 ```
 
 **Resolved**
+
 ```
 This incident has been resolved. [Brief explanation of what happened and what was done].
 We apologize for any inconvenience.
@@ -269,6 +291,7 @@ We apologize for any inconvenience.
 ### Internal Communication
 
 **Incident Start**
+
 ```
 @here SEV[X] Incident Declared
 Issue: [Description]
@@ -280,6 +303,7 @@ Channel: #incident-[timestamp]
 ```
 
 **Update Template**
+
 ```
 UPDATE [timestamp]:
 - Current Status: [status]
@@ -291,12 +315,14 @@ UPDATE [timestamp]:
 ## Post-Incident
 
 ### Immediate Actions (same day)
+
 1. Update status page to resolved
 2. Send all-clear to stakeholders
 3. Document timeline in incident report
 4. Schedule post-mortem meeting
 
 ### Post-Mortem Template
+
 ```markdown
 # Incident Post-Mortem: [Title]
 
@@ -306,43 +332,50 @@ UPDATE [timestamp]:
 **Impact**: [User impact]
 
 ## Timeline
+
 - [HH:MM] Event
 - [HH:MM] Event
 
 ## Root Cause
+
 [Detailed explanation]
 
 ## Contributing Factors
+
 1. [Factor]
 2. [Factor]
 
 ## What Went Well
+
 - [Item]
 - [Item]
 
 ## What Went Wrong
+
 - [Item]
 - [Item]
 
 ## Action Items
-| Action | Owner | Due Date |
-|--------|-------|----------|
-| [Action] | @[owner] | [date] |
+
+| Action   | Owner    | Due Date |
+| -------- | -------- | -------- |
+| [Action] | @[owner] | [date]   |
 
 ## Lessons Learned
+
 [Key takeaways]
 ```
 
 ## Emergency Contacts
 
-| Role | Name | Contact |
-|------|------|---------|
-| Engineering Lead | [Name] | [Phone/Email] |
-| Product Manager | [Name] | [Phone/Email] |
-| DevOps Lead | [Name] | [Phone/Email] |
-| Security Lead | [Name] | [Phone/Email] |
+| Role             | Name    | Contact             |
+| ---------------- | ------- | ------------------- |
+| Engineering Lead | [Name]  | [Phone/Email]       |
+| Product Manager  | [Name]  | [Phone/Email]       |
+| DevOps Lead      | [Name]  | [Phone/Email]       |
+| Security Lead    | [Name]  | [Phone/Email]       |
 | Supabase Support | Support | support@supabase.io |
-| Vercel Support | Support | support@vercel.com |
+| Vercel Support   | Support | support@vercel.com  |
 
 ## Useful Links
 

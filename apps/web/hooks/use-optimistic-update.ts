@@ -1,4 +1,4 @@
-import { useCallback, useState, useTransition } from 'react';
+import { useCallback, useState, useTransition } from "react";
 
 interface UseOptimisticUpdateOptions<T> {
   onUpdate: (newValue: T) => Promise<any>;
@@ -8,7 +8,7 @@ interface UseOptimisticUpdateOptions<T> {
 
 export function useOptimisticUpdate<T>(
   initialValue: T,
-  options: UseOptimisticUpdateOptions<T>
+  options: UseOptimisticUpdateOptions<T>,
 ) {
   const [value, setValue] = useState<T>(initialValue);
   const [optimisticValue, setOptimisticValue] = useState<T>(initialValue);
@@ -17,7 +17,7 @@ export function useOptimisticUpdate<T>(
   const update = useCallback(
     (newValue: T | ((prev: T) => T)) => {
       const nextValue =
-        typeof newValue === 'function'
+        typeof newValue === "function"
           ? (newValue as (prev: T) => T)(optimisticValue)
           : newValue;
 
@@ -40,7 +40,7 @@ export function useOptimisticUpdate<T>(
         }
       });
     },
-    [value, optimisticValue, options]
+    [value, optimisticValue, options],
   );
 
   // Use optimistic value if pending, otherwise use actual value

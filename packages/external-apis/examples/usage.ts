@@ -6,7 +6,7 @@ import {
   setlistfm,
   spotify,
   ticketmaster,
-} from '../index';
+} from "../index";
 
 // Example 1: Using Spotify client directly
 async function spotifyExample() {
@@ -14,13 +14,15 @@ async function spotifyExample() {
   await spotify.authenticate();
 
   // Search for an artist
-  const searchResult = await spotify.searchArtists('Taylor Swift', 1);
+  const searchResult = await spotify.searchArtists("Taylor Swift", 1);
   const artist = searchResult.artists.items[0];
 
   // Get top tracks
   if (artist) {
     const topTracks = await spotify.getArtistTopTracks(artist.id);
-    console.log(`Found ${topTracks.tracks.length} top tracks for ${artist.name}`);
+    console.log(
+      `Found ${topTracks.tracks.length} top tracks for ${artist.name}`,
+    );
   }
 }
 
@@ -28,9 +30,9 @@ async function spotifyExample() {
 async function ticketmasterExample() {
   // Search for events in New York
   const events = await ticketmaster.searchEvents({
-    city: 'New York',
-    stateCode: 'NY',
-    classificationName: 'Music',
+    city: "New York",
+    stateCode: "NY",
+    classificationName: "Music",
     size: 10,
   });
 
@@ -43,7 +45,7 @@ async function ticketmasterExample() {
 async function setlistfmExample() {
   // Search for setlists
   const setlists = await setlistfm.searchSetlists({
-    artistName: 'Radiohead',
+    artistName: "Radiohead",
     year: 2023,
   });
 
@@ -62,14 +64,14 @@ async function syncExample() {
 
   // Sync venues in a city
   const venueSync = new VenueSyncService();
-  await venueSync.syncVenuesByCity('Austin', 'TX');
+  await venueSync.syncVenuesByCity("Austin", "TX");
 
   // Sync upcoming shows
   const showSync = new ShowSyncService();
   await showSync.syncUpcomingShows({
-    city: 'Seattle',
-    stateCode: 'WA',
-    classificationName: 'Music',
+    city: "Seattle",
+    stateCode: "WA",
+    classificationName: "Music",
   });
 }
 
@@ -81,18 +83,18 @@ async function schedulerExample() {
   // await scheduler.runInitialSync();
 
   // Sync data for a specific location
-  await scheduler.syncByLocation('San Francisco', 'CA');
+  await scheduler.syncByLocation("San Francisco", "CA");
 
   // Sync data for a specific artist
-  await scheduler.syncArtistData('The Beatles');
+  await scheduler.syncArtistData("The Beatles");
 
   // Custom sync
   await scheduler.syncCustom({
     artists: true,
     venues: true,
     shows: true,
-    city: 'Portland',
-    stateCode: 'OR',
+    city: "Portland",
+    stateCode: "OR",
   });
 }
 
@@ -107,7 +109,7 @@ async function main() {
     // console.log('\n=== Sync Examples ===');
     // await syncExample();
     // await schedulerExample();
-    
+
     // Reference functions to prevent unused warnings
     void syncExample;
     void schedulerExample;

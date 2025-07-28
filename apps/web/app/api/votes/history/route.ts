@@ -1,25 +1,25 @@
-import { getUser } from '@repo/auth/server';
-import { db } from '@repo/database';
-import { setlistSongs, setlists, shows, songs, votes } from '@repo/database';
-import { eachDayOfInterval, format, startOfDay, subDays } from 'date-fns';
-import { and, desc, eq, gte } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { getUser } from "@repo/auth/server";
+import { db } from "@repo/database";
+import { setlistSongs, setlists, shows, songs, votes } from "@repo/database";
+import { eachDayOfInterval, format, startOfDay, subDays } from "date-fns";
+import { and, desc, eq, gte } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const showId = searchParams.get('showId');
-    const period = searchParams.get('period') || '7d';
-    const page = Number.parseInt(searchParams.get('page') || '1');
-    const limit = Number.parseInt(searchParams.get('limit') || '20');
+    const userId = searchParams.get("userId");
+    const showId = searchParams.get("showId");
+    const period = searchParams.get("period") || "7d";
+    const page = Number.parseInt(searchParams.get("page") || "1");
+    const limit = Number.parseInt(searchParams.get("limit") || "20");
 
     // If no userId provided, try to get from auth
     let targetUserId = userId;
     if (!targetUserId) {
       const user = await getUser();
       if (!user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
       targetUserId = user.id;
     }
@@ -29,13 +29,13 @@ export async function GET(request: NextRequest) {
     let startDate: Date;
 
     switch (period) {
-      case '1d':
+      case "1d":
         startDate = subDays(now, 1);
         break;
-      case '7d':
+      case "7d":
         startDate = subDays(now, 7);
         break;
-      case '30d':
+      case "30d":
         startDate = subDays(now, 30);
         break;
       default:
@@ -44,14 +44,14 @@ export async function GET(request: NextRequest) {
 
     // Build conditions for vote history query
     const conditions = [eq(votes.userId, targetUserId)];
-    
+
     // Apply show filter if provided
     if (showId) {
       conditions.push(eq(shows.id, showId));
     }
 
     // Apply date filter if not all time
-    if (period !== 'all') {
+    if (period !== "all") {
       conditions.push(gte(votes.createdAt, startDate));
     }
 
@@ -120,18 +120,18 @@ export async function GET(request: NextRequest) {
     if (page === 1) {
       // Build conditions for pattern analysis query
       const patternConditions = [eq(votes.userId, targetUserId)];
-      
+
       if (showId) {
         patternConditions.push(eq(shows.id, showId));
       }
 
-      if (period !== 'all') {
+      if (period !== "all") {
         patternConditions.push(gte(votes.createdAt, startDate));
       }
 
       // Get all votes for pattern analysis (within the time period)
       let allVotesQuery;
-      
+
       if (showId) {
         allVotesQuery = db
           .select({
@@ -143,7 +143,9 @@ export async function GET(request: NextRequest) {
           .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
           .innerJoin(shows, eq(setlists.showId, shows.id))
           .where(
-            patternConditions.length > 1 ? and(...patternConditions) : patternConditions[0]
+            patternConditions.length > 1
+              ? and(...patternConditions)
+              : patternConditions[0],
           );
       } else {
         allVotesQuery = db
@@ -153,7 +155,9 @@ export async function GET(request: NextRequest) {
           })
           .from(votes)
           .where(
-            patternConditions.length > 1 ? and(...patternConditions) : patternConditions[0]
+            patternConditions.length > 1
+              ? and(...patternConditions)
+              : patternConditions[0],
           );
       }
 
@@ -161,8 +165,8 @@ export async function GET(request: NextRequest) {
 
       // Calculate pattern statistics
       const totalVotes = allVotes.length;
-      const upvotes = allVotes.filter((v) => v.voteType === 'up').length;
-      const downvotes = allVotes.filter((v) => v.voteType === 'down').length;
+      const upvotes = allVotes.filter((v) => v.voteType === "up").length;
+      const downvotes = allVotes.filter((v) => v.voteType === "down").length;
 
       // Calculate most active hour
       const hourCounts = new Array(24).fill(0);
@@ -174,13 +178,13 @@ export async function GET(request: NextRequest) {
 
       // Calculate daily data for chart
       const days =
-        period === 'all'
+        period === "all"
           ? 30
           : Math.min(
               30,
               Math.ceil(
-                (now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-              )
+                (now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
+              ),
             );
       const chartStartDate = subDays(now, days - 1);
       const dateRange = eachDayOfInterval({ start: chartStartDate, end: now });
@@ -192,14 +196,14 @@ export async function GET(request: NextRequest) {
 
         const dayVotes = allVotes.filter(
           (vote) =>
-            vote.createdAt >= startOfDayDate && vote.createdAt < endOfDayDate
+            vote.createdAt >= startOfDayDate && vote.createdAt < endOfDayDate,
         );
 
         return {
-          date: format(date, 'yyyy-MM-dd'),
+          date: format(date, "yyyy-MM-dd"),
           votes: dayVotes.length,
-          upvotes: dayVotes.filter((v) => v.voteType === 'up').length,
-          downvotes: dayVotes.filter((v) => v.voteType === 'down').length,
+          upvotes: dayVotes.filter((v) => v.voteType === "up").length,
+          downvotes: dayVotes.filter((v) => v.voteType === "down").length,
         };
       });
 
@@ -223,34 +227,34 @@ export async function GET(request: NextRequest) {
 
       // Calculate average votes per day
       const daysPeriod =
-        period === 'all'
+        period === "all"
           ? Math.max(
               1,
               Math.ceil(
                 (now.getTime() -
                   (allVotes.at(-1)?.createdAt.getTime() || now.getTime())) /
-                  (1000 * 60 * 60 * 24)
-              )
+                  (1000 * 60 * 60 * 24),
+              ),
             )
           : Math.ceil(
-              (now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+              (now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
             );
 
       const averageVotesPerDay = totalVotes / Math.max(1, daysPeriod);
 
       // Determine recent trend (simplified)
       const recentVotes = allVotes.filter(
-        (v) => v.createdAt >= subDays(now, 3)
+        (v) => v.createdAt >= subDays(now, 3),
       );
       const olderVotes = allVotes.filter(
-        (v) => v.createdAt >= subDays(now, 6) && v.createdAt < subDays(now, 3)
+        (v) => v.createdAt >= subDays(now, 6) && v.createdAt < subDays(now, 3),
       );
 
-      let recentTrend: 'up' | 'down' | 'stable' = 'stable';
+      let recentTrend: "up" | "down" | "stable" = "stable";
       if (recentVotes.length > olderVotes.length) {
-        recentTrend = 'up';
+        recentTrend = "up";
       } else if (recentVotes.length < olderVotes.length) {
-        recentTrend = 'down';
+        recentTrend = "down";
       }
 
       pattern = {
@@ -275,8 +279,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

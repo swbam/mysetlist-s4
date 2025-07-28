@@ -1,4 +1,4 @@
-import { getUser } from '@repo/auth/server';
+import { getUser } from "@repo/auth/server";
 
 export interface Flag {
   key: string;
@@ -6,7 +6,10 @@ export interface Flag {
   decide(): Promise<boolean>;
 }
 
-export const createFlag = (key: string, defaultValue: boolean = false): Flag => ({
+export const createFlag = (
+  key: string,
+  defaultValue: boolean = false,
+): Flag => ({
   key,
   defaultValue,
   async decide() {

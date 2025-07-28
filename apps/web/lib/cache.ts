@@ -1,21 +1,21 @@
-import { revalidateTag, unstable_cache } from 'next/cache';
+import { revalidateTag, unstable_cache } from "next/cache";
 
 // Cache tags for different entities
 export const CACHE_TAGS = {
-  artists: 'artists',
+  artists: "artists",
   artist: (id: string) => `artist-${id}`,
   artistSlug: (slug: string) => `artist-slug-${slug}`,
-  shows: 'shows',
+  shows: "shows",
   show: (id: string) => `show-${id}`,
   showSlug: (slug: string) => `show-slug-${slug}`,
-  venues: 'venues',
+  venues: "venues",
   venue: (id: string) => `venue-${id}`,
-  setlists: 'setlists',
+  setlists: "setlists",
   setlist: (id: string) => `setlist-${id}`,
-  songs: 'songs',
+  songs: "songs",
   song: (id: string) => `song-${id}`,
-  trending: 'trending',
-  stats: 'stats',
+  trending: "trending",
+  stats: "stats",
   artistStats: (artistId: string) => `artist-stats-${artistId}`,
 } as const;
 
@@ -71,7 +71,7 @@ export async function invalidateShowCache(showId: string, slug?: string) {
 // Helper to invalidate setlist-related caches
 export async function invalidateSetlistCache(
   setlistId: string,
-  showId?: string
+  showId?: string,
 ) {
   const tags = [CACHE_TAGS.setlists, CACHE_TAGS.setlist(setlistId)];
 
@@ -89,7 +89,7 @@ export function createCachedFunction<TArgs extends readonly unknown[], TReturn>(
   options?: {
     revalidate?: number;
     tags?: string[];
-  }
+  },
 ) {
   return unstable_cache(
     async (...args: TArgs) => {
@@ -99,28 +99,28 @@ export function createCachedFunction<TArgs extends readonly unknown[], TReturn>(
     {
       revalidate: options?.revalidate ?? 3600,
       tags: options?.tags ?? keyParts,
-    }
+    },
   );
 }
 
 // Cache headers for different content types
 export const CACHE_HEADERS = {
   // Immutable static assets
-  static: 'public, max-age=31536000, immutable',
+  static: "public, max-age=31536000, immutable",
 
   // Images
-  image: 'public, max-age=86400, stale-while-revalidate=604800',
+  image: "public, max-age=86400, stale-while-revalidate=604800",
 
   // API responses
   api: {
-    public: 'public, max-age=0, s-maxage=300, stale-while-revalidate=600',
-    private: 'private, max-age=0, must-revalidate',
+    public: "public, max-age=0, s-maxage=300, stale-while-revalidate=600",
+    private: "private, max-age=0, must-revalidate",
   },
 
   // HTML pages
   page: {
-    static: 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400',
-    dynamic: 'public, max-age=0, s-maxage=60, stale-while-revalidate=300',
+    static: "public, max-age=0, s-maxage=3600, stale-while-revalidate=86400",
+    dynamic: "public, max-age=0, s-maxage=60, stale-while-revalidate=300",
   },
 } as const;
 

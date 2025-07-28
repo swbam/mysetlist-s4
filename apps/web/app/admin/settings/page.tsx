@@ -18,12 +18,12 @@ import {
   TabsList,
   TabsTrigger,
   Textarea,
-} from '~/components/ui-exports';
-import { Download } from 'lucide-react';
-import { createClient } from '~/lib/supabase/server';
+} from "~/components/ui-exports";
+import { Download } from "lucide-react";
+import { createClient } from "~/lib/supabase/server";
 
 // Force dynamic rendering due to user-specific data fetching
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -33,12 +33,12 @@ export default async function SettingsPage() {
     data: { user },
   } = await supabase.auth.getUser();
   const { data: userData } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user?.id ?? '')
+    .from("users")
+    .select("role")
+    .eq("id", user?.id ?? "")
     .single();
 
-  if (userData?.role !== 'admin') {
+  if (userData?.role !== "admin") {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <Card>

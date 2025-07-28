@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 
 export function useCSRFToken() {
   const [csrfToken, setCSRFToken] = useState<string | null>(null);
@@ -8,12 +8,12 @@ export function useCSRFToken() {
 
   // Get CSRF token from cookie
   const getTokenFromCookie = useCallback((): string | null => {
-    if (typeof window === 'undefined') return null;
-    
+    if (typeof window === "undefined") return null;
+
     const value = `; ${document.cookie}`;
     const parts = value.split(`; csrf-token=`);
     if (parts.length === 2) {
-      return parts.pop()?.split(';').shift() || null;
+      return parts.pop()?.split(";").shift() || null;
     }
     return null;
   }, []);
@@ -22,7 +22,7 @@ export function useCSRFToken() {
   const refreshToken = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/csrf-token');
+      const response = await fetch("/api/csrf-token");
       if (response.ok) {
         const data = await response.json();
         const newToken = data.token;
@@ -30,7 +30,7 @@ export function useCSRFToken() {
         return newToken;
       }
     } catch (error) {
-      console.error('Failed to refresh CSRF token:', error);
+      console.error("Failed to refresh CSRF token:", error);
     } finally {
       setLoading(false);
     }
@@ -51,20 +51,20 @@ export function useCSRFToken() {
   const fetchWithCSRF = useCallback(
     async (url: string, options: RequestInit = {}) => {
       const token = csrfToken || (await refreshToken());
-      
+
       if (!token) {
-        throw new Error('Failed to get CSRF token');
+        throw new Error("Failed to get CSRF token");
       }
 
       const headers = new Headers(options.headers);
-      headers.set('x-csrf-token', token);
+      headers.set("x-csrf-token", token);
 
       return fetch(url, {
         ...options,
         headers,
       });
     },
-    [csrfToken, refreshToken]
+    [csrfToken, refreshToken],
   );
 
   return {

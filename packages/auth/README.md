@@ -52,7 +52,7 @@ JWT_SECRET=your_jwt_secret
 ### 1. Wrap your app with AuthProvider
 
 ```tsx
-import { AuthProvider } from '@repo/auth';
+import { AuthProvider } from "@repo/auth";
 
 export default function RootLayout({
   children,
@@ -62,9 +62,7 @@ export default function RootLayout({
   return (
     <html>
       <body>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
@@ -74,7 +72,7 @@ export default function RootLayout({
 ### 2. Use the useAuth hook
 
 ```tsx
-import { useAuth } from '@repo/auth';
+import { useAuth } from "@repo/auth";
 
 export default function Dashboard() {
   const { user, loading, signOut } = useAuth();
@@ -94,7 +92,7 @@ export default function Dashboard() {
 ### 3. Protect routes
 
 ```tsx
-import { ProtectedRoute } from '@repo/auth';
+import { ProtectedRoute } from "@repo/auth";
 
 export default function ProtectedPage() {
   return (
@@ -125,13 +123,13 @@ import { SignIn, SignUp, ResetPassword } from '@repo/auth';
 ### Profile Management
 
 ```tsx
-import { ProfileSettings } from '@repo/auth';
+import { ProfileSettings } from "@repo/auth";
 
 // Comprehensive profile settings with tabs for:
 // - Profile information
-// - Email preferences  
+// - Email preferences
 // - Spotify integration
-<ProfileSettings />
+<ProfileSettings />;
 ```
 
 ### Route Guards
@@ -150,8 +148,8 @@ import { ProtectedRoute, PublicOnlyRoute, ConditionalAuth } from '@repo/auth';
 </PublicOnlyRoute>
 
 // Conditional rendering based on auth state
-<ConditionalAuth 
-  requireAuth 
+<ConditionalAuth
+  requireAuth
   fallback={<SignInPrompt />}
 >
   <UserContent />
@@ -166,25 +164,25 @@ Main authentication hook with full functionality:
 
 ```tsx
 const {
-  user,           // Current user with profile data
-  session,        // Current session
-  loading,        // Loading state
-  
+  user, // Current user with profile data
+  session, // Current session
+  loading, // Loading state
+
   // Auth methods
   signIn,
   signUp,
   signOut,
   signInWithGoogle,
   signInWithSpotify,
-  
+
   // Profile management
   updateProfile,
   updatePreferences,
-  
+
   // Spotify integration
   linkSpotify,
   refreshSpotifyTokens,
-  
+
   // Utilities
   refreshSession,
 } = useAuth();
@@ -214,7 +212,7 @@ const {
 Core authentication service that handles all auth operations:
 
 ```tsx
-import { UnifiedAuthProvider } from '@repo/auth';
+import { UnifiedAuthProvider } from "@repo/auth";
 
 const authProvider = new UnifiedAuthProvider();
 
@@ -231,7 +229,7 @@ await authProvider.syncSpotifyMusicPreferences(userId);
 Manages user profiles, preferences, and music data:
 
 ```tsx
-import { UserService } from '@repo/auth';
+import { UserService } from "@repo/auth";
 
 const userService = new UserService();
 
@@ -249,7 +247,7 @@ await userService.unfollowArtist(userId, artistId);
 Handles Spotify API integration:
 
 ```tsx
-import { SpotifyService } from '@repo/auth';
+import { SpotifyService } from "@repo/auth";
 
 const spotifyService = new SpotifyService();
 
@@ -267,7 +265,7 @@ const newTokens = await spotifyService.refreshTokens(refreshToken);
 Handles transactional emails:
 
 ```tsx
-import { EmailService } from '@repo/auth';
+import { EmailService } from "@repo/auth";
 
 const emailService = new EmailService();
 
@@ -294,7 +292,7 @@ Add authentication middleware to your Next.js app:
 
 ```tsx
 // middleware.ts
-import { authMiddleware } from '@repo/auth';
+import { authMiddleware } from "@repo/auth";
 
 export async function middleware(request: NextRequest) {
   return await authMiddleware(request);
@@ -302,7 +300,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
 ```
@@ -321,7 +319,7 @@ import type {
   SpotifyProfile,
   UpdateProfileData,
   UpdatePreferencesData,
-} from '@repo/auth';
+} from "@repo/auth";
 ```
 
 ## Error Handling
@@ -332,9 +330,9 @@ All authentication methods return structured errors:
 try {
   await signIn({ email, password });
 } catch (error) {
-  if (error.code === 'invalid_credentials') {
+  if (error.code === "invalid_credentials") {
     // Handle invalid credentials
-  } else if (error.code === 'email_not_confirmed') {
+  } else if (error.code === "email_not_confirmed") {
     // Handle unverified email
   }
 }

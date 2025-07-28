@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Card } from '@repo/design-system/components/ui/card';
-import { MapPin, Users } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Card } from "@repo/design-system/components/ui/card";
+import { MapPin, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 interface NearbyVenue {
   id: string;
@@ -25,7 +25,10 @@ interface NearbyVenuesProps {
   currentVenueId: string;
 }
 
-export function NearbyVenues({ venues, currentVenueId: _currentVenueId }: NearbyVenuesProps) {
+export function NearbyVenues({
+  venues,
+  currentVenueId: _currentVenueId,
+}: NearbyVenuesProps) {
   const formatDistance = (distance: number) => {
     if (distance < 1) {
       return `${Math.round(distance * 1000)}m`;

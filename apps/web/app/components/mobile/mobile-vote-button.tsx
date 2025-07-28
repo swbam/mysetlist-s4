@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, ChevronUp, Heart, Zap } from 'lucide-react';
-import React, { useState, useCallback } from 'react';
-import { toast } from 'sonner';
-import { useAuth } from '~/app/providers/auth-provider';
-import { useRealtimeVotes } from '~/hooks/use-realtime-votes';
+import { Button } from "@repo/design-system/components/ui/button";
+import { cn } from "@repo/design-system/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown, ChevronUp, Heart, Zap } from "lucide-react";
+import React, { useState, useCallback } from "react";
+import { toast } from "sonner";
+import { useAuth } from "~/app/providers/auth-provider";
+import { useRealtimeVotes } from "~/hooks/use-realtime-votes";
 
 interface MobileVoteButtonProps {
   songId: string;
-  onVote: (songId: string, voteType: 'up' | 'down' | null) => Promise<void>;
+  onVote: (songId: string, voteType: "up" | "down" | null) => Promise<void>;
   disabled?: boolean;
   className?: string;
   compact?: boolean;
@@ -43,12 +43,12 @@ export function MobileVoteButton({
   const throttleDelay = 1000; // 1 second
 
   const triggerHaptic = useCallback(() => {
-    if (hapticFeedback && 'vibrate' in navigator) {
+    if (hapticFeedback && "vibrate" in navigator) {
       navigator.vibrate(50); // Short vibration
     }
   }, [hapticFeedback]);
 
-  const handleVote = async (voteType: 'up' | 'down') => {
+  const handleVote = async (voteType: "up" | "down") => {
     const now = Date.now();
 
     if (isVoting || disabled || now - lastVoteTime < throttleDelay) {
@@ -56,7 +56,7 @@ export function MobileVoteButton({
     }
 
     if (!session) {
-      toast.error('Please sign in to vote');
+      toast.error("Please sign in to vote");
       return;
     }
 
@@ -76,40 +76,42 @@ export function MobileVoteButton({
         toast.success(
           `Song hit ${votes.upvotes + votes.downvotes + 1} votes!`,
           {
-            icon: '🎵',
-          }
+            icon: "🎵",
+          },
         );
       }
     } catch (_error) {
-      toast.error('Failed to vote. Please try again.');
+      toast.error("Failed to vote. Please try again.");
     } finally {
       setTimeout(() => setIsVoting(false), 300); // Small delay for animation
     }
   };
 
-  const getVoteIcon = (type: 'up' | 'down') => {
+  const getVoteIcon = (type: "up" | "down") => {
     if (compact) {
-      return type === 'up' ? ChevronUp : ChevronDown;
+      return type === "up" ? ChevronUp : ChevronDown;
     }
 
     // More expressive icons for mobile
     if (votes.userVote === type) {
-      return type === 'up' ? Heart : ChevronDown;
+      return type === "up" ? Heart : ChevronDown;
     }
 
-    return type === 'up' ? ChevronUp : ChevronDown;
+    return type === "up" ? ChevronUp : ChevronDown;
   };
 
-  const getButtonStyle = (type: 'up' | 'down') => {
+  const getButtonStyle = (type: "up" | "down") => {
     // Updated for optimal mobile touch targets (minimum 44px)
-    const baseClasses = compact ? 'h-10 w-10 p-0' : 'h-12 w-12 p-0 md:h-10 md:w-10';
+    const baseClasses = compact
+      ? "h-10 w-10 p-0"
+      : "h-12 w-12 p-0 md:h-10 md:w-10";
 
     const activeClasses =
       votes.userVote === type
-        ? type === 'up'
-          ? 'bg-green-100 text-green-700 border-green-200 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 shadow-sm'
-          : 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 shadow-sm'
-        : '';
+        ? type === "up"
+          ? "bg-green-100 text-green-700 border-green-200 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 shadow-sm"
+          : "bg-red-100 text-red-700 border-red-200 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 shadow-sm"
+        : "";
 
     return cn(baseClasses, activeClasses);
   };
@@ -117,39 +119,41 @@ export function MobileVoteButton({
   const getCountStyle = () => {
     if (compact) {
       return cn(
-        'min-w-[1.5rem] text-center font-medium text-xs tabular-nums',
-        netVotes > 0 && 'text-green-600 dark:text-green-400',
-        netVotes < 0 && 'text-red-600 dark:text-red-400',
-        netVotes === 0 && 'text-muted-foreground'
+        "min-w-[1.5rem] text-center font-medium text-xs tabular-nums",
+        netVotes > 0 && "text-green-600 dark:text-green-400",
+        netVotes < 0 && "text-red-600 dark:text-red-400",
+        netVotes === 0 && "text-muted-foreground",
       );
     }
 
     return cn(
-      'min-w-[2.5rem] text-center font-medium text-sm tabular-nums md:min-w-[2rem] md:text-xs',
-      netVotes > 0 && 'text-green-600 dark:text-green-400',
-      netVotes < 0 && 'text-red-600 dark:text-red-400',
-      netVotes === 0 && 'text-muted-foreground'
+      "min-w-[2.5rem] text-center font-medium text-sm tabular-nums md:min-w-[2rem] md:text-xs",
+      netVotes > 0 && "text-green-600 dark:text-green-400",
+      netVotes < 0 && "text-red-600 dark:text-red-400",
+      netVotes === 0 && "text-muted-foreground",
     );
   };
 
   if (compact) {
     return (
-      <div className={cn('flex items-center gap-1', className)}>
+      <div className={cn("flex items-center gap-1", className)}>
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => handleVote('up')}
+          onClick={() => handleVote("up")}
           disabled={isVoting || disabled}
-          className={getButtonStyle('up')}
+          className={getButtonStyle("up")}
           aria-label={`Upvote (${votes.upvotes} upvotes)`}
         >
           <motion.div
             animate={
-              isVoting && votes.userVote === 'up' ? { scale: [1, 1.2, 1] } : {}
+              isVoting && votes.userVote === "up" ? { scale: [1, 1.2, 1] } : {}
             }
             transition={{ duration: 0.3 }}
           >
-            <>{React.createElement(getVoteIcon('up'), { className: 'h-3 w-3' })}</>
+            <>
+              {React.createElement(getVoteIcon("up"), { className: "h-3 w-3" })}
+            </>
           </motion.div>
         </Button>
 
@@ -160,20 +164,24 @@ export function MobileVoteButton({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => handleVote('down')}
+          onClick={() => handleVote("down")}
           disabled={isVoting || disabled}
-          className={getButtonStyle('down')}
+          className={getButtonStyle("down")}
           aria-label={`Downvote (${votes.downvotes} downvotes)`}
         >
           <motion.div
             animate={
-              isVoting && votes.userVote === 'down'
+              isVoting && votes.userVote === "down"
                 ? { scale: [1, 1.2, 1] }
                 : {}
             }
             transition={{ duration: 0.3 }}
           >
-            <>{React.createElement(getVoteIcon('down'), { className: 'h-3 w-3' })}</>
+            <>
+              {React.createElement(getVoteIcon("down"), {
+                className: "h-3 w-3",
+              })}
+            </>
           </motion.div>
         </Button>
       </div>
@@ -183,32 +191,34 @@ export function MobileVoteButton({
   return (
     <div
       className={cn(
-        'flex flex-col items-center gap-1 md:flex-row md:gap-1',
-        className
+        "flex flex-col items-center gap-1 md:flex-row md:gap-1",
+        className,
       )}
     >
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => handleVote('up')}
+        onClick={() => handleVote("up")}
         disabled={isVoting || disabled}
-        className={getButtonStyle('up')}
+        className={getButtonStyle("up")}
         aria-label={`Upvote (${votes.upvotes} upvotes)`}
       >
         <motion.div
           animate={
-            isVoting && votes.userVote === 'up'
+            isVoting && votes.userVote === "up"
               ? { scale: [1, 1.3, 1], rotate: [0, 5, -5, 0] }
               : {}
           }
-          transition={{ duration: 0.4, ease: 'easeOut' }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <>{React.createElement(getVoteIcon('up'), {
-            className: cn(
-              'h-5 w-5 md:h-4 md:w-4',
-              votes.userVote === 'up' && 'drop-shadow-sm'
-            ),
-          })}</>
+          <>
+            {React.createElement(getVoteIcon("up"), {
+              className: cn(
+                "h-5 w-5 md:h-4 md:w-4",
+                votes.userVote === "up" && "drop-shadow-sm",
+              ),
+            })}
+          </>
         </motion.div>
       </Button>
 
@@ -242,25 +252,27 @@ export function MobileVoteButton({
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => handleVote('down')}
+        onClick={() => handleVote("down")}
         disabled={isVoting || disabled}
-        className={getButtonStyle('down')}
+        className={getButtonStyle("down")}
         aria-label={`Downvote (${votes.downvotes} downvotes)`}
       >
         <motion.div
           animate={
-            isVoting && votes.userVote === 'down'
+            isVoting && votes.userVote === "down"
               ? { scale: [1, 1.3, 1], rotate: [0, -5, 5, 0] }
               : {}
           }
-          transition={{ duration: 0.4, ease: 'easeOut' }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <>{React.createElement(getVoteIcon('down'), {
-            className: cn(
-              'h-5 w-5 md:h-4 md:w-4',
-              votes.userVote === 'down' && 'drop-shadow-sm'
-            ),
-          })}</>
+          <>
+            {React.createElement(getVoteIcon("down"), {
+              className: cn(
+                "h-5 w-5 md:h-4 md:w-4",
+                votes.userVote === "down" && "drop-shadow-sm",
+              ),
+            })}
+          </>
         </motion.div>
       </Button>
 

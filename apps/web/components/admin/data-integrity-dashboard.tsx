@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   AlertCircle,
@@ -9,24 +9,33 @@ import {
   TrendingUp,
   Wrench,
   XCircle,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { Alert, AlertDescription, AlertTitle } from '@repo/design-system/components/ui/alert';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@repo/design-system/components/ui/alert";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Progress } from '@repo/design-system/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
+} from "@repo/design-system/components/ui/card";
+import { Progress } from "@repo/design-system/components/ui/progress";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
 
 interface IntegrityCheck {
   name: string;
-  status: 'pass' | 'fail' | 'warning';
+  status: "pass" | "fail" | "warning";
   message: string;
   details?: any;
 }
@@ -44,11 +53,11 @@ interface IntegrityReport {
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case 'pass':
+    case "pass":
       return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-    case 'fail':
+    case "fail":
       return <XCircle className="h-5 w-5 text-red-500" />;
-    case 'warning':
+    case "warning":
       return <AlertCircle className="h-5 w-5 text-yellow-500" />;
     default:
       return <Loader2 className="h-5 w-5 animate-spin text-gray-500" />;
@@ -57,21 +66,30 @@ const getStatusIcon = (status: string) => {
 
 const getStatusBadge = (status: string) => {
   switch (status) {
-    case 'pass':
+    case "pass":
       return (
-        <Badge variant="outline" className="border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-400">
+        <Badge
+          variant="outline"
+          className="border-green-500/20 bg-green-500/10 text-green-700 dark:text-green-400"
+        >
           Passed
         </Badge>
       );
-    case 'fail':
+    case "fail":
       return (
-        <Badge variant="outline" className="border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400">
+        <Badge
+          variant="outline"
+          className="border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-400"
+        >
           Failed
         </Badge>
       );
-    case 'warning':
+    case "warning":
       return (
-        <Badge variant="outline" className="border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400">
+        <Badge
+          variant="outline"
+          className="border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400"
+        >
           Warning
         </Badge>
       );
@@ -88,9 +106,9 @@ export function DataIntegrityDashboard() {
   const loadReport = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/admin/verify-integrity');
+      const response = await fetch("/api/admin/verify-integrity");
       if (!response.ok) {
-        throw new Error('Failed to load integrity report');
+        throw new Error("Failed to load integrity report");
       }
       const data = await response.json();
       setReport(data);
@@ -107,14 +125,14 @@ export function DataIntegrityDashboard() {
   const executeFix = async (action: string) => {
     setFixing(action);
     try {
-      const response = await fetch('/api/admin/verify-integrity', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/admin/verify-integrity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to execute fix');
+        throw new Error("Failed to execute fix");
       }
 
       const result = await response.json();
@@ -125,13 +143,11 @@ export function DataIntegrityDashboard() {
       // Reload report
       await loadReport();
     } catch (_error) {
-      alert('Failed to execute fix');
+      alert("Failed to execute fix");
     } finally {
       setFixing(null);
     }
   };
-
-
 
   if (!report) {
     return (
@@ -142,7 +158,7 @@ export function DataIntegrityDashboard() {
   }
 
   const healthScore = Math.round(
-    (report.summary.passed / report.summary.total) * 100
+    (report.summary.passed / report.summary.total) * 100,
   );
 
   return (
@@ -160,7 +176,7 @@ export function DataIntegrityDashboard() {
           disabled={loading}
           className="flex items-center gap-2"
         >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
           Refresh Report
         </Button>
       </div>
@@ -250,7 +266,7 @@ export function DataIntegrityDashboard() {
 
         <TabsContent value="failed" className="space-y-4">
           {report.checks
-            .filter((check) => check.status === 'fail')
+            .filter((check) => check.status === "fail")
             .map((check, index) => (
               <CheckCard
                 key={index}
@@ -263,7 +279,7 @@ export function DataIntegrityDashboard() {
 
         <TabsContent value="warnings" className="space-y-4">
           {report.checks
-            .filter((check) => check.status === 'warning')
+            .filter((check) => check.status === "warning")
             .map((check, index) => (
               <CheckCard
                 key={index}
@@ -276,7 +292,7 @@ export function DataIntegrityDashboard() {
 
         <TabsContent value="passed" className="space-y-4">
           {report.checks
-            .filter((check) => check.status === 'pass')
+            .filter((check) => check.status === "pass")
             .map((check, index) => (
               <CheckCard
                 key={index}
@@ -299,8 +315,8 @@ export function DataIntegrityDashboard() {
         <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Button
             variant="outline"
-            onClick={() => executeFix('recalculate_trending')}
-            disabled={fixing === 'recalculate_trending'}
+            onClick={() => executeFix("recalculate_trending")}
+            disabled={fixing === "recalculate_trending"}
             className="flex items-center gap-2"
           >
             <TrendingUp className="h-4 w-4" />
@@ -309,8 +325,8 @@ export function DataIntegrityDashboard() {
 
           <Button
             variant="outline"
-            onClick={() => executeFix('fix_slugs')}
-            disabled={fixing === 'fix_slugs'}
+            onClick={() => executeFix("fix_slugs")}
+            disabled={fixing === "fix_slugs"}
             className="flex items-center gap-2"
           >
             <Wrench className="h-4 w-4" />
@@ -319,8 +335,8 @@ export function DataIntegrityDashboard() {
 
           <Button
             variant="outline"
-            onClick={() => executeFix('cleanup_orphans')}
-            disabled={fixing === 'cleanup_orphans'}
+            onClick={() => executeFix("cleanup_orphans")}
+            disabled={fixing === "cleanup_orphans"}
             className="flex items-center gap-2"
           >
             <Database className="h-4 w-4" />
@@ -340,10 +356,10 @@ interface CheckCardProps {
 
 function CheckCard({ check, onFix, fixing }: CheckCardProps) {
   const canFix =
-    check.status === 'fail' &&
-    (check.name === 'Vote Count Consistency' ||
-      check.name === 'Missing Artist Slugs' ||
-      check.name === 'Orphaned Votes');
+    check.status === "fail" &&
+    (check.name === "Vote Count Consistency" ||
+      check.name === "Missing Artist Slugs" ||
+      check.name === "Orphaned Votes");
 
   return (
     <Card>
@@ -360,12 +376,12 @@ function CheckCard({ check, onFix, fixing }: CheckCardProps) {
                 size="sm"
                 variant="outline"
                 onClick={() => {
-                  if (check.name === 'Vote Count Consistency') {
-                    onFix('fix_vote_counts');
-                  } else if (check.name === 'Missing Artist Slugs') {
-                    onFix('fix_slugs');
-                  } else if (check.name === 'Orphaned Votes') {
-                    onFix('cleanup_orphans');
+                  if (check.name === "Vote Count Consistency") {
+                    onFix("fix_vote_counts");
+                  } else if (check.name === "Missing Artist Slugs") {
+                    onFix("fix_slugs");
+                  } else if (check.name === "Orphaned Votes") {
+                    onFix("cleanup_orphans");
                   }
                 }}
                 disabled={fixing !== null}

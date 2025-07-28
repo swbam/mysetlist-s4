@@ -1,4 +1,4 @@
-import { createClient } from './supabase/client';
+import { createClient } from "./supabase/client";
 
 export interface SyncArtistParams {
   spotifyId?: string;
@@ -28,7 +28,7 @@ export interface SyncSetlistParams {
  */
 export async function syncArtist(params: SyncArtistParams) {
   const supabase = createClient();
-  const { data, error } = await supabase.functions.invoke('sync-artists', {
+  const { data, error } = await supabase.functions.invoke("sync-artists", {
     body: params,
   });
 
@@ -43,7 +43,7 @@ export async function syncArtist(params: SyncArtistParams) {
  */
 export async function syncShows(params: SyncShowsParams) {
   const supabase = createClient();
-  const { data, error } = await supabase.functions.invoke('sync-shows', {
+  const { data, error } = await supabase.functions.invoke("sync-shows", {
     body: params,
   });
 
@@ -58,7 +58,7 @@ export async function syncShows(params: SyncShowsParams) {
  */
 export async function syncSetlist(params: SyncSetlistParams) {
   const supabase = createClient();
-  const { data, error } = await supabase.functions.invoke('sync-setlists', {
+  const { data, error } = await supabase.functions.invoke("sync-setlists", {
     body: params,
   });
 
@@ -72,11 +72,11 @@ export async function syncSetlist(params: SyncSetlistParams) {
  * Trigger a manual sync for all data types
  */
 export async function triggerManualSync(
-  type: 'all' | 'artists' | 'shows' | 'setlists' = 'all',
-  limit = 10
+  type: "all" | "artists" | "shows" | "setlists" = "all",
+  limit = 10,
 ) {
   const supabase = createClient();
-  const { data, error } = await supabase.functions.invoke('scheduled-sync', {
+  const { data, error } = await supabase.functions.invoke("scheduled-sync", {
     body: { type, limit },
   });
 

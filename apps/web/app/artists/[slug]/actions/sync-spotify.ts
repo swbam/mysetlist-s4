@@ -1,9 +1,9 @@
-'use server';
+"use server";
 
-import { db } from '@repo/database';
-import { artists } from '@repo/database/src/schema';
-import { spotify } from '@repo/external-apis';
-import { eq } from 'drizzle-orm';
+import { db } from "@repo/database";
+import { artists } from "@repo/database/src/schema";
+import { spotify } from "@repo/external-apis";
+import { eq } from "drizzle-orm";
 
 export async function syncArtistWithSpotify(artistId: string) {
   // Get artist from database
@@ -14,7 +14,7 @@ export async function syncArtistWithSpotify(artistId: string) {
     .limit(1);
 
   if (!artist || !artist.spotifyId) {
-    throw new Error('Artist not found or no Spotify ID');
+    throw new Error("Artist not found or no Spotify ID");
   }
 
   try {
@@ -40,6 +40,6 @@ export async function syncArtistWithSpotify(artistId: string) {
 
     return { success: true };
   } catch (_error) {
-    return { success: false, error: 'Failed to sync with Spotify' };
+    return { success: false, error: "Failed to sync with Spotify" };
   }
 }

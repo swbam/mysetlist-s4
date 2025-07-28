@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@repo/design-system/components/ui/tooltip';
-import { cn } from '@repo/design-system/lib/utils';
-import { ChevronDown, ChevronUp, Loader2, Lock } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
-import { toast } from 'sonner';
-import { anonymousUser } from '~/lib/anonymous-user';
+} from "@repo/design-system/components/ui/tooltip";
+import { cn } from "@repo/design-system/lib/utils";
+import { ChevronDown, ChevronUp, Loader2, Lock } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
+import { toast } from "sonner";
+import { anonymousUser } from "~/lib/anonymous-user";
 
 interface AnonymousVoteButtonProps {
   setlistSongId: string;
   initialUpvotes: number;
   initialDownvotes: number;
   isAuthenticated: boolean;
-  onVote?: (voteType: 'up' | 'down' | null) => Promise<void>;
+  onVote?: (voteType: "up" | "down" | null) => Promise<void>;
   disabled?: boolean;
-  size?: 'sm' | 'md' | 'lg';
-  variant?: 'default' | 'compact';
+  size?: "sm" | "md" | "lg";
+  variant?: "default" | "compact";
 }
 
 export function AnonymousVoteButton({
@@ -32,13 +32,13 @@ export function AnonymousVoteButton({
   isAuthenticated,
   onVote,
   disabled = false,
-  size = 'md',
-  variant = 'default',
+  size = "md",
+  variant = "default",
 }: AnonymousVoteButtonProps) {
   const router = useRouter();
   const [isVoting, setIsVoting] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [currentVote, setCurrentVote] = useState<'up' | 'down' | null>(null);
+  const [currentVote, setCurrentVote] = useState<"up" | "down" | null>(null);
   const [upvotes, setUpvotes] = useState(initialUpvotes);
   const [downvotes, setDownvotes] = useState(initialDownvotes);
   const [canVote, setCanVote] = useState(true);
@@ -54,7 +54,7 @@ export function AnonymousVoteButton({
     }
   }, [setlistSongId, isAuthenticated]);
 
-  const handleVote = async (voteType: 'up' | 'down') => {
+  const handleVote = async (voteType: "up" | "down") => {
     if (isVoting || disabled || isPending) {
       return;
     }
@@ -63,8 +63,8 @@ export function AnonymousVoteButton({
     if (!isAuthenticated && !canVote && currentVote === null) {
       toast.error("You've used your free vote! Sign up to vote more.", {
         action: {
-          label: 'Sign Up',
-          onClick: () => router.push('/auth/sign-up'),
+          label: "Sign Up",
+          onClick: () => router.push("/auth/sign-up"),
         },
       });
       return;
@@ -81,10 +81,10 @@ export function AnonymousVoteButton({
           await onVote(newVote);
         } else if (isAuthenticated) {
           // Authenticated user with default API
-          const response = await fetch('/api/votes', {
-            method: 'POST',
+          const response = await fetch("/api/votes", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
               setlistSongId,
@@ -93,7 +93,7 @@ export function AnonymousVoteButton({
           });
 
           if (!response.ok) {
-            throw new Error('Failed to vote');
+            throw new Error("Failed to vote");
           }
 
           const data = await response.json();
@@ -107,9 +107,9 @@ export function AnonymousVoteButton({
             anonymousUser.removeVote(setlistSongId);
 
             // Update local state
-            if (currentVote === 'up') {
+            if (currentVote === "up") {
               setUpvotes((prev) => Math.max(0, prev - 1));
-            } else if (currentVote === 'down') {
+            } else if (currentVote === "down") {
               setDownvotes((prev) => Math.max(0, prev - 1));
             }
           } else {
@@ -119,23 +119,23 @@ export function AnonymousVoteButton({
             if (!success) {
               toast.error("You've used your free vote! Sign up to vote more.", {
                 action: {
-                  label: 'Sign Up',
-                  onClick: () => router.push('/auth/sign-up'),
+                  label: "Sign Up",
+                  onClick: () => router.push("/auth/sign-up"),
                 },
               });
               return;
             }
 
             // Update local state optimistically
-            if (currentVote === 'up') {
+            if (currentVote === "up") {
               setUpvotes((prev) => Math.max(0, prev - 1));
-            } else if (currentVote === 'down') {
+            } else if (currentVote === "down") {
               setDownvotes((prev) => Math.max(0, prev - 1));
             }
 
-            if (newVote === 'up') {
+            if (newVote === "up") {
               setUpvotes((prev) => prev + 1);
-            } else if (newVote === 'down') {
+            } else if (newVote === "down") {
               setDownvotes((prev) => prev + 1);
             }
           }
@@ -149,16 +149,16 @@ export function AnonymousVoteButton({
             anonymousUser.getRemainingVotes() === 0 &&
             currentVote === null
           ) {
-            toast.success('Vote recorded! Sign up to vote on more songs.', {
+            toast.success("Vote recorded! Sign up to vote on more songs.", {
               action: {
-                label: 'Sign Up',
-                onClick: () => router.push('/auth/sign-up'),
+                label: "Sign Up",
+                onClick: () => router.push("/auth/sign-up"),
               },
             });
           }
         }
       } catch (_error) {
-        toast.error('Failed to vote');
+        toast.error("Failed to vote");
       } finally {
         setIsVoting(false);
       }
@@ -166,11 +166,11 @@ export function AnonymousVoteButton({
   };
 
   const buttonSize =
-    size === 'sm' ? 'h-6 w-6' : size === 'lg' ? 'h-10 w-10' : 'h-8 w-8';
+    size === "sm" ? "h-6 w-6" : size === "lg" ? "h-10 w-10" : "h-8 w-8";
   const iconSize =
-    size === 'sm' ? 'h-3 w-3' : size === 'lg' ? 'h-5 w-5' : 'h-4 w-4';
+    size === "sm" ? "h-3 w-3" : size === "lg" ? "h-5 w-5" : "h-4 w-4";
 
-  const VoteButtonContent = ({ type }: { type: 'up' | 'down' }) => {
+  const VoteButtonContent = ({ type }: { type: "up" | "down" }) => {
     const isActive = currentVote === type;
     const isDisabled =
       isVoting ||
@@ -186,19 +186,19 @@ export function AnonymousVoteButton({
         disabled={isDisabled}
         className={cn(
           buttonSize,
-          'relative p-0',
+          "relative p-0",
           isActive &&
-            type === 'up' &&
-            'bg-green-100 text-green-700 hover:bg-green-200',
+            type === "up" &&
+            "bg-green-100 text-green-700 hover:bg-green-200",
           isActive &&
-            type === 'down' &&
-            'bg-red-100 text-red-700 hover:bg-red-200',
-          !isAuthenticated && !canVote && currentVote === null && 'opacity-50'
+            type === "down" &&
+            "bg-red-100 text-red-700 hover:bg-red-200",
+          !isAuthenticated && !canVote && currentVote === null && "opacity-50",
         )}
       >
         {isVoting && currentVote === type ? (
-          <Loader2 className={cn(iconSize, 'animate-spin')} />
-        ) : type === 'up' ? (
+          <Loader2 className={cn(iconSize, "animate-spin")} />
+        ) : type === "up" ? (
           <ChevronUp className={iconSize} />
         ) : (
           <ChevronDown className={iconSize} />
@@ -210,7 +210,7 @@ export function AnonymousVoteButton({
     );
   };
 
-  if (variant === 'compact') {
+  if (variant === "compact") {
     return (
       <TooltipProvider>
         <div className="flex items-center gap-1">
@@ -233,10 +233,10 @@ export function AnonymousVoteButton({
 
           <span
             className={cn(
-              'min-w-[2rem] text-center font-medium text-sm',
-              netVotes > 0 && 'text-green-600',
-              netVotes < 0 && 'text-red-600',
-              netVotes === 0 && 'text-muted-foreground'
+              "min-w-[2rem] text-center font-medium text-sm",
+              netVotes > 0 && "text-green-600",
+              netVotes < 0 && "text-red-600",
+              netVotes === 0 && "text-muted-foreground",
             )}
           >
             {netVotes > 0 ? `+${netVotes}` : netVotes}
@@ -285,10 +285,10 @@ export function AnonymousVoteButton({
 
         <span
           className={cn(
-            'font-medium text-sm',
-            netVotes > 0 && 'text-green-600',
-            netVotes < 0 && 'text-red-600',
-            netVotes === 0 && 'text-muted-foreground'
+            "font-medium text-sm",
+            netVotes > 0 && "text-green-600",
+            netVotes < 0 && "text-red-600",
+            netVotes === 0 && "text-muted-foreground",
           )}
         >
           {netVotes > 0 ? `+${netVotes}` : netVotes}

@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { AlertCircle, RefreshCw } from 'lucide-react';
-import Link from 'next/link';
-import React from 'react';
+import { Button } from "@repo/design-system/components/ui/button";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import React from "react";
 
 // Re-export all navigation error boundary components
 export {
   PageErrorBoundary,
   withPageErrorBoundary,
-} from './page-error-boundary';
+} from "./page-error-boundary";
 export {
   RouteErrorBoundary,
   withRouteErrorBoundary,
-} from './route-error-boundary';
-export { SafeLink, useSafeNavigation } from './safe-link';
+} from "./route-error-boundary";
+export { SafeLink, useSafeNavigation } from "./safe-link";
 
 interface Props {
   children: React.ReactNode;
@@ -41,7 +41,7 @@ export class NavigationErrorBoundary extends React.Component<Props, State> {
   handleReset = () => {
     this.setState({ hasError: false, error: null });
     // Force a page reload to clear any corrupted state
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.location.reload();
     }
   };

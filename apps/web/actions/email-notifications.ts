@@ -1,6 +1,6 @@
-'use server';
+"use server";
 
-import { db } from '@repo/database';
+import { db } from "@repo/database";
 import {
   artists,
   emailLogs,
@@ -9,7 +9,7 @@ import {
   shows,
   // Following removed: userFollowsArtists,
   users,
-} from '@repo/database';
+} from "@repo/database";
 import {
   type EmailAddress,
   sendBatchEmails,
@@ -17,8 +17,8 @@ import {
   sendVoteMilestoneEmail,
   sendWeeklyDigestEmail,
   sendWelcomeEmail as sendWelcomeEmailTemplate,
-} from '@repo/email';
-import { and, eq, gte, inArray, isNotNull, isNull, lt, lte } from 'drizzle-orm';
+} from "@repo/email";
+import { and, eq, gte, inArray, isNotNull, isNull, lt, lte } from "drizzle-orm";
 
 // Generic email notification function
 export async function sendEmailNotification(_params: {
@@ -40,8 +40,8 @@ export async function sendDailyShowReminders() {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const todayStr = today.toISOString().split('T')[0]!;
-    const tomorrowStr = tomorrow.toISOString().split('T')[0]!;
+    const todayStr = today.toISOString().split("T")[0]!;
+    const tomorrowStr = tomorrow.toISOString().split("T")[0]!;
 
     // Get all shows happening today or tomorrow
     const upcomingShows = await db
@@ -55,8 +55,8 @@ export async function sendDailyShowReminders() {
         and(
           gte(shows.date, todayStr),
           lte(shows.date, tomorrowStr),
-          eq(shows.status, 'upcoming')
-        )
+          eq(shows.status, "upcoming"),
+        ),
       );
 
     if (!upcomingShows.length) {
@@ -169,7 +169,7 @@ export async function sendDailyShowReminders() {
       success: false,
       usersNotified: 0,
       showsNotified: 0,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -186,7 +186,7 @@ export async function sendWeeklyDigests() {
       .from(users)
       .innerJoin(emailPreferences, eq(emailPreferences.userId, users.id))
       .where(
-        and(eq(emailPreferences.weeklyDigest, true), isNotNull(users.email))
+        and(eq(emailPreferences.weeklyDigest, true), isNotNull(users.email)),
       );
 
     if (!usersWithDigest.length) {
@@ -237,9 +237,9 @@ export async function sendWeeklyDigests() {
         .where(
           and(
             inArray(shows.headlinerArtistId, artistIds),
-            gte(shows.date, today.toISOString().split('T')[0]!),
-            lte(shows.date, weekAhead.toISOString().split('T')[0]!)
-          )
+            gte(shows.date, today.toISOString().split("T")[0]!),
+            lte(shows.date, weekAhead.toISOString().split("T")[0]!),
+          ),
         )
         .limit(10);
 
@@ -247,15 +247,16 @@ export async function sendWeeklyDigests() {
       const artistsWithActivity = popularArtists.slice(0, 5).map((f: any) => ({
         id: f.artist.id,
         name: f.artist.name,
-        upcomingShows: upcomingShows.filter((s: any) => s.artist.id === f.artist.id)
-          .length,
+        upcomingShows: upcomingShows.filter(
+          (s: any) => s.artist.id === f.artist.id,
+        ).length,
       }));
 
       const formattedShows = upcomingShows.slice(0, 5).map((s: any) => ({
         id: s.show.id,
         name: s.show.name,
         artistName: s.artist.name,
-        venue: 'Venue TBA', // In production, join with venues
+        venue: "Venue TBA", // In production, join with venues
         date: new Date(s.show.date).toLocaleDateString(),
       }));
 
@@ -263,16 +264,16 @@ export async function sendWeeklyDigests() {
         to: [
           {
             email: record.user.email,
-            name: record.user.displayName || 'there',
+            name: record.user.displayName || "there",
           },
         ],
-        userName: record.user.displayName || 'there',
+        userName: record.user.displayName || "there",
         weekOf: weekOfStr,
         followedArtists: artistsWithActivity,
         upcomingShows: formattedShows,
         newSetlists: [], // Would need to track new setlists in production
         totalFollowedArtists: popularArtists.length,
-        appUrl: process.env['NEXT_PUBLIC_APP_URL'] || 'https://mysetlist.app',
+        appUrl: process.env["NEXT_PUBLIC_APP_URL"] || "https://mysetlist.app",
       });
 
       totalUsersNotified++;
@@ -285,7 +286,7 @@ export async function sendWeeklyDigests() {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -306,7 +307,7 @@ export async function sendVoteNotification(params: {
       .limit(1);
 
     if (!user[0]?.email) {
-      return { success: false, error: 'User not found or no email' };
+      return { success: false, error: "User not found or no email" };
     }
 
     // Check email preferences
@@ -332,34 +333,34 @@ export async function sendVoteNotification(params: {
       .limit(1);
 
     if (!showData[0]) {
-      return { success: false, error: 'Show not found' };
+      return { success: false, error: "Show not found" };
     }
 
     await sendVoteMilestoneEmail({
-      to: [{ email: user[0].email, name: user[0].displayName || 'there' }],
-      userName: user[0].displayName || 'there',
+      to: [{ email: user[0].email, name: user[0].displayName || "there" }],
+      userName: user[0].displayName || "there",
       show: {
         id: showData[0].show.id,
         name: showData[0].show.name,
         artistName: showData[0].artist.name,
-        venue: 'Venue TBA',
+        venue: "Venue TBA",
         date: new Date(showData[0].show.date).toLocaleDateString(),
       },
       song: {
-        title: 'Song Title', // Would need to join with songs table
+        title: "Song Title", // Would need to join with songs table
         votes: params.totalVotes,
         position: 1,
       },
       milestone: params.milestone,
       totalVotes: params.totalVotes,
-      appUrl: process.env['NEXT_PUBLIC_APP_URL'] || 'https://mysetlist.app',
+      appUrl: process.env["NEXT_PUBLIC_APP_URL"] || "https://mysetlist.app",
     });
 
     return { success: true };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -382,7 +383,7 @@ export async function sendNewShowNotification(params: {
       .limit(1);
 
     if (!showData[0]) {
-      return { success: false, error: 'Show not found' };
+      return { success: false, error: "Show not found" };
     }
 
     // Get users interested in this type of content (replaces followers)
@@ -419,13 +420,15 @@ export async function sendNewShowNotification(params: {
         emails: emailsToSend.map((e) => ({
           ...e,
           email: e.email,
-          userName: e.name || 'there',
+          userName: e.name || "there",
           show: {
             id: showData[0]?.show.id,
             name: showData[0]?.show.name,
             artistName: showData[0]?.artist.name,
-            venue: 'Venue TBA',
-            date: new Date(showData[0]?.show.date || new Date()).toLocaleDateString(),
+            venue: "Venue TBA",
+            date: new Date(
+              showData[0]?.show.date || new Date(),
+            ).toLocaleDateString(),
             announcedAt: new Date().toISOString(),
           },
         })),
@@ -448,7 +451,7 @@ export async function sendNewShowNotification(params: {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -463,7 +466,7 @@ export async function sendWelcomeEmailAction(userId: string) {
       .limit(1);
 
     if (!user[0]?.email) {
-      return { success: false, error: 'User not found or no email' };
+      return { success: false, error: "User not found or no email" };
     }
 
     const toAddress: EmailAddress = { email: user[0].email };
@@ -473,15 +476,15 @@ export async function sendWelcomeEmailAction(userId: string) {
 
     await sendWelcomeEmailTemplate({
       to: [toAddress],
-      name: user[0].displayName || 'there',
-      appUrl: process.env['NEXT_PUBLIC_APP_URL'] || 'https://mysetlist.app',
+      name: user[0].displayName || "there",
+      appUrl: process.env["NEXT_PUBLIC_APP_URL"] || "https://mysetlist.app",
     });
 
     return { success: true };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -516,8 +519,8 @@ export async function processQueuedEmails() {
           lte(emailQueue.scheduledFor, now),
           isNull(emailQueue.sentAt),
           isNull(emailQueue.failedAt),
-          lt(emailQueue.attempts, emailQueue.maxAttempts)
-        )
+          lt(emailQueue.attempts, emailQueue.maxAttempts),
+        ),
       )
       .limit(100); // Process up to 100 emails at a time
 
@@ -538,19 +541,19 @@ export async function processQueuedEmails() {
         let result: { success: boolean; error?: string };
 
         switch (record.queue.emailType) {
-          case 'welcome':
+          case "welcome":
             result = await sendWelcomeEmailAction(record.queue.userId);
             break;
 
-          case 'show_reminder': {
+          case "show_reminder": {
             const showReminderResult = await sendShowReminderEmail({
               to: [
                 {
                   email: record.user.email!,
-                  name: record.user.displayName || 'there',
+                  name: record.user.displayName || "there",
                 },
               ],
-              userName: record.user.displayName || 'there',
+              userName: record.user.displayName || "there",
               show: emailData.show,
               daysUntilShow: emailData.daysUntilShow,
             });
@@ -563,14 +566,14 @@ export async function processQueuedEmails() {
             break;
           }
 
-          case 'new_show':
+          case "new_show":
             result = await sendNewShowNotification({
               artistId: emailData.artistId,
               showId: emailData.showId,
             });
             break;
 
-          case 'weekly_digest':
+          case "weekly_digest":
             // This is handled by a separate cron job
             result = { success: true };
             break;
@@ -598,7 +601,7 @@ export async function processQueuedEmails() {
             emailType: record.queue.emailType,
             subject: `${record.queue.emailType} email`,
             recipient: record.user.email!,
-            status: 'sent',
+            status: "sent",
             sentAt: new Date(),
           });
 
@@ -609,7 +612,7 @@ export async function processQueuedEmails() {
             .update(emailQueue)
             .set({
               attempts: record.queue.attempts + 1,
-              lastError: result.error || 'Unknown error',
+              lastError: result.error || "Unknown error",
               failedAt:
                 record.queue.attempts + 1 >= record.queue.maxAttempts
                   ? new Date()
@@ -626,7 +629,7 @@ export async function processQueuedEmails() {
           .update(emailQueue)
           .set({
             attempts: record.queue.attempts + 1,
-            lastError: error instanceof Error ? error.message : 'Unknown error',
+            lastError: error instanceof Error ? error.message : "Unknown error",
             failedAt:
               record.queue.attempts + 1 >= record.queue.maxAttempts
                 ? new Date()
@@ -651,7 +654,7 @@ export async function processQueuedEmails() {
       processed: 0,
       successful: 0,
       failed: 0,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -662,11 +665,11 @@ export async function getUserEmailPreferences() {
   return {
     emailEnabled: true,
     showReminders: true,
-    showReminderFrequency: 'daily' as const,
+    showReminderFrequency: "daily" as const,
     newShowNotifications: true,
-    newShowFrequency: 'immediately' as const,
+    newShowFrequency: "immediately" as const,
     setlistUpdates: true,
-    setlistUpdateFrequency: 'immediately' as const,
+    setlistUpdateFrequency: "immediately" as const,
     weeklyDigest: true,
     marketingEmails: false,
     securityEmails: true,
@@ -682,13 +685,13 @@ export async function updateEmailPreferences(_data: any) {
 export async function queueEmail(params: {
   userId: string;
   emailType:
-    | 'welcome'
-    | 'show_reminder'
-    | 'new_show'
-    | 'setlist_update'
-    | 'weekly_digest'
-    | 'password_reset'
-    | 'email_verification';
+    | "welcome"
+    | "show_reminder"
+    | "new_show"
+    | "setlist_update"
+    | "weekly_digest"
+    | "password_reset"
+    | "email_verification";
   emailData: any;
   scheduledFor: Date;
 }) {
@@ -710,7 +713,7 @@ export async function queueEmail(params: {
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }

@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/avatar";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card";
 import {
   Activity,
   Calendar,
@@ -22,23 +22,23 @@ import {
   Heart,
   Music,
   RefreshCw,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { cn } from '~/lib/utils';
-import { useAuth } from '../../app/providers/auth-provider';
-import { UserDisplay } from './user-avatar';
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { cn } from "~/lib/utils";
+import { useAuth } from "../../app/providers/auth-provider";
+import { UserDisplay } from "./user-avatar";
 
 interface ActivityItem {
   id: string;
   type:
-    | 'follow'
-    | 'unfollow'
-    | 'vote_up'
-    | 'vote_down'
-    | 'setlist_create'
-    | 'show_attend'
-    | 'show_plan';
+    | "follow"
+    | "unfollow"
+    | "vote_up"
+    | "vote_down"
+    | "setlist_create"
+    | "show_attend"
+    | "show_plan";
   user: {
     id: string;
     email?: string;
@@ -106,16 +106,16 @@ export function ActivityFeed({
     try {
       const params = new URLSearchParams();
       if (userId) {
-        params.set('userId', userId);
+        params.set("userId", userId);
       }
       if (artistId) {
-        params.set('artistId', artistId);
+        params.set("artistId", artistId);
       }
       if (showId) {
-        params.set('showId', showId);
+        params.set("showId", showId);
       }
       if (limit) {
-        params.set('limit', limit.toString());
+        params.set("limit", limit.toString());
       }
 
       const response = await fetch(`/api/activity-feed?${params}`);
@@ -141,7 +141,7 @@ export function ActivityFeed({
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
     if (diffInSeconds < 60) {
-      return 'Just now';
+      return "Just now";
     }
     if (diffInSeconds < 3600) {
       return `${Math.floor(diffInSeconds / 60)}m ago`;
@@ -153,30 +153,30 @@ export function ActivityFeed({
       return `${Math.floor(diffInSeconds / 86400)}d ago`;
     }
 
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
     });
   };
 
   const getActivityIcon = (type: string) => {
-    const iconClass = 'h-4 w-4';
+    const iconClass = "h-4 w-4";
     switch (type) {
-      case 'follow':
-        return <Heart className={cn(iconClass, 'text-red-500')} />;
-      case 'unfollow':
-        return <Heart className={cn(iconClass, 'text-muted-foreground')} />;
-      case 'vote_up':
-        return <ChevronUp className={cn(iconClass, 'text-green-500')} />;
-      case 'vote_down':
-        return <ChevronDown className={cn(iconClass, 'text-red-500')} />;
-      case 'setlist_create':
-        return <Music className={cn(iconClass, 'text-blue-500')} />;
-      case 'show_attend':
-        return <Calendar className={cn(iconClass, 'text-blue-500')} />;
-      case 'show_plan':
-        return <Calendar className={cn(iconClass, 'text-orange-500')} />;
+      case "follow":
+        return <Heart className={cn(iconClass, "text-red-500")} />;
+      case "unfollow":
+        return <Heart className={cn(iconClass, "text-muted-foreground")} />;
+      case "vote_up":
+        return <ChevronUp className={cn(iconClass, "text-green-500")} />;
+      case "vote_down":
+        return <ChevronDown className={cn(iconClass, "text-red-500")} />;
+      case "setlist_create":
+        return <Music className={cn(iconClass, "text-blue-500")} />;
+      case "show_attend":
+        return <Calendar className={cn(iconClass, "text-blue-500")} />;
+      case "show_plan":
+        return <Calendar className={cn(iconClass, "text-orange-500")} />;
       default:
         return <Activity className={iconClass} />;
     }
@@ -184,13 +184,13 @@ export function ActivityFeed({
 
   const getActivityDescription = (activity: ActivityItem) => {
     const userName =
-      activity.user.displayName || activity.user.email?.split('@')[0] || 'User';
+      activity.user.displayName || activity.user.email?.split("@")[0] || "User";
 
     switch (activity.type) {
-      case 'follow':
+      case "follow":
         return (
           <span>
-            <strong>{userName}</strong> started following{' '}
+            <strong>{userName}</strong> started following{" "}
             <Link
               href={`/artists/${activity.artist?.slug}`}
               className="font-medium text-primary hover:underline"
@@ -199,22 +199,22 @@ export function ActivityFeed({
             </Link>
           </span>
         );
-      case 'unfollow':
+      case "unfollow":
         return (
           <span>
-            <strong>{userName}</strong> unfollowed{' '}
+            <strong>{userName}</strong> unfollowed{" "}
             <span className="font-medium">{activity.artist?.name}</span>
           </span>
         );
-      case 'vote_up':
+      case "vote_up":
         return (
           <span>
-            <strong>{userName}</strong> upvoted{' '}
+            <strong>{userName}</strong> upvoted{" "}
             <span className="font-medium">{activity.song?.title}</span>
             {activity.show && (
               <>
-                {' '}
-                for{' '}
+                {" "}
+                for{" "}
                 <Link
                   href={`/shows/${activity.show.slug}`}
                   className="font-medium text-primary hover:underline"
@@ -225,15 +225,15 @@ export function ActivityFeed({
             )}
           </span>
         );
-      case 'vote_down':
+      case "vote_down":
         return (
           <span>
-            <strong>{userName}</strong> downvoted{' '}
+            <strong>{userName}</strong> downvoted{" "}
             <span className="font-medium">{activity.song?.title}</span>
             {activity.show && (
               <>
-                {' '}
-                for{' '}
+                {" "}
+                for{" "}
                 <Link
                   href={`/shows/${activity.show.slug}`}
                   className="font-medium text-primary hover:underline"
@@ -244,10 +244,10 @@ export function ActivityFeed({
             )}
           </span>
         );
-      case 'setlist_create':
+      case "setlist_create":
         return (
           <span>
-            <strong>{userName}</strong> created a setlist for{' '}
+            <strong>{userName}</strong> created a setlist for{" "}
             <Link
               href={`/shows/${activity.show?.slug}`}
               className="font-medium text-primary hover:underline"
@@ -256,10 +256,10 @@ export function ActivityFeed({
             </Link>
           </span>
         );
-      case 'show_attend':
+      case "show_attend":
         return (
           <span>
-            <strong>{userName}</strong> attended{' '}
+            <strong>{userName}</strong> attended{" "}
             <Link
               href={`/shows/${activity.show?.slug}`}
               className="font-medium text-primary hover:underline"
@@ -269,10 +269,10 @@ export function ActivityFeed({
             {activity.venue && <span> at {activity.venue.name}</span>}
           </span>
         );
-      case 'show_plan':
+      case "show_plan":
         return (
           <span>
-            <strong>{userName}</strong> is planning to attend{' '}
+            <strong>{userName}</strong> is planning to attend{" "}
             <Link
               href={`/shows/${activity.show?.slug}`}
               className="font-medium text-primary hover:underline"
@@ -330,7 +330,7 @@ export function ActivityFeed({
                 Activity Feed
               </CardTitle>
               <CardDescription>
-                {userId ? 'User activity' : 'Recent community activity'}
+                {userId ? "User activity" : "Recent community activity"}
               </CardDescription>
             </div>
             <Button
@@ -340,14 +340,14 @@ export function ActivityFeed({
               disabled={refreshing}
             >
               <RefreshCw
-                className={cn('h-4 w-4', refreshing && 'animate-spin')}
+                className={cn("h-4 w-4", refreshing && "animate-spin")}
               />
             </Button>
           </div>
         </CardHeader>
       )}
 
-      <CardContent className={showHeader ? '' : 'pt-6'}>
+      <CardContent className={showHeader ? "" : "pt-6"}>
         <div className="space-y-4">
           {activities.length === 0 ? (
             <div className="py-8 text-center">
@@ -429,7 +429,7 @@ export function ActivityFeedCompact(props: ActivityFeedProps) {
       {...props}
       limit={5}
       showHeader={false}
-      className={cn('border-0 shadow-none', props.className)}
+      className={cn("border-0 shadow-none", props.className)}
     />
   );
 }

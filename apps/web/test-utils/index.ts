@@ -1,15 +1,15 @@
-import type { User } from '@supabase/supabase-js';
-import { vi } from 'vitest';
+import type { User } from "@supabase/supabase-js";
+import { vi } from "vitest";
 
 export const mockUser: User = {
-  id: 'test-user-id',
-  email: 'test@example.com',
+  id: "test-user-id",
+  email: "test@example.com",
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString(),
   app_metadata: {},
   user_metadata: {},
-  aud: 'authenticated',
-  role: 'authenticated',
+  aud: "authenticated",
+  role: "authenticated",
   phone: null,
   confirmation_sent_at: null,
   confirmed_at: new Date().toISOString(),
@@ -42,8 +42,10 @@ export function createMockSupabaseClient() {
     order: vi.fn().mockReturnThis(),
     limit: vi.fn().mockReturnThis(),
     range: vi.fn().mockReturnThis(),
-    single: vi.fn().mockResolvedValue({ data: { role: 'admin' }, error: null }),
-    maybeSingle: vi.fn().mockResolvedValue({ data: { role: 'admin' }, error: null }),
+    single: vi.fn().mockResolvedValue({ data: { role: "admin" }, error: null }),
+    maybeSingle: vi
+      .fn()
+      .mockResolvedValue({ data: { role: "admin" }, error: null }),
   };
 
   return {
@@ -61,13 +63,13 @@ export function createMockSupabaseClient() {
         error: null,
       }),
       getSession: vi.fn().mockResolvedValue({
-        data: { 
+        data: {
           session: {
             user: mockUser,
-            access_token: 'test-token'
-          }
+            access_token: "test-token",
+          },
         },
-        error: null
+        error: null,
       }),
     },
     from: vi.fn().mockImplementation((table: string) => {
@@ -87,38 +89,38 @@ export function createMockSupabaseClient() {
 function getMockDataForTable(table: string) {
   const mockDataMap: Record<string, any> = {
     users: {
-      id: 'test-user-id',
-      email: 'test@example.com',
-      full_name: 'Test User',
-      role: 'admin',
+      id: "test-user-id",
+      email: "test@example.com",
+      full_name: "Test User",
+      role: "admin",
       created_at: new Date().toISOString(),
     },
     artists: {
-      id: 'test-artist-id',
-      name: 'Test Artist',
-      slug: 'test-artist',
-      spotify_id: 'spotify-test-id',
-      image_url: 'https://example.com/artist.jpg',
-      genres: ['rock', 'alternative'],
+      id: "test-artist-id",
+      name: "Test Artist",
+      slug: "test-artist",
+      spotify_id: "spotify-test-id",
+      image_url: "https://example.com/artist.jpg",
+      genres: ["rock", "alternative"],
       popularity: 75,
       followers: 10000,
       verified: true,
       created_at: new Date().toISOString(),
     },
     shows: {
-      id: 'test-show-id',
-      name: 'Test Show',
+      id: "test-show-id",
+      name: "Test Show",
       date: new Date().toISOString(),
-      venue_id: 'test-venue-id',
-      headliner_artist_id: 'test-artist-id',
-      status: 'active',
+      venue_id: "test-venue-id",
+      headliner_artist_id: "test-artist-id",
+      status: "active",
       created_at: new Date().toISOString(),
     },
     votes: {
-      id: 'test-vote-id',
-      song_id: 'test-song-id',
-      user_id: 'test-user-id',
-      vote_type: 'upvote',
+      id: "test-vote-id",
+      song_id: "test-song-id",
+      user_id: "test-user-id",
+      vote_type: "upvote",
       created_at: new Date().toISOString(),
     },
   };
@@ -127,7 +129,7 @@ function getMockDataForTable(table: string) {
 }
 
 export function mockSupabase() {
-  vi.mock('~/lib/supabase/server', () => ({
+  vi.mock("~/lib/supabase/server", () => ({
     createClient: vi.fn().mockResolvedValue(createMockSupabaseClient()),
   }));
 }
@@ -137,5 +139,5 @@ export function renderWithProviders(component: React.ReactElement) {
   return component;
 }
 
-export * from './performance';
-export * from './accessibility';
+export * from "./performance";
+export * from "./accessibility";

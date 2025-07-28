@@ -1,11 +1,11 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
+import { type NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import {
   authRateLimitMiddleware,
   signInRateLimiter,
-} from '~/lib/auth-rate-limit';
-import { validateCSRFToken } from '~/lib/csrf';
-import { createClient } from '~/lib/supabase/server';
+} from "~/lib/auth-rate-limit";
+import { validateCSRFToken } from "~/lib/csrf";
+import { createClient } from "~/lib/supabase/server";
 
 const signInSchema = z.object({
   email: z.string().email(),
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
     // Apply rate limiting
     const rateLimitResponse = await authRateLimitMiddleware(
       request,
-      signInRateLimiter
+      signInRateLimiter,
     );
     if (rateLimitResponse) {
       return rateLimitResponse;
@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
     const isValidCSRF = await validateCSRFToken(request);
     if (!isValidCSRF) {
       return NextResponse.json(
-        { error: 'Invalid CSRF token' },
-        { status: 403 }
+        { error: "Invalid CSRF token" },
+        { status: 403 },
       );
     }
 
@@ -40,10 +40,10 @@ export async function POST(request: NextRequest) {
     if (!validationResult.success) {
       return NextResponse.json(
         {
-          error: 'Invalid request data',
+          error: "Invalid request data",
           issues: validationResult.error.issues,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -66,8 +66,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

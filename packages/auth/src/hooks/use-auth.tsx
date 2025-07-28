@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import type React from 'react';
+import { useRouter } from "next/navigation";
+import type React from "react";
 import {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useState,
-} from 'react';
-import { AUTH_CONFIG } from '../config/supabase';
-import { SupabaseAuthProvider } from '../providers/supabase';
-import type { AuthSession, AuthUser } from '../types';
+} from "react";
+import { AUTH_CONFIG } from "../config/supabase";
+import { SupabaseAuthProvider } from "../providers/supabase";
+import type { AuthSession, AuthUser } from "../types";
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -22,12 +22,12 @@ interface AuthContextType {
   signUp: (
     email: string,
     password: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ) => Promise<AuthUser>;
   signUpWithEmail: (
     email: string,
     password: string,
-    metadata?: Record<string, any>
+    metadata?: Record<string, any>,
   ) => Promise<AuthUser>;
   signInWithSpotify: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
@@ -41,7 +41,7 @@ interface AuthContextType {
   linkSpotify: () => Promise<void>;
   refreshSpotifyTokens: () => Promise<void>;
   isAuthenticated: boolean;
-  hasRole: (role: 'user' | 'moderator' | 'admin') => boolean;
+  hasRole: (role: "user" | "moderator" | "admin") => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -54,10 +54,10 @@ interface AuthProviderProps {
 export function AuthProvider({ children, initialSession }: AuthProviderProps) {
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(
-    initialSession?.user || null
+    initialSession?.user || null,
   );
   const [session, setSession] = useState<AuthSession | null>(
-    initialSession || null
+    initialSession || null,
   );
   const [loading, setLoading] = useState(!initialSession);
 
@@ -84,21 +84,23 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
     initializeAuth();
 
     // Listen for auth state changes
-    const unsubscribe = authProvider.onAuthStateChange(async (event, session) => {
-      setSession(session);
-      setUser(session?.user || null);
-      setLoading(false);
+    const unsubscribe = authProvider.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user || null);
+        setLoading(false);
 
-      // Handle navigation based on auth state
-      if (event === 'SIGNED_IN' && session) {
-        router.push(AUTH_CONFIG.redirectUrls.signIn);
-      } else if (event === 'SIGNED_OUT') {
-        router.push(AUTH_CONFIG.redirectUrls.signOut);
-      }
+        // Handle navigation based on auth state
+        if (event === "SIGNED_IN" && session) {
+          router.push(AUTH_CONFIG.redirectUrls.signIn);
+        } else if (event === "SIGNED_OUT") {
+          router.push(AUTH_CONFIG.redirectUrls.signOut);
+        }
 
-      // Refresh the page to update server state
-      router.refresh();
-    });
+        // Refresh the page to update server state
+        router.refresh();
+      },
+    );
 
     return () => unsubscribe();
   }, [initialSession, router]);
@@ -118,7 +120,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
     async (email: string, password: string) => {
       return signIn(email, password);
     },
-    [signIn]
+    [signIn],
   );
 
   const signUp = useCallback(
@@ -132,20 +134,20 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
         throw error;
       }
     },
-    []
+    [],
   );
 
   const signUpWithEmail = useCallback(
     async (email: string, password: string, metadata?: Record<string, any>) => {
       return signUp(email, password, metadata);
     },
-    [signUp]
+    [signUp],
   );
 
   const signInWithSpotify = useCallback(async () => {
     setLoading(true);
     try {
-      await authProvider.signInWithOAuth('spotify');
+      await authProvider.signInWithOAuth("spotify");
     } catch (error) {
       setLoading(false);
       throw error;
@@ -155,7 +157,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
   const signInWithGoogle = useCallback(async () => {
     setLoading(true);
     try {
-      await authProvider.signInWithOAuth('google');
+      await authProvider.signInWithOAuth("google");
     } catch (error) {
       setLoading(false);
       throw error;
@@ -205,26 +207,26 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
 
   const updatePreferences = useCallback(async (preferences: any) => {
     // TODO: Implement preferences update logic
-    console.log('Updating preferences:', preferences);
+    console.log("Updating preferences:", preferences);
   }, []);
 
   const linkSpotify = useCallback(async () => {
     // TODO: Implement Spotify linking logic
-    console.log('Linking Spotify account');
+    console.log("Linking Spotify account");
   }, []);
 
   const refreshSpotifyTokens = useCallback(async () => {
     // TODO: Implement Spotify token refresh logic
-    console.log('Refreshing Spotify tokens');
+    console.log("Refreshing Spotify tokens");
   }, []);
 
   const hasRole = useCallback(
-    (requiredRole: 'user' | 'moderator' | 'admin') => {
+    (requiredRole: "user" | "moderator" | "admin") => {
       if (!user) {
         return false;
       }
 
-      const userRole = user.app_metadata?.['role'] || 'user';
+      const userRole = user.app_metadata?.["role"] || "user";
       const roleHierarchy = { user: 0, moderator: 1, admin: 2 };
 
       return (
@@ -232,7 +234,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
         roleHierarchy[requiredRole]
       );
     },
-    [user]
+    [user],
   );
 
   const value: AuthContextType = {
@@ -264,7 +266,7 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

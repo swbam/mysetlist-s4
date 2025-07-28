@@ -1,32 +1,31 @@
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { Music, TrendingUp, Users } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { absoluteUrl } from '~/lib/absolute-url';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { Music, TrendingUp, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { absoluteUrl } from "~/lib/absolute-url";
 
 async function getTrendingArtists() {
   try {
-    const res = await fetch(
-      absoluteUrl('/api/trending/artists?limit=4'),
-      { 
-        next: { revalidate: 300 },
-        headers: {
-          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-        },
-      }
-    );
+    const res = await fetch(absoluteUrl("/api/trending/artists?limit=4"), {
+      next: { revalidate: 300 },
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
+    });
 
     if (!res.ok) {
-      console.warn(`Failed to fetch trending artists: ${res.status} ${res.statusText}`);
+      console.warn(
+        `Failed to fetch trending artists: ${res.status} ${res.statusText}`,
+      );
       return [];
     }
 
     const data = await res.json();
     return data.artists || [];
   } catch (error) {
-    console.error('Error fetching trending artists:', error);
+    console.error("Error fetching trending artists:", error);
     return [];
   }
 }
@@ -106,19 +105,21 @@ export async function TrendingArtists() {
                   </h3>
                 </Link>
 
-                {artist.genres && Array.isArray(artist.genres) && artist.genres.length > 0 && (
-                  <div className="mb-3 flex gap-2">
-                    {artist.genres.slice(0, 2).map((genre: string) => (
-                      <Badge
-                        key={genre}
-                        variant="outline"
-                        className="text-xs"
-                      >
-                        {genre}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+                {artist.genres &&
+                  Array.isArray(artist.genres) &&
+                  artist.genres.length > 0 && (
+                    <div className="mb-3 flex gap-2">
+                      {artist.genres.slice(0, 2).map((genre: string) => (
+                        <Badge
+                          key={genre}
+                          variant="outline"
+                          className="text-xs"
+                        >
+                          {genre}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
 
                 <div className="flex items-center justify-between text-muted-foreground text-sm">
                   <span className="flex items-center gap-1">

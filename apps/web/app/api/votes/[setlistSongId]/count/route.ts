@@ -1,8 +1,8 @@
-import { getUser } from '@repo/auth/server';
-import { db } from '@repo/database';
-import { votes } from '@repo/database';
-import { and, count, eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { getUser } from "@repo/auth/server";
+import { db } from "@repo/database";
+import { votes } from "@repo/database";
+import { and, count, eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 type RouteParams = {
   params: Promise<{
@@ -20,14 +20,14 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       .select({ count: count() })
       .from(votes)
       .where(
-        and(eq(votes.setlistSongId, setlistSongId), eq(votes.voteType, 'up'))
+        and(eq(votes.setlistSongId, setlistSongId), eq(votes.voteType, "up")),
       );
 
     const downvoteCount = await db
       .select({ count: count() })
       .from(votes)
       .where(
-        and(eq(votes.setlistSongId, setlistSongId), eq(votes.voteType, 'down'))
+        and(eq(votes.setlistSongId, setlistSongId), eq(votes.voteType, "down")),
       );
 
     const upvotes = upvoteCount[0]?.count || 0;
@@ -35,13 +35,16 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     const netVotes = upvotes - downvotes;
 
     // Get user's vote if authenticated
-    let userVote: 'up' | 'down' | null = null;
+    let userVote: "up" | "down" | null = null;
     if (user) {
       const userVoteRecord = await db
         .select({ voteType: votes.voteType })
         .from(votes)
         .where(
-          and(eq(votes.setlistSongId, setlistSongId), eq(votes.userId, user.id))
+          and(
+            eq(votes.setlistSongId, setlistSongId),
+            eq(votes.userId, user.id),
+          ),
         )
         .limit(1);
 
@@ -59,8 +62,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

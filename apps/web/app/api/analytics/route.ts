@@ -1,17 +1,17 @@
-import { db } from '@repo/database';
-import { sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
-import { withCache } from '~/lib/cache/redis';
+import { db } from "@repo/database";
+import { sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
+import { withCache } from "~/lib/cache/redis";
 
-export const runtime = 'nodejs';
-export const dynamic = 'force-dynamic';
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 interface AnalyticsQuery {
-  metric: 'overview' | 'trending' | 'engagement' | 'growth' | 'performance';
-  period?: 'day' | 'week' | 'month' | 'year' | 'all';
+  metric: "overview" | "trending" | "engagement" | "growth" | "performance";
+  period?: "day" | "week" | "month" | "year" | "all";
   startDate?: string;
   endDate?: string;
-  groupBy?: 'day' | 'week' | 'month';
+  groupBy?: "day" | "week" | "month";
   filters?: {
     artistIds?: string[];
     venueIds?: string[];
@@ -25,16 +25,16 @@ const getCachedAnalytics = withCache(
     return await getAnalyticsData(query);
   },
   (query) => `analytics:${JSON.stringify(query)}`,
-  900 // 15 minutes
+  900, // 15 minutes
 );
 
 async function getAnalyticsData(query: AnalyticsQuery) {
   const {
     metric,
-    period = 'week',
+    period = "week",
     startDate,
     endDate,
-    groupBy = 'day',
+    groupBy = "day",
     filters,
   } = query;
 
@@ -42,15 +42,15 @@ async function getAnalyticsData(query: AnalyticsQuery) {
   const dates = getDateRange(period, startDate, endDate);
 
   switch (metric) {
-    case 'overview':
+    case "overview":
       return getOverviewMetrics(dates, filters);
-    case 'trending':
+    case "trending":
       return getTrendingMetrics(dates, filters);
-    case 'engagement':
+    case "engagement":
       return getEngagementMetrics(dates, groupBy, filters);
-    case 'growth':
+    case "growth":
       return getGrowthMetrics(dates, groupBy, filters);
-    case 'performance':
+    case "performance":
       return getPerformanceMetrics(dates, filters);
     default:
       throw new Error(`Unknown metric: ${metric}`);
@@ -66,20 +66,20 @@ function getDateRange(period: string, startDate?: string, endDate?: string) {
   } else {
     start = new Date(end);
     switch (period) {
-      case 'day':
+      case "day":
         start.setDate(start.getDate() - 1);
         break;
-      case 'week':
+      case "week":
         start.setDate(start.getDate() - 7);
         break;
-      case 'month':
+      case "month":
         start.setMonth(start.getMonth() - 1);
         break;
-      case 'year':
+      case "year":
         start.setFullYear(start.getFullYear() - 1);
         break;
-      case 'all':
-        start = new Date('2020-01-01');
+      case "all":
+        start = new Date("2020-01-01");
         break;
     }
   }
@@ -170,7 +170,7 @@ async function getTrendingMetrics(dates: any, _filters?: any) {
 async function getEngagementMetrics(
   dates: any,
   groupBy: string,
-  _filters?: any
+  _filters?: any,
 ) {
   const timeFormat = getTimeGroupFormat(groupBy);
 
@@ -188,8 +188,8 @@ async function getEngagementMetrics(
         ${dates.end}::timestamp,
         '1 ${sql.raw(groupBy)}'::interval
       ) AS period
-      LEFT JOIN setlist_votes sv ON ${sql.raw(timeFormat.replace('period', 'sv.created_at'))} = ${sql.raw(timeFormat)}
-      LEFT JOIN show_attendance sa ON ${sql.raw(timeFormat.replace('period', 'sa.created_at'))} = ${sql.raw(timeFormat)}
+      LEFT JOIN setlist_votes sv ON ${sql.raw(timeFormat.replace("period", "sv.created_at"))} = ${sql.raw(timeFormat)}
+      LEFT JOIN show_attendance sa ON ${sql.raw(timeFormat.replace("period", "sa.created_at"))} = ${sql.raw(timeFormat)}
       GROUP BY period
       ORDER BY period
     )
@@ -204,15 +204,17 @@ async function getEngagementMetrics(
     summary: {
       totalVotes: rows.reduce(
         (sum: number, row: any) => sum + (row.total_votes || 0),
-        0
+        0,
       ),
       totalAttendances: rows.reduce(
         (sum: number, row: any) => sum + (row.total_attendances || 0),
-        0
+        0,
       ),
       avgVoteValue:
-        rows.reduce((sum: number, row: any) => sum + (row.avg_vote_value || 0), 0) /
-        (rows.length || 1),
+        rows.reduce(
+          (sum: number, row: any) => sum + (row.avg_vote_value || 0),
+          0,
+        ) / (rows.length || 1),
     },
   };
 }
@@ -265,19 +267,21 @@ async function getGrowthMetrics(dates: any, groupBy: string, _filters?: any) {
     summary: {
       totalNewUsers: rows.reduce(
         (sum: number, row: any) => sum + (row.new_users || 0),
-        0
+        0,
       ),
       totalNewArtists: rows.reduce(
         (sum: number, row: any) => sum + (row.new_artists || 0),
-        0
+        0,
       ),
       totalNewShows: rows.reduce(
         (sum: number, row: any) => sum + (row.new_shows || 0),
-        0
+        0,
       ),
       avgGrowthRate:
-        rows.reduce((sum: number, row: any) => sum + (row.user_growth_rate || 0), 0) /
-        (rows.length || 1),
+        rows.reduce(
+          (sum: number, row: any) => sum + (row.user_growth_rate || 0),
+          0,
+        ) / (rows.length || 1),
     },
   };
 }
@@ -309,9 +313,7 @@ async function getPerformanceMetrics(dates: any, _filters?: any) {
   `;
 
   const [apiResult, dbResult] = await Promise.all([
-    db
-      .execute(apiMetrics)
-      .catch(() => ({ rows: [{}] })), // Graceful fallback
+    db.execute(apiMetrics).catch(() => ({ rows: [{}] })), // Graceful fallback
     db.execute(dbMetrics).catch(() => ({ rows: [{}] })),
   ]);
 
@@ -327,11 +329,11 @@ async function getPerformanceMetrics(dates: any, _filters?: any) {
 
 function getTimeGroupFormat(groupBy: string): string {
   switch (groupBy) {
-    case 'day':
+    case "day":
       return "DATE_TRUNC('day', period)";
-    case 'week':
+    case "week":
       return "DATE_TRUNC('week', period)";
-    case 'month':
+    case "month":
       return "DATE_TRUNC('month', period)";
     default:
       return "DATE_TRUNC('day', period)";
@@ -344,23 +346,28 @@ export async function GET(request: NextRequest) {
 
     // Parse query parameters
     const query: AnalyticsQuery = {
-      metric: (searchParams.get('metric') || 'overview') as any,
-      period: searchParams.get('period') as any,
-      startDate: searchParams.get('startDate') || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]!,
-      endDate: searchParams.get('endDate') || new Date().toISOString().split('T')[0]!,
-      groupBy: searchParams.get('groupBy') as any,
+      metric: (searchParams.get("metric") || "overview") as any,
+      period: searchParams.get("period") as any,
+      startDate:
+        searchParams.get("startDate") ||
+        new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split("T")[0]!,
+      endDate:
+        searchParams.get("endDate") || new Date().toISOString().split("T")[0]!,
+      groupBy: searchParams.get("groupBy") as any,
     };
 
     // Parse filters
-    const artistIds = searchParams.get('artistIds');
-    const venueIds = searchParams.get('venueIds');
-    const showStatus = searchParams.get('showStatus');
+    const artistIds = searchParams.get("artistIds");
+    const venueIds = searchParams.get("venueIds");
+    const showStatus = searchParams.get("showStatus");
 
     if (artistIds || venueIds || showStatus) {
       query.filters = {
-        ...(artistIds && { artistIds: artistIds.split(',') }),
-        ...(venueIds && { venueIds: venueIds.split(',') }),
-        ...(showStatus && { showStatus: showStatus.split(',') }),
+        ...(artistIds && { artistIds: artistIds.split(",") }),
+        ...(venueIds && { venueIds: venueIds.split(",") }),
+        ...(showStatus && { showStatus: showStatus.split(",") }),
       };
     }
 
@@ -376,15 +383,15 @@ export async function GET(request: NextRequest) {
 
     // Set cache headers
     response.headers.set(
-      'Cache-Control',
-      'public, s-maxage=900, stale-while-revalidate=1800' // 15 min cache, 30 min stale
+      "Cache-Control",
+      "public, s-maxage=900, stale-while-revalidate=1800", // 15 min cache, 30 min stale
     );
 
     return response;
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to fetch analytics' },
-      { status: 500 }
+      { error: "Failed to fetch analytics" },
+      { status: 500 },
     );
   }
 }

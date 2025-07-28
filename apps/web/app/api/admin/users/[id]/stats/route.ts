@@ -1,9 +1,9 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { createClient } from '~/lib/api/supabase/server';
+import { type NextRequest, NextResponse } from "next/server";
+import { createClient } from "~/lib/api/supabase/server";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const supabase = await createClient();
@@ -14,20 +14,20 @@ export async function GET(
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { data: userData } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
       .single();
 
     if (
       !userData ||
-      (userData.role !== 'admin' && userData.role !== 'moderator')
+      (userData.role !== "admin" && userData.role !== "moderator")
     ) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Get user statistics in parallel
@@ -43,87 +43,95 @@ export async function GET(
     ] = await Promise.all([
       // Setlists created
       supabase
-        .from('setlists')
-        .select('*', { count: 'exact', head: true })
-        .eq('created_by', userId),
+        .from("setlists")
+        .select("*", { count: "exact", head: true })
+        .eq("created_by", userId),
 
       // Reviews written
       supabase
-        .from('venue_reviews')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId),
+        .from("venue_reviews")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId),
 
       // Votes cast
       supabase
-        .from('setlist_song_votes')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId),
+        .from("setlist_song_votes")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId),
 
       // Photos uploaded
       supabase
-        .from('venue_photos')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId),
+        .from("venue_photos")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId),
 
       // Comments written (if you have a comments table)
       supabase
-        .from('venue_review_comments')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId),
+        .from("venue_review_comments")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId),
 
       // Reports submitted
       supabase
-        .from('reports')
-        .select('*', { count: 'exact', head: true })
-        .eq('reporter_id', userId),
+        .from("reports")
+        .select("*", { count: "exact", head: true })
+        .eq("reporter_id", userId),
 
       // Recent activity (last 10 actions)
       supabase
-        .from('user_activity_log')
-        .select(`
+        .from("user_activity_log")
+        .select(
+          `
           action,
           target_type,
           details,
           created_at
-        `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
+        `,
+        )
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
         .limit(10),
 
       // Login history (last 10 logins)
       supabase
-        .from('user_login_history')
-        .select(`
+        .from("user_login_history")
+        .select(
+          `
           ip_address,
           user_agent,
           created_at
-        `)
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
+        `,
+        )
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
         .limit(10),
     ]);
 
     // Get content engagement stats
     const { data: setlistStats } = await supabase
-      .from('setlists')
-      .select(`
+      .from("setlists")
+      .select(
+        `
         id,
         views,
         votes:setlist_song_votes(count),
         created_at
-      `)
-      .eq('created_by', userId)
-      .order('views', { ascending: false })
+      `,
+      )
+      .eq("created_by", userId)
+      .order("views", { ascending: false })
       .limit(5);
 
     // Get user's most active venues/artists
     const { data: venueActivity } = await supabase
-      .from('venue_reviews')
-      .select(`
+      .from("venue_reviews")
+      .select(
+        `
         venue:venues(id, name),
         rating
-      `)
-      .eq('user_id', userId)
+      `,
+      )
+      .eq("user_id", userId)
       .limit(5);
 
     // Calculate engagement metrics
@@ -182,8 +190,8 @@ export async function GET(
     return NextResponse.json(stats);
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to fetch user statistics' },
-      { status: 500 }
+      { error: "Failed to fetch user statistics" },
+      { status: 500 },
     );
   }
 }

@@ -1,14 +1,14 @@
-'use client';
-import { Button } from '@repo/design-system/components/ui/button';
-import { ChevronRight, Music, TrendingUp } from 'lucide-react';
-import Link from 'next/link';
-import React, { memo } from 'react';
-import { SearchBar } from '~/components/search-bar';
-import { motion } from 'framer-motion';
+"use client";
+import { Button } from "@repo/design-system/components/ui/button";
+import { ChevronRight, Music, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import React, { memo } from "react";
+import { SearchBar } from "~/components/search-bar";
+import { motion } from "framer-motion";
 
 function HomeHero() {
   return (
-    <section 
+    <section
       className="relative overflow-hidden pt-32 pb-40"
       aria-label="Homepage hero section"
       role="banner"
@@ -25,7 +25,7 @@ function HomeHero() {
         <div className="mx-auto max-w-5xl text-center">
           <div className="space-y-6 animate-slide-up">
             {/* Badge */}
-            <div 
+            <div
               className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-primary"
               role="status"
               aria-label="Live statistics"
@@ -37,7 +37,7 @@ function HomeHero() {
             </div>
 
             {/* Main heading */}
-            <h1 
+            <h1
               className="bg-gradient-to-b from-white via-white/90 to-white/60 bg-clip-text font-extrabold text-6xl text-transparent leading-[0.95] tracking-tight md:text-8xl"
               id="main-heading"
             >
@@ -71,18 +71,22 @@ function HomeHero() {
 
             {/* Quick search suggestions */}
             <div className="flex flex-wrap items-center justify-center gap-2 px-4 text-sm sm:px-0">
-              <span className="text-muted-foreground hidden sm:inline">Popular:</span>
-              <span className="text-muted-foreground text-xs sm:hidden">Trending:</span>
-              {['Taylor Swift', 'The Weeknd', 'Drake', 'Olivia Rodrigo'].map(
+              <span className="text-muted-foreground hidden sm:inline">
+                Popular:
+              </span>
+              <span className="text-muted-foreground text-xs sm:hidden">
+                Trending:
+              </span>
+              {["Taylor Swift", "The Weeknd", "Drake", "Olivia Rodrigo"].map(
                 (artist) => (
                   <Link
                     key={artist}
-                    href={`/artists/${artist.toLowerCase().replace(' ', '-')}`}
+                    href={`/artists/${artist.toLowerCase().replace(" ", "-")}`}
                     className="rounded-full bg-muted/50 px-3 py-1.5 text-xs transition-all duration-200 hover:bg-muted hover:scale-105 sm:text-sm"
                   >
                     {artist}
                   </Link>
-                )
+                ),
               )}
             </div>
           </div>
@@ -94,7 +98,11 @@ function HomeHero() {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="mt-10 flex flex-col items-center justify-center gap-3 px-4 sm:flex-row sm:gap-4 sm:px-0"
           >
-            <Button size="lg" className="group w-full min-w-[200px] sm:w-auto" asChild>
+            <Button
+              size="lg"
+              className="group w-full min-w-[200px] sm:w-auto"
+              asChild
+            >
               <Link href="/artists">
                 Start Voting
                 <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
@@ -123,7 +131,7 @@ function HomeHero() {
             aria-label="Platform statistics"
           >
             <div className="text-center">
-              <div 
+              <div
                 className="font-bold text-2xl text-white sm:text-3xl md:text-4xl"
                 aria-label="Ten thousand plus"
               >

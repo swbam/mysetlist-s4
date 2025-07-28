@@ -1,4 +1,4 @@
-import { db, and, eq } from '../database';
+import { db, and, eq } from "../database";
 import {
   artists,
   setlistSongs,
@@ -6,13 +6,13 @@ import {
   shows,
   songs,
   venues,
-} from '../schema';
+} from "../schema";
 import {
   SetlistFmClient,
   type SetlistFmSet,
   type SetlistFmSetlist,
-} from '../clients/setlistfm';
-import { SpotifyClient } from '../clients/spotify';
+} from "../clients/setlistfm";
+import { SpotifyClient } from "../clients/spotify";
 
 export class SetlistSyncService {
   private setlistFmClient: SetlistFmClient;
@@ -56,9 +56,9 @@ export class SetlistSyncService {
       .values({
         showId: show.id,
         artistId: artist.id,
-        type: 'actual' as const,
-        name: 'Main Set',
-        importedFrom: 'setlist.fm',
+        type: "actual" as const,
+        name: "Main Set",
+        importedFrom: "setlist.fm",
         externalId: setlistData.id,
         importedAt: new Date(),
       })
@@ -75,7 +75,7 @@ export class SetlistSyncService {
       const songs = await this.processSongsFromSet(
         set,
         artist.id,
-        artist.spotifyId
+        artist.spotifyId,
       );
 
       // Add songs to setlist
@@ -105,7 +105,7 @@ export class SetlistSyncService {
   private async processSongsFromSet(
     set: SetlistFmSet,
     artistId: string,
-    artistSpotifyId: string | null
+    artistSpotifyId: string | null,
   ): Promise<Array<{ id: string; info?: string | undefined }>> {
     const processedSongs: Array<{ id: string; info?: string | undefined }> = [];
 
@@ -115,10 +115,12 @@ export class SetlistSyncService {
         const songResults = await db
           .select({ id: songs.id })
           .from(songs)
-          .where(and(
-            eq(songs.title, songData.name),
-            eq(songs.artist, songData.cover?.name || artistId)
-          ))
+          .where(
+            and(
+              eq(songs.title, songData.name),
+              eq(songs.artist, songData.cover?.name || artistId),
+            ),
+          )
           .limit(1);
         let song: { id: string } | undefined = songResults[0];
 
@@ -130,7 +132,7 @@ export class SetlistSyncService {
             }"`;
             const searchResult = await this.spotifyClient.searchTracks(
               searchQuery,
-              1
+              1,
             );
 
             if (searchResult.tracks.items.length > 0) {
@@ -143,7 +145,7 @@ export class SetlistSyncService {
                   .values({
                     spotifyId: track.id,
                     title: track.name,
-                    artist: track.artists[0]?.name || 'Unknown Artist',
+                    artist: track.artists[0]?.name || "Unknown Artist",
                     album: track.album.name,
                     albumArtUrl: track.album.images[0]?.url || null,
                     releaseDate: track.album.release_date,
@@ -246,12 +248,13 @@ export class SetlistSyncService {
       artistName: headlinerArtist.name,
       date: show.date,
     };
-    
+
     if (venue?.name) {
       searchParams.venueName = venue.name;
     }
-    
-    const searchResult = await this.setlistFmClient.searchSetlists(searchParams);
+
+    const searchResult =
+      await this.setlistFmClient.searchSetlists(searchParams);
 
     if (searchResult.setlist.length > 0) {
       // Use the first matching setlist

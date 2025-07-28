@@ -1,8 +1,8 @@
-import { artists, db, shows } from '@repo/database';
-import { sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { artists, db, shows } from "@repo/database";
+import { sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
-const CRON_SECRET = process.env['CRON_SECRET'];
+const CRON_SECRET = process.env["CRON_SECRET"];
 
 // Trending score calculation weights
 const WEIGHTS = {
@@ -50,8 +50,7 @@ async function updateArtistScores() {
       .select({
         count: sql<number>`count(*)::int`,
       })
-      .from(shows)
-      .where(sql`${shows.headlinerArtistId} = ${artist.id} 
+      .from(shows).where(sql`${shows.headlinerArtistId} = ${artist.id} 
       AND ${shows.date} >= CURRENT_DATE - INTERVAL '30 days'`);
 
     const recentShowCount = recentShowsResult[0]?.count || 0;
@@ -121,9 +120,9 @@ async function updateShowScores() {
 
 export async function GET(request: NextRequest) {
   // Verify cron secret
-  const authHeader = request.headers.get('authorization');
+  const authHeader = request.headers.get("authorization");
   if (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -135,7 +134,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Trending scores updated',
+      message: "Trending scores updated",
       timestamp: new Date().toISOString(),
       results: {
         artists: { updated: artistsUpdated },
@@ -145,10 +144,10 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Trending update failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Trending update failed",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

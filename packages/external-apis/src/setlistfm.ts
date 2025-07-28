@@ -1,6 +1,6 @@
-import 'server-only';
-import axios from 'axios';
-import { keys } from '../keys';
+import "server-only";
+import axios from "axios";
+import { keys } from "../keys";
 
 const env = keys();
 
@@ -74,18 +74,18 @@ interface SetlistFmSearchResponse<T> {
 }
 
 class SetlistFmAPI {
-  private baseURL = 'https://api.setlist.fm/rest/1.0';
+  private baseURL = "https://api.setlist.fm/rest/1.0";
 
   private async makeRequest<T>(
     endpoint: string,
-    params: Record<string, any> = {}
+    params: Record<string, any> = {},
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
 
     const response = await axios.get(url, {
       headers: {
-        'x-api-key': env.SETLIST_FM_API_KEY,
-        Accept: 'application/json',
+        "x-api-key": env.SETLIST_FM_API_KEY,
+        Accept: "application/json",
       },
       params,
     });
@@ -106,8 +106,8 @@ class SetlistFmAPI {
     p?: number;
   }): Promise<SetlistFmSearchResponse<SetlistFmSetlist>> {
     return this.makeRequest<SetlistFmSearchResponse<SetlistFmSetlist>>(
-      '/search/setlists',
-      params
+      "/search/setlists",
+      params,
     );
   }
 
@@ -118,11 +118,11 @@ class SetlistFmAPI {
   async searchArtists(params: {
     artistName: string;
     p?: number;
-    sort?: 'sortName' | 'relevance';
+    sort?: "sortName" | "relevance";
   }): Promise<SetlistFmSearchResponse<SetlistFmArtist>> {
     return this.makeRequest<SetlistFmSearchResponse<SetlistFmArtist>>(
-      '/search/artists',
-      params
+      "/search/artists",
+      params,
     );
   }
 
@@ -134,11 +134,11 @@ class SetlistFmAPI {
     mbid: string,
     params: {
       p?: number;
-    } = {}
+    } = {},
   ): Promise<SetlistFmSearchResponse<SetlistFmSetlist>> {
     return this.makeRequest<SetlistFmSearchResponse<SetlistFmSetlist>>(
       `/artist/${mbid}/setlists`,
-      params
+      params,
     );
   }
 
@@ -151,8 +151,8 @@ class SetlistFmAPI {
     p?: number;
   }): Promise<SetlistFmSearchResponse<SetlistFmVenue>> {
     return this.makeRequest<SetlistFmSearchResponse<SetlistFmVenue>>(
-      '/search/venues',
-      params
+      "/search/venues",
+      params,
     );
   }
 
@@ -164,17 +164,17 @@ class SetlistFmAPI {
     venueId: string,
     params: {
       p?: number;
-    } = {}
+    } = {},
   ): Promise<SetlistFmSearchResponse<SetlistFmSetlist>> {
     return this.makeRequest<SetlistFmSearchResponse<SetlistFmSetlist>>(
       `/venue/${venueId}/setlists`,
-      params
+      params,
     );
   }
 
   async getRecentSetlists(
     artistName: string,
-    limit = 10
+    limit = 10,
   ): Promise<SetlistFmSetlist[]> {
     const response = await this.searchSetlists({
       artistName,
@@ -201,7 +201,7 @@ class SetlistFmAPI {
         } else if (set.encore) {
           setNames.push(`Encore ${set.encore}`);
         } else {
-          setNames.push('Main Set');
+          setNames.push("Main Set");
         }
 
         if (set.song) {

@@ -32,6 +32,7 @@ Before deploying MySetlist, ensure you have:
 ## 🔧 Environment Setup
 
 ### 1. **Clone and Install**
+
 ```bash
 git clone https://github.com/your-org/mysetlist.git
 cd mysetlist
@@ -41,24 +42,28 @@ pnpm install --frozen-lockfile
 ### 2. **Environment Variables Configuration**
 
 #### Local Development
+
 ```bash
 cp apps/web/.env.example apps/web/.env.local
 ```
 
 #### Vercel Dashboard Configuration
+
 Navigate to your Vercel project → Settings → Environment Variables
 
 **Required Variables** (grouped by service):
 
 ##### Core Application
+
 ```env
 NODE_ENV=production
 NEXT_PUBLIC_APP_URL=https://your-domain.vercel.app
-NEXT_PUBLIC_WEB_URL=https://your-domain.vercel.app  
+NEXT_PUBLIC_WEB_URL=https://your-domain.vercel.app
 NEXT_PUBLIC_API_URL=https://your-domain.vercel.app/api
 ```
 
 ##### Supabase (Database & Auth)
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
@@ -68,6 +73,7 @@ DATABASE_URL=postgresql://postgres:[password]@[host]:6543/postgres
 ```
 
 ##### External APIs
+
 ```env
 # Spotify
 SPOTIFY_CLIENT_ID=your_client_id
@@ -82,6 +88,7 @@ SETLISTFM_API_KEY=your_api_key
 ```
 
 ##### Security & Authentication
+
 ```env
 NEXTAUTH_SECRET=your_32_char_minimum_secret
 NEXTAUTH_URL=https://your-domain.vercel.app
@@ -91,6 +98,7 @@ ADMIN_USER_IDS=admin_id_1,admin_id_2
 ```
 
 ##### Optional Services
+
 ```env
 # Redis Cache (Upstash)
 UPSTASH_REDIS_REST_URL=your_redis_url
@@ -106,6 +114,7 @@ NEXT_PUBLIC_POSTHOG_KEY=your_posthog_key
 ```
 
 ### 3. **Validate Environment**
+
 ```bash
 pnpm check:env              # Validate all environment variables
 pnpm check:env --test-apis  # Test external API connections
@@ -114,11 +123,13 @@ pnpm check:env --test-apis  # Test external API connections
 ## 🗄️ Database Setup
 
 ### 1. **Create Supabase Project**
+
 1. Go to [supabase.com](https://supabase.com)
 2. Create a new project
 3. Save the database credentials
 
 ### 2. **Run Database Migrations**
+
 ```bash
 # Install Supabase CLI
 npm install -g supabase
@@ -134,6 +145,7 @@ pnpm db:seed
 ```
 
 ### 3. **Enable Required Extensions**
+
 ```sql
 -- Run in Supabase SQL editor
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -142,11 +154,13 @@ CREATE EXTENSION IF NOT EXISTS "unaccent";
 ```
 
 ### 4. **Configure Row Level Security**
+
 RLS policies are automatically applied via migrations.
 
 ## ☁️ Deployment Options
 
 ### Option 1: Vercel CLI (Recommended)
+
 ```bash
 # First-time setup
 vercel login
@@ -160,18 +174,21 @@ vercel --prod
 ```
 
 ### Option 2: Git-Based Deployment
+
 1. Push code to GitHub/GitLab/Bitbucket
 2. Import project in Vercel Dashboard
 3. Configure environment variables
 4. Auto-deploy on push to `main`
 
 ### Option 3: Quick Deploy Script
+
 ```bash
 # Use the built-in deployment script
 pnpm final
 ```
 
 ### Build Configuration (auto-detected)
+
 ```json
 {
   "buildCommand": "cd apps/web && pnpm build",
@@ -185,6 +202,7 @@ pnpm final
 ## 🔄 CI/CD Setup
 
 ### 1. **GitHub Actions Configuration**
+
 The project includes pre-configured GitHub Actions workflows:
 
 - `.github/workflows/ci.yml` - Continuous Integration
@@ -192,7 +210,9 @@ The project includes pre-configured GitHub Actions workflows:
 - `.github/workflows/deploy-staging.yml` - Staging Deployment
 
 ### 2. **GitHub Secrets**
+
 Add these secrets to your GitHub repository:
+
 ```yaml
 VERCEL_ORG_ID
 VERCEL_PROJECT_ID
@@ -202,7 +222,9 @@ SENTRY_AUTH_TOKEN
 ```
 
 ### 3. **Branch Protection**
+
 Configure branch protection rules:
+
 - Require PR reviews before merging
 - Require status checks to pass
 - Require branches to be up to date
@@ -210,14 +232,17 @@ Configure branch protection rules:
 ## 🌐 Custom Domain Setup
 
 ### 1. **Add Domain in Vercel**
+
 1. Go to Project Settings → Domains
 2. Add your domain
 3. Follow DNS configuration instructions
 
 ### 2. **SSL Configuration**
+
 SSL is automatically provisioned by Vercel.
 
 ### 3. **Configure DNS Records**
+
 ```
 Type    Name    Value
 A       @       76.76.21.21
@@ -227,14 +252,16 @@ CNAME   www     cname.vercel-dns.com
 ## 📊 Redis Setup (Upstash)
 
 ### 1. **Create Upstash Account**
+
 1. Go to [upstash.com](https://upstash.com)
 2. Create a new Redis database
 3. Choose the closest region
 
 ### 2. **Configure Redis**
+
 ```typescript
 // Already configured in lib/cache/redis.ts
-import { Redis } from '@upstash/redis';
+import { Redis } from "@upstash/redis";
 
 export const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -245,16 +272,19 @@ export const redis = new Redis({
 ## 📧 Email Configuration (Resend)
 
 ### 1. **Setup Resend**
+
 1. Create account at [resend.com](https://resend.com)
 2. Verify your domain
 3. Get API key
 
 ### 2. **Configure Email Templates**
+
 Email templates are located in `apps/email/`.
 
 ## 🔍 Monitoring Setup
 
 ### 1. **Sentry Configuration**
+
 ```bash
 # Install Sentry CLI
 npm install -g @sentry/cli
@@ -264,10 +294,13 @@ sentry-cli login
 ```
 
 ### 2. **Vercel Analytics**
+
 Analytics are automatically enabled for Vercel deployments.
 
 ### 3. **Custom Monitoring Stack** (Optional)
+
 Deploy the monitoring stack:
+
 ```bash
 cd infrastructure/monitoring
 docker-compose up -d
@@ -276,16 +309,19 @@ docker-compose up -d
 ## 🚦 Health Checks
 
 ### 1. **API Health Check**
+
 ```bash
 curl https://yourdomain.com/api/health
 ```
 
 ### 2. **Database Health Check**
+
 ```bash
 curl https://yourdomain.com/api/health/db
 ```
 
 ### 3. **External APIs Health Check**
+
 ```bash
 curl https://yourdomain.com/api/external-apis/diagnostics
 ```
@@ -305,23 +341,29 @@ Before going live, ensure:
 ## 📱 Progressive Web App
 
 ### 1. **PWA Configuration**
+
 The app is PWA-ready with:
+
 - Service worker
 - Web manifest
 - Offline support
 
 ### 2. **Testing PWA**
+
 Use Chrome DevTools → Lighthouse → PWA audit
 
 ## 🎯 Post-Deployment
 
 ### 1. **Run Smoke Tests**
+
 ```bash
 pnpm test:e2e:production
 ```
 
 ### 2. **Configure Cron Jobs**
+
 Cron jobs are automatically configured via Vercel:
+
 ```typescript
 // See vercel.json
 {
@@ -335,6 +377,7 @@ Cron jobs are automatically configured via Vercel:
 ```
 
 ### 3. **Warm Cache**
+
 ```bash
 curl -X POST https://yourdomain.com/api/admin/cache-warm
 ```
@@ -342,6 +385,7 @@ curl -X POST https://yourdomain.com/api/admin/cache-warm
 ## 🚦 Health Checks & Monitoring
 
 ### Health Check Endpoints
+
 ```bash
 # Basic health check
 curl https://your-domain.vercel.app/api/health
@@ -354,6 +398,7 @@ curl https://your-domain.vercel.app/api/health/db
 ```
 
 ### Cron Jobs (Configured in vercel.json)
+
 - **Trending Update**: Every 6 hours
 - **Popular Artists Sync**: Daily at 2 AM
 - **Daily Data Sync**: Daily at 1 AM
@@ -362,6 +407,7 @@ curl https://your-domain.vercel.app/api/health/db
 ## 🆘 Troubleshooting
 
 ### Build Failures
+
 ```bash
 # TypeScript errors
 pnpm typecheck
@@ -372,6 +418,7 @@ pnpm build
 ```
 
 ### Environment Variable Issues
+
 ```bash
 # Validate environment
 pnpm check:env
@@ -381,11 +428,13 @@ pnpm check:env --test-apis
 ```
 
 ### Database Connection Issues
+
 - Verify Supabase URL and keys in Vercel dashboard
 - Check database connection string format
 - Ensure RLS policies are configured
 
 ### Performance Issues
+
 - Check Vercel Analytics for insights
 - Review bundle size: `pnpm analyze:web`
 - Monitor API response times
@@ -393,6 +442,7 @@ pnpm check:env --test-apis
 ## 📈 Production Readiness
 
 ### Quick Deployment Checklist
+
 - [ ] Environment variables configured in Vercel
 - [ ] Database migrations applied
 - [ ] TypeScript builds without errors
@@ -400,11 +450,13 @@ pnpm check:env --test-apis
 - [ ] Health checks passing
 
 ### Performance Targets
+
 - **Lighthouse Score**: ≥90
 - **Bundle Size**: <500KB initial
 - **API Response**: <500ms p95
 
 ### Rollback
+
 ```bash
 # Instant rollback via Vercel Dashboard or CLI
 vercel rollback

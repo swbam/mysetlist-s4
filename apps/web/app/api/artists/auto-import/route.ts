@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '~/lib/supabase/server';
+import { type NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 interface AutoImportRequest {
   artistId?: string;
@@ -18,8 +18,8 @@ export async function POST(request: NextRequest) {
 
     if (!artistId && !artistName && !spotifyId) {
       return NextResponse.json(
-        { error: 'Either artistId, artistName, or spotifyId is required' },
-        { status: 400 }
+        { error: "Either artistId, artistName, or spotifyId is required" },
+        { status: 400 },
       );
     }
 
@@ -31,27 +31,27 @@ export async function POST(request: NextRequest) {
     if (artistId) {
       // Look up by ID
       const { data: existingArtist } = await supabase
-        .from('artists')
-        .select('*')
-        .eq('id', artistId)
+        .from("artists")
+        .select("*")
+        .eq("id", artistId)
         .single();
 
       artist = existingArtist;
     } else if (spotifyId) {
       // Look up by Spotify ID
       const { data: existingArtist } = await supabase
-        .from('artists')
-        .select('*')
-        .eq('spotify_id', spotifyId)
+        .from("artists")
+        .select("*")
+        .eq("spotify_id", spotifyId)
         .single();
 
       artist = existingArtist;
     } else if (artistName) {
       // Look up by name
       const { data: existingArtist } = await supabase
-        .from('artists')
-        .select('*')
-        .eq('name', artistName)
+        .from("artists")
+        .select("*")
+        .eq("name", artistName)
         .single();
 
       artist = existingArtist;
@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
     if (!artist) {
       // For now, return error. In production, this would trigger artist creation
       return NextResponse.json(
-        { error: 'Artist not found in database' },
-        { status: 404 }
+        { error: "Artist not found in database" },
+        { status: 404 },
       );
     }
 
@@ -75,24 +75,27 @@ export async function POST(request: NextRequest) {
     if (needsSync) {
       // Update last synced timestamp first to prevent duplicate syncs
       await supabase
-        .from('artists')
+        .from("artists")
         .update({ last_synced_at: new Date().toISOString() })
-        .eq('id', artist.id);
+        .eq("id", artist.id);
 
       // Trigger background sync for shows and additional data
       setImmediate(async () => {
         try {
           // If we have a Ticketmaster ID, sync shows
           if (artist.ticketmaster_id) {
-            await fetch(`${process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001'}/api/artists/sync-shows`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
+            await fetch(
+              `${process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001"}/api/artists/sync-shows`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  artistId: artist.id,
+                }),
               },
-              body: JSON.stringify({
-                artistId: artist.id,
-              }),
-            });
+            );
           }
         } catch (_error) {}
       });
@@ -100,23 +103,23 @@ export async function POST(request: NextRequest) {
 
     // Get current data stats
     const { count: showCount } = await supabase
-      .from('shows')
-      .select('*', { count: 'exact', head: true })
-      .eq('headliner_artist_id', artist.id);
+      .from("shows")
+      .select("*", { count: "exact", head: true })
+      .eq("headliner_artist_id", artist.id);
 
     const { count: songCount } = await supabase
-      .from('artist_songs')
-      .select('*', { count: 'exact', head: true })
-      .eq('artist_id', artist.id);
+      .from("artist_songs")
+      .select("*", { count: "exact", head: true })
+      .eq("artist_id", artist.id);
 
     // Helper function to safely parse genres
     const parseGenres = (genresField: string | string[] | null): string[] => {
       if (!genresField) return [];
-      
+
       if (Array.isArray(genresField)) {
         return genresField;
       }
-      
+
       try {
         // Try to parse as JSON first
         const parsed = JSON.parse(genresField);
@@ -124,7 +127,7 @@ export async function POST(request: NextRequest) {
       } catch {
         // If JSON parsing fails, treat as comma-separated string
         return genresField
-          .split(',')
+          .split(",")
           .map((genre) => genre.trim())
           .filter((genre) => genre.length > 0);
       }
@@ -158,10 +161,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Failed to auto-import artist data',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Failed to auto-import artist data",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,16 +1,16 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
-} from '@repo/design-system/components/ui/card';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { Car, Heart, MapPin, Star, Train, Users, Building } from 'lucide-react';
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
+} from "@repo/design-system/components/ui/card";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { Car, Heart, MapPin, Star, Train, Users, Building } from "lucide-react";
+import Link from "next/link";
+import { useState, useEffect } from "react";
 
 interface Venue {
   id: string;
@@ -42,16 +42,16 @@ export const VenueGrid = () => {
 
   const fetchVenues = async () => {
     try {
-      const response = await fetch('/api/venues?limit=20');
+      const response = await fetch("/api/venues?limit=20");
       if (!response.ok) {
-        throw new Error('Failed to fetch venues');
+        throw new Error("Failed to fetch venues");
       }
 
       const data = await response.json();
       setVenues(data.venues || []);
     } catch (err) {
-      console.error('Error fetching venues:', err);
-      setError('Failed to load venues. Please try again later.');
+      console.error("Error fetching venues:", err);
+      setError("Failed to load venues. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -61,7 +61,7 @@ export const VenueGrid = () => {
     setFavoriteVenues((prev) =>
       prev.includes(venueId)
         ? prev.filter((id) => id !== venueId)
-        : [...prev, venueId]
+        : [...prev, venueId],
     );
   };
 
@@ -152,7 +152,7 @@ export const VenueGrid = () => {
                 onClick={() => toggleFavorite(venue.id)}
               >
                 <Heart
-                  className={`h-4 w-4 ${favoriteVenues.includes(venue.id) ? 'fill-current text-red-500' : ''}`}
+                  className={`h-4 w-4 ${favoriteVenues.includes(venue.id) ? "fill-current text-red-500" : ""}`}
                 />
               </Button>
             </div>
@@ -164,7 +164,9 @@ export const VenueGrid = () => {
                 <span>
                   {venue.city}
                   {venue.state && `, ${venue.state}`}
-                  {venue.country && venue.country !== 'US' && `, ${venue.country}`}
+                  {venue.country &&
+                    venue.country !== "US" &&
+                    `, ${venue.country}`}
                 </span>
               </div>
               {venue.rating && (
@@ -181,13 +183,13 @@ export const VenueGrid = () => {
             </div>
 
             <div className="flex gap-4 text-sm">
-              {venue.amenities?.includes('parking') && (
+              {venue.amenities?.includes("parking") && (
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <Car className="h-4 w-4" />
                   <span>Parking</span>
                 </div>
               )}
-              {venue.amenities?.includes('public_transit') && (
+              {venue.amenities?.includes("public_transit") && (
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <Train className="h-4 w-4" />
                   <span>Transit</span>

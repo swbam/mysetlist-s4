@@ -42,6 +42,7 @@ SELECT cron.schedule(
 ## Future Edge Functions
 
 Only create new Edge Functions for:
+
 - Webhook handlers that need to be separate from the main app
 - Database-intensive operations that benefit from being closer to the data
 - Functions that need Deno-specific capabilities

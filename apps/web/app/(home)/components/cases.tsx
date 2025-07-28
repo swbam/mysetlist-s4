@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
 import {
   Carousel,
   type CarouselApi,
   CarouselContent,
   CarouselItem,
-} from '@repo/design-system/components/ui/carousel';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { Music, TrendingUp, Users } from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+} from "@repo/design-system/components/ui/carousel";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { Music, TrendingUp, Users } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface TrendingArtist {
   id: string;
@@ -32,15 +32,15 @@ export const Cases = () => {
 
   const fetchTrendingArtists = async () => {
     try {
-      const response = await fetch('/api/trending/artists?limit=15');
+      const response = await fetch("/api/trending/artists?limit=15");
       if (!response.ok) {
-        throw new Error('Failed to fetch trending artists');
+        throw new Error("Failed to fetch trending artists");
       }
 
       const data = await response.json();
       setArtists(data.artists || []);
     } catch (err) {
-      console.error('Error fetching trending artists:', err);
+      console.error("Error fetching trending artists:", err);
     } finally {
       setLoading(false);
     }
@@ -157,7 +157,7 @@ export const Cases = () => {
                               {artist.name}
                             </p>
                             <p className="text-muted-foreground text-xs">
-                              {artist.genres[0] || 'Artist'}
+                              {artist.genres[0] || "Artist"}
                             </p>
                             <div className="flex items-center gap-1 text-muted-foreground text-xs">
                               <Users className="h-3 w-3" />

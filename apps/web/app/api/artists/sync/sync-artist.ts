@@ -1,22 +1,22 @@
-import { db } from '@repo/database';
-import { artistSongs, artists, songs } from '@repo/database';
-import { TicketmasterClient, SpotifyClient } from '@repo/external-apis';
-import { and, eq } from 'drizzle-orm';
-import { createServiceClient } from '~/lib/supabase/server';
+import { db } from "@repo/database";
+import { artistSongs, artists, songs } from "@repo/database";
+import { TicketmasterClient, SpotifyClient } from "@repo/external-apis";
+import { and, eq } from "drizzle-orm";
+import { createServiceClient } from "~/lib/supabase/server";
 
 const spotify = new SpotifyClient({});
 
 // Function to find Ticketmaster ID for an artist
 async function findTicketmasterId(artistName: string): Promise<string | null> {
   try {
-    if (!process.env['TICKETMASTER_API_KEY']) {
+    if (!process.env["TICKETMASTER_API_KEY"]) {
       return null;
     }
 
     const tmClient = new TicketmasterClient({});
     const response = await tmClient.searchAttractions({
       keyword: artistName,
-      classificationName: 'Music',
+      classificationName: "Music",
       size: 5,
     });
 
@@ -24,7 +24,7 @@ async function findTicketmasterId(artistName: string): Promise<string | null> {
       // Try to find exact match first
       const exactMatch = response._embedded.attractions.find(
         (attraction: any) =>
-          attraction.name.toLowerCase() === artistName.toLowerCase()
+          attraction.name.toLowerCase() === artistName.toLowerCase(),
       );
 
       if (exactMatch) {
@@ -69,9 +69,9 @@ async function syncFullCatalog(spotifyId: string, artistId: string) {
   // Fetch all albums (including singles and compilations)
   while (hasMore) {
     const albumsResponse = await spotify.getArtistAlbums(spotifyId, {
-      include_groups: 'album,single,compilation',
+      include_groups: "album,single,compilation",
       limit: 50,
-      offset: offset
+      offset: offset,
     });
 
     if (!albumsResponse.items || albumsResponse.items.length === 0) {
@@ -276,7 +276,7 @@ async function syncFullCatalog(spotifyId: string, artistId: string) {
 }
 
 export async function syncArtist(
-  params: SyncArtistParams
+  params: SyncArtistParams,
 ): Promise<SyncArtistResult> {
   try {
     const { artistName, spotifyId, ticketmasterId } = params;
@@ -284,15 +284,18 @@ export async function syncArtist(
     if (!artistName && !spotifyId) {
       return {
         success: false,
-        error: 'Either artistName or spotifyId is required',
+        error: "Either artistName or spotifyId is required",
       };
     }
 
     // Check if Spotify credentials are available
-    if (!process.env['SPOTIFY_CLIENT_ID'] || !process.env['SPOTIFY_CLIENT_SECRET']) {
+    if (
+      !process.env["SPOTIFY_CLIENT_ID"] ||
+      !process.env["SPOTIFY_CLIENT_SECRET"]
+    ) {
       return {
         success: false,
-        error: 'Spotify credentials not configured',
+        error: "Spotify credentials not configured",
       };
     }
 
@@ -307,7 +310,7 @@ export async function syncArtist(
       if (!searchResults.artists?.items?.length) {
         return {
           success: false,
-          error: 'Artist not found on Spotify',
+          error: "Artist not found on Spotify",
         };
       }
       spotifyArtist = searchResults.artists.items[0];
@@ -316,8 +319,8 @@ export async function syncArtist(
     // Generate slug
     const slug = spotifyArtist.name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
 
     // Determine Ticketmaster ID: use provided value if available, otherwise attempt lookup
     const resolvedTicketmasterId =
@@ -345,8 +348,13 @@ export async function syncArtist(
           followers: spotifyArtist.followers?.total || 0,
           verified: true,
           externalUrls: JSON.stringify(spotifyArtist.external_urls || {}),
-          ...(resolvedTicketmasterId !== undefined && { ticketmasterId: resolvedTicketmasterId }),
-          ...(resolvedTicketmasterId === undefined && existingArtist[0]?.ticketmasterId !== undefined && { ticketmasterId: existingArtist[0].ticketmasterId }),
+          ...(resolvedTicketmasterId !== undefined && {
+            ticketmasterId: resolvedTicketmasterId,
+          }),
+          ...(resolvedTicketmasterId === undefined &&
+            existingArtist[0]?.ticketmasterId !== undefined && {
+              ticketmasterId: existingArtist[0].ticketmasterId,
+            }),
           lastSyncedAt: new Date(),
           updatedAt: new Date(),
         })
@@ -404,7 +412,7 @@ export async function syncArtist(
 
         // Sync shows if we have a Ticketmaster ID
         if (artistRecord.ticketmasterId) {
-          await supabaseAdmin.functions.invoke('sync-artist-shows', {
+          await supabaseAdmin.functions.invoke("sync-artist-shows", {
             body: {
               ticketmasterId: artistRecord.ticketmasterId,
               artistId: artistRecord.id,
@@ -417,7 +425,7 @@ export async function syncArtist(
     if (!artistRecord) {
       return {
         success: false,
-        error: 'Failed to create or update artist record',
+        error: "Failed to create or update artist record",
       };
     }
 
@@ -429,7 +437,7 @@ export async function syncArtist(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }

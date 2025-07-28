@@ -1,4 +1,4 @@
-import { performance } from 'node:perf_hooks';
+import { performance } from "node:perf_hooks";
 
 export interface PerformanceMetrics {
   renderTime: number;
@@ -47,7 +47,7 @@ export class PerformanceMonitor {
     if (metrics.renderTime > maxRenderTime) {
       throw new Error(
         `Component ${componentName} took ${metrics.renderTime}ms to render, ` +
-          `expected less than ${maxRenderTime}ms`
+          `expected less than ${maxRenderTime}ms`,
       );
     }
   }
@@ -55,7 +55,7 @@ export class PerformanceMonitor {
 
 export function measureRender<T extends (...args: any[]) => any>(
   fn: T,
-  _name: string
+  _name: string,
 ): T {
   return ((...args: Parameters<T>) => {
     const _start = performance.now();

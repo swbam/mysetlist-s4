@@ -1,17 +1,31 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
-import { Search, X, Loader2 } from 'lucide-react';
-import { Input } from './input';
-import { Button } from './button';
-import { Command, CommandList, CommandEmpty, CommandGroup, CommandItem } from './command';
-import { Popover, PopoverContent, PopoverTrigger } from './popover';
-import { Badge } from './badge';
-import { cn } from '../../lib/utils';
+import { useState, useRef, useEffect } from "react";
+import { Search, X, Loader2 } from "lucide-react";
+import { Input } from "./input";
+import { Button } from "./button";
+import {
+  Command,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "./command";
+import { Popover, PopoverContent, PopoverTrigger } from "./popover";
+import { Badge } from "./badge";
+import { cn } from "../../lib/utils";
 
 interface SearchResult {
   id: string;
-  type: 'artist' | 'show' | 'venue' | 'song' | 'genre' | 'location' | 'recent' | 'trending';
+  type:
+    | "artist"
+    | "show"
+    | "venue"
+    | "song"
+    | "genre"
+    | "location"
+    | "recent"
+    | "trending";
   title: string;
   subtitle?: string;
   imageUrl?: string | null;
@@ -55,9 +69,9 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-export function SearchBox({ 
-  placeholder = 'Search artists, shows, venues...', 
-  onSearch, 
+export function SearchBox({
+  placeholder = "Search artists, shows, venues...",
+  onSearch,
   onSelect,
   onSubmit,
   className,
@@ -65,14 +79,14 @@ export function SearchBox({
   autoFocus = false,
   showRecentSearches = true,
   recentSearches = [],
-  debounceMs = 300
+  debounceMs = 300,
 }: SearchBoxProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  
+
   const inputRef = useRef<HTMLInputElement>(null);
   const debouncedQuery = useDebounce(query, debounceMs);
 
@@ -93,7 +107,7 @@ export function SearchBox({
       setIsOpen(true);
       setSelectedIndex(-1);
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error("Search failed:", error);
       setResults([]);
     } finally {
       setIsLoading(false);
@@ -103,7 +117,7 @@ export function SearchBox({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuery(value);
-    
+
     if (value.length < 2) {
       setIsOpen(false);
     }
@@ -111,7 +125,7 @@ export function SearchBox({
 
   const handleSelect = (result: SearchResult) => {
     onSelect(result);
-    setQuery('');
+    setQuery("");
     setResults([]);
     setIsOpen(false);
     setSelectedIndex(-1);
@@ -133,19 +147,15 @@ export function SearchBox({
     if (!isOpen) return;
 
     switch (e.key) {
-      case 'ArrowDown':
+      case "ArrowDown":
         e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < results.length - 1 ? prev + 1 : 0
-        );
+        setSelectedIndex((prev) => (prev < results.length - 1 ? prev + 1 : 0));
         break;
-      case 'ArrowUp':
+      case "ArrowUp":
         e.preventDefault();
-        setSelectedIndex(prev => 
-          prev > 0 ? prev - 1 : results.length - 1
-        );
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : results.length - 1));
         break;
-      case 'Escape':
+      case "Escape":
         setIsOpen(false);
         setSelectedIndex(-1);
         inputRef.current?.blur();
@@ -154,38 +164,100 @@ export function SearchBox({
   };
 
   const clearSearch = () => {
-    setQuery('');
+    setQuery("");
     setResults([]);
     setIsOpen(false);
     setSelectedIndex(-1);
     inputRef.current?.focus();
   };
 
-  const getResultIcon = (type: SearchResult['type']) => {
+  const getResultIcon = (type: SearchResult["type"]) => {
     const iconClass = "h-4 w-4 flex-shrink-0";
     switch (type) {
-      case 'artist': 
-        return <div className={cn(iconClass, "bg-primary/10 text-primary rounded p-1")}>🎤</div>;
-      case 'show': 
-        return <div className={cn(iconClass, "bg-blue-100 text-blue-600 rounded p-1")}>📅</div>;
-      case 'venue': 
-        return <div className={cn(iconClass, "bg-purple-100 text-purple-600 rounded p-1")}>🏟️</div>;
-      case 'song': 
-        return <div className={cn(iconClass, "bg-green-100 text-green-600 rounded p-1")}>🎵</div>;
-      case 'genre': 
-        return <div className={cn(iconClass, "bg-orange-100 text-orange-600 rounded p-1")}>🎼</div>;
-      case 'location': 
-        return <div className={cn(iconClass, "bg-red-100 text-red-600 rounded p-1")}>📍</div>;
-      case 'recent': 
-        return <div className={cn(iconClass, "bg-gray-100 text-gray-600 rounded p-1")}>🕒</div>;
-      case 'trending': 
-        return <div className={cn(iconClass, "bg-yellow-100 text-yellow-600 rounded p-1")}>📈</div>;
-      default: 
-        return <div className={cn(iconClass, "bg-gray-100 text-gray-600 rounded p-1")}>🔍</div>;
+      case "artist":
+        return (
+          <div
+            className={cn(iconClass, "bg-primary/10 text-primary rounded p-1")}
+          >
+            🎤
+          </div>
+        );
+      case "show":
+        return (
+          <div
+            className={cn(iconClass, "bg-blue-100 text-blue-600 rounded p-1")}
+          >
+            📅
+          </div>
+        );
+      case "venue":
+        return (
+          <div
+            className={cn(
+              iconClass,
+              "bg-purple-100 text-purple-600 rounded p-1",
+            )}
+          >
+            🏟️
+          </div>
+        );
+      case "song":
+        return (
+          <div
+            className={cn(iconClass, "bg-green-100 text-green-600 rounded p-1")}
+          >
+            🎵
+          </div>
+        );
+      case "genre":
+        return (
+          <div
+            className={cn(
+              iconClass,
+              "bg-orange-100 text-orange-600 rounded p-1",
+            )}
+          >
+            🎼
+          </div>
+        );
+      case "location":
+        return (
+          <div className={cn(iconClass, "bg-red-100 text-red-600 rounded p-1")}>
+            📍
+          </div>
+        );
+      case "recent":
+        return (
+          <div
+            className={cn(iconClass, "bg-gray-100 text-gray-600 rounded p-1")}
+          >
+            🕒
+          </div>
+        );
+      case "trending":
+        return (
+          <div
+            className={cn(
+              iconClass,
+              "bg-yellow-100 text-yellow-600 rounded p-1",
+            )}
+          >
+            📈
+          </div>
+        );
+      default:
+        return (
+          <div
+            className={cn(iconClass, "bg-gray-100 text-gray-600 rounded p-1")}
+          >
+            🔍
+          </div>
+        );
     }
   };
 
-  const shouldShowRecentSearches = showRecentSearches && recentSearches.length > 0 && !query && !isLoading;
+  const shouldShowRecentSearches =
+    showRecentSearches && recentSearches.length > 0 && !query && !isLoading;
 
   return (
     <div className={cn("relative", className)}>
@@ -201,7 +273,7 @@ export function SearchBox({
               placeholder={placeholder}
               className={cn(
                 "pl-10 pr-10 h-11",
-                disabled && "cursor-not-allowed opacity-50"
+                disabled && "cursor-not-allowed opacity-50",
               )}
               disabled={disabled}
               autoFocus={autoFocus}
@@ -231,9 +303,9 @@ export function SearchBox({
             )}
           </form>
         </PopoverTrigger>
-        
-        <PopoverContent 
-          className="w-[400px] p-0" 
+
+        <PopoverContent
+          className="w-[400px] p-0"
           align="start"
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
@@ -250,7 +322,7 @@ export function SearchBox({
                       }}
                       className="flex items-center gap-3 p-3 cursor-pointer"
                     >
-                      {getResultIcon('recent')}
+                      {getResultIcon("recent")}
                       <span className="flex-1">{search}</span>
                       <Badge variant="outline" className="text-xs">
                         Recent
@@ -266,13 +338,15 @@ export function SearchBox({
                   <p className="text-sm text-muted-foreground">Searching...</p>
                 </div>
               )}
-              
+
               {!isLoading && results.length === 0 && query.length >= 2 && (
                 <CommandEmpty className="p-4 text-center">
-                  <p className="text-sm text-muted-foreground">No results found for "{query}"</p>
+                  <p className="text-sm text-muted-foreground">
+                    No results found for "{query}"
+                  </p>
                 </CommandEmpty>
               )}
-              
+
               {results.length > 0 && (
                 <CommandGroup>
                   {results.map((result, index) => (
@@ -281,7 +355,7 @@ export function SearchBox({
                       onSelect={() => handleSelect(result)}
                       className={cn(
                         "flex items-center gap-3 p-3 cursor-pointer",
-                        selectedIndex === index && "bg-accent"
+                        selectedIndex === index && "bg-accent",
                       )}
                     >
                       {result.imageUrl ? (
@@ -295,7 +369,9 @@ export function SearchBox({
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium truncate">{result.title}</span>
+                          <span className="font-medium truncate">
+                            {result.title}
+                          </span>
                           {result.metadata?.verified && (
                             <Badge variant="secondary" className="text-xs">
                               Verified
@@ -310,13 +386,19 @@ export function SearchBox({
                         {result.metadata && (
                           <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
                             {result.metadata.followerCount && (
-                              <span>{result.metadata.followerCount.toLocaleString()} followers</span>
+                              <span>
+                                {result.metadata.followerCount.toLocaleString()}{" "}
+                                followers
+                              </span>
                             )}
                             {result.metadata.upcomingShows && (
                               <span>{result.metadata.upcomingShows} shows</span>
                             )}
                             {result.metadata.capacity && (
-                              <span>{result.metadata.capacity.toLocaleString()} capacity</span>
+                              <span>
+                                {result.metadata.capacity.toLocaleString()}{" "}
+                                capacity
+                              </span>
                             )}
                           </div>
                         )}

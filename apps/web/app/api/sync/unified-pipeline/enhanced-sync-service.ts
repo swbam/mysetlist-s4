@@ -1,7 +1,7 @@
-import { db } from '@repo/database';
-import { artists, shows, songs, venues } from '@repo/database';
-import { eq, sql } from 'drizzle-orm';
-import { CacheClient, RedisRateLimiter, cacheKeys } from '~/lib/cache/redis';
+import { db } from "@repo/database";
+import { artists, shows, songs, venues } from "@repo/database";
+import { eq, sql } from "drizzle-orm";
+import { CacheClient, RedisRateLimiter, cacheKeys } from "~/lib/cache/redis";
 // import { SyncProgressTracker } from '~/lib/sync-progress-tracker';
 
 // Enhanced sync service with performance optimizations
@@ -21,7 +21,7 @@ export class EnhancedSyncService {
       force?: boolean;
       includeShows?: boolean;
       includeSongs?: boolean;
-    }
+    },
   ) {
     const syncKey = `sync:artist:${artistId}`;
 
@@ -29,8 +29,8 @@ export class EnhancedSyncService {
     const inProgress = await this.cache.get(`${syncKey}:lock`);
     if (inProgress && !options?.force) {
       return {
-        status: 'in_progress',
-        message: 'Sync already in progress for this artist',
+        status: "in_progress",
+        message: "Sync already in progress for this artist",
       };
     }
 
@@ -92,7 +92,7 @@ export class EnhancedSyncService {
       // await this.progressTracker.completeSync(artistId);
 
       return {
-        status: 'completed',
+        status: "completed",
         artistId,
         syncedAt: new Date().toISOString(),
       };
@@ -123,13 +123,13 @@ export class EnhancedSyncService {
   // Enhanced Spotify sync with retry logic
   private async syncSpotifyArtistData(spotifyId: string, artistId: string) {
     const { allowed } = await this.rateLimiter.checkLimit(
-      'spotify:artist',
+      "spotify:artist",
       50,
-      3600 // 50 requests per hour
+      3600, // 50 requests per hour
     );
 
     if (!allowed) {
-      throw new Error('Spotify rate limit exceeded');
+      throw new Error("Spotify rate limit exceeded");
     }
 
     const spotifyData = await this.fetchSpotifyArtist(spotifyId);
@@ -241,13 +241,13 @@ export class EnhancedSyncService {
             .values({
               id: show.venueId,
               name: show.venueName,
-              slug: show.venueName.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+              slug: show.venueName.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
               city: show.city,
               state: show.state,
               country: show.country,
               latitude: show.latitude,
               longitude: show.longitude,
-              timezone: 'UTC',
+              timezone: "UTC",
             } as any)
             .onConflictDoUpdate({
               target: venues.id,
@@ -264,7 +264,7 @@ export class EnhancedSyncService {
             .values({
               id: show.id,
               name: show.name,
-              slug: show.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+              slug: show.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
               date: show.date,
               venueId: venue?.id,
               headlinerArtistId: artistId,
@@ -330,7 +330,7 @@ export class EnhancedSyncService {
 
   private mergeShowData(
     _ticketmasterShows: any[],
-    _setlistFmShows: any[]
+    _setlistFmShows: any[],
   ): any[] {
     // Implementation would merge and deduplicate shows
     // Placeholder for now
@@ -342,8 +342,8 @@ export class EnhancedSyncService {
     await Promise.all([
       this.cache.del(cacheKeys.artist(artistId)),
       this.cache.del(`artist:stats:${artistId}`),
-      this.cache.invalidatePattern('search:artists:*'),
-      this.cache.invalidatePattern('trending:*'),
+      this.cache.invalidatePattern("search:artists:*"),
+      this.cache.invalidatePattern("trending:*"),
     ]);
   }
 }

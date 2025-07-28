@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { UnifiedSearch } from '~/components/unified-search';
+import { UnifiedSearch } from "~/components/unified-search";
 
 interface SearchFilters {
   types: string[];
@@ -13,15 +13,15 @@ interface SearchFilters {
 interface SearchBarProps {
   placeholder?: string;
   className?: string;
-  variant?: 'default' | 'hero';
+  variant?: "default" | "hero";
   showFilters?: boolean;
   defaultFilters?: Partial<SearchFilters>;
 }
 
 export function SearchBar({
-  placeholder = 'Search artists, shows, venues...',
+  placeholder = "Search artists, shows, venues...",
   className,
-  variant = 'default',
+  variant = "default",
   showFilters = false,
   defaultFilters,
 }: SearchBarProps) {
@@ -36,4 +36,4 @@ export function SearchBar({
   );
 }
 
-SearchBar.displayName = 'SearchBar';
+SearchBar.displayName = "SearchBar";

@@ -1,10 +1,10 @@
-import { artists, db, shows, venues } from '@repo/database';
-import { sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { artists, db, shows, venues } from "@repo/database";
+import { sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Generate realistic random data based on different patterns
 function generateRealisticMetrics(
-  type: 'popular' | 'rising' | 'steady' | 'new'
+  type: "popular" | "rising" | "steady" | "new",
 ) {
   const patterns = {
     popular: {
@@ -41,22 +41,24 @@ function generateRealisticMetrics(
 
   return {
     views: Math.floor(
-      Math.random() * (pattern.views[1]! - pattern.views[0]!) + pattern.views[0]!
+      Math.random() * (pattern.views[1]! - pattern.views[0]!) +
+        pattern.views[0]!,
     ),
     votes: Math.floor(
-      Math.random() * (pattern.votes[1]! - pattern.votes[0]!) + pattern.votes[0]!
+      Math.random() * (pattern.votes[1]! - pattern.votes[0]!) +
+        pattern.votes[0]!,
     ),
     attendees: Math.floor(
       Math.random() * (pattern.attendees[1]! - pattern.attendees[0]!) +
-        pattern.attendees[0]!
+        pattern.attendees[0]!,
     ),
     followers: Math.floor(
       Math.random() * (pattern.followers[1]! - pattern.followers[0]!) +
-        pattern.followers[0]!
+        pattern.followers[0]!,
     ),
     popularity: Math.floor(
       Math.random() * (pattern.popularity[1]! - pattern.popularity[0]!) +
-        pattern.popularity[0]!
+        pattern.popularity[0]!,
     ),
   };
 }
@@ -76,18 +78,18 @@ async function seedArtistData() {
 
   // Assign pattern types to artists
   const artistUpdates = allArtists.map((artist, _index) => {
-    let pattern: 'popular' | 'rising' | 'steady' | 'new';
+    let pattern: "popular" | "rising" | "steady" | "new";
 
     // Distribute patterns: 10% popular, 20% rising, 40% steady, 30% new
     const rand = Math.random();
     if (rand < 0.1) {
-      pattern = 'popular';
+      pattern = "popular";
     } else if (rand < 0.3) {
-      pattern = 'rising';
+      pattern = "rising";
     } else if (rand < 0.7) {
-      pattern = 'steady';
+      pattern = "steady";
     } else {
-      pattern = 'new';
+      pattern = "new";
     }
 
     const metrics = generateRealisticMetrics(pattern);
@@ -145,15 +147,15 @@ async function seedShowData() {
     const daysDiff =
       (now.getTime() - showDate.getTime()) / (1000 * 60 * 60 * 24);
 
-    let pattern: 'popular' | 'rising' | 'steady' | 'new';
+    let pattern: "popular" | "rising" | "steady" | "new";
 
     // Recent shows are more likely to be popular/rising
     if (daysDiff < 7) {
-      pattern = Math.random() < 0.3 ? 'popular' : 'rising';
+      pattern = Math.random() < 0.3 ? "popular" : "rising";
     } else if (daysDiff < 30) {
-      pattern = Math.random() < 0.5 ? 'rising' : 'steady';
+      pattern = Math.random() < 0.5 ? "rising" : "steady";
     } else {
-      pattern = Math.random() < 0.7 ? 'steady' : 'new';
+      pattern = Math.random() < 0.7 ? "steady" : "new";
     }
 
     const metrics = generateRealisticMetrics(pattern);
@@ -207,24 +209,24 @@ async function seedVenueData() {
     `);
 
   const updates = venueStats.map((venue) => {
-    const showCount = Number(venue['show_count']) || 0;
+    const showCount = Number(venue["show_count"]) || 0;
 
     // Venues with more shows get higher base metrics
-    let pattern: 'popular' | 'rising' | 'steady' | 'new';
+    let pattern: "popular" | "rising" | "steady" | "new";
     if (showCount > 10) {
-      pattern = 'popular';
+      pattern = "popular";
     } else if (showCount > 5) {
-      pattern = 'rising';
+      pattern = "rising";
     } else if (showCount > 0) {
-      pattern = 'steady';
+      pattern = "steady";
     } else {
-      pattern = 'new';
+      pattern = "new";
     }
 
     const metrics = generateRealisticMetrics(pattern);
 
     return {
-      id: venue['id'],
+      id: venue["id"],
       showCount,
       metrics,
     };
@@ -236,15 +238,15 @@ async function seedVenueData() {
 export async function POST(request: NextRequest) {
   try {
     // Check for admin authorization
-    const authHeader = request.headers.get('authorization');
-    const adminToken = process.env['ADMIN_API_KEY'];
+    const authHeader = request.headers.get("authorization");
+    const adminToken = process.env["ADMIN_API_KEY"];
 
     if (!authHeader || authHeader !== `Bearer ${adminToken}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') || 'all';
+    const type = searchParams.get("type") || "all";
 
     const results = {
       artists: { updated: 0 },
@@ -253,31 +255,31 @@ export async function POST(request: NextRequest) {
     };
 
     // Seed data based on type
-    if (type === 'all' || type === 'artists') {
+    if (type === "all" || type === "artists") {
       results.artists = await seedArtistData();
     }
 
-    if (type === 'all' || type === 'shows') {
+    if (type === "all" || type === "shows") {
       results.shows = await seedShowData();
     }
 
-    if (type === 'all' || type === 'venues') {
+    if (type === "all" || type === "venues") {
       results.venues = await seedVenueData();
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Trending data seeded successfully',
+      message: "Trending data seeded successfully",
       results,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Failed to seed trending data',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Failed to seed trending data",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

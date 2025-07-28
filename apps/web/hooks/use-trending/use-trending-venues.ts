@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import type { TrendingVenue, TrendingVenuesResponse } from '~/types/api';
+import { useCallback, useEffect, useState } from "react";
+import type { TrendingVenue, TrendingVenuesResponse } from "~/types/api";
 
 export interface UseTrendingVenuesOptions {
-  timeframe?: 'day' | 'week' | 'month';
+  timeframe?: "day" | "week" | "month";
   limit?: number;
   city?: string;
   state?: string;
@@ -14,7 +14,7 @@ export interface UseTrendingVenuesOptions {
 
 export function useTrendingVenues(options: UseTrendingVenuesOptions = {}) {
   const {
-    timeframe = 'week',
+    timeframe = "week",
     limit = 20,
     city,
     state,
@@ -36,22 +36,22 @@ export function useTrendingVenues(options: UseTrendingVenuesOptions = {}) {
 
       // Add optional filters
       if (city) {
-        params.append('city', city);
+        params.append("city", city);
       }
       if (state) {
-        params.append('state', state);
+        params.append("state", state);
       }
 
       const response = await fetch(`/api/trending/venues?${params}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch trending venues');
+        throw new Error("Failed to fetch trending venues");
       }
 
       const data: TrendingVenuesResponse = await response.json();
       setVenues(data.venues || []);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to load trending venues'
+        err instanceof Error ? err.message : "Failed to load trending venues",
       );
     } finally {
       setLoading(false);
@@ -100,9 +100,9 @@ export function useVenueStats(venueId: string) {
       setError(null);
       // This would typically fetch from a dedicated venue stats endpoint
       // For now, we'll use the trending venues endpoint to get basic info
-      const response = await fetch('/api/trending/venues?limit=100');
+      const response = await fetch("/api/trending/venues?limit=100");
       if (!response.ok) {
-        throw new Error('Failed to fetch venue stats');
+        throw new Error("Failed to fetch venue stats");
       }
 
       const data: TrendingVenuesResponse = await response.json();
@@ -113,13 +113,13 @@ export function useVenueStats(venueId: string) {
           totalShows: venue.totalShows || 0,
           upcomingShows: venue.upcomingShows || 0,
           averageAttendance: Math.floor(Math.random() * 1000), // Simulated
-          popularGenres: ['Rock', 'Pop', 'Alternative'], // Simulated
+          popularGenres: ["Rock", "Pop", "Alternative"], // Simulated
           trendingScore: venue.trendingScore || 0,
         });
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to load venue stats'
+        err instanceof Error ? err.message : "Failed to load venue stats",
       );
     } finally {
       setLoading(false);

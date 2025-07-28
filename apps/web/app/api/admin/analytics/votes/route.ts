@@ -1,6 +1,6 @@
-import { format, subDays } from 'date-fns';
-import { type NextRequest, NextResponse } from 'next/server';
-import { createClient } from '~/lib/api/supabase/server';
+import { format, subDays } from "date-fns";
+import { type NextRequest, NextResponse } from "next/server";
+import { createClient } from "~/lib/api/supabase/server";
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,38 +12,38 @@ export async function GET(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { data: userData } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
       .single();
 
     if (
       !userData ||
-      (userData.role !== 'admin' && userData.role !== 'moderator')
+      (userData.role !== "admin" && userData.role !== "moderator")
     ) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const period = searchParams.get('period') || '7d';
-    const showId = searchParams.get('showId');
-    const artistId = searchParams.get('artistId');
-    const venueId = searchParams.get('venueId');
+    const period = searchParams.get("period") || "7d";
+    const showId = searchParams.get("showId");
+    const artistId = searchParams.get("artistId");
+    const venueId = searchParams.get("venueId");
 
     // Calculate date range
     let startDate: Date;
     switch (period) {
-      case '1d':
+      case "1d":
         startDate = subDays(new Date(), 1);
         break;
-      case '30d':
+      case "30d":
         startDate = subDays(new Date(), 30);
         break;
-      case 'all':
-        startDate = new Date('2020-01-01');
+      case "all":
+        startDate = new Date("2020-01-01");
         break;
       default: // 7d
         startDate = subDays(new Date(), 7);
@@ -51,44 +51,46 @@ export async function GET(request: NextRequest) {
 
     // Build base query
     let baseQuery = supabase
-      .from('vote_analytics')
-      .select(`
+      .from("vote_analytics")
+      .select(
+        `
         *,
         setlist_song:setlists(
           id,
           song:songs(title, artist)
         ),
         user:users(id, display_name, username)
-      `)
-      .gte('created_at', startDate.toISOString());
+      `,
+      )
+      .gte("created_at", startDate.toISOString());
 
     // Apply filters
     if (showId) {
-      baseQuery = baseQuery.eq('show_id', showId);
+      baseQuery = baseQuery.eq("show_id", showId);
     }
     if (artistId) {
-      baseQuery = baseQuery.eq('artist_id', artistId);
+      baseQuery = baseQuery.eq("artist_id", artistId);
     }
     if (venueId) {
-      baseQuery = baseQuery.eq('venue_id', venueId);
+      baseQuery = baseQuery.eq("venue_id", venueId);
     }
 
-    const { data: voteData, error } = await baseQuery.order('created_at', {
+    const { data: voteData, error } = await baseQuery.order("created_at", {
       ascending: false,
     });
 
     if (error) {
       return NextResponse.json(
-        { error: 'Failed to fetch analytics' },
-        { status: 500 }
+        { error: "Failed to fetch analytics" },
+        { status: 500 },
       );
     }
 
     // Calculate summary statistics
     const summary = {
       totalVotes: voteData?.length || 0,
-      upvotes: voteData?.filter((v) => v.vote_type === 'up').length || 0,
-      downvotes: voteData?.filter((v) => v.vote_type === 'down').length || 0,
+      upvotes: voteData?.filter((v) => v.vote_type === "up").length || 0,
+      downvotes: voteData?.filter((v) => v.vote_type === "down").length || 0,
       uniqueUsers: new Set(voteData?.map((v) => v.user_id)).size,
       uniqueShows: new Set(voteData?.map((v) => v.show_id)).size,
       uniqueSongs: new Set(voteData?.map((v) => v.setlist_song_id)).size,
@@ -107,7 +109,7 @@ export async function GET(request: NextRequest) {
         });
       }
       const songData = songVotes.get(songId);
-      if (vote.vote_type === 'up') {
+      if (vote.vote_type === "up") {
         songData.votes += 1;
         songData.upvotes += 1;
       } else {
@@ -142,12 +144,12 @@ export async function GET(request: NextRequest) {
 
     // Get vote trends by day
     const dailyVotes = new Map();
-    const dayCount = period === '1d' ? 24 : period === '30d' ? 30 : 7;
+    const dayCount = period === "1d" ? 24 : period === "30d" ? 30 : 7;
 
     for (let i = 0; i < dayCount; i++) {
       const date = subDays(new Date(), i);
       const dateKey =
-        period === '1d' ? format(date, 'HH:00') : format(date, 'MMM dd');
+        period === "1d" ? format(date, "HH:00") : format(date, "MMM dd");
       dailyVotes.set(dateKey, {
         date: dateKey,
         votes: 0,
@@ -159,14 +161,14 @@ export async function GET(request: NextRequest) {
     voteData?.forEach((vote) => {
       const voteDate = new Date(vote.created_at);
       const dateKey =
-        period === '1d'
-          ? format(voteDate, 'HH:00')
-          : format(voteDate, 'MMM dd');
+        period === "1d"
+          ? format(voteDate, "HH:00")
+          : format(voteDate, "MMM dd");
 
       if (dailyVotes.has(dateKey)) {
         const dayData = dailyVotes.get(dateKey);
         dayData.votes += 1;
-        if (vote.vote_type === 'up') {
+        if (vote.vote_type === "up") {
           dayData.upvotes += 1;
         } else {
           dayData.downvotes += 1;
@@ -191,7 +193,7 @@ export async function GET(request: NextRequest) {
           ? ((summary.upvotes / summary.totalVotes) * 100).toFixed(1)
           : 0,
       votingVelocity:
-        period === '1d'
+        period === "1d"
           ? summary.totalVotes
           : (summary.totalVotes / Number.parseInt(period)).toFixed(1),
     };
@@ -214,8 +216,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(analytics);
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }

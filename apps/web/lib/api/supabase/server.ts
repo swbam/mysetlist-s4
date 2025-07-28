@@ -1,6 +1,6 @@
-import { type CookieOptions, createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { env } from '@repo/env';
+import { type CookieOptions, createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import { env } from "@repo/env";
 
 export function createClient() {
   return createServerClient(
@@ -17,7 +17,7 @@ export function createClient() {
             name: string;
             value: string;
             options?: CookieOptions;
-          }[]
+          }[],
         ) {
           try {
             for (const { name, value, options } of cookiesToSet) {
@@ -27,7 +27,9 @@ export function createClient() {
                   secure: options.secure,
                   sameSite: options.sameSite as any,
                   maxAge: options.maxAge,
-                  expires: options.expires ? new Date(options.expires) : undefined,
+                  expires: options.expires
+                    ? new Date(options.expires)
+                    : undefined,
                   path: options.path,
                   domain: options.domain,
                 };
@@ -45,7 +47,7 @@ export function createClient() {
           }
         },
       },
-    }
+    },
   );
 }
 
@@ -66,6 +68,6 @@ export function createServiceClient() {
           // Service role doesn't need cookies
         },
       },
-    }
+    },
   );
 }

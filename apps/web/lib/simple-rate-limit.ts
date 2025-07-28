@@ -9,36 +9,39 @@ type RateLimitEntry = {
 const store = new Map<string, RateLimitEntry>();
 
 // Clean up old entries every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of store.entries()) {
-    if (entry.resetTime < now) {
-      store.delete(key);
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [key, entry] of store.entries()) {
+      if (entry.resetTime < now) {
+        store.delete(key);
+      }
     }
-  }
-}, 5 * 60 * 1000);
+  },
+  5 * 60 * 1000,
+);
 
 export function createSimpleRateLimiter(options: {
   limit: number;
   windowMs: number;
   prefix?: string;
 }) {
-  const { limit, windowMs, prefix = 'rl' } = options;
-  
+  const { limit, windowMs, prefix = "rl" } = options;
+
   return {
     limit: async (identifier: string) => {
       const key = `${prefix}:${identifier}`;
       const now = Date.now();
-      
+
       const entry = store.get(key);
-      
+
       if (!entry || entry.resetTime < now) {
         // New window
         store.set(key, {
           count: 1,
           resetTime: now + windowMs,
         });
-        
+
         return {
           success: true,
           limit,
@@ -46,7 +49,7 @@ export function createSimpleRateLimiter(options: {
           reset: new Date(now + windowMs),
         };
       }
-      
+
       if (entry.count >= limit) {
         // Rate limit exceeded
         return {
@@ -56,11 +59,11 @@ export function createSimpleRateLimiter(options: {
           reset: new Date(entry.resetTime),
         };
       }
-      
+
       // Increment counter
       entry.count++;
       store.set(key, entry);
-      
+
       return {
         success: true,
         limit,
@@ -75,17 +78,17 @@ export function createSimpleRateLimiter(options: {
 export const ticketmasterLimiter = createSimpleRateLimiter({
   limit: 5,
   windowMs: 1000, // 5 requests per second
-  prefix: 'tm',
+  prefix: "tm",
 });
 
 export const setlistFmLimiter = createSimpleRateLimiter({
   limit: 10,
   windowMs: 60000, // 10 requests per minute
-  prefix: 'sf',
+  prefix: "sf",
 });
 
 export const musicBrainzLimiter = createSimpleRateLimiter({
   limit: 1,
   windowMs: 1000, // 1 request per second
-  prefix: 'mb',
+  prefix: "mb",
 });

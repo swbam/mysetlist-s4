@@ -7,11 +7,13 @@ Based on the analysis, MySetlist is experiencing performance issues compared to 
 ## 1. Component Optimization Strategy
 
 ### Current Issues
+
 - Heavy components causing re-renders
 - Missing memoization
 - Unoptimized list rendering
 
 ### Next-Forge Pattern: Smart Memoization
+
 ```typescript
 // packages/design-system/components/ui/artist-card.tsx
 import { memo } from 'react';
@@ -38,13 +40,14 @@ ArtistCard.displayName = 'ArtistCard';
 ```
 
 ### List Virtualization for Large Data Sets
+
 ```typescript
 // components/virtualized-list.tsx
 import { VirtualList } from '@tanstack/react-virtual';
 
 export function VirtualizedArtistGrid({ artists }: { artists: Artist[] }) {
   const parentRef = useRef<HTMLDivElement>(null);
-  
+
   const virtualizer = useVirtualizer({
     count: artists.length,
     getScrollElement: () => parentRef.current,
@@ -78,6 +81,7 @@ export function VirtualizedArtistGrid({ artists }: { artists: Artist[] }) {
 ## 2. Next.js App Router Optimizations
 
 ### Implement Proper Loading States
+
 ```typescript
 // app/artists/loading.tsx
 export default function Loading() {
@@ -92,6 +96,7 @@ export default function Loading() {
 ```
 
 ### Use Streaming and Suspense
+
 ```typescript
 // app/artists/page.tsx
 import { Suspense } from 'react';
@@ -117,6 +122,7 @@ async function ArtistGrid() {
 ## 3. Data Fetching Optimization
 
 ### Implement ISR (Incremental Static Regeneration)
+
 ```typescript
 // app/artists/[slug]/page.tsx
 export const revalidate = 3600; // Revalidate every hour
@@ -131,6 +137,7 @@ export async function generateStaticParams() {
 ```
 
 ### Parallel Data Fetching
+
 ```typescript
 // lib/data-fetching.ts
 export async function getArtistPageData(slug: string) {
@@ -149,6 +156,7 @@ export async function getArtistPageData(slug: string) {
 ## 4. Bundle Size Optimization
 
 ### Dynamic Imports for Heavy Components
+
 ```typescript
 // components/analytics/analytics-dashboard.tsx
 import dynamic from 'next/dynamic';
@@ -163,16 +171,17 @@ const AnalyticsCharts = dynamic(
 ```
 
 ### Optimize Package Imports
+
 ```typescript
 // next.config.ts
 export default {
   experimental: {
     optimizePackageImports: [
-      '@repo/design-system',
-      'lucide-react',
-      'recharts',
-      'framer-motion',
-      '@supabase/supabase-js',
+      "@repo/design-system",
+      "lucide-react",
+      "recharts",
+      "framer-motion",
+      "@supabase/supabase-js",
     ],
   },
 };
@@ -181,6 +190,7 @@ export default {
 ## 5. Image Optimization
 
 ### Use Next.js Image with Proper Configuration
+
 ```typescript
 // components/optimized-image.tsx
 import Image from 'next/image';
@@ -205,23 +215,25 @@ export function OptimizedImage({ src, alt, priority = false }) {
 ## 6. Database Query Optimization
 
 ### Implement Query Caching
+
 ```typescript
 // lib/cache.ts
-import { unstable_cache } from 'next/cache';
+import { unstable_cache } from "next/cache";
 
 export const getCachedArtists = unstable_cache(
   async () => {
     return await db.select().from(artists).limit(100);
   },
-  ['artists-list'],
+  ["artists-list"],
   {
     revalidate: 3600, // 1 hour
-    tags: ['artists'],
-  }
+    tags: ["artists"],
+  },
 );
 ```
 
 ### Optimize Database Queries
+
 ```typescript
 // lib/db/optimized-queries.ts
 export async function getArtistWithShows(slug: string) {
@@ -245,23 +257,24 @@ export async function getArtistWithShows(slug: string) {
 ## 7. Service Worker Optimization
 
 ### Implement Proper Cache Strategy
+
 ```typescript
 // public/sw.js
-const CACHE_NAME = 'mysetlist-v1';
+const CACHE_NAME = "mysetlist-v1";
 const urlsToCache = [
-  '/',
-  '/styles.css',
-  '/_next/static/css/',
-  '/_next/static/js/',
+  "/",
+  "/styles.css",
+  "/_next/static/css/",
+  "/_next/static/js/",
 ];
 
-self.addEventListener('install', (event) => {
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache)),
   );
 });
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener("fetch", (event) => {
   // Network first, fallback to cache
   event.respondWith(
     fetch(event.request)
@@ -272,7 +285,7 @@ self.addEventListener('fetch', (event) => {
         });
         return response;
       })
-      .catch(() => caches.match(event.request))
+      .catch(() => caches.match(event.request)),
   );
 });
 ```
@@ -280,17 +293,18 @@ self.addEventListener('fetch', (event) => {
 ## 8. Monitoring and Metrics
 
 ### Add Performance Monitoring
+
 ```typescript
 // lib/monitoring/performance.tsx
-'use client';
+"use client";
 
-import { useReportWebVitals } from 'next/web-vitals';
+import { useReportWebVitals } from "next/web-vitals";
 
 export function WebVitals() {
   useReportWebVitals((metric) => {
     // Send to analytics
     console.log(metric);
-    
+
     // Send to monitoring service
     if (metric.value > getThreshold(metric.name)) {
       reportToMonitoring({
@@ -319,18 +333,21 @@ function getThreshold(metricName: string) {
 ## Performance Checklist
 
 ### Immediate Actions
+
 - [ ] Add React.memo to top 10 heaviest components
 - [ ] Implement loading.tsx for all dynamic routes
 - [ ] Enable ISR on artist and show pages
 - [ ] Add dynamic imports for analytics components
 
 ### Week 1 Goals
+
 - [ ] Reduce bundle size by 30%
 - [ ] Achieve LCP < 2.5s on all pages
 - [ ] Implement virtualization for large lists
 - [ ] Add proper image optimization
 
 ### Monitoring Setup
+
 ```bash
 # Add these scripts to package.json
 "perf:measure": "lighthouse http://localhost:3001 --output=json --output-path=./lighthouse-report.json",
@@ -341,6 +358,7 @@ function getThreshold(metricName: string) {
 ## Expected Results
 
 After implementing these optimizations:
+
 - ⚡ 50% faster initial page loads
 - 📦 40% smaller JavaScript bundles
 - 🎯 90+ Lighthouse performance score

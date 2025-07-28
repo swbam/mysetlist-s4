@@ -1,12 +1,12 @@
-import { db } from '@repo/database';
-import { venues } from '@repo/database/src/schema';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { desc, isNotNull } from 'drizzle-orm';
-import { Building, MapPin, Users } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { db } from "@repo/database";
+import { venues } from "@repo/database/src/schema";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { desc, isNotNull } from "drizzle-orm";
+import { Building, MapPin, Users } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 async function getFeaturedVenues() {
   const featuredVenues = await db
@@ -32,7 +32,7 @@ async function getFeaturedVenues() {
 export async function FeaturedVenues() {
   const formatCapacity = (capacity: number | null) => {
     if (!capacity) {
-      return 'N/A';
+      return "N/A";
     }
     if (capacity >= 1000) {
       return `${(capacity / 1000).toFixed(1)}K`;

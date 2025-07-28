@@ -1,8 +1,8 @@
-import { randomUUID } from 'node:crypto';
-import { cookies } from 'next/headers';
+import { randomUUID } from "node:crypto";
+import { cookies } from "next/headers";
 
-const SESSION_COOKIE_NAME = 'anonymous-session';
-const ACTIONS_COOKIE_NAME = 'anonymous-actions';
+const SESSION_COOKIE_NAME = "anonymous-session";
+const ACTIONS_COOKIE_NAME = "anonymous-actions";
 const SESSION_DURATION = 60 * 60 * 24; // 24 hours
 
 export interface AnonymousActions {
@@ -30,9 +30,9 @@ export async function getAnonymousSessionId(): Promise<string> {
   const newSessionId = randomUUID();
   cookieStore.set(SESSION_COOKIE_NAME, newSessionId, {
     httpOnly: true,
-    secure: process.env["NODE_ENV"] === 'production',
-    sameSite: 'lax',
-    path: '/',
+    secure: process.env["NODE_ENV"] === "production",
+    sameSite: "lax",
+    path: "/",
     maxAge: SESSION_DURATION,
   });
 
@@ -85,15 +85,15 @@ export async function getAnonymousActions(): Promise<AnonymousActions> {
  * Update anonymous user actions
  */
 export async function updateAnonymousActions(
-  actions: AnonymousActions
+  actions: AnonymousActions,
 ): Promise<void> {
   const cookieStore = await cookies();
 
   cookieStore.set(ACTIONS_COOKIE_NAME, JSON.stringify(actions), {
     httpOnly: true,
-    secure: process.env["NODE_ENV"] === 'production',
-    sameSite: 'lax',
-    path: '/',
+    secure: process.env["NODE_ENV"] === "production",
+    sameSite: "lax",
+    path: "/",
     maxAge: SESSION_DURATION,
   });
 }
@@ -102,7 +102,7 @@ export async function updateAnonymousActions(
  * Check if anonymous user can perform action
  */
 export async function canPerformAnonymousAction(
-  actionType: keyof typeof ANONYMOUS_LIMITS
+  actionType: keyof typeof ANONYMOUS_LIMITS,
 ): Promise<{ allowed: boolean; remaining: number; resetTime: Date }> {
   const actions = await getAnonymousActions();
   const limit = ANONYMOUS_LIMITS[actionType];
@@ -122,7 +122,7 @@ export async function canPerformAnonymousAction(
  * Increment anonymous action count
  */
 export async function incrementAnonymousAction(
-  actionType: keyof typeof ANONYMOUS_LIMITS
+  actionType: keyof typeof ANONYMOUS_LIMITS,
 ): Promise<boolean> {
   const { allowed } = await canPerformAnonymousAction(actionType);
 
@@ -152,7 +152,7 @@ export async function getAnonymousLimitsStatus(): Promise<{
   const sessionId = await getAnonymousSessionId();
   const actions = await getAnonymousActions();
   const resetTime = new Date(
-    new Date(actions.lastReset).getTime() + 24 * 60 * 60 * 1000
+    new Date(actions.lastReset).getTime() + 24 * 60 * 60 * 1000,
   );
 
   return {
@@ -167,7 +167,7 @@ export async function getAnonymousLimitsStatus(): Promise<{
         used: actions.songsAdded || 0,
         remaining: Math.max(
           0,
-          ANONYMOUS_LIMITS.songsAdded - (actions.songsAdded || 0)
+          ANONYMOUS_LIMITS.songsAdded - (actions.songsAdded || 0),
         ),
       },
     },

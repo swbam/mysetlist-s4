@@ -1,17 +1,17 @@
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/alert";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { AlertCircle, ArrowLeft, Mail, Settings } from 'lucide-react';
-import Link from 'next/link';
+} from "@repo/design-system/components/ui/card";
+import { AlertCircle, ArrowLeft, Mail, Settings } from "lucide-react";
+import Link from "next/link";
 
 export default function UnsubscribeErrorPage() {
   return (

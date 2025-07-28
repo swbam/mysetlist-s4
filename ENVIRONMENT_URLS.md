@@ -2,25 +2,28 @@
 
 ## Environment URL Mapping
 
-| Environment | URL | Usage |
-|------------|-----|-------|
-| **Local Development** | `http://localhost:3001` | Local development with `pnpm dev` |
-| **Development/Preview** | `https://windhoek.vercel.app` | Vercel preview deployments |
-| **Production** | `https://theset.live` | Production deployment |
+| Environment             | URL                           | Usage                             |
+| ----------------------- | ----------------------------- | --------------------------------- |
+| **Local Development**   | `http://localhost:3001`       | Local development with `pnpm dev` |
+| **Development/Preview** | `https://windhoek.vercel.app` | Vercel preview deployments        |
+| **Production**          | `https://theset.live`         | Production deployment             |
 
 ## Configuration Details
 
 ### 1. Local Development
+
 - **URL**: `http://localhost:3001`
 - **Configuration**: Set in `.env.local`
 - **Command**: `pnpm dev` (automatically runs on port 3001)
 
 ### 2. Vercel Development/Preview
+
 - **URL**: `https://windhoek.vercel.app`
 - **Configuration**: Set in Vercel environment variables for preview deployments
 - **Branch**: Development/feature branches
 
 ### 3. Production
+
 - **URL**: `https://theset.live`
 - **Configuration**: Set in Vercel environment variables for production
 - **Branch**: `main` branch only
@@ -35,22 +38,22 @@ export function getBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_URL) {
     return process.env.NEXT_PUBLIC_URL;
   }
-  
+
   // Production
-  if (process.env.NODE_ENV === 'production') {
-    if (process.env.VERCEL_ENV === 'production') {
-      return 'https://theset.live';
+  if (process.env.NODE_ENV === "production") {
+    if (process.env.VERCEL_ENV === "production") {
+      return "https://theset.live";
     }
     // Development/preview deployments on Vercel
     if (process.env.VERCEL_URL) {
       return `https://${process.env.VERCEL_URL}`;
     }
     // Fallback for production builds running locally
-    return 'http://localhost:3001';
+    return "http://localhost:3001";
   }
-  
+
   // Local development
-  return 'http://localhost:3001';
+  return "http://localhost:3001";
 }
 ```
 

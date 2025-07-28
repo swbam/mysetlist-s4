@@ -1,23 +1,23 @@
-'use client';
+"use client";
 
-import { DragDropContext, Draggable, Droppable } from '@hello-pangea/dnd';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { Input } from '@repo/design-system/components/ui/input';
-import { cn } from '@repo/design-system/lib/utils';
+} from "@repo/design-system/components/ui/dropdown-menu";
+import { Input } from "@repo/design-system/components/ui/input";
+import { cn } from "@repo/design-system/lib/utils";
 import {
   Edit3,
   GripVertical,
@@ -27,13 +27,13 @@ import {
   Plus,
   Trash2,
   Unlock,
-} from 'lucide-react';
-import Image from 'next/image';
-import { useState, useTransition, useEffect } from 'react';
-import { toast } from 'sonner';
-import { VoteButton } from '../voting/vote-button';
-import { AddSongModal } from './add-song-modal';
-import { createClient } from '~/lib/supabase/client';
+} from "lucide-react";
+import Image from "next/image";
+import { useState, useTransition, useEffect } from "react";
+import { toast } from "sonner";
+import { VoteButton } from "../voting/vote-button";
+import { AddSongModal } from "./add-song-modal";
+import { createClient } from "~/lib/supabase/client";
 
 interface SetlistSong {
   id: string;
@@ -52,14 +52,14 @@ interface SetlistSong {
   upvotes: number;
   downvotes: number;
   netVotes: number;
-  userVote?: 'up' | 'down' | null;
+  userVote?: "up" | "down" | null;
 }
 
 interface SetlistEditorProps {
   setlist: {
     id: string;
     name: string;
-    type: 'predicted' | 'actual';
+    type: "predicted" | "actual";
     isLocked: boolean;
     createdBy: string;
     songs: SetlistSong[];
@@ -86,52 +86,59 @@ export function SetlistEditor({
   const [showAddSong, setShowAddSong] = useState(false);
   const [setlistName, setListName] = useState(setlist.name);
   const [isPending, startTransition] = useTransition();
-  
+
   // Set up realtime subscription for votes
   useEffect(() => {
     if (!canVote) return;
-    
+
     const supabase = createClient();
-    const songIds = songs.map(song => song.id);
-    
+    const songIds = songs.map((song) => song.id);
+
     if (songIds.length === 0) return;
-    
+
     // Subscribe to vote changes for this setlist's songs
     const channel = supabase
       .channel(`setlist-votes-${setlist.id}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'votes',
-          filter: `setlist_song_id=in.(${songIds.join(',')})`
+          event: "*",
+          schema: "public",
+          table: "votes",
+          filter: `setlist_song_id=in.(${songIds.join(",")})`,
         },
         async (payload: any) => {
           // Refetch vote counts for the affected song
-          const setlistSongId = payload.new?.setlist_song_id || payload.old?.setlist_song_id;
+          const setlistSongId =
+            payload.new?.setlist_song_id || payload.old?.setlist_song_id;
           if (!setlistSongId) return;
-          
+
           try {
             const response = await fetch(`/api/votes/${setlistSongId}/count`);
             if (response.ok) {
               const { upvotes, downvotes, userVote } = await response.json();
-              
-              setSongs(prevSongs => 
-                prevSongs.map(song => 
+
+              setSongs((prevSongs) =>
+                prevSongs.map((song) =>
                   song.id === setlistSongId
-                    ? { ...song, upvotes, downvotes, netVotes: upvotes - downvotes, userVote }
-                    : song
-                )
+                    ? {
+                        ...song,
+                        upvotes,
+                        downvotes,
+                        netVotes: upvotes - downvotes,
+                        userVote,
+                      }
+                    : song,
+                ),
               );
             }
           } catch (error) {
-            console.error('Failed to fetch vote counts:', error);
+            console.error("Failed to fetch vote counts:", error);
           }
-        }
+        },
       )
       .subscribe();
-    
+
     return () => {
       supabase.removeChannel(channel);
     };
@@ -166,10 +173,10 @@ export function SetlistEditor({
         position: index + 1,
       }));
 
-      const response = await fetch('/api/setlists/reorder', {
-        method: 'PUT',
+      const response = await fetch("/api/setlists/reorder", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           setlistId: setlist.id,
@@ -178,12 +185,12 @@ export function SetlistEditor({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to reorder songs');
+        throw new Error("Failed to reorder songs");
       }
 
       onUpdate?.();
     } catch (_error) {
-      toast.error('Failed to reorder songs');
+      toast.error("Failed to reorder songs");
       // Revert changes
       setSongs(setlist.songs);
     }
@@ -195,29 +202,29 @@ export function SetlistEditor({
         const response = await fetch(
           `/api/setlists/songs?setlistSongId=${songId}`,
           {
-            method: 'DELETE',
-          }
+            method: "DELETE",
+          },
         );
 
         if (!response.ok) {
-          throw new Error('Failed to remove song');
+          throw new Error("Failed to remove song");
         }
 
         setSongs(songs.filter((song) => song.id !== songId));
-        toast.success('Song removed from setlist');
+        toast.success("Song removed from setlist");
         onUpdate?.();
       } catch (_error) {
-        toast.error('Failed to remove song');
+        toast.error("Failed to remove song");
       }
     });
   };
 
   const updateSongNotes = async (songId: string, notes: string) => {
     try {
-      const response = await fetch('/api/setlists/songs/notes', {
-        method: 'PUT',
+      const response = await fetch("/api/setlists/songs/notes", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           setlistSongId: songId,
@@ -226,26 +233,26 @@ export function SetlistEditor({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update notes');
+        throw new Error("Failed to update notes");
       }
 
       setSongs(
-        songs.map((song) => (song.id === songId ? { ...song, notes } : song))
+        songs.map((song) => (song.id === songId ? { ...song, notes } : song)),
       );
 
       onUpdate?.();
     } catch (_error) {
-      toast.error('Failed to update notes');
+      toast.error("Failed to update notes");
     }
   };
 
   const toggleLock = async () => {
     startTransition(async () => {
       try {
-        const response = await fetch('/api/setlists/lock', {
-          method: 'PUT',
+        const response = await fetch("/api/setlists/lock", {
+          method: "PUT",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             setlistId: setlist.id,
@@ -254,27 +261,27 @@ export function SetlistEditor({
         });
 
         if (!response.ok) {
-          throw new Error('Failed to toggle lock');
+          throw new Error("Failed to toggle lock");
         }
 
-        toast.success(setlist.isLocked ? 'Setlist unlocked' : 'Setlist locked');
+        toast.success(setlist.isLocked ? "Setlist unlocked" : "Setlist locked");
         onUpdate?.();
       } catch (_error) {
-        toast.error('Failed to toggle lock');
+        toast.error("Failed to toggle lock");
       }
     });
   };
 
-  const handleVote = async (songId: string, voteType: 'up' | 'down' | null) => {
+  const handleVote = async (songId: string, voteType: "up" | "down" | null) => {
     // Optimistically update UI
     const previousSongs = [...songs];
     setSongs(
       songs.map((song) => {
         if (song.id === songId) {
           const currentVote = song.userVote;
-          const upDelta = voteType === 'up' ? 1 : currentVote === 'up' ? -1 : 0;
+          const upDelta = voteType === "up" ? 1 : currentVote === "up" ? -1 : 0;
           const downDelta =
-            voteType === 'down' ? 1 : currentVote === 'down' ? -1 : 0;
+            voteType === "down" ? 1 : currentVote === "down" ? -1 : 0;
 
           return {
             ...song,
@@ -285,14 +292,14 @@ export function SetlistEditor({
           };
         }
         return song;
-      })
+      }),
     );
-    
+
     try {
-      const response = await fetch('/api/songs/votes', {
-        method: 'POST',
+      const response = await fetch("/api/songs/votes", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           setlistSongId: songId,
@@ -301,24 +308,24 @@ export function SetlistEditor({
       });
 
       if (!response.ok) {
-        throw new Error('Failed to vote');
+        throw new Error("Failed to vote");
       }
     } catch (error) {
       // Revert on error
       setSongs(previousSongs);
-      toast.error('Failed to save vote');
+      toast.error("Failed to save vote");
       throw error;
     }
   };
 
   const formatDuration = (ms?: number) => {
     if (!ms) {
-      return '';
+      return "";
     }
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   return (
@@ -338,7 +345,7 @@ export function SetlistEditor({
                   <CardTitle>{setlistName}</CardTitle>
                 )}
                 <Badge
-                  variant={setlist.type === 'actual' ? 'default' : 'secondary'}
+                  variant={setlist.type === "actual" ? "default" : "secondary"}
                 >
                   {setlist.type}
                 </Badge>
@@ -356,8 +363,8 @@ export function SetlistEditor({
                   {formatDuration(
                     songs.reduce(
                       (acc, song) => acc + (song.song.durationMs || 0),
-                      0
-                    )
+                      0,
+                    ),
                   )}
                 </span>
               </div>
@@ -373,7 +380,7 @@ export function SetlistEditor({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => setIsEditing(!isEditing)}>
                     <Edit3 className="mr-2 h-4 w-4" />
-                    {isEditing ? 'Done Editing' : 'Edit Setlist'}
+                    {isEditing ? "Done Editing" : "Edit Setlist"}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => setShowAddSong(true)}>
                     <Plus className="mr-2 h-4 w-4" />
@@ -421,9 +428,9 @@ export function SetlistEditor({
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             className={cn(
-                              'flex items-center gap-2 rounded-lg border p-2 transition-colors sm:gap-3 sm:p-3',
-                              'hover:bg-muted/50',
-                              isEditing && canEdit && 'cursor-move'
+                              "flex items-center gap-2 rounded-lg border p-2 transition-colors sm:gap-3 sm:p-3",
+                              "hover:bg-muted/50",
+                              isEditing && canEdit && "cursor-move",
                             )}
                           >
                             {/* Drag Handle */}
@@ -461,7 +468,10 @@ export function SetlistEditor({
                                   {song.song.title}
                                 </h4>
                                 {song.song.isExplicit && (
-                                  <Badge variant="outline" className="text-[10px] sm:text-xs">
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px] sm:text-xs"
+                                  >
                                     E
                                   </Badge>
                                 )}
@@ -491,7 +501,7 @@ export function SetlistEditor({
                                 <div className="mt-1">
                                   {isEditing && canEdit ? (
                                     <Input
-                                      value={song.notes || ''}
+                                      value={song.notes || ""}
                                       onChange={(e) =>
                                         updateSongNotes(song.id, e.target.value)
                                       }

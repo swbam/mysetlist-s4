@@ -47,10 +47,12 @@ Located in `packages/email/templates/`:
 All cron jobs are protected by the `CRON_SECRET` environment variable.
 
 ### 1. Email Processing (Every 5 minutes)
+
 - **Endpoint**: `/api/cron/email-processing`
 - **Function**: Processes queued emails, sends reminders
 
 ### 2. Hourly Update
+
 - **Endpoint**: `/api/cron/hourly-update`
 - **Functions**:
   - Updates trending scores for artists and shows
@@ -58,6 +60,7 @@ All cron jobs are protected by the `CRON_SECRET` environment variable.
   - Updates show statuses (upcoming → completed)
 
 ### 3. Daily Sync
+
 - **Endpoint**: `/api/cron/daily-sync`
 - **Functions**:
   - Syncs artist data that hasn't been updated in 24 hours
@@ -65,10 +68,12 @@ All cron jobs are protected by the `CRON_SECRET` environment variable.
   - Triggers data cleanup
 
 ### 4. Weekly Digest (Mondays at 8 AM)
+
 - **Endpoint**: `/api/cron/weekly-digest`
 - **Function**: Sends weekly email digests to subscribed users
 
 ### 5. Health Check (Every 10 minutes)
+
 - **Endpoint**: `/api/cron/health-check`
 - **Functions**:
   - Checks database connectivity
@@ -158,6 +163,7 @@ curl -X POST http://localhost:3001/api/test/email \
 ### Queue Structure
 
 Emails are stored in the `email_queue` table with:
+
 - Retry logic (max 3 attempts)
 - Scheduled sending time
 - Error tracking
@@ -168,10 +174,12 @@ Emails are stored in the `email_queue` table with:
 ```typescript
 // Queue an email
 await queueEmail({
-  userId: 'user-id',
-  emailType: 'welcome',
-  emailData: { /* template data */ },
-  scheduledFor: new Date()
+  userId: "user-id",
+  emailType: "welcome",
+  emailData: {
+    /* template data */
+  },
+  scheduledFor: new Date(),
 });
 
 // Process queue manually
@@ -183,6 +191,7 @@ await processQueuedEmails();
 ### Email Logs
 
 All sent emails are logged in the `email_logs` table with:
+
 - Recipient information
 - Send status
 - Timestamps
@@ -191,6 +200,7 @@ All sent emails are logged in the `email_logs` table with:
 ### Health Monitoring
 
 The health check endpoint monitors:
+
 - Database connectivity and response time
 - API endpoint availability
 - Overall system health
@@ -222,10 +232,10 @@ Enable debug logging:
 
 ```typescript
 // In email service
-console.log('Email send attempt:', { to, subject, template });
+console.log("Email send attempt:", { to, subject, template });
 
 // In cron jobs
-console.log('Cron job started:', { job, timestamp });
+console.log("Cron job started:", { job, timestamp });
 ```
 
 ## Best Practices

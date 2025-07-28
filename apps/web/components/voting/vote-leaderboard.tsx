@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import { Badge } from '@repo/design-system/components/ui/badge';
+} from "@repo/design-system/components/ui/avatar";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
+} from "@repo/design-system/components/ui/tabs";
+import { cn } from "@repo/design-system/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   Award,
   Crown,
@@ -29,8 +29,8 @@ import {
   TrendingUp,
   Trophy,
   Users,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface VoteLeaderboardProps {
   showId: string;
@@ -84,7 +84,7 @@ export function VoteLeaderboard({
       try {
         const params = new URLSearchParams({ showId });
         if (setlistId) {
-          params.set('setlistId', setlistId);
+          params.set("setlistId", setlistId);
         }
 
         const response = await fetch(`/api/votes/leaderboard?${params}`);
@@ -159,13 +159,13 @@ export function VoteLeaderboard({
   const getRankColor = (rank: number) => {
     switch (rank) {
       case 1:
-        return 'border-yellow-500/20 bg-yellow-50 dark:bg-yellow-900/10';
+        return "border-yellow-500/20 bg-yellow-50 dark:bg-yellow-900/10";
       case 2:
-        return 'border-gray-400/20 bg-gray-50 dark:bg-gray-900/10';
+        return "border-gray-400/20 bg-gray-50 dark:bg-gray-900/10";
       case 3:
-        return 'border-amber-600/20 bg-amber-50 dark:bg-amber-900/10';
+        return "border-amber-600/20 bg-amber-50 dark:bg-amber-900/10";
       default:
-        return 'border-muted';
+        return "border-muted";
     }
   };
 
@@ -207,8 +207,8 @@ export function VoteLeaderboard({
                     exit={{ opacity: 0, x: 20 }}
                     transition={{ delay: index * 0.05 }}
                     className={cn(
-                      'flex items-center gap-3 rounded-lg border p-3',
-                      getRankColor(voter.rank)
+                      "flex items-center gap-3 rounded-lg border p-3",
+                      getRankColor(voter.rank),
                     )}
                   >
                     <div className="flex h-8 w-8 items-center justify-center">
@@ -221,7 +221,7 @@ export function VoteLeaderboard({
                         alt={voter.displayName || voter.username}
                       />
                       <AvatarFallback>
-                        {(voter.displayName || voter.username || 'U')
+                        {(voter.displayName || voter.username || "U")
                           .charAt(0)
                           .toUpperCase()}
                       </AvatarFallback>
@@ -229,7 +229,7 @@ export function VoteLeaderboard({
 
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-medium">
-                        {voter.displayName || voter.username || 'Anonymous'}
+                        {voter.displayName || voter.username || "Anonymous"}
                       </div>
                       <div className="text-muted-foreground text-sm">
                         {voter.upvotes} up, {voter.downvotes} down
@@ -269,8 +269,8 @@ export function VoteLeaderboard({
                     exit={{ opacity: 0, x: 20 }}
                     transition={{ delay: index * 0.05 }}
                     className={cn(
-                      'flex items-center gap-3 rounded-lg border p-3',
-                      getRankColor(song.rank)
+                      "flex items-center gap-3 rounded-lg border p-3",
+                      getRankColor(song.rank),
                     )}
                   >
                     <div className="flex h-8 w-8 items-center justify-center">
@@ -300,14 +300,14 @@ export function VoteLeaderboard({
                       <Badge
                         variant={
                           song.netVotes > 0
-                            ? 'default'
+                            ? "default"
                             : song.netVotes < 0
-                              ? 'destructive'
-                              : 'secondary'
+                              ? "destructive"
+                              : "secondary"
                         }
                         className="font-bold"
                       >
-                        {song.netVotes > 0 ? '+' : ''}
+                        {song.netVotes > 0 ? "+" : ""}
                         {song.netVotes}
                       </Badge>
                       <div className="mt-1 text-muted-foreground text-xs">
@@ -415,7 +415,7 @@ export function VoteLeaderboard({
                         alt={voter.displayName || voter.username}
                       />
                       <AvatarFallback>
-                        {(voter.displayName || voter.username || 'U')
+                        {(voter.displayName || voter.username || "U")
                           .charAt(0)
                           .toUpperCase()}
                       </AvatarFallback>
@@ -423,13 +423,13 @@ export function VoteLeaderboard({
 
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-medium">
-                        {voter.displayName || voter.username || 'Anonymous'}
+                        {voter.displayName || voter.username || "Anonymous"}
                       </div>
                       <div className="text-muted-foreground text-sm">
                         {voter.totalVotes} votes
                         {voter.joinedDate && (
                           <span className="ml-2">
-                            Joined{' '}
+                            Joined{" "}
                             {new Date(voter.joinedDate).toLocaleDateString()}
                           </span>
                         )}

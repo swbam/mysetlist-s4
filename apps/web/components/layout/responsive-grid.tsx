@@ -1,11 +1,11 @@
-import { cn } from '@repo/design-system/lib/utils';
-import React from 'react';
-import { generateGridClasses, gridAriaLabels, focusRing } from './grid-utils';
+import { cn } from "@repo/design-system/lib/utils";
+import React from "react";
+import { generateGridClasses, gridAriaLabels, focusRing } from "./grid-utils";
 
 interface ResponsiveGridProps {
   children: React.ReactNode;
   className?: string;
-  variant?: 'artists' | 'venues' | 'shows' | 'default';
+  variant?: "artists" | "venues" | "shows" | "default";
   loading?: boolean;
   loadingCount?: number;
   emptyState?: React.ReactNode;
@@ -14,19 +14,19 @@ interface ResponsiveGridProps {
 
 interface GridSkeletonProps {
   count: number;
-  variant: ResponsiveGridProps['variant'];
+  variant: ResponsiveGridProps["variant"];
 }
 
 const GridSkeleton: React.FC<GridSkeletonProps> = ({ count, variant }) => {
   const getSkeletonClasses = () => {
-    const baseClasses = 'animate-pulse rounded-lg bg-muted';
-    
+    const baseClasses = "animate-pulse rounded-lg bg-muted";
+
     switch (variant) {
-      case 'artists':
+      case "artists":
         return `${baseClasses} aspect-square`;
-      case 'venues':
+      case "venues":
         return `${baseClasses} h-80`;
-      case 'shows':
+      case "shows":
         return `${baseClasses} h-40`;
       default:
         return `${baseClasses} h-60`;
@@ -36,8 +36,8 @@ const GridSkeleton: React.FC<GridSkeletonProps> = ({ count, variant }) => {
   return (
     <>
       {Array.from({ length: count }, (_, index) => (
-        <div 
-          key={`skeleton-${index}`} 
+        <div
+          key={`skeleton-${index}`}
           className={getSkeletonClasses()}
           role="gridcell"
           aria-label="Loading content"
@@ -50,7 +50,7 @@ const GridSkeleton: React.FC<GridSkeletonProps> = ({ count, variant }) => {
 export const ResponsiveGrid: React.FC<ResponsiveGridProps> = ({
   children,
   className,
-  variant = 'default',
+  variant = "default",
   loading = false,
   loadingCount = 8,
   emptyState,
@@ -62,7 +62,7 @@ export const ResponsiveGrid: React.FC<ResponsiveGridProps> = ({
   // Handle loading state
   if (loading) {
     return (
-      <div 
+      <div
         className={cn(gridClasses, focusRing.card, className)}
         role="grid"
         aria-label={ariaLabel || `Loading ${defaultAriaLabel.toLowerCase()}`}
@@ -77,8 +77,8 @@ export const ResponsiveGrid: React.FC<ResponsiveGridProps> = ({
   const childArray = React.Children.toArray(children);
   if (childArray.length === 0 && emptyState) {
     return (
-      <div 
-        role="region" 
+      <div
+        role="region"
         aria-label={ariaLabel || `Empty ${defaultAriaLabel.toLowerCase()}`}
       >
         {emptyState}
@@ -87,8 +87,8 @@ export const ResponsiveGrid: React.FC<ResponsiveGridProps> = ({
   }
 
   return (
-    <div 
-      className={cn(gridClasses, focusRing.card, className)} 
+    <div
+      className={cn(gridClasses, focusRing.card, className)}
       role="grid"
       aria-label={ariaLabel || defaultAriaLabel}
       aria-rowcount={Math.ceil(childArray.length / 4)} // Approximation

@@ -1,7 +1,7 @@
-import { db } from '@repo/database';
-import { artists, shows, venues } from '@repo/database';
-import { sql } from 'drizzle-orm';
-import { NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { artists, shows, venues } from "@repo/database";
+import { sql } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 // Test endpoint to verify trending data availability
 export async function GET() {
@@ -52,12 +52,12 @@ export async function GET() {
         db
           .select({
             venueId: venues.id,
-            showCount: sql<number>`COUNT(${shows.id})`.as('show_count'),
+            showCount: sql<number>`COUNT(${shows.id})`.as("show_count"),
           })
           .from(venues)
           .leftJoin(shows, sql`${shows.venueId} = ${venues.id}`)
           .groupBy(venues.id)
-          .as('venue_shows')
+          .as("venue_shows"),
       );
 
     results.venues = {
@@ -67,16 +67,16 @@ export async function GET() {
 
     // Test API endpoints
     const endpoints = [
-      { path: '/api/trending', name: 'Main Trending' },
-      { path: '/api/trending/artists', name: 'Trending Artists' },
-      { path: '/api/trending/shows', name: 'Trending Shows' },
-      { path: '/api/trending/venues', name: 'Trending Venues' },
-      { path: '/api/trending/live', name: 'Live Trending' },
+      { path: "/api/trending", name: "Main Trending" },
+      { path: "/api/trending/artists", name: "Trending Artists" },
+      { path: "/api/trending/shows", name: "Trending Shows" },
+      { path: "/api/trending/venues", name: "Trending Venues" },
+      { path: "/api/trending/live", name: "Live Trending" },
       {
-        path: '/api/trending/live?timeframe=1h&type=artist',
-        name: 'Live Artists (1h)',
+        path: "/api/trending/live?timeframe=1h&type=artist",
+        name: "Live Artists (1h)",
       },
-      { path: '/api/activity/recent', name: 'Recent Activity' },
+      { path: "/api/activity/recent", name: "Recent Activity" },
     ];
 
     results.endpoints = {};
@@ -86,13 +86,13 @@ export async function GET() {
 
       try {
         const baseUrl =
-          process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001';
-        const url = `${baseUrl}${endpoint.path}${endpoint.path.includes('?') ? '&' : '?'}limit=1`;
+          process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
+        const url = `${baseUrl}${endpoint.path}${endpoint.path.includes("?") ? "&" : "?"}limit=1`;
 
         const response = await fetch(url, {
           headers: {
-            Accept: 'application/json',
-            'Cache-Control': 'no-cache',
+            Accept: "application/json",
+            "Cache-Control": "no-cache",
           },
         });
 
@@ -121,10 +121,10 @@ export async function GET() {
       } catch (error) {
         const responseTime = Date.now() - startTime;
         results.endpoints[endpoint.name] = {
-          status: 'error',
+          status: "error",
           ok: false,
           responseTime,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         };
       }
     }
@@ -143,7 +143,7 @@ export async function GET() {
       totalEndpoints;
 
     const summary = {
-      status: workingEndpoints === totalEndpoints ? 'healthy' : 'issues',
+      status: workingEndpoints === totalEndpoints ? "healthy" : "issues",
       workingEndpoints,
       totalEndpoints,
       avgResponseTime: Math.round(avgResponseTime),
@@ -161,9 +161,9 @@ export async function GET() {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

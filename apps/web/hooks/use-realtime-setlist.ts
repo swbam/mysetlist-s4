@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
 import type {
   RealtimeChannel,
   RealtimePostgresChangesPayload,
-} from '@supabase/supabase-js';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+} from "@supabase/supabase-js";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { createClient } from "~/lib/supabase/client";
 
 type SetlistSong = {
   id: string;
@@ -24,18 +24,18 @@ type SetlistSong = {
   upvotes: number;
   downvotes: number;
   netVotes: number;
-  userVote?: 'up' | 'down' | null;
+  userVote?: "up" | "down" | null;
 };
 
 type Setlist = {
   id: string;
   name: string;
-  type: 'predicted' | 'actual';
+  type: "predicted" | "actual";
   songs: SetlistSong[];
 };
 
 type RealtimeEvent = {
-  type: 'vote_update' | 'song_played' | 'setlist_update' | 'connection_change';
+  type: "vote_update" | "song_played" | "setlist_update" | "connection_change";
   data?: any;
   timestamp: Date;
 };
@@ -48,7 +48,7 @@ interface UseRealtimeSetlistOptions {
 interface UseRealtimeSetlistReturn {
   setlists: Setlist[];
   loading: boolean;
-  connectionStatus: 'connecting' | 'connected' | 'disconnected' | 'error';
+  connectionStatus: "connecting" | "connected" | "disconnected" | "error";
   isConnected: boolean;
   lastUpdate: Date | null;
   refetch: () => Promise<void>;
@@ -61,8 +61,8 @@ export function useRealtimeSetlist({
   const [setlists, setSetlists] = useState<Setlist[]>([]);
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<
-    'connecting' | 'connected' | 'disconnected' | 'error'
-  >('disconnected');
+    "connecting" | "connected" | "disconnected" | "error"
+  >("disconnected");
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
 
   const supabase = createClient();
@@ -70,7 +70,7 @@ export function useRealtimeSetlist({
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const reconnectAttemptsRef = useRef(0);
 
-  const isConnected = connectionStatus === 'connected';
+  const isConnected = connectionStatus === "connected";
 
   // Emit events if handler provided
   const emitEvent = useCallback(
@@ -79,7 +79,7 @@ export function useRealtimeSetlist({
         onEvent(event);
       }
     },
-    [onEvent]
+    [onEvent],
   );
 
   // Fetch setlists data
@@ -94,7 +94,7 @@ export function useRealtimeSetlist({
       }
     } catch (error) {
       emitEvent({
-        type: 'connection_change',
+        type: "connection_change",
         data: { error },
         timestamp: new Date(),
       });
@@ -110,43 +110,43 @@ export function useRealtimeSetlist({
       // Refetch to get accurate vote counts
       fetchSetlists().then(() => {
         emitEvent({
-          type: 'vote_update',
+          type: "vote_update",
           data: payload,
           timestamp: new Date(),
         });
       });
     },
-    [fetchSetlists, emitEvent]
+    [fetchSetlists, emitEvent],
   );
 
   // Handle setlist song updates
   const handleSetlistSongUpdate = useCallback(
     (payload: RealtimePostgresChangesPayload<any>) => {
-      if (payload.eventType === 'UPDATE') {
+      if (payload.eventType === "UPDATE") {
         setSetlists((prev) =>
           prev.map((setlist) => ({
             ...setlist,
             songs: setlist.songs.map((song) =>
               song.id === payload.new.id
-                ? {
+                ? ({
                     ...song,
-                    isPlayed: payload.new['is_played'] ?? song.isPlayed,
-                    playTime: payload.new['play_time']
-                      ? new Date(payload.new['play_time'])
+                    isPlayed: payload.new["is_played"] ?? song.isPlayed,
+                    playTime: payload.new["play_time"]
+                      ? new Date(payload.new["play_time"])
                       : song.playTime,
-                    notes: payload.new['notes'] ?? song.notes,
-                  } as SetlistSong
-                : song
+                    notes: payload.new["notes"] ?? song.notes,
+                  } as SetlistSong)
+                : song,
             ),
-          }))
+          })),
         );
 
         setLastUpdate(new Date());
 
         // Check if a song was just marked as played
-        if (payload.new['is_played'] && !payload.old['is_played']) {
+        if (payload.new["is_played"] && !payload.old["is_played"]) {
           emitEvent({
-            type: 'song_played',
+            type: "song_played",
             data: {
               songId: payload.new.id,
               playTime: payload.new.play_time,
@@ -155,14 +155,14 @@ export function useRealtimeSetlist({
           });
         } else {
           emitEvent({
-            type: 'setlist_update',
+            type: "setlist_update",
             data: payload,
             timestamp: new Date(),
           });
         }
       }
     },
-    [emitEvent]
+    [emitEvent],
   );
 
   // Setup real-time subscription with reconnection logic
@@ -177,70 +177,70 @@ export function useRealtimeSetlist({
       channelRef.current = null;
     }
 
-    setConnectionStatus('connecting');
+    setConnectionStatus("connecting");
 
     try {
       const setlistIds = setlists.map((s) => s.id);
       const setlistSongIds = setlists.flatMap((s) =>
-        s.songs.map((song) => song.id)
+        s.songs.map((song) => song.id),
       );
 
       const channel = supabase
         .channel(`setlist-${showId}`)
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: '*',
-            schema: 'public',
-            table: 'votes',
-            filter: `setlist_song_id=in.(${setlistSongIds.join(',')})`,
+            event: "*",
+            schema: "public",
+            table: "votes",
+            filter: `setlist_song_id=in.(${setlistSongIds.join(",")})`,
           },
-          handleVoteUpdate
+          handleVoteUpdate,
         )
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: '*',
-            schema: 'public',
-            table: 'setlist_songs',
-            filter: `setlist_id=in.(${setlistIds.join(',')})`,
+            event: "*",
+            schema: "public",
+            table: "setlist_songs",
+            filter: `setlist_id=in.(${setlistIds.join(",")})`,
           },
-          handleSetlistSongUpdate
+          handleSetlistSongUpdate,
         )
         .on(
-          'postgres_changes',
+          "postgres_changes",
           {
-            event: '*',
-            schema: 'public',
-            table: 'setlists',
+            event: "*",
+            schema: "public",
+            table: "setlists",
             filter: `show_id=eq.${showId}`,
           },
           () => {
             // Refetch when setlist structure changes
             fetchSetlists();
-          }
+          },
         )
         .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            setConnectionStatus('connected');
+          if (status === "SUBSCRIBED") {
+            setConnectionStatus("connected");
             reconnectAttemptsRef.current = 0;
             emitEvent({
-              type: 'connection_change',
-              data: { status: 'connected' },
+              type: "connection_change",
+              data: { status: "connected" },
               timestamp: new Date(),
             });
-          } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-            setConnectionStatus('error');
+          } else if (status === "CLOSED" || status === "CHANNEL_ERROR") {
+            setConnectionStatus("error");
             handleReconnect();
-          } else if (status === 'TIMED_OUT') {
-            setConnectionStatus('disconnected');
+          } else if (status === "TIMED_OUT") {
+            setConnectionStatus("disconnected");
             handleReconnect();
           }
         });
 
       channelRef.current = channel;
     } catch (_error) {
-      setConnectionStatus('error');
+      setConnectionStatus("error");
       handleReconnect();
     }
   }, [

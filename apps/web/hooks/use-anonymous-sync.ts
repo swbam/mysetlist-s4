@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { toast } from 'sonner';
-import { syncAnonymousActions } from '~/app/shows/[slug]/anonymous-actions';
-import { anonymousUser } from '~/lib/anonymous-user';
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { toast } from "sonner";
+import { syncAnonymousActions } from "~/app/shows/[slug]/anonymous-actions";
+import { anonymousUser } from "~/lib/anonymous-user";
 
 export function useAnonymousSync(isAuthenticated: boolean, userId?: string) {
   const router = useRouter();
@@ -28,7 +28,7 @@ export function useAnonymousSync(isAuthenticated: boolean, userId?: string) {
 
         if (results.votesSynced > 0 || results.songsSynced > 0) {
           toast.success(
-            `Synced ${results.votesSynced} votes and ${results.songsSynced} song suggestions to your account!`
+            `Synced ${results.votesSynced} votes and ${results.songsSynced} song suggestions to your account!`,
           );
 
           // Clear anonymous session after successful sync

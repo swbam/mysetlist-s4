@@ -1,23 +1,23 @@
-import { getUser } from '@repo/auth/server';
-import { db } from '@repo/database';
-import { setlistSongs, setlists } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { getUser } from "@repo/auth/server";
+import { db } from "@repo/database";
+import { setlistSongs, setlists } from "@repo/database";
+import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function PUT(request: NextRequest) {
   try {
     const user = await getUser();
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { setlistSongId, notes } = await request.json();
 
     if (!setlistSongId) {
       return NextResponse.json(
-        { error: 'Missing required field: setlistSongId' },
-        { status: 400 }
+        { error: "Missing required field: setlistSongId" },
+        { status: 400 },
       );
     }
 
@@ -33,8 +33,8 @@ export async function PUT(request: NextRequest) {
 
     if (setlistSong.length === 0) {
       return NextResponse.json(
-        { error: 'Setlist song not found' },
-        { status: 404 }
+        { error: "Setlist song not found" },
+        { status: 404 },
       );
     }
 
@@ -45,16 +45,16 @@ export async function PUT(request: NextRequest) {
         isLocked: setlists.isLocked,
       })
       .from(setlists)
-      .where(eq(setlists.id, setlistSong[0]!['setlistId']))
+      .where(eq(setlists.id, setlistSong[0]!["setlistId"]))
       .limit(1);
 
     if (
       setlist.length === 0 ||
-      (setlist[0]!['createdBy'] !== user.id && setlist[0]!['isLocked'])
+      (setlist[0]!["createdBy"] !== user.id && setlist[0]!["isLocked"])
     ) {
       return NextResponse.json(
-        { error: 'Cannot modify this setlist' },
-        { status: 403 }
+        { error: "Cannot modify this setlist" },
+        { status: 403 },
       );
     }
 
@@ -67,8 +67,8 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to update song notes' },
-      { status: 500 }
+      { error: "Failed to update song notes" },
+      { status: 500 },
     );
   }
 }

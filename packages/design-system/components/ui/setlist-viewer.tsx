@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './card';
-import { Badge } from './badge';
-import { Button } from './button';
-import { SetlistSong } from './setlist-song';
-import { 
-  Music, 
-  Clock, 
-  Users, 
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "./card";
+import { Badge } from "./badge";
+import { Button } from "./button";
+import { SetlistSong } from "./setlist-song";
+import {
+  Music,
+  Clock,
+  Users,
   Play,
   Pause,
   SkipForward,
@@ -19,17 +19,17 @@ import {
   Download,
   Edit,
   Lock,
-  Unlock
-} from 'lucide-react';
+  Unlock,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from './dropdown-menu';
-import { cn } from '../../lib/utils';
-import { musicTokens } from '../../lib/design-tokens';
+} from "./dropdown-menu";
+import { cn } from "../../lib/utils";
+import { musicTokens } from "../../lib/design-tokens";
 
 interface SetlistSong {
   id: string;
@@ -51,7 +51,7 @@ interface SetlistViewerProps {
   setlist: {
     id: string;
     name: string;
-    type: 'predicted' | 'actual' | 'suggested';
+    type: "predicted" | "actual" | "suggested";
     isLocked?: boolean;
     totalDuration?: number;
     voteCount?: number;
@@ -66,8 +66,8 @@ interface SetlistViewerProps {
       };
     };
   };
-  userVotes?: Record<string, 'up' | 'down'>;
-  onVote?: (songId: string, voteType: 'up' | 'down' | null) => Promise<void>;
+  userVotes?: Record<string, "up" | "down">;
+  onVote?: (songId: string, voteType: "up" | "down" | null) => Promise<void>;
   onPlay?: (songId: string) => void;
   onSongEdit?: (songId: string) => void;
   onSongDelete?: (songId: string) => void;
@@ -78,7 +78,7 @@ interface SetlistViewerProps {
   isEditable?: boolean;
   showVoting?: boolean;
   showPlayControls?: boolean;
-  variant?: 'default' | 'compact' | 'detailed';
+  variant?: "default" | "compact" | "detailed";
   className?: string;
 }
 
@@ -96,10 +96,12 @@ export function SetlistViewer({
   isEditable = false,
   showVoting = true,
   showPlayControls = false,
-  variant = 'default',
-  className
+  variant = "default",
+  className,
 }: SetlistViewerProps) {
-  const [localCurrentSong, setLocalCurrentSong] = useState<string | null>(currentlyPlaying);
+  const [localCurrentSong, setLocalCurrentSong] = useState<string | null>(
+    currentlyPlaying,
+  );
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
@@ -131,8 +133,10 @@ export function SetlistViewer({
 
   const handleNext = () => {
     if (!localCurrentSong) return;
-    
-    const currentIndex = setlist.songs.findIndex(song => song.id === localCurrentSong);
+
+    const currentIndex = setlist.songs.findIndex(
+      (song) => song.id === localCurrentSong,
+    );
     if (currentIndex < setlist.songs.length - 1) {
       const nextSong = setlist.songs[currentIndex + 1];
       setLocalCurrentSong(nextSong.id);
@@ -142,8 +146,10 @@ export function SetlistViewer({
 
   const handlePrevious = () => {
     if (!localCurrentSong) return;
-    
-    const currentIndex = setlist.songs.findIndex(song => song.id === localCurrentSong);
+
+    const currentIndex = setlist.songs.findIndex(
+      (song) => song.id === localCurrentSong,
+    );
     if (currentIndex > 0) {
       const prevSong = setlist.songs[currentIndex - 1];
       setLocalCurrentSong(prevSong.id);
@@ -153,29 +159,37 @@ export function SetlistViewer({
 
   const getSetlistTypeColor = (type: string) => {
     switch (type) {
-      case 'actual': return 'bg-green-100 text-green-800';
-      case 'predicted': return 'bg-blue-100 text-blue-800';
-      case 'suggested': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "actual":
+        return "bg-green-100 text-green-800";
+      case "predicted":
+        return "bg-blue-100 text-blue-800";
+      case "suggested":
+        return "bg-purple-100 text-purple-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
   const getSetlistTypeLabel = (type: string) => {
     switch (type) {
-      case 'actual': return 'Actual Setlist';
-      case 'predicted': return 'Predicted Setlist';
-      case 'suggested': return 'Suggested Setlist';
-      default: return 'Setlist';
+      case "actual":
+        return "Actual Setlist";
+      case "predicted":
+        return "Predicted Setlist";
+      case "suggested":
+        return "Suggested Setlist";
+      default:
+        return "Setlist";
     }
   };
 
   // Enhanced songs with current playing state
-  const enhancedSongs = setlist.songs.map(song => ({
+  const enhancedSongs = setlist.songs.map((song) => ({
     ...song,
     isCurrentSong: song.id === localCurrentSong,
   }));
 
-  if (variant === 'compact') {
+  if (variant === "compact") {
     return (
       <Card className={cn("overflow-hidden", className)}>
         <CardHeader className="pb-3">
@@ -185,7 +199,10 @@ export function SetlistViewer({
               <div>
                 <CardTitle className="text-lg">{setlist.name}</CardTitle>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Badge variant="outline" className={getSetlistTypeColor(setlist.type)}>
+                  <Badge
+                    variant="outline"
+                    className={getSetlistTypeColor(setlist.type)}
+                  >
                     {getSetlistTypeLabel(setlist.type)}
                   </Badge>
                   <span>{setlist.songs.length} songs</span>
@@ -195,7 +212,7 @@ export function SetlistViewer({
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2">
               {showPlayControls && (
                 <Button
@@ -204,11 +221,15 @@ export function SetlistViewer({
                   onClick={handlePlayPause}
                   className="gap-2"
                 >
-                  {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                  {isPlaying ? 'Pause' : 'Play'}
+                  {isPlaying ? (
+                    <Pause className="h-4 w-4" />
+                  ) : (
+                    <Play className="h-4 w-4" />
+                  )}
+                  {isPlaying ? "Pause" : "Play"}
                 </Button>
               )}
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -253,7 +274,7 @@ export function SetlistViewer({
             </div>
           </div>
         </CardHeader>
-        
+
         <CardContent className="pt-0">
           <div className="space-y-2">
             {enhancedSongs.slice(0, 5).map((song) => (
@@ -294,11 +315,16 @@ export function SetlistViewer({
                 <Music className="h-8 w-8 text-primary/60" />
               </div>
               <div>
-                <CardTitle className={cn(musicTokens.typography.showTitle, "mb-2")}>
+                <CardTitle
+                  className={cn(musicTokens.typography.showTitle, "mb-2")}
+                >
                   {setlist.name}
                 </CardTitle>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                  <Badge variant="outline" className={getSetlistTypeColor(setlist.type)}>
+                  <Badge
+                    variant="outline"
+                    className={getSetlistTypeColor(setlist.type)}
+                  >
                     {getSetlistTypeLabel(setlist.type)}
                   </Badge>
                   {setlist.isLocked && (
@@ -326,7 +352,7 @@ export function SetlistViewer({
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2">
               {showPlayControls && (
                 <div className="flex items-center gap-1">
@@ -344,8 +370,12 @@ export function SetlistViewer({
                     onClick={handlePlayPause}
                     className="gap-2"
                   >
-                    {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                    {isPlaying ? 'Pause' : 'Play'}
+                    {isPlaying ? (
+                      <Pause className="h-4 w-4" />
+                    ) : (
+                      <Play className="h-4 w-4" />
+                    )}
+                    {isPlaying ? "Pause" : "Play"}
                   </Button>
                   <Button
                     variant="outline"
@@ -357,7 +387,7 @@ export function SetlistViewer({
                   </Button>
                 </div>
               )}
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2">
@@ -429,18 +459,18 @@ export function SetlistViewer({
                 showVoting={showVoting && !setlist.isLocked}
                 showActions={isEditable}
                 isEditable={isEditable}
-                variant={variant === 'detailed' ? 'detailed' : 'default'}
-                disabled={setlist.isLocked && setlist.type !== 'actual'}
+                variant={variant === "detailed" ? "detailed" : "default"}
+                disabled={setlist.isLocked && setlist.type !== "actual"}
               />
             ))}
-            
+
             {setlist.songs.length === 0 && (
               <div className="text-center py-12 text-muted-foreground">
                 <Music className="h-12 w-12 mx-auto mb-4 opacity-30" />
                 <h3 className="text-lg font-semibold mb-2">No songs yet</h3>
                 <p className="text-sm">
-                  {setlist.type === 'predicted' 
-                    ? "Vote for songs you'd like to hear!" 
+                  {setlist.type === "predicted"
+                    ? "Vote for songs you'd like to hear!"
                     : "Songs will appear here as they're added."}
                 </p>
               </div>

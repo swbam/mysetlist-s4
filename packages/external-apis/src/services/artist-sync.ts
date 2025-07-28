@@ -1,7 +1,7 @@
-import { db, eq } from '../database';
-import { artists, songs, artistSongs } from '../schema';
-import { SpotifyClient } from '../clients/spotify';
-import { SyncErrorHandler, SyncServiceError } from '../utils/error-handler';
+import { db, eq } from "../database";
+import { artists, songs, artistSongs } from "../schema";
+import { SpotifyClient } from "../clients/spotify";
+import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 
 export class ArtistSyncService {
   private spotifyClient: SpotifyClient;
@@ -23,10 +23,10 @@ export class ArtistSyncService {
       await this.spotifyClient.authenticate();
     } catch (error) {
       throw new SyncServiceError(
-        'Failed to authenticate with Spotify',
-        'ArtistSyncService',
-        'authenticate',
-        error instanceof Error ? error : undefined
+        "Failed to authenticate with Spotify",
+        "ArtistSyncService",
+        "authenticate",
+        error instanceof Error ? error : undefined,
       );
     }
 
@@ -34,17 +34,17 @@ export class ArtistSyncService {
     const spotifyArtist = await this.errorHandler.withRetry(
       () => this.spotifyClient.getArtist(artistId),
       {
-        service: 'ArtistSyncService',
-        operation: 'getArtist',
+        service: "ArtistSyncService",
+        operation: "getArtist",
         context: { artistId },
-      }
+      },
     );
 
     if (!spotifyArtist) {
       throw new SyncServiceError(
         `Failed to fetch artist ${artistId} from Spotify`,
-        'ArtistSyncService',
-        'getArtist'
+        "ArtistSyncService",
+        "getArtist",
       );
     }
 
@@ -52,10 +52,10 @@ export class ArtistSyncService {
     const topTracksResult = await this.errorHandler.withRetry(
       () => this.spotifyClient.getArtistTopTracks(artistId),
       {
-        service: 'ArtistSyncService',
-        operation: 'getArtistTopTracks',
+        service: "ArtistSyncService",
+        operation: "getArtistTopTracks",
         context: { artistId },
-      }
+      },
     );
 
     const topTracks = topTracksResult || { tracks: [] };
@@ -94,7 +94,7 @@ export class ArtistSyncService {
 
   private async syncArtistTracks(
     artistId: string,
-    tracks: any[]
+    tracks: any[],
   ): Promise<void> {
     const [artist] = await db
       .select()
@@ -150,7 +150,7 @@ export class ArtistSyncService {
   async syncPopularArtists(): Promise<void> {
     await this.spotifyClient.authenticate();
     // Get popular artists in different genres
-    const genres = ['rock', 'pop', 'hip-hop', 'electronic', 'indie'];
+    const genres = ["rock", "pop", "hip-hop", "electronic", "indie"];
 
     for (const genre of genres) {
       const searchResult = await this.spotifyClient.searchArtists(genre, 10);
@@ -169,7 +169,7 @@ export class ArtistSyncService {
   private generateSlug(name: string): string {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
   }
 }

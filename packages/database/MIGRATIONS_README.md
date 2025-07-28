@@ -7,6 +7,7 @@ This project uses PostgreSQL migrations to manage database schema changes. Migra
 ## Migration Files
 
 Current migrations:
+
 1. `0001_initial_schema.sql` - Core tables and initial schema
 2. `0002_user_follows_artists.sql` - User-artist following relationship
 3. `0003_venue_reviews_photos_tips.sql` - Venue review system
@@ -23,6 +24,7 @@ Current migrations:
 ### Prerequisites
 
 Ensure you have the following environment variables set:
+
 - `DATABASE_URL` or `POSTGRES_URL` - PostgreSQL connection string
 - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
 - `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key
@@ -69,6 +71,7 @@ INSERT INTO schema_migrations (version) VALUES ('0001_initial_schema');
    - RLS policies if creating new tables
 
 Example:
+
 ```sql
 -- Create new feature table
 CREATE TABLE IF NOT EXISTS new_feature (
@@ -79,7 +82,7 @@ CREATE TABLE IF NOT EXISTS new_feature (
 );
 
 -- Add trigger for updated_at
-CREATE TRIGGER update_new_feature_updated_at 
+CREATE TRIGGER update_new_feature_updated_at
 BEFORE UPDATE ON new_feature
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -121,8 +124,8 @@ SELECT * FROM schema_migrations ORDER BY version;
 
 -- Check if a specific table exists
 SELECT EXISTS (
-  SELECT FROM information_schema.tables 
-  WHERE table_schema = 'public' 
+  SELECT FROM information_schema.tables
+  WHERE table_schema = 'public'
   AND table_name = 'your_table_name'
 );
 ```
@@ -130,6 +133,7 @@ SELECT EXISTS (
 ## Required PostgreSQL Extensions
 
 The following extensions must be enabled:
+
 - `uuid-ossp` - UUID generation
 - `postgis` - Geospatial data
 - `pg_trgm` - Trigram text search

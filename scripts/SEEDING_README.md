@@ -5,40 +5,49 @@ This guide explains how to seed your MySetlist database with test data.
 ## Available Seeding Scripts
 
 ### 1. **Mock Data Seeding** (Recommended for Testing)
+
 ```bash
 pnpm seed:mock
 ```
+
 - Creates realistic mock data without external API calls
 - Generates 25 popular artists, 20 venues, shows, songs, setlists, users, and interactions
 - Perfect for local development and testing
 - No API keys required
 
 To clear existing data first:
+
 ```bash
 pnpm seed:mock:clear
 ```
 
 ### 2. **Basic Artist Seeding** (Spotify API)
+
 ```bash
 pnpm seed
 ```
+
 - Seeds popular artists from Spotify
 - Requires `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` env vars
 - Adds basic artist data only
 
 ### 3. **Comprehensive Seeding** (All External APIs)
+
 ```bash
 pnpm seed:comprehensive
 ```
+
 - Uses Spotify, Ticketmaster, and Setlist.fm APIs
 - Creates the most realistic data
 - Requires all API keys to be configured
 - Takes longer but provides real venue and show data
 
 ### 4. **Combined Seeding**
+
 ```bash
 pnpm seed:all
 ```
+
 - Runs mock seeding first, then syncs trending artists
 - Good balance of speed and data quality
 
@@ -59,6 +68,7 @@ pnpm dev
 ## What Gets Seeded
 
 ### Mock Data includes:
+
 - **25 Popular Artists** across genres (Taylor Swift, Billie Eilish, Drake, etc.)
 - **20 Real Venues** (Madison Square Garden, Red Rocks, etc.)
 - **3-5 Shows per Artist** (mix of upcoming and completed)
@@ -71,6 +81,7 @@ pnpm dev
   - Show attendance records
 
 ### Data Relationships:
+
 - Artists → Shows → Setlists → Songs
 - Users → Follows → Artists
 - Users → Votes → Setlist Songs
@@ -89,11 +100,13 @@ After seeding, you can:
 ## Database Management
 
 ### View data in Supabase Studio:
+
 ```bash
 pnpm db:studio
 ```
 
 ### Reset database:
+
 ```bash
 # Clear all data
 pnpm seed:mock:clear
@@ -102,6 +115,7 @@ pnpm seed:mock:clear
 ```
 
 ### Check seed status:
+
 ```bash
 # The scripts will output statistics showing what was created
 ```
@@ -111,11 +125,13 @@ pnpm seed:mock:clear
 ### If seeding fails:
 
 1. **Check database connection**:
+
    ```bash
    pnpm check:env
    ```
 
 2. **Verify migrations are up to date**:
+
    ```bash
    pnpm db:push
    ```

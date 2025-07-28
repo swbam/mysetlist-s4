@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
+} from "@repo/design-system/components/ui/avatar";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import {
   Calendar,
   Clock,
@@ -16,13 +16,13 @@ import {
   UserPlus,
   Users,
   Vote,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface ActivityItem {
   id: string;
-  type: 'vote' | 'follow' | 'attendance' | 'setlist_create' | 'show_create';
+  type: "vote" | "follow" | "attendance" | "setlist_create" | "show_create";
   user: {
     id: string;
     displayName: string;
@@ -32,11 +32,11 @@ interface ActivityItem {
     id: string;
     name: string;
     slug: string;
-    type: 'artist' | 'show' | 'venue' | 'setlist';
+    type: "artist" | "show" | "venue" | "setlist";
   };
   createdAt: string;
   metadata?: {
-    voteType?: 'up' | 'down';
+    voteType?: "up" | "down";
     songCount?: number;
   };
 }
@@ -52,15 +52,15 @@ export function RecentActivity() {
 
   const fetchRecentActivity = async () => {
     try {
-      const response = await fetch('/api/activity/recent?limit=15');
+      const response = await fetch("/api/activity/recent?limit=15");
       if (!response.ok) {
-        throw new Error('Failed to fetch recent activity');
+        throw new Error("Failed to fetch recent activity");
       }
 
       const data = await response.json();
       setActivities(data.activities || []);
     } catch (_err) {
-      setError('Failed to load recent activity');
+      setError("Failed to load recent activity");
     } finally {
       setLoading(false);
     }
@@ -68,15 +68,15 @@ export function RecentActivity() {
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'vote':
+      case "vote":
         return <Vote className="h-3 w-3" />;
-      case 'follow':
+      case "follow":
         return <UserPlus className="h-3 w-3" />;
-      case 'attendance':
+      case "attendance":
         return <Users className="h-3 w-3" />;
-      case 'setlist_create':
+      case "setlist_create":
         return <Music className="h-3 w-3" />;
-      case 'show_create':
+      case "show_create":
         return <Calendar className="h-3 w-3" />;
       default:
         return <Heart className="h-3 w-3" />;
@@ -85,18 +85,18 @@ export function RecentActivity() {
 
   const getActivityColor = (type: string) => {
     switch (type) {
-      case 'vote':
-        return 'text-green-500';
-      case 'follow':
-        return 'text-blue-500';
-      case 'attendance':
-        return 'text-orange-500';
-      case 'setlist_create':
-        return 'text-pink-500';
-      case 'show_create':
-        return 'text-indigo-500';
+      case "vote":
+        return "text-green-500";
+      case "follow":
+        return "text-blue-500";
+      case "attendance":
+        return "text-orange-500";
+      case "setlist_create":
+        return "text-pink-500";
+      case "show_create":
+        return "text-indigo-500";
       default:
-        return 'text-gray-500';
+        return "text-gray-500";
     }
   };
 
@@ -104,33 +104,33 @@ export function RecentActivity() {
     const { type, target, metadata } = activity;
 
     switch (type) {
-      case 'vote':
-        return `${metadata?.voteType === 'up' ? 'upvoted' : 'downvoted'} ${target.name}`;
-      case 'follow':
+      case "vote":
+        return `${metadata?.voteType === "up" ? "upvoted" : "downvoted"} ${target.name}`;
+      case "follow":
         return `started following ${target.name}`;
-      case 'attendance':
+      case "attendance":
         return `marked attending ${target.name}`;
-      case 'setlist_create':
+      case "setlist_create":
         return `created setlist for ${target.name}`;
-      case 'show_create':
+      case "show_create":
         return `added show ${target.name}`;
       default:
         return `interacted with ${target.name}`;
     }
   };
 
-  const getTargetLink = (target: ActivityItem['target']) => {
+  const getTargetLink = (target: ActivityItem["target"]) => {
     switch (target.type) {
-      case 'artist':
+      case "artist":
         return `/artists/${target.slug}`;
-      case 'show':
+      case "show":
         return `/shows/${target.slug}`;
-      case 'venue':
+      case "venue":
         return `/venues/${target.slug}`;
-      case 'setlist':
+      case "setlist":
         return `/setlists/${target.slug}`;
       default:
-        return '#';
+        return "#";
     }
   };
 
@@ -138,11 +138,11 @@ export function RecentActivity() {
     const date = new Date(dateString);
     const now = new Date();
     const diffInMinutes = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60)
+      (now.getTime() - date.getTime()) / (1000 * 60),
     );
 
     if (diffInMinutes < 1) {
-      return 'just now';
+      return "just now";
     }
     if (diffInMinutes < 60) {
       return `${diffInMinutes}m ago`;
@@ -219,14 +219,14 @@ export function RecentActivity() {
                 {getActivityIcon(activity.type)}
               </span>
               <Badge variant="outline" className="text-xs">
-                {activity.type.replace('_', ' ')}
+                {activity.type.replace("_", " ")}
               </Badge>
             </div>
 
             <p className="text-muted-foreground text-sm">
               <span className="font-medium text-foreground">
                 {activity.user.displayName}
-              </span>{' '}
+              </span>{" "}
               {getActivityText(activity)}
             </p>
 

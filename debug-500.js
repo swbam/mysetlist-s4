@@ -1,7 +1,7 @@
-const axios = require('axios');
+const axios = require("axios");
 
 async function testRoutes() {
-  const routes = ['/', '/artists', '/shows', '/trending', '/api/health'];
+  const routes = ["/", "/artists", "/shows", "/trending", "/api/health"];
 
   for (const route of routes) {
     try {

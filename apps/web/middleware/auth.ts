@@ -1,5 +1,5 @@
-import { type CookieOptions, createServerClient } from '@supabase/ssr';
-import { type NextRequest, NextResponse } from 'next/server';
+import { type CookieOptions, createServerClient } from "@supabase/ssr";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function updateSession(request: NextRequest) {
   try {
@@ -10,8 +10,8 @@ export async function updateSession(request: NextRequest) {
     });
 
     // Validate environment variables
-    const supabaseUrl = process.env['NEXT_PUBLIC_SUPABASE_URL'];
-    const supabaseAnonKey = process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'];
+    const supabaseUrl = process.env["NEXT_PUBLIC_SUPABASE_URL"];
+    const supabaseAnonKey = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
 
     if (!supabaseUrl || !supabaseAnonKey) {
       return response;
@@ -42,7 +42,7 @@ export async function updateSession(request: NextRequest) {
         remove(name: string, options: CookieOptions) {
           request.cookies.set({
             name,
-            value: '',
+            value: "",
             ...options,
           });
           response = NextResponse.next({
@@ -52,7 +52,7 @@ export async function updateSession(request: NextRequest) {
           });
           response.cookies.set({
             name,
-            value: '',
+            value: "",
             ...options,
           });
         },

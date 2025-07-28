@@ -1,12 +1,18 @@
-'use client';
+"use client";
 
-import * as React from 'react';
-import { Check, ChevronsUpDown, X } from 'lucide-react';
-import { Badge } from './badge';
-import { Button } from './button';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from './command';
-import { Popover, PopoverContent, PopoverTrigger } from './popover';
-import { cn } from '../../lib/utils';
+import * as React from "react";
+import { Check, ChevronsUpDown, X } from "lucide-react";
+import { Badge } from "./badge";
+import { Button } from "./button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "./command";
+import { Popover, PopoverContent, PopoverTrigger } from "./popover";
+import { cn } from "../../lib/utils";
 
 export interface MultiSelectOption {
   label: string;
@@ -26,7 +32,7 @@ export function MultiSelect({
   options,
   selected,
   onChange,
-  placeholder = 'Select items...',
+  placeholder = "Select items...",
   maxCount,
   className,
 }: MultiSelectProps) {
@@ -43,7 +49,10 @@ export function MultiSelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn('w-full justify-between text-left font-normal', className)}
+          className={cn(
+            "w-full justify-between text-left font-normal",
+            className,
+          )}
         >
           <div className="flex gap-1 flex-wrap">
             {selected.length > 0 ? (
@@ -75,15 +84,18 @@ export function MultiSelect({
           <CommandGroup className="max-h-64 overflow-auto">
             {options.map((option) => {
               const isSelected = selected.includes(option.value);
-              const isDisabled = maxCount && selected.length >= maxCount && !isSelected;
-              
+              const isDisabled =
+                maxCount && selected.length >= maxCount && !isSelected;
+
               return (
                 <CommandItem
                   key={option.value}
                   disabled={isDisabled}
                   onSelect={() => {
                     if (isSelected) {
-                      onChange(selected.filter((item) => item !== option.value));
+                      onChange(
+                        selected.filter((item) => item !== option.value),
+                      );
                     } else if (!maxCount || selected.length < maxCount) {
                       onChange([...selected, option.value]);
                     }
@@ -92,8 +104,8 @@ export function MultiSelect({
                 >
                   <Check
                     className={cn(
-                      'mr-2 h-4 w-4',
-                      isSelected ? 'opacity-100' : 'opacity-0'
+                      "mr-2 h-4 w-4",
+                      isSelected ? "opacity-100" : "opacity-0",
                     )}
                   />
                   {option.label}

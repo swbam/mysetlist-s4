@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { format } from 'date-fns';
-import { Calendar, MapPin, Ticket } from 'lucide-react';
-import Link from 'next/link';
-import React, { useEffect } from 'react';
+} from "@repo/design-system/components/ui/card";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { format } from "date-fns";
+import { Calendar, MapPin, Ticket } from "lucide-react";
+import Link from "next/link";
+import React, { useEffect } from "react";
 
 interface Show {
   show: {
@@ -67,10 +67,10 @@ export const UpcomingShows = React.memo(function UpcomingShows({
   useEffect(() => {
     if (artistId && shows.length === 0) {
       // Trigger autonomous sync in background (non-blocking)
-      fetch('/api/autonomous-sync?pipeline=sync', {
-        method: 'GET',
+      fetch("/api/autonomous-sync?pipeline=sync", {
+        method: "GET",
         headers: {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || 'dev-secret'}`,
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || "dev-secret"}`,
         },
       }).catch(() => {
         // Silent fail - sync will happen via scheduled cron jobs
@@ -91,7 +91,8 @@ export const UpcomingShows = React.memo(function UpcomingShows({
           <div className="py-8 text-center">
             <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
             <p className="text-muted-foreground">
-              Check back later for new tour dates. Shows are automatically updated from Ticketmaster.
+              Check back later for new tour dates. Shows are automatically
+              updated from Ticketmaster.
             </p>
           </div>
         </CardContent>
@@ -109,66 +110,64 @@ export const UpcomingShows = React.memo(function UpcomingShows({
       </div>
 
       {shows.map(({ show, venue, isHeadliner }) => (
-          <Card key={show.id} className="transition-shadow hover:shadow-lg">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Link href={`/shows/${show.slug}`}>
-                      <h3 className="font-semibold hover:underline">
-                        {show.name}
-                      </h3>
-                    </Link>
-                    {isHeadliner && (
-                      <Badge variant="secondary">Headliner</Badge>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      {format(new Date(show.date), 'PPP')}
-                    </span>
-
-                    {venue && (
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        <Link
-                          href={`/venues/${venue.id}`}
-                          className="hover:underline"
-                        >
-                          {venue.name}, {venue.city}
-                          {venue.state && `, ${venue.state}`}
-                        </Link>
-                      </span>
-                    )}
-                  </div>
-
-                  <Badge
-                    variant={
-                      show.status === 'confirmed' ? 'default' : 'secondary'
-                    }
-                  >
-                    {show.status}
-                  </Badge>
+        <Card key={show.id} className="transition-shadow hover:shadow-lg">
+          <CardContent className="p-6">
+            <div className="flex items-start justify-between">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Link href={`/shows/${show.slug}`}>
+                    <h3 className="font-semibold hover:underline">
+                      {show.name}
+                    </h3>
+                  </Link>
+                  {isHeadliner && <Badge variant="secondary">Headliner</Badge>}
                 </div>
 
-                {show.ticketUrl && (
-                  <Button asChild>
-                    <a
-                      href={show.ticketUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <Ticket className="mr-2 h-4 w-4" />
-                      Get Tickets
-                    </a>
-                  </Button>
-                )}
+                <div className="flex items-center gap-4 text-muted-foreground text-sm">
+                  <span className="flex items-center gap-1">
+                    <Calendar className="h-4 w-4" />
+                    {format(new Date(show.date), "PPP")}
+                  </span>
+
+                  {venue && (
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      <Link
+                        href={`/venues/${venue.id}`}
+                        className="hover:underline"
+                      >
+                        {venue.name}, {venue.city}
+                        {venue.state && `, ${venue.state}`}
+                      </Link>
+                    </span>
+                  )}
+                </div>
+
+                <Badge
+                  variant={
+                    show.status === "confirmed" ? "default" : "secondary"
+                  }
+                >
+                  {show.status}
+                </Badge>
               </div>
-            </CardContent>
-          </Card>
-        ))}
+
+              {show.ticketUrl && (
+                <Button asChild>
+                  <a
+                    href={show.ticketUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Ticket className="mr-2 h-4 w-4" />
+                    Get Tickets
+                  </a>
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 });

@@ -1,11 +1,17 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Progress } from '@repo/design-system/components/ui/progress';
-import { Users, Activity, Clock, TrendingUp } from 'lucide-react';
+import { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Progress } from "@repo/design-system/components/ui/progress";
+import { Users, Activity, Clock, TrendingUp } from "lucide-react";
 
 interface EngagementMetrics {
   dailyActiveUsers: number;
@@ -46,7 +52,7 @@ export function UserEngagement() {
   const fetchEngagementMetrics = async () => {
     try {
       setLoading(true);
-      
+
       // Mock data - in production this would fetch from /api/analytics?metric=engagement
       const mockData: EngagementMetrics = {
         dailyActiveUsers: 3240,
@@ -58,36 +64,40 @@ export function UserEngagement() {
         retentionRate: 68.7,
         engagementScore: 74.2,
         userActions: [
-          { action: 'Page Views', count: 45678, percentage: 42.3 },
-          { action: 'Voting', count: 18234, percentage: 16.9 },
-          { action: 'Artist Follows', count: 12890, percentage: 11.9 },
-          { action: 'Show Attendance', count: 9456, percentage: 8.8 },
-          { action: 'Setlist Views', count: 8234, percentage: 7.6 },
-          { action: 'Search', count: 6890, percentage: 6.4 },
-          { action: 'Profile Updates', count: 4567, percentage: 4.2 },
-          { action: 'Comments', count: 2134, percentage: 2.0 }
+          { action: "Page Views", count: 45678, percentage: 42.3 },
+          { action: "Voting", count: 18234, percentage: 16.9 },
+          { action: "Artist Follows", count: 12890, percentage: 11.9 },
+          { action: "Show Attendance", count: 9456, percentage: 8.8 },
+          { action: "Setlist Views", count: 8234, percentage: 7.6 },
+          { action: "Search", count: 6890, percentage: 6.4 },
+          { action: "Profile Updates", count: 4567, percentage: 4.2 },
+          { action: "Comments", count: 2134, percentage: 2.0 },
         ],
         cohortData: [
-          { cohort: 'Week 1', users: 1200, retention: 85.2, engagement: 78.5 },
-          { cohort: 'Week 2', users: 1100, retention: 72.1, engagement: 71.3 },
-          { cohort: 'Week 3', users: 980, retention: 65.8, engagement: 68.9 },
-          { cohort: 'Week 4', users: 890, retention: 62.4, engagement: 65.2 },
-          { cohort: 'Month 2', users: 750, retention: 58.7, engagement: 61.8 },
-          { cohort: 'Month 3', users: 620, retention: 55.3, engagement: 58.4 }
+          { cohort: "Week 1", users: 1200, retention: 85.2, engagement: 78.5 },
+          { cohort: "Week 2", users: 1100, retention: 72.1, engagement: 71.3 },
+          { cohort: "Week 3", users: 980, retention: 65.8, engagement: 68.9 },
+          { cohort: "Week 4", users: 890, retention: 62.4, engagement: 65.2 },
+          { cohort: "Month 2", users: 750, retention: 58.7, engagement: 61.8 },
+          { cohort: "Month 3", users: 620, retention: 55.3, engagement: 58.4 },
         ],
         timeSpentBreakdown: [
-          { category: 'Browsing Artists', minutes: 145, percentage: 34.2 },
-          { category: 'Viewing Shows', minutes: 98, percentage: 23.1 },
-          { category: 'Voting on Songs', minutes: 67, percentage: 15.8 },
-          { category: 'Setlist Exploration', minutes: 54, percentage: 12.7 },
-          { category: 'Discovery/Search', minutes: 38, percentage: 9.0 },
-          { category: 'Profile Management', minutes: 22, percentage: 5.2 }
-        ]
+          { category: "Browsing Artists", minutes: 145, percentage: 34.2 },
+          { category: "Viewing Shows", minutes: 98, percentage: 23.1 },
+          { category: "Voting on Songs", minutes: 67, percentage: 15.8 },
+          { category: "Setlist Exploration", minutes: 54, percentage: 12.7 },
+          { category: "Discovery/Search", minutes: 38, percentage: 9.0 },
+          { category: "Profile Management", minutes: 22, percentage: 5.2 },
+        ],
       };
-      
+
       setMetrics(mockData);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load engagement metrics');
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to load engagement metrics",
+      );
     } finally {
       setLoading(false);
     }
@@ -153,7 +163,9 @@ export function UserEngagement() {
       <Card>
         <CardHeader>
           <CardTitle>Active Users</CardTitle>
-          <CardDescription>User activity across different time periods</CardDescription>
+          <CardDescription>
+            User activity across different time periods
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 md:grid-cols-4">
@@ -161,25 +173,39 @@ export function UserEngagement() {
               <div className="text-2xl font-bold text-green-600">
                 {metrics.dailyActiveUsers.toLocaleString()}
               </div>
-              <div className="text-sm text-muted-foreground">Daily Active Users</div>
+              <div className="text-sm text-muted-foreground">
+                Daily Active Users
+              </div>
               <div className="text-xs text-muted-foreground mt-1">
-                {((metrics.dailyActiveUsers / metrics.monthlyActiveUsers) * 100).toFixed(1)}% of MAU
+                {(
+                  (metrics.dailyActiveUsers / metrics.monthlyActiveUsers) *
+                  100
+                ).toFixed(1)}
+                % of MAU
               </div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">
                 {metrics.weeklyActiveUsers.toLocaleString()}
               </div>
-              <div className="text-sm text-muted-foreground">Weekly Active Users</div>
+              <div className="text-sm text-muted-foreground">
+                Weekly Active Users
+              </div>
               <div className="text-xs text-muted-foreground mt-1">
-                {((metrics.weeklyActiveUsers / metrics.monthlyActiveUsers) * 100).toFixed(1)}% of MAU
+                {(
+                  (metrics.weeklyActiveUsers / metrics.monthlyActiveUsers) *
+                  100
+                ).toFixed(1)}
+                % of MAU
               </div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-purple-600">
                 {metrics.monthlyActiveUsers.toLocaleString()}
               </div>
-              <div className="text-sm text-muted-foreground">Monthly Active Users</div>
+              <div className="text-sm text-muted-foreground">
+                Monthly Active Users
+              </div>
               <div className="text-xs text-muted-foreground mt-1">
                 Total unique users
               </div>
@@ -188,7 +214,9 @@ export function UserEngagement() {
               <div className="text-2xl font-bold text-orange-600">
                 {metrics.engagementScore}
               </div>
-              <div className="text-sm text-muted-foreground">Engagement Score</div>
+              <div className="text-sm text-muted-foreground">
+                Engagement Score
+              </div>
               <div className="text-xs text-muted-foreground mt-1">
                 Overall user engagement
               </div>
@@ -204,28 +232,47 @@ export function UserEngagement() {
             <Clock className="h-5 w-5" />
             Session Quality
           </CardTitle>
-          <CardDescription>How users interact during their sessions</CardDescription>
+          <CardDescription>
+            How users interact during their sessions
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid gap-6 md:grid-cols-4">
             <div className="text-center">
-              <div className="text-2xl font-bold">{formatDuration(metrics.avgSessionDuration)}</div>
-              <div className="text-sm text-muted-foreground">Avg Session Duration</div>
-              <Progress value={metrics.avgSessionDuration * 10} className="mt-2" />
+              <div className="text-2xl font-bold">
+                {formatDuration(metrics.avgSessionDuration)}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Avg Session Duration
+              </div>
+              <Progress
+                value={metrics.avgSessionDuration * 10}
+                className="mt-2"
+              />
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{metrics.avgPageViews.toFixed(1)}</div>
-              <div className="text-sm text-muted-foreground">Avg Page Views</div>
+              <div className="text-2xl font-bold">
+                {metrics.avgPageViews.toFixed(1)}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Avg Page Views
+              </div>
               <Progress value={metrics.avgPageViews * 8} className="mt-2" />
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{metrics.bounceRate.toFixed(1)}%</div>
+              <div className="text-2xl font-bold">
+                {metrics.bounceRate.toFixed(1)}%
+              </div>
               <div className="text-sm text-muted-foreground">Bounce Rate</div>
               <Progress value={100 - metrics.bounceRate} className="mt-2" />
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{metrics.retentionRate.toFixed(1)}%</div>
-              <div className="text-sm text-muted-foreground">Retention Rate</div>
+              <div className="text-2xl font-bold">
+                {metrics.retentionRate.toFixed(1)}%
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Retention Rate
+              </div>
               <Progress value={metrics.retentionRate} className="mt-2" />
             </div>
           </div>
@@ -253,8 +300,13 @@ export function UserEngagement() {
                     <span className="text-sm">{action.action}</span>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-medium">{action.count.toLocaleString()}</div>
-                    <Progress value={action.percentage} className="w-20 h-2 mt-1" />
+                    <div className="text-sm font-medium">
+                      {action.count.toLocaleString()}
+                    </div>
+                    <Progress
+                      value={action.percentage}
+                      className="w-20 h-2 mt-1"
+                    />
                   </div>
                 </div>
               ))}
@@ -281,8 +333,13 @@ export function UserEngagement() {
                     <span className="text-sm">{category.category}</span>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm font-medium">{formatDuration(category.minutes)}</div>
-                    <Progress value={category.percentage} className="w-20 h-2 mt-1" />
+                    <div className="text-sm font-medium">
+                      {formatDuration(category.minutes)}
+                    </div>
+                    <Progress
+                      value={category.percentage}
+                      className="w-20 h-2 mt-1"
+                    />
                   </div>
                 </div>
               ))}

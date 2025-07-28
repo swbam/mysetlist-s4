@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Progress } from '@repo/design-system/components/ui/progress';
-import { AlertCircle, Check, Loader2, RefreshCw, X } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
+} from "@repo/design-system/components/ui/card";
+import { Progress } from "@repo/design-system/components/ui/progress";
+import { AlertCircle, Check, Loader2, RefreshCw, X } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface InteractionTest {
   id: string;
@@ -25,21 +25,21 @@ interface InteractionTest {
 const interactionTests: InteractionTest[] = [
   // User Flow Tests
   {
-    id: 'search-artist-flow',
-    category: 'User Flows',
-    name: 'Search → Artist → Show → Setlist',
-    description: 'Complete flow from search to setlist viewing',
+    id: "search-artist-flow",
+    category: "User Flows",
+    name: "Search → Artist → Show → Setlist",
+    description: "Complete flow from search to setlist viewing",
     critical: true,
     test: async () => {
       try {
         // Test search API
-        const searchRes = await fetch('/api/search/suggestions?q=test');
+        const searchRes = await fetch("/api/search/suggestions?q=test");
         if (!searchRes.ok) {
           return false;
         }
 
         // Test artist page data
-        const artistRes = await fetch('/api/artists/test-artist');
+        const artistRes = await fetch("/api/artists/test-artist");
         if (!artistRes.ok) {
           return false;
         }
@@ -51,14 +51,14 @@ const interactionTests: InteractionTest[] = [
     },
   },
   {
-    id: 'signup-flow',
-    category: 'User Flows',
-    name: 'Sign up → Profile setup → Follow artists',
-    description: 'New user onboarding flow',
+    id: "signup-flow",
+    category: "User Flows",
+    name: "Sign up → Profile setup → Follow artists",
+    description: "New user onboarding flow",
     test: async () => {
       try {
         // Check if auth endpoints exist
-        const response = await fetch('/api/auth/session');
+        const response = await fetch("/api/auth/session");
         return response.ok;
       } catch {
         return false;
@@ -66,27 +66,27 @@ const interactionTests: InteractionTest[] = [
     },
   },
   {
-    id: 'anonymous-vote-flow',
-    category: 'User Flows',
-    name: 'Anonymous → Vote → Sign up (preserve data)',
-    description: 'Anonymous user voting with data preservation',
+    id: "anonymous-vote-flow",
+    category: "User Flows",
+    name: "Anonymous → Vote → Sign up (preserve data)",
+    description: "Anonymous user voting with data preservation",
     test: async () => {
       // This would test localStorage and session handling
-      return typeof window !== 'undefined' && 'localStorage' in window;
+      return typeof window !== "undefined" && "localStorage" in window;
     },
   },
 
   // Interactive Features
   {
-    id: 'voting-works',
-    category: 'Interactive Features',
-    name: 'Voting on setlists',
-    description: 'Up/down voting functionality',
+    id: "voting-works",
+    category: "Interactive Features",
+    name: "Voting on setlists",
+    description: "Up/down voting functionality",
     critical: true,
     test: async () => {
       try {
         // Check vote endpoint
-        const response = await fetch('/api/votes/test', { method: 'HEAD' });
+        const response = await fetch("/api/votes/test", { method: "HEAD" });
         return response.status !== 404;
       } catch {
         return false;
@@ -94,14 +94,14 @@ const interactionTests: InteractionTest[] = [
     },
   },
   {
-    id: 'follow-artist',
-    category: 'Interactive Features',
-    name: 'Follow/unfollow artists',
-    description: 'Follow system with count updates',
+    id: "follow-artist",
+    category: "Interactive Features",
+    name: "Follow/unfollow artists",
+    description: "Follow system with count updates",
     test: async () => {
       try {
-        const response = await fetch('/api/artists/test/follow', {
-          method: 'HEAD',
+        const response = await fetch("/api/artists/test/follow", {
+          method: "HEAD",
         });
         return response.status !== 404;
       } catch {
@@ -110,13 +110,13 @@ const interactionTests: InteractionTest[] = [
     },
   },
   {
-    id: 'add-songs',
-    category: 'Interactive Features',
-    name: 'Add songs to setlists',
-    description: 'Song selector dropdown functionality',
+    id: "add-songs",
+    category: "Interactive Features",
+    name: "Add songs to setlists",
+    description: "Song selector dropdown functionality",
     test: async () => {
       try {
-        const response = await fetch('/api/songs/search?q=test');
+        const response = await fetch("/api/songs/search?q=test");
         return response.ok;
       } catch {
         return false;
@@ -124,13 +124,13 @@ const interactionTests: InteractionTest[] = [
     },
   },
   {
-    id: 'create-setlist',
-    category: 'Interactive Features',
-    name: 'Create new setlists',
-    description: 'Setlist creation functionality',
+    id: "create-setlist",
+    category: "Interactive Features",
+    name: "Create new setlists",
+    description: "Setlist creation functionality",
     test: async () => {
       try {
-        const response = await fetch('/api/setlists', { method: 'HEAD' });
+        const response = await fetch("/api/setlists", { method: "HEAD" });
         return response.status !== 404;
       } catch {
         return false;
@@ -140,42 +140,42 @@ const interactionTests: InteractionTest[] = [
 
   // Real-time Updates
   {
-    id: 'realtime-votes',
-    category: 'Real-time Updates',
-    name: 'Vote counts update live',
-    description: 'Real-time vote synchronization',
+    id: "realtime-votes",
+    category: "Real-time Updates",
+    name: "Vote counts update live",
+    description: "Real-time vote synchronization",
     critical: true,
     test: async () => {
       // Check if WebSocket or SSE is available
-      return 'WebSocket' in window || 'EventSource' in window;
+      return "WebSocket" in window || "EventSource" in window;
     },
   },
   {
-    id: 'realtime-follows',
-    category: 'Real-time Updates',
-    name: 'Follow counts update instantly',
-    description: 'Real-time follower count updates',
+    id: "realtime-follows",
+    category: "Real-time Updates",
+    name: "Follow counts update instantly",
+    description: "Real-time follower count updates",
     test: async () => {
-      return 'WebSocket' in window || 'EventSource' in window;
+      return "WebSocket" in window || "EventSource" in window;
     },
   },
   {
-    id: 'realtime-setlists',
-    category: 'Real-time Updates',
-    name: 'New setlists appear immediately',
-    description: 'Real-time setlist updates',
+    id: "realtime-setlists",
+    category: "Real-time Updates",
+    name: "New setlists appear immediately",
+    description: "Real-time setlist updates",
     test: async () => {
-      return 'WebSocket' in window || 'EventSource' in window;
+      return "WebSocket" in window || "EventSource" in window;
     },
   },
   {
-    id: 'live-indicators',
-    category: 'Real-time Updates',
-    name: 'Live show indicators',
-    description: 'Live show status indicators',
+    id: "live-indicators",
+    category: "Real-time Updates",
+    name: "Live show indicators",
+    description: "Live show status indicators",
     test: async () => {
       try {
-        const response = await fetch('/api/shows/live');
+        const response = await fetch("/api/shows/live");
         return response.ok;
       } catch {
         return false;
@@ -185,10 +185,10 @@ const interactionTests: InteractionTest[] = [
 
   // Forms & Inputs
   {
-    id: 'form-validation',
-    category: 'Forms & Inputs',
-    name: 'Form validation',
-    description: 'All forms validate properly',
+    id: "form-validation",
+    category: "Forms & Inputs",
+    name: "Form validation",
+    description: "All forms validate properly",
     critical: true,
     test: async () => {
       // Check if validation library is loaded
@@ -196,31 +196,31 @@ const interactionTests: InteractionTest[] = [
     },
   },
   {
-    id: 'error-messages',
-    category: 'Forms & Inputs',
-    name: 'Error messages',
-    description: 'Clear error messaging',
+    id: "error-messages",
+    category: "Forms & Inputs",
+    name: "Error messages",
+    description: "Clear error messaging",
     test: async () => {
-      return typeof toast !== 'undefined';
+      return typeof toast !== "undefined";
     },
   },
   {
-    id: 'success-feedback',
-    category: 'Forms & Inputs',
-    name: 'Success feedback',
-    description: 'Success notifications shown',
+    id: "success-feedback",
+    category: "Forms & Inputs",
+    name: "Success feedback",
+    description: "Success notifications shown",
     test: async () => {
-      return typeof toast !== 'undefined';
+      return typeof toast !== "undefined";
     },
   },
   {
-    id: 'file-uploads',
-    category: 'Forms & Inputs',
-    name: 'File uploads',
-    description: 'Venue photo uploads work',
+    id: "file-uploads",
+    category: "Forms & Inputs",
+    name: "File uploads",
+    description: "Venue photo uploads work",
     test: async () => {
       try {
-        const response = await fetch('/api/upload', { method: 'HEAD' });
+        const response = await fetch("/api/upload", { method: "HEAD" });
         return response.status !== 404;
       } catch {
         return false;
@@ -230,38 +230,38 @@ const interactionTests: InteractionTest[] = [
 
   // Mobile Interactions
   {
-    id: 'touch-gestures',
-    category: 'Mobile Interactions',
-    name: 'Touch gestures',
-    description: 'Touch interactions work smoothly',
+    id: "touch-gestures",
+    category: "Mobile Interactions",
+    name: "Touch gestures",
+    description: "Touch interactions work smoothly",
     test: async () => {
-      return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      return "ontouchstart" in window || navigator.maxTouchPoints > 0;
     },
   },
   {
-    id: 'swipe-actions',
-    category: 'Mobile Interactions',
-    name: 'Swipe actions',
-    description: 'Swipe functionality works',
+    id: "swipe-actions",
+    category: "Mobile Interactions",
+    name: "Swipe actions",
+    description: "Swipe functionality works",
     test: async () => {
-      return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+      return "ontouchstart" in window || navigator.maxTouchPoints > 0;
     },
   },
   {
-    id: 'mobile-voting',
-    category: 'Mobile Interactions',
-    name: 'Mobile voting',
-    description: 'Voting works on mobile devices',
+    id: "mobile-voting",
+    category: "Mobile Interactions",
+    name: "Mobile voting",
+    description: "Voting works on mobile devices",
     critical: true,
     test: async () => {
       return true; // Would check mobile-specific voting component
     },
   },
   {
-    id: 'responsive-modals',
-    category: 'Mobile Interactions',
-    name: 'Responsive modals',
-    description: 'Modals/dialogs work on mobile',
+    id: "responsive-modals",
+    category: "Mobile Interactions",
+    name: "Responsive modals",
+    description: "Modals/dialogs work on mobile",
     test: async () => {
       return true; // Would check modal responsiveness
     },
@@ -297,7 +297,7 @@ export function InteractionChecklist() {
     const total = interactionTests.length;
 
     if (passed === total) {
-      toast.success('All interaction tests passed! 🎉');
+      toast.success("All interaction tests passed! 🎉");
     } else {
       toast.warning(`${passed}/${total} tests passed`);
     }
@@ -305,24 +305,24 @@ export function InteractionChecklist() {
 
   const getTestStatus = (testId: string) => {
     if (currentTest === testId) {
-      return 'testing';
+      return "testing";
     }
     if (results[testId] === true) {
-      return 'pass';
+      return "pass";
     }
     if (results[testId] === false) {
-      return 'fail';
+      return "fail";
     }
-    return 'pending';
+    return "pending";
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'testing':
+      case "testing":
         return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
-      case 'pass':
+      case "pass":
         return <Check className="h-4 w-4 text-green-500" />;
-      case 'fail':
+      case "fail":
         return <X className="h-4 w-4 text-red-500" />;
       default:
         return <AlertCircle className="h-4 w-4 text-gray-400" />;
@@ -331,11 +331,11 @@ export function InteractionChecklist() {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'testing':
+      case "testing":
         return <Badge variant="secondary">Testing</Badge>;
-      case 'pass':
+      case "pass":
         return <Badge className="bg-green-500">Pass</Badge>;
-      case 'fail':
+      case "fail":
         return <Badge variant="destructive">Fail</Badge>;
       default:
         return <Badge variant="outline">Pending</Badge>;
@@ -396,11 +396,11 @@ export function InteractionChecklist() {
                     <div
                       key={test.id}
                       className={`flex items-start gap-3 rounded-lg border p-3 ${
-                        status === 'fail'
-                          ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950'
-                          : status === 'pass'
-                            ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950'
-                            : 'border-gray-200 dark:border-gray-800'
+                        status === "fail"
+                          ? "border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950"
+                          : status === "pass"
+                            ? "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950"
+                            : "border-gray-200 dark:border-gray-800"
                       }`}
                     >
                       <div className="mt-0.5">{getStatusIcon(status)}</div>

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@repo/design-system/components/ui/dialog';
+} from "@repo/design-system/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,16 +16,16 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
+} from "@repo/design-system/components/ui/dropdown-menu";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   RadioGroup,
   RadioGroupItem,
-} from '@repo/design-system/components/ui/radio-group';
-import { Textarea } from '@repo/design-system/components/ui/textarea';
-import { toast } from '@repo/design-system/components/ui/use-toast';
-import { addDays } from 'date-fns';
+} from "@repo/design-system/components/ui/radio-group";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { toast } from "@repo/design-system/components/ui/use-toast";
+import { addDays } from "date-fns";
 import {
   AlertTriangle,
   Ban,
@@ -34,10 +34,10 @@ import {
   MoreHorizontal,
   Shield,
   UserCheck,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { createClient } from "~/lib/supabase/client";
 
 interface UserActionsDialogProps {
   user: any;
@@ -49,15 +49,15 @@ export default function UserActionsDialog({
   isBanned,
 }: UserActionsDialogProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [dialogType, setDialogType] = useState<'ban' | 'warn' | 'role' | null>(
-    null
+  const [dialogType, setDialogType] = useState<"ban" | "warn" | "role" | null>(
+    null,
   );
   const [loading, setLoading] = useState(false);
-  const [reason, setReason] = useState('');
-  const [banType, setBanType] = useState<'temporary' | 'permanent'>(
-    'temporary'
+  const [reason, setReason] = useState("");
+  const [banType, setBanType] = useState<"temporary" | "permanent">(
+    "temporary",
   );
-  const [banDays, setBanDays] = useState('7');
+  const [banDays, setBanDays] = useState("7");
   const [newRole, setNewRole] = useState(user.role);
 
   const router = useRouter();
@@ -67,12 +67,12 @@ export default function UserActionsDialog({
     setLoading(true);
     try {
       const bannedUntil =
-        banType === 'temporary'
+        banType === "temporary"
           ? addDays(new Date(), Number.parseInt(banDays)).toISOString()
           : null;
 
       // Create ban record
-      const { error: banError } = await supabase.from('user_bans').insert({
+      const { error: banError } = await supabase.from("user_bans").insert({
         user_id: user.id,
         banned_by: (await supabase.auth.getUser()).data.user?.id,
         reason,
@@ -86,43 +86,43 @@ export default function UserActionsDialog({
 
       // Update user record
       const { error: userError } = await supabase
-        .from('users')
+        .from("users")
         .update({
           is_banned: true,
           ban_reason: reason,
           banned_until: bannedUntil,
         })
-        .eq('id', user.id);
+        .eq("id", user.id);
 
       if (userError) {
         throw userError;
       }
 
       // Log action
-      await supabase.from('moderation_logs').insert({
+      await supabase.from("moderation_logs").insert({
         moderator_id: (await supabase.auth.getUser()).data.user?.id,
-        action: 'ban_user',
-        target_type: 'user',
+        action: "ban_user",
+        target_type: "user",
         target_id: user.id,
         reason,
         metadata: {
           ban_type: banType,
-          ban_days: banType === 'temporary' ? banDays : null,
+          ban_days: banType === "temporary" ? banDays : null,
         },
       });
 
       toast({
-        title: 'User banned',
-        description: `${user.display_name || user.email} has been banned ${banType === 'temporary' ? `for ${banDays} days` : 'permanently'}.`,
+        title: "User banned",
+        description: `${user.display_name || user.email} has been banned ${banType === "temporary" ? `for ${banDays} days` : "permanently"}.`,
       });
 
       setDialogOpen(false);
       router.refresh();
     } catch (_error) {
       toast({
-        title: 'Error',
-        description: 'Failed to ban user. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to ban user. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -134,22 +134,22 @@ export default function UserActionsDialog({
     try {
       // Find active ban
       const { data: activeBan } = await supabase
-        .from('user_bans')
-        .select('id')
-        .eq('user_id', user.id)
-        .is('lifted_at', null)
+        .from("user_bans")
+        .select("id")
+        .eq("user_id", user.id)
+        .is("lifted_at", null)
         .single();
 
       if (activeBan) {
         // Lift ban
         const { error: banError } = await supabase
-          .from('user_bans')
+          .from("user_bans")
           .update({
             lifted_at: new Date().toISOString(),
             lifted_by: (await supabase.auth.getUser()).data.user?.id,
-            lift_reason: 'Manual unban by admin',
+            lift_reason: "Manual unban by admin",
           })
-          .eq('id', activeBan.id);
+          .eq("id", activeBan.id);
 
         if (banError) {
           throw banError;
@@ -158,38 +158,38 @@ export default function UserActionsDialog({
 
       // Update user record
       const { error: userError } = await supabase
-        .from('users')
+        .from("users")
         .update({
           is_banned: false,
           ban_reason: null,
           banned_until: null,
         })
-        .eq('id', user.id);
+        .eq("id", user.id);
 
       if (userError) {
         throw userError;
       }
 
       // Log action
-      await supabase.from('moderation_logs').insert({
+      await supabase.from("moderation_logs").insert({
         moderator_id: (await supabase.auth.getUser()).data.user?.id,
-        action: 'unban_user',
-        target_type: 'user',
+        action: "unban_user",
+        target_type: "user",
         target_id: user.id,
-        reason: 'Manual unban',
+        reason: "Manual unban",
       });
 
       toast({
-        title: 'Ban lifted',
+        title: "Ban lifted",
         description: `The ban on ${user.display_name || user.email} has been lifted.`,
       });
 
       router.refresh();
     } catch (_error) {
       toast({
-        title: 'Error',
-        description: 'Failed to lift ban. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to lift ban. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -201,22 +201,22 @@ export default function UserActionsDialog({
     try {
       // Update user warning count
       const { error } = await supabase
-        .from('users')
+        .from("users")
         .update({
           warning_count: (user.warning_count || 0) + 1,
           last_warning_at: new Date().toISOString(),
         })
-        .eq('id', user.id);
+        .eq("id", user.id);
 
       if (error) {
         throw error;
       }
 
       // Log action
-      await supabase.from('moderation_logs').insert({
+      await supabase.from("moderation_logs").insert({
         moderator_id: (await supabase.auth.getUser()).data.user?.id,
-        action: 'warn_user',
-        target_type: 'user',
+        action: "warn_user",
+        target_type: "user",
         target_id: user.id,
         reason,
         metadata: { warning_count: (user.warning_count || 0) + 1 },
@@ -224,16 +224,16 @@ export default function UserActionsDialog({
 
       // Queue warning email notification
       if (user.email) {
-        await fetch('/api/email/queue', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        await fetch("/api/email/queue", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             to: user.email,
-            subject: 'Warning: Policy Violation',
-            template: 'user-warning',
+            subject: "Warning: Policy Violation",
+            template: "user-warning",
             data: {
-              userName: user.display_name || 'User',
-              reason: reason || 'policy violation',
+              userName: user.display_name || "User",
+              reason: reason || "policy violation",
               warningCount: (user.warning_count || 0) + 1,
             },
           }),
@@ -241,7 +241,7 @@ export default function UserActionsDialog({
       }
 
       toast({
-        title: 'Warning issued',
+        title: "Warning issued",
         description: `${user.display_name || user.email} has been warned.`,
       });
 
@@ -249,9 +249,9 @@ export default function UserActionsDialog({
       router.refresh();
     } catch (_error) {
       toast({
-        title: 'Error',
-        description: 'Failed to warn user. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to warn user. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -262,26 +262,26 @@ export default function UserActionsDialog({
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('users')
+        .from("users")
         .update({ role: newRole })
-        .eq('id', user.id);
+        .eq("id", user.id);
 
       if (error) {
         throw error;
       }
 
       // Log action
-      await supabase.from('moderation_logs').insert({
+      await supabase.from("moderation_logs").insert({
         moderator_id: (await supabase.auth.getUser()).data.user?.id,
-        action: 'change_role',
-        target_type: 'user',
+        action: "change_role",
+        target_type: "user",
         target_id: user.id,
         reason: `Role changed from ${user.role} to ${newRole}`,
         metadata: { old_role: user.role, new_role: newRole },
       });
 
       toast({
-        title: 'Role updated',
+        title: "Role updated",
         description: `${user.display_name || user.email}'s role has been changed to ${newRole}.`,
       });
 
@@ -289,9 +289,9 @@ export default function UserActionsDialog({
       router.refresh();
     } catch (_error) {
       toast({
-        title: 'Error',
-        description: 'Failed to update role. Please try again.',
-        variant: 'destructive',
+        title: "Error",
+        description: "Failed to update role. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -320,7 +320,7 @@ export default function UserActionsDialog({
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={() => {
-              setDialogType('role');
+              setDialogType("role");
               setDialogOpen(true);
               setNewRole(user.role);
             }}
@@ -330,9 +330,9 @@ export default function UserActionsDialog({
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
-              setDialogType('warn');
+              setDialogType("warn");
               setDialogOpen(true);
-              setReason('');
+              setReason("");
             }}
           >
             <AlertTriangle className="mr-2 h-4 w-4" />
@@ -349,11 +349,11 @@ export default function UserActionsDialog({
           ) : (
             <DropdownMenuItem
               onClick={() => {
-                setDialogType('ban');
+                setDialogType("ban");
                 setDialogOpen(true);
-                setReason('');
-                setBanType('temporary');
-                setBanDays('7');
+                setReason("");
+                setBanType("temporary");
+                setBanDays("7");
               }}
               className="text-red-600"
             >
@@ -366,7 +366,7 @@ export default function UserActionsDialog({
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
-          {dialogType === 'ban' && (
+          {dialogType === "ban" && (
             <>
               <DialogHeader>
                 <DialogTitle>Ban User</DialogTitle>
@@ -391,7 +391,7 @@ export default function UserActionsDialog({
                     </div>
                   </RadioGroup>
                 </div>
-                {banType === 'temporary' && (
+                {banType === "temporary" && (
                   <div className="space-y-2">
                     <Label htmlFor="days">Duration (days)</Label>
                     <Input
@@ -423,13 +423,13 @@ export default function UserActionsDialog({
                   onClick={handleBanUser}
                   disabled={loading || !reason}
                 >
-                  {loading ? 'Banning...' : 'Ban User'}
+                  {loading ? "Banning..." : "Ban User"}
                 </Button>
               </DialogFooter>
             </>
           )}
 
-          {dialogType === 'warn' && (
+          {dialogType === "warn" && (
             <>
               <DialogHeader>
                 <DialogTitle>Issue Warning</DialogTitle>
@@ -441,7 +441,7 @@ export default function UserActionsDialog({
                 <div className="rounded-md bg-yellow-50 p-3 dark:bg-yellow-950/20">
                   <p className="text-sm">
                     This user has {user.warning_count || 0} previous warning
-                    {(user.warning_count || 0) !== 1 ? 's' : ''}.
+                    {(user.warning_count || 0) !== 1 ? "s" : ""}.
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -460,13 +460,13 @@ export default function UserActionsDialog({
                   Cancel
                 </Button>
                 <Button onClick={handleWarnUser} disabled={loading || !reason}>
-                  {loading ? 'Sending...' : 'Issue Warning'}
+                  {loading ? "Sending..." : "Issue Warning"}
                 </Button>
               </DialogFooter>
             </>
           )}
 
-          {dialogType === 'role' && (
+          {dialogType === "role" && (
             <>
               <DialogHeader>
                 <DialogTitle>Change User Role</DialogTitle>
@@ -501,7 +501,7 @@ export default function UserActionsDialog({
                   onClick={handleRoleChange}
                   disabled={loading || newRole === user.role}
                 >
-                  {loading ? 'Updating...' : 'Update Role'}
+                  {loading ? "Updating..." : "Update Role"}
                 </Button>
               </DialogFooter>
             </>

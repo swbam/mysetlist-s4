@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { onCLS, onFCP, onINP, onLCP, onTTFB } from 'web-vitals';
+import { useEffect } from "react";
+import { onCLS, onFCP, onINP, onLCP, onTTFB } from "web-vitals";
 
 interface WebVital {
   name: string;
   value: number;
-  rating: 'good' | 'needs-improvement' | 'poor';
+  rating: "good" | "needs-improvement" | "poor";
   delta: number;
   id: string;
   navigationType: string;
@@ -14,15 +14,18 @@ interface WebVital {
 
 function sendToAnalytics(metric: WebVital) {
   // Only send in production or when explicitly enabled
-  if (process.env["NODE_ENV"] !== 'production' && !process.env['NEXT_PUBLIC_ENABLE_ANALYTICS']) {
-    console.log('Web Vital:', metric);
+  if (
+    process.env["NODE_ENV"] !== "production" &&
+    !process.env["NEXT_PUBLIC_ENABLE_ANALYTICS"]
+  ) {
+    console.log("Web Vital:", metric);
     return;
   }
 
-  fetch('/api/analytics/vitals', {
-    method: 'POST',
+  fetch("/api/analytics/vitals", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       ...metric,
@@ -30,7 +33,7 @@ function sendToAnalytics(metric: WebVital) {
       timestamp: Date.now(),
     }),
   }).catch((error) => {
-    console.warn('Failed to send web vital:', error);
+    console.warn("Failed to send web vital:", error);
   });
 }
 

@@ -1,9 +1,15 @@
-'use client';
+"use client";
 
-import type { Session, User } from '@supabase/supabase-js';
-import { useRouter } from 'next/navigation';
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
-import { createClient } from '~/lib/supabase/client';
+import type { Session, User } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useMemo,
+} from "react";
+import { createClient } from "~/lib/supabase/client";
 
 interface AuthContextType {
   user: User | null;
@@ -13,7 +19,7 @@ interface AuthContextType {
   signInWithEmail: (
     email: string,
     password: string,
-    rememberMe?: boolean
+    rememberMe?: boolean,
   ) => Promise<void>;
   signUpWithEmail: (email: string, password: string) => Promise<void>;
   signInWithSpotify: () => Promise<void>;
@@ -27,7 +33,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const supabase = createClient();
 
-export const AuthProvider = React.memo(function AuthProvider({ children }: { children: React.ReactNode }) {
+export const AuthProvider = React.memo(function AuthProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -39,19 +49,22 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
     const initializeAuth = async () => {
       try {
         // Check initial session
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+
         if (error) {
-          console.error('Error fetching session:', error);
+          console.error("Error fetching session:", error);
         }
-        
+
         if (isMounted) {
           setSession(session);
           setUser(session?.user ?? null);
           setLoading(false);
         }
       } catch (error) {
-        console.error('Failed to initialize auth:', error);
+        console.error("Failed to initialize auth:", error);
         if (isMounted) {
           setLoading(false);
         }
@@ -71,7 +84,7 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
       });
       subscription = data.subscription;
     } catch (error) {
-      console.error('Failed to setup auth listener:', error);
+      console.error("Failed to setup auth listener:", error);
     }
 
     return () => {
@@ -85,7 +98,7 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
   const signInWithEmail = async (
     email: string,
     password: string,
-    _rememberMe = false
+    _rememberMe = false,
   ) => {
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -98,9 +111,9 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
 
   const signUpWithEmail = async (email: string, password: string) => {
     const redirectTo =
-      typeof window !== 'undefined'
+      typeof window !== "undefined"
         ? `${window.location.origin}/auth/callback`
-        : 'http://localhost:3001/auth/callback';
+        : "http://localhost:3001/auth/callback";
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -116,16 +129,16 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
 
   const signInWithSpotify = async () => {
     const redirectTo =
-      typeof window !== 'undefined'
+      typeof window !== "undefined"
         ? `${window.location.origin}/auth/callback?next=/my-artists`
-        : 'http://localhost:3001/auth/callback?next=/my-artists';
+        : "http://localhost:3001/auth/callback?next=/my-artists";
 
     const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'spotify',
+      provider: "spotify",
       options: {
         redirectTo,
         scopes:
-          'user-read-email user-read-private user-top-read user-follow-read',
+          "user-read-email user-read-private user-top-read user-follow-read",
       },
     });
     if (error) {
@@ -138,14 +151,14 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
     if (error) {
       throw error;
     }
-    router.push('/');
+    router.push("/");
   };
 
   const resetPassword = async (email: string) => {
     const redirectTo =
-      typeof window !== 'undefined'
+      typeof window !== "undefined"
         ? `${window.location.origin}/auth/callback?next=/auth/update-password`
-        : 'http://localhost:3001/auth/callback?next=/auth/update-password';
+        : "http://localhost:3001/auth/callback?next=/auth/update-password";
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo,
@@ -165,7 +178,7 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
   const hasRole = (role: string) => {
     // Check user metadata for role
     const userRole =
-      user?.app_metadata?.['role'] || user?.user_metadata?.['role'] || 'user';
+      user?.app_metadata?.["role"] || user?.user_metadata?.["role"] || "user";
     return userRole === role;
   };
 
@@ -185,20 +198,18 @@ export const AuthProvider = React.memo(function AuthProvider({ children }: { chi
       updatePassword,
       hasRole,
     }),
-    [user, session, loading, isAuthenticated]
+    [user, session, loading, isAuthenticated],
   );
 
   return (
-    <AuthContext.Provider value={contextValue}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
   );
 });
 
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }

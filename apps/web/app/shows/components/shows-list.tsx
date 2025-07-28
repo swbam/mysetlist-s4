@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
-} from '@repo/design-system/components/ui/card';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { format } from 'date-fns';
+} from "@repo/design-system/components/ui/card";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { format } from "date-fns";
 import {
   Calendar,
   Heart,
@@ -17,11 +17,11 @@ import {
   Star,
   Ticket,
   Users,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { type ShowWithDetails, fetchShows } from '../actions';
+} from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { type ShowWithDetails, fetchShows } from "../actions";
 
 export const ShowsList = () => {
   const [shows, setShows] = useState<ShowWithDetails[]>([]);
@@ -33,15 +33,15 @@ export const ShowsList = () => {
     const loadShows = async () => {
       setLoading(true);
       try {
-        const city = searchParams.get('city') || undefined;
-        const dateFrom = searchParams.get('dateFrom') || undefined;
-        const dateTo = searchParams.get('dateTo') || undefined;
+        const city = searchParams.get("city") || undefined;
+        const dateFrom = searchParams.get("dateFrom") || undefined;
+        const dateTo = searchParams.get("dateTo") || undefined;
         const orderBy =
-          (searchParams.get('orderBy') as 'date' | 'trending' | 'popularity') ||
-          'date';
+          (searchParams.get("orderBy") as "date" | "trending" | "popularity") ||
+          "date";
 
         const { shows: fetchedShows } = await fetchShows({
-          status: 'upcoming',
+          status: "upcoming",
           ...(city && { city }),
           ...(dateFrom && { dateFrom }),
           ...(dateTo && { dateTo }),
@@ -63,13 +63,13 @@ export const ShowsList = () => {
     setSavedShows((prev) =>
       prev.includes(showId)
         ? prev.filter((id) => id !== showId)
-        : [...prev, showId]
+        : [...prev, showId],
     );
   };
 
   const getAttendancePercentage = (
     attending: number,
-    capacity: number | null
+    capacity: number | null,
   ) => {
     if (!capacity || capacity === 0) {
       return 0;
@@ -80,12 +80,12 @@ export const ShowsList = () => {
   const formatPrice = (
     minPrice: number | null,
     maxPrice: number | null,
-    currency: string
+    currency: string,
   ) => {
     if (!minPrice) {
-      return 'Price TBA';
+      return "Price TBA";
     }
-    const currencySymbol = currency === 'USD' ? '$' : currency;
+    const currencySymbol = currency === "USD" ? "$" : currency;
     if (maxPrice && maxPrice !== minPrice) {
       return `${currencySymbol}${minPrice}-${currencySymbol}${maxPrice}`;
     }
@@ -142,7 +142,7 @@ export const ShowsList = () => {
         const attendancePercentage = show.venue?.capacity
           ? getAttendancePercentage(show.attendeeCount, show.venue.capacity)
           : 0;
-        const mainGenre = show.headlinerArtist.genres?.[0] || 'Live Music';
+        const mainGenre = show.headlinerArtist.genres?.[0] || "Live Music";
 
         return (
           <Card
@@ -169,10 +169,10 @@ export const ShowsList = () => {
                   </div>
                   {show.supportingArtists.length > 0 && (
                     <p className="mt-1 text-muted-foreground text-sm">
-                      with{' '}
+                      with{" "}
                       {show.supportingArtists
                         .map((sa) => sa.artist.name)
-                        .join(', ')}
+                        .join(", ")}
                     </p>
                   )}
                 </div>
@@ -185,7 +185,7 @@ export const ShowsList = () => {
                     onClick={() => toggleSave(show.id)}
                   >
                     <Heart
-                      className={`h-4 w-4 ${savedShows.includes(show.id) ? 'fill-current text-red-500' : ''}`}
+                      className={`h-4 w-4 ${savedShows.includes(show.id) ? "fill-current text-red-500" : ""}`}
                     />
                   </Button>
                 </div>
@@ -200,7 +200,7 @@ export const ShowsList = () => {
                       <span className="font-medium">{show.venue.name}</span>
                       <span className="text-muted-foreground">
                         • {show.venue.city}
-                        {show.venue.state ? `, ${show.venue.state}` : ''},{' '}
+                        {show.venue.state ? `, ${show.venue.state}` : ""},{" "}
                         {show.venue.country}
                       </span>
                     </div>
@@ -208,7 +208,7 @@ export const ShowsList = () => {
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span>
-                      {format(new Date(show.date), 'EEEE, MMMM d, yyyy')}
+                      {format(new Date(show.date), "EEEE, MMMM d, yyyy")}
                     </span>
                     {show.startTime && (
                       <span className="text-muted-foreground">
@@ -227,8 +227,8 @@ export const ShowsList = () => {
                           <Badge
                             variant={
                               attendancePercentage > 90
-                                ? 'destructive'
-                                : 'secondary'
+                                ? "destructive"
+                                : "secondary"
                             }
                           >
                             {attendancePercentage}% full
@@ -242,7 +242,7 @@ export const ShowsList = () => {
                 <div className="flex items-end justify-end gap-4">
                   <div className="text-right">
                     <p className="text-muted-foreground text-sm">
-                      {show.minPrice ? 'Starting from' : ''}
+                      {show.minPrice ? "Starting from" : ""}
                     </p>
                     <p className="font-semibold text-2xl">
                       {formatPrice(show.minPrice, show.maxPrice, show.currency)}
@@ -250,7 +250,7 @@ export const ShowsList = () => {
                   </div>
                   <Button
                     asChild
-                    disabled={!show.ticketUrl || show.status === 'cancelled'}
+                    disabled={!show.ticketUrl || show.status === "cancelled"}
                     className="gap-2"
                   >
                     {show.ticketUrl ? (
@@ -260,9 +260,9 @@ export const ShowsList = () => {
                         rel="noopener noreferrer"
                       >
                         <Ticket className="h-4 w-4" />
-                        {show.status === 'cancelled'
-                          ? 'Cancelled'
-                          : 'Get Tickets'}
+                        {show.status === "cancelled"
+                          ? "Cancelled"
+                          : "Get Tickets"}
                       </a>
                     ) : (
                       <span>

@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { useAuth } from '../hooks/use-auth';
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useAuth } from "../hooks/use-auth";
 
 interface AuthGuardProps {
   children: React.ReactNode;
   fallback?: React.ReactNode;
   redirectTo?: string;
-  requireRole?: 'user' | 'moderator' | 'admin';
+  requireRole?: "user" | "moderator" | "admin";
   loadingComponent?: React.ReactNode;
   unauthorizedComponent?: React.ReactNode;
 }
@@ -16,7 +16,7 @@ interface AuthGuardProps {
 export function AuthGuard({
   children,
   fallback,
-  redirectTo = '/auth/signin',
+  redirectTo = "/auth/signin",
   requireRole,
   loadingComponent,
   unauthorizedComponent,
@@ -71,7 +71,7 @@ export function AuthGuard({
 // Higher-order component version
 export function withAuth<P extends object>(
   Component: React.ComponentType<P>,
-  options?: Omit<AuthGuardProps, 'children'>
+  options?: Omit<AuthGuardProps, "children">,
 ) {
   return function AuthenticatedComponent(props: P) {
     return (
@@ -83,7 +83,7 @@ export function withAuth<P extends object>(
 }
 
 // Hook for imperative auth checks
-export function useAuthGuard(requireRole?: 'user' | 'moderator' | 'admin') {
+export function useAuthGuard(requireRole?: "user" | "moderator" | "admin") {
   const { isAuthenticated, hasRole, loading } = useAuth();
 
   const canAccess =

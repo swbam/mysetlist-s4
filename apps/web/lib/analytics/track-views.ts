@@ -1,17 +1,17 @@
-import { artists, db, shows, venues } from '@repo/database';
-import { sql } from 'drizzle-orm';
+import { artists, db, shows, venues } from "@repo/database";
+import { sql } from "drizzle-orm";
 
 /**
  * Track a view for an artist, show, or venue
  * This should be called when a user views a detail page
  */
 export async function trackView(
-  type: 'artist' | 'show' | 'venue',
-  id: string
+  type: "artist" | "show" | "venue",
+  id: string,
 ): Promise<void> {
   try {
     switch (type) {
-      case 'artist':
+      case "artist":
         // Artists don't have viewCount, but we could track popularity
         await db
           .update(artists)
@@ -23,7 +23,7 @@ export async function trackView(
           .where(sql`${artists.id} = ${id}`);
         break;
 
-      case 'show':
+      case "show":
         await db
           .update(shows)
           .set({
@@ -33,7 +33,7 @@ export async function trackView(
           .where(sql`${shows.id} = ${id}`);
         break;
 
-      case 'venue':
+      case "venue":
         // Venues don't have viewCount in schema, just update timestamp
         await db
           .update(venues)
@@ -50,7 +50,7 @@ export async function trackView(
  */
 export async function trackAttendance(
   showId: string,
-  increment = true
+  increment = true,
 ): Promise<void> {
   try {
     await db
@@ -71,7 +71,7 @@ export async function trackAttendance(
  */
 export async function trackVote(
   showId: string,
-  increment = true
+  increment = true,
 ): Promise<void> {
   try {
     await db

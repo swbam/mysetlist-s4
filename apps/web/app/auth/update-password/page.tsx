@@ -1,45 +1,45 @@
-'use client';
+"use client";
 
-export const dynamic = 'force-dynamic';
-import { zodResolver } from '@hookform/resolvers/zod';
+export const dynamic = "force-dynamic";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/alert";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
-import { ArrowLeft, CheckCircle, Loader2, Shield } from 'lucide-react';
-import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { useAuth } from '../../providers/auth-provider';
+} from "@repo/design-system/components/ui/card";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import { ArrowLeft, CheckCircle, Loader2, Shield } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { useAuth } from "../../providers/auth-provider";
 
 const updatePasswordSchema = z
   .object({
     password: z
       .string()
-      .min(8, 'Password must be at least 8 characters')
+      .min(8, "Password must be at least 8 characters")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-        'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number",
       ),
     confirmPassword: z
       .string()
-      .min(8, 'Password must be at least 8 characters'),
+      .min(8, "Password must be at least 8 characters"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
-    path: ['confirmPassword'],
+    path: ["confirmPassword"],
   });
 
 type UpdatePasswordForm = z.infer<typeof updatePasswordSchema>;
@@ -62,13 +62,13 @@ export default function UpdatePasswordPage() {
   });
 
   useEffect(() => {
-    const fromReset = searchParams.get('from') === 'reset';
+    const fromReset = searchParams.get("from") === "reset";
     setIsFromReset(fromReset);
   }, [searchParams]);
 
   // Redirect if not authenticated
   if (!session) {
-    router.push('/auth/sign-in');
+    router.push("/auth/sign-in");
     return null;
   }
 
@@ -82,10 +82,10 @@ export default function UpdatePasswordPage() {
 
       // Show success message briefly, then redirect
       setTimeout(() => {
-        router.push('/profile');
+        router.push("/profile");
       }, 2000);
     } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+      setError(err.message || "Something went wrong");
     } finally {
       setIsLoading(false);
     }
@@ -122,9 +122,9 @@ export default function UpdatePasswordPage() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <Button variant="ghost" size="sm" asChild className="mb-4">
-            <Link href={isFromReset ? '/auth/sign-in' : '/settings'}>
+            <Link href={isFromReset ? "/auth/sign-in" : "/settings"}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              {isFromReset ? 'Back to Sign In' : 'Back to Settings'}
+              {isFromReset ? "Back to Sign In" : "Back to Settings"}
             </Link>
           </Button>
         </div>
@@ -135,12 +135,12 @@ export default function UpdatePasswordPage() {
               <Shield className="h-12 w-12 text-blue-500" />
             </div>
             <CardTitle className="text-2xl">
-              {isFromReset ? 'Reset Your Password' : 'Update Your Password'}
+              {isFromReset ? "Reset Your Password" : "Update Your Password"}
             </CardTitle>
             <CardDescription>
               {isFromReset
-                ? 'Enter a new password for your account'
-                : 'Choose a new secure password for your account'}
+                ? "Enter a new password for your account"
+                : "Choose a new secure password for your account"}
             </CardDescription>
           </CardHeader>
 
@@ -160,7 +160,7 @@ export default function UpdatePasswordPage() {
                     type="password"
                     autoComplete="new-password"
                     required
-                    {...register('password')}
+                    {...register("password")}
                     className="mt-1"
                   />
                   {errors.password && (
@@ -181,7 +181,7 @@ export default function UpdatePasswordPage() {
                     type="password"
                     autoComplete="new-password"
                     required
-                    {...register('confirmPassword')}
+                    {...register("confirmPassword")}
                     className="mt-1"
                   />
                   {errors.confirmPassword && (
@@ -199,7 +199,7 @@ export default function UpdatePasswordPage() {
                     Updating password...
                   </>
                 ) : (
-                  'Update Password'
+                  "Update Password"
                 )}
               </Button>
             </form>

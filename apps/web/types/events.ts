@@ -1,5 +1,5 @@
 // React Event Types
-import type { ChangeEvent, FormEvent, KeyboardEvent, MouseEvent } from 'react';
+import type { ChangeEvent, FormEvent, KeyboardEvent, MouseEvent } from "react";
 
 // Button click events
 export type ButtonClickEvent = MouseEvent<HTMLButtonElement>;
@@ -19,9 +19,9 @@ export type TextAreaKeyboardEvent = KeyboardEvent<HTMLTextAreaElement>;
 // Generic handlers
 export type ClickHandler<T = HTMLElement> = (event: MouseEvent<T>) => void;
 export type ChangeHandler<T = HTMLInputElement> = (
-  event: ChangeEvent<T>
+  event: ChangeEvent<T>,
 ) => void;
 export type SubmitHandler = (event: FormSubmitEvent) => void;
 export type KeyboardHandler<T = HTMLElement> = (
-  event: KeyboardEvent<T>
+  event: KeyboardEvent<T>,
 ) => void;

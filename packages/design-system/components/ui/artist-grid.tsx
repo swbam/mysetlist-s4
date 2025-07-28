@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { ArtistCard } from './artist-card';
-import { Button } from './button';
-import { Skeleton } from './skeleton';
-import { Card, CardContent } from './card';
-import { 
-  Music, 
-  TrendingUp, 
-  Filter, 
-  Grid3X3, 
+import React, { useState } from "react";
+import { ArtistCard } from "./artist-card";
+import { Button } from "./button";
+import { Skeleton } from "./skeleton";
+import { Card, CardContent } from "./card";
+import {
+  Music,
+  TrendingUp,
+  Filter,
+  Grid3X3,
   List,
   Search,
-  RefreshCw
-} from 'lucide-react';
+  RefreshCw,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from './dropdown-menu';
-import { cn } from '../../lib/utils';
+} from "./dropdown-menu";
+import { cn } from "../../lib/utils";
 
 interface Artist {
   id: string;
@@ -48,8 +48,8 @@ interface ArtistGridProps {
   hasMore?: boolean;
   title?: string;
   showFollowButtons?: boolean;
-  variant?: 'grid' | 'list' | 'compact';
-  sortBy?: 'name' | 'popularity' | 'followers' | 'trending';
+  variant?: "grid" | "list" | "compact";
+  sortBy?: "name" | "popularity" | "followers" | "trending";
   onSortChange?: (sortBy: string) => void;
   filterBy?: string;
   onFilterChange?: (filter: string) => void;
@@ -72,30 +72,37 @@ export function ArtistGrid({
   loading = false,
   hasMore = false,
   title,
-  variant = 'grid',
-  sortBy = 'name',
+  variant = "grid",
+  sortBy = "name",
   onSortChange,
   onFilterChange,
   emptyState,
   className,
-  cardClassName
+  cardClassName,
 }: ArtistGridProps) {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>(variant === 'compact' ? 'list' : 'grid');
+  const [viewMode, setViewMode] = useState<"grid" | "list">(
+    variant === "compact" ? "list" : "grid",
+  );
 
   const getGridClasses = () => {
-    if (viewMode === 'list' || variant === 'compact') {
-      return 'space-y-3';
+    if (viewMode === "list" || variant === "compact") {
+      return "space-y-3";
     }
-    return 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4';
+    return "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4";
   };
 
   const getSortLabel = (sort: string) => {
     switch (sort) {
-      case 'name': return 'Name A-Z';
-      case 'popularity': return 'Most Popular';
-      case 'followers': return 'Most Followers';
-      case 'trending': return 'Trending';
-      default: return 'Sort';
+      case "name":
+        return "Name A-Z";
+      case "popularity":
+        return "Most Popular";
+      case "followers":
+        return "Most Followers";
+      case "trending":
+        return "Trending";
+      default:
+        return "Sort";
     }
   };
 
@@ -134,10 +141,11 @@ export function ArtistGrid({
           <CardContent className="p-12 text-center">
             <Music className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-30" />
             <h3 className="text-xl font-semibold mb-2">
-              {emptyState?.title || 'No artists found'}
+              {emptyState?.title || "No artists found"}
             </h3>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              {emptyState?.description || 'Try adjusting your search or filters to find artists.'}
+              {emptyState?.description ||
+                "Try adjusting your search or filters to find artists."}
             </p>
             {emptyState?.action && (
               <Button onClick={emptyState.action.onClick} className="gap-2">
@@ -157,31 +165,29 @@ export function ArtistGrid({
       {(title || onSortChange || onFilterChange || onRefresh) && (
         <div className="flex items-center justify-between">
           <div>
-            {title && (
-              <h2 className="text-2xl font-bold mb-1">{title}</h2>
-            )}
+            {title && <h2 className="text-2xl font-bold mb-1">{title}</h2>}
             <p className="text-muted-foreground">
-              {artists.length} artist{artists.length !== 1 ? 's' : ''}
-              {loading && ' (loading...)'}
+              {artists.length} artist{artists.length !== 1 ? "s" : ""}
+              {loading && " (loading...)"}
             </p>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {/* View Mode Toggle */}
-            {variant !== 'compact' && (
+            {variant !== "compact" && (
               <div className="flex items-center border rounded-lg">
                 <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
-                  onClick={() => setViewMode('grid')}
+                  onClick={() => setViewMode("grid")}
                   className="rounded-r-none"
                 >
                   <Grid3X3 className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
-                  onClick={() => setViewMode('list')}
+                  onClick={() => setViewMode("list")}
                   className="rounded-l-none border-l"
                 >
                   <List className="h-4 w-4" />
@@ -199,16 +205,16 @@ export function ArtistGrid({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => onSortChange('name')}>
+                  <DropdownMenuItem onClick={() => onSortChange("name")}>
                     Name A-Z
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onSortChange('popularity')}>
+                  <DropdownMenuItem onClick={() => onSortChange("popularity")}>
                     Most Popular
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onSortChange('followers')}>
+                  <DropdownMenuItem onClick={() => onSortChange("followers")}>
                     Most Followers
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onSortChange('trending')}>
+                  <DropdownMenuItem onClick={() => onSortChange("trending")}>
                     Trending
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -225,16 +231,16 @@ export function ArtistGrid({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => onFilterChange('all')}>
+                  <DropdownMenuItem onClick={() => onFilterChange("all")}>
                     All Artists
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onFilterChange('verified')}>
+                  <DropdownMenuItem onClick={() => onFilterChange("verified")}>
                     Verified Only
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onFilterChange('trending')}>
+                  <DropdownMenuItem onClick={() => onFilterChange("trending")}>
                     Trending
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onFilterChange('following')}>
+                  <DropdownMenuItem onClick={() => onFilterChange("following")}>
                     Following
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -250,7 +256,9 @@ export function ArtistGrid({
                 disabled={loading}
                 className="gap-2"
               >
-                <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+                <RefreshCw
+                  className={cn("h-4 w-4", loading && "animate-spin")}
+                />
                 Refresh
               </Button>
             )}

@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { format } from 'date-fns';
-import { Calendar, Heart, MapPin, Share2, Users } from 'lucide-react';
-import { useState } from 'react';
-import { LiveShowIndicator } from '~/components/live-show-indicator';
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { format } from "date-fns";
+import { Calendar, Heart, MapPin, Share2, Users } from "lucide-react";
+import { useState } from "react";
+import { LiveShowIndicator } from "~/components/live-show-indicator";
 
 type ShowInfoProps = {
   showId: string;
@@ -14,7 +14,7 @@ type ShowInfoProps = {
       id: string;
       name: string;
       date: string;
-      status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+      status: "upcoming" | "ongoing" | "completed" | "cancelled";
       attendeeCount?: number | null;
     };
     artists: {
@@ -36,11 +36,11 @@ export const ShowInfo = ({ showId: _showId, show }: ShowInfoProps) => {
   const [isSaved, setIsSaved] = useState(false);
 
   const showDate = new Date(show.shows.date);
-  const artistName = show.artists?.name || 'Unknown Artist';
-  const venueName = show.venues?.name || 'Unknown Venue';
+  const artistName = show.artists?.name || "Unknown Artist";
+  const venueName = show.venues?.name || "Unknown Venue";
   const venueLocation = show.venues
     ? `${show.venues.city}, ${show.venues.country}`
-    : 'Unknown Location';
+    : "Unknown Location";
   const attendeeCount = show.shows.attendeeCount || 0;
 
   return (
@@ -53,9 +53,11 @@ export const ShowInfo = ({ showId: _showId, show }: ShowInfoProps) => {
               <LiveShowIndicator
                 showDate={showDate}
                 showStatus={
-                  show.shows.status === 'ongoing' ? 'live' : 
-                  show.shows.status === 'upcoming' ? 'scheduled' :
-                  show.shows.status
+                  show.shows.status === "ongoing"
+                    ? "live"
+                    : show.shows.status === "upcoming"
+                      ? "scheduled"
+                      : show.shows.status
                 }
               />
             </div>
@@ -72,7 +74,7 @@ export const ShowInfo = ({ showId: _showId, show }: ShowInfoProps) => {
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>{format(showDate, 'EEEE, MMMM d, yyyy')}</span>
+                <span>{format(showDate, "EEEE, MMMM d, yyyy")}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Users className="h-4 w-4 text-muted-foreground" />
@@ -86,12 +88,12 @@ export const ShowInfo = ({ showId: _showId, show }: ShowInfoProps) => {
               <Share2 className="h-4 w-4" />
             </Button>
             <Button
-              variant={isSaved ? 'default' : 'outline'}
+              variant={isSaved ? "default" : "outline"}
               onClick={() => setIsSaved(!isSaved)}
               className="gap-2"
             >
-              <Heart className={`h-4 w-4 ${isSaved ? 'fill-current' : ''}`} />
-              {isSaved ? 'Saved' : 'Save'}
+              <Heart className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`} />
+              {isSaved ? "Saved" : "Save"}
             </Button>
           </div>
         </div>

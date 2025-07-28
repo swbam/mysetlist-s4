@@ -1,23 +1,23 @@
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { cn } from '@repo/design-system/lib/utils';
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { cn } from "@repo/design-system/lib/utils";
 
 interface ContentSkeletonProps {
   count?: number;
   className?: string;
-  type?: 'artist' | 'show' | 'card';
+  type?: "artist" | "show" | "card";
 }
 
 export function ContentSkeleton({
   count = 4,
   className,
-  type = 'card',
+  type = "card",
 }: ContentSkeletonProps) {
-  if (type === 'artist') {
+  if (type === "artist") {
     return (
       <div
         className={cn(
-          'grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6',
-          className
+          "grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6",
+          className,
         )}
       >
         {Array.from({ length: count }).map((_, i) => (
@@ -31,12 +31,12 @@ export function ContentSkeleton({
     );
   }
 
-  if (type === 'show') {
+  if (type === "show") {
     return (
       <div
         className={cn(
-          'grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4',
-          className
+          "grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4",
+          className,
         )}
       >
         {Array.from({ length: count }).map((_, i) => (
@@ -56,8 +56,8 @@ export function ContentSkeleton({
   return (
     <div
       className={cn(
-        'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3',
-        className
+        "grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3",
+        className,
       )}
     >
       {Array.from({ length: count }).map((_, i) => (

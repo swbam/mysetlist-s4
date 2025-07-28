@@ -1,29 +1,29 @@
-import { db } from '@repo/database';
-import { sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 // GET /api/analytics/vote-stats - Get comprehensive vote statistics
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const showId = searchParams.get('showId');
-    const timeframe = searchParams.get('timeframe') || '24h'; // 24h, 7d, 30d
-    const includeVelocity = searchParams.get('velocity') === 'true';
+    const showId = searchParams.get("showId");
+    const timeframe = searchParams.get("timeframe") || "24h"; // 24h, 7d, 30d
+    const includeVelocity = searchParams.get("velocity") === "true";
 
     // Parse timeframe
-    let timeInterval = '24 hours';
+    let timeInterval = "24 hours";
     switch (timeframe) {
-      case '7d':
-        timeInterval = '7 days';
+      case "7d":
+        timeInterval = "7 days";
         break;
-      case '30d':
-        timeInterval = '30 days';
+      case "30d":
+        timeInterval = "30 days";
         break;
-      case '1h':
-        timeInterval = '1 hour';
+      case "1h":
+        timeInterval = "1 hour";
         break;
       default:
-        timeInterval = '24 hours';
+        timeInterval = "24 hours";
     }
 
     if (showId) {
@@ -125,8 +125,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to get vote statistics' },
-      { status: 500 }
+      { error: "Failed to get vote statistics" },
+      { status: 500 },
     );
   }
 }
@@ -137,16 +137,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { action } = body;
 
-    if (action === 'update_trending') {
+    if (action === "update_trending") {
       // Trigger trending score calculation
       await db.execute(sql`SELECT update_trending_scores()`);
 
       return NextResponse.json({
-        message: 'Trending scores updated successfully',
+        message: "Trending scores updated successfully",
         timestamp: new Date().toISOString(),
       });
     }
-    if (action === 'recalculate_votes') {
+    if (action === "recalculate_votes") {
       // Recalculate all vote counts (useful for data integrity)
       await db.execute(sql`
         UPDATE setlist_songs 
@@ -189,21 +189,21 @@ export async function POST(request: NextRequest) {
       `);
 
       return NextResponse.json({
-        message: 'Vote counts recalculated successfully',
+        message: "Vote counts recalculated successfully",
         timestamp: new Date().toISOString(),
       });
     }
     return NextResponse.json(
       {
         error:
-          'Invalid action. Valid actions: update_trending, recalculate_votes',
+          "Invalid action. Valid actions: update_trending, recalculate_votes",
       },
-      { status: 400 }
+      { status: 400 },
     );
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to update vote statistics' },
-      { status: 500 }
+      { error: "Failed to update vote statistics" },
+      { status: 500 },
     );
   }
 }

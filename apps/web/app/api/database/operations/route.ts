@@ -1,16 +1,16 @@
-import { db } from '@repo/database';
-import { artists } from '@repo/database';
-import { sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { artists } from "@repo/database";
+import { sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 // GET /api/database/operations - Get database statistics and health
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const operation = searchParams.get('operation') || 'stats';
+    const operation = searchParams.get("operation") || "stats";
 
     switch (operation) {
-      case 'stats': {
+      case "stats": {
         // Get comprehensive database statistics
         const [
           artistCount,
@@ -88,27 +88,27 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
           totals: {
-            artists: artistCount[0]?.['count'] || 0,
-            venues: venueCount[0]?.['count'] || 0,
-            shows: showCount[0]?.['count'] || 0,
-            songs: songCount[0]?.['count'] || 0,
-            setlists: setlistCount[0]?.['count'] || 0,
-            votes: voteCount[0]?.['count'] || 0,
-            activeUsers: activeUsersCount[0]?.['count'] || 0,
+            artists: artistCount[0]?.["count"] || 0,
+            venues: venueCount[0]?.["count"] || 0,
+            shows: showCount[0]?.["count"] || 0,
+            songs: songCount[0]?.["count"] || 0,
+            setlists: setlistCount[0]?.["count"] || 0,
+            votes: voteCount[0]?.["count"] || 0,
+            activeUsers: activeUsersCount[0]?.["count"] || 0,
           },
           distribution: dataDistribution.reduce(
             (acc, row) => {
-              acc[row['metric'] as string] = row['value'] as number;
+              acc[row["metric"] as string] = row["value"] as number;
               return acc;
             },
-            {} as Record<string, number>
+            {} as Record<string, number>,
           ),
           recentActivity: recentActivity,
           timestamp: new Date().toISOString(),
         });
       }
 
-      case 'health': {
+      case "health": {
         // Check database connection and performance
         const startTime = Date.now();
 
@@ -127,9 +127,9 @@ export async function GET(request: NextRequest) {
             WHERE sh.id IS NULL
           `);
 
-          if (Number(orphanedSetlists[0]?.['count']) > 0) {
+          if (Number(orphanedSetlists[0]?.["count"]) > 0) {
             issues.push(
-              `${orphanedSetlists[0]?.['count']} orphaned setlists found`
+              `${orphanedSetlists[0]?.["count"]} orphaned setlists found`,
             );
           }
 
@@ -140,12 +140,12 @@ export async function GET(request: NextRequest) {
             WHERE ss.id IS NULL
           `);
 
-          if (Number(orphanedVotes[0]?.['count']) > 0) {
-            issues.push(`${orphanedVotes[0]?.['count']} orphaned votes found`);
+          if (Number(orphanedVotes[0]?.["count"]) > 0) {
+            issues.push(`${orphanedVotes[0]?.["count"]} orphaned votes found`);
           }
 
           return NextResponse.json({
-            status: issues.length === 0 ? 'healthy' : 'warning',
+            status: issues.length === 0 ? "healthy" : "warning",
             responseTime,
             issues,
             timestamp: new Date().toISOString(),
@@ -153,18 +153,18 @@ export async function GET(request: NextRequest) {
         } catch (error) {
           const responseTime = Date.now() - startTime;
           return NextResponse.json({
-            status: 'unhealthy',
+            status: "unhealthy",
             responseTime,
             error:
               error instanceof Error
                 ? error.message
-                : 'Database connection failed',
+                : "Database connection failed",
             timestamp: new Date().toISOString(),
           });
         }
       }
 
-      case 'table_sizes': {
+      case "table_sizes": {
         // Get table sizes and row counts
         const tableSizes = await db.execute(sql`
           SELECT 
@@ -187,15 +187,15 @@ export async function GET(request: NextRequest) {
         return NextResponse.json(
           {
             error:
-              'Invalid operation. Valid operations: stats, health, table_sizes',
+              "Invalid operation. Valid operations: stats, health, table_sizes",
           },
-          { status: 400 }
+          { status: 400 },
         );
     }
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Database operation failed' },
-      { status: 500 }
+      { error: "Database operation failed" },
+      { status: 500 },
     );
   }
 }
@@ -207,17 +207,17 @@ export async function POST(request: NextRequest) {
     const { operation, params = {} } = body;
 
     switch (operation) {
-      case 'vacuum': {
+      case "vacuum": {
         // Perform database vacuum (cleanup)
         await db.execute(sql`VACUUM ANALYZE`);
 
         return NextResponse.json({
-          message: 'Database vacuum completed',
+          message: "Database vacuum completed",
           timestamp: new Date().toISOString(),
         });
       }
 
-      case 'update_vote_counts': {
+      case "update_vote_counts": {
         // Recalculate all vote counts for data integrity
         const startTime = Date.now();
 
@@ -267,13 +267,13 @@ export async function POST(request: NextRequest) {
         const duration = Date.now() - startTime;
 
         return NextResponse.json({
-          message: 'Vote counts updated successfully',
+          message: "Vote counts updated successfully",
           duration,
           timestamp: new Date().toISOString(),
         });
       }
 
-      case 'cleanup_orphaned_records': {
+      case "cleanup_orphaned_records": {
         // Clean up orphaned records
         const results: any[] = [];
 
@@ -284,7 +284,7 @@ export async function POST(request: NextRequest) {
           RETURNING id
         `);
         results.push(
-          `Removed ${orphanedSetlistSongs.length} orphaned setlist songs`
+          `Removed ${orphanedSetlistSongs.length} orphaned setlist songs`,
         );
 
         // Remove orphaned votes
@@ -304,30 +304,30 @@ export async function POST(request: NextRequest) {
         results.push(`Removed ${orphanedSetlists.length} orphaned setlists`);
 
         return NextResponse.json({
-          message: 'Cleanup completed',
+          message: "Cleanup completed",
           results,
           timestamp: new Date().toISOString(),
         });
       }
 
-      case 'update_trending_scores': {
+      case "update_trending_scores": {
         // Update trending scores for all shows and artists
         await db.execute(sql`SELECT update_trending_scores()`);
 
         return NextResponse.json({
-          message: 'Trending scores updated',
+          message: "Trending scores updated",
           timestamp: new Date().toISOString(),
         });
       }
 
-      case 'reindex': {
+      case "reindex": {
         // Rebuild database indexes for performance
         const indexes = [
-          'idx_votes_setlist_song_user',
-          'idx_votes_created_at',
-          'idx_setlist_songs_votes',
-          'idx_shows_trending',
-          'idx_artists_trending',
+          "idx_votes_setlist_song_user",
+          "idx_votes_created_at",
+          "idx_setlist_songs_votes",
+          "idx_shows_trending",
+          "idx_artists_trending",
         ];
 
         for (const index of indexes) {
@@ -337,18 +337,18 @@ export async function POST(request: NextRequest) {
         }
 
         return NextResponse.json({
-          message: 'Database indexes rebuilt',
+          message: "Database indexes rebuilt",
           indexes,
           timestamp: new Date().toISOString(),
         });
       }
 
-      case 'seed_sample_data': {
+      case "seed_sample_data": {
         // Seed sample data for development/testing
-        if (process.env['NODE_ENV'] === 'production') {
+        if (process.env["NODE_ENV"] === "production") {
           return NextResponse.json(
-            { error: 'Sample data seeding not allowed in production' },
-            { status: 403 }
+            { error: "Sample data seeding not allowed in production" },
+            { status: 403 },
           );
         }
 
@@ -358,7 +358,7 @@ export async function POST(request: NextRequest) {
         const sampleArtists = Array.from({ length: count }, (_, i) => ({
           name: `Sample Artist ${i + 1}`,
           slug: `sample-artist-${i + 1}`,
-          genres: JSON.stringify(['rock', 'indie']),
+          genres: JSON.stringify(["rock", "indie"]),
           popularity: Math.floor(Math.random() * 100),
           verified: Math.random() > 0.5,
         }));
@@ -379,15 +379,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           {
             error:
-              'Invalid operation. Valid operations: vacuum, update_vote_counts, cleanup_orphaned_records, update_trending_scores, reindex, seed_sample_data',
+              "Invalid operation. Valid operations: vacuum, update_vote_counts, cleanup_orphaned_records, update_trending_scores, reindex, seed_sample_data",
           },
-          { status: 400 }
+          { status: 400 },
         );
     }
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Database operation failed' },
-      { status: 500 }
+      { error: "Database operation failed" },
+      { status: 500 },
     );
   }
 }

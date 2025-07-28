@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { v4 as uuidv4 } from 'uuid';
+import { v4 as uuidv4 } from "uuid";
 
 interface AnonymousVote {
   setlistSongId: string;
-  voteType: 'up' | 'down';
+  voteType: "up" | "down";
   timestamp: number;
 }
 
@@ -21,7 +21,7 @@ interface AnonymousSession {
   createdAt: number;
 }
 
-const STORAGE_KEY = 'mysetlist_anonymous_session';
+const STORAGE_KEY = "mysetlist_anonymous_session";
 const SESSION_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 const MAX_VOTES = 1;
 const MAX_SONGS = 1;
@@ -39,7 +39,7 @@ export class AnonymousUserManager {
   }
 
   getSession(): AnonymousSession {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return this.createNewSession();
     }
 
@@ -70,7 +70,7 @@ export class AnonymousUserManager {
       createdAt: Date.now(),
     };
 
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
     }
 
@@ -78,7 +78,7 @@ export class AnonymousUserManager {
   }
 
   saveSession(session: AnonymousSession): void {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
     }
   }
@@ -103,7 +103,7 @@ export class AnonymousUserManager {
     return MAX_SONGS - session.songsAdded.length;
   }
 
-  addVote(setlistSongId: string, voteType: 'up' | 'down'): boolean {
+  addVote(setlistSongId: string, voteType: "up" | "down"): boolean {
     const session = this.getSession();
 
     if (!this.canVote()) {
@@ -112,7 +112,7 @@ export class AnonymousUserManager {
 
     // Remove any existing vote on the same song
     session.votes = session.votes.filter(
-      (v) => v.setlistSongId !== setlistSongId
+      (v) => v.setlistSongId !== setlistSongId,
     );
 
     // Add new vote
@@ -131,7 +131,7 @@ export class AnonymousUserManager {
     const originalLength = session.votes.length;
 
     session.votes = session.votes.filter(
-      (v) => v.setlistSongId !== setlistSongId
+      (v) => v.setlistSongId !== setlistSongId,
     );
 
     if (session.votes.length < originalLength) {
@@ -142,7 +142,7 @@ export class AnonymousUserManager {
     return false;
   }
 
-  getVote(setlistSongId: string): 'up' | 'down' | null {
+  getVote(setlistSongId: string): "up" | "down" | null {
     const session = this.getSession();
     const vote = session.votes.find((v) => v.setlistSongId === setlistSongId);
     return vote?.voteType || null;
@@ -171,7 +171,7 @@ export class AnonymousUserManager {
   }
 
   clearSession(): void {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       localStorage.removeItem(STORAGE_KEY);
     }
   }

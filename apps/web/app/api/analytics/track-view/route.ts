@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { trackView } from '~/lib/analytics/track-views';
+import { type NextRequest, NextResponse } from "next/server";
+import { trackView } from "~/lib/analytics/track-views";
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,15 +9,15 @@ export async function POST(request: NextRequest) {
     // Validate input
     if (!type || !id) {
       return NextResponse.json(
-        { error: 'Missing required parameters' },
-        { status: 400 }
+        { error: "Missing required parameters" },
+        { status: 400 },
       );
     }
 
-    if (!['artist', 'show', 'venue'].includes(type)) {
+    if (!["artist", "show", "venue"].includes(type)) {
       return NextResponse.json(
-        { error: 'Invalid type parameter' },
-        { status: 400 }
+        { error: "Invalid type parameter" },
+        { status: 400 },
       );
     }
 
@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to track view' },
-      { status: 500 }
+      { error: "Failed to track view" },
+      { status: 500 },
     );
   }
 }

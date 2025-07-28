@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card";
 import {
   AlertTriangle,
   ArrowLeft,
@@ -15,9 +15,9 @@ import {
   RefreshCw,
   Settings,
   Zap,
-} from 'lucide-react';
-import Link from 'next/link';
-import React, { useState } from 'react';
+} from "lucide-react";
+import Link from "next/link";
+import React, { useState } from "react";
 
 interface Props {
   children: React.ReactNode;
@@ -77,8 +77,8 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
     }
 
     // Report to error tracking service
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'exception', {
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("event", "exception", {
         description: error.message,
         fatal: false,
       });
@@ -118,19 +118,19 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
   };
 
   private handleReload = () => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.location.reload();
     }
   };
 
   private handleGoBack = () => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.history.back();
     }
   };
 
   private handleClearCache = () => {
-    if ('caches' in window) {
+    if ("caches" in window) {
       caches.keys().then((names) => {
         names.forEach((name) => {
           caches.delete(name);
@@ -139,7 +139,7 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
     }
 
     // Clear localStorage
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       localStorage.clear();
       sessionStorage.clear();
     }
@@ -191,7 +191,7 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
                   <RefreshCw className="mr-2 h-4 w-4" />
                   {retryCount > 0
                     ? `Retry (${retryCount}/${maxRetries})`
-                    : 'Try Again'}
+                    : "Try Again"}
                 </Button>
 
                 <Button
@@ -254,7 +254,7 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
               </div>
 
               {/* Error details for development */}
-              {process.env["NODE_ENV"] === 'development' && error && (
+              {process.env["NODE_ENV"] === "development" && error && (
                 <details className="mt-6 text-left">
                   <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
                     Error Details (Development)
@@ -294,8 +294,8 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
               <div className="rounded-md bg-muted/50 p-4 text-center">
                 <p className="text-muted-foreground text-sm">
                   {retryCount >= maxRetries
-                    ? 'If the problem persists, please try refreshing the page or clearing your cache.'
-                    : 'This error has been automatically reported. You can try again or navigate to a different page.'}
+                    ? "If the problem persists, please try refreshing the page or clearing your cache."
+                    : "This error has been automatically reported. You can try again or navigate to a different page."}
                 </p>
               </div>
             </CardContent>
@@ -328,7 +328,7 @@ export function withEnhancedNavigationErrorBoundary<T extends object>(
     enableAutoRetry?: boolean;
     maxRetries?: number;
     onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
-  }
+  },
 ) {
   return function WithEnhancedNavigationErrorBoundaryComponent(props: T) {
     const boundaryProps: Props = {
@@ -336,11 +336,11 @@ export function withEnhancedNavigationErrorBoundary<T extends object>(
       enableAutoRetry: options?.enableAutoRetry ?? false,
       maxRetries: options?.maxRetries ?? 3,
     };
-    
+
     if (options?.onError) {
       boundaryProps.onError = options.onError;
     }
-    
+
     return <EnhancedNavigationErrorBoundary {...boundaryProps} />;
   };
 }

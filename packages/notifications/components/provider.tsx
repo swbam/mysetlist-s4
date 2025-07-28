@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { KnockFeedProvider, KnockProvider } from '@knocklabs/react';
-import type React from 'react';
-import { keys } from '../keys';
+import { KnockFeedProvider, KnockProvider } from "@knocklabs/react";
+import type React from "react";
+import { keys } from "../keys";
 
 const knockApiKey = keys().NEXT_PUBLIC_KNOCK_API_KEY;
 const knockFeedChannelId = keys().NEXT_PUBLIC_KNOCK_FEED_CHANNEL_ID;

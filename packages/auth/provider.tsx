@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { createClient } from './client';
-import type { User, Session } from '@supabase/supabase-js';
+import { useRouter } from "next/navigation";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { createClient } from "./client";
+import type { User, Session } from "@supabase/supabase-js";
 
 type AuthContextType = {
   session: Session | null;
@@ -27,7 +27,9 @@ export const AuthProvider = ({
   initialSession,
 }: AuthProviderProps) => {
   const router = useRouter();
-  const [session, setSession] = useState<Session | null>(initialSession || null);
+  const [session, setSession] = useState<Session | null>(
+    initialSession || null,
+  );
   const [user, setUser] = useState<User | null>(initialSession?.user || null);
   const [loading, setLoading] = useState(!initialSession);
 
@@ -36,11 +38,13 @@ export const AuthProvider = ({
   useEffect(() => {
     const getSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         setSession(session);
         setUser(session?.user || null);
       } catch (error) {
-        console.error('Error getting session:', error);
+        console.error("Error getting session:", error);
       } finally {
         setLoading(false);
       }
@@ -69,9 +73,9 @@ export const AuthProvider = ({
         email,
         password,
       });
-      
+
       if (error) throw error;
-      
+
       setSession(data.session);
       setUser(data.user);
     } catch (error) {
@@ -88,9 +92,9 @@ export const AuthProvider = ({
         email,
         password,
       });
-      
+
       if (error) throw error;
-      
+
       // Note: User might need to verify email before session is created
       if (data.session) {
         setSession(data.session);
@@ -108,10 +112,10 @@ export const AuthProvider = ({
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
+
       setSession(null);
       setUser(null);
-      router.push('/');
+      router.push("/");
     } catch (error) {
       throw error;
     } finally {
@@ -123,7 +127,7 @@ export const AuthProvider = ({
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset-password`,
     });
-    
+
     if (error) throw error;
   };
 
@@ -147,7 +151,7 @@ export const AuthProvider = ({
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { cn } from '@repo/design-system/lib/utils';
-import React from 'react';
+import { cn } from "@repo/design-system/lib/utils";
+import React from "react";
 
 interface ResponsiveGridProps {
   children: React.ReactNode;
@@ -13,7 +13,7 @@ interface ResponsiveGridProps {
     lg?: number;
     xl?: number;
   };
-  gap?: 'none' | 'sm' | 'md' | 'lg' | 'xl';
+  gap?: "none" | "sm" | "md" | "lg" | "xl";
   equalHeight?: boolean;
   role?: string;
 }
@@ -22,16 +22,16 @@ export function ResponsiveGrid({
   children,
   className,
   cols = { xs: 1, sm: 2, md: 3, lg: 4 },
-  gap = 'md',
+  gap = "md",
   equalHeight = false,
-  role = 'grid',
+  role = "grid",
 }: ResponsiveGridProps) {
   const gapClasses = {
-    none: 'gap-0',
-    sm: 'gap-3',
-    md: 'gap-4 sm:gap-6',
-    lg: 'gap-6 sm:gap-8',
-    xl: 'gap-8 sm:gap-10',
+    none: "gap-0",
+    sm: "gap-3",
+    md: "gap-4 sm:gap-6",
+    lg: "gap-6 sm:gap-8",
+    xl: "gap-8 sm:gap-10",
   };
 
   const colClasses = [
@@ -45,11 +45,11 @@ export function ResponsiveGrid({
   return (
     <div
       className={cn(
-        'grid',
+        "grid",
         gapClasses[gap],
         colClasses,
-        equalHeight && 'items-stretch',
-        className
+        equalHeight && "items-stretch",
+        className,
       )}
       role={role}
     >
@@ -75,7 +75,7 @@ export function ResponsiveGridItem({
   children,
   className,
   span,
-  role = 'gridcell',
+  role = "gridcell",
 }: ResponsiveGridItemProps) {
   const spanClasses = span
     ? [
@@ -104,19 +104,19 @@ interface MasonryGridProps {
     md?: number;
     lg?: number;
   };
-  gap?: 'sm' | 'md' | 'lg';
+  gap?: "sm" | "md" | "lg";
 }
 
 export function MasonryGrid({
   children,
   className,
   cols = { xs: 1, sm: 2, md: 3, lg: 4 },
-  gap = 'md',
+  gap = "md",
 }: MasonryGridProps) {
   const gapClasses = {
-    sm: 'gap-3',
-    md: 'gap-4 sm:gap-6',
-    lg: 'gap-6 sm:gap-8',
+    sm: "gap-3",
+    md: "gap-4 sm:gap-6",
+    lg: "gap-6 sm:gap-8",
   };
 
   const colClasses = [
@@ -131,8 +131,8 @@ export function MasonryGrid({
       className={cn(
         colClasses,
         gapClasses[gap],
-        'break-inside-avoid',
-        className
+        "break-inside-avoid",
+        className,
       )}
     >
       {React.Children.map(children, (child, index) => (

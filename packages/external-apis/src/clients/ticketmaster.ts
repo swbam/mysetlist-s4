@@ -1,4 +1,4 @@
-import { type APIClientConfig, BaseAPIClient } from './base';
+import { type APIClientConfig, BaseAPIClient } from "./base";
 
 export interface TicketmasterEvent {
   id: string;
@@ -80,15 +80,15 @@ export interface TicketmasterVenue {
 }
 
 export class TicketmasterClient extends BaseAPIClient {
-  constructor(config: Omit<APIClientConfig, 'baseURL'>) {
-    const apiKey = process.env['TICKETMASTER_API_KEY'];
+  constructor(config: Omit<APIClientConfig, "baseURL">) {
+    const apiKey = process.env["TICKETMASTER_API_KEY"];
     if (!apiKey) {
-      throw new Error('Ticketmaster API key not configured');
+      throw new Error("Ticketmaster API key not configured");
     }
 
     super({
       ...config,
-      baseURL: 'https://app.ticketmaster.com/discovery/v2/',
+      baseURL: "https://app.ticketmaster.com/discovery/v2/",
       apiKey,
       rateLimit: { requests: 5000, window: 24 * 3600 }, // 5000 requests per day
       cache: { defaultTTL: 1800 }, // 30 minutes default cache
@@ -104,11 +104,11 @@ export class TicketmasterClient extends BaseAPIClient {
     endpoint: string,
     options: RequestInit = {},
     cacheKey?: string,
-    cacheTtl?: number
+    cacheTtl?: number,
   ): Promise<T> {
     // Add API key to URL params for Ticketmaster
     const url = new URL(endpoint, this.baseURL);
-    url.searchParams.append('apikey', this.apiKey!);
+    url.searchParams.append("apikey", this.apiKey!);
 
     // Check cache first if key provided and cache is available
     if (cacheKey && this.cache) {
@@ -130,14 +130,14 @@ export class TicketmasterClient extends BaseAPIClient {
     const response = await fetch(url.toString(), {
       ...options,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...options.headers,
       },
     });
 
     if (!response.ok) {
       throw new Error(
-        `Ticketmaster API request failed: ${response.status} ${response.statusText}`
+        `Ticketmaster API request failed: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -178,7 +178,7 @@ export class TicketmasterClient extends BaseAPIClient {
       `events.json?${params.toString()}`,
       {},
       `ticketmaster:events:${params.toString()}`,
-      900 // 15 minutes cache
+      900, // 15 minutes cache
     );
   }
 
@@ -187,7 +187,7 @@ export class TicketmasterClient extends BaseAPIClient {
       `events/${eventId}.json`,
       {},
       `ticketmaster:event:${eventId}`,
-      1800
+      1800,
     );
   }
 
@@ -212,7 +212,7 @@ export class TicketmasterClient extends BaseAPIClient {
       `venues.json?${params}`,
       {},
       `ticketmaster:venues:${params.toString()}`,
-      3600
+      3600,
     );
   }
 
@@ -221,7 +221,7 @@ export class TicketmasterClient extends BaseAPIClient {
       `venues/${venueId}.json`,
       {},
       `ticketmaster:venue:${venueId}`,
-      3600
+      3600,
     );
   }
 
@@ -244,7 +244,7 @@ export class TicketmasterClient extends BaseAPIClient {
       `attractions.json?${params.toString()}`,
       {},
       `ticketmaster:attractions:${params.toString()}`,
-      1800
+      1800,
     );
   }
 
@@ -253,7 +253,7 @@ export class TicketmasterClient extends BaseAPIClient {
       `attractions/${attractionId}.json`,
       {},
       `ticketmaster:attraction:${attractionId}`,
-      3600
+      3600,
     );
   }
 
@@ -264,11 +264,11 @@ export class TicketmasterClient extends BaseAPIClient {
       sort?: string;
       startDateTime?: string;
       endDateTime?: string;
-    } = {}
+    } = {},
   ): Promise<TicketmasterEvent[]> {
     const result = await this.searchEvents({
       keyword: artistName,
-      classificationName: 'Music',
+      classificationName: "Music",
       ...options,
     });
 

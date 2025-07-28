@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import * as React from 'react';
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 
 interface SafeLinkProps {
   href: string;
@@ -41,10 +41,10 @@ export const SafeLink: React.FC<SafeLinkProps> = ({
 
       // Don't intercept external links or special targets
       if (
-        href.startsWith('http') ||
-        href.startsWith('mailto:') ||
-        href.startsWith('tel:') ||
-        target === '_blank' ||
+        href.startsWith("http") ||
+        href.startsWith("mailto:") ||
+        href.startsWith("tel:") ||
+        target === "_blank" ||
         e.defaultPrevented
       ) {
         return;
@@ -53,14 +53,14 @@ export const SafeLink: React.FC<SafeLinkProps> = ({
       // For internal navigation, let Next.js Link handle it naturally
       // Only intercept on error
     },
-    [href, onClick, target]
+    [href, onClick, target],
   );
 
   // For external links, use regular Link behavior
   if (
-    href.startsWith('http') ||
-    href.startsWith('mailto:') ||
-    href.startsWith('tel:')
+    href.startsWith("http") ||
+    href.startsWith("mailto:") ||
+    href.startsWith("tel:")
   ) {
     const linkProps: any = {
       href,
@@ -69,11 +69,11 @@ export const SafeLink: React.FC<SafeLinkProps> = ({
       rel,
       ...props,
     };
-    
+
     if (onClick) {
       linkProps.onClick = onClick;
     }
-    
+
     return (
       <Link {...linkProps}>
         <>{children}</>
@@ -113,7 +113,7 @@ export function useSafeNavigation() {
         window.location.href = href;
       }
     },
-    [router]
+    [router],
   );
 
   return { safeNavigate };

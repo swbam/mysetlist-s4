@@ -1,8 +1,8 @@
-import { db } from '@repo/database';
-import { artists } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
-import { invalidateArtistCache } from '~/lib/cache';
+import { db } from "@repo/database";
+import { artists } from "@repo/database";
+import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
+import { invalidateArtistCache } from "~/lib/cache";
 
 // POST /api/sync/artist
 // Body: { artistId: string, slug: string }
@@ -13,8 +13,8 @@ export async function POST(request: NextRequest) {
 
     if (!artistId && !slug) {
       return NextResponse.json(
-        { error: 'Artist ID or slug required' },
-        { status: 400 }
+        { error: "Artist ID or slug required" },
+        { status: 400 },
       );
     }
 
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (!artist.length || !artist[0]) {
-      return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
     const artistData = artist[0];
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
     if (!needsSync) {
       return NextResponse.json({
         success: true,
-        message: 'Artist data is up to date',
+        message: "Artist data is up to date",
         artist: artistData,
         synced: false,
       });
@@ -52,11 +52,11 @@ export async function POST(request: NextRequest) {
     // 1. Sync artist shows
     if (artistData.spotifyId) {
       syncPromises.push(
-        fetch(`${process.env['NEXT_PUBLIC_APP_URL']}/api/sync/shows`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        fetch(`${process.env["NEXT_PUBLIC_APP_URL"]}/api/sync/shows`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ artistId: artistData.id }),
-        })
+        }),
       );
     }
 
@@ -68,21 +68,21 @@ export async function POST(request: NextRequest) {
 
     if (songCatalogStale && artistData.spotifyId) {
       syncPromises.push(
-        fetch(`${process.env['NEXT_PUBLIC_APP_URL']}/api/sync/songs`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        fetch(`${process.env["NEXT_PUBLIC_APP_URL"]}/api/sync/songs`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ artistId: artistData.id }),
-        })
+        }),
       );
     }
 
     // 3. Update artist stats
     syncPromises.push(
-      fetch(`${process.env['NEXT_PUBLIC_APP_URL']}/api/sync/artist-stats`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      fetch(`${process.env["NEXT_PUBLIC_APP_URL"]}/api/sync/artist-stats`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ artistId: artistData.id }),
-      })
+      }),
     );
 
     // Execute all syncs
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Artist sync completed',
+      message: "Artist sync completed",
       artist: artistData,
       synced: true,
       operations: {
@@ -114,10 +114,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Sync failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Sync failed",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

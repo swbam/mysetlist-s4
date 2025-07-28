@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/design-system/components/ui/select';
-import { cn } from '@repo/design-system/lib/utils';
-import { format, formatDistanceToNow } from 'date-fns';
-import { AnimatePresence, motion } from 'framer-motion';
+} from "@repo/design-system/components/ui/select";
+import { cn } from "@repo/design-system/lib/utils";
+import { format, formatDistanceToNow } from "date-fns";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   BarChart3,
   Calendar,
@@ -26,8 +26,8 @@ import {
   ThumbsDown,
   ThumbsUp,
   TrendingUp,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface VoteHistoryProps {
   userId?: string;
@@ -39,7 +39,7 @@ interface VoteHistoryItem {
   id: string;
   songTitle: string;
   artist: string;
-  voteType: 'up' | 'down';
+  voteType: "up" | "down";
   createdAt: string;
   updatedAt: string;
   showName: string;
@@ -56,7 +56,7 @@ interface VotePattern {
   mostActiveHour: number;
   votingStreak: number;
   averageVotesPerDay: number;
-  recentTrend: 'up' | 'down' | 'stable';
+  recentTrend: "up" | "down" | "stable";
 }
 
 interface DailyVoteData {
@@ -71,7 +71,7 @@ export function VoteHistory({ userId, showId, className }: VoteHistoryProps) {
   const [pattern, setPattern] = useState<VotePattern | null>(null);
   const [dailyData, setDailyData] = useState<DailyVoteData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState('7d');
+  const [period, setPeriod] = useState("7d");
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
@@ -79,15 +79,15 @@ export function VoteHistory({ userId, showId, className }: VoteHistoryProps) {
     try {
       const params = new URLSearchParams({
         period,
-        page: loadMore ? page.toString() : '1',
-        limit: '20',
+        page: loadMore ? page.toString() : "1",
+        limit: "20",
       });
 
       if (userId) {
-        params.set('userId', userId);
+        params.set("userId", userId);
       }
       if (showId) {
-        params.set('showId', showId);
+        params.set("showId", showId);
       }
 
       const response = await fetch(`/api/votes/history?${params}`);
@@ -157,13 +157,13 @@ export function VoteHistory({ userId, showId, className }: VoteHistoryProps) {
   const maxDailyVotes = Math.max(...dailyData.map((d) => d.votes), 1);
 
   return (
-    <div className={cn('space-y-6', className)}>
+    <div className={cn("space-y-6", className)}>
       {/* Header and Controls */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <History className="h-6 w-6" />
           <h3 className="font-semibold text-xl">
-            {userId ? 'Your Voting History' : 'Vote History'}
+            {userId ? "Your Voting History" : "Vote History"}
           </h3>
         </div>
 
@@ -213,7 +213,7 @@ export function VoteHistory({ userId, showId, className }: VoteHistoryProps) {
                   <span className="font-medium">
                     {pattern.totalVotes > 0
                       ? ((pattern.upvotes / pattern.totalVotes) * 100).toFixed(
-                          1
+                          1,
                         )
                       : 0}
                     %
@@ -226,7 +226,7 @@ export function VoteHistory({ userId, showId, className }: VoteHistoryProps) {
                       width:
                         pattern.totalVotes > 0
                           ? `${(pattern.upvotes / pattern.totalVotes) * 100}%`
-                          : '0%',
+                          : "0%",
                     }}
                   />
                 </div>
@@ -273,7 +273,7 @@ export function VoteHistory({ userId, showId, className }: VoteHistoryProps) {
                   {dailyData.map((day, index) => (
                     <div key={day.date} className="flex items-center gap-2">
                       <div className="w-16 text-muted-foreground text-xs">
-                        {format(new Date(day.date), 'MMM dd')}
+                        {format(new Date(day.date), "MMM dd")}
                       </div>
                       <div className="flex flex-1 items-center gap-1">
                         <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
@@ -327,13 +327,13 @@ export function VoteHistory({ userId, showId, className }: VoteHistoryProps) {
                   >
                     <div
                       className={cn(
-                        'flex h-8 w-8 items-center justify-center rounded-full',
-                        vote.voteType === 'up'
-                          ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'
-                          : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+                        "flex h-8 w-8 items-center justify-center rounded-full",
+                        vote.voteType === "up"
+                          ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                          : "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
                       )}
                     >
-                      {vote.voteType === 'up' ? (
+                      {vote.voteType === "up" ? (
                         <ThumbsUp className="h-4 w-4" />
                       ) : (
                         <ThumbsDown className="h-4 w-4" />
@@ -363,7 +363,7 @@ export function VoteHistory({ userId, showId, className }: VoteHistoryProps) {
                       </div>
                       {vote.currentNetVotes !== undefined && (
                         <div className="font-medium text-sm">
-                          Net: {vote.currentNetVotes > 0 ? '+' : ''}
+                          Net: {vote.currentNetVotes > 0 ? "+" : ""}
                           {vote.currentNetVotes}
                         </div>
                       )}

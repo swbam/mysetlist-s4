@@ -1,13 +1,13 @@
-import { getUser } from '@repo/auth/server';
-import { artists, db, shows, venues } from '@repo/database';
-import { spotify, ticketmaster } from '@repo/external-apis';
-import { and, eq, isNull, lte, or } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { getUser } from "@repo/auth/server";
+import { artists, db, shows, venues } from "@repo/database";
+import { spotify, ticketmaster } from "@repo/external-apis";
+import { and, eq, isNull, lte, or } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Check if user is admin (you'll need to implement this based on your auth system)
 async function isAdmin(userId: string): Promise<boolean> {
   // For now, check against a list of admin user IDs in env vars
-  const adminIds = process.env['ADMIN_USER_IDS']?.split(',') || [];
+  const adminIds = process.env["ADMIN_USER_IDS"]?.split(",") || [];
   return adminIds.includes(userId);
 }
 
@@ -16,37 +16,37 @@ export async function POST(request: NextRequest) {
     const user = await getUser();
 
     if (!user || !(await isAdmin(user.id))) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { action, options } = await request.json();
 
     switch (action) {
-      case 'sync_artists':
+      case "sync_artists":
         return await syncArtists(options);
 
-      case 'sync_shows':
+      case "sync_shows":
         return await syncShows(options);
 
-      case 'sync_venues':
+      case "sync_venues":
         return await syncVenues(options);
 
-      case 'cleanup_old_data':
+      case "cleanup_old_data":
         return await cleanupOldData(options);
 
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
   } catch (error) {
     return NextResponse.json(
-      { error: 'Sync operation failed', details: (error as Error).message },
-      { status: 500 }
+      { error: "Sync operation failed", details: (error as Error).message },
+      { status: 500 },
     );
   }
 }
 
 async function syncArtists(
-  options: { limit?: number; onlyMissingSpotify?: boolean } = {}
+  options: { limit?: number; onlyMissingSpotify?: boolean } = {},
 ) {
   const { limit = 100, onlyMissingSpotify = false } = options || {};
   // Get artists that need Spotify data
@@ -80,7 +80,7 @@ async function syncArtists(
             popularity: spotifyArtist.popularity,
             followers: spotifyArtist.followers.total,
             externalUrls: JSON.stringify({
-              ...JSON.parse(artist.externalUrls || '{}'),
+              ...JSON.parse(artist.externalUrls || "{}"),
               spotify: spotifyArtist.external_urls.spotify,
             }),
             lastSyncedAt: new Date(),
@@ -130,7 +130,7 @@ async function syncShows(options: any) {
       const response = await ticketmaster.searchEvents({
         keyword: artist.name,
         size: 20,
-        sort: 'date,asc',
+        sort: "date,asc",
       });
       const events = response._embedded?.events || [];
 
@@ -147,7 +147,7 @@ async function syncShows(options: any) {
           newShows++;
         } else {
           // Update existing show
-          await updateShowFromTicketmaster(event, existingShow[0]!['id']);
+          await updateShowFromTicketmaster(event, existingShow[0]!["id"]);
           updatedShows++;
         }
       }
@@ -172,8 +172,8 @@ async function syncVenues(options: any) {
       or(
         isNull(venues.capacity),
         isNull(venues.latitude),
-        isNull(venues.longitude)
-      )
+        isNull(venues.longitude),
+      ),
     )
     .limit(limit);
 
@@ -183,7 +183,7 @@ async function syncVenues(options: any) {
   return NextResponse.json({
     success: true,
     venuesToSync: venuesToSync.length,
-    message: 'Venue sync not yet implemented',
+    message: "Venue sync not yet implemented",
   });
 }
 
@@ -198,8 +198,8 @@ async function cleanupOldData(options: any) {
     .where(
       and(
         lte(shows.date, cutoffDate.toISOString()),
-        eq(shows.status, 'completed')
-      )
+        eq(shows.status, "completed"),
+      ),
     );
 
   return NextResponse.json({
@@ -218,4 +218,3 @@ async function updateShowFromTicketmaster(_event: any, _showId: string) {
   // Implementation would update show details
   // Skipping for brevity
 }
-

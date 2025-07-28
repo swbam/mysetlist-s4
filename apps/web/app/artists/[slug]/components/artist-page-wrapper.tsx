@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { Card } from '@repo/design-system/components/ui/card';
-import { AlertCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { SyncProgressDisplay } from '~/components/artist/sync-progress';
-import { useAutoImportOnMount } from '~/hooks/use-artist-auto-import';
-import { useArtistSync } from '~/hooks/use-artist-sync';
+import { Card } from "@repo/design-system/components/ui/card";
+import { AlertCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { SyncProgressDisplay } from "~/components/artist/sync-progress";
+import { useAutoImportOnMount } from "~/hooks/use-artist-auto-import";
+import { useArtistSync } from "~/hooks/use-artist-sync";
 
 interface ArtistPageWrapperProps {
   artistId: string;
@@ -60,7 +60,7 @@ export function ArtistPageWrapper({
 
   // Don't show sync errors to users - just work with cached data
   // Only show error if it's a critical page loading error (not sync errors)
-  if (error && error.includes('not found') && !showSyncProgress) {
+  if (error && error.includes("not found") && !showSyncProgress) {
     return (
       <div className="container mx-auto py-8">
         <Card className="border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20">

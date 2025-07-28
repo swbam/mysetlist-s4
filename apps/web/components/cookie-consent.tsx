@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card } from '@repo/design-system/components/ui/card';
-import { X } from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card } from "@repo/design-system/components/ui/card";
+import { X } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
-const CONSENT_COOKIE_NAME = 'MySetlist-cookie-consent';
+const CONSENT_COOKIE_NAME = "MySetlist-cookie-consent";
 const CONSENT_COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year
 
 interface CookiePreferences {
@@ -35,12 +35,12 @@ export function CookieConsent() {
   }, []);
 
   const getCookieConsent = (): CookiePreferences | null => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return null;
     }
 
     const consent = document.cookie
-      .split('; ')
+      .split("; ")
       .find((row) => row.startsWith(`${CONSENT_COOKIE_NAME}=`));
 
     if (!consent) {
@@ -48,7 +48,7 @@ export function CookieConsent() {
     }
 
     try {
-      const value = consent.split('=')[1];
+      const value = consent.split("=")[1];
       if (!value) {
         return null;
       }
@@ -60,7 +60,7 @@ export function CookieConsent() {
 
   const setCookieConsent = (preferences: CookiePreferences) => {
     document.cookie = `${CONSENT_COOKIE_NAME}=${encodeURIComponent(
-      JSON.stringify(preferences)
+      JSON.stringify(preferences),
     )}; max-age=${CONSENT_COOKIE_MAX_AGE}; path=/; SameSite=Strict`;
 
     applyConsent(preferences);
@@ -68,9 +68,9 @@ export function CookieConsent() {
 
   const applyConsent = (preferences: CookiePreferences) => {
     // Emit custom event for other analytics tools
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.dispatchEvent(
-        new CustomEvent('cookieConsentUpdated', { detail: preferences })
+        new CustomEvent("cookieConsentUpdated", { detail: preferences }),
       );
     }
   };

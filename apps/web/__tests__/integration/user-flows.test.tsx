@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import { render, screen, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { useRouter } from 'next/navigation';
-import { toast } from 'sonner';
-import { vi } from 'vitest';
-import { AuthProvider } from '~/app/providers/auth-provider';
-import { RealtimeProvider } from '~/app/providers/realtime-provider';
-import { FollowButton } from '~/components/auth/follow-button';
-import { MobileVoteButton } from '~/components/mobile/mobile-vote-button';
-import { EnhancedSearch } from '~/components/search/enhanced-search';
-import { AddSongModal } from '~/components/setlist/add-song-modal';
-import { SetlistManager } from '~/components/setlist/setlist-manager';
-import { RealtimeVoteButton } from '~/components/voting/realtime-vote-button';
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { vi } from "vitest";
+import { AuthProvider } from "~/app/providers/auth-provider";
+import { RealtimeProvider } from "~/app/providers/realtime-provider";
+import { FollowButton } from "~/components/auth/follow-button";
+import { MobileVoteButton } from "~/components/mobile/mobile-vote-button";
+import { EnhancedSearch } from "~/components/search/enhanced-search";
+import { AddSongModal } from "~/components/setlist/add-song-modal";
+import { SetlistManager } from "~/components/setlist/setlist-manager";
+import { RealtimeVoteButton } from "~/components/voting/realtime-vote-button";
 
 // Mock providers and hooks
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   useRouter: vi.fn(),
-  usePathname: vi.fn(() => '/'),
+  usePathname: vi.fn(() => "/"),
 }));
 
-vi.mock('sonner', () => ({
+vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),
     error: vi.fn(),
@@ -30,9 +30,9 @@ vi.mock('sonner', () => ({
 
 // Mock auth context
 const mockUser = {
-  id: 'user-123',
-  email: 'test@example.com',
-  role: 'user',
+  id: "user-123",
+  email: "test@example.com",
+  role: "user",
 };
 
 const mockSession = {
@@ -47,7 +47,7 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
   </AuthProvider>
 );
 
-describe('User Flows & Interactions', () => {
+describe("User Flows & Interactions", () => {
   const mockPush = vi.fn();
 
   beforeEach(() => {
@@ -62,8 +62,8 @@ describe('User Flows & Interactions', () => {
     global.fetch = vi.fn();
   });
 
-  describe('Voting Flow', () => {
-    it('should handle upvote interaction correctly', async () => {
+  describe("Voting Flow", () => {
+    it("should handle upvote interaction correctly", async () => {
       const user = userEvent.setup();
 
       render(
@@ -73,7 +73,7 @@ describe('User Flows & Interactions', () => {
             showId="show-123"
             userId={mockUser.id}
           />
-        </TestWrapper>
+        </TestWrapper>,
       );
 
       // Find upvote button
@@ -85,7 +85,7 @@ describe('User Flows & Interactions', () => {
         json: async () => ({
           upvotes: 1,
           downvotes: 0,
-          userVote: 'up',
+          userVote: "up",
           voteLimits: {
             showVotesRemaining: 9,
             dailyVotesRemaining: 49,
@@ -100,18 +100,18 @@ describe('User Flows & Interactions', () => {
       // Verify API call
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          expect.stringContaining('/api/votes'),
+          expect.stringContaining("/api/votes"),
           expect.objectContaining({
-            method: 'POST',
-          })
+            method: "POST",
+          }),
         );
       });
 
       // Check vote count updated
-      expect(screen.getByText('+1')).toBeInTheDocument();
+      expect(screen.getByText("+1")).toBeInTheDocument();
     });
 
-    it('should handle vote toggle correctly', async () => {
+    it("should handle vote toggle correctly", async () => {
       const user = userEvent.setup();
 
       render(
@@ -121,7 +121,7 @@ describe('User Flows & Interactions', () => {
             showId="show-123"
             userId={mockUser.id}
           />
-        </TestWrapper>
+        </TestWrapper>,
       );
 
       const upvoteButton = screen.getByLabelText(/upvote/i);
@@ -132,7 +132,7 @@ describe('User Flows & Interactions', () => {
         json: async () => ({
           upvotes: 1,
           downvotes: 0,
-          userVote: 'up',
+          userVote: "up",
         }),
       });
 
@@ -152,29 +152,29 @@ describe('User Flows & Interactions', () => {
 
       // Verify vote removed
       await waitFor(() => {
-        expect(screen.getByText('0')).toBeInTheDocument();
+        expect(screen.getByText("0")).toBeInTheDocument();
       });
     });
 
-    it('should show error when not logged in', async () => {
+    it("should show error when not logged in", async () => {
       const user = userEvent.setup();
 
       // Render without auth wrapper
       render(
         <RealtimeProvider>
           <RealtimeVoteButton setlistSongId="song-123" showId="show-123" />
-        </RealtimeProvider>
+        </RealtimeProvider>,
       );
 
       const upvoteButton = screen.getByLabelText(/upvote/i);
       await user.click(upvoteButton);
 
-      expect(toast.error).toHaveBeenCalledWith('Please sign in to vote');
+      expect(toast.error).toHaveBeenCalledWith("Please sign in to vote");
     });
   });
 
-  describe('Follow Artist Flow', () => {
-    it('should handle follow/unfollow correctly', async () => {
+  describe("Follow Artist Flow", () => {
+    it("should handle follow/unfollow correctly", async () => {
       const user = userEvent.setup();
       const onFollowChange = vi.fn();
 
@@ -186,10 +186,10 @@ describe('User Flows & Interactions', () => {
             isFollowing={false}
             onFollowChange={onFollowChange}
           />
-        </TestWrapper>
+        </TestWrapper>,
       );
 
-      const followButton = screen.getByRole('button', {
+      const followButton = screen.getByRole("button", {
         name: /follow test artist/i,
       });
 
@@ -204,19 +204,19 @@ describe('User Flows & Interactions', () => {
       // Verify API call
       await waitFor(() => {
         expect(global.fetch).toHaveBeenCalledWith(
-          '/api/artists/artist-123/follow',
+          "/api/artists/artist-123/follow",
           expect.objectContaining({
-            method: 'POST',
-          })
+            method: "POST",
+          }),
         );
       });
 
       // Check button state changed
-      expect(screen.getByText('Following')).toBeInTheDocument();
+      expect(screen.getByText("Following")).toBeInTheDocument();
       expect(onFollowChange).toHaveBeenCalledWith(true);
     });
 
-    it('should update follower count', async () => {
+    it("should update follower count", async () => {
       const user = userEvent.setup();
 
       render(
@@ -227,10 +227,10 @@ describe('User Flows & Interactions', () => {
             followerCount={100}
             showCount={true}
           />
-        </TestWrapper>
+        </TestWrapper>,
       );
 
-      const followButton = screen.getByRole('button', {
+      const followButton = screen.getByRole("button", {
         name: /follow test artist/i,
       });
 
@@ -242,13 +242,13 @@ describe('User Flows & Interactions', () => {
       await user.click(followButton);
 
       await waitFor(() => {
-        expect(screen.getByText('101 followers')).toBeInTheDocument();
+        expect(screen.getByText("101 followers")).toBeInTheDocument();
       });
     });
   });
 
-  describe('Add Song to Setlist Flow', () => {
-    it('should add song successfully', async () => {
+  describe("Add Song to Setlist Flow", () => {
+    it("should add song successfully", async () => {
       const user = userEvent.setup();
       const onSongAdded = vi.fn();
 
@@ -261,79 +261,79 @@ describe('User Flows & Interactions', () => {
             artistId="artist-123"
             onSongAdded={onSongAdded}
           />
-        </TestWrapper>
+        </TestWrapper>,
       );
 
       // Mock song search results
       (global.fetch as any).mockImplementation((url: string) => {
-        if (url.includes('/api/songs/search')) {
+        if (url.includes("/api/songs/search")) {
           return Promise.resolve({
             ok: true,
             json: async () => ({
               songs: [
                 {
-                  id: 'song-new',
-                  spotify_id: 'spotify-123',
-                  title: 'New Song',
-                  artist: 'Test Artist',
-                  album: 'Test Album',
+                  id: "song-new",
+                  spotify_id: "spotify-123",
+                  title: "New Song",
+                  artist: "Test Artist",
+                  album: "Test Album",
                 },
               ],
             }),
           });
         }
-        if (url.includes('/api/songs/upsert')) {
+        if (url.includes("/api/songs/upsert")) {
           return Promise.resolve({
             ok: true,
             json: async () => ({
               song: {
-                id: 'song-new',
-                title: 'New Song',
-                artist: 'Test Artist',
+                id: "song-new",
+                title: "New Song",
+                artist: "Test Artist",
               },
             }),
           });
         }
-        if (url.includes('/api/setlists/songs')) {
+        if (url.includes("/api/setlists/songs")) {
           return Promise.resolve({
             ok: true,
             json: async () => ({ success: true }),
           });
         }
-        return Promise.reject(new Error('Unknown URL'));
+        return Promise.reject(new Error("Unknown URL"));
       });
 
       // Search for a song
       const searchInput = screen.getByPlaceholderText(/search for songs/i);
-      await user.type(searchInput, 'New Song');
+      await user.type(searchInput, "New Song");
 
       // Wait for search results
       await waitFor(() => {
-        expect(screen.getByText('New Song')).toBeInTheDocument();
+        expect(screen.getByText("New Song")).toBeInTheDocument();
       });
 
       // Click on the song to add it
-      const songOption = screen.getByText('New Song');
+      const songOption = screen.getByText("New Song");
       await user.click(songOption);
 
       // Verify success
       await waitFor(() => {
         expect(toast.success).toHaveBeenCalledWith(
-          '"New Song" added to setlist'
+          '"New Song" added to setlist',
         );
         expect(onSongAdded).toHaveBeenCalled();
       });
     });
   });
 
-  describe('Search to Artist Navigation Flow', () => {
-    it('should navigate from search to artist page', async () => {
+  describe("Search to Artist Navigation Flow", () => {
+    it("should navigate from search to artist page", async () => {
       const user = userEvent.setup();
 
       render(
         <TestWrapper>
           <EnhancedSearch />
-        </TestWrapper>
+        </TestWrapper>,
       );
 
       // Mock search suggestions
@@ -342,10 +342,10 @@ describe('User Flows & Interactions', () => {
         json: async () => ({
           suggestions: [
             {
-              id: 'artist-123',
-              type: 'artist',
-              title: 'Taylor Swift',
-              subtitle: 'Pop Artist',
+              id: "artist-123",
+              type: "artist",
+              title: "Taylor Swift",
+              subtitle: "Pop Artist",
               metadata: { followerCount: 1000000 },
             },
           ],
@@ -354,26 +354,26 @@ describe('User Flows & Interactions', () => {
 
       // Type in search
       const searchInput = screen.getByPlaceholderText(/search artists/i);
-      await user.type(searchInput, 'Taylor');
+      await user.type(searchInput, "Taylor");
 
       // Wait for and click suggestion
       await waitFor(() => {
-        expect(screen.getByText('Taylor Swift')).toBeInTheDocument();
+        expect(screen.getByText("Taylor Swift")).toBeInTheDocument();
       });
 
-      const suggestion = screen.getByText('Taylor Swift');
+      const suggestion = screen.getByText("Taylor Swift");
       await user.click(suggestion);
 
       // Verify navigation
-      expect(mockPush).toHaveBeenCalledWith('/artists/artist-123');
+      expect(mockPush).toHaveBeenCalledWith("/artists/artist-123");
     });
   });
 
-  describe('Mobile Voting Interactions', () => {
-    it('should trigger haptic feedback on mobile vote', async () => {
+  describe("Mobile Voting Interactions", () => {
+    it("should trigger haptic feedback on mobile vote", async () => {
       const user = userEvent.setup();
       const mockVibrate = vi.fn();
-      Object.defineProperty(navigator, 'vibrate', {
+      Object.defineProperty(navigator, "vibrate", {
         value: mockVibrate,
         writable: true,
       });
@@ -385,7 +385,7 @@ describe('User Flows & Interactions', () => {
             onVote={vi.fn().mockResolvedValue(undefined)}
             hapticFeedback={true}
           />
-        </TestWrapper>
+        </TestWrapper>,
       );
 
       const upvoteButton = screen.getByLabelText(/upvote/i);
@@ -394,41 +394,41 @@ describe('User Flows & Interactions', () => {
       expect(mockVibrate).toHaveBeenCalledWith(50);
     });
 
-    it('should show vote count updates in real-time', async () => {
+    it("should show vote count updates in real-time", async () => {
       const onVote = vi.fn().mockResolvedValue(undefined);
 
       const { rerender } = render(
         <TestWrapper>
           <MobileVoteButton songId="song-123" onVote={onVote} />
-        </TestWrapper>
+        </TestWrapper>,
       );
 
       // Initial state
-      expect(screen.getByText('0')).toBeInTheDocument();
-      expect(screen.getByText('0 votes')).toBeInTheDocument();
+      expect(screen.getByText("0")).toBeInTheDocument();
+      expect(screen.getByText("0 votes")).toBeInTheDocument();
 
       // Simulate vote update through rerender
       // In real app, this would come from realtime subscription
       rerender(
         <TestWrapper>
           <MobileVoteButton songId="song-123" onVote={onVote} />
-        </TestWrapper>
+        </TestWrapper>,
       );
     });
   });
 
-  describe('Create Setlist Flow', () => {
-    it('should create new predicted setlist', async () => {
+  describe("Create Setlist Flow", () => {
+    it("should create new predicted setlist", async () => {
       const user = userEvent.setup();
 
       const mockShow = {
-        id: 'show-123',
-        name: 'Test Show',
-        date: '2024-12-25',
-        status: 'upcoming' as const,
+        id: "show-123",
+        name: "Test Show",
+        date: "2024-12-25",
+        status: "upcoming" as const,
         headliner_artist: {
-          id: 'artist-123',
-          name: 'Test Artist',
+          id: "artist-123",
+          name: "Test Artist",
         },
       };
 
@@ -440,16 +440,16 @@ describe('User Flows & Interactions', () => {
             currentUser={mockUser}
             initialSetlists={[]}
           />
-        </TestWrapper>
+        </TestWrapper>,
       );
 
       // Mock create setlist response
       (global.fetch as any).mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          id: 'setlist-new',
-          type: 'predicted',
-          name: 'Predicted Setlist',
+          id: "setlist-new",
+          type: "predicted",
+          name: "Predicted Setlist",
           songs: [],
         }),
       });
@@ -460,13 +460,13 @@ describe('User Flows & Interactions', () => {
 
       // Verify success
       await waitFor(() => {
-        expect(toast.success).toHaveBeenCalledWith('Predicted setlist created');
+        expect(toast.success).toHaveBeenCalledWith("Predicted setlist created");
       });
     });
   });
 
-  describe('Form Validation', () => {
-    it('should validate required fields', async () => {
+  describe("Form Validation", () => {
+    it("should validate required fields", async () => {
       const user = userEvent.setup();
 
       // Mock a form component
@@ -476,12 +476,12 @@ describe('User Flows & Interactions', () => {
           const form = e.target as HTMLFormElement;
           const formData = new FormData(form);
 
-          if (!formData.get('email')) {
-            toast.error('Email is required');
+          if (!formData.get("email")) {
+            toast.error("Email is required");
             return;
           }
 
-          toast.success('Form submitted');
+          toast.success("Form submitted");
         };
 
         return (
@@ -495,22 +495,22 @@ describe('User Flows & Interactions', () => {
       render(<TestForm />);
 
       // Submit without filling form
-      const submitButton = screen.getByText('Submit');
+      const submitButton = screen.getByText("Submit");
       await user.click(submitButton);
 
-      expect(toast.error).toHaveBeenCalledWith('Email is required');
+      expect(toast.error).toHaveBeenCalledWith("Email is required");
 
       // Fill and submit
-      const emailInput = screen.getByPlaceholderText('Email');
-      await user.type(emailInput, 'test@example.com');
+      const emailInput = screen.getByPlaceholderText("Email");
+      await user.type(emailInput, "test@example.com");
       await user.click(submitButton);
 
-      expect(toast.success).toHaveBeenCalledWith('Form submitted');
+      expect(toast.success).toHaveBeenCalledWith("Form submitted");
     });
   });
 
-  describe('Real-time Updates', () => {
-    it('should handle real-time connection status', async () => {
+  describe("Real-time Updates", () => {
+    it("should handle real-time connection status", async () => {
       render(
         <TestWrapper>
           <RealtimeVoteButton
@@ -519,12 +519,12 @@ describe('User Flows & Interactions', () => {
             userId={mockUser.id}
             showConnection={true}
           />
-        </TestWrapper>
+        </TestWrapper>,
       );
 
       // Should show connection indicator
-      const connectionIcon = screen.getByRole('img', { hidden: true });
-      expect(connectionIcon).toHaveClass('text-green-500');
+      const connectionIcon = screen.getByRole("img", { hidden: true });
+      expect(connectionIcon).toHaveClass("text-green-500");
     });
   });
 });

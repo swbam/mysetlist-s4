@@ -1,28 +1,28 @@
-'use client';
+"use client";
 
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/alert";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@repo/design-system/components/ui/dialog';
-import { Input } from '@repo/design-system/components/ui/input';
-import { ScrollArea } from '@repo/design-system/components/ui/scroll-area';
-import { Loader2, Lock, Music, Plus, Search } from 'lucide-react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState, useTransition } from 'react';
-import { toast } from 'sonner';
-import { anonymousUser } from '~/lib/anonymous-user';
-import { searchSongs } from '../actions';
-import { recordAnonymousSongSuggestion } from '../anonymous-actions';
+} from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
+import { Loader2, Lock, Music, Plus, Search } from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState, useTransition } from "react";
+import { toast } from "sonner";
+import { anonymousUser } from "~/lib/anonymous-user";
+import { searchSongs } from "../actions";
+import { recordAnonymousSongSuggestion } from "../anonymous-actions";
 
 type AnonymousAddSongDialogProps = {
   setlistId: string;
@@ -42,7 +42,7 @@ export function AnonymousAddSongDialog({
   onAddSong,
 }: AnonymousAddSongDialogProps) {
   const router = useRouter();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [addingSongId, setAddingSongId] = useState<string | null>(null);
@@ -80,7 +80,7 @@ export function AnonymousAddSongDialog({
       const songs = await searchSongs(query, artistId);
       setResults(songs);
     } catch (_error) {
-      toast.error('Failed to search songs');
+      toast.error("Failed to search songs");
     } finally {
       setIsSearching(false);
     }
@@ -91,8 +91,8 @@ export function AnonymousAddSongDialog({
     if (!isAuthenticated && (!canAddSong || hasAddedToThisSetlist)) {
       toast.error("You've already added a song! Sign up to add more.", {
         action: {
-          label: 'Sign Up',
-          onClick: () => router.push('/auth/sign-up'),
+          label: "Sign Up",
+          onClick: () => router.push("/auth/sign-up"),
         },
       });
       return;
@@ -112,8 +112,8 @@ export function AnonymousAddSongDialog({
           if (!success) {
             toast.error("You've already added a song! Sign up to add more.", {
               action: {
-                label: 'Sign Up',
-                onClick: () => router.push('/auth/sign-up'),
+                label: "Sign Up",
+                onClick: () => router.push("/auth/sign-up"),
               },
             });
             return;
@@ -125,17 +125,17 @@ export function AnonymousAddSongDialog({
             await recordAnonymousSongSuggestion(
               setlistId,
               songId,
-              sessionData.sessionId
+              sessionData.sessionId,
             );
           } catch (_error) {
             // Continue anyway - the client-side tracking is what matters
           }
 
           // Show success message for anonymous users
-          toast.success('Song suggestion added! Sign up to add more songs.', {
+          toast.success("Song suggestion added! Sign up to add more songs.", {
             action: {
-              label: 'Sign Up',
-              onClick: () => router.push('/auth/sign-up'),
+              label: "Sign Up",
+              onClick: () => router.push("/auth/sign-up"),
             },
           });
 
@@ -144,14 +144,14 @@ export function AnonymousAddSongDialog({
           setHasAddedToThisSetlist(true);
 
           // Clear search and close dialog
-          setQuery('');
+          setQuery("");
           setResults([]);
           onOpenChange(false);
         }
 
         router.refresh();
       } catch (_error: any) {
-        toast.error('Failed to add song');
+        toast.error("Failed to add song");
       } finally {
         setAddingSongId(null);
       }
@@ -162,7 +162,7 @@ export function AnonymousAddSongDialog({
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   const isDisabled = !isAuthenticated && (!canAddSong || hasAddedToThisSetlist);
@@ -177,8 +177,8 @@ export function AnonymousAddSongDialog({
           </DialogTitle>
           <DialogDescription>
             {isAuthenticated
-              ? 'Search for songs to add to the setlist'
-              : 'As a guest, you can add 1 song suggestion'}
+              ? "Search for songs to add to the setlist"
+              : "As a guest, you can add 1 song suggestion"}
           </DialogDescription>
         </DialogHeader>
 
@@ -189,13 +189,13 @@ export function AnonymousAddSongDialog({
               <Lock className="h-4 w-4" />
               <AlertDescription>
                 {canAddSong && !hasAddedToThisSetlist
-                  ? 'You can add 1 song as a guest. Sign up for unlimited additions!'
+                  ? "You can add 1 song as a guest. Sign up for unlimited additions!"
                   : "You've used your guest song addition. Sign up to add more!"}
                 <Button
                   size="sm"
                   variant="link"
                   className="ml-2 h-auto p-0"
-                  onClick={() => router.push('/auth/sign-up')}
+                  onClick={() => router.push("/auth/sign-up")}
                 >
                   Sign Up
                 </Button>
@@ -309,7 +309,7 @@ export function AnonymousAddSongDialog({
                 <Button
                   size="sm"
                   className="mt-2"
-                  onClick={() => router.push('/auth/sign-up')}
+                  onClick={() => router.push("/auth/sign-up")}
                 >
                   Sign Up to Add More
                 </Button>

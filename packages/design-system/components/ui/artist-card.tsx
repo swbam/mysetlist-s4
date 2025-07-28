@@ -17,7 +17,7 @@ const ArtistCard = React.forwardRef<HTMLDivElement, ArtistCardProps>(
         ref={ref}
         className={cn(
           "rounded-lg border bg-card text-card-foreground shadow-sm",
-          className
+          className,
         )}
         {...props}
       >
@@ -42,8 +42,8 @@ const ArtistCard = React.forwardRef<HTMLDivElement, ArtistCardProps>(
         </div>
       </div>
     );
-  }
+  },
 );
 ArtistCard.displayName = "ArtistCard";
 
-export { ArtistCard }; 
+export { ArtistCard };

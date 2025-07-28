@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,35 +8,35 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@repo/design-system/components/ui/dialog';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
+} from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   RadioGroup,
   RadioGroupItem,
-} from '@repo/design-system/components/ui/radio-group';
-import { Music } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
-import { toast } from 'sonner';
-import { createSetlist } from '../actions';
+} from "@repo/design-system/components/ui/radio-group";
+import { Music } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
+import { createSetlist } from "../actions";
 
 type CreateSetlistDialogProps = {
   show: any;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultType?: 'predicted' | 'actual';
+  defaultType?: "predicted" | "actual";
 };
 
 export function CreateSetlistDialog({
   show,
   open,
   onOpenChange,
-  defaultType = 'predicted',
+  defaultType = "predicted",
 }: CreateSetlistDialogProps) {
   const router = useRouter();
-  const [name, setName] = useState('Main Set');
-  const [type, setType] = useState<'predicted' | 'actual'>(defaultType);
+  const [name, setName] = useState("Main Set");
+  const [type, setType] = useState<"predicted" | "actual">(defaultType);
   const [isPending, startTransition] = useTransition();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -44,22 +44,17 @@ export function CreateSetlistDialog({
 
     startTransition(async () => {
       try {
-        await createSetlist(
-          show.id,
-          show.headliner_artist.id,
-          type,
-          name
-        );
+        await createSetlist(show.id, show.headliner_artist.id, type, name);
 
-        toast.success('Setlist created successfully');
+        toast.success("Setlist created successfully");
         onOpenChange(false);
         router.refresh();
       } catch (error: any) {
-        if (error.message.includes('logged in')) {
-          toast.error('Please sign in to create setlists');
-          router.push('/auth/sign-in');
+        if (error.message.includes("logged in")) {
+          toast.error("Please sign in to create setlists");
+          router.push("/auth/sign-in");
         } else {
-          toast.error('Failed to create setlist');
+          toast.error("Failed to create setlist");
         }
       }
     });
@@ -74,8 +69,8 @@ export function CreateSetlistDialog({
             Create Setlist
           </DialogTitle>
           <DialogDescription>
-            Create a new setlist for {show.headliner_artist.name} at{' '}
-            {show.venue?.name || 'this show'}
+            Create a new setlist for {show.headliner_artist.name} at{" "}
+            {show.venue?.name || "this show"}
           </DialogDescription>
         </DialogHeader>
 
@@ -122,7 +117,7 @@ export function CreateSetlistDialog({
               Cancel
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? 'Creating...' : 'Create Setlist'}
+              {isPending ? "Creating..." : "Create Setlist"}
             </Button>
           </DialogFooter>
         </form>

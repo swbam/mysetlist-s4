@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
-import { useEffect } from 'react';
+import { Button } from "@repo/design-system/components/ui/button";
+import { AlertTriangle, Home, RefreshCw } from "lucide-react";
+import { useEffect } from "react";
 
 export default function TrendingError({
   error,
@@ -41,7 +41,7 @@ export default function TrendingError({
           </Button>
 
           <Button
-            onClick={() => (window.location.href = '/')}
+            onClick={() => (window.location.href = "/")}
             variant="outline"
             className="flex items-center gap-2"
           >

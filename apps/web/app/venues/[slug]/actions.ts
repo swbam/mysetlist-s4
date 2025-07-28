@@ -1,13 +1,9 @@
-'use server';
+"use server";
 
-import { db } from '@repo/database';
-import {
-  artists,
-  shows,
-  venues,
-} from '@repo/database/src/schema';
-import { and, desc, eq, gte, lte, ne, sql } from 'drizzle-orm';
-import { unstable_cache } from 'next/cache';
+import { db } from "@repo/database";
+import { artists, shows, venues } from "@repo/database/src/schema";
+import { and, desc, eq, gte, lte, ne, sql } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
 
 export const getVenueBySlug = unstable_cache(
   async (slug: string) => {
@@ -19,19 +15,19 @@ export const getVenueBySlug = unstable_cache(
 
     return venue || null;
   },
-  ['venue-by-slug'],
-  { revalidate: 3600 } // Cache for 1 hour
+  ["venue-by-slug"],
+  { revalidate: 3600 }, // Cache for 1 hour
 );
 
 export const getVenueShows = unstable_cache(
   async (
     venueId: string,
-    type: 'upcoming' | 'past' = 'upcoming',
-    limit = 20
+    type: "upcoming" | "past" = "upcoming",
+    limit = 20,
   ) => {
-    const now = new Date().toISOString().split('T')[0]!; // Format as YYYY-MM-DD
+    const now = new Date().toISOString().split("T")[0]!; // Format as YYYY-MM-DD
     const condition =
-      type === 'upcoming' ? gte(shows.date, now) : lte(shows.date, now);
+      type === "upcoming" ? gte(shows.date, now) : lte(shows.date, now);
 
     const venueShows = await db
       .select({
@@ -50,15 +46,14 @@ export const getVenueShows = unstable_cache(
       .from(shows)
       .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
       .where(and(eq(shows.venueId, venueId), condition))
-      .orderBy(type === 'upcoming' ? shows.date : desc(shows.date))
+      .orderBy(type === "upcoming" ? shows.date : desc(shows.date))
       .limit(limit);
 
     return venueShows;
   },
-  ['venue-shows'],
-  { revalidate: 300 } // Cache for 5 minutes
+  ["venue-shows"],
+  { revalidate: 300 }, // Cache for 5 minutes
 );
-
 
 export const getNearbyVenues = unstable_cache(
   async (
@@ -66,7 +61,7 @@ export const getNearbyVenues = unstable_cache(
     latitude: number | null,
     longitude: number | null,
     radiusKm = 10,
-    limit = 6
+    limit = 6,
   ) => {
     if (!latitude || !longitude) {
       return [];
@@ -91,7 +86,7 @@ export const getNearbyVenues = unstable_cache(
             cos(radians(${venues.longitude}) - radians(${longitude})) +
             sin(radians(${latitude})) * sin(radians(${venues.latitude}))
           )
-        `.as('distance'),
+        `.as("distance"),
       })
       .from(venues)
       .where(
@@ -105,15 +100,14 @@ export const getNearbyVenues = unstable_cache(
               cos(radians(${venues.longitude}) - radians(${longitude})) +
               sin(radians(${latitude})) * sin(radians(${venues.latitude}))
             ) <= ${radiusKm}
-          `
-        )
+          `,
+        ),
       )
       .orderBy(sql`distance`)
       .limit(limit);
 
     return nearbyVenues;
   },
-  ['nearby-venues'],
-  { revalidate: 3600 }
+  ["nearby-venues"],
+  { revalidate: 3600 },
 );
-

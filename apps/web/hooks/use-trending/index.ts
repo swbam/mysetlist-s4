@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import type { TrendingArtist, TrendingShow } from '~/types/api';
+import { useCallback, useEffect, useState } from "react";
+import type { TrendingArtist, TrendingShow } from "~/types/api";
 
 // Re-export all trending hooks
-export * from './use-recent-activity';
-export * from './use-trending-venues';
+export * from "./use-recent-activity";
+export * from "./use-trending-venues";
 
 export interface LiveTrendingItem {
   id: string;
-  type: 'artist' | 'show' | 'venue';
+  type: "artist" | "show" | "venue";
   name: string;
   slug: string;
   imageUrl?: string;
@@ -20,19 +20,19 @@ export interface LiveTrendingItem {
     interactions: number;
     growth: number;
   };
-  timeframe: '1h' | '6h' | '24h';
+  timeframe: "1h" | "6h" | "24h";
 }
 
 export interface UseTrendingOptions {
-  timeframe?: 'day' | 'week' | 'month';
+  timeframe?: "day" | "week" | "month";
   limit?: number;
   autoRefresh?: boolean;
   refreshInterval?: number;
 }
 
 export interface UseLiveTrendingOptions {
-  timeframe?: '1h' | '6h' | '24h';
-  type?: 'artist' | 'show' | 'venue' | 'all';
+  timeframe?: "1h" | "6h" | "24h";
+  type?: "artist" | "show" | "venue" | "all";
   limit?: number;
   autoRefresh?: boolean;
   refreshInterval?: number;
@@ -41,7 +41,7 @@ export interface UseLiveTrendingOptions {
 // Hook for trending shows
 export function useTrendingShows(options: UseTrendingOptions = {}) {
   const {
-    timeframe = 'week',
+    timeframe = "week",
     limit = 20,
     autoRefresh = false,
     refreshInterval = 5 * 60 * 1000, // 5 minutes
@@ -61,14 +61,14 @@ export function useTrendingShows(options: UseTrendingOptions = {}) {
 
       const response = await fetch(`/api/trending/shows?${params}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch trending shows');
+        throw new Error("Failed to fetch trending shows");
       }
 
       const data = await response.json();
       setShows(data.shows || []);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to load trending shows'
+        err instanceof Error ? err.message : "Failed to load trending shows",
       );
     } finally {
       setLoading(false);
@@ -99,7 +99,7 @@ export function useTrendingShows(options: UseTrendingOptions = {}) {
 // Hook for trending artists
 export function useTrendingArtists(options: UseTrendingOptions = {}) {
   const {
-    timeframe = 'week',
+    timeframe = "week",
     limit = 20,
     autoRefresh = false,
     refreshInterval = 5 * 60 * 1000,
@@ -119,14 +119,14 @@ export function useTrendingArtists(options: UseTrendingOptions = {}) {
 
       const response = await fetch(`/api/trending/artists?${params}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch trending artists');
+        throw new Error("Failed to fetch trending artists");
       }
 
       const data = await response.json();
       setArtists(data.artists || []);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to load trending artists'
+        err instanceof Error ? err.message : "Failed to load trending artists",
       );
     } finally {
       setLoading(false);
@@ -157,8 +157,8 @@ export function useTrendingArtists(options: UseTrendingOptions = {}) {
 // Hook for live trending (real-time updates)
 export function useLiveTrending(options: UseLiveTrendingOptions = {}) {
   const {
-    timeframe = '24h',
-    type = 'all',
+    timeframe = "24h",
+    type = "all",
     limit = 10,
     autoRefresh = true,
     refreshInterval = 5 * 60 * 1000,
@@ -180,7 +180,7 @@ export function useLiveTrending(options: UseLiveTrendingOptions = {}) {
 
       const response = await fetch(`/api/trending/live?${params}`);
       if (!response.ok) {
-        throw new Error('Failed to fetch live trending data');
+        throw new Error("Failed to fetch live trending data");
       }
 
       const data = await response.json();
@@ -188,7 +188,9 @@ export function useLiveTrending(options: UseLiveTrendingOptions = {}) {
       setLastUpdate(new Date());
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to load live trending data'
+        err instanceof Error
+          ? err.message
+          : "Failed to load live trending data",
       );
     } finally {
       setLoading(false);
@@ -239,12 +241,12 @@ export function useTrendingStats() {
       // For now, we'll use the existing endpoints to gather basic stats
 
       const [showsRes, artistsRes] = await Promise.all([
-        fetch('/api/trending/shows?limit=1'),
-        fetch('/api/trending/artists?limit=1'),
+        fetch("/api/trending/shows?limit=1"),
+        fetch("/api/trending/artists?limit=1"),
       ]);
 
       if (!showsRes.ok || !artistsRes.ok) {
-        throw new Error('Failed to fetch trending stats');
+        throw new Error("Failed to fetch trending stats");
       }
 
       const [showsData, artistsData] = await Promise.all([
@@ -265,7 +267,7 @@ export function useTrendingStats() {
       });
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to load trending stats'
+        err instanceof Error ? err.message : "Failed to load trending stats",
       );
     } finally {
       setLoading(false);

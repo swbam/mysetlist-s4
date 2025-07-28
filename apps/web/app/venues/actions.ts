@@ -1,9 +1,9 @@
-'use server';
+"use server";
 
-import { db } from '@repo/database';
-import { shows, venueReviews, venues } from '@repo/database/src/schema';
-import { and, eq, gte, ilike, inArray, lte, or, sql } from 'drizzle-orm';
-import { unstable_cache } from 'next/cache';
+import { db } from "@repo/database";
+import { shows, venueReviews, venues } from "@repo/database/src/schema";
+import { and, eq, gte, ilike, inArray, lte, or, sql } from "drizzle-orm";
+import { unstable_cache } from "next/cache";
 
 interface GetVenuesParams {
   search?: string;
@@ -32,8 +32,8 @@ export const getVenues = unstable_cache(
           ilike(venues.name, `%${search}%`),
           ilike(venues.city, `%${search}%`),
           ilike(venues.state, `%${search}%`),
-          ilike(venues.country, `%${search}%`)
-        )
+          ilike(venues.country, `%${search}%`),
+        ),
       );
     }
 
@@ -43,22 +43,22 @@ export const getVenues = unstable_cache(
     }
 
     // Capacity filter
-    if (capacity && capacity !== 'all') {
+    if (capacity && capacity !== "all") {
       switch (capacity) {
-        case 'small':
+        case "small":
           conditions.push(lte(venues.capacity, 1000));
           break;
-        case 'medium':
+        case "medium":
           conditions.push(
-            and(gte(venues.capacity, 1000), lte(venues.capacity, 5000))
+            and(gte(venues.capacity, 1000), lte(venues.capacity, 5000)),
           );
           break;
-        case 'large':
+        case "large":
           conditions.push(
-            and(gte(venues.capacity, 5000), lte(venues.capacity, 20000))
+            and(gte(venues.capacity, 5000), lte(venues.capacity, 20000)),
           );
           break;
-        case 'xlarge':
+        case "xlarge":
           conditions.push(gte(venues.capacity, 20000));
           break;
       }
@@ -85,7 +85,7 @@ export const getVenues = unstable_cache(
                   cos(radians(${venues.longitude}) - radians(${userLng})) +
                   sin(radians(${userLat})) * sin(radians(${venues.latitude}))
                 )
-              `.as('distance'),
+              `.as("distance"),
             }
           : {}),
       })
@@ -116,7 +116,7 @@ export const getVenues = unstable_cache(
           .where(eq(venueReviews.venueId, venue.id));
 
         // Get upcoming show count
-        const now = new Date().toISOString().split('T')[0]!; // Format as YYYY-MM-DD
+        const now = new Date().toISOString().split("T")[0]!; // Format as YYYY-MM-DD
         const [showCount] = await db
           .select({
             count: sql<number>`COUNT(${shows.id})`,
@@ -130,11 +130,11 @@ export const getVenues = unstable_cache(
           reviewCount: reviewStats[0]?.reviewCount || 0,
           upcomingShowCount: showCount?.count || 0,
         };
-      })
+      }),
     );
 
     return venuesWithStats;
   },
-  ['venues-list'],
-  { revalidate: 300 } // Cache for 5 minutes
+  ["venues-list"],
+  { revalidate: 300 }, // Cache for 5 minutes
 );

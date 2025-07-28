@@ -1,14 +1,14 @@
 #!/usr/bin/env tsx
 
-import { env } from '../apps/web/env';
+import { env } from "../apps/web/env";
 
 async function syncPopularArtists() {
   try {
     const response = await fetch(
-      `${env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/api/artists/sync`,
+      `${env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/sync`,
       {
-        method: 'GET',
-      }
+        method: "GET",
+      },
     );
 
     if (!response.ok) {
@@ -18,7 +18,7 @@ async function syncPopularArtists() {
     const result = await response.json();
 
     if (result.errors?.length > 0) {
-      result.errors.forEach((_error: string) => );
+      result.errors.forEach((_error: string) => {});
     }
 
     if (result.syncedArtists?.length > 0) {

@@ -1,8 +1,8 @@
-import { createServiceClient } from '~/lib/supabase/server';
+import { createServiceClient } from "~/lib/supabase/server";
 
 export interface TrendingItem {
   id: string;
-  type: 'show' | 'artist';
+  type: "show" | "artist";
   name: string;
   score: number;
   votes: number;
@@ -35,15 +35,16 @@ const DEFAULT_CONFIG: TrendingConfig = {
 // No mathematical calculations allowed - all trending scores come from sync system
 
 export async function getTrendingShows(
-  config: TrendingConfig = DEFAULT_CONFIG
+  config: TrendingConfig = DEFAULT_CONFIG,
 ): Promise<TrendingItem[]> {
   try {
     const supabase = createServiceClient();
 
     // Get shows with highest trending scores
     const { data: shows, error } = await supabase
-      .from('shows')
-      .select(`
+      .from("shows")
+      .select(
+        `
         id,
         slug,
         name,
@@ -68,10 +69,11 @@ export async function getTrendingShows(
           city,
           state
         )
-      `)
-      .gt('trending_score', 0)
-      .in('status', ['upcoming', 'ongoing'])
-      .order('trending_score', { ascending: false })
+      `,
+      )
+      .gt("trending_score", 0)
+      .in("status", ["upcoming", "ongoing"])
+      .order("trending_score", { ascending: false })
       .limit(config.limit);
 
     if (error || !shows) {
@@ -80,23 +82,25 @@ export async function getTrendingShows(
 
     // Transform shows to trending items
     const trendingShows = shows.map((show) => {
-      const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
+      const artist = Array.isArray(show.artists)
+        ? show.artists[0]
+        : show.artists;
       const venue = Array.isArray(show.venues) ? show.venues[0] : show.venues;
 
       return {
         id: show.id,
-        type: 'show' as const,
-        name: show.name || 'Concert Show',
+        type: "show" as const,
+        name: show.name || "Concert Show",
         score: show.trending_score || 0,
         votes: show.vote_count || 0,
         attendees: show.attendee_count || 0,
         recent_activity: (show.vote_count || 0) + (show.attendee_count || 0),
         image_url: artist?.image_url,
         slug: show.slug,
-        artist_name: artist?.name || 'Various Artists',
+        artist_name: artist?.name || "Various Artists",
         venue_name: venue
-          ? `${venue.name}, ${venue.city}${venue.state ? `, ${venue.state}` : ''}`
-          : 'TBA',
+          ? `${venue.name}, ${venue.city}${venue.state ? `, ${venue.state}` : ""}`
+          : "TBA",
         show_date: show.date,
       };
     });
@@ -108,15 +112,16 @@ export async function getTrendingShows(
 }
 
 export async function getTrendingArtists(
-  config: TrendingConfig = DEFAULT_CONFIG
+  config: TrendingConfig = DEFAULT_CONFIG,
 ): Promise<TrendingItem[]> {
   try {
     const supabase = createServiceClient();
 
     // Get artists with highest trending scores
     const { data: artists, error } = await supabase
-      .from('artists')
-      .select(`
+      .from("artists")
+      .select(
+        `
         id,
         name,
         slug,
@@ -127,9 +132,10 @@ export async function getTrendingArtists(
         trending_score,
         created_at,
         updated_at
-      `)
-      .gt('trending_score', 0)
-      .order('trending_score', { ascending: false })
+      `,
+      )
+      .gt("trending_score", 0)
+      .order("trending_score", { ascending: false })
       .limit(config.limit);
 
     if (error || !artists) {
@@ -144,7 +150,7 @@ export async function getTrendingArtists(
 
       return {
         id: artist.id,
-        type: 'artist' as const,
+        type: "artist" as const,
         name: artist.name,
         score: artist.trending_score || 0,
         votes,
@@ -162,7 +168,7 @@ export async function getTrendingArtists(
 }
 
 export async function getTrendingContent(
-  config: TrendingConfig = DEFAULT_CONFIG
+  config: TrendingConfig = DEFAULT_CONFIG,
 ): Promise<{
   shows: TrendingItem[];
   artists: TrendingItem[];

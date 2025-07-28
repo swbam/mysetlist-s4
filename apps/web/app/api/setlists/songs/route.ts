@@ -1,23 +1,23 @@
-import { getUser } from '@repo/auth/server';
-import { db } from '@repo/database';
-import { setlistSongs, setlists } from '@repo/database';
-import { eq, max } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { getUser } from "@repo/auth/server";
+import { db } from "@repo/database";
+import { setlistSongs, setlists } from "@repo/database";
+import { eq, max } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const user = await getUser();
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { setlistId, songId, position, notes } = await request.json();
 
     if (!setlistId || !songId) {
       return NextResponse.json(
-        { error: 'Missing required fields: setlistId, songId' },
-        { status: 400 }
+        { error: "Missing required fields: setlistId, songId" },
+        { status: 400 },
       );
     }
 
@@ -33,13 +33,13 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (setlist.length === 0) {
-      return NextResponse.json({ error: 'Setlist not found' }, { status: 404 });
+      return NextResponse.json({ error: "Setlist not found" }, { status: 404 });
     }
 
-    if (setlist[0]!['createdBy'] !== user.id && setlist[0]!['isLocked']) {
+    if (setlist[0]!["createdBy"] !== user.id && setlist[0]!["isLocked"]) {
       return NextResponse.json(
-        { error: 'Cannot modify this setlist' },
-        { status: 403 }
+        { error: "Cannot modify this setlist" },
+        { status: 403 },
       );
     }
 
@@ -75,8 +75,8 @@ export async function POST(request: NextRequest) {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to add song to setlist' },
-      { status: 500 }
+      { error: "Failed to add song to setlist" },
+      { status: 500 },
     );
   }
 }
@@ -86,16 +86,16 @@ export async function DELETE(request: NextRequest) {
     const user = await getUser();
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const setlistSongId = searchParams.get('setlistSongId');
+    const setlistSongId = searchParams.get("setlistSongId");
 
     if (!setlistSongId) {
       return NextResponse.json(
-        { error: 'Missing setlistSongId parameter' },
-        { status: 400 }
+        { error: "Missing setlistSongId parameter" },
+        { status: 400 },
       );
     }
 
@@ -112,8 +112,8 @@ export async function DELETE(request: NextRequest) {
 
     if (setlistSong.length === 0) {
       return NextResponse.json(
-        { error: 'Setlist song not found' },
-        { status: 404 }
+        { error: "Setlist song not found" },
+        { status: 404 },
       );
     }
 
@@ -124,16 +124,16 @@ export async function DELETE(request: NextRequest) {
         isLocked: setlists.isLocked,
       })
       .from(setlists)
-      .where(eq(setlists.id, setlistSong[0]!['setlistId']))
+      .where(eq(setlists.id, setlistSong[0]!["setlistId"]))
       .limit(1);
 
     if (
       setlist.length === 0 ||
-      (setlist[0]!['createdBy'] !== user.id && setlist[0]!['isLocked'])
+      (setlist[0]!["createdBy"] !== user.id && setlist[0]!["isLocked"])
     ) {
       return NextResponse.json(
-        { error: 'Cannot modify this setlist' },
-        { status: 403 }
+        { error: "Cannot modify this setlist" },
+        { status: 403 },
       );
     }
 
@@ -143,8 +143,8 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to remove song from setlist' },
-      { status: 500 }
+      { error: "Failed to remove song from setlist" },
+      { status: 500 },
     );
   }
 }

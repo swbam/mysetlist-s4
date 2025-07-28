@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { Languages } from 'lucide-react';
-import { useParams, usePathname, useRouter } from 'next/navigation';
+} from "@repo/design-system/components/ui/dropdown-menu";
+import { Languages } from "lucide-react";
+import { useParams, usePathname, useRouter } from "next/navigation";
 
 const languages = [
-  { label: '🇬🇧 English', value: 'en' },
-  { label: '🇪🇸 Español', value: 'es' },
-  { label: '🇩🇪 Deutsch', value: 'de' },
-  { label: '🇨🇳 中文', value: 'zh' },
-  { label: '🇫🇷 Français', value: 'fr' },
-  { label: '🇵🇹 Português', value: 'pt' },
+  { label: "🇬🇧 English", value: "en" },
+  { label: "🇪🇸 Español", value: "es" },
+  { label: "🇩🇪 Deutsch", value: "de" },
+  { label: "🇨🇳 中文", value: "zh" },
+  { label: "🇫🇷 Français", value: "fr" },
+  { label: "🇵🇹 Português", value: "pt" },
 ];
 
 export const LanguageSwitcher = () => {
@@ -25,20 +25,20 @@ export const LanguageSwitcher = () => {
   const params = useParams();
 
   const switchLanguage = (locale: string) => {
-    const defaultLocale = 'en';
+    const defaultLocale = "en";
     let newPathname = pathname;
 
     // Case 1: If current locale is default and missing from the URL
     if (
-      !pathname.startsWith(`/${params['locale']}`) &&
-      params['locale'] === defaultLocale
+      !pathname.startsWith(`/${params["locale"]}`) &&
+      params["locale"] === defaultLocale
     ) {
       // Add the default locale to the beginning to normalize
-      newPathname = `/${params['locale']}${pathname}`;
+      newPathname = `/${params["locale"]}${pathname}`;
     }
 
     // Replace current locale with the selected one
-    newPathname = newPathname.replace(`/${params['locale']}`, `/${locale}`);
+    newPathname = newPathname.replace(`/${params["locale"]}`, `/${locale}`);
 
     router.push(newPathname);
   };

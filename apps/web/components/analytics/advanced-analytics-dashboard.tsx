@@ -1,19 +1,33 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Progress } from '@repo/design-system/components/ui/progress';
-import { Alert, AlertDescription } from '@repo/design-system/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Users, 
-  Target, 
+import { useState, useEffect } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Progress } from "@repo/design-system/components/ui/progress";
+import {
+  Alert,
+  AlertDescription,
+} from "@repo/design-system/components/ui/alert";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import {
+  TrendingUp,
+  TrendingDown,
+  Users,
+  Target,
   AlertTriangle,
   CheckCircle,
   XCircle,
@@ -25,8 +39,8 @@ import {
   RefreshCw,
   Star,
   Shield,
-  DollarSign
-} from 'lucide-react';
+  DollarSign,
+} from "lucide-react";
 
 interface CohortData {
   cohortMonth: string;
@@ -45,8 +59,16 @@ interface RetentionMetrics {
 }
 
 interface PredictiveMetrics {
-  userGrowthPrediction: Array<{ month: string; predicted: number; confidence: number }>;
-  churnPrediction: Array<{ userId: string; churnProbability: number; riskFactors: string[] }>;
+  userGrowthPrediction: Array<{
+    month: string;
+    predicted: number;
+    confidence: number;
+  }>;
+  churnPrediction: Array<{
+    userId: string;
+    churnProbability: number;
+    riskFactors: string[];
+  }>;
   ltv: Array<{ segment: string; averageLTV: number; projectedLTV: number }>;
   seasonalityAnalysis: {
     trends: Array<{ month: string; seasonality: number }>;
@@ -56,7 +78,12 @@ interface PredictiveMetrics {
 }
 
 interface FunnelAnalysis {
-  funnel: Array<{ step: string; users: number; conversionRate: number; dropoffRate: number }>;
+  funnel: Array<{
+    step: string;
+    users: number;
+    conversionRate: number;
+    dropoffRate: number;
+  }>;
   overallConversion: number;
   bottlenecks: string[];
   optimizationSuggestions: string[];
@@ -69,7 +96,11 @@ interface RFMAnalysis {
 }
 
 interface AdvancedAnalyticsData {
-  cohort: { cohorts: CohortData[]; averageRetention: number[]; cohortInsights: string[] };
+  cohort: {
+    cohorts: CohortData[];
+    averageRetention: number[];
+    cohortInsights: string[];
+  };
   retention: RetentionMetrics;
   predictive: PredictiveMetrics;
   funnel: FunnelAnalysis;
@@ -81,10 +112,12 @@ export default function AdvancedAnalyticsDashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState({
-    start: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    end: new Date().toISOString().split('T')[0]
+    start: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0],
+    end: new Date().toISOString().split("T")[0],
   });
-  const [activeTab, setActiveTab] = useState('overview');
+  const [activeTab, setActiveTab] = useState("overview");
   const [insights, setInsights] = useState<any>(null);
 
   useEffect(() => {
@@ -95,22 +128,22 @@ export default function AdvancedAnalyticsDashboard() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await fetch(
-        `/api/analytics/advanced?type=all&startDate=${dateRange.start}&endDate=${dateRange.end}`
+        `/api/analytics/advanced?type=all&startDate=${dateRange.start}&endDate=${dateRange.end}`,
       );
       const result = await response.json();
-      
+
       if (result.success) {
         setData(result.data);
         // Also fetch insights
         await fetchInsights();
       } else {
-        setError(result.error || 'Failed to fetch analytics data');
+        setError(result.error || "Failed to fetch analytics data");
       }
     } catch (err) {
-      setError('Error fetching advanced analytics data');
-      console.error('Advanced analytics error:', err);
+      setError("Error fetching advanced analytics data");
+      console.error("Advanced analytics error:", err);
     } finally {
       setLoading(false);
     }
@@ -119,15 +152,15 @@ export default function AdvancedAnalyticsDashboard() {
   const fetchInsights = async () => {
     try {
       const response = await fetch(
-        `/api/analytics/advanced?type=insights&startDate=${dateRange.start}&endDate=${dateRange.end}`
+        `/api/analytics/advanced?type=insights&startDate=${dateRange.start}&endDate=${dateRange.end}`,
       );
       const result = await response.json();
-      
+
       if (result.success) {
         setInsights(result.data);
       }
     } catch (err) {
-      console.error('Insights fetch error:', err);
+      console.error("Insights fetch error:", err);
     }
   };
 
@@ -139,31 +172,34 @@ export default function AdvancedAnalyticsDashboard() {
     return `${num.toFixed(1)}%`;
   };
 
-
   const getRetentionColor = (retention: number) => {
-    if (retention >= 50) return 'text-green-600';
-    if (retention >= 30) return 'text-yellow-600';
-    return 'text-red-600';
+    if (retention >= 50) return "text-green-600";
+    if (retention >= 30) return "text-yellow-600";
+    return "text-red-600";
   };
 
   const getChurnColor = (churn: number) => {
-    if (churn <= 10) return 'text-green-600';
-    if (churn <= 20) return 'text-yellow-600';
-    return 'text-red-600';
+    if (churn <= 10) return "text-green-600";
+    if (churn <= 20) return "text-yellow-600";
+    return "text-red-600";
   };
 
   const getRiskColor = (probability: number) => {
-    if (probability >= 0.7) return 'bg-red-100 text-red-800';
-    if (probability >= 0.4) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-green-100 text-green-800';
+    if (probability >= 0.7) return "bg-red-100 text-red-800";
+    if (probability >= 0.4) return "bg-yellow-100 text-yellow-800";
+    return "bg-green-100 text-green-800";
   };
 
   const getSegmentIcon = (segment: string) => {
     switch (segment) {
-      case 'Champions': return <Star className="w-4 h-4 text-yellow-500" />;
-      case 'Loyal Customers': return <Shield className="w-4 h-4 text-blue-500" />;
-      case 'At Risk': return <AlertTriangle className="w-4 h-4 text-red-500" />;
-      default: return <Users className="w-4 h-4 text-gray-500" />;
+      case "Champions":
+        return <Star className="w-4 h-4 text-yellow-500" />;
+      case "Loyal Customers":
+        return <Shield className="w-4 h-4 text-blue-500" />;
+      case "At Risk":
+        return <AlertTriangle className="w-4 h-4 text-red-500" />;
+      default:
+        return <Users className="w-4 h-4 text-gray-500" />;
     }
   };
 
@@ -172,7 +208,9 @@ export default function AdvancedAnalyticsDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Advanced Analytics</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            Advanced Analytics
+          </h2>
           <p className="text-muted-foreground">
             Deep insights into user behavior, retention, and growth patterns
           </p>
@@ -184,7 +222,9 @@ export default function AdvancedAnalyticsDashboard() {
               id="start-date"
               type="date"
               value={dateRange.start}
-              onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+              onChange={(e) =>
+                setDateRange((prev) => ({ ...prev, start: e.target.value }))
+              }
               className="w-40"
             />
           </div>
@@ -194,12 +234,16 @@ export default function AdvancedAnalyticsDashboard() {
               id="end-date"
               type="date"
               value={dateRange.end}
-              onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+              onChange={(e) =>
+                setDateRange((prev) => ({ ...prev, end: e.target.value }))
+              }
               className="w-40"
             />
           </div>
           <Button onClick={fetchAnalyticsData} disabled={loading}>
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
         </div>
@@ -237,7 +281,9 @@ export default function AdvancedAnalyticsDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Average Retention</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Average Retention
+                  </CardTitle>
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -252,11 +298,15 @@ export default function AdvancedAnalyticsDashboard() {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Churn Rate</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Churn Rate
+                  </CardTitle>
                   <TrendingDown className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className={`text-2xl font-bold ${getChurnColor(data.retention.churnRate)}`}>
+                  <div
+                    className={`text-2xl font-bold ${getChurnColor(data.retention.churnRate)}`}
+                  >
                     {formatPercentage(data.retention.churnRate)}
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -267,7 +317,9 @@ export default function AdvancedAnalyticsDashboard() {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">High Risk Users</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    High Risk Users
+                  </CardTitle>
                   <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -282,7 +334,9 @@ export default function AdvancedAnalyticsDashboard() {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Funnel Conversion</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Funnel Conversion
+                  </CardTitle>
                   <Target className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -307,12 +361,17 @@ export default function AdvancedAnalyticsDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {insights.recommendations.map((insight: string, idx: number) => (
-                      <div key={idx} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                        <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5" />
-                        <span className="text-sm">{insight}</span>
-                      </div>
-                    ))}
+                    {insights.recommendations.map(
+                      (insight: string, idx: number) => (
+                        <div
+                          key={idx}
+                          className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg"
+                        >
+                          <CheckCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+                          <span className="text-sm">{insight}</span>
+                        </div>
+                      ),
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -330,11 +389,18 @@ export default function AdvancedAnalyticsDashboard() {
                 <CardContent>
                   <div className="space-y-3">
                     {insights.alerts.map((alert: any, idx: number) => (
-                      <Alert key={idx} variant={alert.type === 'critical' ? 'destructive' : 'default'}>
+                      <Alert
+                        key={idx}
+                        variant={
+                          alert.type === "critical" ? "destructive" : "default"
+                        }
+                      >
                         <AlertTriangle className="h-4 w-4" />
                         <AlertDescription>
                           <div className="font-medium">{alert.message}</div>
-                          <div className="text-sm text-muted-foreground mt-1">{alert.action}</div>
+                          <div className="text-sm text-muted-foreground mt-1">
+                            {alert.action}
+                          </div>
                         </AlertDescription>
                       </Alert>
                     ))}
@@ -374,31 +440,55 @@ export default function AdvancedAnalyticsDashboard() {
                       <tbody>
                         {data.cohort.cohorts.map((cohort) => (
                           <tr key={cohort.cohortMonth} className="border-b">
-                            <td className="p-2 font-medium">{cohort.cohortMonth}</td>
-                            <td className="p-2">{formatNumber(cohort.cohortSize)}</td>
+                            <td className="p-2 font-medium">
+                              {cohort.cohortMonth}
+                            </td>
+                            <td className="p-2">
+                              {formatNumber(cohort.cohortSize)}
+                            </td>
                             <td className="text-center p-2">
-                              <span className={`${getRetentionColor(cohort.retentionRates[0] || 0)}`}>
-                                {formatPercentage(cohort.retentionRates[0] || 0)}
+                              <span
+                                className={`${getRetentionColor(cohort.retentionRates[0] || 0)}`}
+                              >
+                                {formatPercentage(
+                                  cohort.retentionRates[0] || 0,
+                                )}
                               </span>
                             </td>
                             <td className="text-center p-2">
-                              <span className={`${getRetentionColor(cohort.retentionRates[1] || 0)}`}>
-                                {formatPercentage(cohort.retentionRates[1] || 0)}
+                              <span
+                                className={`${getRetentionColor(cohort.retentionRates[1] || 0)}`}
+                              >
+                                {formatPercentage(
+                                  cohort.retentionRates[1] || 0,
+                                )}
                               </span>
                             </td>
                             <td className="text-center p-2">
-                              <span className={`${getRetentionColor(cohort.retentionRates[2] || 0)}`}>
-                                {formatPercentage(cohort.retentionRates[2] || 0)}
+                              <span
+                                className={`${getRetentionColor(cohort.retentionRates[2] || 0)}`}
+                              >
+                                {formatPercentage(
+                                  cohort.retentionRates[2] || 0,
+                                )}
                               </span>
                             </td>
                             <td className="text-center p-2">
-                              <span className={`${getRetentionColor(cohort.retentionRates[3] || 0)}`}>
-                                {formatPercentage(cohort.retentionRates[3] || 0)}
+                              <span
+                                className={`${getRetentionColor(cohort.retentionRates[3] || 0)}`}
+                              >
+                                {formatPercentage(
+                                  cohort.retentionRates[3] || 0,
+                                )}
                               </span>
                             </td>
                             <td className="text-center p-2">
-                              <span className={`${getRetentionColor(cohort.retentionRates[6] || 0)}`}>
-                                {formatPercentage(cohort.retentionRates[6] || 0)}
+                              <span
+                                className={`${getRetentionColor(cohort.retentionRates[6] || 0)}`}
+                              >
+                                {formatPercentage(
+                                  cohort.retentionRates[6] || 0,
+                                )}
                               </span>
                             </td>
                           </tr>
@@ -411,7 +501,10 @@ export default function AdvancedAnalyticsDashboard() {
                   <div className="space-y-3">
                     <h4 className="font-semibold">Cohort Insights</h4>
                     {data.cohort.cohortInsights.map((insight, idx) => (
-                      <div key={idx} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                      <div
+                        key={idx}
+                        className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg"
+                      >
                         <CheckCircle className="w-5 h-5 text-green-600 mt-0.5" />
                         <span className="text-sm">{insight}</span>
                       </div>
@@ -429,10 +522,15 @@ export default function AdvancedAnalyticsDashboard() {
                   <CardTitle className="text-sm">Day 1 Retention</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className={`text-3xl font-bold ${getRetentionColor(data.retention.dayOneRetention)}`}>
+                  <div
+                    className={`text-3xl font-bold ${getRetentionColor(data.retention.dayOneRetention)}`}
+                  >
                     {formatPercentage(data.retention.dayOneRetention)}
                   </div>
-                  <Progress value={data.retention.dayOneRetention} className="mt-2" />
+                  <Progress
+                    value={data.retention.dayOneRetention}
+                    className="mt-2"
+                  />
                 </CardContent>
               </Card>
 
@@ -441,10 +539,15 @@ export default function AdvancedAnalyticsDashboard() {
                   <CardTitle className="text-sm">Day 7 Retention</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className={`text-3xl font-bold ${getRetentionColor(data.retention.daySevenRetention)}`}>
+                  <div
+                    className={`text-3xl font-bold ${getRetentionColor(data.retention.daySevenRetention)}`}
+                  >
                     {formatPercentage(data.retention.daySevenRetention)}
                   </div>
-                  <Progress value={data.retention.daySevenRetention} className="mt-2" />
+                  <Progress
+                    value={data.retention.daySevenRetention}
+                    className="mt-2"
+                  />
                 </CardContent>
               </Card>
 
@@ -453,10 +556,15 @@ export default function AdvancedAnalyticsDashboard() {
                   <CardTitle className="text-sm">Day 30 Retention</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className={`text-3xl font-bold ${getRetentionColor(data.retention.dayThirtyRetention)}`}>
+                  <div
+                    className={`text-3xl font-bold ${getRetentionColor(data.retention.dayThirtyRetention)}`}
+                  >
                     {formatPercentage(data.retention.dayThirtyRetention)}
                   </div>
-                  <Progress value={data.retention.dayThirtyRetention} className="mt-2" />
+                  <Progress
+                    value={data.retention.dayThirtyRetention}
+                    className="mt-2"
+                  />
                 </CardContent>
               </Card>
             </div>
@@ -467,7 +575,9 @@ export default function AdvancedAnalyticsDashboard() {
                   <CardTitle>Churn Rate</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className={`text-4xl font-bold ${getChurnColor(data.retention.churnRate)}`}>
+                  <div
+                    className={`text-4xl font-bold ${getChurnColor(data.retention.churnRate)}`}
+                  >
                     {formatPercentage(data.retention.churnRate)}
                   </div>
                   <p className="text-sm text-muted-foreground mt-2">
@@ -503,20 +613,30 @@ export default function AdvancedAnalyticsDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {data.predictive.userGrowthPrediction.slice(0, 3).map((prediction, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                        <div>
-                          <div className="font-medium">{prediction.month}</div>
-                          <div className="text-sm text-gray-600">
-                            {formatPercentage(prediction.confidence * 100)} confidence
+                    {data.predictive.userGrowthPrediction
+                      .slice(0, 3)
+                      .map((prediction, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-3 bg-blue-50 rounded-lg"
+                        >
+                          <div>
+                            <div className="font-medium">
+                              {prediction.month}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {formatPercentage(prediction.confidence * 100)}{" "}
+                              confidence
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-xl font-bold">
+                              {formatNumber(prediction.predicted)}
+                            </div>
+                            <div className="text-sm text-gray-600">users</div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="text-xl font-bold">{formatNumber(prediction.predicted)}</div>
-                          <div className="text-sm text-gray-600">users</div>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </CardContent>
               </Card>
@@ -530,19 +650,28 @@ export default function AdvancedAnalyticsDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {data.predictive.churnPrediction.slice(0, 5).map((user, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 rounded-lg border">
-                        <div className="flex-1">
-                          <div className="font-medium">User {user.userId.slice(-8)}</div>
-                          <div className="text-sm text-gray-600">
-                            {user.riskFactors.join(', ')}
+                    {data.predictive.churnPrediction
+                      .slice(0, 5)
+                      .map((user, idx) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between p-3 rounded-lg border"
+                        >
+                          <div className="flex-1">
+                            <div className="font-medium">
+                              User {user.userId.slice(-8)}
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              {user.riskFactors.join(", ")}
+                            </div>
                           </div>
+                          <Badge
+                            className={getRiskColor(user.churnProbability)}
+                          >
+                            {formatPercentage(user.churnProbability * 100)}
+                          </Badge>
                         </div>
-                        <Badge className={getRiskColor(user.churnProbability)}>
-                          {formatPercentage(user.churnProbability * 100)}
-                        </Badge>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </CardContent>
               </Card>
@@ -558,7 +687,10 @@ export default function AdvancedAnalyticsDashboard() {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {data.predictive.ltv.map((segment, idx) => (
-                    <div key={idx} className="text-center p-4 bg-green-50 rounded-lg">
+                    <div
+                      key={idx}
+                      className="text-center p-4 bg-green-50 rounded-lg"
+                    >
                       <div className="font-medium">{segment.segment}</div>
                       <div className="text-2xl font-bold text-green-600">
                         ${segment.averageLTV.toFixed(2)}
@@ -581,13 +713,17 @@ export default function AdvancedAnalyticsDashboard() {
                   Conversion Funnel
                 </CardTitle>
                 <CardDescription>
-                  Overall conversion: {formatPercentage(data.funnel.overallConversion)}
+                  Overall conversion:{" "}
+                  {formatPercentage(data.funnel.overallConversion)}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {data.funnel.funnel.map((step, idx) => (
-                    <div key={idx} className="flex items-center space-x-4 p-4 border rounded-lg">
+                    <div
+                      key={idx}
+                      className="flex items-center space-x-4 p-4 border rounded-lg"
+                    >
                       <div className="flex-1">
                         <div className="font-medium">{step.step}</div>
                         <div className="text-sm text-gray-600">
@@ -612,7 +748,9 @@ export default function AdvancedAnalyticsDashboard() {
                 {/* Bottlenecks */}
                 {data.funnel.bottlenecks.length > 0 && (
                   <div className="mt-6 p-4 bg-red-50 rounded-lg">
-                    <h4 className="font-semibold text-red-800 mb-2">Bottlenecks Identified</h4>
+                    <h4 className="font-semibold text-red-800 mb-2">
+                      Bottlenecks Identified
+                    </h4>
                     <div className="space-y-2">
                       {data.funnel.bottlenecks.map((bottleneck, idx) => (
                         <div key={idx} className="flex items-center gap-2">
@@ -627,14 +765,18 @@ export default function AdvancedAnalyticsDashboard() {
                 {/* Optimization Suggestions */}
                 {data.funnel.optimizationSuggestions.length > 0 && (
                   <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
-                    <h4 className="font-semibold text-yellow-800 mb-2">Optimization Suggestions</h4>
+                    <h4 className="font-semibold text-yellow-800 mb-2">
+                      Optimization Suggestions
+                    </h4>
                     <div className="space-y-2">
-                      {data.funnel.optimizationSuggestions.map((suggestion, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <Zap className="w-4 h-4 text-yellow-600" />
-                          <span className="text-sm">{suggestion}</span>
-                        </div>
-                      ))}
+                      {data.funnel.optimizationSuggestions.map(
+                        (suggestion, idx) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <Zap className="w-4 h-4 text-yellow-600" />
+                            <span className="text-sm">{suggestion}</span>
+                          </div>
+                        ),
+                      )}
                     </div>
                   </div>
                 )}
@@ -654,18 +796,27 @@ export default function AdvancedAnalyticsDashboard() {
                 <CardContent>
                   <div className="space-y-4">
                     {data.rfm.segments.map((segment, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
                         <div className="flex items-center gap-3">
                           {getSegmentIcon(segment.segment)}
                           <div>
                             <div className="font-medium">{segment.segment}</div>
-                            <div className="text-sm text-gray-600">{segment.description}</div>
+                            <div className="text-sm text-gray-600">
+                              {segment.description}
+                            </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="text-lg font-bold">{formatNumber(segment.userCount)}</div>
+                          <div className="text-lg font-bold">
+                            {formatNumber(segment.userCount)}
+                          </div>
                           <div className="text-sm text-gray-600">
-                            {formatPercentage(data.rfm.distribution[segment.segment] || 0)}
+                            {formatPercentage(
+                              data.rfm.distribution[segment.segment] || 0,
+                            )}
                           </div>
                         </div>
                       </div>
@@ -680,21 +831,23 @@ export default function AdvancedAnalyticsDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {Object.entries(data.rfm.recommendations).map(([segment, recommendations]) => (
-                      <div key={segment} className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          {getSegmentIcon(segment)}
-                          <h4 className="font-medium">{segment}</h4>
+                    {Object.entries(data.rfm.recommendations).map(
+                      ([segment, recommendations]) => (
+                        <div key={segment} className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            {getSegmentIcon(segment)}
+                            <h4 className="font-medium">{segment}</h4>
+                          </div>
+                          <div className="pl-6 space-y-1">
+                            {recommendations.map((rec, idx) => (
+                              <div key={idx} className="text-sm text-gray-600">
+                                • {rec}
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                        <div className="pl-6 space-y-1">
-                          {recommendations.map((rec, idx) => (
-                            <div key={idx} className="text-sm text-gray-600">
-                              • {rec}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
+                      ),
+                    )}
                   </div>
                 </CardContent>
               </Card>

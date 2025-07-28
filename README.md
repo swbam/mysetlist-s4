@@ -30,6 +30,7 @@ pnpm tsx scripts/pre-deployment-checklist.ts
 ```
 
 This script verifies:
+
 - ✅ All required environment variables are set
 - ✅ Database connection is established
 - ✅ Build completes without errors
@@ -49,6 +50,7 @@ pnpm tsx scripts/deployment-guide.ts
 ```
 
 This will:
+
 1. Run pre-deployment checks
 2. Verify git status
 3. Install dependencies
@@ -93,6 +95,7 @@ NEXT_PUBLIC_SITE_URL=https://your-app.vercel.app pnpm tsx scripts/post-deploymen
 ```
 
 This tests:
+
 - 🧪 All pages load without 500 errors
 - 🧪 Search functionality works
 - 🧪 API endpoints respond correctly
@@ -124,15 +127,15 @@ SETLIST_FM_API_KEY=your-setlist-fm-key
 
 ### Deployment Scripts
 
-| Script | Description | When to Use |
-|--------|-------------|------------|
+| Script                                         | Description                               | When to Use             |
+| ---------------------------------------------- | ----------------------------------------- | ----------------------- |
 | `pnpm tsx scripts/pre-deployment-checklist.ts` | Comprehensive pre-deployment verification | Before every deployment |
-| `pnpm tsx scripts/deployment-guide.ts` | Interactive deployment process | For guided deployments |
-| `pnpm tsx scripts/post-deployment-test.ts` | Post-deployment verification | After deployment |
-| `pnpm final` | Simple deployment script | Quick deployments |
-| `pnpm final:validate` | Validation without deployment | Testing readiness |
-| `pnpm final:staging` | Deploy to staging | Testing changes |
-| `pnpm final:emergency` | Emergency deployment | Critical fixes only |
+| `pnpm tsx scripts/deployment-guide.ts`         | Interactive deployment process            | For guided deployments  |
+| `pnpm tsx scripts/post-deployment-test.ts`     | Post-deployment verification              | After deployment        |
+| `pnpm final`                                   | Simple deployment script                  | Quick deployments       |
+| `pnpm final:validate`                          | Validation without deployment             | Testing readiness       |
+| `pnpm final:staging`                           | Deploy to staging                         | Testing changes         |
+| `pnpm final:emergency`                         | Emergency deployment                      | Critical fixes only     |
 
 ### Rollback Procedures
 
@@ -156,16 +159,19 @@ vercel alias set <deployment-url> <your-domain>
 After deployment:
 
 1. **Monitor Logs**: Check Vercel logs for errors
+
    ```bash
    vercel logs --follow
    ```
 
 2. **Check Performance**: Monitor Core Web Vitals
+
    ```bash
    pnpm perf:lighthouse
    ```
 
 3. **Database Health**: Verify database connectivity
+
    ```bash
    curl https://your-app.vercel.app/api/health/db
    ```
@@ -177,6 +183,7 @@ After deployment:
 Common deployment issues and solutions:
 
 #### Build Failures
+
 ```bash
 # Clear cache and rebuild
 rm -rf .next
@@ -184,6 +191,7 @@ pnpm build
 ```
 
 #### Environment Variable Issues
+
 ```bash
 # Verify all variables are set
 pnpm check:env
@@ -193,12 +201,14 @@ vercel env pull .env.production
 ```
 
 #### Database Connection Issues
+
 ```bash
 # Test database connection
 pnpm tsx scripts/check-database.ts
 ```
 
 #### TypeScript Errors
+
 ```bash
 # Check for type errors
 pnpm typecheck
@@ -259,6 +269,7 @@ pnpm seed:all
 ## 📊 Performance
 
 Target metrics:
+
 - Lighthouse Score: ≥90
 - First Contentful Paint: <1.8s
 - Largest Contentful Paint: <2.5s

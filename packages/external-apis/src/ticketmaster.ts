@@ -1,6 +1,6 @@
-import 'server-only';
-import axios from 'axios';
-import { keys } from '../keys';
+import "server-only";
+import axios from "axios";
+import { keys } from "../keys";
 
 const env = keys();
 
@@ -119,14 +119,14 @@ interface TicketmasterSearchResponse<T> {
 }
 
 class TicketmasterAPI {
-  private baseURL = 'https://app.ticketmaster.com/discovery/v2';
+  private baseURL = "https://app.ticketmaster.com/discovery/v2";
 
   private async makeRequest<T>(
     endpoint: string,
-    params: Record<string, any> = {}
+    params: Record<string, any> = {},
   ): Promise<T> {
     if (!env.TICKETMASTER_API_KEY) {
-      throw new Error('TICKETMASTER_API_KEY is not configured');
+      throw new Error("TICKETMASTER_API_KEY is not configured");
     }
 
     const url = `${this.baseURL}${endpoint}`;
@@ -148,7 +148,7 @@ class TicketmasterAPI {
     postalCode?: string;
     latlong?: string;
     radius?: string;
-    unit?: 'miles' | 'km';
+    unit?: "miles" | "km";
     source?: string;
     locale?: string;
     marketId?: string;
@@ -166,8 +166,8 @@ class TicketmasterAPI {
     classificationId?: string[];
   }): Promise<TicketmasterSearchResponse<TicketmasterEvent>> {
     return this.makeRequest<TicketmasterSearchResponse<TicketmasterEvent>>(
-      '/events.json',
-      params
+      "/events.json",
+      params,
     );
   }
 
@@ -184,8 +184,8 @@ class TicketmasterAPI {
     classificationId?: string[];
   }): Promise<TicketmasterSearchResponse<any>> {
     return this.makeRequest<TicketmasterSearchResponse<any>>(
-      '/attractions.json',
-      params
+      "/attractions.json",
+      params,
     );
   }
 
@@ -197,7 +197,7 @@ class TicketmasterAPI {
     keyword?: string;
     latlong?: string;
     radius?: string;
-    unit?: 'miles' | 'km';
+    unit?: "miles" | "km";
     size?: number;
     page?: number;
     sort?: string;
@@ -206,8 +206,8 @@ class TicketmasterAPI {
     stateCode?: string;
   }): Promise<TicketmasterSearchResponse<TicketmasterVenue>> {
     return this.makeRequest<TicketmasterSearchResponse<TicketmasterVenue>>(
-      '/venues.json',
-      params
+      "/venues.json",
+      params,
     );
   }
 
@@ -223,12 +223,12 @@ class TicketmasterAPI {
       sort?: string;
       startDateTime?: string;
       endDateTime?: string;
-    } = {}
+    } = {},
   ): Promise<TicketmasterEvent[]> {
     const response = await this.searchEvents({
       keyword: artistName,
-      classificationName: ['Music'],
-      sort: 'date,asc',
+      classificationName: ["Music"],
+      sort: "date,asc",
       ...options,
     });
 

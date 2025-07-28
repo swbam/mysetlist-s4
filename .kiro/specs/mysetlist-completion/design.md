@@ -65,6 +65,7 @@ Client Components
 ### Authentication System Design
 
 #### Auth Package Structure
+
 ```typescript
 // packages/auth/src/types/auth.ts
 export interface AuthUser {
@@ -93,54 +94,68 @@ export interface SpotifyTokens {
 ```
 
 #### Authentication Flow Design
+
 ```typescript
 // packages/auth/src/providers/unified-auth.ts
 export class UnifiedAuthProvider {
   // Handles email/password and Spotify OAuth
-  async signIn(method: 'email' | 'spotify', credentials?: any): Promise<AuthSession>
-  async signUp(email: string, password: string, metadata?: any): Promise<AuthUser>
-  async linkSpotify(userId: string): Promise<SpotifyTokens>
-  async refreshTokens(refreshToken: string): Promise<AuthSession>
-  async signOut(): Promise<void>
+  async signIn(
+    method: "email" | "spotify",
+    credentials?: any,
+  ): Promise<AuthSession>;
+  async signUp(
+    email: string,
+    password: string,
+    metadata?: any,
+  ): Promise<AuthUser>;
+  async linkSpotify(userId: string): Promise<SpotifyTokens>;
+  async refreshTokens(refreshToken: string): Promise<AuthSession>;
+  async signOut(): Promise<void>;
 }
 ```
 
 ### Database Schema Completion
 
 #### Enhanced Schema Design
+
 ```typescript
 // packages/database/src/schema/enhanced-users.ts
-export const userProfiles = pgTable('user_profiles', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => users.id).notNull(),
-  displayName: text('display_name'),
-  bio: text('bio'),
-  location: text('location'),
-  website: text('website'),
-  avatarUrl: text('avatar_url'),
-  spotifyProfile: text('spotify_profile'), // JSON
-  musicPreferences: text('music_preferences'), // JSON
-  privacySettings: text('privacy_settings'), // JSON
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+export const userProfiles = pgTable("user_profiles", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .references(() => users.id)
+    .notNull(),
+  displayName: text("display_name"),
+  bio: text("bio"),
+  location: text("location"),
+  website: text("website"),
+  avatarUrl: text("avatar_url"),
+  spotifyProfile: text("spotify_profile"), // JSON
+  musicPreferences: text("music_preferences"), // JSON
+  privacySettings: text("privacy_settings"), // JSON
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Enhanced voting system with analytics
-export const voteAnalytics = pgTable('vote_analytics', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  setlistSongId: uuid('setlist_song_id').references(() => setlistSongs.id).notNull(),
-  totalVotes: integer('total_votes').default(0),
-  upvotePercentage: doublePrecision('upvote_percentage').default(0),
-  voteVelocity: doublePrecision('vote_velocity').default(0), // votes per hour
-  peakVotingTime: timestamp('peak_voting_time'),
-  demographicData: text('demographic_data'), // JSON
-  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+export const voteAnalytics = pgTable("vote_analytics", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  setlistSongId: uuid("setlist_song_id")
+    .references(() => setlistSongs.id)
+    .notNull(),
+  totalVotes: integer("total_votes").default(0),
+  upvotePercentage: doublePrecision("upvote_percentage").default(0),
+  voteVelocity: doublePrecision("vote_velocity").default(0), // votes per hour
+  peakVotingTime: timestamp("peak_voting_time"),
+  demographicData: text("demographic_data"), // JSON
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 ```
 
 ### External API Integration Design
 
 #### API Client Architecture
+
 ```typescript
 // packages/external-apis/src/clients/unified-client.ts
 export class UnifiedAPIClient {
@@ -158,13 +173,17 @@ export class UnifiedAPIClient {
     // Fetches show data with venue and artist details
   }
 
-  async syncSetlistData(artistId: string, showDate: Date): Promise<HistoricalSetlist[]> {
+  async syncSetlistData(
+    artistId: string,
+    showDate: Date,
+  ): Promise<HistoricalSetlist[]> {
     // Retrieves historical setlists for prediction algorithms
   }
 }
 ```
 
 #### Data Synchronization Strategy
+
 ```typescript
 // packages/external-apis/src/services/sync-orchestrator.ts
 export class SyncOrchestrator {
@@ -194,27 +213,39 @@ export class SyncOrchestrator {
 ### Real-time Voting System Design
 
 #### WebSocket Architecture
+
 ```typescript
 // apps/web/lib/realtime/voting-manager.ts
 export class VotingManager {
   private supabase: SupabaseClient;
   private subscriptions: Map<string, RealtimeChannel>;
 
-  async subscribeToSetlist(setlistId: string, callback: VoteUpdateCallback): Promise<void> {
+  async subscribeToSetlist(
+    setlistId: string,
+    callback: VoteUpdateCallback,
+  ): Promise<void> {
     const channel = this.supabase
       .channel(`setlist:${setlistId}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'votes',
-        filter: `setlist_song_id=in.(select id from setlist_songs where setlist_id=eq.${setlistId})`
-      }, callback)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "votes",
+          filter: `setlist_song_id=in.(select id from setlist_songs where setlist_id=eq.${setlistId})`,
+        },
+        callback,
+      )
       .subscribe();
 
     this.subscriptions.set(setlistId, channel);
   }
 
-  async castVote(userId: string, setlistSongId: string, voteType: 'up' | 'down'): Promise<void> {
+  async castVote(
+    userId: string,
+    setlistSongId: string,
+    voteType: "up" | "down",
+  ): Promise<void> {
     // Optimistic updates with conflict resolution
     // Real-time broadcast to all connected clients
     // Analytics tracking and vote validation
@@ -223,6 +254,7 @@ export class VotingManager {
 ```
 
 #### Vote Aggregation System
+
 ```typescript
 // packages/database/src/queries/vote-aggregation.ts
 export class VoteAggregationService {
@@ -232,7 +264,10 @@ export class VoteAggregationService {
     // Update setlist accuracy predictions
   }
 
-  async calculateSetlistAccuracy(setlistId: string, actualSetlist?: string[]): Promise<number> {
+  async calculateSetlistAccuracy(
+    setlistId: string,
+    actualSetlist?: string[],
+  ): Promise<number> {
     // Compare predicted vs actual setlists
     // Weight votes by user reputation and timing
     // Return accuracy percentage for gamification
@@ -243,6 +278,7 @@ export class VoteAggregationService {
 ### Search and Discovery System Design
 
 #### Unified Search Architecture
+
 ```typescript
 // apps/web/lib/search/unified-search.ts
 export class UnifiedSearchService {
@@ -251,19 +287,25 @@ export class UnifiedSearchService {
       this.searchArtists(query, filters),
       this.searchShows(query, filters),
       this.searchVenues(query, filters),
-      this.searchSongs(query, filters)
+      this.searchSongs(query, filters),
     ]);
 
     return this.rankAndMergeResults(results, query);
   }
 
-  private async searchArtists(query: string, filters: SearchFilters): Promise<ArtistResult[]> {
+  private async searchArtists(
+    query: string,
+    filters: SearchFilters,
+  ): Promise<ArtistResult[]> {
     // Full-text search with PostgreSQL
     // Boost results by popularity and user preferences
     // Include Spotify data for rich results
   }
 
-  private rankAndMergeResults(results: SearchResult[][], query: string): SearchResults {
+  private rankAndMergeResults(
+    results: SearchResult[][],
+    query: string,
+  ): SearchResults {
     // Implement relevance scoring algorithm
     // Consider user location, preferences, and history
     // Return paginated, ranked results
@@ -272,10 +314,13 @@ export class UnifiedSearchService {
 ```
 
 #### Recommendation Engine
+
 ```typescript
 // apps/web/lib/recommendations/recommendation-engine.ts
 export class RecommendationEngine {
-  async getPersonalizedRecommendations(userId: string): Promise<Recommendation[]> {
+  async getPersonalizedRecommendations(
+    userId: string,
+  ): Promise<Recommendation[]> {
     // Analyze user's voting history and followed artists
     // Use Spotify listening data if connected
     // Consider location for local show recommendations
@@ -293,11 +338,12 @@ export class RecommendationEngine {
 ### Mobile-First UI Design
 
 #### Responsive Component Architecture
+
 ```typescript
 // packages/design-system/src/components/adaptive/adaptive-layout.tsx
 export const AdaptiveLayout = ({ children, variant }: AdaptiveLayoutProps) => {
   const { isMobile, isTablet, isDesktop } = useBreakpoint();
-  
+
   return (
     <div className={cn(
       'container mx-auto px-4',
@@ -328,6 +374,7 @@ export const MobileVotingInterface = ({ setlistSong }: MobileVotingProps) => {
 ```
 
 #### Performance Optimization
+
 ```typescript
 // apps/web/lib/performance/optimization-manager.ts
 export class PerformanceManager {
@@ -348,6 +395,7 @@ export class PerformanceManager {
 ## Data Models
 
 ### Enhanced User Model
+
 ```typescript
 export interface EnhancedUser {
   id: string;
@@ -376,44 +424,45 @@ export interface EnhancedUser {
 ```
 
 ### Comprehensive Show Model
+
 ```typescript
 export interface EnhancedShow {
   id: string;
   name: string;
   slug: string;
   date: Date;
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
-  
+  status: "upcoming" | "ongoing" | "completed" | "cancelled";
+
   artists: {
     headliner: Artist;
     supporting: Artist[];
   };
-  
+
   venue: {
     id: string;
     name: string;
     location: Location;
     capacity?: number;
   };
-  
+
   tickets: {
     url?: string;
     priceRange?: PriceRange;
-    availability: 'available' | 'sold_out' | 'limited';
+    availability: "available" | "sold_out" | "limited";
   };
-  
+
   setlists: {
     predicted: Setlist[];
     actual?: Setlist[];
   };
-  
+
   analytics: {
     viewCount: number;
     voteCount: number;
     attendeeCount: number;
     trendingScore: number;
   };
-  
+
   realtime: {
     isLive: boolean;
     currentSong?: Song;
@@ -423,28 +472,29 @@ export interface EnhancedShow {
 ```
 
 ### Advanced Setlist Model
+
 ```typescript
 export interface EnhancedSetlist {
   id: string;
   showId: string;
   artistId: string;
-  type: 'predicted' | 'actual';
-  
+  type: "predicted" | "actual";
+
   songs: SetlistSong[];
-  
+
   metadata: {
     totalVotes: number;
     accuracyScore?: number;
     isLocked: boolean;
     lockReason?: string;
   };
-  
+
   analytics: {
     voteVelocity: number;
     peakVotingTime?: Date;
     demographicBreakdown: VoteDemographics;
   };
-  
+
   predictions: {
     confidence: number;
     algorithmVersion: string;
@@ -456,38 +506,39 @@ export interface EnhancedSetlist {
 ## Error Handling
 
 ### Comprehensive Error Strategy
+
 ```typescript
 // apps/web/lib/errors/error-handler.ts
 export class ErrorHandler {
   static handleAPIError(error: APIError): ErrorResponse {
     switch (error.type) {
-      case 'RATE_LIMIT_EXCEEDED':
+      case "RATE_LIMIT_EXCEEDED":
         return {
-          message: 'Too many requests. Please try again later.',
+          message: "Too many requests. Please try again later.",
           retryAfter: error.retryAfter,
-          action: 'retry'
+          action: "retry",
         };
-      
-      case 'EXTERNAL_API_ERROR':
+
+      case "EXTERNAL_API_ERROR":
         return {
-          message: 'External service temporarily unavailable.',
-          fallback: 'cached_data',
-          action: 'fallback'
+          message: "External service temporarily unavailable.",
+          fallback: "cached_data",
+          action: "fallback",
         };
-      
-      case 'VALIDATION_ERROR':
+
+      case "VALIDATION_ERROR":
         return {
           message: error.message,
           fields: error.fields,
-          action: 'fix_input'
+          action: "fix_input",
         };
-      
+
       default:
         // Log to Sentry for unknown errors
         Sentry.captureException(error);
         return {
-          message: 'Something went wrong. Please try again.',
-          action: 'retry'
+          message: "Something went wrong. Please try again.",
+          action: "retry",
         };
     }
   }
@@ -501,19 +552,20 @@ export class ErrorHandler {
 ```
 
 ### Circuit Breaker Implementation
+
 ```typescript
 // packages/external-apis/src/utils/circuit-breaker.ts
 export class CircuitBreaker {
-  private state: 'CLOSED' | 'OPEN' | 'HALF_OPEN' = 'CLOSED';
+  private state: "CLOSED" | "OPEN" | "HALF_OPEN" = "CLOSED";
   private failures = 0;
   private nextAttempt = 0;
 
   async execute<T>(operation: () => Promise<T>): Promise<T> {
-    if (this.state === 'OPEN') {
+    if (this.state === "OPEN") {
       if (Date.now() < this.nextAttempt) {
-        throw new Error('Circuit breaker is OPEN');
+        throw new Error("Circuit breaker is OPEN");
       }
-      this.state = 'HALF_OPEN';
+      this.state = "HALF_OPEN";
     }
 
     try {
@@ -528,13 +580,13 @@ export class CircuitBreaker {
 
   private onSuccess(): void {
     this.failures = 0;
-    this.state = 'CLOSED';
+    this.state = "CLOSED";
   }
 
   private onFailure(): void {
     this.failures++;
     if (this.failures >= this.threshold) {
-      this.state = 'OPEN';
+      this.state = "OPEN";
       this.nextAttempt = Date.now() + this.timeout;
     }
   }
@@ -544,41 +596,43 @@ export class CircuitBreaker {
 ## Testing Strategy
 
 ### Comprehensive Testing Approach
+
 ```typescript
 // Testing pyramid implementation
 export const TestingStrategy = {
   unit: {
     // Jest + Vitest for package-level testing
-    coverage: '90%+',
-    focus: ['business logic', 'utilities', 'data transformations']
+    coverage: "90%+",
+    focus: ["business logic", "utilities", "data transformations"],
   },
-  
+
   integration: {
     // API route testing with test database
-    coverage: '80%+',
-    focus: ['API endpoints', 'database operations', 'external API mocks']
+    coverage: "80%+",
+    focus: ["API endpoints", "database operations", "external API mocks"],
   },
-  
+
   e2e: {
     // Playwright for critical user journeys
-    coverage: 'key flows',
-    focus: ['authentication', 'voting', 'search', 'mobile responsive']
+    coverage: "key flows",
+    focus: ["authentication", "voting", "search", "mobile responsive"],
   },
-  
+
   performance: {
     // Lighthouse CI + K6 load testing
-    metrics: ['Core Web Vitals', 'API response times', 'database performance']
+    metrics: ["Core Web Vitals", "API response times", "database performance"],
   },
-  
+
   accessibility: {
     // Axe-core integration
-    compliance: 'WCAG 2.1 AA',
-    testing: ['keyboard navigation', 'screen readers', 'color contrast']
-  }
+    compliance: "WCAG 2.1 AA",
+    testing: ["keyboard navigation", "screen readers", "color contrast"],
+  },
 };
 ```
 
 ### Test Data Management
+
 ```typescript
 // apps/web/test-utils/test-data-factory.ts
 export class TestDataFactory {
@@ -590,7 +644,7 @@ export class TestDataFactory {
         displayName: faker.person.fullName(),
         bio: faker.lorem.sentence(),
       },
-      ...overrides
+      ...overrides,
     };
   }
 
@@ -600,7 +654,7 @@ export class TestDataFactory {
       name: `${faker.music.artist()} Live`,
       date: faker.date.future(),
       venue: this.createVenue(),
-      ...overrides
+      ...overrides,
     };
   }
 

@@ -1,52 +1,52 @@
-import { cn } from '@repo/design-system/lib/utils';
-import React from 'react';
+import { cn } from "@repo/design-system/lib/utils";
+import React from "react";
 
 interface SkeletonLoaderProps {
   className?: string;
-  variant?: 'default' | 'artist-card' | 'show-card' | 'featured';
+  variant?: "default" | "artist-card" | "show-card" | "featured";
   count?: number;
 }
 
 export const SkeletonLoader = React.memo(function SkeletonLoader({
   className,
-  variant = 'default',
+  variant = "default",
   count = 1,
 }: SkeletonLoaderProps) {
-  const baseClass = 'animate-pulse bg-muted rounded-md';
+  const baseClass = "animate-pulse bg-muted rounded-md";
 
   const renderSkeleton = () => {
     switch (variant) {
-      case 'artist-card':
+      case "artist-card":
         return (
           <div className="space-y-3">
-            <div className={cn(baseClass, 'aspect-[3/4] rounded-xl')} />
-            <div className={cn(baseClass, 'mx-auto h-4 w-3/4')} />
-            <div className={cn(baseClass, 'mx-auto h-3 w-1/2')} />
+            <div className={cn(baseClass, "aspect-[3/4] rounded-xl")} />
+            <div className={cn(baseClass, "mx-auto h-4 w-3/4")} />
+            <div className={cn(baseClass, "mx-auto h-3 w-1/2")} />
           </div>
         );
 
-      case 'show-card':
+      case "show-card":
         return (
           <div className="space-y-3">
-            <div className={cn(baseClass, 'aspect-[16/10] rounded-t-md')} />
+            <div className={cn(baseClass, "aspect-[16/10] rounded-t-md")} />
             <div className="space-y-2 p-4">
-              <div className={cn(baseClass, 'h-4 w-full')} />
-              <div className={cn(baseClass, 'h-3 w-2/3')} />
-              <div className={cn(baseClass, 'h-3 w-1/2')} />
+              <div className={cn(baseClass, "h-4 w-full")} />
+              <div className={cn(baseClass, "h-3 w-2/3")} />
+              <div className={cn(baseClass, "h-3 w-1/2")} />
             </div>
           </div>
         );
 
-      case 'featured':
+      case "featured":
         return (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className={cn(baseClass, 'h-96 lg:col-span-2')} />
-            <div className={cn(baseClass, 'h-96')} />
+            <div className={cn(baseClass, "h-96 lg:col-span-2")} />
+            <div className={cn(baseClass, "h-96")} />
           </div>
         );
 
       default:
-        return <div className={cn(baseClass, 'h-20', className)} />;
+        return <div className={cn(baseClass, "h-20", className)} />;
     }
   };
 
@@ -101,7 +101,7 @@ export const HomepageSliderSkeleton = React.memo(
         </div>
       </div>
     );
-  }
+  },
 );
 
 // Hero Section Skeleton

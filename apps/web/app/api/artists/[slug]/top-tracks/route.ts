@@ -1,7 +1,7 @@
-import { artists, db } from '@repo/database';
-import { SpotifyClient } from '@repo/external-apis';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { artists, db } from "@repo/database";
+import { SpotifyClient } from "@repo/external-apis";
+import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 type RouteParams = {
   params: Promise<{ slug: string }>;
@@ -19,7 +19,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       .limit(1);
 
     if (!artist[0]) {
-      return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
     // If we have a Spotify ID, fetch from Spotify API
@@ -29,13 +29,13 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
         await spotifyClient.authenticate();
 
         const topTracks = await spotifyClient.getArtistTopTracks(
-          artist[0].spotifyId
+          artist[0].spotifyId,
         );
 
         return NextResponse.json({
           tracks: topTracks.tracks,
           total: topTracks.tracks.length,
-          source: 'spotify',
+          source: "spotify",
         });
       } catch (_spotifyError) {
         // Fall through to mock data
@@ -46,7 +46,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     const mockTracks = [
       {
         id: `track_${artist[0].id}_1`,
-        name: 'Popular Song #1',
+        name: "Popular Song #1",
         duration_ms: 180000,
         popularity: 85,
         preview_url: null,
@@ -57,8 +57,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
         },
         album: {
           id: `album_${artist[0].id}_1`,
-          name: 'Popular Album',
-          release_date: '2023-01-01',
+          name: "Popular Album",
+          release_date: "2023-01-01",
           images: [],
         },
         artists: [
@@ -70,7 +70,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       },
       {
         id: `track_${artist[0].id}_2`,
-        name: 'Popular Song #2',
+        name: "Popular Song #2",
         duration_ms: 210000,
         popularity: 78,
         preview_url: null,
@@ -81,8 +81,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
         },
         album: {
           id: `album_${artist[0].id}_2`,
-          name: 'Another Album',
-          release_date: '2022-06-15',
+          name: "Another Album",
+          release_date: "2022-06-15",
           images: [],
         },
         artists: [
@@ -94,7 +94,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       },
       {
         id: `track_${artist[0].id}_3`,
-        name: 'Popular Song #3',
+        name: "Popular Song #3",
         duration_ms: 195000,
         popularity: 72,
         preview_url: null,
@@ -105,8 +105,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
         },
         album: {
           id: `album_${artist[0].id}_3`,
-          name: 'Latest Release',
-          release_date: '2023-09-20',
+          name: "Latest Release",
+          release_date: "2023-09-20",
           images: [],
         },
         artists: [
@@ -118,7 +118,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       },
       {
         id: `track_${artist[0].id}_4`,
-        name: 'Popular Song #4',
+        name: "Popular Song #4",
         duration_ms: 165000,
         popularity: 68,
         preview_url: null,
@@ -129,8 +129,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
         },
         album: {
           id: `album_${artist[0].id}_4`,
-          name: 'Greatest Hits',
-          release_date: '2021-03-10',
+          name: "Greatest Hits",
+          release_date: "2021-03-10",
           images: [],
         },
         artists: [
@@ -142,7 +142,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       },
       {
         id: `track_${artist[0].id}_5`,
-        name: 'Popular Song #5',
+        name: "Popular Song #5",
         duration_ms: 220000,
         popularity: 65,
         preview_url: null,
@@ -153,8 +153,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
         },
         album: {
           id: `album_${artist[0].id}_5`,
-          name: 'Studio Sessions',
-          release_date: '2020-11-05',
+          name: "Studio Sessions",
+          release_date: "2020-11-05",
           images: [],
         },
         artists: [
@@ -169,12 +169,12 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({
       tracks: mockTracks,
       total: mockTracks.length,
-      source: 'mock',
+      source: "mock",
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to fetch top tracks' },
-      { status: 500 }
+      { error: "Failed to fetch top tracks" },
+      { status: 500 },
     );
   }
 }

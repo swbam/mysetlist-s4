@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
   CardHeader,
-} from '@repo/design-system/components/ui/card';
-import { cn } from '@repo/design-system/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
-import { motion } from 'framer-motion';
-import { Calendar, MapPin } from 'lucide-react';
-import Link from 'next/link';
-import { useRealtimeShow } from '~/hooks/use-realtime-show';
-import { LiveIndicator } from './live-indicator';
+} from "@repo/design-system/components/ui/card";
+import { cn } from "@repo/design-system/lib/utils";
+import { formatDistanceToNow } from "date-fns";
+import { motion } from "framer-motion";
+import { Calendar, MapPin } from "lucide-react";
+import Link from "next/link";
+import { useRealtimeShow } from "~/hooks/use-realtime-show";
+import { LiveIndicator } from "./live-indicator";
 
 interface RealtimeShowCardProps {
   show: {
     id: string;
     name: string;
     date: string;
-    status: 'upcoming' | 'ongoing' | 'completed';
+    status: "upcoming" | "ongoing" | "completed";
     artist?: {
       id: string;
       name: string;
@@ -35,17 +35,14 @@ interface RealtimeShowCardProps {
   className?: string;
 }
 
-export function RealtimeShowCard({
-  show,
-  className,
-}: RealtimeShowCardProps) {
+export function RealtimeShowCard({ show, className }: RealtimeShowCardProps) {
   const { showStatus } = useRealtimeShow({
     showId: show.id,
     initialStatus: show.status,
   });
 
-  const isLive = showStatus === 'ongoing';
-  const isPast = showStatus === 'completed';
+  const isLive = showStatus === "ongoing";
+  const isPast = showStatus === "completed";
   const showDate = new Date(show.date);
   const isToday = new Date().toDateString() === showDate.toDateString();
 
@@ -57,9 +54,9 @@ export function RealtimeShowCard({
     >
       <Card
         className={cn(
-          'overflow-hidden transition-all duration-200 hover:shadow-lg',
-          isLive && 'ring-2 ring-red-500 ring-offset-2',
-          className
+          "overflow-hidden transition-all duration-200 hover:shadow-lg",
+          isLive && "ring-2 ring-red-500 ring-offset-2",
+          className,
         )}
       >
         <CardHeader className="pb-3">
@@ -101,11 +98,11 @@ export function RealtimeShowCard({
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <Calendar className="h-4 w-4" />
             <time dateTime={show.date}>
-              {showDate.toLocaleDateString('en-US', {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
+              {showDate.toLocaleDateString("en-US", {
+                weekday: "short",
+                year: "numeric",
+                month: "short",
+                day: "numeric",
               })}
             </time>
             {!isPast && (
@@ -123,7 +120,6 @@ export function RealtimeShowCard({
               </span>
             </div>
           )}
-
         </CardContent>
       </Card>
     </motion.div>

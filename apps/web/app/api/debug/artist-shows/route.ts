@@ -1,15 +1,18 @@
-import { db } from '@repo/database';
-import { artists, showArtists, shows, venues } from '@repo/database';
-import { and, desc, eq, gte, lt, or, sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { artists, showArtists, shows, venues } from "@repo/database";
+import { and, desc, eq, gte, lt, or, sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const artistSlug = searchParams.get('slug');
+    const artistSlug = searchParams.get("slug");
 
     if (!artistSlug) {
-      return NextResponse.json({ error: 'Artist slug required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Artist slug required" },
+        { status: 400 },
+      );
     }
 
     // Get artist
@@ -20,11 +23,11 @@ export async function GET(request: NextRequest) {
       .limit(1);
 
     if (!artist) {
-      return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
     const now = new Date();
-    const nowString = now.toISOString().split('T')[0];
+    const nowString = now.toISOString().split("T")[0];
 
     // Debug: Get all shows where artist is involved
     const allArtistShows = await db
@@ -39,8 +42,8 @@ export async function GET(request: NextRequest) {
       .where(
         or(
           eq(shows.headlinerArtistId, artist.id),
-          eq(showArtists.artistId, artist.id)
-        )
+          eq(showArtists.artistId, artist.id),
+        ),
       );
 
     // Get upcoming shows
@@ -58,10 +61,10 @@ export async function GET(request: NextRequest) {
         and(
           or(
             eq(shows.headlinerArtistId, artist.id),
-            eq(showArtists.artistId, artist.id)
+            eq(showArtists.artistId, artist.id),
           ),
-          gte(shows.date, nowString!)
-        )
+          gte(shows.date, nowString!),
+        ),
       )
       .orderBy(shows.date);
 
@@ -80,10 +83,10 @@ export async function GET(request: NextRequest) {
         and(
           or(
             eq(shows.headlinerArtistId, artist.id),
-            eq(showArtists.artistId, artist.id)
+            eq(showArtists.artistId, artist.id),
           ),
-          lt(shows.date, nowString!)
-        )
+          lt(shows.date, nowString!),
+        ),
       )
       .orderBy(desc(shows.date));
 
@@ -120,28 +123,28 @@ export async function GET(request: NextRequest) {
         name: show.name,
         date: show.date,
         headlinerArtistId: show.headlinerArtistId,
-        venue: venue?.name || 'Unknown',
+        venue: venue?.name || "Unknown",
       })),
       upcomingShows: upcomingShows.slice(0, 5).map(({ show, venue }) => ({
         id: show.id,
         name: show.name,
         date: show.date,
-        venue: venue?.name || 'Unknown',
+        venue: venue?.name || "Unknown",
       })),
       pastShows: pastShows.slice(0, 5).map(({ show, venue }) => ({
         id: show.id,
         name: show.name,
         date: show.date,
-        venue: venue?.name || 'Unknown',
+        venue: venue?.name || "Unknown",
       })),
     });
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Debug failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Debug failed",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

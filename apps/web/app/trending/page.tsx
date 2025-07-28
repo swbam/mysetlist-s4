@@ -1,19 +1,19 @@
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
+} from "@repo/design-system/components/ui/card";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
+} from "@repo/design-system/components/ui/tabs";
 import {
   Activity,
   Clock,
@@ -22,29 +22,29 @@ import {
   MapPin,
   TrendingUp,
   Users,
-} from 'lucide-react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import React, { Suspense } from 'react';
-import { TrendingErrorBoundary } from '~/components/error-boundaries/trending-error-boundary';
-import { LiveTrending } from '~/components/trending/live-trending';
-import { createServiceClient } from '~/lib/supabase/server';
-import { RecentActivity } from './components/recent-activity';
-import { TrendingArtists } from './components/trending-artists';
-import { TrendingShows } from './components/trending-shows';
-import { TrendingVenues } from './components/trending-venues';
+} from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import React, { Suspense } from "react";
+import { TrendingErrorBoundary } from "~/components/error-boundaries/trending-error-boundary";
+import { LiveTrending } from "~/components/trending/live-trending";
+import { createServiceClient } from "~/lib/supabase/server";
+import { RecentActivity } from "./components/recent-activity";
+import { TrendingArtists } from "./components/trending-artists";
+import { TrendingShows } from "./components/trending-shows";
+import { TrendingVenues } from "./components/trending-venues";
 
 // Force dynamic rendering due to server-side auth check
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: 'Trending - MySetlist',
+  title: "Trending - MySetlist",
   description:
     "Discover what's trending in the live music world. See the hottest artists, most popular shows, and buzzing venues.",
   openGraph: {
-    title: 'Trending Music & Shows | MySetlist',
+    title: "Trending Music & Shows | MySetlist",
     description:
-      'Stay up to date with the latest trends in live music. Discover trending artists, popular shows, and the hottest venues.',
+      "Stay up to date with the latest trends in live music. Discover trending artists, popular shows, and the hottest venues.",
   },
 };
 
@@ -62,30 +62,30 @@ async function getTrendingStats() {
 
     // Count trending artists
     const { count: artistCount } = await supabase
-      .from('artists')
-      .select('*', { count: 'exact', head: true })
-      .gt('trending_score', 0);
+      .from("artists")
+      .select("*", { count: "exact", head: true })
+      .gt("trending_score", 0);
 
     // Count upcoming shows
     const { count: showCount } = await supabase
-      .from('shows')
-      .select('*', { count: 'exact', head: true })
-      .gte('date', new Date().toISOString().split('T')[0]);
+      .from("shows")
+      .select("*", { count: "exact", head: true })
+      .gte("date", new Date().toISOString().split("T")[0]);
 
     // Get total search volume (simulated based on view counts)
     const { data: searchData } = await supabase
-      .from('shows')
-      .select('view_count')
-      .gte('created_at', lastWeekISO);
+      .from("shows")
+      .select("view_count")
+      .gte("created_at", lastWeekISO);
 
     const searchVolume =
       searchData?.reduce((sum, show) => sum + (show.view_count || 0), 0) || 0;
 
     // Count active users (simulated based on unique voters)
     const { count: activeUsers } = await supabase
-      .from('user_votes')
-      .select('user_id', { count: 'exact', head: true })
-      .gte('created_at', lastWeekISO);
+      .from("user_votes")
+      .select("user_id", { count: "exact", head: true })
+      .gte("created_at", lastWeekISO);
 
     return {
       trendingArtists: artistCount || 0,
@@ -233,7 +233,7 @@ export default async function TrendingPage() {
                     {stats.trendingArtists}
                   </div>
                   <p className="text-muted-foreground text-xs">
-                    {stats.artistGrowth > 0 ? '+' : ''}
+                    {stats.artistGrowth > 0 ? "+" : ""}
                     {stats.artistGrowth}% from last week
                   </p>
                 </CardContent>
@@ -251,7 +251,7 @@ export default async function TrendingPage() {
                     {formatNumber(stats.hotShows)}
                   </div>
                   <p className="text-muted-foreground text-xs">
-                    {stats.showGrowth > 0 ? '+' : ''}
+                    {stats.showGrowth > 0 ? "+" : ""}
                     {stats.showGrowth}% from last week
                   </p>
                 </CardContent>
@@ -269,7 +269,7 @@ export default async function TrendingPage() {
                     {formatNumber(stats.searchVolume)}
                   </div>
                   <p className="text-muted-foreground text-xs">
-                    {stats.searchGrowth > 0 ? '+' : ''}
+                    {stats.searchGrowth > 0 ? "+" : ""}
                     {stats.searchGrowth}% from last week
                   </p>
                 </CardContent>
@@ -287,7 +287,7 @@ export default async function TrendingPage() {
                     {formatNumber(stats.activeUsers)}
                   </div>
                   <p className="text-muted-foreground text-xs">
-                    {stats.userGrowth > 0 ? '+' : ''}
+                    {stats.userGrowth > 0 ? "+" : ""}
                     {stats.userGrowth}% from last week
                   </p>
                 </CardContent>
@@ -429,12 +429,12 @@ export default async function TrendingPage() {
                   <CardContent>
                     <div className="flex flex-wrap gap-2">
                       {[
-                        'Pop',
-                        'Rock',
-                        'Hip-Hop',
-                        'Electronic',
-                        'Country',
-                        'Jazz',
+                        "Pop",
+                        "Rock",
+                        "Hip-Hop",
+                        "Electronic",
+                        "Country",
+                        "Jazz",
                       ].map((genre) => (
                         <Link
                           key={genre}

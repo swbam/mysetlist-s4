@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import * as Sentry from '@sentry/nextjs';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import * as Sentry from "@sentry/nextjs";
 
 interface DashboardMetrics {
   timestamp: string;
@@ -25,24 +25,24 @@ interface DashboardMetrics {
   };
   alerts: Array<{
     id: string;
-    level: 'warning' | 'error' | 'critical';
+    level: "warning" | "error" | "critical";
     message: string;
     timestamp: string;
     resolved: boolean;
   }>;
   external_apis: {
     spotify: {
-      status: 'operational' | 'degraded' | 'down';
+      status: "operational" | "degraded" | "down";
       response_time: number;
       error_rate: number;
     };
     ticketmaster: {
-      status: 'operational' | 'degraded' | 'down';
+      status: "operational" | "degraded" | "down";
       response_time: number;
       error_rate: number;
     };
     setlistfm: {
-      status: 'operational' | 'degraded' | 'down';
+      status: "operational" | "degraded" | "down";
       response_time: number;
       error_rate: number;
     };
@@ -52,22 +52,22 @@ interface DashboardMetrics {
 export async function GET(_request: NextRequest) {
   try {
     const supabase = createClient(
-      process.env['NEXT_PUBLIC_SUPABASE_URL']!,
-      process.env['SUPABASE_SERVICE_ROLE_KEY']!
+      process.env["NEXT_PUBLIC_SUPABASE_URL"]!,
+      process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
     );
 
     // Get performance metrics
     const performanceMetrics = await getPerformanceMetrics();
-    
+
     // Get infrastructure metrics
     const infrastructureMetrics = await getInfrastructureMetrics();
-    
+
     // Get business metrics
     const businessMetrics = await getBusinessMetrics(supabase);
-    
+
     // Get external API status
     const externalAPIStatus = await getExternalAPIStatus();
-    
+
     // Get active alerts
     const alerts = await getActiveAlerts();
 
@@ -83,28 +83,28 @@ export async function GET(_request: NextRequest) {
 
     // Track dashboard access
     Sentry.addBreadcrumb({
-      category: 'monitoring',
-      message: 'Dashboard accessed',
-      level: 'info',
+      category: "monitoring",
+      message: "Dashboard accessed",
+      level: "info",
     });
 
     return NextResponse.json(dashboard, {
       headers: {
-        'Cache-Control': 'no-cache, max-age=30',
-        'Content-Type': 'application/json',
+        "Cache-Control": "no-cache, max-age=30",
+        "Content-Type": "application/json",
       },
     });
   } catch (error) {
     Sentry.captureException(error, {
       tags: {
-        component: 'monitoring-dashboard',
+        component: "monitoring-dashboard",
         critical: true,
       },
     });
 
     return NextResponse.json(
-      { error: 'Failed to fetch dashboard metrics' },
-      { status: 500 }
+      { error: "Failed to fetch dashboard metrics" },
+      { status: 500 },
     );
   }
 }
@@ -121,9 +121,9 @@ async function getPerformanceMetrics() {
 
 async function getInfrastructureMetrics() {
   const memoryUsage = process.memoryUsage();
-  
+
   return {
-    memory_usage: (memoryUsage.rss / 1024 / 1024), // Real memory usage in MB
+    memory_usage: memoryUsage.rss / 1024 / 1024, // Real memory usage in MB
     cpu_usage: 45, // Placeholder - integrate with real CPU monitoring
     database_connections: 12, // Placeholder - integrate with real DB connection monitoring
     cache_hit_rate: 0.85, // Placeholder - integrate with real cache monitoring
@@ -134,9 +134,12 @@ async function getBusinessMetrics(supabase: any) {
   try {
     // Get active users in last 24 hours
     const { data: activeUsers } = await supabase
-      .from('users')
-      .select('count')
-      .gte('last_sign_in_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+      .from("users")
+      .select("count")
+      .gte(
+        "last_sign_in_at",
+        new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      );
 
     // TODO: Implement real API call tracking
     const apiCalls24h = 25000; // Placeholder - integrate with real API monitoring
@@ -146,9 +149,12 @@ async function getBusinessMetrics(supabase: any) {
 
     // Get votes in last 24 hours
     const { data: votes } = await supabase
-      .from('votes')
-      .select('count')
-      .gte('created_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+      .from("votes")
+      .select("count")
+      .gte(
+        "created_at",
+        new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      );
 
     return {
       active_users: activeUsers?.length || 0,
@@ -157,7 +163,7 @@ async function getBusinessMetrics(supabase: any) {
       votes_24h: votes?.length || 0,
     };
   } catch (error) {
-    console.error('Error fetching business metrics:', error);
+    console.error("Error fetching business metrics:", error);
     return {
       active_users: 0,
       api_calls_24h: 0,
@@ -168,27 +174,46 @@ async function getBusinessMetrics(supabase: any) {
 }
 
 async function getExternalAPIStatus(): Promise<{
-  spotify: { status: 'operational' | 'degraded' | 'down'; response_time: number; error_rate: number; };
-  ticketmaster: { status: 'operational' | 'degraded' | 'down'; response_time: number; error_rate: number; };
-  setlistfm: { status: 'operational' | 'degraded' | 'down'; response_time: number; error_rate: number; };
+  spotify: {
+    status: "operational" | "degraded" | "down";
+    response_time: number;
+    error_rate: number;
+  };
+  ticketmaster: {
+    status: "operational" | "degraded" | "down";
+    response_time: number;
+    error_rate: number;
+  };
+  setlistfm: {
+    status: "operational" | "degraded" | "down";
+    response_time: number;
+    error_rate: number;
+  };
 }> {
-  const checkAPI = async (url: string, headers: any = {}): Promise<{ status: 'operational' | 'degraded' | 'down'; response_time: number; error_rate: number; }> => {
+  const checkAPI = async (
+    url: string,
+    headers: any = {},
+  ): Promise<{
+    status: "operational" | "degraded" | "down";
+    response_time: number;
+    error_rate: number;
+  }> => {
     try {
       const start = Date.now();
-      const response = await fetch(url, { 
+      const response = await fetch(url, {
         headers,
-        signal: AbortSignal.timeout(5000)
+        signal: AbortSignal.timeout(5000),
       });
       const responseTime = Date.now() - start;
-      
+
       return {
-        status: response.ok ? 'operational' : 'degraded',
+        status: response.ok ? "operational" : "degraded",
         response_time: responseTime,
         error_rate: response.ok ? 0 : 1,
       };
     } catch (error) {
       return {
-        status: 'down' as const,
+        status: "down" as const,
         response_time: 0,
         error_rate: 1,
       };
@@ -196,33 +221,41 @@ async function getExternalAPIStatus(): Promise<{
   };
 
   // Get Spotify token first
-  let spotifyToken = '';
+  let spotifyToken = "";
   try {
-    const tokenResponse = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${Buffer.from(
-          `${process.env['SPOTIFY_CLIENT_ID']}:${process.env['SPOTIFY_CLIENT_SECRET']}`
-        ).toString('base64')}`,
+    const tokenResponse = await fetch(
+      "https://accounts.spotify.com/api/token",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${Buffer.from(
+            `${process.env["SPOTIFY_CLIENT_ID"]}:${process.env["SPOTIFY_CLIENT_SECRET"]}`,
+          ).toString("base64")}`,
+        },
+        body: "grant_type=client_credentials",
       },
-      body: 'grant_type=client_credentials',
-    });
+    );
     const tokenData = await tokenResponse.json();
     spotifyToken = tokenData.access_token;
   } catch (error) {
-    console.error('Failed to get Spotify token:', error);
+    console.error("Failed to get Spotify token:", error);
   }
 
   const [spotify, ticketmaster, setlistfm] = await Promise.all([
-    checkAPI('https://api.spotify.com/v1/search?q=test&type=artist&limit=1', {
-      'Authorization': `Bearer ${spotifyToken}`,
+    checkAPI("https://api.spotify.com/v1/search?q=test&type=artist&limit=1", {
+      Authorization: `Bearer ${spotifyToken}`,
     }),
-    checkAPI(`https://app.ticketmaster.com/discovery/v2/events.json?apikey=${process.env['TICKETMASTER_API_KEY']}&size=1`),
-    checkAPI('https://api.setlist.fm/rest/1.0/search/setlists?artistName=test&p=1', {
-      'x-api-key': process.env['SETLISTFM_API_KEY']!,
-      'Accept': 'application/json',
-    }),
+    checkAPI(
+      `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${process.env["TICKETMASTER_API_KEY"]}&size=1`,
+    ),
+    checkAPI(
+      "https://api.setlist.fm/rest/1.0/search/setlists?artistName=test&p=1",
+      {
+        "x-api-key": process.env["SETLISTFM_API_KEY"]!,
+        Accept: "application/json",
+      },
+    ),
   ]);
 
   return {
@@ -235,13 +268,14 @@ async function getExternalAPIStatus(): Promise<{
 async function getActiveAlerts() {
   // Mock implementation - in production, integrate with actual alerting system
   const alerts: any[] = [];
-  
+
   // Memory usage alert
   const memoryUsage = process.memoryUsage();
-  if (memoryUsage.rss > 512 * 1024 * 1024) { // 512MB
+  if (memoryUsage.rss > 512 * 1024 * 1024) {
+    // 512MB
     alerts.push({
-      id: 'memory-high',
-      level: 'warning' as const,
+      id: "memory-high",
+      level: "warning" as const,
       message: `High memory usage: ${(memoryUsage.rss / 1024 / 1024).toFixed(2)}MB`,
       timestamp: new Date().toISOString(),
       resolved: false,
@@ -252,8 +286,8 @@ async function getActiveAlerts() {
   const responseTime = 350; // Placeholder - integrate with real response time monitoring
   if (responseTime > 800) {
     alerts.push({
-      id: 'response-time-high',
-      level: 'error' as const,
+      id: "response-time-high",
+      level: "error" as const,
       message: `High response time: ${responseTime.toFixed(2)}ms`,
       timestamp: new Date().toISOString(),
       resolved: false,
@@ -268,20 +302,23 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { action, alertId } = body;
 
-    if (action === 'resolve' && alertId) {
+    if (action === "resolve" && alertId) {
       // Mock alert resolution
       Sentry.addBreadcrumb({
-        category: 'monitoring',
+        category: "monitoring",
         message: `Alert resolved: ${alertId}`,
-        level: 'info',
+        level: "info",
       });
 
       return NextResponse.json({ success: true });
     }
 
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
     Sentry.captureException(error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

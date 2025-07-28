@@ -1,6 +1,6 @@
-import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
-import { db } from '../client';
-import { setlistSongs, setlists, songs, votes } from '../schema';
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { db } from "../client";
+import { setlistSongs, setlists, songs, votes } from "../schema";
 
 export async function getSetlistsByShowId(showId: string) {
   const results = await db
@@ -37,10 +37,16 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
   }
 
   // Get user votes if authenticated
-  const userVotes: Record<string, 'up' | 'down'> = {};
+  const userVotes: Record<string, "up" | "down"> = {};
   if (userId) {
     const setlistSongIds = setlistData
-      .filter((row): row is typeof row & { setlistSong: NonNullable<typeof row.setlistSong> } => row.setlistSong !== null)
+      .filter(
+        (
+          row,
+        ): row is typeof row & {
+          setlistSong: NonNullable<typeof row.setlistSong>;
+        } => row.setlistSong !== null,
+      )
       .map((row) => row.setlistSong.id);
 
     if (setlistSongIds.length > 0) {
@@ -53,8 +59,8 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
         .where(
           and(
             eq(votes.userId, userId),
-            inArray(votes.setlistSongId, setlistSongIds)
-          )
+            inArray(votes.setlistSongId, setlistSongIds),
+          ),
         );
 
       voteData.forEach((vote) => {
@@ -66,11 +72,16 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
   // Construct the result
   const setlist = setlistData[0]?.setlist;
   if (!setlist) {
-    throw new Error('Setlist not found');
+    throw new Error("Setlist not found");
   }
   const songList = setlistData
-    .filter((row): row is typeof row & { setlistSong: NonNullable<typeof row.setlistSong>; song: NonNullable<typeof row.song> } => 
-      row.setlistSong !== null && row.song !== null
+    .filter(
+      (
+        row,
+      ): row is typeof row & {
+        setlistSong: NonNullable<typeof row.setlistSong>;
+        song: NonNullable<typeof row.song>;
+      } => row.setlistSong !== null && row.song !== null,
     )
     .map((row) => ({
       id: row.setlistSong.id,
@@ -102,10 +113,10 @@ export async function createSetlist(
   showId: string,
   setlistData: {
     name: string;
-    type: 'predicted' | 'actual';
+    type: "predicted" | "actual";
     artistId: string;
     createdBy?: string;
-  }
+  },
 ) {
   // Get the next order index for the show
   const maxOrderIndex = await db
@@ -137,7 +148,7 @@ export async function addSongToSetlist(
     songId: string;
     position?: number;
     notes?: string;
-  }
+  },
 ) {
   // Get the next position if not provided
   let position = songData.position;
@@ -172,7 +183,7 @@ export async function updateSetlistSongOrder(
   songOrders: Array<{
     setlistSongId: string;
     position: number;
-  }>
+  }>,
 ) {
   // Update all positions in a transaction
   const updates = songOrders.map(({ setlistSongId, position }) =>
@@ -182,9 +193,9 @@ export async function updateSetlistSongOrder(
       .where(
         and(
           eq(setlistSongs.id, setlistSongId),
-          eq(setlistSongs.setlistId, setlistId)
-        )
-      )
+          eq(setlistSongs.setlistId, setlistId),
+        ),
+      ),
   );
 
   await Promise.all(updates);

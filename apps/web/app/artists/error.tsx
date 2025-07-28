@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
-import Link from 'next/link';
-import { useEffect } from 'react';
+import { Button } from "@repo/design-system/components/ui/button";
+import { AlertTriangle, Home, RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { useEffect } from "react";
 
 export default function ArtistsError({
   error,
@@ -30,7 +30,7 @@ export default function ArtistsError({
           temporary issue.
         </p>
 
-        {process.env['NODE_ENV'] === 'development' && error.message && (
+        {process.env["NODE_ENV"] === "development" && error.message && (
           <div className="mb-6 rounded-lg bg-muted p-4 text-left">
             <p className="font-mono text-muted-foreground text-sm">
               {error.message}

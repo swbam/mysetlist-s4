@@ -1,20 +1,28 @@
-import { db } from '@repo/database';
-import { emailQueue, shows, emailPreferences, users, setlistSongs, votes, setlists, songs, venues } from '@repo/database';
-import { addDays } from 'date-fns';
-import { and, eq, isNotNull, isNull, lte, sql } from 'drizzle-orm';
+import { db } from "@repo/database";
+import {
+  emailQueue,
+  shows,
+  emailPreferences,
+  users,
+  setlistSongs,
+  votes,
+  setlists,
+  songs,
+  venues,
+} from "@repo/database";
+import { addDays } from "date-fns";
+import { and, eq, isNotNull, isNull, lte, sql } from "drizzle-orm";
 
 export async function sendShowReminders() {
   try {
     // Get shows happening tomorrow
     const tomorrow = addDays(new Date(), 1);
-    const tomorrowDateString = tomorrow.toISOString().split('T')[0] as string;
+    const tomorrowDateString = tomorrow.toISOString().split("T")[0] as string;
 
     const upcomingShows = await db
       .select()
       .from(shows)
-      .where(
-        eq(shows.date, tomorrowDateString)
-      );
+      .where(eq(shows.date, tomorrowDateString));
 
     // Get users who want reminders
     const usersWithReminders = await db
@@ -26,7 +34,7 @@ export async function sendShowReminders() {
       .from(emailPreferences)
       .innerJoin(users, eq(emailPreferences.userId, users.id))
       .where(
-        and(eq(emailPreferences.showReminders, true), isNotNull(users.email))
+        and(eq(emailPreferences.showReminders, true), isNotNull(users.email)),
       );
 
     let sent = 0;
@@ -36,9 +44,9 @@ export async function sendShowReminders() {
       for (const user of usersWithReminders) {
         await db.insert(emailQueue).values({
           userId: user.userId,
-          emailType: 'show_reminder',
+          emailType: "show_reminder",
           emailData: JSON.stringify({
-            userName: user.displayName || 'there',
+            userName: user.displayName || "there",
             showId: show.id,
             email: user.email,
             subject: `Reminder: Show tomorrow`,
@@ -53,14 +61,13 @@ export async function sendShowReminders() {
   } catch (error) {
     return {
       sent: 0,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
 
 export async function sendDigestEmails() {
   try {
-
     // Get users who want digest emails
     const usersWithDigest = await db
       .select({
@@ -72,7 +79,7 @@ export async function sendDigestEmails() {
       .from(emailPreferences)
       .innerJoin(users, eq(emailPreferences.userId, users.id))
       .where(
-        and(eq(emailPreferences.weeklyDigest, true), isNotNull(users.email))
+        and(eq(emailPreferences.weeklyDigest, true), isNotNull(users.email)),
       );
 
     let sent = 0;
@@ -81,11 +88,11 @@ export async function sendDigestEmails() {
       // Queue digest email
       await db.insert(emailQueue).values({
         userId: user.userId,
-        emailType: 'weekly_digest',
+        emailType: "weekly_digest",
         emailData: JSON.stringify({
-          userName: user.displayName || 'there',
+          userName: user.displayName || "there",
           email: user.email,
-          subject: 'Your MySetlist Digest',
+          subject: "Your MySetlist Digest",
         }),
         scheduledFor: new Date(),
       });
@@ -96,7 +103,7 @@ export async function sendDigestEmails() {
   } catch (error) {
     return {
       sent: 0,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -108,7 +115,7 @@ export async function sendDailyShowReminders() {
   } catch (error) {
     return {
       sent: 0,
-      errors: [error instanceof Error ? error.message : 'Unknown error'],
+      errors: [error instanceof Error ? error.message : "Unknown error"],
     };
   }
 }
@@ -125,10 +132,7 @@ export async function sendWeeklyDigests() {
       .from(emailPreferences)
       .innerJoin(users, eq(emailPreferences.userId, users.id))
       .where(
-        and(
-          eq(emailPreferences.weeklyDigest, true),
-          isNotNull(users.email)
-        )
+        and(eq(emailPreferences.weeklyDigest, true), isNotNull(users.email)),
       );
 
     let sent = 0;
@@ -136,11 +140,11 @@ export async function sendWeeklyDigests() {
     for (const user of usersWithWeeklyDigest) {
       await db.insert(emailQueue).values({
         userId: user.userId,
-        emailType: 'weekly_digest',
+        emailType: "weekly_digest",
         emailData: JSON.stringify({
-          userName: user.displayName || 'there',
+          userName: user.displayName || "there",
           email: user.email,
-          subject: 'Your Weekly MySetlist Digest',
+          subject: "Your Weekly MySetlist Digest",
         }),
         scheduledFor: new Date(),
       });
@@ -151,7 +155,7 @@ export async function sendWeeklyDigests() {
   } catch (error) {
     return {
       sent: 0,
-      errors: [error instanceof Error ? error.message : 'Unknown error'],
+      errors: [error instanceof Error ? error.message : "Unknown error"],
     };
   }
 }
@@ -165,8 +169,8 @@ export async function processQueuedEmails() {
       .where(
         and(
           isNull(emailQueue.sentAt),
-          lte(emailQueue.scheduledFor, new Date())
-        )
+          lte(emailQueue.scheduledFor, new Date()),
+        ),
       )
       .limit(50); // Process in batches
 
@@ -186,7 +190,7 @@ export async function processQueuedEmails() {
         processed++;
       } catch (error) {
         errors.push(
-          `Email ${email.id}: ${error instanceof Error ? error.message : 'Unknown error'}`
+          `Email ${email.id}: ${error instanceof Error ? error.message : "Unknown error"}`,
         );
 
         // Mark as failed
@@ -194,7 +198,7 @@ export async function processQueuedEmails() {
           .update(emailQueue)
           .set({
             failedAt: new Date(),
-            lastError: error instanceof Error ? error.message : 'Unknown error',
+            lastError: error instanceof Error ? error.message : "Unknown error",
             updatedAt: new Date(),
           })
           .where(eq(emailQueue.id, email.id));
@@ -205,7 +209,7 @@ export async function processQueuedEmails() {
   } catch (error) {
     return {
       processed: 0,
-      errors: [error instanceof Error ? error.message : 'Unknown error'],
+      errors: [error instanceof Error ? error.message : "Unknown error"],
     };
   }
 }
@@ -227,7 +231,7 @@ export async function checkVoteMilestones(setlistSongId: string) {
 
     // Check for milestones (10, 25, 50, 100, etc.)
     const milestones = [10, 25, 50, 100, 250, 500, 1000];
-    const milestone = milestones.find(m => totalVotes === m);
+    const milestone = milestones.find((m) => totalVotes === m);
 
     if (!milestone) return { milestone: null };
 
@@ -267,24 +271,24 @@ export async function checkVoteMilestones(setlistSongId: string) {
         and(
           // eq(emailPreferences.voteMilestones, true), // TODO: Add voteMilestones field to email_preferences table
           eq(emailPreferences.emailEnabled, true), // Use general email preference for now
-          isNotNull(users.email)
-        )
+          isNotNull(users.email),
+        ),
       );
 
     // Queue milestone emails
     for (const user of usersToNotify) {
       await db.insert(emailQueue).values({
         userId: user.userId,
-        emailType: 'setlist_update', // Using setlist_update type for vote milestones temporarily
+        emailType: "setlist_update", // Using setlist_update type for vote milestones temporarily
         emailData: JSON.stringify({
-          userName: user.displayName || 'there',
+          userName: user.displayName || "there",
           email: user.email,
           subject: `🎵 \"${details.songTitle}\" reached ${milestone} votes!`,
           show: {
             id: details.showId,
             name: details.showName,
             artistName: details.artistName,
-            venue: details.venueName || 'TBA',
+            venue: details.venueName || "TBA",
             date: details.showDate,
           },
           song: {
@@ -302,7 +306,10 @@ export async function checkVoteMilestones(setlistSongId: string) {
 
     return { milestone, notified: usersToNotify.length };
   } catch (error) {
-    console.error('Failed to check vote milestones:', error);
-    return { milestone: null, error: error instanceof Error ? error.message : 'Unknown error' };
+    console.error("Failed to check vote milestones:", error);
+    return {
+      milestone: null,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }

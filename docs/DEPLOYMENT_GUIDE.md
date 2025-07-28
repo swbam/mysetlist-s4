@@ -19,6 +19,7 @@ This guide provides comprehensive instructions for deploying the MySetlist appli
 Create the following environment files:
 
 #### `.env.production`
+
 ```bash
 # Database
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
@@ -54,7 +55,7 @@ POSTHOG_API_KEY=your_posthog_key
 Set up the following in your Vercel dashboard:
 
 1. **Environment Variables**: Add all production environment variables
-2. **Build Settings**: 
+2. **Build Settings**:
    - Framework Preset: Next.js
    - Build Command: `pnpm run build`
    - Output Directory: `.next`

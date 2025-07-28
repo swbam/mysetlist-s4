@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import type React from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import type React from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 interface LayoutContextValue {
   isMobileMenuOpen: boolean;
@@ -15,7 +15,7 @@ const LayoutContext = createContext<LayoutContextValue | undefined>(undefined);
 export function useLayout() {
   const context = useContext(LayoutContext);
   if (!context) {
-    throw new Error('useLayout must be used within a LayoutProvider');
+    throw new Error("useLayout must be used within a LayoutProvider");
   }
   return context;
 }
@@ -30,7 +30,7 @@ export function LayoutProvider({ children }: LayoutProviderProps) {
 
   // Close mobile menu on route change
   useEffect(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
 
@@ -38,9 +38,9 @@ export function LayoutProvider({ children }: LayoutProviderProps) {
       setMobileMenuOpen(false);
     };
 
-    window.addEventListener('popstate', handleRouteChange);
+    window.addEventListener("popstate", handleRouteChange);
     return () => {
-      window.removeEventListener('popstate', handleRouteChange);
+      window.removeEventListener("popstate", handleRouteChange);
     };
   }, []);
 

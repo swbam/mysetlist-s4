@@ -1,8 +1,8 @@
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import {
   ArtistGridSkeleton,
   TrendingListSkeleton,
-} from '~/components/loading-states';
+} from "~/components/loading-states";
 
 export default function ArtistsLoading() {
   return (

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { UnifiedSearch } from '~/components/unified-search';
+import { UnifiedSearch } from "~/components/unified-search";
 
 export function ArtistSearch() {
   return (

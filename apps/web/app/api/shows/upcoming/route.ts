@@ -1,23 +1,18 @@
-import { getUserFromRequest } from '@repo/auth/server';
-import {
-  artists,
-  db,
-  shows,
-  venues,
-} from '@repo/database';
-import { and, asc, eq, gte, sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { getUserFromRequest } from "@repo/auth/server";
+import { artists, db, shows, venues } from "@repo/database";
+import { and, asc, eq, gte, sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = Number.parseInt(searchParams.get('limit') || '20');
-    const offset = Number.parseInt(searchParams.get('offset') || '0');
-    const filter = searchParams.get('filter') || 'all'; // all, popular, nearby
+    const limit = Number.parseInt(searchParams.get("limit") || "20");
+    const offset = Number.parseInt(searchParams.get("offset") || "0");
+    const filter = searchParams.get("filter") || "all"; // all, popular, nearby
 
     // Note: Following filter removed since userFollowsArtists table doesn't exist
     // Only support 'all' and 'popular' filters now
-    const actualFilter = filter === 'following' ? 'all' : filter;
+    const actualFilter = filter === "following" ? "all" : filter;
 
     // Build the query - simplified without following logic
     const upcomingShows = await db
@@ -49,11 +44,9 @@ export async function GET(request: NextRequest) {
       .from(shows)
       .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
       .leftJoin(venues, eq(shows.venueId, venues.id))
-      .where(gte(shows.date, new Date().toISOString().split('T')[0]))
+      .where(gte(shows.date, new Date().toISOString().split("T")[0]))
       .orderBy(
-        actualFilter === 'popular' 
-          ? artists.trendingScore 
-          : asc(shows.date)
+        actualFilter === "popular" ? artists.trendingScore : asc(shows.date),
       )
       .limit(limit)
       .offset(offset);
@@ -62,8 +55,8 @@ export async function GET(request: NextRequest) {
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(shows)
-      .where(gte(shows.date, new Date().toISOString().split('T')[0]!))
-    
+      .where(gte(shows.date, new Date().toISOString().split("T")[0]!));
+
     const count = countResult[0]?.count || 0;
 
     return NextResponse.json({
@@ -77,9 +70,8 @@ export async function GET(request: NextRequest) {
     });
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to fetch upcoming shows' },
-      { status: 500 }
+      { error: "Failed to fetch upcoming shows" },
+      { status: 500 },
     );
   }
 }
-

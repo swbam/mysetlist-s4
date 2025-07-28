@@ -1,11 +1,11 @@
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { format } from 'date-fns';
-import { Calendar, ChevronRight, Clock, MapPin } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { createServiceClient } from '~/lib/supabase/server';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { format } from "date-fns";
+import { Calendar, ChevronRight, Clock, MapPin } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { createServiceClient } from "~/lib/supabase/server";
 
 type UpcomingShow = {
   id: string;
@@ -32,10 +32,11 @@ type UpcomingShow = {
 async function getUpcomingShows(): Promise<UpcomingShow[]> {
   try {
     const supabase = createServiceClient();
-    
+
     const { data: shows, error } = await supabase
-      .from('shows')
-      .select(`
+      .from("shows")
+      .select(
+        `
         id,
         name,
         slug,
@@ -55,14 +56,15 @@ async function getUpcomingShows(): Promise<UpcomingShow[]> {
           city,
           state
         )
-      `)
-      .eq('status', 'upcoming')
-      .gte('date', new Date().toISOString().split('T')[0])
-      .order('date', { ascending: true })
+      `,
+      )
+      .eq("status", "upcoming")
+      .gte("date", new Date().toISOString().split("T")[0])
+      .order("date", { ascending: true })
       .limit(3);
 
     if (error) {
-      console.error('Error fetching upcoming shows:', error);
+      console.error("Error fetching upcoming shows:", error);
       return [];
     }
 
@@ -74,15 +76,15 @@ async function getUpcomingShows(): Promise<UpcomingShow[]> {
       startTime: show.start_time,
       status: show.status,
       artist: {
-        id: show.headlinerArtist?.id || '',
-        name: show.headlinerArtist?.name || '',
-        slug: show.headlinerArtist?.slug || '',
+        id: show.headlinerArtist?.id || "",
+        name: show.headlinerArtist?.name || "",
+        slug: show.headlinerArtist?.slug || "",
         imageUrl: show.headlinerArtist?.image_url || null,
       },
       venue: show.venue || null,
     }));
   } catch (error) {
-    console.error('Error fetching upcoming shows:', error);
+    console.error("Error fetching upcoming shows:", error);
     return [];
   }
 }
@@ -150,7 +152,7 @@ export async function UpcomingShows() {
                       <div className="flex items-center gap-2 text-sm">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <span>
-                          {format(new Date(show.date), 'MMM dd, yyyy')}
+                          {format(new Date(show.date), "MMM dd, yyyy")}
                         </span>
                       </div>
 
@@ -165,19 +167,19 @@ export async function UpcomingShows() {
                         <MapPin className="h-4 w-4 text-muted-foreground" />
                         <span>
                           {show.venue
-                            ? `${show.venue.name}, ${show.venue.city || ''}`
-                            : 'Venue TBA'}
+                            ? `${show.venue.name}, ${show.venue.city || ""}`
+                            : "Venue TBA"}
                         </span>
                       </div>
 
                       <Badge
                         variant={
-                          show.status === 'cancelled'
-                            ? 'destructive'
-                            : 'default'
+                          show.status === "cancelled"
+                            ? "destructive"
+                            : "default"
                         }
                       >
-                        {show.status === 'cancelled' ? 'Cancelled' : 'Upcoming'}
+                        {show.status === "cancelled" ? "Cancelled" : "Upcoming"}
                       </Badge>
 
                       <Button variant="ghost" size="sm" asChild>

@@ -1,5 +1,5 @@
-import { createServiceClient } from '~/lib/supabase/server';
-import { type NextRequest, NextResponse } from 'next/server';
+import { createServiceClient } from "~/lib/supabase/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(_request: NextRequest) {
   try {
@@ -7,19 +7,21 @@ export async function GET(_request: NextRequest) {
 
     // Get top voted songs from recent setlists
     const { data: topSongs } = await supabase
-      .from('setlist_songs')
-      .select(`
+      .from("setlist_songs")
+      .select(
+        `
         song:songs(id, title, artist),
         votes:user_votes(count)
-      `)
-      .order('votes', { ascending: false })
+      `,
+      )
+      .order("votes", { ascending: false })
       .limit(10);
 
     if (!topSongs || topSongs.length === 0) {
       // Fallback: get any songs from the catalog
       const { data: anySongs } = await supabase
-        .from('songs')
-        .select('id, title, artist')
+        .from("songs")
+        .select("id, title, artist")
         .limit(4);
 
       if (!anySongs) {
@@ -40,7 +42,7 @@ export async function GET(_request: NextRequest) {
     // Calculate vote counts and percentages
     const songsWithVotes = await Promise.all(
       topSongs
-        .filter(item => item.song && item.song.length > 0)
+        .filter((item) => item.song && item.song.length > 0)
         .slice(0, 4)
         .map(async (item, index) => {
           const firstSong = item.song![0];
@@ -48,9 +50,9 @@ export async function GET(_request: NextRequest) {
             return null;
           }
           const { count } = await supabase
-            .from('user_votes')
-            .select('*', { count: 'exact', head: true })
-            .eq('song_id', firstSong.id);
+            .from("user_votes")
+            .select("*", { count: "exact", head: true })
+            .eq("song_id", firstSong.id);
 
           return {
             id: firstSong.id,
@@ -59,8 +61,8 @@ export async function GET(_request: NextRequest) {
             votes: count || 0,
             percentage: 100 - index * 10,
           };
-        })
-    ).then(results => results.filter(r => r !== null));
+        }),
+    ).then((results) => results.filter((r) => r !== null));
 
     return NextResponse.json({
       songs: songsWithVotes,

@@ -1,8 +1,13 @@
-'use client';
+"use client";
 
-import dynamic from 'next/dynamic';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
+import dynamic from "next/dynamic";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 
 // Loading component for analytics charts
 function ChartSkeleton({ height = 300 }: { height?: number }) {
@@ -23,11 +28,14 @@ function ChartSkeleton({ height = 300 }: { height?: number }) {
 
 // Lazy load the analytics charts with loading state
 export const LazyAnalyticsCharts = dynamic<any>(
-  () => import('./analytics-charts').then((mod) => ({ default: mod.AnalyticsCharts })),
+  () =>
+    import("./analytics-charts").then((mod) => ({
+      default: mod.AnalyticsCharts,
+    })),
   {
     loading: () => <ChartSkeleton />,
     ssr: false, // Disable SSR for chart components to avoid hydration issues
-  }
+  },
 );
 
 // The lazy-loaded component already provides performance benefits

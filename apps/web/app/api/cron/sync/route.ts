@@ -1,18 +1,18 @@
-import { NextResponse } from 'next/server';
-import { headers } from 'next/headers';
+import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes
 
 export async function GET(request: Request) {
   try {
     // Verify cron secret
     const headersList = await headers();
-    const authHeader = headersList.get('authorization');
+    const authHeader = headersList.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
 
     if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Call Supabase edge function
@@ -21,25 +21,22 @@ export async function GET(request: Request) {
 
     if (!supabaseUrl || !serviceKey) {
       return NextResponse.json(
-        { error: 'Missing configuration' },
-        { status: 500 }
+        { error: "Missing configuration" },
+        { status: 500 },
       );
     }
 
-    const response = await fetch(
-      `${supabaseUrl}/functions/v1/scheduled-sync`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${serviceKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          type: 'artists',
-          limit: 20,
-        }),
-      }
-    );
+    const response = await fetch(`${supabaseUrl}/functions/v1/scheduled-sync`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${serviceKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        type: "artists",
+        limit: 20,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error(`Sync failed: ${response.statusText}`);
@@ -53,10 +50,10 @@ export async function GET(request: Request) {
       result: data,
     });
   } catch (error) {
-    console.error('Cron sync error:', error);
+    console.error("Cron sync error:", error);
     return NextResponse.json(
-      { error: 'Sync failed', details: error.message },
-      { status: 500 }
+      { error: "Sync failed", details: error.message },
+      { status: 500 },
     );
   }
 }

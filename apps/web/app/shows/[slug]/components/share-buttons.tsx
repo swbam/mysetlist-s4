@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@repo/design-system/components/ui/dialog';
+} from "@repo/design-system/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
+} from "@repo/design-system/components/ui/dropdown-menu";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Check,
   Facebook,
@@ -26,9 +26,9 @@ import {
   Music,
   Share2,
   Twitter,
-} from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
+} from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 
 type ShareButtonsProps = {
   url: string;
@@ -52,12 +52,12 @@ export function ShareButtons({
   const [showEmbedDialog, setShowEmbedDialog] = useState(false);
 
   const fullUrl =
-    typeof window !== 'undefined' ? `${window.location.origin}${url}` : url;
+    typeof window !== "undefined" ? `${window.location.origin}${url}` : url;
 
   const encodedUrl = encodeURIComponent(fullUrl);
   const encodedTitle = encodeURIComponent(title);
   const encodedDescription = encodeURIComponent(
-    description || `Check out ${title} on MySetlist`
+    description || `Check out ${title} on MySetlist`,
   );
 
   const shareLinks = {
@@ -74,10 +74,10 @@ export function ShareButtons({
     try {
       await navigator.clipboard.writeText(fullUrl);
       setCopied(true);
-      toast.success('Link copied to clipboard');
+      toast.success("Link copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
     } catch (_error) {
-      toast.error('Failed to copy link');
+      toast.error("Failed to copy link");
     }
   };
 
@@ -98,9 +98,9 @@ export function ShareButtons({
   const handleCopyEmbed = async () => {
     try {
       await navigator.clipboard.writeText(embedCode);
-      toast.success('Embed code copied to clipboard');
+      toast.success("Embed code copied to clipboard");
     } catch (_error) {
-      toast.error('Failed to copy embed code');
+      toast.error("Failed to copy embed code");
     }
   };
 
@@ -114,7 +114,7 @@ export function ShareButtons({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-          {typeof navigator !== 'undefined' && 'share' in navigator && (
+          {typeof navigator !== "undefined" && "share" in navigator && (
             <>
               <DropdownMenuItem onClick={handleNativeShare}>
                 <Share2 className="mr-2 h-4 w-4" />

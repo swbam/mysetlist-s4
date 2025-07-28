@@ -1,39 +1,39 @@
-import { ArtistSyncService } from '@repo/external-apis/src/services/artist-sync';
-import * as Sentry from '@sentry/nextjs';
-import { type NextRequest, NextResponse } from 'next/server';
+import { ArtistSyncService } from "@repo/external-apis/src/services/artist-sync";
+import * as Sentry from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 
 const { logger } = Sentry;
 
 export async function POST(request: NextRequest) {
   try {
     // Check for admin authorization
-    const authHeader = request.headers.get('authorization');
-    const cronSecret = process.env['CRON_SECRET'];
+    const authHeader = request.headers.get("authorization");
+    const cronSecret = process.env["CRON_SECRET"];
 
     if (!authHeader || !cronSecret || authHeader !== `Bearer ${cronSecret}`) {
-      logger.warn('Unauthorized sync attempt', {
+      logger.warn("Unauthorized sync attempt", {
         hasAuth: !!authHeader,
         hasCronSecret: !!cronSecret,
       });
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
     const {
       limit = 50,
       genres = [
-        'rock',
-        'pop',
-        'hip-hop',
-        'electronic',
-        'indie',
-        'country',
-        'jazz',
-        'classical',
+        "rock",
+        "pop",
+        "hip-hop",
+        "electronic",
+        "indie",
+        "country",
+        "jazz",
+        "classical",
       ],
     } = body;
 
-    logger.info('Starting popular artist sync', { limit, genres });
+    logger.info("Starting popular artist sync", { limit, genres });
 
     const syncService = new ArtistSyncService();
     const results = {
@@ -52,9 +52,9 @@ export async function POST(request: NextRequest) {
           {
             headers: {
               Authorization: `Bearer ${await getSpotifyToken()}`,
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
-          }
+          },
         );
 
         if (!response.ok) {
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
 
         for (const artist of artists.slice(
           0,
-          Math.floor(limit / genres.length)
+          Math.floor(limit / genres.length),
         )) {
           try {
             await syncService.syncArtist(artist.id);
@@ -81,58 +81,58 @@ export async function POST(request: NextRequest) {
           } catch (error) {
             logger.error(`Failed to sync artist ${artist.name}`, {
               artistId: artist.id,
-              error: error instanceof Error ? error.message : 'Unknown error',
+              error: error instanceof Error ? error.message : "Unknown error",
             });
             results.errors++;
           }
         }
       } catch (error) {
         logger.error(`Failed to process genre ${genre}`, {
-          error: error instanceof Error ? error.message : 'Unknown error',
+          error: error instanceof Error ? error.message : "Unknown error",
         });
         results.errors++;
       }
     }
 
-    logger.info('Popular artist sync completed', results);
+    logger.info("Popular artist sync completed", results);
 
     return NextResponse.json({
       success: true,
-      message: 'Popular artists sync completed',
+      message: "Popular artists sync completed",
       results,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    logger.error('Popular artist sync failed', {
-      error: error instanceof Error ? error.message : 'Unknown error',
+    logger.error("Popular artist sync failed", {
+      error: error instanceof Error ? error.message : "Unknown error",
     });
 
     return NextResponse.json(
-      { error: 'Failed to sync popular artists' },
-      { status: 500 }
+      { error: "Failed to sync popular artists" },
+      { status: 500 },
     );
   }
 }
 
 async function getSpotifyToken(): Promise<string> {
-  const clientId = process.env['SPOTIFY_CLIENT_ID'];
-  const clientSecret = process.env['SPOTIFY_CLIENT_SECRET'];
+  const clientId = process.env["SPOTIFY_CLIENT_ID"];
+  const clientSecret = process.env["SPOTIFY_CLIENT_SECRET"];
 
   if (!clientId || !clientSecret) {
-    throw new Error('Spotify credentials not configured');
+    throw new Error("Spotify credentials not configured");
   }
 
-  const response = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
+  const response = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString('base64')}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization: `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`,
     },
-    body: 'grant_type=client_credentials',
+    body: "grant_type=client_credentials",
   });
 
   if (!response.ok) {
-    throw new Error('Failed to get Spotify token');
+    throw new Error("Failed to get Spotify token");
   }
 
   const data = await response.json();

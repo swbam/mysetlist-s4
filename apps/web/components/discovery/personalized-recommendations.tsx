@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { cn } from '@repo/design-system/lib/utils';
+} from "@repo/design-system/components/ui/card";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { cn } from "@repo/design-system/lib/utils";
 import {
   Calendar,
   ExternalLink,
@@ -19,14 +19,14 @@ import {
   RefreshCw,
   Sparkles,
   Star,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Recommendation {
   id: string;
-  type: 'artist' | 'show' | 'venue' | 'genre';
+  type: "artist" | "show" | "venue" | "genre";
   title: string;
   subtitle: string;
   imageUrl?: string;
@@ -45,14 +45,14 @@ interface Recommendation {
 
 interface PersonalizedRecommendationsProps {
   userId?: string;
-  category?: 'all' | 'artists' | 'shows' | 'venues';
+  category?: "all" | "artists" | "shows" | "venues";
   limit?: number;
   className?: string;
 }
 
 export function PersonalizedRecommendations({
   userId,
-  category = 'all',
+  category = "all",
   limit = 6,
   className,
 }: PersonalizedRecommendationsProps) {
@@ -60,7 +60,7 @@ export function PersonalizedRecommendations({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [followingArtists, setFollowingArtists] = useState<Set<string>>(
-    new Set()
+    new Set(),
   );
 
   useEffect(() => {
@@ -86,7 +86,7 @@ export function PersonalizedRecommendations({
             // If not authenticated, fall back to trending data
             return fetchTrendingData();
           }
-          throw new Error('Failed to fetch recommendations');
+          throw new Error("Failed to fetch recommendations");
         }
 
         const result = await response.json();
@@ -100,20 +100,20 @@ export function PersonalizedRecommendations({
             recommendations.push(
               ...result.data.shows.map((show: any) => ({
                 id: show.id,
-                type: 'show' as const,
+                type: "show" as const,
                 title: show.title || show.name,
-                subtitle: show.artist || show.venue_name || 'Show',
+                subtitle: show.artist || show.venue_name || "Show",
                 imageUrl: show.image_url || show.imageUrl,
                 slug: show.id,
                 reason:
-                  'Recommended based on your music preferences and location',
+                  "Recommended based on your music preferences and location",
                 confidence: Math.round(show.score || 75),
                 metadata: {
                   showDate: show.date,
                   venue: show.venue_name,
                   price: show.price_range,
                 },
-              }))
+              })),
             );
           }
 
@@ -121,19 +121,19 @@ export function PersonalizedRecommendations({
             recommendations.push(
               ...result.data.artists.map((artist: any) => ({
                 id: artist.id,
-                type: 'artist' as const,
+                type: "artist" as const,
                 title: artist.name,
-                subtitle: artist.genre || 'Artist',
+                subtitle: artist.genre || "Artist",
                 imageUrl: artist.image_url || artist.imageUrl,
                 slug: artist.id,
-                reason: 'Similar to artists you follow and like',
+                reason: "Similar to artists you follow and like",
                 confidence: Math.round(artist.score || 75),
                 metadata: {
                   genres: artist.genres ? [artist.genre] : [],
                   followerCount: artist.follower_count,
                   popularity: artist.popularity,
                 },
-              }))
+              })),
             );
           }
 
@@ -141,15 +141,15 @@ export function PersonalizedRecommendations({
             recommendations.push(
               ...result.data.venues.map((venue: any) => ({
                 id: venue.id,
-                type: 'venue' as const,
+                type: "venue" as const,
                 title: venue.name,
                 subtitle: `${venue.city}, ${venue.state}`,
                 imageUrl: venue.image_url || venue.imageUrl,
                 slug: venue.id,
-                reason: 'Near your location or similar to venues you visit',
+                reason: "Near your location or similar to venues you visit",
                 confidence: Math.round(venue.score || 75),
                 metadata: {},
-              }))
+              })),
             );
           }
         }
@@ -160,7 +160,7 @@ export function PersonalizedRecommendations({
         await fetchTrendingData();
       }
     } catch (_err) {
-      setError('Failed to load recommendations');
+      setError("Failed to load recommendations");
     } finally {
       setLoading(false);
     }
@@ -169,10 +169,10 @@ export function PersonalizedRecommendations({
   const fetchTrendingData = async () => {
     try {
       const response = await fetch(
-        `/api/trending/live?timeframe=24h&type=${category === 'all' ? 'all' : category}&limit=${limit}`
+        `/api/trending/live?timeframe=24h&type=${category === "all" ? "all" : category}&limit=${limit}`,
       );
       if (!response.ok) {
-        throw new Error('Failed to fetch trending data');
+        throw new Error("Failed to fetch trending data");
       }
 
       const trendingData = await response.json();
@@ -181,7 +181,7 @@ export function PersonalizedRecommendations({
       const recommendations: Recommendation[] =
         trendingData.trending?.map((item: any) => ({
           id: item.id,
-          type: item.type as Recommendation['type'],
+          type: item.type as Recommendation["type"],
           title: item.name,
           subtitle: `Trending ${item.type}`,
           imageUrl: item.image_url || item.imageUrl,
@@ -195,7 +195,7 @@ export function PersonalizedRecommendations({
 
       setRecommendations(recommendations);
     } catch (_err) {
-      setError('Failed to load trending recommendations');
+      setError("Failed to load trending recommendations");
     }
   };
 
@@ -205,7 +205,7 @@ export function PersonalizedRecommendations({
     }
 
     try {
-      const response = await fetch('/api/user/following');
+      const response = await fetch("/api/user/following");
       if (response.ok) {
         const data = await response.json();
         setFollowingArtists(new Set(data.artistIds));
@@ -216,9 +216,9 @@ export function PersonalizedRecommendations({
   const handleFollow = async (artistId: string, isFollowing: boolean) => {
     try {
       const response = await fetch(`/api/artists/${artistId}/follow`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           following: !isFollowing,
@@ -232,63 +232,63 @@ export function PersonalizedRecommendations({
             next.delete(artistId);
             return next;
           });
-          toast.success('Unfollowed artist');
+          toast.success("Unfollowed artist");
         } else {
           setFollowingArtists((prev) => new Set(prev).add(artistId));
-          toast.success('Following artist');
+          toast.success("Following artist");
         }
       } else if (response.status === 401) {
-        toast.error('Please sign in to follow artists');
+        toast.error("Please sign in to follow artists");
       }
     } catch (_error) {
-      toast.error('Failed to update follow status');
+      toast.error("Failed to update follow status");
     }
   };
 
-  const getIcon = (type: Recommendation['type']) => {
+  const getIcon = (type: Recommendation["type"]) => {
     switch (type) {
-      case 'artist':
+      case "artist":
         return <Music className="h-4 w-4" />;
-      case 'show':
+      case "show":
         return <Calendar className="h-4 w-4" />;
-      case 'venue':
+      case "venue":
         return <MapPin className="h-4 w-4" />;
-      case 'genre':
+      case "genre":
         return <Star className="h-4 w-4" />;
     }
   };
 
   const getLink = (recommendation: Recommendation) => {
     switch (recommendation.type) {
-      case 'artist':
+      case "artist":
         return `/artists/${recommendation.slug}`;
-      case 'show':
+      case "show":
         return `/shows/${recommendation.slug}`;
-      case 'venue':
+      case "venue":
         return `/venues/${recommendation.slug}`;
-      case 'genre':
+      case "genre":
         return `/search?genre=${encodeURIComponent(recommendation.title)}`;
     }
   };
 
   const getConfidenceColor = (confidence: number) => {
     if (confidence >= 80) {
-      return 'text-green-600 bg-green-50';
+      return "text-green-600 bg-green-50";
     }
     if (confidence >= 60) {
-      return 'text-yellow-600 bg-yellow-50';
+      return "text-yellow-600 bg-yellow-50";
     }
-    return 'text-red-600 bg-red-50';
+    return "text-red-600 bg-red-50";
   };
 
   const getConfidenceLabel = (confidence: number) => {
     if (confidence >= 80) {
-      return 'High match';
+      return "High match";
     }
     if (confidence >= 60) {
-      return 'Good match';
+      return "Good match";
     }
-    return 'Possible match';
+    return "Possible match";
   };
 
   if (loading) {
@@ -397,8 +397,8 @@ export function PersonalizedRecommendations({
                   <div className="absolute top-2 right-2">
                     <Badge
                       className={cn(
-                        'text-xs',
-                        getConfidenceColor(recommendation.confidence)
+                        "text-xs",
+                        getConfidenceColor(recommendation.confidence),
                       )}
                     >
                       {getConfidenceLabel(recommendation.confidence)}
@@ -450,32 +450,32 @@ export function PersonalizedRecommendations({
                     )}
 
                     <div className="flex items-center justify-between pt-2">
-                      {recommendation.type === 'artist' && (
+                      {recommendation.type === "artist" && (
                         <Button
                           variant={
                             followingArtists.has(recommendation.id)
-                              ? 'default'
-                              : 'outline'
+                              ? "default"
+                              : "outline"
                           }
                           size="sm"
                           onClick={() =>
                             handleFollow(
                               recommendation.id,
-                              followingArtists.has(recommendation.id)
+                              followingArtists.has(recommendation.id),
                             )
                           }
                           className="gap-1"
                         >
                           <Heart
                             className={cn(
-                              'h-3 w-3',
+                              "h-3 w-3",
                               followingArtists.has(recommendation.id) &&
-                                'fill-current'
+                                "fill-current",
                             )}
                           />
                           {followingArtists.has(recommendation.id)
-                            ? 'Following'
-                            : 'Follow'}
+                            ? "Following"
+                            : "Follow"}
                         </Button>
                       )}
 
@@ -483,9 +483,9 @@ export function PersonalizedRecommendations({
                         <Button
                           size="sm"
                           variant={
-                            recommendation.type === 'artist'
-                              ? 'ghost'
-                              : 'default'
+                            recommendation.type === "artist"
+                              ? "ghost"
+                              : "default"
                           }
                         >
                           <ExternalLink className="mr-1 h-3 w-3" />

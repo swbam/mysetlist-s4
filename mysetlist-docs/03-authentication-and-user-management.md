@@ -1,6 +1,7 @@
 # MySetlist - Authentication & User Management with Next-Forge + Supabase
 
 ## Table of Contents
+
 1. [Authentication Overview](#authentication-overview)
 2. [Next-Forge Auth Package Modification](#next-forge-auth-package-modification)
 3. [Supabase Authentication Setup](#supabase-authentication-setup)
@@ -15,6 +16,7 @@
 MySetlist replaces Next-Forge's default authentication with Supabase Auth while maintaining the package structure and patterns. This provides seamless integration with Spotify OAuth for music data access and traditional email/password authentication.
 
 ### Authentication Flow
+
 ```
 User Login Attempt
        ↓
@@ -33,6 +35,7 @@ Session Creation    Session Creation
 ```
 
 ### Authentication Methods
+
 - **Email/Password**: Traditional authentication
 - **Google OAuth**: Alternative social login
 - **Magic Links**: Passwordless email authentication
@@ -40,6 +43,7 @@ Session Creation    Session Creation
 ## Next-Forge Auth Package Modification
 
 ### Package Structure
+
 ```
 packages/auth/
 ├── src/
@@ -72,9 +76,10 @@ packages/auth/
 ```
 
 ### Core Configuration
+
 ```typescript
 // packages/auth/src/config/supabase.ts
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -96,13 +101,14 @@ export const supabaseAdmin = createClient(
       autoRefreshToken: false,
       persistSession: false,
     },
-  }
+  },
 );
 ```
 
 ## Supabase Authentication Setup
 
 ### Environment Variables
+
 ```bash
 # .env.local
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
@@ -118,6 +124,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3001
 ```
 
 ### Supabase Auth Configuration
+
 ```sql
 -- Supabase Auth settings
 UPDATE auth.config SET
@@ -131,10 +138,11 @@ INSERT INTO auth.providers (name, enabled) VALUES
 ```
 
 ### Authentication Provider Setup
+
 ```typescript
 // packages/auth/src/providers/supabase.ts
-import { AuthProvider, AuthUser, AuthSession } from '../types';
-import { supabase } from '../config/supabase';
+import { AuthProvider, AuthUser, AuthSession } from "../types";
+import { supabase } from "../config/supabase";
 
 export class SupabaseAuthProvider implements AuthProvider {
   async signIn(email: string, password: string) {
@@ -147,7 +155,11 @@ export class SupabaseAuthProvider implements AuthProvider {
     return this.mapUser(data.user);
   }
 
-  async signUp(email: string, password: string, metadata?: Record<string, any>) {
+  async signUp(
+    email: string,
+    password: string,
+    metadata?: Record<string, any>,
+  ) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -160,14 +172,15 @@ export class SupabaseAuthProvider implements AuthProvider {
     return this.mapUser(data.user);
   }
 
-  async signInWithOAuth(provider: 'spotify' | 'google') {
+  async signInWithOAuth(provider: "spotify" | "google") {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
-        scopes: provider === 'spotify' 
-          ? 'user-read-email user-read-private user-library-read user-top-read'
-          : undefined,
+        scopes:
+          provider === "spotify"
+            ? "user-read-email user-read-private user-library-read user-top-read"
+            : undefined,
       },
     });
 
@@ -181,9 +194,12 @@ export class SupabaseAuthProvider implements AuthProvider {
   }
 
   async getSession(): Promise<AuthSession | null> {
-    const { data: { session }, error } = await supabase.auth.getSession();
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
     if (error) throw new Error(error.message);
-    
+
     return session ? this.mapSession(session) : null;
   }
 
@@ -212,6 +228,7 @@ export class SupabaseAuthProvider implements AuthProvider {
 ## User Management System
 
 ### Authentication Hook
+
 ```typescript
 // packages/auth/src/hooks/use-auth.ts
 'use client';
@@ -238,7 +255,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [session, setSession] = useState<AuthSession | null>(null);
   const [loading, setLoading] = useState(true);
-  
+
   const authProvider = new SupabaseAuthProvider();
 
   useEffect(() => {
@@ -337,6 +354,7 @@ export function useAuth() {
 ```
 
 ### Route Protection
+
 ```typescript
 // packages/auth/src/components/auth-guard.tsx
 'use client';
@@ -353,11 +371,11 @@ interface AuthGuardProps {
   requireRole?: 'user' | 'moderator' | 'admin';
 }
 
-export function AuthGuard({ 
-  children, 
-  fallback, 
+export function AuthGuard({
+  children,
+  fallback,
   redirectTo = '/auth/signin',
-  requireRole 
+  requireRole
 }: AuthGuardProps) {
   const { user, loading } = useAuth();
   const router = useRouter();
@@ -387,31 +405,32 @@ export function AuthGuard({
 function hasRole(user: AuthUser, requiredRole: string): boolean {
   const userRole = user.appMetadata?.role || 'user';
   const roleHierarchy = { user: 0, moderator: 1, admin: 2 };
-  
+
   return roleHierarchy[userRole] >= roleHierarchy[requiredRole];
 }
 ```
 
-
 ## Session Management
 
 ### Server-Side Session Handling
+
 ```typescript
 // packages/auth/src/utils/session.ts
-import { supabaseAdmin } from '../config/supabase';
-import { cookies } from 'next/headers';
+import { supabaseAdmin } from "../config/supabase";
+import { cookies } from "next/headers";
 
 export async function getServerSession() {
   const cookieStore = cookies();
-  const supabaseSession = cookieStore.get('sb-access-token');
-  
+  const supabaseSession = cookieStore.get("sb-access-token");
+
   if (!supabaseSession?.value) {
     return null;
   }
 
-  const { data: { user }, error } = await supabaseAdmin.auth.getUser(
-    supabaseSession.value
-  );
+  const {
+    data: { user },
+    error,
+  } = await supabaseAdmin.auth.getUser(supabaseSession.value);
 
   if (error || !user) {
     return null;
@@ -431,30 +450,33 @@ export async function getServerSession() {
 export async function requireAuth() {
   const session = await getServerSession();
   if (!session) {
-    throw new Error('Authentication required');
+    throw new Error("Authentication required");
   }
   return session;
 }
 
-export async function requireRole(requiredRole: 'user' | 'moderator' | 'admin') {
+export async function requireRole(
+  requiredRole: "user" | "moderator" | "admin",
+) {
   const session = await requireAuth();
-  const userRole = session.user.appMetadata?.role || 'user';
-  
+  const userRole = session.user.appMetadata?.role || "user";
+
   const roleHierarchy = { user: 0, moderator: 1, admin: 2 };
-  
+
   if (roleHierarchy[userRole] < roleHierarchy[requiredRole]) {
-    throw new Error('Insufficient permissions');
+    throw new Error("Insufficient permissions");
   }
-  
+
   return session;
 }
 ```
 
 ### Middleware for Route Protection
+
 ```typescript
 // apps/web/middleware.ts
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
@@ -491,7 +513,7 @@ export async function middleware(request: NextRequest) {
         remove(name: string, options: CookieOptions) {
           request.cookies.set({
             name,
-            value: '',
+            value: "",
             ...options,
           });
           response = NextResponse.next({
@@ -501,50 +523,51 @@ export async function middleware(request: NextRequest) {
           });
           response.cookies.set({
             name,
-            value: '',
+            value: "",
             ...options,
           });
         },
       },
-    }
+    },
   );
 
   await supabase.auth.getUser();
 
   // Protected routes
-  const protectedPaths = ['/dashboard', '/admin'];
-  const authPaths = ['/auth/signin', '/auth/signup'];
-  
+  const protectedPaths = ["/dashboard", "/admin"];
+  const authPaths = ["/auth/signin", "/auth/signup"];
+
   const { pathname } = request.nextUrl;
-  const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
-  const isAuthPath = authPaths.some(path => pathname.startsWith(path));
+  const isProtectedPath = protectedPaths.some((path) =>
+    pathname.startsWith(path),
+  );
+  const isAuthPath = authPaths.some((path) => pathname.startsWith(path));
 
   const session = await supabase.auth.getSession();
   const isAuthenticated = !!session.data.session;
 
   // Redirect unauthenticated users from protected routes
   if (isProtectedPath && !isAuthenticated) {
-    return NextResponse.redirect(new URL('/auth/signin', request.url));
+    return NextResponse.redirect(new URL("/auth/signin", request.url));
   }
 
   // Redirect authenticated users from auth pages
   if (isAuthPath && isAuthenticated) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   return response;
 }
 
 export const config = {
-  matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
 ```
 
 ## Security Implementation
 
 ### Row Level Security Policies
+
 ```sql
 -- Enable RLS on user-related tables
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
@@ -558,27 +581,27 @@ CREATE POLICY "Users can update own profile" ON users
 ```
 
 ### Input Validation
+
 ```typescript
 // packages/auth/src/utils/validation.ts
-import { z } from 'zod';
+import { z } from "zod";
 
 export const signInSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export const signUpSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.string().email("Invalid email address"),
   password: z
     .string()
-    .min(8, 'Password must be at least 8 characters')
+    .min(8, "Password must be at least 8 characters")
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-      'Password must contain at least one uppercase letter, one lowercase letter, and one number'
+      "Password must contain at least one uppercase letter, one lowercase letter, and one number",
     ),
-  displayName: z.string().min(2, 'Display name must be at least 2 characters'),
+  displayName: z.string().min(2, "Display name must be at least 2 characters"),
 });
-
 ```
 
 This authentication system provides a robust foundation for MySetlist using Next-Forge's package structure with Supabase integration. It supports multiple authentication methods and secure session management for basic user authentication.

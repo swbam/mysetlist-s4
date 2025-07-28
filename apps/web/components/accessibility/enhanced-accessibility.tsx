@@ -1,21 +1,26 @@
-'use client';
+"use client";
 
-import { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { cn } from '@repo/design-system/lib/utils';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { 
-  Eye, 
-  EyeOff, 
-  Volume2, 
-  VolumeX, 
-  Keyboard, 
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { cn } from "@repo/design-system/lib/utils";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import {
+  Eye,
+  EyeOff,
+  Volume2,
+  VolumeX,
+  Keyboard,
   Accessibility,
   Contrast,
   Type,
-  Zap
-} from 'lucide-react';
+  Zap,
+} from "lucide-react";
 
 // Focus management hook
 export function useFocusManagement() {
@@ -34,16 +39,18 @@ export function useFocusManagement() {
 
   const trapFocus = useCallback((container: HTMLElement) => {
     const focusableElements = container.querySelectorAll(
-      'a[href], button, textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select'
+      'a[href], button, textarea, input[type="text"], input[type="radio"], input[type="checkbox"], select',
     );
-    
+
     if (focusableElements.length === 0) return;
 
     const firstElement = focusableElements[0] as HTMLElement;
-    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+    const lastElement = focusableElements[
+      focusableElements.length - 1
+    ] as HTMLElement;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Tab') {
+      if (e.key === "Tab") {
         if (e.shiftKey) {
           if (document.activeElement === firstElement) {
             e.preventDefault();
@@ -58,12 +65,12 @@ export function useFocusManagement() {
       }
     };
 
-    container.addEventListener('keydown', handleKeyDown);
+    container.addEventListener("keydown", handleKeyDown);
     focusTraps.current.add(container);
     firstElement.focus();
 
     return () => {
-      container.removeEventListener('keydown', handleKeyDown);
+      container.removeEventListener("keydown", handleKeyDown);
       focusTraps.current.delete(container);
     };
   }, []);
@@ -83,94 +90,99 @@ export function useFocusManagement() {
 // Keyboard navigation component
 interface KeyboardNavigationProps {
   children: React.ReactNode;
-  orientation?: 'horizontal' | 'vertical' | 'both';
+  orientation?: "horizontal" | "vertical" | "both";
   wrap?: boolean;
   className?: string;
 }
 
 export const KeyboardNavigation = memo(function KeyboardNavigation({
   children,
-  orientation = 'both',
+  orientation = "both",
   wrap = true,
   className,
 }: KeyboardNavigationProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!containerRef.current) return;
+  const handleKeyDown = useCallback(
+    (e: KeyboardEvent) => {
+      if (!containerRef.current) return;
 
-    const focusableElements = Array.from(
-      containerRef.current.querySelectorAll(
-        'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])'
-      )
-    ) as HTMLElement[];
+      const focusableElements = Array.from(
+        containerRef.current.querySelectorAll(
+          'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])',
+        ),
+      ) as HTMLElement[];
 
-    if (focusableElements.length === 0) return;
+      if (focusableElements.length === 0) return;
 
-    let newIndex = currentIndex;
+      let newIndex = currentIndex;
 
-    switch (e.key) {
-      case 'ArrowRight':
-        if (orientation === 'horizontal' || orientation === 'both') {
+      switch (e.key) {
+        case "ArrowRight":
+          if (orientation === "horizontal" || orientation === "both") {
+            e.preventDefault();
+            newIndex = wrap
+              ? (currentIndex + 1) % focusableElements.length
+              : Math.min(currentIndex + 1, focusableElements.length - 1);
+          }
+          break;
+        case "ArrowLeft":
+          if (orientation === "horizontal" || orientation === "both") {
+            e.preventDefault();
+            newIndex = wrap
+              ? (currentIndex - 1 + focusableElements.length) %
+                focusableElements.length
+              : Math.max(currentIndex - 1, 0);
+          }
+          break;
+        case "ArrowDown":
+          if (orientation === "vertical" || orientation === "both") {
+            e.preventDefault();
+            newIndex = wrap
+              ? (currentIndex + 1) % focusableElements.length
+              : Math.min(currentIndex + 1, focusableElements.length - 1);
+          }
+          break;
+        case "ArrowUp":
+          if (orientation === "vertical" || orientation === "both") {
+            e.preventDefault();
+            newIndex = wrap
+              ? (currentIndex - 1 + focusableElements.length) %
+                focusableElements.length
+              : Math.max(currentIndex - 1, 0);
+          }
+          break;
+        case "Home":
           e.preventDefault();
-          newIndex = wrap 
-            ? (currentIndex + 1) % focusableElements.length
-            : Math.min(currentIndex + 1, focusableElements.length - 1);
-        }
-        break;
-      case 'ArrowLeft':
-        if (orientation === 'horizontal' || orientation === 'both') {
+          newIndex = 0;
+          break;
+        case "End":
           e.preventDefault();
-          newIndex = wrap 
-            ? (currentIndex - 1 + focusableElements.length) % focusableElements.length
-            : Math.max(currentIndex - 1, 0);
-        }
-        break;
-      case 'ArrowDown':
-        if (orientation === 'vertical' || orientation === 'both') {
-          e.preventDefault();
-          newIndex = wrap 
-            ? (currentIndex + 1) % focusableElements.length
-            : Math.min(currentIndex + 1, focusableElements.length - 1);
-        }
-        break;
-      case 'ArrowUp':
-        if (orientation === 'vertical' || orientation === 'both') {
-          e.preventDefault();
-          newIndex = wrap 
-            ? (currentIndex - 1 + focusableElements.length) % focusableElements.length
-            : Math.max(currentIndex - 1, 0);
-        }
-        break;
-      case 'Home':
-        e.preventDefault();
-        newIndex = 0;
-        break;
-      case 'End':
-        e.preventDefault();
-        newIndex = focusableElements.length - 1;
-        break;
-    }
+          newIndex = focusableElements.length - 1;
+          break;
+      }
 
-    if (newIndex !== currentIndex) {
-      setCurrentIndex(newIndex);
-      focusableElements[newIndex]?.focus();
-    }
-  }, [currentIndex, orientation, wrap]);
+      if (newIndex !== currentIndex) {
+        setCurrentIndex(newIndex);
+        focusableElements[newIndex]?.focus();
+      }
+    },
+    [currentIndex, orientation, wrap],
+  );
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
-    container.addEventListener('keydown', handleKeyDown);
-    return () => container.removeEventListener('keydown', handleKeyDown);
+    container.addEventListener("keydown", handleKeyDown);
+    return () => container.removeEventListener("keydown", handleKeyDown);
   }, [handleKeyDown]);
 
   return (
     <div
       ref={containerRef}
-      className={cn('focus-within:outline-none', className)}
+      className={cn("focus-within:outline-none", className)}
       role="group"
       aria-label="Keyboard navigable content"
     >
@@ -183,23 +195,26 @@ export const KeyboardNavigation = memo(function KeyboardNavigation({
 export function useScreenReaderAnnouncements() {
   const [announcements, setAnnouncements] = useState<string[]>([]);
 
-  const announce = useCallback((message: string, priority: 'polite' | 'assertive' = 'polite') => {
-    setAnnouncements(prev => [...prev, message]);
+  const announce = useCallback(
+    (message: string, priority: "polite" | "assertive" = "polite") => {
+      setAnnouncements((prev) => [...prev, message]);
 
-    // Create temporary element for screen reader
-    const announcement = document.createElement('div');
-    announcement.setAttribute('aria-live', priority);
-    announcement.setAttribute('aria-atomic', 'true');
-    announcement.className = 'sr-only';
-    announcement.textContent = message;
+      // Create temporary element for screen reader
+      const announcement = document.createElement("div");
+      announcement.setAttribute("aria-live", priority);
+      announcement.setAttribute("aria-atomic", "true");
+      announcement.className = "sr-only";
+      announcement.textContent = message;
 
-    document.body.appendChild(announcement);
+      document.body.appendChild(announcement);
 
-    // Remove after announcement
-    setTimeout(() => {
-      document.body.removeChild(announcement);
-    }, 1000);
-  }, []);
+      // Remove after announcement
+      setTimeout(() => {
+        document.body.removeChild(announcement);
+      }, 1000);
+    },
+    [],
+  );
 
   const clearAnnouncements = useCallback(() => {
     setAnnouncements([]);
@@ -213,19 +228,19 @@ export function useHighContrastMode() {
   const [isHighContrast, setIsHighContrast] = useState(false);
 
   const toggleHighContrast = useCallback(() => {
-    setIsHighContrast(prev => {
+    setIsHighContrast((prev) => {
       const newValue = !prev;
-      document.documentElement.classList.toggle('high-contrast', newValue);
-      localStorage.setItem('high-contrast-mode', newValue.toString());
+      document.documentElement.classList.toggle("high-contrast", newValue);
+      localStorage.setItem("high-contrast-mode", newValue.toString());
       return newValue;
     });
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem('high-contrast-mode');
-    if (saved === 'true') {
+    const saved = localStorage.getItem("high-contrast-mode");
+    if (saved === "true") {
       setIsHighContrast(true);
-      document.documentElement.classList.add('high-contrast');
+      document.documentElement.classList.add("high-contrast");
     }
   }, []);
 
@@ -237,21 +252,23 @@ export function useReducedMotion() {
   const [isReducedMotion, setIsReducedMotion] = useState(false);
 
   const toggleReducedMotion = useCallback(() => {
-    setIsReducedMotion(prev => {
+    setIsReducedMotion((prev) => {
       const newValue = !prev;
-      document.documentElement.classList.toggle('reduce-motion', newValue);
-      localStorage.setItem('reduced-motion', newValue.toString());
+      document.documentElement.classList.toggle("reduce-motion", newValue);
+      localStorage.setItem("reduced-motion", newValue.toString());
       return newValue;
     });
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem('reduced-motion');
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    
-    if (saved === 'true' || prefersReducedMotion) {
+    const saved = localStorage.getItem("reduced-motion");
+    const prefersReducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+
+    if (saved === "true" || prefersReducedMotion) {
       setIsReducedMotion(true);
-      document.documentElement.classList.add('reduce-motion');
+      document.documentElement.classList.add("reduce-motion");
     }
   }, []);
 
@@ -263,22 +280,22 @@ export function useFontSizeAdjustment() {
   const [fontSize, setFontSize] = useState(16);
 
   const adjustFontSize = useCallback((delta: number) => {
-    setFontSize(prev => {
+    setFontSize((prev) => {
       const newSize = Math.max(14, Math.min(24, prev + delta));
       document.documentElement.style.fontSize = `${newSize}px`;
-      localStorage.setItem('font-size', newSize.toString());
+      localStorage.setItem("font-size", newSize.toString());
       return newSize;
     });
   }, []);
 
   const resetFontSize = useCallback(() => {
     setFontSize(16);
-    document.documentElement.style.fontSize = '16px';
-    localStorage.removeItem('font-size');
+    document.documentElement.style.fontSize = "16px";
+    localStorage.removeItem("font-size");
   }, []);
 
   useEffect(() => {
-    const saved = localStorage.getItem('font-size');
+    const saved = localStorage.getItem("font-size");
     if (saved) {
       const size = parseInt(saved, 10);
       setFontSize(size);
@@ -329,7 +346,7 @@ export const AccessibilityPreferences = memo(function AccessibilityPreferences({
   const { announce } = useScreenReaderAnnouncements();
 
   return (
-    <Card className={cn('w-full max-w-md', className)}>
+    <Card className={cn("w-full max-w-md", className)}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Accessibility className="h-5 w-5" />
@@ -349,12 +366,18 @@ export const AccessibilityPreferences = memo(function AccessibilityPreferences({
             onClick={() => {
               toggleHighContrast();
               announce(
-                isHighContrast ? 'High contrast mode disabled' : 'High contrast mode enabled'
+                isHighContrast
+                  ? "High contrast mode disabled"
+                  : "High contrast mode enabled",
               );
             }}
             aria-pressed={isHighContrast}
           >
-            {isHighContrast ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            {isHighContrast ? (
+              <Eye className="h-4 w-4" />
+            ) : (
+              <EyeOff className="h-4 w-4" />
+            )}
           </Button>
         </div>
 
@@ -370,12 +393,18 @@ export const AccessibilityPreferences = memo(function AccessibilityPreferences({
             onClick={() => {
               toggleReducedMotion();
               announce(
-                isReducedMotion ? 'Reduced motion disabled' : 'Reduced motion enabled'
+                isReducedMotion
+                  ? "Reduced motion disabled"
+                  : "Reduced motion enabled",
               );
             }}
             aria-pressed={isReducedMotion}
           >
-            {isReducedMotion ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            {isReducedMotion ? (
+              <VolumeX className="h-4 w-4" />
+            ) : (
+              <Volume2 className="h-4 w-4" />
+            )}
           </Button>
         </div>
 
@@ -392,7 +421,7 @@ export const AccessibilityPreferences = memo(function AccessibilityPreferences({
               size="sm"
               onClick={() => {
                 adjustFontSize(-2);
-                announce('Font size decreased');
+                announce("Font size decreased");
               }}
               aria-label="Decrease font size"
             >
@@ -403,7 +432,7 @@ export const AccessibilityPreferences = memo(function AccessibilityPreferences({
               size="sm"
               onClick={() => {
                 resetFontSize();
-                announce('Font size reset to default');
+                announce("Font size reset to default");
               }}
               aria-label="Reset font size"
             >
@@ -414,7 +443,7 @@ export const AccessibilityPreferences = memo(function AccessibilityPreferences({
               size="sm"
               onClick={() => {
                 adjustFontSize(2);
-                announce('Font size increased');
+                announce("Font size increased");
               }}
               aria-label="Increase font size"
             >
@@ -445,29 +474,26 @@ export const AccessibilityPreferences = memo(function AccessibilityPreferences({
 // ARIA live region for dynamic content
 export const LiveRegion = memo(function LiveRegion({
   children,
-  priority = 'polite',
+  priority = "polite",
   atomic = false,
 }: {
   children: React.ReactNode;
-  priority?: 'polite' | 'assertive' | 'off';
+  priority?: "polite" | "assertive" | "off";
   atomic?: boolean;
 }) {
   return (
-    <div
-      aria-live={priority}
-      aria-atomic={atomic}
-      className="sr-only"
-    >
+    <div aria-live={priority} aria-atomic={atomic} className="sr-only">
       {children}
     </div>
   );
 });
 
 // Enhanced button with better accessibility
-interface AccessibleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface AccessibleButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
-  variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost";
+  size?: "sm" | "md" | "lg";
   loading?: boolean;
   loadingText?: string;
   describedBy?: string;
@@ -475,10 +501,10 @@ interface AccessibleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonEle
 
 export const AccessibleButton = memo(function AccessibleButton({
   children,
-  variant = 'default',
-  size = 'md',
+  variant = "default",
+  size = "md",
   loading = false,
-  loadingText = 'Loading...',
+  loadingText = "Loading...",
   describedBy,
   className,
   ...props
@@ -487,9 +513,9 @@ export const AccessibleButton = memo(function AccessibleButton({
     <Button
       {...props}
       className={cn(
-        'focus:ring-2 focus:ring-offset-2 focus:ring-primary',
-        'disabled:opacity-50 disabled:cursor-not-allowed',
-        className
+        "focus:ring-2 focus:ring-offset-2 focus:ring-primary",
+        "disabled:opacity-50 disabled:cursor-not-allowed",
+        className,
       )}
       aria-busy={loading}
       aria-describedby={describedBy}
@@ -513,16 +539,19 @@ export function useColorContrast() {
     // This is a simplified version - in production you'd use a proper color library
     const getLuminance = (color: string) => {
       // Simple luminance calculation
-      const hex = color.replace('#', '');
+      const hex = color.replace("#", "");
       const r = parseInt(hex.substr(0, 2), 16) / 255;
       const g = parseInt(hex.substr(2, 2), 16) / 255;
       const b = parseInt(hex.substr(4, 2), 16) / 255;
-      
+
       const gamma = 2.4;
-      const rs = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, gamma);
-      const gs = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, gamma);
-      const bs = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, gamma);
-      
+      const rs =
+        r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, gamma);
+      const gs =
+        g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, gamma);
+      const bs =
+        b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, gamma);
+
       return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
     };
 
@@ -530,20 +559,23 @@ export function useColorContrast() {
     const l2 = getLuminance(color2);
     const bright = Math.max(l1, l2);
     const dark = Math.min(l1, l2);
-    
+
     return (bright + 0.05) / (dark + 0.05);
   }, []);
 
-  const checkContrast = useCallback((foreground: string, background: string) => {
-    const ratio = getContrastRatio(foreground, background);
-    return {
-      ratio,
-      aa: ratio >= 4.5,
-      aaa: ratio >= 7,
-      aaLarge: ratio >= 3,
-      aaaLarge: ratio >= 4.5,
-    };
-  }, [getContrastRatio]);
+  const checkContrast = useCallback(
+    (foreground: string, background: string) => {
+      const ratio = getContrastRatio(foreground, background);
+      return {
+        ratio,
+        aa: ratio >= 4.5,
+        aaa: ratio >= 7,
+        aaLarge: ratio >= 3,
+        aaaLarge: ratio >= 4.5,
+      };
+    },
+    [getContrastRatio],
+  );
 
   return { checkContrast };
 }

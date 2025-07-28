@@ -107,12 +107,14 @@
 ### Phase 1: Critical Security Fixes (Immediate)
 
 1. **Implement CSRF Protection**
+
    ```typescript
    // Add CSRF token generation and validation
    // Use double-submit cookie pattern
    ```
 
 2. **Add Rate Limiting to Auth Endpoints**
+
    ```typescript
    // Apply rate limiting to:
    // - /api/auth/sign-in
@@ -129,6 +131,7 @@
 ### Phase 2: Enhanced Security (Priority)
 
 1. **Add Remember Me Functionality**
+
    ```typescript
    // Implement persistent sessions
    // Add checkbox to sign-in form
@@ -136,6 +139,7 @@
    ```
 
 2. **Implement 2FA**
+
    ```typescript
    // Add TOTP support
    // QR code generation
@@ -164,18 +168,21 @@
 ## Recommended Actions
 
 ### Immediate (Next 24 hours)
+
 1. Implement CSRF protection
 2. Add rate limiting to auth endpoints
 3. Implement anonymous user limits
 4. Add security event logging
 
 ### Short Term (Next Week)
+
 1. Add remember me functionality
 2. Implement session management
 3. Add failed login tracking
 4. Enhance password requirements
 
 ### Medium Term (Next Month)
+
 1. Implement 2FA
 2. Add device management
 3. Implement security notifications

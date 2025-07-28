@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis';
+import { Redis } from "@upstash/redis";
 
 export interface RateLimiterOptions {
   requests: number;
@@ -15,12 +15,12 @@ export class RateLimiter {
 
     // Initialize Redis if environment variables are available
     if (
-      process.env['UPSTASH_REDIS_REST_URL'] &&
-      process.env['UPSTASH_REDIS_REST_TOKEN']
+      process.env["UPSTASH_REDIS_REST_URL"] &&
+      process.env["UPSTASH_REDIS_REST_TOKEN"]
     ) {
       this.redis = new Redis({
-        url: process.env['UPSTASH_REDIS_REST_URL'],
-        token: process.env['UPSTASH_REDIS_REST_TOKEN'],
+        url: process.env["UPSTASH_REDIS_REST_URL"],
+        token: process.env["UPSTASH_REDIS_REST_TOKEN"],
       });
     } else {
       this.redis = null;
@@ -28,14 +28,14 @@ export class RateLimiter {
   }
 
   async checkLimit(
-    identifier: string
+    identifier: string,
   ): Promise<{ allowed: boolean; remaining: number; resetIn: number }> {
     if (!this.redis) {
       // If Redis is not available, always allow requests
       return { allowed: true, remaining: this.options.requests, resetIn: 0 };
     }
 
-    const key = `${this.options.keyPrefix || 'rate_limit'}:${identifier}`;
+    const key = `${this.options.keyPrefix || "rate_limit"}:${identifier}`;
 
     try {
       // Increment the counter
@@ -68,7 +68,7 @@ export class RateLimiter {
       return;
     }
 
-    const key = `${this.options.keyPrefix || 'rate_limit'}:${identifier}`;
+    const key = `${this.options.keyPrefix || "rate_limit"}:${identifier}`;
 
     try {
       await this.redis.del(key);
@@ -79,7 +79,7 @@ export class RateLimiter {
 // Utility function for distributed rate limiting across multiple services
 export async function createDistributedRateLimiter(
   serviceName: string,
-  options: Omit<RateLimiterOptions, 'keyPrefix'>
+  options: Omit<RateLimiterOptions, "keyPrefix">,
 ): Promise<RateLimiter> {
   return new RateLimiter({
     ...options,

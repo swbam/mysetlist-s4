@@ -1,25 +1,25 @@
-'use client';
+"use client";
 
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Badge } from '@repo/design-system/components/ui/badge';
+} from "@repo/design-system/components/ui/alert";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { cn } from '@repo/design-system/lib/utils';
-import { Music2, TrendingUp, Wifi, WifiOff } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useState, useCallback } from 'react';
-import { useAuth } from '~/app/providers/auth-provider';
-import { useRealtimeVotes } from '~/hooks/use-realtime-votes';
-import { useRealtimeSetlist } from '~/hooks/use-realtime-setlist';
-import { VoteButton } from '../voting/vote-button';
-import { VoteSummary } from '../voting/vote-summary';
+} from "@repo/design-system/components/ui/card";
+import { cn } from "@repo/design-system/lib/utils";
+import { Music2, TrendingUp, Wifi, WifiOff } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState, useCallback } from "react";
+import { useAuth } from "~/app/providers/auth-provider";
+import { useRealtimeVotes } from "~/hooks/use-realtime-votes";
+import { useRealtimeSetlist } from "~/hooks/use-realtime-setlist";
+import { VoteButton } from "../voting/vote-button";
+import { VoteSummary } from "../voting/vote-summary";
 
 interface RealtimeSetlistViewerProps {
   showId: string;
@@ -45,7 +45,7 @@ export function EnhancedRealtimeSetlistViewer({
   const { setlists: realtimeSetlists, isConnected } = useRealtimeSetlist({
     showId,
     onEvent: (event) => {
-      console.log('Setlist event:', event);
+      console.log("Setlist event:", event);
     },
   });
 
@@ -66,7 +66,7 @@ export function EnhancedRealtimeSetlistViewer({
     setlistSongIds,
     userId: session?.user?.id,
     onVoteUpdate: (update) => {
-      console.log('Vote updated:', update);
+      console.log("Vote updated:", update);
       // Update setlists with new vote data
       setSetlists((currentSetlists) =>
         currentSetlists.map((setlist) => ({
@@ -83,7 +83,7 @@ export function EnhancedRealtimeSetlistViewer({
             }
             return song;
           }),
-        }))
+        })),
       );
     },
   });
@@ -104,22 +104,22 @@ export function EnhancedRealtimeSetlistViewer({
   }, [voteCounts]);
 
   const handleVote = useCallback(
-    async (setlistSongId: string, voteType: 'up' | 'down' | null) => {
+    async (setlistSongId: string, voteType: "up" | "down" | null) => {
       try {
         await vote(setlistSongId, voteType);
       } catch (error) {
-        console.error('Failed to vote:', error);
+        console.error("Failed to vote:", error);
       }
     },
-    [vote]
+    [vote],
   );
 
   const formatDuration = (ms?: number) => {
-    if (!ms) return '';
+    if (!ms) return "";
     const seconds = Math.floor(ms / 1000);
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   const getTopVotedSongs = useCallback(() => {
@@ -148,7 +148,7 @@ export function EnhancedRealtimeSetlistViewer({
   return (
     <div className="space-y-6">
       {/* Connection Status */}
-      <Alert className={cn(!isConnected && 'border-red-200 bg-red-50')}>
+      <Alert className={cn(!isConnected && "border-red-200 bg-red-50")}>
         <div className="flex items-center gap-2">
           {isConnected && isSubscribed ? (
             <Wifi className="h-4 w-4 text-green-600" />
@@ -166,7 +166,7 @@ export function EnhancedRealtimeSetlistViewer({
                 )}
               </>
             ) : (
-              'Connecting to real-time updates...'
+              "Connecting to real-time updates..."
             )}
           </AlertDescription>
         </div>
@@ -184,7 +184,7 @@ export function EnhancedRealtimeSetlistViewer({
                     {setlist.name}
                     <Badge
                       variant={
-                        setlist.type === 'actual' ? 'default' : 'secondary'
+                        setlist.type === "actual" ? "default" : "secondary"
                       }
                     >
                       {setlist.type}
@@ -213,10 +213,10 @@ export function EnhancedRealtimeSetlistViewer({
                           <div
                             key={song.id}
                             className={cn(
-                              'flex items-center gap-3 rounded-lg p-3 transition-colors',
-                              'hover:bg-muted/50',
+                              "flex items-center gap-3 rounded-lg p-3 transition-colors",
+                              "hover:bg-muted/50",
                               song.isPlayed &&
-                                'border border-green-200 bg-green-50'
+                                "border border-green-200 bg-green-50",
                             )}
                           >
                             {/* Position */}
@@ -284,7 +284,7 @@ export function EnhancedRealtimeSetlistViewer({
                             {showVotes &&
                               session &&
                               !setlist.isLocked &&
-                              setlist.type === 'predicted' && (
+                              setlist.type === "predicted" && (
                                 <VoteButton
                                   setlistSongId={song.id}
                                   currentVote={voteData.userVote}
@@ -302,17 +302,17 @@ export function EnhancedRealtimeSetlistViewer({
                             {showVotes &&
                               (!session ||
                                 setlist.isLocked ||
-                                setlist.type === 'actual') && (
+                                setlist.type === "actual") && (
                                 <div className="flex items-center gap-1 text-sm">
                                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                                   <span
                                     className={cn(
-                                      'font-medium',
-                                      voteData.netVotes > 0 && 'text-green-600',
-                                      voteData.netVotes < 0 && 'text-red-600'
+                                      "font-medium",
+                                      voteData.netVotes > 0 && "text-green-600",
+                                      voteData.netVotes < 0 && "text-red-600",
                                     )}
                                   >
-                                    {voteData.netVotes > 0 ? '+' : ''}
+                                    {voteData.netVotes > 0 ? "+" : ""}
                                     {voteData.netVotes}
                                   </span>
                                 </div>

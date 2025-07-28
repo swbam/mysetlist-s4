@@ -1,10 +1,11 @@
-'use client';
+"use client";
 
-import { VenueCard } from '~/components/cards/venue-card';
-import { ResponsiveGrid, EmptyState } from '~/components/layout/responsive-grid';
-import { MapPin } from 'lucide-react';
-import { MapPin } from 'lucide-react';
-import { VenueCard } from './venue-card';
+import { VenueCard } from "~/components/cards/venue-card";
+import {
+  ResponsiveGrid,
+  EmptyState,
+} from "~/components/layout/responsive-grid";
+import { MapPin } from "lucide-react";
 
 interface Venue {
   id: string;
@@ -22,7 +23,6 @@ interface Venue {
   distance?: number;
   amenities: string | null;
   website?: string | null;
-
 }
 
 interface VenueGridClientProps {
@@ -32,7 +32,7 @@ interface VenueGridClientProps {
 export function VenueGridClient({ venues }: VenueGridClientProps) {
   const handleFavorite = (venueId: string) => {
     // TODO: Implement favorite functionality
-    console.log('Favoriting venue:', venueId);
+    console.log("Favoriting venue:", venueId);
   };
 
   const emptyState = (
@@ -44,14 +44,14 @@ export function VenueGridClient({ venues }: VenueGridClientProps) {
   );
 
   return (
-    <ResponsiveGrid 
-      variant="venues" 
+    <ResponsiveGrid
+      variant="venues"
       emptyState={emptyState}
       className="min-h-[600px]"
     >
       {venues.map((venue) => (
         <div key={venue.id} role="gridcell">
-          <VenueCard 
+          <VenueCard
             venue={venue}
             variant="default"
             showFavoriteButton={true}
@@ -60,23 +60,5 @@ export function VenueGridClient({ venues }: VenueGridClientProps) {
         </div>
       ))}
     </ResponsiveGrid>
-  if (venues.length === 0) {
-    return (
-      <div className="py-12 text-center">
-        <MapPin className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
-        <h3 className="mb-2 font-semibold text-lg">No venues found</h3>
-        <p className="text-muted-foreground">
-          Try adjusting your filters or search criteria
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-      {venues.map((venue) => (
-        <VenueCard key={venue.id} venue={venue} />
-      ))}
-    </div>
   );
 }

@@ -1,9 +1,9 @@
-import { db } from '@repo/database';
-import { setlists, shows } from '@repo/database';
-import { and, eq, gte, lte, sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database";
+import { setlists, shows } from "@repo/database";
+import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
-const CRON_SECRET = process.env['CRON_SECRET'];
+const CRON_SECRET = process.env["CRON_SECRET"];
 
 // Update trending scores based on recent activity
 async function updateTrendingScores() {
@@ -100,12 +100,12 @@ async function updateTrendingScores() {
 
     return {
       success: true,
-      message: 'Trending scores updated successfully',
+      message: "Trending scores updated successfully",
     };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -119,14 +119,14 @@ async function cleanupOldData() {
     await db
       .update(shows)
       .set({
-        status: 'completed',
+        status: "completed",
         updatedAt: new Date(),
       })
       .where(
         and(
-          eq(shows.status, 'upcoming'),
-          lte(shows.date, ninetyDaysAgo.toISOString().split('T')[0]!)
-        )
+          eq(shows.status, "upcoming"),
+          lte(shows.date, ninetyDaysAgo.toISOString().split("T")[0]!),
+        ),
       );
 
     // Archive old votes (optional - keep for analytics)
@@ -134,12 +134,12 @@ async function cleanupOldData() {
 
     return {
       success: true,
-      message: 'Cleanup completed successfully',
+      message: "Cleanup completed successfully",
     };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
@@ -154,14 +154,14 @@ async function updateShowStatuses() {
     await db
       .update(shows)
       .set({
-        status: 'completed',
+        status: "completed",
         updatedAt: now,
       })
       .where(
         and(
-          eq(shows.status, 'upcoming'),
-          lte(shows.date, yesterday.toISOString().split('T')[0]!)
-        )
+          eq(shows.status, "upcoming"),
+          lte(shows.date, yesterday.toISOString().split("T")[0]!),
+        ),
       );
 
     // Lock setlists for shows that have started
@@ -176,28 +176,28 @@ async function updateShowStatuses() {
           eq(setlists.isLocked, false),
           gte(
             sql`(SELECT date FROM shows WHERE shows.id = setlists.show_id)`,
-            yesterday
-          )
-        )
+            yesterday,
+          ),
+        ),
       );
 
     return {
       success: true,
-      message: 'Show statuses updated successfully',
+      message: "Show statuses updated successfully",
     };
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : "Unknown error",
     };
   }
 }
 
 export async function GET(request: NextRequest) {
   // Verify cron secret
-  const authHeader = request.headers.get('authorization');
+  const authHeader = request.headers.get("authorization");
   if (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -211,17 +211,17 @@ export async function GET(request: NextRequest) {
 
     const results = {
       trending:
-        trendingResult.status === 'fulfilled'
+        trendingResult.status === "fulfilled"
           ? trendingResult.value
-          : { success: false, error: 'Failed to update trending scores' },
+          : { success: false, error: "Failed to update trending scores" },
       cleanup:
-        cleanupResult.status === 'fulfilled'
+        cleanupResult.status === "fulfilled"
           ? cleanupResult.value
-          : { success: false, error: 'Failed to cleanup old data' },
+          : { success: false, error: "Failed to cleanup old data" },
       showStatuses:
-        statusResult.status === 'fulfilled'
+        statusResult.status === "fulfilled"
           ? statusResult.value
-          : { success: false, error: 'Failed to update show statuses' },
+          : { success: false, error: "Failed to update show statuses" },
     };
 
     const allSuccessful = Object.values(results).every((r) => r.success);
@@ -229,18 +229,18 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: allSuccessful,
       message: allSuccessful
-        ? 'All hourly updates completed successfully'
-        : 'Some updates failed',
+        ? "All hourly updates completed successfully"
+        : "Some updates failed",
       timestamp: new Date().toISOString(),
       results,
     });
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Hourly update failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Hourly update failed",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

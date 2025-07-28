@@ -1,7 +1,7 @@
-import { db } from '@repo/database';
-import { artists } from '@repo/database/src/schema';
-import { desc } from 'drizzle-orm';
-import { ArtistCard } from './artist-card';
+import { db } from "@repo/database";
+import { artists } from "@repo/database/src/schema";
+import { desc } from "drizzle-orm";
+import { ArtistCard } from "./artist-card";
 
 export async function ArtistGridServer() {
   try {

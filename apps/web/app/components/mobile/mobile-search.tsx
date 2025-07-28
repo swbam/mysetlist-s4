@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { Input } from "@repo/design-system/components/ui/input";
+import { cn } from "@repo/design-system/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   Calendar,
@@ -15,14 +15,14 @@ import {
   Search,
   TrendingUp,
   X,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
-import { useDebounce } from '~/hooks/use-debounce';
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useDebounce } from "~/hooks/use-debounce";
 
 interface SearchResult {
   id: string;
-  type: 'artist' | 'show' | 'venue' | 'song';
+  type: "artist" | "show" | "venue" | "song";
   title: string;
   subtitle?: string;
   imageUrl?: string;
@@ -39,30 +39,30 @@ interface MobileSearchProps {
 }
 
 const mockTrendingSearches = [
-  'Taylor Swift',
-  'The Eras Tour',
-  'Madison Square Garden',
-  'Coldplay',
-  'Sphere Las Vegas',
+  "Taylor Swift",
+  "The Eras Tour",
+  "Madison Square Garden",
+  "Coldplay",
+  "Sphere Las Vegas",
 ];
 
 const mockRecentSearches = [
-  'Arctic Monkeys',
-  'Red Rocks',
-  'Billie Eilish',
-  'Coachella',
+  "Arctic Monkeys",
+  "Red Rocks",
+  "Billie Eilish",
+  "Coachella",
 ];
 
 export function MobileSearch({
   onSearch,
   onResultSelect,
   className,
-  placeholder = 'Search artists, shows, venues...',
+  placeholder = "Search artists, shows, venues...",
   recentSearches = mockRecentSearches,
   trendingSearches = mockTrendingSearches,
 }: MobileSearchProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
@@ -90,20 +90,18 @@ export function MobileSearch({
         searchResults = await onSearch(searchQuery);
       } else {
         const res = await fetch(
-          `/api/search?q=${encodeURIComponent(searchQuery)}&limit=8`
+          `/api/search?q=${encodeURIComponent(searchQuery)}&limit=8`,
         );
         if (res.ok) {
           const data = await res.json();
-          searchResults = (data.results || []).map(
-            (result: any) => ({
-              id: result.slug || result.id,
-              type: result.type,
-              title: result.title,
-              imageUrl: result.imageUrl,
-              subtitle: result.subtitle,
-              trending: result.trending || false,
-            })
-          );
+          searchResults = (data.results || []).map((result: any) => ({
+            id: result.slug || result.id,
+            type: result.type,
+            title: result.title,
+            imageUrl: result.imageUrl,
+            subtitle: result.subtitle,
+            trending: result.trending || false,
+          }));
         }
       }
 
@@ -124,7 +122,7 @@ export function MobileSearch({
 
   const handleClose = () => {
     setIsOpen(false);
-    setQuery('');
+    setQuery("");
     setResults([]);
     setFocusedIndex(-1);
   };
@@ -135,19 +133,21 @@ export function MobileSearch({
     } else {
       // Handle different result types
       switch (result.type) {
-        case 'artist':
+        case "artist":
           router.push(`/artists/${result.id}`);
           break;
-        case 'show':
+        case "show":
           router.push(`/shows/${result.id}`);
           break;
-        case 'venue':
+        case "venue":
           router.push(`/venues/${result.id}`);
           break;
-        case 'song':
+        case "song":
           // For songs, try to navigate to the artist page
           if (result.subtitle) {
-            router.push(`/artists?search=${encodeURIComponent(result.subtitle)}`);
+            router.push(
+              `/artists?search=${encodeURIComponent(result.subtitle)}`,
+            );
           }
           break;
       }
@@ -164,13 +164,13 @@ export function MobileSearch({
 
   const getResultIcon = (type: string) => {
     switch (type) {
-      case 'artist':
+      case "artist":
         return Music;
-      case 'show':
+      case "show":
         return Calendar;
-      case 'venue':
+      case "venue":
         return MapPin;
-      case 'song':
+      case "song":
         return Music;
       default:
         return Search;
@@ -180,13 +180,13 @@ export function MobileSearch({
   // Prevent body scroll when search is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isOpen]);
 
@@ -197,8 +197,8 @@ export function MobileSearch({
         variant="ghost"
         onClick={handleOpen}
         className={cn(
-          'flex-1 justify-start gap-2 text-muted-foreground md:hidden',
-          className
+          "flex-1 justify-start gap-2 text-muted-foreground md:hidden",
+          className,
         )}
       >
         <Search className="h-4 w-4" />
@@ -232,7 +232,7 @@ export function MobileSearch({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setQuery('')}
+                        onClick={() => setQuery("")}
                         className="-translate-y-1/2 absolute top-1/2 right-2 h-6 w-6 p-0"
                       >
                         <X className="h-4 w-4" />
@@ -267,8 +267,8 @@ export function MobileSearch({
                           <Card
                             key={result.id}
                             className={cn(
-                              'cursor-pointer transition-colors hover:bg-muted/50',
-                              focusedIndex === index && 'bg-muted'
+                              "cursor-pointer transition-colors hover:bg-muted/50",
+                              focusedIndex === index && "bg-muted",
                             )}
                             onClick={() => handleResultSelect(result)}
                           >

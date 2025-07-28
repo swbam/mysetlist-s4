@@ -1,17 +1,21 @@
-'use client';
+"use client";
 
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardHeader } from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Calendar, MapPin, Music, Search, X } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { useDebounce } from '~/hooks/use-debounce';
+} from "@repo/design-system/components/ui/alert";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+} from "@repo/design-system/components/ui/card";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Calendar, MapPin, Music, Search, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useDebounce } from "~/hooks/use-debounce";
 
 interface Show {
   id: string;
@@ -27,7 +31,7 @@ interface Show {
 
 export function ShowsSearch() {
   const router = useRouter();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<Show[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,20 +49,20 @@ export function ShowsSearch() {
     try {
       const params = new URLSearchParams({
         q: searchQuery,
-        types: 'show',
-        limit: '10'
+        types: "show",
+        limit: "10",
       });
 
       const response = await fetch(`/api/search?${params}`);
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Search failed');
+        throw new Error(data.error || "Search failed");
       }
 
       // Filter only show results
       const showResults = (data.results || [])
-        .filter((result: any) => result.type === 'show')
+        .filter((result: any) => result.type === "show")
         .map((result: any) => ({
           id: result.id,
           name: result.title,
@@ -68,12 +72,12 @@ export function ShowsSearch() {
           venueName: result.venueName,
           location: result.location,
           imageUrl: result.imageUrl,
-          status: 'upcoming'
+          status: "upcoming",
         }));
 
       setResults(showResults);
     } catch (err: any) {
-      setError(err.message || 'Failed to search shows');
+      setError(err.message || "Failed to search shows");
       setResults([]);
     } finally {
       setIsLoading(false);
@@ -85,17 +89,17 @@ export function ShowsSearch() {
   };
 
   const clearSearch = () => {
-    setQuery('');
+    setQuery("");
     setResults([]);
     setError(null);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'short',
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
@@ -143,7 +147,7 @@ export function ShowsSearch() {
       {results.length > 0 && (
         <div className="space-y-3">
           <p className="text-muted-foreground text-sm">
-            Found {results.length} show{results.length !== 1 ? 's' : ''}
+            Found {results.length} show{results.length !== 1 ? "s" : ""}
           </p>
           <div className="grid gap-3">
             {results.map((show) => (
@@ -162,7 +166,10 @@ export function ShowsSearch() {
                         <h3 className="font-semibold text-lg truncate">
                           {show.name}
                         </h3>
-                        <Badge variant="outline" className="text-xs flex-shrink-0">
+                        <Badge
+                          variant="outline"
+                          className="text-xs flex-shrink-0"
+                        >
                           Show
                         </Badge>
                       </div>
@@ -205,10 +212,12 @@ export function ShowsSearch() {
           <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
           <h3 className="mb-2 font-semibold text-lg">No shows found</h3>
           <p className="text-muted-foreground text-sm">
-            No shows found for "{query}". Try searching for artist names, venues, or locations.
+            No shows found for "{query}". Try searching for artist names,
+            venues, or locations.
           </p>
           <p className="mt-2 text-muted-foreground text-xs">
-            Example searches: "Taylor Swift", "Madison Square Garden", "New York"
+            Example searches: "Taylor Swift", "Madison Square Garden", "New
+            York"
           </p>
         </div>
       )}
@@ -220,7 +229,8 @@ export function ShowsSearch() {
           </div>
           <h3 className="mb-2 font-semibold text-lg">Search for Shows</h3>
           <p className="text-muted-foreground text-sm">
-            Find upcoming concerts by searching for artists, venues, or locations
+            Find upcoming concerts by searching for artists, venues, or
+            locations
           </p>
         </div>
       )}

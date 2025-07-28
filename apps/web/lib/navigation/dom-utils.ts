@@ -4,7 +4,7 @@
  */
 
 export const isBrowser =
-  typeof window !== 'undefined' && typeof document !== 'undefined';
+  typeof window !== "undefined" && typeof document !== "undefined";
 
 export const safeDocument = isBrowser ? document : undefined;
 export const safeWindow = isBrowser ? window : undefined;
@@ -61,7 +61,7 @@ export function safeAppendToHead(element: HTMLElement): void {
 export function safeAddEventListener<K extends keyof WindowEventMap>(
   type: K,
   listener: (this: Window, ev: WindowEventMap[K]) => any,
-  options?: boolean | AddEventListenerOptions
+  options?: boolean | AddEventListenerOptions,
 ): () => void {
   if (isBrowser && safeWindow) {
     safeWindow.addEventListener(type, listener, options);
@@ -78,5 +78,5 @@ export function getLocationOrigin(): string {
     return safeWindow.location.origin;
   }
   // Fallback for SSR - you might want to use an environment variable here
-  return process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001';
+  return process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
 }

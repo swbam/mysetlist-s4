@@ -1,11 +1,11 @@
-import { and, asc, desc, eq, gte, inArray, lte, sql } from 'drizzle-orm';
-import { db } from '../client';
-import { setlistSongs, setlists, shows, users, votes } from '../schema';
+import { and, asc, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
+import { db } from "../client";
+import { setlistSongs, setlists, shows, users, votes } from "../schema";
 
 export async function createVote(voteData: {
   userId: string;
   setlistSongId: string;
-  voteType: 'up' | 'down';
+  voteType: "up" | "down";
 }) {
   const [vote] = await db
     .insert(votes)
@@ -30,7 +30,7 @@ export async function removeVote(userId: string, setlistSongId: string) {
   await db
     .delete(votes)
     .where(
-      and(eq(votes.userId, userId), eq(votes.setlistSongId, setlistSongId))
+      and(eq(votes.userId, userId), eq(votes.setlistSongId, setlistSongId)),
     );
 
   return { success: true };
@@ -41,7 +41,7 @@ export async function getUserVote(userId: string, setlistSongId: string) {
     .select()
     .from(votes)
     .where(
-      and(eq(votes.userId, userId), eq(votes.setlistSongId, setlistSongId))
+      and(eq(votes.userId, userId), eq(votes.setlistSongId, setlistSongId)),
     )
     .limit(1);
 
@@ -62,11 +62,11 @@ export async function getUserVotes(userId: string, setlistSongIds: string[]) {
     .where(
       and(
         eq(votes.userId, userId),
-        inArray(votes.setlistSongId, setlistSongIds)
-      )
+        inArray(votes.setlistSongId, setlistSongIds),
+      ),
     );
 
-  const voteMap: Record<string, 'up' | 'down'> = {};
+  const voteMap: Record<string, "up" | "down"> = {};
   userVotes.forEach((vote) => {
     voteMap[vote.setlistSongId] = vote.voteType;
   });
@@ -122,9 +122,9 @@ export async function getVoteCountsForSetlist(setlistId: string) {
       songVotes[setlistSongId] = { upvotes: 0, downvotes: 0, netVotes: 0 };
     }
 
-    if (voteType === 'up') {
+    if (voteType === "up") {
       songVotes[setlistSongId].upvotes = count;
-    } else if (voteType === 'down') {
+    } else if (voteType === "down") {
       songVotes[setlistSongId].downvotes = count;
     }
   });
@@ -143,15 +143,15 @@ export async function getTopVotedSongsForShow(
   options?: {
     limit?: number;
     minVotes?: number;
-    voteType?: 'up' | 'down' | 'net';
-  }
+    voteType?: "up" | "down" | "net";
+  },
 ) {
-  const { limit = 20, minVotes = 1, voteType = 'net' } = options || {};
+  const { limit = 20, minVotes = 1, voteType = "net" } = options || {};
 
   const orderColumn =
-    voteType === 'up'
+    voteType === "up"
       ? setlistSongs.upvotes
-      : voteType === 'down'
+      : voteType === "down"
         ? setlistSongs.downvotes
         : setlistSongs.netVotes;
 
@@ -177,9 +177,9 @@ export async function getUserVotingHistory(
   options?: {
     limit?: number;
     showId?: string;
-    voteType?: 'up' | 'down';
+    voteType?: "up" | "down";
     dateRange?: { from: Date; to: Date };
-  }
+  },
 ) {
   const { limit = 50, showId, voteType, dateRange } = options || {};
 
@@ -197,8 +197,8 @@ export async function getUserVotingHistory(
     conditions.push(
       and(
         gte(votes.createdAt, dateRange.from),
-        lte(votes.createdAt, dateRange.to)
-      )
+        lte(votes.createdAt, dateRange.to),
+      ),
     );
   }
 
@@ -223,17 +223,17 @@ export async function getUserVotingHistory(
 export async function getVotingStatistics(options?: {
   showId?: string;
   userId?: string;
-  timeRange?: 'day' | 'week' | 'month' | 'all';
+  timeRange?: "day" | "week" | "month" | "all";
 }) {
-  const { showId, userId, timeRange = 'all' } = options || {};
+  const { showId, userId, timeRange = "all" } = options || {};
 
   let dateCondition = sql`TRUE`;
 
-  if (timeRange !== 'all') {
+  if (timeRange !== "all") {
     const intervals = {
-      day: '1 day',
-      week: '7 days',
-      month: '30 days',
+      day: "1 day",
+      week: "7 days",
+      month: "30 days",
     };
     dateCondition = sql`${votes.createdAt} >= NOW() - INTERVAL '${sql.raw(intervals[timeRange])}'`;
   }
@@ -315,7 +315,7 @@ export async function getVotingStatistics(options?: {
         acc[voteType] = count;
         return acc;
       },
-      { up: 0, down: 0 } as Record<string, number>
+      { up: 0, down: 0 } as Record<string, number>,
     ),
     topVoters,
     mostVotedSongs,
@@ -325,20 +325,20 @@ export async function getVotingStatistics(options?: {
 export async function getVotingTrends(options?: {
   showId?: string;
   days?: number;
-  groupBy?: 'hour' | 'day';
+  groupBy?: "hour" | "day";
 }) {
-  const { showId, days = 7, groupBy = 'day' } = options || {};
+  const { showId, days = 7, groupBy = "day" } = options || {};
 
   const dateFormat =
-    groupBy === 'hour'
+    groupBy === "hour"
       ? sql`DATE_TRUNC('hour', ${votes.createdAt})`
       : sql`DATE_TRUNC('day', ${votes.createdAt})`;
 
   const conditions = [
     gte(
       votes.createdAt,
-      sql`NOW() - INTERVAL '${sql.raw(days.toString())} days'`
-    )
+      sql`NOW() - INTERVAL '${sql.raw(days.toString())} days'`,
+    ),
   ];
 
   if (showId) {
@@ -347,7 +347,7 @@ export async function getVotingTrends(options?: {
 
   const query = db
     .select({
-      period: dateFormat.as('period'),
+      period: dateFormat.as("period"),
       upvotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'up')`,
       downvotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'down')`,
       totalVotes: sql<number>`COUNT(*)`,
@@ -390,8 +390,8 @@ export async function bulkUpdateVoteCounts(setlistSongIds: string[]) {
           updatedAt: new Date(),
         })
         .where(eq(setlistSongs.id, setlistSongId))
-        .returning()
-    )
+        .returning(),
+    ),
   );
 
   return updates.flat();
