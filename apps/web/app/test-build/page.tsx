@@ -4,5 +4,5 @@ export default function TestBuildPage() {
       <h1>Test Build Page</h1>
       <p>If you can see this, the build is working.</p>
     </div>
-  );
+  )
 }

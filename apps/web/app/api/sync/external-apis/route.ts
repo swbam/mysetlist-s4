@@ -1,155 +1,152 @@
-import { db } from '@repo/database';
-import { artists, setlistSongs, setlists, shows, venues } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
-import { 
-  SpotifyClient, 
-  TicketmasterClient, 
-  SetlistFmClient,
+import { db } from "@repo/database"
+import { artists, setlistSongs, setlists, shows, venues } from "@repo/database"
+import {
   type SetlistFmArtist,
-  type SetlistFmVenue,
-  type SetlistFmSong,
+  SetlistFmClient,
   type SetlistFmSet,
-  type SetlistFmSetlist
-} from '@repo/external-apis';
+  type SetlistFmSetlist,
+  type SetlistFmSong,
+  type SetlistFmVenue,
+  SpotifyClient,
+  TicketmasterClient,
+} from "@repo/external-apis"
+import { eq } from "drizzle-orm"
+import { type NextRequest, NextResponse } from "next/server"
 
 // Types for external API responses
 interface SpotifyAuthResponse {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
+  access_token: string
+  token_type: string
+  expires_in: number
 }
 
 interface SpotifyArtist {
-  id: string;
-  name: string;
-  images: Array<{ url: string; height: number; width: number }>;
-  genres: string[];
-  popularity: number;
-  followers: { total: number };
-  external_urls: { spotify: string };
+  id: string
+  name: string
+  images: Array<{ url: string; height: number; width: number }>
+  genres: string[]
+  popularity: number
+  followers: { total: number }
+  external_urls: { spotify: string }
 }
 
 interface SpotifySearchResponse {
   artists: {
-    items: SpotifyArtist[];
-    total: number;
-  };
+    items: SpotifyArtist[]
+    total: number
+  }
 }
 
 interface TicketmasterVenue {
-  id: string;
-  name: string;
-  address?: { line1: string };
-  city?: { name: string };
-  state?: { stateCode: string };
-  country?: { countryCode: string };
-  postalCode?: string;
-  location?: { latitude: string; longitude: string };
-  timezone?: string;
-  capacity?: number;
-  url?: string;
+  id: string
+  name: string
+  address?: { line1: string }
+  city?: { name: string }
+  state?: { stateCode: string }
+  country?: { countryCode: string }
+  postalCode?: string
+  location?: { latitude: string; longitude: string }
+  timezone?: string
+  capacity?: number
+  url?: string
 }
 
 interface TicketmasterAttraction {
-  id: string;
-  name: string;
+  id: string
+  name: string
 }
 
 interface TicketmasterEvent {
-  id: string;
-  name: string;
+  id: string
+  name: string
   dates: {
-    start: { localDate: string; localTime?: string };
-    status: { code: string };
-  };
-  priceRanges?: Array<{ min: number; max: number; currency: string }>;
-  url: string;
+    start: { localDate: string; localTime?: string }
+    status: { code: string }
+  }
+  priceRanges?: Array<{ min: number; max: number; currency: string }>
+  url: string
   _embedded?: {
-    venues?: TicketmasterVenue[];
-    attractions?: TicketmasterAttraction[];
-  };
+    venues?: TicketmasterVenue[]
+    attractions?: TicketmasterAttraction[]
+  }
 }
 
 interface TicketmasterSearchResponse {
   _embedded?: {
-    events?: TicketmasterEvent[];
-  };
+    events?: TicketmasterEvent[]
+  }
 }
 
 // SetlistFm types are imported from @repo/external-apis
 
 interface SetlistFmSearchResponse {
-  setlist?: SetlistFmSetlist[];
-  artist?: SetlistFmArtist[];
+  setlist?: SetlistFmSetlist[]
+  artist?: SetlistFmArtist[]
 }
 
 // Database insert types
 interface ArtistInsert {
-  spotifyId?: string;
-  setlistfmMbid?: string;
-  name: string;
-  slug: string;
-  imageUrl?: string | null;
-  smallImageUrl?: string | null;
-  genres?: string;
-  popularity?: number;
-  followers?: number;
-  externalUrls?: string;
-  lastSyncedAt?: Date;
-  verified: boolean;
+  spotifyId?: string
+  setlistfmMbid?: string
+  name: string
+  slug: string
+  imageUrl?: string | null
+  smallImageUrl?: string | null
+  genres?: string
+  popularity?: number
+  followers?: number
+  externalUrls?: string
+  lastSyncedAt?: Date
+  verified: boolean
 }
 
 interface VenueInsert {
-  ticketmasterId?: string;
-  name: string;
-  slug: string;
-  address?: string | null;
-  city?: string | null;
-  state?: string | null;
-  country?: string | null;
-  postalCode?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
-  timezone?: string | null;
-  capacity?: number | null;
-  website?: string | null;
+  ticketmasterId?: string
+  name: string
+  slug: string
+  address?: string | null
+  city?: string | null
+  state?: string | null
+  country?: string | null
+  postalCode?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  timezone?: string | null
+  capacity?: number | null
+  website?: string | null
 }
 
-
 interface SetlistInsert {
-  setlistfmId: string;
-  artistId: string;
-  venueId: string;
-  eventDate: Date;
-  tourName?: string | null;
-  info?: string | null;
-  lastUpdated: Date;
+  setlistfmId: string
+  artistId: string
+  venueId: string
+  eventDate: Date
+  tourName?: string | null
+  info?: string | null
+  lastUpdated: Date
 }
 
 interface SetlistSongInsert {
-  setlistId: string;
-  songName: string;
-  position: number;
-  isEncore: boolean;
-  info?: string | null;
-  isTape: boolean;
-  coverArtist?: string | null;
+  setlistId: string
+  songName: string
+  position: number
+  isEncore: boolean
+  info?: string | null
+  isTape: boolean
+  coverArtist?: string | null
 }
-
-
 
 // Sync Services
 class ArtistSyncService {
-  private spotifyClient: SpotifyClient;
+  private spotifyClient: SpotifyClient
 
   constructor() {
-    this.spotifyClient = new SpotifyClient({});
+    this.spotifyClient = new SpotifyClient({})
   }
 
   async syncArtistFromSpotify(spotifyId: string) {
-    await this.spotifyClient.authenticate();
-    const spotifyArtist = await this.spotifyClient.getArtist(spotifyId);
+    await this.spotifyClient.authenticate()
+    const spotifyArtist = await this.spotifyClient.getArtist(spotifyId)
 
     const artistData: ArtistInsert = {
       spotifyId: spotifyArtist.id,
@@ -163,7 +160,7 @@ class ArtistSyncService {
       externalUrls: JSON.stringify(spotifyArtist.external_urls),
       lastSyncedAt: new Date(),
       verified: false,
-    };
+    }
     const [artist] = await db
       .insert(artists)
       .values(artistData)
@@ -174,79 +171,79 @@ class ArtistSyncService {
           updatedAt: new Date(),
         },
       })
-      .returning();
+      .returning()
 
-    return artist;
+    return artist
   }
 
   private generateSlug(name: string): string {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "")
   }
 }
 
 class ShowSyncService {
-  private ticketmasterClient: TicketmasterClient;
+  private ticketmasterClient: TicketmasterClient
 
   constructor() {
     this.ticketmasterClient = new TicketmasterClient({
       apiKey: process.env.TICKETMASTER_API_KEY!,
-    });
+    })
   }
 
   async syncUpcomingShows(
     options: { city?: string; stateCode?: string; limit?: number } = {}
   ) {
-    const now = new Date();
-    const futureDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year ahead
+    const now = new Date()
+    const futureDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000) // 1 year ahead
 
     const searchParams: any = {
       startDateTime: now.toISOString(),
       endDateTime: futureDate.toISOString(),
       size: options.limit || 200,
-      countryCode: 'US',
-    };
-    
+      countryCode: "US",
+    }
+
     if (options.city) {
-      searchParams.city = options.city;
+      searchParams.city = options.city
     }
-    
+
     if (options.stateCode) {
-      searchParams.stateCode = options.stateCode;
+      searchParams.stateCode = options.stateCode
     }
 
-    const events = await this.ticketmasterClient.searchEvents(searchParams);
+    const events = await this.ticketmasterClient.searchEvents(searchParams)
 
-    const results: any[] = [];
+    const results: any[] = []
     if (events._embedded?.events) {
       for (const event of events._embedded.events) {
         try {
-          const syncedShow = await this.syncShow(event);
+          const syncedShow = await this.syncShow(event)
           if (syncedShow) {
-            results.push(syncedShow);
+            results.push(syncedShow)
           }
         } catch (_error) {}
       }
     }
 
-    return results;
+    return results
   }
 
   private async syncShow(tmEvent: TicketmasterEvent) {
     try {
       // Sync venue first
-      let venue: any = null;
+      let venue: any = null
       if (tmEvent._embedded?.venues?.[0]) {
-        venue = await this.syncVenue(tmEvent._embedded.venues[0]);
+        venue = await this.syncVenue(tmEvent._embedded.venues[0])
       }
 
       // Find or create artist
-      const artist = await this.findOrCreateArtist(tmEvent);
-      
+      const artist = await this.findOrCreateArtist(tmEvent)
+
       if (!artist) {
-        throw new Error('Failed to find or create artist');
+        throw new Error("Failed to find or create artist")
       }
 
       // Create or update show
@@ -262,8 +259,8 @@ class ShowSyncService {
         ticketUrl: tmEvent.url,
         minPrice: tmEvent.priceRanges?.[0]?.min || null,
         maxPrice: tmEvent.priceRanges?.[0]?.max || null,
-        currency: tmEvent.priceRanges?.[0]?.currency || 'USD',
-      };
+        currency: tmEvent.priceRanges?.[0]?.currency || "USD",
+      }
 
       const [show] = await db
         .insert(shows)
@@ -275,11 +272,11 @@ class ShowSyncService {
             updatedAt: new Date(),
           } as any,
         })
-        .returning();
+        .returning()
 
-      return show;
+      return show
     } catch (_error) {
-      return null;
+      return null
     }
   }
 
@@ -302,7 +299,7 @@ class ShowSyncService {
       timezone: tmVenue.timezone || null,
       capacity: tmVenue.capacity || null,
       website: tmVenue.url || null,
-    };
+    }
 
     try {
       const [venue] = await db
@@ -315,23 +312,24 @@ class ShowSyncService {
             updatedAt: new Date(),
           } as any,
         })
-        .returning();
+        .returning()
 
-      return venue;
+      return venue
     } catch (_error) {
-      return null;
+      return null
     }
   }
 
   private async findOrCreateArtist(tmEvent: TicketmasterEvent) {
     const attractionName =
-      tmEvent._embedded?.attractions?.[0]?.name || tmEvent.name;
+      tmEvent._embedded?.attractions?.[0]?.name || tmEvent.name
 
-    let artist = await db.select()
+    let artist = await db
+      .select()
       .from(artists)
       .where(eq(artists.name, attractionName))
       .limit(1)
-      .then(results => results[0]);
+      .then((results) => results[0])
 
     if (!artist) {
       const [newArtist] = await db
@@ -341,88 +339,88 @@ class ShowSyncService {
           slug: this.generateSlug(attractionName),
           verified: false,
         })
-        .returning();
+        .returning()
 
-      artist = newArtist;
+      artist = newArtist
     }
 
-    return artist;
+    return artist
   }
 
   private mapEventStatus(
     statusCode: string
-  ): 'upcoming' | 'cancelled' | 'completed' {
+  ): "upcoming" | "cancelled" | "completed" {
     switch (statusCode) {
-      case 'onsale':
-      case 'offsale':
-        return 'upcoming';
-      case 'cancelled':
-        return 'cancelled';
+      case "onsale":
+      case "offsale":
+        return "upcoming"
+      case "cancelled":
+        return "cancelled"
       default:
-        return 'upcoming';
+        return "upcoming"
     }
   }
 
   private generateSlug(name: string): string {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "")
   }
 }
 
 class SetlistSyncService {
-  private setlistFmClient: SetlistFmClient;
+  private setlistFmClient: SetlistFmClient
 
   constructor() {
     this.setlistFmClient = new SetlistFmClient({
       apiKey: process.env.SETLISTFM_API_KEY!,
-    });
+    })
   }
 
   async syncSetlistsForArtist(artistName: string, maxPages = 5) {
-    const results: any[] = [];
+    const results: any[] = []
 
     for (let page = 1; page <= maxPages; page++) {
       try {
         const response = await this.setlistFmClient.searchSetlists({
           artistName,
           p: page,
-        });
+        })
 
         if (response.setlist && response.setlist.length > 0) {
           for (const setlistData of response.setlist) {
             try {
-              const syncedSetlist = await this.syncSetlist(setlistData);
+              const syncedSetlist = await this.syncSetlist(setlistData)
               if (syncedSetlist) {
-                results.push(syncedSetlist);
+                results.push(syncedSetlist)
               }
             } catch (_error) {}
           }
         } else {
-          break; // No more setlists
+          break // No more setlists
         }
 
         // Rate limiting: wait 1 second between requests
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000))
       } catch (_error) {
-        break;
+        break
       }
     }
 
-    return results;
+    return results
   }
 
   private async syncSetlist(setlistData: SetlistFmSetlist) {
     try {
       // Find or create artist
-      const artist = await this.findOrCreateArtist(setlistData.artist);
+      const artist = await this.findOrCreateArtist(setlistData.artist)
 
       // Find or create venue
-      const venue = await this.findOrCreateVenue(setlistData.venue);
-      
+      const venue = await this.findOrCreateVenue(setlistData.venue)
+
       if (!artist || !venue) {
-        throw new Error('Failed to find or create artist or venue');
+        throw new Error("Failed to find or create artist or venue")
       }
 
       // Create or update setlist
@@ -434,7 +432,7 @@ class SetlistSyncService {
         tourName: setlistData.tour?.name || null,
         info: setlistData.info || null,
         lastUpdated: new Date(setlistData.lastUpdated),
-      };
+      }
 
       const [setlist] = await db
         .insert(setlists)
@@ -446,16 +444,16 @@ class SetlistSyncService {
             updatedAt: new Date(),
           } as any,
         })
-        .returning();
+        .returning()
 
       // Sync songs
       if (setlist) {
-        await this.syncSetlistSongs(setlist.id, setlistData.sets);
+        await this.syncSetlistSongs(setlist.id, setlistData.sets)
       }
 
-      return setlist;
+      return setlist
     } catch (_error) {
-      return null;
+      return null
     }
   }
 
@@ -464,9 +462,9 @@ class SetlistSyncService {
     sets: { set: SetlistFmSet[] }
   ) {
     // Clear existing songs for this setlist
-    await db.delete(setlistSongs).where(eq(setlistSongs.setlistId, setlistId));
+    await db.delete(setlistSongs).where(eq(setlistSongs.setlistId, setlistId))
 
-    let position = 1;
+    let position = 1
 
     for (const set of sets.set) {
       for (const song of set.song) {
@@ -479,21 +477,22 @@ class SetlistSyncService {
             info: song.info || null,
             isTape: song.tape === true,
             coverArtist: song.cover?.name || null,
-          };
+          }
 
-          await db.insert(setlistSongs).values(songData as any);
-          position++;
+          await db.insert(setlistSongs).values(songData as any)
+          position++
         }
       }
     }
   }
 
   private async findOrCreateArtist(artistData: SetlistFmArtist) {
-    let artist = await db.select()
+    let artist = await db
+      .select()
       .from(artists)
       .where(eq(artists.name, artistData.name))
       .limit(1)
-      .then(results => results[0]);
+      .then((results) => results[0])
 
     if (!artist) {
       const [newArtist] = await db
@@ -504,20 +503,21 @@ class SetlistSyncService {
           setlistfmMbid: artistData.mbid,
           verified: false,
         } as any)
-        .returning();
+        .returning()
 
-      artist = newArtist;
+      artist = newArtist
     }
 
-    return artist;
+    return artist
   }
 
   private async findOrCreateVenue(venueData: SetlistFmVenue) {
-    let venue = await db.select()
+    let venue = await db
+      .select()
       .from(venues)
       .where(eq(venues.name, venueData.name))
       .limit(1)
-      .then(results => results[0]);
+      .then((results) => results[0])
 
     if (!venue) {
       const [newVenue] = await db
@@ -530,126 +530,128 @@ class SetlistSyncService {
           country: venueData.city.country.code,
           latitude: venueData.city.coords?.lat || null,
           longitude: venueData.city.coords?.long || null,
-          timezone: 'UTC', // Default timezone
+          timezone: "UTC", // Default timezone
         } as any)
-        .returning();
+        .returning()
 
-      venue = newVenue;
+      venue = newVenue
     }
 
-    return venue;
+    return venue
   }
 
   private generateSlug(name: string): string {
     return name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "")
   }
 }
 
 interface SyncResults {
-  action: string;
-  timestamp: string;
+  action: string
+  timestamp: string
   results: {
-    artist?: typeof artists.$inferSelect;
-    shows?: (typeof shows.$inferSelect)[];
-    setlists?: (typeof setlists.$inferSelect)[];
+    artist?: typeof artists.$inferSelect
+    shows?: (typeof shows.$inferSelect)[]
+    setlists?: (typeof setlists.$inferSelect)[]
     spotify?: {
-      success: boolean;
-      artistCount?: number;
-      artists?: Array<{ name: string; popularity: number; followers: number }>;
-      error?: string;
-    };
+      success: boolean
+      artistCount?: number
+      artists?: Array<{ name: string; popularity: number; followers: number }>
+      error?: string
+    }
     ticketmaster?: {
-      success: boolean;
-      eventCount?: number;
-      events?: Array<{ name: string; date: string; venue?: string }>;
-      error?: string;
-    };
+      success: boolean
+      eventCount?: number
+      events?: Array<{ name: string; date: string; venue?: string }>
+      error?: string
+    }
     setlistfm?: {
-      success: boolean;
-      artistCount?: number;
-      artists?: Array<{ name: string; mbid: string }>;
-      error?: string;
-    };
-  };
+      success: boolean
+      artistCount?: number
+      artists?: Array<{ name: string; mbid: string }>
+      error?: string
+    }
+  }
 }
 
 // Main sync handler
 export async function POST(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const action = searchParams.get('action') || 'test';
-    const artistName = searchParams.get('artist') || 'Taylor Swift';
-    const city = searchParams.get('city') || undefined;
-    const state = searchParams.get('state') || undefined;
+    const { searchParams } = new URL(request.url)
+    const action = searchParams.get("action") || "test"
+    const artistName = searchParams.get("artist") || "Taylor Swift"
+    const city = searchParams.get("city") || undefined
+    const state = searchParams.get("state") || undefined
 
     const results: SyncResults = {
       action,
       timestamp: new Date().toISOString(),
       results: {},
-    };
+    }
 
     switch (action) {
-      case 'sync-artist': {
-        const artistSync = new ArtistSyncService();
-        const spotifyClient = new SpotifyClient({});
+      case "sync-artist": {
+        const artistSync = new ArtistSyncService()
+        const spotifyClient = new SpotifyClient({})
 
         // Search for artist on Spotify first
-        const searchResults = await spotifyClient.searchArtists(artistName, 1);
+        const searchResults = await spotifyClient.searchArtists(artistName, 1)
         if (searchResults.artists.items.length > 0) {
-          const firstArtist = searchResults.artists.items[0];
+          const firstArtist = searchResults.artists.items[0]
           if (firstArtist) {
-            const artist = await artistSync.syncArtistFromSpotify(firstArtist.id);
+            const artist = await artistSync.syncArtistFromSpotify(
+              firstArtist.id
+            )
             if (artist) {
-              results.results.artist = artist;
+              results.results.artist = artist
             }
           }
         }
-        break;
+        break
       }
 
-      case 'sync-shows': {
-        const showSync = new ShowSyncService();
-        const showSyncOptions: any = { limit: 50 };
-        if (city) showSyncOptions.city = city;
-        if (state) showSyncOptions.stateCode = state;
-        
-        const syncdShows = await showSync.syncUpcomingShows(showSyncOptions);
-        results.results.shows = syncdShows;
-        break;
+      case "sync-shows": {
+        const showSync = new ShowSyncService()
+        const showSyncOptions: any = { limit: 50 }
+        if (city) showSyncOptions.city = city
+        if (state) showSyncOptions.stateCode = state
+
+        const syncdShows = await showSync.syncUpcomingShows(showSyncOptions)
+        results.results.shows = syncdShows
+        break
       }
 
-      case 'sync-setlists': {
-        const setlistSync = new SetlistSyncService();
+      case "sync-setlists": {
+        const setlistSync = new SetlistSyncService()
         const syncdSetlists = await setlistSync.syncSetlistsForArtist(
           artistName,
           3
-        );
-        results.results.setlists = syncdSetlists;
-        break;
+        )
+        results.results.setlists = syncdSetlists
+        break
       }
       default: {
         // Test all APIs
-        const spotifyTest = new SpotifyClient({});
+        const spotifyTest = new SpotifyClient({})
         const ticketmasterTest = new TicketmasterClient({
           apiKey: process.env.TICKETMASTER_API_KEY!,
-        });
+        })
         const setlistfmTest = new SetlistFmClient({
           apiKey: process.env.SETLISTFM_API_KEY!,
-        });
+        })
 
         const [spotifyResult, ticketmasterResult, setlistfmResult] =
           await Promise.allSettled([
             spotifyTest.searchArtists(artistName, 5),
             ticketmasterTest.searchEvents({ keyword: artistName, size: 5 }),
             setlistfmTest.searchArtists(artistName, 1),
-          ]);
+          ])
 
         results.results = {
           spotify:
-            spotifyResult.status === 'fulfilled'
+            spotifyResult.status === "fulfilled"
               ? {
                   success: true,
                   artistCount: spotifyResult.value.artists.items.length,
@@ -665,8 +667,8 @@ export async function POST(request: NextRequest) {
                   success: false,
                   error: (spotifyResult.reason as Error).message,
                 },
-          ticketmaster: 
-            ticketmasterResult.status === 'fulfilled'
+          ticketmaster:
+            ticketmasterResult.status === "fulfilled"
               ? {
                   success: true,
                   eventCount:
@@ -685,7 +687,7 @@ export async function POST(request: NextRequest) {
                   error: (ticketmasterResult.reason as Error).message,
                 },
           setlistfm:
-            setlistfmResult.status === 'fulfilled'
+            setlistfmResult.status === "fulfilled"
               ? {
                   success: true,
                   artistCount: setlistfmResult.value.artist?.length || 0,
@@ -699,23 +701,23 @@ export async function POST(request: NextRequest) {
                   success: false,
                   error: (setlistfmResult.reason as Error).message,
                 },
-        } as any;
-        break;
+        } as any
+        break
       }
     }
 
     return NextResponse.json({
       success: true,
       ...results,
-    });
+    })
   } catch (error) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
       { status: 500 }
-    );
+    )
   }
 }

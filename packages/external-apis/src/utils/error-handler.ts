@@ -1,42 +1,42 @@
 export interface SyncError {
-  service: string;
-  operation: string;
-  error: Error;
-  context?: Record<string, any>;
-  timestamp: Date;
+  service: string
+  operation: string
+  error: Error
+  context?: Record<string, any>
+  timestamp: Date
 }
 
 export class SyncErrorHandler {
-  private errors: SyncError[] = [];
-  private maxRetries = 3;
-  private retryDelay = 1000; // Base delay in ms
+  private errors: SyncError[] = []
+  private maxRetries = 3
+  private retryDelay = 1000 // Base delay in ms
 
   constructor(
     private options: {
-      maxRetries?: number;
-      retryDelay?: number;
-      onError?: (error: SyncError) => void;
+      maxRetries?: number
+      retryDelay?: number
+      onError?: (error: SyncError) => void
     } = {}
   ) {
-    if (options.maxRetries) this.maxRetries = options.maxRetries;
-    if (options.retryDelay) this.retryDelay = options.retryDelay;
+    if (options.maxRetries) this.maxRetries = options.maxRetries
+    if (options.retryDelay) this.retryDelay = options.retryDelay
   }
 
   async withRetry<T>(
     operation: () => Promise<T>,
     context: {
-      service: string;
-      operation: string;
-      context?: Record<string, any>;
+      service: string
+      operation: string
+      context?: Record<string, any>
     }
   ): Promise<T | null> {
-    let lastError: Error | null = null;
+    let lastError: Error | null = null
 
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
-        return await operation();
+        return await operation()
       } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
+        lastError = error instanceof Error ? error : new Error(String(error))
 
         const syncError: SyncError = {
           service: context.service,
@@ -44,23 +44,23 @@ export class SyncErrorHandler {
           error: lastError,
           context: { ...context.context, attempt },
           timestamp: new Date(),
-        };
+        }
 
-        this.errors.push(syncError);
-        
+        this.errors.push(syncError)
+
         if (this.options.onError) {
-          this.options.onError(syncError);
+          this.options.onError(syncError)
         }
 
         // Don't retry on certain errors
         if (this.shouldNotRetry(lastError)) {
-          break;
+          break
         }
 
         // Exponential backoff
         if (attempt < this.maxRetries) {
-          const delay = this.retryDelay * Math.pow(2, attempt - 1);
-          await new Promise(resolve => setTimeout(resolve, delay));
+          const delay = this.retryDelay * Math.pow(2, attempt - 1)
+          await new Promise((resolve) => setTimeout(resolve, delay))
         }
       }
     }
@@ -70,42 +70,42 @@ export class SyncErrorHandler {
       service: context.service,
       operation: context.operation,
       error: lastError?.message,
-    });
+    })
 
-    return null;
+    return null
   }
 
   private shouldNotRetry(error: Error): boolean {
     // Don't retry on certain errors
     const nonRetryableErrors = [
-      'Invalid credentials',
-      'Unauthorized',
-      'Forbidden',
-      'Not Found',
-    ];
+      "Invalid credentials",
+      "Unauthorized",
+      "Forbidden",
+      "Not Found",
+    ]
 
-    return nonRetryableErrors.some(msg => 
+    return nonRetryableErrors.some((msg) =>
       error.message.toLowerCase().includes(msg.toLowerCase())
-    );
+    )
   }
 
   getErrors(): SyncError[] {
-    return [...this.errors];
+    return [...this.errors]
   }
 
   clearErrors(): void {
-    this.errors = [];
+    this.errors = []
   }
 
   getErrorSummary(): Record<string, number> {
-    const summary: Record<string, number> = {};
-    
-    this.errors.forEach(error => {
-      const key = `${error.service}:${error.operation}`;
-      summary[key] = (summary[key] || 0) + 1;
-    });
+    const summary: Record<string, number> = {}
 
-    return summary;
+    this.errors.forEach((error) => {
+      const key = `${error.service}:${error.operation}`
+      summary[key] = (summary[key] || 0) + 1
+    })
+
+    return summary
   }
 }
 
@@ -115,8 +115,8 @@ export class RateLimitError extends Error {
     message: string,
     public readonly retryAfter?: number
   ) {
-    super(message);
-    this.name = 'RateLimitError';
+    super(message)
+    this.name = "RateLimitError"
   }
 }
 
@@ -127,8 +127,8 @@ export class APIError extends Error {
     public readonly statusCode: number,
     public readonly endpoint: string
   ) {
-    super(message);
-    this.name = 'APIError';
+    super(message)
+    this.name = "APIError"
   }
 }
 
@@ -140,7 +140,7 @@ export class SyncServiceError extends Error {
     public readonly operation: string,
     public readonly rootCause?: Error
   ) {
-    super(message);
-    this.name = 'SyncServiceError';
+    super(message)
+    this.name = "SyncServiceError"
   }
 }

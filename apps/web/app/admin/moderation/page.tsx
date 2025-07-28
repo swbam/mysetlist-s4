@@ -4,13 +4,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
+} from "@repo/design-system/components/ui/tabs"
 import {
   CheckCircle,
   Clock,
@@ -18,15 +18,15 @@ import {
   Image,
   Lightbulb,
   MessageSquare,
-} from 'lucide-react';
-import { createClient } from '~/lib/supabase/server';
-import ModerationItem from './components/moderation-item';
+} from "lucide-react"
+import { createClient } from "~/lib/supabase/server"
+import ModerationItem from "./components/moderation-item"
 
 // Force dynamic rendering due to user-specific data fetching
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic"
 
 export default async function ModerationPage() {
-  const supabase = await createClient();
+  const supabase = await createClient()
 
   // Fetch pending content for moderation
   const [
@@ -36,53 +36,53 @@ export default async function ModerationPage() {
     { data: pendingTips },
   ] = await Promise.all([
     supabase
-      .from('setlists')
+      .from("setlists")
       .select(`
         *,
         show:shows(name, date, venue:venues(name)),
         artist:artists(name),
         created_by:users(display_name, email)
       `)
-      .eq('moderation_status', 'pending')
-      .order('created_at', { ascending: false })
+      .eq("moderation_status", "pending")
+      .order("created_at", { ascending: false })
       .limit(20),
     supabase
-      .from('venue_reviews')
+      .from("venue_reviews")
       .select(`
         *,
         venue:venues(name),
         user:users(display_name, email, avatar_url)
       `)
-      .eq('moderation_status', 'pending')
-      .order('created_at', { ascending: false })
+      .eq("moderation_status", "pending")
+      .order("created_at", { ascending: false })
       .limit(20),
     supabase
-      .from('venue_photos')
+      .from("venue_photos")
       .select(`
         *,
         venue:venues(name),
         user:users(display_name, email)
       `)
-      .eq('moderation_status', 'pending')
-      .order('created_at', { ascending: false })
+      .eq("moderation_status", "pending")
+      .order("created_at", { ascending: false })
       .limit(20),
     supabase
-      .from('venue_insider_tips')
+      .from("venue_insider_tips")
       .select(`
         *,
         venue:venues(name),
         user:users(display_name, email)
       `)
-      .eq('moderation_status', 'pending')
-      .order('created_at', { ascending: false })
+      .eq("moderation_status", "pending")
+      .order("created_at", { ascending: false })
       .limit(20),
-  ]);
+  ])
 
   const totalPending =
     (pendingSetlists?.length ?? 0) +
     (pendingReviews?.length ?? 0) +
     (pendingPhotos?.length ?? 0) +
-    (pendingTips?.length ?? 0);
+    (pendingTips?.length ?? 0)
 
   return (
     <div className="space-y-6">
@@ -138,7 +138,10 @@ export default async function ModerationPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="font-medium text-sm">Photos</CardTitle>
-            <Image className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            <Image
+              className="h-4 w-4 text-muted-foreground"
+              aria-hidden="true"
+            />
           </CardHeader>
           <CardContent>
             <div className="font-bold text-2xl">
@@ -201,18 +204,10 @@ export default async function ModerationPage() {
                     />
                   ))}
                   {pendingPhotos?.map((photo) => (
-                    <ModerationItem
-                      key={photo.id}
-                      type="photo"
-                      item={photo}
-                    />
+                    <ModerationItem key={photo.id} type="photo" item={photo} />
                   ))}
                   {pendingTips?.map((tip) => (
-                    <ModerationItem
-                      key={tip.id}
-                      type="tip"
-                      item={tip}
-                    />
+                    <ModerationItem key={tip.id} type="tip" item={tip} />
                   ))}
                 </div>
               )}
@@ -243,11 +238,7 @@ export default async function ModerationPage() {
                 </div>
               ) : (
                 pendingReviews?.map((review) => (
-                  <ModerationItem
-                    key={review.id}
-                    type="review"
-                    item={review}
-                  />
+                  <ModerationItem key={review.id} type="review" item={review} />
                 ))
               )}
             </TabsContent>
@@ -255,16 +246,15 @@ export default async function ModerationPage() {
             <TabsContent value="photos" className="mt-6 space-y-4">
               {pendingPhotos?.length === 0 ? (
                 <div className="py-12 text-center">
-                  <Image className="mx-auto mb-4 h-12 w-12 text-muted-foreground" aria-hidden="true" />
+                  <Image
+                    className="mx-auto mb-4 h-12 w-12 text-muted-foreground"
+                    aria-hidden="true"
+                  />
                   <p className="text-muted-foreground">No pending photos</p>
                 </div>
               ) : (
                 pendingPhotos?.map((photo) => (
-                  <ModerationItem
-                    key={photo.id}
-                    type="photo"
-                    item={photo}
-                  />
+                  <ModerationItem key={photo.id} type="photo" item={photo} />
                 ))
               )}
             </TabsContent>
@@ -277,11 +267,7 @@ export default async function ModerationPage() {
                 </div>
               ) : (
                 pendingTips?.map((tip) => (
-                  <ModerationItem
-                    key={tip.id}
-                    type="tip"
-                    item={tip}
-                  />
+                  <ModerationItem key={tip.id} type="tip" item={tip} />
                 ))
               )}
             </TabsContent>
@@ -289,5 +275,5 @@ export default async function ModerationPage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

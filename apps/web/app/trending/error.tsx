@@ -1,17 +1,17 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
-import { useEffect } from 'react';
+import { Button } from "@repo/design-system/components/ui/button"
+import { AlertTriangle, Home, RefreshCw } from "lucide-react"
+import { useEffect } from "react"
 
 export default function TrendingError({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
-  reset: () => void;
+  error: Error & { digest?: string }
+  reset: () => void
 }) {
-  useEffect(() => {}, [error]);
+  useEffect(() => {}, [error])
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -41,7 +41,7 @@ export default function TrendingError({
           </Button>
 
           <Button
-            onClick={() => (window.location.href = '/')}
+            onClick={() => (window.location.href = "/")}
             variant="outline"
             className="flex items-center gap-2"
           >
@@ -51,5 +51,5 @@ export default function TrendingError({
         </div>
       </div>
     </div>
-  );
+  )
 }

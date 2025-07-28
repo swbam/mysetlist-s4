@@ -1,21 +1,21 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
-import { format } from 'date-fns';
+} from "@repo/design-system/components/ui/tabs"
+import { format } from "date-fns"
 import {
   AlertTriangle,
   CheckCircle,
@@ -25,86 +25,92 @@ import {
   Shield,
   TrendingUp,
   Zap,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
+} from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface SystemHealth {
-  status: 'healthy' | 'warning' | 'critical';
-  uptime: number;
-  responseTime: number;
-  errorRate: number;
-  lastChecked: string;
+  status: "healthy" | "warning" | "critical"
+  uptime: number
+  responseTime: number
+  errorRate: number
+  lastChecked: string
 }
 
 interface DatabaseMetrics {
   connectionPool: {
-    active: number;
-    idle: number;
-    total: number;
-  };
+    active: number
+    idle: number
+    total: number
+  }
   queries: {
-    slow: number;
-    failed: number;
-    total: number;
-  };
+    slow: number
+    failed: number
+    total: number
+  }
   size: {
-    users: number;
-    shows: number;
-    artists: number;
-    venues: number;
-  };
+    users: number
+    shows: number
+    artists: number
+    venues: number
+  }
 }
 
 interface SecurityEvent {
-  id: string;
+  id: string
   type:
-    | 'login_attempt'
-    | 'suspicious_activity'
-    | 'data_access'
-    | 'permission_change';
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  description: string;
-  user_id?: string;
-  ip_address: string;
-  timestamp: string;
-  resolved: boolean;
+    | "login_attempt"
+    | "suspicious_activity"
+    | "data_access"
+    | "permission_change"
+  severity: "low" | "medium" | "high" | "critical"
+  description: string
+  user_id?: string
+  ip_address: string
+  timestamp: string
+  resolved: boolean
 }
 
 export default function MonitoringDashboard() {
   const [systemHealth, _setSystemHealth] = useState<SystemHealth>({
-    status: 'healthy',
+    status: "healthy",
     uptime: 99.9,
     responseTime: 245,
     errorRate: 0.1,
     lastChecked: new Date().toISOString(),
-  });
+  })
 
   const [databaseMetrics, _setDatabaseMetrics] = useState<DatabaseMetrics>({
     connectionPool: { active: 12, idle: 8, total: 20 },
     queries: { slow: 3, failed: 1, total: 15420 },
     size: { users: 1250, shows: 890, artists: 450, venues: 120 },
-  });
+  })
 
-  const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([])
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    fetchMonitoringData();
-    const interval = setInterval(fetchMonitoringData, 30000); // Refresh every 30 seconds
+    fetchMonitoringData()
+    const interval = setInterval(fetchMonitoringData, 30000) // Refresh every 30 seconds
 
-    return () => clearInterval(interval);
-  }, []);
+    return () => clearInterval(interval)
+  }, [])
 
   const fetchMonitoringData = async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       // In a real implementation, these would be separate API calls
       const [_healthResponse, _dbResponse, _securityResponse] =
         await Promise.all([
-          fetch(`${process.env['NEXT_PUBLIC_API_URL']}/admin/monitoring/health`),
-          fetch(`${process.env['NEXT_PUBLIC_API_URL']}/admin/monitoring/database`),
-          fetch(`${process.env['NEXT_PUBLIC_API_URL']}/admin/monitoring/security`),
-        ]);
+          fetch(
+            `${process.env["NEXT_PUBLIC_API_URL"]}/admin/monitoring/health`
+          ),
+          fetch(
+            `${process.env["NEXT_PUBLIC_API_URL"]}/admin/monitoring/database`
+          ),
+          fetch(
+            `${process.env["NEXT_PUBLIC_API_URL"]}/admin/monitoring/security`
+          ),
+        ])
 
       // For now, using mock data
       // const healthData = await healthResponse.json();
@@ -114,68 +120,68 @@ export default function MonitoringDashboard() {
       // Mock security events
       setSecurityEvents([
         {
-          id: '1',
-          type: 'login_attempt',
-          severity: 'medium',
-          description: 'Multiple failed login attempts from IP 192.168.1.100',
-          ip_address: '192.168.1.100',
+          id: "1",
+          type: "login_attempt",
+          severity: "medium",
+          description: "Multiple failed login attempts from IP 192.168.1.100",
+          ip_address: "192.168.1.100",
           timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
           resolved: false,
         },
         {
-          id: '2',
-          type: 'suspicious_activity',
-          severity: 'high',
-          description: 'Unusual data access pattern detected',
-          user_id: 'user_123',
-          ip_address: '10.0.0.45',
+          id: "2",
+          type: "suspicious_activity",
+          severity: "high",
+          description: "Unusual data access pattern detected",
+          user_id: "user_123",
+          ip_address: "10.0.0.45",
           timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
           resolved: true,
         },
         {
-          id: '3',
-          type: 'data_access',
-          severity: 'low',
-          description: 'Admin panel accessed from new location',
-          user_id: 'admin_456',
-          ip_address: '203.0.113.0',
+          id: "3",
+          type: "data_access",
+          severity: "low",
+          description: "Admin panel accessed from new location",
+          user_id: "admin_456",
+          ip_address: "203.0.113.0",
           timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
           resolved: true,
         },
-      ]);
+      ])
     } catch (_error) {
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'healthy':
-        return 'text-green-500';
-      case 'warning':
-        return 'text-yellow-500';
-      case 'critical':
-        return 'text-red-500';
+      case "healthy":
+        return "text-green-500"
+      case "warning":
+        return "text-yellow-500"
+      case "critical":
+        return "text-red-500"
       default:
-        return 'text-gray-500';
+        return "text-gray-500"
     }
-  };
+  }
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'low':
-        return 'secondary';
-      case 'medium':
-        return 'default';
-      case 'high':
-        return 'destructive';
-      case 'critical':
-        return 'destructive';
+      case "low":
+        return "secondary"
+      case "medium":
+        return "default"
+      case "high":
+        return "destructive"
+      case "critical":
+        return "destructive"
       default:
-        return 'outline';
+        return "outline"
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -189,7 +195,7 @@ export default function MonitoringDashboard() {
         </div>
         <Button onClick={fetchMonitoringData} disabled={isLoading}>
           <RefreshCw
-            className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
+            className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
           />
           Refresh
         </Button>
@@ -209,8 +215,8 @@ export default function MonitoringDashboard() {
               {systemHealth.status}
             </div>
             <p className="text-muted-foreground text-xs">
-              Last checked:{' '}
-              {format(new Date(systemHealth.lastChecked), 'HH:mm:ss')}
+              Last checked:{" "}
+              {format(new Date(systemHealth.lastChecked), "HH:mm:ss")}
             </p>
           </CardContent>
         </Card>
@@ -245,7 +251,7 @@ export default function MonitoringDashboard() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="font-medium text-sm">Error Rate</CardTitle>
             <AlertTriangle
-              className={`h-4 w-4 ${systemHealth.errorRate > 1 ? 'text-red-500' : 'text-green-500'}`}
+              className={`h-4 w-4 ${systemHealth.errorRate > 1 ? "text-red-500" : "text-green-500"}`}
             />
           </CardHeader>
           <CardContent>
@@ -328,8 +334,8 @@ export default function MonitoringDashboard() {
                     <Badge
                       variant={
                         databaseMetrics.queries.slow > 5
-                          ? 'destructive'
-                          : 'secondary'
+                          ? "destructive"
+                          : "secondary"
                       }
                     >
                       {databaseMetrics.queries.slow}
@@ -340,8 +346,8 @@ export default function MonitoringDashboard() {
                     <Badge
                       variant={
                         databaseMetrics.queries.failed > 0
-                          ? 'destructive'
-                          : 'secondary'
+                          ? "destructive"
+                          : "secondary"
                       }
                     >
                       {databaseMetrics.queries.failed}
@@ -442,7 +448,7 @@ export default function MonitoringDashboard() {
                         <div>
                           {format(
                             new Date(event.timestamp),
-                            'MMM d, yyyy HH:mm:ss'
+                            "MMM d, yyyy HH:mm:ss"
                           )}
                         </div>
                         {event.user_id && <div>User: {event.user_id}</div>}
@@ -471,10 +477,10 @@ export default function MonitoringDashboard() {
               <CardContent>
                 <div className="space-y-3">
                   {[
-                    { endpoint: '/api/shows', time: 125, requests: 1240 },
-                    { endpoint: '/api/artists', time: 89, requests: 890 },
-                    { endpoint: '/api/venues', time: 156, requests: 670 },
-                    { endpoint: '/api/users', time: 78, requests: 450 },
+                    { endpoint: "/api/shows", time: 125, requests: 1240 },
+                    { endpoint: "/api/artists", time: 89, requests: 890 },
+                    { endpoint: "/api/venues", time: 156, requests: 670 },
+                    { endpoint: "/api/users", time: 78, requests: 450 },
                   ].map((api) => (
                     <div
                       key={api.endpoint}
@@ -515,7 +521,7 @@ export default function MonitoringDashboard() {
                     <div className="h-2 w-full rounded-full bg-secondary">
                       <div
                         className="h-2 rounded-full bg-blue-500"
-                        style={{ width: '42%' }}
+                        style={{ width: "42%" }}
                       />
                     </div>
                   </div>
@@ -527,7 +533,7 @@ export default function MonitoringDashboard() {
                     <div className="h-2 w-full rounded-full bg-secondary">
                       <div
                         className="h-2 rounded-full bg-green-500"
-                        style={{ width: '68%' }}
+                        style={{ width: "68%" }}
                       />
                     </div>
                   </div>
@@ -539,7 +545,7 @@ export default function MonitoringDashboard() {
                     <div className="h-2 w-full rounded-full bg-secondary">
                       <div
                         className="h-2 rounded-full bg-yellow-500"
-                        style={{ width: '23%' }}
+                        style={{ width: "23%" }}
                       />
                     </div>
                   </div>
@@ -550,5 +556,5 @@ export default function MonitoringDashboard() {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

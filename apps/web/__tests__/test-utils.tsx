@@ -3,22 +3,22 @@
  * This file provides unified testing utilities following Next-Forge patterns
  */
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { type RenderOptions, render } from '@testing-library/react';
-import { SessionProvider } from 'next-auth/react';
-import type React from 'react';
-import type { ReactElement } from 'react';
-import { vi } from 'vitest';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { type RenderOptions, render } from "@testing-library/react"
+import { SessionProvider } from "next-auth/react"
+import type React from "react"
+import type { ReactElement } from "react"
+import { vi } from "vitest"
 
 // Import and re-export utilities from test-utils package
-export * from '../test-utils';
-export * from '../test-utils/auth';
-export * from '../test-utils/api';
-export * from '../test-utils/performance';
-export * from '../test-utils/accessibility';
+export * from "../test-utils"
+export * from "../test-utils/auth"
+export * from "../test-utils/api"
+export * from "../test-utils/performance"
+export * from "../test-utils/accessibility"
 
 // Mock Next.js router
-vi.mock('next/navigation', () => ({
+vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),
@@ -32,12 +32,12 @@ vi.mock('next/navigation', () => ({
     has: vi.fn(),
     getAll: vi.fn(),
   }),
-  usePathname: () => '/test',
+  usePathname: () => "/test",
   useParams: () => ({}),
-}));
+}))
 
 // Mock Supabase client
-vi.mock('~/lib/supabase/client', () => ({
+vi.mock("~/lib/supabase/client", () => ({
   createClient: () => ({
     auth: {
       getSession: vi
@@ -66,7 +66,7 @@ vi.mock('~/lib/supabase/client', () => ({
       unsubscribe: vi.fn(),
     })),
   }),
-}));
+}))
 
 // Create a test query client
 const createTestQueryClient = () =>
@@ -77,15 +77,15 @@ const createTestQueryClient = () =>
         gcTime: Number.POSITIVE_INFINITY,
       },
     },
-  });
+  })
 
 interface AllTheProvidersProps {
-  children: React.ReactNode;
-  session?: any;
+  children: React.ReactNode
+  session?: any
 }
 
 function AllTheProviders({ children, session = null }: AllTheProvidersProps) {
-  const testQueryClient = createTestQueryClient();
+  const testQueryClient = createTestQueryClient()
 
   return (
     <SessionProvider session={session}>
@@ -93,24 +93,24 @@ function AllTheProviders({ children, session = null }: AllTheProvidersProps) {
         {children}
       </QueryClientProvider>
     </SessionProvider>
-  );
+  )
 }
 
 const customRender = (
   ui: ReactElement,
-  options?: Omit<RenderOptions, 'wrapper'> & { session?: any }
+  options?: Omit<RenderOptions, "wrapper"> & { session?: any }
 ) => {
-  const { session, ...renderOptions } = options || {};
+  const { session, ...renderOptions } = options || {}
 
   return render(ui, {
     wrapper: ({ children }) => (
       <AllTheProviders session={session}>{children}</AllTheProviders>
     ),
     ...renderOptions,
-  });
-};
+  })
+}
 
 // Re-export everything
-export * from '@testing-library/react';
-export { customRender as render };
-export { vi };
+export * from "@testing-library/react"
+export { customRender as render }
+export { vi }

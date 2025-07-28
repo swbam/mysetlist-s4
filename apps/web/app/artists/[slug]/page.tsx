@@ -1,108 +1,108 @@
-import { getUser } from '@repo/auth/server';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system';
-import type { Metadata } from 'next';
-import dynamic from 'next/dynamic';
-import { notFound } from 'next/navigation';
-import React from 'react';
-import { BreadcrumbNavigation } from '~/components/breadcrumb-navigation';
-import { ArtistErrorBoundary } from '~/components/error-boundaries/artist-error-boundary';
-import { createArtistMetadata } from '~/lib/seo-metadata';
+import { getUser } from "@repo/auth/server"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system"
+import type { Metadata } from "next"
+import dynamic from "next/dynamic"
+import { notFound } from "next/navigation"
+import React from "react"
+import { BreadcrumbNavigation } from "~/components/breadcrumb-navigation"
+import { ArtistErrorBoundary } from "~/components/error-boundaries/artist-error-boundary"
+import { createArtistMetadata } from "~/lib/seo-metadata"
 import {
   getArtist,
+  getArtistSetlists,
   getArtistShows,
   getArtistStats,
-  getArtistSetlists,
   getSimilarArtists,
-} from './actions';
-import { ArtistHeader } from './components/artist-header';
-import { ArtistPageWrapper } from './components/artist-page-wrapper';
-import { ArtistStats } from './components/artist-stats';
-import { UpcomingShows } from './components/upcoming-shows';
+} from "./actions"
+import { ArtistHeader } from "./components/artist-header"
+import { ArtistPageWrapper } from "./components/artist-page-wrapper"
+import { ArtistStats } from "./components/artist-stats"
+import { UpcomingShows } from "./components/upcoming-shows"
 
 // Dynamic imports for tab content to optimize initial bundle
 const ArtistBio = dynamic(
   () =>
-    import('./components/artist-bio').then((mod) => ({
+    import("./components/artist-bio").then((mod) => ({
       default: mod.ArtistBio,
     })),
   {
     loading: () => <div className="h-32 animate-pulse rounded-lg bg-muted" />,
   }
-);
+)
 
 const ArtistSongCatalog = dynamic(
   () =>
-    import('./components/artist-song-catalog').then((mod) => ({
+    import("./components/artist-song-catalog").then((mod) => ({
       default: mod.ArtistSongCatalog as any,
     })),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
   }
-);
+)
 
 const ArtistTopTracks = dynamic(
   () =>
-    import('./components/artist-top-tracks').then((mod) => ({
+    import("./components/artist-top-tracks").then((mod) => ({
       default: mod.ArtistTopTracks,
     })),
   {
     loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
   }
-);
+)
 
 const PastShows = dynamic(
   () =>
-    import('./components/past-shows').then((mod) => ({
+    import("./components/past-shows").then((mod) => ({
       default: mod.PastShows as any,
     })),
   {
     loading: () => <div className="h-64 animate-pulse rounded-lg bg-muted" />,
   }
-);
+)
 
 const SimilarArtists = dynamic(
   () =>
-    import('./components/similar-artists').then((mod) => ({
+    import("./components/similar-artists").then((mod) => ({
       default: mod.SimilarArtists,
     })),
   {
     loading: () => <div className="h-64 animate-pulse rounded-lg bg-muted" />,
   }
-);
+)
 
 const ArtistSetlistsView = dynamic(
   () =>
-    import('./components/artist-setlists-view').then((mod) => ({
+    import("./components/artist-setlists-view").then((mod) => ({
       default: mod.ArtistSetlistsView,
     })),
   {
     loading: () => <div className="h-64 animate-pulse rounded-lg bg-muted" />,
   }
-);
+)
 
 type ArtistPageProps = {
   params: Promise<{
-    slug: string;
-  }>;
-};
+    slug: string
+  }>
+}
 
 // Configure ISR with revalidation
-export const revalidate = 3600; // Revalidate every hour
-export const dynamicParams = true; // Allow dynamic params beyond generateStaticParams
+export const revalidate = 3600 // Revalidate every hour
+export const dynamicParams = true // Allow dynamic params beyond generateStaticParams
 
 export const generateMetadata = async ({
   params,
 }: ArtistPageProps): Promise<Metadata> => {
-  const { slug } = await params;
+  const { slug } = await params
 
-  const artist = await getArtist(slug);
+  const artist = await getArtist(slug)
 
   if (!artist) {
     return createArtistMetadata({
-      name: 'Artist Not Found',
-      bio: 'The requested artist could not be found.',
-      slug: 'not-found',
-    });
+      name: "Artist Not Found",
+      bio: "The requested artist could not be found.",
+      slug: "not-found",
+    })
   }
 
   return createArtistMetadata({
@@ -112,43 +112,46 @@ export const generateMetadata = async ({
     slug: artist.slug,
     ...(artist.followers && { followerCount: artist.followers }),
     ...(artist.followerCount && { followerCount: artist.followerCount }),
-  });
-};
+  })
+}
 
 const ArtistPage = async ({ params }: ArtistPageProps) => {
-  const { slug } = await params;
-  const _user = await getUser();
-  void _user; // Intentionally unused - keeps session active
+  const { slug } = await params
+  const _user = await getUser()
+  void _user // Intentionally unused - keeps session active
 
   // Fetch artist data
-  const artist = await getArtist(slug);
+  const artist = await getArtist(slug)
 
   if (!artist) {
-    notFound();
+    notFound()
   }
 
   // Fetch all related data in parallel with enhanced error handling
   const results = await Promise.allSettled([
-    getArtistShows(artist.id, 'upcoming'),
-    getArtistShows(artist.id, 'past'),
+    getArtistShows(artist.id, "upcoming"),
+    getArtistShows(artist.id, "past"),
     getArtistStats(artist.id),
     getSimilarArtists(artist.id, artist.genres),
     getArtistSetlists(artist.id, 5), // Get recent setlists
-  ]);
-  
-  const upcomingShows = results[0].status === 'fulfilled' ? results[0].value : [];
-  const pastShows = results[1].status === 'fulfilled' ? results[1].value : [];
-  const _stats = results[2].status === 'fulfilled' ? results[2].value : null;
-  const _similarArtists = results[3].status === 'fulfilled' ? results[3].value : [];
-  const artistSetlists = results[4].status === 'fulfilled' ? results[4].value : [];
-  
-  void _stats; // Future implementation: artist statistics display
-  void _similarArtists; // Future implementation: similar artists section
+  ])
+
+  const upcomingShows =
+    results[0].status === "fulfilled" ? results[0].value : []
+  const pastShows = results[1].status === "fulfilled" ? results[1].value : []
+  const _stats = results[2].status === "fulfilled" ? results[2].value : null
+  const _similarArtists =
+    results[3].status === "fulfilled" ? results[3].value : []
+  const artistSetlists =
+    results[4].status === "fulfilled" ? results[4].value : []
+
+  void _stats // Future implementation: artist statistics display
+  void _similarArtists // Future implementation: similar artists section
 
   const breadcrumbItems = [
-    { label: 'Artists', href: '/artists' },
+    { label: "Artists", href: "/artists" },
     { label: artist.name, isCurrentPage: true },
-  ];
+  ]
 
   // Transform artist data for components
   const artistData = {
@@ -157,14 +160,14 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
     slug: artist.slug,
     imageUrl: artist.imageUrl || undefined,
     smallImageUrl: artist.smallImageUrl || undefined,
-    genres: artist.genres || '[]',
+    genres: artist.genres || "[]",
     popularity: artist.popularity || 0,
     followers: artist.followers || 0,
     verified: artist.verified || false,
     bio: artist.bio || undefined,
     externalUrls: artist.externalUrls || undefined,
     spotifyId: artist.spotifyId || undefined,
-  };
+  }
 
   // Transform shows data
   const transformedUpcomingShows = upcomingShows.map(
@@ -172,7 +175,7 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
       show: {
         ...show,
         ...(show.ticketUrl && { ticketUrl: show.ticketUrl }),
-        status: show.status || 'confirmed',
+        status: show.status || "confirmed",
       },
       venue: venue
         ? {
@@ -186,14 +189,14 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
       orderIndex: orderIndex || 0,
       isHeadliner: isHeadliner || false,
     })
-  );
+  )
 
   const transformedPastShows = pastShows.map(
     ({ show, venue, orderIndex, isHeadliner }) => ({
       show: {
         ...show,
         ...(show.ticketUrl && { ticketUrl: show.ticketUrl }),
-        status: show.status || 'completed',
+        status: show.status || "completed",
       },
       venue: venue
         ? {
@@ -207,7 +210,7 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
       orderIndex: orderIndex || 0,
       isHeadliner: isHeadliner || false,
     })
-  );
+  )
 
   return (
     <ArtistErrorBoundary artistName={artist.name}>
@@ -251,7 +254,11 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
             </TabsList>
 
             <TabsContent value="shows" className="space-y-4">
-              <React.Suspense fallback={<div className="h-64 animate-pulse rounded-lg bg-muted" />}>
+              <React.Suspense
+                fallback={
+                  <div className="h-64 animate-pulse rounded-lg bg-muted" />
+                }
+              >
                 {React.createElement(UpcomingShows as any, {
                   shows: transformedUpcomingShows,
                   artistName: artist.name,
@@ -261,7 +268,11 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
             </TabsContent>
 
             <TabsContent value="past" className="space-y-4">
-              <React.Suspense fallback={<div className="h-64 animate-pulse rounded-lg bg-muted" />}>
+              <React.Suspense
+                fallback={
+                  <div className="h-64 animate-pulse rounded-lg bg-muted" />
+                }
+              >
                 {React.createElement(PastShows as any, {
                   shows: transformedPastShows,
                   artistName: artist.name,
@@ -271,7 +282,11 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
             </TabsContent>
 
             <TabsContent value="setlists" className="space-y-4">
-              <React.Suspense fallback={<div className="h-64 animate-pulse rounded-lg bg-muted" />}>
+              <React.Suspense
+                fallback={
+                  <div className="h-64 animate-pulse rounded-lg bg-muted" />
+                }
+              >
                 <ArtistSetlistsView
                   setlists={(artistSetlists || []) as any}
                   artistName={artist.name}
@@ -281,7 +296,11 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
             </TabsContent>
 
             <TabsContent value="music" className="space-y-4">
-              <React.Suspense fallback={<div className="h-96 animate-pulse rounded-lg bg-muted" />}>
+              <React.Suspense
+                fallback={
+                  <div className="h-96 animate-pulse rounded-lg bg-muted" />
+                }
+              >
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                   <ArtistTopTracks
                     artistId={artist.id}
@@ -297,7 +316,11 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
             </TabsContent>
 
             <TabsContent value="about" className="space-y-6">
-              <React.Suspense fallback={<div className="h-64 animate-pulse rounded-lg bg-muted" />}>
+              <React.Suspense
+                fallback={
+                  <div className="h-64 animate-pulse rounded-lg bg-muted" />
+                }
+              >
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                   {artist.bio && <ArtistBio bio={artist.bio} />}
                   <SimilarArtists artistId={artist.id} genres={artist.genres} />
@@ -308,14 +331,14 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
         </div>
       </ArtistPageWrapper>
     </ArtistErrorBoundary>
-  );
-};
+  )
+}
 
 // Generate static params for popular artists
 export async function generateStaticParams() {
   try {
-    const { db, artists } = await import('@repo/database');
-    const { desc, sql } = await import('drizzle-orm');
+    const { db, artists } = await import("@repo/database")
+    const { desc, sql } = await import("drizzle-orm")
 
     // Get top 50 most popular artists for static generation
     const popularArtists = await db
@@ -325,14 +348,14 @@ export async function generateStaticParams() {
       .from(artists)
       .where(sql`${artists.popularity} > 0 OR ${artists.trendingScore} > 0`)
       .orderBy(desc(artists.trendingScore), desc(artists.popularity))
-      .limit(50);
+      .limit(50)
 
     return popularArtists.map((artist) => ({
       slug: artist.slug,
-    }));
+    }))
   } catch (_error) {
-    return [];
+    return []
   }
 }
 
-export default ArtistPage;
+export default ArtistPage

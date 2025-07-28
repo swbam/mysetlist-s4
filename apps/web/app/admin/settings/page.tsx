@@ -1,3 +1,4 @@
+import { Download } from "lucide-react"
 import {
   Button,
   Card,
@@ -18,27 +19,26 @@ import {
   TabsList,
   TabsTrigger,
   Textarea,
-} from '~/components/ui-exports';
-import { Download } from 'lucide-react';
-import { createClient } from '~/lib/supabase/server';
+} from "~/components/ui-exports"
+import { createClient } from "~/lib/supabase/server"
 
 // Force dynamic rendering due to user-specific data fetching
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic"
 
 export default async function SettingsPage() {
-  const supabase = await createClient();
+  const supabase = await createClient()
 
   // Check if user is admin
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getUser()
   const { data: userData } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', user?.id ?? '')
-    .single();
+    .from("users")
+    .select("role")
+    .eq("id", user?.id ?? "")
+    .single()
 
-  if (userData?.role !== 'admin') {
+  if (userData?.role !== "admin") {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <Card>
@@ -49,7 +49,7 @@ export default async function SettingsPage() {
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
   return (
@@ -361,5 +361,5 @@ export default async function SettingsPage() {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

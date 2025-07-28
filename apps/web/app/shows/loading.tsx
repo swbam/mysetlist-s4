@@ -1,12 +1,12 @@
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
+import { Skeleton } from "@repo/design-system/components/ui/skeleton"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
-import { List } from 'lucide-react';
-import { ShowListSkeleton } from '~/components/loading-states';
+} from "@repo/design-system/components/ui/tabs"
+import { List } from "lucide-react"
+import { ShowListSkeleton } from "~/components/loading-states"
 
 export default function ShowsLoading() {
   return (
@@ -43,5 +43,5 @@ export default function ShowsLoading() {
         </div>
       </div>
     </div>
-  );
+  )
 }

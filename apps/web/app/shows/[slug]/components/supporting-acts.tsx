@@ -1,40 +1,40 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
+import { Badge } from "@repo/design-system/components/ui/badge"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { CheckCircle2, Clock, Users } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
+} from "@repo/design-system/components/ui/card"
+import { CheckCircle2, Clock, Users } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
 
 type SupportingActsProps = {
   artists: Array<{
-    id: string;
-    order_index: number;
-    set_length?: number;
-    is_headliner: boolean;
+    id: string
+    order_index: number
+    set_length?: number
+    is_headliner: boolean
     artist: {
-      id: string;
-      name: string;
-      slug: string;
-      image_url?: string;
-      verified?: boolean;
-    };
-  }>;
-};
+      id: string
+      name: string
+      slug: string
+      image_url?: string
+      verified?: boolean
+    }
+  }>
+}
 
 export function SupportingActs({ artists }: SupportingActsProps) {
   // Sort by order_index and filter out headliner
   const supportingActs = artists
     .filter((a) => !a.is_headliner)
-    .sort((a, b) => a.order_index - b.order_index);
+    .sort((a, b) => a.order_index - b.order_index)
 
   if (supportingActs.length === 0) {
-    return null;
+    return null
   }
 
   return (
@@ -93,5 +93,5 @@ export function SupportingActs({ artists }: SupportingActsProps) {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

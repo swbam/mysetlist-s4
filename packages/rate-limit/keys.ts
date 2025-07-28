@@ -1,5 +1,5 @@
-import { createEnv } from '@t3-oss/env-nextjs';
-import { z } from 'zod';
+import { createEnv } from "@t3-oss/env-nextjs"
+import { z } from "zod"
 
 export const keys = () =>
   createEnv({
@@ -8,8 +8,11 @@ export const keys = () =>
       SUPABASE_ANON_KEY: z.string().min(1),
     },
     runtimeEnv: {
-      SUPABASE_URL: process.env['SUPABASE_URL'] || process.env['NEXT_PUBLIC_SUPABASE_URL'],
-      SUPABASE_ANON_KEY: process.env['SUPABASE_ANON_KEY'] || process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'],
+      SUPABASE_URL:
+        process.env["SUPABASE_URL"] || process.env["NEXT_PUBLIC_SUPABASE_URL"],
+      SUPABASE_ANON_KEY:
+        process.env["SUPABASE_ANON_KEY"] ||
+        process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"],
     },
-    skipValidation: !!process.env['SKIP_ENV_VALIDATION'],
-  });
+    skipValidation: !!process.env["SKIP_ENV_VALIDATION"],
+  })

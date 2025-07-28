@@ -1,10 +1,10 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
-import { cn } from '@repo/design-system/lib/utils';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Card, CardContent } from "@repo/design-system/components/ui/card"
+import { Input } from "@repo/design-system/components/ui/input"
+import { cn } from "@repo/design-system/lib/utils"
 import {
   Calendar,
   Clock,
@@ -14,40 +14,40 @@ import {
   Search,
   TrendingUp,
   Users,
-} from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { useDebounce } from '~/hooks/use-debounce';
+} from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { useDebounce } from "~/hooks/use-debounce"
 
 interface SearchSuggestion {
-  id: string;
+  id: string
   type:
-    | 'artist'
-    | 'show'
-    | 'venue'
-    | 'genre'
-    | 'location'
-    | 'recent'
-    | 'trending';
-  title: string;
-  subtitle?: string;
-  imageUrl?: string;
+    | "artist"
+    | "show"
+    | "venue"
+    | "genre"
+    | "location"
+    | "recent"
+    | "trending"
+  title: string
+  subtitle?: string
+  imageUrl?: string
   metadata?: {
-    popularity?: number;
-    upcomingShows?: number;
-    followerCount?: number;
-    capacity?: number;
-    showDate?: string;
-  };
+    popularity?: number
+    upcomingShows?: number
+    followerCount?: number
+    capacity?: number
+    showDate?: string
+  }
 }
 
 interface SearchAutocompleteProps {
-  value: string;
-  onChange: (value: string) => void;
-  onSelect: (suggestion: SearchSuggestion) => void;
-  onSearch: () => void;
-  placeholder?: string;
-  className?: string;
-  disabled?: boolean;
+  value: string
+  onChange: (value: string) => void
+  onSelect: (suggestion: SearchSuggestion) => void
+  onSearch: () => void
+  placeholder?: string
+  className?: string
+  disabled?: boolean
 }
 
 export function SearchAutocomplete({
@@ -55,187 +55,187 @@ export function SearchAutocomplete({
   onChange,
   onSelect,
   onSearch,
-  placeholder = 'Search artists, shows, venues...',
+  placeholder = "Search artists, shows, venues...",
   className,
   disabled,
 }: SearchAutocompleteProps) {
-  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<SearchSuggestion[]>([])
+  const [loading, setLoading] = useState(false)
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [selectedIndex, setSelectedIndex] = useState(-1)
+  const [recentSearches, setRecentSearches] = useState<string[]>([])
 
-  const inputRef = useRef<HTMLInputElement>(null);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null)
+  const suggestionsRef = useRef<HTMLDivElement>(null)
 
-  const debouncedValue = useDebounce(value, 300);
+  const debouncedValue = useDebounce(value, 300)
 
   // Load recent searches from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem('mysetlist-recent-searches');
+    const saved = localStorage.getItem("mysetlist-recent-searches")
     if (saved) {
       try {
-        setRecentSearches(JSON.parse(saved).slice(0, 5));
+        setRecentSearches(JSON.parse(saved).slice(0, 5))
       } catch (_error) {}
     }
-  }, []);
+  }, [])
 
   // Save search to recent searches
   const saveRecentSearch = (query: string) => {
     if (!query.trim() || query.length < 2) {
-      return;
+      return
     }
 
     const updated = [query, ...recentSearches.filter((s) => s !== query)].slice(
       0,
       5
-    );
-    setRecentSearches(updated);
-    localStorage.setItem('mysetlist-recent-searches', JSON.stringify(updated));
-  };
+    )
+    setRecentSearches(updated)
+    localStorage.setItem("mysetlist-recent-searches", JSON.stringify(updated))
+  }
 
   // Fetch suggestions
   useEffect(() => {
     const fetchSuggestions = async () => {
       if (!debouncedValue || debouncedValue.length < 2) {
-        setSuggestions([]);
-        return;
+        setSuggestions([])
+        return
       }
 
-      setLoading(true);
+      setLoading(true)
       try {
         const response = await fetch(
           `/api/search/suggestions?q=${encodeURIComponent(debouncedValue)}&limit=8`
-        );
+        )
 
         if (response.ok) {
-          const data = await response.json();
-          setSuggestions(data.suggestions || []);
+          const data = await response.json()
+          setSuggestions(data.suggestions || [])
         }
       } catch (_error) {
-        setSuggestions([]);
+        setSuggestions([])
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchSuggestions();
-  }, [debouncedValue]);
+    fetchSuggestions()
+  }, [debouncedValue])
 
   // Handle keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showSuggestions) {
-      return;
+      return
     }
 
     switch (e.key) {
-      case 'ArrowDown': {
-        e.preventDefault();
+      case "ArrowDown": {
+        e.preventDefault()
         setSelectedIndex((prev) =>
           prev < suggestions.length - 1 ? prev + 1 : 0
-        );
-        break;
+        )
+        break
       }
-      case 'ArrowUp': {
-        e.preventDefault();
+      case "ArrowUp": {
+        e.preventDefault()
         setSelectedIndex((prev) =>
           prev > 0 ? prev - 1 : suggestions.length - 1
-        );
-        break;
+        )
+        break
       }
-      case 'Enter': {
-        e.preventDefault();
+      case "Enter": {
+        e.preventDefault()
         if (selectedIndex >= 0 && suggestions[selectedIndex]) {
-          handleSelectSuggestion(suggestions[selectedIndex]);
+          handleSelectSuggestion(suggestions[selectedIndex])
         } else {
-          handleSearch();
+          handleSearch()
         }
-        break;
+        break
       }
-      case 'Escape': {
-        setShowSuggestions(false);
-        setSelectedIndex(-1);
-        inputRef.current?.blur();
-        break;
+      case "Escape": {
+        setShowSuggestions(false)
+        setSelectedIndex(-1)
+        inputRef.current?.blur()
+        break
       }
     }
-  };
+  }
 
   const handleSelectSuggestion = (suggestion: SearchSuggestion) => {
-    onChange(suggestion.title);
-    saveRecentSearch(suggestion.title);
-    onSelect(suggestion);
-    setShowSuggestions(false);
-    setSelectedIndex(-1);
-  };
+    onChange(suggestion.title)
+    saveRecentSearch(suggestion.title)
+    onSelect(suggestion)
+    setShowSuggestions(false)
+    setSelectedIndex(-1)
+  }
 
   const handleSearch = () => {
-    saveRecentSearch(value);
-    onSearch();
-    setShowSuggestions(false);
-    setSelectedIndex(-1);
-  };
+    saveRecentSearch(value)
+    onSearch()
+    setShowSuggestions(false)
+    setSelectedIndex(-1)
+  }
 
   const handleFocus = () => {
-    setShowSuggestions(true);
+    setShowSuggestions(true)
     if (!value && recentSearches.length > 0) {
       // Show recent searches when focused with empty input
       const recentSuggestions = recentSearches.map((search, index) => ({
         id: `recent-${index}`,
-        type: 'recent' as const,
+        type: "recent" as const,
         title: search,
-        subtitle: 'Recent search',
-      }));
-      setSuggestions(recentSuggestions);
+        subtitle: "Recent search",
+      }))
+      setSuggestions(recentSuggestions)
     }
-  };
+  }
 
   const handleBlur = (_e: React.FocusEvent) => {
     // Delay hiding suggestions to allow clicking on them
     setTimeout(() => {
       if (!suggestionsRef.current?.contains(document.activeElement)) {
-        setShowSuggestions(false);
-        setSelectedIndex(-1);
+        setShowSuggestions(false)
+        setSelectedIndex(-1)
       }
-    }, 150);
-  };
+    }, 150)
+  }
 
-  const getIcon = (type: SearchSuggestion['type']) => {
+  const getIcon = (type: SearchSuggestion["type"]) => {
     switch (type) {
-      case 'artist':
-        return <Music className="h-4 w-4" />;
-      case 'show':
-        return <Calendar className="h-4 w-4" />;
-      case 'venue':
-        return <MapPin className="h-4 w-4" />;
-      case 'trending':
-        return <TrendingUp className="h-4 w-4" />;
-      case 'recent':
-        return <History className="h-4 w-4" />;
+      case "artist":
+        return <Music className="h-4 w-4" />
+      case "show":
+        return <Calendar className="h-4 w-4" />
+      case "venue":
+        return <MapPin className="h-4 w-4" />
+      case "trending":
+        return <TrendingUp className="h-4 w-4" />
+      case "recent":
+        return <History className="h-4 w-4" />
       default:
-        return <Search className="h-4 w-4" />;
+        return <Search className="h-4 w-4" />
     }
-  };
+  }
 
-  const getBadgeVariant = (type: SearchSuggestion['type']) => {
+  const getBadgeVariant = (type: SearchSuggestion["type"]) => {
     switch (type) {
-      case 'artist':
-        return 'default';
-      case 'show':
-        return 'secondary';
-      case 'venue':
-        return 'outline';
-      case 'trending':
-        return 'destructive';
-      case 'recent':
-        return 'outline';
+      case "artist":
+        return "default"
+      case "show":
+        return "secondary"
+      case "venue":
+        return "outline"
+      case "trending":
+        return "destructive"
+      case "recent":
+        return "outline"
       default:
-        return 'outline';
+        return "outline"
     }
-  };
+  }
 
   return (
-    <div className={cn('relative w-full', className)}>
+    <div className={cn("relative w-full", className)}>
       <div className="relative">
         <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 transform text-muted-foreground" />
         <Input
@@ -284,8 +284,8 @@ export function SearchAutocomplete({
                 <div
                   key={suggestion.id}
                   className={cn(
-                    'flex cursor-pointer items-center gap-3 border-b p-3 transition-colors last:border-b-0',
-                    index === selectedIndex ? 'bg-muted' : 'hover:bg-muted/50'
+                    "flex cursor-pointer items-center gap-3 border-b p-3 transition-colors last:border-b-0",
+                    index === selectedIndex ? "bg-muted" : "hover:bg-muted/50"
                   )}
                   onClick={() => handleSelectSuggestion(suggestion)}
                 >
@@ -329,7 +329,7 @@ export function SearchAutocomplete({
                         {suggestion.metadata.capacity && (
                           <span className="flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
-                            {suggestion.metadata.capacity.toLocaleString()}{' '}
+                            {suggestion.metadata.capacity.toLocaleString()}{" "}
                             capacity
                           </span>
                         )}
@@ -343,7 +343,7 @@ export function SearchAutocomplete({
                     )}
                   </div>
 
-                  {suggestion.type === 'trending' && (
+                  {suggestion.type === "trending" && (
                     <TrendingUp className="h-4 w-4 text-orange-500" />
                   )}
                 </div>
@@ -353,5 +353,5 @@ export function SearchAutocomplete({
         </Card>
       )}
     </div>
-  );
+  )
 }

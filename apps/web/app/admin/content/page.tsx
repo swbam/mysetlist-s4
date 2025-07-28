@@ -1,3 +1,19 @@
+import { format } from "date-fns"
+import {
+  Building,
+  Calendar,
+  CheckCircle,
+  Download,
+  Filter,
+  MapPin,
+  Music,
+  Music2,
+  RotateCcw,
+  Search,
+  Star,
+  TrendingUp,
+  Users,
+} from "lucide-react"
 import {
   Badge,
   Button,
@@ -18,51 +34,35 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '~/components/ui-exports';
-import { format } from 'date-fns';
-import {
-  Building,
-  Calendar,
-  CheckCircle,
-  Download,
-  Filter,
-  MapPin,
-  Music,
-  Music2,
-  RotateCcw,
-  Search,
-  Star,
-  TrendingUp,
-  Users,
-} from 'lucide-react';
-import { createClient } from '~/lib/supabase/server';
-import ContentActions from './components/content-actions';
-import { SyncPopularArtistsButton } from './components/sync-popular-artists-button';
+} from "~/components/ui-exports"
+import { createClient } from "~/lib/supabase/server"
+import ContentActions from "./components/content-actions"
+import { SyncPopularArtistsButton } from "./components/sync-popular-artists-button"
 
 // Force dynamic rendering due to user-specific data fetching
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic"
 
 export default async function ContentPage({
   params,
 }: { params: Promise<{ locale: string }> }) {
-  const supabase = await createClient();
-  const { locale } = await params;
+  const supabase = await createClient()
+  const { locale } = await params
 
   // Fetch content data
   const [{ data: artists }, { data: venues }, { data: shows }] =
     await Promise.all([
       supabase
-        .from('artists')
-        .select('*, artist_stats(*)')
-        .order('trending_score', { ascending: false })
+        .from("artists")
+        .select("*, artist_stats(*)")
+        .order("trending_score", { ascending: false })
         .limit(20),
       supabase
-        .from('venues')
-        .select('*, _reviews:venue_reviews(count), _photos:venue_photos(count)')
-        .order('created_at', { ascending: false })
+        .from("venues")
+        .select("*, _reviews:venue_reviews(count), _photos:venue_photos(count)")
+        .order("created_at", { ascending: false })
         .limit(20),
       supabase
-        .from('shows')
+        .from("shows")
         .select(`
         *,
         headliner:artists!shows_headliner_artist_id_fkey(name),
@@ -70,9 +70,9 @@ export default async function ContentPage({
         _attendees:show_attendees(count),
         _setlists:setlists(count)
       `)
-        .order('trending_score', { ascending: false })
+        .order("trending_score", { ascending: false })
         .limit(20),
-    ]);
+    ])
 
   return (
     <div className="space-y-6">
@@ -334,7 +334,7 @@ export default async function ContentPage({
                           <div>
                             <p className="font-medium">{artist.name}</p>
                             <p className="text-muted-foreground text-sm">
-                              {artist.genres?.split(',')[0]}
+                              {artist.genres?.split(",")[0]}
                             </p>
                           </div>
                         </div>
@@ -374,9 +374,9 @@ export default async function ContentPage({
                         {artist.last_synced_at
                           ? format(
                               new Date(artist.last_synced_at),
-                              'MMM d, yyyy'
+                              "MMM d, yyyy"
                             )
-                          : 'Never'}
+                          : "Never"}
                       </TableCell>
                       <TableCell className="text-right">
                         <ContentActions
@@ -463,7 +463,7 @@ export default async function ContentPage({
                         </div>
                       </TableCell>
                       <TableCell>
-                        {venue.capacity?.toLocaleString() ?? 'N/A'}
+                        {venue.capacity?.toLocaleString() ?? "N/A"}
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
@@ -474,7 +474,7 @@ export default async function ContentPage({
                         </div>
                       </TableCell>
                       <TableCell>
-                        {format(new Date(venue.created_at), 'MMM d, yyyy')}
+                        {format(new Date(venue.created_at), "MMM d, yyyy")}
                       </TableCell>
                       <TableCell className="text-right">
                         <ContentActions
@@ -541,7 +541,7 @@ export default async function ContentPage({
                         </div>
                       </TableCell>
                       <TableCell>
-                        {format(new Date(show.date), 'MMM d, yyyy')}
+                        {format(new Date(show.date), "MMM d, yyyy")}
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
@@ -563,13 +563,13 @@ export default async function ContentPage({
                         <div className="space-y-1">
                           <Badge
                             variant={
-                              show.status === 'completed'
-                                ? 'secondary'
-                                : show.status === 'ongoing'
-                                  ? 'default'
-                                  : show.status === 'cancelled'
-                                    ? 'destructive'
-                                    : 'outline'
+                              show.status === "completed"
+                                ? "secondary"
+                                : show.status === "ongoing"
+                                  ? "default"
+                                  : show.status === "cancelled"
+                                    ? "destructive"
+                                    : "outline"
                             }
                           >
                             {show.status}
@@ -598,5 +598,5 @@ export default async function ContentPage({
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

@@ -1,56 +1,56 @@
-'use client';
+"use client"
 
-import { Progress } from '@repo/design-system/components/ui/progress';
-import { CheckCircle2, Clock, Loader2, XCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import type { SyncProgress } from '~/lib/sync/progress-tracker';
+import { Progress } from "@repo/design-system/components/ui/progress"
+import { CheckCircle2, Clock, Loader2, XCircle } from "lucide-react"
+import { useEffect, useState } from "react"
+import type { SyncProgress } from "~/lib/sync/progress-tracker"
 
 interface SyncProgressDisplayProps {
-  artistId: string;
-  onComplete?: () => void;
+  artistId: string
+  onComplete?: () => void
 }
 
 export function SyncProgressDisplay({
   artistId,
   onComplete,
 }: SyncProgressDisplayProps) {
-  const [progress, setProgress] = useState<SyncProgress | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState<SyncProgress | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const checkProgress = async () => {
       try {
-        const response = await fetch(`/api/sync/progress/${artistId}`);
+        const response = await fetch(`/api/sync/progress/${artistId}`)
         if (response.ok) {
-          const data = await response.json();
-          setProgress(data.progress);
+          const data = await response.json()
+          setProgress(data.progress)
 
           if (
-            (data.progress.status === 'completed' ||
-              data.progress.status === 'failed') &&
+            (data.progress.status === "completed" ||
+              data.progress.status === "failed") &&
             onComplete
           ) {
-            onComplete();
+            onComplete()
           }
         } else if (response.status === 404) {
-          setError('No sync in progress');
+          setError("No sync in progress")
         }
       } catch (_err) {
-        setError('Failed to fetch progress');
+        setError("Failed to fetch progress")
       }
-    };
+    }
 
     // Check immediately
-    checkProgress();
+    checkProgress()
 
     // Then check every 2 seconds
-    const interval = setInterval(checkProgress, 2000);
+    const interval = setInterval(checkProgress, 2000)
 
-    return () => clearInterval(interval);
-  }, [artistId, onComplete]);
+    return () => clearInterval(interval)
+  }, [artistId, onComplete])
 
   if (error) {
-    return null;
+    return null
   }
 
   if (!progress) {
@@ -59,27 +59,27 @@ export function SyncProgressDisplay({
         <Loader2 className="h-4 w-4 animate-spin" />
         Loading sync status...
       </div>
-    );
+    )
   }
 
   const getStepIcon = (status: string) => {
     switch (status) {
-      case 'completed':
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-      case 'failed':
-        return <XCircle className="h-4 w-4 text-red-500" />;
-      case 'syncing':
-        return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
+      case "completed":
+        return <CheckCircle2 className="h-4 w-4 text-green-500" />
+      case "failed":
+        return <XCircle className="h-4 w-4 text-red-500" />
+      case "syncing":
+        return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
       default:
-        return <Clock className="h-4 w-4 text-gray-400" />;
+        return <Clock className="h-4 w-4 text-gray-400" />
     }
-  };
+  }
 
   const getOverallProgress = () => {
-    const steps = Object.values(progress.steps);
-    const completed = steps.filter((s) => s.status === 'completed').length;
-    return (completed / steps.length) * 100;
-  };
+    const steps = Object.values(progress.steps)
+    const completed = steps.filter((s) => s.status === "completed").length
+    return (completed / steps.length) * 100
+  }
 
   return (
     <div className="space-y-4 rounded-lg border bg-card p-4">
@@ -112,11 +112,11 @@ export function SyncProgressDisplay({
         </div>
       )}
 
-      {progress.status === 'completed' && (
+      {progress.status === "completed" && (
         <div className="rounded bg-green-50 p-2 text-green-600 text-sm">
           Sync completed successfully!
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -1,75 +1,75 @@
-import { db } from '@repo/database';
+import { db } from "@repo/database"
 import {
-  artists,
-  artistStats,
-  shows,
-  setlists,
-  venues,
-  songs,
   artistSongs,
-} from '@repo/database';
-import { eq, sql, and, desc } from 'drizzle-orm';
-import { SyncProgressTracker } from '~/lib/sync-progress-tracker';
+  artistStats,
+  artists,
+  setlists,
+  shows,
+  songs,
+  venues,
+} from "@repo/database"
 import {
   ArtistSyncService,
-  ShowSyncService,
   SetlistSyncService,
-  VenueSyncService,
+  ShowSyncService,
   SyncScheduler,
-} from '@repo/external-apis';
+  VenueSyncService,
+} from "@repo/external-apis"
+import { and, desc, eq, sql } from "drizzle-orm"
+import { SyncProgressTracker } from "~/lib/sync-progress-tracker"
 
 // Rate limiting utility
 export class RateLimiter {
   private static requestCounts = new Map<
     string,
     { count: number; resetTime: number }
-  >();
+  >()
 
   static async checkLimit(
     key: string,
     maxRequests: number,
     windowMs: number
   ): Promise<boolean> {
-    const now = Date.now();
-    const current = RateLimiter.requestCounts.get(key);
+    const now = Date.now()
+    const current = RateLimiter.requestCounts.get(key)
 
     if (!current || now > current.resetTime) {
       RateLimiter.requestCounts.set(key, {
         count: 1,
         resetTime: now + windowMs,
-      });
-      return true;
+      })
+      return true
     }
 
     if (current.count >= maxRequests) {
-      return false;
+      return false
     }
 
-    current.count++;
-    return true;
+    current.count++
+    return true
   }
 
   static async delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms))
   }
 }
 
 // Unified Sync Service V2 - Uses external-apis sync services
 export class UnifiedSyncService {
-  private artistSyncService: ArtistSyncService;
-  private showSyncService: ShowSyncService;
-  private setlistSyncService: SetlistSyncService;
-  private venueSyncService: VenueSyncService;
-  private syncScheduler: SyncScheduler;
-  private progressTracker: SyncProgressTracker;
+  private artistSyncService: ArtistSyncService
+  private showSyncService: ShowSyncService
+  private setlistSyncService: SetlistSyncService
+  private venueSyncService: VenueSyncService
+  private syncScheduler: SyncScheduler
+  private progressTracker: SyncProgressTracker
 
   constructor() {
-    this.artistSyncService = new ArtistSyncService();
-    this.showSyncService = new ShowSyncService();
-    this.setlistSyncService = new SetlistSyncService();
-    this.venueSyncService = new VenueSyncService();
-    this.syncScheduler = new SyncScheduler();
-    this.progressTracker = new SyncProgressTracker();
+    this.artistSyncService = new ArtistSyncService()
+    this.showSyncService = new ShowSyncService()
+    this.setlistSyncService = new SetlistSyncService()
+    this.venueSyncService = new VenueSyncService()
+    this.syncScheduler = new SyncScheduler()
+    this.progressTracker = new SyncProgressTracker()
   }
 
   async syncArtistCatalog(artistId: string) {
@@ -80,7 +80,7 @@ export class UnifiedSyncService {
       venues: { synced: 0, errors: 0 },
       setlists: { synced: 0, errors: 0 },
       stats: { calculated: false },
-    };
+    }
 
     try {
       // Get artist from database
@@ -88,35 +88,35 @@ export class UnifiedSyncService {
         .select()
         .from(artists)
         .where(eq(artists.id, artistId))
-        .limit(1);
+        .limit(1)
 
       if (!artist) {
-        throw new Error('Artist not found');
+        throw new Error("Artist not found")
       }
 
-      results.artist.data = artist;
+      results.artist.data = artist
 
       // Start progress tracking
-      await this.progressTracker.startSync(artistId, artist.name);
+      await this.progressTracker.startSync(artistId, artist.name)
 
       // Step 1: Sync artist data using SyncScheduler
       await this.progressTracker.updateProgress(artistId, {
-        currentStep: 'Syncing artist data',
+        currentStep: "Syncing artist data",
         completedSteps: 1,
-      });
+      })
 
-      await this.syncScheduler.syncArtistData(artist.name);
-      results.artist.updated = true;
+      await this.syncScheduler.syncArtistData(artist.name)
+      results.artist.updated = true
 
       // Get updated stats after sync
       const updatedArtist = await db
         .select()
         .from(artists)
         .where(eq(artists.id, artistId))
-        .limit(1);
+        .limit(1)
 
       if (updatedArtist[0]) {
-        results.artist.data = updatedArtist[0];
+        results.artist.data = updatedArtist[0]
       }
 
       // Step 2: Count synced songs
@@ -124,17 +124,17 @@ export class UnifiedSyncService {
         .select({ count: sql<number>`count(*)` })
         .from(songs)
         .innerJoin(artistSongs, eq(artistSongs.songId, songs.id))
-        .where(eq(artistSongs.artistId, artistId));
-      
-      results.songs.synced = Number(songCount[0]?.count || 0);
+        .where(eq(artistSongs.artistId, artistId))
+
+      results.songs.synced = Number(songCount[0]?.count || 0)
 
       // Step 3: Count synced shows
       const showCount = await db
         .select({ count: sql<number>`count(*)` })
         .from(shows)
-        .where(eq(shows.headlinerArtistId, artistId));
-      
-      results.shows.synced = Number(showCount[0]?.count || 0);
+        .where(eq(shows.headlinerArtistId, artistId))
+
+      results.shows.synced = Number(showCount[0]?.count || 0)
 
       // Step 4: Count synced venues (through shows)
       const venueCount = await db
@@ -145,26 +145,26 @@ export class UnifiedSyncService {
             eq(shows.headlinerArtistId, artistId),
             sql`${shows.venueId} IS NOT NULL`
           )
-        );
-      
-      results.venues.synced = Number(venueCount[0]?.count || 0);
+        )
+
+      results.venues.synced = Number(venueCount[0]?.count || 0)
 
       // Step 5: Count synced setlists
       const setlistCount = await db
         .select({ count: sql<number>`count(*)` })
         .from(setlists)
-        .where(eq(setlists.artistId, artistId));
-      
-      results.setlists.synced = Number(setlistCount[0]?.count || 0);
+        .where(eq(setlists.artistId, artistId))
+
+      results.setlists.synced = Number(setlistCount[0]?.count || 0)
 
       // Step 6: Calculate artist stats
       await this.progressTracker.updateProgress(artistId, {
-        currentStep: 'Calculating artist statistics',
+        currentStep: "Calculating artist statistics",
         completedSteps: 3,
-      });
+      })
 
-      await this.calculateArtistStats(artistId);
-      results.stats.calculated = true;
+      await this.calculateArtistStats(artistId)
+      results.stats.calculated = true
 
       // Update artist with last full sync timestamp
       await db
@@ -173,10 +173,10 @@ export class UnifiedSyncService {
           lastFullSyncAt: new Date(),
           updatedAt: new Date(),
         })
-        .where(eq(artists.id, artistId));
+        .where(eq(artists.id, artistId))
 
       // Complete sync
-      await this.progressTracker.completeSync(artistId);
+      await this.progressTracker.completeSync(artistId)
       await this.progressTracker.updateProgress(artistId, {
         completedSteps: 4,
         details: {
@@ -185,17 +185,16 @@ export class UnifiedSyncService {
           venues: results.venues,
           setlists: results.setlists,
         },
-      });
-
+      })
     } catch (error) {
       await this.progressTracker.completeSync(
         artistId,
-        error instanceof Error ? error.message : 'Unknown error'
-      );
-      throw error;
+        error instanceof Error ? error.message : "Unknown error"
+      )
+      throw error
     }
 
-    return results;
+    return results
   }
 
   // Calculate artist statistics
@@ -204,36 +203,36 @@ export class UnifiedSyncService {
     const showsCount = await db
       .select({ count: sql<number>`count(*)` })
       .from(shows)
-      .where(eq(shows.headlinerArtistId, artistId));
+      .where(eq(shows.headlinerArtistId, artistId))
 
-    const totalShows = Number(showsCount[0]?.count || 0);
+    const totalShows = Number(showsCount[0]?.count || 0)
 
     // Get upcoming shows count
     const upcomingShowsCount = await db
       .select({ count: sql<number>`count(*)` })
       .from(shows)
       .where(
-        and(eq(shows.headlinerArtistId, artistId), eq(shows.status, 'upcoming'))
-      );
+        and(eq(shows.headlinerArtistId, artistId), eq(shows.status, "upcoming"))
+      )
 
-    const upcomingShows = Number(upcomingShowsCount[0]?.count || 0);
+    const upcomingShows = Number(upcomingShowsCount[0]?.count || 0)
 
     // Get total setlists count
     const setlistsCount = await db
       .select({ count: sql<number>`count(*)` })
       .from(setlists)
-      .where(eq(setlists.artistId, artistId));
+      .where(eq(setlists.artistId, artistId))
 
-    const totalSetlists = Number(setlistsCount[0]?.count || 0);
+    const totalSetlists = Number(setlistsCount[0]?.count || 0)
 
     // Get total songs count
     const songsCount = await db
       .select({ count: sql<number>`count(*)` })
       .from(songs)
       .innerJoin(artistSongs, eq(artistSongs.songId, songs.id))
-      .where(eq(artistSongs.artistId, artistId));
+      .where(eq(artistSongs.artistId, artistId))
 
-    const totalSongs = Number(songsCount[0]?.count || 0);
+    const totalSongs = Number(songsCount[0]?.count || 0)
 
     // Update artist stats
     await db
@@ -245,14 +244,14 @@ export class UnifiedSyncService {
         totalSongs,
         updatedAt: new Date(),
       })
-      .where(eq(artists.id, artistId));
+      .where(eq(artists.id, artistId))
 
     // Check if detailed stats record exists
     const existingStats = await db
       .select()
       .from(artistStats)
       .where(eq(artistStats.artistId, artistId))
-      .limit(1);
+      .limit(1)
 
     const statsData = {
       totalShows,
@@ -260,20 +259,20 @@ export class UnifiedSyncService {
       totalSetlists,
       totalSongs,
       updatedAt: new Date(),
-    };
+    }
 
     if (existingStats.length > 0) {
       // Update existing stats
       await db
         .update(artistStats)
         .set(statsData)
-        .where(eq(artistStats.artistId, artistId));
+        .where(eq(artistStats.artistId, artistId))
     } else {
       // Create new stats record
       await db.insert(artistStats).values({
         artistId,
         ...statsData,
-      });
+      })
     }
   }
 
@@ -284,45 +283,45 @@ export class UnifiedSyncService {
       synced: 0,
       errors: 0,
       details: [] as any[],
-    };
+    }
 
     for (const artistId of artistIds) {
       try {
-        const syncResult = await this.syncArtistCatalog(artistId);
-        results.synced++;
+        const syncResult = await this.syncArtistCatalog(artistId)
+        results.synced++
         results.details.push({
           artistId,
           success: true,
           ...syncResult,
-        });
+        })
       } catch (error) {
-        results.errors++;
+        results.errors++
         results.details.push({
           artistId,
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
+          error: error instanceof Error ? error.message : "Unknown error",
+        })
       }
 
       // Rate limiting between artists
-      await RateLimiter.delay(500);
+      await RateLimiter.delay(500)
     }
 
-    return results;
+    return results
   }
 
   // Sync popular artists
   async syncPopularArtists() {
-    await this.syncScheduler.runInitialSync();
+    await this.syncScheduler.runInitialSync()
   }
 
   // Sync shows by location
   async syncShowsByLocation(city: string, stateCode?: string) {
-    await this.syncScheduler.syncByLocation(city, stateCode);
+    await this.syncScheduler.syncByLocation(city, stateCode)
   }
 
   // Run daily sync
   async runDailySync() {
-    await this.syncScheduler.runDailySync();
+    await this.syncScheduler.runDailySync()
   }
 }

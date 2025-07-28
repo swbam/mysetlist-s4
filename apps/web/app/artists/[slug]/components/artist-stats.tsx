@@ -1,8 +1,8 @@
-import { db, sql } from '@repo/database';
-import { Calendar, Music, TrendingUp, Users } from 'lucide-react';
+import { db, sql } from "@repo/database"
+import { Calendar, Music, TrendingUp, Users } from "lucide-react"
 
 interface ArtistStatsProps {
-  artistId: string;
+  artistId: string
 }
 
 export async function ArtistStats({ artistId }: ArtistStatsProps) {
@@ -13,20 +13,20 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
      WHERE artist_id = ${artistId}
      LIMIT 1`
   )) as unknown as {
-    rows?: { total_shows: number | null; avg_setlist_length: number | null }[];
-  };
+    rows?: { total_shows: number | null; avg_setlist_length: number | null }[]
+  }
 
   const artistStatsData = statsRes.rows?.[0] ?? {
     total_shows: 0,
     avg_setlist_length: null,
-  };
+  }
 
   // Fetch follower count
   const followersRes = (await db.execute(
     sql`SELECT COUNT(*)::int AS cnt FROM user_follows_artists WHERE artist_id = ${artistId}`
-  )) as unknown as { rows?: { cnt: number }[] };
+  )) as unknown as { rows?: { cnt: number }[] }
 
-  const followerCount = followersRes.rows?.[0]?.cnt ?? 0;
+  const followerCount = followersRes.rows?.[0]?.cnt ?? 0
 
   // Get total unique songs across all setlists for this artist via raw SQL
   const songCountRes = (await db.execute(
@@ -34,9 +34,9 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
        FROM setlist_songs ss
        JOIN setlists s ON ss.setlist_id = s.id
        WHERE s.artist_id = ${artistId}`
-  )) as unknown as { rows?: { cnt: number }[] };
+  )) as unknown as { rows?: { cnt: number }[] }
 
-  const totalSongs = songCountRes.rows?.[0]?.cnt ?? 0;
+  const totalSongs = songCountRes.rows?.[0]?.cnt ?? 0
 
   return (
     <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
@@ -72,9 +72,9 @@ export async function ArtistStats({ artistId }: ArtistStatsProps) {
         <p className="font-bold text-2xl">
           {artistStatsData.avg_setlist_length
             ? Number(artistStatsData.avg_setlist_length).toFixed(1)
-            : '0'}
+            : "0"}
         </p>
       </div>
     </div>
-  );
+  )
 }

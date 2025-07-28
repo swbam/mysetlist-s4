@@ -1,50 +1,50 @@
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Calendar, MapPin, Music2, Users } from 'lucide-react';
-import Link from 'next/link';
-import React from 'react';
-import { formatDate } from '~/lib/utils';
+} from "@repo/design-system/components/ui/card"
+import { Calendar, MapPin, Music2, Users } from "lucide-react"
+import Link from "next/link"
+import React from "react"
+import { formatDate } from "~/lib/utils"
 
 interface Show {
   show: {
-    id: string;
-    name: string;
-    slug: string;
-    date: string;
-    venueId?: string | null;
-    setlistCount?: number | null;
-    attendeeCount?: number | null;
-    voteCount?: number | null;
-    ticketUrl?: string;
-    status?: string;
-  };
+    id: string
+    name: string
+    slug: string
+    date: string
+    venueId?: string | null
+    setlistCount?: number | null
+    attendeeCount?: number | null
+    voteCount?: number | null
+    ticketUrl?: string
+    status?: string
+  }
   venue?: {
-    id: string;
-    name: string;
-    city: string;
-    state?: string;
-    country: string;
-  };
-  isHeadliner: boolean;
-  orderIndex: number;
+    id: string
+    name: string
+    city: string
+    state?: string
+    country: string
+  }
+  isHeadliner: boolean
+  orderIndex: number
 }
 
 interface PastShowsProps {
-  shows: Show[];
-  artistName: string;
-  artistId?: string;
+  shows: Show[]
+  artistName: string
+  artistId?: string
 }
 
-export const PastShows = React.memo(function PastShows({ 
-  shows, 
-  artistName, 
-  artistId: _artistId 
+export const PastShows = React.memo(function PastShows({
+  shows,
+  artistName,
+  artistId: _artistId,
 }: PastShowsProps) {
   if (shows.length === 0) {
     return (
@@ -58,7 +58,7 @@ export const PastShows = React.memo(function PastShows({
           </p>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -138,5 +138,5 @@ export const PastShows = React.memo(function PastShows({
         )}
       </CardContent>
     </Card>
-  );
-});
+  )
+})

@@ -1,6 +1,6 @@
-import { Button } from '@repo/design-system/components/ui/button';
-import { Music } from 'lucide-react';
-import Link from 'next/link';
+import { Button } from "@repo/design-system/components/ui/button"
+import { Music } from "lucide-react"
+import Link from "next/link"
 
 export default function ArtistNotFound() {
   return (
@@ -19,5 +19,5 @@ export default function ArtistNotFound() {
         </Button>
       </div>
     </div>
-  );
+  )
 }

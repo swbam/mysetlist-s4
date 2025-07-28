@@ -1,24 +1,24 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, type PanInfo, motion } from 'framer-motion';
-import { X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Button } from "@repo/design-system/components/ui/button"
+import { cn } from "@repo/design-system/lib/utils"
+import { AnimatePresence, type PanInfo, motion } from "framer-motion"
+import { X } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
 
 interface BottomSheetProps {
-  isOpen: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-  title?: string;
-  description?: string;
-  className?: string;
-  height?: 'auto' | 'half' | 'full';
-  draggable?: boolean;
-  showHandle?: boolean;
-  showCloseButton?: boolean;
-  snapPoints?: number[]; // Array of percentages (0-100)
-  onSnapChange?: (snapIndex: number) => void;
+  isOpen: boolean
+  onClose: () => void
+  children: React.ReactNode
+  title?: string
+  description?: string
+  className?: string
+  height?: "auto" | "half" | "full"
+  draggable?: boolean
+  showHandle?: boolean
+  showCloseButton?: boolean
+  snapPoints?: number[] // Array of percentages (0-100)
+  onSnapChange?: (snapIndex: number) => void
 }
 
 export function BottomSheet({
@@ -28,105 +28,105 @@ export function BottomSheet({
   title,
   description,
   className,
-  height = 'auto',
+  height = "auto",
   draggable = true,
   showHandle = true,
   showCloseButton = true,
   snapPoints = [25, 50, 90],
   onSnapChange,
 }: BottomSheetProps) {
-  const [currentSnapIndex, setCurrentSnapIndex] = useState(1); // Start at middle snap point
-  const [isDragging, setIsDragging] = useState(false);
-  const sheetRef = useRef<HTMLDivElement>(null);
+  const [currentSnapIndex, setCurrentSnapIndex] = useState(1) // Start at middle snap point
+  const [isDragging, setIsDragging] = useState(false)
+  const sheetRef = useRef<HTMLDivElement>(null)
 
   // Calculate height based on props and snap points
   const getHeight = () => {
-    if (height === 'full') {
-      return '100vh';
+    if (height === "full") {
+      return "100vh"
     }
-    if (height === 'half') {
-      return '50vh';
+    if (height === "half") {
+      return "50vh"
     }
     if (snapPoints && snapPoints.length > 0) {
-      return `${snapPoints[currentSnapIndex]}vh`;
+      return `${snapPoints[currentSnapIndex]}vh`
     }
-    return 'auto';
-  };
+    return "auto"
+  }
 
   // Prevent body scroll when sheet is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
+      document.body.style.overflow = "hidden"
+      document.body.style.touchAction = "none"
     } else {
-      document.body.style.overflow = 'unset';
-      document.body.style.touchAction = 'auto';
+      document.body.style.overflow = "unset"
+      document.body.style.touchAction = "auto"
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
-      document.body.style.touchAction = 'auto';
-    };
-  }, [isOpen]);
+      document.body.style.overflow = "unset"
+      document.body.style.touchAction = "auto"
+    }
+  }, [isOpen])
 
   const handleDragEnd = (_event: any, info: PanInfo) => {
-    setIsDragging(false);
+    setIsDragging(false)
 
     if (!draggable || !snapPoints) {
-      return;
+      return
     }
 
-    const { offset, velocity } = info;
+    const { offset, velocity } = info
 
     // Determine which snap point to go to based on drag direction and velocity
-    let targetSnapIndex = currentSnapIndex;
+    let targetSnapIndex = currentSnapIndex
 
     if (velocity.y > 300) {
       // Fast downward swipe - go to lower snap point or close
       if (currentSnapIndex === 0) {
-        onClose();
-        return;
+        onClose()
+        return
       }
-      targetSnapIndex = Math.max(0, currentSnapIndex - 1);
+      targetSnapIndex = Math.max(0, currentSnapIndex - 1)
     } else if (velocity.y < -300) {
       // Fast upward swipe - go to higher snap point
-      targetSnapIndex = Math.min(snapPoints.length - 1, currentSnapIndex + 1);
+      targetSnapIndex = Math.min(snapPoints.length - 1, currentSnapIndex + 1)
     } else {
       // Slow drag - snap to nearest point
-      const dragDistance = offset.y;
-      const threshold = 50;
+      const dragDistance = offset.y
+      const threshold = 50
 
       if (dragDistance > threshold && currentSnapIndex > 0) {
-        targetSnapIndex = currentSnapIndex - 1;
+        targetSnapIndex = currentSnapIndex - 1
       } else if (
         dragDistance < -threshold &&
         currentSnapIndex < snapPoints.length - 1
       ) {
-        targetSnapIndex = currentSnapIndex + 1;
+        targetSnapIndex = currentSnapIndex + 1
       }
 
       // Close if dragged down past minimum height
       if (dragDistance > 150 && currentSnapIndex === 0) {
-        onClose();
-        return;
+        onClose()
+        return
       }
     }
 
-    setCurrentSnapIndex(targetSnapIndex);
-    onSnapChange?.(targetSnapIndex);
-  };
+    setCurrentSnapIndex(targetSnapIndex)
+    onSnapChange?.(targetSnapIndex)
+  }
 
   const handleBackdropTap = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
-      onClose();
+      onClose()
     }
-  };
+  }
 
   const variants = {
     hidden: {
-      y: '100%',
+      y: "100%",
       transition: {
-        type: 'spring',
+        type: "spring",
         stiffness: 300,
         damping: 30,
       },
@@ -134,12 +134,12 @@ export function BottomSheet({
     visible: {
       y: 0,
       transition: {
-        type: 'spring',
+        type: "spring",
         stiffness: 300,
         damping: 30,
       },
     },
-  };
+  }
 
   return (
     <AnimatePresence>
@@ -161,15 +161,15 @@ export function BottomSheet({
             initial="hidden"
             animate="visible"
             exit="hidden"
-            drag={draggable ? 'y' : false}
+            drag={draggable ? "y" : false}
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={0.1}
             onDragStart={() => setIsDragging(true)}
             onDragEnd={handleDragEnd}
             className={cn(
-              'fixed right-0 bottom-0 left-0 z-50 rounded-t-xl border-t bg-background shadow-xl',
-              'flex max-h-[95vh] flex-col',
-              isDragging && 'cursor-grabbing',
+              "fixed right-0 bottom-0 left-0 z-50 rounded-t-xl border-t bg-background shadow-xl",
+              "flex max-h-[95vh] flex-col",
+              isDragging && "cursor-grabbing",
               className
             )}
             style={{
@@ -219,10 +219,10 @@ export function BottomSheet({
                   <div
                     key={index}
                     className={cn(
-                      'h-1.5 w-1.5 rounded-full transition-colors',
+                      "h-1.5 w-1.5 rounded-full transition-colors",
                       index === currentSnapIndex
-                        ? 'bg-primary'
-                        : 'bg-muted-foreground/30'
+                        ? "bg-primary"
+                        : "bg-muted-foreground/30"
                     )}
                   />
                 ))}
@@ -232,5 +232,5 @@ export function BottomSheet({
         </>
       )}
     </AnimatePresence>
-  );
+  )
 }

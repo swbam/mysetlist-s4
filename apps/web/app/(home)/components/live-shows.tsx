@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import {
   Card,
@@ -9,8 +9,8 @@ import {
   // TabsContent,
   // TabsList,
   // TabsTrigger,
-} from '@repo/design-system';
-import { RealtimeShowsFeed } from '~/components/realtime-shows-feed';
+} from "@repo/design-system"
+import { RealtimeShowsFeed } from "~/components/realtime-shows-feed"
 
 export function LiveShows() {
   return (
@@ -77,5 +77,5 @@ export function LiveShows() {
         </Card>
       </div>
     </section>
-  );
+  )
 }

@@ -1,3 +1,16 @@
+import { format, subDays } from "date-fns"
+import {
+  Activity,
+  AlertTriangle,
+  Ban,
+  CheckCircle,
+  FileText,
+  Search,
+  Shield,
+  Star,
+  User,
+  XCircle,
+} from "lucide-react"
 import {
   Avatar,
   AvatarFallback,
@@ -14,34 +27,21 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '~/components/ui-exports';
-import { format, subDays } from 'date-fns';
-import {
-  Activity,
-  AlertTriangle,
-  Ban,
-  CheckCircle,
-  FileText,
-  Search,
-  Shield,
-  Star,
-  User,
-  XCircle,
-} from 'lucide-react';
-import { createClient } from '~/lib/supabase/server';
+} from "~/components/ui-exports"
+import { createClient } from "~/lib/supabase/server"
 
 // Force dynamic rendering due to user-specific data fetching
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic"
 
 export default async function ActivityPage({
   params,
 }: { params: Promise<{ locale: string }> }) {
-  const supabase = await createClient();
-  await params; // Params accessed for Next.js compatibility
+  const supabase = await createClient()
+  await params // Params accessed for Next.js compatibility
 
   // Fetch moderation logs with moderator info
   const { data: logs } = await supabase
-    .from('moderation_logs')
+    .from("moderation_logs")
     .select(`
       *,
       moderator:users!moderation_logs_moderator_id_fkey(
@@ -51,69 +51,69 @@ export default async function ActivityPage({
         role
       )
     `)
-    .order('created_at', { ascending: false })
-    .limit(100);
+    .order("created_at", { ascending: false })
+    .limit(100)
 
   // Get activity stats
-  const today = new Date();
-  const weekAgo = subDays(today, 7);
+  const today = new Date()
+  const weekAgo = subDays(today, 7)
 
   await supabase
-    .from('moderation_logs')
-    .select('action', { count: 'exact', head: true })
-    .gte('created_at', weekAgo.toISOString());
+    .from("moderation_logs")
+    .select("action", { count: "exact", head: true })
+    .gte("created_at", weekAgo.toISOString())
 
   // Group logs by action type
   const actionCounts =
     logs?.reduce(
       (acc, log) => {
-        acc[log.action] = (acc[log.action] || 0) + 1;
-        return acc;
+        acc[log.action] = (acc[log.action] || 0) + 1
+        return acc
       },
       {} as Record<string, number>
-    ) ?? {};
+    ) ?? {}
 
   const getActionIcon = (action: string) => {
     switch (action) {
-      case 'approve':
-      case 'verify_artist':
-        return CheckCircle;
-      case 'reject':
-      case 'unverify_artist':
-        return XCircle;
-      case 'delete':
-      case 'ban_user':
-        return Ban;
-      case 'warn_user':
-        return AlertTriangle;
-      case 'feature_content':
-        return Star;
+      case "approve":
+      case "verify_artist":
+        return CheckCircle
+      case "reject":
+      case "unverify_artist":
+        return XCircle
+      case "delete":
+      case "ban_user":
+        return Ban
+      case "warn_user":
+        return AlertTriangle
+      case "feature_content":
+        return Star
       default:
-        return Shield;
+        return Shield
     }
-  };
+  }
 
   const getActionColor = (action: string) => {
     switch (action) {
-      case 'approve':
-      case 'verify_artist':
-        return 'text-green-600';
-      case 'reject':
-      case 'delete':
-      case 'ban_user':
-        return 'text-red-600';
-      case 'warn_user':
-        return 'text-yellow-600';
-      case 'feature_content':
-        return 'text-blue-600';
+      case "approve":
+      case "verify_artist":
+        return "text-green-600"
+      case "reject":
+      case "delete":
+      case "ban_user":
+        return "text-red-600"
+      case "warn_user":
+        return "text-yellow-600"
+      case "feature_content":
+        return "text-blue-600"
       default:
-        return 'text-gray-600';
+        return "text-gray-600"
     }
-  };
+  }
 
   const formatAction = (action: string) => {
-    return action.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-  };
+    return action.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+  }
 
   return (
     <div className="space-y-6">
@@ -165,9 +165,9 @@ export default async function ActivityPage({
                 ? formatAction(
                     Object.entries(actionCounts).sort(
                       ([, a], [, b]) => (b as number) - (a as number)
-                    )[0]?.[0] ?? 'unknown'
+                    )[0]?.[0] ?? "unknown"
                   )
-                : 'N/A'}
+                : "N/A"}
             </div>
             <p className="text-muted-foreground text-xs">action type</p>
           </CardContent>
@@ -243,7 +243,7 @@ export default async function ActivityPage({
         <CardContent>
           <div className="space-y-4">
             {logs?.map((log) => {
-              const ActionIcon = getActionIcon(log.action);
+              const ActionIcon = getActionIcon(log.action)
 
               return (
                 <div
@@ -255,7 +255,7 @@ export default async function ActivityPage({
                     <span className="text-sm font-medium">
                       {log.moderator?.display_name?.[0] ||
                         log.moderator?.email?.[0] ||
-                        'M'}
+                        "M"}
                     </span>
                   </div>
 
@@ -266,16 +266,16 @@ export default async function ActivityPage({
                       </p>
                       <Badge
                         variant={
-                          log.moderator?.role === 'admin'
-                            ? 'destructive'
-                            : 'default'
+                          log.moderator?.role === "admin"
+                            ? "destructive"
+                            : "default"
                         }
                       >
                         {log.moderator?.role}
                       </Badge>
                       <span className="text-muted-foreground text-sm">•</span>
                       <span className="text-muted-foreground text-sm">
-                        {format(new Date(log.created_at), 'MMM d, h:mm a')}
+                        {format(new Date(log.created_at), "MMM d, h:mm a")}
                       </span>
                     </div>
 
@@ -309,11 +309,11 @@ export default async function ActivityPage({
                     )}
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

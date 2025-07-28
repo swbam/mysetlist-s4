@@ -10,31 +10,31 @@ import {
   Section,
   Tailwind,
   Text,
-} from '@react-email/components';
+} from "@react-email/components"
 
 type Artist = {
-  id: string;
-  name: string;
-  upcomingShows: number;
-};
+  id: string
+  name: string
+  upcomingShows: number
+}
 
 type Show = {
-  id: string;
-  name: string;
-  artistName: string;
-  venue: string;
-  date: string;
-};
+  id: string
+  name: string
+  artistName: string
+  venue: string
+  date: string
+}
 
 type WeeklyDigestTemplateProps = {
-  readonly userName: string;
-  readonly weekOf: string;
-  readonly followedArtists: Artist[];
-  readonly upcomingShows: Show[];
-  readonly newSetlists: Show[];
-  readonly appUrl: string;
-  readonly totalFollowedArtists: number;
-};
+  readonly userName: string
+  readonly weekOf: string
+  readonly followedArtists: Artist[]
+  readonly upcomingShows: Show[]
+  readonly newSetlists: Show[]
+  readonly appUrl: string
+  readonly totalFollowedArtists: number
+}
 
 export const WeeklyDigestTemplate = ({
   userName,
@@ -198,14 +198,14 @@ export const WeeklyDigestTemplate = ({
 
               <Text className="text-sm text-zinc-500">
                 You're receiving this weekly digest because you've enabled email
-                notifications. You can manage your preferences{' '}
+                notifications. You can manage your preferences{" "}
                 <Link
                   href={`${appUrl}/settings`}
                   className="text-zinc-700 underline"
                 >
                   here
-                </Link>{' '}
-                or{' '}
+                </Link>{" "}
+                or{" "}
                 <Link
                   href={`${appUrl}/unsubscribe?type=weekly-digest`}
                   className="text-zinc-700 underline"
@@ -220,43 +220,43 @@ export const WeeklyDigestTemplate = ({
       </Body>
     </Html>
   </Tailwind>
-);
+)
 
 WeeklyDigestTemplate.PreviewProps = {
-  userName: 'Alex',
-  weekOf: 'November 11-17, 2024',
+  userName: "Alex",
+  weekOf: "November 11-17, 2024",
   followedArtists: [
-    { id: '1', name: 'The Midnight', upcomingShows: 3 },
-    { id: '2', name: 'Bon Iver', upcomingShows: 1 },
-    { id: '3', name: 'Arctic Monkeys', upcomingShows: 0 },
+    { id: "1", name: "The Midnight", upcomingShows: 3 },
+    { id: "2", name: "Bon Iver", upcomingShows: 1 },
+    { id: "3", name: "Arctic Monkeys", upcomingShows: 0 },
   ],
   upcomingShows: [
     {
-      id: '1',
-      name: 'Fall Tour',
-      artistName: 'The Midnight',
-      venue: 'The Fillmore',
-      date: 'Nov 15, 2024',
+      id: "1",
+      name: "Fall Tour",
+      artistName: "The Midnight",
+      venue: "The Fillmore",
+      date: "Nov 15, 2024",
     },
     {
-      id: '2',
-      name: 'Acoustic Sessions',
-      artistName: 'Bon Iver',
-      venue: 'Blue Note',
-      date: 'Nov 17, 2024',
+      id: "2",
+      name: "Acoustic Sessions",
+      artistName: "Bon Iver",
+      venue: "Blue Note",
+      date: "Nov 17, 2024",
     },
   ],
   newSetlists: [
     {
-      id: '3',
-      name: 'World Tour',
-      artistName: 'Arctic Monkeys',
-      venue: 'Madison Square Garden',
-      date: 'Nov 12, 2024',
+      id: "3",
+      name: "World Tour",
+      artistName: "Arctic Monkeys",
+      venue: "Madison Square Garden",
+      date: "Nov 12, 2024",
     },
   ],
-  appUrl: 'https://MySetlist.app',
+  appUrl: "https://MySetlist.app",
   totalFollowedArtists: 8,
-};
+}
 
-export default WeeklyDigestTemplate;
+export default WeeklyDigestTemplate

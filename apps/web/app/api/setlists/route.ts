@@ -1,30 +1,30 @@
-import { getUser } from '@repo/auth/server';
-import { db } from '@repo/database';
-import { setlists } from '@repo/database';
-import { type NextRequest, NextResponse } from 'next/server';
+import { getUser } from "@repo/auth/server"
+import { db } from "@repo/database"
+import { setlists } from "@repo/database"
+import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUser();
+    const user = await getUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { showId, artistId, type, name } = await request.json();
+    const { showId, artistId, type, name } = await request.json()
 
     if (!showId || !artistId || !type || !name) {
       return NextResponse.json(
-        { error: 'Missing required fields: showId, artistId, type, name' },
+        { error: "Missing required fields: showId, artistId, type, name" },
         { status: 400 }
-      );
+      )
     }
 
-    if (!['predicted', 'actual'].includes(type)) {
+    if (!["predicted", "actual"].includes(type)) {
       return NextResponse.json(
         { error: 'Invalid type. Must be "predicted" or "actual"' },
         { status: 400 }
-      );
+      )
     }
 
     // Create the setlist
@@ -41,13 +41,13 @@ export async function POST(request: NextRequest) {
         accuracyScore: 0,
         createdBy: user.id,
       })
-      .returning();
+      .returning()
 
-    return NextResponse.json(newSetlist[0]);
+    return NextResponse.json(newSetlist[0])
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to create setlist' },
+      { error: "Failed to create setlist" },
       { status: 500 }
-    );
+    )
   }
 }

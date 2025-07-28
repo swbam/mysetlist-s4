@@ -1,36 +1,36 @@
-import { db } from '@repo/database';
-import { sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database"
+import { sql } from "drizzle-orm"
+import { type NextRequest, NextResponse } from "next/server"
 
 // GET /api/analytics/vote-stats - Get comprehensive vote statistics
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const showId = searchParams.get('showId');
-    const timeframe = searchParams.get('timeframe') || '24h'; // 24h, 7d, 30d
-    const includeVelocity = searchParams.get('velocity') === 'true';
+    const { searchParams } = new URL(request.url)
+    const showId = searchParams.get("showId")
+    const timeframe = searchParams.get("timeframe") || "24h" // 24h, 7d, 30d
+    const includeVelocity = searchParams.get("velocity") === "true"
 
     // Parse timeframe
-    let timeInterval = '24 hours';
+    let timeInterval = "24 hours"
     switch (timeframe) {
-      case '7d':
-        timeInterval = '7 days';
-        break;
-      case '30d':
-        timeInterval = '30 days';
-        break;
-      case '1h':
-        timeInterval = '1 hour';
-        break;
+      case "7d":
+        timeInterval = "7 days"
+        break
+      case "30d":
+        timeInterval = "30 days"
+        break
+      case "1h":
+        timeInterval = "1 hour"
+        break
       default:
-        timeInterval = '24 hours';
+        timeInterval = "24 hours"
     }
 
     if (showId) {
       // Get stats for a specific show
       const showStats = await db.execute(sql`
         SELECT * FROM get_vote_stats(${showId}::UUID)
-      `);
+      `)
 
       if (includeVelocity) {
         // Get detailed vote velocity data
@@ -48,24 +48,24 @@ export async function GET(request: NextRequest) {
           GROUP BY DATE_TRUNC('hour', v.created_at)
           ORDER BY hour DESC
           LIMIT 48
-        `);
+        `)
 
         return NextResponse.json({
           showStats: (showStats as any)?.[0] || null,
           velocityData: (velocityData as any[]) || [],
           timeframe,
-        });
+        })
       }
 
       return NextResponse.json({
         showStats: (showStats as any)?.[0] || null,
         timeframe,
-      });
+      })
     }
     // Get trending shows with vote metrics
     const trendingShows = await db.execute(sql`
         SELECT * FROM get_trending_shows(20)
-      `);
+      `)
 
     // Get overall platform vote statistics
     const overallStats = await db.execute(sql`
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
         INNER JOIN setlists ON setlist_songs.setlist_id = setlists.id
         INNER JOIN shows ON setlists.show_id = shows.id
         WHERE votes.created_at > NOW() - INTERVAL '${sql.raw(timeInterval)}'
-      `);
+      `)
 
     // Get top voted songs
     const topVotedSongs = await db.execute(sql`
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
         HAVING SUM(ss.upvotes + ss.downvotes) > 0
         ORDER BY net_votes DESC, total_upvotes DESC
         LIMIT 20
-      `);
+      `)
 
     // Get vote activity by hour for the past 24 hours
     const hourlyActivity = await db.execute(sql`
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
         WHERE v.created_at > NOW() - INTERVAL '24 hours'
         GROUP BY EXTRACT(HOUR FROM v.created_at)
         ORDER BY hour
-      `);
+      `)
 
     return NextResponse.json({
       trendingShows: trendingShows,
@@ -122,31 +122,31 @@ export async function GET(request: NextRequest) {
       topVotedSongs: topVotedSongs,
       hourlyActivity: hourlyActivity,
       timeframe,
-    });
+    })
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to get vote statistics' },
+      { error: "Failed to get vote statistics" },
       { status: 500 }
-    );
+    )
   }
 }
 
 // POST /api/analytics/vote-stats - Trigger vote statistics update
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { action } = body;
+    const body = await request.json()
+    const { action } = body
 
-    if (action === 'update_trending') {
+    if (action === "update_trending") {
       // Trigger trending score calculation
-      await db.execute(sql`SELECT update_trending_scores()`);
+      await db.execute(sql`SELECT update_trending_scores()`)
 
       return NextResponse.json({
-        message: 'Trending scores updated successfully',
+        message: "Trending scores updated successfully",
         timestamp: new Date().toISOString(),
-      });
+      })
     }
-    if (action === 'recalculate_votes') {
+    if (action === "recalculate_votes") {
       // Recalculate all vote counts (useful for data integrity)
       await db.execute(sql`
         UPDATE setlist_songs 
@@ -163,12 +163,12 @@ export async function POST(request: NextRequest) {
             WHERE setlist_song_id = setlist_songs.id 
               AND vote_type = 'down'
           )
-      `);
+      `)
 
       await db.execute(sql`
         UPDATE setlist_songs 
         SET net_votes = upvotes - downvotes
-      `);
+      `)
 
       await db.execute(sql`
         UPDATE setlists 
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
           FROM setlist_songs 
           WHERE setlist_id = setlists.id
         )
-      `);
+      `)
 
       await db.execute(sql`
         UPDATE shows 
@@ -186,24 +186,24 @@ export async function POST(request: NextRequest) {
           FROM setlists 
           WHERE show_id = shows.id
         )
-      `);
+      `)
 
       return NextResponse.json({
-        message: 'Vote counts recalculated successfully',
+        message: "Vote counts recalculated successfully",
         timestamp: new Date().toISOString(),
-      });
+      })
     }
     return NextResponse.json(
       {
         error:
-          'Invalid action. Valid actions: update_trending, recalculate_votes',
+          "Invalid action. Valid actions: update_trending, recalculate_votes",
       },
       { status: 400 }
-    );
+    )
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to update vote statistics' },
+      { error: "Failed to update vote statistics" },
       { status: 500 }
-    );
+    )
   }
 }

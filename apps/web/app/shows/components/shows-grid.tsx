@@ -1,47 +1,47 @@
-'use client';
+"use client"
 
-import { Music } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { ShowCard } from './show-card';
-import { type ShowWithDetails, fetchShows } from '../actions';
-import { Card } from '@repo/design-system/components/ui/card';
+import { Card } from "@repo/design-system/components/ui/card"
+import { Music } from "lucide-react"
+import { useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
+import { type ShowWithDetails, fetchShows } from "../actions"
+import { ShowCard } from "./show-card"
 
 export const ShowsGrid = () => {
-  const [shows, setShows] = useState<ShowWithDetails[]>([]);
-  const [loading, setLoading] = useState(true);
-  const searchParams = useSearchParams();
+  const [shows, setShows] = useState<ShowWithDetails[]>([])
+  const [loading, setLoading] = useState(true)
+  const searchParams = useSearchParams()
 
   useEffect(() => {
     const loadShows = async () => {
-      setLoading(true);
+      setLoading(true)
       try {
-        const city = searchParams.get('city') || undefined;
-        const dateFrom = searchParams.get('dateFrom') || undefined;
-        const dateTo = searchParams.get('dateTo') || undefined;
+        const city = searchParams.get("city") || undefined
+        const dateFrom = searchParams.get("dateFrom") || undefined
+        const dateTo = searchParams.get("dateTo") || undefined
         const orderBy =
-          (searchParams.get('orderBy') as 'date' | 'trending' | 'popularity') ||
-          'date';
+          (searchParams.get("orderBy") as "date" | "trending" | "popularity") ||
+          "date"
 
         const { shows: fetchedShows } = await fetchShows({
-          status: 'upcoming',
+          status: "upcoming",
           ...(city && { city }),
           ...(dateFrom && { dateFrom }),
           ...(dateTo && { dateTo }),
           orderBy,
           limit: 20,
-        });
+        })
 
-        setShows(fetchedShows);
+        setShows(fetchedShows)
       } catch (_error) {
         // Silent error handling
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    loadShows();
-  }, [searchParams]);
+    loadShows()
+  }, [searchParams])
 
   if (loading) {
     return (
@@ -57,7 +57,7 @@ export const ShowsGrid = () => {
           </Card>
         ))}
       </div>
-    );
+    )
   }
 
   if (shows.length === 0) {
@@ -69,7 +69,7 @@ export const ShowsGrid = () => {
           Try adjusting your filters or check back later for new shows.
         </p>
       </Card>
-    );
+    )
   }
 
   return (
@@ -78,5 +78,5 @@ export const ShowsGrid = () => {
         <ShowCard key={show.id} show={show} />
       ))}
     </div>
-  );
-};
+  )
+}

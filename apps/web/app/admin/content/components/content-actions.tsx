@@ -1,15 +1,5 @@
-'use client';
+"use client"
 
-import {
-  Button,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-  toast,
-} from '~/components/ui-exports';
 import {
   CheckCircle,
   Edit,
@@ -19,15 +9,25 @@ import {
   Star,
   Trash,
   XCircle,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+} from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  toast,
+} from "~/components/ui-exports"
+import { createClient } from "~/lib/supabase/client"
 
 interface ContentActionsProps {
-  type: 'artist' | 'venue' | 'show';
-  item: any;
-  locale: string;
+  type: "artist" | "venue" | "show"
+  item: any
+  locale: string
 }
 
 export default function ContentActions({
@@ -35,140 +35,140 @@ export default function ContentActions({
   item,
   locale,
 }: ContentActionsProps) {
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const supabase = createClient();
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+  const supabase = createClient()
 
   const handleVerify = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
       const table =
-        type === 'artist' ? 'artists' : type === 'venue' ? 'venues' : 'shows';
-      const field = type === 'show' ? 'is_verified' : 'verified';
+        type === "artist" ? "artists" : type === "venue" ? "venues" : "shows"
+      const field = type === "show" ? "is_verified" : "verified"
 
       const { error } = await supabase
         .from(table)
         .update({ [field]: !item[field] })
-        .eq('id', item.id);
+        .eq("id", item.id)
 
       if (error) {
-        throw error;
+        throw error
       }
 
       // Log action
-      await supabase.from('moderation_logs').insert({
+      await supabase.from("moderation_logs").insert({
         moderator_id: (await supabase.auth.getUser()).data.user?.id,
-        action: item[field] ? 'unverify_artist' : 'verify_artist',
+        action: item[field] ? "unverify_artist" : "verify_artist",
         target_type: type,
         target_id: item.id,
-        reason: `${type} ${item[field] ? 'unverified' : 'verified'} by admin`,
-      });
+        reason: `${type} ${item[field] ? "unverified" : "verified"} by admin`,
+      })
 
       toast({
-        title: item[field] ? 'Unverified' : 'Verified',
-        description: `${item.name} has been ${item[field] ? 'unverified' : 'verified'}.`,
-      });
+        title: item[field] ? "Unverified" : "Verified",
+        description: `${item.name} has been ${item[field] ? "unverified" : "verified"}.`,
+      })
 
-      router.refresh();
+      router.refresh()
     } catch (_error) {
       toast({
-        title: 'Error',
-        description: 'Failed to update verification status.',
-        variant: 'destructive',
-      });
+        title: "Error",
+        description: "Failed to update verification status.",
+        variant: "destructive",
+      })
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleFeature = async () => {
-    if (type !== 'show') {
-      return;
+    if (type !== "show") {
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
     try {
       const { error } = await supabase
-        .from('shows')
+        .from("shows")
         .update({ is_featured: !item.is_featured })
-        .eq('id', item.id);
+        .eq("id", item.id)
 
       if (error) {
-        throw error;
+        throw error
       }
 
       // Log action
-      await supabase.from('moderation_logs').insert({
+      await supabase.from("moderation_logs").insert({
         moderator_id: (await supabase.auth.getUser()).data.user?.id,
-        action: 'feature_content',
-        target_type: 'show',
+        action: "feature_content",
+        target_type: "show",
         target_id: item.id,
-        reason: `Show ${item.is_featured ? 'unfeatured' : 'featured'} by admin`,
-      });
+        reason: `Show ${item.is_featured ? "unfeatured" : "featured"} by admin`,
+      })
 
       toast({
-        title: item.is_featured ? 'Unfeatured' : 'Featured',
-        description: `${item.name} has been ${item.is_featured ? 'unfeatured' : 'featured'}.`,
-      });
+        title: item.is_featured ? "Unfeatured" : "Featured",
+        description: `${item.name} has been ${item.is_featured ? "unfeatured" : "featured"}.`,
+      })
 
-      router.refresh();
+      router.refresh()
     } catch (_error) {
       toast({
-        title: 'Error',
-        description: 'Failed to update feature status.',
-        variant: 'destructive',
-      });
+        title: "Error",
+        description: "Failed to update feature status.",
+        variant: "destructive",
+      })
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleSync = async () => {
-    if (type !== 'artist') {
-      return;
+    if (type !== "artist") {
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
     try {
-      const response = await fetch('/api/sync/artist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/sync/artist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ artistId: item.id }),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error('Sync failed');
+        throw new Error("Sync failed")
       }
 
-      const result = await response.json();
+      const result = await response.json()
 
       toast({
-        title: 'Sync completed',
+        title: "Sync completed",
         description: `Artist data synced successfully. Updated ${result.updated || 0} fields.`,
-      });
+      })
 
-      router.refresh();
+      router.refresh()
     } catch (_error) {
       toast({
-        title: 'Error',
-        description: 'Failed to sync artist data.',
-        variant: 'destructive',
-      });
+        title: "Error",
+        description: "Failed to sync artist data.",
+        variant: "destructive",
+      })
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const getViewUrl = () => {
     switch (type) {
-      case 'artist':
-        return `/${locale}/artists/${item.slug}`;
-      case 'venue':
-        return `/${locale}/venues/${item.slug}`;
-      case 'show':
-        return `/${locale}/shows/${item.slug}`;
+      case "artist":
+        return `/${locale}/artists/${item.slug}`
+      case "venue":
+        return `/${locale}/venues/${item.slug}`
+      case "show":
+        return `/${locale}/shows/${item.slug}`
     }
-  };
+  }
 
   return (
     <DropdownMenu>
@@ -192,7 +192,7 @@ export default function ContentActions({
         </DropdownMenuItem>
         <DropdownMenuSeparator />
 
-        {(type === 'artist' || type === 'show') && (
+        {(type === "artist" || type === "show") && (
           <DropdownMenuItem onClick={handleVerify}>
             {item.verified || item.is_verified ? (
               <>
@@ -208,7 +208,7 @@ export default function ContentActions({
           </DropdownMenuItem>
         )}
 
-        {type === 'show' && (
+        {type === "show" && (
           <DropdownMenuItem onClick={handleFeature}>
             {item.is_featured ? (
               <>
@@ -224,7 +224,7 @@ export default function ContentActions({
           </DropdownMenuItem>
         )}
 
-        {type === 'artist' && (
+        {type === "artist" && (
           <DropdownMenuItem onClick={handleSync}>
             <RefreshCw className="mr-2 h-4 w-4" />
             Sync with Spotify
@@ -238,5 +238,5 @@ export default function ContentActions({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
+  )
 }

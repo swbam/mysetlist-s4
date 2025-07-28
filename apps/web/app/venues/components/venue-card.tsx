@@ -1,64 +1,64 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { Car, Heart, MapPin, Star, Users } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useState } from 'react';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Card, CardContent } from "@repo/design-system/components/ui/card"
+import { Car, Heart, MapPin, Star, Users } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { useState } from "react"
 
 interface VenueCardProps {
   venue: {
-    id: string;
-    name: string;
-    slug: string;
-    city: string;
-    state: string | null;
-    country: string;
-    capacity: number | null;
-    venueType: string | null;
-    imageUrl: string | null;
-    avgRating?: number;
-    reviewCount?: number;
-    upcomingShowCount?: number;
-    distance?: number;
-    amenities: string | null;
-  };
+    id: string
+    name: string
+    slug: string
+    city: string
+    state: string | null
+    country: string
+    capacity: number | null
+    venueType: string | null
+    imageUrl: string | null
+    avgRating?: number
+    reviewCount?: number
+    upcomingShowCount?: number
+    distance?: number
+    amenities: string | null
+  }
 }
 
 export function VenueCard({ venue }: VenueCardProps) {
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false)
 
   const formatCapacity = (capacity: number) => {
     if (capacity >= 1000) {
-      return `${(capacity / 1000).toFixed(1)}k`;
+      return `${(capacity / 1000).toFixed(1)}k`
     }
-    return capacity.toString();
-  };
+    return capacity.toString()
+  }
 
   const formatDistance = (distance?: number) => {
-    if (!distance) return null;
+    if (!distance) return null
     if (distance < 1) {
-      return `${Math.round(distance * 1000)}m`;
+      return `${Math.round(distance * 1000)}m`
     }
-    return `${distance.toFixed(1)}km`;
-  };
+    return `${distance.toFixed(1)}km`
+  }
 
   const venueTypeLabels: Record<string, string> = {
-    arena: 'Arena',
-    stadium: 'Stadium',
-    theater: 'Theater',
-    club: 'Club',
-    'outdoor-amphitheater': 'Outdoor Amphitheater',
-    'indoor-amphitheater': 'Indoor Amphitheater',
-    ballroom: 'Ballroom',
-    festival: 'Festival Grounds',
-    other: 'Other',
-  };
+    arena: "Arena",
+    stadium: "Stadium",
+    theater: "Theater",
+    club: "Club",
+    "outdoor-amphitheater": "Outdoor Amphitheater",
+    "indoor-amphitheater": "Indoor Amphitheater",
+    ballroom: "Ballroom",
+    festival: "Festival Grounds",
+    other: "Other",
+  }
 
-  const amenitiesList = venue.amenities ? JSON.parse(venue.amenities) : [];
-  const hasParking = amenitiesList.includes('parking');
+  const amenitiesList = venue.amenities ? JSON.parse(venue.amenities) : []
+  const hasParking = amenitiesList.includes("parking")
 
   return (
     <Card className="overflow-hidden transition-shadow hover:shadow-lg">
@@ -107,7 +107,7 @@ export function VenueCard({ venue }: VenueCardProps) {
             className="h-8 w-8 flex-shrink-0"
           >
             <Heart
-              className={`h-4 w-4 ${isFavorite ? 'fill-current text-red-500' : ''}`}
+              className={`h-4 w-4 ${isFavorite ? "fill-current text-red-500" : ""}`}
             />
           </Button>
         </div>
@@ -156,5 +156,5 @@ export function VenueCard({ venue }: VenueCardProps) {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

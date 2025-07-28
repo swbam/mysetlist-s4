@@ -1,59 +1,59 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Globe, MapPin, Phone, Users } from 'lucide-react';
-import Link from 'next/link';
+} from "@repo/design-system/components/ui/card"
+import { Globe, MapPin, Phone, Users } from "lucide-react"
+import Link from "next/link"
 
 type VenueDetailsProps = {
   venue: {
-    id: string;
-    name: string;
-    slug: string;
-    address?: string;
-    city: string;
-    state?: string;
-    country: string;
-    postal_code?: string;
-    latitude?: number;
-    longitude?: number;
-    capacity?: number;
-    venue_type?: string;
-    phone_number?: string;
-    website?: string;
-    image_url?: string;
-  };
-};
+    id: string
+    name: string
+    slug: string
+    address?: string
+    city: string
+    state?: string
+    country: string
+    postal_code?: string
+    latitude?: number
+    longitude?: number
+    capacity?: number
+    venue_type?: string
+    phone_number?: string
+    website?: string
+    image_url?: string
+  }
+}
 
 export function VenueDetails({ venue }: VenueDetailsProps) {
   const getFullAddress = () => {
-    const parts: string[] = [];
+    const parts: string[] = []
     if (venue.address) {
-      parts.push(venue.address);
+      parts.push(venue.address)
     }
-    parts.push(venue.city);
+    parts.push(venue.city)
     if (venue.state) {
-      parts.push(venue.state);
+      parts.push(venue.state)
     }
     if (venue.postal_code) {
-      parts.push(venue.postal_code);
+      parts.push(venue.postal_code)
     }
-    parts.push(venue.country);
-    return parts.join(', ');
-  };
+    parts.push(venue.country)
+    return parts.join(", ")
+  }
 
   const getMapUrl = () => {
     if (venue.latitude && venue.longitude) {
-      return `https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`;
+      return `https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`
     }
-    const query = encodeURIComponent(`${venue.name} ${getFullAddress()}`);
-    return `https://www.google.com/maps/search/?api=1&query=${query}`;
-  };
+    const query = encodeURIComponent(`${venue.name} ${getFullAddress()}`)
+    return `https://www.google.com/maps/search/?api=1&query=${query}`
+  }
 
   return (
     <Card>
@@ -102,7 +102,7 @@ export function VenueDetails({ venue }: VenueDetailsProps) {
               <div>
                 <p className="mb-1 font-medium">Type</p>
                 <p className="text-muted-foreground capitalize">
-                  {venue.venue_type.replace('_', ' ')}
+                  {venue.venue_type.replace("_", " ")}
                 </p>
               </div>
             )}
@@ -154,5 +154,5 @@ export function VenueDetails({ venue }: VenueDetailsProps) {
         </Button>
       </CardContent>
     </Card>
-  );
+  )
 }

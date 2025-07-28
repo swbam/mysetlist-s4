@@ -1,5 +1,21 @@
-'use client';
+"use client"
 
+import { toast } from "@repo/design-system/components/ui/use-toast"
+import { format } from "date-fns"
+import {
+  Calendar,
+  CheckCircle,
+  FileText,
+  Flag,
+  Image as ImageIcon,
+  Lightbulb,
+  MapPin,
+  MessageSquare,
+  Star,
+  XCircle,
+} from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 import {
   Avatar,
   AvatarFallback,
@@ -16,83 +32,64 @@ import {
   DialogTitle,
   Label,
   Textarea,
-} from '~/components/ui-exports';
-import { toast } from '@repo/design-system/components/ui/use-toast';
-import { format } from 'date-fns';
-import {
-  Calendar,
-  CheckCircle,
-  FileText,
-  Flag,
-  Image as ImageIcon,
-  Lightbulb,
-  MapPin,
-  MessageSquare,
-  Star,
-  XCircle,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+} from "~/components/ui-exports"
+import { createClient } from "~/lib/supabase/client"
 
 interface ModerationItemProps {
-  type: 'setlist' | 'review' | 'photo' | 'tip';
-  item: any;
+  type: "setlist" | "review" | "photo" | "tip"
+  item: any
 }
 
-export default function ModerationItem({
-  type,
-  item,
-}: ModerationItemProps) {
-  const [loading, setLoading] = useState(false);
-  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
+export default function ModerationItem({ type, item }: ModerationItemProps) {
+  const [loading, setLoading] = useState(false)
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
+  const [rejectReason, setRejectReason] = useState("")
 
-  const router = useRouter();
-  const supabase = createClient();
+  const router = useRouter()
+  const supabase = createClient()
 
   const getIcon = () => {
     switch (type) {
-      case 'setlist':
-        return FileText;
-      case 'review':
-        return MessageSquare;
-      case 'photo':
-        return ImageIcon;
-      case 'tip':
-        return Lightbulb;
+      case "setlist":
+        return FileText
+      case "review":
+        return MessageSquare
+      case "photo":
+        return ImageIcon
+      case "tip":
+        return Lightbulb
     }
-  };
+  }
 
   const getTitle = () => {
     switch (type) {
-      case 'setlist':
-        return `Setlist for ${item.show?.name} - ${item.artist?.name}`;
-      case 'review':
-        return `Review of ${item.venue?.name}`;
-      case 'photo':
-        return `Photo at ${item.venue?.name}`;
-      case 'tip':
-        return `Tip for ${item.venue?.name}`;
+      case "setlist":
+        return `Setlist for ${item.show?.name} - ${item.artist?.name}`
+      case "review":
+        return `Review of ${item.venue?.name}`
+      case "photo":
+        return `Photo at ${item.venue?.name}`
+      case "tip":
+        return `Tip for ${item.venue?.name}`
     }
-  };
+  }
 
   const getContent = () => {
     switch (type) {
-      case 'setlist':
+      case "setlist":
         return (
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-muted-foreground text-sm">
               <Calendar className="h-4 w-4" />
               {item.show?.date &&
-                format(new Date(item.show.date), 'MMM d, yyyy')}
+                format(new Date(item.show.date), "MMM d, yyyy")}
               <MapPin className="ml-2 h-4 w-4" />
               {item.show?.venue?.name}
             </div>
             <p className="text-sm">Type: {item.type}</p>
           </div>
-        );
-      case 'review':
+        )
+      case "review":
         return (
           <div className="space-y-2">
             <div className="flex items-center gap-2">
@@ -101,8 +98,8 @@ export default function ModerationItem({
                   key={i}
                   className={`h-4 w-4 ${
                     i < item.rating
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-gray-300'
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-gray-300"
                   }`}
                 />
               ))}
@@ -110,138 +107,138 @@ export default function ModerationItem({
             </div>
             <p className="line-clamp-3 text-sm">{item.review}</p>
             <p className="text-muted-foreground text-xs">
-              Visited: {format(new Date(item.visited_at), 'MMM d, yyyy')}
+              Visited: {format(new Date(item.visited_at), "MMM d, yyyy")}
             </p>
           </div>
-        );
-      case 'photo':
+        )
+      case "photo":
         return (
           <div className="space-y-2">
             <img
               src={item.image_url}
-              alt={item.caption || 'Venue photo'}
+              alt={item.caption || "Venue photo"}
               className="h-48 w-full rounded-md object-cover"
             />
             {item.caption && <p className="text-sm">{item.caption}</p>}
           </div>
-        );
-      case 'tip':
+        )
+      case "tip":
         return (
           <div className="space-y-2">
             <Badge variant="secondary">{item.tip_category}</Badge>
             <p className="text-sm">{item.tip}</p>
           </div>
-        );
+        )
     }
-  };
+  }
 
   const handleApprove = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
       const table =
-        type === 'setlist'
-          ? 'setlists'
-          : type === 'review'
-            ? 'venue_reviews'
-            : type === 'photo'
-              ? 'venue_photos'
-              : 'venue_insider_tips';
+        type === "setlist"
+          ? "setlists"
+          : type === "review"
+            ? "venue_reviews"
+            : type === "photo"
+              ? "venue_photos"
+              : "venue_insider_tips"
 
       // Update moderation status
       const { error } = await supabase
         .from(table)
         .update({
-          moderation_status: 'approved',
+          moderation_status: "approved",
           reviewed_at: new Date().toISOString(),
           reviewed_by: (await supabase.auth.getUser()).data.user?.id,
         })
-        .eq('id', item.id);
+        .eq("id", item.id)
 
       if (error) {
-        throw error;
+        throw error
       }
 
       // Log action
-      await supabase.from('moderation_logs').insert({
+      await supabase.from("moderation_logs").insert({
         moderator_id: (await supabase.auth.getUser()).data.user?.id,
-        action: 'approve',
+        action: "approve",
         target_type: type,
         target_id: item.id,
-        reason: 'Content approved',
-      });
+        reason: "Content approved",
+      })
 
       toast({
-        title: 'Content approved',
-        description: 'The content has been approved and is now visible.',
-      });
+        title: "Content approved",
+        description: "The content has been approved and is now visible.",
+      })
 
-      router.refresh();
+      router.refresh()
     } catch (_error) {
       toast({
-        title: 'Error',
-        description: 'Failed to approve content. Please try again.',
-        variant: 'destructive',
-      });
+        title: "Error",
+        description: "Failed to approve content. Please try again.",
+        variant: "destructive",
+      })
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleReject = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
       const table =
-        type === 'setlist'
-          ? 'setlists'
-          : type === 'review'
-            ? 'venue_reviews'
-            : type === 'photo'
-              ? 'venue_photos'
-              : 'venue_insider_tips';
+        type === "setlist"
+          ? "setlists"
+          : type === "review"
+            ? "venue_reviews"
+            : type === "photo"
+              ? "venue_photos"
+              : "venue_insider_tips"
 
       // Update moderation status
       const { error } = await supabase
         .from(table)
         .update({
-          moderation_status: 'rejected',
+          moderation_status: "rejected",
           reviewed_at: new Date().toISOString(),
           reviewed_by: (await supabase.auth.getUser()).data.user?.id,
         })
-        .eq('id', item.id);
+        .eq("id", item.id)
 
       if (error) {
-        throw error;
+        throw error
       }
 
       // Log action
-      await supabase.from('moderation_logs').insert({
+      await supabase.from("moderation_logs").insert({
         moderator_id: (await supabase.auth.getUser()).data.user?.id,
-        action: 'reject',
+        action: "reject",
         target_type: type,
         target_id: item.id,
         reason: rejectReason,
-      });
+      })
 
       toast({
-        title: 'Content rejected',
-        description: 'The content has been rejected.',
-      });
+        title: "Content rejected",
+        description: "The content has been rejected.",
+      })
 
-      setRejectDialogOpen(false);
-      router.refresh();
+      setRejectDialogOpen(false)
+      router.refresh()
     } catch (_error) {
       toast({
-        title: 'Error',
-        description: 'Failed to reject content. Please try again.',
-        variant: 'destructive',
-      });
+        title: "Error",
+        description: "Failed to reject content. Please try again.",
+        variant: "destructive",
+      })
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const Icon = getIcon();
-  const user = item.created_by || item.user;
+  const Icon = getIcon()
+  const user = item.created_by || item.user
 
   return (
     <>
@@ -259,7 +256,7 @@ export default function ModerationItem({
                   {/* Avatar temporarily disabled due to TypeScript issues */}
                   <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center">
                     <span className="text-xs font-medium">
-                      {user?.display_name?.[0] || user?.email?.[0] || 'U'}
+                      {user?.display_name?.[0] || user?.email?.[0] || "U"}
                     </span>
                   </div>
                   <span className="text-muted-foreground text-sm">
@@ -267,7 +264,7 @@ export default function ModerationItem({
                   </span>
                   <span className="text-muted-foreground text-sm">•</span>
                   <span className="text-muted-foreground text-sm">
-                    {format(new Date(item.created_at), 'MMM d, h:mm a')}
+                    {format(new Date(item.created_at), "MMM d, h:mm a")}
                   </span>
                 </div>
               </div>
@@ -330,11 +327,11 @@ export default function ModerationItem({
               onClick={handleReject}
               disabled={loading || !rejectReason}
             >
-              {loading ? 'Rejecting...' : 'Reject Content'}
+              {loading ? "Rejecting..." : "Reject Content"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
-  );
+  )
 }

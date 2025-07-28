@@ -1,19 +1,19 @@
-import { useCallback, useEffect, useState, useTransition } from 'react';
-import { toast } from 'sonner';
+import { useCallback, useEffect, useState, useTransition } from "react"
+import { toast } from "sonner"
 
 interface VoteState {
-  upvotes: number;
-  downvotes: number;
-  userVote: 'up' | 'down' | null;
-  pendingVote?: 'up' | 'down' | null;
+  upvotes: number
+  downvotes: number
+  userVote: "up" | "down" | null
+  pendingVote?: "up" | "down" | null
 }
 
 interface UseOptimisticVotingOptions {
-  setlistSongId: string;
-  userId?: string;
-  initialVotes?: VoteState;
-  onVoteSuccess?: (result: any) => void;
-  onVoteError?: (error: Error) => void;
+  setlistSongId: string
+  userId?: string
+  initialVotes?: VoteState
+  onVoteSuccess?: (result: any) => void
+  onVoteError?: (error: Error) => void
 }
 
 export function useOptimisticVoting({
@@ -23,129 +23,126 @@ export function useOptimisticVoting({
   onVoteSuccess,
   onVoteError,
 }: UseOptimisticVotingOptions) {
-  const [votes, setVotes] = useState<VoteState>(initialVotes);
-  const [isVoting, setIsVoting] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  const [isOptimistic, setIsOptimistic] = useState(false);
+  const [votes, setVotes] = useState<VoteState>(initialVotes)
+  const [isVoting, setIsVoting] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  const [isOptimistic, setIsOptimistic] = useState(false)
 
   // Fetch initial vote state
   useEffect(() => {
     if (!setlistSongId) {
-      return;
+      return
     }
 
     const fetchVotes = async () => {
       try {
         const response = await fetch(
           `/api/votes?setlistSongId=${setlistSongId}`
-        );
+        )
         if (response.ok) {
-          const data = await response.json();
+          const data = await response.json()
           setVotes({
             upvotes: data.upvotes || 0,
             downvotes: data.downvotes || 0,
             userVote: data.userVote || null,
-          });
+          })
         }
       } catch (_error) {}
-    };
+    }
 
-    fetchVotes();
-  }, [setlistSongId]);
+    fetchVotes()
+  }, [setlistSongId])
 
   const vote = useCallback(
-    async (voteType: 'up' | 'down') => {
+    async (voteType: "up" | "down") => {
       if (!userId) {
-        toast.error('Please sign in to vote');
-        return;
+        toast.error("Please sign in to vote")
+        return
       }
 
       if (isVoting) {
-        return;
+        return
       }
 
-      setIsVoting(true);
-      setIsOptimistic(true);
+      setIsVoting(true)
+      setIsOptimistic(true)
 
       // Calculate optimistic state
-      const currentVote = votes.userVote;
-      const newVote = currentVote === voteType ? null : voteType;
+      const currentVote = votes.userVote
+      const newVote = currentVote === voteType ? null : voteType
 
       // Apply optimistic update
-      const optimisticUpdate = { ...votes };
+      const optimisticUpdate = { ...votes }
 
       // Remove previous vote
-      if (currentVote === 'up') {
-        optimisticUpdate.upvotes = Math.max(0, optimisticUpdate.upvotes - 1);
-      } else if (currentVote === 'down') {
-        optimisticUpdate.downvotes = Math.max(
-          0,
-          optimisticUpdate.downvotes - 1
-        );
+      if (currentVote === "up") {
+        optimisticUpdate.upvotes = Math.max(0, optimisticUpdate.upvotes - 1)
+      } else if (currentVote === "down") {
+        optimisticUpdate.downvotes = Math.max(0, optimisticUpdate.downvotes - 1)
       }
 
       // Add new vote
-      if (newVote === 'up') {
-        optimisticUpdate.upvotes += 1;
-      } else if (newVote === 'down') {
-        optimisticUpdate.downvotes += 1;
+      if (newVote === "up") {
+        optimisticUpdate.upvotes += 1
+      } else if (newVote === "down") {
+        optimisticUpdate.downvotes += 1
       }
 
-      optimisticUpdate.userVote = newVote;
-      optimisticUpdate.pendingVote = voteType;
+      optimisticUpdate.userVote = newVote
+      optimisticUpdate.pendingVote = voteType
 
-      setVotes(optimisticUpdate);
+      setVotes(optimisticUpdate)
 
       startTransition(async () => {
         try {
-          const response = await fetch('/api/votes', {
-            method: 'POST',
+          const response = await fetch("/api/votes", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
               setlistSongId,
               voteType: newVote,
             }),
-          });
+          })
 
           if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || 'Failed to vote');
+            const errorText = await response.text()
+            throw new Error(errorText || "Failed to vote")
           }
 
-          const result = await response.json();
+          const result = await response.json()
 
           // Update with server response
           setVotes({
             upvotes: result.upvotes,
             downvotes: result.downvotes,
             userVote: result.userVote,
-          });
+          })
 
-          onVoteSuccess?.(result);
+          onVoteSuccess?.(result)
         } catch (error) {
           // Rollback optimistic update
-          setVotes(votes);
+          setVotes(votes)
 
           const errorMessage =
-            error instanceof Error ? error.message : 'Failed to vote';
+            error instanceof Error ? error.message : "Failed to vote"
 
-          if (errorMessage.includes('Unauthorized')) {
-            toast.error('Please sign in to vote');
+          if (errorMessage.includes("Unauthorized")) {
+            toast.error("Please sign in to vote")
           } else {
-            toast.error(errorMessage);
+            toast.error(errorMessage)
           }
 
-          onVoteError?.(error as Error);
+          onVoteError?.(error as Error)
         } finally {
-          setIsVoting(false);
-          setIsOptimistic(false);
+          setIsVoting(false)
+          setIsOptimistic(false)
         }
-      });
+      })
     },
     [votes, userId, setlistSongId, isVoting, onVoteSuccess, onVoteError]
-  );
+  )
 
   return {
     votes,
@@ -157,16 +154,16 @@ export function useOptimisticVoting({
       try {
         const response = await fetch(
           `/api/votes?setlistSongId=${setlistSongId}`
-        );
+        )
         if (response.ok) {
-          const data = await response.json();
+          const data = await response.json()
           setVotes({
             upvotes: data.upvotes || 0,
             downvotes: data.downvotes || 0,
             userVote: data.userVote || null,
-          });
+          })
         }
       } catch (_error) {}
     },
-  };
+  }
 }

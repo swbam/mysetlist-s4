@@ -1,5 +1,5 @@
-import { Button } from '@repo/design-system/components/ui/button';
-import { ArrowRight, Music } from 'lucide-react';
+import { Button } from "@repo/design-system/components/ui/button"
+import { ArrowRight, Music } from "lucide-react"
 
 export default function CTA() {
   return (
@@ -31,5 +31,5 @@ export default function CTA() {
         </div>
       </div>
     </div>
-  );
+  )
 }

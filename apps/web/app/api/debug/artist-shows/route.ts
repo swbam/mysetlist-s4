@@ -1,15 +1,18 @@
-import { db } from '@repo/database';
-import { artists, showArtists, shows, venues } from '@repo/database';
-import { and, desc, eq, gte, lt, or, sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database"
+import { artists, showArtists, shows, venues } from "@repo/database"
+import { and, desc, eq, gte, lt, or, sql } from "drizzle-orm"
+import { type NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const artistSlug = searchParams.get('slug');
+    const { searchParams } = new URL(request.url)
+    const artistSlug = searchParams.get("slug")
 
     if (!artistSlug) {
-      return NextResponse.json({ error: 'Artist slug required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Artist slug required" },
+        { status: 400 }
+      )
     }
 
     // Get artist
@@ -17,14 +20,14 @@ export async function GET(request: NextRequest) {
       .select()
       .from(artists)
       .where(eq(artists.slug, artistSlug))
-      .limit(1);
+      .limit(1)
 
     if (!artist) {
-      return NextResponse.json({ error: 'Artist not found' }, { status: 404 });
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 })
     }
 
-    const now = new Date();
-    const nowString = now.toISOString().split('T')[0];
+    const now = new Date()
+    const nowString = now.toISOString().split("T")[0]
 
     // Debug: Get all shows where artist is involved
     const allArtistShows = await db
@@ -41,7 +44,7 @@ export async function GET(request: NextRequest) {
           eq(shows.headlinerArtistId, artist.id),
           eq(showArtists.artistId, artist.id)
         )
-      );
+      )
 
     // Get upcoming shows
     const upcomingShows = await db
@@ -63,7 +66,7 @@ export async function GET(request: NextRequest) {
           gte(shows.date, nowString!)
         )
       )
-      .orderBy(shows.date);
+      .orderBy(shows.date)
 
     // Get past shows
     const pastShows = await db
@@ -85,18 +88,18 @@ export async function GET(request: NextRequest) {
           lt(shows.date, nowString!)
         )
       )
-      .orderBy(desc(shows.date));
+      .orderBy(desc(shows.date))
 
     // Get shows count by different methods
     const headlinerCount = await db
       .select({ count: sql`count(*)`.mapWith(Number) })
       .from(shows)
-      .where(eq(shows.headlinerArtistId, artist.id));
+      .where(eq(shows.headlinerArtistId, artist.id))
 
     const showArtistCount = await db
       .select({ count: sql`count(*)`.mapWith(Number) })
       .from(showArtists)
-      .where(eq(showArtists.artistId, artist.id));
+      .where(eq(showArtists.artistId, artist.id))
 
     return NextResponse.json({
       artist: {
@@ -120,28 +123,28 @@ export async function GET(request: NextRequest) {
         name: show.name,
         date: show.date,
         headlinerArtistId: show.headlinerArtistId,
-        venue: venue?.name || 'Unknown',
+        venue: venue?.name || "Unknown",
       })),
       upcomingShows: upcomingShows.slice(0, 5).map(({ show, venue }) => ({
         id: show.id,
         name: show.name,
         date: show.date,
-        venue: venue?.name || 'Unknown',
+        venue: venue?.name || "Unknown",
       })),
       pastShows: pastShows.slice(0, 5).map(({ show, venue }) => ({
         id: show.id,
         name: show.name,
         date: show.date,
-        venue: venue?.name || 'Unknown',
+        venue: venue?.name || "Unknown",
       })),
-    });
+    })
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Debug failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Debug failed",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
-    );
+    )
   }
 }

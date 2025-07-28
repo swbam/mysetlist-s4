@@ -1,58 +1,58 @@
-import { getUser } from '@repo/auth/server';
-import { db } from '@repo/database';
-import { setlistSongs, setlists, shows, songs, votes } from '@repo/database';
-import { eachDayOfInterval, format, startOfDay, subDays } from 'date-fns';
-import { and, desc, eq, gte } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { getUser } from "@repo/auth/server"
+import { db } from "@repo/database"
+import { setlistSongs, setlists, shows, songs, votes } from "@repo/database"
+import { eachDayOfInterval, format, startOfDay, subDays } from "date-fns"
+import { and, desc, eq, gte } from "drizzle-orm"
+import { type NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const showId = searchParams.get('showId');
-    const period = searchParams.get('period') || '7d';
-    const page = Number.parseInt(searchParams.get('page') || '1');
-    const limit = Number.parseInt(searchParams.get('limit') || '20');
+    const { searchParams } = new URL(request.url)
+    const userId = searchParams.get("userId")
+    const showId = searchParams.get("showId")
+    const period = searchParams.get("period") || "7d"
+    const page = Number.parseInt(searchParams.get("page") || "1")
+    const limit = Number.parseInt(searchParams.get("limit") || "20")
 
     // If no userId provided, try to get from auth
-    let targetUserId = userId;
+    let targetUserId = userId
     if (!targetUserId) {
-      const user = await getUser();
+      const user = await getUser()
       if (!user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
       }
-      targetUserId = user.id;
+      targetUserId = user.id
     }
 
     // Calculate date range
-    const now = new Date();
-    let startDate: Date;
+    const now = new Date()
+    let startDate: Date
 
     switch (period) {
-      case '1d':
-        startDate = subDays(now, 1);
-        break;
-      case '7d':
-        startDate = subDays(now, 7);
-        break;
-      case '30d':
-        startDate = subDays(now, 30);
-        break;
+      case "1d":
+        startDate = subDays(now, 1)
+        break
+      case "7d":
+        startDate = subDays(now, 7)
+        break
+      case "30d":
+        startDate = subDays(now, 30)
+        break
       default:
-        startDate = new Date(0); // All time
+        startDate = new Date(0) // All time
     }
 
     // Build conditions for vote history query
-    const conditions = [eq(votes.userId, targetUserId)];
-    
+    const conditions = [eq(votes.userId, targetUserId)]
+
     // Apply show filter if provided
     if (showId) {
-      conditions.push(eq(shows.id, showId));
+      conditions.push(eq(shows.id, showId))
     }
 
     // Apply date filter if not all time
-    if (period !== 'all') {
-      conditions.push(gte(votes.createdAt, startDate));
+    if (period !== "all") {
+      conditions.push(gte(votes.createdAt, startDate))
     }
 
     // Build vote history query
@@ -82,21 +82,21 @@ export async function GET(request: NextRequest) {
       .innerJoin(songs, eq(setlistSongs.songId, songs.id))
       .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
       .innerJoin(shows, eq(setlists.showId, shows.id))
-      .where(conditions.length > 1 ? and(...conditions) : conditions[0]);
+      .where(conditions.length > 1 ? and(...conditions) : conditions[0])
 
     // Add pagination
-    const offset = (page - 1) * limit;
+    const offset = (page - 1) * limit
     const paginatedQuery = voteQuery
       .orderBy(desc(votes.createdAt))
       .limit(limit + 1) // Get one extra to check if there are more
-      .offset(offset);
+      .offset(offset)
 
-    const voteHistory = await paginatedQuery;
+    const voteHistory = await paginatedQuery
 
     // Check if there are more results
-    const hasMore = voteHistory.length > limit;
+    const hasMore = voteHistory.length > limit
     if (hasMore) {
-      voteHistory.pop(); // Remove the extra record
+      voteHistory.pop() // Remove the extra record
     }
 
     // Format history data
@@ -111,27 +111,27 @@ export async function GET(request: NextRequest) {
       showDate: vote.show.date,
       setlistSongId: vote.setlistSongId,
       currentNetVotes: vote.currentVotes.netVotes,
-    }));
+    }))
 
     // Calculate voting pattern (only on first page)
-    let pattern: any = null;
-    let dailyData: any = null;
+    let pattern: any = null
+    let dailyData: any = null
 
     if (page === 1) {
       // Build conditions for pattern analysis query
-      const patternConditions = [eq(votes.userId, targetUserId)];
-      
+      const patternConditions = [eq(votes.userId, targetUserId)]
+
       if (showId) {
-        patternConditions.push(eq(shows.id, showId));
+        patternConditions.push(eq(shows.id, showId))
       }
 
-      if (period !== 'all') {
-        patternConditions.push(gte(votes.createdAt, startDate));
+      if (period !== "all") {
+        patternConditions.push(gte(votes.createdAt, startDate))
       }
 
       // Get all votes for pattern analysis (within the time period)
-      let allVotesQuery;
-      
+      let allVotesQuery
+
       if (showId) {
         allVotesQuery = db
           .select({
@@ -143,8 +143,10 @@ export async function GET(request: NextRequest) {
           .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
           .innerJoin(shows, eq(setlists.showId, shows.id))
           .where(
-            patternConditions.length > 1 ? and(...patternConditions) : patternConditions[0]
-          );
+            patternConditions.length > 1
+              ? and(...patternConditions)
+              : patternConditions[0]
+          )
       } else {
         allVotesQuery = db
           .select({
@@ -153,77 +155,79 @@ export async function GET(request: NextRequest) {
           })
           .from(votes)
           .where(
-            patternConditions.length > 1 ? and(...patternConditions) : patternConditions[0]
-          );
+            patternConditions.length > 1
+              ? and(...patternConditions)
+              : patternConditions[0]
+          )
       }
 
-      const allVotes = await allVotesQuery;
+      const allVotes = await allVotesQuery
 
       // Calculate pattern statistics
-      const totalVotes = allVotes.length;
-      const upvotes = allVotes.filter((v) => v.voteType === 'up').length;
-      const downvotes = allVotes.filter((v) => v.voteType === 'down').length;
+      const totalVotes = allVotes.length
+      const upvotes = allVotes.filter((v) => v.voteType === "up").length
+      const downvotes = allVotes.filter((v) => v.voteType === "down").length
 
       // Calculate most active hour
-      const hourCounts = new Array(24).fill(0);
+      const hourCounts = new Array(24).fill(0)
       allVotes.forEach((vote) => {
-        const hour = vote.createdAt.getHours();
-        hourCounts[hour]++;
-      });
-      const mostActiveHour = hourCounts.indexOf(Math.max(...hourCounts));
+        const hour = vote.createdAt.getHours()
+        hourCounts[hour]++
+      })
+      const mostActiveHour = hourCounts.indexOf(Math.max(...hourCounts))
 
       // Calculate daily data for chart
       const days =
-        period === 'all'
+        period === "all"
           ? 30
           : Math.min(
               30,
               Math.ceil(
                 (now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
               )
-            );
-      const chartStartDate = subDays(now, days - 1);
-      const dateRange = eachDayOfInterval({ start: chartStartDate, end: now });
+            )
+      const chartStartDate = subDays(now, days - 1)
+      const dateRange = eachDayOfInterval({ start: chartStartDate, end: now })
 
       dailyData = dateRange.map((date) => {
-        const startOfDayDate = startOfDay(date);
-        const endOfDayDate = new Date(startOfDayDate);
-        endOfDayDate.setDate(endOfDayDate.getDate() + 1);
+        const startOfDayDate = startOfDay(date)
+        const endOfDayDate = new Date(startOfDayDate)
+        endOfDayDate.setDate(endOfDayDate.getDate() + 1)
 
         const dayVotes = allVotes.filter(
           (vote) =>
             vote.createdAt >= startOfDayDate && vote.createdAt < endOfDayDate
-        );
+        )
 
         return {
-          date: format(date, 'yyyy-MM-dd'),
+          date: format(date, "yyyy-MM-dd"),
           votes: dayVotes.length,
-          upvotes: dayVotes.filter((v) => v.voteType === 'up').length,
-          downvotes: dayVotes.filter((v) => v.voteType === 'down').length,
-        };
-      });
+          upvotes: dayVotes.filter((v) => v.voteType === "up").length,
+          downvotes: dayVotes.filter((v) => v.voteType === "down").length,
+        }
+      })
 
       // Calculate voting streak (consecutive days with votes)
-      let votingStreak = 0;
-      const today = startOfDay(now);
+      let votingStreak = 0
+      const today = startOfDay(now)
 
       for (let i = 0; i < 30; i++) {
-        const checkDate = subDays(today, i);
+        const checkDate = subDays(today, i)
         const hasVotesOnDay = allVotes.some((vote) => {
-          const voteDate = startOfDay(vote.createdAt);
-          return voteDate.getTime() === checkDate.getTime();
-        });
+          const voteDate = startOfDay(vote.createdAt)
+          return voteDate.getTime() === checkDate.getTime()
+        })
 
         if (hasVotesOnDay) {
-          votingStreak++;
+          votingStreak++
         } else {
-          break;
+          break
         }
       }
 
       // Calculate average votes per day
       const daysPeriod =
-        period === 'all'
+        period === "all"
           ? Math.max(
               1,
               Math.ceil(
@@ -234,23 +238,21 @@ export async function GET(request: NextRequest) {
             )
           : Math.ceil(
               (now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-            );
+            )
 
-      const averageVotesPerDay = totalVotes / Math.max(1, daysPeriod);
+      const averageVotesPerDay = totalVotes / Math.max(1, daysPeriod)
 
       // Determine recent trend (simplified)
-      const recentVotes = allVotes.filter(
-        (v) => v.createdAt >= subDays(now, 3)
-      );
+      const recentVotes = allVotes.filter((v) => v.createdAt >= subDays(now, 3))
       const olderVotes = allVotes.filter(
         (v) => v.createdAt >= subDays(now, 6) && v.createdAt < subDays(now, 3)
-      );
+      )
 
-      let recentTrend: 'up' | 'down' | 'stable' = 'stable';
+      let recentTrend: "up" | "down" | "stable" = "stable"
       if (recentVotes.length > olderVotes.length) {
-        recentTrend = 'up';
+        recentTrend = "up"
       } else if (recentVotes.length < olderVotes.length) {
-        recentTrend = 'down';
+        recentTrend = "down"
       }
 
       pattern = {
@@ -262,7 +264,7 @@ export async function GET(request: NextRequest) {
         votingStreak,
         averageVotesPerDay,
         recentTrend,
-      };
+      }
     }
 
     return NextResponse.json({
@@ -272,11 +274,11 @@ export async function GET(request: NextRequest) {
       hasMore,
       page,
       period,
-    });
+    })
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
-    );
+    )
   }
 }

@@ -1,10 +1,10 @@
 #!/usr/bin/env tsx
 
-import { faker } from '@faker-js/faker';
-import { db, sql } from './db-client';
+import { faker } from "@faker-js/faker"
+import { db, sql } from "./db-client"
 
 // Set seed for consistent random data
-faker.seed(123);
+faker.seed(123)
 
 async function clearDatabase() {
   await db.execute(sql`
@@ -27,7 +27,7 @@ async function clearDatabase() {
     
     -- Re-enable triggers
     SET session_replication_role = 'origin';
-  `);
+  `)
 }
 
 async function seedWithSQL() {
@@ -40,7 +40,7 @@ async function seedWithSQL() {
       ('user1@example.com', 'user', NOW(), NOW()),
       ('user2@example.com', 'user', NOW(), NOW()),
       ('user3@example.com', 'user', NOW(), NOW());
-  `);
+  `)
 
   // Create popular artists with high trending scores
   await db.execute(sql`
@@ -57,7 +57,7 @@ async function seedWithSQL() {
       ('Olivia Rodrigo', 'olivia-rodrigo', '["pop", "pop rock"]', 88, 40000000, 4000, 40000000, true, 85, NOW(), '1McMsnEElThX1knmY4oliG', 'K8vZ917w9x7'),
       ('Twenty One Pilots', 'twenty-one-pilots', '["alternative", "pop"]', 82, 36000000, 3600, 36000000, true, 78, NOW(), '3YQKmKGau1PzlVlkL1iodx', 'K8vZ91717I0'),
       ('Dispatch', 'dispatch', '["indie rock", "jam band", "folk rock"]', 75, 2500000, 2500, 2500000, true, 70, NOW(), '3k5U4n1dxgVQHhzf7nEvX4', 'K8vZ917oN27');
-  `);
+  `)
 
   // Create artist stats
   await db.execute(sql`
@@ -68,7 +68,7 @@ async function seedWithSQL() {
       FLOOR(RANDOM() * 30 + 5),
       15 + RANDOM() * 10
     FROM artists;
-  `);
+  `)
 
   // Create venues
   await db.execute(sql`
@@ -84,7 +84,7 @@ async function seedWithSQL() {
       ('Barclays Center', 'barclays-center', 'Brooklyn', 'NY', 'USA', 19000, 'arena', 'America/New_York', NOW()),
       ('Climate Pledge Arena', 'climate-pledge-arena', 'Seattle', 'WA', 'USA', 18100, 'arena', 'America/Los_Angeles', NOW()),
       ('FTX Arena', 'ftx-arena', 'Miami', 'FL', 'USA', 19600, 'arena', 'America/New_York', NOW());
-  `);
+  `)
 
   // Create shows with varying dates and trending scores
   await db.execute(sql`
@@ -131,7 +131,7 @@ async function seedWithSQL() {
       NOW() - (RANDOM() * INTERVAL '30 days')
     FROM artist_venue_pairs
     WHERE rn <= 3;
-  `);
+  `)
 
   // Create show_artists relationships
   await db.execute(sql`
@@ -143,7 +143,7 @@ async function seedWithSQL() {
       90 + FLOOR(RANDOM() * 30),
       true
     FROM shows;
-  `);
+  `)
 
   // Create songs for each artist
   await db.execute(sql`
@@ -168,7 +168,7 @@ async function seedWithSQL() {
     FROM artists a
     CROSS JOIN song_titles st
     LIMIT 200;
-  `);
+  `)
 
   // Create setlists for shows
   await db.execute(sql`
@@ -182,7 +182,7 @@ async function seedWithSQL() {
       FLOOR(RANDOM() * 100),
       NOW()
     FROM shows s;
-  `);
+  `)
 
   // Add songs to setlists
   await db.execute(sql`
@@ -207,7 +207,7 @@ async function seedWithSQL() {
       NOW()
     FROM setlist_songs_data
     WHERE position <= 15;
-  `);
+  `)
 
   // Create user follows
   await db.execute(sql`
@@ -220,7 +220,7 @@ async function seedWithSQL() {
     CROSS JOIN artists a
     WHERE u.role = 'user'
     AND RANDOM() < 0.4;
-  `);
+  `)
 
   // Update follower counts
   await db.execute(sql`
@@ -230,7 +230,7 @@ async function seedWithSQL() {
       FROM user_follows_artists ufa 
       WHERE ufa.artist_id = a.id
     );
-  `);
+  `)
 
   // Create some votes
   await db.execute(sql`
@@ -245,7 +245,7 @@ async function seedWithSQL() {
     WHERE u.role = 'user'
     AND RANDOM() < 0.3
     ON CONFLICT (user_id, setlist_song_id) DO NOTHING;
-  `);
+  `)
 
   // Update aggregate counts
   await db.execute(sql`
@@ -273,19 +273,19 @@ async function seedWithSQL() {
       WHERE s.headliner_artist_id = a.id
       AND s.date >= CURRENT_DATE - INTERVAL '30 days'
     );
-  `);
+  `)
 }
 
 async function main() {
   try {
-    await clearDatabase();
-    await seedWithSQL();
+    await clearDatabase()
+    await seedWithSQL()
   } catch (_error) {
-    process.exit(1);
+    process.exit(1)
   }
 }
 
 // Run if called directly
 if (require.main === module) {
-  main().catch(console.error);
+  main().catch(console.error)
 }

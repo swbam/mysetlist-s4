@@ -1,10 +1,10 @@
-'use client';
+"use client"
 
 import {
   Avatar,
   AvatarFallback,
-} from '@repo/design-system/components/ui/avatar';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/avatar"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,32 +12,32 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { Heart, Loader2, LogOut, Music2, Settings } from 'lucide-react';
-import Link from 'next/link';
-import React, { useState, useMemo } from 'react';
-import { useAuth } from '../../providers/auth-provider';
+} from "@repo/design-system/components/ui/dropdown-menu"
+import { Heart, Loader2, LogOut, Music2, Settings } from "lucide-react"
+import Link from "next/link"
+import React, { useState, useMemo } from "react"
+import { useAuth } from "../../providers/auth-provider"
 
 export const UserMenu = React.memo(function UserMenu() {
-  const { user, signOut, loading } = useAuth();
-  const [isSigningOut, setIsSigningOut] = useState(false);
+  const { user, signOut, loading } = useAuth()
+  const [isSigningOut, setIsSigningOut] = useState(false)
 
   const handleSignOut = async () => {
-    setIsSigningOut(true);
+    setIsSigningOut(true)
     try {
-      await signOut();
+      await signOut()
     } catch (_error) {
     } finally {
-      setIsSigningOut(false);
+      setIsSigningOut(false)
     }
-  };
+  }
 
   if (loading) {
     return (
       <div className="flex h-9 w-9 items-center justify-center">
         <Loader2 className="h-4 w-4 animate-spin" />
       </div>
-    );
+    )
   }
 
   if (!user) {
@@ -50,26 +50,26 @@ export const UserMenu = React.memo(function UserMenu() {
           <Link href="/auth/sign-up">Sign up</Link>
         </Button>
       </div>
-    );
+    )
   }
 
   const initials = useMemo(() => {
-    const email = user?.email;
-    if (!email) return 'U';
-    
-    const atIndex = email.indexOf('@');
-    if (atIndex === -1) return 'U';
-    
-    const username = email.substring(0, atIndex);
-    const parts = username.split('.');
+    const email = user?.email
+    if (!email) return "U"
+
+    const atIndex = email.indexOf("@")
+    if (atIndex === -1) return "U"
+
+    const username = email.substring(0, atIndex)
+    const parts = username.split(".")
     const initials = parts
-      .map((n) => n[0] || '')
-      .join('')
+      .map((n) => n[0] || "")
+      .join("")
       .toUpperCase()
-      .slice(0, 2);
-    
-    return initials || 'U';
-  }, [user]);
+      .slice(0, 2)
+
+    return initials || "U"
+  }, [user])
 
   return (
     <DropdownMenu>
@@ -123,5 +123,5 @@ export const UserMenu = React.memo(function UserMenu() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-});
+  )
+})

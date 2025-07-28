@@ -1,25 +1,25 @@
-'use client';
+"use client"
 
 import {
   DragDropContext,
   Draggable,
   type DropResult,
   Droppable,
-} from '@hello-pangea/dnd';
-import { Button } from '@repo/design-system/components/ui/button';
-import { GripVertical, Save, X } from 'lucide-react';
-import { useState, useTransition } from 'react';
-import { toast } from 'sonner';
-import { reorderSetlistSongs } from '../actions';
-import { SongItem } from './song-item';
+} from "@hello-pangea/dnd"
+import { Button } from "@repo/design-system/components/ui/button"
+import { GripVertical, Save, X } from "lucide-react"
+import { useState, useTransition } from "react"
+import { toast } from "sonner"
+import { reorderSetlistSongs } from "../actions"
+import { SongItem } from "./song-item"
 
 type ReorderableSetlistProps = {
-  setlist: any;
-  show: any;
-  currentUser: any;
-  onReorder?: (newOrder: any[]) => void;
-  onCancel?: () => void;
-};
+  setlist: any
+  show: any
+  currentUser: any
+  onReorder?: (newOrder: any[]) => void
+  onCancel?: () => void
+}
 
 export function ReorderableSetlist({
   setlist,
@@ -28,28 +28,28 @@ export function ReorderableSetlist({
   onReorder,
   onCancel,
 }: ReorderableSetlistProps) {
-  const [songs, setSongs] = useState(setlist.setlist_songs || []);
-  const [hasChanges, setHasChanges] = useState(false);
-  const [isPending, startTransition] = useTransition();
+  const [songs, setSongs] = useState(setlist.setlist_songs || [])
+  const [hasChanges, setHasChanges] = useState(false)
+  const [isPending, startTransition] = useTransition()
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) {
-      return;
+      return
     }
 
-    const items = Array.from(songs);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
+    const items = Array.from(songs)
+    const [reorderedItem] = items.splice(result.source.index, 1)
+    items.splice(result.destination.index, 0, reorderedItem)
 
     // Update positions
     const updatedItems = items.map((item, index) => ({
-      ...(typeof item === 'object' && item !== null ? item : {}),
+      ...(typeof item === "object" && item !== null ? item : {}),
       position: index + 1,
-    }));
+    }))
 
-    setSongs(updatedItems);
-    setHasChanges(true);
-  };
+    setSongs(updatedItems)
+    setHasChanges(true)
+  }
 
   const handleSave = () => {
     startTransition(async () => {
@@ -58,24 +58,24 @@ export function ReorderableSetlist({
         const reorderData = songs.map((song: any, index: number) => ({
           id: song.id,
           position: index + 1,
-        }));
+        }))
 
-        await reorderSetlistSongs(setlist.id, reorderData);
+        await reorderSetlistSongs(setlist.id, reorderData)
 
-        toast.success('Setlist reordered successfully');
-        setHasChanges(false);
-        onReorder?.(songs);
+        toast.success("Setlist reordered successfully")
+        setHasChanges(false)
+        onReorder?.(songs)
       } catch (_error) {
-        toast.error('Failed to reorder setlist');
+        toast.error("Failed to reorder setlist")
       }
-    });
-  };
+    })
+  }
 
   const handleCancel = () => {
-    setSongs(setlist.setlist_songs || []);
-    setHasChanges(false);
-    onCancel?.();
-  };
+    setSongs(setlist.setlist_songs || [])
+    setHasChanges(false)
+    onCancel?.()
+  }
 
   return (
     <div className="space-y-4">
@@ -116,7 +116,7 @@ export function ReorderableSetlist({
               {...provided.droppableProps}
               ref={provided.innerRef}
               className={`space-y-2 ${
-                snapshot.isDraggingOver ? 'rounded-lg bg-muted/20 p-2' : ''
+                snapshot.isDraggingOver ? "rounded-lg bg-muted/20 p-2" : ""
               }`}
             >
               {songs.map((item: any, index: number) => (
@@ -131,8 +131,8 @@ export function ReorderableSetlist({
                       {...provided.draggableProps}
                       className={`${
                         snapshot.isDragging
-                          ? 'rotate-1 transform opacity-70 shadow-lg'
-                          : ''
+                          ? "rotate-1 transform opacity-70 shadow-lg"
+                          : ""
                       }`}
                     >
                       <div className="flex items-center gap-2 rounded-lg border bg-card p-3 transition-all hover:shadow-sm">
@@ -171,5 +171,5 @@ export function ReorderableSetlist({
         </div>
       )}
     </div>
-  );
+  )
 }

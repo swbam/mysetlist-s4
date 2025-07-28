@@ -1,4 +1,4 @@
-import { db } from '@repo/database';
+import { db } from "@repo/database"
 import {
   artists,
   setlistSongs,
@@ -6,16 +6,16 @@ import {
   shows,
   songs,
   venues,
-} from '@repo/database';
-import { asc, eq, inArray, sql } from 'drizzle-orm';
-import { cacheKeys, withCache } from '~/lib/cache/redis';
+} from "@repo/database"
+import { asc, eq, inArray, sql } from "drizzle-orm"
+import { cacheKeys, withCache } from "~/lib/cache/redis"
 
 // Optimized query helpers with caching
 export const optimizedQueries = {
   // Batch fetch with single query
   async getShowsWithDetails(showIds: string[]) {
     if (showIds.length === 0) {
-      return [];
+      return []
     }
 
     const result = await db
@@ -28,26 +28,26 @@ export const optimizedQueries = {
       .leftJoin(artists, eq(shows.headlinerArtistId, artists.id))
       .leftJoin(venues, eq(shows.venueId, venues.id))
       .where(inArray(shows.id, showIds))
-      .execute();
+      .execute()
 
     // Group by show ID for easy access
-    const showMap = new Map();
+    const showMap = new Map()
     result.forEach((row) => {
       if (!showMap.has(row.show.id)) {
         showMap.set(row.show.id, {
           ...row.show,
           artist: row.artist,
           venue: row.venue,
-        });
+        })
       }
-    });
+    })
 
-    return Array.from(showMap.values());
+    return Array.from(showMap.values())
   },
 
   // Optimized trending query with proper indexes
   async getTrendingShowsOptimized(limit = 20, hoursAgo = 168) {
-    const cutoffDate = new Date(Date.now() - hoursAgo * 60 * 60 * 1000);
+    const cutoffDate = new Date(Date.now() - hoursAgo * 60 * 60 * 1000)
 
     // Use a CTE for better performance
     const query = sql`
@@ -72,10 +72,10 @@ export const optimizedQueries = {
       SELECT * FROM trending_shows
       ORDER BY calculated_score DESC
       LIMIT ${limit}
-    `;
+    `
 
-    const result = await db.execute(query);
-    return result;
+    const result = await db.execute(query)
+    return result
   },
 
   // Efficient artist search with full-text search
@@ -93,16 +93,16 @@ export const optimizedQueries = {
         popularity DESC,
         follower_count DESC
       LIMIT ${limit}
-    `;
+    `
 
-    const result = await db.execute(query);
-    return result;
+    const result = await db.execute(query)
+    return result
   },
 
   // Batch setlist fetch with songs
   async getSetlistsWithSongs(setlistIds: string[]) {
     if (setlistIds.length === 0) {
-      return [];
+      return []
     }
 
     // Fetch setlists and their songs in parallel
@@ -124,25 +124,25 @@ export const optimizedQueries = {
         .where(inArray(setlistSongs.setlistId, setlistIds))
         .orderBy(asc(setlistSongs.position))
         .execute(),
-    ]);
+    ])
 
     // Group songs by setlist
-    const songsBySetlist = new Map<string, any[]>();
+    const songsBySetlist = new Map<string, any[]>()
     songData.forEach((row) => {
       if (!songsBySetlist.has(row.setlistId)) {
-        songsBySetlist.set(row.setlistId, []);
+        songsBySetlist.set(row.setlistId, [])
       }
       songsBySetlist.get(row.setlistId)?.push({
         order: row.songOrder,
         ...row.song,
-      });
-    });
+      })
+    })
 
     // Combine data
     return setlistData.map((setlist) => ({
       ...setlist,
       songs: songsBySetlist.get(setlist.id) || [],
-    }));
+    }))
   },
 
   // Venue search with geo-location
@@ -152,7 +152,7 @@ export const optimizedQueries = {
     radiusMiles = 50,
     limit = 20
   ) {
-    const radiusKm = radiusMiles * 1.60934;
+    const radiusKm = radiusMiles * 1.60934
 
     const query = sql`
       SELECT 
@@ -177,10 +177,10 @@ export const optimizedQueries = {
         )) <= ${radiusKm}
       ORDER BY distance_km ASC
       LIMIT ${limit}
-    `;
+    `
 
-    const result = await db.execute(query);
-    return result;
+    const result = await db.execute(query)
+    return result
   },
 
   // Get artist statistics with aggregation
@@ -201,24 +201,24 @@ export const optimizedQueries = {
       LEFT JOIN songs sa ON sa.artist_id = a.id
       WHERE a.id = ${artistId}
       GROUP BY a.id
-    `;
+    `
 
-    const result = await db.execute(query);
-    return result[0];
+    const result = await db.execute(query)
+    return result[0]
   },
-};
+}
 
 // Add caching to expensive queries
 export const cachedQueries = {
   getTrendingShows: withCache(
     optimizedQueries.getTrendingShowsOptimized,
-    (limit, _hoursAgo) => cacheKeys.trending('custom', 'shows', limit || 20),
+    (limit, _hoursAgo) => cacheKeys.trending("custom", "shows", limit || 20),
     300 // 5 minutes
   ),
 
   searchArtists: withCache(
     optimizedQueries.searchArtistsOptimized,
-    (searchTerm, _limit) => cacheKeys.searchResults(searchTerm, 'artists'),
+    (searchTerm, _limit) => cacheKeys.searchResults(searchTerm, "artists"),
     600 // 10 minutes
   ),
 
@@ -227,18 +227,18 @@ export const cachedQueries = {
     (artistId) => `artist:stats:${artistId}`,
     900 // 15 minutes
   ),
-};
+}
 
 // Query performance monitoring
 export async function withQueryMetrics<T>(
   _queryName: string,
   queryFn: () => Promise<T>
 ): Promise<T> {
-  const start = Date.now();
+  const start = Date.now()
 
   try {
-    const result = await queryFn();
-    const duration = Date.now() - start;
+    const result = await queryFn()
+    const duration = Date.now() - start
 
     // Log slow queries
     if (duration > 100) {
@@ -246,14 +246,14 @@ export async function withQueryMetrics<T>(
 
     // Track metrics (could send to analytics)
     if (
-      typeof process !== 'undefined' &&
-      process.env["NODE_ENV"] === 'production'
+      typeof process !== "undefined" &&
+      process.env["NODE_ENV"] === "production"
     ) {
       // Track query performance metrics
     }
 
-    return result;
+    return result
   } catch (error) {
-    throw error;
+    throw error
   }
 }

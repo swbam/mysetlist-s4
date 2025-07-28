@@ -1,170 +1,203 @@
-'use client';
+"use client"
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@repo/design-system/components/ui/select';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Progress } from '@repo/design-system/components/ui/progress';
-import { Alert, AlertDescription } from '@repo/design-system/components/ui/alert';
-import { 
-  Database, 
-  Server, 
-  Shield, 
-  DollarSign, 
-  Clock, 
-  AlertTriangle,
-  CheckCircle,
+import {
+  Alert,
+  AlertDescription,
+} from "@repo/design-system/components/ui/alert"
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card"
+import { Input } from "@repo/design-system/components/ui/input"
+import { Label } from "@repo/design-system/components/ui/label"
+import { Progress } from "@repo/design-system/components/ui/progress"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs"
+import {
   Activity,
+  AlertTriangle,
   BarChart3,
+  CheckCircle,
+  Clock,
+  Database,
+  DollarSign,
+  Server,
   Settings,
+  Shield,
+  Target,
   TrendingUp,
-  Target
-} from 'lucide-react';
+} from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface ScalabilityRecommendations {
   database: {
-    readReplicas: number;
-    sharding: boolean;
-    partitioning: string[];
-    connectionPooling: number;
-  };
+    readReplicas: number
+    sharding: boolean
+    partitioning: string[]
+    connectionPooling: number
+  }
   caching: {
-    layers: string[];
-    ttl: Record<string, number>;
-    memoryAllocation: string;
-    strategy: string;
-  };
+    layers: string[]
+    ttl: Record<string, number>
+    memoryAllocation: string
+    strategy: string
+  }
   infrastructure: {
-    servers: Array<{ type: string; count: number; specs: string }>;
-    databases: Array<{ type: string; count: number; specs: string }>;
-    caches: Array<{ type: string; count: number; specs: string }>;
-    storage: { type: string; size: string; backups: string };
-  };
+    servers: Array<{ type: string; count: number; specs: string }>
+    databases: Array<{ type: string; count: number; specs: string }>
+    caches: Array<{ type: string; count: number; specs: string }>
+    storage: { type: string; size: string; backups: string }
+  }
   performance: {
-    database: string[];
-    application: string[];
-    frontend: string[];
-    network: string[];
-  };
+    database: string[]
+    application: string[]
+    frontend: string[]
+    network: string[]
+  }
   monitoring: {
-    metrics: string[];
-    alerts: Array<{ metric: string; threshold: number; action: string }>;
-    dashboards: string[];
-    logging: { level: string; retention: string };
-  };
+    metrics: string[]
+    alerts: Array<{ metric: string; threshold: number; action: string }>
+    dashboards: string[]
+    logging: { level: string; retention: string }
+  }
   costs: {
-    strategies: string[];
-    recommendations: string[];
-    savings: { monthly: number; percentage: number };
-  };
+    strategies: string[]
+    recommendations: string[]
+    savings: { monthly: number; percentage: number }
+  }
   security: {
-    measures: string[];
-    compliance: string[];
-    infrastructure: string[];
-    monitoring: string[];
-  };
+    measures: string[]
+    compliance: string[]
+    infrastructure: string[]
+    monitoring: string[]
+  }
 }
 
 interface ScalabilityPlan {
-  currentState: any;
-  targetState: any;
-  migrationPlan: any;
-  timeline: any;
-  costs: any;
-  risks: any;
+  currentState: any
+  targetState: any
+  migrationPlan: any
+  timeline: any
+  costs: any
+  risks: any
 }
 
 export default function ScalabilityPlanner() {
-  const [currentUsers, setCurrentUsers] = useState<number>(10000);
-  const [targetUsers, setTargetUsers] = useState<number>(100000);
-  const [timeframe, setTimeframe] = useState<string>('12 months');
-  const [recommendations, setRecommendations] = useState<ScalabilityRecommendations | null>(null);
-  const [scalabilityPlan, setScalabilityPlan] = useState<ScalabilityPlan | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('recommendations');
+  const [currentUsers, setCurrentUsers] = useState<number>(10000)
+  const [targetUsers, setTargetUsers] = useState<number>(100000)
+  const [timeframe, setTimeframe] = useState<string>("12 months")
+  const [recommendations, setRecommendations] =
+    useState<ScalabilityRecommendations | null>(null)
+  const [scalabilityPlan, setScalabilityPlan] =
+    useState<ScalabilityPlan | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState("recommendations")
 
   useEffect(() => {
-    fetchRecommendations();
-  }, [currentUsers]);
+    fetchRecommendations()
+  }, [currentUsers])
 
   const fetchRecommendations = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await fetch(`/api/scalability?type=recommendations&userCount=${currentUsers}`);
-      const data = await response.json();
-      
+      setLoading(true)
+      setError(null)
+
+      const response = await fetch(
+        `/api/scalability?type=recommendations&userCount=${currentUsers}`
+      )
+      const data = await response.json()
+
       if (data.success) {
-        setRecommendations(data.recommendations);
+        setRecommendations(data.recommendations)
       } else {
-        setError(data.error || 'Failed to fetch recommendations');
+        setError(data.error || "Failed to fetch recommendations")
       }
     } catch (err) {
-      setError('Error fetching scalability recommendations');
-      console.error('Scalability recommendations error:', err);
+      setError("Error fetching scalability recommendations")
+      console.error("Scalability recommendations error:", err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const generateScalabilityPlan = async () => {
     try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await fetch(`/api/scalability?type=plan&userCount=${currentUsers}&targetUsers=${targetUsers}&timeframe=${timeframe}`);
-      const data = await response.json();
-      
+      setLoading(true)
+      setError(null)
+
+      const response = await fetch(
+        `/api/scalability?type=plan&userCount=${currentUsers}&targetUsers=${targetUsers}&timeframe=${timeframe}`
+      )
+      const data = await response.json()
+
       if (data.success) {
-        setScalabilityPlan(data.plan);
-        setActiveTab('plan');
+        setScalabilityPlan(data.plan)
+        setActiveTab("plan")
       } else {
-        setError(data.error || 'Failed to generate plan');
+        setError(data.error || "Failed to generate plan")
       }
     } catch (err) {
-      setError('Error generating scalability plan');
-      console.error('Scalability plan error:', err);
+      setError("Error generating scalability plan")
+      console.error("Scalability plan error:", err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const formatNumber = (num: number) => {
-    return new Intl.NumberFormat().format(num);
-  };
+    return new Intl.NumberFormat().format(num)
+  }
 
   const getPhaseColor = (phase: string) => {
     switch (phase) {
-      case 'startup': return 'bg-green-100 text-green-800';
-      case 'growth': return 'bg-blue-100 text-blue-800';
-      case 'scale': return 'bg-purple-100 text-purple-800';
-      case 'enterprise': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case "startup":
+        return "bg-green-100 text-green-800"
+      case "growth":
+        return "bg-blue-100 text-blue-800"
+      case "scale":
+        return "bg-purple-100 text-purple-800"
+      case "enterprise":
+        return "bg-red-100 text-red-800"
+      default:
+        return "bg-gray-100 text-gray-800"
     }
-  };
+  }
 
   const getRiskColor = (risk: string) => {
-    if (risk.includes('complexity') || risk.includes('challenge')) {
-      return 'text-red-600';
+    if (risk.includes("complexity") || risk.includes("challenge")) {
+      return "text-red-600"
     }
-    if (risk.includes('performance') || risk.includes('downtime')) {
-      return 'text-orange-600';
+    if (risk.includes("performance") || risk.includes("downtime")) {
+      return "text-orange-600"
     }
-    return 'text-yellow-600';
-  };
+    return "text-yellow-600"
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Scalability Planner</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            Scalability Planner
+          </h2>
           <p className="text-muted-foreground">
             Plan and optimize your infrastructure for exponential growth
           </p>
@@ -183,7 +216,8 @@ export default function ScalabilityPlanner() {
             Scalability Configuration
           </CardTitle>
           <CardDescription>
-            Configure your current and target user base to get personalized recommendations
+            Configure your current and target user base to get personalized
+            recommendations
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -194,7 +228,9 @@ export default function ScalabilityPlanner() {
                 id="currentUsers"
                 type="number"
                 value={currentUsers}
-                onChange={(e) => setCurrentUsers(parseInt(e.target.value))}
+                onChange={(e) =>
+                  setCurrentUsers(Number.parseInt(e.target.value))
+                }
                 min="1000"
                 max="10000000"
                 step="1000"
@@ -206,7 +242,9 @@ export default function ScalabilityPlanner() {
                 id="targetUsers"
                 type="number"
                 value={targetUsers}
-                onChange={(e) => setTargetUsers(parseInt(e.target.value))}
+                onChange={(e) =>
+                  setTargetUsers(Number.parseInt(e.target.value))
+                }
                 min="1000"
                 max="10000000"
                 step="1000"
@@ -232,7 +270,11 @@ export default function ScalabilityPlanner() {
                 <Activity className="w-4 h-4 mr-2" />
                 Update Recommendations
               </Button>
-              <Button onClick={generateScalabilityPlan} disabled={loading} variant="outline">
+              <Button
+                onClick={generateScalabilityPlan}
+                disabled={loading}
+                variant="outline"
+              >
                 <Target className="w-4 h-4 mr-2" />
                 Generate Plan
               </Button>
@@ -271,46 +313,72 @@ export default function ScalabilityPlanner() {
                     Infrastructure Recommendations
                   </CardTitle>
                   <CardDescription>
-                    Recommended infrastructure for {formatNumber(currentUsers)} users
+                    Recommended infrastructure for {formatNumber(currentUsers)}{" "}
+                    users
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-3">
                       <h4 className="font-semibold">Servers</h4>
-                      {recommendations.infrastructure.servers.map((server, idx) => (
-                        <div key={idx} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                          <span className="font-medium">{server.type}</span>
-                          <div className="text-right">
-                            <div className="font-semibold">{server.count}x</div>
-                            <div className="text-sm text-gray-600">{server.specs}</div>
+                      {recommendations.infrastructure.servers.map(
+                        (server, idx) => (
+                          <div
+                            key={idx}
+                            className="flex justify-between items-center p-2 bg-gray-50 rounded"
+                          >
+                            <span className="font-medium">{server.type}</span>
+                            <div className="text-right">
+                              <div className="font-semibold">
+                                {server.count}x
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                {server.specs}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
                     <div className="space-y-3">
                       <h4 className="font-semibold">Databases</h4>
-                      {recommendations.infrastructure.databases.map((db, idx) => (
-                        <div key={idx} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                          <span className="font-medium">{db.type}</span>
-                          <div className="text-right">
-                            <div className="font-semibold">{db.count}x</div>
-                            <div className="text-sm text-gray-600">{db.specs}</div>
+                      {recommendations.infrastructure.databases.map(
+                        (db, idx) => (
+                          <div
+                            key={idx}
+                            className="flex justify-between items-center p-2 bg-gray-50 rounded"
+                          >
+                            <span className="font-medium">{db.type}</span>
+                            <div className="text-right">
+                              <div className="font-semibold">{db.count}x</div>
+                              <div className="text-sm text-gray-600">
+                                {db.specs}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
                     <div className="space-y-3">
                       <h4 className="font-semibold">Caches</h4>
-                      {recommendations.infrastructure.caches.map((cache, idx) => (
-                        <div key={idx} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                          <span className="font-medium">{cache.type}</span>
-                          <div className="text-right">
-                            <div className="font-semibold">{cache.count}x</div>
-                            <div className="text-sm text-gray-600">{cache.specs}</div>
+                      {recommendations.infrastructure.caches.map(
+                        (cache, idx) => (
+                          <div
+                            key={idx}
+                            className="flex justify-between items-center p-2 bg-gray-50 rounded"
+                          >
+                            <span className="font-medium">{cache.type}</span>
+                            <div className="text-right">
+                              <div className="font-semibold">
+                                {cache.count}x
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                {cache.specs}
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -334,7 +402,7 @@ export default function ScalabilityPlanner() {
                     </div>
                     <div className="text-center p-4 bg-green-50 rounded-lg">
                       <div className="text-2xl font-bold text-green-600">
-                        {recommendations.database.sharding ? 'Yes' : 'No'}
+                        {recommendations.database.sharding ? "Yes" : "No"}
                       </div>
                       <div className="text-sm text-gray-600">Sharding</div>
                     </div>
@@ -342,13 +410,17 @@ export default function ScalabilityPlanner() {
                       <div className="text-2xl font-bold text-purple-600">
                         {recommendations.database.partitioning.length}
                       </div>
-                      <div className="text-sm text-gray-600">Partitioned Tables</div>
+                      <div className="text-sm text-gray-600">
+                        Partitioned Tables
+                      </div>
                     </div>
                     <div className="text-center p-4 bg-orange-50 rounded-lg">
                       <div className="text-2xl font-bold text-orange-600">
                         {recommendations.database.connectionPooling}
                       </div>
-                      <div className="text-sm text-gray-600">Connection Pool</div>
+                      <div className="text-sm text-gray-600">
+                        Connection Pool
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -367,21 +439,39 @@ export default function ScalabilityPlanner() {
                     <div className="space-y-3">
                       <h4 className="font-semibold">Database Optimizations</h4>
                       <div className="space-y-2">
-                        {recommendations.performance.database.map((opt, idx) => (
-                          <Badge key={idx} variant="secondary" className="mr-2">
-                            {opt.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                          </Badge>
-                        ))}
+                        {recommendations.performance.database.map(
+                          (opt, idx) => (
+                            <Badge
+                              key={idx}
+                              variant="secondary"
+                              className="mr-2"
+                            >
+                              {opt
+                                .replace(/_/g, " ")
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
+                            </Badge>
+                          )
+                        )}
                       </div>
                     </div>
                     <div className="space-y-3">
-                      <h4 className="font-semibold">Application Optimizations</h4>
+                      <h4 className="font-semibold">
+                        Application Optimizations
+                      </h4>
                       <div className="space-y-2">
-                        {recommendations.performance.application.map((opt, idx) => (
-                          <Badge key={idx} variant="secondary" className="mr-2">
-                            {opt.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                          </Badge>
-                        ))}
+                        {recommendations.performance.application.map(
+                          (opt, idx) => (
+                            <Badge
+                              key={idx}
+                              variant="secondary"
+                              className="mr-2"
+                            >
+                              {opt
+                                .replace(/_/g, " ")
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
+                            </Badge>
+                          )
+                        )}
                       </div>
                     </div>
                   </div>
@@ -403,7 +493,9 @@ export default function ScalabilityPlanner() {
                         <div key={idx} className="flex items-center gap-2">
                           <CheckCircle className="w-4 h-4 text-green-500" />
                           <span className="text-sm">
-                            {measure.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                            {measure
+                              .replace(/_/g, " ")
+                              .replace(/\b\w/g, (l) => l.toUpperCase())}
                           </span>
                         </div>
                       ))}
@@ -424,17 +516,23 @@ export default function ScalabilityPlanner() {
                         <div className="text-2xl font-bold text-green-600">
                           {recommendations.costs.savings.percentage}%
                         </div>
-                        <div className="text-sm text-gray-600">Potential Savings</div>
+                        <div className="text-sm text-gray-600">
+                          Potential Savings
+                        </div>
                       </div>
                       <div className="space-y-2">
-                        {recommendations.costs.strategies.slice(0, 3).map((strategy, idx) => (
-                          <div key={idx} className="flex items-center gap-2">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-sm">
-                              {strategy.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                            </span>
-                          </div>
-                        ))}
+                        {recommendations.costs.strategies
+                          .slice(0, 3)
+                          .map((strategy, idx) => (
+                            <div key={idx} className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <span className="text-sm">
+                                {strategy
+                                  .replace(/_/g, " ")
+                                  .replace(/\b\w/g, (l) => l.toUpperCase())}
+                              </span>
+                            </div>
+                          ))}
                       </div>
                     </div>
                   </CardContent>
@@ -459,14 +557,19 @@ export default function ScalabilityPlanner() {
                     Migration Plan Overview
                   </CardTitle>
                   <CardDescription>
-                    Plan to scale from {formatNumber(currentUsers)} to {formatNumber(targetUsers)} users
+                    Plan to scale from {formatNumber(currentUsers)} to{" "}
+                    {formatNumber(targetUsers)} users
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-2">
                       <h4 className="font-semibold">Current State</h4>
-                      <Badge className={getPhaseColor(scalabilityPlan.currentState.phase)}>
+                      <Badge
+                        className={getPhaseColor(
+                          scalabilityPlan.currentState.phase
+                        )}
+                      >
                         {scalabilityPlan.currentState.phase}
                       </Badge>
                       <div className="text-sm text-gray-600">
@@ -475,7 +578,11 @@ export default function ScalabilityPlanner() {
                     </div>
                     <div className="space-y-2">
                       <h4 className="font-semibold">Target State</h4>
-                      <Badge className={getPhaseColor(scalabilityPlan.targetState.phase)}>
+                      <Badge
+                        className={getPhaseColor(
+                          scalabilityPlan.targetState.phase
+                        )}
+                      >
                         {scalabilityPlan.targetState.phase}
                       </Badge>
                       <div className="text-sm text-gray-600">
@@ -500,18 +607,24 @@ export default function ScalabilityPlanner() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {scalabilityPlan.timeline.phases.map((phase: any, idx: number) => (
-                      <div key={idx} className="flex items-center space-x-4">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-semibold text-blue-600">{idx + 1}</span>
+                    {scalabilityPlan.timeline.phases.map(
+                      (phase: any, idx: number) => (
+                        <div key={idx} className="flex items-center space-x-4">
+                          <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-semibold text-blue-600">
+                              {idx + 1}
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-semibold">{phase.phase}</div>
+                            <div className="text-sm text-gray-600">
+                              {phase.duration}
+                            </div>
+                          </div>
+                          <Progress value={(idx + 1) * 20} className="w-24" />
                         </div>
-                        <div className="flex-1">
-                          <div className="font-semibold">{phase.phase}</div>
-                          <div className="text-sm text-gray-600">{phase.duration}</div>
-                        </div>
-                        <Progress value={(idx + 1) * 20} className="w-24" />
-                      </div>
-                    ))}
+                      )
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -530,19 +643,25 @@ export default function ScalabilityPlanner() {
                       <div className="text-2xl font-bold text-blue-600">
                         ${formatNumber(scalabilityPlan.costs.current)}
                       </div>
-                      <div className="text-sm text-gray-600">Current Monthly</div>
+                      <div className="text-sm text-gray-600">
+                        Current Monthly
+                      </div>
                     </div>
                     <div className="text-center p-4 bg-green-50 rounded-lg">
                       <div className="text-2xl font-bold text-green-600">
                         ${formatNumber(scalabilityPlan.costs.target)}
                       </div>
-                      <div className="text-sm text-gray-600">Target Monthly</div>
+                      <div className="text-sm text-gray-600">
+                        Target Monthly
+                      </div>
                     </div>
                     <div className="text-center p-4 bg-purple-50 rounded-lg">
                       <div className="text-2xl font-bold text-purple-600">
                         ${formatNumber(scalabilityPlan.costs.migration)}
                       </div>
-                      <div className="text-sm text-gray-600">Migration Cost</div>
+                      <div className="text-sm text-gray-600">
+                        Migration Cost
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -560,36 +679,54 @@ export default function ScalabilityPlanner() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="space-y-3">
                       <h4 className="font-semibold">Technical Risks</h4>
-                      {scalabilityPlan.risks.technical.map((risk: string, idx: number) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <AlertTriangle className={`w-4 h-4 ${getRiskColor(risk)}`} />
-                          <span className="text-sm">
-                            {risk.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                          </span>
-                        </div>
-                      ))}
+                      {scalabilityPlan.risks.technical.map(
+                        (risk: string, idx: number) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <AlertTriangle
+                              className={`w-4 h-4 ${getRiskColor(risk)}`}
+                            />
+                            <span className="text-sm">
+                              {risk
+                                .replace(/_/g, " ")
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
+                            </span>
+                          </div>
+                        )
+                      )}
                     </div>
                     <div className="space-y-3">
                       <h4 className="font-semibold">Operational Risks</h4>
-                      {scalabilityPlan.risks.operational.map((risk: string, idx: number) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <AlertTriangle className={`w-4 h-4 ${getRiskColor(risk)}`} />
-                          <span className="text-sm">
-                            {risk.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                          </span>
-                        </div>
-                      ))}
+                      {scalabilityPlan.risks.operational.map(
+                        (risk: string, idx: number) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <AlertTriangle
+                              className={`w-4 h-4 ${getRiskColor(risk)}`}
+                            />
+                            <span className="text-sm">
+                              {risk
+                                .replace(/_/g, " ")
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
+                            </span>
+                          </div>
+                        )
+                      )}
                     </div>
                     <div className="space-y-3">
                       <h4 className="font-semibold">Financial Risks</h4>
-                      {scalabilityPlan.risks.financial.map((risk: string, idx: number) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <AlertTriangle className={`w-4 h-4 ${getRiskColor(risk)}`} />
-                          <span className="text-sm">
-                            {risk.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                          </span>
-                        </div>
-                      ))}
+                      {scalabilityPlan.risks.financial.map(
+                        (risk: string, idx: number) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <AlertTriangle
+                              className={`w-4 h-4 ${getRiskColor(risk)}`}
+                            />
+                            <span className="text-sm">
+                              {risk
+                                .replace(/_/g, " ")
+                                .replace(/\b\w/g, (l) => l.toUpperCase())}
+                            </span>
+                          </div>
+                        )
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -603,5 +740,5 @@ export default function ScalabilityPlanner() {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

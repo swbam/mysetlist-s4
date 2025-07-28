@@ -1,17 +1,17 @@
-'use server';
+"use server"
 
-import { db } from '@repo/database';
-import { shows, venueReviews, venues } from '@repo/database/src/schema';
-import { and, eq, gte, ilike, inArray, lte, or, sql } from 'drizzle-orm';
-import { unstable_cache } from 'next/cache';
+import { db } from "@repo/database"
+import { shows, venueReviews, venues } from "@repo/database/src/schema"
+import { and, eq, gte, ilike, inArray, lte, or, sql } from "drizzle-orm"
+import { unstable_cache } from "next/cache"
 
 interface GetVenuesParams {
-  search?: string;
-  types?: string[];
-  capacity?: string;
-  userLat?: number;
-  userLng?: number;
-  limit?: number;
+  search?: string
+  types?: string[]
+  capacity?: string
+  userLat?: number
+  userLng?: number
+  limit?: number
 }
 
 export const getVenues = unstable_cache(
@@ -23,7 +23,7 @@ export const getVenues = unstable_cache(
     userLng,
     limit = 50,
   }: GetVenuesParams) => {
-    const conditions: any[] = [];
+    const conditions: any[] = []
 
     // Search filter
     if (search) {
@@ -34,33 +34,33 @@ export const getVenues = unstable_cache(
           ilike(venues.state, `%${search}%`),
           ilike(venues.country, `%${search}%`)
         )
-      );
+      )
     }
 
     // Type filter
     if (types && types.length > 0) {
-      conditions.push(inArray(venues.venueType, types));
+      conditions.push(inArray(venues.venueType, types))
     }
 
     // Capacity filter
-    if (capacity && capacity !== 'all') {
+    if (capacity && capacity !== "all") {
       switch (capacity) {
-        case 'small':
-          conditions.push(lte(venues.capacity, 1000));
-          break;
-        case 'medium':
+        case "small":
+          conditions.push(lte(venues.capacity, 1000))
+          break
+        case "medium":
           conditions.push(
             and(gte(venues.capacity, 1000), lte(venues.capacity, 5000))
-          );
-          break;
-        case 'large':
+          )
+          break
+        case "large":
           conditions.push(
             and(gte(venues.capacity, 5000), lte(venues.capacity, 20000))
-          );
-          break;
-        case 'xlarge':
-          conditions.push(gte(venues.capacity, 20000));
-          break;
+          )
+          break
+        case "xlarge":
+          conditions.push(gte(venues.capacity, 20000))
+          break
       }
     }
 
@@ -70,12 +70,16 @@ export const getVenues = unstable_cache(
         id: venues.id,
         name: venues.name,
         slug: venues.slug,
+        address: venues.address,
         city: venues.city,
         state: venues.state,
         country: venues.country,
         capacity: venues.capacity,
         latitude: venues.latitude,
         longitude: venues.longitude,
+        venueType: venues.venueType,
+        imageUrl: venues.imageUrl,
+        amenities: venues.amenities,
         // Add distance calculation if user location is provided
         ...(userLat && userLng
           ? {
@@ -85,23 +89,23 @@ export const getVenues = unstable_cache(
                   cos(radians(${venues.longitude}) - radians(${userLng})) +
                   sin(radians(${userLat})) * sin(radians(${venues.latitude}))
                 )
-              `.as('distance'),
+              `.as("distance"),
             }
           : {}),
       })
-      .from(venues);
+      .from(venues)
 
     // Apply conditions if any
     const queryWithConditions =
-      conditions.length > 0 ? baseQuery.where(and(...conditions)) : baseQuery;
+      conditions.length > 0 ? baseQuery.where(and(...conditions)) : baseQuery
 
     // Apply sorting
     const queryWithSort =
       userLat && userLng
         ? queryWithConditions.orderBy(sql`distance`)
-        : queryWithConditions.orderBy(venues.name);
+        : queryWithConditions.orderBy(venues.name)
 
-    const results = await queryWithSort.limit(limit);
+    const results = await queryWithSort.limit(limit)
 
     // Get additional data for each venue
     const venuesWithStats = await Promise.all(
@@ -113,28 +117,28 @@ export const getVenues = unstable_cache(
             reviewCount: sql<number>`COUNT(${venueReviews.id})`,
           })
           .from(venueReviews)
-          .where(eq(venueReviews.venueId, venue.id));
+          .where(eq(venueReviews.venueId, venue.id))
 
         // Get upcoming show count
-        const now = new Date().toISOString().split('T')[0]!; // Format as YYYY-MM-DD
+        const now = new Date().toISOString().split("T")[0]! // Format as YYYY-MM-DD
         const [showCount] = await db
           .select({
             count: sql<number>`COUNT(${shows.id})`,
           })
           .from(shows)
-          .where(and(eq(shows.venueId, venue.id), gte(shows.date, now)));
+          .where(and(eq(shows.venueId, venue.id), gte(shows.date, now)))
 
         return {
           ...venue,
           avgRating: reviewStats[0]?.avgRating || null,
           reviewCount: reviewStats[0]?.reviewCount || 0,
           upcomingShowCount: showCount?.count || 0,
-        };
+        }
       })
-    );
+    )
 
-    return venuesWithStats;
+    return venuesWithStats
   },
-  ['venues-list'],
+  ["venues-list"],
   { revalidate: 300 } // Cache for 5 minutes
-);
+)

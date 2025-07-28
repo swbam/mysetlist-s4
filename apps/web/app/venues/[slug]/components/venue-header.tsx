@@ -1,7 +1,7 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Card } from '@repo/design-system/components/ui/card';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Card } from "@repo/design-system/components/ui/card"
 import {
   Calendar,
   Clock,
@@ -10,50 +10,47 @@ import {
   Phone,
   Star,
   Users,
-} from 'lucide-react';
-import Image from 'next/image';
+} from "lucide-react"
+import Image from "next/image"
 
 interface VenueHeaderProps {
   venue: {
-    id: string;
-    name: string;
-    address: string | null;
-    city: string;
-    state: string | null;
-    country: string;
-    imageUrl: string | null;
-    capacity: number | null;
-    venueType: string | null;
-    description: string | null;
-    phoneNumber?: string | null;
-    website?: string | null;
-    timezone?: string;
-  };
-  upcomingShowCount: number;
+    id: string
+    name: string
+    address: string | null
+    city: string
+    state: string | null
+    country: string
+    imageUrl: string | null
+    capacity: number | null
+    venueType: string | null
+    description: string | null
+    phoneNumber?: string | null
+    website?: string | null
+    timezone?: string
+  }
+  upcomingShowCount: number
 }
 
-export function VenueHeader({
-  venue,
-  upcomingShowCount,
-}: VenueHeaderProps) {
+export function VenueHeader({ venue, upcomingShowCount }: VenueHeaderProps) {
   const formatCapacity = (capacity: number) => {
     if (capacity >= 1000) {
-      return `${(capacity / 1000).toFixed(1)}k`;
+      return `${(capacity / 1000).toFixed(1)}k`
     }
-    return capacity.toString();
-  };
+    return capacity.toString()
+  }
 
   const venueTypeLabels: Record<string, string> = {
-    arena: 'Arena',
-    stadium: 'Stadium',
-    theater: 'Theater',
-    club: 'Club',
-    'outdoor-amphitheater': 'Outdoor Amphitheater',
-    'indoor-amphitheater': 'Indoor Amphitheater',
-    ballroom: 'Ballroom',
-    festival: 'Festival Grounds',
-    other: 'Other',
-  };
+    arena: "Arena",
+    stadium: "Stadium",
+    theater: "Theater",
+    club: "Club",
+    "outdoor-amphitheater": "Outdoor Amphitheater",
+    "indoor-amphitheater": "Indoor Amphitheater",
+    ballroom: "Ballroom",
+    festival: "Festival Grounds",
+    other: "Other",
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -105,7 +102,7 @@ export function VenueHeader({
             <div>
               <p className="text-muted-foreground text-sm">Capacity</p>
               <p className="font-semibold text-lg">
-                {venue.capacity ? formatCapacity(venue.capacity) : 'N/A'}
+                {venue.capacity ? formatCapacity(venue.capacity) : "N/A"}
               </p>
             </div>
           </div>
@@ -160,7 +157,7 @@ export function VenueHeader({
             {venue.timezone && (
               <div className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                {venue.timezone.split('/').pop()?.replace('_', ' ')}
+                {venue.timezone.split("/").pop()?.replace("_", " ")}
               </div>
             )}
           </div>
@@ -173,5 +170,5 @@ export function VenueHeader({
         )}
       </div>
     </div>
-  );
+  )
 }

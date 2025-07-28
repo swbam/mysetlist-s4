@@ -1,31 +1,31 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { CheckCircle2, Music, TrendingUp } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { formatNumber, parseGenres } from '~/lib/utils';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Card, CardContent } from "@repo/design-system/components/ui/card"
+import { CheckCircle2, Music, TrendingUp } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { formatNumber, parseGenres } from "~/lib/utils"
 
 interface ArtistCardProps {
   artist: {
-    id: string;
-    name: string;
-    slug: string;
-    imageUrl: string | null;
-    smallImageUrl: string | null;
-    genres: string | null;
-    followers: number | null;
-    followerCount: number | null;
-    popularity: number | null;
-    verified: boolean;
-    trendingScore: number | null;
-  };
+    id: string
+    name: string
+    slug: string
+    imageUrl: string | null
+    smallImageUrl: string | null
+    genres: string | null
+    followers: number | null
+    followerCount: number | null
+    popularity: number | null
+    verified: boolean
+    trendingScore: number | null
+  }
 }
 
 export function ArtistCard({ artist }: ArtistCardProps) {
-  const genres = parseGenres(artist.genres);
-  const imageUrl = artist.smallImageUrl || artist.imageUrl;
+  const genres = parseGenres(artist.genres)
+  const imageUrl = artist.smallImageUrl || artist.imageUrl
 
   return (
     <Card className="overflow-hidden transition-shadow hover:shadow-lg">
@@ -80,5 +80,5 @@ export function ArtistCard({ artist }: ArtistCardProps) {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

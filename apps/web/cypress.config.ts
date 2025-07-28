@@ -1,10 +1,10 @@
-import { defineConfig } from 'cypress';
+import { defineConfig } from "cypress"
 
 export default defineConfig({
   e2e: {
-    baseUrl: 'http://localhost:3001',
-    supportFile: 'cypress/support/e2e.ts',
-    specPattern: 'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
+    baseUrl: "http://localhost:3001",
+    supportFile: "cypress/support/e2e.ts",
+    specPattern: "cypress/e2e/**/*.cy.{js,jsx,ts,tsx}",
     viewportWidth: 1280,
     viewportHeight: 720,
     video: true,
@@ -14,23 +14,23 @@ export default defineConfig({
       openMode: 0,
     },
     env: {
-      API_URL: 'http://localhost:3001/api',
+      API_URL: "http://localhost:3001/api",
     },
     setupNodeEvents(on, _config) {
       // implement node event listeners here
-      on('task', {
+      on("task", {
         log(_message) {
-          return null;
+          return null
         },
-      });
+      })
     },
   },
   component: {
     devServer: {
-      framework: 'next',
-      bundler: 'webpack',
+      framework: "next",
+      bundler: "webpack",
     },
-    specPattern: 'cypress/component/**/*.cy.{js,jsx,ts,tsx}',
-    supportFile: 'cypress/support/component.ts',
+    specPattern: "cypress/component/**/*.cy.{js,jsx,ts,tsx}",
+    supportFile: "cypress/support/component.ts",
   },
-});
+})

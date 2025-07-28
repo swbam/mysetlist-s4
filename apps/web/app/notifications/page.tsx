@@ -1,28 +1,28 @@
-import { getUser } from '@repo/auth/server';
-import { Button } from '@repo/design-system/components/ui/button';
+import { getUser } from "@repo/auth/server"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Bell, BellOff, Settings } from 'lucide-react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { createPageMetadata } from '~/lib/seo-metadata';
+} from "@repo/design-system/components/ui/card"
+import { Bell, BellOff, Settings } from "lucide-react"
+import type { Metadata } from "next"
+import Link from "next/link"
+import { redirect } from "next/navigation"
+import { createPageMetadata } from "~/lib/seo-metadata"
 
 export const metadata: Metadata = createPageMetadata({
-  title: 'Notifications | MySetlist',
+  title: "Notifications | MySetlist",
   description:
-    'Stay updated on your favorite artists, shows, and venue announcements.',
-});
+    "Stay updated on your favorite artists, shows, and venue announcements.",
+})
 
 const NotificationsPage = async () => {
-  const user = await getUser();
+  const user = await getUser()
 
   if (!user) {
-    redirect('/auth/sign-in?redirect=/notifications');
+    redirect("/auth/sign-in?redirect=/notifications")
   }
 
   return (
@@ -103,7 +103,7 @@ const NotificationsPage = async () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default NotificationsPage;
+export default NotificationsPage

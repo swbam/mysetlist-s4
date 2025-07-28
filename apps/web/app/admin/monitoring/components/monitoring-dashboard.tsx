@@ -1,25 +1,25 @@
-'use client';
+"use client"
 
 import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from '@repo/design-system/components/ui/alert';
-import { Badge } from '@repo/design-system/components/ui/badge';
+} from "@repo/design-system/components/ui/alert"
+import { Badge } from "@repo/design-system/components/ui/badge"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Progress } from '@repo/design-system/components/ui/progress';
+} from "@repo/design-system/components/ui/card"
+import { Progress } from "@repo/design-system/components/ui/progress"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
-import { format } from 'date-fns';
+} from "@repo/design-system/components/ui/tabs"
+import { format } from "date-fns"
 import {
   Activity,
   AlertTriangle,
@@ -27,14 +27,14 @@ import {
   TrendingUp,
   Users,
   Zap,
-} from 'lucide-react';
-import { useState } from 'react';
+} from "lucide-react"
+import { useState } from "react"
 
 interface MonitoringDashboardProps {
-  dbStats: any;
-  apiStats: any;
-  errorLogs: any[];
-  userActivity: any;
+  dbStats: any
+  apiStats: any
+  errorLogs: any[]
+  userActivity: any
 }
 
 export function MonitoringDashboard({
@@ -47,10 +47,10 @@ export function MonitoringDashboard({
     activeConnections: 0,
     requestsPerMinute: 0,
     avgResponseTime: 0,
-  });
+  })
 
   // Calculate health score
-  const healthScore = calculateHealthScore(dbStats, apiStats, errorLogs);
+  const healthScore = calculateHealthScore(dbStats, apiStats, errorLogs)
 
   return (
     <div className="space-y-8">
@@ -66,10 +66,10 @@ export function MonitoringDashboard({
             <Progress value={healthScore} className="mt-2" />
             <p className="mt-2 text-muted-foreground text-xs">
               {healthScore >= 90
-                ? 'Healthy'
+                ? "Healthy"
                 : healthScore >= 70
-                  ? 'Warning'
-                  : 'Critical'}
+                  ? "Warning"
+                  : "Critical"}
             </p>
           </CardContent>
         </Card>
@@ -128,7 +128,7 @@ export function MonitoringDashboard({
                 errorLogs.filter(
                   (e) => new Date(e.created_at) > new Date(Date.now() - 3600000)
                 ).length
-              }{' '}
+              }{" "}
               errors in last hour
             </p>
           </CardContent>
@@ -137,13 +137,13 @@ export function MonitoringDashboard({
 
       {/* Critical Alerts */}
       {healthScore < 90 && (
-        <Alert variant={healthScore < 70 ? 'destructive' : 'default'}>
+        <Alert variant={healthScore < 70 ? "destructive" : "default"}>
           <AlertTriangle className="h-4 w-4" />
           <AlertTitle>System Health Alert</AlertTitle>
           <AlertDescription>
             {healthScore < 70
-              ? 'Critical issues detected. Immediate action required.'
-              : 'System performance is degraded. Please investigate.'}
+              ? "Critical issues detected. Immediate action required."
+              : "System performance is degraded. Please investigate."}
           </AlertDescription>
         </Alert>
       )}
@@ -170,7 +170,7 @@ export function MonitoringDashboard({
                       Connection Pool
                     </dt>
                     <dd className="font-medium text-sm">
-                      {dbStats.activeConnections || 0} /{' '}
+                      {dbStats.activeConnections || 0} /{" "}
                       {dbStats.maxConnections || 100}
                     </dd>
                   </div>
@@ -195,7 +195,7 @@ export function MonitoringDashboard({
                       Database Size
                     </dt>
                     <dd className="font-medium text-sm">
-                      {dbStats.dbSize || 'N/A'}
+                      {dbStats.dbSize || "N/A"}
                     </dd>
                   </div>
                 </dl>
@@ -255,7 +255,7 @@ export function MonitoringDashboard({
                         <div className="flex items-center gap-2">
                           <Badge
                             variant={
-                              stats.errorRate > 5 ? 'destructive' : 'secondary'
+                              stats.errorRate > 5 ? "destructive" : "secondary"
                             }
                           >
                             {stats.errorRate}% errors
@@ -288,10 +288,10 @@ export function MonitoringDashboard({
                   >
                     <div className="flex items-center justify-between">
                       <Badge variant="destructive">
-                        {error.level || 'ERROR'}
+                        {error.level || "ERROR"}
                       </Badge>
                       <span className="text-muted-foreground text-xs">
-                        {format(new Date(error.created_at), 'MMM d, HH:mm:ss')}
+                        {format(new Date(error.created_at), "MMM d, HH:mm:ss")}
                       </span>
                     </div>
                     <p className="font-medium text-sm">{error.message}</p>
@@ -353,7 +353,7 @@ export function MonitoringDashboard({
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }
 
 function calculateHealthScore(
@@ -361,42 +361,42 @@ function calculateHealthScore(
   apiStats: any,
   errorLogs: any[]
 ): number {
-  let score = 100;
+  let score = 100
 
   // Deduct points for high error rate
   if (apiStats.errorRate > 1) {
-    score -= 10;
+    score -= 10
   }
   if (apiStats.errorRate > 5) {
-    score -= 20;
+    score -= 20
   }
 
   // Deduct points for slow response times
   if (apiStats.avgResponseTime > 500) {
-    score -= 10;
+    score -= 10
   }
   if (apiStats.avgResponseTime > 1000) {
-    score -= 20;
+    score -= 20
   }
 
   // Deduct points for database issues
   if (dbStats.slowQueries > 10) {
-    score -= 15;
+    score -= 15
   }
   if (dbStats.activeConnections > dbStats.maxConnections * 0.8) {
-    score -= 10;
+    score -= 10
   }
 
   // Deduct points for recent errors
   const recentErrors = errorLogs.filter(
     (e) => new Date(e.created_at) > new Date(Date.now() - 3600000)
-  ).length;
+  ).length
   if (recentErrors > 10) {
-    score -= 10;
+    score -= 10
   }
   if (recentErrors > 50) {
-    score -= 20;
+    score -= 20
   }
 
-  return Math.max(0, score);
+  return Math.max(0, score)
 }

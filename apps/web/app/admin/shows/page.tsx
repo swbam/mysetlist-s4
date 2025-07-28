@@ -1,14 +1,14 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,15 +16,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { Input } from '@repo/design-system/components/ui/input';
+} from "@repo/design-system/components/ui/dropdown-menu"
+import { Input } from "@repo/design-system/components/ui/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/design-system/components/ui/select';
+} from "@repo/design-system/components/ui/select"
 import {
   Table,
   TableBody,
@@ -32,7 +32,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@repo/design-system/components/ui/table';
+} from "@repo/design-system/components/ui/table"
 import {
   Calendar,
   CheckCircle,
@@ -49,80 +49,80 @@ import {
   Search,
   Trash2,
   XCircle,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+} from "lucide-react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
+import { createClient } from "~/lib/supabase/client"
 
 interface Show {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  status: 'upcoming' | 'in_progress' | 'completed' | 'cancelled';
+  id: string
+  title: string
+  date: string
+  time: string
+  status: "upcoming" | "in_progress" | "completed" | "cancelled"
   venue: {
-    name: string;
-    city: string;
-    state: string;
-  };
+    name: string
+    city: string
+    state: string
+  }
   artist: {
-    name: string;
-    image_url?: string;
-  };
-  ticket_url?: string;
-  created_at: string;
-  updated_at: string;
-  setlists_count?: number;
-  attendees_count?: number;
+    name: string
+    image_url?: string
+  }
+  ticket_url?: string
+  created_at: string
+  updated_at: string
+  setlists_count?: number
+  attendees_count?: number
 }
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'upcoming':
-      return 'default';
-    case 'in_progress':
-      return 'secondary';
-    case 'completed':
-      return 'outline';
-    case 'cancelled':
-      return 'destructive';
+    case "upcoming":
+      return "default"
+    case "in_progress":
+      return "secondary"
+    case "completed":
+      return "outline"
+    case "cancelled":
+      return "destructive"
     default:
-      return 'outline';
+      return "outline"
   }
-};
+}
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case 'upcoming':
-      return Clock;
-    case 'in_progress':
-      return Calendar;
-    case 'completed':
-      return CheckCircle;
-    case 'cancelled':
-      return XCircle;
+    case "upcoming":
+      return Clock
+    case "in_progress":
+      return Calendar
+    case "completed":
+      return CheckCircle
+    case "cancelled":
+      return XCircle
     default:
-      return Clock;
+      return Clock
   }
-};
+}
 
 export default function ShowsManagementPage() {
-  const [shows, setShows] = useState<Show[]>([]);
-  const [totalShows, setTotalShows] = useState(0);
-  const [upcomingShows, setUpcomingShows] = useState(0);
-  const [completedShows, setCompletedShows] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [shows, setShows] = useState<Show[]>([])
+  const [totalShows, setTotalShows] = useState(0)
+  const [upcomingShows, setUpcomingShows] = useState(0)
+  const [completedShows, setCompletedShows] = useState(0)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData()
+  }, [])
 
   const loadData = async () => {
-    const supabase = createClient();
+    const supabase = createClient()
 
     // Fetch shows with related data
     const { data: showsData } = await supabase
-      .from('shows')
+      .from("shows")
       .select(`
 				id,
 				title,
@@ -144,42 +144,42 @@ export default function ShowsManagementPage() {
 				setlists (count),
 				attendees (count)
 			`)
-      .order('date', { ascending: false })
-      .limit(100);
+      .order("date", { ascending: false })
+      .limit(100)
 
     // Get quick stats
     const { count: total } = await supabase
-      .from('shows')
-      .select('*', { count: 'exact', head: true });
+      .from("shows")
+      .select("*", { count: "exact", head: true })
 
     const { count: upcoming } = await supabase
-      .from('shows')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'upcoming');
+      .from("shows")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "upcoming")
 
     const { count: completed } = await supabase
-      .from('shows')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'completed');
+      .from("shows")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "completed")
 
     // Transform the data to match the expected structure
     const transformedShows = (showsData || []).map((show: any) => ({
       ...show,
-      venue: show.venue?.[0] || { name: '', city: '', state: '' },
-      artist: show.artist?.[0] || { name: '', image_url: '' },
+      venue: show.venue?.[0] || { name: "", city: "", state: "" },
+      artist: show.artist?.[0] || { name: "", image_url: "" },
       setlists_count: show.setlists?.[0]?.count || 0,
       attendees_count: show.attendees?.[0]?.count || 0,
-    }));
+    }))
 
-    setShows(transformedShows);
-    setTotalShows(total || 0);
-    setUpcomingShows(upcoming || 0);
-    setCompletedShows(completed || 0);
-    setLoading(false);
-  };
+    setShows(transformedShows)
+    setTotalShows(total || 0)
+    setUpcomingShows(upcoming || 0)
+    setCompletedShows(completed || 0)
+    setLoading(false)
+  }
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>
   }
 
   return (
@@ -332,7 +332,7 @@ export default function ShowsManagementPage() {
             </TableHeader>
             <TableBody>
               {shows.map((show) => {
-                const StatusIcon = getStatusIcon(show.status);
+                const StatusIcon = getStatusIcon(show.status)
                 return (
                   <TableRow key={show.id}>
                     <TableCell>
@@ -362,7 +362,7 @@ export default function ShowsManagementPage() {
                           {new Date(show.date).toLocaleDateString()}
                         </div>
                         <div className="text-muted-foreground text-sm">
-                          {show.time || 'Time TBA'}
+                          {show.time || "Time TBA"}
                         </div>
                       </div>
                     </TableCell>
@@ -377,7 +377,7 @@ export default function ShowsManagementPage() {
                     <TableCell>
                       <Badge variant={getStatusColor(show.status)}>
                         <StatusIcon className="mr-1 h-3 w-3" />
-                        {show.status.replace('_', ' ')}
+                        {show.status.replace("_", " ")}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -438,12 +438,12 @@ export default function ShowsManagementPage() {
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                );
+                )
               })}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

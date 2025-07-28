@@ -1,46 +1,46 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/design-system/components/ui/select';
-import { Calendar, MapPin, Music, TrendingUp, X } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback } from 'react';
+} from "@repo/design-system/components/ui/select"
+import { Calendar, MapPin, Music, TrendingUp, X } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useCallback } from "react"
 
 export function DiscoverFilters() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
-  const timeframe = searchParams.get('timeframe') || 'week';
-  const category = searchParams.get('category') || 'all';
-  const location = searchParams.get('location') || '';
+  const timeframe = searchParams.get("timeframe") || "week"
+  const category = searchParams.get("category") || "all"
+  const location = searchParams.get("location") || ""
 
   const updateFilter = useCallback(
     (key: string, value: string) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams.toString())
 
-      if (value && value !== 'all') {
-        params.set(key, value);
+      if (value && value !== "all") {
+        params.set(key, value)
       } else {
-        params.delete(key);
+        params.delete(key)
       }
 
-      router.push(`/discover?${params.toString()}`);
+      router.push(`/discover?${params.toString()}`)
     },
     [router, searchParams]
-  );
+  )
 
   const clearFilters = useCallback(() => {
-    router.push('/discover');
-  }, [router]);
+    router.push("/discover")
+  }, [router])
 
   const hasActiveFilters =
-    timeframe !== 'week' || category !== 'all' || location;
+    timeframe !== "week" || category !== "all" || location
 
   return (
     <div className="flex flex-wrap items-center gap-4 rounded-lg border bg-card p-4">
@@ -51,7 +51,7 @@ export function DiscoverFilters() {
 
       <Select
         value={timeframe}
-        onValueChange={(value) => updateFilter('timeframe', value)}
+        onValueChange={(value) => updateFilter("timeframe", value)}
       >
         <SelectTrigger className="w-[140px]">
           <Calendar className="mr-2 h-4 w-4" />
@@ -67,7 +67,7 @@ export function DiscoverFilters() {
 
       <Select
         value={category}
-        onValueChange={(value) => updateFilter('category', value)}
+        onValueChange={(value) => updateFilter("category", value)}
       >
         <SelectTrigger className="w-[140px]">
           <Music className="mr-2 h-4 w-4" />
@@ -83,9 +83,9 @@ export function DiscoverFilters() {
       </Select>
 
       <Select
-        value={location || 'all'}
+        value={location || "all"}
         onValueChange={(value) =>
-          updateFilter('location', value === 'all' ? '' : value)
+          updateFilter("location", value === "all" ? "" : value)
         }
       >
         <SelectTrigger className="w-[160px]">
@@ -115,5 +115,5 @@ export function DiscoverFilters() {
         </Button>
       )}
     </div>
-  );
+  )
 }

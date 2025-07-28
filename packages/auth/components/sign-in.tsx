@@ -1,79 +1,80 @@
-'use client';
+"use client"
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { useAuth } from '../src/hooks/use-auth';
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { useAuth } from "../src/hooks/use-auth"
 
 export const SignIn = () => {
-  const router = useRouter();
-  const { signIn, signInWithGoogle, signInWithSpotify, resetPassword } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const router = useRouter()
+  const { signIn, signInWithGoogle, signInWithSpotify, resetPassword } =
+    useAuth()
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(null);
-    setLoading(true);
+    e.preventDefault()
+    setError(null)
+    setSuccess(null)
+    setLoading(true)
 
     try {
-      await signIn(email, password);
-      router.push('/dashboard');
+      await signIn(email, password)
+      router.push("/dashboard")
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleGoogleSignIn = async () => {
-    setError(null);
-    setLoading(true);
+    setError(null)
+    setLoading(true)
 
     try {
-      await signInWithGoogle();
+      await signInWithGoogle()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      setLoading(false);
+      setError(err instanceof Error ? err.message : "An error occurred")
+      setLoading(false)
     }
-  };
+  }
 
   const handleSpotifySignIn = async () => {
-    setError(null);
-    setLoading(true);
+    setError(null)
+    setLoading(true)
 
     try {
-      await signInWithSpotify();
+      await signInWithSpotify()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      setLoading(false);
+      setError(err instanceof Error ? err.message : "An error occurred")
+      setLoading(false)
     }
-  };
+  }
 
   const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
     if (!email) {
-      setError('Please enter your email address');
-      return;
+      setError("Please enter your email address")
+      return
     }
 
-    setError(null);
-    setLoading(true);
+    setError(null)
+    setLoading(true)
 
     try {
-      await resetPassword(email);
-      setSuccess('Password reset email sent! Check your inbox.');
-      setShowForgotPassword(false);
+      await resetPassword(email)
+      setSuccess("Password reset email sent! Check your inbox.")
+      setShowForgotPassword(false)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : "An error occurred")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   if (showForgotPassword) {
     return (
@@ -83,14 +84,18 @@ export const SignIn = () => {
             Reset your password
           </h2>
           <p className="mt-2 text-center text-gray-600 text-sm">
-            Enter your email address and we'll send you a link to reset your password.
+            Enter your email address and we'll send you a link to reset your
+            password.
           </p>
         </div>
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
           <form className="space-y-6" onSubmit={handleForgotPassword}>
             <div>
-              <label htmlFor="email" className="block font-medium text-sm leading-6">
+              <label
+                htmlFor="email"
+                className="block font-medium text-sm leading-6"
+              >
                 Email address
               </label>
               <div className="mt-2">
@@ -126,7 +131,7 @@ export const SignIn = () => {
                 disabled={loading}
                 className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 font-semibold text-sm text-white leading-6 shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 disabled:opacity-50"
               >
-                {loading ? 'Sending...' : 'Send reset email'}
+                {loading ? "Sending..." : "Send reset email"}
               </button>
             </div>
           </form>
@@ -141,7 +146,7 @@ export const SignIn = () => {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -205,7 +210,9 @@ export const SignIn = () => {
               <div className="w-full border-gray-300 border-t" />
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="bg-white px-2 text-gray-500">Or continue with email</span>
+              <span className="bg-white px-2 text-gray-500">
+                Or continue with email
+              </span>
             </div>
           </div>
         </div>
@@ -213,7 +220,10 @@ export const SignIn = () => {
         {/* Email/Password Form */}
         <form className="mt-6 space-y-6" onSubmit={handleSubmit}>
           <div>
-            <label htmlFor="email" className="block font-medium text-sm leading-6">
+            <label
+              htmlFor="email"
+              className="block font-medium text-sm leading-6"
+            >
               Email address
             </label>
             <div className="mt-2">
@@ -233,7 +243,10 @@ export const SignIn = () => {
 
           <div>
             <div className="flex items-center justify-between">
-              <label htmlFor="password" className="block font-medium text-sm leading-6">
+              <label
+                htmlFor="password"
+                className="block font-medium text-sm leading-6"
+              >
                 Password
               </label>
               <button
@@ -263,8 +276,16 @@ export const SignIn = () => {
             <div className="rounded-md bg-red-50 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
+                  <svg
+                    className="h-5 w-5 text-red-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
                 <div className="ml-3">
@@ -278,8 +299,16 @@ export const SignIn = () => {
             <div className="rounded-md bg-green-50 p-4">
               <div className="flex">
                 <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.236 4.53L7.53 10.23a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
+                  <svg
+                    className="h-5 w-5 text-green-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.236 4.53L7.53 10.23a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 </div>
                 <div className="ml-3">
@@ -297,21 +326,36 @@ export const SignIn = () => {
             >
               {loading ? (
                 <div className="flex items-center">
-                  <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  <svg
+                    className="mr-2 h-4 w-4 animate-spin"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
                   </svg>
                   Signing in...
                 </div>
               ) : (
-                'Sign in'
+                "Sign in"
               )}
             </button>
           </div>
         </form>
 
         <p className="mt-10 text-center text-gray-500 text-sm">
-          Don't have an account?{' '}
+          Don't have an account?{" "}
           <a
             href="/sign-up"
             className="font-semibold text-indigo-600 leading-6 hover:text-indigo-500"
@@ -321,5 +365,5 @@ export const SignIn = () => {
         </p>
       </div>
     </div>
-  );
-};
+  )
+}

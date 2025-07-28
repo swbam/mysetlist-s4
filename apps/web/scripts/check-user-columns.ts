@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
-import { sql } from 'drizzle-orm';
-import { db } from './db-client';
+import { sql } from "drizzle-orm"
+import { db } from "./db-client"
 
 async function check() {
   try {
@@ -10,10 +10,10 @@ async function check() {
       FROM information_schema.columns 
       WHERE table_name = 'users' 
       AND table_schema = 'public'
-    `);
+    `)
     if (result && Array.isArray(result)) {
     }
   } catch (_error) {}
 }
 
-check();
+check()

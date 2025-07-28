@@ -1,11 +1,11 @@
-'use client';
+"use client"
 
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Checkbox } from '@repo/design-system/components/ui/checkbox';
+} from "@repo/design-system/components/ui/alert"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Checkbox } from "@repo/design-system/components/ui/checkbox"
 import {
   Dialog,
   DialogContent,
@@ -14,9 +14,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@repo/design-system/components/ui/dialog';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
+} from "@repo/design-system/components/ui/dialog"
+import { Input } from "@repo/design-system/components/ui/input"
+import { Label } from "@repo/design-system/components/ui/label"
 import {
   AlertTriangle,
   CheckCircle2,
@@ -24,82 +24,82 @@ import {
   EyeOff,
   Loader2,
   Trash2,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { useAuth } from '../../providers/auth-provider';
+} from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { useAuth } from "../../providers/auth-provider"
 
 export function DeleteAccountDialog() {
-  const router = useRouter();
-  const { user: _user, signOut } = useAuth();
-  const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter()
+  const { user: _user, signOut } = useAuth()
+  const [isOpen, setIsOpen] = useState(false)
   const [step, setStep] = useState<
-    'confirm' | 'verify' | 'deleting' | 'success'
-  >('confirm');
-  const [password, setPassword] = useState('');
-  const [confirmationText, setConfirmationText] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [confirmDeletion, setConfirmDeletion] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+    "confirm" | "verify" | "deleting" | "success"
+  >("confirm")
+  const [password, setPassword] = useState("")
+  const [confirmationText, setConfirmationText] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [confirmDeletion, setConfirmDeletion] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleDeleteAccount = async () => {
-    if (!password || confirmationText !== 'DELETE' || !confirmDeletion) {
-      setError('Please complete all required fields');
-      return;
+    if (!password || confirmationText !== "DELETE" || !confirmDeletion) {
+      setError("Please complete all required fields")
+      return
     }
 
-    setStep('deleting');
-    setError(null);
+    setStep("deleting")
+    setError(null)
 
     try {
-      const response = await fetch('/api/user/delete', {
-        method: 'DELETE',
+      const response = await fetch("/api/user/delete", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           password,
           confirmationText,
         }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete account');
+        throw new Error(data.error || "Failed to delete account")
       }
 
-      setStep('success');
+      setStep("success")
 
       // Sign out and redirect after a short delay
       setTimeout(async () => {
-        await signOut();
-        router.push('/');
-      }, 3000);
+        await signOut()
+        router.push("/")
+      }, 3000)
     } catch (err: any) {
-      setError(err.message || 'An error occurred while deleting your account');
-      setStep('verify');
+      setError(err.message || "An error occurred while deleting your account")
+      setStep("verify")
     }
-  };
+  }
 
   const resetDialog = () => {
-    setStep('confirm');
-    setPassword('');
-    setConfirmationText('');
-    setConfirmDeletion(false);
-    setError(null);
-    setShowPassword(false);
-  };
+    setStep("confirm")
+    setPassword("")
+    setConfirmationText("")
+    setConfirmDeletion(false)
+    setError(null)
+    setShowPassword(false)
+  }
 
   const handleClose = () => {
-    if (step !== 'deleting') {
-      setIsOpen(false);
-      resetDialog();
+    if (step !== "deleting") {
+      setIsOpen(false)
+      resetDialog()
     }
-  };
+  }
 
   const isVerifyStepValid =
-    password && confirmationText === 'DELETE' && confirmDeletion;
+    password && confirmationText === "DELETE" && confirmDeletion
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -115,7 +115,7 @@ export function DeleteAccountDialog() {
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-md">
-        {step === 'confirm' && (
+        {step === "confirm" && (
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-destructive">
@@ -163,7 +163,7 @@ export function DeleteAccountDialog() {
               </Button>
               <Button
                 variant="destructive"
-                onClick={() => setStep('verify')}
+                onClick={() => setStep("verify")}
                 className="w-full sm:w-auto"
               >
                 Continue with Deletion
@@ -172,7 +172,7 @@ export function DeleteAccountDialog() {
           </>
         )}
 
-        {step === 'verify' && (
+        {step === "verify" && (
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-destructive">
@@ -196,7 +196,7 @@ export function DeleteAccountDialog() {
                 <div className="relative">
                   <Input
                     id="delete-password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your current password"
@@ -234,7 +234,7 @@ export function DeleteAccountDialog() {
                 <Checkbox
                   id="confirm-deletion"
                   checked={confirmDeletion}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     setConfirmDeletion(checked === true)
                   }
                 />
@@ -248,7 +248,7 @@ export function DeleteAccountDialog() {
             <DialogFooter className="flex-col gap-2 sm:flex-row">
               <Button
                 variant="outline"
-                onClick={() => setStep('confirm')}
+                onClick={() => setStep("confirm")}
                 className="w-full sm:w-auto"
               >
                 Back
@@ -265,7 +265,7 @@ export function DeleteAccountDialog() {
           </>
         )}
 
-        {step === 'deleting' && (
+        {step === "deleting" && (
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -287,7 +287,7 @@ export function DeleteAccountDialog() {
           </>
         )}
 
-        {step === 'success' && (
+        {step === "success" && (
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-green-600">
@@ -313,5 +313,5 @@ export function DeleteAccountDialog() {
         )}
       </DialogContent>
     </Dialog>
-  );
+  )
 }

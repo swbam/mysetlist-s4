@@ -1,30 +1,30 @@
-'use client';
+"use client"
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react"
 
 export interface RecentActivityItem {
-  id: string;
-  type: 'vote' | 'attendance' | 'comment' | 'follow';
+  id: string
+  type: "vote" | "attendance" | "comment" | "follow"
   user: {
-    name: string;
-    avatar?: string;
-  };
+    name: string
+    avatar?: string
+  }
   target: {
-    type: 'show' | 'artist' | 'venue';
-    name: string;
-    slug: string;
-  };
-  timestamp: string;
+    type: "show" | "artist" | "venue"
+    name: string
+    slug: string
+  }
+  timestamp: string
   metadata?: {
-    voteCount?: number;
-    comment?: string;
-  };
+    voteCount?: number
+    comment?: string
+  }
 }
 
 export interface UseRecentActivityOptions {
-  limit?: number;
-  autoRefresh?: boolean;
-  refreshInterval?: number;
+  limit?: number
+  autoRefresh?: boolean
+  refreshInterval?: number
 }
 
 export function useRecentActivity(options: UseRecentActivityOptions = {}) {
@@ -32,25 +32,25 @@ export function useRecentActivity(options: UseRecentActivityOptions = {}) {
     limit = 20,
     autoRefresh = true,
     refreshInterval = 30 * 1000, // 30 seconds
-  } = options;
+  } = options
 
-  const [activities, setActivities] = useState<RecentActivityItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [activities, setActivities] = useState<RecentActivityItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchActivities = useCallback(async () => {
     try {
-      setError(null);
+      setError(null)
       const params = new URLSearchParams({
         limit: limit.toString(),
-      });
+      })
 
-      const response = await fetch(`/api/activity-feed?${params}`);
+      const response = await fetch(`/api/activity-feed?${params}`)
       if (!response.ok) {
-        throw new Error('Failed to fetch recent activity');
+        throw new Error("Failed to fetch recent activity")
       }
 
-      const data = await response.json();
+      const data = await response.json()
 
       // Transform the data to match our interface
       const transformedActivities: RecentActivityItem[] =
@@ -58,7 +58,7 @@ export function useRecentActivity(options: UseRecentActivityOptions = {}) {
           id: activity.id,
           type: activity.type,
           user: {
-            name: activity.userName || 'Anonymous',
+            name: activity.userName || "Anonymous",
             avatar: activity.userAvatar,
           },
           target: {
@@ -71,35 +71,35 @@ export function useRecentActivity(options: UseRecentActivityOptions = {}) {
             voteCount: activity.voteCount,
             comment: activity.comment,
           },
-        })) || [];
+        })) || []
 
-      setActivities(transformedActivities);
+      setActivities(transformedActivities)
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : 'Failed to load recent activity'
-      );
+        err instanceof Error ? err.message : "Failed to load recent activity"
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, [limit]);
+  }, [limit])
 
   useEffect(() => {
-    fetchActivities();
-  }, [fetchActivities]);
+    fetchActivities()
+  }, [fetchActivities])
 
   useEffect(() => {
     if (!autoRefresh) {
-      return;
+      return
     }
 
-    const interval = setInterval(fetchActivities, refreshInterval);
-    return () => clearInterval(interval);
-  }, [autoRefresh, refreshInterval, fetchActivities]);
+    const interval = setInterval(fetchActivities, refreshInterval)
+    return () => clearInterval(interval)
+  }, [autoRefresh, refreshInterval, fetchActivities])
 
   return {
     activities,
     loading,
     error,
     refetch: fetchActivities,
-  };
+  }
 }

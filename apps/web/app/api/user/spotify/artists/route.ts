@@ -1,7 +1,7 @@
-import { getUserFromRequest } from '@repo/auth/server';
-import { artists, db } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { getUserFromRequest } from "@repo/auth/server"
+import { artists, db } from "@repo/database"
+import { eq } from "drizzle-orm"
+import { type NextRequest, NextResponse } from "next/server"
 
 // Mock function to simulate Spotify API call
 // In production, this would use the actual Spotify Web API
@@ -14,51 +14,51 @@ async function getSpotifyFollowedArtists(_accessToken: string) {
     artists: {
       items: [
         {
-          id: 'spotify_1',
-          name: 'Taylor Swift',
-          images: [{ url: 'https://i.scdn.co/image/taylor-swift' }],
-          genres: ['pop', 'country'],
+          id: "spotify_1",
+          name: "Taylor Swift",
+          images: [{ url: "https://i.scdn.co/image/taylor-swift" }],
+          genres: ["pop", "country"],
         },
         {
-          id: 'spotify_2',
-          name: 'The Weeknd',
-          images: [{ url: 'https://i.scdn.co/image/the-weeknd' }],
-          genres: ['r&b', 'pop'],
+          id: "spotify_2",
+          name: "The Weeknd",
+          images: [{ url: "https://i.scdn.co/image/the-weeknd" }],
+          genres: ["r&b", "pop"],
         },
         {
-          id: 'spotify_3',
-          name: 'Billie Eilish',
-          images: [{ url: 'https://i.scdn.co/image/billie-eilish' }],
-          genres: ['pop', 'alternative'],
+          id: "spotify_3",
+          name: "Billie Eilish",
+          images: [{ url: "https://i.scdn.co/image/billie-eilish" }],
+          genres: ["pop", "alternative"],
         },
       ],
     },
-  };
+  }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request);
+    const user = await getUserFromRequest(request)
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     // Check if user has Spotify connected
-    if (user.app_metadata?.provider !== 'spotify') {
+    if (user.app_metadata?.provider !== "spotify") {
       return NextResponse.json(
-        { error: 'Spotify account not connected' },
+        { error: "Spotify account not connected" },
         { status: 400 }
-      );
+      )
     }
 
     // Get Spotify access token (would come from OAuth in production)
-    const accessToken = user.app_metadata?.['provider_token'] || 'mock_token';
+    const accessToken = user.app_metadata?.["provider_token"] || "mock_token"
 
     // Fetch user's followed artists from Spotify
-    const spotifyData = await getSpotifyFollowedArtists(accessToken);
+    const spotifyData = await getSpotifyFollowedArtists(accessToken)
 
-    let foundCount = 0;
-    const foundArtists: any[] = [];
+    let foundCount = 0
+    const foundArtists: any[] = []
 
     // Process each Spotify artist
     for (const spotifyArtist of spotifyData.artists.items) {
@@ -67,15 +67,15 @@ export async function POST(request: NextRequest) {
         .select()
         .from(artists)
         .where(eq(artists.name, spotifyArtist.name))
-        .limit(1);
+        .limit(1)
 
       if (existingArtist) {
         foundArtists.push({
           id: existingArtist.id,
           name: existingArtist.name,
           slug: existingArtist.slug,
-        });
-        foundCount++;
+        })
+        foundCount++
       }
     }
 
@@ -85,33 +85,33 @@ export async function POST(request: NextRequest) {
       totalSpotifyArtists: spotifyData.artists.items.length,
       foundArtists,
       message: `Found ${foundCount} matching artists in database (following functionality unavailable)`,
-    });
+    })
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to sync Spotify artists' },
+      { error: "Failed to sync Spotify artists" },
       { status: 500 }
-    );
+    )
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getUserFromRequest(request);
+    const user = await getUserFromRequest(request)
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     // Check Spotify connection status
-    const isSpotifyConnected = user.app_metadata?.provider === 'spotify';
+    const isSpotifyConnected = user.app_metadata?.provider === "spotify"
 
     return NextResponse.json({
       isSpotifyConnected,
       spotifyEmail: isSpotifyConnected ? user.email : null,
-    });
+    })
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to check Spotify status' },
+      { error: "Failed to check Spotify status" },
       { status: 500 }
-    );
+    )
   }
 }

@@ -1,43 +1,43 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { Calendar, Heart, TrendingUp, Music } from 'lucide-react';
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Card, CardContent } from "@repo/design-system/components/ui/card"
+import { Skeleton } from "@repo/design-system/components/ui/skeleton"
+import { Calendar, Heart, Music, TrendingUp } from "lucide-react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
 
 interface Artist {
-  id: string;
-  name: string;
-  slug: string;
-  genres: string[] | null;
-  imageUrl: string | null;
-  followers: number | null;
-  upcomingShows: number;
-  trendingScore: number;
+  id: string
+  name: string
+  slug: string
+  genres: string[] | null
+  imageUrl: string | null
+  followers: number | null
+  upcomingShows: number
+  trendingScore: number
 }
 
 export const ArtistGrid = () => {
-  const [artists, setArtists] = useState<Artist[]>([]);
-  const [followedArtists, setFollowedArtists] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [artists, setArtists] = useState<Artist[]>([])
+  const [followedArtists, setFollowedArtists] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchArtists();
-  }, []);
+    fetchArtists()
+  }, [])
 
   const fetchArtists = async () => {
     try {
-      const response = await fetch('/api/artists?limit=20');
+      const response = await fetch("/api/artists?limit=20")
       if (!response.ok) {
-        throw new Error('Failed to fetch artists');
+        throw new Error("Failed to fetch artists")
       }
 
-      const data = await response.json();
-      
+      const data = await response.json()
+
       // Map the API response to our component's interface
       const mappedArtists: Artist[] = data.artists.map((artist: any) => ({
         id: artist.id,
@@ -48,34 +48,34 @@ export const ArtistGrid = () => {
         followers: artist.followers,
         upcomingShows: artist.upcomingShows || artist.upcoming_shows || 0,
         trendingScore: artist.trendingScore || artist.trending_score || 0,
-      }));
+      }))
 
-      setArtists(mappedArtists);
+      setArtists(mappedArtists)
     } catch (err) {
-      console.error('Error fetching artists:', err);
-      setError('Failed to load artists. Please try again later.');
+      console.error("Error fetching artists:", err)
+      setError("Failed to load artists. Please try again later.")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const toggleFollow = (artistId: string) => {
     setFollowedArtists((prev) =>
       prev.includes(artistId)
         ? prev.filter((id) => id !== artistId)
         : [...prev, artistId]
-    );
-  };
+    )
+  }
 
   const formatFollowers = (count: number) => {
     if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M`;
+      return `${(count / 1000000).toFixed(1)}M`
     }
     if (count >= 1000) {
-      return `${(count / 1000).toFixed(0)}K`;
+      return `${(count / 1000).toFixed(0)}K`
     }
-    return count.toString();
-  };
+    return count.toString()
+  }
 
   // Loading skeleton
   if (loading) {
@@ -93,7 +93,7 @@ export const ArtistGrid = () => {
           </Card>
         ))}
       </div>
-    );
+    )
   }
 
   // Error state
@@ -105,7 +105,7 @@ export const ArtistGrid = () => {
           Try Again
         </Button>
       </div>
-    );
+    )
   }
 
   // Empty state
@@ -115,7 +115,7 @@ export const ArtistGrid = () => {
         <Music className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
         <p className="text-muted-foreground">No artists found.</p>
       </div>
-    );
+    )
   }
 
   // Main content
@@ -138,9 +138,9 @@ export const ArtistGrid = () => {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="font-bold text-6xl text-primary/20">
                     {artist.name
-                      .split(' ')
+                      .split(" ")
                       .map((word) => word[0])
-                      .join('')}
+                      .join("")}
                   </div>
                 </div>
               )}
@@ -176,20 +176,20 @@ export const ArtistGrid = () => {
 
             <Button
               variant={
-                followedArtists.includes(artist.id) ? 'default' : 'outline'
+                followedArtists.includes(artist.id) ? "default" : "outline"
               }
               size="sm"
               className="w-full gap-2"
               onClick={() => toggleFollow(artist.id)}
             >
               <Heart
-                className={`h-4 w-4 ${followedArtists.includes(artist.id) ? 'fill-current' : ''}`}
+                className={`h-4 w-4 ${followedArtists.includes(artist.id) ? "fill-current" : ""}`}
               />
-              {followedArtists.includes(artist.id) ? 'Following' : 'Follow'}
+              {followedArtists.includes(artist.id) ? "Following" : "Follow"}
             </Button>
           </CardContent>
         </Card>
       ))}
     </div>
-  );
-};
+  )
+}

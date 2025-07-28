@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 // Component disabled - react-window not installed
 
@@ -30,9 +30,9 @@ interface VirtualizedVoteListProps {
 */
 
 // COMPONENT DISABLED - react-window not installed
-export const VirtualizedVoteList = () => null;
-export const OptimizedVoteList = () => null;
-export type VirtualizedVoteListRef = {};
+export const VirtualizedVoteList = () => null
+export const OptimizedVoteList = () => null
+export type VirtualizedVoteListRef = {}
 
 /*
 // Memoized row component to prevent unnecessary re-renders

@@ -1,26 +1,26 @@
-'use client';
+"use client"
 
-import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from "@hookform/resolvers/zod"
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
+} from "@repo/design-system/components/ui/alert"
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/avatar"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
-import { Textarea } from '@repo/design-system/components/ui/textarea';
+} from "@repo/design-system/components/ui/card"
+import { Input } from "@repo/design-system/components/ui/input"
+import { Label } from "@repo/design-system/components/ui/label"
+import { Textarea } from "@repo/design-system/components/ui/textarea"
 import {
   ArrowLeft,
   CheckCircle,
@@ -30,56 +30,56 @@ import {
   Upload,
   User,
   X,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { ProtectedRoute } from '../../components/protected-route';
-import { useAuth } from '../../providers/auth-provider';
+} from "lucide-react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { ProtectedRoute } from "../../components/protected-route"
+import { useAuth } from "../../providers/auth-provider"
 
 const profileSchema = z.object({
   displayName: z
     .string()
-    .min(2, 'Display name must be at least 2 characters')
-    .max(50, 'Display name must be less than 50 characters'),
-  bio: z.string().max(500, 'Bio must be less than 500 characters').optional(),
+    .min(2, "Display name must be at least 2 characters")
+    .max(50, "Display name must be less than 50 characters"),
+  bio: z.string().max(500, "Bio must be less than 500 characters").optional(),
   location: z
     .string()
-    .max(100, 'Location must be less than 100 characters')
+    .max(100, "Location must be less than 100 characters")
     .optional(),
   website: z
     .string()
-    .url('Please enter a valid URL')
+    .url("Please enter a valid URL")
     .optional()
-    .or(z.literal('')),
+    .or(z.literal("")),
   spotifyUsername: z
     .string()
-    .max(50, 'Spotify username must be less than 50 characters')
+    .max(50, "Spotify username must be less than 50 characters")
     .optional(),
-});
+})
 
-type ProfileForm = z.infer<typeof profileSchema>;
+type ProfileForm = z.infer<typeof profileSchema>
 
 interface ProfileData {
-  displayName: string;
-  bio?: string;
-  location?: string;
-  website?: string;
-  spotifyUsername?: string;
-  avatarUrl?: string;
+  displayName: string
+  bio?: string
+  location?: string
+  website?: string
+  spotifyUsername?: string
+  avatarUrl?: string
 }
 
 export default function EditProfilePage() {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const router = useRouter()
+  const { user } = useAuth()
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
 
   const {
     register,
@@ -89,114 +89,114 @@ export default function EditProfilePage() {
     formState: { errors, isDirty },
   } = useForm<ProfileForm>({
     resolver: zodResolver(profileSchema),
-  });
+  })
 
-  const bioValue = watch('bio', '');
+  const bioValue = watch("bio", "")
 
   useEffect(() => {
     const fetchProfile = async () => {
       if (!user?.id) {
-        return;
+        return
       }
 
       try {
-        const response = await fetch(`/api/user/profile/${user.id}`);
+        const response = await fetch(`/api/user/profile/${user.id}`)
         if (response.ok) {
-          const data = await response.json();
-          const profile = data.profile as ProfileData;
+          const data = await response.json()
+          const profile = data.profile as ProfileData
 
           setValue(
-            'displayName',
-            profile.displayName || user.email?.split('@')[0] || ''
-          );
-          setValue('bio', profile.bio || '');
-          setValue('location', profile.location || '');
-          setValue('website', profile.website || '');
-          setValue('spotifyUsername', profile.spotifyUsername || '');
-          setAvatarPreview(profile.avatarUrl || null);
+            "displayName",
+            profile.displayName || user.email?.split("@")[0] || ""
+          )
+          setValue("bio", profile.bio || "")
+          setValue("location", profile.location || "")
+          setValue("website", profile.website || "")
+          setValue("spotifyUsername", profile.spotifyUsername || "")
+          setAvatarPreview(profile.avatarUrl || null)
         }
       } catch (_error) {
-        setError('Failed to load profile data');
+        setError("Failed to load profile data")
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchProfile();
-  }, [user?.id, setValue]);
+    fetchProfile()
+  }, [user?.id, setValue])
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const file = e.target.files?.[0]
     if (file) {
       // Validate file size (5MB max)
       if (file.size > 5 * 1024 * 1024) {
-        setError('Image must be less than 5MB');
-        return;
+        setError("Image must be less than 5MB")
+        return
       }
 
       // Validate file type
-      if (!file.type.startsWith('image/')) {
-        setError('Please select an image file');
-        return;
+      if (!file.type.startsWith("image/")) {
+        setError("Please select an image file")
+        return
       }
 
-      setAvatarFile(file);
+      setAvatarFile(file)
 
       // Create preview
-      const reader = new FileReader();
+      const reader = new FileReader()
       reader.onload = (e) => {
-        setAvatarPreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+        setAvatarPreview(e.target?.result as string)
+      }
+      reader.readAsDataURL(file)
     }
-  };
+  }
 
   const removeAvatar = () => {
-    setAvatarFile(null);
-    setAvatarPreview(null);
-  };
+    setAvatarFile(null)
+    setAvatarPreview(null)
+  }
 
   const onSubmit = async (data: ProfileForm) => {
-    setSaving(true);
-    setError(null);
+    setSaving(true)
+    setError(null)
 
     try {
-      const formData = new FormData();
+      const formData = new FormData()
 
       // Add profile data
       Object.entries(data).forEach(([key, value]) => {
         if (value) {
-          formData.append(key, value);
+          formData.append(key, value)
         }
-      });
+      })
 
       // Add avatar if selected
       if (avatarFile) {
-        formData.append('avatar', avatarFile);
+        formData.append("avatar", avatarFile)
       }
 
-      const response = await fetch('/api/user/profile', {
-        method: 'PUT',
+      const response = await fetch("/api/user/profile", {
+        method: "PUT",
         body: formData,
-      });
+      })
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update profile');
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to update profile")
       }
 
-      setSuccess(true);
+      setSuccess(true)
 
       // Redirect after a short delay
       setTimeout(() => {
-        router.push('/profile');
-      }, 2000);
+        router.push("/profile")
+      }, 2000)
     } catch (err: any) {
-      setError(err.message || 'Failed to update profile');
+      setError(err.message || "Failed to update profile")
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -208,7 +208,7 @@ export default function EditProfilePage() {
           </div>
         </div>
       </ProtectedRoute>
-    );
+    )
   }
 
   if (success) {
@@ -234,7 +234,7 @@ export default function EditProfilePage() {
           </Card>
         </div>
       </ProtectedRoute>
-    );
+    )
   }
 
   return (
@@ -331,7 +331,7 @@ export default function EditProfilePage() {
                   <Label htmlFor="displayName">Display Name *</Label>
                   <Input
                     id="displayName"
-                    {...register('displayName')}
+                    {...register("displayName")}
                     placeholder="How you'd like to be known"
                   />
                   {errors.displayName && (
@@ -346,14 +346,14 @@ export default function EditProfilePage() {
                   <Label htmlFor="bio">Bio</Label>
                   <Textarea
                     id="bio"
-                    {...register('bio')}
+                    {...register("bio")}
                     placeholder="Tell us about yourself, your music taste, favorite artists..."
                     rows={4}
                     className="resize-none"
                   />
                   <div className="flex justify-between text-muted-foreground text-xs">
                     <span>Optional bio to share with other music fans</span>
-                    <span>{(bioValue || '').length}/500</span>
+                    <span>{(bioValue || "").length}/500</span>
                   </div>
                   {errors.bio && (
                     <p className="text-destructive text-sm">
@@ -367,7 +367,7 @@ export default function EditProfilePage() {
                   <Label htmlFor="location">Location</Label>
                   <Input
                     id="location"
-                    {...register('location')}
+                    {...register("location")}
                     placeholder="City, State/Country"
                   />
                   {errors.location && (
@@ -383,7 +383,7 @@ export default function EditProfilePage() {
                   <Input
                     id="website"
                     type="url"
-                    {...register('website')}
+                    {...register("website")}
                     placeholder="https://your-website.com"
                   />
                   {errors.website && (
@@ -404,7 +404,7 @@ export default function EditProfilePage() {
                   </Label>
                   <Input
                     id="spotifyUsername"
-                    {...register('spotifyUsername')}
+                    {...register("spotifyUsername")}
                     placeholder="your-spotify-username"
                   />
                   <p className="text-muted-foreground text-xs">
@@ -452,5 +452,5 @@ export default function EditProfilePage() {
         </div>
       </div>
     </ProtectedRoute>
-  );
+  )
 }

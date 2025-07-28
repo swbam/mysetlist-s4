@@ -1,6 +1,6 @@
-import { eq, sql } from 'drizzle-orm';
-import { db } from '../client';
-import { emailPreferences, users } from '../schema';
+import { eq, sql } from "drizzle-orm"
+import { db } from "../client"
+import { emailPreferences, users } from "../schema"
 
 export async function getUserById(userId: string) {
   const result = await db
@@ -15,9 +15,9 @@ export async function getUserById(userId: string) {
     })
     .from(users)
     .where(eq(users.id, userId))
-    .limit(1);
+    .limit(1)
 
-  return result[0] || null;
+  return result[0] || null
 }
 
 export async function getUserByEmail(email: string) {
@@ -25,14 +25,14 @@ export async function getUserByEmail(email: string) {
     .select()
     .from(users)
     .where(eq(users.email, email))
-    .limit(1);
+    .limit(1)
 
-  return result[0] || null;
+  return result[0] || null
 }
 
 export async function createUser(userData: {
-  id: string;
-  email: string;
+  id: string
+  email: string
 }) {
   const [user] = await db
     .insert(users)
@@ -40,7 +40,7 @@ export async function createUser(userData: {
       id: userData.id,
       email: userData.email,
     })
-    .returning();
+    .returning()
 
   // Create default email preferences
   if (user) {
@@ -50,25 +50,25 @@ export async function createUser(userData: {
         userId: user.id,
         emailEnabled: true,
         showReminders: true,
-        showReminderFrequency: 'daily',
+        showReminderFrequency: "daily",
         newShowNotifications: true,
-        newShowFrequency: 'immediately',
+        newShowFrequency: "immediately",
         setlistUpdates: true,
-        setlistUpdateFrequency: 'immediately',
+        setlistUpdateFrequency: "immediately",
         weeklyDigest: true,
         marketingEmails: false,
         securityEmails: true,
       })
-      .onConflictDoNothing();
+      .onConflictDoNothing()
   }
 
-  return user;
+  return user
 }
 
 export async function updateUser(
   userId: string,
   userData: {
-    email?: string;
+    email?: string
   }
 ) {
   const [updatedUser] = await db
@@ -78,9 +78,9 @@ export async function updateUser(
       updatedAt: new Date(),
     })
     .where(eq(users.id, userId))
-    .returning();
+    .returning()
 
-  return updatedUser;
+  return updatedUser
 }
 
 export async function getUserStats(userId: string) {
@@ -94,22 +94,21 @@ export async function getUserStats(userId: string) {
     })
     .from(users)
     .where(eq(users.id, userId))
-    .limit(1);
+    .limit(1)
 
   return (
     stats[0] || {
       totalVotes: 0,
     }
-  );
+  )
 }
-
 
 export async function getUserPreferences(userId: string) {
   const prefs = await db
     .select()
     .from(emailPreferences)
     .where(eq(emailPreferences.userId, userId))
-    .limit(1);
+    .limit(1)
 
   if (prefs.length === 0) {
     // Create default preferences if they don't exist
@@ -119,21 +118,21 @@ export async function getUserPreferences(userId: string) {
         userId,
         emailEnabled: true,
         showReminders: true,
-        showReminderFrequency: 'daily',
+        showReminderFrequency: "daily",
         newShowNotifications: true,
-        newShowFrequency: 'immediately',
+        newShowFrequency: "immediately",
         setlistUpdates: true,
-        setlistUpdateFrequency: 'immediately',
+        setlistUpdateFrequency: "immediately",
         weeklyDigest: true,
         marketingEmails: false,
         securityEmails: true,
       })
-      .returning();
+      .returning()
 
-    return newPrefs;
+    return newPrefs
   }
 
-  return prefs[0];
+  return prefs[0]
 }
 
 export async function updateUserPreferences(
@@ -147,7 +146,7 @@ export async function updateUserPreferences(
       updatedAt: new Date(),
     })
     .where(eq(emailPreferences.userId, userId))
-    .returning();
+    .returning()
 
-  return updated;
+  return updated
 }

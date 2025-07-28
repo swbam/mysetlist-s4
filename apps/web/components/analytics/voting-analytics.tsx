@@ -1,63 +1,82 @@
-'use client';
+"use client"
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import { Vote, TrendingUp, Users, Calendar, Trophy, Target, Activity } from 'lucide-react';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs"
+import {
+  Activity,
+  Calendar,
+  Target,
+  TrendingUp,
+  Trophy,
+  Users,
+  Vote,
+} from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface VotingMetrics {
-  totalVotes: number;
-  uniqueVoters: number;
-  avgVotesPerUser: number;
-  votingParticipation: number;
+  totalVotes: number
+  uniqueVoters: number
+  avgVotesPerUser: number
+  votingParticipation: number
   topVotedSongs: Array<{
-    title: string;
-    artist: string;
-    votes: number;
-    showName: string;
-    venue: string;
-  }>;
+    title: string
+    artist: string
+    votes: number
+    showName: string
+    venue: string
+  }>
   mostActiveVoters: Array<{
-    name: string;
-    votes: number;
-    favoriteArtist: string;
-  }>;
+    name: string
+    votes: number
+    favoriteArtist: string
+  }>
   votingTrends: Array<{
-    period: string;
-    votes: number;
-    uniqueVoters: number;
-  }>;
+    period: string
+    votes: number
+    uniqueVoters: number
+  }>
   votingByTime: Array<{
-    hour: number;
-    votes: number;
-  }>;
+    hour: number
+    votes: number
+  }>
   showVotingStats: Array<{
-    showName: string;
-    artist: string;
-    venue: string;
-    totalVotes: number;
-    uniqueVoters: number;
-    avgVotesPerSong: number;
-    date: string;
-  }>;
+    showName: string
+    artist: string
+    venue: string
+    totalVotes: number
+    uniqueVoters: number
+    avgVotesPerSong: number
+    date: string
+  }>
 }
 
 export function VotingAnalytics() {
-  const [metrics, setMetrics] = useState<VotingMetrics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [period, setPeriod] = useState<'day' | 'week' | 'month'>('week');
+  const [metrics, setMetrics] = useState<VotingMetrics | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [period, setPeriod] = useState<"day" | "week" | "month">("week")
 
   useEffect(() => {
-    fetchVotingMetrics();
-  }, [period]);
+    fetchVotingMetrics()
+  }, [period])
 
   const fetchVotingMetrics = async () => {
     try {
-      setLoading(true);
-      
+      setLoading(true)
+
       // Mock data - in production this would fetch from /api/analytics?metric=voting
       const mockData: VotingMetrics = {
         totalVotes: 12547,
@@ -70,43 +89,47 @@ export function VotingAnalytics() {
             artist: "Taylor Swift",
             votes: 1250,
             showName: "Eras Tour",
-            venue: "Madison Square Garden"
+            venue: "Madison Square Garden",
           },
           {
             title: "Blinding Lights",
             artist: "The Weeknd",
             votes: 1180,
             showName: "After Hours Til Dawn",
-            venue: "Staples Center"
+            venue: "Staples Center",
           },
           {
             title: "Bad Guy",
             artist: "Billie Eilish",
             votes: 1090,
             showName: "Happier Than Ever Tour",
-            venue: "Red Rocks Amphitheatre"
+            venue: "Red Rocks Amphitheatre",
           },
           {
             title: "Circles",
             artist: "Post Malone",
             votes: 980,
             showName: "Twelve Carat Tour",
-            venue: "The Forum"
+            venue: "The Forum",
           },
           {
             title: "As It Was",
             artist: "Harry Styles",
             votes: 950,
             showName: "Love On Tour",
-            venue: "Wembley Stadium"
-          }
+            venue: "Wembley Stadium",
+          },
         ],
         mostActiveVoters: [
           { name: "MusicFan2024", votes: 847, favoriteArtist: "Taylor Swift" },
           { name: "ConcertGoer", votes: 692, favoriteArtist: "The Weeknd" },
-          { name: "SetlistExpert", votes: 580, favoriteArtist: "Billie Eilish" },
+          {
+            name: "SetlistExpert",
+            votes: 580,
+            favoriteArtist: "Billie Eilish",
+          },
           { name: "VotingMachine", votes: 534, favoriteArtist: "Post Malone" },
-          { name: "MelodyMaster", votes: 489, favoriteArtist: "Harry Styles" }
+          { name: "MelodyMaster", votes: 489, favoriteArtist: "Harry Styles" },
         ],
         votingTrends: generateTrendData(period),
         votingByTime: generateHourlyData(),
@@ -118,7 +141,7 @@ export function VotingAnalytics() {
             totalVotes: 3420,
             uniqueVoters: 890,
             avgVotesPerSong: 142.5,
-            date: "2024-01-15"
+            date: "2024-01-15",
           },
           {
             showName: "After Hours Til Dawn",
@@ -127,7 +150,7 @@ export function VotingAnalytics() {
             totalVotes: 2890,
             uniqueVoters: 720,
             avgVotesPerSong: 120.4,
-            date: "2024-01-20"
+            date: "2024-01-20",
           },
           {
             showName: "Happier Than Ever Tour",
@@ -136,38 +159,40 @@ export function VotingAnalytics() {
             totalVotes: 2560,
             uniqueVoters: 650,
             avgVotesPerSong: 109.8,
-            date: "2024-01-25"
-          }
-        ]
-      };
-      
-      setMetrics(mockData);
+            date: "2024-01-25",
+          },
+        ],
+      }
+
+      setMetrics(mockData)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load voting analytics');
+      setError(
+        err instanceof Error ? err.message : "Failed to load voting analytics"
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const generateTrendData = (periodType: string) => {
-    const days = periodType === 'month' ? 30 : periodType === 'week' ? 7 : 1;
+    const days = periodType === "month" ? 30 : periodType === "week" ? 7 : 1
     return Array.from({ length: days }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (days - 1 - i));
+      const date = new Date()
+      date.setDate(date.getDate() - (days - 1 - i))
       return {
         period: date.toLocaleDateString(),
         votes: Math.floor(Math.random() * 500) + 200,
-        uniqueVoters: Math.floor(Math.random() * 150) + 50
-      };
-    });
-  };
+        uniqueVoters: Math.floor(Math.random() * 150) + 50,
+      }
+    })
+  }
 
   const generateHourlyData = () => {
     return Array.from({ length: 24 }, (_, hour) => ({
       hour,
-      votes: Math.floor(Math.random() * 200) + 50
-    }));
-  };
+      votes: Math.floor(Math.random() * 200) + 50,
+    }))
+  }
 
   if (loading) {
     return (
@@ -190,7 +215,7 @@ export function VotingAnalytics() {
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -205,10 +230,10 @@ export function VotingAnalytics() {
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
-  if (!metrics) return null;
+  if (!metrics) return null
 
   return (
     <div className="space-y-6">
@@ -225,23 +250,23 @@ export function VotingAnalytics() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant={period === 'day' ? 'default' : 'outline'}
+            variant={period === "day" ? "default" : "outline"}
             size="sm"
-            onClick={() => setPeriod('day')}
+            onClick={() => setPeriod("day")}
           >
             Day
           </Button>
           <Button
-            variant={period === 'week' ? 'default' : 'outline'}
+            variant={period === "week" ? "default" : "outline"}
             size="sm"
-            onClick={() => setPeriod('week')}
+            onClick={() => setPeriod("week")}
           >
             Week
           </Button>
           <Button
-            variant={period === 'month' ? 'default' : 'outline'}
+            variant={period === "month" ? "default" : "outline"}
             size="sm"
-            onClick={() => setPeriod('month')}
+            onClick={() => setPeriod("month")}
           >
             Month
           </Button>
@@ -258,7 +283,9 @@ export function VotingAnalytics() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.totalVotes.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              {metrics.totalVotes.toLocaleString()}
+            </div>
             <div className="text-sm text-muted-foreground">
               Across all shows and songs
             </div>
@@ -273,7 +300,9 @@ export function VotingAnalytics() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.uniqueVoters.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              {metrics.uniqueVoters.toLocaleString()}
+            </div>
             <div className="text-sm text-muted-foreground">
               {metrics.votingParticipation.toFixed(1)}% participation rate
             </div>
@@ -288,7 +317,9 @@ export function VotingAnalytics() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.avgVotesPerUser.toFixed(1)}</div>
+            <div className="text-2xl font-bold">
+              {metrics.avgVotesPerUser.toFixed(1)}
+            </div>
             <div className="text-sm text-muted-foreground">
               Average engagement per voter
             </div>
@@ -303,7 +334,9 @@ export function VotingAnalytics() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{metrics.votingParticipation.toFixed(1)}%</div>
+            <div className="text-2xl font-bold">
+              {metrics.votingParticipation.toFixed(1)}%
+            </div>
             <div className="text-sm text-muted-foreground">
               Of total active users
             </div>
@@ -333,7 +366,9 @@ export function VotingAnalytics() {
                   <div className="h-full w-full bg-muted/20 rounded flex items-center justify-center">
                     <div className="text-center">
                       <TrendingUp className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">Voting trends chart</p>
+                      <p className="text-sm text-muted-foreground">
+                        Voting trends chart
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -350,7 +385,9 @@ export function VotingAnalytics() {
                   <div className="h-full w-full bg-muted/20 rounded flex items-center justify-center">
                     <div className="text-center">
                       <Activity className="h-12 w-12 mx-auto mb-2 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">Hourly voting patterns</p>
+                      <p className="text-sm text-muted-foreground">
+                        Hourly voting patterns
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -373,7 +410,10 @@ export function VotingAnalytics() {
             <CardContent>
               <div className="space-y-4">
                 {metrics.topVotedSongs.map((song, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-muted/50 rounded-lg"
+                  >
                     <div className="flex items-center gap-4">
                       <Badge variant="secondary" className="text-xs">
                         #{index + 1}
@@ -389,7 +429,9 @@ export function VotingAnalytics() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold">{song.votes.toLocaleString()}</div>
+                      <div className="text-lg font-bold">
+                        {song.votes.toLocaleString()}
+                      </div>
                       <div className="text-sm text-muted-foreground">votes</div>
                     </div>
                   </div>
@@ -413,7 +455,10 @@ export function VotingAnalytics() {
             <CardContent>
               <div className="space-y-4">
                 {metrics.mostActiveVoters.map((voter, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-muted/50 rounded-lg"
+                  >
                     <div className="flex items-center gap-4">
                       <Badge variant="secondary" className="text-xs">
                         #{index + 1}
@@ -426,7 +471,9 @@ export function VotingAnalytics() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold">{voter.votes.toLocaleString()}</div>
+                      <div className="text-lg font-bold">
+                        {voter.votes.toLocaleString()}
+                      </div>
                       <div className="text-sm text-muted-foreground">votes</div>
                     </div>
                   </div>
@@ -464,16 +511,28 @@ export function VotingAnalytics() {
                     </div>
                     <div className="grid grid-cols-3 gap-4 mt-3">
                       <div className="text-center">
-                        <div className="text-lg font-bold">{show.totalVotes.toLocaleString()}</div>
-                        <div className="text-xs text-muted-foreground">Total Votes</div>
+                        <div className="text-lg font-bold">
+                          {show.totalVotes.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Total Votes
+                        </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold">{show.uniqueVoters.toLocaleString()}</div>
-                        <div className="text-xs text-muted-foreground">Voters</div>
+                        <div className="text-lg font-bold">
+                          {show.uniqueVoters.toLocaleString()}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Voters
+                        </div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold">{show.avgVotesPerSong.toFixed(1)}</div>
-                        <div className="text-xs text-muted-foreground">Avg/Song</div>
+                        <div className="text-lg font-bold">
+                          {show.avgVotesPerSong.toFixed(1)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Avg/Song
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -484,5 +543,5 @@ export function VotingAnalytics() {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

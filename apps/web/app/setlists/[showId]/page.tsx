@@ -1,23 +1,23 @@
-import { db } from '@repo/database';
-import { artists, shows, venues } from '@repo/database/src/schema';
-import { createMetadata } from '@repo/seo/metadata';
-import { eq } from 'drizzle-orm';
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { RealtimeActivityFeed } from '~/components/realtime-activity-feed';
-import { EnhancedSetlistViewer } from './components/enhanced-setlist-viewer';
-import { ShowInfo } from './components/show-info';
+import { db } from "@repo/database"
+import { artists, shows, venues } from "@repo/database/src/schema"
+import { createMetadata } from "@repo/seo/metadata"
+import { eq } from "drizzle-orm"
+import type { Metadata } from "next"
+import { notFound } from "next/navigation"
+import { RealtimeActivityFeed } from "~/components/realtime-activity-feed"
+import { EnhancedSetlistViewer } from "./components/enhanced-setlist-viewer"
+import { ShowInfo } from "./components/show-info"
 
 type SetlistPageProps = {
   params: Promise<{
-    showId: string;
-  }>;
-};
+    showId: string
+  }>
+}
 
 export const generateMetadata = async ({
   params,
 }: SetlistPageProps): Promise<Metadata> => {
-  const { showId } = await params;
+  const { showId } = await params
 
   // Fetch show details for metadata
   const show = await db
@@ -31,24 +31,24 @@ export const generateMetadata = async ({
     .leftJoin(artists, eq(shows.headlinerArtistId, artists.id))
     .leftJoin(venues, eq(shows.venueId, venues.id))
     .where(eq(shows.id, showId))
-    .limit(1);
+    .limit(1)
 
   if (show.length === 0 || !show[0]) {
     return createMetadata({
-      title: 'Show Not Found - MySetlist',
-      description: 'The requested show could not be found.',
-    });
+      title: "Show Not Found - MySetlist",
+      description: "The requested show could not be found.",
+    })
   }
 
-  const firstShow = show[0];
+  const firstShow = show[0]
   return createMetadata({
     title: `${firstShow.artist} at ${firstShow.venue} - MySetlist`,
     description: `Live setlist and voting for ${firstShow.artist} at ${firstShow.venue}`,
-  });
-};
+  })
+}
 
 const SetlistPage = async ({ params }: SetlistPageProps) => {
-  const { showId } = await params;
+  const { showId } = await params
 
   // Fetch show data with setlists
   const show = await db
@@ -77,13 +77,13 @@ const SetlistPage = async ({ params }: SetlistPageProps) => {
     .leftJoin(artists, eq(shows.headlinerArtistId, artists.id))
     .leftJoin(venues, eq(shows.venueId, venues.id))
     .where(eq(shows.id, showId))
-    .limit(1);
+    .limit(1)
 
   if (show.length === 0 || !show[0]) {
-    notFound();
+    notFound()
   }
 
-  const showData = show[0];
+  const showData = show[0]
   return (
     <div className="flex flex-col gap-8 py-8 md:py-16">
       <div className="container mx-auto">
@@ -100,7 +100,7 @@ const SetlistPage = async ({ params }: SetlistPageProps) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SetlistPage;
+export default SetlistPage

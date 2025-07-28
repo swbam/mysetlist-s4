@@ -1,7 +1,7 @@
-import { db } from '@repo/database';
-import { sql } from 'drizzle-orm';
-import { CacheService } from './cache';
-import { MonitoringService, withPerformanceMonitoring } from './monitoring';
+import { db } from "@repo/database"
+import { sql } from "drizzle-orm"
+import { CacheService } from "./cache"
+import { MonitoringService, withPerformanceMonitoring } from "./monitoring"
 
 /**
  * Database optimization utilities for production performance
@@ -13,62 +13,62 @@ export class DatabaseOptimizer {
   static async executeOptimizedQuery<T>(
     queryFn: () => Promise<T>,
     options: {
-      cacheKey?: string;
-      cacheTTL?: number;
-      queryName?: string;
-      timeout?: number;
+      cacheKey?: string
+      cacheTTL?: number
+      queryName?: string
+      timeout?: number
     } = {}
   ): Promise<T> {
     const {
       cacheKey,
       cacheTTL = 300, // 5 minutes default
-      queryName = 'database_query',
+      queryName = "database_query",
       timeout = 30000, // 30 seconds default
-    } = options;
+    } = options
 
     // Try cache first if cache key provided
     if (cacheKey) {
-      const cacheService = new CacheService();
-      const cached = await cacheService.get(cacheKey) as T | null;
+      const cacheService = new CacheService()
+      const cached = (await cacheService.get(cacheKey)) as T | null
       if (cached !== null) {
         MonitoringService.trackMetric({
-          name: 'database.cache_hit',
+          name: "database.cache_hit",
           value: 1,
           tags: { query: queryName },
-        });
-        return cached;
+        })
+        return cached
       }
     }
 
     // Execute query with monitoring and timeout
-    const wrappedQuery = withPerformanceMonitoring(queryFn, queryName);
+    const wrappedQuery = withPerformanceMonitoring(queryFn, queryName)
 
     try {
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Query timeout')), timeout);
-      });
+        setTimeout(() => reject(new Error("Query timeout")), timeout)
+      })
 
-      const result = await Promise.race([wrappedQuery(), timeoutPromise]);
+      const result = await Promise.race([wrappedQuery(), timeoutPromise])
 
       // Cache result if cache key provided
       if (cacheKey) {
-        const cacheService = new CacheService();
-        await cacheService.set(cacheKey, result, cacheTTL);
+        const cacheService = new CacheService()
+        await cacheService.set(cacheKey, result, cacheTTL)
         MonitoringService.trackMetric({
-          name: 'database.cache_miss',
+          name: "database.cache_miss",
           value: 1,
           tags: { query: queryName },
-        });
+        })
       }
 
-      return result;
+      return result
     } catch (error) {
       MonitoringService.trackError(error as Error, {
-        operation: 'database_query',
+        operation: "database_query",
         query: queryName,
         cached: !!cacheKey,
-      });
-      throw error;
+      })
+      throw error
     }
   }
 
@@ -78,17 +78,17 @@ export class DatabaseOptimizer {
   static async batchQueries<T>(
     queries: Array<() => Promise<T>>,
     options: {
-      batchSize?: number;
-      concurrency?: number;
-      failFast?: boolean;
+      batchSize?: number
+      concurrency?: number
+      failFast?: boolean
     } = {}
   ): Promise<T[]> {
-    const { batchSize = 10, failFast = false } = options;
+    const { batchSize = 10, failFast = false } = options
 
-    const results: T[] = [];
+    const results: T[] = []
 
     for (let i = 0; i < queries.length; i += batchSize) {
-      const batch = queries.slice(i, i + batchSize);
+      const batch = queries.slice(i, i + batchSize)
 
       try {
         if (failFast) {
@@ -99,53 +99,53 @@ export class DatabaseOptimizer {
                 queryName: `batch_query_${i}`,
               })
             )
-          );
-          results.push(...batchResults);
+          )
+          results.push(...batchResults)
         } else {
           // Continue on error - collect all successful results
           const batchPromises = batch.map((query) =>
             DatabaseOptimizer.executeOptimizedQuery(query, {
               queryName: `batch_query_${i}`,
             }).catch((_error) => {
-              return null;
+              return null
             })
-          );
+          )
 
-          const batchResults = await Promise.all(batchPromises);
-          results.push(...(batchResults.filter((r) => r !== null) as T[]));
+          const batchResults = await Promise.all(batchPromises)
+          results.push(...(batchResults.filter((r) => r !== null) as T[]))
         }
       } catch (error) {
         MonitoringService.trackError(error as Error, {
-          operation: 'batch_queries',
+          operation: "batch_queries",
           batch_index: i,
           batch_size: batch.length,
-        });
+        })
 
         if (failFast) {
-          throw error;
+          throw error
         }
       }
     }
 
     MonitoringService.trackMetric({
-      name: 'database.batch_query.completed',
+      name: "database.batch_query.completed",
       value: results.length,
       tags: {
         total_queries: queries.length.toString(),
         success_rate: ((results.length / queries.length) * 100).toFixed(1),
       },
-    });
+    })
 
-    return results;
+    return results
   }
 
   /**
    * Connection pool management
    */
   static async checkConnectionHealth(): Promise<{
-    activeConnections: number;
-    totalConnections: number;
-    healthStatus: 'healthy' | 'warning' | 'critical';
+    activeConnections: number
+    totalConnections: number
+    healthStatus: "healthy" | "warning" | "critical"
   }> {
     try {
       const result = await db.execute(sql`
@@ -153,53 +153,53 @@ export class DatabaseOptimizer {
           (SELECT count(*) FROM pg_stat_activity WHERE state = 'active') as active_connections,
           (SELECT count(*) FROM pg_stat_activity) as total_connections,
           (SELECT setting::int FROM pg_settings WHERE name = 'max_connections') as max_connections
-      `);
+      `)
 
-      const row = result[0] as any;
-      const activeConnections = Number.parseInt(row.active_connections);
-      const totalConnections = Number.parseInt(row.total_connections);
-      const maxConnections = Number.parseInt(row.max_connections);
+      const row = result[0] as any
+      const activeConnections = Number.parseInt(row.active_connections)
+      const totalConnections = Number.parseInt(row.total_connections)
+      const maxConnections = Number.parseInt(row.max_connections)
 
-      const utilizationPercent = (totalConnections / maxConnections) * 100;
+      const utilizationPercent = (totalConnections / maxConnections) * 100
 
-      let healthStatus: 'healthy' | 'warning' | 'critical' = 'healthy';
+      let healthStatus: "healthy" | "warning" | "critical" = "healthy"
       if (utilizationPercent > 90) {
-        healthStatus = 'critical';
+        healthStatus = "critical"
       } else if (utilizationPercent > 75) {
-        healthStatus = 'warning';
+        healthStatus = "warning"
       }
 
       MonitoringService.trackMetric({
-        name: 'database.connections.active',
+        name: "database.connections.active",
         value: activeConnections,
-      });
+      })
 
       MonitoringService.trackMetric({
-        name: 'database.connections.total',
+        name: "database.connections.total",
         value: totalConnections,
-      });
+      })
 
       MonitoringService.trackMetric({
-        name: 'database.connections.utilization',
+        name: "database.connections.utilization",
         value: utilizationPercent,
-        unit: 'percent',
-      });
+        unit: "percent",
+      })
 
       return {
         activeConnections,
         totalConnections,
         healthStatus,
-      };
+      }
     } catch (error) {
       MonitoringService.trackError(error as Error, {
-        operation: 'connection_health_check',
-      });
+        operation: "connection_health_check",
+      })
 
       return {
         activeConnections: 0,
         totalConnections: 0,
-        healthStatus: 'critical',
-      };
+        healthStatus: "critical",
+      }
     }
   }
 
@@ -208,13 +208,13 @@ export class DatabaseOptimizer {
    */
   static async analyzeSlowQueries(): Promise<{
     slowQueries: Array<{
-      query: string;
-      calls: number;
-      totalTime: number;
-      avgTime: number;
-      rows: number;
-    }>;
-    recommendations: string[];
+      query: string
+      calls: number
+      totalTime: number
+      avgTime: number
+      rows: number
+    }>
+    recommendations: string[]
   }> {
     try {
       // Get slow queries from pg_stat_statements if available
@@ -229,20 +229,20 @@ export class DatabaseOptimizer {
         WHERE mean_time > 100 -- queries taking more than 100ms on average
         ORDER BY mean_time DESC 
         LIMIT 20
-      `);
+      `)
 
-      const recommendations: string[] = [];
+      const recommendations: string[] = []
 
       if (slowQueries.length > 0) {
         recommendations.push(
-          'Consider adding indexes for frequently executed slow queries'
-        );
+          "Consider adding indexes for frequently executed slow queries"
+        )
         recommendations.push(
-          'Review query execution plans for optimization opportunities'
-        );
+          "Review query execution plans for optimization opportunities"
+        )
         recommendations.push(
-          'Consider query result caching for expensive read operations'
-        );
+          "Consider query result caching for expensive read operations"
+        )
       }
 
       // Check for missing indexes
@@ -256,23 +256,23 @@ export class DatabaseOptimizer {
         FROM pg_stats 
         WHERE n_distinct > 100 AND correlation < 0.1
         LIMIT 10
-      `);
+      `)
 
       if (missingIndexes.length > 0) {
         recommendations.push(
-          'Consider adding indexes on high-cardinality columns with low correlation'
-        );
+          "Consider adding indexes on high-cardinality columns with low correlation"
+        )
       }
 
       return {
         slowQueries: slowQueries as any[],
         recommendations,
-      };
+      }
     } catch (_error) {
       return {
         slowQueries: [],
-        recommendations: ['pg_stat_statements extension may not be enabled'],
-      };
+        recommendations: ["pg_stat_statements extension may not be enabled"],
+      }
     }
   }
 
@@ -280,21 +280,21 @@ export class DatabaseOptimizer {
    * Database maintenance operations
    */
   static async performMaintenance(): Promise<{
-    vacuumResults: string[];
-    indexRebuilds: string[];
-    statisticsUpdated: boolean;
+    vacuumResults: string[]
+    indexRebuilds: string[]
+    statisticsUpdated: boolean
   }> {
     const results = {
       vacuumResults: [] as string[],
       indexRebuilds: [] as string[],
       statisticsUpdated: false,
-    };
+    }
 
     try {
       // Update table statistics for better query planning
-      await db.execute(sql`ANALYZE`);
-      results.statisticsUpdated = true;
-      results.vacuumResults.push('Table statistics updated successfully');
+      await db.execute(sql`ANALYZE`)
+      results.statisticsUpdated = true
+      results.vacuumResults.push("Table statistics updated successfully")
 
       // Check for tables that need vacuuming
       const tableStats = await db.execute(sql`
@@ -311,7 +311,7 @@ export class DatabaseOptimizer {
         WHERE n_dead_tup > 1000 AND n_live_tup > 0
         ORDER BY dead_ratio DESC
         LIMIT 5
-      `);
+      `)
 
       // Vacuum tables with high dead tuple ratio
       for (const row of tableStats as any[]) {
@@ -320,73 +320,77 @@ export class DatabaseOptimizer {
           try {
             await db.execute(
               sql.raw(`VACUUM ${row.schemaname}.${row.tablename}`)
-            );
+            )
             results.vacuumResults.push(
               `Vacuumed ${row.schemaname}.${row.tablename}`
-            );
+            )
           } catch (error) {
             results.vacuumResults.push(
-              `Failed to vacuum ${row.schemaname}.${row.tablename}: ${error instanceof Error ? error.message : 'Unknown error'}`
-            );
+              `Failed to vacuum ${row.schemaname}.${row.tablename}: ${error instanceof Error ? error.message : "Unknown error"}`
+            )
           }
         }
       }
 
       MonitoringService.trackMetric({
-        name: 'database.maintenance.completed',
+        name: "database.maintenance.completed",
         value: 1,
         tags: {
           tables_vacuumed: results.vacuumResults.length.toString(),
           statistics_updated: results.statisticsUpdated.toString(),
         },
-      });
+      })
     } catch (error) {
       MonitoringService.trackError(error as Error, {
-        operation: 'database_maintenance',
-      });
-      results.vacuumResults.push(`Maintenance error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        operation: "database_maintenance",
+      })
+      results.vacuumResults.push(
+        `Maintenance error: ${error instanceof Error ? error.message : "Unknown error"}`
+      )
     }
 
-    return results;
+    return results
   }
 
   /**
    * Query execution plan analysis
    */
   static async explainQuery(query: string): Promise<{
-    plan: any[];
-    cost: number;
-    duration: number;
-    suggestions: string[];
+    plan: any[]
+    cost: number
+    duration: number
+    suggestions: string[]
   }> {
     try {
       const explainResult = await db.execute(
         sql.raw(`EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ${query}`)
-      );
+      )
 
-      const plan = explainResult[0] ? (explainResult[0] as any)['QUERY PLAN'][0] : {};
-      const cost = plan['Total Cost'] || 0;
-      const duration = plan['Actual Total Time'] || 0;
+      const plan = explainResult[0]
+        ? (explainResult[0] as any)["QUERY PLAN"][0]
+        : {}
+      const cost = plan["Total Cost"] || 0
+      const duration = plan["Actual Total Time"] || 0
 
-      const suggestions: string[] = [];
+      const suggestions: string[] = []
 
       // Analyze plan for optimization opportunities
       if (duration > 1000) {
-        suggestions.push('Query takes over 1 second - consider optimization');
+        suggestions.push("Query takes over 1 second - consider optimization")
       }
 
-      if (plan['Node Type'] === 'Seq Scan') {
-        suggestions.push('Sequential scan detected - consider adding an index');
+      if (plan["Node Type"] === "Seq Scan") {
+        suggestions.push("Sequential scan detected - consider adding an index")
       }
 
-      if (plan['Shared Hit Blocks'] && plan['Shared Read Blocks']) {
+      if (plan["Shared Hit Blocks"] && plan["Shared Read Blocks"]) {
         const hitRatio =
-          plan['Shared Hit Blocks'] /
-          (plan['Shared Hit Blocks'] + plan['Shared Read Blocks']);
+          plan["Shared Hit Blocks"] /
+          (plan["Shared Hit Blocks"] + plan["Shared Read Blocks"])
         if (hitRatio < 0.9) {
           suggestions.push(
-            'Low cache hit ratio - consider increasing shared_buffers'
-          );
+            "Low cache hit ratio - consider increasing shared_buffers"
+          )
         }
       }
 
@@ -395,9 +399,11 @@ export class DatabaseOptimizer {
         cost,
         duration,
         suggestions,
-      };
+      }
     } catch (error) {
-      throw new Error(`Query explanation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Query explanation failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      )
     }
   }
 
@@ -406,12 +412,12 @@ export class DatabaseOptimizer {
    */
   static async getIndexStats(): Promise<
     Array<{
-      tableName: string;
-      indexName: string;
-      scans: number;
-      tuplesRead: number;
-      tuplesUsed: number;
-      efficiency: number;
+      tableName: string
+      indexName: string
+      scans: number
+      tuplesRead: number
+      tuplesUsed: number
+      efficiency: number
     }>
   > {
     try {
@@ -429,7 +435,7 @@ export class DatabaseOptimizer {
           END as efficiency
         FROM pg_stat_user_indexes
         ORDER BY efficiency DESC
-      `);
+      `)
 
       return result.map((row: any) => ({
         tableName: `${row.schemaname}.${row.tablename}`,
@@ -438,9 +444,9 @@ export class DatabaseOptimizer {
         tuplesRead: row.tuples_read,
         tuplesUsed: row.tuples_used,
         efficiency: row.efficiency,
-      }));
+      }))
     } catch (_error) {
-      return [];
+      return []
     }
   }
 }
@@ -455,40 +461,40 @@ export class OptimizedQueryBuilder {
   static buildPaginatedQuery(
     baseQuery: string,
     options: {
-      page: number;
-      limit: number;
-      sortBy?: string;
-      sortOrder?: 'ASC' | 'DESC';
-      useSeekPagination?: boolean;
-      seekValue?: any;
+      page: number
+      limit: number
+      sortBy?: string
+      sortOrder?: "ASC" | "DESC"
+      useSeekPagination?: boolean
+      seekValue?: any
     }
   ): string {
     const {
       page,
       limit,
-      sortBy = 'created_at',
-      sortOrder = 'DESC',
+      sortBy = "created_at",
+      sortOrder = "DESC",
       useSeekPagination = false,
       seekValue,
-    } = options;
+    } = options
 
-    let query = baseQuery;
+    let query = baseQuery
 
     // Add sorting
-    query += ` ORDER BY ${sortBy} ${sortOrder}`;
+    query += ` ORDER BY ${sortBy} ${sortOrder}`
 
     if (useSeekPagination && seekValue) {
       // Use seek pagination for better performance on large datasets
-      const operator = sortOrder === 'DESC' ? '<' : '>';
-      query += ` AND ${sortBy} ${operator} ${seekValue}`;
-      query += ` LIMIT ${limit}`;
+      const operator = sortOrder === "DESC" ? "<" : ">"
+      query += ` AND ${sortBy} ${operator} ${seekValue}`
+      query += ` LIMIT ${limit}`
     } else {
       // Use offset pagination
-      const offset = (page - 1) * limit;
-      query += ` LIMIT ${limit} OFFSET ${offset}`;
+      const offset = (page - 1) * limit
+      query += ` LIMIT ${limit} OFFSET ${offset}`
     }
 
-    return query;
+    return query
   }
 
   /**
@@ -497,30 +503,30 @@ export class OptimizedQueryBuilder {
   static addPerformanceHints(
     query: string,
     hints: {
-      useIndex?: string;
-      enableSeqScan?: boolean;
-      enableHashJoin?: boolean;
-      workMem?: string;
+      useIndex?: string
+      enableSeqScan?: boolean
+      enableHashJoin?: boolean
+      workMem?: string
     }
   ): string {
-    let optimizedQuery = query;
+    let optimizedQuery = query
 
     if (hints.useIndex) {
-      optimizedQuery = `/*+ IndexScan(${hints.useIndex}) */ ${optimizedQuery}`;
+      optimizedQuery = `/*+ IndexScan(${hints.useIndex}) */ ${optimizedQuery}`
     }
 
     if (hints.enableSeqScan === false) {
-      optimizedQuery = `SET enable_seqscan = off; ${optimizedQuery}; SET enable_seqscan = on;`;
+      optimizedQuery = `SET enable_seqscan = off; ${optimizedQuery}; SET enable_seqscan = on;`
     }
 
     if (hints.enableHashJoin === false) {
-      optimizedQuery = `SET enable_hashjoin = off; ${optimizedQuery}; SET enable_hashjoin = on;`;
+      optimizedQuery = `SET enable_hashjoin = off; ${optimizedQuery}; SET enable_hashjoin = on;`
     }
 
     if (hints.workMem) {
-      optimizedQuery = `SET work_mem = '${hints.workMem}'; ${optimizedQuery}; RESET work_mem;`;
+      optimizedQuery = `SET work_mem = '${hints.workMem}'; ${optimizedQuery}; RESET work_mem;`
     }
 
-    return optimizedQuery;
+    return optimizedQuery
   }
 }

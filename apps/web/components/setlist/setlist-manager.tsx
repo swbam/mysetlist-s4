@@ -1,46 +1,46 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Label } from '@repo/design-system/components/ui/label';
-import { Switch } from '@repo/design-system/components/ui/switch';
+} from "@repo/design-system/components/ui/card"
+import { Label } from "@repo/design-system/components/ui/label"
+import { Switch } from "@repo/design-system/components/ui/switch"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
-import { BarChart3, Music2, Plus, Shuffle, Users, Zap } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
-import { VoteSummary } from '../voting/vote-summary';
-import { AddSongModal } from './add-song-modal';
-import { RealtimeSetlistViewer } from './realtime-setlist-viewer';
-import { SetlistEditor } from './setlist-editor';
+} from "@repo/design-system/components/ui/tabs"
+import { BarChart3, Music2, Plus, Shuffle, Users, Zap } from "lucide-react"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
+import { VoteSummary } from "../voting/vote-summary"
+import { AddSongModal } from "./add-song-modal"
+import { RealtimeSetlistViewer } from "./realtime-setlist-viewer"
+import { SetlistEditor } from "./setlist-editor"
 
 interface SetlistManagerProps {
-  showId: string;
+  showId: string
   show: {
-    id: string;
-    name: string;
-    date: string;
-    status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+    id: string
+    name: string
+    date: string
+    status: "upcoming" | "ongoing" | "completed" | "cancelled"
     headliner_artist: {
-      id: string;
-      name: string;
-    };
-  };
+      id: string
+      name: string
+    }
+  }
   currentUser?: {
-    id: string;
-    role?: string;
-  };
-  initialSetlists?: any[];
+    id: string
+    role?: string
+  }
+  initialSetlists?: any[]
 }
 
 export function SetlistManager({
@@ -49,95 +49,95 @@ export function SetlistManager({
   currentUser,
   initialSetlists = [],
 }: SetlistManagerProps) {
-  const [setlists, setSetlists] = useState(initialSetlists);
-  const [activeTab, setActiveTab] = useState('predicted');
-  const [showAddModal, setShowAddModal] = useState(false);
+  const [setlists, setSetlists] = useState(initialSetlists)
+  const [activeTab, setActiveTab] = useState("predicted")
+  const [showAddModal, setShowAddModal] = useState(false)
   const [isRealtimeEnabled, setIsRealtimeEnabled] = useState(
-    show.status === 'ongoing'
-  );
-  const [showVotingStats, setShowVotingStats] = useState(true);
-  const [refreshKey, setRefreshKey] = useState(0);
+    show.status === "ongoing"
+  )
+  const [showVotingStats, setShowVotingStats] = useState(true)
+  const [refreshKey, setRefreshKey] = useState(0)
 
-  const actualSetlists = setlists.filter((s) => s.type === 'actual');
-  const predictedSetlists = setlists.filter((s) => s.type === 'predicted');
+  const actualSetlists = setlists.filter((s) => s.type === "actual")
+  const predictedSetlists = setlists.filter((s) => s.type === "predicted")
 
   const canEdit =
     currentUser &&
-    (currentUser.role === 'admin' ||
-      currentUser.role === 'moderator' ||
-      show.status !== 'completed');
+    (currentUser.role === "admin" ||
+      currentUser.role === "moderator" ||
+      show.status !== "completed")
 
-  const canVote = currentUser && show.status !== 'cancelled';
-  const isLive = show.status === 'ongoing';
+  const canVote = currentUser && show.status !== "cancelled"
+  const isLive = show.status === "ongoing"
 
   useEffect(() => {
     if (isRealtimeEnabled && isLive) {
       const interval = setInterval(() => {
-        fetchSetlists();
-      }, 10000); // Refresh every 10 seconds when live
+        fetchSetlists()
+      }, 10000) // Refresh every 10 seconds when live
 
-      return () => clearInterval(interval);
+      return () => clearInterval(interval)
     }
-    return undefined;
-  }, [isRealtimeEnabled, isLive, showId]);
+    return undefined
+  }, [isRealtimeEnabled, isLive, showId])
 
   const fetchSetlists = async () => {
     try {
-      const response = await fetch(`/api/setlists/${showId}`);
+      const response = await fetch(`/api/setlists/${showId}`)
       if (response.ok) {
-        const data = await response.json();
-        setSetlists(data.setlists || []);
+        const data = await response.json()
+        setSetlists(data.setlists || [])
       }
     } catch (_error) {}
-  };
+  }
 
-  const createNewSetlist = async (type: 'predicted' | 'actual') => {
+  const createNewSetlist = async (type: "predicted" | "actual") => {
     try {
-      const response = await fetch('/api/setlists', {
-        method: 'POST',
+      const response = await fetch("/api/setlists", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           showId,
           artistId: show.headliner_artist.id,
           type,
-          name: type === 'actual' ? 'Actual Setlist' : 'Predicted Setlist',
+          name: type === "actual" ? "Actual Setlist" : "Predicted Setlist",
         }),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error('Failed to create setlist');
+        throw new Error("Failed to create setlist")
       }
 
-      const newSetlist = await response.json();
-      setSetlists([...setlists, newSetlist]);
+      const newSetlist = await response.json()
+      setSetlists([...setlists, newSetlist])
       toast.success(
-        `${type === 'actual' ? 'Actual' : 'Predicted'} setlist created`
-      );
+        `${type === "actual" ? "Actual" : "Predicted"} setlist created`
+      )
 
-      return newSetlist;
+      return newSetlist
     } catch (_error) {
-      toast.error('Failed to create setlist');
+      toast.error("Failed to create setlist")
     }
-  };
+  }
 
   const handleRefresh = () => {
-    setRefreshKey((prev) => prev + 1);
-    fetchSetlists();
-  };
+    setRefreshKey((prev) => prev + 1)
+    fetchSetlists()
+  }
 
   const calculateVotingStats = () => {
-    let totalVotes = 0;
-    let totalUpvotes = 0;
-    let totalDownvotes = 0;
-    const topSongs: any[] = [];
+    let totalVotes = 0
+    let totalUpvotes = 0
+    let totalDownvotes = 0
+    const topSongs: any[] = []
 
     predictedSetlists.forEach((setlist) => {
       setlist.songs?.forEach((song: any) => {
-        totalVotes += song.upvotes + song.downvotes;
-        totalUpvotes += song.upvotes;
-        totalDownvotes += song.downvotes;
+        totalVotes += song.upvotes + song.downvotes
+        totalUpvotes += song.upvotes
+        totalDownvotes += song.downvotes
 
         if (song.upvotes > 0 || song.downvotes > 0) {
           topSongs.push({
@@ -147,20 +147,20 @@ export function SetlistManager({
             netVotes: song.netVotes,
             upvotes: song.upvotes,
             downvotes: song.downvotes,
-          });
+          })
         }
-      });
-    });
+      })
+    })
 
     return {
       totalVotes,
       totalUpvotes,
       totalDownvotes,
       topSongs: topSongs.sort((a, b) => b.netVotes - a.netVotes),
-    };
-  };
+    }
+  }
 
-  const votingStats = calculateVotingStats();
+  const votingStats = calculateVotingStats()
 
   return (
     <div className="space-y-6">
@@ -171,7 +171,11 @@ export function SetlistManager({
             <CardTitle className="flex items-center gap-2">
               <Music2 className="h-5 w-5 sm:h-6 sm:w-6" />
               <span className="text-lg sm:text-xl">Setlist Manager</span>
-              {isLive && <Badge variant="destructive" className="text-xs">LIVE</Badge>}
+              {isLive && (
+                <Badge variant="destructive" className="text-xs">
+                  LIVE
+                </Badge>
+              )}
             </CardTitle>
 
             <div className="flex flex-wrap items-center gap-2 sm:gap-4">
@@ -184,7 +188,10 @@ export function SetlistManager({
                     onCheckedChange={setIsRealtimeEnabled}
                     className="scale-90 sm:scale-100"
                   />
-                  <Label htmlFor="realtime" className="flex items-center gap-1 text-sm">
+                  <Label
+                    htmlFor="realtime"
+                    className="flex items-center gap-1 text-sm"
+                  >
                     <Zap className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">Real-time</span>
                     <span className="sm:hidden">Live</span>
@@ -212,14 +219,23 @@ export function SetlistManager({
 
               {/* Actions */}
               <div className="flex gap-2">
-                <Button variant="outline" size="sm" onClick={handleRefresh} className="text-xs sm:text-sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRefresh}
+                  className="text-xs sm:text-sm"
+                >
                   <Shuffle className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
                   <span className="hidden sm:inline">Refresh</span>
                   <span className="sm:hidden">Refresh</span>
                 </Button>
 
                 {canEdit && (
-                  <Button onClick={() => setShowAddModal(true)} size="sm" className="text-xs sm:text-sm">
+                  <Button
+                    onClick={() => setShowAddModal(true)}
+                    size="sm"
+                    className="text-xs sm:text-sm"
+                  >
                     <Plus className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">Add Songs</span>
                     <span className="sm:hidden">Add</span>
@@ -277,11 +293,16 @@ export function SetlistManager({
                     <SetlistEditor
                       key={`${setlist.id}-${refreshKey}`}
                       setlist={setlist}
-                      currentUser={currentUser || { id: '' }}
+                      currentUser={currentUser || { id: "" }}
                       artistId={show.headliner_artist.id}
                       onUpdate={fetchSetlists}
-                      {...(canEdit !== undefined && { canEdit: canEdit && setlist.createdBy === currentUser?.id })}
-                      {...(canVote !== undefined && { canVote: canVote && !setlist.isLocked })}
+                      {...(canEdit !== undefined && {
+                        canEdit:
+                          canEdit && setlist.createdBy === currentUser?.id,
+                      })}
+                      {...(canVote !== undefined && {
+                        canVote: canVote && !setlist.isLocked,
+                      })}
                     />
                   ))
                 ) : (
@@ -295,7 +316,7 @@ export function SetlistManager({
                         Be the first to predict what songs will be played
                       </p>
                       {canEdit && (
-                        <Button onClick={() => createNewSetlist('predicted')}>
+                        <Button onClick={() => createNewSetlist("predicted")}>
                           <Plus className="mr-2 h-4 w-4" />
                           Create Predicted Setlist
                         </Button>
@@ -311,10 +332,13 @@ export function SetlistManager({
                     <SetlistEditor
                       key={`${setlist.id}-${refreshKey}`}
                       setlist={setlist}
-                      currentUser={currentUser || { id: '' }}
+                      currentUser={currentUser || { id: "" }}
                       artistId={show.headliner_artist.id}
                       onUpdate={fetchSetlists}
-                      {...(canEdit !== undefined && { canEdit: canEdit && setlist.createdBy === currentUser?.id })}
+                      {...(canEdit !== undefined && {
+                        canEdit:
+                          canEdit && setlist.createdBy === currentUser?.id,
+                      })}
                       canVote={false} // No voting on actual setlists
                     />
                   ))
@@ -326,12 +350,12 @@ export function SetlistManager({
                         No actual setlists yet
                       </h3>
                       <p className="mb-4 text-muted-foreground">
-                        {show.status === 'completed'
-                          ? 'Add the actual setlist from this show'
-                          : 'Actual setlist will be added after the show'}
+                        {show.status === "completed"
+                          ? "Add the actual setlist from this show"
+                          : "Actual setlist will be added after the show"}
                       </p>
-                      {canEdit && show.status !== 'upcoming' && (
-                        <Button onClick={() => createNewSetlist('actual')}>
+                      {canEdit && show.status !== "upcoming" && (
+                        <Button onClick={() => createNewSetlist("actual")}>
                           <Plus className="mr-2 h-4 w-4" />
                           Create Actual Setlist
                         </Button>
@@ -361,13 +385,13 @@ export function SetlistManager({
       <AddSongModal
         open={showAddModal}
         onOpenChange={setShowAddModal}
-        setlistId={predictedSetlists[0]?.id || ''} // Default to first predicted setlist
+        setlistId={predictedSetlists[0]?.id || ""} // Default to first predicted setlist
         artistId={show.headliner_artist.id}
         onSongAdded={() => {
-          fetchSetlists();
-          toast.success('Song added to setlist');
+          fetchSetlists()
+          toast.success("Song added to setlist")
         }}
       />
     </div>
-  );
+  )
 }

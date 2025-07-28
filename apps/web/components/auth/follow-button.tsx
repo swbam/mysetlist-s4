@@ -3,13 +3,13 @@
 // MySetlist is focused on setlist voting, not social following features
 
 export function FollowButton() {
-  return null; // Component disabled
+  return null // Component disabled
 }
 
 export function FollowButtonCompact() {
-  return null; // Component disabled
+  return null // Component disabled
 }
 
 export function FollowButtonWithCount() {
-  return null; // Component disabled
+  return null // Component disabled
 }

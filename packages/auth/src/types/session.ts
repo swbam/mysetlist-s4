@@ -1,13 +1,13 @@
 export interface SessionData {
-  userId: string;
-  email: string;
-  role: string;
-  lastActivity: string;
-  expiresAt: string;
+  userId: string
+  email: string
+  role: string
+  lastActivity: string
+  expiresAt: string
 }
 
 export interface SessionOptions {
-  maxAge: number;
-  refreshThreshold: number;
-  autoRefresh: boolean;
+  maxAge: number
+  refreshThreshold: number
+  autoRefresh: boolean
 }

@@ -1,2 +1,2 @@
 // Stubbed CMS Toolbar component - basehub not needed for MySetlist
-export const Toolbar = () => null;
+export const Toolbar = () => null

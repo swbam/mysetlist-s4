@@ -1,6 +1,6 @@
-'use client';
+"use client"
 
-import { Star } from 'lucide-react';
+import { Star } from "lucide-react"
 
 export default function Testimonials() {
   return (
@@ -76,5 +76,5 @@ export default function Testimonials() {
         </div>
       </div>
     </div>
-  );
+  )
 }

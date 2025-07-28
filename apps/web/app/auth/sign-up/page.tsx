@@ -1,26 +1,26 @@
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
-import { Music } from 'lucide-react';
-import Link from 'next/link';
-import { signInWithProvider, signUp } from '../actions';
+} from "@repo/design-system/components/ui/alert"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Input } from "@repo/design-system/components/ui/input"
+import { Label } from "@repo/design-system/components/ui/label"
+import { Music } from "lucide-react"
+import Link from "next/link"
+import { signInWithProvider, signUp } from "../actions"
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic"
 
 export default async function SignUpPage({
   searchParams,
 }: {
-  searchParams: Promise<{ message?: string; error?: string }>;
+  searchParams: Promise<{ message?: string; error?: string }>
 }) {
-  const params = await searchParams;
+  const params = await searchParams
   const handleSpotifySignIn = async () => {
-    'use server';
-    await signInWithProvider('spotify');
-  };
+    "use server"
+    await signInWithProvider("spotify")
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
@@ -30,7 +30,7 @@ export default async function SignUpPage({
             Create your account
           </h2>
           <p className="mt-2 text-center text-muted-foreground text-sm">
-            Or{' '}
+            Or{" "}
             <Link
               href="/auth/sign-in"
               className="font-medium text-primary underline-offset-4 hover:underline"
@@ -126,14 +126,14 @@ export default async function SignUpPage({
         </div>
 
         <p className="text-center text-muted-foreground text-sm">
-          By creating an account, you agree to our{' '}
+          By creating an account, you agree to our{" "}
           <Link
             href="/terms"
             className="font-medium text-primary underline-offset-4 hover:underline"
           >
             Terms of Service
-          </Link>{' '}
-          and{' '}
+          </Link>{" "}
+          and{" "}
           <Link
             href="/privacy"
             className="font-medium text-primary underline-offset-4 hover:underline"
@@ -143,5 +143,5 @@ export default async function SignUpPage({
         </p>
       </div>
     </div>
-  );
+  )
 }

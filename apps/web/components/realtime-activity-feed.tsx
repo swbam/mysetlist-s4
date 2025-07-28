@@ -1,16 +1,16 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
+import { Badge } from "@repo/design-system/components/ui/badge"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { ScrollArea } from '@repo/design-system/components/ui/scroll-area';
-import { cn } from '@repo/design-system/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
-import { AnimatePresence, motion } from 'framer-motion';
+} from "@repo/design-system/components/ui/card"
+import { ScrollArea } from "@repo/design-system/components/ui/scroll-area"
+import { cn } from "@repo/design-system/lib/utils"
+import { formatDistanceToNow } from "date-fns"
+import { AnimatePresence, motion } from "framer-motion"
 import {
   Activity,
   Clock,
@@ -19,30 +19,30 @@ import {
   ThumbsDown,
   ThumbsUp,
   UserPlus,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+} from "lucide-react"
+import { useEffect, useState } from "react"
+import { createClient } from "~/lib/supabase/client"
 
-type ActivityType = 'vote' | 'song_played' | 'user_joined' | 'setlist_updated';
+type ActivityType = "vote" | "song_played" | "user_joined" | "setlist_updated"
 
 type Activity = {
-  id: string;
-  type: ActivityType;
-  timestamp: Date;
+  id: string
+  type: ActivityType
+  timestamp: Date
   data: {
-    userName?: string;
-    songTitle?: string;
-    artistName?: string;
-    voteType?: 'up' | 'down';
-    showName?: string;
-    venueName?: string;
-  };
-};
+    userName?: string
+    songTitle?: string
+    artistName?: string
+    voteType?: "up" | "down"
+    showName?: string
+    venueName?: string
+  }
+}
 
 interface RealtimeActivityFeedProps {
-  showId?: string;
-  limit?: number;
-  className?: string;
+  showId?: string
+  limit?: number
+  className?: string
 }
 
 export function RealtimeActivityFeed({
@@ -50,89 +50,89 @@ export function RealtimeActivityFeed({
   limit = 10,
   className,
 }: RealtimeActivityFeedProps) {
-  const [activities, setActivities] = useState<Activity[]>([]);
-  const [isConnected, setIsConnected] = useState(false);
-  const supabase = createClient();
+  const [activities, setActivities] = useState<Activity[]>([])
+  const [isConnected, setIsConnected] = useState(false)
+  const supabase = createClient()
 
   useEffect(() => {
     // Subscribe to real-time updates
     const channel = supabase
-      .channel('activity-feed')
+      .channel("activity-feed")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'votes',
+          event: "INSERT",
+          schema: "public",
+          table: "votes",
         },
         async (payload) => {
           // Fetch additional data for the vote
-          const voteData = await fetchVoteDetails(payload.new);
+          const voteData = await fetchVoteDetails(payload.new)
           if (voteData) {
             const activity: Activity = {
-              id: `vote-${payload.new['id']}`,
-              type: 'vote',
-              timestamp: new Date(payload.new['created_at']),
+              id: `vote-${payload.new["id"]}`,
+              type: "vote",
+              timestamp: new Date(payload.new["created_at"]),
               data: voteData,
-            };
-            addActivity(activity);
+            }
+            addActivity(activity)
           }
         }
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'setlist_songs',
-          filter: 'is_played=eq.true',
+          event: "UPDATE",
+          schema: "public",
+          table: "setlist_songs",
+          filter: "is_played=eq.true",
         },
         async (payload) => {
-          if (payload.new['is_played'] && !payload.old['is_played']) {
-            const songData = await fetchSongDetails(payload.new);
+          if (payload.new["is_played"] && !payload.old["is_played"]) {
+            const songData = await fetchSongDetails(payload.new)
             if (songData) {
               const activity: Activity = {
-                id: `played-${payload.new['id']}`,
-                type: 'song_played',
-                timestamp: new Date(payload.new['play_time']),
+                id: `played-${payload.new["id"]}`,
+                type: "song_played",
+                timestamp: new Date(payload.new["play_time"]),
                 data: songData,
-              };
-              addActivity(activity);
+              }
+              addActivity(activity)
             }
           }
         }
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'attendees',
+          event: "INSERT",
+          schema: "public",
+          table: "attendees",
         },
         async (payload) => {
-          const attendeeData = await fetchAttendeeDetails(payload.new);
+          const attendeeData = await fetchAttendeeDetails(payload.new)
           if (attendeeData) {
             const activity: Activity = {
-              id: `joined-${payload.new['id']}`,
-              type: 'user_joined',
-              timestamp: new Date(payload.new['created_at']),
+              id: `joined-${payload.new["id"]}`,
+              type: "user_joined",
+              timestamp: new Date(payload.new["created_at"]),
               data: attendeeData,
-            };
-            addActivity(activity);
+            }
+            addActivity(activity)
           }
         }
       )
       .subscribe((status) => {
-        setIsConnected(status === 'SUBSCRIBED');
-      });
+        setIsConnected(status === "SUBSCRIBED")
+      })
 
     // Fetch initial activities
-    fetchRecentActivities();
+    fetchRecentActivities()
 
     return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [showId]);
+      supabase.removeChannel(channel)
+    }
+  }, [showId])
 
   const fetchRecentActivities = async () => {
     try {
@@ -140,125 +140,125 @@ export function RealtimeActivityFeed({
       // For now, we'll just set some mock data
       const mockActivities: Activity[] = [
         {
-          id: '1',
-          type: 'song_played',
+          id: "1",
+          type: "song_played",
           timestamp: new Date(Date.now() - 1000 * 60 * 2),
           data: {
-            songTitle: 'Bohemian Rhapsody',
-            artistName: 'Queen',
-            showName: 'Queen Live',
+            songTitle: "Bohemian Rhapsody",
+            artistName: "Queen",
+            showName: "Queen Live",
           },
         },
         {
-          id: '2',
-          type: 'vote',
+          id: "2",
+          type: "vote",
           timestamp: new Date(Date.now() - 1000 * 60 * 5),
           data: {
-            userName: 'John Doe',
-            songTitle: 'We Will Rock You',
-            voteType: 'up',
+            userName: "John Doe",
+            songTitle: "We Will Rock You",
+            voteType: "up",
           },
         },
-      ];
-      setActivities(mockActivities);
+      ]
+      setActivities(mockActivities)
     } catch (_error) {}
-  };
+  }
 
   const fetchVoteDetails = async (vote: any) => {
     // This would fetch actual data from the API
     return {
-      userName: 'Anonymous User',
-      songTitle: 'Song Title',
-      voteType: vote.vote_type as 'up' | 'down',
-    };
-  };
+      userName: "Anonymous User",
+      songTitle: "Song Title",
+      voteType: vote.vote_type as "up" | "down",
+    }
+  }
 
   const fetchSongDetails = async (_setlistSong: any) => {
     // This would fetch actual data from the API
     return {
-      songTitle: 'Song Title',
-      artistName: 'Artist Name',
-      showName: 'Show Name',
-    };
-  };
+      songTitle: "Song Title",
+      artistName: "Artist Name",
+      showName: "Show Name",
+    }
+  }
 
   const fetchAttendeeDetails = async (_attendee: any) => {
     // This would fetch actual data from the API
     return {
-      userName: 'New User',
-      showName: 'Show Name',
-      venueName: 'Venue Name',
-    };
-  };
+      userName: "New User",
+      showName: "Show Name",
+      venueName: "Venue Name",
+    }
+  }
 
   const addActivity = (activity: Activity) => {
     setActivities((prev) => {
-      const updated = [activity, ...prev].slice(0, limit);
+      const updated = [activity, ...prev].slice(0, limit)
       return updated.sort(
         (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
-      );
-    });
-  };
+      )
+    })
+  }
 
   const getActivityIcon = (type: ActivityType) => {
     switch (type) {
-      case 'vote':
-        return ThumbsUp;
-      case 'song_played':
-        return PlayCircle;
-      case 'user_joined':
-        return UserPlus;
-      case 'setlist_updated':
-        return Music;
+      case "vote":
+        return ThumbsUp
+      case "song_played":
+        return PlayCircle
+      case "user_joined":
+        return UserPlus
+      case "setlist_updated":
+        return Music
       default:
-        return Activity;
+        return Activity
     }
-  };
+  }
 
   const getActivityMessage = (activity: Activity) => {
-    const { type, data } = activity;
+    const { type, data } = activity
 
     switch (type) {
-      case 'vote':
+      case "vote":
         return (
           <>
-            <span className="font-medium">{data.userName}</span> voted{' '}
-            {data.voteType === 'up' ? (
+            <span className="font-medium">{data.userName}</span> voted{" "}
+            {data.voteType === "up" ? (
               <ThumbsUp className="inline h-3 w-3 text-green-600" />
             ) : (
               <ThumbsDown className="inline h-3 w-3 text-red-600" />
-            )}{' '}
+            )}{" "}
             on <span className="font-medium">{data.songTitle}</span>
           </>
-        );
-      case 'song_played':
+        )
+      case "song_played":
         return (
           <>
-            Now playing: <span className="font-medium">{data.songTitle}</span>{' '}
+            Now playing: <span className="font-medium">{data.songTitle}</span>{" "}
             by <span className="font-medium">{data.artistName}</span>
           </>
-        );
-      case 'user_joined':
+        )
+      case "user_joined":
         return (
           <>
-            <span className="font-medium">{data.userName}</span> joined{' '}
+            <span className="font-medium">{data.userName}</span> joined{" "}
             <span className="font-medium">{data.showName}</span>
           </>
-        );
-      case 'setlist_updated':
+        )
+      case "setlist_updated":
         return (
           <>
-            Setlist updated for{' '}
+            Setlist updated for{" "}
             <span className="font-medium">{data.showName}</span>
           </>
-        );
+        )
       default:
-        return 'Activity occurred';
+        return "Activity occurred"
     }
-  };
+  }
 
   return (
-    <Card className={cn('h-full', className)}>
+    <Card className={cn("h-full", className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 font-medium text-lg">
@@ -287,7 +287,7 @@ export function RealtimeActivityFeed({
                 </div>
               ) : (
                 activities.map((activity, index) => {
-                  const Icon = getActivityIcon(activity.type);
+                  const Icon = getActivityIcon(activity.type)
 
                   return (
                     <motion.div
@@ -300,15 +300,15 @@ export function RealtimeActivityFeed({
                     >
                       <div
                         className={cn(
-                          'rounded-full p-2',
-                          activity.type === 'vote' &&
-                            'bg-blue-100 text-blue-600',
-                          activity.type === 'song_played' &&
-                            'bg-green-100 text-green-600',
-                          activity.type === 'user_joined' &&
-                            'bg-purple-100 text-purple-600',
-                          activity.type === 'setlist_updated' &&
-                            'bg-orange-100 text-orange-600'
+                          "rounded-full p-2",
+                          activity.type === "vote" &&
+                            "bg-blue-100 text-blue-600",
+                          activity.type === "song_played" &&
+                            "bg-green-100 text-green-600",
+                          activity.type === "user_joined" &&
+                            "bg-purple-100 text-purple-600",
+                          activity.type === "setlist_updated" &&
+                            "bg-orange-100 text-orange-600"
                         )}
                       >
                         <Icon className="h-4 w-4" />
@@ -326,7 +326,7 @@ export function RealtimeActivityFeed({
                         </p>
                       </div>
                     </motion.div>
-                  );
+                  )
                 })
               )}
             </AnimatePresence>
@@ -334,5 +334,5 @@ export function RealtimeActivityFeed({
         </ScrollArea>
       </CardContent>
     </Card>
-  );
+  )
 }

@@ -1,5 +1,5 @@
 // Export everything from auth except UserProfile and UserPreferences
-export type { 
+export type {
   AuthProvider,
   AuthUser,
   AuthSession,
@@ -13,11 +13,11 @@ export type {
   IAuthProvider,
   OAuthConfig,
   AuthState,
-  AuthEventType
-} from './auth';
+  AuthEventType,
+} from "./auth"
 
 // Export UserProfile and UserPreferences from user module only
-export type { UserProfile, UserPreferences } from './user';
+export type { UserProfile, UserPreferences } from "./user"
 
 // Export everything from session
-export * from './session';
+export * from "./session"

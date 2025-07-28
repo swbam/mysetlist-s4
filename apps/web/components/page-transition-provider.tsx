@@ -1,16 +1,16 @@
-'use client';
+"use client"
 
-import type { ReactNode } from 'react';
-import { usePageTransition } from '~/hooks/use-page-transition';
+import type { ReactNode } from "react"
+import { usePageTransition } from "~/hooks/use-page-transition"
 
 interface PageTransitionProviderProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 export function PageTransitionProvider({
   children,
 }: PageTransitionProviderProps) {
-  usePageTransition();
+  usePageTransition()
 
-  return <>{children}</>;
+  return <>{children}</>
 }

@@ -1,20 +1,20 @@
-import type { NextRequest } from 'next/server';
+import type { NextRequest } from "next/server"
 import {
   authRateLimitMiddleware,
   emailVerificationRateLimiter,
   passwordResetRateLimiter,
   signInRateLimiter,
   signUpRateLimiter,
-} from './auth-rate-limit';
-import { csrfProtection } from './csrf';
+} from "./auth-rate-limit"
+import { csrfProtection } from "./csrf"
 
 // Map of auth endpoints to their rate limiters
 const authEndpointLimiters = new Map([
-  ['/api/auth/sign-in', signInRateLimiter],
-  ['/api/auth/sign-up', signUpRateLimiter],
-  ['/api/auth/reset-password', passwordResetRateLimiter],
-  ['/api/auth/verify-email', emailVerificationRateLimiter],
-]);
+  ["/api/auth/sign-in", signInRateLimiter],
+  ["/api/auth/sign-up", signUpRateLimiter],
+  ["/api/auth/reset-password", passwordResetRateLimiter],
+  ["/api/auth/verify-email", emailVerificationRateLimiter],
+])
 
 /**
  * Apply security middleware to API routes
@@ -22,29 +22,29 @@ const authEndpointLimiters = new Map([
 export async function applySecurityMiddleware(
   request: NextRequest
 ): Promise<Response | null> {
-  const pathname = request.nextUrl.pathname;
+  const pathname = request.nextUrl.pathname
 
   // Apply rate limiting to auth endpoints
-  const rateLimiter = authEndpointLimiters.get(pathname);
+  const rateLimiter = authEndpointLimiters.get(pathname)
   if (rateLimiter) {
     const rateLimitResponse = await authRateLimitMiddleware(
       request,
       rateLimiter
-    );
+    )
     if (rateLimitResponse) {
-      return rateLimitResponse;
+      return rateLimitResponse
     }
   }
 
   // Apply CSRF protection to state-changing operations
-  if (pathname.startsWith('/api/') && request.method !== 'GET') {
-    const csrfResponse = await csrfProtection(request);
+  if (pathname.startsWith("/api/") && request.method !== "GET") {
+    const csrfResponse = await csrfProtection(request)
     if (csrfResponse) {
-      return csrfResponse;
+      return csrfResponse
     }
   }
 
-  return null;
+  return null
 }
 
 /**
@@ -53,17 +53,17 @@ export async function applySecurityMiddleware(
 export function getSecurityHeaders(): Record<string, string> {
   return {
     // Prevent clickjacking
-    'X-Frame-Options': 'DENY',
+    "X-Frame-Options": "DENY",
     // Prevent MIME type sniffing
-    'X-Content-Type-Options': 'nosniff',
+    "X-Content-Type-Options": "nosniff",
     // Enable XSS protection
-    'X-XSS-Protection': '1; mode=block',
+    "X-XSS-Protection": "1; mode=block",
     // Referrer policy
-    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    "Referrer-Policy": "strict-origin-when-cross-origin",
     // Permissions policy
-    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
     // Content Security Policy
-    'Content-Security-Policy': [
+    "Content-Security-Policy": [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
       "style-src 'self' 'unsafe-inline'",
@@ -75,7 +75,7 @@ export function getSecurityHeaders(): Record<string, string> {
       "base-uri 'self'",
       "form-action 'self'",
       "frame-ancestors 'none'",
-      'upgrade-insecure-requests',
-    ].join('; '),
-  };
+      "upgrade-insecure-requests",
+    ].join("; "),
+  }
 }

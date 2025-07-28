@@ -3,5 +3,5 @@
 // MySetlist is focused on setlist voting, not social following features
 
 export async function FollowerCount() {
-  return null; // Component disabled
+  return null // Component disabled
 }

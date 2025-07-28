@@ -2,31 +2,31 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
+} from "@repo/design-system/components/ui/avatar"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Music } from 'lucide-react';
-import Link from 'next/link';
-import { parseGenres } from '~/lib/utils';
-import { getSimilarArtists } from '../actions';
+} from "@repo/design-system/components/ui/card"
+import { Music } from "lucide-react"
+import Link from "next/link"
+import { parseGenres } from "~/lib/utils"
+import { getSimilarArtists } from "../actions"
 
 interface SimilarArtistsProps {
-  artistId: string;
-  genres: string | null;
+  artistId: string
+  genres: string | null
 }
 
 export async function SimilarArtists({
   artistId,
   genres,
 }: SimilarArtistsProps) {
-  const similarArtists = await getSimilarArtists(artistId, genres);
+  const similarArtists = await getSimilarArtists(artistId, genres)
 
   if (similarArtists.length === 0) {
-    return null;
+    return null
   }
 
   return (
@@ -54,7 +54,7 @@ export async function SimilarArtists({
                 <p className="truncate font-medium">{artist.name}</p>
                 {artist.genres && (
                   <p className="truncate text-muted-foreground text-sm">
-                    {parseGenres(artist.genres).slice(0, 2).join(', ')}
+                    {parseGenres(artist.genres).slice(0, 2).join(", ")}
                   </p>
                 )}
               </div>
@@ -63,5 +63,5 @@ export async function SimilarArtists({
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

@@ -1,51 +1,50 @@
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { Music, TrendingUp, Users } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { absoluteUrl } from '~/lib/absolute-url';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Card, CardContent } from "@repo/design-system/components/ui/card"
+import { Music, TrendingUp, Users } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { absoluteUrl } from "~/lib/absolute-url"
 
 async function getTrendingArtists() {
   try {
-    const res = await fetch(
-      absoluteUrl('/api/trending/artists?limit=4'),
-      { 
-        next: { revalidate: 300 },
-        headers: {
-          'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600',
-        },
-      }
-    );
+    const res = await fetch(absoluteUrl("/api/trending/artists?limit=4"), {
+      next: { revalidate: 300 },
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
+    })
 
     if (!res.ok) {
-      console.warn(`Failed to fetch trending artists: ${res.status} ${res.statusText}`);
-      return [];
+      console.warn(
+        `Failed to fetch trending artists: ${res.status} ${res.statusText}`
+      )
+      return []
     }
 
-    const data = await res.json();
-    return data.artists || [];
+    const data = await res.json()
+    return data.artists || []
   } catch (error) {
-    console.error('Error fetching trending artists:', error);
-    return [];
+    console.error("Error fetching trending artists:", error)
+    return []
   }
 }
 
 export async function TrendingArtists() {
   const formatFollowers = (count: number) => {
     if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M`;
+      return `${(count / 1000000).toFixed(1)}M`
     }
     if (count >= 1000) {
-      return `${(count / 1000).toFixed(0)}K`;
+      return `${(count / 1000).toFixed(0)}K`
     }
-    return count.toString();
-  };
+    return count.toString()
+  }
 
-  const trendingArtists = await getTrendingArtists();
+  const trendingArtists = await getTrendingArtists()
 
   if (trendingArtists.length === 0) {
-    return null; // Don't show the section if no trending artists
+    return null // Don't show the section if no trending artists
   }
 
   return (
@@ -106,19 +105,21 @@ export async function TrendingArtists() {
                   </h3>
                 </Link>
 
-                {artist.genres && Array.isArray(artist.genres) && artist.genres.length > 0 && (
-                  <div className="mb-3 flex gap-2">
-                    {artist.genres.slice(0, 2).map((genre: string) => (
-                      <Badge
-                        key={genre}
-                        variant="outline"
-                        className="text-xs"
-                      >
-                        {genre}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
+                {artist.genres &&
+                  Array.isArray(artist.genres) &&
+                  artist.genres.length > 0 && (
+                    <div className="mb-3 flex gap-2">
+                      {artist.genres.slice(0, 2).map((genre: string) => (
+                        <Badge
+                          key={genre}
+                          variant="outline"
+                          className="text-xs"
+                        >
+                          {genre}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
 
                 <div className="flex items-center justify-between text-muted-foreground text-sm">
                   <span className="flex items-center gap-1">
@@ -133,5 +134,5 @@ export async function TrendingArtists() {
         </div>
       </div>
     </section>
-  );
+  )
 }

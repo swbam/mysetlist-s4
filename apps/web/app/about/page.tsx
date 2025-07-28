@@ -3,16 +3,16 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Heart, Music, Users, Zap } from 'lucide-react';
-import type { Metadata } from 'next';
-import { createPageMetadata } from '~/lib/seo-metadata';
+} from "@repo/design-system/components/ui/card"
+import { Heart, Music, Users, Zap } from "lucide-react"
+import type { Metadata } from "next"
+import { createPageMetadata } from "~/lib/seo-metadata"
 
 export const metadata: Metadata = createPageMetadata({
-  title: 'About MySetlist | Your Concert Companion',
+  title: "About MySetlist | Your Concert Companion",
   description:
-    'Learn about MySetlist - the ultimate platform for concert fans to vote on setlists, discover new music, and connect with fellow music lovers.',
-});
+    "Learn about MySetlist - the ultimate platform for concert fans to vote on setlists, discover new music, and connect with fellow music lovers.",
+})
 
 const AboutPage = () => {
   return (
@@ -157,7 +157,7 @@ const AboutPage = () => {
         </Card>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AboutPage;
+export default AboutPage

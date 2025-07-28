@@ -10,24 +10,24 @@ import {
   Section,
   Tailwind,
   Text,
-} from '@react-email/components';
+} from "@react-email/components"
 
 type Show = {
-  id: string;
-  name: string;
-  artistName: string;
-  venue: string;
-  date: string;
-  time?: string;
-  ticketUrl?: string;
-  announcedAt: string;
-};
+  id: string
+  name: string
+  artistName: string
+  venue: string
+  date: string
+  time?: string
+  ticketUrl?: string
+  announcedAt: string
+}
 
 type NewShowNotificationTemplateProps = {
-  readonly userName: string;
-  readonly show: Show;
-  readonly appUrl: string;
-};
+  readonly userName: string
+  readonly show: Show
+  readonly appUrl: string
+}
 
 export const NewShowNotificationTemplate = ({
   userName,
@@ -101,15 +101,15 @@ export const NewShowNotificationTemplate = ({
               <Hr className="my-6" />
 
               <Text className="text-sm text-zinc-500">
-                You're receiving this notification because you follow{' '}
-                {show.artistName}. You can manage your notification preferences{' '}
+                You're receiving this notification because you follow{" "}
+                {show.artistName}. You can manage your notification preferences{" "}
                 <Link
                   href={`${appUrl}/settings`}
                   className="text-zinc-700 underline"
                 >
                   here
-                </Link>{' '}
-                or{' '}
+                </Link>{" "}
+                or{" "}
                 <Link
                   href={`${appUrl}/unsubscribe?type=new-shows`}
                   className="text-zinc-700 underline"
@@ -124,21 +124,21 @@ export const NewShowNotificationTemplate = ({
       </Body>
     </Html>
   </Tailwind>
-);
+)
 
 NewShowNotificationTemplate.PreviewProps = {
-  userName: 'Alex',
+  userName: "Alex",
   show: {
-    id: '123',
-    name: 'Winter Acoustic Tour',
-    artistName: 'Bon Iver',
-    venue: 'The Greek Theatre',
-    date: 'December 12, 2024',
-    time: '7:30 PM',
-    ticketUrl: 'https://example.com/tickets',
-    announcedAt: 'November 15, 2024',
+    id: "123",
+    name: "Winter Acoustic Tour",
+    artistName: "Bon Iver",
+    venue: "The Greek Theatre",
+    date: "December 12, 2024",
+    time: "7:30 PM",
+    ticketUrl: "https://example.com/tickets",
+    announcedAt: "November 15, 2024",
   },
-  appUrl: 'https://MySetlist.app',
-};
+  appUrl: "https://MySetlist.app",
+}
 
-export default NewShowNotificationTemplate;
+export default NewShowNotificationTemplate

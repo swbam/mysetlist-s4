@@ -1,11 +1,11 @@
-'use client';
+"use client"
 
-import { ModeToggle } from '@repo/design-system/components/mode-toggle';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Separator } from '@repo/design-system/components/ui/separator';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
+import { ModeToggle } from "@repo/design-system/components/mode-toggle"
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Separator } from "@repo/design-system/components/ui/separator"
+import { cn } from "@repo/design-system/lib/utils"
+import { AnimatePresence, motion } from "framer-motion"
 import {
   Bell,
   Calendar,
@@ -18,121 +18,121 @@ import {
   Settings,
   User,
   X,
-} from 'lucide-react';
-import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+} from "lucide-react"
+import Link from "next/link"
+import React, { useEffect, useState } from "react"
 
 interface MobileNavigationProps {
-  className?: string;
-  user?: any;
-  notificationCount?: number;
+  className?: string
+  user?: any
+  notificationCount?: number
 }
 
 const navigationItems = [
   {
-    title: 'Home',
-    href: '/',
+    title: "Home",
+    href: "/",
     icon: Home,
-    description: 'Discover trending shows',
+    description: "Discover trending shows",
   },
   {
-    title: 'Artists',
-    href: '/artists',
+    title: "Artists",
+    href: "/artists",
     icon: Music,
-    description: 'Browse music artists',
+    description: "Browse music artists",
   },
   {
-    title: 'Shows',
-    href: '/shows',
+    title: "Shows",
+    href: "/shows",
     icon: Calendar,
-    description: 'Upcoming & past shows',
+    description: "Upcoming & past shows",
   },
   {
-    title: 'Venues',
-    href: '/venues',
+    title: "Venues",
+    href: "/venues",
     icon: MapPin,
-    description: 'Concert venues & locations',
+    description: "Concert venues & locations",
   },
-];
+]
 
 const userMenuItems = [
   {
-    title: 'Profile',
-    href: '/profile',
+    title: "Profile",
+    href: "/profile",
     icon: User,
-    description: 'Your profile & activity',
+    description: "Your profile & activity",
   },
   {
-    title: 'Following',
-    href: '/profile/following',
+    title: "Following",
+    href: "/profile/following",
     icon: Heart,
-    description: 'Artists you follow',
+    description: "Artists you follow",
   },
   {
-    title: 'Playlists',
-    href: '/playlists',
+    title: "Playlists",
+    href: "/playlists",
     icon: Headphones,
-    description: 'Your saved setlists',
+    description: "Your saved setlists",
   },
   {
-    title: 'Settings',
-    href: '/settings',
+    title: "Settings",
+    href: "/settings",
     icon: Settings,
-    description: 'Account & preferences',
+    description: "Account & preferences",
   },
-];
+]
 
 export const MobileNavigation = React.memo(function MobileNavigation({
   className,
   user,
   notificationCount = 0,
 }: MobileNavigationProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
+  const [isOpen, setIsOpen] = useState(false)
+  const [isClosing, setIsClosing] = useState(false)
 
   // Close menu on route change
   useEffect(() => {
     const handleRouteChange = () => {
-      setIsOpen(false);
-    };
+      setIsOpen(false)
+    }
 
     // Listen for navigation events
-    window.addEventListener('popstate', handleRouteChange);
+    window.addEventListener("popstate", handleRouteChange)
 
     return () => {
-      window.removeEventListener('popstate', handleRouteChange);
-    };
-  }, []);
+      window.removeEventListener("popstate", handleRouteChange)
+    }
+  }, [])
 
   // Prevent body scroll when menu is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden"
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset"
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
+      document.body.style.overflow = "unset"
+    }
+  }, [isOpen])
 
   const handleClose = () => {
-    setIsClosing(true);
+    setIsClosing(true)
     setTimeout(() => {
-      setIsOpen(false);
-      setIsClosing(false);
-    }, 150);
-  };
+      setIsOpen(false)
+      setIsClosing(false)
+    }, 150)
+  }
 
   const handleLinkClick = () => {
-    handleClose();
-  };
+    handleClose()
+  }
 
   return (
     <>
       {/* Mobile Menu Toggle Button */}
-      <div className={cn('flex md:hidden', className)}>
+      <div className={cn("flex md:hidden", className)}>
         <Button
           variant="ghost"
           size="sm"
@@ -150,7 +150,7 @@ export const MobileNavigation = React.memo(function MobileNavigation({
                   variant="destructive"
                   className="-top-1 -right-1 absolute flex h-5 w-5 items-center justify-center p-0 text-xs"
                 >
-                  {notificationCount > 9 ? '9+' : notificationCount}
+                  {notificationCount > 9 ? "9+" : notificationCount}
                 </Badge>
               )}
             </>
@@ -174,11 +174,11 @@ export const MobileNavigation = React.memo(function MobileNavigation({
 
             {/* Menu Panel */}
             <motion.div
-              initial={{ x: '-100%' }}
-              animate={{ x: isClosing ? '-100%' : 0 }}
-              exit={{ x: '-100%' }}
+              initial={{ x: "-100%" }}
+              animate={{ x: isClosing ? "-100%" : 0 }}
+              exit={{ x: "-100%" }}
               transition={{
-                type: 'spring',
+                type: "spring",
                 stiffness: 300,
                 damping: 30,
                 duration: 0.3,
@@ -244,7 +244,7 @@ export const MobileNavigation = React.memo(function MobileNavigation({
                   <div className="p-4">
                     <nav className="space-y-2">
                       {navigationItems.map((item) => {
-                        const Icon = item.icon;
+                        const Icon = item.icon
                         return (
                           <Link
                             key={item.href}
@@ -263,7 +263,7 @@ export const MobileNavigation = React.memo(function MobileNavigation({
                               </p>
                             </div>
                           </Link>
-                        );
+                        )
                       })}
 
                       {/* My Artists link for authenticated users */}
@@ -296,7 +296,7 @@ export const MobileNavigation = React.memo(function MobileNavigation({
                         </p>
                         <nav className="space-y-2">
                           {userMenuItems.map((item) => {
-                            const Icon = item.icon;
+                            const Icon = item.icon
                             return (
                               <Link
                                 key={item.href}
@@ -314,7 +314,7 @@ export const MobileNavigation = React.memo(function MobileNavigation({
                                   </p>
                                 </div>
                               </Link>
-                            );
+                            )
                           })}
                         </nav>
                       </div>
@@ -362,5 +362,5 @@ export const MobileNavigation = React.memo(function MobileNavigation({
         )}
       </AnimatePresence>
     </>
-  );
-});
+  )
+})

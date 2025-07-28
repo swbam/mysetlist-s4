@@ -1,20 +1,32 @@
 // Re-export database client and utilities
-export { db, getDb, sql, eq, and, or, desc, asc, ilike, isNull, isNotNull } from './src/client';
-export type { Database } from './src/client';
+export {
+  db,
+  getDb,
+  sql,
+  eq,
+  and,
+  or,
+  desc,
+  asc,
+  ilike,
+  isNull,
+  isNotNull,
+} from "./src/client"
+export type { Database } from "./src/client"
 
 // Re-export from main index
-export { testConnection } from './src/index';
+export { testConnection } from "./src/index"
 
 // Re-export all schema tables
-export * from './src/schema';
+export * from "./src/schema"
 
 // Re-export growth calculation utilities
-export * from './src/utils/growth-calculation';
+export * from "./src/utils/growth-calculation"
 
 // Re-export realtime functionality
-export { realtimeManager } from './src/realtime';
-export type { RealtimeManager } from './src/realtime';
+export { realtimeManager } from "./src/realtime"
+export type { RealtimeManager } from "./src/realtime"
 
 // Re-export Supabase client helpers
-export { createSupabaseBrowserClient } from './src/supabase-client';
-export { createSupabaseAdminClient } from './src/supabase';
+export { createSupabaseBrowserClient } from "./src/supabase-client"
+export { createSupabaseAdminClient } from "./src/supabase"

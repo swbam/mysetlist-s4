@@ -4,17 +4,17 @@
  */
 
 export const isBrowser =
-  typeof window !== 'undefined' && typeof document !== 'undefined';
+  typeof window !== "undefined" && typeof document !== "undefined"
 
-export const safeDocument = isBrowser ? document : undefined;
-export const safeWindow = isBrowser ? window : undefined;
+export const safeDocument = isBrowser ? document : undefined
+export const safeWindow = isBrowser ? window : undefined
 
 /**
  * Safely add a class to document.body
  */
 export function addBodyClass(className: string): void {
   if (isBrowser && safeDocument?.body) {
-    safeDocument.body.classList.add(className);
+    safeDocument.body.classList.add(className)
   }
 }
 
@@ -23,7 +23,7 @@ export function addBodyClass(className: string): void {
  */
 export function removeBodyClass(className: string): void {
   if (isBrowser && safeDocument?.body) {
-    safeDocument.body.classList.remove(className);
+    safeDocument.body.classList.remove(className)
   }
 }
 
@@ -32,7 +32,7 @@ export function removeBodyClass(className: string): void {
  */
 export function setBodyOverflow(value: string): void {
   if (isBrowser && safeDocument?.body) {
-    safeDocument.body.style.overflow = value;
+    safeDocument.body.style.overflow = value
   }
 }
 
@@ -41,9 +41,9 @@ export function setBodyOverflow(value: string): void {
  */
 export function safeGetElementById(id: string): HTMLElement | null {
   if (isBrowser && safeDocument) {
-    return safeDocument.getElementById(id);
+    return safeDocument.getElementById(id)
   }
-  return null;
+  return null
 }
 
 /**
@@ -51,7 +51,7 @@ export function safeGetElementById(id: string): HTMLElement | null {
  */
 export function safeAppendToHead(element: HTMLElement): void {
   if (isBrowser && safeDocument?.head) {
-    safeDocument.head.appendChild(element);
+    safeDocument.head.appendChild(element)
   }
 }
 
@@ -64,10 +64,10 @@ export function safeAddEventListener<K extends keyof WindowEventMap>(
   options?: boolean | AddEventListenerOptions
 ): () => void {
   if (isBrowser && safeWindow) {
-    safeWindow.addEventListener(type, listener, options);
-    return () => safeWindow.removeEventListener(type, listener, options);
+    safeWindow.addEventListener(type, listener, options)
+    return () => safeWindow.removeEventListener(type, listener, options)
   }
-  return () => {}; // No-op cleanup function
+  return () => {} // No-op cleanup function
 }
 
 /**
@@ -75,8 +75,8 @@ export function safeAddEventListener<K extends keyof WindowEventMap>(
  */
 export function getLocationOrigin(): string {
   if (isBrowser && safeWindow?.location) {
-    return safeWindow.location.origin;
+    return safeWindow.location.origin
   }
   // Fallback for SSR - you might want to use an environment variable here
-  return process.env['NEXT_PUBLIC_APP_URL'] || 'http://localhost:3001';
+  return process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001"
 }

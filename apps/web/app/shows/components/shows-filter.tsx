@@ -1,92 +1,92 @@
-'use client';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Calendar } from '@repo/design-system/components/ui/calendar';
+"use client"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Calendar } from "@repo/design-system/components/ui/calendar"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '@repo/design-system/components/ui/popover';
+} from "@repo/design-system/components/ui/popover"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/design-system/components/ui/select';
-import { addDays, format, startOfWeek } from 'date-fns';
-import { CalendarIcon, MapPin, X } from 'lucide-react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { fetchCities } from '../actions';
+} from "@repo/design-system/components/ui/select"
+import { addDays, format, startOfWeek } from "date-fns"
+import { CalendarIcon, MapPin, X } from "lucide-react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
+import { fetchCities } from "../actions"
 
 export const ShowsFilter = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
-  const [city, setCity] = useState(searchParams.get('city') || 'all');
+  const [city, setCity] = useState(searchParams.get("city") || "all")
   const [dateFrom, setDateFrom] = useState<Date | undefined>(
-    searchParams.get('dateFrom')
-      ? new Date(searchParams.get('dateFrom')!)
+    searchParams.get("dateFrom")
+      ? new Date(searchParams.get("dateFrom")!)
       : undefined
-  );
+  )
   const [dateTo, setDateTo] = useState<Date | undefined>(
-    searchParams.get('dateTo')
-      ? new Date(searchParams.get('dateTo')!)
+    searchParams.get("dateTo")
+      ? new Date(searchParams.get("dateTo")!)
       : undefined
-  );
-  const [orderBy, setOrderBy] = useState(searchParams.get('orderBy') || 'date');
-  const [availableCities, setAvailableCities] = useState<string[]>([]);
+  )
+  const [orderBy, setOrderBy] = useState(searchParams.get("orderBy") || "date")
+  const [availableCities, setAvailableCities] = useState<string[]>([])
 
   useEffect(() => {
     // Load available cities
-    fetchCities().then((cities) => setAvailableCities(cities));
-  }, []);
+    fetchCities().then((cities) => setAvailableCities(cities))
+  }, [])
 
   const applyFilters = () => {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams()
 
-    if (city && city !== 'all') {
-      params.set('city', city);
+    if (city && city !== "all") {
+      params.set("city", city)
     }
     if (dateFrom) {
-      params.set('dateFrom', format(dateFrom, 'yyyy-MM-dd'));
+      params.set("dateFrom", format(dateFrom, "yyyy-MM-dd"))
     }
     if (dateTo) {
-      params.set('dateTo', format(dateTo, 'yyyy-MM-dd'));
+      params.set("dateTo", format(dateTo, "yyyy-MM-dd"))
     }
-    if (orderBy !== 'date') {
-      params.set('orderBy', orderBy);
+    if (orderBy !== "date") {
+      params.set("orderBy", orderBy)
     }
 
-    router.push(`/shows?${params.toString()}`);
-  };
+    router.push(`/shows?${params.toString()}`)
+  }
 
   const clearFilters = () => {
-    setCity('all');
-    setDateFrom(undefined);
-    setDateTo(undefined);
-    setOrderBy('date');
-    router.push('/shows');
-  };
+    setCity("all")
+    setDateFrom(undefined)
+    setDateTo(undefined)
+    setOrderBy("date")
+    router.push("/shows")
+  }
 
   const setThisWeekend = () => {
-    const now = new Date();
+    const now = new Date()
     // Get this weekend (Saturday and Sunday)
-    const startOfCurrentWeek = startOfWeek(now, { weekStartsOn: 1 }); // Monday start
-    const weekendStart = addDays(startOfCurrentWeek, 5); // Saturday
-    const weekendEnd = addDays(startOfCurrentWeek, 6); // Sunday
-    setDateFrom(weekendStart);
-    setDateTo(weekendEnd);
-  };
+    const startOfCurrentWeek = startOfWeek(now, { weekStartsOn: 1 }) // Monday start
+    const weekendStart = addDays(startOfCurrentWeek, 5) // Saturday
+    const weekendEnd = addDays(startOfCurrentWeek, 6) // Sunday
+    setDateFrom(weekendStart)
+    setDateTo(weekendEnd)
+  }
 
   const setNext30Days = () => {
-    const now = new Date();
-    setDateFrom(now);
-    setDateTo(addDays(now, 30));
-  };
+    const now = new Date()
+    setDateFrom(now)
+    setDateTo(addDays(now, 30))
+  }
 
   const hasActiveFilters =
-    (city && city !== 'all') || dateFrom || dateTo || orderBy !== 'date';
+    (city && city !== "all") || dateFrom || dateTo || orderBy !== "date"
 
   return (
     <div className="flex flex-col gap-4 rounded-lg border bg-card p-4">
@@ -115,9 +115,9 @@ export const ShowsFilter = () => {
               <CalendarIcon className="mr-2 h-4 w-4" />
               {dateFrom
                 ? dateTo
-                  ? `${format(dateFrom, 'MMM d')} - ${format(dateTo, 'MMM d')}`
-                  : format(dateFrom, 'PPP')
-                : 'Date range'}
+                  ? `${format(dateFrom, "MMM d")} - ${format(dateTo, "MMM d")}`
+                  : format(dateFrom, "PPP")
+                : "Date range"}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
@@ -182,5 +182,5 @@ export const ShowsFilter = () => {
         </Button>
       </div>
     </div>
-  );
-};
+  )
+}

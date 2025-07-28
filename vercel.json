@@ -56,7 +56,6 @@
     {
       "source": "/healthz",
       "destination": "/api/health"
-
     }
   ],
   "headers": [

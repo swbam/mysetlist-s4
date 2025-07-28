@@ -1,8 +1,8 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
+import { Button } from "@repo/design-system/components/ui/button"
+import { cn } from "@repo/design-system/lib/utils"
+import { AnimatePresence, motion } from "framer-motion"
 import {
   Bell,
   Music,
@@ -11,123 +11,123 @@ import {
   UserPlus,
   Volume2,
   X,
-} from 'lucide-react';
-import { useEffect, useState } from 'react';
+} from "lucide-react"
+import { useEffect, useState } from "react"
 
 export type NotificationType =
-  | 'song_played'
-  | 'vote_update'
-  | 'user_joined'
-  | 'setlist_update';
+  | "song_played"
+  | "vote_update"
+  | "user_joined"
+  | "setlist_update"
 
 export interface RealtimeNotification {
-  id: string;
-  type: NotificationType;
-  title: string;
-  message: string;
-  timestamp: Date;
-  data?: any;
+  id: string
+  type: NotificationType
+  title: string
+  message: string
+  timestamp: Date
+  data?: any
 }
 
 interface RealtimeNotificationsProps {
-  notifications: RealtimeNotification[];
-  onDismiss?: (id: string) => void;
-  position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
-  autoHideDuration?: number;
-  maxVisible?: number;
+  notifications: RealtimeNotification[]
+  onDismiss?: (id: string) => void
+  position?: "top-right" | "top-left" | "bottom-right" | "bottom-left"
+  autoHideDuration?: number
+  maxVisible?: number
 }
 
 export function RealtimeNotifications({
   notifications,
   onDismiss,
-  position = 'top-right',
+  position = "top-right",
   autoHideDuration = 5000,
   maxVisible = 3,
 }: RealtimeNotificationsProps) {
-  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set())
 
   const visibleNotifications = notifications
     .filter((n) => !dismissedIds.has(n.id))
-    .slice(0, maxVisible);
+    .slice(0, maxVisible)
 
   const handleDismiss = (id: string) => {
-    setDismissedIds((prev) => new Set([...prev, id]));
+    setDismissedIds((prev) => new Set([...prev, id]))
     if (onDismiss) {
-      onDismiss(id);
+      onDismiss(id)
     }
-  };
+  }
 
   const getIcon = (type: NotificationType) => {
     switch (type) {
-      case 'song_played':
-        return PlayCircle;
-      case 'vote_update':
-        return ThumbsUp;
-      case 'user_joined':
-        return UserPlus;
-      case 'setlist_update':
-        return Music;
+      case "song_played":
+        return PlayCircle
+      case "vote_update":
+        return ThumbsUp
+      case "user_joined":
+        return UserPlus
+      case "setlist_update":
+        return Music
       default:
-        return Bell;
+        return Bell
     }
-  };
+  }
 
   const getNotificationColor = (type: NotificationType) => {
     switch (type) {
-      case 'song_played':
-        return 'from-green-500 to-green-600';
-      case 'vote_update':
-        return 'from-blue-500 to-blue-600';
-      case 'user_joined':
-        return 'from-blue-500 to-purple-600';
-      case 'setlist_update':
-        return 'from-orange-500 to-orange-600';
+      case "song_played":
+        return "from-green-500 to-green-600"
+      case "vote_update":
+        return "from-blue-500 to-blue-600"
+      case "user_joined":
+        return "from-blue-500 to-purple-600"
+      case "setlist_update":
+        return "from-orange-500 to-orange-600"
       default:
-        return 'from-gray-500 to-gray-600';
+        return "from-gray-500 to-gray-600"
     }
-  };
+  }
 
   const positionClasses = {
-    'top-right': 'top-4 right-4',
-    'top-left': 'top-4 left-4',
-    'bottom-right': 'bottom-4 right-4',
-    'bottom-left': 'bottom-4 left-4',
-  };
+    "top-right": "top-4 right-4",
+    "top-left": "top-4 left-4",
+    "bottom-right": "bottom-4 right-4",
+    "bottom-left": "bottom-4 left-4",
+  }
 
   useEffect(() => {
     if (autoHideDuration <= 0) {
-      return;
+      return
     }
 
     const timers = visibleNotifications.map((notification) => {
       return setTimeout(() => {
-        handleDismiss(notification.id);
-      }, autoHideDuration);
-    });
+        handleDismiss(notification.id)
+      }, autoHideDuration)
+    })
 
     return () => {
-      timers.forEach((timer) => clearTimeout(timer));
-    };
-  }, [visibleNotifications, autoHideDuration]);
+      timers.forEach((timer) => clearTimeout(timer))
+    }
+  }, [visibleNotifications, autoHideDuration])
 
   return (
     <div
       className={cn(
-        'pointer-events-none fixed z-50',
+        "pointer-events-none fixed z-50",
         positionClasses[position]
       )}
     >
       <AnimatePresence>
         {visibleNotifications.map((notification, index) => {
-          const Icon = getIcon(notification.type);
-          const gradientColor = getNotificationColor(notification.type);
+          const Icon = getIcon(notification.type)
+          const gradientColor = getNotificationColor(notification.type)
 
           return (
             <motion.div
               key={notification.id}
               initial={{
                 opacity: 0,
-                x: position.includes('right') ? 100 : -100,
+                x: position.includes("right") ? 100 : -100,
                 scale: 0.8,
               }}
               animate={{
@@ -138,11 +138,11 @@ export function RealtimeNotifications({
               }}
               exit={{
                 opacity: 0,
-                x: position.includes('right') ? 100 : -100,
+                x: position.includes("right") ? 100 : -100,
                 scale: 0.8,
               }}
               transition={{
-                type: 'spring',
+                type: "spring",
                 stiffness: 300,
                 damping: 30,
               }}
@@ -152,7 +152,7 @@ export function RealtimeNotifications({
                 {/* Gradient background */}
                 <div
                   className={cn(
-                    'absolute inset-0 bg-gradient-to-r opacity-90',
+                    "absolute inset-0 bg-gradient-to-r opacity-90",
                     gradientColor
                   )}
                 />
@@ -191,43 +191,41 @@ export function RealtimeNotifications({
                 </div>
               </div>
             </motion.div>
-          );
+          )
         })}
       </AnimatePresence>
     </div>
-  );
+  )
 }
 
 // Hook for managing notifications
 export function useRealtimeNotifications() {
-  const [notifications, setNotifications] = useState<RealtimeNotification[]>(
-    []
-  );
+  const [notifications, setNotifications] = useState<RealtimeNotification[]>([])
 
   const addNotification = (
-    notification: Omit<RealtimeNotification, 'id' | 'timestamp'>
+    notification: Omit<RealtimeNotification, "id" | "timestamp">
   ) => {
     const newNotification: RealtimeNotification = {
       ...notification,
       id: Math.random().toString(36).substr(2, 9),
       timestamp: new Date(),
-    };
+    }
 
-    setNotifications((prev) => [newNotification, ...prev]);
-  };
+    setNotifications((prev) => [newNotification, ...prev])
+  }
 
   const removeNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  };
+    setNotifications((prev) => prev.filter((n) => n.id !== id))
+  }
 
   const clearNotifications = () => {
-    setNotifications([]);
-  };
+    setNotifications([])
+  }
 
   return {
     notifications,
     addNotification,
     removeNotification,
     clearNotifications,
-  };
+  }
 }

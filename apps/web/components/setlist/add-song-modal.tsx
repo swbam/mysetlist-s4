@@ -1,35 +1,35 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@repo/design-system/components/ui/dialog';
-import { Music } from 'lucide-react';
-import { useTransition } from 'react';
-import { toast } from 'sonner';
-import { SongSelector } from './song-selector';
+} from "@repo/design-system/components/ui/dialog"
+import { Music } from "lucide-react"
+import { useTransition } from "react"
+import { toast } from "sonner"
+import { SongSelector } from "./song-selector"
 
 interface Song {
-  id: string;
-  spotify_id: string;
-  title: string;
-  artist: string;
-  album?: string;
-  album_art_url?: string;
-  duration_ms?: number;
-  is_explicit?: boolean;
+  id: string
+  spotify_id: string
+  title: string
+  artist: string
+  album?: string
+  album_art_url?: string
+  duration_ms?: number
+  is_explicit?: boolean
 }
 
 interface AddSongModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  setlistId: string;
-  artistId?: string;
-  onSongAdded?: (song: Song) => void;
+  open: boolean
+  onOpenChange: (open: boolean) => void
+  setlistId: string
+  artistId?: string
+  onSongAdded?: (song: Song) => void
 }
 
 export function AddSongModal({
@@ -39,16 +39,16 @@ export function AddSongModal({
   artistId,
   onSongAdded,
 }: AddSongModalProps) {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, startTransition] = useTransition()
 
   const handleSongSelect = async (song: Song) => {
     startTransition(async () => {
       try {
         // First, check if song exists in our database, if not create it
-        const songResponse = await fetch('/api/songs/upsert', {
-          method: 'POST',
+        const songResponse = await fetch("/api/songs/upsert", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             spotify_id: song.spotify_id,
@@ -59,42 +59,42 @@ export function AddSongModal({
             duration_ms: song.duration_ms,
             is_explicit: song.is_explicit,
           }),
-        });
+        })
 
         if (!songResponse.ok) {
-          throw new Error('Failed to save song');
+          throw new Error("Failed to save song")
         }
 
-        const { song: savedSong } = await songResponse.json();
+        const { song: savedSong } = await songResponse.json()
 
         // Then add to setlist
-        const setlistResponse = await fetch('/api/setlists/songs', {
-          method: 'POST',
+        const setlistResponse = await fetch("/api/setlists/songs", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
             setlistId,
             songId: savedSong.id,
             position: 999, // Will be adjusted by server
           }),
-        });
+        })
 
         if (!setlistResponse.ok) {
-          const error = await setlistResponse.text();
-          throw new Error(error || 'Failed to add song to setlist');
+          const error = await setlistResponse.text()
+          throw new Error(error || "Failed to add song to setlist")
         }
 
-        toast.success(`"${song.title}" added to setlist`);
-        onSongAdded?.(song);
+        toast.success(`"${song.title}" added to setlist`)
+        onSongAdded?.(song)
 
         // Keep modal open for adding more songs
         // onOpenChange(false);
       } catch (error: any) {
-        toast.error(error.message || 'Failed to add song');
+        toast.error(error.message || "Failed to add song")
       }
-    });
-  };
+    })
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -130,5 +130,5 @@ export function AddSongModal({
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

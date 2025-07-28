@@ -1,6 +1,6 @@
-'use client';
+"use client"
 
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion"
 
 export function HomeLoadingSkeleton() {
   return (
@@ -11,24 +11,24 @@ export function HomeLoadingSkeleton() {
           <div className="mx-auto max-w-5xl text-center">
             <motion.div
               animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
               className="space-y-6"
             >
               {/* Title skeleton */}
               <div className="mx-auto h-16 w-3/4 rounded-lg bg-gradient-to-r from-muted via-muted/50 to-muted" />
-              
+
               {/* Subtitle skeleton */}
               <div className="mx-auto h-6 w-1/2 rounded-lg bg-muted/70" />
-              
+
               {/* Search skeleton */}
               <div className="mx-auto mt-12 h-14 w-full max-w-2xl rounded-lg bg-muted/60" />
-              
+
               {/* Buttons skeleton */}
               <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
                 <div className="h-12 w-full min-w-[200px] rounded-lg bg-primary/20 sm:w-auto" />
                 <div className="h-12 w-full min-w-[200px] rounded-lg bg-muted/60 sm:w-auto" />
               </div>
-              
+
               {/* Stats skeleton */}
               <div className="mx-auto mt-16 grid max-w-2xl grid-cols-2 gap-6 md:grid-cols-3 md:gap-8">
                 {[...Array(3)].map((_, i) => (
@@ -53,13 +53,17 @@ export function HomeLoadingSkeleton() {
             </div>
             <div className="h-6 w-24 rounded bg-muted/50" />
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-7">
             {[...Array(7)].map((_, i) => (
               <motion.div
                 key={i}
                 animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, delay: i * 0.1, repeat: Infinity }}
+                transition={{
+                  duration: 2,
+                  delay: i * 0.1,
+                  repeat: Number.POSITIVE_INFINITY,
+                }}
                 className="space-y-3"
               >
                 <div className="aspect-[3/4] rounded-xl bg-muted/60" />
@@ -81,13 +85,17 @@ export function HomeLoadingSkeleton() {
             </div>
             <div className="h-6 w-24 rounded bg-muted/50" />
           </div>
-          
+
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {[...Array(4)].map((_, i) => (
               <motion.div
                 key={i}
                 animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, delay: i * 0.15, repeat: Infinity }}
+                transition={{
+                  duration: 2,
+                  delay: i * 0.15,
+                  repeat: Number.POSITIVE_INFINITY,
+                }}
                 className="overflow-hidden rounded-lg border border-border/50 bg-card/50"
               >
                 <div className="aspect-[16/10] bg-muted/60" />
@@ -106,7 +114,7 @@ export function HomeLoadingSkeleton() {
         </div>
       </section>
     </div>
-  );
+  )
 }
 
-export default HomeLoadingSkeleton;
+export default HomeLoadingSkeleton

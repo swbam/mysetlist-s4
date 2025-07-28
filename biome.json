@@ -1,7 +1,35 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "extends": ["ultracite"],
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 80,
+    "attributePosition": "auto"
+  },
+  "organizeImports": {
+    "enabled": true
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    }
+  },
   "javascript": {
+    "formatter": {
+      "jsxQuoteStyle": "double",
+      "quoteProperties": "asNeeded",
+      "trailingCommas": "es5",
+      "semicolons": "asNeeded",
+      "arrowParentheses": "always",
+      "bracketSpacing": true,
+      "bracketSameLine": false,
+      "quoteStyle": "double",
+      "attributePosition": "auto"
+    },
     "globals": ["Liveblocks"]
   },
   "files": {
@@ -11,7 +39,13 @@
       "packages/design-system/hooks/**",
       "packages/collaboration/config.ts",
       "apps/docs/**/*.json",
-      "apps/email/.react-email/**"
+      "apps/email/.react-email/**",
+      "CCPlugins/**",
+      "node_modules/**",
+      ".next/**",
+      ".turbo/**",
+      "dist/**",
+      "build/**"
     ]
   }
 }

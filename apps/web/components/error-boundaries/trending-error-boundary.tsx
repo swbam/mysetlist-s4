@@ -1,17 +1,17 @@
-'use client';
+"use client"
 
-import type { ReactNode } from 'react';
-import { PageErrorBoundary } from './page-error-boundary';
+import type { ReactNode } from "react"
+import { PageErrorBoundary } from "./page-error-boundary"
 
 interface TrendingErrorBoundaryProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 export function TrendingErrorBoundary({
   children,
 }: TrendingErrorBoundaryProps) {
-  const ErrorBoundary = PageErrorBoundary as any;
-  
+  const ErrorBoundary = PageErrorBoundary as any
+
   return (
     <ErrorBoundary
       fallbackTitle="Error loading trending content"
@@ -20,5 +20,5 @@ export function TrendingErrorBoundary({
     >
       {children}
     </ErrorBoundary>
-  );
+  )
 }

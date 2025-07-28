@@ -1,13 +1,13 @@
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Home, Music2, Search } from 'lucide-react';
-import Link from 'next/link';
+} from "@repo/design-system/components/ui/card"
+import { Home, Music2, Search } from "lucide-react"
+import Link from "next/link"
 
 export default function NotFound() {
   return (
@@ -72,5 +72,5 @@ export default function NotFound() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

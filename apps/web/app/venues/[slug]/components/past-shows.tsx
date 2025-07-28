@@ -1,27 +1,27 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Card } from '@repo/design-system/components/ui/card';
-import { format } from 'date-fns';
-import { Calendar, Music } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Card } from "@repo/design-system/components/ui/card"
+import { format } from "date-fns"
+import { Calendar, Music } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
 
 interface Show {
-  id: string;
-  name: string;
-  date: Date;
+  id: string
+  name: string
+  date: Date
   artist: {
-    id: string;
-    name: string;
-    slug: string;
-    imageUrl: string | null;
-  };
+    id: string
+    name: string
+    slug: string
+    imageUrl: string | null
+  }
 }
 
 interface PastShowsProps {
-  shows: Show[];
-  venueId: string;
+  shows: Show[]
+  venueId: string
 }
 
 export function PastShows({ shows, venueId: _venueId }: PastShowsProps) {
@@ -34,23 +34,23 @@ export function PastShows({ shows, venueId: _venueId }: PastShowsProps) {
           No shows have been recorded at this venue yet.
         </p>
       </Card>
-    );
+    )
   }
 
   // Group shows by year
   const showsByYear = shows.reduce(
     (acc, show) => {
-      const year = new Date(show.date).getFullYear();
+      const year = new Date(show.date).getFullYear()
       if (!acc[year]) {
-        acc[year] = [];
+        acc[year] = []
       }
-      acc[year].push(show);
-      return acc;
+      acc[year].push(show)
+      return acc
     },
     {} as Record<number, Show[]>
-  );
+  )
 
-  const years = Object.keys(showsByYear).sort((a, b) => Number(b) - Number(a));
+  const years = Object.keys(showsByYear).sort((a, b) => Number(b) - Number(a))
 
   return (
     <div className="space-y-6">
@@ -96,7 +96,7 @@ export function PastShows({ shows, venueId: _venueId }: PastShowsProps) {
                       <div className="mt-1 flex items-center gap-2">
                         <Calendar className="h-3 w-3 text-muted-foreground" />
                         <span className="text-muted-foreground text-sm">
-                          {format(new Date(show.date), 'MMMM d, yyyy')}
+                          {format(new Date(show.date), "MMMM d, yyyy")}
                         </span>
                       </div>
                     </div>
@@ -119,5 +119,5 @@ export function PastShows({ shows, venueId: _venueId }: PastShowsProps) {
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -1,13 +1,13 @@
-'use client';
+"use client"
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
+} from "@repo/design-system/components/ui/avatar"
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Skeleton } from "@repo/design-system/components/ui/skeleton"
 import {
   Calendar,
   Clock,
@@ -16,150 +16,150 @@ import {
   UserPlus,
   Users,
   Vote,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+} from "lucide-react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
 
 interface ActivityItem {
-  id: string;
-  type: 'vote' | 'follow' | 'attendance' | 'setlist_create' | 'show_create';
+  id: string
+  type: "vote" | "follow" | "attendance" | "setlist_create" | "show_create"
   user: {
-    id: string;
-    displayName: string;
-    avatarUrl?: string;
-  };
+    id: string
+    displayName: string
+    avatarUrl?: string
+  }
   target: {
-    id: string;
-    name: string;
-    slug: string;
-    type: 'artist' | 'show' | 'venue' | 'setlist';
-  };
-  createdAt: string;
+    id: string
+    name: string
+    slug: string
+    type: "artist" | "show" | "venue" | "setlist"
+  }
+  createdAt: string
   metadata?: {
-    voteType?: 'up' | 'down';
-    songCount?: number;
-  };
+    voteType?: "up" | "down"
+    songCount?: number
+  }
 }
 
 export function RecentActivity() {
-  const [activities, setActivities] = useState<ActivityItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [activities, setActivities] = useState<ActivityItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchRecentActivity();
-  }, []);
+    fetchRecentActivity()
+  }, [])
 
   const fetchRecentActivity = async () => {
     try {
-      const response = await fetch('/api/activity/recent?limit=15');
+      const response = await fetch("/api/activity/recent?limit=15")
       if (!response.ok) {
-        throw new Error('Failed to fetch recent activity');
+        throw new Error("Failed to fetch recent activity")
       }
 
-      const data = await response.json();
-      setActivities(data.activities || []);
+      const data = await response.json()
+      setActivities(data.activities || [])
     } catch (_err) {
-      setError('Failed to load recent activity');
+      setError("Failed to load recent activity")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'vote':
-        return <Vote className="h-3 w-3" />;
-      case 'follow':
-        return <UserPlus className="h-3 w-3" />;
-      case 'attendance':
-        return <Users className="h-3 w-3" />;
-      case 'setlist_create':
-        return <Music className="h-3 w-3" />;
-      case 'show_create':
-        return <Calendar className="h-3 w-3" />;
+      case "vote":
+        return <Vote className="h-3 w-3" />
+      case "follow":
+        return <UserPlus className="h-3 w-3" />
+      case "attendance":
+        return <Users className="h-3 w-3" />
+      case "setlist_create":
+        return <Music className="h-3 w-3" />
+      case "show_create":
+        return <Calendar className="h-3 w-3" />
       default:
-        return <Heart className="h-3 w-3" />;
+        return <Heart className="h-3 w-3" />
     }
-  };
+  }
 
   const getActivityColor = (type: string) => {
     switch (type) {
-      case 'vote':
-        return 'text-green-500';
-      case 'follow':
-        return 'text-blue-500';
-      case 'attendance':
-        return 'text-orange-500';
-      case 'setlist_create':
-        return 'text-pink-500';
-      case 'show_create':
-        return 'text-indigo-500';
+      case "vote":
+        return "text-green-500"
+      case "follow":
+        return "text-blue-500"
+      case "attendance":
+        return "text-orange-500"
+      case "setlist_create":
+        return "text-pink-500"
+      case "show_create":
+        return "text-indigo-500"
       default:
-        return 'text-gray-500';
+        return "text-gray-500"
     }
-  };
+  }
 
   const getActivityText = (activity: ActivityItem) => {
-    const { type, target, metadata } = activity;
+    const { type, target, metadata } = activity
 
     switch (type) {
-      case 'vote':
-        return `${metadata?.voteType === 'up' ? 'upvoted' : 'downvoted'} ${target.name}`;
-      case 'follow':
-        return `started following ${target.name}`;
-      case 'attendance':
-        return `marked attending ${target.name}`;
-      case 'setlist_create':
-        return `created setlist for ${target.name}`;
-      case 'show_create':
-        return `added show ${target.name}`;
+      case "vote":
+        return `${metadata?.voteType === "up" ? "upvoted" : "downvoted"} ${target.name}`
+      case "follow":
+        return `started following ${target.name}`
+      case "attendance":
+        return `marked attending ${target.name}`
+      case "setlist_create":
+        return `created setlist for ${target.name}`
+      case "show_create":
+        return `added show ${target.name}`
       default:
-        return `interacted with ${target.name}`;
+        return `interacted with ${target.name}`
     }
-  };
+  }
 
-  const getTargetLink = (target: ActivityItem['target']) => {
+  const getTargetLink = (target: ActivityItem["target"]) => {
     switch (target.type) {
-      case 'artist':
-        return `/artists/${target.slug}`;
-      case 'show':
-        return `/shows/${target.slug}`;
-      case 'venue':
-        return `/venues/${target.slug}`;
-      case 'setlist':
-        return `/setlists/${target.slug}`;
+      case "artist":
+        return `/artists/${target.slug}`
+      case "show":
+        return `/shows/${target.slug}`
+      case "venue":
+        return `/venues/${target.slug}`
+      case "setlist":
+        return `/setlists/${target.slug}`
       default:
-        return '#';
+        return "#"
     }
-  };
+  }
 
   const formatTimeAgo = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
+    const date = new Date(dateString)
+    const now = new Date()
     const diffInMinutes = Math.floor(
       (now.getTime() - date.getTime()) / (1000 * 60)
-    );
+    )
 
     if (diffInMinutes < 1) {
-      return 'just now';
+      return "just now"
     }
     if (diffInMinutes < 60) {
-      return `${diffInMinutes}m ago`;
+      return `${diffInMinutes}m ago`
     }
 
-    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60)
     if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
+      return `${diffInHours}h ago`
     }
 
-    const diffInDays = Math.floor(diffInHours / 24);
+    const diffInDays = Math.floor(diffInHours / 24)
     if (diffInDays < 7) {
-      return `${diffInDays}d ago`;
+      return `${diffInDays}d ago`
     }
 
-    return date.toLocaleDateString();
-  };
+    return date.toLocaleDateString()
+  }
 
   if (loading) {
     return (
@@ -174,7 +174,7 @@ export function RecentActivity() {
           </div>
         ))}
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -185,7 +185,7 @@ export function RecentActivity() {
           Try Again
         </Button>
       </div>
-    );
+    )
   }
 
   if (activities.length === 0) {
@@ -194,7 +194,7 @@ export function RecentActivity() {
         <Clock className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
         <p className="text-muted-foreground text-sm">No recent activity</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -219,14 +219,14 @@ export function RecentActivity() {
                 {getActivityIcon(activity.type)}
               </span>
               <Badge variant="outline" className="text-xs">
-                {activity.type.replace('_', ' ')}
+                {activity.type.replace("_", " ")}
               </Badge>
             </div>
 
             <p className="text-muted-foreground text-sm">
               <span className="font-medium text-foreground">
                 {activity.user.displayName}
-              </span>{' '}
+              </span>{" "}
               {getActivityText(activity)}
             </p>
 
@@ -252,5 +252,5 @@ export function RecentActivity() {
         </Link>
       </div>
     </div>
-  );
+  )
 }

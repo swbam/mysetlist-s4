@@ -1,19 +1,20 @@
-import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { keys } from '../../keys';
-import type { AuthSession, AuthUser } from '../types';
-import type { User } from '@supabase/supabase-js';
+import { createServerClient } from "@supabase/ssr"
+import type { User } from "@supabase/supabase-js"
+import { cookies } from "next/headers"
+import { keys } from "../../keys"
+import type { AuthSession, AuthUser } from "../types"
 
-const env = keys();
+const env = keys()
 
 // Helper function to map Supabase user to AuthUser
 function mapSupabaseUserToAuthUser(user: User): AuthUser {
   return {
     ...user,
     profile: {
-      id: '',
+      id: "",
       userId: user.id,
-      displayName: user.user_metadata?.['displayName'] || user.email?.split('@')[0] || '',
+      displayName:
+        user.user_metadata?.["displayName"] || user.email?.split("@")[0] || "",
       isPublic: true,
       showAttendedShows: true,
       showVotedSongs: true,
@@ -25,15 +26,15 @@ function mapSupabaseUserToAuthUser(user: User): AuthUser {
     },
     preferences: {
       emailPreferences: {
-        id: '',
+        id: "",
         userId: user.id,
         emailEnabled: true,
         showReminders: true,
-        showReminderFrequency: 'daily',
+        showReminderFrequency: "daily",
         newShowNotifications: true,
-        newShowFrequency: 'daily',
+        newShowFrequency: "daily",
         setlistUpdates: true,
-        setlistUpdateFrequency: 'immediately',
+        setlistUpdateFrequency: "immediately",
         weeklyDigest: false,
         marketingEmails: false,
         securityEmails: true,
@@ -55,11 +56,11 @@ function mapSupabaseUserToAuthUser(user: User): AuthUser {
     },
     emailVerified: !!user.email_confirmed_at,
     spotifyConnected: false,
-  } as AuthUser;
+  } as AuthUser
 }
 
 export async function createServerSession() {
-  const cookieStore = await cookies();
+  const cookieStore = await cookies()
 
   return createServerClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
@@ -67,13 +68,13 @@ export async function createServerSession() {
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll();
+          return cookieStore.getAll()
         },
         setAll(cookiesToSet) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
-            );
+            )
           } catch {
             // The `setAll` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
@@ -82,25 +83,25 @@ export async function createServerSession() {
         },
       },
     }
-  );
+  )
 }
 
 export async function getServerAuthSession(): Promise<{
-  user: AuthUser | null;
-  session: AuthSession | null;
+  user: AuthUser | null
+  session: AuthSession | null
 } | null> {
   try {
-    const supabase = await createServerSession();
+    const supabase = await createServerSession()
     const {
       data: { session },
       error,
-    } = await supabase.auth.getSession();
+    } = await supabase.auth.getSession()
 
     if (error || !session) {
-      return { user: null, session: null };
+      return { user: null, session: null }
     }
 
-    const authUser = mapSupabaseUserToAuthUser(session.user);
+    const authUser = mapSupabaseUserToAuthUser(session.user)
 
     return {
       user: authUser,
@@ -110,73 +111,73 @@ export async function getServerAuthSession(): Promise<{
         expires_at: session.expires_at || 0,
         user: authUser,
       } as AuthSession,
-    };
+    }
   } catch (_error) {
-    return { user: null, session: null };
+    return { user: null, session: null }
   }
 }
 
 export async function validateServerSession(): Promise<AuthUser | null> {
-  const auth = await getServerAuthSession();
-  return auth?.user || null;
+  const auth = await getServerAuthSession()
+  return auth?.user || null
 }
 
 export async function requireServerAuth(): Promise<AuthUser> {
-  const user = await validateServerSession();
+  const user = await validateServerSession()
   if (!user) {
-    throw new Error('Authentication required');
+    throw new Error("Authentication required")
   }
-  return user;
+  return user
 }
 
 export async function requireServerRole(
-  requiredRole: 'user' | 'moderator' | 'admin'
+  requiredRole: "user" | "moderator" | "admin"
 ): Promise<AuthUser> {
-  const user = await requireServerAuth();
-  const userRole = user.app_metadata?.['role'] || 'user';
+  const user = await requireServerAuth()
+  const userRole = user.app_metadata?.["role"] || "user"
 
-  const roleHierarchy = { user: 0, moderator: 1, admin: 2 };
-  const userLevel = roleHierarchy[userRole as keyof typeof roleHierarchy] ?? 0;
-  const requiredLevel = roleHierarchy[requiredRole] ?? 0;
+  const roleHierarchy = { user: 0, moderator: 1, admin: 2 }
+  const userLevel = roleHierarchy[userRole as keyof typeof roleHierarchy] ?? 0
+  const requiredLevel = roleHierarchy[requiredRole] ?? 0
 
   if (userLevel < requiredLevel) {
-    throw new Error('Insufficient permissions');
+    throw new Error("Insufficient permissions")
   }
 
-  return user;
+  return user
 }
 
 // Session management utilities
 export function isSessionExpired(expiresAt: number): boolean {
-  return Date.now() / 1000 >= expiresAt;
+  return Date.now() / 1000 >= expiresAt
 }
 
 export function isSessionExpiringSoon(
   expiresAt: number,
   thresholdMinutes = 5
 ): boolean {
-  const threshold = thresholdMinutes * 60; // Convert to seconds
-  const timeLeft = expiresAt - Date.now() / 1000;
-  return timeLeft <= threshold && timeLeft > 0;
+  const threshold = thresholdMinutes * 60 // Convert to seconds
+  const timeLeft = expiresAt - Date.now() / 1000
+  return timeLeft <= threshold && timeLeft > 0
 }
 
 export function getSessionTimeLeft(expiresAt: number): number {
-  return Math.max(0, expiresAt - Date.now() / 1000);
+  return Math.max(0, expiresAt - Date.now() / 1000)
 }
 
 export function formatSessionTimeLeft(expiresAt: number): string {
-  const timeLeft = getSessionTimeLeft(expiresAt);
+  const timeLeft = getSessionTimeLeft(expiresAt)
 
   if (timeLeft <= 0) {
-    return 'Expired';
+    return "Expired"
   }
 
-  const hours = Math.floor(timeLeft / 3600);
-  const minutes = Math.floor((timeLeft % 3600) / 60);
+  const hours = Math.floor(timeLeft / 3600)
+  const minutes = Math.floor((timeLeft % 3600) / 60)
 
   if (hours > 0) {
-    return `${hours}h ${minutes}m`;
+    return `${hours}h ${minutes}m`
   }
 
-  return `${minutes}m`;
+  return `${minutes}m`
 }

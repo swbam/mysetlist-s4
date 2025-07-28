@@ -1,108 +1,108 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card } from '@repo/design-system/components/ui/card';
-import { X } from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { Button } from "@repo/design-system/components/ui/button"
+import { Card } from "@repo/design-system/components/ui/card"
+import { X } from "lucide-react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
 
-const CONSENT_COOKIE_NAME = 'MySetlist-cookie-consent';
-const CONSENT_COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year
+const CONSENT_COOKIE_NAME = "MySetlist-cookie-consent"
+const CONSENT_COOKIE_MAX_AGE = 365 * 24 * 60 * 60 // 1 year
 
 interface CookiePreferences {
-  necessary: boolean;
-  analytics: boolean;
-  marketing: boolean;
+  necessary: boolean
+  analytics: boolean
+  marketing: boolean
 }
 
 export function CookieConsent() {
-  const [showBanner, setShowBanner] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
+  const [showBanner, setShowBanner] = useState(false)
+  const [showDetails, setShowDetails] = useState(false)
   const [preferences, setPreferences] = useState<CookiePreferences>({
     necessary: true,
     analytics: true,
     marketing: true,
-  });
+  })
 
   useEffect(() => {
     // Check if consent has been given
-    const consent = getCookieConsent();
+    const consent = getCookieConsent()
     if (consent) {
-      applyConsent(consent);
+      applyConsent(consent)
     } else {
-      setShowBanner(true);
+      setShowBanner(true)
     }
-  }, []);
+  }, [])
 
   const getCookieConsent = (): CookiePreferences | null => {
-    if (typeof window === 'undefined') {
-      return null;
+    if (typeof window === "undefined") {
+      return null
     }
 
     const consent = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith(`${CONSENT_COOKIE_NAME}=`));
+      .split("; ")
+      .find((row) => row.startsWith(`${CONSENT_COOKIE_NAME}=`))
 
     if (!consent) {
-      return null;
+      return null
     }
 
     try {
-      const value = consent.split('=')[1];
+      const value = consent.split("=")[1]
       if (!value) {
-        return null;
+        return null
       }
-      return JSON.parse(decodeURIComponent(value));
+      return JSON.parse(decodeURIComponent(value))
     } catch {
-      return null;
+      return null
     }
-  };
+  }
 
   const setCookieConsent = (preferences: CookiePreferences) => {
     document.cookie = `${CONSENT_COOKIE_NAME}=${encodeURIComponent(
       JSON.stringify(preferences)
-    )}; max-age=${CONSENT_COOKIE_MAX_AGE}; path=/; SameSite=Strict`;
+    )}; max-age=${CONSENT_COOKIE_MAX_AGE}; path=/; SameSite=Strict`
 
-    applyConsent(preferences);
-  };
+    applyConsent(preferences)
+  }
 
   const applyConsent = (preferences: CookiePreferences) => {
     // Emit custom event for other analytics tools
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.dispatchEvent(
-        new CustomEvent('cookieConsentUpdated', { detail: preferences })
-      );
+        new CustomEvent("cookieConsentUpdated", { detail: preferences })
+      )
     }
-  };
+  }
 
   const acceptAll = () => {
     const allAccepted: CookiePreferences = {
       necessary: true,
       analytics: true,
       marketing: true,
-    };
-    setCookieConsent(allAccepted);
-    setShowBanner(false);
-  };
+    }
+    setCookieConsent(allAccepted)
+    setShowBanner(false)
+  }
 
   const acceptSelected = () => {
-    setCookieConsent(preferences);
-    setShowBanner(false);
-    setShowDetails(false);
-  };
+    setCookieConsent(preferences)
+    setShowBanner(false)
+    setShowDetails(false)
+  }
 
   const rejectAll = () => {
     const onlyNecessary: CookiePreferences = {
       necessary: true,
       analytics: false,
       marketing: false,
-    };
-    setCookieConsent(onlyNecessary);
-    setShowBanner(false);
-  };
+    }
+    setCookieConsent(onlyNecessary)
+    setShowBanner(false)
+  }
 
   if (!showBanner) {
-    return null;
+    return null
   }
 
   return (
@@ -232,5 +232,5 @@ export function CookieConsent() {
         </div>
       </Card>
     </div>
-  );
+  )
 }

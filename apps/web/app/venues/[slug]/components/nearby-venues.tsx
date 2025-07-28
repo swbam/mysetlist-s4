@@ -1,44 +1,47 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Card } from '@repo/design-system/components/ui/card';
-import { MapPin, Users } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Card } from "@repo/design-system/components/ui/card"
+import { MapPin, Users } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
 
 interface NearbyVenue {
-  id: string;
-  name: string;
-  slug: string;
-  address: string | null;
-  city: string;
-  state: string | null;
-  country: string;
-  imageUrl: string | null;
-  capacity: number | null;
-  venueType: string | null;
-  distance: number;
+  id: string
+  name: string
+  slug: string
+  address: string | null
+  city: string
+  state: string | null
+  country: string
+  imageUrl: string | null
+  capacity: number | null
+  venueType: string | null
+  distance: number
 }
 
 interface NearbyVenuesProps {
-  venues: NearbyVenue[];
-  currentVenueId: string;
+  venues: NearbyVenue[]
+  currentVenueId: string
 }
 
-export function NearbyVenues({ venues, currentVenueId: _currentVenueId }: NearbyVenuesProps) {
+export function NearbyVenues({
+  venues,
+  currentVenueId: _currentVenueId,
+}: NearbyVenuesProps) {
   const formatDistance = (distance: number) => {
     if (distance < 1) {
-      return `${Math.round(distance * 1000)}m`;
+      return `${Math.round(distance * 1000)}m`
     }
-    return `${distance.toFixed(1)}km`;
-  };
+    return `${distance.toFixed(1)}km`
+  }
 
   const formatCapacity = (capacity: number) => {
     if (capacity >= 1000) {
-      return `${(capacity / 1000).toFixed(1)}k`;
+      return `${(capacity / 1000).toFixed(1)}k`
     }
-    return capacity.toString();
-  };
+    return capacity.toString()
+  }
 
   return (
     <div className="space-y-6">
@@ -104,5 +107,5 @@ export function NearbyVenues({ venues, currentVenueId: _currentVenueId }: Nearby
         ))}
       </div>
     </div>
-  );
+  )
 }

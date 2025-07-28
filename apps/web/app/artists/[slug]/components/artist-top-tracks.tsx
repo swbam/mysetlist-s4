@@ -1,87 +1,94 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { Music, Play } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { getArtistTopTracks } from '../actions';
+} from "@repo/design-system/components/ui/card"
+import { Skeleton } from "@repo/design-system/components/ui/skeleton"
+import { Music, Play } from "lucide-react"
+import Image from "next/image"
+import { useEffect, useState } from "react"
+import { getArtistTopTracks } from "../actions"
 
 interface Track {
-  id: string;
-  name: string;
+  id: string
+  name: string
   album: {
-    name: string;
-    images: Array<{ url: string }>;
-  };
-  duration_ms: number;
-  preview_url: string | null;
+    name: string
+    images: Array<{ url: string }>
+  }
+  duration_ms: number
+  preview_url: string | null
   external_urls: {
-    spotify: string;
-  };
+    spotify: string
+  }
 }
 
 interface ArtistTopTracksProps {
-  artistId: string;
-  spotifyId: string | null;
+  artistId: string
+  spotifyId: string | null
 }
 
 export function ArtistTopTracks({ artistId, spotifyId }: ArtistTopTracksProps) {
-  const [tracks, setTracks] = useState<Track[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [playingTrack, setPlayingTrack] = useState<string | null>(null);
+  const [tracks, setTracks] = useState<Track[]>([])
+  const [loading, setLoading] = useState(true)
+  const [playingTrack, setPlayingTrack] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchTracks = async () => {
       try {
-        setLoading(true);
+        setLoading(true)
 
         if (spotifyId) {
           // Try to fetch from Spotify via server action first
-          const spotifyTracks = await getArtistTopTracks(spotifyId);
-          if (spotifyTracks && (Array.isArray(spotifyTracks) ? spotifyTracks.length > 0 : spotifyTracks.tracks?.length > 0)) {
-            const tracks = Array.isArray(spotifyTracks) ? spotifyTracks : spotifyTracks.tracks;
-            setTracks(tracks as unknown as Track[]);
-            return;
+          const spotifyTracks = await getArtistTopTracks(spotifyId)
+          if (
+            spotifyTracks &&
+            (Array.isArray(spotifyTracks)
+              ? spotifyTracks.length > 0
+              : spotifyTracks.tracks?.length > 0)
+          ) {
+            const tracks = Array.isArray(spotifyTracks)
+              ? spotifyTracks
+              : spotifyTracks.tracks
+            setTracks(tracks as unknown as Track[])
+            return
           }
         }
 
         // Fallback to API route with mock data
-        const response = await fetch(`/api/artists/${artistId}/top-tracks`);
+        const response = await fetch(`/api/artists/${artistId}/top-tracks`)
         if (response.ok) {
-          const data = await response.json();
+          const data = await response.json()
           const apiTracks = data.tracks.map((track: any) => ({
             ...track,
             album: {
-              name: track.album || 'Unknown Album',
+              name: track.album || "Unknown Album",
               images: track.album_images || [],
             },
-          }));
-          setTracks(apiTracks);
+          }))
+          setTracks(apiTracks)
         }
       } catch (_error) {
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchTracks();
-  }, [artistId, spotifyId]);
+    fetchTracks()
+  }, [artistId, spotifyId])
 
   const formatDuration = (ms: number) => {
-    const minutes = Math.floor(ms / 60000);
-    const seconds = ((ms % 60000) / 1000).toFixed(0);
-    return `${minutes}:${seconds.padStart(2, '0')}`;
-  };
+    const minutes = Math.floor(ms / 60000)
+    const seconds = ((ms % 60000) / 1000).toFixed(0)
+    return `${minutes}:${seconds.padStart(2, "0")}`
+  }
 
   if (!loading && tracks.length === 0) {
-    return null;
+    return null
   }
 
   return (
@@ -142,10 +149,10 @@ export function ArtistTopTracks({ artistId, spotifyId }: ArtistTopTracksProps) {
                     variant="ghost"
                     onClick={() => {
                       if (playingTrack === track.id) {
-                        setPlayingTrack(null);
+                        setPlayingTrack(null)
                         // Stop audio
                       } else {
-                        setPlayingTrack(track.id);
+                        setPlayingTrack(track.id)
                         // Play audio
                       }
                     }}
@@ -159,5 +166,5 @@ export function ArtistTopTracks({ artistId, spotifyId }: ArtistTopTracksProps) {
         )}
       </CardContent>
     </Card>
-  );
+  )
 }

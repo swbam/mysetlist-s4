@@ -1,89 +1,93 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { cn } from '@repo/design-system/lib/utils';
-import { 
-  Calendar, 
-  CheckCircle2, 
-  Heart, 
-  Music, 
-  TrendingUp, 
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Card, CardContent } from "@repo/design-system/components/ui/card"
+import { cn } from "@repo/design-system/lib/utils"
+import {
+  Calendar,
+  CheckCircle2,
+  Heart,
+  Music,
+  Play,
+  TrendingUp,
   Users,
-  Play
-} from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useState } from 'react';
-import { parseGenres } from '~/lib/parse-genres';
-import { focusRing, touchTargets, animations } from '~/components/layout/grid-utils';
+} from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { useState } from "react"
+import {
+  animations,
+  focusRing,
+  touchTargets,
+} from "~/components/layout/grid-utils"
+import { parseGenres } from "~/lib/parse-genres"
 
 interface ArtistCardProps {
   artist: {
-    id: string;
-    name: string;
-    slug: string;
-    imageUrl?: string | null;
-    smallImageUrl?: string | null;
-    genres?: string | string[] | null;
-    followers?: number | null;
-    followerCount?: number | null;
-    popularity?: number | null;
-    verified?: boolean;
-    trendingScore?: number | null;
-    upcomingShows?: number;
-    totalShows?: number;
-    lastShowDate?: string | null;
-  };
-  variant?: 'default' | 'compact' | 'detailed';
-  showFollowButton?: boolean;
-  onFollow?: (artistId: string) => void;
-  className?: string;
+    id: string
+    name: string
+    slug: string
+    imageUrl?: string | null
+    smallImageUrl?: string | null
+    genres?: string | string[] | null
+    followers?: number | null
+    followerCount?: number | null
+    popularity?: number | null
+    verified?: boolean
+    trendingScore?: number | null
+    upcomingShows?: number
+    totalShows?: number
+    lastShowDate?: string | null
+  }
+  variant?: "default" | "compact" | "detailed"
+  showFollowButton?: boolean
+  onFollow?: (artistId: string) => void
+  className?: string
 }
 
-export function ArtistCard({ 
-  artist, 
-  variant = 'default',
+export function ArtistCard({
+  artist,
+  variant = "default",
   showFollowButton = false,
   onFollow,
-  className 
+  className,
 }: ArtistCardProps) {
-  const [isFollowing, setIsFollowing] = useState(false);
-  const [imageError, setImageError] = useState(false);
-  
+  const [isFollowing, setIsFollowing] = useState(false)
+  const [imageError, setImageError] = useState(false)
+
   // Parse genres consistently
-  const genres = Array.isArray(artist.genres) 
-    ? artist.genres 
-    : parseGenres(artist.genres);
-  
+  const genres = Array.isArray(artist.genres)
+    ? artist.genres
+    : parseGenres(artist.genres)
+
   // Get the best image URL
-  const imageUrl = artist.smallImageUrl || artist.imageUrl;
-  
+  const imageUrl = artist.smallImageUrl || artist.imageUrl
+
   // Format follower count
   const formatFollowers = (count?: number | null) => {
-    if (!count) return '0';
-    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
-    if (count >= 1000) return `${(count / 1000).toFixed(0)}k`;
-    return count.toString();
-  };
+    if (!count) return "0"
+    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`
+    if (count >= 1000) return `${(count / 1000).toFixed(0)}k`
+    return count.toString()
+  }
 
   // Handle follow action
   const handleFollow = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsFollowing(!isFollowing);
-    onFollow?.(artist.id);
-  };
+    e.preventDefault()
+    e.stopPropagation()
+    setIsFollowing(!isFollowing)
+    onFollow?.(artist.id)
+  }
 
   // Determine if artist is trending
-  const isTrending = artist.trendingScore && artist.trendingScore > 75;
-  const isHot = artist.trendingScore && artist.trendingScore > 90;
+  const isTrending = artist.trendingScore && artist.trendingScore > 75
+  const isHot = artist.trendingScore && artist.trendingScore > 90
 
   return (
-    <Card 
+    <Card
       className={cn(
-        'group overflow-hidden',
+        "group overflow-hidden",
         animations.all,
         animations.shadow,
         animations.scale,
@@ -93,7 +97,7 @@ export function ArtistCard({
       role="article"
       aria-label={`Artist: ${artist.name}`}
     >
-      <Link 
+      <Link
         href={`/artists/${artist.slug}`}
         className="block focus:outline-none"
         tabIndex={0}
@@ -113,18 +117,18 @@ export function ArtistCard({
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
-              <Music 
-                className="h-16 w-16 text-muted-foreground/30" 
-                aria-hidden="true" 
+              <Music
+                className="h-16 w-16 text-muted-foreground/30"
+                aria-hidden="true"
               />
             </div>
           )}
-          
+
           {/* Trending/Hot Badge */}
           {isHot ? (
             <div className="absolute top-3 right-3">
-              <Badge 
-                variant="secondary" 
+              <Badge
+                variant="secondary"
                 className="gap-1 bg-red-500/90 text-white hover:bg-red-500"
               >
                 <TrendingUp className="h-3 w-3" aria-hidden="true" />
@@ -144,8 +148,8 @@ export function ArtistCard({
           {artist.verified && (
             <div className="absolute top-3 left-3">
               <div className="rounded-full bg-primary/90 p-1.5">
-                <CheckCircle2 
-                  className="h-4 w-4 text-primary-foreground fill-current" 
+                <CheckCircle2
+                  className="h-4 w-4 text-primary-foreground fill-current"
                   aria-label="Verified artist"
                 />
               </div>
@@ -166,24 +170,17 @@ export function ArtistCard({
       {/* Card Content */}
       <CardContent className="p-4">
         <div className="mb-3">
-          <Link 
-            href={`/artists/${artist.slug}`}
-            className="focus:outline-none"
-          >
+          <Link href={`/artists/${artist.slug}`} className="focus:outline-none">
             <h3 className="truncate font-semibold text-lg transition-colors group-hover:text-primary">
               {artist.name}
             </h3>
           </Link>
-          
+
           {/* Genres */}
           {genres.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1">
               {genres.slice(0, 2).map((genre) => (
-                <Badge 
-                  key={genre} 
-                  variant="outline" 
-                  className="text-xs"
-                >
+                <Badge key={genre} variant="outline" className="text-xs">
                   {genre}
                 </Badge>
               ))}
@@ -200,9 +197,11 @@ export function ArtistCard({
         <div className="flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <Users className="h-3 w-3" aria-hidden="true" />
-            <span>{formatFollowers(artist.followers || artist.followerCount)} fans</span>
+            <span>
+              {formatFollowers(artist.followers || artist.followerCount)} fans
+            </span>
           </div>
-          
+
           {artist.upcomingShows && artist.upcomingShows > 0 && (
             <div className="flex items-center gap-1">
               <Calendar className="h-3 w-3" aria-hidden="true" />
@@ -213,7 +212,7 @@ export function ArtistCard({
 
         {/* Follow Button */}
         {showFollowButton && (
-          <Button 
+          <Button
             variant={isFollowing ? "default" : "outline"}
             size="sm"
             className={cn(
@@ -222,19 +221,18 @@ export function ArtistCard({
               focusRing.button
             )}
             onClick={handleFollow}
-            aria-label={isFollowing ? `Unfollow ${artist.name}` : `Follow ${artist.name}`}
+            aria-label={
+              isFollowing ? `Unfollow ${artist.name}` : `Follow ${artist.name}`
+            }
           >
-            <Heart 
-              className={cn(
-                "mr-2 h-4 w-4",
-                isFollowing && "fill-current"
-              )} 
+            <Heart
+              className={cn("mr-2 h-4 w-4", isFollowing && "fill-current")}
               aria-hidden="true"
             />
-            {isFollowing ? 'Following' : 'Follow'}
+            {isFollowing ? "Following" : "Follow"}
           </Button>
         )}
       </CardContent>
     </Card>
-  );
+  )
 }

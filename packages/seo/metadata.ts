@@ -1,21 +1,23 @@
-import merge from 'lodash.merge';
-import type { Metadata } from 'next';
+import merge from "lodash.merge"
+import type { Metadata } from "next"
 
-type MetadataGenerator = Omit<Metadata, 'description' | 'title'> & {
-  title: string;
-  description: string;
-  image?: string;
-};
+type MetadataGenerator = Omit<Metadata, "description" | "title"> & {
+  title: string
+  description: string
+  image?: string
+}
 
-const applicationName = 'MySetlist';
-const author: Metadata['authors'] = {
-  name: 'MySetlist',
-  url: 'https://mysetlist.com/',
-};
-const publisher = 'MySetlist';
-const twitterHandle = '@mysetlist';
-const protocol = process.env['NODE_ENV'] === 'production' ? 'https' : 'http';
-const productionUrl = process.env['VERCEL_PROJECT_PRODUCTION_URL'] || process.env['NEXT_PUBLIC_SITE_URL'];
+const applicationName = "MySetlist"
+const author: Metadata["authors"] = {
+  name: "MySetlist",
+  url: "https://mysetlist.com/",
+}
+const publisher = "MySetlist"
+const twitterHandle = "@mysetlist"
+const protocol = process.env["NODE_ENV"] === "production" ? "https" : "http"
+const productionUrl =
+  process.env["VERCEL_PROJECT_PRODUCTION_URL"] ||
+  process.env["NEXT_PUBLIC_SITE_URL"]
 
 export const createMetadata = ({
   title,
@@ -23,7 +25,7 @@ export const createMetadata = ({
   image,
   ...properties
 }: MetadataGenerator): Metadata => {
-  const parsedTitle = `${title} | ${applicationName}`;
+  const parsedTitle = `${title} | ${applicationName}`
   const defaultMetadata: Metadata = {
     title: parsedTitle,
     description,
@@ -38,24 +40,24 @@ export const createMetadata = ({
     },
     appleWebApp: {
       capable: true,
-      statusBarStyle: 'default',
+      statusBarStyle: "default",
       title: parsedTitle,
     },
     openGraph: {
       title: parsedTitle,
       description,
-      type: 'website',
+      type: "website",
       siteName: applicationName,
-      locale: 'en_US',
+      locale: "en_US",
     },
     publisher,
     twitter: {
-      card: 'summary_large_image',
+      card: "summary_large_image",
       creator: twitterHandle,
     },
-  };
+  }
 
-  const metadata: Metadata = merge(defaultMetadata, properties);
+  const metadata: Metadata = merge(defaultMetadata, properties)
 
   if (image && metadata.openGraph) {
     metadata.openGraph.images = [
@@ -65,8 +67,8 @@ export const createMetadata = ({
         height: 630,
         alt: title,
       },
-    ];
+    ]
   }
 
-  return metadata;
-};
+  return metadata
+}

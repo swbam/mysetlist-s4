@@ -1,6 +1,6 @@
-import { Button } from '@repo/design-system/components/ui/button';
-import { Calendar } from 'lucide-react';
-import Link from 'next/link';
+import { Button } from "@repo/design-system/components/ui/button"
+import { Calendar } from "lucide-react"
+import Link from "next/link"
 
 export default function ShowNotFound() {
   return (
@@ -19,5 +19,5 @@ export default function ShowNotFound() {
         </Button>
       </div>
     </div>
-  );
+  )
 }

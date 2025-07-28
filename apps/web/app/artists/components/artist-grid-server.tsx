@@ -1,7 +1,7 @@
-import { db } from '@repo/database';
-import { artists } from '@repo/database/src/schema';
-import { desc } from 'drizzle-orm';
-import { ArtistCard } from './artist-card';
+import { db } from "@repo/database"
+import { artists } from "@repo/database/src/schema"
+import { desc } from "drizzle-orm"
+import { ArtistCard } from "./artist-card"
 
 export async function ArtistGridServer() {
   try {
@@ -10,7 +10,7 @@ export async function ArtistGridServer() {
       .select()
       .from(artists)
       .orderBy(desc(artists.popularity))
-      .limit(12);
+      .limit(12)
 
     if (topArtists.length === 0) {
       return (
@@ -19,7 +19,7 @@ export async function ArtistGridServer() {
             No artists found. Use the search above to discover new artists!
           </p>
         </div>
-      );
+      )
     }
 
     return (
@@ -34,7 +34,7 @@ export async function ArtistGridServer() {
           />
         ))}
       </div>
-    );
+    )
   } catch (_error) {
     return (
       <div className="py-8 text-center">
@@ -46,6 +46,6 @@ export async function ArtistGridServer() {
           your database.
         </p>
       </div>
-    );
+    )
   }
 }

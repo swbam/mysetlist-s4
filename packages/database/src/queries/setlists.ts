@@ -1,6 +1,6 @@
-import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm';
-import { db } from '../client';
-import { setlistSongs, setlists, songs, votes } from '../schema';
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm"
+import { db } from "../client"
+import { setlistSongs, setlists, songs, votes } from "../schema"
 
 export async function getSetlistsByShowId(showId: string) {
   const results = await db
@@ -14,9 +14,9 @@ export async function getSetlistsByShowId(showId: string) {
     })
     .from(setlists)
     .where(eq(setlists.showId, showId))
-    .orderBy(asc(setlists.orderIndex));
+    .orderBy(asc(setlists.orderIndex))
 
-  return results;
+  return results
 }
 
 export async function getSetlistWithSongs(setlistId: string, userId?: string) {
@@ -30,18 +30,24 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
     .leftJoin(setlistSongs, eq(setlists.id, setlistSongs.setlistId))
     .leftJoin(songs, eq(setlistSongs.songId, songs.id))
     .where(eq(setlists.id, setlistId))
-    .orderBy(asc(setlistSongs.position));
+    .orderBy(asc(setlistSongs.position))
 
   if (setlistData.length === 0) {
-    return null;
+    return null
   }
 
   // Get user votes if authenticated
-  const userVotes: Record<string, 'up' | 'down'> = {};
+  const userVotes: Record<string, "up" | "down"> = {}
   if (userId) {
     const setlistSongIds = setlistData
-      .filter((row): row is typeof row & { setlistSong: NonNullable<typeof row.setlistSong> } => row.setlistSong !== null)
-      .map((row) => row.setlistSong.id);
+      .filter(
+        (
+          row
+        ): row is typeof row & {
+          setlistSong: NonNullable<typeof row.setlistSong>
+        } => row.setlistSong !== null
+      )
+      .map((row) => row.setlistSong.id)
 
     if (setlistSongIds.length > 0) {
       const voteData = await db
@@ -55,22 +61,27 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
             eq(votes.userId, userId),
             inArray(votes.setlistSongId, setlistSongIds)
           )
-        );
+        )
 
       voteData.forEach((vote) => {
-        userVotes[vote.setlistSongId] = vote.voteType;
-      });
+        userVotes[vote.setlistSongId] = vote.voteType
+      })
     }
   }
 
   // Construct the result
-  const setlist = setlistData[0]?.setlist;
+  const setlist = setlistData[0]?.setlist
   if (!setlist) {
-    throw new Error('Setlist not found');
+    throw new Error("Setlist not found")
   }
   const songList = setlistData
-    .filter((row): row is typeof row & { setlistSong: NonNullable<typeof row.setlistSong>; song: NonNullable<typeof row.song> } => 
-      row.setlistSong !== null && row.song !== null
+    .filter(
+      (
+        row
+      ): row is typeof row & {
+        setlistSong: NonNullable<typeof row.setlistSong>
+        song: NonNullable<typeof row.song>
+      } => row.setlistSong !== null && row.song !== null
     )
     .map((row) => ({
       id: row.setlistSong.id,
@@ -90,30 +101,30 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
       downvotes: row.setlistSong.downvotes,
       netVotes: row.setlistSong.netVotes,
       userVote: userVotes[row.setlistSong.id] || null,
-    }));
+    }))
 
   return {
     ...setlist,
     songs: songList,
-  };
+  }
 }
 
 export async function createSetlist(
   showId: string,
   setlistData: {
-    name: string;
-    type: 'predicted' | 'actual';
-    artistId: string;
-    createdBy?: string;
+    name: string
+    type: "predicted" | "actual"
+    artistId: string
+    createdBy?: string
   }
 ) {
   // Get the next order index for the show
   const maxOrderIndex = await db
     .select({ max: sql<number>`COALESCE(MAX(order_index), -1)` })
     .from(setlists)
-    .where(eq(setlists.showId, showId));
+    .where(eq(setlists.showId, showId))
 
-  const orderIndex = (maxOrderIndex[0]?.max ?? -1) + 1;
+  const orderIndex = (maxOrderIndex[0]?.max ?? -1) + 1
 
   const [newSetlist] = await db
     .insert(setlists)
@@ -126,28 +137,28 @@ export async function createSetlist(
       createdBy: setlistData.createdBy ?? null,
       isLocked: false,
     })
-    .returning();
+    .returning()
 
-  return newSetlist;
+  return newSetlist
 }
 
 export async function addSongToSetlist(
   setlistId: string,
   songData: {
-    songId: string;
-    position?: number;
-    notes?: string;
+    songId: string
+    position?: number
+    notes?: string
   }
 ) {
   // Get the next position if not provided
-  let position = songData.position;
+  let position = songData.position
   if (position === undefined) {
     const maxPosition = await db
       .select({ max: sql<number>`COALESCE(MAX(position), -1)` })
       .from(setlistSongs)
-      .where(eq(setlistSongs.setlistId, setlistId));
+      .where(eq(setlistSongs.setlistId, setlistId))
 
-    position = (maxPosition[0]?.max ?? -1) + 1;
+    position = (maxPosition[0]?.max ?? -1) + 1
   }
 
   const [newSetlistSong] = await db
@@ -162,16 +173,16 @@ export async function addSongToSetlist(
       downvotes: 0,
       netVotes: 0,
     })
-    .returning();
+    .returning()
 
-  return newSetlistSong;
+  return newSetlistSong
 }
 
 export async function updateSetlistSongOrder(
   setlistId: string,
   songOrders: Array<{
-    setlistSongId: string;
-    position: number;
+    setlistSongId: string
+    position: number
   }>
 ) {
   // Update all positions in a transaction
@@ -185,11 +196,11 @@ export async function updateSetlistSongOrder(
           eq(setlistSongs.setlistId, setlistId)
         )
       )
-  );
+  )
 
-  await Promise.all(updates);
+  await Promise.all(updates)
 
-  return { success: true };
+  return { success: true }
 }
 
 export async function markSongAsPlayed(setlistSongId: string, played = true) {
@@ -201,9 +212,9 @@ export async function markSongAsPlayed(setlistSongId: string, played = true) {
       updatedAt: new Date(),
     })
     .where(eq(setlistSongs.id, setlistSongId))
-    .returning();
+    .returning()
 
-  return updated;
+  return updated
 }
 
 export async function lockSetlist(setlistId: string, locked = true) {
@@ -214,25 +225,25 @@ export async function lockSetlist(setlistId: string, locked = true) {
       updatedAt: new Date(),
     })
     .where(eq(setlists.id, setlistId))
-    .returning();
+    .returning()
 
-  return updated;
+  return updated
 }
 
 export async function deleteSetlist(setlistId: string) {
   // Delete all setlist songs first (or rely on CASCADE if set up)
-  await db.delete(setlistSongs).where(eq(setlistSongs.setlistId, setlistId));
+  await db.delete(setlistSongs).where(eq(setlistSongs.setlistId, setlistId))
 
   // Delete the setlist
-  await db.delete(setlists).where(eq(setlists.id, setlistId));
+  await db.delete(setlists).where(eq(setlists.id, setlistId))
 
-  return { success: true };
+  return { success: true }
 }
 
 export async function removeSongFromSetlist(setlistSongId: string) {
-  await db.delete(setlistSongs).where(eq(setlistSongs.id, setlistSongId));
+  await db.delete(setlistSongs).where(eq(setlistSongs.id, setlistSongId))
 
-  return { success: true };
+  return { success: true }
 }
 
 export async function getTopVotedSongs(showId: string, limit = 10) {
@@ -247,9 +258,9 @@ export async function getTopVotedSongs(showId: string, limit = 10) {
     .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
     .where(eq(setlists.showId, showId))
     .orderBy(desc(setlistSongs.netVotes))
-    .limit(limit);
+    .limit(limit)
 
-  return results;
+  return results
 }
 
 export async function updateSetlistSongVotes(setlistSongId: string) {
@@ -260,10 +271,10 @@ export async function updateSetlistSongVotes(setlistSongId: string) {
       downvotes: sql<number>`COUNT(*) FILTER (WHERE vote_type = 'down')`,
     })
     .from(votes)
-    .where(eq(votes.setlistSongId, setlistSongId));
+    .where(eq(votes.setlistSongId, setlistSongId))
 
-  const { upvotes, downvotes } = voteCount[0] || { upvotes: 0, downvotes: 0 };
-  const netVotes = upvotes - downvotes;
+  const { upvotes, downvotes } = voteCount[0] || { upvotes: 0, downvotes: 0 }
+  const netVotes = upvotes - downvotes
 
   // Update the setlist song
   const [updated] = await db
@@ -275,7 +286,7 @@ export async function updateSetlistSongVotes(setlistSongId: string) {
       updatedAt: new Date(),
     })
     .where(eq(setlistSongs.id, setlistSongId))
-    .returning();
+    .returning()
 
-  return updated;
+  return updated
 }
