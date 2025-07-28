@@ -33,13 +33,42 @@ export type {
 } from "./src/clients/setlistfm";
 
 import { SetlistFmClient } from "./src/clients/setlistfm";
-// Export instantiated clients
+// Export instantiated clients as lazy getters to avoid initialization errors
 import { SpotifyClient } from "./src/clients/spotify";
 import { TicketmasterClient } from "./src/clients/ticketmaster";
 
-export const spotify = new SpotifyClient({});
-export const ticketmaster = new TicketmasterClient({});
-export const setlistfm = new SetlistFmClient({});
+// Create singleton instances
+let _spotify: SpotifyClient | null = null;
+let _ticketmaster: TicketmasterClient | null = null;
+let _setlistfm: SetlistFmClient | null = null;
+
+// Export clients with direct method access
+export const spotify = new Proxy({} as SpotifyClient, {
+  get: (target, prop) => {
+    if (!_spotify) {
+      _spotify = new SpotifyClient({});
+    }
+    return (_spotify as any)[prop];
+  }
+});
+
+export const ticketmaster = new Proxy({} as TicketmasterClient, {
+  get: (target, prop) => {
+    if (!_ticketmaster) {
+      _ticketmaster = new TicketmasterClient({});
+    }
+    return (_ticketmaster as any)[prop];
+  }
+});
+
+export const setlistfm = new Proxy({} as SetlistFmClient, {
+  get: (target, prop) => {
+    if (!_setlistfm) {
+      _setlistfm = new SetlistFmClient({});
+    }
+    return (_setlistfm as any)[prop];
+  }
+});
 
 // Export sync services
 export { ArtistSyncService } from "./src/services/artist-sync";

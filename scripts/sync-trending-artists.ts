@@ -6,6 +6,7 @@
 
 import "dotenv/config";
 import { TicketmasterClient } from "../packages/external-apis/src/clients/ticketmaster";
+import { SpotifyClient } from "../packages/external-apis/src/clients/spotify";
 
 // API configuration - these should be in your .env file
 const requiredEnvVars = [
@@ -23,6 +24,9 @@ for (const envVar of requiredEnvVars) {
 }
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+
+// Create Spotify client instance
+const spotify = new SpotifyClient({});
 
 interface TrendingArtist {
   name: string;
@@ -90,15 +94,17 @@ async function getTrendingArtistsFromTicketmaster(): Promise<TrendingArtist[]> {
     .slice(0, 15); // Get top 15 to ensure we have at least 10 after Spotify matching
 
   // Match with Spotify to get additional data
+  await spotify.authenticate();
+  
   for (const artist of sortedArtists) {
     try {
       const spotifyResults = await spotify.searchArtists(artist.name, 1);
 
-      if (spotifyResults.length > 0) {
-        const spotifyArtist = spotifyResults[0];
+      if (spotifyResults.artists?.items?.length > 0) {
+        const spotifyArtist = spotifyResults.artists.items[0];
         artist.spotifyId = spotifyArtist.id;
         artist.genres = spotifyArtist.genres;
-        if (!artist.imageUrl && spotifyArtist.images.length > 0) {
+        if (!artist.imageUrl && spotifyArtist.images?.length > 0) {
           artist.imageUrl = spotifyArtist.images[0].url;
         }
       }

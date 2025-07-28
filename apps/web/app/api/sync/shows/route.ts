@@ -1,6 +1,6 @@
 import { db } from "@repo/database";
 import { artists, showArtists, shows, venues } from "@repo/database";
-import { ticketmaster } from "@repo/external-apis";
+import { TicketmasterClient } from "@repo/external-apis";
 import { and, desc, eq, gte } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -70,15 +70,13 @@ export async function POST(request: NextRequest) {
     const tmId = ticketmasterId || artistData?.ticketmasterId;
 
     if (!tmId) {
-      // If no Ticketmaster ID, create sample shows as fallback
-      const sampleShows = await createSampleShows(artistId, artistData);
+      // No Ticketmaster ID - return empty results, no fake data
       return NextResponse.json({
         success: true,
-        message: "Created sample shows (no Ticketmaster ID)",
+        message: "No Ticketmaster ID available for artist",
         artist: artistData,
-        showsCount: sampleShows.length,
-        shows: sampleShows,
-        fallback: true,
+        showsCount: 0,
+        shows: [],
       });
     }
 
@@ -88,6 +86,11 @@ export async function POST(request: NextRequest) {
         `[Shows Sync] Fetching shows for artist ${artistData.name} (${tmId})`,
       );
 
+      // Create Ticketmaster client
+      const ticketmaster = new TicketmasterClient({
+        apiKey: process.env.TICKETMASTER_API_KEY!
+      });
+      
       // Fetch shows from Ticketmaster API
       const searchResult = await ticketmaster.searchEvents({
         keyword: tmId,
@@ -188,15 +191,14 @@ export async function POST(request: NextRequest) {
     } catch (apiError) {
       console.error("[Shows Sync] Ticketmaster API error:", apiError);
 
-      // Fallback to sample shows on API failure
-      const sampleShows = await createSampleShows(artistId, artistData);
+      // API error - return empty results, no fake data
       return NextResponse.json({
-        success: true,
-        message: "Created sample shows (API error)",
+        success: false,
+        message: "Ticketmaster API error occurred",
         artist: artistData,
-        showsCount: sampleShows.length,
-        shows: sampleShows,
-        fallback: true,
+        showsCount: 0,
+        shows: [],
+        error: apiError instanceof Error ? apiError.message : "Unknown API error",
       });
     }
   } catch (error) {
@@ -310,78 +312,3 @@ function mapTicketmasterStatus(
   }
 }
 
-// Helper function to create sample shows
-async function createSampleShows(artistId: string, artistData: any) {
-  // Get or create sample venue
-  let sampleVenue = await db
-    .select()
-    .from(venues)
-    .where(eq(venues.slug, "sample-venue"))
-    .limit(1);
-
-  if (!sampleVenue.length) {
-    const [newVenue] = await db
-      .insert(venues)
-      .values({
-        name: "Sample Venue",
-        slug: "sample-venue",
-        address: "123 Main St",
-        city: "Los Angeles",
-        state: "CA",
-        country: "United States",
-        postalCode: "90001",
-        latitude: 34.0522,
-        longitude: -118.2437,
-        timezone: "America/Los_Angeles",
-        capacity: 5000,
-      } as any)
-      .returning();
-
-    if (!newVenue) {
-      throw new Error("Failed to create sample venue");
-    }
-
-    sampleVenue = [newVenue];
-  }
-
-  const venueData = sampleVenue[0];
-
-  // Create sample shows
-  const sampleShows = [
-    {
-      headlinerArtistId: artistId,
-      venueId: venueData!.id,
-      name: `${artistData.name} Live`,
-      slug: `${artistData.slug}-live-${Date.now()}`,
-      date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      startTime: "20:00",
-      doorsTime: "19:00",
-      status: "upcoming" as const,
-      description: `Don't miss ${artistData.name} performing live!`,
-      ticketUrl: "https://example.com/tickets",
-      minPrice: 45,
-      maxPrice: 125,
-      currency: "USD",
-    },
-  ];
-
-  const insertedShows = await db
-    .insert(shows)
-    .values(sampleShows as any)
-    .returning();
-
-  // Create show-artist relationships
-  for (const show of insertedShows) {
-    await db.insert(showArtists).values({
-      showId: show.id,
-      artistId: artistId,
-      orderIndex: 0,
-      setLength: 90,
-      isHeadliner: true,
-    });
-  }
-
-  return insertedShows;
-}

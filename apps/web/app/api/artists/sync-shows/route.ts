@@ -29,25 +29,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
-    // If no Ticketmaster ID, create sample shows
+    // If no Ticketmaster ID, return empty results
     if (!artist.ticketmasterId) {
-      // Create sample shows as fallback
-      const sampleShows = await createSampleShows(artistId, artist);
-
-      // Update artist's last sync timestamp
-      await db
-        .update(artists)
-        .set({
-          updatedAt: new Date(),
-          lastSyncedAt: new Date(),
-        })
-        .where(eq(artists.id, artistId));
-
       return NextResponse.json({
         success: true,
-        message: "Created sample shows (no Ticketmaster ID)",
-        showsCount: sampleShows.length,
-        shows: sampleShows,
+        message: "No Ticketmaster ID available for artist",
+        showsCount: 0,
+        shows: [],
       });
     }
 

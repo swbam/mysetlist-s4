@@ -33,12 +33,24 @@
   },
   "crons": [
     {
-      "path": "/api/cron/sync",
-      "schedule": "0 0 * * *"
+      "path": "/api/cron/autonomous-sync?mode=discovery",
+      "schedule": "0 */4 * * *"
     },
     {
-      "path": "/api/cron/trending",
-      "schedule": "0 12 * * *"
+      "path": "/api/cron/autonomous-sync?mode=sync",
+      "schedule": "0 */2 * * *"
+    },
+    {
+      "path": "/api/cron/master-sync?mode=daily",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/calculate-trending?mode=hourly",
+      "schedule": "30 * * * *"
+    },
+    {
+      "path": "/api/cron/calculate-trending?mode=daily",
+      "schedule": "0 7 * * *"
     }
   ],
   "redirects": [

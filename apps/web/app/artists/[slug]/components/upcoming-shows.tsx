@@ -13,7 +13,7 @@ import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import { format } from "date-fns";
 import { Calendar, MapPin, Ticket } from "lucide-react";
 import Link from "next/link";
-import React, { useEffect } from "react";
+import React from "react";
 
 interface Show {
   show: {
@@ -63,20 +63,8 @@ export const UpcomingShows = React.memo(function UpcomingShows({
   artistName,
   artistId,
 }: UpcomingShowsProps) {
-  // Trigger background sync when component mounts if shows are empty or stale
-  useEffect(() => {
-    if (artistId && shows.length === 0) {
-      // Trigger autonomous sync in background (non-blocking)
-      fetch("/api/autonomous-sync?pipeline=sync", {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_CRON_SECRET || "dev-secret"}`,
-        },
-      }).catch(() => {
-        // Silent fail - sync will happen via scheduled cron jobs
-      });
-    }
-  }, [artistId, shows.length]);
+  // Note: Autonomous sync happens server-side via scheduled cron jobs
+  // Client-side sync removed for security reasons (CRON_SECRET should never be exposed)
 
   if (shows.length === 0) {
     return (

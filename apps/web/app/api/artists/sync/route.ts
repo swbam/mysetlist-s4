@@ -272,23 +272,16 @@ export async function GET() {
         }
       }
     } catch (_tmError) {
-      // Fall back to a smaller hardcoded list if Ticketmaster fails
-      const fallbackArtists = [
-        "Taylor Swift",
-        "Drake",
-        "The Weeknd",
-        "Billie Eilish",
-        "Post Malone",
-      ];
-
-      // Use fallback artists
-      for (const name of fallbackArtists) {
-        artistMap.set(name, {
-          name,
-          ticketmasterId: "",
-          showCount: 1,
-        });
-      }
+      // Ticketmaster API error - return empty results instead of fake data
+      console.error("[Trending Artists] Ticketmaster API error:", _tmError);
+      return NextResponse.json({
+        success: false,
+        error: "Failed to fetch trending artists from Ticketmaster",
+        syncedCount: 0,
+        totalAttempted: 0,
+        trendingArtists: [],
+        errors: ["Ticketmaster API error"],
+      });
     }
 
     // Sort by show count and take top 10

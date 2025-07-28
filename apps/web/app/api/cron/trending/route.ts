@@ -15,43 +15,62 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Call Supabase edge function
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    // Get the base URL for internal API calls
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
+      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
+      "http://localhost:3001";
 
-    if (!supabaseUrl || !serviceKey) {
-      return NextResponse.json(
-        { error: "Missing configuration" },
-        { status: 500 },
-      );
-    }
-
-    const response = await fetch(`${supabaseUrl}/functions/v1/scheduled-sync`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${serviceKey}`,
-        "Content-Type": "application/json",
+    // Call the calculate-trending endpoint directly
+    const trendingResponse = await fetch(
+      `${baseUrl}/api/cron/calculate-trending?mode=daily&type=all`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${cronSecret}`,
+          "Content-Type": "application/json",
+        },
       },
-      body: JSON.stringify({
-        type: "trending",
-      }),
-    });
+    );
 
-    if (!response.ok) {
-      throw new Error(`Trending update failed: ${response.statusText}`);
+    if (!trendingResponse.ok) {
+      const errorText = await trendingResponse.text();
+      throw new Error(`Trending calculation failed: ${errorText}`);
     }
 
-    const data = await response.json();
+    const trendingData = await trendingResponse.json();
+
+    // Also trigger a master sync to update artist/show data
+    const syncResponse = await fetch(
+      `${baseUrl}/api/cron/master-sync?mode=daily`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${cronSecret}`,
+          "Content-Type": "application/json",
+        },
+      },
+    );
+
+    let syncData = null;
+    if (syncResponse.ok) {
+      syncData = await syncResponse.json();
+    }
 
     return NextResponse.json({
       success: true,
       timestamp: new Date().toISOString(),
-      result: data,
+      results: {
+        trending: trendingData,
+        sync: syncData,
+      },
     });
   } catch (error) {
     console.error("Cron trending error:", error);
     return NextResponse.json(
-      { error: "Trending update failed", details: error.message },
+      { 
+        error: "Trending update failed", 
+        details: error instanceof Error ? error.message : "Unknown error" 
+      },
       { status: 500 },
     );
   }
