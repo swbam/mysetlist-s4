@@ -62,7 +62,8 @@
     "dev": {
       "cache": false,
       "persistent": true,
-      "dependsOn": []
+      "dependsOn": [],
+      "env": ["NODE_ENV", "NEXT_PUBLIC_*", "DATABASE_URL"]
     },
     "start": {
       "dependsOn": ["build"],

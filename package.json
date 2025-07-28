@@ -33,7 +33,9 @@
     "deploy": "tsx scripts/deploy.ts",
     "deploy:preview": "vercel",
     "deploy:quick": "vercel --prod",
-    "analyze": "cd apps/web && ANALYZE=true pnpm build"
+    "analyze": "cd apps/web && ANALYZE=true pnpm build",
+    "benchmark:turbopack": "node scripts/benchmark-turbopack.js",
+    "benchmark:turbopack:full": "node scripts/benchmark-turbopack.js --benchmark"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
