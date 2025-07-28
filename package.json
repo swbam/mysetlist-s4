@@ -33,6 +33,8 @@
     "deploy": "tsx scripts/deploy.ts",
     "deploy:preview": "vercel",
     "deploy:quick": "vercel --prod",
+    "deploy:security": "./scripts/deploy-security-migration.sh",
+    "test:security": "tsx scripts/test-security-fixes.ts",
     "analyze": "cd apps/web && ANALYZE=true pnpm build",
     "benchmark:turbopack": "node scripts/benchmark-turbopack.js",
     "benchmark:turbopack:full": "node scripts/benchmark-turbopack.js --benchmark"

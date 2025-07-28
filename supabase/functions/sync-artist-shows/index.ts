@@ -7,9 +7,13 @@ interface RequestBody {
 }
 
 serve(async (req: Request) => {
-  // Handle CORS
+  // Get origin from request headers
+  const origin = req.headers.get("origin");
+  const headers = corsHeaders(origin);
+
+  // Handle CORS preflight
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers });
   }
 
   try {
@@ -20,7 +24,7 @@ serve(async (req: Request) => {
         JSON.stringify({ error: "Missing required parameters" }),
         {
           status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: { ...headers, "Content-Type": "application/json" },
         }
       );
     }
@@ -39,7 +43,7 @@ serve(async (req: Request) => {
 
     return new Response(JSON.stringify(data), {
       status: response.status,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...headers, "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Error in sync-artist-shows function:", error);
@@ -50,7 +54,7 @@ serve(async (req: Request) => {
       }),
       {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...headers, "Content-Type": "application/json" },
       }
     );
   }
