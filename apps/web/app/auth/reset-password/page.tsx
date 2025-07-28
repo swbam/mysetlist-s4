@@ -1,32 +1,32 @@
-'use client';
+"use client"
 
-export const dynamic = 'force-dynamic';
-import { zodResolver } from '@hookform/resolvers/zod';
+export const dynamic = "force-dynamic"
+import { zodResolver } from "@hookform/resolvers/zod"
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
-import { ArrowLeft, Loader2 } from 'lucide-react';
-import Link from 'next/link';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { useAuth } from '../../providers/auth-provider';
+} from "@repo/design-system/components/ui/alert"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Input } from "@repo/design-system/components/ui/input"
+import { Label } from "@repo/design-system/components/ui/label"
+import { ArrowLeft, Loader2 } from "lucide-react"
+import Link from "next/link"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { useAuth } from "../../providers/auth-provider"
 
 const resetSchema = z.object({
-  email: z.string().email('Please enter a valid email'),
-});
+  email: z.string().email("Please enter a valid email"),
+})
 
-type ResetForm = z.infer<typeof resetSchema>;
+type ResetForm = z.infer<typeof resetSchema>
 
 export default function ResetPasswordPage() {
-  const { resetPassword } = useAuth();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const { resetPassword } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
 
   const {
     register,
@@ -34,21 +34,21 @@ export default function ResetPasswordPage() {
     formState: { errors },
   } = useForm<ResetForm>({
     resolver: zodResolver(resetSchema),
-  });
+  })
 
   const onSubmit = async (data: ResetForm) => {
-    setIsLoading(true);
-    setError(null);
+    setIsLoading(true)
+    setError(null)
 
     try {
-      await resetPassword(data.email);
-      setSuccess(true);
+      await resetPassword(data.email)
+      setSuccess(true)
     } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+      setError(err.message || "Something went wrong")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   if (success) {
     return (
@@ -70,7 +70,7 @@ export default function ResetPasswordPage() {
           </Link>
         </div>
       </div>
-    );
+    )
   }
 
   return (
@@ -100,7 +100,7 @@ export default function ResetPasswordPage() {
               type="email"
               autoComplete="email"
               required
-              {...register('email')}
+              {...register("email")}
               className="mt-1"
             />
             {errors.email && (
@@ -118,7 +118,7 @@ export default function ResetPasswordPage() {
                   Sending reset link...
                 </>
               ) : (
-                'Send reset link'
+                "Send reset link"
               )}
             </Button>
 
@@ -133,5 +133,5 @@ export default function ResetPasswordPage() {
         </form>
       </div>
     </div>
-  );
+  )
 }

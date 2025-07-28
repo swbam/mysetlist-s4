@@ -1,122 +1,122 @@
-'use client';
+"use client"
 
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/alert"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { AlertCircle, Loader2, Music, RefreshCw } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { useAuth } from '~/app/providers/auth-provider';
+} from "@repo/design-system/components/ui/card"
+import { AlertCircle, Loader2, Music, RefreshCw } from "lucide-react"
+import Image from "next/image"
+import { useEffect, useState } from "react"
+import { useAuth } from "~/app/providers/auth-provider"
 
 interface SpotifyArtist {
-  id: string;
-  name: string;
-  images: { url: string }[];
-  genres: string[];
-  popularity: number;
+  id: string
+  name: string
+  images: { url: string }[]
+  genres: string[]
+  popularity: number
   external_urls: {
-    spotify: string;
-  };
+    spotify: string
+  }
 }
 
 interface MyArtistsContentProps {
-  userId: string;
+  userId: string
 }
 
 export function MyArtistsContent({ userId: _userId }: MyArtistsContentProps) {
-  const { signInWithSpotify } = useAuth();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [needsReauth, setNeedsReauth] = useState(false);
-  const [topArtists, setTopArtists] = useState<SpotifyArtist[]>([]);
-  const [followedArtists, setFollowedArtists] = useState<SpotifyArtist[]>([]);
+  const { signInWithSpotify } = useAuth()
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSyncing, setIsSyncing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [needsReauth, setNeedsReauth] = useState(false)
+  const [topArtists, setTopArtists] = useState<SpotifyArtist[]>([])
+  const [followedArtists, setFollowedArtists] = useState<SpotifyArtist[]>([])
 
   useEffect(() => {
-    fetchSpotifyData();
-  }, []);
+    fetchSpotifyData()
+  }, [])
 
   const fetchSpotifyData = async () => {
     try {
-      setIsLoading(true);
-      setError(null);
+      setIsLoading(true)
+      setError(null)
 
-      const response = await fetch('/api/auth/spotify/user-data');
+      const response = await fetch("/api/auth/spotify/user-data")
 
       if (!response.ok) {
         if (response.status === 401) {
           setError(
-            'Please sign in with Spotify to see your artists. You may need to reconnect your Spotify account.'
-          );
-          setNeedsReauth(true);
-          return;
+            "Please sign in with Spotify to see your artists. You may need to reconnect your Spotify account."
+          )
+          setNeedsReauth(true)
+          return
         }
-        throw new Error('Failed to fetch Spotify data');
+        throw new Error("Failed to fetch Spotify data")
       }
 
-      const data = await response.json();
-      setTopArtists(data.topArtists || []);
-      setFollowedArtists(data.followedArtists || []);
+      const data = await response.json()
+      setTopArtists(data.topArtists || [])
+      setFollowedArtists(data.followedArtists || [])
     } catch (_err) {
-      setError('Failed to load your Spotify artists. Please try again.');
+      setError("Failed to load your Spotify artists. Please try again.")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const syncArtist = async (artist: SpotifyArtist) => {
     try {
-      setIsSyncing(true);
+      setIsSyncing(true)
 
-      const response = await fetch('/api/artists/sync', {
-        method: 'POST',
+      const response = await fetch("/api/artists/sync", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           spotifyId: artist.id,
           name: artist.name,
           imageUrl: artist.images[0]?.url,
         }),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error('Failed to sync artist');
+        throw new Error("Failed to sync artist")
       }
 
       // Redirect to artist page after sync
-      const data = await response.json();
-      window.location.href = `/artists/${data.slug}`;
+      const data = await response.json()
+      window.location.href = `/artists/${data.slug}`
     } catch (_err) {
-      setError('Failed to sync artist. Please try again.');
+      setError("Failed to sync artist. Please try again.")
     } finally {
-      setIsSyncing(false);
+      setIsSyncing(false)
     }
-  };
+  }
 
   const handleReconnectSpotify = async () => {
     try {
-      await signInWithSpotify();
+      await signInWithSpotify()
     } catch (_err) {
-      setError('Failed to reconnect to Spotify. Please try again.');
+      setError("Failed to reconnect to Spotify. Please try again.")
     }
-  };
+  }
 
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
-    );
+    )
   }
 
   return (
@@ -130,7 +130,7 @@ export function MyArtistsContent({ userId: _userId }: MyArtistsContentProps) {
 
       {error && (
         <Alert
-          variant={needsReauth ? 'default' : 'destructive'}
+          variant={needsReauth ? "default" : "destructive"}
           className="mb-6"
         >
           <AlertCircle className="h-4 w-4" />
@@ -193,7 +193,7 @@ export function MyArtistsContent({ userId: _userId }: MyArtistsContentProps) {
                       <CardTitle className="text-lg">{artist.name}</CardTitle>
                       {artist.genres.length > 0 && (
                         <CardDescription className="text-sm">
-                          {artist.genres.slice(0, 2).join(', ')}
+                          {artist.genres.slice(0, 2).join(", ")}
                         </CardDescription>
                       )}
                     </CardHeader>
@@ -210,7 +210,7 @@ export function MyArtistsContent({ userId: _userId }: MyArtistsContentProps) {
                             Syncing...
                           </>
                         ) : (
-                          'View Shows & Setlists'
+                          "View Shows & Setlists"
                         )}
                       </Button>
                     </CardContent>
@@ -249,7 +249,7 @@ export function MyArtistsContent({ userId: _userId }: MyArtistsContentProps) {
                       <CardTitle className="text-lg">{artist.name}</CardTitle>
                       {artist.genres.length > 0 && (
                         <CardDescription className="text-sm">
-                          {artist.genres.slice(0, 2).join(', ')}
+                          {artist.genres.slice(0, 2).join(", ")}
                         </CardDescription>
                       )}
                     </CardHeader>
@@ -266,7 +266,7 @@ export function MyArtistsContent({ userId: _userId }: MyArtistsContentProps) {
                             Syncing...
                           </>
                         ) : (
-                          'View Shows & Setlists'
+                          "View Shows & Setlists"
                         )}
                       </Button>
                     </CardContent>
@@ -278,5 +278,5 @@ export function MyArtistsContent({ userId: _userId }: MyArtistsContentProps) {
         </div>
       )}
     </div>
-  );
+  )
 }

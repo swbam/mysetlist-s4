@@ -1,52 +1,52 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { AlertTriangle, ArrowLeft, Home, RefreshCw } from 'lucide-react';
-import Link from 'next/link';
-import React from 'react';
+} from "@repo/design-system/components/ui/card"
+import { AlertTriangle, ArrowLeft, Home, RefreshCw } from "lucide-react"
+import Link from "next/link"
+import React from "react"
 
 interface Props {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-  routeName?: string;
-  showBackButton?: boolean;
-  onRetry?: () => void;
+  children: React.ReactNode
+  fallback?: React.ReactNode
+  routeName?: string
+  showBackButton?: boolean
+  onRetry?: () => void
 }
 
 interface State {
-  hasError: boolean;
-  error: Error | null;
-  errorInfo: React.ErrorInfo | null;
-  retryCount: number;
+  hasError: boolean
+  error: Error | null
+  errorInfo: React.ErrorInfo | null
+  retryCount: number
 }
 
 export class RouteErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
-    super(props);
+    super(props)
     this.state = {
       hasError: false,
       error: null,
       errorInfo: null,
       retryCount: 0,
-    };
+    }
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
-    return { hasError: true, error, errorInfo: null };
+    return { hasError: true, error, errorInfo: null }
   }
 
   override componentDidCatch(_error: Error, errorInfo: React.ErrorInfo) {
-    this.setState({ errorInfo });
+    this.setState({ errorInfo })
 
     // Log to external service in production
-    if (process.env["NODE_ENV"] === 'production') {
+    if (process.env["NODE_ENV"] === "production") {
       // TODO: Send to error tracking service
     }
   }
@@ -57,27 +57,27 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
       error: null,
       errorInfo: null,
       retryCount: prevState.retryCount + 1,
-    }));
+    }))
 
     if (this.props.onRetry) {
-      this.props.onRetry();
+      this.props.onRetry()
     }
-  };
+  }
 
   handleReload = () => {
-    if (typeof window !== 'undefined') {
-      window.location.reload();
+    if (typeof window !== "undefined") {
+      window.location.reload()
     }
-  };
+  }
 
   override render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
-        return <>{this.props.fallback}</>;
+        return <>{this.props.fallback}</>
       }
 
-      const routeDisplayName = this.props.routeName || 'route';
-      const showAdvancedOptions = this.state.retryCount > 2;
+      const routeDisplayName = this.props.routeName || "route"
+      const showAdvancedOptions = this.state.retryCount > 2
 
       return (
         <div className="container mx-auto flex min-h-[400px] items-center justify-center px-4 py-8">
@@ -88,7 +88,7 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
               </div>
               <CardTitle className="text-xl">
                 {routeDisplayName.charAt(0).toUpperCase() +
-                  routeDisplayName.slice(1)}{' '}
+                  routeDisplayName.slice(1)}{" "}
                 Error
               </CardTitle>
               <CardDescription>
@@ -107,7 +107,7 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
                   <RefreshCw className="mr-2 h-4 w-4" />
                   {this.state.retryCount > 0
                     ? `Retry (${this.state.retryCount}/5)`
-                    : 'Try Again'}
+                    : "Try Again"}
                 </Button>
 
                 {showAdvancedOptions && (
@@ -145,7 +145,7 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
               {this.state.retryCount >= 3 && (
                 <div className="rounded-md bg-muted p-3 text-center">
                   <p className="text-muted-foreground text-sm">
-                    Still having trouble? Try refreshing the page or{' '}
+                    Still having trouble? Try refreshing the page or{" "}
                     <Link
                       href="/contact"
                       className="text-primary hover:underline"
@@ -156,39 +156,40 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
                 </div>
               )}
 
-              {process.env["NODE_ENV"] === 'development' && this.state.error && (
-                <details className="mt-4 text-left">
-                  <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
-                    Debug Information
-                  </summary>
-                  <div className="mt-2 space-y-2">
-                    <div className="rounded-md bg-muted p-2">
-                      <h4 className="font-medium text-xs">Error:</h4>
-                      <pre className="mt-1 overflow-auto text-xs">
-                        {this.state.error.message}
-                      </pre>
-                    </div>
-                    {this.state.error.stack && (
+              {process.env["NODE_ENV"] === "development" &&
+                this.state.error && (
+                  <details className="mt-4 text-left">
+                    <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
+                      Debug Information
+                    </summary>
+                    <div className="mt-2 space-y-2">
                       <div className="rounded-md bg-muted p-2">
-                        <h4 className="font-medium text-xs">Stack:</h4>
+                        <h4 className="font-medium text-xs">Error:</h4>
                         <pre className="mt-1 overflow-auto text-xs">
-                          {this.state.error.stack
-                            .split('\n')
-                            .slice(0, 10)
-                            .join('\n')}
+                          {this.state.error.message}
                         </pre>
                       </div>
-                    )}
-                  </div>
-                </details>
-              )}
+                      {this.state.error.stack && (
+                        <div className="rounded-md bg-muted p-2">
+                          <h4 className="font-medium text-xs">Stack:</h4>
+                          <pre className="mt-1 overflow-auto text-xs">
+                            {this.state.error.stack
+                              .split("\n")
+                              .slice(0, 10)
+                              .join("\n")}
+                          </pre>
+                        </div>
+                      )}
+                    </div>
+                  </details>
+                )}
             </CardContent>
           </Card>
         </div>
-      );
+      )
     }
 
-    return this.props.children;
+    return this.props.children
   }
 }
 
@@ -200,9 +201,12 @@ export function withRouteErrorBoundary<T extends object>(
 ) {
   return function WithRouteErrorBoundaryComponent(props: T) {
     return (
-      <RouteErrorBoundary routeName={routeName ?? 'Page'} showBackButton={showBackButton}>
+      <RouteErrorBoundary
+        routeName={routeName ?? "Page"}
+        showBackButton={showBackButton}
+      >
         <Component {...props} />
       </RouteErrorBoundary>
-    );
-  };
+    )
+  }
 }

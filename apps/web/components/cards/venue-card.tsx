@@ -1,114 +1,118 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { cn } from '@repo/design-system/lib/utils';
-import { 
-  Calendar, 
-  Car, 
-  ExternalLink, 
-  Heart, 
-  MapPin, 
-  Star, 
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Card, CardContent } from "@repo/design-system/components/ui/card"
+import { cn } from "@repo/design-system/lib/utils"
+import {
+  Accessibility,
+  Calendar,
+  Car,
+  ExternalLink,
+  Heart,
+  MapPin,
+  Music,
+  Star,
   Users,
   Wifi,
-  Accessibility,
-  Music
-} from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useState } from 'react';
-import { focusRing, touchTargets, animations } from '~/components/layout/grid-utils';
+} from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { useState } from "react"
+import {
+  animations,
+  focusRing,
+  touchTargets,
+} from "~/components/layout/grid-utils"
 
 interface VenueCardProps {
   venue: {
-    id: string;
-    name: string;
-    slug: string;
-    imageUrl?: string | null;
-    address?: string | null;
-    city: string;
-    state?: string | null;
-    country: string;
-    capacity?: number | null;
-    venueType?: string | null;
-    avgRating?: number | null;
-    reviewCount?: number | null;
-    upcomingShowCount?: number;
-    distance?: number;
-    amenities?: string | null;
-    website?: string | null;
-  };
-  variant?: 'default' | 'compact' | 'detailed';
-  showFavoriteButton?: boolean;
-  onFavorite?: (venueId: string) => void;
-  className?: string;
+    id: string
+    name: string
+    slug: string
+    imageUrl?: string | null
+    address?: string | null
+    city: string
+    state?: string | null
+    country: string
+    capacity?: number | null
+    venueType?: string | null
+    avgRating?: number | null
+    reviewCount?: number | null
+    upcomingShowCount?: number
+    distance?: number
+    amenities?: string | null
+    website?: string | null
+  }
+  variant?: "default" | "compact" | "detailed"
+  showFavoriteButton?: boolean
+  onFavorite?: (venueId: string) => void
+  className?: string
 }
 
-export function VenueCard({ 
-  venue, 
-  variant = 'default',
+export function VenueCard({
+  venue,
+  variant = "default",
   showFavoriteButton = false,
   onFavorite,
-  className 
+  className,
 }: VenueCardProps) {
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [imageError, setImageError] = useState(false);
-  
+  const [isFavorite, setIsFavorite] = useState(false)
+  const [imageError, setImageError] = useState(false)
+
   // Format capacity
   const formatCapacity = (capacity?: number | null) => {
-    if (!capacity) return null;
-    if (capacity >= 1000) return `${(capacity / 1000).toFixed(1)}k`;
-    return capacity.toString();
-  };
+    if (!capacity) return null
+    if (capacity >= 1000) return `${(capacity / 1000).toFixed(1)}k`
+    return capacity.toString()
+  }
 
   // Format distance
   const formatDistance = (distance?: number) => {
-    if (!distance) return null;
-    if (distance < 1) return `${Math.round(distance * 1000)}m`;
-    return `${distance.toFixed(1)}km`;
-  };
+    if (!distance) return null
+    if (distance < 1) return `${Math.round(distance * 1000)}m`
+    return `${distance.toFixed(1)}km`
+  }
 
   // Format location
   const formatLocation = () => {
     if (venue.state) {
-      return `${venue.city}, ${venue.state}`;
+      return `${venue.city}, ${venue.state}`
     }
-    return `${venue.city}, ${venue.country}`;
-  };
+    return `${venue.city}, ${venue.country}`
+  }
 
   // Parse amenities
-  const amenities = venue.amenities ? JSON.parse(venue.amenities) : [];
-  const hasParking = amenities.includes('parking');
-  const hasWifi = amenities.includes('wifi');
-  const hasAccessibility = amenities.includes('accessibility');
+  const amenities = venue.amenities ? JSON.parse(venue.amenities) : []
+  const hasParking = amenities.includes("parking")
+  const hasWifi = amenities.includes("wifi")
+  const hasAccessibility = amenities.includes("accessibility")
 
   // Venue type labels
   const venueTypeLabels: Record<string, string> = {
-    arena: 'Arena',
-    stadium: 'Stadium',
-    theater: 'Theater',
-    club: 'Club',
-    'outdoor-amphitheater': 'Outdoor Amphitheater',
-    'indoor-amphitheater': 'Indoor Amphitheater',
-    ballroom: 'Ballroom',
-    festival: 'Festival Grounds',
-    other: 'Other',
-  };
+    arena: "Arena",
+    stadium: "Stadium",
+    theater: "Theater",
+    club: "Club",
+    "outdoor-amphitheater": "Outdoor Amphitheater",
+    "indoor-amphitheater": "Indoor Amphitheater",
+    ballroom: "Ballroom",
+    festival: "Festival Grounds",
+    other: "Other",
+  }
 
   // Handle favorite action
   const handleFavorite = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsFavorite(!isFavorite);
-    onFavorite?.(venue.id);
-  };
+    e.preventDefault()
+    e.stopPropagation()
+    setIsFavorite(!isFavorite)
+    onFavorite?.(venue.id)
+  }
 
   return (
-    <Card 
+    <Card
       className={cn(
-        'group overflow-hidden',
+        "group overflow-hidden",
         animations.all,
         animations.shadow,
         animations.scale,
@@ -118,7 +122,7 @@ export function VenueCard({
       role="article"
       aria-label={`Venue: ${venue.name}`}
     >
-      <Link 
+      <Link
         href={`/venues/${venue.slug}`}
         className="block focus:outline-none"
         tabIndex={0}
@@ -138,17 +142,20 @@ export function VenueCard({
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center">
-              <Music 
-                className="h-16 w-16 text-muted-foreground/30" 
-                aria-hidden="true" 
+              <Music
+                className="h-16 w-16 text-muted-foreground/30"
+                aria-hidden="true"
               />
             </div>
           )}
-          
+
           {/* Distance Badge */}
           {venue.distance !== undefined && (
             <div className="absolute top-3 right-3">
-              <Badge variant="secondary" className="bg-black/50 text-white hover:bg-black/60">
+              <Badge
+                variant="secondary"
+                className="bg-black/50 text-white hover:bg-black/60"
+              >
                 {formatDistance(venue.distance)} away
               </Badge>
             </div>
@@ -157,8 +164,14 @@ export function VenueCard({
           {/* Rating Badge */}
           {venue.avgRating && venue.avgRating > 0 && (
             <div className="absolute top-3 left-3">
-              <Badge variant="secondary" className="gap-1 bg-black/50 text-white hover:bg-black/60">
-                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" aria-hidden="true" />
+              <Badge
+                variant="secondary"
+                className="gap-1 bg-black/50 text-white hover:bg-black/60"
+              >
+                <Star
+                  className="h-3 w-3 fill-yellow-400 text-yellow-400"
+                  aria-hidden="true"
+                />
                 {venue.avgRating.toFixed(1)}
               </Badge>
             </div>
@@ -176,13 +189,19 @@ export function VenueCard({
                   focusRing.button
                 )}
                 onClick={handleFavorite}
-                aria-label={isFavorite ? `Remove ${venue.name} from favorites` : `Add ${venue.name} to favorites`}
+                aria-label={
+                  isFavorite
+                    ? `Remove ${venue.name} from favorites`
+                    : `Add ${venue.name} to favorites`
+                }
               >
-                <Heart 
+                <Heart
                   className={cn(
                     "h-4 w-4",
-                    isFavorite ? "fill-red-500 text-red-500" : "text-muted-foreground"
-                  )} 
+                    isFavorite
+                      ? "fill-red-500 text-red-500"
+                      : "text-muted-foreground"
+                  )}
                   aria-hidden="true"
                 />
               </Button>
@@ -194,15 +213,12 @@ export function VenueCard({
       {/* Card Content */}
       <CardContent className="p-4">
         <div className="mb-3">
-          <Link 
-            href={`/venues/${venue.slug}`}
-            className="focus:outline-none"
-          >
+          <Link href={`/venues/${venue.slug}`} className="focus:outline-none">
             <h3 className="font-semibold text-lg leading-tight transition-colors group-hover:text-primary line-clamp-2">
               {venue.name}
             </h3>
           </Link>
-          
+
           {/* Location */}
           <div className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">
             <MapPin className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
@@ -229,7 +245,10 @@ export function VenueCard({
         {amenities.length > 0 && (
           <div className="mb-3 flex gap-3 text-xs text-muted-foreground">
             {hasParking && (
-              <div className="flex items-center gap-1" title="Parking available">
+              <div
+                className="flex items-center gap-1"
+                title="Parking available"
+              >
                 <Car className="h-3 w-3" aria-hidden="true" />
                 <span className="sr-only">Parking available</span>
               </div>
@@ -251,7 +270,8 @@ export function VenueCard({
 
         {/* Stats Footer */}
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          {venue.upcomingShowCount !== undefined && venue.upcomingShowCount > 0 ? (
+          {venue.upcomingShowCount !== undefined &&
+          venue.upcomingShowCount > 0 ? (
             <div className="flex items-center gap-1">
               <Calendar className="h-3 w-3" aria-hidden="true" />
               <span>{venue.upcomingShowCount} upcoming shows</span>
@@ -264,15 +284,13 @@ export function VenueCard({
             <Button
               variant="ghost"
               size="sm"
-              className={cn(
-                "text-xs",
-                touchTargets.minimum,
-                focusRing.button
-              )}
+              className={cn("text-xs", touchTargets.minimum, focusRing.button)}
               onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                window.open(venue.website, '_blank', 'noopener,noreferrer');
+                e.preventDefault()
+                e.stopPropagation()
+                if (venue.website) {
+                  window.open(venue.website, "_blank", "noopener,noreferrer")
+                }
               }}
               aria-label={`Visit ${venue.name} website`}
             >
@@ -282,5 +300,5 @@ export function VenueCard({
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

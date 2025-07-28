@@ -1,37 +1,37 @@
-'use client';
+"use client"
 
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { createClient } from '~/lib/supabase/client';
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
+import { createClient } from "~/lib/supabase/client"
 
 export function useRealtimeUpdates(showId: string, isLive: boolean) {
-  const router = useRouter();
-  const supabase = createClient();
+  const router = useRouter()
+  const supabase = createClient()
 
   useEffect(() => {
     if (!isLive) {
-      return;
+      return
     }
 
     // Subscribe to setlist updates
     const setlistChannel = supabase
       .channel(`show-setlists-${showId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'setlist_songs',
+          event: "*",
+          schema: "public",
+          table: "setlist_songs",
           filter: `setlist_id=in.(select id from setlists where show_id=eq.${showId})`,
         },
         (_payload) => {
-          router.refresh();
+          router.refresh()
         }
       )
-      .subscribe();
+      .subscribe()
 
     return () => {
-      supabase.removeChannel(setlistChannel);
-    };
-  }, [showId, isLive, router, supabase]);
+      supabase.removeChannel(setlistChannel)
+    }
+  }, [showId, isLive, router, supabase])
 }

@@ -1,17 +1,60 @@
-import React, { Suspense, lazy } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import { LoadingSpinner } from '@repo/design-system/components/ui/loading-spinner';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card"
+import { LoadingSpinner } from "@repo/design-system/components/ui/loading-spinner"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs"
+import React, { Suspense, lazy } from "react"
 
 // Lazy load heavy analytics components for better bundle splitting
-const AnalyticsOverview = lazy(() => import('~/components/analytics/analytics-overview').then(m => ({ default: m.AnalyticsOverview })));
-const AnalyticsCharts = lazy(() => import('~/components/analytics/analytics-charts').then(m => ({ default: m.AnalyticsCharts })));
-const AnalyticsTable = lazy(() => import('~/components/analytics/analytics-table').then(m => ({ default: m.AnalyticsTable })));
-const RealTimeMetrics = lazy(() => import('~/components/analytics/real-time-metrics').then(m => ({ default: m.RealTimeMetrics })));
-const UserEngagement = lazy(() => import('~/components/analytics/user-engagement').then(m => ({ default: m.UserEngagement })));
-const PerformanceMetrics = lazy(() => import('~/components/analytics/performance-metrics').then(m => ({ default: m.PerformanceMetrics })));
-const VotingAnalytics = lazy(() => import('~/components/analytics/voting-analytics').then(m => ({ default: m.VotingAnalytics })));
-const RecommendationAnalytics = lazy(() => import('~/components/analytics/recommendation-analytics').then(m => ({ default: m.RecommendationAnalytics })));
+const AnalyticsOverview = lazy(() =>
+  import("~/components/analytics/analytics-overview").then((m) => ({
+    default: m.AnalyticsOverview,
+  }))
+)
+const AnalyticsCharts = lazy(() =>
+  import("~/components/analytics/analytics-charts").then((m) => ({
+    default: m.AnalyticsCharts,
+  }))
+)
+const AnalyticsTable = lazy(() =>
+  import("~/components/analytics/analytics-table").then((m) => ({
+    default: m.AnalyticsTable,
+  }))
+)
+const RealTimeMetrics = lazy(() =>
+  import("~/components/analytics/real-time-metrics").then((m) => ({
+    default: m.RealTimeMetrics,
+  }))
+)
+const UserEngagement = lazy(() =>
+  import("~/components/analytics/user-engagement").then((m) => ({
+    default: m.UserEngagement,
+  }))
+)
+const PerformanceMetrics = lazy(() =>
+  import("~/components/analytics/performance-metrics").then((m) => ({
+    default: m.PerformanceMetrics,
+  }))
+)
+const VotingAnalytics = lazy(() =>
+  import("~/components/analytics/voting-analytics").then((m) => ({
+    default: m.VotingAnalytics,
+  }))
+)
+const RecommendationAnalytics = lazy(() =>
+  import("~/components/analytics/recommendation-analytics").then((m) => ({
+    default: m.RecommendationAnalytics,
+  }))
+)
 
 export default function AnalyticsPage() {
   return (
@@ -20,7 +63,9 @@ export default function AnalyticsPage() {
         {/* Header */}
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Analytics Dashboard
+            </h1>
             <p className="text-muted-foreground">
               Comprehensive insights and real-time metrics for MySetlist
             </p>
@@ -173,7 +218,9 @@ export default function AnalyticsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>User Growth</CardTitle>
-                  <CardDescription>New user registrations over time</CardDescription>
+                  <CardDescription>
+                    New user registrations over time
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Suspense fallback={<LoadingSpinner />}>
@@ -184,7 +231,9 @@ export default function AnalyticsPage() {
               <Card>
                 <CardHeader>
                   <CardTitle>User Retention</CardTitle>
-                  <CardDescription>How many users return each week</CardDescription>
+                  <CardDescription>
+                    How many users return each week
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Suspense fallback={<LoadingSpinner />}>
@@ -217,7 +266,10 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-center text-muted-foreground">
-                  <p>Revenue tracking will be implemented with monetization features</p>
+                  <p>
+                    Revenue tracking will be implemented with monetization
+                    features
+                  </p>
                 </div>
               </CardContent>
             </Card>
@@ -225,5 +277,5 @@ export default function AnalyticsPage() {
         </Tabs>
       </div>
     </div>
-  );
+  )
 }

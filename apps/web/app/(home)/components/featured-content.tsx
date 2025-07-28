@@ -1,13 +1,13 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardHeader,
-} from '@repo/design-system/components/ui/card';
-import { motion } from 'framer-motion';
+} from "@repo/design-system/components/ui/card"
+import { motion } from "framer-motion"
 import {
   Calendar,
   ChevronRight,
@@ -16,75 +16,77 @@ import {
   Sparkles,
   Trophy,
   Users,
-} from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import React, { useEffect, useState } from 'react';
+} from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import React, { useEffect, useState } from "react"
 
 interface FeaturedShow {
-  id: string;
-  name: string;
-  venue: string;
-  date: string;
-  imageUrl: string;
-  attendees: number;
-  votesCount: number;
+  id: string
+  name: string
+  venue: string
+  date: string
+  imageUrl: string
+  attendees: number
+  votesCount: number
 }
 
 interface TopVotedSong {
-  id: string;
-  title: string;
-  artist: string;
-  votes: number;
-  percentage: number;
+  id: string
+  title: string
+  artist: string
+  votes: number
+  percentage: number
 }
 
 interface UpcomingShow {
-  id: string;
-  artist: string;
-  venue: string;
-  date: string;
-  ticketsLeft?: number;
+  id: string
+  artist: string
+  venue: string
+  date: string
+  ticketsLeft?: number
 }
 
 function FeaturedContent() {
-  const [featuredShow, setFeaturedShow] = useState<FeaturedShow | null>(null);
-  const [topVotedSongs, setTopVotedSongs] = useState<TopVotedSong[]>([]);
-  const [upcomingHighlights, setUpcomingHighlights] = useState<UpcomingShow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [featuredShow, setFeaturedShow] = useState<FeaturedShow | null>(null)
+  const [topVotedSongs, setTopVotedSongs] = useState<TopVotedSong[]>([])
+  const [upcomingHighlights, setUpcomingHighlights] = useState<UpcomingShow[]>(
+    []
+  )
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchFeaturedContent = async () => {
       try {
         // Fetch featured show
-        const featuredRes = await fetch('/api/trending/featured');
+        const featuredRes = await fetch("/api/trending/featured")
         if (featuredRes.ok) {
-          const data = await featuredRes.json();
-          setFeaturedShow(data.show);
+          const data = await featuredRes.json()
+          setFeaturedShow(data.show)
         }
 
         // Fetch top voted songs
-        const songsRes = await fetch('/api/trending/top-songs');
+        const songsRes = await fetch("/api/trending/top-songs")
         if (songsRes.ok) {
-          const data = await songsRes.json();
-          setTopVotedSongs(data.songs || []);
+          const data = await songsRes.json()
+          setTopVotedSongs(data.songs || [])
         }
 
         // Fetch upcoming shows
-        const upcomingRes = await fetch('/api/trending/upcoming-shows');
+        const upcomingRes = await fetch("/api/trending/upcoming-shows")
         if (upcomingRes.ok) {
-          const data = await upcomingRes.json();
-          setUpcomingHighlights(data.shows || []);
+          const data = await upcomingRes.json()
+          setUpcomingHighlights(data.shows || [])
         }
       } catch (error) {
-        console.error('Error fetching featured content:', error);
+        console.error("Error fetching featured content:", error)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchFeaturedContent();
-  }, []);
+    fetchFeaturedContent()
+  }, [])
 
   // Show loading skeleton while fetching
   if (loading) {
@@ -103,12 +105,16 @@ function FeaturedContent() {
           </div>
         </div>
       </section>
-    );
+    )
   }
 
   // Don't render if no data
-  if (!featuredShow && topVotedSongs.length === 0 && upcomingHighlights.length === 0) {
-    return null;
+  if (
+    !featuredShow &&
+    topVotedSongs.length === 0 &&
+    upcomingHighlights.length === 0
+  ) {
+    return null
   }
 
   return (
@@ -174,9 +180,15 @@ function FeaturedContent() {
                       </span>
                     </div>
                     <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-                      <Button size="default" className="w-full sm:w-auto" asChild>
+                      <Button
+                        size="default"
+                        className="w-full sm:w-auto"
+                        asChild
+                      >
                         <Link href={`/shows/${featuredShow.id}`}>
-                          <span className="hidden sm:inline">View Setlist Predictions</span>
+                          <span className="hidden sm:inline">
+                            View Setlist Predictions
+                          </span>
                           <span className="sm:hidden">View Predictions</span>
                           <ChevronRight className="ml-2 h-4 w-4" />
                         </Link>
@@ -289,7 +301,7 @@ function FeaturedContent() {
                       transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
                     >
                       <Link
-                        href={`/artists/${show.artist.toLowerCase().replace(' ', '-')}`}
+                        href={`/artists/${show.artist.toLowerCase().replace(" ", "-")}`}
                       >
                         <Card className="group border-border/30 transition-all duration-300 hover:bg-card/80">
                           <CardContent className="p-4">
@@ -302,14 +314,15 @@ function FeaturedContent() {
                                   {show.venue}
                                 </p>
                               </div>
-                              {show.ticketsLeft !== undefined && show.ticketsLeft < 100 && (
-                                <Badge
-                                  variant="destructive"
-                                  className="text-xs"
-                                >
-                                  {show.ticketsLeft} left
-                                </Badge>
-                              )}
+                              {show.ticketsLeft !== undefined &&
+                                show.ticketsLeft < 100 && (
+                                  <Badge
+                                    variant="destructive"
+                                    className="text-xs"
+                                  >
+                                    {show.ticketsLeft} left
+                                  </Badge>
+                                )}
                             </div>
                             <div className="flex items-center justify-between text-sm">
                               <span className="flex items-center gap-1 text-muted-foreground">
@@ -332,7 +345,7 @@ function FeaturedContent() {
         </div>
       </div>
     </section>
-  );
+  )
 }
 
-export default FeaturedContent;
+export default FeaturedContent

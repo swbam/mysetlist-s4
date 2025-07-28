@@ -1,8 +1,8 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Skeleton } from "@repo/design-system/components/ui/skeleton"
 import {
   Building,
   Calendar,
@@ -10,88 +10,88 @@ import {
   MapPin,
   TrendingUp,
   Users,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+} from "lucide-react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
 
 interface TrendingVenue {
-  id: string;
-  name: string;
-  slug: string;
-  city: string;
-  state?: string;
-  country: string;
-  capacity?: number;
-  upcomingShows: number;
-  totalShows: number;
-  trendingScore: number;
-  weeklyGrowth: number;
-  imageUrl?: string;
+  id: string
+  name: string
+  slug: string
+  city: string
+  state?: string
+  country: string
+  capacity?: number
+  upcomingShows: number
+  totalShows: number
+  trendingScore: number
+  weeklyGrowth: number
+  imageUrl?: string
 }
 
 export function TrendingVenues() {
-  const [venues, setVenues] = useState<TrendingVenue[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [venues, setVenues] = useState<TrendingVenue[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchTrendingVenues();
-  }, []);
+    fetchTrendingVenues()
+  }, [])
 
   const fetchTrendingVenues = async () => {
     try {
-      const response = await fetch('/api/trending/venues');
+      const response = await fetch("/api/trending/venues")
       if (!response.ok) {
-        throw new Error('Failed to fetch trending venues');
+        throw new Error("Failed to fetch trending venues")
       }
 
-      const data = await response.json();
-      setVenues(data.venues || []);
+      const data = await response.json()
+      setVenues(data.venues || [])
     } catch (_err) {
-      setError('Failed to load trending venues');
+      setError("Failed to load trending venues")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const formatCapacity = (capacity?: number) => {
     if (!capacity) {
-      return 'N/A';
+      return "N/A"
     }
     if (capacity >= 1000) {
-      return `${(capacity / 1000).toFixed(1)}K`;
+      return `${(capacity / 1000).toFixed(1)}K`
     }
-    return capacity.toString();
-  };
+    return capacity.toString()
+  }
 
   const getGrowthBadge = (growth: number) => {
     if (growth > 20) {
       return {
-        variant: 'default' as const,
-        text: 'Hot',
-        color: 'text-red-500',
-      };
+        variant: "default" as const,
+        text: "Hot",
+        color: "text-red-500",
+      }
     }
     if (growth > 10) {
       return {
-        variant: 'secondary' as const,
-        text: 'Rising',
-        color: 'text-orange-500',
-      };
+        variant: "secondary" as const,
+        text: "Rising",
+        color: "text-orange-500",
+      }
     }
     if (growth > 0) {
       return {
-        variant: 'outline' as const,
-        text: 'Growing',
-        color: 'text-green-500',
-      };
+        variant: "outline" as const,
+        text: "Growing",
+        color: "text-green-500",
+      }
     }
     return {
-      variant: 'outline' as const,
-      text: 'Stable',
-      color: 'text-gray-500',
-    };
-  };
+      variant: "outline" as const,
+      text: "Stable",
+      color: "text-gray-500",
+    }
+  }
 
   if (loading) {
     return (
@@ -118,7 +118,7 @@ export function TrendingVenues() {
           </div>
         ))}
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -129,7 +129,7 @@ export function TrendingVenues() {
           Try Again
         </Button>
       </div>
-    );
+    )
   }
 
   if (venues.length === 0) {
@@ -138,13 +138,13 @@ export function TrendingVenues() {
         <Building className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
         <p className="text-muted-foreground">No trending venues found</p>
       </div>
-    );
+    )
   }
 
   return (
     <div className="space-y-3">
       {venues.map((venue, index) => {
-        const growthBadge = getGrowthBadge(venue.weeklyGrowth);
+        const growthBadge = getGrowthBadge(venue.weeklyGrowth)
 
         return (
           <div
@@ -214,7 +214,7 @@ export function TrendingVenues() {
             <div className="text-right">
               <div className="flex items-center gap-1 font-medium text-sm">
                 <TrendingUp className={`h-3 w-3 ${growthBadge.color}`} />
-                {venue.weeklyGrowth > 0 ? '+' : ''}
+                {venue.weeklyGrowth > 0 ? "+" : ""}
                 {venue.weeklyGrowth.toFixed(1)}%
               </div>
               <div className="text-muted-foreground text-xs">
@@ -229,8 +229,8 @@ export function TrendingVenues() {
               </Button>
             </Link>
           </div>
-        );
+        )
       })}
     </div>
-  );
+  )
 }

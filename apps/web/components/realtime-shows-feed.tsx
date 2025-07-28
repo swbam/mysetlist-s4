@@ -1,18 +1,18 @@
-'use client';
+"use client"
 
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Bell, BellRing } from 'lucide-react';
-import { useState } from 'react';
-import { useRealtimeShows } from '~/hooks/use-realtime-shows';
-import { RealtimeShowCard } from './realtime-show-card';
+import { cn } from "@repo/design-system/lib/utils"
+import { AnimatePresence, motion } from "framer-motion"
+import { Bell, BellRing } from "lucide-react"
+import { useState } from "react"
+import { useRealtimeShows } from "~/hooks/use-realtime-shows"
+import { RealtimeShowCard } from "./realtime-show-card"
 
 interface RealtimeShowsFeedProps {
-  limit?: number;
-  status?: 'upcoming' | 'ongoing' | 'completed';
-  artistId?: string;
-  venueId?: string;
-  className?: string;
+  limit?: number
+  status?: "upcoming" | "ongoing" | "completed"
+  artistId?: string
+  venueId?: string
+  className?: string
 }
 
 export function RealtimeShowsFeed({
@@ -22,7 +22,7 @@ export function RealtimeShowsFeed({
   venueId,
   className,
 }: RealtimeShowsFeedProps) {
-  const [hasNewShows, setHasNewShows] = useState(false);
+  const [hasNewShows, setHasNewShows] = useState(false)
 
   const { shows, isLoading } = useRealtimeShows({
     limit,
@@ -30,39 +30,39 @@ export function RealtimeShowsFeed({
     ...(artistId && { artistId }),
     ...(venueId && { venueId }),
     onNewShow: () => {
-      setHasNewShows(true);
+      setHasNewShows(true)
       // Auto-dismiss notification after 5 seconds
-      setTimeout(() => setHasNewShows(false), 5000);
+      setTimeout(() => setHasNewShows(false), 5000)
     },
-  });
+  })
 
   // Filter to show only live shows first, then upcoming, then past
   const sortedShows = [...shows].sort((a, b) => {
-    const statusOrder = { ongoing: 0, upcoming: 1, completed: 2 };
-    const statusDiff = statusOrder[a.status] - statusOrder[b.status];
+    const statusOrder = { ongoing: 0, upcoming: 1, completed: 2 }
+    const statusDiff = statusOrder[a.status] - statusOrder[b.status]
     if (statusDiff !== 0) {
-      return statusDiff;
+      return statusDiff
     }
 
     // Within same status, sort by date
-    return new Date(b.date).getTime() - new Date(a.date).getTime();
-  });
+    return new Date(b.date).getTime() - new Date(a.date).getTime()
+  })
 
-  const liveShows = sortedShows.filter((show) => show.status === 'ongoing');
-  const hasLiveShows = liveShows.length > 0;
+  const liveShows = sortedShows.filter((show) => show.status === "ongoing")
+  const hasLiveShows = liveShows.length > 0
 
   if (isLoading) {
     return (
-      <div className={cn('space-y-4', className)}>
+      <div className={cn("space-y-4", className)}>
         {[...new Array(3)].map((_, i) => (
           <div key={i} className="h-32 animate-pulse rounded-lg bg-muted" />
         ))}
       </div>
-    );
+    )
   }
 
   return (
-    <div className={cn('space-y-6', className)}>
+    <div className={cn("space-y-6", className)}>
       {/* New show notification */}
       <AnimatePresence>
         {hasNewShows && (
@@ -102,7 +102,7 @@ export function RealtimeShowsFeed({
         {!status && <h3 className="font-semibold text-lg">Recent Shows</h3>}
         <div className="grid gap-4 md:grid-cols-2">
           {sortedShows
-            .filter((show) => !hasLiveShows || show.status !== 'ongoing')
+            .filter((show) => !hasLiveShows || show.status !== "ongoing")
             .map((show) => (
               <RealtimeShowCard key={show.id} show={show} />
             ))}
@@ -116,5 +116,5 @@ export function RealtimeShowsFeed({
         </div>
       )}
     </div>
-  );
+  )
 }

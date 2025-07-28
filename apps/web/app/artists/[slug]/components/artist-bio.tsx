@@ -1,24 +1,24 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import { useState } from 'react';
+} from "@repo/design-system/components/ui/card"
+import { ChevronDown, ChevronUp } from "lucide-react"
+import { useState } from "react"
 
 interface ArtistBioProps {
-  bio: string;
+  bio: string
 }
 
 export function ArtistBio({ bio }: ArtistBioProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const shouldTruncate = bio.length > 300;
+  const [isExpanded, setIsExpanded] = useState(false)
+  const shouldTruncate = bio.length > 300
   const displayBio =
-    shouldTruncate && !isExpanded ? `${bio.slice(0, 300)}...` : bio;
+    shouldTruncate && !isExpanded ? `${bio.slice(0, 300)}...` : bio
 
   return (
     <Card>
@@ -49,5 +49,5 @@ export function ArtistBio({ bio }: ArtistBioProps) {
         )}
       </CardContent>
     </Card>
-  );
+  )
 }

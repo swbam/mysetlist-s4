@@ -1,11 +1,11 @@
-import { db } from '@repo/database';
-import { artists, shows } from '@repo/database';
-import { gt, sql, desc } from 'drizzle-orm';
-import { NextResponse } from 'next/server';
+import { db } from "@repo/database"
+import { artists, shows } from "@repo/database"
+import { desc, gt, sql } from "drizzle-orm"
+import { NextResponse } from "next/server"
 
 export async function POST() {
   try {
-    console.log('Initializing trending scores...');
+    console.log("Initializing trending scores...")
 
     // Update trending scores for artists based on popularity and followers
     const artistsUpdated = await db
@@ -24,7 +24,7 @@ export async function POST() {
           END
         `,
       })
-      .where(gt(artists.popularity, 0));
+      .where(gt(artists.popularity, 0))
 
     // Update trending scores for shows based on view count and attendee count
     const showsUpdated = await db
@@ -41,7 +41,7 @@ export async function POST() {
           END
         `,
       })
-      .where(sql`${shows.date} >= CURRENT_DATE - INTERVAL '30 days'`);
+      .where(sql`${shows.date} >= CURRENT_DATE - INTERVAL '30 days'`)
 
     // Get top trending artists
     const topArtists = await db
@@ -51,7 +51,7 @@ export async function POST() {
       })
       .from(artists)
       .orderBy(desc(artists.trendingScore))
-      .limit(10);
+      .limit(10)
 
     // Get top trending shows
     const topShows = await db
@@ -61,27 +61,27 @@ export async function POST() {
       })
       .from(shows)
       .orderBy(desc(shows.trendingScore))
-      .limit(10);
+      .limit(10)
 
     return NextResponse.json({
       success: true,
-      message: 'Trending scores initialized',
+      message: "Trending scores initialized",
       stats: {
         artistsUpdated,
         showsUpdated,
         topArtists,
         topShows,
       },
-    });
+    })
   } catch (error) {
-    console.error('Error initializing trending scores:', error);
+    console.error("Error initializing trending scores:", error)
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -91,12 +91,12 @@ export async function GET() {
     const [artistCount] = await db
       .select({ count: sql`count(*)`.mapWith(Number) })
       .from(artists)
-      .where(gt(artists.trendingScore, 0));
+      .where(gt(artists.trendingScore, 0))
 
     const [showCount] = await db
       .select({ count: sql`count(*)`.mapWith(Number) })
       .from(shows)
-      .where(gt(shows.trendingScore, 0));
+      .where(gt(shows.trendingScore, 0))
 
     const topArtists = await db
       .select({
@@ -107,7 +107,7 @@ export async function GET() {
       })
       .from(artists)
       .orderBy(desc(artists.trendingScore))
-      .limit(5);
+      .limit(5)
 
     const topShows = await db
       .select({
@@ -118,7 +118,7 @@ export async function GET() {
       })
       .from(shows)
       .orderBy(desc(shows.trendingScore))
-      .limit(5);
+      .limit(5)
 
     return NextResponse.json({
       success: true,
@@ -128,15 +128,15 @@ export async function GET() {
         topArtists,
         topShows,
       },
-    });
+    })
   } catch (error) {
-    console.error('Error getting trending stats:', error);
+    console.error("Error getting trending stats:", error)
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
-    );
+    )
   }
 }

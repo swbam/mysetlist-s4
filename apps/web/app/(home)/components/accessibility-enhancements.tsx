@@ -1,39 +1,44 @@
-'use client';
+"use client"
 
-import { useEffect } from 'react';
+import { useEffect } from "react"
 
 export function AccessibilityEnhancements() {
   useEffect(() => {
     // Enhanced focus management for keyboard navigation
     const handleKeyDown = (e: KeyboardEvent) => {
       // Skip links functionality
-      if (e.key === 'Tab' && e.shiftKey === false) {
-        const firstFocusable = document.querySelector('[data-skip-to-content]') as HTMLElement;
+      if (e.key === "Tab" && e.shiftKey === false) {
+        const firstFocusable = document.querySelector(
+          "[data-skip-to-content]"
+        ) as HTMLElement
         if (document.activeElement === document.body && firstFocusable) {
-          e.preventDefault();
-          firstFocusable.focus();
+          e.preventDefault()
+          firstFocusable.focus()
         }
       }
-    };
+    }
 
     // Reduced motion preferences
-    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
     const handleReducedMotion = (e: MediaQueryListEvent | MediaQueryList) => {
       if (e.matches) {
-        document.documentElement.style.setProperty('--animation-duration', '0.01ms');
-        document.documentElement.style.setProperty('--animation-delay', '0ms');
+        document.documentElement.style.setProperty(
+          "--animation-duration",
+          "0.01ms"
+        )
+        document.documentElement.style.setProperty("--animation-delay", "0ms")
       }
-    };
+    }
 
-    document.addEventListener('keydown', handleKeyDown);
-    mediaQuery.addEventListener('change', handleReducedMotion);
-    handleReducedMotion(mediaQuery);
+    document.addEventListener("keydown", handleKeyDown)
+    mediaQuery.addEventListener("change", handleReducedMotion)
+    handleReducedMotion(mediaQuery)
 
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      mediaQuery.removeEventListener('change', handleReducedMotion);
-    };
-  }, []);
+      document.removeEventListener("keydown", handleKeyDown)
+      mediaQuery.removeEventListener("change", handleReducedMotion)
+    }
+  }, [])
 
   return (
     <>
@@ -79,7 +84,7 @@ export function AccessibilityEnhancements() {
         }
       `}</style>
     </>
-  );
+  )
 }
 
-export default AccessibilityEnhancements;
+export default AccessibilityEnhancements

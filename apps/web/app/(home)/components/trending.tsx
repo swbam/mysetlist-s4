@@ -1,12 +1,12 @@
-import { formatDistanceToNow } from 'date-fns';
-import { ArrowUp, Calendar, Users } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { type TrendingItem, getWeeklyTrending } from '~/lib/trending';
+import { formatDistanceToNow } from "date-fns"
+import { ArrowUp, Calendar, Users } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { type TrendingItem, getWeeklyTrending } from "~/lib/trending"
 
 async function TrendingCard({ item }: { item: TrendingItem }) {
-  const isShow = item.type === 'show';
-  const href = isShow ? `/shows/${item.slug}` : `/artists/${item.slug}`;
+  const isShow = item.type === "show"
+  const href = isShow ? `/shows/${item.slug}` : `/artists/${item.slug}`
 
   return (
     <Link
@@ -58,14 +58,14 @@ async function TrendingCard({ item }: { item: TrendingItem }) {
         </div>
       </div>
     </Link>
-  );
+  )
 }
 
 export async function Trending() {
-  const { shows, artists } = await getWeeklyTrending(5);
+  const { shows, artists } = await getWeeklyTrending(5)
 
   if (shows.length === 0 && artists.length === 0) {
-    return null;
+    return null
   }
 
   return (
@@ -119,5 +119,5 @@ export async function Trending() {
         </div>
       </div>
     </section>
-  );
+  )
 }

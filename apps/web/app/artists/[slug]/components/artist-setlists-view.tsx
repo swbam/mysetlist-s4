@@ -1,59 +1,53 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { 
-  Calendar, 
-  MapPin, 
-  Music2, 
-  Vote,
-  ExternalLink 
-} from 'lucide-react';
-import Link from 'next/link';
-import { formatDate } from '~/lib/utils';
+} from "@repo/design-system/components/ui/card"
+import { Calendar, ExternalLink, MapPin, Music2, Vote } from "lucide-react"
+import Link from "next/link"
+import { formatDate } from "~/lib/utils"
 
 interface Setlist {
   setlist: {
-    id: string;
-    name: string;
-    artistId: string;
-    showId: string;
-    isLocked: boolean;
-    createdAt: string;
-  };
+    id: string
+    name: string
+    artistId: string
+    showId: string
+    isLocked: boolean
+    createdAt: string
+  }
   show?: {
-    id: string;
-    name: string;
-    slug: string;
-    date: string;
-  };
+    id: string
+    name: string
+    slug: string
+    date: string
+  }
   venue?: {
-    id: string;
-    name: string;
-    city: string;
-    state?: string;
-    country: string;
-  };
-  songCount: number;
-  voteCount: number;
+    id: string
+    name: string
+    city: string
+    state?: string
+    country: string
+  }
+  songCount: number
+  voteCount: number
 }
 
 interface ArtistSetlistsViewProps {
-  setlists: Setlist[];
-  artistName: string;
-  artistId: string;
+  setlists: Setlist[]
+  artistName: string
+  artistId: string
 }
 
-export function ArtistSetlistsView({ 
-  setlists, 
-  artistName, 
-  artistId: _artistId 
+export function ArtistSetlistsView({
+  setlists,
+  artistName,
+  artistId: _artistId,
 }: ArtistSetlistsViewProps) {
   if (setlists.length === 0) {
     return (
@@ -73,7 +67,7 @@ export function ArtistSetlistsView({
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -169,5 +163,5 @@ export function ArtistSetlistsView({
         )}
       </CardContent>
     </Card>
-  );
+  )
 }

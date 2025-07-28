@@ -1,28 +1,28 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
+import { Badge } from "@repo/design-system/components/ui/badge"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { cn } from '@repo/design-system/lib/utils';
-import { BarChart3, TrendingDown, TrendingUp, Users } from 'lucide-react';
+} from "@repo/design-system/components/ui/card"
+import { cn } from "@repo/design-system/lib/utils"
+import { BarChart3, TrendingDown, TrendingUp, Users } from "lucide-react"
 
 interface VoteSummaryProps {
-  totalVotes: number;
-  totalUpvotes: number;
-  totalDownvotes: number;
+  totalVotes: number
+  totalUpvotes: number
+  totalDownvotes: number
   topSongs?: Array<{
-    id: string;
-    title: string;
-    artist: string;
-    netVotes: number;
-    upvotes: number;
-    downvotes: number;
-  }>;
-  className?: string;
+    id: string
+    title: string
+    artist: string
+    netVotes: number
+    upvotes: number
+    downvotes: number
+  }>
+  className?: string
 }
 
 export function VoteSummary({
@@ -32,11 +32,11 @@ export function VoteSummary({
   topSongs = [],
   className,
 }: VoteSummaryProps) {
-  const netVotes = totalUpvotes - totalDownvotes;
+  const netVotes = totalUpvotes - totalDownvotes
   const upvotePercentage =
-    totalVotes > 0 ? (totalUpvotes / totalVotes) * 100 : 0;
+    totalVotes > 0 ? (totalUpvotes / totalVotes) * 100 : 0
   const downvotePercentage =
-    totalVotes > 0 ? (totalDownvotes / totalVotes) * 100 : 0;
+    totalVotes > 0 ? (totalDownvotes / totalVotes) * 100 : 0
 
   return (
     <Card className={className}>
@@ -103,13 +103,13 @@ export function VoteSummary({
         <div className="rounded-lg border p-3 text-center">
           <div
             className={cn(
-              'font-bold text-2xl',
-              netVotes > 0 && 'text-green-600',
-              netVotes < 0 && 'text-red-600',
-              netVotes === 0 && 'text-muted-foreground'
+              "font-bold text-2xl",
+              netVotes > 0 && "text-green-600",
+              netVotes < 0 && "text-red-600",
+              netVotes === 0 && "text-muted-foreground"
             )}
           >
-            {netVotes > 0 ? '+' : ''}
+            {netVotes > 0 ? "+" : ""}
             {netVotes}
           </div>
           <p className="text-muted-foreground text-sm">Net Vote Score</p>
@@ -132,7 +132,7 @@ export function VoteSummary({
                     <div className="truncate">
                       <span className="font-medium">{song.title}</span>
                       <span className="text-muted-foreground">
-                        {' '}
+                        {" "}
                         • {song.artist}
                       </span>
                     </div>
@@ -140,14 +140,14 @@ export function VoteSummary({
                   <Badge
                     variant={
                       song.netVotes > 0
-                        ? 'default'
+                        ? "default"
                         : song.netVotes < 0
-                          ? 'destructive'
-                          : 'secondary'
+                          ? "destructive"
+                          : "secondary"
                     }
                     className="text-xs"
                   >
-                    {song.netVotes > 0 ? '+' : ''}
+                    {song.netVotes > 0 ? "+" : ""}
                     {song.netVotes}
                   </Badge>
                 </div>
@@ -168,5 +168,5 @@ export function VoteSummary({
         )}
       </CardContent>
     </Card>
-  );
+  )
 }

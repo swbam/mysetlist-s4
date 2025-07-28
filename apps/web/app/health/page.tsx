@@ -1,85 +1,92 @@
-'use client';
+"use client"
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { CheckCircle2, XCircle, AlertCircle, RefreshCw } from 'lucide-react';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card"
+import { AlertCircle, CheckCircle2, RefreshCw, XCircle } from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface HealthCheck {
-  service: string;
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  responseTime: number;
-  error?: string;
-  details?: any;
+  service: string
+  status: "healthy" | "degraded" | "unhealthy"
+  responseTime: number
+  error?: string
+  details?: any
 }
 
 interface SystemHealth {
-  status: 'healthy' | 'degraded' | 'unhealthy';
-  timestamp: string;
-  version: string;
-  uptime: number;
-  checks: HealthCheck[];
+  status: "healthy" | "degraded" | "unhealthy"
+  timestamp: string
+  version: string
+  uptime: number
+  checks: HealthCheck[]
   summary: {
-    healthy: number;
-    degraded: number;
-    unhealthy: number;
-  };
+    healthy: number
+    degraded: number
+    unhealthy: number
+  }
 }
 
 export default function HealthDashboard() {
-  const [health, setHealth] = useState<SystemHealth | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [health, setHealth] = useState<SystemHealth | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const fetchHealth = async () => {
-    setLoading(true);
-    setError(null);
-    
+    setLoading(true)
+    setError(null)
+
     try {
-      const response = await fetch('/api/health/comprehensive');
+      const response = await fetch("/api/health/comprehensive")
       if (!response.ok) {
-        throw new Error(`Health check failed: ${response.status}`);
+        throw new Error(`Health check failed: ${response.status}`)
       }
-      const data = await response.json();
-      setHealth(data);
+      const data = await response.json()
+      setHealth(data)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch health status');
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch health status"
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchHealth();
-    const interval = setInterval(fetchHealth, 30000); // Refresh every 30 seconds
-    return () => clearInterval(interval);
-  }, []);
+    fetchHealth()
+    const interval = setInterval(fetchHealth, 30000) // Refresh every 30 seconds
+    return () => clearInterval(interval)
+  }, [])
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'healthy':
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-      case 'degraded':
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
-      case 'unhealthy':
-        return <XCircle className="h-5 w-5 text-red-500" />;
+      case "healthy":
+        return <CheckCircle2 className="h-5 w-5 text-green-500" />
+      case "degraded":
+        return <AlertCircle className="h-5 w-5 text-yellow-500" />
+      case "unhealthy":
+        return <XCircle className="h-5 w-5 text-red-500" />
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'healthy':
-        return <Badge variant="default">Healthy</Badge>;
-      case 'degraded':
-        return <Badge variant="secondary">Degraded</Badge>;
-      case 'unhealthy':
-        return <Badge variant="destructive">Unhealthy</Badge>;
+      case "healthy":
+        return <Badge variant="default">Healthy</Badge>
+      case "degraded":
+        return <Badge variant="secondary">Degraded</Badge>
+      case "unhealthy":
+        return <Badge variant="destructive">Unhealthy</Badge>
       default:
-        return <Badge>Unknown</Badge>;
+        return <Badge>Unknown</Badge>
     }
-  };
+  }
 
   if (loading && !health) {
     return (
@@ -88,7 +95,7 @@ export default function HealthDashboard() {
           <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -96,7 +103,9 @@ export default function HealthDashboard() {
       <div className="container mx-auto p-6">
         <Card className="border-destructive">
           <CardHeader>
-            <CardTitle className="text-destructive">Health Check Error</CardTitle>
+            <CardTitle className="text-destructive">
+              Health Check Error
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">{error}</p>
@@ -109,10 +118,10 @@ export default function HealthDashboard() {
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
-  if (!health) return null;
+  if (!health) return null
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -129,7 +138,7 @@ export default function HealthDashboard() {
           disabled={loading}
           className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 disabled:opacity-50"
         >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
           Refresh
         </button>
       </div>
@@ -151,23 +160,32 @@ export default function HealthDashboard() {
             <div>
               <p className="text-sm text-muted-foreground">Version</p>
               <p className="font-mono text-sm mt-1">
-                {health.version.substring(0, 8) || 'development'}
+                {health.version.substring(0, 8) || "development"}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Services</p>
               <div className="flex gap-2 mt-1">
                 <span className="text-sm">
-                  <span className="text-green-500">{health.summary.healthy}</span> healthy
+                  <span className="text-green-500">
+                    {health.summary.healthy}
+                  </span>{" "}
+                  healthy
                 </span>
                 {health.summary.degraded > 0 && (
                   <span className="text-sm">
-                    <span className="text-yellow-500">{health.summary.degraded}</span> degraded
+                    <span className="text-yellow-500">
+                      {health.summary.degraded}
+                    </span>{" "}
+                    degraded
                   </span>
                 )}
                 {health.summary.unhealthy > 0 && (
                   <span className="text-sm">
-                    <span className="text-red-500">{health.summary.unhealthy}</span> unhealthy
+                    <span className="text-red-500">
+                      {health.summary.unhealthy}
+                    </span>{" "}
+                    unhealthy
                   </span>
                 )}
               </div>
@@ -186,16 +204,18 @@ export default function HealthDashboard() {
           <Card
             key={check.service}
             className={
-              check.status === 'unhealthy'
-                ? 'border-destructive'
-                : check.status === 'degraded'
-                ? 'border-warning'
-                : ''
+              check.status === "unhealthy"
+                ? "border-destructive"
+                : check.status === "degraded"
+                  ? "border-warning"
+                  : ""
             }
           >
             <CardHeader>
               <CardTitle className="flex items-center justify-between text-base">
-                <span className="capitalize">{check.service.replace(/_/g, ' ')}</span>
+                <span className="capitalize">
+                  {check.service.replace(/_/g, " ")}
+                </span>
                 {getStatusIcon(check.status)}
               </CardTitle>
             </CardHeader>
@@ -206,8 +226,12 @@ export default function HealthDashboard() {
                   {getStatusBadge(check.status)}
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Response Time</span>
-                  <span className="font-mono text-sm">{check.responseTime}ms</span>
+                  <span className="text-sm text-muted-foreground">
+                    Response Time
+                  </span>
+                  <span className="font-mono text-sm">
+                    {check.responseTime}ms
+                  </span>
                 </div>
                 {check.error && (
                   <div className="pt-2 border-t">
@@ -288,23 +312,25 @@ export default function HealthDashboard() {
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Environment</p>
-              <p className="font-mono text-sm">{process.env.NODE_ENV || 'development'}</p>
+              <p className="font-mono text-sm">
+                {process.env.NODE_ENV || "development"}
+              </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Site URL</p>
               <p className="font-mono text-sm truncate">
-                {process.env.NEXT_PUBLIC_SITE_URL || 'Not configured'}
+                {process.env.NEXT_PUBLIC_SITE_URL || "Not configured"}
               </p>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Deployment</p>
               <p className="font-mono text-sm">
-                {process.env.VERCEL ? 'Vercel' : 'Local'}
+                {process.env.VERCEL ? "Vercel" : "Local"}
               </p>
             </div>
           </div>
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

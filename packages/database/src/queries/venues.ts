@@ -1,6 +1,6 @@
-import { and, asc, desc, eq, ilike, or, sql } from 'drizzle-orm';
-import { db } from '../client';
-import { venues } from '../schema';
+import { and, asc, desc, eq, ilike, or, sql } from "drizzle-orm"
+import { db } from "../client"
+import { venues } from "../schema"
 
 export async function getVenueById(venueId: string) {
   const result = await db
@@ -20,9 +20,9 @@ export async function getVenueById(venueId: string) {
     })
     .from(venues)
     .where(eq(venues.id, venueId))
-    .limit(1);
+    .limit(1)
 
-  return result[0] || null;
+  return result[0] || null
 }
 
 export async function getVenueBySlug(slug: string) {
@@ -43,20 +43,20 @@ export async function getVenueBySlug(slug: string) {
     })
     .from(venues)
     .where(eq(venues.slug, slug))
-    .limit(1);
+    .limit(1)
 
-  return result[0] || null;
+  return result[0] || null
 }
 
 export async function searchVenues(
   query: string,
   options?: {
-    limit?: number;
-    city?: string;
-    state?: string;
+    limit?: number
+    city?: string
+    state?: string
   }
 ) {
-  const { limit = 20, city, state } = options || {};
+  const { limit = 20, city, state } = options || {}
 
   const conditions = [
     or(
@@ -64,14 +64,14 @@ export async function searchVenues(
       ilike(venues.city, `%${query}%`),
       venues.address ? ilike(venues.address, `%${query}%`) : undefined
     ),
-  ];
+  ]
 
   if (city) {
-    conditions.push(ilike(venues.city, `%${city}%`));
+    conditions.push(ilike(venues.city, `%${city}%`))
   }
 
   if (state && venues.state) {
-    conditions.push(ilike(venues.state, `%${state}%`));
+    conditions.push(ilike(venues.state, `%${state}%`))
   }
 
   const results = await db
@@ -98,21 +98,21 @@ export async function searchVenues(
       WHERE s.venue_id = ${venues.id}
     )`)
     )
-    .limit(limit);
+    .limit(limit)
 
-  return results;
+  return results
 }
 
 export async function getVenuesByCity(
   city: string,
   options?: {
-    limit?: number;
-    onlyWithUpcomingShows?: boolean;
+    limit?: number
+    onlyWithUpcomingShows?: boolean
   }
 ) {
-  const { limit = 50, onlyWithUpcomingShows = false } = options || {};
+  const { limit = 50, onlyWithUpcomingShows = false } = options || {}
 
-  const conditions = [ilike(venues.city, city)];
+  const conditions = [ilike(venues.city, city)]
 
   if (onlyWithUpcomingShows) {
     conditions.push(
@@ -121,7 +121,7 @@ export async function getVenuesByCity(
         WHERE s.venue_id = ${venues.id} 
         AND s.date >= CURRENT_DATE
       )`
-    );
+    )
   }
 
   const results = await db
@@ -142,9 +142,9 @@ export async function getVenuesByCity(
     .from(venues)
     .where(and(...conditions))
     .orderBy(asc(venues.name))
-    .limit(limit);
+    .limit(limit)
 
-  return results;
+  return results
 }
 
 export async function getNearbyVenues(
@@ -201,8 +201,7 @@ export async function getNearbyVenues(
       )
     )
     .orderBy(sql`distance`)
-    .limit(20);
+    .limit(20)
 
-  return results;
+  return results
 }
-

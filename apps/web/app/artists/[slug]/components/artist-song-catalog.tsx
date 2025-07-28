@@ -1,16 +1,16 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
-import { ScrollArea } from '@repo/design-system/components/ui/scroll-area';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
+} from "@repo/design-system/components/ui/card"
+import { Input } from "@repo/design-system/components/ui/input"
+import { ScrollArea } from "@repo/design-system/components/ui/scroll-area"
+import { Skeleton } from "@repo/design-system/components/ui/skeleton"
 import {
   ArrowDown,
   ArrowUp,
@@ -22,28 +22,28 @@ import {
   Music,
   Play,
   Search,
-} from 'lucide-react';
-import Image from 'next/image';
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+} from "lucide-react"
+import Image from "next/image"
+import React, { useEffect, useState, useCallback, useMemo } from "react"
 
 interface Song {
-  id: string;
-  title: string;
-  artist: string;
-  album: string;
-  albumArtUrl: string | null;
-  releaseDate: string | null;
-  durationMs: number;
-  popularity: number;
-  previewUrl: string | null;
-  isExplicit: boolean;
-  spotifyId: string | null;
+  id: string
+  title: string
+  artist: string
+  album: string
+  albumArtUrl: string | null
+  releaseDate: string | null
+  durationMs: number
+  popularity: number
+  previewUrl: string | null
+  isExplicit: boolean
+  spotifyId: string | null
 }
 
 interface ArtistSongCatalogProps {
-  artistId: string;
-  artistSlug: string;
-  artistName: string;
+  artistId: string
+  artistSlug: string
+  artistName: string
 }
 
 export const ArtistSongCatalog = React.memo(function ArtistSongCatalog({
@@ -51,28 +51,28 @@ export const ArtistSongCatalog = React.memo(function ArtistSongCatalog({
   artistSlug,
   artistName,
 }: ArtistSongCatalogProps) {
-  const [songs, setSongs] = useState<Song[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredSongs, setFilteredSongs] = useState<Song[]>([]);
-  const [playingTrack, setPlayingTrack] = useState<string | null>(null);
-  const [offset, setOffset] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [source, setSource] = useState<string>('');
+  const [songs, setSongs] = useState<Song[]>([])
+  const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filteredSongs, setFilteredSongs] = useState<Song[]>([])
+  const [playingTrack, setPlayingTrack] = useState<string | null>(null)
+  const [offset, setOffset] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const [source, setSource] = useState<string>("")
   const [sortBy, setSortBy] = useState<
-    'popularity' | 'title' | 'album' | 'releaseDate'
-  >('popularity');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+    "popularity" | "title" | "album" | "releaseDate"
+  >("popularity")
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc")
 
-  const limit = 20;
-
-  useEffect(() => {
-    fetchSongs();
-  }, [artistSlug]);
+  const limit = 20
 
   useEffect(() => {
-    let filtered = songs;
+    fetchSongs()
+  }, [artistSlug])
+
+  useEffect(() => {
+    let filtered = songs
 
     // Apply search filter
     if (searchQuery) {
@@ -80,103 +80,106 @@ export const ArtistSongCatalog = React.memo(function ArtistSongCatalog({
         (song) =>
           song.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           song.album.toLowerCase().includes(searchQuery.toLowerCase())
-      );
+      )
     }
 
     // Apply sorting
     filtered = [...filtered].sort((a, b) => {
-      let aValue: any, bValue: any;
+      let aValue: any, bValue: any
 
       switch (sortBy) {
-        case 'title': {
-          aValue = a.title.toLowerCase();
-          bValue = b.title.toLowerCase();
-          break;
+        case "title": {
+          aValue = a.title.toLowerCase()
+          bValue = b.title.toLowerCase()
+          break
         }
-        case 'album': {
-          aValue = a.album.toLowerCase();
-          bValue = b.album.toLowerCase();
-          break;
+        case "album": {
+          aValue = a.album.toLowerCase()
+          bValue = b.album.toLowerCase()
+          break
         }
-        case 'releaseDate': {
-          aValue = new Date(a.releaseDate || 0);
-          bValue = new Date(b.releaseDate || 0);
-          break;
+        case "releaseDate": {
+          aValue = new Date(a.releaseDate || 0)
+          bValue = new Date(b.releaseDate || 0)
+          break
         }
         default: {
-          aValue = a.popularity;
-          bValue = b.popularity;
-          break;
+          aValue = a.popularity
+          bValue = b.popularity
+          break
         }
       }
 
-      if (sortOrder === 'asc') {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+      if (sortOrder === "asc") {
+        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0
       }
-      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-    });
+      return aValue > bValue ? -1 : aValue < bValue ? 1 : 0
+    })
 
-    setFilteredSongs(filtered);
-  }, [searchQuery, songs, sortBy, sortOrder]);
+    setFilteredSongs(filtered)
+  }, [searchQuery, songs, sortBy, sortOrder])
 
-  const fetchSongs = useCallback(async (loadMore = false) => {
-    try {
-      if (loadMore) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-      }
-
-      const currentOffset = loadMore ? offset : 0;
-      const response = await fetch(
-        `/api/artists/${artistSlug}/songs?limit=${limit}&offset=${currentOffset}`
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-
+  const fetchSongs = useCallback(
+    async (loadMore = false) => {
+      try {
         if (loadMore) {
-          setSongs((prev) => [...prev, ...data.songs]);
+          setLoadingMore(true)
         } else {
-          setSongs(data.songs);
+          setLoading(true)
         }
 
-        setSource(data.source);
-        setHasMore(data.songs.length === limit);
-        setOffset(currentOffset + data.songs.length);
+        const currentOffset = loadMore ? offset : 0
+        const response = await fetch(
+          `/api/artists/${artistSlug}/songs?limit=${limit}&offset=${currentOffset}`
+        )
+
+        if (response.ok) {
+          const data = await response.json()
+
+          if (loadMore) {
+            setSongs((prev) => [...prev, ...data.songs])
+          } else {
+            setSongs(data.songs)
+          }
+
+          setSource(data.source)
+          setHasMore(data.songs.length === limit)
+          setOffset(currentOffset + data.songs.length)
+        }
+      } catch (_error) {
+      } finally {
+        setLoading(false)
+        setLoadingMore(false)
       }
-    } catch (_error) {
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, [artistSlug, limit, offset]);
+    },
+    [artistSlug, limit, offset]
+  )
 
   const formatDuration = (ms: number) => {
-    const minutes = Math.floor(ms / 60000);
-    const seconds = ((ms % 60000) / 1000).toFixed(0);
-    return `${minutes}:${seconds.padStart(2, '0')}`;
-  };
+    const minutes = Math.floor(ms / 60000)
+    const seconds = ((ms % 60000) / 1000).toFixed(0)
+    return `${minutes}:${seconds.padStart(2, "0")}`
+  }
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) {
-      return 'Unknown';
+      return "Unknown"
     }
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-    });
-  };
+    const date = new Date(dateString)
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+    })
+  }
 
   const handleLoadMore = useCallback(() => {
     if (!loadingMore && hasMore) {
-      fetchSongs(true);
+      fetchSongs(true)
     }
-  }, [loadingMore, hasMore, fetchSongs]);
+  }, [loadingMore, hasMore, fetchSongs])
 
   // Memoize formatted data to prevent re-computation
-  const memoizedFilteredSongs = useMemo(() => filteredSongs, [filteredSongs]);
+  const memoizedFilteredSongs = useMemo(() => filteredSongs, [filteredSongs])
 
   if (loading) {
     return (
@@ -202,7 +205,7 @@ export const ArtistSongCatalog = React.memo(function ArtistSongCatalog({
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -215,11 +218,11 @@ export const ArtistSongCatalog = React.memo(function ArtistSongCatalog({
               Song Catalog
               {source && (
                 <Badge variant="secondary" className="ml-2">
-                  {source === 'spotify'
-                    ? 'From Spotify'
-                    : source === 'database'
-                      ? 'Verified'
-                      : 'Sample Data'}
+                  {source === "spotify"
+                    ? "From Spotify"
+                    : source === "database"
+                      ? "Verified"
+                      : "Sample Data"}
                 </Badge>
               )}
             </CardTitle>
@@ -245,18 +248,18 @@ export const ArtistSongCatalog = React.memo(function ArtistSongCatalog({
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  if (sortBy === 'popularity') {
-                    setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc');
+                  if (sortBy === "popularity") {
+                    setSortOrder(sortOrder === "desc" ? "asc" : "desc")
                   } else {
-                    setSortBy('popularity');
-                    setSortOrder('desc');
+                    setSortBy("popularity")
+                    setSortOrder("desc")
                   }
                 }}
                 className="gap-1"
               >
                 Popular
-                {sortBy === 'popularity' &&
-                  (sortOrder === 'desc' ? (
+                {sortBy === "popularity" &&
+                  (sortOrder === "desc" ? (
                     <ArrowDown className="h-3 w-3" />
                   ) : (
                     <ArrowUp className="h-3 w-3" />
@@ -267,18 +270,18 @@ export const ArtistSongCatalog = React.memo(function ArtistSongCatalog({
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  if (sortBy === 'title') {
-                    setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                  if (sortBy === "title") {
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc")
                   } else {
-                    setSortBy('title');
-                    setSortOrder('asc');
+                    setSortBy("title")
+                    setSortOrder("asc")
                   }
                 }}
                 className="gap-1"
               >
                 A-Z
-                {sortBy === 'title' &&
-                  (sortOrder === 'asc' ? (
+                {sortBy === "title" &&
+                  (sortOrder === "asc" ? (
                     <ArrowUp className="h-3 w-3" />
                   ) : (
                     <ArrowDown className="h-3 w-3" />
@@ -319,9 +322,9 @@ export const ArtistSongCatalog = React.memo(function ArtistSongCatalog({
                         className="h-8 w-8 rounded-full bg-white/20 p-0 hover:bg-white/30"
                         onClick={() => {
                           if (playingTrack === song.id) {
-                            setPlayingTrack(null);
+                            setPlayingTrack(null)
                           } else {
-                            setPlayingTrack(song.id);
+                            setPlayingTrack(song.id)
                           }
                         }}
                       >
@@ -376,7 +379,7 @@ export const ArtistSongCatalog = React.memo(function ArtistSongCatalog({
                       onClick={() =>
                         window.open(
                           `https://open.spotify.com/track/${song.spotifyId}`,
-                          '_blank'
+                          "_blank"
                         )
                       }
                     >
@@ -401,7 +404,7 @@ export const ArtistSongCatalog = React.memo(function ArtistSongCatalog({
                       Loading...
                     </>
                   ) : (
-                    'Load More Songs'
+                    "Load More Songs"
                   )}
                 </Button>
               </div>
@@ -410,5 +413,5 @@ export const ArtistSongCatalog = React.memo(function ArtistSongCatalog({
         </ScrollArea>
       </CardContent>
     </Card>
-  );
-});
+  )
+})

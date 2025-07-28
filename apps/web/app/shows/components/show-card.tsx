@@ -1,9 +1,9 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { format } from 'date-fns';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Card, CardContent } from "@repo/design-system/components/ui/card"
+import { format } from "date-fns"
 import {
   Calendar,
   Heart,
@@ -12,80 +12,80 @@ import {
   Star,
   Ticket,
   Users,
-} from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useState } from 'react';
+} from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import { useState } from "react"
 
 interface ShowCardProps {
   show: {
-    id: string;
-    name: string;
-    slug: string;
-    date: string;
-    startTime?: string | null;
-    status: string;
-    ticketUrl?: string | null;
-    minPrice: number | null;
-    maxPrice: number | null;
-    currency: string;
-    attendeeCount: number;
-    isFeatured?: boolean;
+    id: string
+    name: string
+    slug: string
+    date: string
+    startTime?: string | null
+    status: string
+    ticketUrl?: string | null
+    minPrice: number | null
+    maxPrice: number | null
+    currency: string
+    attendeeCount: number
+    isFeatured?: boolean
     headlinerArtist: {
-      id: string;
-      name: string;
-      slug: string;
-      imageUrl?: string | null;
-      verified: boolean;
-      genres?: string[] | null;
-    };
+      id: string
+      name: string
+      slug: string
+      imageUrl?: string | null
+      verified: boolean
+      genres?: string[] | null
+    }
     supportingArtists: Array<{
       artist: {
-        id: string;
-        name: string;
-        slug: string;
-      };
-    }>;
+        id: string
+        name: string
+        slug: string
+      }
+    }>
     venue?: {
-      id: string;
-      name: string;
-      slug: string;
-      city: string;
-      state?: string | null;
-      country: string;
-      capacity: number | null;
-    } | null;
-  };
+      id: string
+      name: string
+      slug: string
+      city: string
+      state?: string | null
+      country: string
+      capacity: number | null
+    } | null
+  }
 }
 
 export function ShowCard({ show }: ShowCardProps) {
-  const [isSaved, setIsSaved] = useState(false);
+  const [isSaved, setIsSaved] = useState(false)
 
   const formatPrice = (
     minPrice: number | null,
     maxPrice: number | null,
     currency: string
   ) => {
-    if (!minPrice) return 'TBA';
-    const currencySymbol = currency === 'USD' ? '$' : currency;
+    if (!minPrice) return "TBA"
+    const currencySymbol = currency === "USD" ? "$" : currency
     if (maxPrice && maxPrice !== minPrice) {
-      return `${currencySymbol}${minPrice}-${currencySymbol}${maxPrice}`;
+      return `${currencySymbol}${minPrice}-${currencySymbol}${maxPrice}`
     }
-    return `${currencySymbol}${minPrice}+`;
-  };
+    return `${currencySymbol}${minPrice}+`
+  }
 
   const getAttendancePercentage = (
     attending: number,
     capacity: number | null
   ) => {
-    if (!capacity || capacity === 0) return 0;
-    return Math.round((attending / capacity) * 100);
-  };
+    if (!capacity || capacity === 0) return 0
+    return Math.round((attending / capacity) * 100)
+  }
 
-  const mainGenre = show.headlinerArtist.genres?.[0] || 'Live Music';
+  const mainGenre = show.headlinerArtist.genres?.[0] || "Live Music"
   const attendancePercentage = show.venue?.capacity
     ? getAttendancePercentage(show.attendeeCount, show.venue.capacity)
-    : 0;
+    : 0
 
   return (
     <Card className="overflow-hidden transition-shadow hover:shadow-lg">
@@ -136,20 +136,20 @@ export function ShowCard({ show }: ShowCardProps) {
             className="h-8 w-8 flex-shrink-0"
           >
             <Heart
-              className={`h-4 w-4 ${isSaved ? 'fill-current text-red-500' : ''}`}
+              className={`h-4 w-4 ${isSaved ? "fill-current text-red-500" : ""}`}
             />
           </Button>
         </div>
 
         {show.supportingArtists.length > 0 && (
           <p className="mb-2 truncate text-muted-foreground text-sm">
-            with {show.supportingArtists.map((sa) => sa.artist.name).join(', ')}
+            with {show.supportingArtists.map((sa) => sa.artist.name).join(", ")}
           </p>
         )}
 
         <div className="mb-3 flex items-center gap-2 text-muted-foreground text-sm">
           <Calendar className="h-4 w-4" />
-          <span>{format(new Date(show.date), 'MMM d, yyyy')}</span>
+          <span>{format(new Date(show.date), "MMM d, yyyy")}</span>
           {show.startTime && <span>• {show.startTime}</span>}
         </div>
 
@@ -185,7 +185,7 @@ export function ShowCard({ show }: ShowCardProps) {
               </div>
             )}
           </div>
-          {show.ticketUrl && show.status !== 'cancelled' && (
+          {show.ticketUrl && show.status !== "cancelled" && (
             <Button asChild size="sm" className="gap-1">
               <a
                 href={show.ticketUrl}
@@ -200,5 +200,5 @@ export function ShowCard({ show }: ShowCardProps) {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

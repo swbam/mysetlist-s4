@@ -1,76 +1,76 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardHeader,
-} from '@repo/design-system/components/ui/card';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { Car, Heart, MapPin, Star, Train, Users, Building } from 'lucide-react';
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
+} from "@repo/design-system/components/ui/card"
+import { Skeleton } from "@repo/design-system/components/ui/skeleton"
+import { Building, Car, Heart, MapPin, Star, Train, Users } from "lucide-react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
 
 interface Venue {
-  id: string;
-  name: string;
-  slug: string;
-  venueType: string | null;
-  city: string;
-  state: string | null;
-  country: string | null;
-  capacity: number | null;
-  rating?: number;
-  reviewCount?: number;
-  upcomingShows: number;
-  website?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
-  amenities?: string[] | null;
+  id: string
+  name: string
+  slug: string
+  venueType: string | null
+  city: string
+  state: string | null
+  country: string | null
+  capacity: number | null
+  rating?: number
+  reviewCount?: number
+  upcomingShows: number
+  website?: string | null
+  latitude?: number | null
+  longitude?: number | null
+  amenities?: string[] | null
 }
 
 export const VenueGrid = () => {
-  const [venues, setVenues] = useState<Venue[]>([]);
-  const [favoriteVenues, setFavoriteVenues] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [venues, setVenues] = useState<Venue[]>([])
+  const [favoriteVenues, setFavoriteVenues] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchVenues();
-  }, []);
+    fetchVenues()
+  }, [])
 
   const fetchVenues = async () => {
     try {
-      const response = await fetch('/api/venues?limit=20');
+      const response = await fetch("/api/venues?limit=20")
       if (!response.ok) {
-        throw new Error('Failed to fetch venues');
+        throw new Error("Failed to fetch venues")
       }
 
-      const data = await response.json();
-      setVenues(data.venues || []);
+      const data = await response.json()
+      setVenues(data.venues || [])
     } catch (err) {
-      console.error('Error fetching venues:', err);
-      setError('Failed to load venues. Please try again later.');
+      console.error("Error fetching venues:", err)
+      setError("Failed to load venues. Please try again later.")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const toggleFavorite = (venueId: string) => {
     setFavoriteVenues((prev) =>
       prev.includes(venueId)
         ? prev.filter((id) => id !== venueId)
         : [...prev, venueId]
-    );
-  };
+    )
+  }
 
   const formatCapacity = (capacity: number) => {
     if (capacity >= 1000) {
-      return `${(capacity / 1000).toFixed(1)}K`;
+      return `${(capacity / 1000).toFixed(1)}K`
     }
-    return capacity.toString();
-  };
+    return capacity.toString()
+  }
 
   // Loading skeleton
   if (loading) {
@@ -95,7 +95,7 @@ export const VenueGrid = () => {
           </Card>
         ))}
       </div>
-    );
+    )
   }
 
   // Error state
@@ -107,7 +107,7 @@ export const VenueGrid = () => {
           Try Again
         </Button>
       </div>
-    );
+    )
   }
 
   // Empty state
@@ -117,7 +117,7 @@ export const VenueGrid = () => {
         <Building className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
         <p className="text-muted-foreground">No venues found.</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -152,7 +152,7 @@ export const VenueGrid = () => {
                 onClick={() => toggleFavorite(venue.id)}
               >
                 <Heart
-                  className={`h-4 w-4 ${favoriteVenues.includes(venue.id) ? 'fill-current text-red-500' : ''}`}
+                  className={`h-4 w-4 ${favoriteVenues.includes(venue.id) ? "fill-current text-red-500" : ""}`}
                 />
               </Button>
             </div>
@@ -164,7 +164,9 @@ export const VenueGrid = () => {
                 <span>
                   {venue.city}
                   {venue.state && `, ${venue.state}`}
-                  {venue.country && venue.country !== 'US' && `, ${venue.country}`}
+                  {venue.country &&
+                    venue.country !== "US" &&
+                    `, ${venue.country}`}
                 </span>
               </div>
               {venue.rating && (
@@ -181,13 +183,13 @@ export const VenueGrid = () => {
             </div>
 
             <div className="flex gap-4 text-sm">
-              {venue.amenities?.includes('parking') && (
+              {venue.amenities?.includes("parking") && (
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <Car className="h-4 w-4" />
                   <span>Parking</span>
                 </div>
               )}
-              {venue.amenities?.includes('public_transit') && (
+              {venue.amenities?.includes("public_transit") && (
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <Train className="h-4 w-4" />
                   <span>Transit</span>
@@ -208,5 +210,5 @@ export const VenueGrid = () => {
         </Card>
       ))}
     </div>
-  );
-};
+  )
+}

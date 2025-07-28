@@ -1,10 +1,10 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { cn } from '@repo/design-system/lib/utils';
-import { format } from 'date-fns';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Card, CardContent } from "@repo/design-system/components/ui/card"
+import { cn } from "@repo/design-system/lib/utils"
+import { format } from "date-fns"
 import {
   Calendar,
   Clock,
@@ -16,45 +16,45 @@ import {
   Star,
   TrendingUp,
   Users,
-} from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
+} from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
 
 interface SearchResult {
-  id: string;
-  type: 'artist' | 'show' | 'venue';
-  title: string;
-  subtitle: string;
-  imageUrl?: string | null;
-  slug: string;
-  verified?: boolean;
-  popularity?: number;
-  genres?: string[];
-  showCount?: number;
-  followerCount?: number;
-  date?: string;
+  id: string
+  type: "artist" | "show" | "venue"
+  title: string
+  subtitle: string
+  imageUrl?: string | null
+  slug: string
+  verified?: boolean
+  popularity?: number
+  genres?: string[]
+  showCount?: number
+  followerCount?: number
+  date?: string
   venue?: {
-    name: string;
-    city: string;
-    state: string;
-  };
+    name: string
+    city: string
+    state: string
+  }
   artist?: {
-    name: string;
-    slug: string;
-  };
-  capacity?: number;
+    name: string
+    slug: string
+  }
+  capacity?: number
   price?: {
-    min: number;
-    max: number;
-    currency: string;
-  };
+    min: number
+    max: number
+    currency: string
+  }
 }
 
 interface SearchResultCardProps {
-  result: SearchResult;
-  onFollow?: (artistId: string, isFollowing: boolean) => void;
-  isFollowing?: boolean;
-  showType?: boolean;
+  result: SearchResult
+  onFollow?: (artistId: string, isFollowing: boolean) => void
+  isFollowing?: boolean
+  showType?: boolean
 }
 
 export function SearchResultCard({
@@ -65,71 +65,71 @@ export function SearchResultCard({
 }: SearchResultCardProps) {
   const getResultIcon = () => {
     switch (result.type) {
-      case 'artist':
-        return <Music className="h-4 w-4" />;
-      case 'show':
-        return <Calendar className="h-4 w-4" />;
-      case 'venue':
-        return <MapPin className="h-4 w-4" />;
+      case "artist":
+        return <Music className="h-4 w-4" />
+      case "show":
+        return <Calendar className="h-4 w-4" />
+      case "venue":
+        return <MapPin className="h-4 w-4" />
     }
-  };
+  }
 
   const getResultLink = () => {
     switch (result.type) {
-      case 'artist':
-        return `/artists/${result.slug}`;
-      case 'show':
-        return `/shows/${result.slug}`;
-      case 'venue':
-        return `/venues/${result.slug}`;
+      case "artist":
+        return `/artists/${result.slug}`
+      case "show":
+        return `/shows/${result.slug}`
+      case "venue":
+        return `/venues/${result.slug}`
       default:
-        return '/';
+        return "/"
     }
-  };
+  }
 
   const getBadgeVariant = () => {
     switch (result.type) {
-      case 'artist':
-        return 'default';
-      case 'show':
-        return 'secondary';
-      case 'venue':
-        return 'outline';
+      case "artist":
+        return "default"
+      case "show":
+        return "secondary"
+      case "venue":
+        return "outline"
     }
-  };
+  }
 
-  const formatPrice = (price: SearchResult['price']) => {
+  const formatPrice = (price: SearchResult["price"]) => {
     if (!price) {
-      return null;
+      return null
     }
-    return `${price.currency}${price.min}-${price.max}`;
-  };
+    return `${price.currency}${price.min}-${price.max}`
+  }
 
   const formatDate = (dateString: string) => {
     try {
-      const date = new Date(dateString);
-      return format(date, 'MMM dd, yyyy');
+      const date = new Date(dateString)
+      return format(date, "MMM dd, yyyy")
     } catch {
-      return dateString;
+      return dateString
     }
-  };
+  }
 
   const handleClick = () => {
     // Fire auto-import request for artist data; ignore errors
-    if (result.type === 'artist') {
-      fetch('/api/artists/auto-import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+    if (result.type === "artist") {
+      fetch("/api/artists/auto-import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ artistId: result.id }),
-      }).catch(() => {});
+      }).catch(() => {})
     }
-  };
+  }
 
   return (
     <Card
       className={cn(
-        'overflow-hidden transition-all duration-200 hover:scale-[1.02] hover:shadow-md',
-        result.verified && 'ring-2 ring-primary/20'
+        "overflow-hidden transition-all duration-200 hover:scale-[1.02] hover:shadow-md",
+        result.verified && "ring-2 ring-primary/20"
       )}
     >
       <CardContent className="p-6">
@@ -185,7 +185,7 @@ export function SearchResultCard({
 
             {/* Type-specific metadata */}
             <div className="flex items-center gap-4 text-muted-foreground text-sm">
-              {result.type === 'artist' && (
+              {result.type === "artist" && (
                 <>
                   {result.followerCount && (
                     <span className="flex items-center gap-1">
@@ -208,7 +208,7 @@ export function SearchResultCard({
                 </>
               )}
 
-              {result.type === 'show' && (
+              {result.type === "show" && (
                 <>
                   {result.date && (
                     <span className="flex items-center gap-1">
@@ -225,7 +225,7 @@ export function SearchResultCard({
                 </>
               )}
 
-              {result.type === 'venue' && (
+              {result.type === "venue" && (
                 <>
                   {result.capacity && (
                     <span className="flex items-center gap-1">
@@ -244,7 +244,7 @@ export function SearchResultCard({
             </div>
 
             {/* Genres for artists */}
-            {result.type === 'artist' &&
+            {result.type === "artist" &&
               result.genres &&
               result.genres.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
@@ -264,23 +264,23 @@ export function SearchResultCard({
 
           {/* Actions */}
           <div className="flex flex-shrink-0 gap-2">
-            {result.type === 'artist' && onFollow && (
+            {result.type === "artist" && onFollow && (
               <Button
-                variant={isFollowing ? 'default' : 'outline'}
+                variant={isFollowing ? "default" : "outline"}
                 size="sm"
                 onClick={() => onFollow(result.id, isFollowing)}
                 className="gap-2"
               >
                 <Heart
-                  className={cn('h-4 w-4', isFollowing && 'fill-current')}
+                  className={cn("h-4 w-4", isFollowing && "fill-current")}
                 />
-                {isFollowing ? 'Following' : 'Follow'}
+                {isFollowing ? "Following" : "Follow"}
               </Button>
             )}
 
-            {result.type === 'show' && result.venue && (
+            {result.type === "show" && result.venue && (
               <Link
-                href={`/venues/${result.venue.name.toLowerCase().replace(/\s+/g, '-')}`}
+                href={`/venues/${result.venue.name.toLowerCase().replace(/\s+/g, "-")}`}
               >
                 <Button variant="outline" size="sm" className="gap-2">
                   <MapPin className="h-4 w-4" />
@@ -292,16 +292,16 @@ export function SearchResultCard({
             <Link href={getResultLink()} onClick={handleClick}>
               <Button size="sm" className="gap-2">
                 <ExternalLink className="h-4 w-4" />
-                {result.type === 'artist'
-                  ? 'View Artist'
-                  : result.type === 'show'
-                    ? 'View Show'
-                    : 'View Venue'}
+                {result.type === "artist"
+                  ? "View Artist"
+                  : result.type === "show"
+                    ? "View Show"
+                    : "View Venue"}
               </Button>
             </Link>
           </div>
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

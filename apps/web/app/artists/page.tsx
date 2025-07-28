@@ -1,25 +1,23 @@
-import { createMetadata } from '@repo/seo/metadata';
-import type { Metadata } from 'next';
-import React, { Suspense } from 'react';
-import { PageErrorBoundary } from '~/components/error-boundary-wrapper';
-import {
-  TrendingListSkeleton,
-} from '~/components/loading-states';
-import { ResponsiveGrid } from '~/components/layout/responsive-grid';
-import { ArtistSearch } from './components/artist-search';
-import { PopularArtists } from './components/popular-artists';
-import { TrendingArtists } from './components/trending-artists';
+import { createMetadata } from "@repo/seo/metadata"
+import type { Metadata } from "next"
+import React, { Suspense } from "react"
+import { PageErrorBoundary } from "~/components/error-boundary-wrapper"
+import { ResponsiveGrid } from "~/components/layout/responsive-grid"
+import { TrendingListSkeleton } from "~/components/loading-states"
+import { ArtistSearch } from "./components/artist-search"
+import { PopularArtists } from "./components/popular-artists"
+import { TrendingArtists } from "./components/trending-artists"
 
 // Only use dynamic for this page since it needs real-time artist data
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
+export const dynamic = "force-dynamic"
+export const revalidate = 0
 
 export const generateMetadata = (): Metadata => {
   return createMetadata({
-    title: 'Artists - MySetlist',
-    description: 'Discover and explore artists, their shows, and setlists.',
-  });
-};
+    title: "Artists - MySetlist",
+    description: "Discover and explore artists, their shows, and setlists.",
+  })
+}
 
 export default function ArtistsPage() {
   return (
@@ -42,17 +40,33 @@ export default function ArtistsPage() {
             {/* Trending Artists Section */}
             <div className="mt-12">
               <h2 className="mb-6 font-semibold text-2xl">Trending Artists</h2>
-              {React.createElement(Suspense as any, {
-                fallback: <TrendingListSkeleton count={5} />
-              }, <TrendingArtists />)}
+              {React.createElement(
+                Suspense as any,
+                {
+                  fallback: <TrendingListSkeleton count={5} />,
+                },
+                <TrendingArtists />
+              )}
             </div>
 
             {/* Popular Artists Grid */}
             <div className="mt-12">
               <h2 className="mb-6 font-semibold text-2xl">Popular Artists</h2>
-              {React.createElement(Suspense as any, {
-                fallback: <ResponsiveGrid variant="artists" loading={true} loadingCount={12} />
-              }, <PopularArtists />)}
+              {React.createElement(
+                Suspense as any,
+                {
+                  fallback: (
+                    <ResponsiveGrid
+                      variant="artists"
+                      loading={true}
+                      loadingCount={12}
+                    >
+                      {/* Loading skeleton will be handled by the component */}
+                    </ResponsiveGrid>
+                  ),
+                },
+                <PopularArtists />
+              )}
             </div>
 
             <div className="py-16 text-center">
@@ -92,5 +106,5 @@ export default function ArtistsPage() {
         </div>
       </div>
     </PageErrorBoundary>
-  );
+  )
 }

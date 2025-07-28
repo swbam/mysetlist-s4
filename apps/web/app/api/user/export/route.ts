@@ -1,5 +1,5 @@
-import { getUser } from '@repo/auth/server';
-import { db } from '@repo/database';
+import { getUser } from "@repo/auth/server"
+import { db } from "@repo/database"
 import {
   artists,
   emailPreferences,
@@ -8,34 +8,34 @@ import {
   venueReviews,
   venues,
   votes,
-} from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+} from "@repo/database"
+import { eq } from "drizzle-orm"
+import { type NextRequest, NextResponse } from "next/server"
 
 export async function GET(_request: NextRequest) {
   try {
-    const user = await getUser();
+    const user = await getUser()
 
     if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     // Collect all user data
-    const userData = await collectUserData(user.id);
+    const userData = await collectUserData(user.id)
 
     // Return as JSON download
     return new NextResponse(JSON.stringify(userData, null, 2), {
       status: 200,
       headers: {
-        'Content-Type': 'application/json',
-        'Content-Disposition': `attachment; filename="mysetlist-export-${user.id}-${new Date().toISOString().split('T')[0]}.json"`,
+        "Content-Type": "application/json",
+        "Content-Disposition": `attachment; filename="mysetlist-export-${user.id}-${new Date().toISOString().split("T")[0]}.json"`,
       },
-    });
+    })
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to export user data' },
+      { error: "Failed to export user data" },
       { status: 500 }
-    );
+    )
   }
 }
 
@@ -44,18 +44,17 @@ async function collectUserData(userId: string) {
   const [userProfile] = await db
     .select()
     .from(users)
-    .where(eq(users.id, userId));
+    .where(eq(users.id, userId))
 
   if (!userProfile) {
-    throw new Error('User profile not found');
+    throw new Error("User profile not found")
   }
 
   // Get email preferences
   const [emailPrefs] = await db
     .select()
     .from(emailPreferences)
-    .where(eq(emailPreferences.userId, userId));
-
+    .where(eq(emailPreferences.userId, userId))
 
   // Get votes
   const userVotes = await db
@@ -65,7 +64,7 @@ async function collectUserData(userId: string) {
       createdAt: votes.createdAt,
     })
     .from(votes)
-    .where(eq(votes.userId, userId));
+    .where(eq(votes.userId, userId))
 
   // Get venue reviews
   const reviews = await db
@@ -79,7 +78,7 @@ async function collectUserData(userId: string) {
     })
     .from(venueReviews)
     .leftJoin(venues, eq(venueReviews.venueId, venues.id))
-    .where(eq(venueReviews.userId, userId));
+    .where(eq(venueReviews.userId, userId))
 
   return {
     exportDate: new Date().toISOString(),
@@ -105,5 +104,5 @@ async function collectUserData(userId: string) {
       content: r.content,
       postedAt: r.createdAt,
     })),
-  };
+  }
 }

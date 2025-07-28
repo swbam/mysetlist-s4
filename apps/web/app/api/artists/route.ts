@@ -1,66 +1,66 @@
-import { type NextRequest, NextResponse } from 'next/server';
-import { createServiceClient } from '~/lib/supabase/server';
-import { parseGenres } from '~/lib/utils';
+import { type NextRequest, NextResponse } from "next/server"
+import { createServiceClient } from "~/lib/supabase/server"
+import { parseGenres } from "~/lib/utils"
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const page = parseInt(searchParams.get('page') || '1');
-    const offset = (page - 1) * limit;
-    const genre = searchParams.get('genre');
-    const sort = searchParams.get('sort') || 'trending'; // trending, popular, alphabetical
+    const { searchParams } = new URL(request.url)
+    const limit = Number.parseInt(searchParams.get("limit") || "20")
+    const page = Number.parseInt(searchParams.get("page") || "1")
+    const offset = (page - 1) * limit
+    const genre = searchParams.get("genre")
+    const sort = searchParams.get("sort") || "trending" // trending, popular, alphabetical
 
-    const supabase = createServiceClient();
+    const supabase = createServiceClient()
 
     // Build query
     let query = supabase
-      .from('artists')
-      .select('*', { count: 'exact' })
-      .range(offset, offset + limit - 1);
+      .from("artists")
+      .select("*", { count: "exact" })
+      .range(offset, offset + limit - 1)
 
     // Filter by genre if provided
     if (genre) {
-      query = query.contains('genres', [genre]);
+      query = query.contains("genres", [genre])
     }
 
     // Apply sorting
     switch (sort) {
-      case 'trending':
+      case "trending":
         query = query
-          .order('trending_score', { ascending: false })
-          .order('popularity', { ascending: false });
-        break;
-      case 'popular':
+          .order("trending_score", { ascending: false })
+          .order("popularity", { ascending: false })
+        break
+      case "popular":
         query = query
-          .order('popularity', { ascending: false })
-          .order('followers', { ascending: false });
-        break;
-      case 'alphabetical':
-        query = query.order('name', { ascending: true });
-        break;
-      case 'recent':
-        query = query.order('created_at', { ascending: false });
-        break;
+          .order("popularity", { ascending: false })
+          .order("followers", { ascending: false })
+        break
+      case "alphabetical":
+        query = query.order("name", { ascending: true })
+        break
+      case "recent":
+        query = query.order("created_at", { ascending: false })
+        break
       default:
         query = query
-          .order('trending_score', { ascending: false })
-          .order('popularity', { ascending: false });
+          .order("trending_score", { ascending: false })
+          .order("popularity", { ascending: false })
     }
 
-    const { data: artists, error, count } = await query;
+    const { data: artists, error, count } = await query
 
     if (error) {
-      console.error('Artists API error:', error);
+      console.error("Artists API error:", error)
       return NextResponse.json(
         {
-          error: 'Failed to fetch artists',
-          message: error instanceof Error ? error.message : 'Unknown error',
+          error: "Failed to fetch artists",
+          message: error instanceof Error ? error.message : "Unknown error",
           artists: [],
           success: false,
         },
         { status: 500 }
-      );
+      )
     }
 
     // Transform artists data
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
       lastSyncedAt: artist.last_synced_at,
       createdAt: artist.created_at,
       updatedAt: artist.updated_at,
-    }));
+    }))
 
     const response = NextResponse.json({
       artists: transformedArtists,
@@ -94,22 +94,25 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil((count || 0) / limit),
       },
       success: true,
-    });
+    })
 
     // Set cache headers
-    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=30');
+    response.headers.set(
+      "Cache-Control",
+      "public, s-maxage=60, stale-while-revalidate=30"
+    )
 
-    return response;
+    return response
   } catch (error) {
-    console.error('Artists API error:', error);
+    console.error("Artists API error:", error)
     return NextResponse.json(
       {
-        error: 'Failed to fetch artists',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: "Failed to fetch artists",
+        message: error instanceof Error ? error.message : "Unknown error",
         artists: [],
         success: false,
       },
       { status: 500 }
-    );
+    )
   }
 }

@@ -1,93 +1,93 @@
-import { db } from '@repo/database';
-import { artistSongs, artists, songs } from '@repo/database';
-import { TicketmasterClient, SpotifyClient } from '@repo/external-apis';
-import { and, eq } from 'drizzle-orm';
-import { createServiceClient } from '~/lib/supabase/server';
+import { db } from "@repo/database"
+import { artistSongs, artists, songs } from "@repo/database"
+import { SpotifyClient, TicketmasterClient } from "@repo/external-apis"
+import { and, eq } from "drizzle-orm"
+import { createServiceClient } from "~/lib/supabase/server"
 
-const spotify = new SpotifyClient({});
+const spotify = new SpotifyClient({})
 
 // Function to find Ticketmaster ID for an artist
 async function findTicketmasterId(artistName: string): Promise<string | null> {
   try {
-    if (!process.env['TICKETMASTER_API_KEY']) {
-      return null;
+    if (!process.env["TICKETMASTER_API_KEY"]) {
+      return null
     }
 
-    const tmClient = new TicketmasterClient({});
+    const tmClient = new TicketmasterClient({})
     const response = await tmClient.searchAttractions({
       keyword: artistName,
-      classificationName: 'Music',
+      classificationName: "Music",
       size: 5,
-    });
+    })
 
     if (response._embedded?.attractions) {
       // Try to find exact match first
       const exactMatch = response._embedded.attractions.find(
         (attraction: any) =>
           attraction.name.toLowerCase() === artistName.toLowerCase()
-      );
+      )
 
       if (exactMatch) {
-        return exactMatch.id;
+        return exactMatch.id
       }
 
       // If no exact match, return the first result
       if (response._embedded.attractions.length > 0) {
-        return response._embedded.attractions[0].id;
+        return response._embedded.attractions[0].id
       }
     }
   } catch (_error) {}
 
-  return null;
+  return null
 }
 
 interface SyncArtistParams {
-  artistName?: string;
-  spotifyId?: string;
-  ticketmasterId?: string;
+  artistName?: string
+  spotifyId?: string
+  ticketmasterId?: string
 }
 
 interface SyncArtistResult {
-  success: boolean;
-  artist?: any;
-  error?: string;
+  success: boolean
+  artist?: any
+  error?: string
   catalogSync?: {
-    albums: number;
-    songs: number;
-    errors: number;
-  };
+    albums: number
+    songs: number
+    errors: number
+  }
 }
 
 async function syncFullCatalog(spotifyId: string, artistId: string) {
-  await spotify.authenticate();
-  const results = { albums: 0, songs: 0, errors: 0 };
-  const processedAlbums = new Set<string>();
-  const processedTracks = new Set<string>();
-  let offset = 0;
-  let hasMore = true;
+  await spotify.authenticate()
+  const results = { albums: 0, songs: 0, errors: 0 }
+  const processedAlbums = new Set<string>()
+  const processedTracks = new Set<string>()
+  let offset = 0
+  let hasMore = true
 
   // Fetch all albums (including singles and compilations)
   while (hasMore) {
     const albumsResponse = await spotify.getArtistAlbums(spotifyId, {
-      include_groups: 'album,single,compilation',
+      include_groups: "album,single,compilation",
       limit: 50,
-      offset: offset
-    });
+      offset: offset,
+    })
 
     if (!albumsResponse.items || albumsResponse.items.length === 0) {
-      hasMore = false;
-      break;
+      hasMore = false
+      break
     }
 
     // Process each album
     for (const album of albumsResponse.items) {
       if (processedAlbums.has(album.id)) {
-        continue;
+        continue
       }
-      processedAlbums.add(album.id);
+      processedAlbums.add(album.id)
 
       try {
-        results.albums++;
+        results.albums++
 
         // TODO: getAlbumTracks and getTracks methods not implemented in SpotifyClient
         // Skipping album tracks syncing for now
@@ -261,76 +261,79 @@ async function syncFullCatalog(spotifyId: string, artistId: string) {
         }
         */
       } catch (_error) {
-        results.errors++;
+        results.errors++
       }
     }
 
-    offset += 50;
-    hasMore = offset < albumsResponse.total;
+    offset += 50
+    hasMore = offset < albumsResponse.total
 
     // Rate limiting between album batches
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, 200))
   }
 
-  return results;
+  return results
 }
 
 export async function syncArtist(
   params: SyncArtistParams
 ): Promise<SyncArtistResult> {
   try {
-    const { artistName, spotifyId, ticketmasterId } = params;
+    const { artistName, spotifyId, ticketmasterId } = params
 
     if (!artistName && !spotifyId) {
       return {
         success: false,
-        error: 'Either artistName or spotifyId is required',
-      };
+        error: "Either artistName or spotifyId is required",
+      }
     }
 
     // Check if Spotify credentials are available
-    if (!process.env['SPOTIFY_CLIENT_ID'] || !process.env['SPOTIFY_CLIENT_SECRET']) {
+    if (
+      !process.env["SPOTIFY_CLIENT_ID"] ||
+      !process.env["SPOTIFY_CLIENT_SECRET"]
+    ) {
       return {
         success: false,
-        error: 'Spotify credentials not configured',
-      };
+        error: "Spotify credentials not configured",
+      }
     }
 
-    let spotifyArtist;
+    let spotifyArtist
 
     if (spotifyId) {
       // Get artist by ID
-      spotifyArtist = await spotify.getArtist(spotifyId);
+      spotifyArtist = await spotify.getArtist(spotifyId)
     } else {
       // Search for artist by name
-      const searchResults = await spotify.searchArtists(artistName!, 1);
+      const searchResults = await spotify.searchArtists(artistName!, 1)
       if (!searchResults.artists?.items?.length) {
         return {
           success: false,
-          error: 'Artist not found on Spotify',
-        };
+          error: "Artist not found on Spotify",
+        }
       }
-      spotifyArtist = searchResults.artists.items[0];
+      spotifyArtist = searchResults.artists.items[0]
     }
 
     // Generate slug
     const slug = spotifyArtist.name
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "")
 
     // Determine Ticketmaster ID: use provided value if available, otherwise attempt lookup
     const resolvedTicketmasterId =
-      ticketmasterId ?? (await findTicketmasterId(spotifyArtist.name));
+      ticketmasterId ?? (await findTicketmasterId(spotifyArtist.name))
 
     // Check if artist already exists
     const existingArtist = await db
       .select()
       .from(artists)
       .where(eq(artists.spotifyId, spotifyArtist.id as string))
-      .limit(1);
+      .limit(1)
 
-    let artistRecord;
+    let artistRecord
 
     if (existingArtist.length > 0) {
       // Update existing artist
@@ -345,15 +348,20 @@ export async function syncArtist(
           followers: spotifyArtist.followers?.total || 0,
           verified: true,
           externalUrls: JSON.stringify(spotifyArtist.external_urls || {}),
-          ...(resolvedTicketmasterId !== undefined && { ticketmasterId: resolvedTicketmasterId }),
-          ...(resolvedTicketmasterId === undefined && existingArtist[0]?.ticketmasterId !== undefined && { ticketmasterId: existingArtist[0].ticketmasterId }),
+          ...(resolvedTicketmasterId !== undefined && {
+            ticketmasterId: resolvedTicketmasterId,
+          }),
+          ...(resolvedTicketmasterId === undefined &&
+            existingArtist[0]?.ticketmasterId !== undefined && {
+              ticketmasterId: existingArtist[0].ticketmasterId,
+            }),
           lastSyncedAt: new Date(),
           updatedAt: new Date(),
         })
         .where(eq(artists.id, existingArtist[0]?.id as string))
-        .returning();
+        .returning()
 
-      artistRecord = updated;
+      artistRecord = updated
     } else {
       // Create new artist
       const [created] = await db
@@ -372,17 +380,17 @@ export async function syncArtist(
           ticketmasterId: resolvedTicketmasterId,
           lastSyncedAt: new Date(),
         })
-        .returning();
+        .returning()
 
-      artistRecord = created;
+      artistRecord = created
     }
 
     // Sync full catalog inline for immediate results
-    let catalogSync = { albums: 0, songs: 0, errors: 0 };
+    let catalogSync = { albums: 0, songs: 0, errors: 0 }
 
     try {
       if (artistRecord) {
-        catalogSync = await syncFullCatalog(spotifyArtist.id, artistRecord.id);
+        catalogSync = await syncFullCatalog(spotifyArtist.id, artistRecord.id)
 
         // Update artist with catalog counts
         await db
@@ -393,23 +401,23 @@ export async function syncArtist(
             songCatalogSyncedAt: new Date(),
             lastFullSyncAt: new Date(),
           })
-          .where(eq(artists.id, artistRecord.id));
+          .where(eq(artists.id, artistRecord.id))
       }
     } catch (_err) {}
 
     // Fire-and-forget background jobs for other sync tasks
     if (artistRecord) {
       try {
-        const supabaseAdmin = createServiceClient();
+        const supabaseAdmin = createServiceClient()
 
         // Sync shows if we have a Ticketmaster ID
         if (artistRecord.ticketmasterId) {
-          await supabaseAdmin.functions.invoke('sync-artist-shows', {
+          await supabaseAdmin.functions.invoke("sync-artist-shows", {
             body: {
               ticketmasterId: artistRecord.ticketmasterId,
               artistId: artistRecord.id,
             },
-          });
+          })
         }
       } catch (_err) {}
     }
@@ -417,19 +425,19 @@ export async function syncArtist(
     if (!artistRecord) {
       return {
         success: false,
-        error: 'Failed to create or update artist record',
-      };
+        error: "Failed to create or update artist record",
+      }
     }
 
     return {
       success: true,
       artist: artistRecord,
       catalogSync,
-    };
+    }
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+      error: error instanceof Error ? error.message : "Unknown error",
+    }
   }
 }

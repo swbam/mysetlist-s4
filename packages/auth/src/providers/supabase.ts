@@ -1,30 +1,35 @@
-import type { Session, User } from '@supabase/supabase-js';
+import type { Session, User } from "@supabase/supabase-js"
 import {
   AUTH_CONFIG,
   createSupabaseAdmin,
   createSupabaseClient,
-} from '../config/supabase';
-import type { IAuthProvider, AuthSession, AuthUser, OAuthConfig } from '../types';
+} from "../config/supabase"
+import type {
+  AuthSession,
+  AuthUser,
+  IAuthProvider,
+  OAuthConfig,
+} from "../types"
 
 export class SupabaseAuthProvider implements IAuthProvider {
-  private client = createSupabaseClient();
-  private adminClient = createSupabaseAdmin();
+  private client = createSupabaseClient()
+  private adminClient = createSupabaseAdmin()
 
   async signIn(email: string, password: string): Promise<AuthUser> {
     const { data, error } = await this.client.auth.signInWithPassword({
       email,
       password,
-    });
+    })
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
 
     if (!data.user) {
-      throw new Error('Authentication failed');
+      throw new Error("Authentication failed")
     }
 
-    return this.mapUser(data.user);
+    return this.mapUser(data.user)
   }
 
   async signUp(
@@ -39,24 +44,24 @@ export class SupabaseAuthProvider implements IAuthProvider {
         data: metadata || {},
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
-    });
+    })
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
 
     if (!data.user) {
-      throw new Error('Sign up failed');
+      throw new Error("Sign up failed")
     }
 
-    return this.mapUser(data.user);
+    return this.mapUser(data.user)
   }
 
-  async signInWithOAuth(provider: 'spotify' | 'google'): Promise<any> {
+  async signInWithOAuth(provider: "spotify" | "google"): Promise<any> {
     const scopes =
-      provider === 'spotify'
+      provider === "spotify"
         ? AUTH_CONFIG.oauth.spotify.scopes
-        : AUTH_CONFIG.oauth.google.scopes;
+        : AUTH_CONFIG.oauth.google.scopes
 
     const { data, error } = await this.client.auth.signInWithOAuth({
       provider,
@@ -64,42 +69,46 @@ export class SupabaseAuthProvider implements IAuthProvider {
         redirectTo: `${window.location.origin}${AUTH_CONFIG.redirectUrls.callback}`,
         scopes,
       },
-    });
+    })
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
 
-    return data;
+    return data
   }
 
   async signInWithGoogle(config?: OAuthConfig): Promise<void> {
     const { error } = await this.client.auth.signInWithOAuth({
-      provider: 'google',
+      provider: "google",
       options: {
-        redirectTo: config?.redirectTo || `${window.location.origin}${AUTH_CONFIG.redirectUrls.callback}`,
+        redirectTo:
+          config?.redirectTo ||
+          `${window.location.origin}${AUTH_CONFIG.redirectUrls.callback}`,
         scopes: config?.scopes || AUTH_CONFIG.oauth.google.scopes,
         ...(config?.queryParams && { queryParams: config.queryParams }),
       },
-    });
+    })
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
   }
 
   async signInWithSpotify(config?: OAuthConfig): Promise<void> {
     const { error } = await this.client.auth.signInWithOAuth({
-      provider: 'spotify',
+      provider: "spotify",
       options: {
-        redirectTo: config?.redirectTo || `${window.location.origin}${AUTH_CONFIG.redirectUrls.callback}`,
+        redirectTo:
+          config?.redirectTo ||
+          `${window.location.origin}${AUTH_CONFIG.redirectUrls.callback}`,
         scopes: config?.scopes || AUTH_CONFIG.oauth.spotify.scopes,
         ...(config?.queryParams && { queryParams: config.queryParams }),
       },
-    });
+    })
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
   }
 
@@ -109,18 +118,18 @@ export class SupabaseAuthProvider implements IAuthProvider {
       options: {
         emailRedirectTo: `${window.location.origin}${AUTH_CONFIG.redirectUrls.callback}`,
       },
-    });
+    })
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
   }
 
   async signOut(): Promise<void> {
-    const { error } = await this.client.auth.signOut();
+    const { error } = await this.client.auth.signOut()
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
   }
 
@@ -128,75 +137,75 @@ export class SupabaseAuthProvider implements IAuthProvider {
     const {
       data: { session },
       error,
-    } = await this.client.auth.getSession();
+    } = await this.client.auth.getSession()
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
 
-    return session ? this.mapSession(session) : null;
+    return session ? this.mapSession(session) : null
   }
 
   async getUser(): Promise<AuthUser | null> {
     const {
       data: { user },
       error,
-    } = await this.client.auth.getUser();
+    } = await this.client.auth.getUser()
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
 
-    return user ? this.mapUser(user) : null;
+    return user ? this.mapUser(user) : null
   }
 
   async refreshSession(): Promise<AuthSession | null> {
     const {
       data: { session },
       error,
-    } = await this.client.auth.refreshSession();
+    } = await this.client.auth.refreshSession()
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
 
-    return session ? this.mapSession(session) : null;
+    return session ? this.mapSession(session) : null
   }
 
   async resetPassword(email: string): Promise<void> {
     const { error } = await this.client.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset-password`,
-    });
+    })
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
   }
 
   async updatePassword(password: string): Promise<void> {
     const { error } = await this.client.auth.updateUser({
       password,
-    });
+    })
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
   }
 
   async updateProfile(metadata: Record<string, any>): Promise<AuthUser> {
     const { data, error } = await this.client.auth.updateUser({
       data: metadata,
-    });
+    })
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
 
     if (!data.user) {
-      throw new Error('Profile update failed');
+      throw new Error("Profile update failed")
     }
 
-    return this.mapUser(data.user);
+    return this.mapUser(data.user)
   }
 
   // Admin functions (server-side only)
@@ -204,56 +213,59 @@ export class SupabaseAuthProvider implements IAuthProvider {
     const {
       data: { user },
       error,
-    } = await this.adminClient.auth.admin.getUserById(userId);
+    } = await this.adminClient.auth.admin.getUserById(userId)
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
 
-    return user ? this.mapUser(user) : null;
+    return user ? this.mapUser(user) : null
   }
 
   async deleteUser(userId: string): Promise<void> {
-    const { error } = await this.adminClient.auth.admin.deleteUser(userId);
+    const { error } = await this.adminClient.auth.admin.deleteUser(userId)
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
   }
 
   async updateUserRole(
     userId: string,
-    role: 'user' | 'moderator' | 'admin'
+    role: "user" | "moderator" | "admin"
   ): Promise<void> {
     const { error } = await this.adminClient.auth.admin.updateUserById(userId, {
       app_metadata: { role },
-    });
+    })
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
   }
 
   // Event listener for auth state changes
   onAuthStateChange(
     callback: (event: string, session: AuthSession | null) => void
-  ): (() => void) {
+  ): () => void {
     const { data } = this.client.auth.onAuthStateChange((event, session) => {
-      callback(event, session ? this.mapSession(session) : null);
-    });
-    
+      callback(event, session ? this.mapSession(session) : null)
+    })
+
     return () => {
-      data.subscription.unsubscribe();
-    };
+      data.subscription.unsubscribe()
+    }
   }
 
   private mapUser(user: User): AuthUser {
     return {
       ...user,
       profile: {
-        id: '',
+        id: "",
         userId: user.id,
-        displayName: user.user_metadata?.['displayName'] || user.email?.split('@')[0] || '',
+        displayName:
+          user.user_metadata?.["displayName"] ||
+          user.email?.split("@")[0] ||
+          "",
         isPublic: true,
         showAttendedShows: true,
         showVotedSongs: true,
@@ -265,15 +277,15 @@ export class SupabaseAuthProvider implements IAuthProvider {
       },
       preferences: {
         emailPreferences: {
-          id: '',
+          id: "",
           userId: user.id,
           emailEnabled: true,
           showReminders: true,
-          showReminderFrequency: 'daily',
+          showReminderFrequency: "daily",
           newShowNotifications: true,
-          newShowFrequency: 'daily',
+          newShowFrequency: "daily",
           setlistUpdates: true,
-          setlistUpdateFrequency: 'immediately',
+          setlistUpdateFrequency: "immediately",
           weeklyDigest: false,
           marketingEmails: false,
           securityEmails: true,
@@ -295,7 +307,7 @@ export class SupabaseAuthProvider implements IAuthProvider {
       },
       emailVerified: !!user.email_confirmed_at,
       spotifyConnected: false,
-    } as AuthUser;
+    } as AuthUser
   }
 
   private mapSession(session: Session): AuthSession {
@@ -305,6 +317,6 @@ export class SupabaseAuthProvider implements IAuthProvider {
       refresh_token: session.refresh_token,
       expires_at: session.expires_at || 0,
       user: this.mapUser(session.user),
-    } as AuthSession;
+    } as AuthSession
   }
 }

@@ -1,102 +1,102 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
+import { Button } from "@repo/design-system/components/ui/button"
+import { Card, CardContent } from "@repo/design-system/components/ui/card"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@repo/design-system/components/ui/dialog';
-import { Switch } from '@repo/design-system/components/ui/switch';
-import { BarChart3, Cookie, MapPin, Settings, Shield } from 'lucide-react';
-import { useEffect, useState } from 'react';
+} from "@repo/design-system/components/ui/dialog"
+import { Switch } from "@repo/design-system/components/ui/switch"
+import { BarChart3, Cookie, MapPin, Settings, Shield } from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface CookiePreferences {
-  necessary: boolean;
-  analytics: boolean;
-  marketing: boolean;
-  personalization: boolean;
+  necessary: boolean
+  analytics: boolean
+  marketing: boolean
+  personalization: boolean
 }
 
 export function GDPRCookieConsent() {
-  const [showBanner, setShowBanner] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
+  const [showBanner, setShowBanner] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const [preferences, setPreferences] = useState<CookiePreferences>({
     necessary: true, // Always true, required
     analytics: false,
     marketing: false,
     personalization: false,
-  });
+  })
 
   useEffect(() => {
     // Check if user has already made a choice
-    const consent = localStorage.getItem('mysetlist-cookie-consent');
-    const preferences = localStorage.getItem('mysetlist-cookie-preferences');
+    const consent = localStorage.getItem("mysetlist-cookie-consent")
+    const preferences = localStorage.getItem("mysetlist-cookie-preferences")
 
     if (consent) {
       // Load saved preferences
       if (preferences) {
-        setPreferences(JSON.parse(preferences));
+        setPreferences(JSON.parse(preferences))
       }
       // Initialize analytics based on saved preferences
       initializeAnalytics(
         preferences ? JSON.parse(preferences) : { analytics: false }
-      );
-      return; // Add explicit return for this path
+      )
+      return // Add explicit return for this path
     } else {
       // Show banner after a short delay
-      const timer = setTimeout(() => setShowBanner(true), 1000);
-      return () => clearTimeout(timer);
+      const timer = setTimeout(() => setShowBanner(true), 1000)
+      return () => clearTimeout(timer)
     }
-  }, []);
+  }, [])
 
   const initializeAnalytics = (prefs: CookiePreferences) => {
     // Initialize PostHog with consent
-    if (typeof window !== 'undefined' && window.posthog) {
+    if (typeof window !== "undefined" && window.posthog) {
       if (prefs.analytics) {
-        (window.posthog as any).opt_in_capturing();
+        ;(window.posthog as any).opt_in_capturing()
       } else {
-        (window.posthog as any).opt_out_capturing();
+        ;(window.posthog as any).opt_out_capturing()
       }
     }
 
     // Initialize Google Analytics with consent
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('consent', 'update', {
-        analytics_storage: prefs.analytics ? 'granted' : 'denied',
-        ad_storage: prefs.marketing ? 'granted' : 'denied',
-        personalization_storage: prefs.personalization ? 'granted' : 'denied',
-      });
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("consent", "update", {
+        analytics_storage: prefs.analytics ? "granted" : "denied",
+        ad_storage: prefs.marketing ? "granted" : "denied",
+        personalization_storage: prefs.personalization ? "granted" : "denied",
+      })
     }
 
     // Initialize Sentry with consent
-    if (typeof window !== 'undefined' && window.Sentry) {
-      const client = window.Sentry.getCurrentHub().getClient();
+    if (typeof window !== "undefined" && window.Sentry) {
+      const client = window.Sentry.getCurrentHub().getClient()
       if (client) {
-        const options = client.getOptions();
+        const options = client.getOptions()
         if (prefs.analytics) {
           // Sentry is considered analytics for error tracking
-          options.enabled = true;
+          options.enabled = true
         } else {
-          options.enabled = false;
+          options.enabled = false
         }
       }
     }
-  };
+  }
 
   const savePreferences = (prefs: CookiePreferences) => {
-    localStorage.setItem('mysetlist-cookie-consent', 'given');
-    localStorage.setItem('mysetlist-cookie-preferences', JSON.stringify(prefs));
+    localStorage.setItem("mysetlist-cookie-consent", "given")
+    localStorage.setItem("mysetlist-cookie-preferences", JSON.stringify(prefs))
     localStorage.setItem(
-      'mysetlist-cookie-consent-date',
+      "mysetlist-cookie-consent-date",
       new Date().toISOString()
-    );
+    )
 
-    setPreferences(prefs);
-    initializeAnalytics(prefs);
-  };
+    setPreferences(prefs)
+    initializeAnalytics(prefs)
+  }
 
   const acceptAll = () => {
     const allAccepted = {
@@ -104,10 +104,10 @@ export function GDPRCookieConsent() {
       analytics: true,
       marketing: true,
       personalization: true,
-    };
-    savePreferences(allAccepted);
-    setShowBanner(false);
-  };
+    }
+    savePreferences(allAccepted)
+    setShowBanner(false)
+  }
 
   const acceptNecessaryOnly = () => {
     const necessaryOnly = {
@@ -115,26 +115,26 @@ export function GDPRCookieConsent() {
       analytics: false,
       marketing: false,
       personalization: false,
-    };
-    savePreferences(necessaryOnly);
-    setShowBanner(false);
-  };
+    }
+    savePreferences(necessaryOnly)
+    setShowBanner(false)
+  }
 
   const saveCustomPreferences = () => {
-    savePreferences(preferences);
-    setShowSettings(false);
-    setShowBanner(false);
-  };
+    savePreferences(preferences)
+    setShowSettings(false)
+    setShowBanner(false)
+  }
 
   const updatePreference = (key: keyof CookiePreferences, value: boolean) => {
     setPreferences((prev) => ({
       ...prev,
-      [key]: key === 'necessary' ? true : value, // Necessary cookies can't be disabled
-    }));
-  };
+      [key]: key === "necessary" ? true : value, // Necessary cookies can't be disabled
+    }))
+  }
 
   if (!showBanner) {
-    return null;
+    return null
   }
 
   return (
@@ -177,11 +177,11 @@ export function GDPRCookieConsent() {
                     </Button>
                   </div>
                   <p className="mt-2 text-muted-foreground text-xs">
-                    By clicking \"Accept All\", you agree to our{' '}
+                    By clicking \"Accept All\", you agree to our{" "}
                     <a href="/privacy" className="underline hover:text-primary">
                       Privacy Policy
-                    </a>{' '}
-                    and{' '}
+                    </a>{" "}
+                    and{" "}
                     <a href="/terms" className="underline hover:text-primary">
                       Terms of Service
                     </a>
@@ -247,7 +247,7 @@ export function GDPRCookieConsent() {
                 <Switch
                   checked={preferences.analytics}
                   onCheckedChange={(checked) =>
-                    updatePreference('analytics', checked)
+                    updatePreference("analytics", checked)
                   }
                   aria-label="Analytics cookies"
                 />
@@ -273,7 +273,7 @@ export function GDPRCookieConsent() {
                 <Switch
                   checked={preferences.marketing}
                   onCheckedChange={(checked) =>
-                    updatePreference('marketing', checked)
+                    updatePreference("marketing", checked)
                   }
                   aria-label="Marketing cookies"
                 />
@@ -299,7 +299,7 @@ export function GDPRCookieConsent() {
                 <Switch
                   checked={preferences.personalization}
                   onCheckedChange={(checked) =>
-                    updatePreference('personalization', checked)
+                    updatePreference("personalization", checked)
                   }
                   aria-label="Personalization cookies"
                 />
@@ -336,24 +336,24 @@ export function GDPRCookieConsent() {
         </DialogContent>
       </Dialog>
     </>
-  );
+  )
 }
 
 // Global types for analytics services
 declare global {
   interface Window {
-    gtag?: (...args: any[]) => void;
+    gtag?: (...args: any[]) => void
     posthog?: {
-      opt_in_capturing: () => void;
-      opt_out_capturing: () => void;
-      capture: (event: string, properties?: Record<string, any>) => void;
-    };
+      opt_in_capturing: () => void
+      opt_out_capturing: () => void
+      capture: (event: string, properties?: Record<string, any>) => void
+    }
     Sentry?: {
       getCurrentHub: () => {
         getClient: () => {
-          getOptions: () => { enabled: boolean };
-        } | null;
-      };
-    };
+          getOptions: () => { enabled: boolean }
+        } | null
+      }
+    }
   }
 }

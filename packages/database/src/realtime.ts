@@ -1,33 +1,33 @@
-import type { RealtimeChannel } from '@supabase/supabase-js';
-import { createSupabaseBrowserClient } from './supabase-client';
+import type { RealtimeChannel } from "@supabase/supabase-js"
+import { createSupabaseBrowserClient } from "./supabase-client"
 
 export interface RealtimeSubscriptionOptions {
-  onInsert?: (payload: any) => void;
-  onUpdate?: (payload: any) => void;
-  onDelete?: (payload: any) => void;
-  onError?: (error: any) => void;
+  onInsert?: (payload: any) => void
+  onUpdate?: (payload: any) => void
+  onDelete?: (payload: any) => void
+  onError?: (error: any) => void
 }
 
 export interface SetlistUpdatePayload {
-  eventType: 'INSERT' | 'UPDATE' | 'DELETE';
-  new?: any;
-  old?: any;
-  errors?: any;
-  table: string;
-  schema: string;
+  eventType: "INSERT" | "UPDATE" | "DELETE"
+  new?: any
+  old?: any
+  errors?: any
+  table: string
+  schema: string
 }
 
 export interface VoteUpdatePayload {
-  eventType: 'INSERT' | 'UPDATE' | 'DELETE';
-  new?: any;
-  old?: any;
-  errors?: any;
-  table: string;
-  schema: string;
+  eventType: "INSERT" | "UPDATE" | "DELETE"
+  new?: any
+  old?: any
+  errors?: any
+  table: string
+  schema: string
 }
 
 export class RealtimeManager {
-  private channels: Map<string, RealtimeChannel> = new Map();
+  private channels: Map<string, RealtimeChannel> = new Map()
 
   /**
    * Subscribe to setlist updates for a specific show
@@ -36,20 +36,20 @@ export class RealtimeManager {
     showId: string,
     callback: (payload: SetlistUpdatePayload) => void
   ): RealtimeChannel {
-    const channelName = `setlist:${showId}`;
+    const channelName = `setlist:${showId}`
 
     // Remove existing channel if it exists
-    this.unsubscribe(channelName);
+    this.unsubscribe(channelName)
 
-    const supabase = createSupabaseBrowserClient();
+    const supabase = createSupabaseBrowserClient()
     const channel = supabase
       .channel(channelName)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'setlist_songs',
+          event: "*",
+          schema: "public",
+          table: "setlist_songs",
           filter: `setlist_id=in.(select id from setlists where show_id=eq.${showId})`,
         },
         (payload: any) => {
@@ -60,15 +60,15 @@ export class RealtimeManager {
             errors: payload.errors,
             table: payload.table,
             schema: payload.schema,
-          });
+          })
         }
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'setlists',
+          event: "*",
+          schema: "public",
+          table: "setlists",
           filter: `show_id=eq.${showId}`,
         },
         (payload: any) => {
@@ -79,17 +79,17 @@ export class RealtimeManager {
             errors: payload.errors,
             table: payload.table,
             schema: payload.schema,
-          });
+          })
         }
       )
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-        } else if (status === 'CHANNEL_ERROR') {
+        if (status === "SUBSCRIBED") {
+        } else if (status === "CHANNEL_ERROR") {
         }
-      });
+      })
 
-    this.channels.set(channelName, channel);
-    return channel;
+    this.channels.set(channelName, channel)
+    return channel
   }
 
   /**
@@ -99,20 +99,20 @@ export class RealtimeManager {
     setlistSongId: string,
     callback: (payload: VoteUpdatePayload) => void
   ): RealtimeChannel {
-    const channelName = `votes:${setlistSongId}`;
+    const channelName = `votes:${setlistSongId}`
 
     // Remove existing channel if it exists
-    this.unsubscribe(channelName);
+    this.unsubscribe(channelName)
 
-    const supabase = createSupabaseBrowserClient();
+    const supabase = createSupabaseBrowserClient()
     const channel = supabase
       .channel(channelName)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'votes',
+          event: "*",
+          schema: "public",
+          table: "votes",
           filter: `setlist_song_id=eq.${setlistSongId}`,
         },
         (payload: any) => {
@@ -123,15 +123,15 @@ export class RealtimeManager {
             errors: payload.errors,
             table: payload.table,
             schema: payload.schema,
-          });
+          })
         }
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'setlist_songs',
+          event: "UPDATE",
+          schema: "public",
+          table: "setlist_songs",
           filter: `id=eq.${setlistSongId}`,
         },
         (payload: any) => {
@@ -143,17 +143,17 @@ export class RealtimeManager {
             errors: payload.errors,
             table: payload.table,
             schema: payload.schema,
-          });
+          })
         }
       )
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-        } else if (status === 'CHANNEL_ERROR') {
+        if (status === "SUBSCRIBED") {
+        } else if (status === "CHANNEL_ERROR") {
         }
-      });
+      })
 
-    this.channels.set(channelName, channel);
-    return channel;
+    this.channels.set(channelName, channel)
+    return channel
   }
 
   /**
@@ -163,32 +163,32 @@ export class RealtimeManager {
     showId: string,
     callback: (payload: any) => void
   ): RealtimeChannel {
-    const channelName = `show:${showId}`;
+    const channelName = `show:${showId}`
 
     // Remove existing channel if it exists
-    this.unsubscribe(channelName);
+    this.unsubscribe(channelName)
 
-    const supabase = createSupabaseBrowserClient();
+    const supabase = createSupabaseBrowserClient()
     const channel = supabase
       .channel(channelName)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'shows',
+          event: "UPDATE",
+          schema: "public",
+          table: "shows",
           filter: `id=eq.${showId}`,
         },
         callback
       )
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-        } else if (status === 'CHANNEL_ERROR') {
+        if (status === "SUBSCRIBED") {
+        } else if (status === "CHANNEL_ERROR") {
         }
-      });
+      })
 
-    this.channels.set(channelName, channel);
-    return channel;
+    this.channels.set(channelName, channel)
+    return channel
   }
 
   /**
@@ -198,32 +198,32 @@ export class RealtimeManager {
     showId: string,
     callback: (payload: any) => void
   ): RealtimeChannel {
-    const channelName = `attendance:${showId}`;
+    const channelName = `attendance:${showId}`
 
     // Remove existing channel if it exists
-    this.unsubscribe(channelName);
+    this.unsubscribe(channelName)
 
-    const supabase = createSupabaseBrowserClient();
+    const supabase = createSupabaseBrowserClient()
     const channel = supabase
       .channel(channelName)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'user_show_attendance',
+          event: "*",
+          schema: "public",
+          table: "user_show_attendance",
           filter: `show_id=eq.${showId}`,
         },
         callback
       )
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-        } else if (status === 'CHANNEL_ERROR') {
+        if (status === "SUBSCRIBED") {
+        } else if (status === "CHANNEL_ERROR") {
         }
-      });
+      })
 
-    this.channels.set(channelName, channel);
-    return channel;
+    this.channels.set(channelName, channel)
+    return channel
   }
 
   /**
@@ -233,32 +233,32 @@ export class RealtimeManager {
     artistId: string,
     callback: (payload: any) => void
   ): RealtimeChannel {
-    const channelName = `artist_followers:${artistId}`;
+    const channelName = `artist_followers:${artistId}`
 
     // Remove existing channel if it exists
-    this.unsubscribe(channelName);
+    this.unsubscribe(channelName)
 
-    const supabase = createSupabaseBrowserClient();
+    const supabase = createSupabaseBrowserClient()
     const channel = supabase
       .channel(channelName)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'user_follows_artists',
+          event: "*",
+          schema: "public",
+          table: "user_follows_artists",
           filter: `artist_id=eq.${artistId}`,
         },
         callback
       )
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-        } else if (status === 'CHANNEL_ERROR') {
+        if (status === "SUBSCRIBED") {
+        } else if (status === "CHANNEL_ERROR") {
         }
-      });
+      })
 
-    this.channels.set(channelName, channel);
-    return channel;
+    this.channels.set(channelName, channel)
+    return channel
   }
 
   /**
@@ -267,42 +267,42 @@ export class RealtimeManager {
   subscribeToTrendingUpdates(
     callback: (payload: any) => void
   ): RealtimeChannel {
-    const channelName = 'trending_updates';
+    const channelName = "trending_updates"
 
     // Remove existing channel if it exists
-    this.unsubscribe(channelName);
+    this.unsubscribe(channelName)
 
-    const supabase = createSupabaseBrowserClient();
+    const supabase = createSupabaseBrowserClient()
     const channel = supabase
       .channel(channelName)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'shows',
-          filter: 'trending_score.gt.0',
+          event: "UPDATE",
+          schema: "public",
+          table: "shows",
+          filter: "trending_score.gt.0",
         },
         callback
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'artists',
-          filter: 'trending_score.gt.0',
+          event: "UPDATE",
+          schema: "public",
+          table: "artists",
+          filter: "trending_score.gt.0",
         },
         callback
       )
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-        } else if (status === 'CHANNEL_ERROR') {
+        if (status === "SUBSCRIBED") {
+        } else if (status === "CHANNEL_ERROR") {
         }
-      });
+      })
 
-    this.channels.set(channelName, channel);
-    return channel;
+    this.channels.set(channelName, channel)
+    return channel
   }
 
   /**
@@ -312,111 +312,111 @@ export class RealtimeManager {
     setlistId: string,
     callback: (payload: any) => void
   ): RealtimeChannel {
-    const channelName = `setlist_votes:${setlistId}`;
+    const channelName = `setlist_votes:${setlistId}`
 
     // Remove existing channel if it exists
-    this.unsubscribe(channelName);
+    this.unsubscribe(channelName)
 
-    const supabase = createSupabaseBrowserClient();
+    const supabase = createSupabaseBrowserClient()
     const channel = supabase
       .channel(channelName)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'votes',
+          event: "*",
+          schema: "public",
+          table: "votes",
           filter: `setlist_song_id=in.(select id from setlist_songs where setlist_id=eq.${setlistId})`,
         },
         callback
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'setlist_songs',
+          event: "UPDATE",
+          schema: "public",
+          table: "setlist_songs",
           filter: `setlist_id=eq.${setlistId}`,
         },
         callback
       )
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-        } else if (status === 'CHANNEL_ERROR') {
+        if (status === "SUBSCRIBED") {
+        } else if (status === "CHANNEL_ERROR") {
         }
-      });
+      })
 
-    this.channels.set(channelName, channel);
-    return channel;
+    this.channels.set(channelName, channel)
+    return channel
   }
 
   /**
    * Subscribe to global activity feed
    */
   subscribeToGlobalActivity(callback: (payload: any) => void): RealtimeChannel {
-    const channelName = 'global_activity';
+    const channelName = "global_activity"
 
     // Remove existing channel if it exists
-    this.unsubscribe(channelName);
+    this.unsubscribe(channelName)
 
-    const supabase = createSupabaseBrowserClient();
+    const supabase = createSupabaseBrowserClient()
     const channel = supabase
       .channel(channelName)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'votes',
+          event: "INSERT",
+          schema: "public",
+          table: "votes",
         },
         callback
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'setlists',
+          event: "INSERT",
+          schema: "public",
+          table: "setlists",
         },
         callback
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'user_show_attendance',
+          event: "INSERT",
+          schema: "public",
+          table: "user_show_attendance",
         },
         callback
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'user_follows_artists',
+          event: "INSERT",
+          schema: "public",
+          table: "user_follows_artists",
         },
         callback
       )
       .subscribe((status) => {
-        if (status === 'SUBSCRIBED') {
-        } else if (status === 'CHANNEL_ERROR') {
+        if (status === "SUBSCRIBED") {
+        } else if (status === "CHANNEL_ERROR") {
         }
-      });
+      })
 
-    this.channels.set(channelName, channel);
-    return channel;
+    this.channels.set(channelName, channel)
+    return channel
   }
 
   /**
    * Unsubscribe from a specific channel
    */
   unsubscribe(channelName: string): void {
-    const channel = this.channels.get(channelName);
+    const channel = this.channels.get(channelName)
     if (channel) {
-      const supabase = createSupabaseBrowserClient();
-      supabase.removeChannel(channel);
-      this.channels.delete(channelName);
+      const supabase = createSupabaseBrowserClient()
+      supabase.removeChannel(channel)
+      this.channels.delete(channelName)
     }
   }
 
@@ -425,71 +425,71 @@ export class RealtimeManager {
    */
   unsubscribeAll(): void {
     this.channels.forEach((_, channelName) => {
-      this.unsubscribe(channelName);
-    });
+      this.unsubscribe(channelName)
+    })
   }
 
   /**
    * Get list of active channels
    */
   getActiveChannels(): string[] {
-    return Array.from(this.channels.keys());
+    return Array.from(this.channels.keys())
   }
 
   /**
    * Get connection status
    */
   getConnectionStatus(): string {
-    const supabase = createSupabaseBrowserClient();
-    return supabase.realtime.isConnected() ? 'connected' : 'disconnected';
+    const supabase = createSupabaseBrowserClient()
+    return supabase.realtime.isConnected() ? "connected" : "disconnected"
   }
 
   /**
    * Reconnect to Supabase realtime
    */
   reconnect(): void {
-    const supabase = createSupabaseBrowserClient();
-    supabase.realtime.disconnect();
-    supabase.realtime.connect();
+    const supabase = createSupabaseBrowserClient()
+    supabase.realtime.disconnect()
+    supabase.realtime.connect()
   }
 }
 
 // Export singleton instance
-export const realtimeManager = new RealtimeManager();
+export const realtimeManager = new RealtimeManager()
 
 // Export individual subscription functions for convenience
 export const subscribeToSetlistUpdates = (
   showId: string,
   callback: (payload: SetlistUpdatePayload) => void
-) => realtimeManager.subscribeToSetlistUpdates(showId, callback);
+) => realtimeManager.subscribeToSetlistUpdates(showId, callback)
 
 export const subscribeToVoteUpdates = (
   setlistSongId: string,
   callback: (payload: VoteUpdatePayload) => void
-) => realtimeManager.subscribeToVoteUpdates(setlistSongId, callback);
+) => realtimeManager.subscribeToVoteUpdates(setlistSongId, callback)
 
 export const subscribeToShowUpdates = (
   showId: string,
   callback: (payload: any) => void
-) => realtimeManager.subscribeToShowUpdates(showId, callback);
+) => realtimeManager.subscribeToShowUpdates(showId, callback)
 
 export const subscribeToAttendanceUpdates = (
   showId: string,
   callback: (payload: any) => void
-) => realtimeManager.subscribeToAttendanceUpdates(showId, callback);
+) => realtimeManager.subscribeToAttendanceUpdates(showId, callback)
 
 export const subscribeToArtistFollowers = (
   artistId: string,
   callback: (payload: any) => void
-) => realtimeManager.subscribeToArtistFollowers(artistId, callback);
+) => realtimeManager.subscribeToArtistFollowers(artistId, callback)
 
 export const subscribeToTrendingUpdates = (callback: (payload: any) => void) =>
-  realtimeManager.subscribeToTrendingUpdates(callback);
+  realtimeManager.subscribeToTrendingUpdates(callback)
 
 export const subscribeToSetlistVotes = (
   setlistId: string,
   callback: (payload: any) => void
-) => realtimeManager.subscribeToSetlistVotes(setlistId, callback);
+) => realtimeManager.subscribeToSetlistVotes(setlistId, callback)
 
 export const subscribeToGlobalActivity = (callback: (payload: any) => void) =>
-  realtimeManager.subscribeToGlobalActivity(callback);
+  realtimeManager.subscribeToGlobalActivity(callback)

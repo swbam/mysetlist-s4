@@ -1,38 +1,39 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card } from '@repo/design-system/components/ui/card';
-import { AlertTriangle, ChevronLeft, Home, RefreshCw } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import React, { Component, type ReactNode } from 'react';
+import { Button } from "@repo/design-system/components/ui/button"
+import { Card } from "@repo/design-system/components/ui/card"
+import { AlertTriangle, ChevronLeft, Home, RefreshCw } from "lucide-react"
+import { useRouter } from "next/navigation"
+import type React from "react"
+import { Component, type ReactNode } from "react"
 
 interface Props {
-  children: ReactNode;
-  fallbackTitle?: string;
-  fallbackDescription?: string;
-  showBackButton?: boolean;
+  children: ReactNode
+  fallbackTitle?: string
+  fallbackDescription?: string
+  showBackButton?: boolean
 }
 
 interface State {
-  hasError: boolean;
-  error?: Error | undefined;
+  hasError: boolean
+  error?: Error | undefined
 }
 
 export class PageErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
-    super(props);
-    this.state = { hasError: false };
+    super(props)
+    this.state = { hasError: false }
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+    return { hasError: true, error }
   }
 
   override componentDidCatch(_error: Error, _errorInfo: React.ErrorInfo) {}
 
   handleReset = () => {
-    this.setState({ hasError: false, error: undefined });
-  };
+    this.setState({ hasError: false, error: undefined })
+  }
 
   override render() {
     if (this.state.hasError) {
@@ -44,29 +45,29 @@ export class PageErrorBoundary extends Component<Props, State> {
           description={this.props.fallbackDescription}
           showBackButton={this.props.showBackButton}
         />
-      );
+      )
     }
 
-    return this.props.children;
+    return this.props.children
   }
 }
 
 interface ErrorFallbackProps {
-  error?: Error | undefined;
-  onReset: () => void;
-  title?: string | undefined;
-  description?: string | undefined;
-  showBackButton?: boolean | undefined;
+  error?: Error | undefined
+  onReset: () => void
+  title?: string | undefined
+  description?: string | undefined
+  showBackButton?: boolean | undefined
 }
 
 function ErrorFallback({
   error,
   onReset,
-  title = 'Something went wrong',
-  description = 'We encountered an error while loading this page. This might be a temporary issue.',
+  title = "Something went wrong",
+  description = "We encountered an error while loading this page. This might be a temporary issue.",
   showBackButton = true,
 }: ErrorFallbackProps) {
-  const router = useRouter();
+  const router = useRouter()
 
   return (
     <div className="container mx-auto px-4 py-16">
@@ -103,7 +104,7 @@ function ErrorFallback({
             )}
 
             <Button
-              onClick={() => router.push('/')}
+              onClick={() => router.push("/")}
               variant="outline"
               className="flex items-center gap-2"
             >
@@ -112,7 +113,7 @@ function ErrorFallback({
             </Button>
           </div>
 
-          {process.env["NODE_ENV"] === 'development' && error && (
+          {process.env["NODE_ENV"] === "development" && error && (
             <details className="mt-6 w-full max-w-md text-left">
               <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
                 Error details (development only)
@@ -126,5 +127,5 @@ function ErrorFallback({
         </div>
       </Card>
     </div>
-  );
+  )
 }

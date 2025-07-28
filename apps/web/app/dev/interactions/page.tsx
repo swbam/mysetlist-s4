@@ -1,23 +1,23 @@
-'use client';
+"use client"
 
-import React from 'react';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
-import { FollowButton } from '~/components/auth/follow-button';
-import { InteractionChecklist } from '~/components/dev/interaction-checklist';
-import { MobileVoteButton } from '~/components/mobile/mobile-vote-button';
-import { SetlistManager } from '~/components/setlist/setlist-manager';
-import { RealtimeVoteButton } from '~/components/voting/realtime-vote-button';
+} from "@repo/design-system/components/ui/tabs"
+import React from "react"
+import { FollowButton } from "~/components/auth/follow-button"
+import { InteractionChecklist } from "~/components/dev/interaction-checklist"
+import { MobileVoteButton } from "~/components/mobile/mobile-vote-button"
+import { SetlistManager } from "~/components/setlist/setlist-manager"
+import { RealtimeVoteButton } from "~/components/voting/realtime-vote-button"
 
 export default function InteractionsDevPage() {
   return (
@@ -183,18 +183,18 @@ export default function InteractionsDevPage() {
                 <SetlistManager
                   showId="test-show-1"
                   show={{
-                    id: 'test-show-1',
-                    name: 'Test Concert 2024',
-                    date: '2024-12-25',
-                    status: 'upcoming',
+                    id: "test-show-1",
+                    name: "Test Concert 2024",
+                    date: "2024-12-25",
+                    status: "upcoming",
                     headliner_artist: {
-                      id: 'test-artist',
-                      name: 'Test Artist',
+                      id: "test-artist",
+                      name: "Test Artist",
                     },
                   }}
                   currentUser={{
-                    id: 'test-user',
-                    role: 'user',
+                    id: "test-user",
+                    role: "user",
                   }}
                   initialSetlists={[]}
                 />
@@ -238,5 +238,5 @@ export default function InteractionsDevPage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

@@ -1,24 +1,24 @@
-'use client';
+"use client"
 
-import { cn } from '@repo/design-system/lib/utils';
-import Image, { type ImageProps } from 'next/image';
-import { useState } from 'react';
+import { cn } from "@repo/design-system/lib/utils"
+import Image, { type ImageProps } from "next/image"
+import { useState } from "react"
 
-interface OptimizedImageProps extends Omit<ImageProps, 'onError' | 'onLoad'> {
-  fallback?: React.ReactNode;
-  aspectRatio?: 'square' | 'video' | 'portrait' | 'landscape';
-  className?: string;
-  containerClassName?: string;
-  showPlaceholder?: boolean;
-  placeholderIcon?: React.ReactNode;
+interface OptimizedImageProps extends Omit<ImageProps, "onError" | "onLoad"> {
+  fallback?: React.ReactNode
+  aspectRatio?: "square" | "video" | "portrait" | "landscape"
+  className?: string
+  containerClassName?: string
+  showPlaceholder?: boolean
+  placeholderIcon?: React.ReactNode
 }
 
 const aspectRatioClasses = {
-  square: 'aspect-square',
-  video: 'aspect-video',
-  portrait: 'aspect-[3/4]',
-  landscape: 'aspect-[4/3]',
-} as const;
+  square: "aspect-square",
+  video: "aspect-video",
+  portrait: "aspect-[3/4]",
+  landscape: "aspect-[4/3]",
+} as const
 
 export function OptimizedImage({
   src,
@@ -32,28 +32,28 @@ export function OptimizedImage({
   priority = false,
   ...props
 }: OptimizedImageProps) {
-  const [imageError, setImageError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [imageError, setImageError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   // Handle image load error
   const handleError = () => {
-    setImageError(true);
-    setIsLoading(false);
-  };
+    setImageError(true)
+    setIsLoading(false)
+  }
 
   // Handle image load success
   const handleLoad = () => {
-    setIsLoading(false);
-  };
+    setIsLoading(false)
+  }
 
   // If there's an error and no src, show fallback
   if (!src || imageError) {
     return (
-      <div 
+      <div
         className={cn(
-          'flex items-center justify-center bg-gradient-to-br from-muted/50 to-muted/20',
+          "flex items-center justify-center bg-gradient-to-br from-muted/50 to-muted/20",
           aspectRatio && aspectRatioClasses[aspectRatio],
-          'overflow-hidden',
+          "overflow-hidden",
           containerClassName
         )}
         role="img"
@@ -62,9 +62,7 @@ export function OptimizedImage({
         {fallback || (
           <>
             {placeholderIcon && (
-              <div className="text-muted-foreground/30">
-                {placeholderIcon}
-              </div>
+              <div className="text-muted-foreground/30">{placeholderIcon}</div>
             )}
             {!placeholderIcon && showPlaceholder && (
               <div className="flex flex-col items-center gap-2 text-muted-foreground/50">
@@ -79,13 +77,13 @@ export function OptimizedImage({
           </>
         )}
       </div>
-    );
+    )
   }
 
   return (
-    <div 
+    <div
       className={cn(
-        'relative overflow-hidden',
+        "relative overflow-hidden",
         aspectRatio && aspectRatioClasses[aspectRatio],
         containerClassName
       )}
@@ -102,7 +100,7 @@ export function OptimizedImage({
           </div>
         </div>
       )}
-      
+
       {/* Optimized Image */}
       <Image
         src={src}
@@ -111,23 +109,23 @@ export function OptimizedImage({
         onLoad={handleLoad}
         priority={priority}
         className={cn(
-          'object-cover transition-opacity duration-300',
-          isLoading ? 'opacity-0' : 'opacity-100',
+          "object-cover transition-opacity duration-300",
+          isLoading ? "opacity-0" : "opacity-100",
           className
         )}
         {...props}
       />
     </div>
-  );
+  )
 }
 
 // Preset components for common use cases
-export function ArtistImage({ 
-  src, 
-  alt, 
+export function ArtistImage({
+  src,
+  alt,
   className,
-  ...props 
-}: Omit<OptimizedImageProps, 'aspectRatio'>) {
+  ...props
+}: Omit<OptimizedImageProps, "aspectRatio">) {
   return (
     <OptimizedImage
       src={src}
@@ -137,15 +135,15 @@ export function ArtistImage({
       placeholderIcon={<div className="text-4xl">🎤</div>}
       {...props}
     />
-  );
+  )
 }
 
-export function VenueImage({ 
-  src, 
-  alt, 
+export function VenueImage({
+  src,
+  alt,
   className,
-  ...props 
-}: Omit<OptimizedImageProps, 'aspectRatio'>) {
+  ...props
+}: Omit<OptimizedImageProps, "aspectRatio">) {
   return (
     <OptimizedImage
       src={src}
@@ -155,5 +153,5 @@ export function VenueImage({
       placeholderIcon={<div className="text-4xl">🏟️</div>}
       {...props}
     />
-  );
+  )
 }

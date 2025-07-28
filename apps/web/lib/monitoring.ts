@@ -1,33 +1,33 @@
-import { Sentry } from './sentry';
+import { Sentry } from "./sentry"
 
 interface MetricData {
-  name: string;
-  value: number;
-  unit?: string;
-  tags?: Record<string, string>;
-  timestamp?: number;
+  name: string
+  value: number
+  unit?: string
+  tags?: Record<string, string>
+  timestamp?: number
 }
 
 interface PerformanceMetric {
-  name: string;
-  duration: number;
-  startTime: number;
-  endTime: number;
-  metadata?: Record<string, any>;
+  name: string
+  duration: number
+  startTime: number
+  endTime: number
+  metadata?: Record<string, any>
 }
 
 /**
  * Comprehensive monitoring service for production
  */
 export class MonitoringService {
-  private static metrics: Map<string, PerformanceMetric> = new Map();
-  private static customMetrics: MetricData[] = [];
+  private static metrics: Map<string, PerformanceMetric> = new Map()
+  private static customMetrics: MetricData[] = []
 
   /**
    * Start performance measurement
    */
   static startMeasurement(name: string, metadata?: Record<string, any>): void {
-    const startTime = performance.now();
+    const startTime = performance.now()
 
     MonitoringService.metrics.set(name, {
       name,
@@ -35,11 +35,11 @@ export class MonitoringService {
       startTime,
       endTime: 0,
       ...(metadata && { metadata }),
-    });
+    })
 
     // Mark performance start
-    if (typeof performance !== 'undefined' && 'mark' in performance) {
-      performance.mark(`${name}-start`);
+    if (typeof performance !== "undefined" && "mark" in performance) {
+      performance.mark(`${name}-start`)
     }
   }
 
@@ -47,54 +47,54 @@ export class MonitoringService {
    * End performance measurement and track result
    */
   static endMeasurement(name: string): number {
-    const metric = MonitoringService.metrics.get(name);
+    const metric = MonitoringService.metrics.get(name)
     if (!metric) {
-      return 0;
+      return 0
     }
 
-    const endTime = performance.now();
-    const duration = endTime - metric.startTime;
+    const endTime = performance.now()
+    const duration = endTime - metric.startTime
 
     // Update metric
-    metric.endTime = endTime;
-    metric.duration = duration;
+    metric.endTime = endTime
+    metric.duration = duration
 
     // Performance API measurement
     if (
-      typeof performance !== 'undefined' &&
-      'mark' in performance &&
-      'measure' in performance
+      typeof performance !== "undefined" &&
+      "mark" in performance &&
+      "measure" in performance
     ) {
-      performance.mark(`${name}-end`);
-      performance.measure(name, `${name}-start`, `${name}-end`);
+      performance.mark(`${name}-end`)
+      performance.measure(name, `${name}-start`, `${name}-end`)
     }
 
     // Send to monitoring services
     MonitoringService.trackMetric({
       name: `performance.${name}`,
       value: duration,
-      unit: 'ms',
+      unit: "ms",
       tags: {
         operation: name,
         ...metric.metadata,
       },
-    });
+    })
 
     // Log slow operations
     if (duration > 1000) {
       // Send to Sentry for slow operations
       Sentry.addBreadcrumb({
         message: `Slow operation: ${name}`,
-        level: 'warning',
+        level: "warning",
         data: {
           duration,
           ...metric.metadata,
         },
-      });
+      })
     }
 
-    MonitoringService.metrics.delete(name);
-    return duration;
+    MonitoringService.metrics.delete(name)
+    return duration
   }
 
   /**
@@ -104,29 +104,29 @@ export class MonitoringService {
     const enrichedMetric = {
       ...metric,
       timestamp: metric.timestamp || Date.now(),
-    };
+    }
 
-    MonitoringService.customMetrics.push(enrichedMetric);
+    MonitoringService.customMetrics.push(enrichedMetric)
 
     // Send to PostHog if available
-    if (typeof window !== 'undefined' && window.posthog) {
-      window.posthog.capture('custom_metric', {
+    if (typeof window !== "undefined" && window.posthog) {
+      window.posthog.capture("custom_metric", {
         metric_name: metric.name,
         metric_value: metric.value,
         metric_unit: metric.unit,
         ...metric.tags,
-      });
+      })
     }
 
     // Send to Sentry as custom metric
     Sentry.addBreadcrumb({
       message: `Metric: ${metric.name}`,
-      level: 'info',
+      level: "info",
       data: enrichedMetric,
-    });
+    })
 
     // Log in development
-    if (process.env["NODE_ENV"] === 'development') {
+    if (process.env["NODE_ENV"] === "development") {
     }
   }
 
@@ -141,16 +141,16 @@ export class MonitoringService {
     error?: Error
   ): void {
     MonitoringService.trackMetric({
-      name: 'api.call',
+      name: "api.call",
       value: duration,
-      unit: 'ms',
+      unit: "ms",
       tags: {
         endpoint,
         method,
         status: status.toString(),
-        success: status < 400 ? 'true' : 'false',
+        success: status < 400 ? "true" : "false",
       },
-    });
+    })
 
     // Track errors separately
     if (error || status >= 400) {
@@ -162,7 +162,7 @@ export class MonitoringService {
           status,
           duration,
         }
-      );
+      )
     }
   }
 
@@ -176,22 +176,22 @@ export class MonitoringService {
     error?: Error
   ): void {
     MonitoringService.trackMetric({
-      name: 'database.query',
+      name: "database.query",
       value: duration,
-      unit: 'ms',
+      unit: "ms",
       tags: {
         query_type: MonitoringService.getQueryType(query),
         ...(rowCount !== undefined && { row_count: rowCount.toString() }),
-        success: error ? 'false' : 'true',
+        success: error ? "false" : "true",
       },
-    });
+    })
 
     if (error) {
       MonitoringService.trackError(error, {
         query: query.substring(0, 100), // Truncate for privacy
         duration,
         rowCount,
-      });
+      })
     }
   }
 
@@ -204,21 +204,21 @@ export class MonitoringService {
     metadata?: Record<string, any>
   ): void {
     MonitoringService.trackMetric({
-      name: 'user.action',
+      name: "user.action",
       value: 1,
       tags: {
         action,
-        user_id: userId || 'anonymous',
+        user_id: userId || "anonymous",
         ...metadata,
       },
-    });
+    })
 
     // Track in PostHog
-    if (typeof window !== 'undefined' && window.posthog) {
+    if (typeof window !== "undefined" && window.posthog) {
       window.posthog.capture(action, {
         user_id: userId,
         ...metadata,
-      });
+      })
     }
   }
 
@@ -231,36 +231,38 @@ export class MonitoringService {
       ...(context && { tags: context }),
       extra: {
         timestamp: new Date().toISOString(),
-        ...(typeof navigator !== 'undefined' && { userAgent: navigator.userAgent }),
-        ...(typeof window !== 'undefined' && { url: window.location.href }),
+        ...(typeof navigator !== "undefined" && {
+          userAgent: navigator.userAgent,
+        }),
+        ...(typeof window !== "undefined" && { url: window.location.href }),
       },
-    });
+    })
 
     // Track error metric
     MonitoringService.trackMetric({
-      name: 'error.count',
+      name: "error.count",
       value: 1,
       tags: {
         error_type: error.name,
         error_message: error.message.substring(0, 100),
         ...context,
       },
-    });
+    })
   }
 
   /**
    * Track page performance metrics
    */
   static trackPagePerformance(): void {
-    if (typeof window === 'undefined') {
-      return;
+    if (typeof window === "undefined") {
+      return
     }
 
-    window.addEventListener('load', () => {
+    window.addEventListener("load", () => {
       // Get navigation timing
       const navigation = performance.getEntriesByType(
-        'navigation'
-      )[0] as PerformanceNavigationTiming;
+        "navigation"
+      )[0] as PerformanceNavigationTiming
 
       if (navigation) {
         const metrics = {
@@ -272,74 +274,74 @@ export class MonitoringService {
           timeToFirstByte: navigation.responseStart - navigation.requestStart,
           dnsLookup: navigation.domainLookupEnd - navigation.domainLookupStart,
           tcpConnect: navigation.connectEnd - navigation.connectStart,
-        };
+        }
 
         // Get paint metrics
-        const paintEntries = performance.getEntriesByType('paint');
+        const paintEntries = performance.getEntriesByType("paint")
         paintEntries.forEach((entry) => {
-          if (entry.name === 'first-contentful-paint') {
-            metrics.firstContentfulPaint = entry.startTime;
+          if (entry.name === "first-contentful-paint") {
+            metrics.firstContentfulPaint = entry.startTime
           }
-        });
+        })
 
         // Get LCP
-        if ('PerformanceObserver' in window) {
+        if ("PerformanceObserver" in window) {
           try {
             const observer = new PerformanceObserver((list) => {
-              const entries = list.getEntries();
-              const lastEntry = entries.at(-1);
+              const entries = list.getEntries()
+              const lastEntry = entries.at(-1)
               if (lastEntry) {
-                metrics.largestContentfulPaint = lastEntry.startTime;
+                metrics.largestContentfulPaint = lastEntry.startTime
 
                 // Track all metrics
                 Object.entries(metrics).forEach(([name, value]) => {
                   MonitoringService.trackMetric({
                     name: `performance.${name}`,
                     value: Math.round(value),
-                    unit: 'ms',
+                    unit: "ms",
                     tags: {
                       page: window.location.pathname,
                     },
-                  });
-                });
+                  })
+                })
               }
-            });
+            })
 
-            observer.observe({ entryTypes: ['largest-contentful-paint'] });
+            observer.observe({ entryTypes: ["largest-contentful-paint"] })
           } catch (_error) {}
         }
       }
-    });
+    })
   }
 
   /**
    * Monitor memory usage (Chrome only)
    */
   static trackMemoryUsage(): void {
-    if (typeof window === 'undefined' || !('memory' in performance)) {
-      return;
+    if (typeof window === "undefined" || !("memory" in performance)) {
+      return
     }
 
-    const memory = (performance as any).memory;
+    const memory = (performance as any).memory
 
     MonitoringService.trackMetric({
-      name: 'memory.usage',
+      name: "memory.usage",
       value: memory.usedJSHeapSize,
-      unit: 'bytes',
+      unit: "bytes",
       tags: {
         total: memory.totalJSHeapSize.toString(),
         limit: memory.jsHeapSizeLimit.toString(),
       },
-    });
+    })
 
     // Warn if memory usage is high
-    const usagePercent = (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
+    const usagePercent = (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100
     if (usagePercent > 80) {
       MonitoringService.trackMetric({
-        name: 'memory.warning',
+        name: "memory.warning",
         value: usagePercent,
-        unit: 'percent',
-      });
+        unit: "percent",
+      })
     }
   }
 
@@ -347,44 +349,44 @@ export class MonitoringService {
    * Get all collected metrics
    */
   static getMetrics(): MetricData[] {
-    return [...MonitoringService.customMetrics];
+    return [...MonitoringService.customMetrics]
   }
 
   /**
    * Clear collected metrics
    */
   static clearMetrics(): void {
-    MonitoringService.customMetrics.length = 0;
-    MonitoringService.metrics.clear();
+    MonitoringService.customMetrics.length = 0
+    MonitoringService.metrics.clear()
   }
 
   /**
    * Get query type from SQL string
    */
   private static getQueryType(query: string): string {
-    const trimmed = query.trim().toUpperCase();
-    if (trimmed.startsWith('SELECT')) {
-      return 'SELECT';
+    const trimmed = query.trim().toUpperCase()
+    if (trimmed.startsWith("SELECT")) {
+      return "SELECT"
     }
-    if (trimmed.startsWith('INSERT')) {
-      return 'INSERT';
+    if (trimmed.startsWith("INSERT")) {
+      return "INSERT"
     }
-    if (trimmed.startsWith('UPDATE')) {
-      return 'UPDATE';
+    if (trimmed.startsWith("UPDATE")) {
+      return "UPDATE"
     }
-    if (trimmed.startsWith('DELETE')) {
-      return 'DELETE';
+    if (trimmed.startsWith("DELETE")) {
+      return "DELETE"
     }
-    if (trimmed.startsWith('CREATE')) {
-      return 'CREATE';
+    if (trimmed.startsWith("CREATE")) {
+      return "CREATE"
     }
-    if (trimmed.startsWith('ALTER')) {
-      return 'ALTER';
+    if (trimmed.startsWith("ALTER")) {
+      return "ALTER"
     }
-    if (trimmed.startsWith('DROP')) {
-      return 'DROP';
+    if (trimmed.startsWith("DROP")) {
+      return "DROP"
     }
-    return 'OTHER';
+    return "OTHER"
   }
 }
 
@@ -392,19 +394,19 @@ export class MonitoringService {
  * Performance monitoring hook for React components
  */
 export function usePerformanceMonitoring(componentName: string) {
-  const startTime = performance.now();
+  const startTime = performance.now()
 
   return {
     trackRender: () => {
-      const renderTime = performance.now() - startTime;
+      const renderTime = performance.now() - startTime
       MonitoringService.trackMetric({
-        name: 'component.render',
+        name: "component.render",
         value: renderTime,
-        unit: 'ms',
+        unit: "ms",
         tags: {
           component: componentName,
         },
-      });
+      })
     },
 
     trackInteraction: (action: string, metadata?: Record<string, any>) => {
@@ -412,16 +414,16 @@ export function usePerformanceMonitoring(componentName: string) {
         `${componentName}.${action}`,
         undefined,
         metadata
-      );
+      )
     },
 
     trackError: (error: Error, context?: Record<string, any>) => {
       MonitoringService.trackError(error, {
         component: componentName,
         ...context,
-      });
+      })
     },
-  };
+  }
 }
 
 /**
@@ -432,61 +434,61 @@ export function withPerformanceMonitoring<T extends (...args: any[]) => any>(
   name: string
 ): T {
   return ((...args: any[]) => {
-    MonitoringService.startMeasurement(name);
+    MonitoringService.startMeasurement(name)
 
     try {
-      const result = fn(...args);
+      const result = fn(...args)
 
       // Handle async functions
-      if (result && typeof result.then === 'function') {
+      if (result && typeof result.then === "function") {
         return result
           .then((value: any) => {
-            MonitoringService.endMeasurement(name);
-            return value;
+            MonitoringService.endMeasurement(name)
+            return value
           })
           .catch((error: Error) => {
-            MonitoringService.endMeasurement(name);
-            MonitoringService.trackError(error, { function: name });
-            throw error;
-          });
+            MonitoringService.endMeasurement(name)
+            MonitoringService.trackError(error, { function: name })
+            throw error
+          })
       }
 
-      MonitoringService.endMeasurement(name);
-      return result;
+      MonitoringService.endMeasurement(name)
+      return result
     } catch (error) {
-      MonitoringService.endMeasurement(name);
-      MonitoringService.trackError(error as Error, { function: name });
-      throw error;
+      MonitoringService.endMeasurement(name)
+      MonitoringService.trackError(error as Error, { function: name })
+      throw error
     }
-  }) as T;
+  }) as T
 }
 
 // Initialize monitoring
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   // Track page performance on load
-  MonitoringService.trackPagePerformance();
+  MonitoringService.trackPagePerformance()
 
   // Track memory usage periodically
   setInterval(() => {
-    MonitoringService.trackMemoryUsage();
-  }, 30000); // Every 30 seconds
+    MonitoringService.trackMemoryUsage()
+  }, 30000) // Every 30 seconds
 
   // Track unhandled errors
-  window.addEventListener('error', (event) => {
+  window.addEventListener("error", (event) => {
     MonitoringService.trackError(event.error, {
       filename: event.filename,
       lineno: event.lineno,
       colno: event.colno,
-    });
-  });
+    })
+  })
 
   // Track unhandled promise rejections
-  window.addEventListener('unhandledrejection', (event) => {
+  window.addEventListener("unhandledrejection", (event) => {
     MonitoringService.trackError(
-      new Error(event.reason?.toString() || 'Unhandled promise rejection'),
-      { type: 'unhandled_rejection' }
-    );
-  });
+      new Error(event.reason?.toString() || "Unhandled promise rejection"),
+      { type: "unhandled_rejection" }
+    )
+  })
 }
 
 // PostHog types are defined in components/gdpr-cookie-consent.tsx

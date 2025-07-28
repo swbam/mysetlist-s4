@@ -1,46 +1,46 @@
-'use client';
+"use client"
 
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@repo/design-system/components/ui/tooltip';
-import { formatDistanceToNow } from 'date-fns';
-import { Clock } from 'lucide-react';
-import { useEffect, useState } from 'react';
+} from "@repo/design-system/components/ui/tooltip"
+import { formatDistanceToNow } from "date-fns"
+import { Clock } from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface CachedIndicatorProps {
-  cacheKey: string;
-  className?: string;
+  cacheKey: string
+  className?: string
 }
 
 export function CachedIndicator({ cacheKey, className }: CachedIndicatorProps) {
-  const [cachedAt, setCachedAt] = useState<Date | null>(null);
+  const [cachedAt, setCachedAt] = useState<Date | null>(null)
 
   useEffect(() => {
     // Check if data is from cache
     const checkCache = async () => {
-      if ('caches' in window) {
+      if ("caches" in window) {
         try {
-          const cache = await caches.open('MySetlist-v1');
-          const response = await cache.match(cacheKey);
+          const cache = await caches.open("MySetlist-v1")
+          const response = await cache.match(cacheKey)
 
           if (response) {
-            const date = response.headers.get('date');
+            const date = response.headers.get("date")
             if (date) {
-              setCachedAt(new Date(date));
+              setCachedAt(new Date(date))
             }
           }
         } catch (_error) {}
       }
-    };
+    }
 
-    checkCache();
-  }, [cacheKey]);
+    checkCache()
+  }, [cacheKey])
 
   if (!cachedAt) {
-    return null;
+    return null
   }
 
   return (
@@ -59,5 +59,5 @@ export function CachedIndicator({ cacheKey, className }: CachedIndicatorProps) {
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  );
+  )
 }

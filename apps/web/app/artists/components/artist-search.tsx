@@ -1,6 +1,6 @@
-'use client';
+"use client"
 
-import { UnifiedSearch } from '~/components/unified-search';
+import { UnifiedSearch } from "~/components/unified-search"
 
 export function ArtistSearch() {
   return (
@@ -9,5 +9,5 @@ export function ArtistSearch() {
       placeholder="Search for artists..."
       limit={10}
     />
-  );
+  )
 }

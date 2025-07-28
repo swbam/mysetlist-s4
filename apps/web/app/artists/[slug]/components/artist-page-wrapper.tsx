@@ -1,17 +1,17 @@
-'use client';
+"use client"
 
-import { Card } from '@repo/design-system/components/ui/card';
-import { AlertCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
-import { SyncProgressDisplay } from '~/components/artist/sync-progress';
-import { useAutoImportOnMount } from '~/hooks/use-artist-auto-import';
-import { useArtistSync } from '~/hooks/use-artist-sync';
+import { Card } from "@repo/design-system/components/ui/card"
+import { AlertCircle } from "lucide-react"
+import { useEffect, useState } from "react"
+import { SyncProgressDisplay } from "~/components/artist/sync-progress"
+import { useAutoImportOnMount } from "~/hooks/use-artist-auto-import"
+import { useArtistSync } from "~/hooks/use-artist-sync"
 
 interface ArtistPageWrapperProps {
-  artistId: string;
-  artistName: string;
-  spotifyId?: string | null;
-  children: React.ReactNode;
+  artistId: string
+  artistName: string
+  spotifyId?: string | null
+  children: React.ReactNode
 }
 
 export function ArtistPageWrapper({
@@ -20,27 +20,27 @@ export function ArtistPageWrapper({
   spotifyId,
   children,
 }: ArtistPageWrapperProps) {
-  const [showSyncProgress, setShowSyncProgress] = useState(false);
+  const [showSyncProgress, setShowSyncProgress] = useState(false)
   const { loading, error } = useAutoImportOnMount({
     artistId,
     artistName,
     ...(spotifyId && { spotifyId }),
     enabled: true,
-  });
+  })
 
-  const { progress: syncProgress } = useArtistSync();
+  const { progress: syncProgress } = useArtistSync()
 
   useEffect(() => {
     if (error) {
     }
-  }, [error]);
+  }, [error])
 
   useEffect(() => {
     // Show sync progress if there's an active sync for this artist
     if (syncProgress && syncProgress.artistId === artistId) {
-      setShowSyncProgress(true);
+      setShowSyncProgress(true)
     }
-  }, [syncProgress, artistId]);
+  }, [syncProgress, artistId])
 
   // Show loading state briefly
   if (loading) {
@@ -55,12 +55,12 @@ export function ArtistPageWrapper({
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   // Don't show sync errors to users - just work with cached data
   // Only show error if it's a critical page loading error (not sync errors)
-  if (error && error.includes('not found') && !showSyncProgress) {
+  if (error && error.includes("not found") && !showSyncProgress) {
     return (
       <div className="container mx-auto py-8">
         <Card className="border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-900/20">
@@ -78,7 +78,7 @@ export function ArtistPageWrapper({
         </Card>
         {children}
       </div>
-    );
+    )
   }
 
   return (
@@ -95,5 +95,5 @@ export function ArtistPageWrapper({
         )}
       {children}
     </>
-  );
+  )
 }

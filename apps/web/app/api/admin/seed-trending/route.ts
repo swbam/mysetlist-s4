@@ -1,10 +1,10 @@
-import { artists, db, shows, venues } from '@repo/database';
-import { sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { artists, db, shows, venues } from "@repo/database"
+import { sql } from "drizzle-orm"
+import { type NextRequest, NextResponse } from "next/server"
 
 // Generate realistic random data based on different patterns
 function generateRealisticMetrics(
-  type: 'popular' | 'rising' | 'steady' | 'new'
+  type: "popular" | "rising" | "steady" | "new"
 ) {
   const patterns = {
     popular: {
@@ -35,16 +35,18 @@ function generateRealisticMetrics(
       followers: [1000, 10000],
       popularity: [10, 30],
     },
-  };
+  }
 
-  const pattern = patterns[type];
+  const pattern = patterns[type]
 
   return {
     views: Math.floor(
-      Math.random() * (pattern.views[1]! - pattern.views[0]!) + pattern.views[0]!
+      Math.random() * (pattern.views[1]! - pattern.views[0]!) +
+        pattern.views[0]!
     ),
     votes: Math.floor(
-      Math.random() * (pattern.votes[1]! - pattern.votes[0]!) + pattern.votes[0]!
+      Math.random() * (pattern.votes[1]! - pattern.votes[0]!) +
+        pattern.votes[0]!
     ),
     attendees: Math.floor(
       Math.random() * (pattern.attendees[1]! - pattern.attendees[0]!) +
@@ -58,7 +60,7 @@ function generateRealisticMetrics(
       Math.random() * (pattern.popularity[1]! - pattern.popularity[0]!) +
         pattern.popularity[0]!
     ),
-  };
+  }
 }
 
 async function seedArtistData() {
@@ -68,36 +70,36 @@ async function seedArtistData() {
       id: artists.id,
       name: artists.name,
     })
-    .from(artists);
+    .from(artists)
 
   if (allArtists.length === 0) {
-    return { updated: 0 };
+    return { updated: 0 }
   }
 
   // Assign pattern types to artists
   const artistUpdates = allArtists.map((artist, _index) => {
-    let pattern: 'popular' | 'rising' | 'steady' | 'new';
+    let pattern: "popular" | "rising" | "steady" | "new"
 
     // Distribute patterns: 10% popular, 20% rising, 40% steady, 30% new
-    const rand = Math.random();
+    const rand = Math.random()
     if (rand < 0.1) {
-      pattern = 'popular';
+      pattern = "popular"
     } else if (rand < 0.3) {
-      pattern = 'rising';
+      pattern = "rising"
     } else if (rand < 0.7) {
-      pattern = 'steady';
+      pattern = "steady"
     } else {
-      pattern = 'new';
+      pattern = "new"
     }
 
-    const metrics = generateRealisticMetrics(pattern);
+    const metrics = generateRealisticMetrics(pattern)
 
     // Calculate trending score
     const trendingScore =
       (metrics.followers / 10000) * 0.3 +
       metrics.popularity * 0.2 +
       Math.random() * 50 * 0.3 + // Mock recent shows
-      Math.random() * 100 * 0.2; // Mock growth
+      Math.random() * 100 * 0.2 // Mock growth
 
     return {
       id: artist.id,
@@ -105,8 +107,8 @@ async function seedArtistData() {
       popularity: metrics.popularity,
       followerCount: Math.floor(metrics.followers / 100), // App followers
       trendingScore,
-    };
-  });
+    }
+  })
 
   // Update artists in batches
   for (const update of artistUpdates) {
@@ -118,10 +120,10 @@ async function seedArtistData() {
         followerCount: update.followerCount,
         trendingScore: update.trendingScore,
       })
-      .where(sql`${artists.id} = ${update.id}`);
+      .where(sql`${artists.id} = ${update.id}`)
   }
 
-  return { updated: artistUpdates.length };
+  return { updated: artistUpdates.length }
 }
 
 async function seedShowData() {
@@ -132,40 +134,40 @@ async function seedShowData() {
       name: shows.name,
       date: shows.date,
     })
-    .from(shows);
+    .from(shows)
 
   if (allShows.length === 0) {
-    return { updated: 0 };
+    return { updated: 0 }
   }
 
   // Assign pattern types to shows based on date
   const showUpdates = allShows.map((show) => {
-    const showDate = new Date(show.date);
-    const now = new Date();
+    const showDate = new Date(show.date)
+    const now = new Date()
     const daysDiff =
-      (now.getTime() - showDate.getTime()) / (1000 * 60 * 60 * 24);
+      (now.getTime() - showDate.getTime()) / (1000 * 60 * 60 * 24)
 
-    let pattern: 'popular' | 'rising' | 'steady' | 'new';
+    let pattern: "popular" | "rising" | "steady" | "new"
 
     // Recent shows are more likely to be popular/rising
     if (daysDiff < 7) {
-      pattern = Math.random() < 0.3 ? 'popular' : 'rising';
+      pattern = Math.random() < 0.3 ? "popular" : "rising"
     } else if (daysDiff < 30) {
-      pattern = Math.random() < 0.5 ? 'rising' : 'steady';
+      pattern = Math.random() < 0.5 ? "rising" : "steady"
     } else {
-      pattern = Math.random() < 0.7 ? 'steady' : 'new';
+      pattern = Math.random() < 0.7 ? "steady" : "new"
     }
 
-    const metrics = generateRealisticMetrics(pattern);
+    const metrics = generateRealisticMetrics(pattern)
 
     // Calculate trending score with time decay
-    const recencyFactor = Math.max(0, 1 - daysDiff / 7);
+    const recencyFactor = Math.max(0, 1 - daysDiff / 7)
     const trendingScore =
       metrics.views * 0.2 +
       metrics.attendees * 0.3 +
       metrics.votes * 0.25 +
       Math.floor(metrics.votes / 10) * 5 * 0.15 + // Mock setlist count
-      recencyFactor * 100 * 0.1;
+      recencyFactor * 100 * 0.1
 
     return {
       id: show.id,
@@ -174,8 +176,8 @@ async function seedShowData() {
       voteCount: metrics.votes,
       setlistCount: Math.floor(metrics.votes / 10),
       trendingScore,
-    };
-  });
+    }
+  })
 
   // Update shows in batches
   for (const update of showUpdates) {
@@ -188,10 +190,10 @@ async function seedShowData() {
         setlistCount: update.setlistCount,
         trendingScore: update.trendingScore,
       })
-      .where(sql`${shows.id} = ${update.id}`);
+      .where(sql`${shows.id} = ${update.id}`)
   }
 
-  return { updated: showUpdates.length };
+  return { updated: showUpdates.length }
 }
 
 async function seedVenueData() {
@@ -204,85 +206,85 @@ async function seedVenueData() {
       FROM ${venues} v
       LEFT JOIN ${shows} s ON s.venue_id = v.id
       GROUP BY v.id, v.name
-    `);
+    `)
 
   const updates = venueStats.map((venue) => {
-    const showCount = Number(venue['show_count']) || 0;
+    const showCount = Number(venue["show_count"]) || 0
 
     // Venues with more shows get higher base metrics
-    let pattern: 'popular' | 'rising' | 'steady' | 'new';
+    let pattern: "popular" | "rising" | "steady" | "new"
     if (showCount > 10) {
-      pattern = 'popular';
+      pattern = "popular"
     } else if (showCount > 5) {
-      pattern = 'rising';
+      pattern = "rising"
     } else if (showCount > 0) {
-      pattern = 'steady';
+      pattern = "steady"
     } else {
-      pattern = 'new';
+      pattern = "new"
     }
 
-    const metrics = generateRealisticMetrics(pattern);
+    const metrics = generateRealisticMetrics(pattern)
 
     return {
-      id: venue['id'],
+      id: venue["id"],
       showCount,
       metrics,
-    };
-  });
+    }
+  })
 
-  return { updated: updates.length };
+  return { updated: updates.length }
 }
 
 export async function POST(request: NextRequest) {
   try {
     // Check for admin authorization
-    const authHeader = request.headers.get('authorization');
-    const adminToken = process.env['ADMIN_API_KEY'];
+    const authHeader = request.headers.get("authorization")
+    const adminToken = process.env["ADMIN_API_KEY"]
 
     if (!authHeader || authHeader !== `Bearer ${adminToken}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') || 'all';
+    const { searchParams } = new URL(request.url)
+    const type = searchParams.get("type") || "all"
 
     const results = {
       artists: { updated: 0 },
       shows: { updated: 0 },
       venues: { updated: 0 },
-    };
+    }
 
     // Seed data based on type
-    if (type === 'all' || type === 'artists') {
-      results.artists = await seedArtistData();
+    if (type === "all" || type === "artists") {
+      results.artists = await seedArtistData()
     }
 
-    if (type === 'all' || type === 'shows') {
-      results.shows = await seedShowData();
+    if (type === "all" || type === "shows") {
+      results.shows = await seedShowData()
     }
 
-    if (type === 'all' || type === 'venues') {
-      results.venues = await seedVenueData();
+    if (type === "all" || type === "venues") {
+      results.venues = await seedVenueData()
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Trending data seeded successfully',
+      message: "Trending data seeded successfully",
       results,
       timestamp: new Date().toISOString(),
-    });
+    })
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Failed to seed trending data',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Failed to seed trending data",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
-    );
+    )
   }
 }
 
 export async function GET(request: NextRequest) {
   // Allow GET for easier testing
-  return POST(request);
+  return POST(request)
 }

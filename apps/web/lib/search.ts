@@ -1,18 +1,18 @@
 export interface SearchResult {
-  id: string;
-  type: 'artist'; // Only artists are searchable per PRD requirements
-  title: string;
-  subtitle?: string;
-  meta?: string;
-  imageUrl?: string;
-  slug: string;
-  source?: 'database' | 'ticketmaster';
-  requiresSync?: boolean;
-  ticketmasterId?: string;
+  id: string
+  type: "artist" // Only artists are searchable per PRD requirements
+  title: string
+  subtitle?: string
+  meta?: string
+  imageUrl?: string
+  slug: string
+  source?: "database" | "ticketmaster"
+  requiresSync?: boolean
+  ticketmasterId?: string
 }
 
 export interface SearchResponse {
-  results: SearchResult[];
+  results: SearchResult[]
 }
 
 export async function searchContent(
@@ -20,52 +20,53 @@ export async function searchContent(
   limit = 10
 ): Promise<SearchResponse> {
   if (!query || query.length < 2) {
-    return { results: [] };
+    return { results: [] }
   }
 
   try {
     const params = new URLSearchParams({
       q: query,
       limit: limit.toString(),
-    });
+    })
 
     const response = await fetch(`/api/search?${params}`, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-    });
+    })
 
     if (!response.ok) {
-      throw new Error(`Search failed: ${response.status}`);
+      throw new Error(`Search failed: ${response.status}`)
     }
 
-    return await response.json();
+    return await response.json()
   } catch (_error) {
-    return { results: [] };
+    return { results: [] }
   }
 }
 
 export function getSearchResultHref(result: SearchResult): string {
   // Only artists are searchable, so always return artist URL
   // For Ticketmaster results without a slug, generate one
-  const slug = result.slug || result.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-  return `/artists/${slug}`;
+  const slug =
+    result.slug || result.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+  return `/artists/${slug}`
 }
 
-export function getSearchResultIcon(_type: SearchResult['type']): string {
+export function getSearchResultIcon(_type: SearchResult["type"]): string {
   // Only artists are searchable
-  return 'music';
+  return "music"
 }
 
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout;
+  let timeoutId: NodeJS.Timeout
 
   return (...args: Parameters<T>) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => func.apply(null, args), delay);
-  };
+    clearTimeout(timeoutId)
+    timeoutId = setTimeout(() => func.apply(null, args), delay)
+  }
 }

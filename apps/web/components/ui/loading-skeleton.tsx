@@ -1,22 +1,22 @@
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { cn } from '@repo/design-system/lib/utils';
+import { Skeleton } from "@repo/design-system/components/ui/skeleton"
+import { cn } from "@repo/design-system/lib/utils"
 
 interface LoadingSkeletonProps {
-  className?: string;
-  type?: 'card' | 'list' | 'grid' | 'artist' | 'show' | 'venue';
-  count?: number;
+  className?: string
+  type?: "card" | "list" | "grid" | "artist" | "show" | "venue"
+  count?: number
 }
 
 export function LoadingSkeleton({
   className,
-  type = 'card',
+  type = "card",
   count = 1,
 }: LoadingSkeletonProps) {
-  const items = Array.from({ length: count }, (_, i) => i);
+  const items = Array.from({ length: count }, (_, i) => i)
 
-  if (type === 'artist') {
+  if (type === "artist") {
     return (
-      <div className={cn('space-y-4', className)}>
+      <div className={cn("space-y-4", className)}>
         {items.map((i) => (
           <div key={i} className="flex items-center gap-4">
             <Skeleton className="h-16 w-16 rounded-full" />
@@ -28,12 +28,12 @@ export function LoadingSkeleton({
           </div>
         ))}
       </div>
-    );
+    )
   }
 
-  if (type === 'show') {
+  if (type === "show") {
     return (
-      <div className={cn('space-y-4', className)}>
+      <div className={cn("space-y-4", className)}>
         {items.map((i) => (
           <div key={i} className="space-y-3 rounded-lg border p-4">
             <div className="flex items-start justify-between">
@@ -51,12 +51,12 @@ export function LoadingSkeleton({
           </div>
         ))}
       </div>
-    );
+    )
   }
 
-  if (type === 'venue') {
+  if (type === "venue") {
     return (
-      <div className={cn('space-y-4', className)}>
+      <div className={cn("space-y-4", className)}>
         {items.map((i) => (
           <div
             key={i}
@@ -70,14 +70,14 @@ export function LoadingSkeleton({
           </div>
         ))}
       </div>
-    );
+    )
   }
 
-  if (type === 'grid') {
+  if (type === "grid") {
     return (
       <div
         className={cn(
-          'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3',
+          "grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3",
           className
         )}
       >
@@ -89,12 +89,12 @@ export function LoadingSkeleton({
           </div>
         ))}
       </div>
-    );
+    )
   }
 
-  if (type === 'list') {
+  if (type === "list") {
     return (
-      <div className={cn('space-y-3', className)}>
+      <div className={cn("space-y-3", className)}>
         {items.map((i) => (
           <div key={i} className="flex items-center gap-3">
             <Skeleton className="h-4 w-4" />
@@ -102,12 +102,12 @@ export function LoadingSkeleton({
           </div>
         ))}
       </div>
-    );
+    )
   }
 
   // Default card skeleton
   return (
-    <div className={cn('space-y-4', className)}>
+    <div className={cn("space-y-4", className)}>
       {items.map((i) => (
         <div key={i} className="space-y-4 rounded-lg border p-6">
           <div className="space-y-2">
@@ -122,7 +122,7 @@ export function LoadingSkeleton({
         </div>
       ))}
     </div>
-  );
+  )
 }
 
 // Specific skeleton for setlist songs
@@ -144,7 +144,7 @@ export function SetlistSongSkeleton({ count = 5 }: { count?: number }) {
         </div>
       ))}
     </div>
-  );
+  )
 }
 
 // Specific skeleton for artist stats
@@ -158,5 +158,5 @@ export function ArtistStatsSkeleton() {
         </div>
       ))}
     </div>
-  );
+  )
 }

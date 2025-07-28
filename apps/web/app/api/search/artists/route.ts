@@ -1,21 +1,21 @@
-import { createServiceClient } from '~/lib/supabase/server';
-import { type NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from "next/server"
+import { createServiceClient } from "~/lib/supabase/server"
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const query = searchParams.get('q') || '';
-    const limit = Number.parseInt(searchParams.get('limit') || '20', 10);
+    const searchParams = request.nextUrl.searchParams
+    const query = searchParams.get("q") || ""
+    const limit = Number.parseInt(searchParams.get("limit") || "20", 10)
 
     if (!query || query.length < 2) {
-      return NextResponse.json({ artists: [] });
+      return NextResponse.json({ artists: [] })
     }
 
-    const supabase = createServiceClient();
+    const supabase = createServiceClient()
 
     // Search artists by name with fuzzy matching
     const { data: searchResults, error } = await supabase
-      .from('artists')
+      .from("artists")
       .select(`
         id,
         name,
@@ -28,29 +28,29 @@ export async function GET(request: NextRequest) {
         verified,
         spotify_id
       `)
-      .ilike('name', `%${query}%`)
-      .order('popularity', { ascending: false })
-      .limit(limit);
+      .ilike("name", `%${query}%`)
+      .order("popularity", { ascending: false })
+      .limit(limit)
 
     if (error) {
-      console.error('Artist search error:', error);
-      throw error;
+      console.error("Artist search error:", error)
+      throw error
     }
 
     return NextResponse.json({
       artists: searchResults || [],
       query,
       total: searchResults?.length || 0,
-    });
+    })
   } catch (_error) {
     return NextResponse.json(
       {
-        error: 'Artist search failed',
+        error: "Artist search failed",
         artists: [],
-        query: '',
+        query: "",
         total: 0,
       },
       { status: 500 }
-    );
+    )
   }
 }

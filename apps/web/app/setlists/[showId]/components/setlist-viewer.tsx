@@ -1,14 +1,14 @@
-'use client';
+"use client"
 
-import { VoteButton } from '@repo/design-system';
-import { Badge } from '@repo/design-system/components/ui/badge';
+import { VoteButton } from "@repo/design-system"
+import { Badge } from "@repo/design-system/components/ui/badge"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Progress } from '@repo/design-system/components/ui/progress';
+} from "@repo/design-system/components/ui/card"
+import { Progress } from "@repo/design-system/components/ui/progress"
 import {
   CheckCircle,
   Clock,
@@ -16,71 +16,71 @@ import {
   Sparkles,
   Wifi,
   WifiOff,
-} from 'lucide-react';
-import React, { useEffect, useRef, useState } from 'react';
-import { createClient } from '~/lib/supabase/client';
+} from "lucide-react"
+import React, { useEffect, useRef, useState } from "react"
+import { createClient } from "~/lib/supabase/client"
 
 type SetlistViewerProps = {
-  showId: string;
-};
+  showId: string
+}
 
 type SetlistSong = {
-  id: string;
-  songId: string;
-  position: number;
+  id: string
+  songId: string
+  position: number
   song: {
-    id: string;
-    title: string;
-    artist: string;
-    durationMs?: number;
-    albumArtUrl?: string;
-  };
-  notes?: string;
-  isPlayed?: boolean;
-  playTime?: Date;
-  upvotes: number;
-  downvotes: number;
-  netVotes: number;
-  userVote?: 'up' | 'down' | null;
-};
+    id: string
+    title: string
+    artist: string
+    durationMs?: number
+    albumArtUrl?: string
+  }
+  notes?: string
+  isPlayed?: boolean
+  playTime?: Date
+  upvotes: number
+  downvotes: number
+  netVotes: number
+  userVote?: "up" | "down" | null
+}
 
 type Setlist = {
-  id: string;
-  name: string;
-  type: 'predicted' | 'actual';
-  songs: SetlistSong[];
-};
+  id: string
+  name: string
+  type: "predicted" | "actual"
+  songs: SetlistSong[]
+}
 
 export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
-  const [setlists, setSetlists] = useState<Setlist[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeSetlist, setActiveSetlist] = useState<string>('predicted');
-  const [isConnected, setIsConnected] = useState(false);
-  const supabase = createClient();
-  const subscriptionRef = useRef<any>(null);
+  const [setlists, setSetlists] = useState<Setlist[]>([])
+  const [loading, setLoading] = useState(true)
+  const [activeSetlist, setActiveSetlist] = useState<string>("predicted")
+  const [isConnected, setIsConnected] = useState(false)
+  const supabase = createClient()
+  const subscriptionRef = useRef<any>(null)
 
   // Fetch setlists for the show
   useEffect(() => {
     const fetchSetlists = async () => {
       try {
-        const response = await fetch(`/api/setlists/${showId}`);
+        const response = await fetch(`/api/setlists/${showId}`)
         if (response.ok) {
-          const data = await response.json();
-          setSetlists(data.setlists || []);
+          const data = await response.json()
+          setSetlists(data.setlists || [])
         }
       } catch (_error) {
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchSetlists();
-  }, [showId]);
+    fetchSetlists()
+  }, [showId])
 
   // Set up real-time subscriptions
   useEffect(() => {
     if (!showId) {
-      return;
+      return
     }
 
     const setupRealtimeSubscription = async () => {
@@ -89,53 +89,53 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
         const channel = supabase
           .channel(`setlist-${showId}`)
           .on(
-            'postgres_changes',
+            "postgres_changes",
             {
-              event: '*',
-              schema: 'public',
-              table: 'votes',
-              filter: `setlist_song_id=in.(${setlists.flatMap((s) => s.songs.map((song) => song.id)).join(',')})`,
+              event: "*",
+              schema: "public",
+              table: "votes",
+              filter: `setlist_song_id=in.(${setlists.flatMap((s) => s.songs.map((song) => song.id)).join(",")})`,
             },
             (payload) => {
-              handleRealtimeVoteUpdate(payload);
+              handleRealtimeVoteUpdate(payload)
             }
           )
           .on(
-            'postgres_changes',
+            "postgres_changes",
             {
-              event: '*',
-              schema: 'public',
-              table: 'setlist_songs',
+              event: "*",
+              schema: "public",
+              table: "setlist_songs",
             },
             (payload) => {
-              handleRealtimeSetlistUpdate(payload);
+              handleRealtimeSetlistUpdate(payload)
             }
           )
           .subscribe((status) => {
-            setIsConnected(status === 'SUBSCRIBED');
+            setIsConnected(status === "SUBSCRIBED")
 
-            if (status === 'SUBSCRIBED') {
-            } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
-              setIsConnected(false);
+            if (status === "SUBSCRIBED") {
+            } else if (status === "CLOSED" || status === "CHANNEL_ERROR") {
+              setIsConnected(false)
             }
-          });
+          })
 
-        subscriptionRef.current = channel;
+        subscriptionRef.current = channel
       } catch (_error) {
-        setIsConnected(false);
+        setIsConnected(false)
       }
-    };
+    }
 
     if (setlists.length > 0) {
-      setupRealtimeSubscription();
+      setupRealtimeSubscription()
     }
 
     return () => {
       if (subscriptionRef.current) {
-        subscriptionRef.current.unsubscribe();
+        subscriptionRef.current.unsubscribe()
       }
-    };
-  }, [showId, setlists]);
+    }
+  }, [showId, setlists])
 
   const handleRealtimeVoteUpdate = (_payload: any) => {
     // Refetch vote counts when votes change
@@ -145,16 +145,16 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
         .then((res) => res.json())
         .then((data) => {
           if (data.setlists) {
-            setSetlists(data.setlists);
+            setSetlists(data.setlists)
           }
         })
-        .catch(console.error);
-    }, 100);
-  };
+        .catch(console.error)
+    }, 100)
+  }
 
   const handleRealtimeSetlistUpdate = (payload: any) => {
     // Handle setlist song updates (like when a song is marked as played)
-    if (payload.eventType === 'UPDATE') {
+    if (payload.eventType === "UPDATE") {
       setSetlists((prev) =>
         prev.map((setlist) => ({
           ...setlist,
@@ -164,45 +164,45 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
                   ...song,
                   isPlayed: payload.new.is_played,
                   ...(payload.new.play_time && {
-                    playTime: new Date(payload.new.play_time)
+                    playTime: new Date(payload.new.play_time),
                   }),
                 }
               : song
           ),
         }))
-      );
+      )
 
       // Log when a song is played
       if (payload.new.is_played && !payload.old.is_played) {
         const song = setlists
           .flatMap((s) => s.songs)
-          .find((s) => s.id === payload.new.id);
+          .find((s) => s.id === payload.new.id)
         if (song) {
         }
       }
     }
-  };
+  }
 
-  const currentSetlist = setlists.find((s) => s.type === activeSetlist);
+  const currentSetlist = setlists.find((s) => s.type === activeSetlist)
 
   const handleVote = async (
     setlistSongId: string,
-    voteType: 'up' | 'down' | null
+    voteType: "up" | "down" | null
   ) => {
     try {
-      const response = await fetch('/api/votes', {
-        method: 'POST',
+      const response = await fetch("/api/votes", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           setlistSongId,
           voteType,
         }),
-      });
+      })
 
       if (response.ok) {
-        const result = await response.json();
+        const result = await response.json()
 
         // Optimistically update local state
         setSetlists((prev) =>
@@ -220,19 +220,19 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
                 : song
             ),
           }))
-        );
+        )
       }
     } catch (_error) {}
-  };
+  }
 
   const formatDuration = (durationMs?: number) => {
     if (!durationMs) {
-      return '?:??';
+      return "?:??"
     }
-    const minutes = Math.floor(durationMs / 60000);
-    const seconds = Math.floor((durationMs % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
+    const minutes = Math.floor(durationMs / 60000)
+    const seconds = Math.floor((durationMs % 60000) / 1000)
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`
+  }
 
   if (loading) {
     return (
@@ -242,7 +242,7 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
           <p className="text-muted-foreground">Loading setlist...</p>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   if (!currentSetlist || currentSetlist.songs.length === 0) {
@@ -256,12 +256,12 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
           </p>
         </CardContent>
       </Card>
-    );
+    )
   }
 
-  const songs = currentSetlist.songs.sort((a, b) => a.position - b.position);
-  const playedSongs = songs.filter((song) => song.isPlayed).length;
-  const progress = songs.length > 0 ? (playedSongs / songs.length) * 100 : 0;
+  const songs = currentSetlist.songs.sort((a, b) => a.position - b.position)
+  const playedSongs = songs.filter((song) => song.isPlayed).length
+  const progress = songs.length > 0 ? (playedSongs / songs.length) * 100 : 0
 
   return (
     <Card>
@@ -273,7 +273,7 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
             {/* Real-time connection indicator */}
             <div
               className="flex items-center gap-1"
-              title={isConnected ? 'Live updates connected' : 'No live updates'}
+              title={isConnected ? "Live updates connected" : "No live updates"}
             >
               {isConnected ? (
                 <Wifi className="h-4 w-4 text-green-500" />
@@ -298,11 +298,11 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
                 onClick={() => setActiveSetlist(setlist.type)}
                 className={`rounded-md px-3 py-1 text-sm transition-colors ${
                   activeSetlist === setlist.type
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
                 }`}
               >
-                {setlist.type === 'predicted' ? 'Predicted' : 'Actual'}
+                {setlist.type === "predicted" ? "Predicted" : "Actual"}
               </button>
             ))}
           </div>
@@ -314,7 +314,7 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
             <div
               key={setlistSong.id}
               className={`p-4 transition-colors ${
-                setlistSong.isPlayed ? 'bg-green-50/50' : ''
+                setlistSong.isPlayed ? "bg-green-50/50" : ""
               }`}
             >
               <div className="flex items-center justify-between">
@@ -347,7 +347,7 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
                         <>
                           <span>•</span>
                           <span>
-                            Played at{' '}
+                            Played at{" "}
                             {new Date(
                               setlistSong.playTime
                             ).toLocaleTimeString()}
@@ -361,11 +361,14 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
                 <div className="flex items-center gap-4">
                   {React.createElement(VoteButton as any, {
                     songId: setlistSong.id,
-                    ...(setlistSong.userVote !== undefined && { currentVote: setlistSong.userVote }),
+                    ...(setlistSong.userVote !== undefined && {
+                      currentVote: setlistSong.userVote,
+                    }),
                     upvotes: setlistSong.upvotes,
                     downvotes: setlistSong.downvotes,
                     onVote: handleVote,
-                    disabled: !setlistSong.isPlayed && currentSetlist.type === 'actual'
+                    disabled:
+                      !setlistSong.isPlayed && currentSetlist.type === "actual",
                   })}
                 </div>
               </div>
@@ -374,5 +377,5 @@ export const SetlistViewer = ({ showId }: SetlistViewerProps) => {
         </div>
       </CardContent>
     </Card>
-  );
-};
+  )
+}

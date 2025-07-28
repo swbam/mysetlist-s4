@@ -1,20 +1,20 @@
-'use client';
+"use client"
 
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/alert"
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Progress } from '@repo/design-system/components/ui/progress';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
+} from "@repo/design-system/components/ui/card"
+import { Progress } from "@repo/design-system/components/ui/progress"
+import { cn } from "@repo/design-system/lib/utils"
+import { AnimatePresence, motion } from "framer-motion"
 import {
   AlertCircle,
   CheckCircle,
@@ -26,23 +26,23 @@ import {
   Volume2,
   Wifi,
   WifiOff,
-} from 'lucide-react';
-import React, { useState } from 'react';
-import { VoteButton } from '~/components/voting/vote-button';
-import { useRealtimeSetlist } from '~/hooks/use-realtime-setlist';
+} from "lucide-react"
+import React, { useState } from "react"
+import { VoteButton } from "~/components/voting/vote-button"
+import { useRealtimeSetlist } from "~/hooks/use-realtime-setlist"
 
 type EnhancedSetlistViewerProps = {
-  showId: string;
-};
+  showId: string
+}
 
 export const EnhancedSetlistViewer = ({
   showId,
 }: EnhancedSetlistViewerProps) => {
-  const [activeSetlist, setActiveSetlist] = useState<string>('predicted');
+  const [activeSetlist, setActiveSetlist] = useState<string>("predicted")
   const [realtimeEvents, setRealtimeEvents] = useState<
     Array<{ id: string; message: string; timestamp: Date }>
-  >([]);
-  const [showEventNotifications, _setShowEventNotifications] = useState(true);
+  >([])
+  const [showEventNotifications, _setShowEventNotifications] = useState(true)
 
   const {
     setlists,
@@ -55,29 +55,29 @@ export const EnhancedSetlistViewer = ({
     showId,
     onEvent: (event) => {
       // Handle real-time events
-      let message = '';
+      let message = ""
 
       switch (event.type) {
-        case 'song_played': {
+        case "song_played": {
           const playedSong = setlists
             .flatMap((s) => s.songs)
-            .find((s) => s.id === event.data.songId);
+            .find((s) => s.id === event.data.songId)
           if (playedSong) {
-            message = `Now playing: ${playedSong.song.title}`;
+            message = `Now playing: ${playedSong.song.title}`
           }
-          break;
+          break
         }
-        case 'vote_update':
-          message = 'Vote counts updated';
-          break;
-        case 'setlist_update':
-          message = 'Setlist updated';
-          break;
-        case 'connection_change':
-          if (event.data?.status === 'connected') {
-            message = 'Live updates connected';
+        case "vote_update":
+          message = "Vote counts updated"
+          break
+        case "setlist_update":
+          message = "Setlist updated"
+          break
+        case "connection_change":
+          if (event.data?.status === "connected") {
+            message = "Live updates connected"
           }
-          break;
+          break
       }
 
       if (message) {
@@ -85,74 +85,74 @@ export const EnhancedSetlistViewer = ({
           id: `${Date.now()}-${crypto.randomUUID().slice(0, 8)}`,
           message,
           timestamp: event.timestamp,
-        };
-        setRealtimeEvents((prev) => [newEvent, ...prev].slice(0, 5));
+        }
+        setRealtimeEvents((prev) => [newEvent, ...prev].slice(0, 5))
 
         // Auto-remove after 5 seconds
         setTimeout(() => {
-          setRealtimeEvents((prev) => prev.filter((e) => e.id !== newEvent.id));
-        }, 5000);
+          setRealtimeEvents((prev) => prev.filter((e) => e.id !== newEvent.id))
+        }, 5000)
       }
     },
-  });
+  })
 
-  const currentSetlist = setlists.find((s) => s.type === activeSetlist);
+  const currentSetlist = setlists.find((s) => s.type === activeSetlist)
 
   const handleVote = async (
     setlistSongId: string,
-    voteType: 'up' | 'down' | null
+    voteType: "up" | "down" | null
   ) => {
     try {
-      const response = await fetch('/api/votes', {
-        method: 'POST',
+      const response = await fetch("/api/votes", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           setlistSongId,
           voteType,
         }),
-      });
+      })
 
       if (!response.ok) {
       }
     } catch (_error) {}
-  };
+  }
 
   const formatDuration = (durationMs?: number) => {
     if (!durationMs) {
-      return '?:??';
+      return "?:??"
     }
-    const minutes = Math.floor(durationMs / 60000);
-    const seconds = Math.floor((durationMs % 60000) / 1000);
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
+    const minutes = Math.floor(durationMs / 60000)
+    const seconds = Math.floor((durationMs % 60000) / 1000)
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`
+  }
 
   const getConnectionIcon = () => {
     switch (connectionStatus) {
-      case 'connected':
-        return <Wifi className="h-4 w-4 text-green-500" />;
-      case 'connecting':
-        return <Wifi className="h-4 w-4 animate-pulse text-yellow-500" />;
-      case 'error':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
+      case "connected":
+        return <Wifi className="h-4 w-4 text-green-500" />
+      case "connecting":
+        return <Wifi className="h-4 w-4 animate-pulse text-yellow-500" />
+      case "error":
+        return <AlertCircle className="h-4 w-4 text-red-500" />
       default:
-        return <WifiOff className="h-4 w-4 text-muted-foreground" />;
+        return <WifiOff className="h-4 w-4 text-muted-foreground" />
     }
-  };
+  }
 
   const getConnectionMessage = () => {
     switch (connectionStatus) {
-      case 'connected':
-        return 'Live updates active';
-      case 'connecting':
-        return 'Connecting...';
-      case 'error':
-        return 'Connection error';
+      case "connected":
+        return "Live updates active"
+      case "connecting":
+        return "Connecting..."
+      case "error":
+        return "Connection error"
       default:
-        return 'Disconnected';
+        return "Disconnected"
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -162,7 +162,7 @@ export const EnhancedSetlistViewer = ({
           <p className="text-muted-foreground">Loading setlist...</p>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   if (!currentSetlist || currentSetlist.songs.length === 0) {
@@ -180,17 +180,17 @@ export const EnhancedSetlistViewer = ({
           </Button>
         </CardContent>
       </Card>
-    );
+    )
   }
 
-  const songs = currentSetlist.songs.sort((a, b) => a.position - b.position);
-  const playedSongs = songs.filter((song) => song.isPlayed).length;
-  const progress = songs.length > 0 ? (playedSongs / songs.length) * 100 : 0;
+  const songs = currentSetlist.songs.sort((a, b) => a.position - b.position)
+  const playedSongs = songs.filter((song) => song.isPlayed).length
+  const progress = songs.length > 0 ? (playedSongs / songs.length) * 100 : 0
   const currentlyPlaying = songs.find(
     (s) =>
       s.isPlayed &&
       songs.findIndex((song) => song.isPlayed) === songs.lastIndexOf(s)
-  );
+  )
 
   return (
     <>
@@ -262,13 +262,13 @@ export const EnhancedSetlistViewer = ({
                   key={setlist.id}
                   onClick={() => setActiveSetlist(setlist.type)}
                   className={cn(
-                    'rounded-md px-3 py-1 text-sm transition-colors',
+                    "rounded-md px-3 py-1 text-sm transition-colors",
                     activeSetlist === setlist.type
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
                   )}
                 >
-                  {setlist.type === 'predicted' ? 'Predicted' : 'Actual'}
+                  {setlist.type === "predicted" ? "Predicted" : "Actual"}
                 </button>
               ))}
             </div>
@@ -285,19 +285,18 @@ export const EnhancedSetlistViewer = ({
         <CardContent className="p-0">
           <div className="divide-y">
             {songs.map((setlistSong) => {
-              const isCurrentlyPlaying =
-                currentlyPlaying?.id === setlistSong.id;
+              const isCurrentlyPlaying = currentlyPlaying?.id === setlistSong.id
 
               return (
                 <motion.div
                   key={setlistSong.id}
                   layout
                   className={cn(
-                    'p-4 transition-all duration-300',
+                    "p-4 transition-all duration-300",
                     setlistSong.isPlayed &&
-                      'bg-green-50/50 dark:bg-green-950/20',
+                      "bg-green-50/50 dark:bg-green-950/20",
                     isCurrentlyPlaying &&
-                      'border-primary border-l-4 bg-primary/5'
+                      "border-primary border-l-4 bg-primary/5"
                   )}
                 >
                   <div className="flex items-center justify-between">
@@ -318,8 +317,8 @@ export const EnhancedSetlistViewer = ({
                         <div className="mb-1 flex items-center gap-2">
                           <h3
                             className={cn(
-                              'font-semibold transition-colors',
-                              isCurrentlyPlaying && 'text-primary'
+                              "font-semibold transition-colors",
+                              isCurrentlyPlaying && "text-primary"
                             )}
                           >
                             {setlistSong.song.title}
@@ -345,7 +344,7 @@ export const EnhancedSetlistViewer = ({
                             <>
                               <span>•</span>
                               <span>
-                                Played at{' '}
+                                Played at{" "}
                                 {new Date(
                                   setlistSong.playTime
                                 ).toLocaleTimeString()}
@@ -369,30 +368,35 @@ export const EnhancedSetlistViewer = ({
                       {/* Vote Button */}
                       {React.createElement(VoteButton as any, {
                         setlistSongId: setlistSong.id,
-                        ...(setlistSong.userVote !== undefined && { currentVote: setlistSong.userVote }),
+                        ...(setlistSong.userVote !== undefined && {
+                          currentVote: setlistSong.userVote,
+                        }),
                         upvotes: setlistSong.upvotes,
                         downvotes: setlistSong.downvotes,
-                        onVote: (voteType: any) => handleVote(setlistSong.id, voteType),
-                        disabled: !setlistSong.isPlayed && currentSetlist.type === 'actual',
+                        onVote: (voteType: any) =>
+                          handleVote(setlistSong.id, voteType),
+                        disabled:
+                          !setlistSong.isPlayed &&
+                          currentSetlist.type === "actual",
                         variant: "compact",
-                        size: "sm"
+                        size: "sm",
                       })}
                     </div>
                   </div>
                 </motion.div>
-              );
+              )
             })}
           </div>
         </CardContent>
       </Card>
 
       {/* Connection Issues Alert */}
-      {connectionStatus === 'error' && (
+      {connectionStatus === "error" && (
         <Alert variant="destructive" className="mt-4">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             Real-time updates are unavailable. The page will automatically
-            reconnect when possible. You can also{' '}
+            reconnect when possible. You can also{" "}
             <Button variant="link" className="h-auto p-0" onClick={refetch}>
               refresh manually
             </Button>
@@ -401,5 +405,5 @@ export const EnhancedSetlistViewer = ({
         </Alert>
       )}
     </>
-  );
-};
+  )
+}

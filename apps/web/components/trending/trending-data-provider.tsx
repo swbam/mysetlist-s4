@@ -1,6 +1,6 @@
-'use client';
+"use client"
 
-import { type ReactNode, createContext, useContext } from 'react';
+import { type ReactNode, createContext, useContext } from "react"
 import {
   type UseLiveTrendingOptions,
   type UseTrendingOptions,
@@ -10,26 +10,26 @@ import {
   useTrendingShows,
   useTrendingStats,
   useTrendingVenues,
-} from '~/hooks/use-trending';
+} from "~/hooks/use-trending"
 
 interface TrendingContextValue {
-  shows: ReturnType<typeof useTrendingShows>;
-  artists: ReturnType<typeof useTrendingArtists>;
-  venues: ReturnType<typeof useTrendingVenues>;
-  liveTrending: ReturnType<typeof useLiveTrending>;
-  stats: ReturnType<typeof useTrendingStats>;
-  recentActivity: ReturnType<typeof useRecentActivity>;
+  shows: ReturnType<typeof useTrendingShows>
+  artists: ReturnType<typeof useTrendingArtists>
+  venues: ReturnType<typeof useTrendingVenues>
+  liveTrending: ReturnType<typeof useLiveTrending>
+  stats: ReturnType<typeof useTrendingStats>
+  recentActivity: ReturnType<typeof useRecentActivity>
 }
 
-const TrendingContext = createContext<TrendingContextValue | null>(null);
+const TrendingContext = createContext<TrendingContextValue | null>(null)
 
 export interface TrendingDataProviderProps {
-  children: ReactNode;
-  showsOptions?: UseTrendingOptions;
-  artistsOptions?: UseTrendingOptions;
-  venuesOptions?: UseTrendingOptions;
-  liveTrendingOptions?: UseLiveTrendingOptions;
-  enableAutoRefresh?: boolean;
+  children: ReactNode
+  showsOptions?: UseTrendingOptions
+  artistsOptions?: UseTrendingOptions
+  venuesOptions?: UseTrendingOptions
+  liveTrendingOptions?: UseLiveTrendingOptions
+  enableAutoRefresh?: boolean
 }
 
 export function TrendingDataProvider({
@@ -43,25 +43,25 @@ export function TrendingDataProvider({
   const shows = useTrendingShows({
     ...showsOptions,
     autoRefresh: enableAutoRefresh,
-  });
+  })
 
   const artists = useTrendingArtists({
     ...artistsOptions,
     autoRefresh: enableAutoRefresh,
-  });
+  })
 
   const venues = useTrendingVenues({
     ...venuesOptions,
     autoRefresh: enableAutoRefresh,
-  });
+  })
 
   const liveTrending = useLiveTrending({
     ...liveTrendingOptions,
     autoRefresh: enableAutoRefresh,
-  });
+  })
 
-  const stats = useTrendingStats();
-  const recentActivity = useRecentActivity({ autoRefresh: enableAutoRefresh });
+  const stats = useTrendingStats()
+  const recentActivity = useRecentActivity({ autoRefresh: enableAutoRefresh })
 
   const value: TrendingContextValue = {
     shows,
@@ -70,32 +70,32 @@ export function TrendingDataProvider({
     liveTrending,
     stats,
     recentActivity,
-  };
+  }
 
   return (
     <TrendingContext.Provider value={value}>
       {children}
     </TrendingContext.Provider>
-  );
+  )
 }
 
 export function useTrendingData() {
-  const context = useContext(TrendingContext);
+  const context = useContext(TrendingContext)
   if (!context) {
     throw new Error(
-      'useTrendingData must be used within a TrendingDataProvider'
-    );
+      "useTrendingData must be used within a TrendingDataProvider"
+    )
   }
-  return context;
+  return context
 }
 
 // Convenience hook for just live trending data
 export function useLiveTrendingData() {
-  const context = useContext(TrendingContext);
+  const context = useContext(TrendingContext)
   if (!context) {
     throw new Error(
-      'useLiveTrendingData must be used within a TrendingDataProvider'
-    );
+      "useLiveTrendingData must be used within a TrendingDataProvider"
+    )
   }
-  return context.liveTrending;
+  return context.liveTrending
 }

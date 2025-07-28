@@ -1,16 +1,16 @@
-import { db } from '@repo/database';
-import { setlists, shows } from '@repo/database';
-import { and, eq, gte, lte, sql } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database"
+import { setlists, shows } from "@repo/database"
+import { and, eq, gte, lte, sql } from "drizzle-orm"
+import { type NextRequest, NextResponse } from "next/server"
 
-const CRON_SECRET = process.env['CRON_SECRET'];
+const CRON_SECRET = process.env["CRON_SECRET"]
 
 // Update trending scores based on recent activity
 async function updateTrendingScores() {
   try {
-    const now = new Date();
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const now = new Date()
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
 
     // Update artist trending scores based on:
     // - Recent show views
@@ -58,7 +58,7 @@ async function updateTrendingScores() {
       FROM artist_activity
       WHERE artists.id = artist_activity.id
       AND (view_score + vote_score + upcoming_score + follower_score) > 0
-    `);
+    `)
 
     // Update show trending scores
     await db.execute(sql`
@@ -96,73 +96,73 @@ async function updateTrendingScores() {
         updated_at = CURRENT_TIMESTAMP
       FROM show_activity
       WHERE shows.id = show_activity.id
-    `);
+    `)
 
     return {
       success: true,
-      message: 'Trending scores updated successfully',
-    };
+      message: "Trending scores updated successfully",
+    }
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+      error: error instanceof Error ? error.message : "Unknown error",
+    }
   }
 }
 
 // Clean up old data
 async function cleanupOldData() {
   try {
-    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
 
     // Mark old shows as completed
     await db
       .update(shows)
       .set({
-        status: 'completed',
+        status: "completed",
         updatedAt: new Date(),
       })
       .where(
         and(
-          eq(shows.status, 'upcoming'),
-          lte(shows.date, ninetyDaysAgo.toISOString().split('T')[0]!)
+          eq(shows.status, "upcoming"),
+          lte(shows.date, ninetyDaysAgo.toISOString().split("T")[0]!)
         )
-      );
+      )
 
     // Archive old votes (optional - keep for analytics)
     // Could move to a separate archive table if needed
 
     return {
       success: true,
-      message: 'Cleanup completed successfully',
-    };
+      message: "Cleanup completed successfully",
+    }
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+      error: error instanceof Error ? error.message : "Unknown error",
+    }
   }
 }
 
 // Update show statuses
 async function updateShowStatuses() {
   try {
-    const now = new Date();
-    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const now = new Date()
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 
     // Update past shows
     await db
       .update(shows)
       .set({
-        status: 'completed',
+        status: "completed",
         updatedAt: now,
       })
       .where(
         and(
-          eq(shows.status, 'upcoming'),
-          lte(shows.date, yesterday.toISOString().split('T')[0]!)
+          eq(shows.status, "upcoming"),
+          lte(shows.date, yesterday.toISOString().split("T")[0]!)
         )
-      );
+      )
 
     // Lock setlists for shows that have started
     await db
@@ -179,25 +179,25 @@ async function updateShowStatuses() {
             yesterday
           )
         )
-      );
+      )
 
     return {
       success: true,
-      message: 'Show statuses updated successfully',
-    };
+      message: "Show statuses updated successfully",
+    }
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
+      error: error instanceof Error ? error.message : "Unknown error",
+    }
   }
 }
 
 export async function GET(request: NextRequest) {
   // Verify cron secret
-  const authHeader = request.headers.get('authorization');
+  const authHeader = request.headers.get("authorization")
   if (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
   try {
@@ -207,44 +207,44 @@ export async function GET(request: NextRequest) {
         updateTrendingScores(),
         cleanupOldData(),
         updateShowStatuses(),
-      ]);
+      ])
 
     const results = {
       trending:
-        trendingResult.status === 'fulfilled'
+        trendingResult.status === "fulfilled"
           ? trendingResult.value
-          : { success: false, error: 'Failed to update trending scores' },
+          : { success: false, error: "Failed to update trending scores" },
       cleanup:
-        cleanupResult.status === 'fulfilled'
+        cleanupResult.status === "fulfilled"
           ? cleanupResult.value
-          : { success: false, error: 'Failed to cleanup old data' },
+          : { success: false, error: "Failed to cleanup old data" },
       showStatuses:
-        statusResult.status === 'fulfilled'
+        statusResult.status === "fulfilled"
           ? statusResult.value
-          : { success: false, error: 'Failed to update show statuses' },
-    };
+          : { success: false, error: "Failed to update show statuses" },
+    }
 
-    const allSuccessful = Object.values(results).every((r) => r.success);
+    const allSuccessful = Object.values(results).every((r) => r.success)
 
     return NextResponse.json({
       success: allSuccessful,
       message: allSuccessful
-        ? 'All hourly updates completed successfully'
-        : 'Some updates failed',
+        ? "All hourly updates completed successfully"
+        : "Some updates failed",
       timestamp: new Date().toISOString(),
       results,
-    });
+    })
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Hourly update failed',
-        details: error instanceof Error ? error.message : 'Unknown error',
+        error: "Hourly update failed",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
-    );
+    )
   }
 }
 
 export async function POST(request: NextRequest) {
-  return GET(request);
+  return GET(request)
 }

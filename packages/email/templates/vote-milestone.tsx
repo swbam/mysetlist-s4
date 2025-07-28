@@ -10,31 +10,31 @@ import {
   Section,
   Tailwind,
   Text,
-} from '@react-email/components';
+} from "@react-email/components"
 
 type Show = {
-  id: string;
-  name: string;
-  artistName: string;
-  venue: string;
-  date: string;
-};
+  id: string
+  name: string
+  artistName: string
+  venue: string
+  date: string
+}
 
 type Song = {
-  title: string;
-  artist?: string;
-  votes: number;
-  position: number;
-};
+  title: string
+  artist?: string
+  votes: number
+  position: number
+}
 
 type VoteMilestoneTemplateProps = {
-  readonly userName: string;
-  readonly show: Show;
-  readonly song: Song;
-  readonly milestone: number;
-  readonly totalVotes: number;
-  readonly appUrl: string;
-};
+  readonly userName: string
+  readonly show: Show
+  readonly song: Song
+  readonly milestone: number
+  readonly totalVotes: number
+  readonly appUrl: string
+}
 
 export const VoteMilestoneTemplate = ({
   userName,
@@ -148,14 +148,14 @@ export const VoteMilestoneTemplate = ({
 
               <Text className="text-sm text-zinc-500">
                 You're receiving this notification because you voted for this
-                song. You can manage your notification preferences{' '}
+                song. You can manage your notification preferences{" "}
                 <Link
                   href={`${appUrl}/settings`}
                   className="text-zinc-700 underline"
                 >
                   here
-                </Link>{' '}
-                or{' '}
+                </Link>{" "}
+                or{" "}
                 <Link
                   href={`${appUrl}/unsubscribe?type=vote-milestones`}
                   className="text-zinc-700 underline"
@@ -170,26 +170,26 @@ export const VoteMilestoneTemplate = ({
       </Body>
     </Html>
   </Tailwind>
-);
+)
 
 VoteMilestoneTemplate.PreviewProps = {
-  userName: 'Alex',
+  userName: "Alex",
   show: {
-    id: '123',
-    name: 'Winter Tour 2024',
-    artistName: 'The Midnight',
-    venue: 'Red Rocks Amphitheatre',
-    date: 'December 15, 2024',
+    id: "123",
+    name: "Winter Tour 2024",
+    artistName: "The Midnight",
+    venue: "Red Rocks Amphitheatre",
+    date: "December 15, 2024",
   },
   song: {
-    title: 'Endless Summer',
-    artist: 'The Midnight',
+    title: "Endless Summer",
+    artist: "The Midnight",
     votes: 100,
     position: 3,
   },
   milestone: 100,
   totalVotes: 1250,
-  appUrl: 'https://MySetlist.app',
-};
+  appUrl: "https://MySetlist.app",
+}
 
-export default VoteMilestoneTemplate;
+export default VoteMilestoneTemplate

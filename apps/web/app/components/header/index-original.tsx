@@ -1,7 +1,7 @@
-'use client';
+"use client"
 
-import { ModeToggle } from '@repo/design-system/components/mode-toggle';
-import { Button } from '@repo/design-system/components/ui/button';
+import { ModeToggle } from "@repo/design-system/components/mode-toggle"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -9,62 +9,65 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   NavigationMenuTrigger,
-} from '@repo/design-system/components/ui/navigation-menu';
-import { MoveRight } from 'lucide-react';
-import React, { useMemo } from 'react';
-import { useAuth } from '~/app/providers/auth-provider';
+} from "@repo/design-system/components/ui/navigation-menu"
+import { MoveRight } from "lucide-react"
+import React, { useMemo } from "react"
+import { useAuth } from "~/app/providers/auth-provider"
 
-import Image from 'next/image';
-import { MobileNavigation } from '~/app/components/mobile/mobile-navigation';
-import { MobileSearch } from '~/app/components/mobile/mobile-search';
+import Image from "next/image"
+import { MobileNavigation } from "~/app/components/mobile/mobile-navigation"
+import { MobileSearch } from "~/app/components/mobile/mobile-search"
 import {
   NavigationErrorBoundary,
   SafeLink,
-} from '~/components/navigation/navigation-error-boundary';
-import { RealtimeStatus } from '~/components/realtime-status';
-import { SearchBar } from '~/components/search-bar';
-import Logo from './logo.svg';
-import { UserMenu } from './user-menu';
+} from "~/components/navigation/navigation-error-boundary"
+import { RealtimeStatus } from "~/components/realtime-status"
+import { SearchBar } from "~/components/search-bar"
+import Logo from "./logo.svg"
+import { UserMenu } from "./user-menu"
 
 const HeaderContent = React.memo(() => {
-  const { user } = useAuth();
+  const { user } = useAuth()
 
-  const navigationItems = useMemo(() => [
-    {
-      title: 'Home',
-      href: '/',
-      description: '',
-    },
-    {
-      title: 'Artists',
-      href: '/artists',
-      description: '',
-    },
-    ...(user
-      ? [
-          {
-            title: 'My Artists',
-            href: '/my-artists',
-            description: '',
-          },
-        ]
-      : []),
-    {
-      title: 'Shows',
-      href: '/shows',
-      description: '',
-    },
-    {
-      title: 'Venues',
-      href: '/venues',
-      description: '',
-    },
-    {
-      title: 'Trending',
-      href: '/trending',
-      description: '',
-    },
-  ], [user]);
+  const navigationItems = useMemo(
+    () => [
+      {
+        title: "Home",
+        href: "/",
+        description: "",
+      },
+      {
+        title: "Artists",
+        href: "/artists",
+        description: "",
+      },
+      ...(user
+        ? [
+            {
+              title: "My Artists",
+              href: "/my-artists",
+              description: "",
+            },
+          ]
+        : []),
+      {
+        title: "Shows",
+        href: "/shows",
+        description: "",
+      },
+      {
+        title: "Venues",
+        href: "/venues",
+        description: "",
+      },
+      {
+        title: "Trending",
+        href: "/trending",
+        description: "",
+      },
+    ],
+    [user]
+  )
 
   return (
     <header className="sticky top-0 left-0 z-40 w-full border-b bg-background">
@@ -78,7 +81,7 @@ const HeaderContent = React.memo(() => {
                     <>
                       <NavigationMenuLink asChild>
                         <Button variant="ghost" asChild>
-                          {item.href.startsWith('http') ? (
+                          {item.href.startsWith("http") ? (
                             <SafeLink
                               href={item.href}
                               target="_blank"
@@ -88,10 +91,7 @@ const HeaderContent = React.memo(() => {
                               {item.title}
                             </SafeLink>
                           ) : (
-                            <SafeLink
-                              href={item.href}
-                              prefetch={true}
-                            >
+                            <SafeLink href={item.href} prefetch={true}>
                               {item.title}
                             </SafeLink>
                           )}
@@ -174,8 +174,8 @@ const HeaderContent = React.memo(() => {
               >
                 <SafeLink href="/auth/sign-in">Sign in</SafeLink>
               </Button>
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
                 asChild
               >
@@ -200,15 +200,15 @@ const HeaderContent = React.memo(() => {
         </div>
       </div>
     </header>
-  );
-});
+  )
+})
 
-HeaderContent.displayName = 'HeaderContent';
+HeaderContent.displayName = "HeaderContent"
 
 export const Header = () => {
   return (
     <NavigationErrorBoundary>
       <HeaderContent />
     </NavigationErrorBoundary>
-  );
-};
+  )
+}

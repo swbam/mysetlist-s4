@@ -1,16 +1,25 @@
-'use client';
+"use client"
 
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
-import { usePerformanceMonitor } from '~/hooks/use-performance-monitor';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Progress } from '@repo/design-system/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import { 
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card"
+import { Progress } from "@repo/design-system/components/ui/progress"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs"
+import { cn } from "@repo/design-system/lib/utils"
+import {
   Activity,
-  AlertTriangle, 
-  Clock, 
+  AlertTriangle,
+  Clock,
   Download,
   Eye,
   Gauge,
@@ -19,16 +28,17 @@ import {
   Smartphone,
   TrendingUp,
   Wifi,
-  Zap
-} from 'lucide-react';
-import { cn } from '@repo/design-system/lib/utils';
+  Zap,
+} from "lucide-react"
+import { memo, useCallback, useEffect, useMemo, useState } from "react"
+import { usePerformanceMonitor } from "~/hooks/use-performance-monitor"
 
 interface PerformanceDashboardProps {
-  className?: string;
-  autoRefresh?: boolean;
-  refreshInterval?: number;
-  showDetailedMetrics?: boolean;
-  onMetricAlert?: (metric: string, value: number, threshold: number) => void;
+  className?: string
+  autoRefresh?: boolean
+  refreshInterval?: number
+  showDetailedMetrics?: boolean
+  onMetricAlert?: (metric: string, value: number, threshold: number) => void
 }
 
 // Performance thresholds based on Google's recommendations
@@ -39,7 +49,7 @@ const PERFORMANCE_THRESHOLDS = {
   cls: { good: 0.1, poor: 0.25 },
   ttfb: { good: 800, poor: 1800 },
   memory: { good: 50, poor: 80 }, // MB
-};
+}
 
 // Metric component
 const MetricCard = memo(function MetricCard({
@@ -51,21 +61,24 @@ const MetricCard = memo(function MetricCard({
   description,
   trend,
 }: {
-  title: string;
-  value: number | undefined;
-  unit: string;
-  threshold: { good: number; poor: number };
-  icon: React.ComponentType<{ className?: string }>;
-  description: string;
-  trend?: 'up' | 'down' | 'stable';
+  title: string
+  value: number | undefined
+  unit: string
+  threshold: { good: number; poor: number }
+  icon: React.ComponentType<{ className?: string }>
+  description: string
+  trend?: "up" | "down" | "stable"
 }) {
-  const getStatus = useCallback((val: number) => {
-    if (val <= threshold.good) return 'good';
-    if (val <= threshold.poor) return 'needs-improvement';
-    return 'poor';
-  }, [threshold]);
+  const getStatus = useCallback(
+    (val: number) => {
+      if (val <= threshold.good) return "good"
+      if (val <= threshold.poor) return "needs-improvement"
+      return "poor"
+    },
+    [threshold]
+  )
 
-  const status = value ? getStatus(value) : 'unknown';
+  const status = value ? getStatus(value) : "unknown"
 
   return (
     <Card className="h-full">
@@ -75,11 +88,16 @@ const MetricCard = memo(function MetricCard({
           <div className="flex items-center space-x-2">
             <Icon className="h-4 w-4 text-muted-foreground" />
             {trend && (
-              <TrendingUp className={cn(
-                'h-3 w-3',
-                trend === 'up' ? 'text-green-500' : 
-                trend === 'down' ? 'text-red-500' : 'text-gray-500'
-              )} />
+              <TrendingUp
+                className={cn(
+                  "h-3 w-3",
+                  trend === "up"
+                    ? "text-green-500"
+                    : trend === "down"
+                      ? "text-red-500"
+                      : "text-gray-500"
+                )}
+              />
             )}
           </div>
         </div>
@@ -88,56 +106,63 @@ const MetricCard = memo(function MetricCard({
         <div className="space-y-3">
           <div className="flex items-center space-x-2">
             <span className="text-2xl font-bold">
-              {value ? value.toFixed(1) : '--'}
+              {value ? value.toFixed(1) : "--"}
             </span>
             <span className="text-sm text-muted-foreground">{unit}</span>
-            <Badge variant={status === 'good' ? 'default' : 'destructive'} className="ml-auto">
+            <Badge
+              variant={status === "good" ? "default" : "destructive"}
+              className="ml-auto"
+            >
               {status}
             </Badge>
           </div>
-          
+
           <div className="space-y-2">
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>Good</span>
               <span>Poor</span>
             </div>
             <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div 
+              <div
                 className="absolute left-0 top-0 h-full bg-green-500"
-                style={{ width: `${(threshold.good / (threshold.poor * 1.2)) * 100}%` }}
+                style={{
+                  width: `${(threshold.good / (threshold.poor * 1.2)) * 100}%`,
+                }}
               />
-              <div 
+              <div
                 className="absolute top-0 h-full bg-yellow-500"
-                style={{ 
+                style={{
                   left: `${(threshold.good / (threshold.poor * 1.2)) * 100}%`,
-                  width: `${((threshold.poor - threshold.good) / (threshold.poor * 1.2)) * 100}%`
+                  width: `${((threshold.poor - threshold.good) / (threshold.poor * 1.2)) * 100}%`,
                 }}
               />
               {value && (
-                <div 
+                <div
                   className="absolute top-0 w-1 h-full bg-gray-800"
-                  style={{ left: `${Math.min((value / (threshold.poor * 1.2)) * 100, 100)}%` }}
+                  style={{
+                    left: `${Math.min((value / (threshold.poor * 1.2)) * 100, 100)}%`,
+                  }}
                 />
               )}
             </div>
           </div>
-          
+
           <p className="text-xs text-muted-foreground">{description}</p>
         </div>
       </CardContent>
     </Card>
-  );
-}) as any;
+  )
+}) as any
 
 // Network information component
-const NetworkInfo = memo(function NetworkInfo({ 
-  connectionType, 
-  downlink, 
-  effectiveType 
+const NetworkInfo = memo(function NetworkInfo({
+  connectionType,
+  downlink,
+  effectiveType,
 }: {
-  connectionType?: string;
-  downlink?: number;
-  effectiveType?: string;
+  connectionType?: string
+  downlink?: number
+  effectiveType?: string
 }) {
   return (
     <Card>
@@ -150,20 +175,20 @@ const NetworkInfo = memo(function NetworkInfo({
       <CardContent className="space-y-2">
         <div className="flex justify-between text-sm">
           <span>Connection Type:</span>
-          <Badge variant="outline">{connectionType || 'Unknown'}</Badge>
+          <Badge variant="outline">{connectionType || "Unknown"}</Badge>
         </div>
         <div className="flex justify-between text-sm">
           <span>Effective Type:</span>
-          <Badge variant="outline">{effectiveType || 'Unknown'}</Badge>
+          <Badge variant="outline">{effectiveType || "Unknown"}</Badge>
         </div>
         <div className="flex justify-between text-sm">
           <span>Downlink:</span>
-          <span>{downlink ? `${downlink} Mbps` : 'Unknown'}</span>
+          <span>{downlink ? `${downlink} Mbps` : "Unknown"}</span>
         </div>
       </CardContent>
     </Card>
-  );
-}) as any;
+  )
+}) as any
 
 // Memory usage component
 const MemoryUsage = memo(function MemoryUsage({
@@ -171,15 +196,15 @@ const MemoryUsage = memo(function MemoryUsage({
   jsHeapTotal,
   jsHeapLimit,
 }: {
-  jsHeapUsed?: number;
-  jsHeapTotal?: number;
-  jsHeapLimit?: number;
+  jsHeapUsed?: number
+  jsHeapTotal?: number
+  jsHeapLimit?: number
 }) {
-  const usedMB = jsHeapUsed ? (jsHeapUsed / 1024 / 1024) : 0;
-  const totalMB = jsHeapTotal ? (jsHeapTotal / 1024 / 1024) : 0;
-  const limitMB = jsHeapLimit ? (jsHeapLimit / 1024 / 1024) : 0;
-  
-  const usagePercentage = totalMB > 0 ? (usedMB / totalMB) * 100 : 0;
+  const usedMB = jsHeapUsed ? jsHeapUsed / 1024 / 1024 : 0
+  const totalMB = jsHeapTotal ? jsHeapTotal / 1024 / 1024 : 0
+  const limitMB = jsHeapLimit ? jsHeapLimit / 1024 / 1024 : 0
+
+  const usagePercentage = totalMB > 0 ? (usedMB / totalMB) * 100 : 0
 
   return (
     <Card>
@@ -204,7 +229,7 @@ const MemoryUsage = memo(function MemoryUsage({
             <span>{limitMB.toFixed(1)} MB</span>
           </div>
         </div>
-        
+
         <div className="space-y-2">
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>Usage</span>
@@ -212,7 +237,7 @@ const MemoryUsage = memo(function MemoryUsage({
           </div>
           <Progress value={usagePercentage} className="h-2" />
         </div>
-        
+
         {usagePercentage > 80 && (
           <div className="flex items-center space-x-2 text-xs text-red-600">
             <AlertTriangle className="h-3 w-3" />
@@ -221,8 +246,8 @@ const MemoryUsage = memo(function MemoryUsage({
         )}
       </CardContent>
     </Card>
-  );
-}) as any;
+  )
+}) as any
 
 // Main dashboard component
 const PerformanceDashboardComponent = function PerformanceDashboard({
@@ -232,89 +257,102 @@ const PerformanceDashboardComponent = function PerformanceDashboard({
   showDetailedMetrics: _showDetailedMetrics = true,
   onMetricAlert,
 }: PerformanceDashboardProps) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [alertHistory, setAlertHistory] = useState<Array<{
-    metric: string;
-    value: number;
-    threshold: number;
-    timestamp: Date;
-  }>>([]);
+  const [isVisible, setIsVisible] = useState(false)
+  const [alertHistory, setAlertHistory] = useState<
+    Array<{
+      metric: string
+      value: number
+      threshold: number
+      timestamp: Date
+    }>
+  >([])
 
-  const { 
-    metrics, 
-    isMonitoring, 
-    startMonitoring, 
-    stopMonitoring, 
-    getPerformanceScore, 
-    exportMetrics 
+  const {
+    metrics,
+    isMonitoring,
+    startMonitoring,
+    stopMonitoring,
+    getPerformanceScore,
+    exportMetrics,
   } = usePerformanceMonitor({
     trackCoreWebVitals: true,
     trackResourceUsage: true,
     trackNetworkInfo: true,
     reportInterval: refreshInterval,
     onMetricUpdate: (metric, value) => {
-      const threshold = PERFORMANCE_THRESHOLDS[metric as keyof typeof PERFORMANCE_THRESHOLDS];
+      const threshold =
+        PERFORMANCE_THRESHOLDS[metric as keyof typeof PERFORMANCE_THRESHOLDS]
       if (threshold && value > threshold.poor) {
-        const alert = { metric, value, threshold: threshold.poor, timestamp: new Date() };
-        setAlertHistory(prev => [...prev, alert].slice(-10)); // Keep last 10 alerts
-        onMetricAlert?.(metric, value, threshold.poor);
+        const alert = {
+          metric,
+          value,
+          threshold: threshold.poor,
+          timestamp: new Date(),
+        }
+        setAlertHistory((prev) => [...prev, alert].slice(-10)) // Keep last 10 alerts
+        onMetricAlert?.(metric, value, threshold.poor)
       }
     },
-  });
+  })
 
-  const performanceScore = useMemo(() => getPerformanceScore(), [getPerformanceScore]);
+  const performanceScore = useMemo(
+    () => getPerformanceScore(),
+    [getPerformanceScore]
+  )
 
   // Toggle monitoring based on visibility
   useEffect(() => {
     if (isVisible && autoRefresh) {
-      startMonitoring();
+      startMonitoring()
     } else {
-      stopMonitoring();
+      stopMonitoring()
     }
-  }, [isVisible, autoRefresh, startMonitoring, stopMonitoring]);
+  }, [isVisible, autoRefresh, startMonitoring, stopMonitoring])
 
   // Intersection observer for visibility
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => setIsVisible(entry?.isIntersecting ?? false),
       { threshold: 0.1 }
-    );
+    )
 
-    const dashboardRef = document.querySelector('[data-performance-dashboard]');
+    const dashboardRef = document.querySelector("[data-performance-dashboard]")
     if (dashboardRef) {
-      observer.observe(dashboardRef);
+      observer.observe(dashboardRef)
     }
 
-    return () => observer.disconnect();
-  }, []);
+    return () => observer.disconnect()
+  }, [])
 
   const handleExport = useCallback(() => {
-    const data = exportMetrics();
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `performance-metrics-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [exportMetrics]);
+    const data = exportMetrics()
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `performance-metrics-${new Date().toISOString().split("T")[0]}.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [exportMetrics])
 
   const getDeviceType = () => {
-    if (typeof window === 'undefined') return 'unknown';
-    return window.innerWidth <= 768 ? 'mobile' : 'desktop';
-  };
+    if (typeof window === "undefined") return "unknown"
+    return window.innerWidth <= 768 ? "mobile" : "desktop"
+  }
 
   return (
-    <div data-performance-dashboard className={cn('space-y-6', className)}>
+    <div data-performance-dashboard className={cn("space-y-6", className)}>
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           <Gauge className="h-5 w-5" />
           <h2 className="text-xl font-semibold">Performance Dashboard</h2>
-          <Badge variant={isMonitoring ? 'default' : 'secondary'}>
-            {isMonitoring ? 'Monitoring' : 'Stopped'}
+          <Badge variant={isMonitoring ? "default" : "secondary"}>
+            {isMonitoring ? "Monitoring" : "Stopped"}
           </Badge>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
@@ -325,14 +363,16 @@ const PerformanceDashboardComponent = function PerformanceDashboard({
             <Download className="h-4 w-4 mr-2" />
             Export
           </Button>
-          
+
           <div className="flex items-center space-x-2">
-            {getDeviceType() === 'mobile' ? (
+            {getDeviceType() === "mobile" ? (
               <Smartphone className="h-4 w-4 text-muted-foreground" />
             ) : (
               <Monitor className="h-4 w-4 text-muted-foreground" />
             )}
-            <span className="text-sm text-muted-foreground">{getDeviceType()}</span>
+            <span className="text-sm text-muted-foreground">
+              {getDeviceType()}
+            </span>
           </div>
         </div>
       </div>
@@ -341,16 +381,24 @@ const PerformanceDashboardComponent = function PerformanceDashboard({
       {performanceScore && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm font-medium">Overall Performance Score</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Overall Performance Score
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center space-x-4">
-              <div className="text-3xl font-bold">{performanceScore.overall}</div>
+              <div className="text-3xl font-bold">
+                {performanceScore.overall}
+              </div>
               <div className="flex-1">
                 <Progress value={performanceScore.overall} className="h-3" />
               </div>
-              <Badge variant={performanceScore.overall >= 90 ? 'default' : 'destructive'}>
-                {performanceScore.overall >= 90 ? 'Good' : 'Needs Improvement'}
+              <Badge
+                variant={
+                  performanceScore.overall >= 90 ? "default" : "destructive"
+                }
+              >
+                {performanceScore.overall >= 90 ? "Good" : "Needs Improvement"}
               </Badge>
             </div>
           </CardContent>
@@ -431,18 +479,27 @@ const PerformanceDashboardComponent = function PerformanceDashboard({
         <TabsContent value="alerts" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle className="text-sm font-medium">Recent Alerts</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Recent Alerts
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {alertHistory.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No performance alerts</p>
+                <p className="text-sm text-muted-foreground">
+                  No performance alerts
+                </p>
               ) : (
                 <div className="space-y-2">
                   {alertHistory.map((alert, index) => (
-                    <div key={index} className="flex items-center justify-between text-sm">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between text-sm"
+                    >
                       <div className="flex items-center space-x-2">
                         <AlertTriangle className="h-4 w-4 text-red-500" />
-                        <span>{alert.metric}: {alert.value.toFixed(1)}</span>
+                        <span>
+                          {alert.metric}: {alert.value.toFixed(1)}
+                        </span>
                       </div>
                       <span className="text-muted-foreground">
                         {alert.timestamp.toLocaleTimeString()}
@@ -456,7 +513,7 @@ const PerformanceDashboardComponent = function PerformanceDashboard({
         </TabsContent>
       </Tabs>
     </div>
-  );
-};
+  )
+}
 
-export const PerformanceDashboard = memo(PerformanceDashboardComponent);
+export const PerformanceDashboard = memo(PerformanceDashboardComponent)

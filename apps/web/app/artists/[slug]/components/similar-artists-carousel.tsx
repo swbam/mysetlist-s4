@@ -1,42 +1,42 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { motion } from 'framer-motion';
-import { Music, TrendingUp, Users } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
-import React, { useMemo } from 'react';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Card, CardContent } from "@repo/design-system/components/ui/card"
+import { motion } from "framer-motion"
+import { Music, TrendingUp, Users } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
+import React, { useMemo } from "react"
 import {
   ContentSlider,
   ContentSliderItem,
-} from '~/components/ui/content-slider';
+} from "~/components/ui/content-slider"
 
 interface SimilarArtist {
-  id: string;
-  name: string;
-  slug: string;
-  imageUrl: string | null;
-  genres: string[] | null;
-  popularity: number;
-  verified: boolean;
-  followerCount?: number;
-  trendingScore?: number;
+  id: string
+  name: string
+  slug: string
+  imageUrl: string | null
+  genres: string[] | null
+  popularity: number
+  verified: boolean
+  followerCount?: number
+  trendingScore?: number
 }
 
 interface SimilarArtistsCarouselProps {
-  artists: SimilarArtist[];
-  currentArtistId: string;
+  artists: SimilarArtist[]
+  currentArtistId: string
 }
 
 const ArtistCard = React.memo(function ArtistCard({
   artist,
   index,
 }: {
-  artist: SimilarArtist;
-  index: number;
+  artist: SimilarArtist
+  index: number
 }) {
-  const primaryGenre = artist.genres?.[0] || 'Artist';
+  const primaryGenre = artist.genres?.[0] || "Artist"
 
   return (
     <Link href={`/artists/${artist.slug}`} className="block h-full">
@@ -139,8 +139,8 @@ const ArtistCard = React.memo(function ArtistCard({
         </CardContent>
       </Card>
     </Link>
-  );
-});
+  )
+})
 
 export const SimilarArtistsCarousel = React.memo(
   function SimilarArtistsCarousel({
@@ -151,10 +151,10 @@ export const SimilarArtistsCarousel = React.memo(
     const filteredArtists = useMemo(
       () => artists.filter((artist) => artist.id !== currentArtistId),
       [artists, currentArtistId]
-    );
+    )
 
     if (filteredArtists.length === 0) {
-      return null;
+      return null
     }
 
     return (
@@ -180,6 +180,6 @@ export const SimilarArtistsCarousel = React.memo(
           </ContentSliderItem>
         ))}
       </ContentSlider>
-    );
+    )
   }
-);
+)

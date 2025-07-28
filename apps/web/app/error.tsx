@@ -1,17 +1,17 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
-import { useEffect } from 'react';
+import { Button } from "@repo/design-system/components/ui/button"
+import { AlertTriangle, Home, RefreshCw } from "lucide-react"
+import { useEffect } from "react"
 
 export default function Error({
   error,
   reset,
 }: {
-  error: Error & { digest?: string };
-  reset: () => void;
+  error: Error & { digest?: string }
+  reset: () => void
 }) {
-  useEffect(() => {}, [error]);
+  useEffect(() => {}, [error])
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
@@ -41,7 +41,7 @@ export default function Error({
           </Button>
 
           <Button
-            onClick={() => (window.location.href = '/')}
+            onClick={() => (window.location.href = "/")}
             variant="outline"
             className="flex items-center gap-2"
           >
@@ -50,7 +50,7 @@ export default function Error({
           </Button>
         </div>
 
-        {process.env['NODE_ENV'] === 'development' && (
+        {process.env["NODE_ENV"] === "development" && (
           <details className="mt-6 text-left">
             <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
               Error details (development only)
@@ -63,5 +63,5 @@ export default function Error({
         )}
       </div>
     </div>
-  );
+  )
 }

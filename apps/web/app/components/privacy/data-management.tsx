@@ -1,168 +1,181 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Alert, AlertDescription } from '@repo/design-system/components/ui/alert';
-import { 
-  Download, 
-  Trash2, 
-  Shield, 
-  Eye, 
-  EyeOff, 
+import {
+  Alert,
+  AlertDescription,
+} from "@repo/design-system/components/ui/alert"
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card"
+import {
   AlertTriangle,
   CheckCircle,
-  Clock
-} from 'lucide-react';
-import { useState } from 'react';
+  Clock,
+  Download,
+  Eye,
+  EyeOff,
+  Shield,
+  Trash2,
+} from "lucide-react"
+import { useState } from "react"
 
 interface UserData {
   profile: {
-    email: string;
-    displayName?: string;
-    createdAt: string;
-    lastLoginAt?: string;
-  };
+    email: string
+    displayName?: string
+    createdAt: string
+    lastLoginAt?: string
+  }
   activity: {
-    totalVotes: number;
-    followedArtists: number;
-    attendedShows: number;
-    lastActivity: string;
-  };
+    totalVotes: number
+    followedArtists: number
+    attendedShows: number
+    lastActivity: string
+  }
   preferences: {
-    emailNotifications: boolean;
-    publicProfile: boolean;
-    dataSharing: boolean;
-  };
+    emailNotifications: boolean
+    publicProfile: boolean
+    dataSharing: boolean
+  }
 }
 
 interface DataExportRequest {
-  id: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  requestedAt: string;
-  completedAt?: string;
-  downloadUrl?: string;
-  expiresAt?: string;
+  id: string
+  status: "pending" | "processing" | "completed" | "failed"
+  requestedAt: string
+  completedAt?: string
+  downloadUrl?: string
+  expiresAt?: string
 }
 
 interface DataManagementProps {
-  userData: UserData;
-  userId: string;
+  userData: UserData
+  userId: string
 }
 
 export function DataManagement({ userData, userId }: DataManagementProps) {
-  const [exportRequests, setExportRequests] = useState<DataExportRequest[]>([]);
-  const [isExporting, setIsExporting] = useState(false);
-  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
-  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
-  const [deleteConfirmationText, setDeleteConfirmationText] = useState('');
+  const [exportRequests, setExportRequests] = useState<DataExportRequest[]>([])
+  const [isExporting, setIsExporting] = useState(false)
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false)
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState("")
 
   const requestDataExport = async () => {
-    setIsExporting(true);
+    setIsExporting(true)
     try {
-      const response = await fetch('/api/user/export', {
-        method: 'POST',
+      const response = await fetch("/api/user/export", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-      });
+      })
 
       if (response.ok) {
-        const data = await response.json();
-        setExportRequests(prev => [data.exportRequest, ...prev]);
+        const data = await response.json()
+        setExportRequests((prev) => [data.exportRequest, ...prev])
       } else {
-        throw new Error('Failed to request data export');
+        throw new Error("Failed to request data export")
       }
     } catch (error) {
-      console.error('Error requesting data export:', error);
-      alert('Failed to request data export. Please try again.');
+      console.error("Error requesting data export:", error)
+      alert("Failed to request data export. Please try again.")
     } finally {
-      setIsExporting(false);
+      setIsExporting(false)
     }
-  };
+  }
 
   const deleteAccount = async () => {
-    if (deleteConfirmationText !== 'DELETE MY ACCOUNT') {
-      alert('Please type "DELETE MY ACCOUNT" to confirm');
-      return;
+    if (deleteConfirmationText !== "DELETE MY ACCOUNT") {
+      alert('Please type "DELETE MY ACCOUNT" to confirm')
+      return
     }
 
-    setIsDeletingAccount(true);
+    setIsDeletingAccount(true)
     try {
-      const response = await fetch('/api/user/delete', {
-        method: 'DELETE',
+      const response = await fetch("/api/user/delete", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           confirmation: deleteConfirmationText,
         }),
-      });
+      })
 
       if (response.ok) {
         // Redirect to goodbye page
-        window.location.href = '/auth/account-deleted';
+        window.location.href = "/auth/account-deleted"
       } else {
-        throw new Error('Failed to delete account');
+        throw new Error("Failed to delete account")
       }
     } catch (error) {
-      console.error('Error deleting account:', error);
-      alert('Failed to delete account. Please contact support.');
+      console.error("Error deleting account:", error)
+      alert("Failed to delete account. Please contact support.")
     } finally {
-      setIsDeletingAccount(false);
+      setIsDeletingAccount(false)
     }
-  };
+  }
 
-  const updatePrivacyPreference = async (preference: keyof UserData['preferences'], value: boolean) => {
+  const updatePrivacyPreference = async (
+    preference: keyof UserData["preferences"],
+    value: boolean
+  ) => {
     try {
-      const response = await fetch('/api/user/preferences', {
-        method: 'PATCH',
+      const response = await fetch("/api/user/preferences", {
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           [preference]: value,
         }),
-      });
+      })
 
       if (!response.ok) {
-        throw new Error('Failed to update preference');
+        throw new Error("Failed to update preference")
       }
     } catch (error) {
-      console.error('Error updating preference:', error);
-      alert('Failed to update preference. Please try again.');
+      console.error("Error updating preference:", error)
+      alert("Failed to update preference. Please try again.")
     }
-  };
+  }
 
-  const getStatusIcon = (status: DataExportRequest['status']) => {
+  const getStatusIcon = (status: DataExportRequest["status"]) => {
     switch (status) {
-      case 'pending':
-        return <Clock className="h-4 w-4 text-yellow-500" />;
-      case 'processing':
-        return <div className="h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />;
-      case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'failed':
-        return <AlertTriangle className="h-4 w-4 text-red-500" />;
+      case "pending":
+        return <Clock className="h-4 w-4 text-yellow-500" />
+      case "processing":
+        return (
+          <div className="h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        )
+      case "completed":
+        return <CheckCircle className="h-4 w-4 text-green-500" />
+      case "failed":
+        return <AlertTriangle className="h-4 w-4 text-red-500" />
       default:
-        return null;
+        return null
     }
-  };
+  }
 
-  const getStatusColor = (status: DataExportRequest['status']) => {
+  const getStatusColor = (status: DataExportRequest["status"]) => {
     switch (status) {
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'processing':
-        return 'bg-blue-100 text-blue-800';
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'failed':
-        return 'bg-red-100 text-red-800';
+      case "pending":
+        return "bg-yellow-100 text-yellow-800"
+      case "processing":
+        return "bg-blue-100 text-blue-800"
+      case "completed":
+        return "bg-green-100 text-green-800"
+      case "failed":
+        return "bg-red-100 text-red-800"
       default:
-        return 'bg-gray-100 text-gray-800';
+        return "bg-gray-100 text-gray-800"
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -184,16 +197,26 @@ export function DataManagement({ userData, userId }: DataManagementProps) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             <div className="text-center">
-              <div className="text-2xl font-bold">{userData.activity.totalVotes}</div>
+              <div className="text-2xl font-bold">
+                {userData.activity.totalVotes}
+              </div>
               <div className="text-sm text-muted-foreground">Votes Cast</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{userData.activity.followedArtists}</div>
-              <div className="text-sm text-muted-foreground">Artists Followed</div>
+              <div className="text-2xl font-bold">
+                {userData.activity.followedArtists}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Artists Followed
+              </div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{userData.activity.attendedShows}</div>
-              <div className="text-sm text-muted-foreground">Shows Attended</div>
+              <div className="text-2xl font-bold">
+                {userData.activity.attendedShows}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Shows Attended
+              </div>
             </div>
             <div className="text-center">
               <div className="text-sm font-medium">Member Since</div>
@@ -219,11 +242,18 @@ export function DataManagement({ userData, userId }: DataManagementProps) {
               </div>
             </div>
             <Button
-              variant={userData.preferences.emailNotifications ? 'default' : 'outline'}
+              variant={
+                userData.preferences.emailNotifications ? "default" : "outline"
+              }
               size="sm"
-              onClick={() => updatePrivacyPreference('emailNotifications', !userData.preferences.emailNotifications)}
+              onClick={() =>
+                updatePrivacyPreference(
+                  "emailNotifications",
+                  !userData.preferences.emailNotifications
+                )
+              }
             >
-              {userData.preferences.emailNotifications ? 'Enabled' : 'Disabled'}
+              {userData.preferences.emailNotifications ? "Enabled" : "Disabled"}
             </Button>
           </div>
 
@@ -235,9 +265,16 @@ export function DataManagement({ userData, userId }: DataManagementProps) {
               </div>
             </div>
             <Button
-              variant={userData.preferences.publicProfile ? 'default' : 'outline'}
+              variant={
+                userData.preferences.publicProfile ? "default" : "outline"
+              }
               size="sm"
-              onClick={() => updatePrivacyPreference('publicProfile', !userData.preferences.publicProfile)}
+              onClick={() =>
+                updatePrivacyPreference(
+                  "publicProfile",
+                  !userData.preferences.publicProfile
+                )
+              }
               className="gap-2"
             >
               {userData.preferences.publicProfile ? (
@@ -262,11 +299,16 @@ export function DataManagement({ userData, userId }: DataManagementProps) {
               </div>
             </div>
             <Button
-              variant={userData.preferences.dataSharing ? 'default' : 'outline'}
+              variant={userData.preferences.dataSharing ? "default" : "outline"}
               size="sm"
-              onClick={() => updatePrivacyPreference('dataSharing', !userData.preferences.dataSharing)}
+              onClick={() =>
+                updatePrivacyPreference(
+                  "dataSharing",
+                  !userData.preferences.dataSharing
+                )
+              }
             >
-              {userData.preferences.dataSharing ? 'Enabled' : 'Disabled'}
+              {userData.preferences.dataSharing ? "Enabled" : "Disabled"}
             </Button>
           </div>
         </CardContent>
@@ -282,7 +324,8 @@ export function DataManagement({ userData, userId }: DataManagementProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground">
-            Download a copy of all your data including profile information, votes, and activity history.
+            Download a copy of all your data including profile information,
+            votes, and activity history.
           </p>
 
           <Button
@@ -291,26 +334,33 @@ export function DataManagement({ userData, userId }: DataManagementProps) {
             className="gap-2"
           >
             <Download className="h-4 w-4" />
-            {isExporting ? 'Requesting Export...' : 'Request Data Export'}
+            {isExporting ? "Requesting Export..." : "Request Data Export"}
           </Button>
 
           {exportRequests.length > 0 && (
             <div className="space-y-2">
               <h4 className="font-medium">Export Requests</h4>
               {exportRequests.map((request) => (
-                <div key={request.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div
+                  key={request.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
                   <div className="flex items-center gap-3">
                     {getStatusIcon(request.status)}
                     <div>
                       <div className="font-medium">
-                        Requested {new Date(request.requestedAt).toLocaleDateString()}
+                        Requested{" "}
+                        {new Date(request.requestedAt).toLocaleDateString()}
                       </div>
-                      <Badge variant="secondary" className={getStatusColor(request.status)}>
+                      <Badge
+                        variant="secondary"
+                        className={getStatusColor(request.status)}
+                      >
                         {request.status}
                       </Badge>
                     </div>
                   </div>
-                  {request.status === 'completed' && request.downloadUrl && (
+                  {request.status === "completed" && request.downloadUrl && (
                     <Button size="sm" asChild>
                       <a href={request.downloadUrl} download>
                         Download
@@ -336,8 +386,9 @@ export function DataManagement({ userData, userId }: DataManagementProps) {
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              <strong>Warning:</strong> This action cannot be undone. All your data including votes, 
-              followed artists, and account information will be permanently deleted.
+              <strong>Warning:</strong> This action cannot be undone. All your
+              data including votes, followed artists, and account information
+              will be permanently deleted.
             </AlertDescription>
           </Alert>
 
@@ -368,17 +419,20 @@ export function DataManagement({ userData, userId }: DataManagementProps) {
                 <Button
                   variant="destructive"
                   onClick={deleteAccount}
-                  disabled={isDeletingAccount || deleteConfirmationText !== 'DELETE MY ACCOUNT'}
+                  disabled={
+                    isDeletingAccount ||
+                    deleteConfirmationText !== "DELETE MY ACCOUNT"
+                  }
                   className="gap-2"
                 >
                   <Trash2 className="h-4 w-4" />
-                  {isDeletingAccount ? 'Deleting...' : 'Confirm Deletion'}
+                  {isDeletingAccount ? "Deleting..." : "Confirm Deletion"}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setShowDeleteConfirmation(false);
-                    setDeleteConfirmationText('');
+                    setShowDeleteConfirmation(false)
+                    setDeleteConfirmationText("")
                   }}
                 >
                   Cancel
@@ -389,5 +443,5 @@ export function DataManagement({ userData, userId }: DataManagementProps) {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

@@ -1,6 +1,6 @@
-import { and, desc, eq, ilike, sql } from 'drizzle-orm';
-import { db } from '../client';
-import { artists, userFollowsArtists } from '../schema';
+import { and, desc, eq, ilike, sql } from "drizzle-orm"
+import { db } from "../client"
+import { artists, userFollowsArtists } from "../schema"
 
 export async function getArtistById(artistId: string) {
   const artist = await db
@@ -21,9 +21,9 @@ export async function getArtistById(artistId: string) {
     })
     .from(artists)
     .where(eq(artists.id, artistId))
-    .limit(1);
+    .limit(1)
 
-  return artist[0] || null;
+  return artist[0] || null
 }
 
 export async function getArtistBySlug(slug: string) {
@@ -50,9 +50,9 @@ export async function getArtistBySlug(slug: string) {
     })
     .from(artists)
     .where(eq(artists.slug, slug))
-    .limit(1);
+    .limit(1)
 
-  return artist[0] || null;
+  return artist[0] || null
 }
 
 export async function searchArtists(query: string, limit = 20) {
@@ -68,9 +68,9 @@ export async function searchArtists(query: string, limit = 20) {
     .from(artists)
     .where(ilike(artists.name, `%${query}%`))
     .orderBy(desc(artists.popularity))
-    .limit(limit);
+    .limit(limit)
 
-  return results;
+  return results
 }
 
 export async function getPopularArtists(limit = 20) {
@@ -85,9 +85,9 @@ export async function getPopularArtists(limit = 20) {
     })
     .from(artists)
     .orderBy(desc(artists.popularity))
-    .limit(limit);
+    .limit(limit)
 
-  return results;
+  return results
 }
 
 export async function getArtistsByGenre(genre: string, limit = 20) {
@@ -103,9 +103,9 @@ export async function getArtistsByGenre(genre: string, limit = 20) {
     .from(artists)
     .where(sql`${artists.genres}::text ILIKE ${`%${genre}%`}`)
     .orderBy(desc(artists.popularity))
-    .limit(limit);
+    .limit(limit)
 
-  return results;
+  return results
 }
 
 export async function getUserFollowedArtists(userId: string) {
@@ -124,9 +124,9 @@ export async function getUserFollowedArtists(userId: string) {
     .from(userFollowsArtists)
     .innerJoin(artists, eq(userFollowsArtists.artistId, artists.id))
     .where(eq(userFollowsArtists.userId, userId))
-    .orderBy(desc(userFollowsArtists.createdAt));
+    .orderBy(desc(userFollowsArtists.createdAt))
 
-  return results;
+  return results
 }
 
 export async function isUserFollowingArtist(userId: string, artistId: string) {
@@ -138,9 +138,9 @@ export async function isUserFollowingArtist(userId: string, artistId: string) {
         eq(userFollowsArtists.userId, userId),
         eq(userFollowsArtists.artistId, artistId)
       )
-    );
+    )
 
-  return result[0]?.count ? result[0].count > 0 : false;
+  return result[0]?.count ? result[0].count > 0 : false
 }
 
 export async function getSimilarArtists(artistId: string, limit = 10) {
@@ -149,21 +149,21 @@ export async function getSimilarArtists(artistId: string, limit = 10) {
     .select({ genres: artists.genres })
     .from(artists)
     .where(eq(artists.id, artistId))
-    .limit(1);
+    .limit(1)
 
   if (!artist[0] || !artist[0].genres) {
-    return [];
+    return []
   }
 
-  const genres = JSON.parse(artist[0].genres as string);
+  const genres = JSON.parse(artist[0].genres as string)
   if (!Array.isArray(genres) || genres.length === 0) {
-    return [];
+    return []
   }
 
   // Find artists with similar genres
   const genreConditions = genres.map(
     (genre) => sql`${artists.genres}::text ILIKE ${`%${genre}%`}`
-  );
+  )
 
   const results = await db
     .select({
@@ -182,7 +182,7 @@ export async function getSimilarArtists(artistId: string, limit = 10) {
       )
     )
     .orderBy(desc(artists.popularity))
-    .limit(limit);
+    .limit(limit)
 
-  return results;
+  return results
 }

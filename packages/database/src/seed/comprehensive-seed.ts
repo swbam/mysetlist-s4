@@ -36,7 +36,7 @@ ongs`)ength} sgsData.lontlistSs with ${seetlistth} stlists.lengertedSe{insSeeded
     
  istIeadlinerArtshow.h.id === d(a => artists.finllA artist = a    constws[i];
 lShohow = al  const si];
-  tlists[nsertedSetlist = iconst se) {
+  tlists[nsertedSetlist = iconst se) 
     gth; i++lenedSetlists.i < inserti = 0;  for (let s
  s to setlistsong Add );
   
@@ -45,15 +45,14 @@ lShohow = al  const si];
   tlist);
   ush(sestsData.pli set
     
-   0,
-    };racyScore: accu
+   0,;racyScore: accu
       100,1000) + m() * ndoth.ra.floor(Mates: MathtotalVo     false,
   ocked:   isLx: 0,
    rInde   orde',
    'Main Setme:   na    nst,
 s codicted' a  type: 'preId,
     istArtner.headliId: show  artist,
-     show.idshowId:{
+     show.idshowId:
        = t setlist   consetlist
  icted se a pred   // Creat
  allShows) { of  showfor (const [];
@@ -434,8 +433,7 @@ rences and prefeh profileit wrsh} uses.lengtedUsernsertd ${i✅ Seedeonsole.log(
   
 fsData);remailP(eces).valuesailPreferensert(eminwait db.
 
-  aue,
-  }));ails: tr securityEmlse,
+  aue,));ails: tr securityEmlse,
    ails: fagEmarketinrue,
     mklyDigest: tt,
     weeely' as consmediatimuency: 'eqstUpdateFr setlirue,
@@ -445,14 +443,13 @@ fsData);remailP(eces).valuesailPreferensert(eminwait db.
     newShost,as con' : 'dailyderFrequencyReminow
     shrue,ers: tnd showRemirue,
    bled: tlEna  emaid,
-  user.i    userId: er => ({
+  user.i    userId: er => (
 rs.map(us insertedUse =ilPrefsData  const emances
 prefereil ate ema  // Crea);
 
 filesDatues(userPro.valProfiles)sert(userwait db.in));
 
-  arue,
-  }tedSongs: towVo    shws: true,
+  arue,tedSongs: towVo    shws: true,
 tendedShoshowAtue,
      tric:sPubl]),
     iernative', 'Alt 'Pop'fy(['Rock',SON.stringiteGenres: J   favorio, CA',
@@ -469,31 +466,24 @@ eturnUsers).rues(testers).valsert(usin = await db.nsertedUsers
 rified: neilVe
       emaas const, 'admin'     role:n User',
   me: 'AdmiisplayNa     d,
- tlist.com'in@mysemail: 'adm     e
-     {
-    },
+ tlist.com'in@mysemail: 'adm     e,
 Date(),ew erified: n emailV  onst,
     cser' asrole: 'u',
       e Smith 'JanName:aydispl      m',
 h@example.cone.smitl: 'ja
-      emai
-    {    },
+      emai,
 ew Date(),Verified: n  emailt,
     ser' as cons    role: 'u  John Doe',
 layName: 'dispm',
       ample.co@exjohn.doel: '    emai
-   [
-    {s =t testUserns
+   [s =t testUserns
   
-  cosers...');ding uSeelog('👥 le.nsors() {
+  cosers...');ding uSeelog('👥 le.nsors() 
   coeedUseon sc functi
 
-asyn
-  }
-}ror;ow err);
-    thriled:', errofase seeding Databaerror('❌ ole. cons  rror) {
- catch (e!');
-  } ullyed successfding complettabase seeg('✅ Dalosole.
+asynror;ow err);
+    thriled:', errofase seeding Databaerror('❌ ole. cons  rror) 
+ catch (e!');ullyed successfding complettabase seeg('✅ Dalosole.
     con
     etlists();seedSawait     dShows();
   await seests
@@ -508,14 +498,13 @@ asyn
     awsers fieed u    // S{
 
 
-  try );...'seedingse e databasiv comprehen('🌱 Starting.lognsole{
+  try );...'seedingse e databasiv comprehen('🌱 Starting.lognsole
   cotabase() on seedDanctiort async fuexp
  */
  and testingment for developeedingabase sensive datompreh
  * C
 
-/**/schema';m '..nces 
-} froefere,
+/**/schema';m '..nces froefere,
   emailPrileserProf
   us  users, , 
 gson setlistSlists, 

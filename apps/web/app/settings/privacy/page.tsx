@@ -1,25 +1,25 @@
-import { redirect } from 'next/navigation';
-import { createClient } from '~/lib/supabase/server';
-import { PrivacySettings } from './components/privacy-settings';
+import { redirect } from "next/navigation"
+import { createClient } from "~/lib/supabase/server"
+import { PrivacySettings } from "./components/privacy-settings"
 
 // Force dynamic rendering due to user-specific data fetching
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic"
 
 export default async function PrivacySettingsPage() {
-  const supabase = await createClient();
+  const supabase = await createClient()
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getUser()
 
   if (!user) {
-    redirect('/auth/sign-in');
+    redirect("/auth/sign-in")
   }
 
   const { data: privacySettings } = await supabase
-    .from('user_privacy_settings')
-    .select('*')
-    .eq('user_id', user.id)
-    .single();
+    .from("user_privacy_settings")
+    .select("*")
+    .eq("user_id", user.id)
+    .single()
 
   return (
     <div className="container mx-auto max-w-4xl py-8">
@@ -27,9 +27,9 @@ export default async function PrivacySettingsPage() {
 
       <PrivacySettings
         userId={user.id}
-        email={user.email || ''}
+        email={user.email || ""}
         currentSettings={privacySettings}
       />
     </div>
-  );
+  )
 }

@@ -3,14 +3,14 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Clock, Eye, TrendingUp, Users } from 'lucide-react';
-import { createServiceClient } from '~/lib/supabase/server';
+} from "@repo/design-system/components/ui/card"
+import { Clock, Eye, TrendingUp, Users } from "lucide-react"
+import { createServiceClient } from "~/lib/supabase/server"
 
 async function fetchStats() {
   try {
-    const supabase = await createServiceClient();
-    const { data } = await supabase.rpc('admin_dashboard_stats'); // assumes view exists and function returns row
+    const supabase = await createServiceClient()
+    const { data } = await supabase.rpc("admin_dashboard_stats") // assumes view exists and function returns row
 
     // Fallback shape if view/function not present
     return {
@@ -18,19 +18,19 @@ async function fetchStats() {
       hot_shows: data?.total_shows ?? 0,
       search_volume: data?.total_searches ?? 0,
       active_users: data?.active_users ?? 0,
-    } as any;
+    } as any
   } catch (_e) {
     return {
       trending_artists: 0,
       hot_shows: 0,
       search_volume: 0,
       active_users: 0,
-    };
+    }
   }
 }
 
 export async function QuickStats() {
-  const stats = await fetchStats();
+  const stats = await fetchStats()
 
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -73,5 +73,5 @@ export async function QuickStats() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

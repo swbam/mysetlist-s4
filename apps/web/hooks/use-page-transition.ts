@@ -1,39 +1,39 @@
-'use client';
+"use client"
 
-import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { usePathname } from "next/navigation"
+import { useEffect } from "react"
 import {
   addBodyClass,
   removeBodyClass,
   safeAppendToHead,
   safeDocument,
   safeGetElementById,
-} from '~/lib/navigation/dom-utils';
+} from "~/lib/navigation/dom-utils"
 
 export function usePageTransition() {
-  const pathname = usePathname();
+  const pathname = usePathname()
 
   useEffect(() => {
     // Add transition class to body
-    addBodyClass('page-transition');
+    addBodyClass("page-transition")
 
     // Remove after transition completes
     const timer = setTimeout(() => {
-      removeBodyClass('page-transition');
-    }, 300);
+      removeBodyClass("page-transition")
+    }, 300)
 
     return () => {
-      clearTimeout(timer);
-      removeBodyClass('page-transition');
-    };
-  }, [pathname]);
+      clearTimeout(timer)
+      removeBodyClass("page-transition")
+    }
+  }, [pathname])
 
   useEffect(() => {
     // Add CSS for transitions if not already present
-    const styleId = 'page-transition-styles';
+    const styleId = "page-transition-styles"
     if (!safeGetElementById(styleId) && safeDocument) {
-      const style = safeDocument.createElement('style');
-      style.id = styleId;
+      const style = safeDocument.createElement("style")
+      style.id = styleId
       style.textContent = `
         .page-transition {
           animation: slideInFromRight 0.3s ease-out;
@@ -73,8 +73,8 @@ export function usePageTransition() {
             }
           }
         }
-      `;
-      safeAppendToHead(style);
+      `
+      safeAppendToHead(style)
     }
-  }, []);
+  }, [])
 }

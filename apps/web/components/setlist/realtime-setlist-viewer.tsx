@@ -1,30 +1,29 @@
-'use client';
+"use client"
 
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Badge } from '@repo/design-system/components/ui/badge';
+} from "@repo/design-system/components/ui/alert"
+import { Badge } from "@repo/design-system/components/ui/badge"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { cn } from '@repo/design-system/lib/utils';
-import { Music2, TrendingUp, Wifi, WifiOff } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { useAuth } from '~/app/providers/auth-provider';
-import { VoteButton } from '../voting/vote-button';
-import { VoteSummary } from '../voting/vote-summary';
-
+} from "@repo/design-system/components/ui/card"
+import { cn } from "@repo/design-system/lib/utils"
+import { Music2, TrendingUp, Wifi, WifiOff } from "lucide-react"
+import Image from "next/image"
+import { useEffect, useState } from "react"
+import { useAuth } from "~/app/providers/auth-provider"
+import { VoteButton } from "../voting/vote-button"
+import { VoteSummary } from "../voting/vote-summary"
 
 interface RealtimeSetlistViewerProps {
-  showId: string;
-  isLive?: boolean;
-  showVotes?: boolean;
-  refreshInterval?: number;
+  showId: string
+  isLive?: boolean
+  showVotes?: boolean
+  refreshInterval?: number
 }
 
 export function RealtimeSetlistViewer({
@@ -33,75 +32,75 @@ export function RealtimeSetlistViewer({
   showVotes = true,
   refreshInterval = 30000, // 30 seconds
 }: RealtimeSetlistViewerProps) {
-  const { session } = useAuth();
-  const [setlists, setSetlists] = useState<any[]>([]);
-  const [isConnected, setIsConnected] = useState(true);
-  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
+  const { session } = useAuth()
+  const [setlists, setSetlists] = useState<any[]>([])
+  const [isConnected, setIsConnected] = useState(true)
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
   const [totalVotes, setTotalVotes] = useState({
     total: 0,
     upvotes: 0,
     downvotes: 0,
-  });
+  })
 
   useEffect(() => {
-    fetchSetlists();
+    fetchSetlists()
 
     const interval = setInterval(() => {
-      fetchSetlists();
-    }, refreshInterval);
+      fetchSetlists()
+    }, refreshInterval)
 
-    return () => clearInterval(interval);
-  }, [showId, refreshInterval]);
+    return () => clearInterval(interval)
+  }, [showId, refreshInterval])
 
   const fetchSetlists = async () => {
     try {
-      const response = await fetch(`/api/setlists/${showId}`);
+      const response = await fetch(`/api/setlists/${showId}`)
 
       if (!response.ok) {
-        throw new Error('Failed to fetch setlists');
+        throw new Error("Failed to fetch setlists")
       }
 
-      const data = await response.json();
-      setSetlists(data.setlists || []);
-      setLastUpdate(new Date());
-      setIsConnected(true);
+      const data = await response.json()
+      setSetlists(data.setlists || [])
+      setLastUpdate(new Date())
+      setIsConnected(true)
 
       // Calculate total votes
       const votes = data.setlists.reduce(
         (acc: any, setlist: any) => {
           setlist.songs?.forEach((song: any) => {
-            acc.total += song.upvotes + song.downvotes;
-            acc.upvotes += song.upvotes;
-            acc.downvotes += song.downvotes;
-          });
-          return acc;
+            acc.total += song.upvotes + song.downvotes
+            acc.upvotes += song.upvotes
+            acc.downvotes += song.downvotes
+          })
+          return acc
         },
         { total: 0, upvotes: 0, downvotes: 0 }
-      );
+      )
 
-      setTotalVotes(votes);
+      setTotalVotes(votes)
     } catch (_error) {
-      setIsConnected(false);
+      setIsConnected(false)
     }
-  };
+  }
 
   const handleVote = async (
     setlistSongId: string,
-    voteType: 'up' | 'down' | null
+    voteType: "up" | "down" | null
   ) => {
-    const response = await fetch('/api/votes', {
-      method: 'POST',
+    const response = await fetch("/api/votes", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         setlistSongId,
         voteType,
       }),
-    });
+    })
 
     if (!response.ok) {
-      throw new Error('Failed to vote');
+      throw new Error("Failed to vote")
     }
 
     // Optimistically update local state
@@ -110,24 +109,24 @@ export function RealtimeSetlistViewer({
         ...setlist,
         songs: setlist.songs?.map((song: any) => {
           if (song.id === setlistSongId) {
-            const currentVote = song.userVote;
-            let upvotes = song.upvotes;
-            let downvotes = song.downvotes;
+            const currentVote = song.userVote
+            let upvotes = song.upvotes
+            let downvotes = song.downvotes
 
             // Remove previous vote
-            if (currentVote === 'up') {
-              upvotes--;
+            if (currentVote === "up") {
+              upvotes--
             }
-            if (currentVote === 'down') {
-              downvotes--;
+            if (currentVote === "down") {
+              downvotes--
             }
 
             // Add new vote
-            if (voteType === 'up') {
-              upvotes++;
+            if (voteType === "up") {
+              upvotes++
             }
-            if (voteType === 'down') {
-              downvotes++;
+            if (voteType === "down") {
+              downvotes++
             }
 
             return {
@@ -136,42 +135,42 @@ export function RealtimeSetlistViewer({
               downvotes,
               netVotes: upvotes - downvotes,
               userVote: voteType,
-            };
+            }
           }
-          return song;
+          return song
         }),
       }))
-    );
+    )
 
     // Refresh data to ensure consistency
-    setTimeout(fetchSetlists, 1000);
-  };
+    setTimeout(fetchSetlists, 1000)
+  }
 
   const formatDuration = (ms?: number) => {
     if (!ms) {
-      return '';
+      return ""
     }
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
+    const seconds = Math.floor(ms / 1000)
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
+  }
 
   const formatLastUpdate = (date: Date) => {
-    const now = new Date();
-    const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const now = new Date()
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000)
 
     if (diff < 60) {
-      return `${diff}s ago`;
+      return `${diff}s ago`
     }
     if (diff < 3600) {
-      return `${Math.floor(diff / 60)}m ago`;
+      return `${Math.floor(diff / 60)}m ago`
     }
-    return `${Math.floor(diff / 3600)}h ago`;
-  };
+    return `${Math.floor(diff / 3600)}h ago`
+  }
 
   const getTopVotedSongs = () => {
-    const allSongs: any[] = [];
+    const allSongs: any[] = []
     setlists.forEach((setlist) => {
       setlist.songs?.forEach((song: any) => {
         allSongs.push({
@@ -181,17 +180,17 @@ export function RealtimeSetlistViewer({
           netVotes: song.netVotes,
           upvotes: song.upvotes,
           downvotes: song.downvotes,
-        });
-      });
-    });
+        })
+      })
+    })
 
-    return allSongs.sort((a, b) => b.netVotes - a.netVotes);
-  };
+    return allSongs.sort((a, b) => b.netVotes - a.netVotes)
+  }
 
   return (
     <div className="space-y-6">
       {/* Connection Status */}
-      <Alert className={cn(!isConnected && 'border-red-200 bg-red-50')}>
+      <Alert className={cn(!isConnected && "border-red-200 bg-red-50")}>
         <div className="flex items-center gap-2">
           {isConnected ? (
             <Wifi className="h-4 w-4 text-green-600" />
@@ -201,7 +200,7 @@ export function RealtimeSetlistViewer({
           <AlertDescription>
             {isConnected ? (
               <>
-                Live updates enabled • Last updated{' '}
+                Live updates enabled • Last updated{" "}
                 {formatLastUpdate(lastUpdate)}
                 {isLive && (
                   <Badge variant="destructive" className="ml-2">
@@ -210,7 +209,7 @@ export function RealtimeSetlistViewer({
                 )}
               </>
             ) : (
-              'Connection lost. Retrying...'
+              "Connection lost. Retrying..."
             )}
           </AlertDescription>
         </div>
@@ -228,7 +227,7 @@ export function RealtimeSetlistViewer({
                     {setlist.name}
                     <Badge
                       variant={
-                        setlist.type === 'actual' ? 'default' : 'secondary'
+                        setlist.type === "actual" ? "default" : "secondary"
                       }
                     >
                       {setlist.type}
@@ -249,10 +248,10 @@ export function RealtimeSetlistViewer({
                         <div
                           key={song.id}
                           className={cn(
-                            'flex items-center gap-3 rounded-lg p-3 transition-colors',
-                            'hover:bg-muted/50',
+                            "flex items-center gap-3 rounded-lg p-3 transition-colors",
+                            "hover:bg-muted/50",
                             song.isPlayed &&
-                              'border border-green-200 bg-green-50'
+                              "border border-green-200 bg-green-50"
                           )}
                         >
                           {/* Position */}
@@ -320,7 +319,7 @@ export function RealtimeSetlistViewer({
                           {showVotes &&
                             session &&
                             !setlist.isLocked &&
-                            setlist.type === 'predicted' && (
+                            setlist.type === "predicted" && (
                               <VoteButton
                                 setlistSongId={song.id}
                                 currentVote={song.userVote}
@@ -338,17 +337,17 @@ export function RealtimeSetlistViewer({
                           {showVotes &&
                             (!session ||
                               setlist.isLocked ||
-                              setlist.type === 'actual') && (
+                              setlist.type === "actual") && (
                               <div className="flex items-center gap-1 text-sm">
                                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
                                 <span
                                   className={cn(
-                                    'font-medium',
-                                    song.netVotes > 0 && 'text-green-600',
-                                    song.netVotes < 0 && 'text-red-600'
+                                    "font-medium",
+                                    song.netVotes > 0 && "text-green-600",
+                                    song.netVotes < 0 && "text-red-600"
                                   )}
                                 >
-                                  {song.netVotes > 0 ? '+' : ''}
+                                  {song.netVotes > 0 ? "+" : ""}
                                   {song.netVotes}
                                 </span>
                               </div>
@@ -392,5 +391,5 @@ export function RealtimeSetlistViewer({
         )}
       </div>
     </div>
-  );
+  )
 }

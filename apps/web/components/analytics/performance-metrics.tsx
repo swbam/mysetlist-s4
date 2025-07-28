@@ -1,74 +1,94 @@
-'use client';
+"use client"
 
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Progress } from '@repo/design-system/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
-import { Zap, Server, Database, Clock, TrendingUp, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card"
+import { Progress } from "@repo/design-system/components/ui/progress"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs"
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Database,
+  Server,
+  TrendingUp,
+  XCircle,
+  Zap,
+} from "lucide-react"
+import { useEffect, useState } from "react"
 
 interface PerformanceData {
   apiMetrics: {
-    totalRequests: number;
-    avgResponseTime: number;
-    medianResponseTime: number;
-    p95ResponseTime: number;
-    p99ResponseTime: number;
-    errorRate: number;
-    throughput: number;
-    uptime: number;
-  };
+    totalRequests: number
+    avgResponseTime: number
+    medianResponseTime: number
+    p95ResponseTime: number
+    p99ResponseTime: number
+    errorRate: number
+    throughput: number
+    uptime: number
+  }
   databaseMetrics: {
-    totalQueries: number;
-    avgQueryTime: number;
-    slowQueries: number;
-    connectionPool: number;
-    cachehitRate: number;
-    deadlocks: number;
-  };
+    totalQueries: number
+    avgQueryTime: number
+    slowQueries: number
+    connectionPool: number
+    cachehitRate: number
+    deadlocks: number
+  }
   systemMetrics: {
-    cpuUsage: number;
-    memoryUsage: number;
-    diskUsage: number;
-    networkLatency: number;
-    loadAverage: number;
-  };
+    cpuUsage: number
+    memoryUsage: number
+    diskUsage: number
+    networkLatency: number
+    loadAverage: number
+  }
   endpoints: Array<{
-    path: string;
-    method: string;
-    requests: number;
-    avgResponseTime: number;
-    errorRate: number;
-    status: 'healthy' | 'warning' | 'error';
-  }>;
+    path: string
+    method: string
+    requests: number
+    avgResponseTime: number
+    errorRate: number
+    status: "healthy" | "warning" | "error"
+  }>
   errorBreakdown: Array<{
-    type: string;
-    count: number;
-    percentage: number;
-    trend: 'up' | 'down' | 'stable';
-  }>;
+    type: string
+    count: number
+    percentage: number
+    trend: "up" | "down" | "stable"
+  }>
   performanceGoals: Array<{
-    metric: string;
-    target: number;
-    current: number;
-    status: 'met' | 'warning' | 'missed';
-  }>;
+    metric: string
+    target: number
+    current: number
+    status: "met" | "warning" | "missed"
+  }>
 }
 
 export function PerformanceMetrics() {
-  const [data, setData] = useState<PerformanceData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<PerformanceData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchPerformanceData();
-  }, []);
+    fetchPerformanceData()
+  }, [])
 
   const fetchPerformanceData = async () => {
     try {
-      setLoading(true);
-      
+      setLoading(true)
+
       // Mock data - in production this would fetch from /api/analytics?metric=performance
       const mockData: PerformanceData = {
         apiMetrics: {
@@ -79,7 +99,7 @@ export function PerformanceMetrics() {
           p99ResponseTime: 580,
           errorRate: 0.8,
           throughput: 1234,
-          uptime: 99.97
+          uptime: 99.97,
         },
         databaseMetrics: {
           totalQueries: 156789,
@@ -87,89 +107,163 @@ export function PerformanceMetrics() {
           slowQueries: 45,
           connectionPool: 85,
           cachehitRate: 94.2,
-          deadlocks: 2
+          deadlocks: 2,
         },
         systemMetrics: {
           cpuUsage: 42.5,
           memoryUsage: 68.3,
           diskUsage: 34.7,
           networkLatency: 12.5,
-          loadAverage: 1.8
+          loadAverage: 1.8,
         },
         endpoints: [
-          { path: '/api/artists', method: 'GET', requests: 45678, avgResponseTime: 89, errorRate: 0.2, status: 'healthy' },
-          { path: '/api/shows', method: 'GET', requests: 34567, avgResponseTime: 156, errorRate: 0.5, status: 'healthy' },
-          { path: '/api/votes', method: 'POST', requests: 23456, avgResponseTime: 234, errorRate: 1.2, status: 'warning' },
-          { path: '/api/search', method: 'GET', requests: 19876, avgResponseTime: 345, errorRate: 0.8, status: 'healthy' },
-          { path: '/api/analytics', method: 'GET', requests: 12345, avgResponseTime: 567, errorRate: 2.1, status: 'error' },
-          { path: '/api/recommendations', method: 'GET', requests: 9876, avgResponseTime: 123, errorRate: 0.3, status: 'healthy' }
+          {
+            path: "/api/artists",
+            method: "GET",
+            requests: 45678,
+            avgResponseTime: 89,
+            errorRate: 0.2,
+            status: "healthy",
+          },
+          {
+            path: "/api/shows",
+            method: "GET",
+            requests: 34567,
+            avgResponseTime: 156,
+            errorRate: 0.5,
+            status: "healthy",
+          },
+          {
+            path: "/api/votes",
+            method: "POST",
+            requests: 23456,
+            avgResponseTime: 234,
+            errorRate: 1.2,
+            status: "warning",
+          },
+          {
+            path: "/api/search",
+            method: "GET",
+            requests: 19876,
+            avgResponseTime: 345,
+            errorRate: 0.8,
+            status: "healthy",
+          },
+          {
+            path: "/api/analytics",
+            method: "GET",
+            requests: 12345,
+            avgResponseTime: 567,
+            errorRate: 2.1,
+            status: "error",
+          },
+          {
+            path: "/api/recommendations",
+            method: "GET",
+            requests: 9876,
+            avgResponseTime: 123,
+            errorRate: 0.3,
+            status: "healthy",
+          },
         ],
         errorBreakdown: [
-          { type: '4xx Client Errors', count: 1234, percentage: 65.2, trend: 'down' },
-          { type: '5xx Server Errors', count: 456, percentage: 24.1, trend: 'stable' },
-          { type: 'Database Errors', count: 123, percentage: 6.5, trend: 'down' },
-          { type: 'Timeout Errors', count: 78, percentage: 4.1, trend: 'up' }
+          {
+            type: "4xx Client Errors",
+            count: 1234,
+            percentage: 65.2,
+            trend: "down",
+          },
+          {
+            type: "5xx Server Errors",
+            count: 456,
+            percentage: 24.1,
+            trend: "stable",
+          },
+          {
+            type: "Database Errors",
+            count: 123,
+            percentage: 6.5,
+            trend: "down",
+          },
+          { type: "Timeout Errors", count: 78, percentage: 4.1, trend: "up" },
         ],
         performanceGoals: [
-          { metric: 'API Response Time', target: 200, current: 145, status: 'met' },
-          { metric: 'Error Rate', target: 1.0, current: 0.8, status: 'met' },
-          { metric: 'Uptime', target: 99.9, current: 99.97, status: 'met' },
-          { metric: 'Cache Hit Rate', target: 90, current: 94.2, status: 'met' },
-          { metric: 'Database Query Time', target: 50, current: 23, status: 'met' },
-          { metric: 'CPU Usage', target: 70, current: 42.5, status: 'met' }
-        ]
-      };
-      
-      setData(mockData);
+          {
+            metric: "API Response Time",
+            target: 200,
+            current: 145,
+            status: "met",
+          },
+          { metric: "Error Rate", target: 1.0, current: 0.8, status: "met" },
+          { metric: "Uptime", target: 99.9, current: 99.97, status: "met" },
+          {
+            metric: "Cache Hit Rate",
+            target: 90,
+            current: 94.2,
+            status: "met",
+          },
+          {
+            metric: "Database Query Time",
+            target: 50,
+            current: 23,
+            status: "met",
+          },
+          { metric: "CPU Usage", target: 70, current: 42.5, status: "met" },
+        ],
+      }
+
+      setData(mockData)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load performance data');
+      setError(
+        err instanceof Error ? err.message : "Failed to load performance data"
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'healthy':
-      case 'met':
-        return 'text-green-600';
-      case 'warning':
-        return 'text-yellow-600';
-      case 'error':
-      case 'missed':
-        return 'text-red-600';
+      case "healthy":
+      case "met":
+        return "text-green-600"
+      case "warning":
+        return "text-yellow-600"
+      case "error":
+      case "missed":
+        return "text-red-600"
       default:
-        return 'text-gray-600';
+        return "text-gray-600"
     }
-  };
+  }
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'healthy':
-      case 'met':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'warning':
-        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
-      case 'error':
-      case 'missed':
-        return <XCircle className="h-4 w-4 text-red-600" />;
+      case "healthy":
+      case "met":
+        return <CheckCircle className="h-4 w-4 text-green-600" />
+      case "warning":
+        return <AlertTriangle className="h-4 w-4 text-yellow-600" />
+      case "error":
+      case "missed":
+        return <XCircle className="h-4 w-4 text-red-600" />
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
-      case 'up':
-        return <TrendingUp className="h-4 w-4 text-red-500" />;
-      case 'down':
-        return <TrendingUp className="h-4 w-4 text-green-500 rotate-180" />;
-      case 'stable':
-        return <div className="h-4 w-4 bg-gray-400 rounded-full" />;
+      case "up":
+        return <TrendingUp className="h-4 w-4 text-red-500" />
+      case "down":
+        return <TrendingUp className="h-4 w-4 text-green-500 rotate-180" />
+      case "stable":
+        return <div className="h-4 w-4 bg-gray-400 rounded-full" />
       default:
-        return null;
+        return null
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -190,7 +284,7 @@ export function PerformanceMetrics() {
           ))}
         </div>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -205,10 +299,10 @@ export function PerformanceMetrics() {
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
-  if (!data) return null;
+  if (!data) return null
 
   return (
     <div className="space-y-6">
@@ -235,20 +329,32 @@ export function PerformanceMetrics() {
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Avg Response Time</span>
-                <span className="font-medium">{data.apiMetrics.avgResponseTime}ms</span>
+                <span className="text-sm text-muted-foreground">
+                  Avg Response Time
+                </span>
+                <span className="font-medium">
+                  {data.apiMetrics.avgResponseTime}ms
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Error Rate</span>
-                <span className="font-medium">{data.apiMetrics.errorRate}%</span>
+                <span className="text-sm text-muted-foreground">
+                  Error Rate
+                </span>
+                <span className="font-medium">
+                  {data.apiMetrics.errorRate}%
+                </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Uptime</span>
                 <span className="font-medium">{data.apiMetrics.uptime}%</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Throughput</span>
-                <span className="font-medium">{data.apiMetrics.throughput}/s</span>
+                <span className="text-sm text-muted-foreground">
+                  Throughput
+                </span>
+                <span className="font-medium">
+                  {data.apiMetrics.throughput}/s
+                </span>
               </div>
             </div>
           </CardContent>
@@ -264,20 +370,36 @@ export function PerformanceMetrics() {
           <CardContent>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Avg Query Time</span>
-                <span className="font-medium">{data.databaseMetrics.avgQueryTime}ms</span>
+                <span className="text-sm text-muted-foreground">
+                  Avg Query Time
+                </span>
+                <span className="font-medium">
+                  {data.databaseMetrics.avgQueryTime}ms
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Cache Hit Rate</span>
-                <span className="font-medium">{data.databaseMetrics.cachehitRate}%</span>
+                <span className="text-sm text-muted-foreground">
+                  Cache Hit Rate
+                </span>
+                <span className="font-medium">
+                  {data.databaseMetrics.cachehitRate}%
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Slow Queries</span>
-                <span className="font-medium">{data.databaseMetrics.slowQueries}</span>
+                <span className="text-sm text-muted-foreground">
+                  Slow Queries
+                </span>
+                <span className="font-medium">
+                  {data.databaseMetrics.slowQueries}
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Connection Pool</span>
-                <span className="font-medium">{data.databaseMetrics.connectionPool}%</span>
+                <span className="text-sm text-muted-foreground">
+                  Connection Pool
+                </span>
+                <span className="font-medium">
+                  {data.databaseMetrics.connectionPool}%
+                </span>
               </div>
             </div>
           </CardContent>
@@ -294,19 +416,33 @@ export function PerformanceMetrics() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">CPU Usage</span>
-                <span className="font-medium">{data.systemMetrics.cpuUsage}%</span>
+                <span className="font-medium">
+                  {data.systemMetrics.cpuUsage}%
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Memory Usage</span>
-                <span className="font-medium">{data.systemMetrics.memoryUsage}%</span>
+                <span className="text-sm text-muted-foreground">
+                  Memory Usage
+                </span>
+                <span className="font-medium">
+                  {data.systemMetrics.memoryUsage}%
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Disk Usage</span>
-                <span className="font-medium">{data.systemMetrics.diskUsage}%</span>
+                <span className="text-sm text-muted-foreground">
+                  Disk Usage
+                </span>
+                <span className="font-medium">
+                  {data.systemMetrics.diskUsage}%
+                </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-muted-foreground">Network Latency</span>
-                <span className="font-medium">{data.systemMetrics.networkLatency}ms</span>
+                <span className="text-sm text-muted-foreground">
+                  Network Latency
+                </span>
+                <span className="font-medium">
+                  {data.systemMetrics.networkLatency}ms
+                </span>
               </div>
             </div>
           </CardContent>
@@ -332,7 +468,10 @@ export function PerformanceMetrics() {
             <CardContent>
               <div className="space-y-4">
                 {data.endpoints.map((endpoint, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-muted/50 rounded-lg"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
                         {getStatusIcon(endpoint.status)}
@@ -348,8 +487,12 @@ export function PerformanceMetrics() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-medium">{endpoint.avgResponseTime}ms</div>
-                      <div className={`text-xs ${getStatusColor(endpoint.status)}`}>
+                      <div className="text-sm font-medium">
+                        {endpoint.avgResponseTime}ms
+                      </div>
+                      <div
+                        className={`text-xs ${getStatusColor(endpoint.status)}`}
+                      >
                         {endpoint.errorRate}% errors
                       </div>
                     </div>
@@ -371,7 +514,10 @@ export function PerformanceMetrics() {
             <CardContent>
               <div className="space-y-4">
                 {data.errorBreakdown.map((error, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-muted/50 rounded-lg"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
                         {getTrendIcon(error.trend)}
@@ -410,7 +556,10 @@ export function PerformanceMetrics() {
             <CardContent>
               <div className="space-y-4">
                 {data.performanceGoals.map((goal, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 bg-muted/50 rounded-lg"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
                         {getStatusIcon(goal.status)}
@@ -425,7 +574,7 @@ export function PerformanceMetrics() {
                     <div className="text-right">
                       <div className="text-lg font-bold">{goal.current}</div>
                       <div className={`text-xs ${getStatusColor(goal.status)}`}>
-                        {goal.status === 'met' ? 'Target met' : 'Target missed'}
+                        {goal.status === "met" ? "Target met" : "Target missed"}
                       </div>
                     </div>
                   </div>
@@ -436,5 +585,5 @@ export function PerformanceMetrics() {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

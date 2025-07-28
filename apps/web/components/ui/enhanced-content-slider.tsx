@@ -1,4 +1,4 @@
-'use client';
+"use client"
 
 import {
   Carousel,
@@ -7,40 +7,40 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from '@repo/design-system/components/ui/carousel';
-import { cn } from '@repo/design-system/lib/utils';
-import { motion } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
-import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+} from "@repo/design-system/components/ui/carousel"
+import { cn } from "@repo/design-system/lib/utils"
+import { motion } from "framer-motion"
+import { ChevronRight } from "lucide-react"
+import Link from "next/link"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 interface EnhancedContentSliderProps {
-  title: string;
-  subtitle?: string;
-  viewAllLink?: string;
-  viewAllText?: string;
-  autoPlay?: boolean;
-  autoPlayInterval?: number;
-  className?: string;
-  children: React.ReactNode;
+  title: string
+  subtitle?: string
+  viewAllLink?: string
+  viewAllText?: string
+  autoPlay?: boolean
+  autoPlayInterval?: number
+  className?: string
+  children: React.ReactNode
   itemsPerView?: {
-    mobile?: number;
-    tablet?: number;
-    desktop?: number;
-    wide?: number;
-  };
-  loop?: boolean;
-  showDots?: boolean;
-  gradientOverlay?: boolean;
-  isLoading?: boolean;
-  error?: string | null;
+    mobile?: number
+    tablet?: number
+    desktop?: number
+    wide?: number
+  }
+  loop?: boolean
+  showDots?: boolean
+  gradientOverlay?: boolean
+  isLoading?: boolean
+  error?: string | null
 }
 
 export function EnhancedContentSlider({
   title,
   subtitle,
   viewAllLink,
-  viewAllText = 'View All',
+  viewAllText = "View All",
   autoPlay = false,
   autoPlayInterval = 4000,
   className,
@@ -57,87 +57,85 @@ export function EnhancedContentSlider({
   isLoading = false,
   error = null,
 }: EnhancedContentSliderProps) {
-  const [api, setApi] = useState<CarouselApi>();
-  const [current, setCurrent] = useState(0);
-  const [count, setCount] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [api, setApi] = useState<CarouselApi>()
+  const [current, setCurrent] = useState(0)
+  const [count, setCount] = useState(0)
+  const [isHovered, setIsHovered] = useState(false)
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     if (!api) {
-      return;
+      return
     }
 
-    setCount(api.scrollSnapList().length);
-    setCurrent(api.selectedScrollSnap());
+    setCount(api.scrollSnapList().length)
+    setCurrent(api.selectedScrollSnap())
 
-    api.on('select', () => {
-      setCurrent(api.selectedScrollSnap());
-    });
-  }, [api]);
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap())
+    })
+  }, [api])
 
   // Auto-play functionality with performance optimization
   const startAutoPlay = useCallback(() => {
     if (!api || !autoPlay || isHovered) {
-      return;
+      return
     }
 
     intervalRef.current = setInterval(() => {
       if (api.canScrollNext()) {
-        api.scrollNext();
+        api.scrollNext()
       } else if (loop) {
-        api.scrollTo(0);
+        api.scrollTo(0)
       }
-    }, autoPlayInterval);
-  }, [api, autoPlay, autoPlayInterval, loop, isHovered]);
+    }, autoPlayInterval)
+  }, [api, autoPlay, autoPlayInterval, loop, isHovered])
 
   const stopAutoPlay = useCallback(() => {
     if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+      clearInterval(intervalRef.current)
+      intervalRef.current = null
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
     if (autoPlay && !isHovered) {
-      startAutoPlay();
+      startAutoPlay()
     } else {
-      stopAutoPlay();
+      stopAutoPlay()
     }
 
     return () => {
-      stopAutoPlay();
-    };
-  }, [autoPlay, isHovered, startAutoPlay, stopAutoPlay]);
+      stopAutoPlay()
+    }
+  }, [autoPlay, isHovered, startAutoPlay, stopAutoPlay])
 
   // Handle mouse events for auto-play
   const handleMouseEnter = useCallback(() => {
-    setIsHovered(true);
-  }, []);
+    setIsHovered(true)
+  }, [])
 
   const handleMouseLeave = useCallback(() => {
-    setIsHovered(false);
-  }, []);
+    setIsHovered(false)
+  }, [])
 
   if (error) {
     return (
-      <section className={cn('relative py-16 md:py-24', className)}>
+      <section className={cn("relative py-16 md:py-24", className)}>
         <div className="container relative mx-auto px-4">
           <div className="text-center">
             <h2 className="mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text font-bold text-3xl text-transparent tracking-tight md:text-4xl">
               {title}
             </h2>
-            <p className="text-muted-foreground">
-              {error}
-            </p>
+            <p className="text-muted-foreground">{error}</p>
           </div>
         </div>
       </section>
-    );
+    )
   }
 
   return (
-    <section className={cn('relative py-16 md:py-24', className)}>
+    <section className={cn("relative py-16 md:py-24", className)}>
       {/* Background gradient effect */}
       {gradientOverlay && (
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
@@ -162,7 +160,7 @@ export function EnhancedContentSlider({
           {viewAllLink && !isLoading && (
             <motion.div
               whileHover={{ x: 5 }}
-              transition={{ type: 'spring', stiffness: 300 }}
+              transition={{ type: "spring", stiffness: 300 }}
             >
               <Link
                 href={viewAllLink}
@@ -187,9 +185,9 @@ export function EnhancedContentSlider({
         >
           <Carousel
             setApi={setApi}
-            opts={{ 
-              loop, 
-              align: 'start',
+            opts={{
+              loop,
+              align: "start",
               skipSnaps: false,
               dragFree: true,
             }}
@@ -221,10 +219,10 @@ export function EnhancedContentSlider({
                   key={index}
                   onClick={() => api?.scrollTo(index)}
                   className={cn(
-                    'h-2 w-2 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+                    "h-2 w-2 rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
                     index === current
-                      ? 'w-8 bg-primary'
-                      : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
+                      ? "w-8 bg-primary"
+                      : "bg-muted-foreground/30 hover:bg-muted-foreground/50"
                   )}
                   aria-label={`Go to slide ${index + 1}`}
                 />
@@ -234,7 +232,7 @@ export function EnhancedContentSlider({
         </motion.div>
       </div>
     </section>
-  );
+  )
 }
 
 // Export a wrapper for carousel items with consistent styling
@@ -243,26 +241,27 @@ export function EnhancedContentSliderItem({
   className,
   basis,
 }: {
-  children: React.ReactNode;
-  className?: string;
-  basis?: string;
+  children: React.ReactNode
+  className?: string
+  basis?: string
 }) {
   return (
     <CarouselItem
       className={cn(
-        'pl-1 sm:pl-2 md:pl-4',
-        basis || 'basis-4/5 sm:basis-2/5 md:basis-1/3 lg:basis-1/4 xl:basis-1/6',
+        "pl-1 sm:pl-2 md:pl-4",
+        basis ||
+          "basis-4/5 sm:basis-2/5 md:basis-1/3 lg:basis-1/4 xl:basis-1/6",
         className
       )}
     >
       <motion.div
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
         className="h-full focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 rounded-lg"
       >
         {children}
       </motion.div>
     </CarouselItem>
-  );
+  )
 }

@@ -1,38 +1,38 @@
-'use client';
+"use client"
 
 import {
   Alert,
   AlertDescription,
-} from '@repo/design-system/components/ui/alert';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/alert"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
-import { Switch } from '@repo/design-system/components/ui/switch';
+} from "@repo/design-system/components/ui/card"
+import { Input } from "@repo/design-system/components/ui/input"
+import { Label } from "@repo/design-system/components/ui/label"
+import { Switch } from "@repo/design-system/components/ui/switch"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
-import { Shield, Trash2 } from 'lucide-react';
-import { useState } from 'react';
-import { ProtectedRoute } from '../components/protected-route';
-import { useAuth } from '../providers/auth-provider';
-import { DeleteAccountDialog } from './components/delete-account-dialog';
-import { EmailNotificationSettings } from './components/email-notification-settings';
+} from "@repo/design-system/components/ui/tabs"
+import { Shield, Trash2 } from "lucide-react"
+import { useState } from "react"
+import { ProtectedRoute } from "../components/protected-route"
+import { useAuth } from "../providers/auth-provider"
+import { DeleteAccountDialog } from "./components/delete-account-dialog"
+import { EmailNotificationSettings } from "./components/email-notification-settings"
 
 export default function SettingsPage() {
-  const { user } = useAuth();
-  const [_emailNotifications, _setEmailNotifications] = useState(true);
-  const [_pushNotifications, _setPushNotifications] = useState(false);
-  const [showEmail, setShowEmail] = useState(false);
+  const { user } = useAuth()
+  const [_emailNotifications, _setEmailNotifications] = useState(true)
+  const [_pushNotifications, _setPushNotifications] = useState(false)
+  const [showEmail, setShowEmail] = useState(false)
 
   return (
     <ProtectedRoute>
@@ -64,7 +64,7 @@ export default function SettingsPage() {
                   <Input
                     id="email"
                     type="email"
-                    value={user?.email || ''}
+                    value={user?.email || ""}
                     disabled
                   />
                 </div>
@@ -163,5 +163,5 @@ export default function SettingsPage() {
         </Tabs>
       </div>
     </ProtectedRoute>
-  );
+  )
 }

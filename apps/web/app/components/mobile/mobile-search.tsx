@@ -1,11 +1,11 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Card, CardContent } from "@repo/design-system/components/ui/card"
+import { Input } from "@repo/design-system/components/ui/input"
+import { cn } from "@repo/design-system/lib/utils"
+import { AnimatePresence, motion } from "framer-motion"
 import {
   ArrowRight,
   Calendar,
@@ -15,180 +15,180 @@ import {
   Search,
   TrendingUp,
   X,
-} from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
-import { useDebounce } from '~/hooks/use-debounce';
+} from "lucide-react"
+import { useRouter } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
+import { useDebounce } from "~/hooks/use-debounce"
 
 interface SearchResult {
-  id: string;
-  type: 'artist' | 'show' | 'venue' | 'song';
-  title: string;
-  subtitle?: string;
-  imageUrl?: string;
-  trending?: boolean;
+  id: string
+  type: "artist" | "show" | "venue" | "song"
+  title: string
+  subtitle?: string
+  imageUrl?: string
+  trending?: boolean
 }
 
 interface MobileSearchProps {
-  onSearch?: (query: string) => Promise<SearchResult[]>;
-  onResultSelect?: (result: SearchResult) => void;
-  className?: string;
-  placeholder?: string;
-  recentSearches?: string[];
-  trendingSearches?: string[];
+  onSearch?: (query: string) => Promise<SearchResult[]>
+  onResultSelect?: (result: SearchResult) => void
+  className?: string
+  placeholder?: string
+  recentSearches?: string[]
+  trendingSearches?: string[]
 }
 
 const mockTrendingSearches = [
-  'Taylor Swift',
-  'The Eras Tour',
-  'Madison Square Garden',
-  'Coldplay',
-  'Sphere Las Vegas',
-];
+  "Taylor Swift",
+  "The Eras Tour",
+  "Madison Square Garden",
+  "Coldplay",
+  "Sphere Las Vegas",
+]
 
 const mockRecentSearches = [
-  'Arctic Monkeys',
-  'Red Rocks',
-  'Billie Eilish',
-  'Coachella',
-];
+  "Arctic Monkeys",
+  "Red Rocks",
+  "Billie Eilish",
+  "Coachella",
+]
 
 export function MobileSearch({
   onSearch,
   onResultSelect,
   className,
-  placeholder = 'Search artists, shows, venues...',
+  placeholder = "Search artists, shows, venues...",
   recentSearches = mockRecentSearches,
   trendingSearches = mockTrendingSearches,
 }: MobileSearchProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [isOpen, setIsOpen] = useState(false)
+  const [query, setQuery] = useState("")
+  const [results, setResults] = useState<SearchResult[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [focusedIndex, setFocusedIndex] = useState(-1)
 
-  const inputRef = useRef<HTMLInputElement>(null);
-  const debouncedQuery = useDebounce(query, 300);
-  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null)
+  const debouncedQuery = useDebounce(query, 300)
+  const router = useRouter()
 
   // Handle search
   useEffect(() => {
     if (debouncedQuery.length >= 2 && onSearch) {
-      performSearch(debouncedQuery);
+      performSearch(debouncedQuery)
     } else {
-      setResults([]);
+      setResults([])
     }
-  }, [debouncedQuery, onSearch]);
+  }, [debouncedQuery, onSearch])
 
   const performSearch = async (searchQuery: string) => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      let searchResults: SearchResult[] = [];
+      let searchResults: SearchResult[] = []
 
       if (onSearch) {
         // allow parent override
-        searchResults = await onSearch(searchQuery);
+        searchResults = await onSearch(searchQuery)
       } else {
         const res = await fetch(
           `/api/search?q=${encodeURIComponent(searchQuery)}&limit=8`
-        );
+        )
         if (res.ok) {
-          const data = await res.json();
-          searchResults = (data.results || []).map(
-            (result: any) => ({
-              id: result.slug || result.id,
-              type: result.type,
-              title: result.title,
-              imageUrl: result.imageUrl,
-              subtitle: result.subtitle,
-              trending: result.trending || false,
-            })
-          );
+          const data = await res.json()
+          searchResults = (data.results || []).map((result: any) => ({
+            id: result.slug || result.id,
+            type: result.type,
+            title: result.title,
+            imageUrl: result.imageUrl,
+            subtitle: result.subtitle,
+            trending: result.trending || false,
+          }))
         }
       }
 
-      setResults(searchResults);
+      setResults(searchResults)
     } catch (_error) {
-      setResults([]);
+      setResults([])
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleOpen = () => {
-    setIsOpen(true);
+    setIsOpen(true)
     setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
-  };
+      inputRef.current?.focus()
+    }, 100)
+  }
 
   const handleClose = () => {
-    setIsOpen(false);
-    setQuery('');
-    setResults([]);
-    setFocusedIndex(-1);
-  };
+    setIsOpen(false)
+    setQuery("")
+    setResults([])
+    setFocusedIndex(-1)
+  }
 
   const handleResultSelect = (result: SearchResult) => {
     if (onResultSelect) {
-      onResultSelect(result);
+      onResultSelect(result)
     } else {
       // Handle different result types
       switch (result.type) {
-        case 'artist':
-          router.push(`/artists/${result.id}`);
-          break;
-        case 'show':
-          router.push(`/shows/${result.id}`);
-          break;
-        case 'venue':
-          router.push(`/venues/${result.id}`);
-          break;
-        case 'song':
+        case "artist":
+          router.push(`/artists/${result.id}`)
+          break
+        case "show":
+          router.push(`/shows/${result.id}`)
+          break
+        case "venue":
+          router.push(`/venues/${result.id}`)
+          break
+        case "song":
           // For songs, try to navigate to the artist page
           if (result.subtitle) {
-            router.push(`/artists?search=${encodeURIComponent(result.subtitle)}`);
+            router.push(
+              `/artists?search=${encodeURIComponent(result.subtitle)}`
+            )
           }
-          break;
+          break
       }
     }
 
     // Note: persist recent searches can be implemented later
-    handleClose();
-  };
+    handleClose()
+  }
 
   const handleQuickSearch = (searchTerm: string) => {
-    setQuery(searchTerm);
-    performSearch(searchTerm);
-  };
+    setQuery(searchTerm)
+    performSearch(searchTerm)
+  }
 
   const getResultIcon = (type: string) => {
     switch (type) {
-      case 'artist':
-        return Music;
-      case 'show':
-        return Calendar;
-      case 'venue':
-        return MapPin;
-      case 'song':
-        return Music;
+      case "artist":
+        return Music
+      case "show":
+        return Calendar
+      case "venue":
+        return MapPin
+      case "song":
+        return Music
       default:
-        return Search;
+        return Search
     }
-  };
+  }
 
   // Prevent body scroll when search is open
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden"
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset"
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, [isOpen]);
+      document.body.style.overflow = "unset"
+    }
+  }, [isOpen])
 
   return (
     <>
@@ -197,7 +197,7 @@ export function MobileSearch({
         variant="ghost"
         onClick={handleOpen}
         className={cn(
-          'flex-1 justify-start gap-2 text-muted-foreground md:hidden',
+          "flex-1 justify-start gap-2 text-muted-foreground md:hidden",
           className
         )}
       >
@@ -232,7 +232,7 @@ export function MobileSearch({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setQuery('')}
+                        onClick={() => setQuery("")}
                         className="-translate-y-1/2 absolute top-1/2 right-2 h-6 w-6 p-0"
                       >
                         <X className="h-4 w-4" />
@@ -262,13 +262,13 @@ export function MobileSearch({
                     </h3>
                     <div className="space-y-2">
                       {results.map((result, index) => {
-                        const Icon = getResultIcon(result.type);
+                        const Icon = getResultIcon(result.type)
                         return (
                           <Card
                             key={result.id}
                             className={cn(
-                              'cursor-pointer transition-colors hover:bg-muted/50',
-                              focusedIndex === index && 'bg-muted'
+                              "cursor-pointer transition-colors hover:bg-muted/50",
+                              focusedIndex === index && "bg-muted"
                             )}
                             onClick={() => handleResultSelect(result)}
                           >
@@ -309,7 +309,7 @@ export function MobileSearch({
                               </div>
                             </CardContent>
                           </Card>
-                        );
+                        )
                       })}
                     </div>
                   </div>
@@ -389,5 +389,5 @@ export function MobileSearch({
         )}
       </AnimatePresence>
     </>
-  );
+  )
 }

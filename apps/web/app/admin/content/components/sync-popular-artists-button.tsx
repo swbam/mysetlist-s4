@@ -1,50 +1,50 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { Loader2, TrendingUp } from 'lucide-react';
-import { useState } from 'react';
+import { Button } from "@repo/design-system/components/ui/button"
+import { Loader2, TrendingUp } from "lucide-react"
+import { useState } from "react"
 
 export function SyncPopularArtistsButton() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [lastResult, setLastResult] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false)
+  const [lastResult, setLastResult] = useState<any>(null)
 
   const handleSync = async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const response = await fetch('/api/artists/sync-popular', {
-        method: 'POST',
+      const response = await fetch("/api/artists/sync-popular", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env['NEXT_PUBLIC_CRON_SECRET'] || 'demo'}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env["NEXT_PUBLIC_CRON_SECRET"] || "demo"}`,
         },
         body: JSON.stringify({
           limit: 50,
           genres: [
-            'rock',
-            'pop',
-            'hip-hop',
-            'electronic',
-            'indie',
-            'country',
-            'jazz',
-            'classical',
+            "rock",
+            "pop",
+            "hip-hop",
+            "electronic",
+            "indie",
+            "country",
+            "jazz",
+            "classical",
           ],
         }),
-      });
+      })
 
       if (response.ok) {
-        const result = await response.json();
-        setLastResult(result);
+        const result = await response.json()
+        setLastResult(result)
       } else {
-        const error = await response.json();
-        setLastResult({ error: error.error || 'Sync failed' });
+        const error = await response.json()
+        setLastResult({ error: error.error || "Sync failed" })
       }
     } catch (_error) {
-      setLastResult({ error: 'Network error occurred' });
+      setLastResult({ error: "Network error occurred" })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div className="space-y-3">
@@ -54,7 +54,7 @@ export function SyncPopularArtistsButton() {
         ) : (
           <TrendingUp className="mr-2 h-4 w-4" />
         )}
-        {isLoading ? 'Syncing...' : 'Sync Popular Artists'}
+        {isLoading ? "Syncing..." : "Sync Popular Artists"}
       </Button>
 
       {lastResult && (
@@ -73,5 +73,5 @@ export function SyncPopularArtistsButton() {
         </div>
       )}
     </div>
-  );
+  )
 }

@@ -1,14 +1,14 @@
-import { createServiceClient } from '~/lib/supabase/server';
-import { ArtistCard } from '~/components/cards/artist-card';
-import { ResponsiveGrid, EmptyState } from '~/components/layout/responsive-grid';
-import { Music } from 'lucide-react';
+import { Music } from "lucide-react"
+import { ArtistCard } from "~/components/cards/artist-card"
+import { EmptyState, ResponsiveGrid } from "~/components/layout/responsive-grid"
+import { createServiceClient } from "~/lib/supabase/server"
 
 async function getPopularArtists() {
-  const supabase = createServiceClient();
-  
+  const supabase = createServiceClient()
+
   // Get artists ordered by their overall popularity
   const { data: popularArtists, error } = await supabase
-    .from('artists')
+    .from("artists")
     .select(`
       id,
       name,
@@ -21,35 +21,36 @@ async function getPopularArtists() {
       trending_score,
       popularity
     `)
-    .eq('verified', true)
-    .order('follower_count', { ascending: false })
-    .limit(12);
+    .eq("verified", true)
+    .order("follower_count", { ascending: false })
+    .limit(12)
 
   if (error) {
-    console.error('Error fetching popular artists:', error);
-    return [];
+    console.error("Error fetching popular artists:", error)
+    return []
   }
 
   // Process the data to match the expected format
-  const processedArtists = popularArtists?.map(artist => ({
-    id: artist.id,
-    name: artist.name,
-    slug: artist.slug,
-    imageUrl: artist.image_url,
-    smallImageUrl: artist.small_image_url,
-    genres: artist.genres,
-    verified: artist.verified,
-    followerCount: artist.follower_count || 0,
-    trendingScore: artist.trending_score,
-    popularity: artist.popularity,
-    upcomingShows: 0, // TODO: Get from shows table
-  })) || [];
+  const processedArtists =
+    popularArtists?.map((artist) => ({
+      id: artist.id,
+      name: artist.name,
+      slug: artist.slug,
+      imageUrl: artist.image_url,
+      smallImageUrl: artist.small_image_url,
+      genres: artist.genres,
+      verified: artist.verified,
+      followerCount: artist.follower_count || 0,
+      trendingScore: artist.trending_score,
+      popularity: artist.popularity,
+      upcomingShows: 0, // TODO: Get from shows table
+    })) || []
 
-  return processedArtists;
+  return processedArtists
 }
 
 export async function PopularArtists() {
-  const artists = await getPopularArtists();
+  const artists = await getPopularArtists()
 
   const emptyState = (
     <EmptyState
@@ -57,17 +58,17 @@ export async function PopularArtists() {
       title="No Popular Artists"
       description="Check back soon for trending and popular artists in your area."
     />
-  );
+  )
 
   return (
-    <ResponsiveGrid 
-      variant="artists" 
+    <ResponsiveGrid
+      variant="artists"
       emptyState={emptyState}
       className="min-h-[400px]"
     >
       {artists.map((artist) => (
         <div key={artist.id} role="gridcell">
-          <ArtistCard 
+          <ArtistCard
             artist={artist}
             variant="default"
             showFollowButton={false}
@@ -75,5 +76,5 @@ export async function PopularArtists() {
         </div>
       ))}
     </ResponsiveGrid>
-  );
+  )
 }

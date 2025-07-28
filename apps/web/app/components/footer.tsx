@@ -1,27 +1,27 @@
-import Link from 'next/link';
+import Link from "next/link"
 
 export const Footer = () => {
-  const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getFullYear()
 
   const footerLinks = {
     product: [
-      { title: 'Artists', href: '/artists' },
-      { title: 'Shows', href: '/shows' },
-      { title: 'Venues', href: '/venues' },
-      { title: 'Setlists', href: '/setlists' },
+      { title: "Artists", href: "/artists" },
+      { title: "Shows", href: "/shows" },
+      { title: "Venues", href: "/venues" },
+      { title: "Setlists", href: "/setlists" },
     ],
     company: [
-      { title: 'About', href: '/about' },
-      { title: 'Contact', href: '/contact' },
-      { title: 'Privacy', href: '/privacy' },
-      { title: 'Terms', href: '/terms' },
+      { title: "About", href: "/about" },
+      { title: "Contact", href: "/contact" },
+      { title: "Privacy", href: "/privacy" },
+      { title: "Terms", href: "/terms" },
     ],
     social: [
-      { title: 'Twitter', href: 'https://twitter.com' },
-      { title: 'Instagram', href: 'https://instagram.com' },
-      { title: 'Facebook', href: 'https://facebook.com' },
+      { title: "Twitter", href: "https://twitter.com" },
+      { title: "Instagram", href: "https://instagram.com" },
+      { title: "Facebook", href: "https://facebook.com" },
     ],
-  };
+  }
 
   return (
     <footer className="border-t bg-background">
@@ -92,5 +92,5 @@ export const Footer = () => {
         </div>
       </div>
     </footer>
-  );
-};
+  )
+}

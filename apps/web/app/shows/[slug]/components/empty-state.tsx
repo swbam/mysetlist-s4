@@ -1,13 +1,13 @@
-'use client';
+"use client"
 
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from "lucide-react"
 
 type EmptyStateProps = {
-  icon: LucideIcon;
-  title: string;
-  description?: string;
-  action?: React.ReactNode;
-};
+  icon: LucideIcon
+  title: string
+  description?: string
+  action?: React.ReactNode
+}
 
 export function EmptyState({
   icon: Icon,
@@ -24,5 +24,5 @@ export function EmptyState({
       )}
       {action}
     </div>
-  );
+  )
 }

@@ -1,136 +1,130 @@
-'use client';
+"use client"
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import {
-  Calendar,
-  ExternalLink,
-  MapPin,
-  TrendingUp,
-  Users,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+} from "@repo/design-system/components/ui/avatar"
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Skeleton } from "@repo/design-system/components/ui/skeleton"
+import { Calendar, ExternalLink, MapPin, TrendingUp, Users } from "lucide-react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
 
 interface TrendingShow {
-  id: string;
-  name: string;
-  slug: string;
-  date: string;
-  status: 'upcoming' | 'ongoing' | 'completed';
+  id: string
+  name: string
+  slug: string
+  date: string
+  status: "upcoming" | "ongoing" | "completed"
   artist: {
-    name: string;
-    slug: string;
-    imageUrl?: string;
-  };
+    name: string
+    slug: string
+    imageUrl?: string
+  }
   venue: {
-    name: string;
-    city: string;
-    state?: string;
-  };
-  voteCount: number;
-  attendeeCount: number;
-  trendingScore: number;
-  weeklyGrowth: number;
+    name: string
+    city: string
+    state?: string
+  }
+  voteCount: number
+  attendeeCount: number
+  trendingScore: number
+  weeklyGrowth: number
 }
 
 export function TrendingShows() {
-  const [shows, setShows] = useState<TrendingShow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [shows, setShows] = useState<TrendingShow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchTrendingShows();
-  }, []);
+    fetchTrendingShows()
+  }, [])
 
   const fetchTrendingShows = async () => {
     try {
-      const response = await fetch('/api/trending/shows');
+      const response = await fetch("/api/trending/shows")
       if (!response.ok) {
-        throw new Error('Failed to fetch trending shows');
+        throw new Error("Failed to fetch trending shows")
       }
 
-      const data = await response.json();
-      setShows(data.shows || []);
+      const data = await response.json()
+      setShows(data.shows || [])
     } catch (_err) {
-      setError('Failed to load trending shows');
+      setError("Failed to load trending shows")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
+    const date = new Date(dateString)
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'upcoming':
+      case "upcoming":
         return {
-          variant: 'default' as const,
-          text: 'Upcoming',
-          color: 'text-blue-500',
-        };
-      case 'ongoing':
+          variant: "default" as const,
+          text: "Upcoming",
+          color: "text-blue-500",
+        }
+      case "ongoing":
         return {
-          variant: 'default' as const,
-          text: 'Live',
-          color: 'text-red-500',
-        };
-      case 'completed':
+          variant: "default" as const,
+          text: "Live",
+          color: "text-red-500",
+        }
+      case "completed":
         return {
-          variant: 'secondary' as const,
-          text: 'Completed',
-          color: 'text-gray-500',
-        };
+          variant: "secondary" as const,
+          text: "Completed",
+          color: "text-gray-500",
+        }
       default:
         return {
-          variant: 'outline' as const,
+          variant: "outline" as const,
           text: status,
-          color: 'text-gray-500',
-        };
+          color: "text-gray-500",
+        }
     }
-  };
+  }
 
   const getGrowthBadge = (growth: number) => {
     if (growth > 20) {
       return {
-        variant: 'default' as const,
-        text: 'Hot',
-        color: 'text-red-500',
-      };
+        variant: "default" as const,
+        text: "Hot",
+        color: "text-red-500",
+      }
     }
     if (growth > 10) {
       return {
-        variant: 'secondary' as const,
-        text: 'Rising',
-        color: 'text-orange-500',
-      };
+        variant: "secondary" as const,
+        text: "Rising",
+        color: "text-orange-500",
+      }
     }
     if (growth > 0) {
       return {
-        variant: 'outline' as const,
-        text: 'Growing',
-        color: 'text-green-500',
-      };
+        variant: "outline" as const,
+        text: "Growing",
+        color: "text-green-500",
+      }
     }
     return {
-      variant: 'outline' as const,
-      text: 'Stable',
-      color: 'text-gray-500',
-    };
-  };
+      variant: "outline" as const,
+      text: "Stable",
+      color: "text-gray-500",
+    }
+  }
 
   if (loading) {
     return (
@@ -155,7 +149,7 @@ export function TrendingShows() {
           </div>
         ))}
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -166,7 +160,7 @@ export function TrendingShows() {
           Try Again
         </Button>
       </div>
-    );
+    )
   }
 
   if (shows.length === 0) {
@@ -175,14 +169,14 @@ export function TrendingShows() {
         <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
         <p className="text-muted-foreground">No trending shows found</p>
       </div>
-    );
+    )
   }
 
   return (
     <div className="space-y-3">
       {shows.map((show, index) => {
-        const statusBadge = getStatusBadge(show.status);
-        const growthBadge = getGrowthBadge(show.weeklyGrowth);
+        const statusBadge = getStatusBadge(show.status)
+        const growthBadge = getGrowthBadge(show.weeklyGrowth)
 
         return (
           <div
@@ -247,7 +241,7 @@ export function TrendingShows() {
             <div className="text-right">
               <div className="flex items-center gap-1 font-medium text-sm">
                 <TrendingUp className={`h-3 w-3 ${growthBadge.color}`} />
-                {show.weeklyGrowth > 0 ? '+' : ''}
+                {show.weeklyGrowth > 0 ? "+" : ""}
                 {show.weeklyGrowth.toFixed(1)}%
               </div>
               <div className="text-muted-foreground text-xs">
@@ -262,8 +256,8 @@ export function TrendingShows() {
               </Button>
             </Link>
           </div>
-        );
+        )
       })}
     </div>
-  );
+  )
 }

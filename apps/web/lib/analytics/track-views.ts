@@ -1,17 +1,17 @@
-import { artists, db, shows, venues } from '@repo/database';
-import { sql } from 'drizzle-orm';
+import { artists, db, shows, venues } from "@repo/database"
+import { sql } from "drizzle-orm"
 
 /**
  * Track a view for an artist, show, or venue
  * This should be called when a user views a detail page
  */
 export async function trackView(
-  type: 'artist' | 'show' | 'venue',
+  type: "artist" | "show" | "venue",
   id: string
 ): Promise<void> {
   try {
     switch (type) {
-      case 'artist':
+      case "artist":
         // Artists don't have viewCount, but we could track popularity
         await db
           .update(artists)
@@ -20,26 +20,26 @@ export async function trackView(
             // Increment popularity slightly on view
             popularity: sql`LEAST(100, COALESCE(${artists.popularity}, 0) + 0.1)`,
           })
-          .where(sql`${artists.id} = ${id}`);
-        break;
+          .where(sql`${artists.id} = ${id}`)
+        break
 
-      case 'show':
+      case "show":
         await db
           .update(shows)
           .set({
             viewCount: sql`COALESCE(${shows.viewCount}, 0) + 1`,
             updatedAt: new Date(),
           })
-          .where(sql`${shows.id} = ${id}`);
-        break;
+          .where(sql`${shows.id} = ${id}`)
+        break
 
-      case 'venue':
+      case "venue":
         // Venues don't have viewCount in schema, just update timestamp
         await db
           .update(venues)
           .set({ updatedAt: new Date() })
-          .where(sql`${venues.id} = ${id}`);
-        break;
+          .where(sql`${venues.id} = ${id}`)
+        break
     }
   } catch (_error) {}
 }
@@ -61,7 +61,7 @@ export async function trackAttendance(
           : sql`GREATEST(0, COALESCE(${shows.attendeeCount}, 0) - 1)`,
         updatedAt: new Date(),
       })
-      .where(sql`${shows.id} = ${showId}`);
+      .where(sql`${shows.id} = ${showId}`)
   } catch (_error) {}
 }
 
@@ -82,7 +82,7 @@ export async function trackVote(
           : sql`GREATEST(0, COALESCE(${shows.voteCount}, 0) - 1)`,
         updatedAt: new Date(),
       })
-      .where(sql`${shows.id} = ${showId}`);
+      .where(sql`${shows.id} = ${showId}`)
   } catch (_error) {}
 }
 
@@ -97,6 +97,6 @@ export async function trackSetlistCreated(showId: string): Promise<void> {
         setlistCount: sql`COALESCE(${shows.setlistCount}, 0) + 1`,
         updatedAt: new Date(),
       })
-      .where(sql`${shows.id} = ${showId}`);
+      .where(sql`${shows.id} = ${showId}`)
   } catch (_error) {}
 }

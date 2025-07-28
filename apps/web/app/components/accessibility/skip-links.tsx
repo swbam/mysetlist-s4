@@ -1,19 +1,19 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { cn } from '@repo/design-system/lib/utils';
+import { Button } from "@repo/design-system/components/ui/button"
+import { cn } from "@repo/design-system/lib/utils"
 
 interface SkipLink {
-  href: string;
-  label: string;
+  href: string
+  label: string
 }
 
 const skipLinks: SkipLink[] = [
-  { href: '#main-content', label: 'Skip to main content' },
-  { href: '#navigation', label: 'Skip to navigation' },
-  { href: '#search', label: 'Skip to search' },
-  { href: '#footer', label: 'Skip to footer' },
-];
+  { href: "#main-content", label: "Skip to main content" },
+  { href: "#navigation", label: "Skip to navigation" },
+  { href: "#search", label: "Skip to search" },
+  { href: "#footer", label: "Skip to footer" },
+]
 
 export function SkipLinks() {
   return (
@@ -35,7 +35,7 @@ export function SkipLinks() {
         ))}
       </div>
     </div>
-  );
+  )
 }
 
 // Screen reader announcements component
@@ -47,64 +47,66 @@ export function ScreenReaderAnnouncements() {
       aria-atomic="true"
       className="sr-only"
     />
-  );
+  )
 }
 
 // Focus management hook
 export function useFocusManagement() {
   const announceToScreenReader = (message: string) => {
-    const announcer = document.getElementById('screen-reader-announcements');
+    const announcer = document.getElementById("screen-reader-announcements")
     if (announcer) {
-      announcer.textContent = message;
+      announcer.textContent = message
       // Clear after a short delay to allow for re-announcements
       setTimeout(() => {
-        announcer.textContent = '';
-      }, 1000);
+        announcer.textContent = ""
+      }, 1000)
     }
-  };
+  }
 
   const focusElement = (selector: string) => {
-    const element = document.querySelector(selector) as HTMLElement;
+    const element = document.querySelector(selector) as HTMLElement
     if (element) {
-      element.focus();
-      return true;
+      element.focus()
+      return true
     }
-    return false;
-  };
+    return false
+  }
 
   const trapFocus = (container: HTMLElement) => {
     const focusableElements = container.querySelectorAll(
       'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
-    const firstElement = focusableElements[0] as HTMLElement;
-    const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+    )
+    const firstElement = focusableElements[0] as HTMLElement
+    const lastElement = focusableElements[
+      focusableElements.length - 1
+    ] as HTMLElement
 
     const handleTabKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Tab') return;
+      if (e.key !== "Tab") return
 
       if (e.shiftKey) {
         if (document.activeElement === firstElement) {
-          lastElement.focus();
-          e.preventDefault();
+          lastElement.focus()
+          e.preventDefault()
         }
       } else {
         if (document.activeElement === lastElement) {
-          firstElement.focus();
-          e.preventDefault();
+          firstElement.focus()
+          e.preventDefault()
         }
       }
-    };
+    }
 
-    container.addEventListener('keydown', handleTabKey);
+    container.addEventListener("keydown", handleTabKey)
 
     return () => {
-      container.removeEventListener('keydown', handleTabKey);
-    };
-  };
+      container.removeEventListener("keydown", handleTabKey)
+    }
+  }
 
   return {
     announceToScreenReader,
     focusElement,
     trapFocus,
-  };
+  }
 }

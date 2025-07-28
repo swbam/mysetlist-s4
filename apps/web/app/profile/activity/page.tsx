@@ -1,26 +1,26 @@
-'use client';
+"use client"
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/avatar"
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
+} from "@repo/design-system/components/ui/card"
+import { Input } from "@repo/design-system/components/ui/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@repo/design-system/components/ui/select';
+} from "@repo/design-system/components/ui/select"
 import {
   Activity,
   ArrowLeft,
@@ -31,65 +31,65 @@ import {
   Heart,
   Music,
   Search,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { ProtectedRoute } from '../../components/protected-route';
-import { useAuth } from '../../providers/auth-provider';
+} from "lucide-react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
+import { ProtectedRoute } from "../../components/protected-route"
+import { useAuth } from "../../providers/auth-provider"
 
 interface UserActivity {
-  id: string;
+  id: string
   type:
-    | 'follow'
-    | 'unfollow'
-    | 'vote_up'
-    | 'vote_down'
-    | 'setlist_create'
-    | 'show_attend'
-    | 'show_plan';
-  artistId?: string;
-  artistName?: string;
-  artistImage?: string;
-  showId?: string;
-  showName?: string;
-  showDate?: string;
-  venueName?: string;
-  songTitle?: string;
-  timestamp: string;
-  description: string;
-  metadata?: Record<string, any>;
+    | "follow"
+    | "unfollow"
+    | "vote_up"
+    | "vote_down"
+    | "setlist_create"
+    | "show_attend"
+    | "show_plan"
+  artistId?: string
+  artistName?: string
+  artistImage?: string
+  showId?: string
+  showName?: string
+  showDate?: string
+  venueName?: string
+  songTitle?: string
+  timestamp: string
+  description: string
+  metadata?: Record<string, any>
 }
 
 interface ActivityStats {
-  totalActivities: number;
-  artistsFollowed: number;
-  showsAttended: number;
-  votesGiven: number;
-  setlistsCreated: number;
+  totalActivities: number
+  artistsFollowed: number
+  showsAttended: number
+  votesGiven: number
+  setlistsCreated: number
 }
 
 export default function ActivityPage() {
-  const { user } = useAuth();
-  const [activities, setActivities] = useState<UserActivity[]>([]);
-  const [stats, setStats] = useState<ActivityStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterType, setFilterType] = useState<string>('all');
+  const { user } = useAuth()
+  const [activities, setActivities] = useState<UserActivity[]>([])
+  const [stats, setStats] = useState<ActivityStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [filterType, setFilterType] = useState<string>("all")
   const [filteredActivities, setFilteredActivities] = useState<UserActivity[]>(
     []
-  );
+  )
 
   useEffect(() => {
     const fetchActivity = async () => {
       if (!user?.id) {
-        return;
+        return
       }
 
       try {
-        const response = await fetch(`/api/user/activity/${user.id}`);
+        const response = await fetch(`/api/user/activity/${user.id}`)
         if (response.ok) {
-          const data = await response.json();
-          setActivities(data.activities || []);
+          const data = await response.json()
+          setActivities(data.activities || [])
           setStats(
             data.stats || {
               totalActivities: 0,
@@ -98,119 +98,119 @@ export default function ActivityPage() {
               votesGiven: 0,
               setlistsCreated: 0,
             }
-          );
+          )
         }
       } catch (_error) {
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchActivity();
-  }, [user?.id]);
+    fetchActivity()
+  }, [user?.id])
 
   useEffect(() => {
-    let filtered = activities;
+    let filtered = activities
 
     // Filter by type
-    if (filterType !== 'all') {
+    if (filterType !== "all") {
       filtered = filtered.filter((activity) => {
         switch (filterType) {
-          case 'follows':
-            return activity.type === 'follow' || activity.type === 'unfollow';
-          case 'votes':
-            return activity.type === 'vote_up' || activity.type === 'vote_down';
-          case 'shows':
+          case "follows":
+            return activity.type === "follow" || activity.type === "unfollow"
+          case "votes":
+            return activity.type === "vote_up" || activity.type === "vote_down"
+          case "shows":
             return (
-              activity.type === 'show_attend' || activity.type === 'show_plan'
-            );
-          case 'setlists':
-            return activity.type === 'setlist_create';
+              activity.type === "show_attend" || activity.type === "show_plan"
+            )
+          case "setlists":
+            return activity.type === "setlist_create"
           default:
-            return true;
+            return true
         }
-      });
+      })
     }
 
     // Filter by search query
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
+      const query = searchQuery.toLowerCase()
       filtered = filtered.filter(
         (activity) =>
           activity.description.toLowerCase().includes(query) ||
           activity.artistName?.toLowerCase().includes(query) ||
           activity.showName?.toLowerCase().includes(query) ||
           activity.songTitle?.toLowerCase().includes(query)
-      );
+      )
     }
 
-    setFilteredActivities(filtered);
-  }, [activities, filterType, searchQuery]);
+    setFilteredActivities(filtered)
+  }, [activities, filterType, searchQuery])
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
 
     if (diffInSeconds < 60) {
-      return 'Just now';
+      return "Just now"
     }
     if (diffInSeconds < 3600) {
-      return `${Math.floor(diffInSeconds / 60)}m ago`;
+      return `${Math.floor(diffInSeconds / 60)}m ago`
     }
     if (diffInSeconds < 86400) {
-      return `${Math.floor(diffInSeconds / 3600)}h ago`;
+      return `${Math.floor(diffInSeconds / 3600)}h ago`
     }
     if (diffInSeconds < 604800) {
-      return `${Math.floor(diffInSeconds / 86400)}d ago`;
+      return `${Math.floor(diffInSeconds / 86400)}d ago`
     }
 
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
-    });
-  };
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: date.getFullYear() !== now.getFullYear() ? "numeric" : undefined,
+    })
+  }
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'follow':
-        return <Heart className="h-4 w-4 text-red-500" />;
-      case 'unfollow':
-        return <Heart className="h-4 w-4 text-muted-foreground" />;
-      case 'vote_up':
-        return <ChevronUp className="h-4 w-4 text-green-500" />;
-      case 'vote_down':
-        return <ChevronDown className="h-4 w-4 text-red-500" />;
-      case 'setlist_create':
-        return <Music className="h-4 w-4 text-blue-500" />;
-      case 'show_attend':
-        return <Calendar className="h-4 w-4 text-blue-500" />;
-      case 'show_plan':
-        return <Calendar className="h-4 w-4 text-orange-500" />;
+      case "follow":
+        return <Heart className="h-4 w-4 text-red-500" />
+      case "unfollow":
+        return <Heart className="h-4 w-4 text-muted-foreground" />
+      case "vote_up":
+        return <ChevronUp className="h-4 w-4 text-green-500" />
+      case "vote_down":
+        return <ChevronDown className="h-4 w-4 text-red-500" />
+      case "setlist_create":
+        return <Music className="h-4 w-4 text-blue-500" />
+      case "show_attend":
+        return <Calendar className="h-4 w-4 text-blue-500" />
+      case "show_plan":
+        return <Calendar className="h-4 w-4 text-orange-500" />
       default:
-        return <Activity className="h-4 w-4" />;
+        return <Activity className="h-4 w-4" />
     }
-  };
+  }
 
   const getActivityBadge = (type: string) => {
     const badges = {
-      follow: { label: 'Follow', variant: 'default' as const },
-      unfollow: { label: 'Unfollow', variant: 'secondary' as const },
-      vote_up: { label: 'Upvote', variant: 'default' as const },
-      vote_down: { label: 'Downvote', variant: 'destructive' as const },
-      setlist_create: { label: 'Setlist', variant: 'default' as const },
-      show_attend: { label: 'Attended', variant: 'default' as const },
-      show_plan: { label: 'Planning', variant: 'secondary' as const },
-    };
+      follow: { label: "Follow", variant: "default" as const },
+      unfollow: { label: "Unfollow", variant: "secondary" as const },
+      vote_up: { label: "Upvote", variant: "default" as const },
+      vote_down: { label: "Downvote", variant: "destructive" as const },
+      setlist_create: { label: "Setlist", variant: "default" as const },
+      show_attend: { label: "Attended", variant: "default" as const },
+      show_plan: { label: "Planning", variant: "secondary" as const },
+    }
 
-    const badge = badges[type as keyof typeof badges];
+    const badge = badges[type as keyof typeof badges]
     return badge ? (
       <Badge variant={badge.variant} className="text-xs">
         {badge.label}
       </Badge>
-    ) : null;
-  };
+    ) : null
+  }
 
   if (loading) {
     return (
@@ -226,7 +226,7 @@ export default function ActivityPage() {
           </div>
         </div>
       </ProtectedRoute>
-    );
+    )
   }
 
   return (
@@ -352,7 +352,7 @@ export default function ActivityPage() {
             <CardTitle>
               {filteredActivities.length} Activities
               {searchQuery && ` matching "${searchQuery}"`}
-              {filterType !== 'all' && ` in ${filterType}`}
+              {filterType !== "all" && ` in ${filterType}`}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -400,7 +400,7 @@ export default function ActivityPage() {
                         )}
                         {activity.showDate && (
                           <span>
-                            {' '}
+                            {" "}
                             • {new Date(activity.showDate).toLocaleDateString()}
                           </span>
                         )}
@@ -414,16 +414,16 @@ export default function ActivityPage() {
                 <div className="py-12 text-center">
                   <Activity className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
                   <h3 className="mb-2 font-semibold text-lg">
-                    {searchQuery || filterType !== 'all'
-                      ? 'No matching activities'
-                      : 'No activities yet'}
+                    {searchQuery || filterType !== "all"
+                      ? "No matching activities"
+                      : "No activities yet"}
                   </h3>
                   <p className="mb-4 text-muted-foreground">
-                    {searchQuery || filterType !== 'all'
-                      ? 'Try adjusting your search or filter criteria'
-                      : 'Start exploring shows and following artists to see your activity here'}
+                    {searchQuery || filterType !== "all"
+                      ? "Try adjusting your search or filter criteria"
+                      : "Start exploring shows and following artists to see your activity here"}
                   </p>
-                  {!searchQuery && filterType === 'all' && (
+                  {!searchQuery && filterType === "all" && (
                     <div className="flex flex-col justify-center gap-2 sm:flex-row">
                       <Button asChild>
                         <Link href="/artists">Browse Artists</Link>
@@ -448,5 +448,5 @@ export default function ActivityPage() {
         </Card>
       </div>
     </ProtectedRoute>
-  );
+  )
 }

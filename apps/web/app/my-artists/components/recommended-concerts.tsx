@@ -1,21 +1,15 @@
-import {
-  artistStats,
-  artists,
-  db,
-  shows,
-  venues,
-} from '@repo/database';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { format } from 'date-fns';
-import { desc, eq, gte } from 'drizzle-orm';
-import { Calendar, MapPin, Music, Sparkles, TrendingUp } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { artistStats, artists, db, shows, venues } from "@repo/database"
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Card, CardContent } from "@repo/design-system/components/ui/card"
+import { format } from "date-fns"
+import { desc, eq, gte } from "drizzle-orm"
+import { Calendar, MapPin, Music, Sparkles, TrendingUp } from "lucide-react"
+import Image from "next/image"
+import Link from "next/link"
 
 interface RecommendedConcertsProps {
-  userId?: string; // userId not used anymore, kept for compatibility
+  userId?: string // userId not used anymore, kept for compatibility
 }
 
 export async function RecommendedConcerts({
@@ -49,7 +43,7 @@ export async function RecommendedConcerts({
     .leftJoin(artistStats, eq(artists.id, artistStats.artistId))
     .where(gte(shows.date, new Date().toISOString().substring(0, 10)))
     .orderBy(desc(artists.trendingScore))
-    .limit(5);
+    .limit(5)
 
   if (recommendedShows.length === 0) {
     return (
@@ -61,7 +55,7 @@ export async function RecommendedConcerts({
           </p>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -99,7 +93,7 @@ export async function RecommendedConcerts({
 
                 <div className="mt-1 flex items-center gap-2 text-muted-foreground text-xs">
                   <Calendar className="h-3 w-3" />
-                  <span>{format(new Date(show.date), 'MMM d')}</span>
+                  <span>{format(new Date(show.date), "MMM d")}</span>
                 </div>
 
                 {show.venue && (
@@ -117,18 +111,21 @@ export async function RecommendedConcerts({
                   <div className="mt-2 flex gap-1">
                     {(() => {
                       try {
-                        const genres = JSON.parse(show.artist.genres);
-                        return Array.isArray(genres) && genres.slice(0, 2).map((genre) => (
-                          <Badge
-                            key={genre}
-                            variant="secondary"
-                            className="px-2 py-0 text-xs"
-                          >
-                            {genre}
-                          </Badge>
-                        ));
+                        const genres = JSON.parse(show.artist.genres)
+                        return (
+                          Array.isArray(genres) &&
+                          genres.slice(0, 2).map((genre) => (
+                            <Badge
+                              key={genre}
+                              variant="secondary"
+                              className="px-2 py-0 text-xs"
+                            >
+                              {genre}
+                            </Badge>
+                          ))
+                        )
                       } catch {
-                        return null;
+                        return null
                       }
                     })()}
                   </div>
@@ -157,5 +154,5 @@ export async function RecommendedConcerts({
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

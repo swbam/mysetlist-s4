@@ -1,6 +1,6 @@
-import { type CookieOptions, createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
-import { env } from '@repo/env';
+import { env } from "@repo/env"
+import { type CookieOptions, createServerClient } from "@supabase/ssr"
+import { cookies } from "next/headers"
 
 export function createClient() {
   return createServerClient(
@@ -9,14 +9,14 @@ export function createClient() {
     {
       cookies: {
         async getAll() {
-          const cookieStore = await cookies();
-          return cookieStore.getAll();
+          const cookieStore = await cookies()
+          return cookieStore.getAll()
         },
         async setAll(
           cookiesToSet: {
-            name: string;
-            value: string;
-            options?: CookieOptions;
+            name: string
+            value: string
+            options?: CookieOptions
           }[]
         ) {
           try {
@@ -27,15 +27,17 @@ export function createClient() {
                   secure: options.secure,
                   sameSite: options.sameSite as any,
                   maxAge: options.maxAge,
-                  expires: options.expires ? new Date(options.expires) : undefined,
+                  expires: options.expires
+                    ? new Date(options.expires)
+                    : undefined,
                   path: options.path,
                   domain: options.domain,
-                };
-                const cookieStore = await cookies();
-                cookieStore.set(name, value, cookieOptions);
+                }
+                const cookieStore = await cookies()
+                cookieStore.set(name, value, cookieOptions)
               } else {
-                const cookieStore = await cookies();
-                cookieStore.set(name, value);
+                const cookieStore = await cookies()
+                cookieStore.set(name, value)
               }
             }
           } catch {
@@ -46,7 +48,7 @@ export function createClient() {
         },
       },
     }
-  );
+  )
 }
 
 export function createServiceClient() {
@@ -60,12 +62,12 @@ export function createServiceClient() {
       },
       cookies: {
         getAll() {
-          return [];
+          return []
         },
         setAll() {
           // Service role doesn't need cookies
         },
       },
     }
-  );
+  )
 }

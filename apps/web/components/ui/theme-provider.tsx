@@ -1,107 +1,107 @@
-'use client';
+"use client"
 
-import { cn } from '@repo/design-system/lib/utils';
-import type React from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { cn } from "@repo/design-system/lib/utils"
+import type React from "react"
+import { createContext, useContext, useEffect, useState } from "react"
 
-type Theme = 'dark' | 'light' | 'system';
+type Theme = "dark" | "light" | "system"
 
 interface ThemeProviderContextProps {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-  systemTheme: 'dark' | 'light';
-  resolvedTheme: 'dark' | 'light';
+  theme: Theme
+  setTheme: (theme: Theme) => void
+  systemTheme: "dark" | "light"
+  resolvedTheme: "dark" | "light"
 }
 
 const ThemeProviderContext = createContext<
   ThemeProviderContextProps | undefined
->(undefined);
+>(undefined)
 
 interface ThemeProviderProps {
-  children: React.ReactNode;
-  defaultTheme?: Theme;
-  storageKey?: string;
-  enableSystem?: boolean;
-  disableTransitionOnChange?: boolean;
+  children: React.ReactNode
+  defaultTheme?: Theme
+  storageKey?: string
+  enableSystem?: boolean
+  disableTransitionOnChange?: boolean
 }
 
 export function ThemeProvider({
   children,
-  defaultTheme = 'system',
-  storageKey = 'mysetlist-theme',
+  defaultTheme = "system",
+  storageKey = "mysetlist-theme",
   enableSystem: _enableSystem = true,
   disableTransitionOnChange = false,
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(defaultTheme);
-  const [systemTheme, setSystemTheme] = useState<'dark' | 'light'>('light');
-  const [mounted, setMounted] = useState(false);
+  const [theme, setTheme] = useState<Theme>(defaultTheme)
+  const [systemTheme, setSystemTheme] = useState<"dark" | "light">("light")
+  const [mounted, setMounted] = useState(false)
 
-  const resolvedTheme = theme === 'system' ? systemTheme : theme;
+  const resolvedTheme = theme === "system" ? systemTheme : theme
 
   // Update system theme when it changes
   useEffect(() => {
-    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const media = window.matchMedia("(prefers-color-scheme: dark)")
 
     const updateSystemTheme = () => {
-      setSystemTheme(media.matches ? 'dark' : 'light');
-    };
+      setSystemTheme(media.matches ? "dark" : "light")
+    }
 
-    updateSystemTheme();
-    media.addEventListener('change', updateSystemTheme);
+    updateSystemTheme()
+    media.addEventListener("change", updateSystemTheme)
 
-    return () => media.removeEventListener('change', updateSystemTheme);
-  }, []);
+    return () => media.removeEventListener("change", updateSystemTheme)
+  }, [])
 
   // Load theme from storage
   useEffect(() => {
-    const stored = localStorage.getItem(storageKey) as Theme;
-    if (stored && ['dark', 'light', 'system'].includes(stored)) {
-      setTheme(stored);
+    const stored = localStorage.getItem(storageKey) as Theme
+    if (stored && ["dark", "light", "system"].includes(stored)) {
+      setTheme(stored)
     }
-    setMounted(true);
-  }, [storageKey]);
+    setMounted(true)
+  }, [storageKey])
 
   // Apply theme to document
   useEffect(() => {
     if (!mounted) {
-      return;
+      return
     }
 
-    const root = window.document.documentElement;
+    const root = window.document.documentElement
 
     // Temporarily disable transitions to prevent flash
     if (disableTransitionOnChange) {
-      root.classList.add('[&_*]:!transition-none');
+      root.classList.add("[&_*]:!transition-none")
     }
 
-    root.classList.remove('light', 'dark');
-    root.classList.add(resolvedTheme);
+    root.classList.remove("light", "dark")
+    root.classList.add(resolvedTheme)
 
     // Re-enable transitions
     if (disableTransitionOnChange) {
       setTimeout(() => {
-        root.classList.remove('[&_*]:!transition-none');
-      }, 0);
+        root.classList.remove("[&_*]:!transition-none")
+      }, 0)
     }
 
     // Update meta theme-color for mobile browsers
-    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]')
     if (metaThemeColor) {
       metaThemeColor.setAttribute(
-        'content',
-        resolvedTheme === 'dark' ? '#0f0f0f' : '#ffffff'
-      );
+        "content",
+        resolvedTheme === "dark" ? "#0f0f0f" : "#ffffff"
+      )
     }
-  }, [resolvedTheme, mounted, disableTransitionOnChange]);
+  }, [resolvedTheme, mounted, disableTransitionOnChange])
 
   const handleSetTheme = (newTheme: Theme) => {
-    setTheme(newTheme);
-    localStorage.setItem(storageKey, newTheme);
-  };
+    setTheme(newTheme)
+    localStorage.setItem(storageKey, newTheme)
+  }
 
   // Don't render until mounted to prevent hydration mismatch
   if (!mounted) {
-    return null;
+    return null
   }
 
   return (
@@ -115,75 +115,75 @@ export function ThemeProvider({
     >
       {children}
     </ThemeProviderContext.Provider>
-  );
+  )
 }
 
 export function useTheme() {
-  const context = useContext(ThemeProviderContext);
+  const context = useContext(ThemeProviderContext)
   if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    throw new Error("useTheme must be used within a ThemeProvider")
   }
-  return context;
+  return context
 }
 
 // Theme toggle component
 interface ThemeToggleProps {
-  className?: string;
-  size?: 'sm' | 'md' | 'lg';
-  variant?: 'icon' | 'text' | 'full';
+  className?: string
+  size?: "sm" | "md" | "lg"
+  variant?: "icon" | "text" | "full"
 }
 
 export function ThemeToggle({
   className,
-  size = 'md',
-  variant = 'icon',
+  size = "md",
+  variant = "icon",
 }: ThemeToggleProps) {
-  const { theme, setTheme, resolvedTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
+  const { theme, setTheme, resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    setMounted(true)
+  }, [])
 
   if (!mounted) {
     return (
       <div
         className={cn(
-          'animate-pulse rounded-full bg-muted',
-          size === 'sm' && 'h-8 w-8',
-          size === 'md' && 'h-9 w-9',
-          size === 'lg' && 'h-10 w-10',
+          "animate-pulse rounded-full bg-muted",
+          size === "sm" && "h-8 w-8",
+          size === "md" && "h-9 w-9",
+          size === "lg" && "h-10 w-10",
           className
         )}
       />
-    );
+    )
   }
 
   const toggleTheme = () => {
-    if (theme === 'light') {
-      setTheme('dark');
-    } else if (theme === 'dark') {
-      setTheme('system');
+    if (theme === "light") {
+      setTheme("dark")
+    } else if (theme === "dark") {
+      setTheme("system")
     } else {
-      setTheme('light');
+      setTheme("light")
     }
-  };
+  }
 
   const getThemeIcon = () => {
-    if (theme === 'system') {
+    if (theme === "system") {
       return (
         <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
           <path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14.5a6.5 6.5 0 110-13 6.5 6.5 0 010 13z" />
         </svg>
-      );
+      )
     }
 
-    if (resolvedTheme === 'dark') {
+    if (resolvedTheme === "dark") {
       return (
         <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
           <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
         </svg>
-      );
+      )
     }
 
     return (
@@ -194,74 +194,74 @@ export function ThemeToggle({
           clipRule="evenodd"
         />
       </svg>
-    );
-  };
+    )
+  }
 
   const getThemeText = () => {
-    if (theme === 'system') {
-      return 'System';
+    if (theme === "system") {
+      return "System"
     }
-    if (resolvedTheme === 'dark') {
-      return 'Dark';
+    if (resolvedTheme === "dark") {
+      return "Dark"
     }
-    return 'Light';
-  };
+    return "Light"
+  }
 
-  if (variant === 'icon') {
+  if (variant === "icon") {
     return (
       <button
         onClick={toggleTheme}
         className={cn(
-          'inline-flex items-center justify-center rounded-full transition-colors',
-          'hover:bg-accent hover:text-accent-foreground',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-          'touch-manipulation select-none',
-          size === 'sm' && 'h-8 w-8',
-          size === 'md' && 'h-9 w-9',
-          size === 'lg' && 'h-10 w-10',
+          "inline-flex items-center justify-center rounded-full transition-colors",
+          "hover:bg-accent hover:text-accent-foreground",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "touch-manipulation select-none",
+          size === "sm" && "h-8 w-8",
+          size === "md" && "h-9 w-9",
+          size === "lg" && "h-10 w-10",
           className
         )}
-        aria-label={`Switch to ${theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light'} theme`}
+        aria-label={`Switch to ${theme === "light" ? "dark" : theme === "dark" ? "system" : "light"} theme`}
       >
         {getThemeIcon()}
       </button>
-    );
+    )
   }
 
-  if (variant === 'text') {
+  if (variant === "text") {
     return (
       <button
         onClick={toggleTheme}
         className={cn(
-          'inline-flex items-center gap-2 rounded-md px-3 py-2 transition-colors',
-          'hover:bg-accent hover:text-accent-foreground',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-          'touch-manipulation select-none',
-          'font-medium text-sm',
+          "inline-flex items-center gap-2 rounded-md px-3 py-2 transition-colors",
+          "hover:bg-accent hover:text-accent-foreground",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "touch-manipulation select-none",
+          "font-medium text-sm",
           className
         )}
-        aria-label={`Switch to ${theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light'} theme`}
+        aria-label={`Switch to ${theme === "light" ? "dark" : theme === "dark" ? "system" : "light"} theme`}
       >
         {getThemeText()}
       </button>
-    );
+    )
   }
 
   return (
     <button
       onClick={toggleTheme}
       className={cn(
-        'inline-flex items-center gap-2 rounded-md px-3 py-2 transition-colors',
-        'hover:bg-accent hover:text-accent-foreground',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-        'touch-manipulation select-none',
-        'font-medium text-sm',
+        "inline-flex items-center gap-2 rounded-md px-3 py-2 transition-colors",
+        "hover:bg-accent hover:text-accent-foreground",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        "touch-manipulation select-none",
+        "font-medium text-sm",
         className
       )}
-      aria-label={`Switch to ${theme === 'light' ? 'dark' : theme === 'dark' ? 'system' : 'light'} theme`}
+      aria-label={`Switch to ${theme === "light" ? "dark" : theme === "dark" ? "system" : "light"} theme`}
     >
       {getThemeIcon()}
       <span>{getThemeText()}</span>
     </button>
-  );
+  )
 }

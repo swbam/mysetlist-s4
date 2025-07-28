@@ -1,59 +1,61 @@
-import { Button } from '@repo/design-system';
-import { Badge } from '@repo/design-system';
-import { Card, CardContent } from '@repo/design-system';
-import { Avatar, AvatarFallback, AvatarImage } from '@repo/design-system';
-import { Calendar, ExternalLink, Music, Users, Verified } from 'lucide-react';
-import Link from 'next/link';
-import React, { Suspense } from 'react';
-import { parseGenres } from '~/lib/utils';
-import { FollowButton } from './follow-button';
-import { FollowerCount } from './follower-count';
+import { Button } from "@repo/design-system"
+import { Badge } from "@repo/design-system"
+import { Card, CardContent } from "@repo/design-system"
+import { Avatar, AvatarFallback, AvatarImage } from "@repo/design-system"
+import { Calendar, ExternalLink, Music, Users, Verified } from "lucide-react"
+import Link from "next/link"
+import React, { Suspense } from "react"
+import { parseGenres } from "~/lib/utils"
+import { FollowButton } from "./follow-button"
+import { FollowerCount } from "./follower-count"
 
 interface ArtistHeaderProps {
   artist: {
-    id: string;
-    name: string;
-    slug: string;
-    imageUrl?: string;
-    smallImageUrl?: string;
-    genres: string;
-    popularity: number;
-    followers: number;
-    monthlyListeners?: number;
-    verified: boolean;
-    bio?: string;
-    externalUrls?: string;
+    id: string
+    name: string
+    slug: string
+    imageUrl?: string
+    smallImageUrl?: string
+    genres: string
+    popularity: number
+    followers: number
+    monthlyListeners?: number
+    verified: boolean
+    bio?: string
+    externalUrls?: string
     _count?: {
-      shows: number;
-      setlists: number;
-    };
-  };
+      shows: number
+      setlists: number
+    }
+  }
 }
 
-export const ArtistHeader = React.memo(function ArtistHeader({ artist }: ArtistHeaderProps) {
+export const ArtistHeader = React.memo(function ArtistHeader({
+  artist,
+}: ArtistHeaderProps) {
   // Safe genre parsing with utility function
   const genres = React.useMemo(() => {
-    return parseGenres(artist.genres);
-  }, [artist.genres]);
+    return parseGenres(artist.genres)
+  }, [artist.genres])
 
   const externalUrls = React.useMemo(() => {
     try {
-      return artist.externalUrls ? JSON.parse(artist.externalUrls) : {};
+      return artist.externalUrls ? JSON.parse(artist.externalUrls) : {}
     } catch (error) {
-      console.warn('Failed to parse external URLs:', error);
-      return {};
+      console.warn("Failed to parse external URLs:", error)
+      return {}
     }
-  }, [artist.externalUrls]);
+  }, [artist.externalUrls])
 
   const formatFollowers = (count: number) => {
     if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M`;
+      return `${(count / 1000000).toFixed(1)}M`
     }
     if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}K`;
+      return `${(count / 1000).toFixed(1)}K`
     }
-    return count.toString();
-  };
+    return count.toString()
+  }
 
   return (
     <div className="w-full">
@@ -161,5 +163,5 @@ export const ArtistHeader = React.memo(function ArtistHeader({ artist }: ArtistH
         </Card>
       )}
     </div>
-  );
-});
+  )
+})

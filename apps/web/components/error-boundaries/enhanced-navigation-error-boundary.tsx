@@ -1,13 +1,13 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card"
 import {
   AlertTriangle,
   ArrowLeft,
@@ -15,41 +15,41 @@ import {
   RefreshCw,
   Settings,
   Zap,
-} from 'lucide-react';
-import Link from 'next/link';
-import React, { useState } from 'react';
+} from "lucide-react"
+import Link from "next/link"
+import React, { useState } from "react"
 
 interface Props {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-  enableAutoRetry?: boolean;
-  maxRetries?: number;
-  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+  children: React.ReactNode
+  fallback?: React.ReactNode
+  enableAutoRetry?: boolean
+  maxRetries?: number
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void
 }
 
 interface State {
-  hasError: boolean;
-  error: Error | null;
-  errorInfo: React.ErrorInfo | null;
-  retryCount: number;
-  isRetrying: boolean;
+  hasError: boolean
+  error: Error | null
+  errorInfo: React.ErrorInfo | null
+  retryCount: number
+  isRetrying: boolean
 }
 
 export class EnhancedNavigationErrorBoundary extends React.Component<
   Props,
   State
 > {
-  private retryTimeouts: NodeJS.Timeout[] = [];
+  private retryTimeouts: NodeJS.Timeout[] = []
 
   constructor(props: Props) {
-    super(props);
+    super(props)
     this.state = {
       hasError: false,
       error: null,
       errorInfo: null,
       retryCount: 0,
       isRetrying: false,
-    };
+    }
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
@@ -57,15 +57,15 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
       hasError: true,
       error,
       errorInfo: null,
-    };
+    }
   }
 
   override componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    this.setState({ errorInfo });
+    this.setState({ errorInfo })
 
     // Call custom error handler
     if (this.props.onError) {
-      this.props.onError(error, errorInfo);
+      this.props.onError(error, errorInfo)
     }
 
     // Auto-retry if enabled
@@ -73,25 +73,25 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
       this.props.enableAutoRetry &&
       this.state.retryCount < (this.props.maxRetries || 3)
     ) {
-      this.scheduleAutoRetry();
+      this.scheduleAutoRetry()
     }
 
     // Report to error tracking service
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'exception', {
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("event", "exception", {
         description: error.message,
         fatal: false,
-      });
+      })
     }
   }
 
   override componentWillUnmount() {
     // Clear any pending retries
-    this.retryTimeouts.forEach((timeout) => clearTimeout(timeout));
+    this.retryTimeouts.forEach((timeout) => clearTimeout(timeout))
   }
 
   private scheduleAutoRetry = () => {
-    const delay = Math.min(1000 * 2 ** this.state.retryCount, 10000); // Exponential backoff
+    const delay = Math.min(1000 * 2 ** this.state.retryCount, 10000) // Exponential backoff
 
     const timeout = setTimeout(() => {
       this.setState((prevState) => ({
@@ -100,12 +100,12 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
         errorInfo: null,
         retryCount: prevState.retryCount + 1,
         isRetrying: false,
-      }));
-    }, delay);
+      }))
+    }, delay)
 
-    this.retryTimeouts.push(timeout);
-    this.setState({ isRetrying: true });
-  };
+    this.retryTimeouts.push(timeout)
+    this.setState({ isRetrying: true })
+  }
 
   private handleManualRetry = () => {
     this.setState((prevState) => ({
@@ -114,49 +114,49 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
       errorInfo: null,
       retryCount: prevState.retryCount + 1,
       isRetrying: false,
-    }));
-  };
+    }))
+  }
 
   private handleReload = () => {
-    if (typeof window !== 'undefined') {
-      window.location.reload();
+    if (typeof window !== "undefined") {
+      window.location.reload()
     }
-  };
+  }
 
   private handleGoBack = () => {
-    if (typeof window !== 'undefined') {
-      window.history.back();
+    if (typeof window !== "undefined") {
+      window.history.back()
     }
-  };
+  }
 
   private handleClearCache = () => {
-    if ('caches' in window) {
+    if ("caches" in window) {
       caches.keys().then((names) => {
         names.forEach((name) => {
-          caches.delete(name);
-        });
-      });
+          caches.delete(name)
+        })
+      })
     }
 
     // Clear localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.clear();
-      sessionStorage.clear();
+    if (typeof window !== "undefined") {
+      localStorage.clear()
+      sessionStorage.clear()
     }
 
     // Reload after clearing cache
-    this.handleReload();
-  };
+    this.handleReload()
+  }
 
   override render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
-        return <>{this.props.fallback}</>;
+        return <>{this.props.fallback}</>
       }
 
-      const { error, errorInfo, retryCount, isRetrying } = this.state;
-      const maxRetries = this.props.maxRetries || 3;
-      const canRetry = retryCount < maxRetries;
+      const { error, errorInfo, retryCount, isRetrying } = this.state
+      const maxRetries = this.props.maxRetries || 3
+      const canRetry = retryCount < maxRetries
 
       return (
         <div className="container mx-auto flex min-h-[70vh] items-center justify-center px-4 py-8">
@@ -191,7 +191,7 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
                   <RefreshCw className="mr-2 h-4 w-4" />
                   {retryCount > 0
                     ? `Retry (${retryCount}/${maxRetries})`
-                    : 'Try Again'}
+                    : "Try Again"}
                 </Button>
 
                 <Button
@@ -254,7 +254,7 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
               </div>
 
               {/* Error details for development */}
-              {process.env["NODE_ENV"] === 'development' && error && (
+              {process.env["NODE_ENV"] === "development" && error && (
                 <details className="mt-6 text-left">
                   <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
                     Error Details (Development)
@@ -294,40 +294,40 @@ export class EnhancedNavigationErrorBoundary extends React.Component<
               <div className="rounded-md bg-muted/50 p-4 text-center">
                 <p className="text-muted-foreground text-sm">
                   {retryCount >= maxRetries
-                    ? 'If the problem persists, please try refreshing the page or clearing your cache.'
-                    : 'This error has been automatically reported. You can try again or navigate to a different page.'}
+                    ? "If the problem persists, please try refreshing the page or clearing your cache."
+                    : "This error has been automatically reported. You can try again or navigate to a different page."}
                 </p>
               </div>
             </CardContent>
           </Card>
         </div>
-      );
+      )
     }
 
-    return this.props.children;
+    return this.props.children
   }
 }
 
 // Hook for using the error boundary in functional components
 export function useEnhancedErrorBoundary() {
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<Error | null>(null)
 
-  const resetError = () => setError(null);
+  const resetError = () => setError(null)
 
   const reportError = (error: Error, _errorInfo?: React.ErrorInfo) => {
-    setError(error);
-  };
+    setError(error)
+  }
 
-  return { error, resetError, reportError };
+  return { error, resetError, reportError }
 }
 
 // Higher-order component wrapper
 export function withEnhancedNavigationErrorBoundary<T extends object>(
   Component: React.ComponentType<T>,
   options?: {
-    enableAutoRetry?: boolean;
-    maxRetries?: number;
-    onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+    enableAutoRetry?: boolean
+    maxRetries?: number
+    onError?: (error: Error, errorInfo: React.ErrorInfo) => void
   }
 ) {
   return function WithEnhancedNavigationErrorBoundaryComponent(props: T) {
@@ -335,12 +335,12 @@ export function withEnhancedNavigationErrorBoundary<T extends object>(
       children: <Component {...props} />,
       enableAutoRetry: options?.enableAutoRetry ?? false,
       maxRetries: options?.maxRetries ?? 3,
-    };
-    
-    if (options?.onError) {
-      boundaryProps.onError = options.onError;
     }
-    
-    return <EnhancedNavigationErrorBoundary {...boundaryProps} />;
-  };
+
+    if (options?.onError) {
+      boundaryProps.onError = options.onError
+    }
+
+    return <EnhancedNavigationErrorBoundary {...boundaryProps} />
+  }
 }

@@ -1,11 +1,11 @@
-import { db } from '@repo/database';
-import { songs } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { type NextRequest, NextResponse } from 'next/server';
+import { db } from "@repo/database"
+import { songs } from "@repo/database"
+import { eq } from "drizzle-orm"
+import { type NextRequest, NextResponse } from "next/server"
 
 export async function POST(request: NextRequest) {
   try {
-    const songData = await request.json();
+    const songData = await request.json()
 
     // Support both naming conventions
     const {
@@ -21,28 +21,28 @@ export async function POST(request: NextRequest) {
       is_explicit,
       popularity,
       previewUrl,
-    } = songData;
+    } = songData
 
-    const finalSpotifyId = spotifyId || spotify_id;
-    const finalAlbumArtUrl = albumArtUrl || album_art_url;
-    const finalDurationMs = duration || duration_ms;
+    const finalSpotifyId = spotifyId || spotify_id
+    const finalAlbumArtUrl = albumArtUrl || album_art_url
+    const finalDurationMs = duration || duration_ms
 
     if (!title || !artist) {
       return NextResponse.json(
-        { error: 'Missing required fields: title, artist' },
+        { error: "Missing required fields: title, artist" },
         { status: 400 }
-      );
+      )
     }
 
     // Check if song already exists
-    let existingSong;
+    let existingSong
 
     if (finalSpotifyId) {
       existingSong = await db
         .select()
         .from(songs)
         .where(eq(songs.spotifyId, finalSpotifyId))
-        .limit(1);
+        .limit(1)
     }
 
     // If no Spotify ID or not found, check by title and artist
@@ -51,15 +51,15 @@ export async function POST(request: NextRequest) {
         .select()
         .from(songs)
         .where(eq(songs.title, title))
-        .limit(1);
+        .limit(1)
 
       // Filter for artist match
-      existingSong = existingSong.filter((s) => s.artist === artist);
+      existingSong = existingSong.filter((s) => s.artist === artist)
     }
 
     if (existingSong && existingSong.length > 0 && existingSong[0]) {
       // Update existing song with new data if available
-      const existing = existingSong[0];
+      const existing = existingSong[0]
       const updatedSong = await db
         .update(songs)
         .set({
@@ -72,9 +72,9 @@ export async function POST(request: NextRequest) {
           updatedAt: new Date(),
         })
         .where(eq(songs.id, existing.id))
-        .returning();
+        .returning()
 
-      return NextResponse.json({ song: updatedSong[0] });
+      return NextResponse.json({ song: updatedSong[0] })
     }
 
     // Create new song
@@ -99,10 +99,10 @@ export async function POST(request: NextRequest) {
         createdAt: new Date(),
         updatedAt: new Date(),
       })
-      .returning();
+      .returning()
 
-    return NextResponse.json({ song: newSong[0] });
+    return NextResponse.json({ song: newSong[0] })
   } catch (_error) {
-    return NextResponse.json({ error: 'Failed to save song' }, { status: 500 });
+    return NextResponse.json({ error: "Failed to save song" }, { status: 500 })
   }
 }

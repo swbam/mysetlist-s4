@@ -1,5 +1,5 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system"
+import { Skeleton } from "@repo/design-system/components/ui/skeleton"
 
 export default function ArtistPageLoading() {
   return (
@@ -50,5 +50,5 @@ export default function ArtistPageLoading() {
         </TabsContent>
       </Tabs>
     </div>
-  );
+  )
 }

@@ -1,57 +1,57 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { AlertTriangle, ArrowLeft, Home, RefreshCw } from 'lucide-react';
-import Link from 'next/link';
-import React from 'react';
+} from "@repo/design-system/components/ui/card"
+import { AlertTriangle, ArrowLeft, Home, RefreshCw } from "lucide-react"
+import Link from "next/link"
+import React from "react"
 
 interface Props {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
-  pageTitle?: string;
+  children: React.ReactNode
+  fallback?: React.ReactNode
+  pageTitle?: string
 }
 
 interface State {
-  hasError: boolean;
-  error: Error | null;
-  errorInfo: React.ErrorInfo | null;
+  hasError: boolean
+  error: Error | null
+  errorInfo: React.ErrorInfo | null
 }
 
 export class PageErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
-    super(props);
-    this.state = { hasError: false, error: null, errorInfo: null };
+    super(props)
+    this.state = { hasError: false, error: null, errorInfo: null }
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error, errorInfo: null };
+    return { hasError: true, error, errorInfo: null }
   }
 
   override componentDidCatch(_error: Error, errorInfo: React.ErrorInfo) {
-    this.setState({ errorInfo });
+    this.setState({ errorInfo })
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null });
-  };
+    this.setState({ hasError: false, error: null, errorInfo: null })
+  }
 
   handleReload = () => {
-    if (typeof window !== 'undefined') {
-      window.location.reload();
+    if (typeof window !== "undefined") {
+      window.location.reload()
     }
-  };
+  }
 
   override render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
-        return <>{this.props.fallback}</>;
+        return <>{this.props.fallback}</>
       }
 
       return (
@@ -64,7 +64,7 @@ export class PageErrorBoundary extends React.Component<Props, State> {
               <CardTitle className="text-2xl">
                 {this.props.pageTitle
                   ? `${this.props.pageTitle} Error`
-                  : 'Page Error'}
+                  : "Page Error"}
               </CardTitle>
               <CardDescription>
                 Something went wrong while loading this page. Don't worry, we
@@ -106,46 +106,47 @@ export class PageErrorBoundary extends React.Component<Props, State> {
                 </Button>
               </div>
 
-              {process.env["NODE_ENV"] === 'development' && this.state.error && (
-                <details className="mt-6 text-left">
-                  <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
-                    Error Details (Development)
-                  </summary>
-                  <div className="mt-2 space-y-2">
-                    <div className="rounded-md bg-muted p-3">
-                      <h4 className="font-medium text-sm">Error Message:</h4>
-                      <pre className="mt-1 overflow-auto text-xs">
-                        {this.state.error.message}
-                      </pre>
+              {process.env["NODE_ENV"] === "development" &&
+                this.state.error && (
+                  <details className="mt-6 text-left">
+                    <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
+                      Error Details (Development)
+                    </summary>
+                    <div className="mt-2 space-y-2">
+                      <div className="rounded-md bg-muted p-3">
+                        <h4 className="font-medium text-sm">Error Message:</h4>
+                        <pre className="mt-1 overflow-auto text-xs">
+                          {this.state.error.message}
+                        </pre>
+                      </div>
+                      {this.state.error.stack && (
+                        <div className="rounded-md bg-muted p-3">
+                          <h4 className="font-medium text-sm">Stack Trace:</h4>
+                          <pre className="mt-1 overflow-auto text-xs">
+                            {this.state.error.stack}
+                          </pre>
+                        </div>
+                      )}
+                      {this.state.errorInfo && (
+                        <div className="rounded-md bg-muted p-3">
+                          <h4 className="font-medium text-sm">
+                            Component Stack:
+                          </h4>
+                          <pre className="mt-1 overflow-auto text-xs">
+                            {this.state.errorInfo.componentStack}
+                          </pre>
+                        </div>
+                      )}
                     </div>
-                    {this.state.error.stack && (
-                      <div className="rounded-md bg-muted p-3">
-                        <h4 className="font-medium text-sm">Stack Trace:</h4>
-                        <pre className="mt-1 overflow-auto text-xs">
-                          {this.state.error.stack}
-                        </pre>
-                      </div>
-                    )}
-                    {this.state.errorInfo && (
-                      <div className="rounded-md bg-muted p-3">
-                        <h4 className="font-medium text-sm">
-                          Component Stack:
-                        </h4>
-                        <pre className="mt-1 overflow-auto text-xs">
-                          {this.state.errorInfo.componentStack}
-                        </pre>
-                      </div>
-                    )}
-                  </div>
-                </details>
-              )}
+                  </details>
+                )}
             </CardContent>
           </Card>
         </div>
-      );
+      )
     }
 
-    return this.props.children;
+    return this.props.children
   }
 }
 
@@ -156,9 +157,9 @@ export function withPageErrorBoundary<T extends object>(
 ) {
   return function WithPageErrorBoundaryComponent(props: T) {
     return (
-      <PageErrorBoundary pageTitle={pageTitle ?? 'Page'}>
+      <PageErrorBoundary pageTitle={pageTitle ?? "Page"}>
         <Component {...props} />
       </PageErrorBoundary>
-    );
-  };
+    )
+  }
 }

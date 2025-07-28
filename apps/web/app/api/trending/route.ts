@@ -1,105 +1,105 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from "next/server"
 import {
   type TrendingConfig,
   getDailyTrending,
   getMonthlyTrending,
   getTrendingContent,
   getWeeklyTrending,
-} from '~/lib/trending';
-import { rateLimitMiddleware } from '~/middleware/rate-limit';
+} from "~/lib/trending"
+import { rateLimitMiddleware } from "~/middleware/rate-limit"
 
 // Force dynamic rendering for API route
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic"
 
 export async function GET(request: NextRequest) {
   // Apply rate limiting
-  const rateLimitResult = await rateLimitMiddleware(request);
+  const rateLimitResult = await rateLimitMiddleware(request)
   if (rateLimitResult) {
-    return rateLimitResult;
+    return rateLimitResult
   }
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const period = searchParams.get('period') || 'week';
-    const limit = Number.parseInt(searchParams.get('limit') || '20');
-    const type = searchParams.get('type') as
-      | 'shows'
-      | 'artists'
-      | 'combined'
-      | null;
+    const searchParams = request.nextUrl.searchParams
+    const period = searchParams.get("period") || "week"
+    const limit = Number.parseInt(searchParams.get("limit") || "20")
+    const type = searchParams.get("type") as
+      | "shows"
+      | "artists"
+      | "combined"
+      | null
 
     // Custom config if provided
-    const customConfig = searchParams.get('config');
-    let config: TrendingConfig | undefined;
+    const customConfig = searchParams.get("config")
+    let config: TrendingConfig | undefined
 
     if (customConfig) {
       try {
-        config = JSON.parse(customConfig);
+        config = JSON.parse(customConfig)
       } catch (_e) {
         return NextResponse.json(
-          { error: 'Invalid config parameter' },
+          { error: "Invalid config parameter" },
           { status: 400 }
-        );
+        )
       }
     }
 
-    let data;
+    let data
 
     switch (period) {
-      case 'day':
-        data = await getDailyTrending(limit);
-        break;
-      case 'week':
-        data = await getWeeklyTrending(limit);
-        break;
-      case 'month':
-        data = await getMonthlyTrending(limit);
-        break;
-      case 'custom': {
+      case "day":
+        data = await getDailyTrending(limit)
+        break
+      case "week":
+        data = await getWeeklyTrending(limit)
+        break
+      case "month":
+        data = await getMonthlyTrending(limit)
+        break
+      case "custom": {
         if (!config) {
           return NextResponse.json(
-            { error: 'Custom period requires config parameter' },
+            { error: "Custom period requires config parameter" },
             { status: 400 }
-          );
+          )
         }
-        data = await getTrendingContent(config);
-        break;
+        data = await getTrendingContent(config)
+        break
       }
       default:
         return NextResponse.json(
-          { error: 'Invalid period. Use: day, week, month, or custom' },
+          { error: "Invalid period. Use: day, week, month, or custom" },
           { status: 400 }
-        );
+        )
     }
 
     // Filter by type if specified
-    let response;
-    if (type && type !== 'combined') {
-      response = data[type];
-    } else if (type === 'combined' || !type) {
-      response = data.combined;
+    let response
+    if (type && type !== "combined") {
+      response = data[type]
+    } else if (type === "combined" || !type) {
+      response = data.combined
     } else {
-      response = data;
+      response = data
     }
 
     const jsonResponse = NextResponse.json({
       period,
       limit,
-      type: type || 'combined',
+      type: type || "combined",
       data: response,
       timestamp: new Date().toISOString(),
-    });
+    })
 
     // Add cache headers
     jsonResponse.headers.set(
-      'Cache-Control',
-      'public, s-maxage=300, stale-while-revalidate=600'
-    );
+      "Cache-Control",
+      "public, s-maxage=300, stale-while-revalidate=600"
+    )
 
-    return jsonResponse;
+    return jsonResponse
   } catch (_error) {
     return NextResponse.json(
-      { error: 'Failed to fetch trending content' },
+      { error: "Failed to fetch trending content" },
       { status: 500 }
-    );
+    )
   }
 }

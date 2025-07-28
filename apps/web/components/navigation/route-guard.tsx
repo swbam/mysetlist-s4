@@ -1,35 +1,35 @@
-'use client';
+"use client"
 
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Skeleton } from "@repo/design-system/components/ui/skeleton"
+import { usePathname } from "next/navigation"
+import { useEffect, useState } from "react"
 
 interface RouteGuardProps {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
+  children: React.ReactNode
+  fallback?: React.ReactNode
 }
 
 export function RouteGuard({ children, fallback }: RouteGuardProps) {
-  const pathname = usePathname();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const pathname = usePathname()
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
     const handleRouteChange = () => {
-      setIsLoading(true);
-      setError(null);
-    };
+      setIsLoading(true)
+      setError(null)
+    }
 
     const handleRouteComplete = () => {
-      setIsLoading(false);
-    };
+      setIsLoading(false)
+    }
 
     // Simulate route change detection
-    handleRouteChange();
-    const timer = setTimeout(handleRouteComplete, 100);
+    handleRouteChange()
+    const timer = setTimeout(handleRouteComplete, 100)
 
-    return () => clearTimeout(timer);
-  }, [pathname]);
+    return () => clearTimeout(timer)
+  }, [pathname])
 
   if (error) {
     return (
@@ -47,14 +47,14 @@ export function RouteGuard({ children, fallback }: RouteGuardProps) {
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   if (isLoading && fallback) {
-    return <>{fallback}</>;
+    return <>{fallback}</>
   }
 
-  return <>{children}</>;
+  return <>{children}</>
 }
 
 export function PageLoadingSkeleton() {
@@ -77,5 +77,5 @@ export function PageLoadingSkeleton() {
         </div>
       </div>
     </div>
-  );
+  )
 }

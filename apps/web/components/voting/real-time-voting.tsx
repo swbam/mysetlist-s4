@@ -1,32 +1,32 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card } from '@repo/design-system/components/ui/card';
-import { Progress } from '@repo/design-system/components/ui/progress';
-import { cn } from '@repo/design-system/lib/utils';
-import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, ChevronUp, Music, Sparkles, Users } from 'lucide-react';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
-import { useAuth } from '~/app/providers/auth-provider';
-import { createClient } from '~/lib/supabase/client';
+import { Button } from "@repo/design-system/components/ui/button"
+import { Card } from "@repo/design-system/components/ui/card"
+import { Progress } from "@repo/design-system/components/ui/progress"
+import { cn } from "@repo/design-system/lib/utils"
+import { AnimatePresence, motion } from "framer-motion"
+import { ChevronDown, ChevronUp, Music, Sparkles, Users } from "lucide-react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
+import { toast } from "sonner"
+import { useAuth } from "~/app/providers/auth-provider"
+import { createClient } from "~/lib/supabase/client"
 
 interface Song {
-  id: string;
-  title: string;
-  artist: string;
-  duration?: number;
-  spotifyId?: string;
-  votes: number;
-  userVote?: 'up' | 'down' | null;
+  id: string
+  title: string
+  artist: string
+  duration?: number
+  spotifyId?: string
+  votes: number
+  userVote?: "up" | "down" | null
 }
 
 interface RealTimeVotingProps {
-  showId: string;
-  setlistId?: string;
-  songs: Song[];
-  className?: string;
-  onVoteUpdate?: (songId: string, newVoteCount: number) => void;
+  showId: string
+  setlistId?: string
+  songs: Song[]
+  className?: string
+  onVoteUpdate?: (songId: string, newVoteCount: number) => void
 }
 
 const VoteButton = React.memo(function VoteButton({
@@ -36,33 +36,33 @@ const VoteButton = React.memo(function VoteButton({
   disabled,
   count,
 }: {
-  type: 'up' | 'down';
-  active: boolean;
-  onClick: () => void;
-  disabled: boolean;
-  count?: number;
+  type: "up" | "down"
+  active: boolean
+  onClick: () => void
+  disabled: boolean
+  count?: number
 }) {
   return (
     <Button
       size="sm"
-      variant={active ? 'default' : 'outline'}
+      variant={active ? "default" : "outline"}
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        'gap-1.5 transition-all',
-        type === 'up' && active && 'bg-green-600 hover:bg-green-700',
-        type === 'down' && active && 'bg-red-600 hover:bg-red-700'
+        "gap-1.5 transition-all",
+        type === "up" && active && "bg-green-600 hover:bg-green-700",
+        type === "down" && active && "bg-red-600 hover:bg-red-700"
       )}
     >
-      {type === 'up' ? (
+      {type === "up" ? (
         <ChevronUp className="h-4 w-4" />
       ) : (
         <ChevronDown className="h-4 w-4" />
       )}
       {count !== undefined && <span className="font-medium">{count}</span>}
     </Button>
-  );
-});
+  )
+})
 
 const SongCard = React.memo(function SongCard({
   song,
@@ -71,13 +71,13 @@ const SongCard = React.memo(function SongCard({
   onVote,
   isVoting,
 }: {
-  song: Song;
-  rank: number;
-  totalVotes: number;
-  onVote: (type: 'up' | 'down') => void;
-  isVoting: boolean;
+  song: Song
+  rank: number
+  totalVotes: number
+  onVote: (type: "up" | "down") => void
+  isVoting: boolean
 }) {
-  const votePercentage = totalVotes > 0 ? (song.votes / totalVotes) * 100 : 0;
+  const votePercentage = totalVotes > 0 ? (song.votes / totalVotes) * 100 : 0
 
   return (
     <motion.div
@@ -95,11 +95,11 @@ const SongCard = React.memo(function SongCard({
               <div className="relative">
                 <div
                   className={cn(
-                    'flex h-10 w-10 items-center justify-center rounded-full font-bold text-lg',
-                    rank === 1 && 'bg-yellow-500/20 text-yellow-500',
-                    rank === 2 && 'bg-gray-400/20 text-gray-400',
-                    rank === 3 && 'bg-orange-600/20 text-orange-600',
-                    rank > 3 && 'bg-muted text-muted-foreground'
+                    "flex h-10 w-10 items-center justify-center rounded-full font-bold text-lg",
+                    rank === 1 && "bg-yellow-500/20 text-yellow-500",
+                    rank === 2 && "bg-gray-400/20 text-gray-400",
+                    rank === 3 && "bg-orange-600/20 text-orange-600",
+                    rank > 3 && "bg-muted text-muted-foreground"
                   )}
                 >
                   {rank}
@@ -128,7 +128,7 @@ const SongCard = React.memo(function SongCard({
                   {song.duration && (
                     <span className="ml-2">
                       • {Math.floor(song.duration / 60)}:
-                      {(song.duration % 60).toString().padStart(2, '0')}
+                      {(song.duration % 60).toString().padStart(2, "0")}
                     </span>
                   )}
                 </p>
@@ -139,8 +139,8 @@ const SongCard = React.memo(function SongCard({
             <div className="flex items-center gap-2">
               <VoteButton
                 type="down"
-                active={song.userVote === 'down'}
-                onClick={() => onVote('down')}
+                active={song.userVote === "down"}
+                onClick={() => onVote("down")}
                 disabled={isVoting}
               />
 
@@ -158,8 +158,8 @@ const SongCard = React.memo(function SongCard({
 
               <VoteButton
                 type="up"
-                active={song.userVote === 'up'}
-                onClick={() => onVote('up')}
+                active={song.userVote === "up"}
+                onClick={() => onVote("up")}
                 disabled={isVoting}
               />
             </div>
@@ -175,8 +175,8 @@ const SongCard = React.memo(function SongCard({
         </div>
       </Card>
     </motion.div>
-  );
-});
+  )
+})
 
 export const RealTimeVoting = React.memo(function RealTimeVoting({
   showId,
@@ -185,130 +185,130 @@ export const RealTimeVoting = React.memo(function RealTimeVoting({
   className,
   onVoteUpdate: _onVoteUpdate,
 }: RealTimeVotingProps) {
-  const { user } = useAuth();
-  const [songs, setSongs] = useState(initialSongs);
-  const [votingStates, setVotingStates] = useState<Record<string, boolean>>({});
-  const [activeVoters, setActiveVoters] = useState(0);
+  const { user } = useAuth()
+  const [songs, setSongs] = useState(initialSongs)
+  const [votingStates, setVotingStates] = useState<Record<string, boolean>>({})
+  const [activeVoters, setActiveVoters] = useState(0)
 
-  const supabase = createClient();
+  const supabase = createClient()
 
   // Calculate total votes
   const totalVotes = useMemo(
     () => songs.reduce((sum, song) => sum + song.votes, 0),
     [songs]
-  );
+  )
 
   // Sort songs by votes
   const sortedSongs = useMemo(
     () => [...songs].sort((a, b) => b.votes - a.votes),
     [songs]
-  );
+  )
 
   // Handle voting
   const handleVote = useCallback(
-    async (songId: string, voteType: 'up' | 'down') => {
+    async (songId: string, voteType: "up" | "down") => {
       if (!user) {
-        toast.error('Please sign in to vote');
-        return;
+        toast.error("Please sign in to vote")
+        return
       }
 
-      setVotingStates((prev) => ({ ...prev, [songId]: true }));
+      setVotingStates((prev) => ({ ...prev, [songId]: true }))
 
       try {
-        const song = songs.find((s) => s.id === songId);
+        const song = songs.find((s) => s.id === songId)
         if (!song) {
-          return;
+          return
         }
 
         // Optimistic update
         setSongs((prevSongs) =>
           prevSongs.map((s) => {
             if (s.id !== songId) {
-              return s;
+              return s
             }
 
-            let newVotes = s.votes;
-            let newUserVote: 'up' | 'down' | null = voteType;
+            let newVotes = s.votes
+            let newUserVote: "up" | "down" | null = voteType
 
             // Handle vote logic
             if (s.userVote === voteType) {
               // Remove vote
-              newVotes = voteType === 'up' ? s.votes - 1 : s.votes + 1;
-              newUserVote = null;
+              newVotes = voteType === "up" ? s.votes - 1 : s.votes + 1
+              newUserVote = null
             } else if (s.userVote) {
               // Change vote
-              newVotes = voteType === 'up' ? s.votes + 2 : s.votes - 2;
+              newVotes = voteType === "up" ? s.votes + 2 : s.votes - 2
             } else {
               // New vote
-              newVotes = voteType === 'up' ? s.votes + 1 : s.votes - 1;
+              newVotes = voteType === "up" ? s.votes + 1 : s.votes - 1
             }
 
-            return { ...s, votes: newVotes, userVote: newUserVote };
+            return { ...s, votes: newVotes, userVote: newUserVote }
           })
-        );
+        )
 
         // Send to server
-        const { error } = await supabase.rpc('cast_vote', {
+        const { error } = await supabase.rpc("cast_vote", {
           p_user_id: user.id,
           p_song_id: songId,
           p_show_id: showId,
           p_setlist_id: setlistId,
           p_vote_type: voteType,
-        });
+        })
 
         if (error) {
-          throw error;
+          throw error
         }
 
-        toast.success('Vote recorded!');
+        toast.success("Vote recorded!")
       } catch (_error) {
-        toast.error('Failed to record vote');
+        toast.error("Failed to record vote")
 
         // Revert optimistic update
-        setSongs(initialSongs);
+        setSongs(initialSongs)
       } finally {
-        setVotingStates((prev) => ({ ...prev, [songId]: false }));
+        setVotingStates((prev) => ({ ...prev, [songId]: false }))
       }
     },
     [user, songs, showId, setlistId, supabase, initialSongs]
-  );
+  )
 
   // Subscribe to real-time updates
   useEffect(() => {
     if (!showId) {
-      return;
+      return
     }
 
     const channel = supabase
       .channel(`votes:${showId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'user_votes',
+          event: "*",
+          schema: "public",
+          table: "user_votes",
           filter: `show_id=eq.${showId}`,
         },
         (payload) => {
           // Update active voters count
-          if (payload.eventType === 'INSERT') {
-            setActiveVoters((prev) => prev + 1);
+          if (payload.eventType === "INSERT") {
+            setActiveVoters((prev) => prev + 1)
           }
         }
       )
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState();
-        setActiveVoters(Object.keys(state).length);
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState()
+        setActiveVoters(Object.keys(state).length)
       })
-      .subscribe();
+      .subscribe()
 
     return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [showId, supabase]);
+      supabase.removeChannel(channel)
+    }
+  }, [showId, supabase])
 
   return (
-    <div className={cn('space-y-4', className)}>
+    <div className={cn("space-y-4", className)}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -326,7 +326,7 @@ export const RealTimeVoting = React.memo(function RealTimeVoting({
           >
             <Users className="h-4 w-4 text-primary" />
             <span className="font-medium text-sm">
-              {activeVoters} {activeVoters === 1 ? 'person' : 'people'} voting
+              {activeVoters} {activeVoters === 1 ? "person" : "people"} voting
             </span>
             <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
           </motion.div>
@@ -358,5 +358,5 @@ export const RealTimeVoting = React.memo(function RealTimeVoting({
         </Card>
       )}
     </div>
-  );
-});
+  )
+})

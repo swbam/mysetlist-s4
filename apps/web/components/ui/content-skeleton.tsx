@@ -1,22 +1,22 @@
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { cn } from '@repo/design-system/lib/utils';
+import { Skeleton } from "@repo/design-system/components/ui/skeleton"
+import { cn } from "@repo/design-system/lib/utils"
 
 interface ContentSkeletonProps {
-  count?: number;
-  className?: string;
-  type?: 'artist' | 'show' | 'card';
+  count?: number
+  className?: string
+  type?: "artist" | "show" | "card"
 }
 
 export function ContentSkeleton({
   count = 4,
   className,
-  type = 'card',
+  type = "card",
 }: ContentSkeletonProps) {
-  if (type === 'artist') {
+  if (type === "artist") {
     return (
       <div
         className={cn(
-          'grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6',
+          "grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-6",
           className
         )}
       >
@@ -28,14 +28,14 @@ export function ContentSkeleton({
           </div>
         ))}
       </div>
-    );
+    )
   }
 
-  if (type === 'show') {
+  if (type === "show") {
     return (
       <div
         className={cn(
-          'grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4',
+          "grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-4",
           className
         )}
       >
@@ -50,13 +50,13 @@ export function ContentSkeleton({
           </div>
         ))}
       </div>
-    );
+    )
   }
 
   return (
     <div
       className={cn(
-        'grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3',
+        "grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3",
         className
       )}
     >
@@ -71,5 +71,5 @@ export function ContentSkeleton({
         </div>
       ))}
     </div>
-  );
+  )
 }

@@ -1,78 +1,78 @@
-'use client';
+"use client"
 
 import {
   Carousel,
   type CarouselApi,
   CarouselContent,
   CarouselItem,
-} from '@repo/design-system/components/ui/carousel';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { Music, TrendingUp, Users } from 'lucide-react';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+} from "@repo/design-system/components/ui/carousel"
+import { Skeleton } from "@repo/design-system/components/ui/skeleton"
+import { Music, TrendingUp, Users } from "lucide-react"
+import Link from "next/link"
+import { useEffect, useState } from "react"
 
 interface TrendingArtist {
-  id: string;
-  name: string;
-  slug: string;
-  genres: string[];
-  followers: number;
-  imageUrl?: string;
+  id: string
+  name: string
+  slug: string
+  genres: string[]
+  followers: number
+  imageUrl?: string
 }
 
 export const Cases = () => {
-  const [api, setApi] = useState<CarouselApi>();
-  const [current, setCurrent] = useState(0);
-  const [artists, setArtists] = useState<TrendingArtist[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [api, setApi] = useState<CarouselApi>()
+  const [current, setCurrent] = useState(0)
+  const [artists, setArtists] = useState<TrendingArtist[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchTrendingArtists();
-  }, []);
+    fetchTrendingArtists()
+  }, [])
 
   const fetchTrendingArtists = async () => {
     try {
-      const response = await fetch('/api/trending/artists?limit=15');
+      const response = await fetch("/api/trending/artists?limit=15")
       if (!response.ok) {
-        throw new Error('Failed to fetch trending artists');
+        throw new Error("Failed to fetch trending artists")
       }
 
-      const data = await response.json();
-      setArtists(data.artists || []);
+      const data = await response.json()
+      setArtists(data.artists || [])
     } catch (err) {
-      console.error('Error fetching trending artists:', err);
+      console.error("Error fetching trending artists:", err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
     if (!api || artists.length === 0) {
-      return;
+      return
     }
 
     const interval = setTimeout(() => {
       if (api.selectedScrollSnap() + 1 === api.scrollSnapList().length) {
-        setCurrent(0);
-        api.scrollTo(0);
+        setCurrent(0)
+        api.scrollTo(0)
       } else {
-        api.scrollNext();
-        setCurrent(current + 1);
+        api.scrollNext()
+        setCurrent(current + 1)
       }
-    }, 3000); // Auto-scroll every 3 seconds
+    }, 3000) // Auto-scroll every 3 seconds
 
-    return () => clearTimeout(interval);
-  }, [api, current, artists]);
+    return () => clearTimeout(interval)
+  }, [api, current, artists])
 
   const formatFollowers = (count: number) => {
     if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M`;
+      return `${(count / 1000000).toFixed(1)}M`
     }
     if (count >= 1000) {
-      return `${Math.round(count / 1000)}K`;
+      return `${Math.round(count / 1000)}K`
     }
-    return count.toString();
-  };
+    return count.toString()
+  }
 
   if (loading) {
     return (
@@ -103,11 +103,11 @@ export const Cases = () => {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   if (artists.length === 0) {
-    return null;
+    return null
   }
 
   return (
@@ -157,7 +157,7 @@ export const Cases = () => {
                               {artist.name}
                             </p>
                             <p className="text-muted-foreground text-xs">
-                              {artist.genres[0] || 'Artist'}
+                              {artist.genres[0] || "Artist"}
                             </p>
                             <div className="flex items-center gap-1 text-muted-foreground text-xs">
                               <Users className="h-3 w-3" />
@@ -175,5 +175,5 @@ export const Cases = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

@@ -1,52 +1,50 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { format } from 'date-fns';
-import Link from 'next/link';
-import { useRealtimeShow } from '~/hooks/use-realtime-show';
+import { Button } from "@repo/design-system/components/ui/button"
+import { format } from "date-fns"
+import Link from "next/link"
+import { useRealtimeShow } from "~/hooks/use-realtime-show"
 
 type ShowHeaderProps = {
   show: {
-    id: string;
-    name: string;
-    slug: string;
-    date: string;
-    start_time?: string;
-    doors_time?: string;
-    status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+    id: string
+    name: string
+    slug: string
+    date: string
+    start_time?: string
+    doors_time?: string
+    status: "upcoming" | "ongoing" | "completed" | "cancelled"
     headliner_artist: {
-      id: string;
-      name: string;
-      slug: string;
-      image_url?: string;
-      verified?: boolean;
-    };
+      id: string
+      name: string
+      slug: string
+      image_url?: string
+      verified?: boolean
+    }
     venue?: {
-      id: string;
-      name: string;
-      slug: string;
-      city: string;
-      state?: string;
-      country: string;
-    };
-    is_featured?: boolean;
-    is_verified?: boolean;
-    ticket_url?: string | null;
-  };
-};
+      id: string
+      name: string
+      slug: string
+      city: string
+      state?: string
+      country: string
+    }
+    is_featured?: boolean
+    is_verified?: boolean
+    ticket_url?: string | null
+  }
+}
 
 export function ShowHeader({ show }: ShowHeaderProps) {
-  const showDate = new Date(show.date);
+  const showDate = new Date(show.date)
 
   // Use real-time show status
   const { showStatus: _showStatus } = useRealtimeShow({
     showId: show.id,
-    initialStatus: show.status as 'upcoming' | 'ongoing' | 'completed',
-  });
+    initialStatus: show.status as "upcoming" | "ongoing" | "completed",
+  })
 
-
-
-  const bg = show.headliner_artist.image_url ?? undefined;
+  const bg = show.headliner_artist.image_url ?? undefined
 
   return (
     <section className="relative h-72 w-full overflow-hidden rounded-xl md:h-96">
@@ -65,8 +63,8 @@ export function ShowHeader({ show }: ShowHeaderProps) {
           {show.headliner_artist.name}
         </h1>
         <p className="text-muted-foreground text-sm md:text-base">
-          {show.venue?.name ? `${show.venue.name} · ` : ''}
-          {format(showDate, 'MMM d, yyyy')}
+          {show.venue?.name ? `${show.venue.name} · ` : ""}
+          {format(showDate, "MMM d, yyyy")}
         </p>
         <div className="mt-4 flex gap-3">
           <Button size="sm" asChild>
@@ -82,5 +80,5 @@ export function ShowHeader({ show }: ShowHeaderProps) {
         </div>
       </div>
     </section>
-  );
+  )
 }

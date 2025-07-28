@@ -1,26 +1,26 @@
-'use client';
+"use client"
 
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@repo/design-system/components/ui/avatar';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+} from "@repo/design-system/components/ui/avatar"
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
+} from "@repo/design-system/components/ui/card"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@repo/design-system/components/ui/dropdown-menu';
-import { formatDistanceToNow } from 'date-fns';
+} from "@repo/design-system/components/ui/dropdown-menu"
+import { formatDistanceToNow } from "date-fns"
 import {
   ArrowUpDown,
   CheckCircle,
@@ -30,23 +30,23 @@ import {
   MoreVertical,
   Music2,
   User,
-} from 'lucide-react';
-import { useEffect, useState, useTransition } from 'react';
-import { toast } from 'sonner';
-import { useAuth } from '~/app/providers/auth-provider';
-import { AnonymousAddSongButton } from '~/components/anonymous-add-song-button';
-import { createClient } from '~/lib/supabase/client';
-import { lockSetlist, removeSongFromSetlist } from '../actions';
-import { AnonymousAddSongDialog } from './anonymous-add-song-dialog';
-import { ReorderableSetlist } from './reorderable-setlist';
-import { SongItem } from './song-item';
+} from "lucide-react"
+import { useEffect, useState, useTransition } from "react"
+import { toast } from "sonner"
+import { useAuth } from "~/app/providers/auth-provider"
+import { AnonymousAddSongButton } from "~/components/anonymous-add-song-button"
+import { createClient } from "~/lib/supabase/client"
+import { lockSetlist, removeSongFromSetlist } from "../actions"
+import { AnonymousAddSongDialog } from "./anonymous-add-song-dialog"
+import { ReorderableSetlist } from "./reorderable-setlist"
+import { SongItem } from "./song-item"
 
 type SetlistViewerProps = {
-  setlist: any;
-  show: any;
-  currentUser: any;
-  type: 'actual' | 'predicted';
-};
+  setlist: any
+  show: any
+  currentUser: any
+  type: "actual" | "predicted"
+}
 
 export function SetlistViewer({
   setlist,
@@ -54,40 +54,40 @@ export function SetlistViewer({
   currentUser,
   type,
 }: SetlistViewerProps) {
-  const { session } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
-  const [showAddSong, setShowAddSong] = useState(false);
-  const [isReordering, setIsReordering] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  const [setlistData, setSetlistData] = useState(setlist);
+  const { session } = useAuth()
+  const [isEditing, setIsEditing] = useState(false)
+  const [showAddSong, setShowAddSong] = useState(false)
+  const [isReordering, setIsReordering] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  const [setlistData, setSetlistData] = useState(setlist)
 
-  const isOwner = currentUser?.id === setlistData.created_by;
-  const canEdit = isOwner && !setlistData.is_locked;
-  const totalSongs = setlistData.setlist_songs?.length || 0;
+  const isOwner = currentUser?.id === setlistData.created_by
+  const canEdit = isOwner && !setlistData.is_locked
+  const totalSongs = setlistData.setlist_songs?.length || 0
   const totalDuration =
     setlistData.setlist_songs?.reduce((acc: number, item: any) => {
-      return acc + (item.song?.duration_ms || 0);
-    }, 0) || 0;
+      return acc + (item.song?.duration_ms || 0)
+    }, 0) || 0
 
   // Set up real-time subscription for votes
   useEffect(() => {
-    const supabase = createClient();
+    const supabase = createClient()
 
     // Subscribe to vote changes for this setlist
     const channel = supabase
       .channel(`setlist-votes-${setlist.id}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'votes',
-          filter: `setlist_song_id=in.(${setlistData.setlist_songs?.map((s: any) => s.id).join(',')})`,
+          event: "*",
+          schema: "public",
+          table: "votes",
+          filter: `setlist_song_id=in.(${setlistData.setlist_songs?.map((s: any) => s.id).join(",")})`,
         },
         async () => {
           // Refresh setlist data when votes change
           const { data, error } = await supabase
-            .from('setlists')
+            .from("setlists")
             .select(`
               *,
               setlist_songs(
@@ -96,8 +96,8 @@ export function SetlistViewer({
                 votes(*)
               )
             `)
-            .eq('id', setlist.id)
-            .single();
+            .eq("id", setlist.id)
+            .single()
 
           if (!error && data) {
             // Process vote counts for each song
@@ -106,55 +106,55 @@ export function SetlistViewer({
               setlist_songs: data.setlist_songs?.map((item: any) => ({
                 ...item,
                 upvotes:
-                  item.votes?.filter((v: any) => v.vote_type === 'up').length ||
+                  item.votes?.filter((v: any) => v.vote_type === "up").length ||
                   0,
                 downvotes:
-                  item.votes?.filter((v: any) => v.vote_type === 'down')
+                  item.votes?.filter((v: any) => v.vote_type === "down")
                     .length || 0,
                 userVote:
                   item.votes?.find((v: any) => v.user_id === currentUser?.id)
                     ?.vote_type || null,
               })),
-            };
-            setSetlistData(processedData);
+            }
+            setSetlistData(processedData)
           }
         }
       )
-      .subscribe();
+      .subscribe()
 
     return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [setlist.id, currentUser?.id, setlistData.setlist_songs]);
+      supabase.removeChannel(channel)
+    }
+  }, [setlist.id, currentUser?.id, setlistData.setlist_songs])
 
   const formatDuration = (ms: number) => {
-    const minutes = Math.floor(ms / 60000);
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-    return hours > 0 ? `${hours}h ${remainingMinutes}m` : `${minutes}m`;
-  };
+    const minutes = Math.floor(ms / 60000)
+    const hours = Math.floor(minutes / 60)
+    const remainingMinutes = minutes % 60
+    return hours > 0 ? `${hours}h ${remainingMinutes}m` : `${minutes}m`
+  }
 
   const handleLockSetlist = () => {
     startTransition(async () => {
       try {
-        await lockSetlist(setlistData.id);
-        toast.success('Setlist locked successfully');
+        await lockSetlist(setlistData.id)
+        toast.success("Setlist locked successfully")
       } catch (_error) {
-        toast.error('Failed to lock setlist');
+        toast.error("Failed to lock setlist")
       }
-    });
-  };
+    })
+  }
 
   const handleDeleteSong = (setlistSongId: string) => {
     startTransition(async () => {
       try {
-        await removeSongFromSetlist(setlistSongId);
-        toast.success('Song removed from setlist');
+        await removeSongFromSetlist(setlistSongId)
+        toast.success("Song removed from setlist")
       } catch (_error) {
-        toast.error('Failed to remove song');
+        toast.error("Failed to remove song")
       }
-    });
-  };
+    })
+  }
 
   return (
     <>
@@ -163,8 +163,8 @@ export function SetlistViewer({
           <div className="flex items-start justify-between">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <CardTitle>{setlistData.name || 'Main Set'}</CardTitle>
-                <Badge variant={type === 'actual' ? 'default' : 'secondary'}>
+                <CardTitle>{setlistData.name || "Main Set"}</CardTitle>
+                <Badge variant={type === "actual" ? "default" : "secondary"}>
                   {type}
                 </Badge>
                 {setlistData.is_locked && (
@@ -201,7 +201,7 @@ export function SetlistViewer({
                     </AvatarFallback>
                   </Avatar>
                   <span>
-                    {setlistData.creator?.display_name || 'Anonymous'}
+                    {setlistData.creator?.display_name || "Anonymous"}
                   </span>
                 </div>
                 <span>•</span>
@@ -231,7 +231,7 @@ export function SetlistViewer({
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem onClick={() => setIsEditing(!isEditing)}>
                       <Edit className="mr-2 h-4 w-4" />
-                      {isEditing ? 'Done Editing' : 'Edit Setlist'}
+                      {isEditing ? "Done Editing" : "Edit Setlist"}
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => setShowAddSong(true)}>
                       <Music2 className="mr-2 h-4 w-4" />
@@ -241,7 +241,7 @@ export function SetlistViewer({
                       onClick={() => setIsReordering(!isReordering)}
                     >
                       <ArrowUpDown className="mr-2 h-4 w-4" />
-                      {isReordering ? 'Stop Reordering' : 'Reorder Songs'}
+                      {isReordering ? "Stop Reordering" : "Reorder Songs"}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
@@ -309,5 +309,5 @@ export function SetlistViewer({
         />
       )}
     </>
-  );
+  )
 }

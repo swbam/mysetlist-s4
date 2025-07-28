@@ -1,55 +1,55 @@
-'use client';
+"use client"
 
-import { Button } from '@repo/design-system/components/ui/button';
-import { AlertCircle, RefreshCw } from 'lucide-react';
-import Link from 'next/link';
-import React from 'react';
+import { Button } from "@repo/design-system/components/ui/button"
+import { AlertCircle, RefreshCw } from "lucide-react"
+import Link from "next/link"
+import React from "react"
 
 // Re-export all navigation error boundary components
 export {
   PageErrorBoundary,
   withPageErrorBoundary,
-} from './page-error-boundary';
+} from "./page-error-boundary"
 export {
   RouteErrorBoundary,
   withRouteErrorBoundary,
-} from './route-error-boundary';
-export { SafeLink, useSafeNavigation } from './safe-link';
+} from "./route-error-boundary"
+export { SafeLink, useSafeNavigation } from "./safe-link"
 
 interface Props {
-  children: React.ReactNode;
-  fallback?: React.ReactNode;
+  children: React.ReactNode
+  fallback?: React.ReactNode
 }
 
 interface State {
-  hasError: boolean;
-  error: Error | null;
+  hasError: boolean
+  error: Error | null
 }
 
 export class NavigationErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
-    super(props);
-    this.state = { hasError: false, error: null };
+    super(props)
+    this.state = { hasError: false, error: null }
   }
 
   static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+    return { hasError: true, error }
   }
 
   override componentDidCatch(_error: Error, _errorInfo: React.ErrorInfo) {}
 
   handleReset = () => {
-    this.setState({ hasError: false, error: null });
+    this.setState({ hasError: false, error: null })
     // Force a page reload to clear any corrupted state
-    if (typeof window !== 'undefined') {
-      window.location.reload();
+    if (typeof window !== "undefined") {
+      window.location.reload()
     }
-  };
+  }
 
   override render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
-        return <>{this.props.fallback}</>;
+        return <>{this.props.fallback}</>
       }
 
       return (
@@ -77,9 +77,9 @@ export class NavigationErrorBoundary extends React.Component<Props, State> {
             </div>
           </div>
         </div>
-      );
+      )
     }
 
-    return this.props.children;
+    return this.props.children
   }
 }

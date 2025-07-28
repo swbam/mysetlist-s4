@@ -1,18 +1,18 @@
-import { relations } from 'drizzle-orm';
-import { artistSongs, artistStats, artists } from './artists';
+import { relations } from "drizzle-orm"
+import { artistSongs, artistStats, artists } from "./artists"
 import {
   emailLogs,
   emailPreferences,
   emailQueue,
   emailUnsubscribes,
-} from './email-preferences';
-import { setlistSongs, setlists, songs, votes } from './setlists';
-import { showArtists, showComments, shows } from './shows';
+} from "./email-preferences"
+import { setlistSongs, setlists, songs, votes } from "./setlists"
+import { showArtists, showComments, shows } from "./shows"
 // import { userFollowsArtists } from './user-follows-artists'; // Table removed
-import { userProfiles } from './user-profiles';
-import { users } from './users';
-import { venueInsiderTips, venuePhotos, venueReviews } from './venue-reviews';
-import { venueTips, venues } from './venues';
+import { userProfiles } from "./user-profiles"
+import { users } from "./users"
+import { venueInsiderTips, venuePhotos, venueReviews } from "./venue-reviews"
+import { venueTips, venues } from "./venues"
 
 export const usersRelations = relations(users, ({ many, one }) => ({
   profile: one(userProfiles, {
@@ -34,7 +34,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   emailUnsubscribes: many(emailUnsubscribes),
   emailQueue: many(emailQueue),
   emailLogs: many(emailLogs),
-}));
+}))
 
 export const artistsRelations = relations(artists, ({ many, one }) => ({
   shows: many(shows),
@@ -46,14 +46,14 @@ export const artistsRelations = relations(artists, ({ many, one }) => ({
     references: [artistStats.artistId],
   }),
   // followers: many(userFollowsArtists), // Table removed
-}));
+}))
 
 export const artistStatsRelations = relations(artistStats, ({ one }) => ({
   artist: one(artists, {
     fields: [artistStats.artistId],
     references: [artists.id],
   }),
-}));
+}))
 
 export const venuesRelations = relations(venues, ({ many }) => ({
   shows: many(shows),
@@ -61,7 +61,7 @@ export const venuesRelations = relations(venues, ({ many }) => ({
   photos: many(venuePhotos),
   tips: many(venueTips),
   insiderTips: many(venueInsiderTips),
-}));
+}))
 
 export const showsRelations = relations(shows, ({ many, one }) => ({
   headlinerArtist: one(artists, {
@@ -75,7 +75,7 @@ export const showsRelations = relations(shows, ({ many, one }) => ({
   setlists: many(setlists),
   supportingArtists: many(showArtists),
   comments: many(showComments),
-}));
+}))
 
 export const showArtistsRelations = relations(showArtists, ({ one }) => ({
   show: one(shows, {
@@ -86,7 +86,7 @@ export const showArtistsRelations = relations(showArtists, ({ one }) => ({
     fields: [showArtists.artistId],
     references: [artists.id],
   }),
-}));
+}))
 
 export const setlistsRelations = relations(setlists, ({ many, one }) => ({
   show: one(shows, {
@@ -102,7 +102,7 @@ export const setlistsRelations = relations(setlists, ({ many, one }) => ({
     references: [users.id],
   }),
   songs: many(setlistSongs),
-}));
+}))
 
 export const setlistSongsRelations = relations(
   setlistSongs,
@@ -117,12 +117,12 @@ export const setlistSongsRelations = relations(
     }),
     votes: many(votes),
   })
-);
+)
 
 export const songsRelations = relations(songs, ({ many }) => ({
   setlistAppearances: many(setlistSongs),
   artists: many(artistSongs),
-}));
+}))
 
 export const votesRelations = relations(votes, ({ one }) => ({
   user: one(users, {
@@ -133,7 +133,7 @@ export const votesRelations = relations(votes, ({ one }) => ({
     fields: [votes.setlistSongId],
     references: [setlistSongs.id],
   }),
-}));
+}))
 
 export const venueReviewsRelations = relations(venueReviews, ({ one }) => ({
   venue: one(venues, {
@@ -144,7 +144,7 @@ export const venueReviewsRelations = relations(venueReviews, ({ one }) => ({
     fields: [venueReviews.userId],
     references: [users.id],
   }),
-}));
+}))
 
 export const venuePhotosRelations = relations(venuePhotos, ({ one }) => ({
   venue: one(venues, {
@@ -155,7 +155,7 @@ export const venuePhotosRelations = relations(venuePhotos, ({ one }) => ({
     fields: [venuePhotos.userId],
     references: [users.id],
   }),
-}));
+}))
 
 export const venueInsiderTipsRelations = relations(
   venueInsiderTips,
@@ -169,7 +169,7 @@ export const venueInsiderTipsRelations = relations(
       references: [users.id],
     }),
   })
-);
+)
 
 // Table removed - userFollowsArtists relations
 // export const userFollowsArtistsRelations = relations(
@@ -195,14 +195,14 @@ export const artistSongsRelations = relations(artistSongs, ({ one }) => ({
     fields: [artistSongs.songId],
     references: [songs.id],
   }),
-}));
+}))
 
 export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
   user: one(users, {
     fields: [userProfiles.userId],
     references: [users.id],
   }),
-}));
+}))
 
 export const showCommentsRelations = relations(showComments, ({ one }) => ({
   show: one(shows, {
@@ -217,7 +217,7 @@ export const showCommentsRelations = relations(showComments, ({ one }) => ({
     fields: [showComments.parentId],
     references: [showComments.id],
   }),
-}));
+}))
 
 export const venueTipsRelations = relations(venueTips, ({ one }) => ({
   venue: one(venues, {
@@ -228,7 +228,7 @@ export const venueTipsRelations = relations(venueTips, ({ one }) => ({
     fields: [venueTips.userId],
     references: [users.id],
   }),
-}));
+}))
 
 export const emailPreferencesRelations = relations(
   emailPreferences,
@@ -238,7 +238,7 @@ export const emailPreferencesRelations = relations(
       references: [users.id],
     }),
   })
-);
+)
 
 export const emailUnsubscribesRelations = relations(
   emailUnsubscribes,
@@ -248,18 +248,18 @@ export const emailUnsubscribesRelations = relations(
       references: [users.id],
     }),
   })
-);
+)
 
 export const emailQueueRelations = relations(emailQueue, ({ one }) => ({
   user: one(users, {
     fields: [emailQueue.userId],
     references: [users.id],
   }),
-}));
+}))
 
 export const emailLogsRelations = relations(emailLogs, ({ one }) => ({
   user: one(users, {
     fields: [emailLogs.userId],
     references: [users.id],
   }),
-}));
+}))

@@ -2,54 +2,54 @@ import {
   Card,
   CardContent,
   CardHeader,
-} from '@repo/design-system/components/ui/card';
-import { Skeleton } from '@repo/design-system/components/ui/skeleton';
-import { cn } from '@repo/design-system/lib/utils';
-import { Activity } from 'lucide-react';
+} from "@repo/design-system/components/ui/card"
+import { Skeleton } from "@repo/design-system/components/ui/skeleton"
+import { cn } from "@repo/design-system/lib/utils"
+import { Activity } from "lucide-react"
 
 interface LoadingSpinnerProps {
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
+  size?: "sm" | "md" | "lg"
+  className?: string
 }
 
 export function LoadingSpinner({
-  size = 'md',
+  size = "md",
   className,
 }: LoadingSpinnerProps) {
   const sizeClasses = {
-    sm: 'h-4 w-4',
-    md: 'h-6 w-6',
-    lg: 'h-8 w-8',
-  };
+    sm: "h-4 w-4",
+    md: "h-6 w-6",
+    lg: "h-8 w-8",
+  }
 
   return (
     <div
       className={cn(
-        'animate-spin rounded-full border-2 border-muted border-t-primary',
+        "animate-spin rounded-full border-2 border-muted border-t-primary",
         sizeClasses[size],
         className
       )}
       role="status"
       aria-label="Loading"
     />
-  );
+  )
 }
 
 interface LoadingStateProps {
-  message?: string;
-  icon?: any;
-  className?: string;
+  message?: string
+  icon?: any
+  className?: string
 }
 
 export function LoadingState({
-  message = 'Loading...',
+  message = "Loading...",
   icon: Icon = Activity,
   className,
 }: LoadingStateProps) {
   return (
     <div
       className={cn(
-        'flex flex-col items-center justify-center py-8 text-center sm:py-12',
+        "flex flex-col items-center justify-center py-8 text-center sm:py-12",
         className
       )}
       role="status"
@@ -65,7 +65,7 @@ export function LoadingState({
         {message}
       </p>
     </div>
-  );
+  )
 }
 
 // Specific loading skeletons for different components
@@ -88,7 +88,7 @@ export function ArtistCardSkeleton() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }
 
 export function ShowCardSkeleton() {
@@ -113,7 +113,7 @@ export function ShowCardSkeleton() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }
 
 export function VenueCardSkeleton() {
@@ -138,7 +138,7 @@ export function VenueCardSkeleton() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }
 
 export function SetlistSkeleton() {
@@ -182,7 +182,7 @@ export function SetlistSkeleton() {
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }
 
 export function StatCardSkeleton() {
@@ -195,7 +195,7 @@ export function StatCardSkeleton() {
         <Skeleton className="mx-auto h-3 w-24" />
       </CardContent>
     </Card>
-  );
+  )
 }
 
 export function TrendingCardSkeleton() {
@@ -212,7 +212,7 @@ export function TrendingCardSkeleton() {
         <Skeleton className="h-4 w-16" />
       </div>
     </div>
-  );
+  )
 }
 
 // Grid skeletons for multiple items
@@ -223,7 +223,7 @@ export function ArtistGridSkeleton({ count = 4 }: { count?: number }) {
         <ArtistCardSkeleton key={i} />
       ))}
     </div>
-  );
+  )
 }
 
 export function ShowListSkeleton({ count = 3 }: { count?: number }) {
@@ -233,7 +233,7 @@ export function ShowListSkeleton({ count = 3 }: { count?: number }) {
         <ShowCardSkeleton key={i} />
       ))}
     </div>
-  );
+  )
 }
 
 export function VenueGridSkeleton({ count = 3 }: { count?: number }) {
@@ -243,7 +243,7 @@ export function VenueGridSkeleton({ count = 3 }: { count?: number }) {
         <VenueCardSkeleton key={i} />
       ))}
     </div>
-  );
+  )
 }
 
 export function VenueListSkeleton({ count = 5 }: { count?: number }) {
@@ -253,7 +253,7 @@ export function VenueListSkeleton({ count = 5 }: { count?: number }) {
         <VenueCardSkeleton key={i} />
       ))}
     </div>
-  );
+  )
 }
 
 export function TrendingListSkeleton({ count = 5 }: { count?: number }) {
@@ -263,7 +263,7 @@ export function TrendingListSkeleton({ count = 5 }: { count?: number }) {
         <TrendingCardSkeleton key={i} />
       ))}
     </div>
-  );
+  )
 }
 
 export function StatsGridSkeleton({ count = 4 }: { count?: number }) {
@@ -273,7 +273,7 @@ export function StatsGridSkeleton({ count = 4 }: { count?: number }) {
         <StatCardSkeleton key={i} />
       ))}
     </div>
-  );
+  )
 }
 
 // Page-specific loading states
@@ -308,7 +308,7 @@ export function HomePageSkeleton() {
         <VenueGridSkeleton />
       </div>
     </div>
-  );
+  )
 }
 
 export function ArtistPageSkeleton() {
@@ -350,7 +350,7 @@ export function ArtistPageSkeleton() {
         <ShowListSkeleton />
       </div>
     </div>
-  );
+  )
 }
 
 export function ShowPageSkeleton() {
@@ -400,5 +400,5 @@ export function ShowPageSkeleton() {
         </div>
       </div>
     </div>
-  );
+  )
 }

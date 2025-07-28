@@ -1,116 +1,116 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent } from '@repo/design-system/components/ui/card';
-import { Input } from '@repo/design-system/components/ui/input';
-import { ScrollArea } from '@repo/design-system/components/ui/scroll-area';
-import { Loader2, Music, Plus, Search } from 'lucide-react';
-import Image from 'next/image';
-import { useEffect, useState } from 'react';
-import { toast } from 'sonner';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
+import { Card, CardContent } from "@repo/design-system/components/ui/card"
+import { Input } from "@repo/design-system/components/ui/input"
+import { ScrollArea } from "@repo/design-system/components/ui/scroll-area"
+import { Loader2, Music, Plus, Search } from "lucide-react"
+import Image from "next/image"
+import { useEffect, useState } from "react"
+import { toast } from "sonner"
 
 interface Song {
-  id: string;
-  spotify_id: string;
-  title: string;
-  artist: string;
-  album?: string;
-  album_art_url?: string;
-  duration_ms?: number;
-  is_explicit?: boolean;
+  id: string
+  spotify_id: string
+  title: string
+  artist: string
+  album?: string
+  album_art_url?: string
+  duration_ms?: number
+  is_explicit?: boolean
 }
 
 interface SongSelectorProps {
-  onSongSelect: (song: Song) => void;
-  artistId?: string;
-  placeholder?: string;
-  maxHeight?: string;
-  disabled?: boolean;
+  onSongSelect: (song: Song) => void
+  artistId?: string
+  placeholder?: string
+  maxHeight?: string
+  disabled?: boolean
 }
 
 export function SongSelector({
   onSongSelect,
   artistId,
-  placeholder = 'Search for songs...',
-  maxHeight = '300px',
+  placeholder = "Search for songs...",
+  maxHeight = "300px",
   disabled = false,
 }: SongSelectorProps) {
-  const [query, setQuery] = useState('');
-  const [songs, setSongs] = useState<Song[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [addingSongId, setAddingSongId] = useState<string | null>(null);
+  const [query, setQuery] = useState("")
+  const [songs, setSongs] = useState<Song[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [addingSongId, setAddingSongId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!query.trim()) {
-      setSongs([]);
-      return;
+      setSongs([])
+      return
     }
 
     const timeoutId = setTimeout(() => {
-      searchSongs();
-    }, 300);
+      searchSongs()
+    }, 300)
 
-    return () => clearTimeout(timeoutId);
-  }, [query]);
+    return () => clearTimeout(timeoutId)
+  }, [query])
 
   const searchSongs = async () => {
     if (!query.trim()) {
-      return;
+      return
     }
 
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       const params = new URLSearchParams({
         q: query,
-        limit: '20',
-      });
+        limit: "20",
+      })
 
       if (artistId) {
-        params.append('artistId', artistId);
+        params.append("artistId", artistId)
       }
 
-      const response = await fetch(`/api/songs/search?${params}`);
+      const response = await fetch(`/api/songs/search?${params}`)
 
       if (!response.ok) {
-        throw new Error('Failed to search songs');
+        throw new Error("Failed to search songs")
       }
 
-      const data = await response.json();
-      setSongs(data.songs || []);
+      const data = await response.json()
+      setSongs(data.songs || [])
     } catch (_error) {
-      toast.error('Failed to search songs');
-      setSongs([]);
+      toast.error("Failed to search songs")
+      setSongs([])
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const handleSongSelect = async (song: Song) => {
     if (disabled) {
-      return;
+      return
     }
 
-    setAddingSongId(song.id);
+    setAddingSongId(song.id)
     try {
-      await onSongSelect(song);
-      setQuery('');
-      setSongs([]);
+      await onSongSelect(song)
+      setQuery("")
+      setSongs([])
     } catch (_error) {
     } finally {
-      setAddingSongId(null);
+      setAddingSongId(null)
     }
-  };
+  }
 
   const formatDuration = (ms?: number) => {
     if (!ms) {
-      return '';
+      return ""
     }
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
+    const seconds = Math.floor(ms / 1000)
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`
+  }
 
   return (
     <div className="space-y-3">
@@ -216,5 +216,5 @@ export function SongSelector({
         </div>
       )}
     </div>
-  );
+  )
 }

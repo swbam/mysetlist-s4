@@ -1,55 +1,55 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from "next/server"
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const query = searchParams.get('q') || 'Taylor Swift';
+  const { searchParams } = new URL(request.url)
+  const query = searchParams.get("q") || "Taylor Swift"
 
   try {
     // Check if API key is configured
-    const apiKey = process.env['SETLISTFM_API_KEY'];
+    const apiKey = process.env["SETLISTFM_API_KEY"]
     if (!apiKey) {
       return NextResponse.json(
         {
-          error: 'SETLISTFM_API_KEY is not configured',
-          solution: 'Please add SETLISTFM_API_KEY to your .env.local file',
+          error: "SETLISTFM_API_KEY is not configured",
+          solution: "Please add SETLISTFM_API_KEY to your .env.local file",
         },
         { status: 500 }
-      );
+      )
     }
-    const artistUrl = `https://api.setlist.fm/rest/1.0/search/artists?artistName=${encodeURIComponent(query)}`;
+    const artistUrl = `https://api.setlist.fm/rest/1.0/search/artists?artistName=${encodeURIComponent(query)}`
     const artistResponse = await fetch(artistUrl, {
       headers: {
-        'x-api-key': apiKey,
-        Accept: 'application/json',
-        'User-Agent': 'MySetlist/1.0',
+        "x-api-key": apiKey,
+        Accept: "application/json",
+        "User-Agent": "MySetlist/1.0",
       },
-    });
+    })
 
     if (!artistResponse.ok) {
-      const errorText = await artistResponse.text();
+      const errorText = await artistResponse.text()
       throw new Error(
         `Artist search failed: ${artistResponse.status} ${artistResponse.statusText} - ${errorText}`
-      );
+      )
     }
 
-    const artistData = await artistResponse.json();
-    const setlistUrl = `https://api.setlist.fm/rest/1.0/search/setlists?artistName=${encodeURIComponent(query)}&p=1`;
+    const artistData = await artistResponse.json()
+    const setlistUrl = `https://api.setlist.fm/rest/1.0/search/setlists?artistName=${encodeURIComponent(query)}&p=1`
     const setlistResponse = await fetch(setlistUrl, {
       headers: {
-        'x-api-key': apiKey,
-        Accept: 'application/json',
-        'User-Agent': 'MySetlist/1.0',
+        "x-api-key": apiKey,
+        Accept: "application/json",
+        "User-Agent": "MySetlist/1.0",
       },
-    });
+    })
 
     if (!setlistResponse.ok) {
-      const errorText = await setlistResponse.text();
+      const errorText = await setlistResponse.text()
       throw new Error(
         `Setlist search failed: ${setlistResponse.status} ${setlistResponse.statusText} - ${errorText}`
-      );
+      )
     }
 
-    const setlistData = await setlistResponse.json();
+    const setlistData = await setlistResponse.json()
 
     return NextResponse.json({
       success: true,
@@ -91,18 +91,18 @@ export async function GET(request: NextRequest) {
           setlistResponse: setlistData,
         },
       },
-    });
+    })
   } catch (error) {
     return NextResponse.json(
       {
-        error: 'Setlist.fm API test failed',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: "Setlist.fm API test failed",
+        message: error instanceof Error ? error.message : "Unknown error",
         stack: error instanceof Error ? error.stack : undefined,
         query,
-        apiKeyConfigured: !!process.env['SETLISTFM_API_KEY'],
-        baseUrl: 'https://api.setlist.fm/rest/1.0/',
+        apiKeyConfigured: !!process.env["SETLISTFM_API_KEY"],
+        baseUrl: "https://api.setlist.fm/rest/1.0/",
       },
       { status: 500 }
-    );
+    )
   }
 }

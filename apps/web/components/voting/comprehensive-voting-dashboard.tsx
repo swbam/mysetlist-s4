@@ -1,22 +1,22 @@
-'use client';
+"use client"
 
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from "@repo/design-system/components/ui/badge"
+import { Button } from "@repo/design-system/components/ui/button"
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '@repo/design-system/components/ui/card';
-import { Label } from '@repo/design-system/components/ui/label';
-import { Switch } from '@repo/design-system/components/ui/switch';
+} from "@repo/design-system/components/ui/card"
+import { Label } from "@repo/design-system/components/ui/label"
+import { Switch } from "@repo/design-system/components/ui/switch"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@repo/design-system/components/ui/tabs';
-import { cn } from '@repo/design-system/lib/utils';
+} from "@repo/design-system/components/ui/tabs"
+import { cn } from "@repo/design-system/lib/utils"
 import {
   BarChart3,
   Eye,
@@ -26,43 +26,43 @@ import {
   TrendingUp,
   Trophy,
   Users,
-} from 'lucide-react';
-import { useState } from 'react';
-import { VoteHistory } from './vote-history';
-import { VoteLeaderboard } from './vote-leaderboard';
-import { VoteStatistics } from './vote-statistics';
-import { VoteSummary } from './vote-summary';
+} from "lucide-react"
+import { useState } from "react"
+import { VoteHistory } from "./vote-history"
+import { VoteLeaderboard } from "./vote-leaderboard"
+import { VoteStatistics } from "./vote-statistics"
+import { VoteSummary } from "./vote-summary"
 
 interface ComprehensiveVotingDashboardProps {
-  showId: string;
-  setlistId?: string;
-  userId?: string;
-  userRole?: 'admin' | 'user';
-  className?: string;
-  compact?: boolean;
+  showId: string
+  setlistId?: string
+  userId?: string
+  userRole?: "admin" | "user"
+  className?: string
+  compact?: boolean
 }
 
-import { memo } from 'react';
+import { memo } from "react"
 
 function ComprehensiveVotingDashboardComponent({
   showId,
   setlistId,
   userId,
-  userRole = 'user',
+  userRole = "user",
   className,
   compact = false,
 }: ComprehensiveVotingDashboardProps) {
-  const [activeTab, setActiveTab] = useState('overview');
-  const [realtimeEnabled, setRealtimeEnabled] = useState(true);
-  const [showPersonalData, setShowPersonalData] = useState(true);
+  const [activeTab, setActiveTab] = useState("overview")
+  const [realtimeEnabled, setRealtimeEnabled] = useState(true)
+  const [showPersonalData, setShowPersonalData] = useState(true)
 
-  const isAdmin = userRole === 'admin';
-  const hasUserId = Boolean(userId);
+  const isAdmin = userRole === "admin"
+  const hasUserId = Boolean(userId)
 
   // Simplified compact view for embedding in other components
   if (compact) {
     return (
-      <div className={cn('space-y-4', className)}>
+      <div className={cn("space-y-4", className)}>
         <VoteSummary
           totalVotes={0}
           totalUpvotes={0}
@@ -70,11 +70,11 @@ function ComprehensiveVotingDashboardComponent({
           className="h-auto"
         />
       </div>
-    );
+    )
   }
 
   return (
-    <div className={cn('space-y-6', className)}>
+    <div className={cn("space-y-6", className)}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1">
@@ -188,7 +188,7 @@ function ComprehensiveVotingDashboardComponent({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setActiveTab('history')}
+                    onClick={() => setActiveTab("history")}
                   >
                     View All
                   </Button>
@@ -250,7 +250,7 @@ function ComprehensiveVotingDashboardComponent({
         </div>
       )}
     </div>
-  );
+  )
 }
 
 export const ComprehensiveVotingDashboard = memo(
@@ -263,6 +263,6 @@ export const ComprehensiveVotingDashboard = memo(
       prevProps.userRole === nextProps.userRole &&
       prevProps.className === nextProps.className &&
       prevProps.compact === nextProps.compact
-    );
+    )
   }
-);
+)

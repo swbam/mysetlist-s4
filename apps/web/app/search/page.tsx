@@ -1,15 +1,15 @@
-import { createMetadata } from '@repo/seo/metadata';
-import type { Metadata } from 'next';
-import { Suspense } from 'react';
-import { EnhancedSearch } from '~/components/search/enhanced-search';
+import { createMetadata } from "@repo/seo/metadata"
+import type { Metadata } from "next"
+import { Suspense } from "react"
+import { EnhancedSearch } from "~/components/search/enhanced-search"
 
 export const generateMetadata = (): Metadata => {
   return createMetadata({
-    title: 'Search - MySetlist',
+    title: "Search - MySetlist",
     description:
-      'Search for artists, shows, venues, and songs. Discover your next concert experience with advanced filtering options.',
-  });
-};
+      "Search for artists, shows, venues, and songs. Discover your next concert experience with advanced filtering options.",
+  })
+}
 
 export default function SearchPage() {
   return (
@@ -26,14 +26,16 @@ export default function SearchPage() {
         </div>
 
         {/* Enhanced Search Component */}
-        <Suspense fallback={
-          <div className="flex items-center justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
-          </div>
-        }>
+        <Suspense
+          fallback={
+            <div className="flex items-center justify-center py-12">
+              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
+            </div>
+          }
+        >
           <EnhancedSearch showFilters={true} />
         </Suspense>
       </div>
     </div>
-  );
+  )
 }

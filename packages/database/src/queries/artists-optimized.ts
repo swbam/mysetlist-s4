@@ -1,6 +1,6 @@
-import { and, desc, eq, ilike, sql } from 'drizzle-orm';
-import { db } from '../client';
-import { artists, userFollowsArtists, shows, showArtists } from '../schema';
+import { and, desc, eq, ilike, sql } from "drizzle-orm"
+import { db } from "../client"
+import { artists, showArtists, shows, userFollowsArtists } from "../schema"
 
 // Optimized artist queries with better performance
 // These queries use CTEs and join optimizations to reduce redundant subqueries
@@ -8,17 +8,18 @@ import { artists, userFollowsArtists, shows, showArtists } from '../schema';
 export async function getArtistById(artistId: string) {
   // Use CTE to calculate counts more efficiently
   const artist = await db
-    .with('artist_stats', db => db
-      .select({
-        artistId: artists.id,
-        showCount: sql<number>`COUNT(DISTINCT sa.show_id)`,
-        upcomingShowCount: sql<number>`COUNT(DISTINCT CASE WHEN s.date >= CURRENT_DATE THEN s.id END)`,
-      })
-      .from(artists)
-      .leftJoin(showArtists, eq(showArtists.artistId, artists.id))
-      .leftJoin(shows, eq(shows.id, showArtists.showId))
-      .where(eq(artists.id, artistId))
-      .groupBy(artists.id)
+    .with("artist_stats", (db) =>
+      db
+        .select({
+          artistId: artists.id,
+          showCount: sql<number>`COUNT(DISTINCT sa.show_id)`,
+          upcomingShowCount: sql<number>`COUNT(DISTINCT CASE WHEN s.date >= CURRENT_DATE THEN s.id END)`,
+        })
+        .from(artists)
+        .leftJoin(showArtists, eq(showArtists.artistId, artists.id))
+        .leftJoin(shows, eq(shows.id, showArtists.showId))
+        .where(eq(artists.id, artistId))
+        .groupBy(artists.id)
     )
     .select({
       artist: artists,
@@ -28,9 +29,9 @@ export async function getArtistById(artistId: string) {
     .from(artists)
     .leftJoin(sql`artist_stats`, eq(sql`artist_stats.artist_id`, artists.id))
     .where(eq(artists.id, artistId))
-    .limit(1);
+    .limit(1)
 
-  return artist[0] || null;
+  return artist[0] || null
 }
 
 export async function getArtistBySlug(slug: string) {
@@ -58,9 +59,9 @@ export async function getArtistBySlug(slug: string) {
     })
     .from(artists)
     .where(eq(artists.slug, slug))
-    .limit(1);
+    .limit(1)
 
-  return artist[0] || null;
+  return artist[0] || null
 }
 
 export async function searchArtistsOptimized(query: string, limit = 20) {
@@ -94,9 +95,9 @@ export async function searchArtistsOptimized(query: string, limit = 20) {
       )`
     )
     .orderBy(desc(artists.popularity), desc(sql`follower_counts.count`))
-    .limit(limit);
+    .limit(limit)
 
-  return results;
+  return results
 }
 
 export async function getPopularArtistsOptimized(limit = 20) {
@@ -129,9 +130,9 @@ export async function getPopularArtistsOptimized(limit = 20) {
       desc(artists.popularity),
       desc(sql`follower_counts.count`)
     )
-    .limit(limit);
+    .limit(limit)
 
-  return results;
+  return results
 }
 
 export async function getArtistsByGenreOptimized(genre: string, limit = 20) {
@@ -158,11 +159,13 @@ export async function getArtistsByGenreOptimized(genre: string, limit = 20) {
         .$dynamic(),
       eq(sql`follower_counts.artist_id`, artists.id)
     )
-    .where(sql`${artists.genres} ? ${genre} OR ${artists.genres}::text ILIKE ${`%${genre}%`}`)
+    .where(
+      sql`${artists.genres} ? ${genre} OR ${artists.genres}::text ILIKE ${`%${genre}%`}`
+    )
     .orderBy(desc(artists.popularity), desc(sql`follower_counts.count`))
-    .limit(limit);
+    .limit(limit)
 
-  return results;
+  return results
 }
 
 export async function getUserFollowedArtistsOptimized(userId: string) {
@@ -194,12 +197,15 @@ export async function getUserFollowedArtistsOptimized(userId: string) {
       eq(sql`upcoming_shows.artist_id`, artists.id)
     )
     .where(eq(userFollowsArtists.userId, userId))
-    .orderBy(desc(userFollowsArtists.createdAt));
+    .orderBy(desc(userFollowsArtists.createdAt))
 
-  return results;
+  return results
 }
 
-export async function isUserFollowingArtistOptimized(userId: string, artistId: string) {
+export async function isUserFollowingArtistOptimized(
+  userId: string,
+  artistId: string
+) {
   // Simple existence check using LIMIT 1 for efficiency
   const result = await db
     .select({ exists: sql<boolean>`1` })
@@ -210,9 +216,9 @@ export async function isUserFollowingArtistOptimized(userId: string, artistId: s
         eq(userFollowsArtists.artistId, artistId)
       )
     )
-    .limit(1);
+    .limit(1)
 
-  return result.length > 0;
+  return result.length > 0
 }
 
 export async function getSimilarArtistsOptimized(artistId: string, limit = 10) {
@@ -240,7 +246,9 @@ export async function getSimilarArtistsOptimized(artistId: string, limit = 10) {
       followerCount: sql<number>`COALESCE(follower_counts.count, 0)`,
     })
     .from(sql`${artists} AS target_artist`)
-    .crossJoin(sql`(SELECT genres FROM ${artists} WHERE id = ${artistId}) AS source_artist`)
+    .crossJoin(
+      sql`(SELECT genres FROM ${artists} WHERE id = ${artistId}) AS source_artist`
+    )
     .leftJoin(
       db
         .select({
@@ -267,14 +275,14 @@ export async function getSimilarArtistsOptimized(artistId: string, limit = 10) {
       desc(sql`target_artist.popularity`),
       desc(sql`follower_counts.count`)
     )
-    .limit(limit);
+    .limit(limit)
 
-  return results;
+  return results
 }
 
 // Batch operations for better performance
 export async function getArtistsBatch(artistIds: string[]) {
-  if (artistIds.length === 0) return [];
+  if (artistIds.length === 0) return []
 
   const results = await db
     .select({
@@ -298,9 +306,9 @@ export async function getArtistsBatch(artistIds: string[]) {
         .$dynamic(),
       eq(sql`follower_counts.artist_id`, artists.id)
     )
-    .where(sql`${artists.id} = ANY(${artistIds})`);
+    .where(sql`${artists.id} = ANY(${artistIds})`)
 
-  return results;
+  return results
 }
 
 // Cache-friendly trending artists query
@@ -330,12 +338,9 @@ export async function getTrendingArtistsOptimized(limit = 20, offset = 0) {
       eq(sql`follower_counts.artist_id`, artists.id)
     )
     .where(sql`${artists.trendingScore} > 0`)
-    .orderBy(
-      desc(artists.trendingScore),
-      desc(artists.popularity)
-    )
+    .orderBy(desc(artists.trendingScore), desc(artists.popularity))
     .limit(limit)
-    .offset(offset);
+    .offset(offset)
 
-  return results;
+  return results
 }
