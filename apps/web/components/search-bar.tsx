@@ -13,7 +13,7 @@ interface SearchFilters {
 interface SearchBarProps {
   placeholder?: string;
   className?: string;
-  variant?: "default" | "hero";
+  variant?: "default" | "hero" | "artists-only";
   showFilters?: boolean;
   defaultFilters?: Partial<SearchFilters>;
 }

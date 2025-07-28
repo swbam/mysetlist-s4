@@ -160,7 +160,7 @@ const HeaderContent = React.memo(() => {
         </div>
         <div className="flex items-center justify-end gap-1 sm:gap-2 lg:gap-4">
           <div className="hidden max-w-md flex-1 lg:block">
-            <SearchBar />
+            <SearchBar variant="artists-only" placeholder="Search artists..." />
           </div>
           <div className="max-w-[160px] flex-1 sm:max-w-[200px] lg:hidden">
             <MobileSearch />

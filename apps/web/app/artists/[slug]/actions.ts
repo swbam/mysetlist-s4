@@ -116,8 +116,6 @@ export const getArtist = unstable_cache(_getArtist, ["artist-by-slug"], {
 });
 
 const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
-  const now = new Date();
-
   try {
     // Enhanced query with better data handling and validation
     const artistShows = await db
@@ -150,14 +148,8 @@ const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
             eq(showArtists.artistId, artistId),
           ),
           type === "upcoming"
-            ? gte(
-                shows.date,
-                now.toISOString().split("T")[0] || now.toISOString(),
-              )
-            : lt(
-                shows.date,
-                now.toISOString().split("T")[0] || now.toISOString(),
-              ),
+            ? drizzleSql`${shows.date} >= CURRENT_DATE`
+            : drizzleSql`${shows.date} < CURRENT_DATE`,
         ),
       )
       .orderBy(type === "upcoming" ? shows.date : desc(shows.date))

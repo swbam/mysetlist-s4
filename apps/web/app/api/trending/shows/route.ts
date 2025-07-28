@@ -27,9 +27,9 @@ export async function GET(request: NextRequest) {
         break;
     }
 
-    const supabase = await createServiceClient();
+    const supabase = createServiceClient();
 
-    // Get trending shows with artist and venue information using proper column names
+    // Get trending shows with proper joins for artist and venue information
     const { data: raw, error } = await supabase
       .from("shows")
       .select(
@@ -49,25 +49,10 @@ export async function GET(request: NextRequest) {
         previous_view_count,
         previous_attendee_count,
         previous_vote_count,
-        previous_setlist_count,
-        artists!inner(
-          id,
-          name,
-          slug,
-          image_url
-        ),
-        venues!inner(
-          id,
-          name,
-          city,
-          state,
-          country
-        )
+        previous_setlist_count
       `,
       )
-      .or(
-        `date.gte.${startDate.toISOString().substring(0, 10)},attendee_count.gt.0,view_count.gt.0`,
-      )
+      .gt("trending_score", 0)
       .order("trending_score", { ascending: false, nullsFirst: false })
       .order("attendee_count", { ascending: false, nullsFirst: false })
       .order("view_count", { ascending: false, nullsFirst: false })
@@ -75,10 +60,28 @@ export async function GET(request: NextRequest) {
 
     if (error) throw error;
 
+    // Get artist and venue data for the shows
+    const artistIds = [...new Set(raw?.map(s => s.headliner_artist_id).filter(Boolean))];
+    const venueIds = [...new Set(raw?.map(s => s.venue_id).filter(Boolean))];
+
+    const [artistsData, venuesData] = await Promise.all([
+      artistIds.length > 0 ? supabase
+        .from("artists")
+        .select("id, name, slug, image_url")
+        .in("id", artistIds) : Promise.resolve({ data: [] }),
+      venueIds.length > 0 ? supabase
+        .from("venues")
+        .select("id, name, city, state, country")
+        .in("id", venueIds) : Promise.resolve({ data: [] })
+    ]);
+
+    const artistsMap = new Map((artistsData.data || []).map(a => [a.id, a]));
+    const venuesMap = new Map((venuesData.data || []).map(v => [v.id, v]));
+
     const formatted: TrendingShow[] = ((raw || []) as any[]).map((s, idx) => {
-      // Get the first artist from the array (headliner)
-      const artist = Array.isArray(s.artists) ? s.artists[0] : s.artists;
-      const venue = Array.isArray(s.venues) ? s.venues[0] : s.venues;
+      // Get the headliner artist and venue from the fetched data
+      const artist = s.headliner_artist_id ? artistsMap.get(s.headliner_artist_id) : null;
+      const venue = s.venue_id ? venuesMap.get(s.venue_id) : null;
 
       // Fallback trending score if null
       const score =

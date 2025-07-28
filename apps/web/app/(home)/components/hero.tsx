@@ -55,8 +55,8 @@ function HomeHero() {
             {/* Search container with glow effect */}
             <div className="relative mx-auto w-full max-w-2xl">
               <SearchBar
-                variant="hero"
-                placeholder="Search artists..."
+                variant="artists-only"
+                placeholder="Search artists via Ticketmaster..."
                 className="w-full"
               />
             </div>

@@ -23,6 +23,13 @@
     "trigger:trending": "curl -X POST http://localhost:3001/api/admin/trigger-trending",
     "check:trending": "tsx scripts/check-trending-setup.ts",
     "check:env": "tsx scripts/check-env.ts",
+    "check:env:apis": "tsx scripts/check-env-apis.ts",
+    "check:db:sync": "tsx scripts/check-db-sync.ts",
+    "check:sync:status": "tsx scripts/check-sync-status.ts",
+    "trigger:sync": "tsx scripts/trigger-sync.ts",
+    "trigger:sync:discovery": "tsx scripts/trigger-sync.ts autonomous-discovery --mode discovery",
+    "trigger:sync:master": "tsx scripts/trigger-sync.ts master-sync --mode daily",
+    "trigger:sync:trending": "tsx scripts/trigger-sync.ts trending --mode daily",
     "deploy": "tsx scripts/deploy.ts",
     "deploy:preview": "vercel",
     "deploy:quick": "vercel --prod",
@@ -44,5 +51,8 @@
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "pnpm@10.13.1"
+  "packageManager": "pnpm@10.13.1",
+  "dependencies": {
+    "postgres": "^3.4.7"
+  }
 }

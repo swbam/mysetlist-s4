@@ -81,9 +81,9 @@ async function getTrendingStats() {
     const searchVolume =
       searchData?.reduce((sum, show) => sum + (show.view_count || 0), 0) || 0;
 
-    // Count active users (simulated based on unique voters)
+    // Count active users based on recent votes
     const { count: activeUsers } = await supabase
-      .from("user_votes")
+      .from("votes")
       .select("user_id", { count: "exact", head: true })
       .gte("created_at", lastWeekISO);
 
