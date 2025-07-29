@@ -24,48 +24,75 @@ export interface SyncSetlistParams {
 }
 
 /**
+ * Get the app URL for API calls
+ */
+function getAppUrl() {
+  if (typeof window !== 'undefined') {
+    // Client-side
+    return '';
+  }
+  // Server-side
+  return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+}
+
+/**
  * Sync artist data from Spotify
  */
 export async function syncArtist(params: SyncArtistParams) {
-  const supabase = createClient();
-  const { data, error } = await supabase.functions.invoke("sync-artists", {
-    body: params,
+  const response = await fetch(`${getAppUrl()}/api/sync/artists`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(params),
   });
 
-  if (error) {
-    throw error;
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to sync artist: ${error}`);
   }
-  return data;
+
+  return response.json();
 }
 
 /**
  * Sync shows/concerts from Ticketmaster
  */
 export async function syncShows(params: SyncShowsParams) {
-  const supabase = createClient();
-  const { data, error } = await supabase.functions.invoke("sync-shows", {
-    body: params,
+  const response = await fetch(`${getAppUrl()}/api/sync/shows`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(params),
   });
 
-  if (error) {
-    throw error;
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to sync shows: ${error}`);
   }
-  return data;
+
+  return response.json();
 }
 
 /**
  * Sync setlist from Setlist.fm
  */
 export async function syncSetlist(params: SyncSetlistParams) {
-  const supabase = createClient();
-  const { data, error } = await supabase.functions.invoke("sync-setlists", {
-    body: params,
+  const response = await fetch(`${getAppUrl()}/api/sync/setlists`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(params),
   });
 
-  if (error) {
-    throw error;
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to sync setlist: ${error}`);
   }
-  return data;
+
+  return response.json();
 }
 
 /**
@@ -75,13 +102,18 @@ export async function triggerManualSync(
   type: "all" | "artists" | "shows" | "setlists" = "all",
   limit = 10,
 ) {
-  const supabase = createClient();
-  const { data, error } = await supabase.functions.invoke("scheduled-sync", {
-    body: { type, limit },
+  const response = await fetch(`${getAppUrl()}/api/cron/master-sync`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ type, limit, mode: 'manual' }),
   });
 
-  if (error) {
-    throw error;
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to trigger sync: ${error}`);
   }
-  return data;
+
+  return response.json();
 }

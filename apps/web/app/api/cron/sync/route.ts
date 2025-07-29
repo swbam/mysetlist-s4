@@ -15,27 +15,15 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Call Supabase edge function
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    // Call master sync API directly instead of edge function
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 
-    if (!supabaseUrl || !serviceKey) {
-      return NextResponse.json(
-        { error: "Missing configuration" },
-        { status: 500 },
-      );
-    }
-
-    const response = await fetch(`${supabaseUrl}/functions/v1/scheduled-sync`, {
-      method: "POST",
+    const response = await fetch(`${appUrl}/api/cron/master-sync?mode=hourly`, {
+      method: "GET",
       headers: {
-        Authorization: `Bearer ${serviceKey}`,
+        "Authorization": `Bearer ${cronSecret}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        type: "artists",
-        limit: 20,
-      }),
     });
 
     if (!response.ok) {

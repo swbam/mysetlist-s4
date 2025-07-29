@@ -1,3 +1,5 @@
+// DEPRECATED: This file uses edge functions and should be removed
+// The backup functionality should be moved to a proper API route if needed
 import { type NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "~/lib/api/supabase/server";
 
