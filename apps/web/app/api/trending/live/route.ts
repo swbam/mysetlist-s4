@@ -1,10 +1,10 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/supabase/server";
 import {
   calculateArtistGrowth,
   calculateShowGrowth,
   calculateVenueGrowth,
 } from "@repo/database";
+import { type NextRequest, NextResponse } from "next/server";
+import { createClient } from "~/lib/supabase/server";
 
 interface LiveTrendingItem {
   id: string;
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type") as "artist" | "show" | "venue" | "all";
 
   try {
-    const supabase = await createServiceClient();
+    const supabase = await createClient();
     const trending: LiveTrendingItem[] = [];
 
     // Calculate time window for trending based on timeframe

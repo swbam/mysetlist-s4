@@ -29,6 +29,9 @@ export const venues = pgTable("venues", {
   description: text("description"),
   amenities: text("amenities"), // JSON array
 
+  // External integrations
+  ticketmasterId: text("ticketmaster_id").unique(),
+
   // Analytics fields
   totalShows: integer("total_shows").default(0),
   upcomingShows: integer("upcoming_shows").default(0),

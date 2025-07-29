@@ -2,7 +2,7 @@ import { db } from "@repo/database";
 import { artists, setlists, shows, songs, venues } from "@repo/database";
 import { inArray, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/supabase/server";
+import { createClient } from "~/lib/supabase/server";
 import { withRateLimit } from "~/middleware/rate-limit";
 
 export const runtime = "nodejs";
@@ -238,7 +238,7 @@ function getTable(resource: string) {
 async function handler(request: NextRequest) {
   try {
     // Check authentication
-    const supabase = createServiceClient();
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,

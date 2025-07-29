@@ -1,5 +1,4 @@
 import * as Sentry from "@sentry/nextjs";
-import React from "react";
 
 export function initSentry() {
   const SENTRY_DSN = process.env["NEXT_PUBLIC_SENTRY_DSN"];

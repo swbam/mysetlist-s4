@@ -1,7 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@repo/database";
 import { artists } from "@repo/database";
 import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 import { UnifiedSyncService } from "../unified-pipeline/sync-service";
 
 export async function POST(request: NextRequest) {

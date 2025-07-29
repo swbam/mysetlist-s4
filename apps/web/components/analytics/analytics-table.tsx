@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Avatar,
-  AvatarImage,
   AvatarFallback,
+  AvatarImage,
 } from "@repo/design-system/components/ui/avatar";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Table,
   TableBody,
@@ -17,13 +16,14 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import {
-  TrendingUp,
-  TrendingDown,
-  Music,
-  MapPin,
-  User,
   Eye,
+  MapPin,
+  Music,
+  TrendingDown,
+  TrendingUp,
+  User,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface TableProps {
   type:
@@ -64,14 +64,14 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
     try {
       setLoading(true);
 
-      // Mock data based on table type
-      const mockData = generateMockData(type, limit);
-      setData(mockData);
-
-      // In production, this would be:
-      // const response = await fetch(`/api/analytics/table?type=${type}&limit=${limit}`);
-      // const result = await response.json();
-      // setData(result.data);
+      const response = await fetch(
+        `/api/analytics/table?type=${type}&limit=${limit}`,
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch table data");
+      }
+      const result = await response.json();
+      setData(result.data || []);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load table data",

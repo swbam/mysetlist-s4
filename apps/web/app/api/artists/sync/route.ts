@@ -1,9 +1,9 @@
 import { db } from "@repo/database";
 import { artists } from "@repo/database";
+import { env } from "@repo/env";
 import { SpotifyClient, TicketmasterClient } from "@repo/external-apis";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { env } from "@repo/env";
 
 const spotify = new SpotifyClient({});
 
@@ -151,11 +151,14 @@ export async function POST(request: NextRequest) {
       // Always sync song catalog
       if (artistRecord) {
         // Call song sync API directly instead of edge function
-        fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/songs`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ artistId: artistRecord.id }),
-        }).catch(() => {
+        fetch(
+          `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/songs`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ artistId: artistRecord.id }),
+          },
+        ).catch(() => {
           // Log but don't fail the main request
           console.error("Failed to sync song catalog");
         });
@@ -163,14 +166,17 @@ export async function POST(request: NextRequest) {
         // Sync shows if we have a Ticketmaster ID
         if (artistRecord.ticketmasterId) {
           // Call shows sync API directly instead of edge function
-          fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/shows`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ticketmasterId: artistRecord.ticketmasterId,
-              artistId: artistRecord.id,
-            }),
-          }).catch(() => {
+          fetch(
+            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/shows`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ticketmasterId: artistRecord.ticketmasterId,
+                artistId: artistRecord.id,
+              }),
+            },
+          ).catch(() => {
             // Log but don't fail the main request
             console.error("Failed to sync shows");
           });

@@ -2,15 +2,7 @@
 
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Card } from "@repo/design-system/components/ui/card";
-import {
-  Calendar,
-  Clock,
-  Globe,
-  MapPin,
-  Phone,
-  Star,
-  Users,
-} from "lucide-react";
+import { Calendar, Clock, Globe, MapPin, Phone, Users } from "lucide-react";
 import Image from "next/image";
 
 interface VenueHeaderProps {

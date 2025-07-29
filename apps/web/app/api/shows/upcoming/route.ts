@@ -1,6 +1,5 @@
-import { getUserFromRequest } from "@repo/auth/server";
 import { artists, db, shows, venues } from "@repo/database";
-import { and, asc, eq, gte, sql } from "drizzle-orm";
+import { asc, desc, eq, gte, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -15,7 +14,7 @@ export async function GET(request: NextRequest) {
     const actualFilter = filter === "following" ? "all" : filter;
 
     // Build the query - simplified without following logic
-    const upcomingShows = await db
+    const baseQuery = db
       .select({
         id: shows.id,
         name: shows.name,
@@ -44,10 +43,11 @@ export async function GET(request: NextRequest) {
       .from(shows)
       .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
       .leftJoin(venues, eq(shows.venueId, venues.id))
-      .where(gte(shows.date, new Date().toISOString().split("T")[0]))
-      .orderBy(
-        actualFilter === "popular" ? artists.trendingScore : asc(shows.date),
-      )
+      .where(gte(shows.date, new Date().toISOString().split("T")[0]!));
+
+    const upcomingShows = await (actualFilter === "popular"
+      ? baseQuery.orderBy(desc(artists.trendingScore))
+      : baseQuery.orderBy(asc(shows.date)))
       .limit(limit)
       .offset(offset);
 

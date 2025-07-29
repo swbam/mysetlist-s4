@@ -2,8 +2,8 @@ import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
 import React, { Suspense } from "react";
 import { PageErrorBoundary } from "~/components/error-boundary-wrapper";
-import { TrendingListSkeleton } from "~/components/loading-states";
 import { ResponsiveGrid } from "~/components/layout/responsive-grid";
+import { TrendingListSkeleton } from "~/components/loading-states";
 import { ArtistSearch } from "./components/artist-search";
 import { PopularArtists } from "./components/popular-artists";
 import { TrendingArtists } from "./components/trending-artists";
@@ -40,31 +40,25 @@ export default function ArtistsPage() {
             {/* Trending Artists Section */}
             <div className="mt-12">
               <h2 className="mb-6 font-semibold text-2xl">Trending Artists</h2>
-              {React.createElement(
-                Suspense as any,
-                {
-                  fallback: <TrendingListSkeleton count={5} />,
-                },
-                <TrendingArtists />,
-              )}
+              <Suspense fallback={<TrendingListSkeleton count={5} />}>
+                <TrendingArtists />
+              </Suspense>
             </div>
 
             {/* Popular Artists Grid */}
             <div className="mt-12">
               <h2 className="mb-6 font-semibold text-2xl">Popular Artists</h2>
-              {React.createElement(
-                Suspense as any,
-                {
-                  fallback: (
-                    <ResponsiveGrid
-                      variant="artists"
-                      loading={true}
-                      loadingCount={12}
-                    />
-                  ),
-                },
-                <PopularArtists />,
-              )}
+              <Suspense
+                fallback={
+                  <ResponsiveGrid
+                    variant="artists"
+                    loading={true}
+                    loadingCount={12}
+                  >{" "}</ResponsiveGrid>
+                }
+              >
+                <PopularArtists />
+              </Suspense>
             </div>
 
             <div className="py-16 text-center">

@@ -1,13 +1,13 @@
+import { createSupabaseAdminClient } from "@repo/database";
 import { type CookieOptions, createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { createSupabaseAdminClient } from "@repo/database";
 
 export async function createClient() {
   // Check if we're in a request context (not during build time)
-  const isRequestContext = typeof window === "undefined" && 
-    process.env.NODE_ENV !== 'production' ? 
-    true : // In development, assume request context
-    Boolean(process.env.NEXT_PHASE !== 'phase-production-build');
+  const isRequestContext =
+    typeof window === "undefined" && process.env.NODE_ENV !== "production"
+      ? true // In development, assume request context
+      : Boolean(process.env.NEXT_PHASE !== "phase-production-build");
 
   const supabaseUrl =
     process.env["NEXT_PUBLIC_SUPABASE_URL"] ||
@@ -58,7 +58,10 @@ export async function createClient() {
     });
   } catch (error) {
     // Fallback to admin client for build time or when cookies aren't available
-    console.warn("Failed to create server client, falling back to admin client:", error);
+    console.warn(
+      "Failed to create server client, falling back to admin client:",
+      error,
+    );
     return createSupabaseAdminClient();
   }
 }

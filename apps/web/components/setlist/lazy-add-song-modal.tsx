@@ -1,8 +1,8 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Loader2 } from "lucide-react";
+import dynamic from "next/dynamic";
 
 // Loading component for the modal
 function ModalSkeleton() {

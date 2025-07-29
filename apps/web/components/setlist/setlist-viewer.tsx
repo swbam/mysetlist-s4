@@ -1,9 +1,9 @@
 "use client";
 
-import { useAuth } from "~/app/providers/auth-provider";
 // import { SetlistViewer as UISetlistViewer } from '@repo/design-system';
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "~/app/providers/auth-provider";
 import type { Setlist } from "~/types/setlist";
 
 interface Vote {

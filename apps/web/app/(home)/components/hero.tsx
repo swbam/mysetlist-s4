@@ -2,7 +2,7 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { ChevronRight, Music, TrendingUp } from "lucide-react";
 import Link from "next/link";
-import React, { memo } from "react";
+import { memo } from "react";
 import { SearchBar } from "~/components/search-bar";
 
 function HomeHero() {

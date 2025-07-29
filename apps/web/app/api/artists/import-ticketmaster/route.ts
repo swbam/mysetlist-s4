@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@repo/database";
+import { type NextRequest, NextResponse } from "next/server";
 import { generateSlug } from "../../../../lib/utils/slug";
 
 interface ImportTicketmasterArtistRequest {

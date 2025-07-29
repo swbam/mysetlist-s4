@@ -11,7 +11,7 @@ import {
 } from "@repo/database";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/supabase/server";
+import { createClient } from "~/lib/supabase/server";
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -32,7 +32,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Verify password with Supabase
-    const supabase = createServiceClient();
+    const supabase = await createClient();
     const { error: authError } = await supabase.auth.signInWithPassword({
       email: user.email!,
       password,

@@ -6,21 +6,21 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@repo/design-system/components/ui/sheet";
+import { cn } from "@repo/design-system/lib/utils";
 import {
-  Menu,
-  Home,
-  Music,
   Calendar,
+  Home,
   MapPin,
+  Menu,
+  Music,
+  Search,
   TrendingUp,
   User,
-  Search,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useState, useMemo } from "react";
-import { cn } from "@repo/design-system/lib/utils";
 
 interface NavigationItem {
   href: string;

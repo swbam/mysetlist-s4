@@ -1,7 +1,7 @@
 import { db } from "@repo/database";
-import { artists, shows, songs, venues, setlists } from "@repo/database";
-import { sql, desc, gte, and, or, isNull, lte } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { artists } from "@repo/database";
+import { and, desc, gte, isNull, lte, or, sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * 🚀 AUTONOMOUS SYNC ENGINE - UNIFIED PIPELINE

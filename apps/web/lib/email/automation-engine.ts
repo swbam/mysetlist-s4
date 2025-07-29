@@ -1,12 +1,12 @@
-import { createClient } from "~/lib/supabase/server";
-import { getUserPreferences } from "~/lib/recommendations";
 import {
-  sendWelcomeEmail,
-  sendShowReminderEmail,
   sendNewShowNotificationEmail,
-  sendWeeklyDigestEmail,
+  sendShowReminderEmail,
   sendVoteMilestoneEmail,
+  sendWeeklyDigestEmail,
+  sendWelcomeEmail,
 } from "@repo/email/services";
+import { getUserPreferences } from "~/lib/recommendations";
+import { createClient } from "~/lib/supabase/server";
 
 export interface EmailTrigger {
   id: string;

@@ -10,7 +10,7 @@ import {
   venues,
 } from "@repo/database";
 import { spotify } from "@repo/external-apis";
-import { and, desc, sql as drizzleSql, eq, gte, lt, or } from "drizzle-orm";
+import { and, desc, sql as drizzleSql, eq, or } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { CACHE_TAGS, REVALIDATION_TIMES } from "~/lib/cache";
 
@@ -268,7 +268,7 @@ export async function getArtistTopTracks(spotifyId: string) {
 }
 
 // New action for complete artist-to-setlist flow
-const _getArtistSetlists = async (artistId: string, limit: number = 10) => {
+const _getArtistSetlists = async (artistId: string, limit = 10) => {
   try {
     const artistSetlists = await db
       .select({
@@ -318,10 +318,7 @@ export const getArtistSetlists = unstable_cache(
 );
 
 // Enhanced action for artist songs with setlist integration
-const _getArtistSongsWithSetlistData = async (
-  artistId: string,
-  limit: number = 50,
-) => {
+const _getArtistSongsWithSetlistData = async (artistId: string, limit = 50) => {
   try {
     const artistSongs = await db
       .select({

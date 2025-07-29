@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 import { TrendingErrorBoundary } from "~/components/error-boundaries/trending-error-boundary";
 import { LiveTrending } from "~/components/trending/live-trending";
 import { createServiceClient } from "~/lib/supabase/server";

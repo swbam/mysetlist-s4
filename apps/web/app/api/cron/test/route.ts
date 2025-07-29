@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
 import { db } from "@repo/database";
 import { sql } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 const CRON_SECRET = process.env["CRON_SECRET"];
 

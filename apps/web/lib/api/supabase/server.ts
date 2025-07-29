@@ -1,6 +1,6 @@
+import { env } from "@repo/env";
 import { type CookieOptions, createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { env } from "@repo/env";
 
 export function createClient() {
   return createServerClient(

@@ -1,6 +1,6 @@
 "use server";
 
-import { keys, getResendClient } from "@repo/email";
+import { getResendClient, keys } from "@repo/email";
 import { ContactTemplate } from "@repo/email/templates/contact";
 import { parseError } from "@repo/observability/error";
 

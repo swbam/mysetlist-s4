@@ -1,6 +1,6 @@
 import { getUser } from "@repo/auth/server";
 import { type NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/supabase/server";
+import { createClient } from "~/lib/supabase/server";
 
 export async function GET(
   _request: NextRequest,
@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const supabase = createServiceClient();
+    const supabase = await createClient();
 
     // Fetch user profile data
     const profile = {

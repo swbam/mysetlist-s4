@@ -9,9 +9,9 @@ import { ArtistErrorBoundary } from "~/components/error-boundaries/artist-error-
 import { createArtistMetadata } from "~/lib/seo-metadata";
 import {
   getArtist,
+  getArtistSetlists,
   getArtistShows,
   getArtistStats,
-  getArtistSetlists,
   getSimilarArtists,
 } from "./actions";
 import { ArtistHeader } from "./components/artist-header";

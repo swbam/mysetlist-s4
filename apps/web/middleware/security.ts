@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { createRateLimiter } from "@repo/rate-limit";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Security headers configuration
 const securityHeaders = {
@@ -81,7 +81,7 @@ const ipRateLimit = new Map<string, { count: number; resetTime: number }>();
 
 const checkIPRateLimit = (
   ip: string,
-  limit: number = 1000,
+  limit = 1000,
   windowMs: number = 15 * 60 * 1000,
 ): boolean => {
   const now = Date.now();

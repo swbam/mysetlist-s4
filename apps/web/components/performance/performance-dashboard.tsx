@@ -1,15 +1,13 @@
 "use client";
 
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { usePerformanceMonitor } from "~/hooks/use-performance-monitor";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import { Progress } from "@repo/design-system/components/ui/progress";
 import {
   Tabs,
@@ -17,6 +15,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
+import { cn } from "@repo/design-system/lib/utils";
 import {
   Activity,
   AlertTriangle,
@@ -31,7 +30,8 @@ import {
   Wifi,
   Zap,
 } from "lucide-react";
-import { cn } from "@repo/design-system/lib/utils";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { usePerformanceMonitor } from "~/hooks/use-performance-monitor";
 
 interface PerformanceDashboardProps {
   className?: string;

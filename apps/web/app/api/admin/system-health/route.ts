@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/api/supabase/server";
+import { createClient } from "~/lib/api/supabase/server";
 
 interface HealthCheck {
   service: string;
@@ -155,7 +155,7 @@ async function getSystemMetrics() {
 
 export async function GET(_request: NextRequest) {
   try {
-    const supabase = createServiceClient();
+    const supabase = await createClient();
 
     // Check admin authorization
     const {

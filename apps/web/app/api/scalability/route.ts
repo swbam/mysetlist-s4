@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
-  scalabilityArchitect,
-  getScalabilityRecommendations,
   generateScalabilityPlan,
+  getScalabilityRecommendations,
+  scalabilityArchitect,
 } from "~/lib/scalability/architecture-design";
 import { createClient } from "~/lib/supabase/server";
 
@@ -27,8 +27,10 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get("type") || "recommendations";
-    const userCount = parseInt(searchParams.get("userCount") || "10000");
-    const targetUsers = parseInt(searchParams.get("targetUsers") || "100000");
+    const userCount = Number.parseInt(searchParams.get("userCount") || "10000");
+    const targetUsers = Number.parseInt(
+      searchParams.get("targetUsers") || "100000",
+    );
     const timeframe = searchParams.get("timeframe") || "12 months";
 
     switch (type) {
@@ -120,7 +122,7 @@ export async function GET(request: NextRequest) {
         });
 
       case "comparison":
-        const currentUserCount = parseInt(
+        const currentUserCount = Number.parseInt(
           searchParams.get("currentUsers") || "10000",
         );
         const currentRecommendations =

@@ -1,10 +1,10 @@
 "use client";
 
 import { Button } from "@repo/design-system/components/ui/button";
-import { ChevronUp, ChevronDown } from "lucide-react";
-import { useEffect, useState, useCallback } from "react";
-import { createClient } from "~/lib/supabase/client";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { useRealtimeConnection } from "~/app/providers/realtime-provider";
+import { createClient } from "~/lib/supabase/client";
 
 interface VoteData {
   upvotes: number;

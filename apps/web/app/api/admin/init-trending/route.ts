@@ -1,6 +1,6 @@
 import { db } from "@repo/database";
 import { artists, shows } from "@repo/database";
-import { gt, sql, desc } from "drizzle-orm";
+import { desc, gt, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 export async function POST() {

@@ -1,11 +1,11 @@
 import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 import { ErrorBoundaryWrapper } from "~/components/error-boundary-wrapper";
 import { ResponsiveGrid } from "~/components/layout/responsive-grid";
-import { VenueSearch } from "./components/venue-search";
 import { getVenues } from "./actions";
 import { VenueGridClient } from "./components/venue-grid-client";
+import { VenueSearch } from "./components/venue-search";
 
 export const generateMetadata = async (): Promise<Metadata> => {
   return createMetadata({
@@ -36,23 +36,7 @@ const VenuesContent = async ({ searchParams }: { searchParams: any }) => {
     ...(searchParams.lng && { userLng: Number.parseFloat(searchParams.lng) }),
   });
 
-  const formattedVenues = venues.map((venue) => ({
-    id: venue.id,
-    name: venue.name,
-    slug: venue.slug,
-    address: venue.address,
-    city: venue.city,
-    state: venue.state,
-    country: venue.country,
-    capacity: venue.capacity,
-    venueType: venue.venueType,
-    imageUrl: venue.imageUrl,
-    avgRating: venue.avgRating ?? 0,
-    reviewCount: venue.reviewCount,
-    upcomingShowCount: venue.upcomingShowCount,
-    distance: venue.distance,
-    amenities: venue.amenities,
-  }));
+  const formattedVenues = venues;
 
   return (
     <div className="space-y-6">
@@ -88,7 +72,9 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
                     variant="venues"
                     loading={true}
                     loadingCount={9}
-                  />
+                  >
+                    {null}
+                  </ResponsiveGrid>
                 </div>
               }
             >
@@ -101,7 +87,9 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
                   variant="venues"
                   loading={true}
                   loadingCount={6}
-                />
+                >
+                  {null}
+                </ResponsiveGrid>
               }
             >
               <VenuesContent searchParams={resolvedSearchParams} />

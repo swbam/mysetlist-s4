@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { db, artists, shows, venues, songs } from "@repo/database";
+import { artists, db, shows, songs, venues } from "@repo/database";
 import { desc } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Mock data for quick population
 const MOCK_ARTISTS = [

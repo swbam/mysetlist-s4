@@ -1,5 +1,5 @@
 import { getUser } from "@repo/auth/server";
-import { db, artists, shows, venues, songs } from "@repo/database";
+import { artists, db, shows, songs, venues } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {

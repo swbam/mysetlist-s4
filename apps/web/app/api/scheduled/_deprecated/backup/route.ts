@@ -1,7 +1,7 @@
 // DEPRECATED: This file uses edge functions and should be removed
 // The backup functionality should be moved to a proper API route if needed
 import { type NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/api/supabase/server";
+import { createClient } from "~/lib/api/supabase/server";
 
 const CRON_SECRET = process.env["CRON_SECRET"];
 
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const supabase = createServiceClient();
+    const supabase = await createClient();
 
     // Call Supabase edge function for database backup
     const { data, error } = await supabase.functions.invoke("backup-database", {
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     // Log backup failure
     try {
-      const supabase = createServiceClient();
+      const supabase = await createClient();
       await supabase.from("backup_logs").insert({
         backup_type: "incremental",
         status: "failed",

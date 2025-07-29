@@ -4,7 +4,7 @@ import { apiKeys } from "@repo/database";
 import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { type NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/supabase/server";
+import { createClient } from "~/lib/supabase/server";
 
 export const runtime = "nodejs";
 
@@ -33,7 +33,7 @@ function generateApiKey(): { key: string; hash: string } {
 export async function GET(_request: NextRequest) {
   try {
     // Check authentication
-    const supabase = createServiceClient();
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,
@@ -73,7 +73,7 @@ export async function GET(_request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const supabase = createServiceClient();
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // Check authentication
-    const supabase = createServiceClient();
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,

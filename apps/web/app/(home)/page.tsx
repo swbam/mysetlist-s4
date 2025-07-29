@@ -1,9 +1,27 @@
+import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import Hero from "./components/hero";
-import { TrendingArtists } from "./components/trending-artists";
-import { Trending as TrendingShows } from "./components/trending";
-import FeaturedContent from "./components/featured-content";
 import { HomeLoadingSkeleton } from "./components/home-loading-skeleton";
+
+// Dynamic imports for non-critical components
+const TrendingArtists = dynamic(
+  () =>
+    import("./components/trending-artists").then((mod) => mod.TrendingArtists),
+  {
+    loading: () => <HomeLoadingSkeleton />,
+  },
+);
+
+const TrendingShows = dynamic(
+  () => import("./components/trending").then((mod) => mod.Trending),
+  {
+    loading: () => <HomeLoadingSkeleton />,
+  },
+);
+
+const FeaturedContent = dynamic(() => import("./components/featured-content"), {
+  loading: () => <HomeLoadingSkeleton />,
+});
 
 export const metadata = {
   title: "MySetlist - Concert Setlist Voting Platform",

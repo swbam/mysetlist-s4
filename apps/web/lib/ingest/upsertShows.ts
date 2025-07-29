@@ -1,8 +1,8 @@
 import { db } from "@repo/database";
 import { shows } from "@repo/database";
 import { eq } from "drizzle-orm";
-import { upsertVenue } from "./upsertVenue";
 import { nanoid } from "nanoid";
+import { upsertVenue } from "./upsertVenue";
 
 export async function upsertShows(rawShows: any[], artistId: string) {
   const upsertedShows: any[] = [];

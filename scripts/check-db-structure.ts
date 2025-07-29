@@ -5,8 +5,8 @@
  * This script checks the current database structure
  */
 
-import { config } from "dotenv";
 import { join } from "path";
+import { config } from "dotenv";
 
 // Load environment variables first
 config({ path: join(process.cwd(), ".env.local") });
@@ -37,12 +37,20 @@ async function checkDatabaseStructure() {
     console.log("");
 
     // Check if our target tables exist
-    const targetTables = ['user_activity_log', 'trending_artists', 'trending_shows', 'pipeline_jobs', 'schema_migrations'];
+    const targetTables = [
+      "user_activity_log",
+      "trending_artists",
+      "trending_shows",
+      "pipeline_jobs",
+      "schema_migrations",
+    ];
     console.log("🎯 Target Tables Status:");
-    
+
     for (const tableName of targetTables) {
-      const exists = tables.rows?.some((row: any) => row.tablename === tableName);
-      console.log(`  ${tableName}: ${exists ? '✅ EXISTS' : '❌ NOT FOUND'}`);
+      const exists = tables.rows?.some(
+        (row: any) => row.tablename === tableName,
+      );
+      console.log(`  ${tableName}: ${exists ? "✅ EXISTS" : "❌ NOT FOUND"}`);
     }
 
     // Check cron schema
@@ -75,7 +83,6 @@ async function checkDatabaseStructure() {
         console.log(`  - ${row.column_name} (${row.data_type})`);
       });
     }
-
   } catch (error) {
     console.error("❌ Error checking database structure:", error);
     process.exit(1);

@@ -3,7 +3,7 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
-import { memo, useState, useTransition, useCallback } from "react";
+import { memo, useCallback, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 interface VoteButtonProps {

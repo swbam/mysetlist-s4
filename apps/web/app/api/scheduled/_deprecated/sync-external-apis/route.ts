@@ -1,8 +1,8 @@
 import { db } from "@repo/database";
 import { artists, shows, venues } from "@repo/database";
+import { SpotifyClient, TicketmasterClient } from "@repo/external-apis";
 import { eq, gte, isNull, or } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { SpotifyClient, TicketmasterClient } from "@repo/external-apis";
 
 // Rate limiting and caching utilities
 class RateLimiter {
@@ -291,7 +291,7 @@ class ShowSyncService {
     const attractionName =
       tmEvent._embedded?.attractions?.[0]?.name || tmEvent.name;
 
-    let artistResult = await db
+    const artistResult = await db
       .select()
       .from(artists)
       .where(eq(artists.name, attractionName))

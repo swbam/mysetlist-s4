@@ -10,15 +10,15 @@ import {
   songs,
   venues,
 } from "@repo/database";
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
-import { SyncProgressTracker } from "~/lib/sync-progress-tracker";
 import {
   ArtistSyncService,
-  ShowSyncService,
   SetlistSyncService,
-  VenueSyncService,
+  ShowSyncService,
   SyncScheduler,
+  VenueSyncService,
 } from "@repo/external-apis";
+import { and, desc, eq, sql } from "drizzle-orm";
+import { SyncProgressTracker } from "~/lib/sync-progress-tracker";
 
 // Rate limiting and caching utilities
 export class RateLimiter {

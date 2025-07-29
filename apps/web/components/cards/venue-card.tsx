@@ -5,24 +5,24 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { cn } from "@repo/design-system/lib/utils";
 import {
+  Accessibility,
   Calendar,
   Car,
   ExternalLink,
   Heart,
   MapPin,
+  Music,
   Star,
   Users,
   Wifi,
-  Accessibility,
-  Music,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import {
+  animations,
   focusRing,
   touchTargets,
-  animations,
 } from "~/components/layout/grid-utils";
 
 interface VenueCardProps {
@@ -288,7 +288,9 @@ export function VenueCard({
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                window.open(venue.website, "_blank", "noopener,noreferrer");
+                if (venue.website) {
+                  window.open(venue.website, "_blank", "noopener,noreferrer");
+                }
               }}
               aria-label={`Visit ${venue.name} website`}
             >

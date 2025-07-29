@@ -1,8 +1,7 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -11,14 +10,15 @@ import {
   CommandItem,
   CommandList,
 } from "@repo/design-system/components/ui/command";
+import { Input } from "@repo/design-system/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@repo/design-system/components/ui/popover";
-import { Search, Filter, X, Music, MapPin, Calendar } from "lucide-react";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { Calendar, Filter, MapPin, Music, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDebounce } from "~/hooks/use-debounce";
 
 interface SearchResult {

@@ -17,7 +17,7 @@ import {
   WifiOff,
   Zap,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, memo } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useRealtimeConnection } from "~/app/providers/realtime-provider";
 import { useOptimisticVoting } from "~/hooks/use-optimistic-voting";

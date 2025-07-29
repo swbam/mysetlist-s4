@@ -1,10 +1,10 @@
 #!/usr/bin/env tsx
 /**
  * Supabase Edge Functions Deployment Script
- * 
+ *
  * NOTE: All edge functions have been removed from this project.
  * Their functionality has been migrated to API routes in /apps/web/app/api/
- * 
+ *
  * This file is kept for reference but no longer performs any deployments.
  */
 

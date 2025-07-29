@@ -1,10 +1,10 @@
-import { createServiceClient } from "~/lib/supabase/server";
+import { Music } from "lucide-react";
 import { ArtistCard } from "~/components/cards/artist-card";
 import {
-  ResponsiveGrid,
   EmptyState,
+  ResponsiveGrid,
 } from "~/components/layout/responsive-grid";
-import { Music } from "lucide-react";
+import { createServiceClient } from "~/lib/supabase/server";
 
 async function getPopularArtists() {
   const supabase = createServiceClient();

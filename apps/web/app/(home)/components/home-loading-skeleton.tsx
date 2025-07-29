@@ -11,7 +11,7 @@ export function HomeLoadingSkeleton() {
           <div className="mx-auto max-w-5xl text-center">
             <motion.div
               animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 2, repeat: Infinity }}
+              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
               className="space-y-6"
             >
               {/* Title skeleton */}
@@ -59,7 +59,11 @@ export function HomeLoadingSkeleton() {
               <motion.div
                 key={i}
                 animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, delay: i * 0.1, repeat: Infinity }}
+                transition={{
+                  duration: 2,
+                  delay: i * 0.1,
+                  repeat: Number.POSITIVE_INFINITY,
+                }}
                 className="space-y-3"
               >
                 <div className="aspect-[3/4] rounded-xl bg-muted/60" />
@@ -87,7 +91,11 @@ export function HomeLoadingSkeleton() {
               <motion.div
                 key={i}
                 animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 2, delay: i * 0.15, repeat: Infinity }}
+                transition={{
+                  duration: 2,
+                  delay: i * 0.15,
+                  repeat: Number.POSITIVE_INFINITY,
+                }}
                 className="overflow-hidden rounded-lg border border-border/50 bg-card/50"
               >
                 <div className="aspect-[16/10] bg-muted/60" />

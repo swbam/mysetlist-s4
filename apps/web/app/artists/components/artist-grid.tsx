@@ -4,9 +4,9 @@ import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
-import { Calendar, Heart, TrendingUp, Music } from "lucide-react";
+import { Calendar, Heart, Music, TrendingUp } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface Artist {
   id: string;

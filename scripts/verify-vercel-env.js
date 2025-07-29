@@ -55,7 +55,7 @@ console.log("🔍 MySetlist - Vercel Environment Variables Verification\n");
 console.log("=".repeat(60));
 
 let hasErrors = false;
-let missingVars = [];
+const missingVars = [];
 
 // Check required variables
 console.log("\n✅ Required Variables:");

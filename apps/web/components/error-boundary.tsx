@@ -1,6 +1,5 @@
 "use client";
 
-import { captureException } from "@sentry/nextjs";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -9,9 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import { captureException } from "@sentry/nextjs";
+import { AlertTriangle, Home, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import React, { Component, type ReactNode } from "react";
+import type React from "react";
+import { Component, type ReactNode } from "react";
 
 interface ErrorBoundaryState {
   hasError: boolean;

@@ -44,30 +44,30 @@ let _setlistfm: SetlistFmClient | null = null;
 
 // Export clients with direct method access
 export const spotify = new Proxy({} as SpotifyClient, {
-  get: (target, prop) => {
+  get: (_target, prop) => {
     if (!_spotify) {
       _spotify = new SpotifyClient({});
     }
     return (_spotify as any)[prop];
-  }
+  },
 });
 
 export const ticketmaster = new Proxy({} as TicketmasterClient, {
-  get: (target, prop) => {
+  get: (_target, prop) => {
     if (!_ticketmaster) {
       _ticketmaster = new TicketmasterClient({});
     }
     return (_ticketmaster as any)[prop];
-  }
+  },
 });
 
 export const setlistfm = new Proxy({} as SetlistFmClient, {
-  get: (target, prop) => {
+  get: (_target, prop) => {
     if (!_setlistfm) {
       _setlistfm = new SetlistFmClient({});
     }
     return (_setlistfm as any)[prop];
-  }
+  },
 });
 
 // Export sync services

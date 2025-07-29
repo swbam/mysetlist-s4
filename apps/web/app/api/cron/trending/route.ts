@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes
@@ -16,9 +16,10 @@ export async function GET(request: Request) {
     }
 
     // Get the base URL for internal API calls
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 
-      process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 
-      "http://localhost:3001";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : "http://localhost:3001";
 
     // Call the calculate-trending endpoint directly
     const trendingResponse = await fetch(
@@ -67,9 +68,9 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Cron trending error:", error);
     return NextResponse.json(
-      { 
-        error: "Trending update failed", 
-        details: error instanceof Error ? error.message : "Unknown error" 
+      {
+        error: "Trending update failed",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     );

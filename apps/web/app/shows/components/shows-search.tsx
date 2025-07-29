@@ -6,15 +6,11 @@ import {
 } from "@repo/design-system/components/ui/alert";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-} from "@repo/design-system/components/ui/card";
+import { Card, CardHeader } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Calendar, MapPin, Music, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useDebounce } from "~/hooks/use-debounce";
 
 interface Show {

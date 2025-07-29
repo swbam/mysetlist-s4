@@ -1,9 +1,9 @@
 "use client";
 
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import { cn } from "@repo/design-system/lib/utils";
 import Image from "next/image";
 import React, { useState } from "react";
-import { cn } from "@repo/design-system/lib/utils";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 
 interface ResponsiveImageProps {
   src: string;

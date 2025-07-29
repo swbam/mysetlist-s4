@@ -1,9 +1,7 @@
 import { getUser } from "@repo/auth/server";
 import { db } from "@repo/database";
 import {
-  artists,
   emailPreferences,
-  shows,
   users,
   venueReviews,
   venues,

@@ -1,18 +1,18 @@
 import { createClient } from "../../client";
-import type {
-  AuthUser,
-  AuthSession,
-  AuthError,
-  SignUpData,
-  SignInData,
-  PasswordResetData,
-  SpotifyTokens,
-  SpotifyProfile,
-  OAuthConfig,
-} from "../types/auth";
+import { EmailService } from "../services/email-service";
 import { SpotifyService } from "../services/spotify-service";
 import { UserService } from "../services/user-service";
-import { EmailService } from "../services/email-service";
+import type {
+  AuthError,
+  AuthSession,
+  AuthUser,
+  OAuthConfig,
+  PasswordResetData,
+  SignInData,
+  SignUpData,
+  SpotifyProfile,
+  SpotifyTokens,
+} from "../types/auth";
 
 export class UnifiedAuthProvider {
   private supabase = createClient();

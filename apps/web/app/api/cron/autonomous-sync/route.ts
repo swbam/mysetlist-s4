@@ -1,17 +1,17 @@
 import { db } from "@repo/database";
-import { artists, shows, venues, userActivityLog } from "@repo/database";
-import { desc, isNull, lte, or, sql, eq, and, gte } from "drizzle-orm";
+import { artists, shows, userActivityLog, venues } from "@repo/database";
+import { desc, eq, isNull, lte, or, sql } from "drizzle-orm";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * Autonomous Sync System - Fully automated artist and show discovery
- * 
+ *
  * This endpoint autonomously discovers and syncs artists from multiple sources:
  * 1. Ticketmaster - For live upcoming shows
  * 2. Spotify - For popular artists
  * 3. Setlist.fm - For historical setlist data
- * 
+ *
  * Modes:
  * - discovery: Find new artists from Ticketmaster/Spotify
  * - sync: Sync existing artists
@@ -77,25 +77,38 @@ async function discoverTicketmasterArtists(limit = 50): Promise<any[]> {
 
   try {
     // Get upcoming concerts in major markets
-    const markets = ["Los Angeles", "New York", "Chicago", "San Francisco", "Seattle", "Austin", "Nashville"];
+    const markets = [
+      "Los Angeles",
+      "New York",
+      "Chicago",
+      "San Francisco",
+      "Seattle",
+      "Austin",
+      "Nashville",
+    ];
     const discoveredArtists: any[] = [];
-    
-    for (const market of markets.slice(0, 3)) { // Limit to prevent timeout
-      const url = new URL("https://app.ticketmaster.com/discovery/v2/events.json");
+
+    for (const market of markets.slice(0, 3)) {
+      // Limit to prevent timeout
+      const url = new URL(
+        "https://app.ticketmaster.com/discovery/v2/events.json",
+      );
       url.searchParams.append("apikey", TICKETMASTER_API_KEY);
       url.searchParams.append("classificationName", "Music");
       url.searchParams.append("city", market);
       url.searchParams.append("size", "20");
       url.searchParams.append("sort", "relevance,desc");
-      
+
       const response = await fetch(url.toString());
       if (!response.ok) {
-        console.error(`Ticketmaster API error for ${market}: ${response.statusText}`);
+        console.error(
+          `Ticketmaster API error for ${market}: ${response.statusText}`,
+        );
         continue;
       }
-      
+
       const data = await response.json();
-      
+
       if (data._embedded?.events) {
         for (const event of data._embedded.events) {
           // Extract artist from attractions
@@ -114,16 +127,16 @@ async function discoverTicketmasterArtists(limit = 50): Promise<any[]> {
           }
         }
       }
-      
+
       // Rate limit
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
-    
+
     // Deduplicate by ticketmasterId
     const uniqueArtists = Array.from(
-      new Map(discoveredArtists.map(a => [a.ticketmasterId, a])).values()
+      new Map(discoveredArtists.map((a) => [a.ticketmasterId, a])).values(),
     );
-    
+
     return uniqueArtists.slice(0, limit);
   } catch (error) {
     console.error("Ticketmaster discovery error:", error);
@@ -132,10 +145,13 @@ async function discoverTicketmasterArtists(limit = 50): Promise<any[]> {
 }
 
 // Discover popular artists from Spotify
-async function discoverSpotifyArtists(token: string, limit = 50): Promise<any[]> {
+async function discoverSpotifyArtists(
+  token: string,
+  limit = 50,
+): Promise<any[]> {
   try {
     const discoveredArtists: any[] = [];
-    
+
     // Get artists from different playlists and categories
     const playlists = [
       "37i9dQZEVXbMDoHDwVN2tF", // Global Top 50
@@ -144,23 +160,24 @@ async function discoverSpotifyArtists(token: string, limit = 50): Promise<any[]>
       "37i9dQZF1DX0XUsuxWHRQd", // RapCaviar
       "37i9dQZF1DX4JAvHpjipBk", // New Music Friday
     ];
-    
-    for (const playlistId of playlists.slice(0, 2)) { // Limit to prevent timeout
+
+    for (const playlistId of playlists.slice(0, 2)) {
+      // Limit to prevent timeout
       const url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`;
-      
+
       const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       if (!response.ok) {
         console.error(`Spotify playlist error: ${response.statusText}`);
         continue;
       }
-      
+
       const data = await response.json();
-      
+
       if (data.items) {
         for (const item of data.items) {
           if (item.track?.artists) {
@@ -175,26 +192,29 @@ async function discoverSpotifyArtists(token: string, limit = 50): Promise<any[]>
           }
         }
       }
-      
+
       // Rate limit
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
-    
+
     // Deduplicate by spotifyId
     const uniqueArtists = Array.from(
-      new Map(discoveredArtists.map(a => [a.spotifyId, a])).values()
+      new Map(discoveredArtists.map((a) => [a.spotifyId, a])).values(),
     );
-    
+
     // Get full artist details for unique artists
     const detailedArtists: any[] = [];
     for (const artist of uniqueArtists.slice(0, limit)) {
       try {
-        const response = await fetch(`https://api.spotify.com/v1/artists/${artist.spotifyId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        const response = await fetch(
+          `https://api.spotify.com/v1/artists/${artist.spotifyId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        });
-        
+        );
+
         if (response.ok) {
           const fullArtist = await response.json();
           detailedArtists.push({
@@ -207,14 +227,14 @@ async function discoverSpotifyArtists(token: string, limit = 50): Promise<any[]>
             source: "spotify",
           });
         }
-        
+
         // Rate limit
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (error) {
         console.error(`Error fetching artist ${artist.spotifyId}:`, error);
       }
     }
-    
+
     return detailedArtists;
   } catch (error) {
     console.error("Spotify discovery error:", error);
@@ -223,10 +243,13 @@ async function discoverSpotifyArtists(token: string, limit = 50): Promise<any[]>
 }
 
 // Add discovered artists to database
-async function addDiscoveredArtists(discoveredArtists: any[], source: string): Promise<{ added: number; errors: number }> {
+async function addDiscoveredArtists(
+  discoveredArtists: any[],
+  source: string,
+): Promise<{ added: number; errors: number }> {
   let added = 0;
   let errors = 0;
-  
+
   for (const artist of discoveredArtists) {
     try {
       // Check if artist already exists
@@ -235,20 +258,24 @@ async function addDiscoveredArtists(discoveredArtists: any[], source: string): P
         .from(artists)
         .where(
           or(
-            artist.spotifyId ? eq(artists.spotifyId, artist.spotifyId) : sql`false`,
-            artist.ticketmasterId ? eq(artists.ticketmasterId, artist.ticketmasterId) : sql`false`,
-            eq(artists.name, artist.name)
-          )
+            artist.spotifyId
+              ? eq(artists.spotifyId, artist.spotifyId)
+              : sql`false`,
+            artist.ticketmasterId
+              ? eq(artists.ticketmasterId, artist.ticketmasterId)
+              : sql`false`,
+            eq(artists.name, artist.name),
+          ),
         )
         .limit(1);
-      
+
       if (existing.length === 0) {
         // Create slug from name
         const slug = artist.name
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-+|-+$/g, "");
-        
+
         // Insert new artist
         await db.insert(artists).values({
           name: artist.name,
@@ -262,9 +289,9 @@ async function addDiscoveredArtists(discoveredArtists: any[], source: string): P
           createdAt: new Date(),
           updatedAt: new Date(),
         });
-        
+
         added++;
-        
+
         // Log discovery
         await db.insert(userActivityLog).values({
           action: "artist_discovered",
@@ -282,38 +309,42 @@ async function addDiscoveredArtists(discoveredArtists: any[], source: string): P
       errors++;
     }
   }
-  
+
   return { added, errors };
 }
 
 // Sync artist shows from Ticketmaster
-async function syncArtistShows(artist: any): Promise<{ synced: number; errors: number }> {
+async function syncArtistShows(
+  artist: any,
+): Promise<{ synced: number; errors: number }> {
   if (!TICKETMASTER_API_KEY || !artist.ticketmasterId) {
     return { synced: 0, errors: 0 };
   }
-  
+
   try {
-    const url = new URL("https://app.ticketmaster.com/discovery/v2/events.json");
+    const url = new URL(
+      "https://app.ticketmaster.com/discovery/v2/events.json",
+    );
     url.searchParams.append("apikey", TICKETMASTER_API_KEY);
     url.searchParams.append("attractionId", artist.ticketmasterId);
     url.searchParams.append("size", "50");
-    
+
     const response = await fetch(url.toString());
     if (!response.ok) {
       throw new Error(`Ticketmaster API error: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     let synced = 0;
     let errors = 0;
-    
+
     if (data._embedded?.events) {
       for (const event of data._embedded.events) {
         try {
           // Extract venue
           const venueData = event._embedded?.venues?.[0];
-          let venueId = null;
-          
+          let venueId: string | null = null;
+
           if (venueData) {
             // Check if venue exists
             const existingVenue = await db
@@ -321,64 +352,70 @@ async function syncArtistShows(artist: any): Promise<{ synced: number; errors: n
               .from(venues)
               .where(eq(venues.ticketmasterId, venueData.id))
               .limit(1);
-            
+
             if (existingVenue.length === 0) {
               // Create venue
               const venueSlug = venueData.name
                 .toLowerCase()
                 .replace(/[^a-z0-9]+/g, "-")
                 .replace(/^-+|-+$/g, "");
-              
+
               const newVenue = await db
                 .insert(venues)
                 .values({
                   name: venueData.name,
                   slug: venueSlug,
                   ticketmasterId: venueData.id,
-                  city: venueData.city?.name || null,
+                  city: venueData.city?.name || "",
                   state: venueData.state?.stateCode || null,
-                  country: venueData.country?.countryCode || null,
+                  country: venueData.country?.countryCode || "",
                   address: venueData.address?.line1 || null,
-                  latitude: venueData.location?.latitude ? parseFloat(venueData.location.latitude) : null,
-                  longitude: venueData.location?.longitude ? parseFloat(venueData.location.longitude) : null,
+                  latitude: venueData.location?.latitude
+                    ? Number.parseFloat(venueData.location.latitude)
+                    : null,
+                  longitude: venueData.location?.longitude
+                    ? Number.parseFloat(venueData.location.longitude)
+                    : null,
                   capacity: venueData.generalInfo?.generalRule ? 0 : null,
+                  timezone: venueData.timezone || "America/New_York",
                 })
                 .returning();
-              
-              venueId = newVenue[0].id;
+
+              venueId = newVenue[0]?.id || null;
             } else {
-              venueId = existingVenue[0].id;
+              venueId = existingVenue[0]?.id || null;
             }
           }
-          
+
           // Check if show exists
           const existingShow = await db
             .select()
             .from(shows)
             .where(eq(shows.ticketmasterId, event.id))
             .limit(1);
-          
+
           if (existingShow.length === 0) {
             // Create show
-            const showSlug = `${artist.slug}-${event.dates.start.localDate}-${venueData?.name || "venue"}`
-              .toLowerCase()
-              .replace(/[^a-z0-9]+/g, "-")
-              .replace(/^-+|-+$/g, "");
-            
+            const showSlug =
+              `${artist.slug}-${event.dates.start.localDate}-${venueData?.name || "venue"}`
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "");
+
             await db.insert(shows).values({
               name: event.name,
               slug: showSlug,
               ticketmasterId: event.id,
               headlinerArtistId: artist.id,
               venueId,
-              date: new Date(event.dates.start.localDate),
-              status: event.dates.status.code === "onsale" ? "upcoming" : "completed",
+              date: event.dates.start.localDate,
+              status:
+                event.dates.status.code === "onsale" ? "upcoming" : "completed",
               ticketUrl: event.url || null,
-              imageUrl: event.images?.[0]?.url || null,
-              priceMin: event.priceRanges?.[0]?.min || null,
-              priceMax: event.priceRanges?.[0]?.max || null,
+              minPrice: event.priceRanges?.[0]?.min || null,
+              maxPrice: event.priceRanges?.[0]?.max || null,
             });
-            
+
             synced++;
           }
         } catch (error) {
@@ -387,7 +424,7 @@ async function syncArtistShows(artist: any): Promise<{ synced: number; errors: n
         }
       }
     }
-    
+
     return { synced, errors };
   } catch (error) {
     console.error(`Error syncing shows for ${artist.name}:`, error);
@@ -404,15 +441,15 @@ async function calculateTrendingScores(): Promise<{ updated: number }> {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.CRON_SECRET}`,
+        Authorization: `Bearer ${process.env.CRON_SECRET}`,
       },
     });
-    
+
     if (response.ok) {
       const result = await response.json();
       return { updated: result.results?.artists?.updated || 0 };
     }
-    
+
     return { updated: 0 };
   } catch (error) {
     console.error("Error calculating trending scores:", error);
@@ -422,20 +459,20 @@ async function calculateTrendingScores(): Promise<{ updated: number }> {
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
-  
+
   // Verify cron secret
   const headersList = await headers();
   const authHeader = headersList.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
-  
+
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  
+
   const { searchParams } = new URL(request.url);
   const mode = searchParams.get("mode") || "full"; // discovery, sync, full
-  const limit = parseInt(searchParams.get("limit") || "20");
-  
+  const limit = Number.parseInt(searchParams.get("limit") || "20");
+
   const result: SyncResult = {
     success: true,
     mode,
@@ -456,7 +493,7 @@ export async function GET(request: NextRequest) {
     duration: "",
     errors: [],
   };
-  
+
   try {
     // Log start
     await db.insert(userActivityLog).values({
@@ -468,27 +505,36 @@ export async function GET(request: NextRequest) {
         startTime: result.timestamp,
       },
     });
-    
+
     // Phase 1: Discovery (if enabled)
     if (mode === "discovery" || mode === "full") {
       // Discover from Ticketmaster
       const ticketmasterArtists = await discoverTicketmasterArtists(limit);
       result.discovery.ticketmaster.found = ticketmasterArtists.length;
-      
+
       if (ticketmasterArtists.length > 0) {
-        const tmResult = await addDiscoveredArtists(ticketmasterArtists, "ticketmaster");
+        const tmResult = await addDiscoveredArtists(
+          ticketmasterArtists,
+          "ticketmaster",
+        );
         result.discovery.ticketmaster.added = tmResult.added;
         result.discovery.ticketmaster.errors = tmResult.errors;
       }
-      
+
       // Discover from Spotify
       const spotifyToken = await getSpotifyToken();
       if (spotifyToken) {
-        const spotifyArtists = await discoverSpotifyArtists(spotifyToken, limit);
+        const spotifyArtists = await discoverSpotifyArtists(
+          spotifyToken,
+          limit,
+        );
         result.discovery.spotify.found = spotifyArtists.length;
-        
+
         if (spotifyArtists.length > 0) {
-          const spResult = await addDiscoveredArtists(spotifyArtists, "spotify");
+          const spResult = await addDiscoveredArtists(
+            spotifyArtists,
+            "spotify",
+          );
           result.discovery.spotify.added = spResult.added;
           result.discovery.spotify.errors = spResult.errors;
         }
@@ -496,7 +542,7 @@ export async function GET(request: NextRequest) {
         result.errors.push("Failed to get Spotify token");
       }
     }
-    
+
     // Phase 2: Sync existing artists (if enabled)
     if (mode === "sync" || mode === "full") {
       // Get artists that need syncing
@@ -507,14 +553,14 @@ export async function GET(request: NextRequest) {
         .where(
           or(
             isNull(artists.lastSyncedAt),
-            lte(artists.lastSyncedAt, oneDayAgo)
-          )
+            lte(artists.lastSyncedAt, oneDayAgo),
+          ),
         )
         .orderBy(desc(artists.popularity))
         .limit(limit);
-      
+
       result.sync.artists.processed = artistsToSync.length;
-      
+
       // Sync each artist
       for (const artist of artistsToSync) {
         try {
@@ -524,7 +570,7 @@ export async function GET(request: NextRequest) {
             result.sync.shows.added += showResult.synced;
             result.sync.shows.errors += showResult.errors;
           }
-          
+
           // Update sync timestamp
           await db
             .update(artists)
@@ -533,26 +579,26 @@ export async function GET(request: NextRequest) {
               updatedAt: new Date(),
             })
             .where(eq(artists.id, artist.id));
-          
+
           result.sync.artists.updated++;
-          
+
           // Rate limit
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         } catch (error) {
           result.sync.artists.errors++;
           result.errors.push(`Failed to sync artist ${artist.name}: ${error}`);
         }
       }
     }
-    
+
     // Phase 3: Calculate trending scores
     const trendingResult = await calculateTrendingScores();
     result.trending.calculated = true;
     result.trending.updated = trendingResult.updated;
-    
+
     // Calculate duration
     result.duration = `${((Date.now() - startTime) / 1000).toFixed(2)}s`;
-    
+
     // Log completion
     await db.insert(userActivityLog).values({
       action: `autonomous-sync-${mode}-complete`,
@@ -563,13 +609,15 @@ export async function GET(request: NextRequest) {
         result,
       },
     });
-    
+
     return NextResponse.json(result);
   } catch (error) {
     result.success = false;
-    result.errors.push(error instanceof Error ? error.message : "Unknown error");
+    result.errors.push(
+      error instanceof Error ? error.message : "Unknown error",
+    );
     result.duration = `${((Date.now() - startTime) / 1000).toFixed(2)}s`;
-    
+
     // Log error
     await db.insert(userActivityLog).values({
       action: `autonomous-sync-${mode}-error`,
@@ -580,7 +628,7 @@ export async function GET(request: NextRequest) {
         duration: result.duration,
       },
     });
-    
+
     return NextResponse.json(result, { status: 500 });
   }
 }

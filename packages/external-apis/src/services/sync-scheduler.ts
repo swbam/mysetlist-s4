@@ -1,8 +1,8 @@
+import { SpotifyClient } from "../clients/spotify";
 import { ArtistSyncService } from "./artist-sync";
 import { SetlistSyncService } from "./setlist-sync";
 import { ShowSyncService } from "./show-sync";
 import { VenueSyncService } from "./venue-sync";
-import { SpotifyClient } from "../clients/spotify";
 
 export interface SyncOptions {
   artists?: boolean;

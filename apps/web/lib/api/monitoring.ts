@@ -400,10 +400,7 @@ export class MonitoringService {
   }
 
   // Get metrics for dashboard
-  async getMetrics(
-    name: string,
-    timeRange: number = 3600000,
-  ): Promise<MetricEntry[]> {
+  async getMetrics(name: string, timeRange = 3600000): Promise<MetricEntry[]> {
     try {
       const cutoff = Date.now() - timeRange;
       const results = await this.cache.zrange(
@@ -422,7 +419,7 @@ export class MonitoringService {
   // Get recent logs
   async getLogs(
     level: "info" | "warn" | "error" | "debug",
-    limit: number = 100,
+    limit = 100,
   ): Promise<LogEntry[]> {
     try {
       const results = await this.cache.pipeline([

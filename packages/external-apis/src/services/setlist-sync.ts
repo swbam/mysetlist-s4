@@ -1,4 +1,10 @@
-import { db, and, eq } from "../database";
+import {
+  SetlistFmClient,
+  type SetlistFmSet,
+  type SetlistFmSetlist,
+} from "../clients/setlistfm";
+import { SpotifyClient } from "../clients/spotify";
+import { and, db, eq } from "../database";
 import {
   artists,
   setlistSongs,
@@ -7,12 +13,6 @@ import {
   songs,
   venues,
 } from "../schema";
-import {
-  SetlistFmClient,
-  type SetlistFmSet,
-  type SetlistFmSetlist,
-} from "../clients/setlistfm";
-import { SpotifyClient } from "../clients/spotify";
 
 export class SetlistSyncService {
   private setlistFmClient: SetlistFmClient;

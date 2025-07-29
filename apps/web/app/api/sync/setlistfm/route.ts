@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/supabase/server";
 import { SetlistFmClient } from "@repo/external-apis";
+import { type NextRequest, NextResponse } from "next/server";
 import { monitor } from "~/lib/api/monitoring";
+import { createClient } from "~/lib/supabase/server";
 import { withRateLimit } from "~/middleware/rate-limit";
 
 interface SyncRequest {
@@ -16,7 +16,7 @@ async function syncSetlistFmData(request: NextRequest): Promise<NextResponse> {
   const startTime = Date.now();
 
   try {
-    const supabase = createServiceClient();
+    const supabase = await createClient();
     const body = (await request.json()) as SyncRequest;
 
     // Validate input
@@ -354,7 +354,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const supabase = createServiceClient();
+    const supabase = await createClient();
 
     // Get sync status
     const { data: artist } = await supabase

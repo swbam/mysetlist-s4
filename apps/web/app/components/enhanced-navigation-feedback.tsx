@@ -1,10 +1,10 @@
 "use client";
 
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { cn } from "@repo/design-system/lib/utils";
 import { ChevronRight, Home } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@repo/design-system/lib/utils";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface BreadcrumbItem {
   label: string;

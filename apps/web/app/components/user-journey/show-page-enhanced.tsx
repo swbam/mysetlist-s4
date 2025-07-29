@@ -1,38 +1,36 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Input } from "@repo/design-system/components/ui/input";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
-import { Input } from "@repo/design-system/components/ui/input";
 import {
   Calendar,
+  Clock,
+  ExternalLink,
+  Lock,
   MapPin,
   Music,
-  Users,
-  ExternalLink,
-  Clock,
   Plus,
   Search,
-  TrendingUp,
-  Lock,
   Unlock,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { RealtimeVoting } from "../realtime-voting";
+import { useEffect, useState } from "react";
 import { useRealtimeConnection } from "~/app/providers/realtime-provider";
+import { RealtimeVoting } from "../realtime-voting";
 
 interface Show {
   id: string;

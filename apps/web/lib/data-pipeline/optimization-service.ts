@@ -1,5 +1,5 @@
-import { createClient } from "~/lib/supabase/server";
 import { CacheClient } from "~/lib/cache/redis";
+import { createClient } from "~/lib/supabase/server";
 
 export interface CacheStrategy {
   key: string;
@@ -199,7 +199,7 @@ class DataOptimizationService {
   // Real-time data processing with batching
   async processBatchData(
     data: any[],
-    batchSize: number = 100,
+    batchSize = 100,
     processor: (batch: any[]) => Promise<void>,
   ): Promise<{ processed: number; failed: number; errors: string[] }> {
     const results = {
@@ -406,7 +406,7 @@ class DataOptimizationService {
     key: string,
     queryTime: number,
     cacheHit: boolean,
-    error: boolean = false,
+    error = false,
   ): void {
     const stats = this.queryStats.get(key) || {
       queryTime: 0,

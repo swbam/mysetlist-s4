@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
     warnings: [] as string[],
   };
 
-  let transaction = null;
+  const transaction = null;
 
   try {
     // Log sync start

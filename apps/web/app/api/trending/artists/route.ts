@@ -1,8 +1,8 @@
+import { calculateArtistGrowth } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { CACHE_HEADERS } from "~/lib/cache";
+import { createClient } from "~/lib/supabase/server";
 import { parseGenres } from "~/lib/utils";
-import { createServiceClient } from "~/lib/supabase/server";
-import { calculateArtistGrowth } from "@repo/database";
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     let supabase;
     try {
-      supabase = createServiceClient();
+      supabase = await createClient();
     } catch (error) {
       console.error("Failed to create Supabase client:", error);
       // Return empty array instead of throwing

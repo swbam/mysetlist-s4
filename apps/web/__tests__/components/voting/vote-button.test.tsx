@@ -1,9 +1,9 @@
 import {
+  act,
   fireEvent,
   render,
   screen,
   waitFor,
-  act,
 } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { VoteButton } from "~/components/voting/vote-button";

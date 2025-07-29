@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     const response = await fetch(`${appUrl}/api/cron/master-sync?mode=hourly`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${cronSecret}`,
+        Authorization: `Bearer ${cronSecret}`,
         "Content-Type": "application/json",
       },
     });

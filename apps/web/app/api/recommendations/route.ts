@@ -7,16 +7,16 @@ import {
   getRecommendedVenues,
 } from "~/lib/recommendations";
 import {
+  type MLRecommendationConfig,
   getMLRecommendations,
   trackRecommendationPerformance,
-  type MLRecommendationConfig,
 } from "~/lib/recommendations/ml-engine";
-import { createServiceClient } from "~/lib/supabase/server";
+import { createClient } from "~/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const supabase = createServiceClient();
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,
@@ -151,7 +151,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const supabase = createServiceClient();
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,

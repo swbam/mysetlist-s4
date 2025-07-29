@@ -1,10 +1,10 @@
-import { Inter } from "next/font/google";
-import { Metadata } from "next";
-import { AuthProvider } from "./providers/auth-provider";
-import { ResponsiveHeader } from "../components/layout/responsive-header";
-import { Footer } from "./components/footer";
-import { ThemeProvider } from "../components/ui/theme-provider";
 import { Toaster } from "@repo/design-system/components/ui/sonner";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import { ResponsiveHeader } from "../components/layout/responsive-header";
+import { ThemeProvider } from "../components/ui/theme-provider";
+import { Footer } from "./components/footer";
+import { AuthProvider } from "./providers/auth-provider";
 import "@repo/design-system/styles/globals.css";
 
 const inter = Inter({ subsets: ["latin"] });

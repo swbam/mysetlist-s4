@@ -1,10 +1,14 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { NextRequest, NextResponse } from "next/server";
 // import { env } from '@repo/env';
 import {
-  searchRateLimiter,
   apiRateLimitMiddleware,
+  searchRateLimiter,
 } from "~/lib/api-rate-limit";
+
+// Vercel function config to prevent timeouts
+export const maxDuration = 10; // 10 seconds max
+export const dynamic = "force-dynamic";
 
 const QuerySchema = z.object({
   q: z.string().min(2, "Query must be at least 2 characters"),
@@ -20,9 +24,10 @@ export async function GET(req: NextRequest) {
     return rateLimitResponse;
   }
 
+  const { searchParams } = new URL(req.url);
+  const queryParam = searchParams.get("q");
+
   try {
-    const { searchParams } = new URL(req.url);
-    const queryParam = searchParams.get("q");
 
     // Validate query parameter
     const result = QuerySchema.safeParse({ q: queryParam });
@@ -45,13 +50,19 @@ export async function GET(req: NextRequest) {
     url.searchParams.append("size", "20");
     url.searchParams.append("classificationName", "music"); // Filter for music attractions only
 
-    // Make request to Ticketmaster API with caching
+    // Make request to Ticketmaster API with caching and timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
     const response = await fetch(url.toString(), {
       next: { revalidate: 300 }, // Cache for 5 minutes
       headers: {
         Accept: "application/json",
       },
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (!response.ok) {
       // Handle rate limiting
@@ -93,8 +104,21 @@ export async function GET(req: NextRequest) {
       total: formattedAttractions.length,
       query: q,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Ticketmaster search error:", error);
+
+    // Handle timeout error specifically
+    if (error.name === "AbortError") {
+      return NextResponse.json(
+        {
+          error: "Search timed out. Please try again.",
+          attractions: [],
+          total: 0,
+          query: queryParam || "",
+        },
+        { status: 408 },
+      );
+    }
 
     return NextResponse.json(
       {

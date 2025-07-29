@@ -5,8 +5,8 @@
  * This script completes the remaining security migration steps
  */
 
-import { config } from "dotenv";
 import { join } from "path";
+import { config } from "dotenv";
 
 // Load environment variables first
 config({ path: join(process.cwd(), ".env.local") });
@@ -178,7 +178,8 @@ async function completeMigration() {
       console.log("\n👁️ View Status:");
       if (viewCheck.rows && Array.isArray(viewCheck.rows)) {
         viewCheck.rows.forEach((row: any) => {
-          const status = row.security_status === "No SECURITY DEFINER" ? "✅" : "❌";
+          const status =
+            row.security_status === "No SECURITY DEFINER" ? "✅" : "❌";
           console.log(`   ${row.viewname}: ${status} ${row.security_status}`);
         });
       }
@@ -188,7 +189,9 @@ async function completeMigration() {
       console.error("\n⚠️ Unable to verify final status:", error);
     }
   } else {
-    console.log("\n⚠️ Some errors occurred. Please check the Supabase dashboard.");
+    console.log(
+      "\n⚠️ Some errors occurred. Please check the Supabase dashboard.",
+    );
   }
 
   process.exit(errorCount > 0 ? 1 : 0);
