@@ -1,6 +1,6 @@
 import { calculateArtistGrowth } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { CACHE_HEADERS } from "~/lib/cache";
+import { CACHE_DURATIONS, CACHE_TAGS, getCacheHeaders } from "~/lib/cache";
 import { createClient } from "~/lib/supabase/server";
 import { parseGenres } from "~/lib/utils";
 

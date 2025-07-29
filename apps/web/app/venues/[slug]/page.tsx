@@ -15,6 +15,9 @@ import { UpcomingShows } from "./components/upcoming-shows";
 import { VenueDetails } from "./components/venue-details";
 import { VenueHeader } from "./components/venue-header";
 
+// Enable ISR with 60 second revalidation
+export const revalidate = 60;
+
 type VenuePageProps = {
   params: Promise<{
     locale: string;

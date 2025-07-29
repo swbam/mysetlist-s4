@@ -13,15 +13,18 @@ const TrendingArtists = dynamic(
 );
 
 const TrendingShows = dynamic(
-  () => import("./components/trending").then((mod) => mod.Trending),
+  () => import("./components/trending-optimized").then((mod) => mod.Trending),
   {
     loading: () => <HomeLoadingSkeleton />,
   },
 );
 
-const FeaturedContent = dynamic(() => import("./components/featured-content"), {
-  loading: () => <HomeLoadingSkeleton />,
-});
+const FeaturedContent = dynamic(
+  () => import("./components/featured-content-optimized"),
+  {
+    loading: () => <HomeLoadingSkeleton />,
+  },
+);
 
 export const metadata = {
   title: "MySetlist - Concert Setlist Voting Platform",

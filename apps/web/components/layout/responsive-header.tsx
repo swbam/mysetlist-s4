@@ -342,12 +342,12 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                 </DropdownMenu>
               </>
             ) : (
-              <div className="hidden items-center space-x-2 sm:flex">
-                <Button variant="ghost" size="sm" asChild>
+              <div className="flex items-center space-x-2">
+                <Button variant="outline" size="sm" asChild className="hidden sm:flex">
                   <Link href="/auth/sign-in">Sign In</Link>
                 </Button>
-                <Button size="sm" asChild>
-                  <Link href="/auth/sign-up">Sign Up</Link>
+                <Button size="sm" asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Link href="/auth/sign-up">Get Started</Link>
                 </Button>
               </div>
             )}

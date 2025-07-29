@@ -1,9 +1,36 @@
 "use client";
-import { Button } from "@repo/design-system/components/ui/button";
+import dynamic from "next/dynamic";
 import { ChevronRight, Music, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { memo } from "react";
-import { SearchBar } from "~/components/search-bar";
+
+// Lazy load button component
+const Button = dynamic(
+  () =>
+    import("@repo/design-system/components/ui/button").then(
+      (mod) => mod.Button,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-10 w-32 animate-pulse rounded-md bg-muted" />
+    ),
+  },
+);
+
+// Lazy load search bar
+const SearchBar = dynamic(
+  () =>
+    import("~/components/search-bar").then((mod) => ({
+      default: mod.SearchBar,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-14 w-full animate-pulse rounded-md bg-muted" />
+    ),
+  },
+);
 
 function HomeHero() {
   return (

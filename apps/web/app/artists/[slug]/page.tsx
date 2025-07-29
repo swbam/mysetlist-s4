@@ -19,6 +19,9 @@ import { ArtistPageWrapper } from "./components/artist-page-wrapper";
 import { ArtistStats } from "./components/artist-stats";
 import { UpcomingShows } from "./components/upcoming-shows";
 
+// Enable ISR with 60 second revalidation
+export const revalidate = 60;
+
 // Dynamic imports for tab content to optimize initial bundle
 const ArtistBio = dynamic(
   () =>
@@ -87,7 +90,6 @@ type ArtistPageProps = {
 };
 
 // Configure ISR with revalidation
-export const revalidate = 3600; // Revalidate every hour
 export const dynamicParams = true; // Allow dynamic params beyond generateStaticParams
 
 export const generateMetadata = async ({

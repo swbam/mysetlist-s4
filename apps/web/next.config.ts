@@ -17,6 +17,12 @@ const nextConfig: NextConfig = {
       "@radix-ui/react-dialog",
       "@radix-ui/react-dropdown-menu",
       "@radix-ui/react-tabs",
+      "@radix-ui/react-popover",
+      "@radix-ui/react-avatar",
+      "@radix-ui/react-command",
+      "@supabase/supabase-js",
+      "@supabase/auth-helpers-nextjs",
+      "framer-motion",
     ],
   },
 
@@ -53,6 +59,51 @@ const nextConfig: NextConfig = {
           message: /Critical dependency/,
         },
       ];
+      
+      // Optimize chunks
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: "all",
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Framework chunk
+            framework: {
+              name: "framework",
+              chunks: "all",
+              test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
+              priority: 40,
+              enforce: true,
+            },
+            // Design system chunk
+            designSystem: {
+              name: "design-system",
+              test: /[\\/]@repo[\\/]design-system[\\/]|[\\/]@radix-ui[\\/]|[\\/]class-variance-authority[\\/]|[\\/]clsx[\\/]|[\\/]tailwind-merge[\\/]/,
+              priority: 30,
+              reuseExistingChunk: true,
+            },
+            // Supabase chunk
+            supabase: {
+              name: "supabase",
+              test: /[\\/]@supabase[\\/]/,
+              priority: 20,
+              reuseExistingChunk: true,
+            },
+            // Common chunk for shared modules
+            commons: {
+              name: "commons",
+              minChunks: 2,
+              priority: 10,
+              reuseExistingChunk: true,
+            },
+          },
+        },
+        runtimeChunk: {
+          name: "runtime",
+        },
+        moduleIds: "deterministic",
+      };
     }
     return config;
   },

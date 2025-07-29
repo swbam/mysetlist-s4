@@ -2,27 +2,34 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET } from "../../../../app/api/admin/analytics/votes/route";
 
-// Mock Supabase
-const mockSupabase = {
+// Create a function that returns a fresh mock Supabase instance
+const createMockSupabase = () => ({
   auth: {
     getUser: vi.fn(),
   },
   from: vi.fn(),
-};
+});
 
+// Create a variable to hold our mock instance
+let mockSupabase: ReturnType<typeof createMockSupabase>;
+
+// Mock the Supabase server client module
 vi.mock("~/lib/api/supabase/server", () => ({
-  createClient: vi.fn(() => mockSupabase),
+  createClient: vi.fn(() => Promise.resolve(mockSupabase)),
 }));
 
 describe("/api/admin/analytics/votes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Create a fresh mock instance for each test
+    mockSupabase = createMockSupabase();
   });
 
   describe("GET", () => {
     it("should return 401 if user is not authenticated", async () => {
       mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: null },
+        error: null,
       });
 
       const request = new NextRequest(
@@ -38,6 +45,7 @@ describe("/api/admin/analytics/votes", () => {
     it("should return 403 if user is not admin or moderator", async () => {
       mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: { id: "user-1" } },
+        error: null,
       });
 
       const mockQuery = {
@@ -45,6 +53,7 @@ describe("/api/admin/analytics/votes", () => {
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({
           data: { role: "user" },
+          error: null,
         }),
       };
 
@@ -63,96 +72,64 @@ describe("/api/admin/analytics/votes", () => {
     it("should return vote analytics for admin user", async () => {
       mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: { id: "admin-1" } },
+        error: null,
       });
-
-      const mockQuery = {
-        select: vi.fn().mockReturnThis(),
-        eq: vi.fn().mockReturnThis(),
-        single: vi.fn().mockResolvedValue({
-          data: { role: "admin" },
-        }),
-        gte: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockReturnThis(),
-      };
 
       // Mock vote analytics data
       const mockVoteData = [
         {
           id: "vote-1",
           created_at: "2023-01-01T00:00:00Z",
-          vote_type: "played",
+          vote_type: "up",
+          setlist_song_id: "setlist-song-1",
+          user_id: "user-1",
+          show_id: "show-1",
+          artist_id: "artist-1",
+          venue_id: "venue-1",
           setlist_song: {
+            id: "setlist-song-1",
             song: {
-              id: "song-1",
-              name: "Test Song",
-              artist: { name: "Test Artist" },
+              title: "Test Song",
+              artist: "Test Artist",
             },
           },
           user: {
             id: "user-1",
             display_name: "Test User",
+            username: "testuser",
           },
         },
       ];
 
-      const mockTopSongs = [
-        {
-          song_id: "song-1",
-          song_name: "Test Song",
-          artist_name: "Test Artist",
-          vote_count: 25,
-        },
-      ];
+      // Mock for role check
+      const roleCheckQuery = {
+        select: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        single: vi.fn().mockResolvedValue({
+          data: { role: "admin" },
+          error: null,
+        }),
+      };
 
-      const mockTopUsers = [
-        {
-          user_id: "user-1",
-          display_name: "Test User",
-          vote_count: 15,
-        },
-      ];
+      // Mock for vote analytics query
+      const voteAnalyticsQuery = {
+        select: vi.fn().mockReturnThis(),
+        gte: vi.fn().mockReturnThis(),
+        eq: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({
+          data: mockVoteData,
+          error: null,
+        }),
+      };
 
-      // Mock different queries based on table
-      mockSupabase.from.mockImplementation((table) => {
-        if (table === "setlist_song_votes") {
-          return {
-            ...mockQuery,
-            select: vi.fn().mockImplementation((fields) => {
-              if (fields.includes("count")) {
-                return {
-                  ...mockQuery,
-                  gte: vi.fn().mockReturnThis(),
-                  lte: vi.fn().mockReturnThis(),
-                  eq: vi.fn().mockResolvedValue({ count: 100 }),
-                };
-              }
-              return {
-                ...mockQuery,
-                gte: vi.fn().mockReturnThis(),
-                lte: vi.fn().mockReturnThis(),
-                order: vi.fn().mockReturnThis(),
-                limit: vi.fn().mockResolvedValue({ data: mockVoteData }),
-              };
-            }),
-          };
+      // Set up from() to return different queries based on table
+      mockSupabase.from.mockImplementation((table: string) => {
+        if (table === "users") {
+          return roleCheckQuery;
+        } else if (table === "vote_analytics") {
+          return voteAnalyticsQuery;
         }
-        return mockQuery;
-      });
-
-      // Mock raw SQL queries for top songs and users
-      const mockRpc = vi.fn();
-      mockSupabase.rpc = mockRpc;
-
-      mockRpc.mockImplementation((procedure) => {
-        if (procedure === "get_top_voted_songs") {
-          return Promise.resolve({ data: mockTopSongs });
-        }
-        if (procedure === "get_top_voting_users") {
-          return Promise.resolve({ data: mockTopUsers });
-        }
-        return Promise.resolve({ data: [] });
+        return roleCheckQuery;
       });
 
       const request = new NextRequest(
@@ -163,20 +140,32 @@ describe("/api/admin/analytics/votes", () => {
 
       expect(response.status).toBe(200);
       expect(data).toHaveProperty("summary");
-      expect(data).toHaveProperty("top_songs");
-      expect(data).toHaveProperty("top_users");
-      expect(data).toHaveProperty("recent_votes");
+      expect(data).toHaveProperty("topSongs");
+      expect(data).toHaveProperty("topUsers");
+      expect(data).toHaveProperty("recentActivity");
       expect(data).toHaveProperty("trends");
+      expect(data).toHaveProperty("engagementMetrics");
 
-      expect(data.summary.total_votes).toBe(100);
-      expect(data.top_songs).toEqual(mockTopSongs);
-      expect(data.top_users).toEqual(mockTopUsers);
-      expect(data.recent_votes).toEqual(mockVoteData);
+      // Check summary calculations
+      expect(data.summary.totalVotes).toBe(1);
+      expect(data.summary.upvotes).toBe(1);
+      expect(data.summary.downvotes).toBe(0);
+      expect(data.summary.uniqueUsers).toBe(1);
+      expect(data.summary.uniqueShows).toBe(1);
+      expect(data.summary.uniqueSongs).toBe(1);
+
+      // Check top songs
+      expect(data.topSongs).toHaveLength(1);
+      expect(data.topSongs[0].votes).toBe(1);
+
+      // Check recent activity
+      expect(data.recentActivity).toHaveLength(1);
     });
 
     it("should handle different time periods correctly", async () => {
       mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: { id: "admin-1" } },
+        error: null,
       });
 
       const mockQuery = {
@@ -184,15 +173,16 @@ describe("/api/admin/analytics/votes", () => {
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({
           data: { role: "admin" },
+          error: null,
         }),
         gte: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({
+          data: [],
+          error: null,
+        }),
       };
 
       mockSupabase.from.mockReturnValue(mockQuery);
-      mockSupabase.rpc = vi.fn().mockResolvedValue({ data: [] });
 
       // Test 30 day period
       const request = new NextRequest(
@@ -202,12 +192,12 @@ describe("/api/admin/analytics/votes", () => {
 
       expect(response.status).toBe(200);
       expect(mockQuery.gte).toHaveBeenCalled();
-      expect(mockQuery.lte).toHaveBeenCalled();
     });
 
-    it("should filter by vote type when specified", async () => {
+    it("should filter by location when specified", async () => {
       mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: { id: "admin-1" } },
+        error: null,
       });
 
       const mockQuery = {
@@ -215,46 +205,61 @@ describe("/api/admin/analytics/votes", () => {
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({
           data: { role: "admin" },
+          error: null,
         }),
         gte: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({
+          data: [],
+          error: null,
+        }),
       };
 
       mockSupabase.from.mockReturnValue(mockQuery);
-      mockSupabase.rpc = vi.fn().mockResolvedValue({ data: [] });
 
       const request = new NextRequest(
-        "http://localhost/api/admin/analytics/votes?vote_type=played",
+        "http://localhost/api/admin/analytics/votes?showId=show-123&artistId=artist-456",
       );
       const response = await GET(request);
 
       expect(response.status).toBe(200);
-      expect(mockQuery.eq).toHaveBeenCalledWith("vote_type", "played");
+      // Verify filters were applied
+      expect(mockQuery.eq).toHaveBeenCalledWith("show_id", "show-123");
+      expect(mockQuery.eq).toHaveBeenCalledWith("artist_id", "artist-456");
     });
 
     it("should handle errors gracefully", async () => {
       mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: { id: "admin-1" } },
+        error: null,
       });
 
-      const mockQuery = {
+      const roleCheckQuery = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({
           data: { role: "admin" },
+          error: null,
         }),
-        gte: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockReturnThis(),
       };
 
-      // Mock database error
-      mockQuery.select.mockRejectedValueOnce(new Error("Database error"));
+      const errorQuery = {
+        select: vi.fn().mockReturnThis(),
+        gte: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({
+          data: null,
+          error: new Error("Database error"),
+        }),
+      };
 
-      mockSupabase.from.mockReturnValue(mockQuery);
+      let callCount = 0;
+      mockSupabase.from.mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return roleCheckQuery; // Role check succeeds
+        } else {
+          return errorQuery; // Vote query fails
+        }
+      });
 
       const request = new NextRequest(
         "http://localhost/api/admin/analytics/votes",
@@ -263,51 +268,73 @@ describe("/api/admin/analytics/votes", () => {
       const data = await response.json();
 
       expect(response.status).toBe(500);
-      expect(data.error).toBe("Failed to fetch vote analytics");
+      expect(data.error).toBe("Failed to fetch analytics");
     });
 
-    it("should calculate vote trends correctly", async () => {
+    it("should calculate engagement metrics correctly", async () => {
       mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: { id: "admin-1" } },
+        error: null,
       });
 
-      const mockQuery = {
+      const mockVoteData = [
+        {
+          id: "vote-1",
+          created_at: new Date().toISOString(),
+          vote_type: "up",
+          setlist_song_id: "song-1",
+          user_id: "user-1",
+          show_id: "show-1",
+          setlist_song: { song: { title: "Song 1", artist: "Artist 1" } },
+          user: { display_name: "User 1" },
+        },
+        {
+          id: "vote-2",
+          created_at: new Date().toISOString(),
+          vote_type: "down",
+          setlist_song_id: "song-1",
+          user_id: "user-2",
+          show_id: "show-1",
+          setlist_song: { song: { title: "Song 1", artist: "Artist 1" } },
+          user: { display_name: "User 2" },
+        },
+        {
+          id: "vote-3",
+          created_at: new Date().toISOString(),
+          vote_type: "up",
+          setlist_song_id: "song-2",
+          user_id: "user-1",
+          show_id: "show-1",
+          setlist_song: { song: { title: "Song 2", artist: "Artist 1" } },
+          user: { display_name: "User 1" },
+        },
+      ];
+
+      const roleCheckQuery = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         single: vi.fn().mockResolvedValue({
           data: { role: "admin" },
+          error: null,
         }),
-        gte: vi.fn().mockReturnThis(),
-        lte: vi.fn().mockReturnThis(),
-        order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockReturnThis(),
       };
 
-      // Mock vote counts for trend calculation
-      mockSupabase.from.mockImplementation((_table) => {
-        return {
-          ...mockQuery,
-          select: vi.fn().mockImplementation((fields) => {
-            if (fields.includes("count")) {
-              return {
-                ...mockQuery,
-                gte: vi.fn().mockReturnThis(),
-                lte: vi.fn().mockReturnThis(),
-                eq: vi.fn().mockResolvedValue({ count: 50 }),
-              };
-            }
-            return {
-              ...mockQuery,
-              gte: vi.fn().mockReturnThis(),
-              lte: vi.fn().mockReturnThis(),
-              order: vi.fn().mockReturnThis(),
-              limit: vi.fn().mockResolvedValue({ data: [] }),
-            };
-          }),
-        };
-      });
+      const voteQuery = {
+        select: vi.fn().mockReturnThis(),
+        gte: vi.fn().mockReturnThis(),
+        order: vi.fn().mockResolvedValue({
+          data: mockVoteData,
+          error: null,
+        }),
+      };
 
-      mockSupabase.rpc = vi.fn().mockResolvedValue({ data: [] });
+      mockSupabase.from.mockImplementation((table: string) => {
+        if (table === "users") {
+          return roleCheckQuery;
+        } else {
+          return voteQuery;
+        }
+      });
 
       const request = new NextRequest(
         "http://localhost/api/admin/analytics/votes?period=7d",
@@ -316,9 +343,18 @@ describe("/api/admin/analytics/votes", () => {
       const data = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data.summary).toHaveProperty("votes_today");
-      expect(data.summary).toHaveProperty("votes_yesterday");
-      expect(data.trends).toHaveProperty("daily_change");
+      
+      // Verify engagement metrics
+      expect(data.engagementMetrics.avgVotesPerUser).toBe("1.50"); // 3 votes / 2 users
+      expect(data.engagementMetrics.avgVotesPerSong).toBe("1.50"); // 3 votes / 2 songs
+      expect(data.engagementMetrics.upvoteRatio).toBe("66.7"); // 2 upvotes / 3 total
+      
+      // Verify summary
+      expect(data.summary.totalVotes).toBe(3);
+      expect(data.summary.upvotes).toBe(2);
+      expect(data.summary.downvotes).toBe(1);
+      expect(data.summary.uniqueUsers).toBe(2);
+      expect(data.summary.uniqueSongs).toBe(2);
     });
   });
 });
