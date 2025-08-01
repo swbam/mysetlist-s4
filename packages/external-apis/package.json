@@ -17,7 +17,7 @@
     "@upstash/redis": "^1.28.0",
     "axios": "^1.6.0",
     "commander": "^11.1.0",
-    "drizzle-orm": "^0.29.3",
+    "drizzle-orm": "^0.44.4",
     "postgres": "^3.4.7",
     "server-only": "^0.0.1",
     "zod": "^3.25.28"
