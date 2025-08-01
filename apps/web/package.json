@@ -87,7 +87,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
     "@faker-js/faker": "^9.9.0",
-    "@lhci/cli": "^0.13.0",
+    "@lhci/cli": "^0.15.1",
     "@next/bundle-analyzer": "15.3.4",
     "@playwright/test": "^1.48.0",
     "@repo/typescript-config": "workspace:*",
