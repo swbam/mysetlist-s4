@@ -20,7 +20,7 @@
     "@repo/env": "workspace:*",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.50.3",
-    "drizzle-orm": "^0.29.5",
+    "drizzle-orm": "^0.44.4",
     "postgres": "^3.4.7"
   },
   "devDependencies": {
