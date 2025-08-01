@@ -425,7 +425,7 @@ jobs:
           timeout 60s bash -c 'until curl -f http://localhost:3001/api/health; do sleep 2; done'
 
       - name: Run Lighthouse CI
-        uses: treosh/lighthouse-ci-action@v10
+        uses: treosh/lighthouse-ci-action@v12
         with:
           configPath: '.lighthouserc.json'
           uploadArtifacts: true
@@ -612,7 +612,7 @@ jobs:
           curl -f https://mysetlist-sonnet.vercel.app/api/monitoring/dashboard
 
       - name: Run post-deployment Lighthouse audit
-        uses: treosh/lighthouse-ci-action@v10
+        uses: treosh/lighthouse-ci-action@v12
         with:
           urls: |
             https://mysetlist-sonnet.vercel.app
