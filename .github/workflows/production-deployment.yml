@@ -157,7 +157,7 @@ jobs:
         run: pnpm audit --audit-level moderate
 
       - name: Run CodeQL analysis
-        uses: github/codeql-action/analyze@v2
+        uses: github/codeql-action/analyze@v3
         with:
           languages: javascript
 
