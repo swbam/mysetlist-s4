@@ -133,8 +133,8 @@ export const fetchShows = cache(
         .leftJoin(venues, eq(shows.venueId, venues.id));
       const supabase = createServiceClient();
 
-      // Build the query
-      let query = supabase.from("shows").select(
+      // Build the Supabase query (used only when db client is unavailable
+      const _supabaseQuery = supabase.from("shows").select(
         `
         *,
         headlinerArtist:artists!shows_headliner_artist_id_artists_id_fk(
@@ -161,8 +161,8 @@ export const fetchShows = cache(
         { count: "exact" },
       );
 
-      // Apply filters
-      const conditions = [];
+      // Apply filters to Supabase query
+      const conditions: any[] = [];
 
       if (status) {
         conditions.push(eq(shows.status, status));
@@ -198,6 +198,9 @@ export const fetchShows = cache(
           gte(shows.date, new Date().toISOString().substring(0, 10)),
         );
       }
+
+      // Note: supabaseQuery isn't executed currently. Future refactor might
+      // choose between drizzleQuery vs supabaseQuery based on environment.
 
       if (conditions.length > 0) {
         query = query.where(and(...conditions));
