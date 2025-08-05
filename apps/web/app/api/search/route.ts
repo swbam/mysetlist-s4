@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/supabase/server";
+import { createClient as createSupabaseServerClient } from "~/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { TicketmasterClient } from "@repo/external-apis";
 
 const ticketmaster = new TicketmasterClient({
@@ -45,9 +46,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ results: [] });
     }
 
-    let supabase;
+    let supabase: SupabaseClient;
     try {
-      supabase = createServiceClient();
+      // Use the public anonymous key for standard RLS-protected access
+      // This avoids relying on the service-role key which is blocked on the
+      // Edge runtime at Vercel and ensures queries respect security policies.
+      supabase = await createSupabaseServerClient();
     } catch (error) {
       console.error("Failed to create Supabase client:", error);
       return NextResponse.json(

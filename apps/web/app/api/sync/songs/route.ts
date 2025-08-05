@@ -1,7 +1,8 @@
 import { db } from "@repo/database";
 import { artistSongs, artists, songs } from "@repo/database";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
+import { SpotifyClient } from "@repo/external-apis";
 
 // POST /api/sync/songs
 // Body: { artistId: string }
@@ -49,87 +50,199 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // For now, create sample songs
-    // In production, this would call Spotify API or other music data sources
-    const sampleSongs = [
-      {
-        title: "Greatest Hit #1",
-        artist: artistData!.name,
-        album: "Best Of Collection",
-        albumType: "album" as const,
-        releaseDate: "2023-01-01",
-        durationMs: 210000, // 3:30
-        popularity: 85,
-        isExplicit: false,
-        isPlayable: true,
-      },
-      {
-        title: "Fan Favorite",
-        artist: artistData!.name,
-        album: "Live Sessions",
-        albumType: "album" as const,
-        releaseDate: "2023-06-15",
-        durationMs: 195000, // 3:15
-        popularity: 78,
-        isExplicit: false,
-        isPlayable: true,
-      },
-      {
-        title: "Acoustic Dreams",
-        artist: artistData!.name,
-        album: "Unplugged",
-        albumType: "album" as const,
-        releaseDate: "2023-09-20",
-        durationMs: 240000, // 4:00
-        popularity: 72,
-        isExplicit: false,
-        isPlayable: true,
-      },
-      {
-        title: "Electric Nights",
-        artist: artistData!.name,
-        album: "Dance Collection",
-        albumType: "album" as const,
-        releaseDate: "2024-01-10",
-        durationMs: 180000, // 3:00
-        popularity: 80,
-        isExplicit: false,
-        isPlayable: true,
-      },
-      {
-        title: "Summer Vibes",
-        artist: artistData!.name,
-        album: "Seasonal Hits",
-        albumType: "single" as const,
-        releaseDate: "2024-07-01",
-        durationMs: 200000, // 3:20
-        popularity: 75,
-        isExplicit: false,
-        isPlayable: true,
-      },
+    // =====================
+    // Fetch songs from Spotify
+    // =====================
+
+    // Require spotify id
+    if (!artistData.spotifyId) {
+      return NextResponse.json(
+        {
+          error: "Artist does not have a spotifyId; cannot sync songs",
+        },
+        { status: 400 },
+      );
+    }
+
+    const spotifyClient = new SpotifyClient({});
+    try {
+      await spotifyClient.authenticate();
+    } catch (authError) {
+      return NextResponse.json(
+        { error: "Spotify authentication failed" },
+        { status: 500 },
+      );
+    }
+
+    // Step 1: fetch all albums (album + single)
+    const albums: any[] = [];
+    let offset = 0;
+    const limit = 50;
+    while (true) {
+      const resp = await spotifyClient.getArtistAlbums(artistData.spotifyId, {
+        include_groups: "album,single",
+        market: "US",
+        limit,
+        offset,
+      });
+
+      if (resp.items && resp.items.length > 0) {
+        albums.push(...resp.items);
+      }
+
+      if (!resp.next) {
+        break;
+      }
+      offset += limit;
+      if (offset > 1000) {
+        // safety cap
+        break;
+      }
+    }
+
+    // Helper to get raw access token (separate call to avoid private field)
+    const getAccessToken = async () => {
+      const clientId =
+        process.env["SPOTIFY_CLIENT_ID"] ||
+        process.env["NEXT_PUBLIC_SPOTIFY_CLIENT_ID"];
+      const clientSecret = process.env["SPOTIFY_CLIENT_SECRET"];
+
+      if (!clientId || !clientSecret) throw new Error("Missing Spotify creds");
+
+      const basic = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
+      const resp = await fetch("https://accounts.spotify.com/api/token", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: `Basic ${basic}`,
+        },
+        body: "grant_type=client_credentials",
+      });
+      if (!resp.ok) throw new Error("Spotify token fetch failed");
+      const json = (await resp.json()) as { access_token: string; expires_in: number };
+      return json.access_token;
+    };
+
+    const accessToken = await getAccessToken();
+
+    // Fetch tracks for each album
+    const trackMap: Map<string, any> = new Map();
+
+    for (const album of albums) {
+      let albumOffset = 0;
+      while (true) {
+        const params = new URLSearchParams({
+          market: "US",
+          limit: limit.toString(),
+          offset: albumOffset.toString(),
+        });
+        const albumTracksRespRes = await fetch(
+          `https://api.spotify.com/v1/albums/${album.id}/tracks?${params}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          },
+        );
+        if (!albumTracksRespRes.ok) {
+          break;
+        }
+        const albumTracksResp = await albumTracksRespRes.json();
+
+        if (albumTracksResp.items && albumTracksResp.items.length > 0) {
+          for (const t of albumTracksResp.items) {
+            if (!trackMap.has(t.id)) {
+              trackMap.set(t.id, { track: t, album });
+            }
+          }
+        }
+
+        if (!albumTracksResp.next) break;
+        albumOffset += limit;
+      }
+    }
+
+    const tracks = Array.from(trackMap.values());
+
+    if (tracks.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: "No tracks found for artist on Spotify",
+        songsCount: 0,
+      });
+    }
+
+    // Determine which songs already exist
+    const existingTrackRows = await db
+      .select({ spotifyId: songs.spotifyId })
+      .from(songs)
+      .where(inArray(songs.spotifyId, tracks.map((t) => t.track.id)));
+
+    const existingIds = new Set(existingTrackRows.map((r) => r.spotifyId));
+
+    const newSongValues = tracks
+      .filter((t) => !existingIds.has(t.track.id))
+      .map(({ track, album }) => ({
+        spotifyId: track.id,
+        title: track.name,
+        artist: artistData.name,
+        album: album.name,
+        albumId: album.id,
+        albumType: album.album_type,
+        albumArtUrl: album.images?.[0]?.url || null,
+        releaseDate: album.release_date,
+        trackNumber: track.track_number,
+        discNumber: track.disc_number || 1,
+        durationMs: track.duration_ms,
+        popularity: track.popularity ?? 0,
+        previewUrl: track.preview_url,
+        spotifyUri: track.uri,
+        externalUrls: JSON.stringify(track.external_urls || {}),
+        isExplicit: track.explicit,
+        isPlayable: (track as any).is_playable ?? true,
+      }));
+
+    let insertedSongs: any[] = [];
+    if (newSongValues.length > 0) {
+      insertedSongs = await db.insert(songs).values(newSongValues).returning();
+    }
+
+    // Create artist-song relations for all tracks (existing + new)
+    const allTrackIds = [
+      ...Array.from(existingIds),
+      ...insertedSongs.map((s) => s.spotifyId!),
     ];
 
-    // Insert songs
-    const insertedSongs = await db
-      .insert(songs)
-      .values(sampleSongs)
-      .returning();
+    // Need to fetch ids for existing songs to relate
+    let allSongRows = insertedSongs;
+    if (existingIds.size > 0) {
+      const existingRowsFull = await db
+        .select({ id: songs.id, spotifyId: songs.spotifyId })
+        .from(songs)
+        .where(inArray(songs.spotifyId, Array.from(existingIds)));
+      allSongRows = [...insertedSongs, ...existingRowsFull];
+    }
 
-    // Create artist-song relationships
-    const artistSongRelations = insertedSongs.map((song) => ({
-      artistId: artistId,
-      songId: song.id,
+    const artistSongRelations = allSongRows.map((row) => ({
+      artistId,
+      songId: row.id,
       isPrimaryArtist: true,
     }));
 
-    await db.insert(artistSongs).values(artistSongRelations);
+    if (artistSongRelations.length > 0) {
+      // Insert, ignoring duplicates via on conflict do nothing if supported
+      await db
+        .insert(artistSongs)
+        .values(artistSongRelations)
+        .onConflictDoNothing();
+    }
 
-    // Update artist's song catalog sync timestamp and counts
+    // Update artist record
     await db
       .update(artists)
       .set({
         songCatalogSyncedAt: new Date(),
-        totalSongs: insertedSongs.length,
+        totalSongs: allSongRows.length,
         updatedAt: new Date(),
       })
       .where(eq(artists.id, artistId));
@@ -138,8 +251,8 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Song catalog sync completed",
       artist: artistData,
-      songsCount: insertedSongs.length,
-      songs: insertedSongs,
+      songsCount: allSongRows.length,
+      newSongsInserted: insertedSongs.length,
     });
   } catch (error) {
     return NextResponse.json(
