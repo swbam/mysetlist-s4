@@ -3,6 +3,7 @@ import { artistSongs, artists, songs } from "@repo/database";
 import { eq, inArray } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { SpotifyClient } from "@repo/external-apis";
+import { createSupabaseAdminClient } from "@repo/database";
 
 // POST /api/sync/songs
 // Body: { artistId: string }
@@ -164,6 +165,24 @@ export async function POST(request: NextRequest) {
 
     const tracks = Array.from(trackMap.values());
 
+    // ------------------ realtime progress helper ------------------
+    const adminSupabase = createSupabaseAdminClient();
+    const progressIdRes = await adminSupabase
+      .from("import_progress")
+      .insert({ artist_id: artistId, current: 0, total: tracks.length })
+      .select("id")
+      .single();
+
+    const progressId = progressIdRes.data?.id;
+
+    const updateProgress = async (current: number, status = "in_progress", message = null as string | null) => {
+      if (!progressId) return;
+      await adminSupabase
+        .from("import_progress")
+        .update({ current, status, message, updated_at: new Date() })
+        .eq("id", progressId);
+    };
+
     if (tracks.length === 0) {
       return NextResponse.json({
         success: true,
@@ -205,6 +224,7 @@ export async function POST(request: NextRequest) {
     let insertedSongs: any[] = [];
     if (newSongValues.length > 0) {
       insertedSongs = await db.insert(songs).values(newSongValues).returning();
+      await updateProgress(tracks.length, "in_progress", `Inserted ${insertedSongs.length} new songs`);
     }
 
     // Create artist-song relations for all tracks (existing + new)
@@ -230,12 +250,13 @@ export async function POST(request: NextRequest) {
     }));
 
     if (artistSongRelations.length > 0) {
-      // Insert, ignoring duplicates via on conflict do nothing if supported
       await db
         .insert(artistSongs)
         .values(artistSongRelations)
         .onConflictDoNothing();
     }
+
+    await updateProgress(tracks.length, "completed", `Catalog sync complete`);
 
     // Update artist record
     await db
@@ -255,6 +276,13 @@ export async function POST(request: NextRequest) {
       newSongsInserted: insertedSongs.length,
     });
   } catch (error) {
+    try {
+      const adminSupabase = createSupabaseAdminClient();
+      await adminSupabase
+        .from("import_progress")
+        .update({ status: "error", message: String(error) })
+        .eq("artist_id", (error as any)?.artistId || "");
+    } catch (_) {}
     return NextResponse.json(
       {
         error: "Songs sync failed",

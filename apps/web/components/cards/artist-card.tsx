@@ -87,7 +87,7 @@ export function ArtistCard({
   return (
     <Card
       className={cn(
-        "group overflow-hidden",
+        "group overflow-hidden w-[min(18rem,100%)]",
         animations.all,
         animations.shadow,
         animations.scale,

@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { CACHE_HEADERS } from "~/lib/cache";
 import { parseGenres } from "~/lib/utils";
-import { createServiceClient } from "~/lib/supabase/server";
+import { createClient as createSupabaseServerClient } from "~/lib/supabase/server";
 import { calculateArtistGrowth } from "@repo/database";
 
 export async function GET(request: NextRequest) {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     let supabase;
     try {
-      supabase = createServiceClient();
+      supabase = await createSupabaseServerClient();
     } catch (error) {
       console.error("Failed to create Supabase client:", error);
       // Return empty array instead of throwing
@@ -37,12 +37,8 @@ export async function GET(request: NextRequest) {
 
     // Get trending artists with fallback for empty data
     const { data: trendingArtists, error } = await supabase
-      .from("artists")
+      .from("trending_artists_mv")
       .select("*")
-      .or("trending_score.gt.0,popularity.gt.0")
-      .order("trending_score", { ascending: false })
-      .order("popularity", { ascending: false })
-      .order("followers", { ascending: false })
       .limit(limit);
 
     if (error) {
