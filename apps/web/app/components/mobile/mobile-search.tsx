@@ -38,28 +38,13 @@ interface MobileSearchProps {
   trendingSearches?: string[];
 }
 
-const mockTrendingSearches = [
-  "Taylor Swift",
-  "The Eras Tour",
-  "Madison Square Garden",
-  "Coldplay",
-  "Sphere Las Vegas",
-];
-
-const mockRecentSearches = [
-  "Arctic Monkeys",
-  "Red Rocks",
-  "Billie Eilish",
-  "Coachella",
-];
-
 export function MobileSearch({
   onSearch,
   onResultSelect,
   className,
   placeholder = "Search artists...",
-  recentSearches = mockRecentSearches,
-  trendingSearches = mockTrendingSearches,
+  recentSearches = [],
+  trendingSearches = [],
 }: MobileSearchProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");

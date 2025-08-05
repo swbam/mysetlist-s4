@@ -131,35 +131,6 @@ export const fetchShows = cache(
         .from(shows)
         .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
         .leftJoin(venues, eq(shows.venueId, venues.id));
-      const supabase = createServiceClient();
-
-      // Build the query
-      let query = supabase.from("shows").select(
-        `
-        *,
-        headlinerArtist:artists!shows_headliner_artist_id_artists_id_fk(
-          id,
-          name,
-          slug,
-          imageUrl:image_url,
-          genres,
-          verified
-        ),
-        venue:venues!shows_venue_id_venues_id_fk(*),
-        supportingArtists:show_artists!show_artists_show_id_shows_id_fk(
-          id,
-          artistId:artist_id,
-          orderIndex:order_index,
-          setLength:set_length,
-          artist:artists!show_artists_artist_id_artists_id_fk(
-            id,
-            name,
-            slug
-          )
-        )
-      `,
-        { count: "exact" },
-      );
 
       // Apply filters
       const conditions = [];
