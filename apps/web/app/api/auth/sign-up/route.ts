@@ -5,7 +5,7 @@ import {
   signUpRateLimiter,
 } from "~/lib/auth-rate-limit";
 import { validateCSRFToken } from "~/lib/csrf";
-import { createClient } from "~/lib/supabase/server";
+import { createAuthenticatedClient } from "~/lib/supabase/server";
 
 const signUpSchema = z.object({
   email: z.string().email(),
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     const { email, password } = validationResult.data;
 
     // Create account with Supabase
-    const supabase = await createClient();
+    const supabase = await createAuthenticatedClient();
     const { data, error } = await supabase.auth.signUp({
       email,
       password,

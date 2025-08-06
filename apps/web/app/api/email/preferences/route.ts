@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "~/lib/supabase/server";
+import { createAuthenticatedClient } from "~/lib/supabase/server";
 
 export interface EmailPreferences {
   id?: string;
@@ -20,7 +20,7 @@ export interface EmailPreferences {
 // GET user's email preferences
 export async function GET(_request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createAuthenticatedClient();
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -73,7 +73,7 @@ export async function GET(_request: NextRequest) {
 // UPDATE user's email preferences
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createAuthenticatedClient();
     const {
       data: { session },
     } = await supabase.auth.getSession();
@@ -168,7 +168,7 @@ export async function PUT(request: NextRequest) {
 // POST to bulk update preferences (for onboarding)
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createAuthenticatedClient();
     const {
       data: { session },
     } = await supabase.auth.getSession();

@@ -12,18 +12,28 @@ import {
   sendWelcomeEmail,
 } from "@repo/email/services";
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "~/lib/supabase/server";
+import { createAuthenticatedClient, createServiceClient } from "~/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
-
-    // Check authentication for non-system requests
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
+    // Parse body first to check for system token
     const body = await request.json();
+    const { systemToken } = body;
+    
+    let supabase;
+    if (systemToken === process.env["EMAIL_SYSTEM_TOKEN"]) {
+      supabase = createServiceClient();
+    } else {
+      supabase = await createAuthenticatedClient();
+    }
+
+    // Check authentication for non-system requests (only for authenticated client)
+    let session = null;
+    if (systemToken !== process.env["EMAIL_SYSTEM_TOKEN"]) {
+      const { data: { session: userSession } } = await supabase.auth.getSession();
+      session = userSession;
+    }
+
     const {
       type,
       template,
@@ -34,7 +44,6 @@ export async function POST(request: NextRequest) {
       priority = "normal",
       scheduleFor,
       scheduledFor,
-      systemToken,
     } = body;
 
     // Validate system token for automated emails
@@ -245,7 +254,7 @@ export async function POST(request: NextRequest) {
 // GET endpoint to check email queue status
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createAuthenticatedClient();
     const {
       data: { session },
     } = await supabase.auth.getSession();

@@ -1,10 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "~/lib/supabase/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 // This API allows triggering specific email notifications based on events
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = createServiceClient();
     const body = await request.json();
     const { event, data, systemToken } = body;
 

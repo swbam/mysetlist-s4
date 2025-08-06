@@ -9,8 +9,13 @@ export function createClient() {
     {
       cookies: {
         async getAll() {
-          const cookieStore = await cookies();
-          return cookieStore.getAll();
+          try {
+            const cookieStore = await cookies();
+            return cookieStore.getAll();
+          } catch {
+            // Not in request context (build time), return empty array
+            return [];
+          }
         },
         async setAll(
           cookiesToSet: {
@@ -49,6 +54,10 @@ export function createClient() {
       },
     },
   );
+}
+
+export function createAuthenticatedClient() {
+  return createClient();
 }
 
 export function createServiceClient() {

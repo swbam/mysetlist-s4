@@ -56,7 +56,7 @@ BEGIN
   
   -- If settings not found, use environment defaults
   IF app_url IS NULL THEN
-    app_url := 'https://mysetlist.io';
+    app_url := 'https://theset.live';
   END IF;
   
   -- Make HTTP request to master sync API
@@ -99,7 +99,7 @@ BEGIN
   
   -- If settings not found, use environment defaults
   IF app_url IS NULL THEN
-    app_url := 'https://mysetlist.io';
+    app_url := 'https://theset.live';
   END IF;
   
   -- Make HTTP request to trending API

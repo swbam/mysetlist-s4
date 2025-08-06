@@ -1,10 +1,10 @@
 import { format, subDays } from "date-fns";
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "~/lib/api/supabase/server";
+import { createAuthenticatedClient } from "~/lib/api/supabase/server";
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createAuthenticatedClient();
     const { searchParams } = new URL(request.url);
 
     // Check admin authorization

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { createClient } from "~/lib/supabase/server";
+import { createAuthenticatedClient } from "~/lib/supabase/server";
 
 export async function GET() {
   try {
-    const supabase = await createClient();
+    const supabase = await createAuthenticatedClient();
 
     // Get the current user
     const {
@@ -127,7 +127,7 @@ async function storeUserSpotifyData(
   followedArtists: any[],
 ) {
   try {
-    const supabase = await createClient();
+    const supabase = await createAuthenticatedClient();
 
     // Store user's music preferences
     const { error } = await supabase.from("user_music_preferences").upsert(

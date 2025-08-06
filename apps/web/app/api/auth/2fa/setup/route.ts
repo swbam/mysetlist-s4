@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { authenticator } from "otplib";
 import qrcode from "qrcode";
-import { createClient } from "~/lib/supabase/server";
+import { createAuthenticatedClient } from "~/lib/supabase/server";
 
 export async function POST() {
   try {
-    const supabase = await createClient();
+    const supabase = await createAuthenticatedClient();
 
     // Get the current user
     const {

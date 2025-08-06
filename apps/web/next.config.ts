@@ -4,24 +4,41 @@ const nextConfig: NextConfig = {
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
   
-  // Turbopack configuration for optimal development performance
+  // Production optimization features  
+  experimental: {
+    // Enable React 19 optimizations
+    ppr: false, // Partial Prerendering disabled for compatibility
+    optimizeServerReact: true,
+  },
+  
+  // Turbopack configuration (stable as of Next.js 15)
   turbopack: {
-    // Enable memory optimizations for large applications
-    memoryLimit: 4096, // 4GB memory limit
-    
-    // Configure module resolution for monorepo
     resolveAlias: {
       "@repo/design-system": "./packages/design-system/src",
       "@repo/database": "./packages/database/src", 
       "@repo/auth": "./packages/auth/src",
       "@repo/external-apis": "./packages/external-apis/src",
     },
-    
-    // Enable tree shaking optimizations
-    treeShaking: true,
-    
-    // Optimize for development speed
-    minify: false,
+  },
+  
+  // Bundle optimization
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
+  
+  // Image optimization
+  images: {
+    formats: ["image/webp", "image/avif"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "i.scdn.co", // Spotify images
+      },
+      {
+        protocol: "https", 
+        hostname: "s1.ticketm.net", // Ticketmaster images
+      },
+    ],
   },
   
   webpack: (config, { isServer }) => {

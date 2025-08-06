@@ -315,11 +315,16 @@ async function syncArtistShows(artist: any): Promise<{ synced: number; errors: n
           let venueId = null;
           
           if (venueData) {
-            // Check if venue exists
+            // Check if venue exists by name and city (venues don't have ticketmasterId)
             const existingVenue = await db
               .select()
               .from(venues)
-              .where(eq(venues.ticketmasterId, venueData.id))
+              .where(
+                and(
+                  eq(venues.name, venueData.name),
+                  eq(venues.city, venueData.city?.name || 'Unknown')
+                )
+              )
               .limit(1);
             
             if (existingVenue.length === 0) {
@@ -334,8 +339,7 @@ async function syncArtistShows(artist: any): Promise<{ synced: number; errors: n
                 .values({
                   name: venueData.name,
                   slug: venueSlug,
-                  ticketmasterId: venueData.id,
-                  city: venueData.city?.name || null,
+                  city: venueData.city?.name || 'Unknown',
                   state: venueData.state?.stateCode || null,
                   country: venueData.country?.countryCode || null,
                   address: venueData.address?.line1 || null,
