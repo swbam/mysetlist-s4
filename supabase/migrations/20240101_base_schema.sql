@@ -201,6 +201,7 @@ CREATE TABLE IF NOT EXISTS "artist_stats" (
 	"most_played_song" text,
 	"last_show_date" timestamp,
 	"total_votes" integer DEFAULT 0,
+	"total_followers" integer DEFAULT 0,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -982,8 +983,7 @@ CREATE TABLE IF NOT EXISTS "show_reminder_subscriptions" (
 	"show_id" uuid NOT NULL,
 	"reminder_days_before" integer DEFAULT 1,
 	"reminder_sent" boolean DEFAULT false,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "show_reminder_subscriptions_user_id_show_id_pk" PRIMARY KEY("user_id","show_id")
+	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "transactional_emails" (
