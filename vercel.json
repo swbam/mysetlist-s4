@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "name": "mysetlist-sonnet",
   "buildCommand": "pnpm turbo build --filter=web",
   "outputDirectory": "apps/web/.next",
   "installCommand": "pnpm install --frozen-lockfile",
@@ -74,7 +75,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.vercel-analytics.com *.vercel.live theset.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: *.spotify.com *.scdn.co; connect-src 'self' *.supabase.co *.spotify.com api.setlist.fm app.ticketmaster.com *.vercel-analytics.com wss: theset.live; font-src 'self' data:; frame-src 'self' accounts.spotify.com;"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.vercel-analytics.com *.vercel.live mysetlist-sonnet.vercel.app; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: *.spotify.com *.scdn.co; connect-src 'self' *.supabase.co *.spotify.com api.setlist.fm app.ticketmaster.com *.vercel-analytics.com wss: mysetlist-sonnet.vercel.app; font-src 'self' data:; frame-src 'self' accounts.spotify.com;"
         },
         {
           "key": "Permissions-Policy",
@@ -100,5 +101,14 @@
         }
       ]
     }
-  ]
+  ],
+  "env": {
+    "NEXT_PUBLIC_URL": "https://mysetlist-sonnet.vercel.app",
+    "NEXT_PUBLIC_APP_URL": "https://mysetlist-sonnet.vercel.app",
+    "NEXT_PUBLIC_WEB_URL": "https://mysetlist-sonnet.vercel.app",
+    "NEXT_PUBLIC_API_URL": "https://mysetlist-sonnet.vercel.app/api",
+    "NEXTAUTH_URL": "https://mysetlist-sonnet.vercel.app",
+    "NODE_ENV": "production",
+    "NEXT_PUBLIC_APP_ENV": "production"
+  }
 }
