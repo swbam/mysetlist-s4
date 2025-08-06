@@ -22,9 +22,13 @@ DO UPDATE SET
   updated_at = NOW();
 
 -- Set database-level settings for cron jobs to access
--- NOTE: Replace with your actual Supabase values
-ALTER DATABASE postgres SET "app.settings.supabase_url" = 'https://yzwkimtdaabyjbpykquu.supabase.co';
-ALTER DATABASE postgres SET "app.settings.supabase_service_role_key" = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDY5MjMxNiwiZXhwIjoyMDY2MjY4MzE2fQ.ZMorLC_eZke3bvBAF0zyzqUONxpomfTN2RpE_mLjz18';
+-- NOTE: These values should be set via environment variables, not hardcoded
+-- Example of how to set these in your deployment:
+-- ALTER DATABASE postgres SET "app.settings.supabase_url" = 'YOUR_SUPABASE_URL';
+-- ALTER DATABASE postgres SET "app.settings.supabase_service_role_key" = 'YOUR_SERVICE_ROLE_KEY';
+
+-- These are commented out to prevent hardcoded credentials in the codebase
+-- They should be set via environment variables or deployment configuration
 
 -- Create a function to get the current configuration
 CREATE OR REPLACE FUNCTION get_cron_config()

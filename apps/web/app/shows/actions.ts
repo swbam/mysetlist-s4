@@ -131,6 +131,7 @@ export const fetchShows = cache(
         .from(shows)
         .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
         .leftJoin(venues, eq(shows.venueId, venues.id));
+<<<<<<< HEAD
       const supabase = createServiceClient();
 
       // Build the Supabase query (used only when db client is unavailable
@@ -160,6 +161,8 @@ export const fetchShows = cache(
       `,
         { count: "exact" },
       );
+=======
+>>>>>>> fix-mysetlist-production-completion
 
       // Apply filters to Supabase query
       const conditions: any[] = [];
