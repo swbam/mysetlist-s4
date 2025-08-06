@@ -146,7 +146,7 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
     }
 
     try {
-      const cache = await caches.open("mysetlist-data-v1");
+      const cache = await caches.open("mysetlist-data-v2");
       await cache.put(
         key,
         new Response(JSON.stringify(data), {
@@ -163,7 +163,7 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
     }
 
     try {
-      const cache = await caches.open("mysetlist-data-v1");
+      const cache = await caches.open("mysetlist-data-v2");
       const response = await cache.match(key);
       if (response) {
         return await response.json();
@@ -284,7 +284,7 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
     try {
       const cacheNames = await caches.keys();
       const oldCaches = cacheNames.filter(name => 
-        name.includes('mysetlist') && name.includes('-v0')
+        name.includes('mysetlist') && (name.includes('-v0') || name.includes('-v1'))
       );
       
       await Promise.all(

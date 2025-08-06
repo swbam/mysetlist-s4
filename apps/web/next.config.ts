@@ -1,8 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  typescript: { ignoreBuildErrors: true },
-  eslint: { ignoreDuringBuilds: true },
+  typescript: { ignoreBuildErrors: false }, // Enable TS checking in production
+  eslint: { ignoreDuringBuilds: false },
+  
+  // Vercel deployment configuration
+  output: "standalone",
   
   // Production optimization features  
   experimental: {
@@ -19,15 +22,8 @@ const nextConfig: NextConfig = {
     ],
   },
   
-  // Turbopack configuration (stable as of Next.js 15)
-  turbopack: {
-    resolveAlias: {
-      "@repo/design-system": "./packages/design-system/src",
-      "@repo/database": "./packages/database/src", 
-      "@repo/auth": "./packages/auth/src",
-      "@repo/external-apis": "./packages/external-apis/src",
-    },
-  },
+  // Remove Turbopack config for Vercel deployment compatibility
+  // Turbopack aliases cause issues in production builds
   
   // Bundle optimization
   compiler: {
@@ -37,6 +33,8 @@ const nextConfig: NextConfig = {
   // Image optimization
   images: {
     formats: ["image/webp", "image/avif"],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       {
         protocol: "https",
@@ -45,6 +43,10 @@ const nextConfig: NextConfig = {
       {
         protocol: "https", 
         hostname: "s1.ticketm.net", // Ticketmaster images
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com", // Placeholder images
       },
     ],
   },
@@ -61,13 +63,15 @@ const nextConfig: NextConfig = {
       ];
     }
 
-    // Bundle splitting optimizations
+    // Bundle splitting optimizations (optimized for Vercel)
     if (!isServer) {
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           ...config.optimization?.splitChunks,
           chunks: "all",
+          maxInitialRequests: 20,
+          maxAsyncRequests: 20,
           cacheGroups: {
             ...config.optimization?.splitChunks?.cacheGroups,
             // Separate vendor chunk for heavy libraries
@@ -76,6 +80,8 @@ const nextConfig: NextConfig = {
               name: "vendors",
               priority: 10,
               chunks: "all",
+              enforce: true,
+              reuseExistingChunk: true,
             },
             // Separate UI framework chunk
             ui: {
@@ -83,6 +89,8 @@ const nextConfig: NextConfig = {
               name: "ui-framework",
               priority: 20,
               chunks: "all",
+              enforce: true,
+              reuseExistingChunk: true,
             },
             // Separate charts/visualization chunk
             charts: {
@@ -90,6 +98,8 @@ const nextConfig: NextConfig = {
               name: "charts",
               priority: 20,
               chunks: "all",
+              enforce: true,
+              reuseExistingChunk: true,
             },
           },
         },
