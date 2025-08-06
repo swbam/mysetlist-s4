@@ -134,7 +134,8 @@ const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
         voteCount: drizzleSql<number>`(
           SELECT COUNT(*)::int 
           FROM votes v 
-          JOIN setlists s ON v.setlist_id = s.id 
+          JOIN setlist_songs ss ON v.setlist_song_id = ss.id 
+          JOIN setlists s ON ss.setlist_id = s.id 
           WHERE s.show_id = ${shows.id}
         )`,
       })
@@ -282,8 +283,9 @@ const _getArtistSetlists = async (artistId: string, limit: number = 10) => {
         )`,
         voteCount: drizzleSql<number>`(
           SELECT COUNT(*)::int 
-          FROM votes 
-          WHERE votes.setlist_id = ${setlists.id}
+          FROM votes v 
+          JOIN setlist_songs ss ON v.setlist_song_id = ss.id 
+          WHERE ss.setlist_id = ${setlists.id}
         )`,
       })
       .from(setlists)
@@ -329,7 +331,10 @@ const _getArtistSongsWithSetlistData = async (
         timesPlayed: drizzleSql<number>`COUNT(setlist_songs.song_id)::int`,
         lastPlayed: drizzleSql<string>`MAX(setlists.created_at)`,
         popularity: drizzleSql<number>`
-          COALESCE(AVG(votes.rating), 0)::int
+          COALESCE(
+            (COUNT(CASE WHEN votes.vote_type = 'up' THEN 1 END) - COUNT(CASE WHEN votes.vote_type = 'down' THEN 1 END))::float /
+            NULLIF(COUNT(votes.id), 0) * 100, 0
+          )::int
         `,
       })
       .from(drizzleSql`songs`)
@@ -338,7 +343,7 @@ const _getArtistSongsWithSetlistData = async (
         drizzleSql`setlist_songs.song_id = songs.id`,
       )
       .leftJoin(setlists, drizzleSql`setlist_songs.setlist_id = setlists.id`)
-      .leftJoin(drizzleSql`votes`, drizzleSql`votes.setlist_id = setlists.id`)
+      .leftJoin(drizzleSql`votes`, drizzleSql`votes.setlist_song_id = setlist_songs.id`)
       .where(
         drizzleSql`songs.artist = (SELECT name FROM artists WHERE id = ${artistId})`,
       )

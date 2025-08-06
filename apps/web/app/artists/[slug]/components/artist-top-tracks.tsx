@@ -59,7 +59,7 @@ export function ArtistTopTracks({ artistId, spotifyId }: ArtistTopTracksProps) {
           }
         }
 
-        // Fallback to API route with mock data
+        // Fallback to API route (may return empty if no Spotify data)
         const response = await fetch(`/api/artists/${artistId}/top-tracks`);
         if (response.ok) {
           const data = await response.json();
@@ -127,6 +127,7 @@ export function ArtistTopTracks({ artistId, spotifyId }: ArtistTopTracksProps) {
                       alt={track.album.name}
                       fill
                       className="object-cover"
+                      sizes="48px"
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-muted">

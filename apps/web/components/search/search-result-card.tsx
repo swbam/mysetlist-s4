@@ -148,7 +148,7 @@ export function SearchResultCard({
                 alt={result.title}
                 fill
                 className="object-cover"
-                sizes="64px"
+                sizes="(max-width: 768px) 64px, 64px"
               />
             </div>
           ) : (

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSyncQueue } from "@repo/utils";
-import { spotifyApi } from "@repo/external-apis/spotify";
-import { ticketmasterApi } from "@repo/external-apis/ticketmaster";
-import { setlistfmApi } from "@repo/external-apis/setlistfm";
+import { spotify as spotifyApi, ticketmaster as ticketmasterApi, setlistfm as setlistfmApi } from "@repo/external-apis";
 import { db } from "@repo/database";
 import { artists, shows, venues, artistSongs } from "@repo/database";
 import { eq } from "drizzle-orm";
