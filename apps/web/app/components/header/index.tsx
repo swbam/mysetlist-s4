@@ -178,14 +178,14 @@ const HeaderContent = React.memo(() => {
               <Button
                 variant="outline"
                 size="sm"
-                className="hidden sm:inline-flex transition-colors hover:bg-muted/80 font-medium text-xs sm:text-sm"
+                className="inline-flex transition-colors hover:bg-muted/80 font-medium text-xs sm:text-sm"
                 asChild
               >
                 <SafeLink href="/auth/sign-in">Sign in</SafeLink>
               </Button>
               <Button
                 size="sm"
-                className="hidden sm:inline-flex bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm text-xs sm:text-sm"
+                className="inline-flex bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm text-xs sm:text-sm"
                 asChild
               >
                 <SafeLink href="/auth/sign-up">Get Started</SafeLink>

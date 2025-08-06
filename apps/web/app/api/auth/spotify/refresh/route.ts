@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { createClient } from "~/lib/supabase/server";
+import { createAuthenticatedClient } from "~/lib/supabase/server";
 
 export async function POST() {
   try {
-    const supabase = await createClient();
+    const supabase = await createAuthenticatedClient();
 
     // Refresh the session to get a new Spotify token
     const { data, error } = await supabase.auth.refreshSession();

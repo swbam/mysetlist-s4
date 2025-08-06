@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { authenticator } from "otplib";
-import { createClient } from "~/lib/supabase/server";
+import { createAuthenticatedClient } from "~/lib/supabase/server";
 
 export async function POST(request: Request) {
   try {
-    const supabase = await createClient();
+    const supabase = await createAuthenticatedClient();
     const { code, secret } = await request.json();
 
     // Get the current user
