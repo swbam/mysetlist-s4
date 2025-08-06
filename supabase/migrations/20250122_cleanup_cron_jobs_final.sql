@@ -87,7 +87,7 @@ DELETE FROM app_settings WHERE key NOT IN ('app_url', 'cron_secret');
 -- Update app settings with correct values
 INSERT INTO app_settings (key, value) 
 VALUES 
-  ('app_url', 'https://mysetlist-sonnet.vercel.app'),
+  ('app_url', 'https://theset.live'),
   ('cron_secret', '6155002300')
 ON CONFLICT (key) 
 DO UPDATE SET 

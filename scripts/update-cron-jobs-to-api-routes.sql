@@ -99,7 +99,7 @@ SELECT cron.schedule(
 -- Update app settings if not already set
 INSERT INTO app.settings (name, value)
 VALUES 
-  ('app_url', 'https://mysetlist.io'),
+  ('app_url', 'https://theset.live'),
   ('cron_secret', current_setting('app.settings.cron_secret', true))
 ON CONFLICT (name) DO UPDATE
 SET value = EXCLUDED.value

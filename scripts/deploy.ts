@@ -27,7 +27,7 @@ async function deploy() {
     console.log(chalk.green("\n✅ Deployment successful!"));
     console.log(
       chalk.blue(
-        "🌐 Your app is now live at: https://mysetlist-sonnet.vercel.app",
+        "🌐 Your app is now live at: https://theset.live",
       ),
     );
   } catch (error) {

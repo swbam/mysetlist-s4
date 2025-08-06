@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS app_settings (
 -- Insert or update app settings
 INSERT INTO app_settings (key, value) 
 VALUES 
-  ('app_url', 'https://mysetlist-sonnet.vercel.app'),
+  ('app_url', 'https://theset.live'),
   ('cron_secret', '6155002300'), -- As specified in the docs
   ('supabase_url', current_setting('app.settings.supabase_url', true)),
   ('supabase_anon_key', current_setting('app.settings.supabase_anon_key', true))

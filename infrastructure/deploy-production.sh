@@ -15,8 +15,8 @@ NC='\033[0m' # No Color
 # Configuration
 PROJECT_NAME="mysetlist-sonnet"
 DEPLOYMENT_ENV="production"
-HEALTH_CHECK_URL="https://mysetlist-sonnet.vercel.app/api/health/comprehensive"
-MONITORING_URL="https://mysetlist-sonnet.vercel.app/api/monitoring/dashboard"
+HEALTH_CHECK_URL="https://theset.live/api/health/comprehensive"
+MONITORING_URL="https://theset.live/api/monitoring/dashboard"
 SLACK_WEBHOOK_URL=""  # Add your Slack webhook URL here
 ROLLBACK_ENABLED=true
 PERFORMANCE_BUDGET_LCP=2500
@@ -277,7 +277,7 @@ rollback_deployment() {
     log_info "Rolling back to: $backup_deployment"
     
     cd apps/web
-    vercel alias set "$backup_deployment" mysetlist-sonnet.vercel.app || {
+    vercel alias set "$backup_deployment" theset.live || {
         log_error "Rollback failed"
         return 1
     }
@@ -295,7 +295,7 @@ finalize_deployment() {
     # Set production alias
     log_info "Setting production alias"
     cd apps/web
-    vercel alias set "$deployment_url" mysetlist-sonnet.vercel.app || {
+    vercel alias set "$deployment_url" theset.live || {
         log_error "Failed to set production alias"
         return 1
     }
