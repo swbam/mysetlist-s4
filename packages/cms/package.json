@@ -6,7 +6,7 @@
   "types": "./index.ts",
   "dependencies": {
     "@t3-oss/env-nextjs": "^0.13.4",
-    "next": "15.3.4",
+    "next": "15.4.5",
     "zod": "^3.25.28"
   }
 }
