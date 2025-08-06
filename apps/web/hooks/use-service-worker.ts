@@ -275,12 +275,45 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
     loadOfflineActions();
   }, [getCachedData]);
 
-  // Auto-register service worker - DISABLED to prevent conflicts
-  // useEffect(() => {
-  //   if (state.isSupported && !state.isRegistered) {
-  //     register();
-  //   }
-  // }, [state.isSupported, state.isRegistered, register]);
+  // Clear stale caches to prevent stale content issues
+  const clearStaleCaches = useCallback(async () => {
+    if (!("caches" in window)) {
+      return;
+    }
+    
+    try {
+      const cacheNames = await caches.keys();
+      const oldCaches = cacheNames.filter(name => 
+        name.includes('mysetlist') && name.includes('-v0')
+      );
+      
+      await Promise.all(
+        oldCaches.map(name => {
+          console.log('[Cache] Clearing stale cache:', name);
+          return caches.delete(name);
+        })
+      );
+    } catch (error) {
+      console.warn('[Cache] Failed to clear stale caches:', error);
+    }
+  }, []);
+  
+  // Clear trending cache specifically
+  const clearTrendingCache = useCallback(async () => {
+    await sendMessage({ type: 'CLEAR_API_CACHE' });
+  }, [sendMessage]);
+  
+  // Force trending data refresh
+  const refreshTrendingData = useCallback(async () => {
+    await sendMessage({ type: 'UPDATE_TRENDING' });
+  }, [sendMessage]);
+
+  // Clear stale caches on mount
+  useEffect(() => {
+    if (state.isSupported) {
+      clearStaleCaches();
+    }
+  }, [state.isSupported, clearStaleCaches]);
 
   return {
     ...state,
@@ -294,6 +327,9 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
     clearOfflineActions,
     isCached,
     offlineActions,
+    clearStaleCaches,
+    clearTrendingCache,
+    refreshTrendingData,
   };
 }
 

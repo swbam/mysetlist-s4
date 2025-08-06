@@ -35,6 +35,8 @@
     "deploy:quick": "vercel --prod",
     "deploy:security": "./scripts/deploy-security-migration.sh",
     "test:security": "tsx scripts/test-security-fixes.ts",
+    "test:cache": "node test-cache-behavior.js",
+    "test:cache:dev": "TEST_BASE_URL=http://localhost:3001 node test-cache-behavior.js",
     "analyze": "cd apps/web && ANALYZE=true pnpm build",
     "benchmark:turbopack": "node scripts/benchmark-turbopack.js",
     "benchmark:turbopack:full": "node scripts/benchmark-turbopack.js --benchmark"
@@ -57,6 +59,7 @@
   },
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
+    "@paralleldrive/cuid2": "^2.2.2",
     "postgres": "^3.4.7"
   }
 }

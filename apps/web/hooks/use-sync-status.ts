@@ -1,8 +1,23 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { createClient } from '@/lib/supabase/client';
-import type { SyncJob, SyncProgress } from '@repo/database';
+import { createClient } from '~/lib/supabase/client';
+
+// Define types locally since they may not exist in database package
+interface SyncJob {
+  id: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  current_step: string | null;
+  total_steps: number;
+  completed_steps: number;
+  error?: string;
+}
+
+interface SyncProgress {
+  step: string;
+  status: 'pending' | 'running' | 'completed' | 'failed';
+  message?: string;
+}
 
 interface SyncStatus {
   job: SyncJob | null;
@@ -12,8 +27,7 @@ interface SyncStatus {
   currentStep: string | null;
   overallProgress: number;
   isCompleted: boolean;
-  isFailed: bool
-;
+  isFailed: boolean;
 }
 
 export function useSyncStatus(jobId: string | null): SyncStatus {

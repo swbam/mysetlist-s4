@@ -52,6 +52,8 @@ const VenuesContent = async ({ searchParams }: { searchParams: any }) => {
     upcomingShowCount: venue.upcomingShowCount,
     distance: venue.distance,
     amenities: venue.amenities,
+    latitude: venue.latitude,
+    longitude: venue.longitude,
   }));
 
   return (
@@ -88,7 +90,9 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
                     variant="venues"
                     loading={true}
                     loadingCount={9}
-                  />
+                  >
+                    <></>
+                  </ResponsiveGrid>
                 </div>
               }
             >
@@ -101,7 +105,9 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
                   variant="venues"
                   loading={true}
                   loadingCount={6}
-                />
+                >
+                  <></>
+                </ResponsiveGrid>
               }
             >
               <VenuesContent searchParams={resolvedSearchParams} />

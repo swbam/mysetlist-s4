@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
     // Enable React 19 optimizations
     ppr: false, // Partial Prerendering disabled for compatibility
     optimizeServerReact: true,
+    // Enable optimizations for bundle size
+    optimizePackageImports: [
+      "lucide-react",
+      "framer-motion",
+      "@radix-ui/react-icons",
+      "recharts",
+      "@hello-pangea/dnd",
+    ],
   },
   
   // Turbopack configuration (stable as of Next.js 15)
@@ -52,6 +60,42 @@ const nextConfig: NextConfig = {
         },
       ];
     }
+
+    // Bundle splitting optimizations
+    if (!isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          ...config.optimization?.splitChunks,
+          chunks: "all",
+          cacheGroups: {
+            ...config.optimization?.splitChunks?.cacheGroups,
+            // Separate vendor chunk for heavy libraries
+            vendor: {
+              test: /[\/]node_modules[\/]/,
+              name: "vendors",
+              priority: 10,
+              chunks: "all",
+            },
+            // Separate UI framework chunk
+            ui: {
+              test: /[\/]node_modules[\/](@radix-ui|@hello-pangea|framer-motion)[\/]/,
+              name: "ui-framework",
+              priority: 20,
+              chunks: "all",
+            },
+            // Separate charts/visualization chunk
+            charts: {
+              test: /[\/]node_modules[\/](recharts|lucide-react)[\/]/,
+              name: "charts",
+              priority: 20,
+              chunks: "all",
+            },
+          },
+        },
+      };
+    }
+    
     return config;
   },
 };

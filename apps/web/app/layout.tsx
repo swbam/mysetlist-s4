@@ -5,6 +5,7 @@ import { Header } from "./components/header";
 import { Footer } from "./components/footer";
 import { ThemeProvider } from "../components/ui/theme-provider";
 import { Toaster } from "@repo/design-system/components/ui/sonner";
+import { CacheManager } from "../components/cache-manager";
 import "@repo/design-system/styles/globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -32,14 +33,16 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            <div className="min-h-screen flex flex-col">
-              <Header />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-            <Toaster />
-          </AuthProvider>
+          <CacheManager enableAutoRefresh={true} refreshInterval={5 * 60 * 1000}>
+            <AuthProvider>
+              <div className="min-h-screen flex flex-col">
+                <Header />
+                <main className="flex-1">{children}</main>
+                <Footer />
+              </div>
+              <Toaster />
+            </AuthProvider>
+          </CacheManager>
         </ThemeProvider>
       </body>
     </html>

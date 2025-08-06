@@ -28,7 +28,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import React, { useState } from "react";
-import { VoteButton } from "~/components/voting/vote-button";
+import { EnhancedVoteButton } from "~/components/voting/enhanced-vote-button";
 import { useRealtimeSetlist } from "~/hooks/use-realtime-setlist";
 
 type EnhancedSetlistViewerProps = {

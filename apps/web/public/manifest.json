@@ -1,12 +1,15 @@
 {
-  "name": "MySetlist",
+  "name": "MySetlist - Concert Setlist Voting",
   "short_name": "MySetlist",
-  "description": "Vote on your favorite setlists and discover live music",
+  "description": "Vote on concert setlists, discover trending artists, and connect with music fans worldwide",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
   "orientation": "portrait-primary",
+  "lang": "en",
+  "dir": "ltr",
   "icons": [
     {
       "src": "/icon-192.png",
@@ -19,33 +22,94 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512", 
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
-  "categories": ["music", "entertainment"],
+  "categories": ["music", "entertainment", "social"],
   "screenshots": [
     {
       "src": "/screenshots/home.png",
       "sizes": "1280x720",
       "type": "image/png",
-      "label": "Home screen showing trending artists"
+      "label": "Home screen showing trending artists and real-time updates",
+      "platform": "wide"
     },
     {
-      "src": "/screenshots/artist.png",
+      "src": "/screenshots/artist.png", 
       "sizes": "1280x720",
       "type": "image/png",
-      "label": "Artist page with shows and setlists"
+      "label": "Artist page with upcoming shows and setlist voting",
+      "platform": "wide"
     }
   ],
   "shortcuts": [
     {
-      "name": "Trending",
+      "name": "Trending Now",
       "url": "/trending",
-      "description": "View trending artists and shows"
+      "description": "View live trending artists and shows",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     },
     {
-      "name": "My Artists",
+      "name": "My Artists", 
       "url": "/my-artists",
-      "description": "View your followed artists"
+      "description": "View your followed artists and upcoming shows",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Discover",
+      "url": "/artists",
+      "description": "Discover new artists and venues",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192", 
+          "type": "image/png"
+        }
+      ]
     }
-  ]
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "protocol_handlers": [
+    {
+      "protocol": "web+mysetlist",
+      "url": "/artist/%s"
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 }

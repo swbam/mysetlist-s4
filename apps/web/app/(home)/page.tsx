@@ -1,9 +1,20 @@
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import Hero from "./components/hero";
 import { TrendingArtists } from "./components/trending-artists";
 import { Trending as TrendingShows } from "./components/trending";
-import FeaturedContent from "./components/featured-content";
 import { HomeLoadingSkeleton } from "./components/home-loading-skeleton";
+
+// Dynamic import for FeaturedContent to reduce initial bundle size
+const FeaturedContent = dynamic(() => import("./components/featured-content"), {
+  loading: () => (
+    <section className="py-12">
+      <div className="container mx-auto px-4">
+        <div className="h-96 animate-pulse rounded-lg bg-muted" />
+      </div>
+    </section>
+  ),
+});
 
 export const metadata = {
   title: "MySetlist - Concert Setlist Voting Platform",

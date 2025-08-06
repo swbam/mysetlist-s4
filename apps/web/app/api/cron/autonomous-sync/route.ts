@@ -312,7 +312,7 @@ async function syncArtistShows(artist: any): Promise<{ synced: number; errors: n
         try {
           // Extract venue
           const venueData = event._embedded?.venues?.[0];
-          let venueId = null;
+          let venueId: string | null = null;
           
           if (venueData) {
             // Check if venue exists by name and city (venues don't have ticketmasterId)
@@ -341,7 +341,8 @@ async function syncArtistShows(artist: any): Promise<{ synced: number; errors: n
                   slug: venueSlug,
                   city: venueData.city?.name || 'Unknown',
                   state: venueData.state?.stateCode || null,
-                  country: venueData.country?.countryCode || null,
+                  country: venueData.country?.countryCode || 'US',
+                  timezone: venueData.timezone || 'America/New_York',
                   address: venueData.address?.line1 || null,
                   latitude: venueData.location?.latitude ? parseFloat(venueData.location.latitude) : null,
                   longitude: venueData.location?.longitude ? parseFloat(venueData.location.longitude) : null,
@@ -349,9 +350,9 @@ async function syncArtistShows(artist: any): Promise<{ synced: number; errors: n
                 })
                 .returning();
               
-              venueId = newVenue[0].id;
+              venueId = newVenue[0]?.id || null;
             } else {
-              venueId = existingVenue[0].id;
+              venueId = existingVenue[0]?.id || null;
             }
           }
           
@@ -375,12 +376,11 @@ async function syncArtistShows(artist: any): Promise<{ synced: number; errors: n
               ticketmasterId: event.id,
               headlinerArtistId: artist.id,
               venueId,
-              date: new Date(event.dates.start.localDate),
+              date: event.dates.start.localDate,
               status: event.dates.status.code === "onsale" ? "upcoming" : "completed",
               ticketUrl: event.url || null,
-              imageUrl: event.images?.[0]?.url || null,
-              priceMin: event.priceRanges?.[0]?.min || null,
-              priceMax: event.priceRanges?.[0]?.max || null,
+              minPrice: event.priceRanges?.[0]?.min || null,
+              maxPrice: event.priceRanges?.[0]?.max || null,
             });
             
             synced++;
