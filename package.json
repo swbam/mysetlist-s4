@@ -57,6 +57,7 @@
   },
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
+    "@paralleldrive/cuid2": "^2.2.2",
     "postgres": "^3.4.7"
   }
 }

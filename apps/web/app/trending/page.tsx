@@ -201,26 +201,26 @@ export default async function TrendingPage() {
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
               <LiveTrending
                 timeframe="1h"
-                type="all"
+                type="artist"
                 limit={5}
                 autoRefresh={true}
               />
               <LiveTrending
                 timeframe="6h"
-                type="all"
+                type="artist"
                 limit={5}
                 autoRefresh={false}
               />
               <LiveTrending
                 timeframe="24h"
-                type="all"
+                type="artist"
                 limit={5}
                 autoRefresh={false}
               />
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="font-medium text-sm">
@@ -233,8 +233,7 @@ export default async function TrendingPage() {
                     {stats.trendingArtists}
                   </div>
                   <p className="text-muted-foreground text-xs">
-                    {stats.artistGrowth > 0 ? "+" : ""}
-                    {stats.artistGrowth}% from last week
+                    Artists with high engagement
                   </p>
                 </CardContent>
               </Card>
@@ -251,8 +250,7 @@ export default async function TrendingPage() {
                     {formatNumber(stats.hotShows)}
                   </div>
                   <p className="text-muted-foreground text-xs">
-                    {stats.showGrowth > 0 ? "+" : ""}
-                    {stats.showGrowth}% from last week
+                    Upcoming concerts
                   </p>
                 </CardContent>
               </Card>
@@ -269,26 +267,7 @@ export default async function TrendingPage() {
                     {formatNumber(stats.searchVolume)}
                   </div>
                   <p className="text-muted-foreground text-xs">
-                    {stats.searchGrowth > 0 ? "+" : ""}
-                    {stats.searchGrowth}% from last week
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="font-medium text-sm">
-                    Active Users
-                  </CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="font-bold text-2xl">
-                    {formatNumber(stats.activeUsers)}
-                  </div>
-                  <p className="text-muted-foreground text-xs">
-                    {stats.userGrowth > 0 ? "+" : ""}
-                    {stats.userGrowth}% from last week
+                    Total page views
                   </p>
                 </CardContent>
               </Card>
@@ -310,7 +289,6 @@ export default async function TrendingPage() {
                       <LiveTrending timeframe="24h" type="artist" limit={8} />
                       <LiveTrending timeframe="24h" type="show" limit={8} />
                     </div>
-                    <LiveTrending timeframe="24h" type="venue" limit={6} />
                   </TabsContent>
 
                   <TabsContent value="artists" className="space-y-4">
