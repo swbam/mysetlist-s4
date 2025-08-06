@@ -1,7 +1,7 @@
 // DEPRECATED: This file uses edge functions and should be removed
 // The backup functionality should be moved to a proper API route if needed
 import { type NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/api/supabase/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 const CRON_SECRET = process.env["CRON_SECRET"];
 

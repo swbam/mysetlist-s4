@@ -288,7 +288,9 @@ export function VenueCard({
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                window.open(venue.website, "_blank", "noopener,noreferrer");
+                if (venue.website) {
+                  window.open(venue.website, "_blank", "noopener,noreferrer");
+                }
               }}
               aria-label={`Visit ${venue.name} website`}
             >

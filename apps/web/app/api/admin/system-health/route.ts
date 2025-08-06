@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/api/supabase/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 interface HealthCheck {
   service: string;

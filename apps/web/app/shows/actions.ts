@@ -273,7 +273,7 @@ export const fetchShows = cache(
         minPrice: show.minPrice,
         maxPrice: show.maxPrice,
         currency: show.currency || 'USD',
-        viewCount: show.viewCount,
+        viewCount: show.viewCount || 0,
         attendeeCount: show.attendeeCount,
         setlistCount: show.setlistCount,
         voteCount: show.voteCount,

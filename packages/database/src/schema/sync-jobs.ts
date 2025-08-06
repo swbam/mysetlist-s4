@@ -1,6 +1,5 @@
 import { pgTable, text, timestamp, jsonb, boolean, integer } from "drizzle-orm/pg-core";
 import { createId } from "@paralleldrive/cuid2";
-import { artists } from "./artists";
 
 export const syncJobs = pgTable("sync_jobs", {
   id: text("id")

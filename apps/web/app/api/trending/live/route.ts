@@ -18,8 +18,10 @@ interface LiveTrendingItem {
   timeframe: "1h" | "6h" | "24h";
 }
 
-// Add ISR support with cache headers
-export const revalidate = 60; // Revalidate every minute for live data
+// Disable ISR for truly live data - rely on CDN caching
+export const revalidate = 0; // Always fresh data
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -29,7 +31,8 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type") as "artist" | "show" | "venue" | "all";
 
   try {
-    const supabase = await createServiceClient();
+    console.log('Live trending API called with:', { timeframe, limit, type });
+    const supabase = createServiceClient();
     const trending: LiveTrendingItem[] = [];
 
     // Calculate time window for trending based on timeframe
@@ -229,11 +232,14 @@ export async function GET(request: NextRequest) {
       generatedAt: new Date().toISOString(),
     });
 
-    // Add cache headers for better performance
+    // Add cache headers optimized for fresh trending data
     response.headers.set(
       "Cache-Control",
-      "public, s-maxage=60, stale-while-revalidate=300",
+      "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
     );
+    response.headers.set("X-Cache-Strategy", "fresh-trending");
+    response.headers.set("X-Last-Modified", new Date().toISOString());
+    response.headers.set("Vary", "Accept-Encoding");
 
     return response;
   } catch (error) {

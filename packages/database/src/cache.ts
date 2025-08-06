@@ -63,7 +63,11 @@ const caches = new Map<string, LRUCache<string, any>>();
 function getCache(type: string): LRUCache<string, any> {
   if (!caches.has(type)) {
     const config = cacheConfigs[type] || cacheConfigs["default"];
-    caches.set(type, new LRUCache(config));
+    if (config) {
+      caches.set(type, new LRUCache(config));
+    } else {
+      throw new Error(`No cache config found for type: ${type}`);
+    }
   }
   return caches.get(type)!;
 }

@@ -1,6 +1,6 @@
 import { getUser } from "@repo/auth/server";
 import { type NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/api/supabase/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 interface IntegrityCheck {
   name: string;

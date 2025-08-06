@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createAuthenticatedClient } from "~/lib/api/supabase/server";
+import { createAuthenticatedClient } from "~/lib/supabase/server";
 
 export async function GET(
   _request: NextRequest,
