@@ -1,8 +1,8 @@
 // CORS configuration for production security
 // Only allow specific origins instead of wildcard
 const allowedOrigins = [
-  "https://mysetlist.io",
-  "https://www.mysetlist.io",
+  "https://theset.live",
+  "https://www.theset.live",
   // Add localhost for development
   "http://localhost:3000",
   "http://localhost:3001",

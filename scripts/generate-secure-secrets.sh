@@ -23,7 +23,7 @@ cat << EOF
 
 # Authentication
 NEXTAUTH_SECRET="${NEXTAUTH_SECRET}"
-NEXTAUTH_URL="https://mysetlist-sonnet.vercel.app"
+NEXTAUTH_URL="https://theset.live"
 
 # Supabase (Get from Supabase dashboard)
 NEXT_PUBLIC_SUPABASE_URL="<YOUR_SUPABASE_URL>"
@@ -50,7 +50,7 @@ POSTHOG_API_KEY="<YOUR_POSTHOG_API_KEY>"
 
 # Email (If using email features)
 RESEND_API_KEY="<YOUR_RESEND_API_KEY>"
-EMAIL_FROM="noreply@mysetlist-sonnet.vercel.app"
+EMAIL_FROM="noreply@theset.live"
 
 # Feature Flags
 NEXT_PUBLIC_POSTHOG_KEY="<YOUR_POSTHOG_KEY>"
@@ -62,7 +62,7 @@ ANALYZE="false"
 
 # Vercel Configuration
 VERCEL_ENV="production"
-VERCEL_URL="mysetlist-sonnet.vercel.app"
+VERCEL_URL="theset.live"
 
 EOF
 

@@ -85,7 +85,7 @@ echo "🌐 Adding Application URLs..."
 echo "============================="
 echo ""
 echo "Please enter your Vercel deployment URL"
-echo "(e.g., mysetlist-sonnet.vercel.app or your custom domain)"
+echo "(e.g., theset.live or your custom domain)"
 read -p "Deployment URL: " DEPLOYMENT_URL
 
 # Clean up the URL (remove protocol if included)
