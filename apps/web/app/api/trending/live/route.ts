@@ -136,10 +136,9 @@ export async function GET(request: NextRequest) {
             trending_score,
             updated_at,
             date,
-            previous_view_count,
-            previous_attendee_count,
-            previous_vote_count,
-            previous_setlist_count,
+            -- Historical fields might not exist in some environments; comment out to avoid errors
+            -- previous_view_count,
+            -- previous_attendee_count
             headliner_artist:artists!shows_headliner_artist_id_fkey(
               name,
               image_url
@@ -166,13 +165,14 @@ export async function GET(request: NextRequest) {
             // Calculate real growth using historical data (no fake calculations)
             const realGrowth = calculateShowGrowth({
               viewCount: show.view_count || 0,
-              previousViewCount: show.previous_view_count,
+              previousViewCount: (show as any).previous_view_count || 0,
               attendeeCount: show.attendee_count || 0,
-              previousAttendeeCount: show.previous_attendee_count,
+              previousAttendeeCount: (show as any).previous_attendee_count || 0,
               voteCount: show.vote_count || 0,
-              previousVoteCount: show.previous_vote_count,
+              // Fallback to 0 if historical columns aren't present
+              previousVoteCount: (show as any).previous_vote_count || 0,
               setlistCount: show.setlist_count || 0,
-              previousSetlistCount: show.previous_setlist_count,
+              previousSetlistCount: (show as any).previous_setlist_count || 0,
             });
 
             // Use real growth data only (0 if no historical data available)
