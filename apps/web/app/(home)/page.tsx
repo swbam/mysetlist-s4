@@ -14,7 +14,6 @@ const FeaturedContent = dynamic(() => import("./components/featured-content"), {
       </div>
     </section>
   ),
-  ssr: false, // Client-side only since it's not critical for SEO
 });
 
 export const metadata = {

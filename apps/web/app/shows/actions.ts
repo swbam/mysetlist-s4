@@ -195,15 +195,12 @@ export const fetchShows = cache(
       const showsData = await query;
 
       // Get total count for pagination
-      let countQuery = db
+      const countQuery = db
         .select({ count: sql<number>`count(*)` })
         .from(shows)
         .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
-        .leftJoin(venues, eq(shows.venueId, venues.id));
-
-      if (conditions.length > 0) {
-        countQuery = countQuery.where(and(...conditions));
-      }
+        .leftJoin(venues, eq(shows.venueId, venues.id))
+        .where(conditions.length > 0 ? and(...conditions) : sql`1=1`);
 
       const countResult = await countQuery;
       const totalCount = countResult[0]?.count || 0;
@@ -274,10 +271,10 @@ export const fetchShows = cache(
         maxPrice: show.maxPrice,
         currency: show.currency || 'USD',
         viewCount: show.viewCount || 0,
-        attendeeCount: show.attendeeCount,
-        setlistCount: show.setlistCount,
-        voteCount: show.voteCount,
-        trendingScore: show.trendingScore,
+        attendeeCount: show.attendeeCount || 0,
+        setlistCount: show.setlistCount || 0,
+        voteCount: show.voteCount || 0,
+        trendingScore: show.trendingScore || 0,
         isFeatured: show.isFeatured,
         isVerified: show.isVerified,
         headlinerArtist: {

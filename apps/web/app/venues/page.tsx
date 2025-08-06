@@ -52,6 +52,8 @@ const VenuesContent = async ({ searchParams }: { searchParams: any }) => {
     upcomingShowCount: venue.upcomingShowCount,
     distance: venue.distance,
     amenities: venue.amenities,
+    latitude: venue.latitude,
+    longitude: venue.longitude,
   }));
 
   return (

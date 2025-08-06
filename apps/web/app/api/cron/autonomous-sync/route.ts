@@ -312,7 +312,7 @@ async function syncArtistShows(artist: any): Promise<{ synced: number; errors: n
         try {
           // Extract venue
           const venueData = event._embedded?.venues?.[0];
-          let venueId = null;
+          let venueId: string | null = null;
           
           if (venueData) {
             // Check if venue exists by name and city (venues don't have ticketmasterId)
@@ -379,9 +379,8 @@ async function syncArtistShows(artist: any): Promise<{ synced: number; errors: n
               date: event.dates.start.localDate,
               status: event.dates.status.code === "onsale" ? "upcoming" : "completed",
               ticketUrl: event.url || null,
-              imageUrl: event.images?.[0]?.url || null,
-              priceMin: event.priceRanges?.[0]?.min || null,
-              priceMax: event.priceRanges?.[0]?.max || null,
+              minPrice: event.priceRanges?.[0]?.min || null,
+              maxPrice: event.priceRanges?.[0]?.max || null,
             });
             
             synced++;

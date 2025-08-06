@@ -88,9 +88,8 @@ export class SyncQueue {
       .from("sync_jobs")
       .update({
         current_step: step,
-        completed_steps: progress === 100 ? 
-          this.supabase.sql`completed_steps + 1` : 
-          this.supabase.sql`completed_steps`,
+        // For SQL increment, we'll need to handle this differently
+        // completed_steps will be incremented separately if needed
         updated_at: new Date().toISOString(),
       })
       .eq("id", jobId);

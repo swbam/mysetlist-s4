@@ -1,6 +1,6 @@
 'use client';
 
-import { useSyncStatus } from '@/hooks/use-sync-status';
+import { useSyncStatus } from '~/hooks/use-sync-status';
 import { Loader2, Check, X, AlertCircle } from 'lucide-react';
 import { cn } from '@repo/design-system/lib/utils';
 

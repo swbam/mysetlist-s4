@@ -54,9 +54,10 @@ export function useAnonymousVoting({
         const todayVotes: Record<string, Vote> = {};
         
         for (const [key, vote] of Object.entries(parsedVotes)) {
-          const voteDate = new Date(vote.timestamp).toDateString();
+          const typedVote = vote as Vote;
+          const voteDate = new Date(typedVote.timestamp).toDateString();
           if (voteDate === today) {
-            todayVotes[key] = vote;
+            todayVotes[key] = typedVote;
           }
         }
         
