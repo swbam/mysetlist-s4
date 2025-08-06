@@ -16,6 +16,7 @@ export * from "./email-enhanced";
 export * from "./data-pipeline";
 export * from "./rate-limits";
 export * from "./api-keys";
+export * from "./sync-jobs";
 
 // Re-export artistSongs from artists file to avoid circular dependency
 export { artistSongs } from "./artists";
