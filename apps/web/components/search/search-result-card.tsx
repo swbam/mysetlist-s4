@@ -125,6 +125,9 @@ export function SearchResultCard({
     }
   };
 
+  // Remove artist images to create a cleaner list UI
+  const shouldShowImage = result.type !== "artist" && result.imageUrl;
+
   return (
     <Card
       className={cn(
@@ -135,7 +138,7 @@ export function SearchResultCard({
       <CardContent className="p-6">
         <div className="flex items-center gap-4">
           {/* Image/Avatar */}
-          {result.imageUrl ? (
+          {shouldShowImage ? (
             <div className="relative h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg">
               <Image
                 src={result.imageUrl}
