@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db, artists, shows, venues, songs } from "@repo/database";
 import { desc } from "drizzle-orm";
 
-// Mock data for quick population
+// Dev-only initializer; blocked in production
 const MOCK_ARTISTS = [
   { name: "Taylor Swift", genres: ["Pop", "Country"], popularity: 95 },
   { name: "Drake", genres: ["Hip Hop", "R&B"], popularity: 92 },
@@ -272,6 +272,9 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
+  if (process.env.NODE_ENV === "production" || !process.env["ADMIN_ENABLE_INIT"]) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   return NextResponse.json({
     message: "Data Initialization Endpoint",
     usage: {

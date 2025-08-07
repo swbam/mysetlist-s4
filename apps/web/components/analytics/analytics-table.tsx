@@ -85,6 +85,10 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
     tableType: string,
     itemLimit: number,
   ): TableRow[] => {
+    // Do not generate mock data in production
+    if (typeof process !== "undefined" && process.env.NODE_ENV === "production") {
+      return [];
+    }
     switch (tableType) {
       case "engaged-users":
         return Array.from({ length: itemLimit }, (_, i) => ({

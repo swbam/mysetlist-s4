@@ -58,8 +58,8 @@ export function MobileSearch({
   onResultSelect,
   className,
   placeholder = "Search artists, shows, venues...",
-  recentSearches = mockRecentSearches,
-  trendingSearches = mockTrendingSearches,
+  recentSearches = [],
+  trendingSearches = [],
 }: MobileSearchProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");

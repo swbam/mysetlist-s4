@@ -191,7 +191,6 @@ export default async function TrendingPage() {
             <h1 className="font-bold text-4xl">Trending</h1>
           </div>
           <p className="text-muted-foreground text-xl">
-            Discover what's hot in the live music world right now
           </p>
         </div>
 

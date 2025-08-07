@@ -97,43 +97,19 @@ export function UnifiedSearch({
       setError(null);
 
       try {
-        // Determine which API endpoint to use, with fallback options
-        let endpoint: string;
-        let fallbackEndpoint: string;
+        // Determine API endpoint. Remove non-existent fallbacks for stability in production
+        const endpoint =
+          variant === "artists-only"
+            ? `/api/artists/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`
+            : `/api/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`;
 
-        if (variant === "artists-only") {
-          endpoint = `/api/artists/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`;
-          fallbackEndpoint = `/api/artists/search-simple?q=${encodeURIComponent(searchQuery)}&limit=${limit}`;
-        } else {
-          endpoint = `/api/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`;
-          fallbackEndpoint = `/api/search-fallback?q=${encodeURIComponent(searchQuery)}&limit=${limit}`;
-        }
-
-        let response = await fetch(endpoint, {
+        const response = await fetch(endpoint, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
         });
-
-        // If primary endpoint fails, try fallback
-        if (!response.ok) {
-          console.warn(
-            `Primary endpoint failed (${response.status}), trying fallback...`,
-          );
-          response = await fetch(fallbackEndpoint, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error(
-              `Both search endpoints failed. Status: ${response.status}`,
-            );
-          }
-        }
+        if (!response.ok) throw new Error(`Search failed: ${response.status}`);
 
         const data = await response.json();
 
