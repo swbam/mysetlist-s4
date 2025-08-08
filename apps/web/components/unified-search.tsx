@@ -34,6 +34,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDebounce } from "~/hooks/use-debounce";
+import { useCSRFToken } from "~/hooks/use-csrf-token";
 
 interface SearchResult {
   id: string;
@@ -84,6 +85,7 @@ export function UnifiedSearch({
 
   const debouncedQuery = useDebounce(query, 300);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { fetchWithCSRF } = useCSRFToken();
 
   const performSearch = useCallback(
     async (searchQuery: string) => {
@@ -97,19 +99,28 @@ export function UnifiedSearch({
       setError(null);
 
       try {
-        // Determine API endpoint. Remove non-existent fallbacks for stability in production
-        const endpoint =
+        // Prefer optimized search with fallback to standard search
+        const optimizedEndpoint =
           variant === "artists-only"
             ? `/api/artists/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`
-            : `/api/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`;
+            : `/api/search/optimized?q=${encodeURIComponent(searchQuery)}&limit=${limit}`;
 
-        const response = await fetch(endpoint, {
+        const standardEndpoint = `/api/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`;
+
+        let response = await fetch(optimizedEndpoint, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
         });
-        if (!response.ok) throw new Error(`Search failed: ${response.status}`);
+        if (!response.ok) {
+          // Retry with standard endpoint once
+          response = await fetch(standardEndpoint, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          });
+          if (!response.ok) throw new Error(`Search failed: ${response.status}`);
+        }
 
         const data = await response.json();
 
@@ -178,7 +189,9 @@ export function UnifiedSearch({
           if (result.requiresSync || result.source === "ticketmaster") {
             // For Ticketmaster artists, use the import endpoint
             if (result.source === "ticketmaster") {
-              const resp = await fetch("/api/artists/import-ticketmaster", {
+              const resp = await fetchWithCSRF(
+                "/api/artists/import-ticketmaster",
+                {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -187,7 +200,8 @@ export function UnifiedSearch({
                   imageUrl: result.imageUrl,
                   genres: result.genres,
                 }),
-              });
+                },
+              );
 
               const data = await resp.json();
               if (resp.ok && data.artist?.slug) {
@@ -201,7 +215,7 @@ export function UnifiedSearch({
               }
             } else {
               // For other external sources, use auto-import
-              const resp = await fetch("/api/artists/auto-import", {
+              const resp = await fetchWithCSRF("/api/artists/auto-import", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

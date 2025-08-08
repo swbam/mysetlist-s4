@@ -38,10 +38,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate voteType
-    if (!["up", "down", null].includes(voteType)) {
+    // Validate voteType (only upvote or remove)
+    if (!["up", null].includes(voteType)) {
       return NextResponse.json(
-        { error: 'Invalid request: voteType must be "up", "down", or null' },
+        { error: 'Invalid request: voteType must be "up" or null' },
         { status: 400 },
       );
     }
@@ -64,11 +64,11 @@ export async function POST(request: NextRequest) {
           .eq("setlist_song_id", setlistSongId);
       }
     } else if (existingVote) {
-      // Update existing vote
+      // Update existing vote (only to up)
       await supabase
         .from("votes")
         .update({
-          vote_type: voteType,
+          vote_type: "up",
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", user.id)
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       await supabase.from("votes").insert({
         user_id: user.id,
         setlist_song_id: setlistSongId,
-        vote_type: voteType,
+        vote_type: "up",
       });
     }
 
@@ -88,17 +88,14 @@ export async function POST(request: NextRequest) {
       .select("vote_type")
       .eq("setlist_song_id", setlistSongId);
 
-    const upvotes = allVotes?.filter((v) => v.vote_type === "up").length || 0;
-    const downvotes =
-      allVotes?.filter((v) => v.vote_type === "down").length || 0;
-    const netVotes = upvotes - downvotes;
+    const upvotes = allVotes?.length || 0;
+    const netVotes = upvotes;
 
     // Update vote counts on setlist_songs table
     await supabase
       .from("setlist_songs")
       .update({
         upvotes,
-        downvotes,
         net_votes: netVotes,
         updated_at: new Date().toISOString(),
       })
@@ -108,7 +105,6 @@ export async function POST(request: NextRequest) {
       success: true,
       userVote: voteType,
       upvotes,
-      downvotes,
       netVotes,
     });
   } catch (error) {
@@ -133,10 +129,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get vote counts
+    // Get vote counts (downvotes removed)
     const { data: song } = await supabase
       .from("setlist_songs")
-      .select("upvotes, downvotes, net_votes")
+      .select("upvotes, net_votes")
       .eq("id", setlistSongId)
       .single();
 
@@ -145,7 +141,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's vote if authenticated
-    let userVote: "up" | "down" | null = null;
+    let userVote: "up" | null = null;
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -158,7 +154,7 @@ export async function GET(request: NextRequest) {
         .eq("setlist_song_id", setlistSongId)
         .single();
 
-      userVote = vote?.vote_type || null;
+      userVote = vote?.vote_type === "up" ? "up" : null;
     }
 
     return NextResponse.json({

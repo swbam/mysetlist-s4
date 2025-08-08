@@ -1,7 +1,9 @@
+import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { RealtimeVoting } from "~/app/components/realtime-voting";
-import { RealtimeProvider } from "~/app/providers/realtime-provider";
+import "@testing-library/jest-dom";
+import { RealtimeVoting } from "../../../app/components/realtime-voting";
+import { RealtimeProvider } from "../../../app/providers/realtime-provider";
 
 // Mock fetch
 global.fetch = vi.fn();
@@ -20,9 +22,8 @@ vi.mock("~/lib/supabase/client", () => ({
 
 const mockVoteData = {
   upvotes: 5,
-  downvotes: 2,
-  netVotes: 3,
-  userVote: null as "up" | "down" | null,
+  netVotes: 5,
+  userVote: null as "up" | null,
 };
 
 const renderWithProvider = (component: React.ReactElement) => {
@@ -45,8 +46,7 @@ describe("RealtimeVoting Component", () => {
     );
 
     expect(screen.getByText("5")).toBeInTheDocument(); // upvotes
-    expect(screen.getByText("2")).toBeInTheDocument(); // downvotes
-    expect(screen.getByText("+3")).toBeInTheDocument(); // net votes
+    expect(screen.getByText("+5")).toBeInTheDocument(); // net votes
   });
 
   it("handles upvote correctly", async () => {
@@ -56,8 +56,7 @@ describe("RealtimeVoting Component", () => {
         success: true,
         userVote: "up",
         upvotes: 6,
-        downvotes: 2,
-        netVotes: 4,
+        netVotes: 6,
       }),
     });
 
@@ -86,42 +85,7 @@ describe("RealtimeVoting Component", () => {
     });
   });
 
-  it("handles downvote correctly", async () => {
-    (fetch as any).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        success: true,
-        userVote: "down",
-        upvotes: 5,
-        downvotes: 3,
-        netVotes: 2,
-      }),
-    });
-
-    renderWithProvider(
-      <RealtimeVoting
-        setlistSongId="test-song-id"
-        initialVotes={mockVoteData}
-        userId="test-user-id"
-      />,
-    );
-
-    const downvoteButton = screen.getByRole("button", { name: /2/ });
-    fireEvent.click(downvoteButton);
-
-    await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith("/api/votes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          setlistSongId: "test-song-id",
-          voteType: "down",
-        }),
-      });
-    });
-  });
+  // Downvote behavior removed
 
   it("shows login prompt when user is not authenticated", () => {
     renderWithProvider(
@@ -153,7 +117,7 @@ describe("RealtimeVoting Component", () => {
     // Should revert to original state on error
     await waitFor(() => {
       expect(screen.getByText("5")).toBeInTheDocument();
-      expect(screen.getByText("+3")).toBeInTheDocument();
+    expect(screen.getByText("+5")).toBeInTheDocument();
     });
   });
 
@@ -178,7 +142,7 @@ describe("RealtimeVoting Component", () => {
 
     // Should immediately show optimistic update
     expect(screen.getByText("6")).toBeInTheDocument(); // upvotes increased
-    expect(screen.getByText("+4")).toBeInTheDocument(); // net votes increased
+    expect(screen.getByText("+6")).toBeInTheDocument(); // net votes increased
 
     // Resolve the promise
     resolvePromise!({
@@ -187,14 +151,13 @@ describe("RealtimeVoting Component", () => {
         success: true,
         userVote: "up",
         upvotes: 6,
-        downvotes: 2,
-        netVotes: 4,
+        netVotes: 6,
       }),
     });
 
     await waitFor(() => {
       expect(screen.getByText("6")).toBeInTheDocument();
-      expect(screen.getByText("+4")).toBeInTheDocument();
+      expect(screen.getByText("+6")).toBeInTheDocument();
     });
   });
 
@@ -231,8 +194,7 @@ describe("RealtimeVoting Component", () => {
         success: true,
         userVote: "up",
         upvotes: 6,
-        downvotes: 2,
-        netVotes: 4,
+        netVotes: 6,
       }),
     });
   });

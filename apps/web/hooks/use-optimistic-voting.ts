@@ -3,9 +3,8 @@ import { toast } from "sonner";
 
 interface VoteState {
   upvotes: number;
-  downvotes: number;
-  userVote: "up" | "down" | null;
-  pendingVote?: "up" | "down" | null;
+  userVote: "up" | null;
+  pendingVote?: "up" | null;
 }
 
 interface UseOptimisticVotingOptions {
@@ -19,7 +18,7 @@ interface UseOptimisticVotingOptions {
 export function useOptimisticVoting({
   setlistSongId,
   userId,
-  initialVotes = { upvotes: 0, downvotes: 0, userVote: null },
+  initialVotes = { upvotes: 0, userVote: null },
   onVoteSuccess,
   onVoteError,
 }: UseOptimisticVotingOptions) {
@@ -43,7 +42,6 @@ export function useOptimisticVoting({
           const data = await response.json();
           setVotes({
             upvotes: data.upvotes || 0,
-            downvotes: data.downvotes || 0,
             userVote: data.userVote || null,
           });
         }
@@ -54,7 +52,7 @@ export function useOptimisticVoting({
   }, [setlistSongId]);
 
   const vote = useCallback(
-    async (voteType: "up" | "down") => {
+    async (voteType: "up") => {
       if (!userId) {
         toast.error("Please sign in to vote");
         return;
@@ -77,18 +75,11 @@ export function useOptimisticVoting({
       // Remove previous vote
       if (currentVote === "up") {
         optimisticUpdate.upvotes = Math.max(0, optimisticUpdate.upvotes - 1);
-      } else if (currentVote === "down") {
-        optimisticUpdate.downvotes = Math.max(
-          0,
-          optimisticUpdate.downvotes - 1,
-        );
       }
 
       // Add new vote
       if (newVote === "up") {
         optimisticUpdate.upvotes += 1;
-      } else if (newVote === "down") {
-        optimisticUpdate.downvotes += 1;
       }
 
       optimisticUpdate.userVote = newVote;
@@ -119,7 +110,6 @@ export function useOptimisticVoting({
           // Update with server response
           setVotes({
             upvotes: result.upvotes,
-            downvotes: result.downvotes,
             userVote: result.userVote,
           });
 
@@ -162,7 +152,6 @@ export function useOptimisticVoting({
           const data = await response.json();
           setVotes({
             upvotes: data.upvotes || 0,
-            downvotes: data.downvotes || 0,
             userVote: data.userVote || null,
           });
         }

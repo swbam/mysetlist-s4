@@ -51,10 +51,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           WHERE ss.song_id = ${songs.id} AND s.artist_id = ${artist[0].id}
         )`,
         avgRating: sql<number>`(
-          SELECT COALESCE(AVG(v.rating), 0)::int
+          SELECT COALESCE(SUM(CASE WHEN v.vote_type = 'up' THEN 1 ELSE 0 END), 0)::int
           FROM setlist_songs ss 
           JOIN setlists s ON ss.setlist_id = s.id
-          JOIN votes v ON v.setlist_id = s.id
+          JOIN votes v ON v.setlist_song_id = ss.id
           WHERE ss.song_id = ${songs.id} AND s.artist_id = ${artist[0].id}
         )`,
       })

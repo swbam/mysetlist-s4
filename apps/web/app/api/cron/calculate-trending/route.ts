@@ -502,7 +502,7 @@ async function logTrendingOperation(
 export async function GET(request: NextRequest) {
   // Verify cron secret
   const authHeader = request.headers.get("authorization");
-  if (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`) {
+  if (CRON_SECRET && (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { Calendar, MapPin, Ticket } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import { AutoSyncOnEmptyShows } from "./auto-sync";
 
 interface Show {
   show: {
@@ -39,6 +40,7 @@ interface UpcomingShowsProps {
   shows: Show[];
   artistName: string;
   artistId?: string;
+  spotifyId?: string;
 }
 
 function ShowSkeleton() {
@@ -62,6 +64,7 @@ export const UpcomingShows = React.memo(function UpcomingShows({
   shows,
   artistName,
   artistId,
+  spotifyId,
 }: UpcomingShowsProps) {
   // Note: Autonomous sync happens server-side via scheduled cron jobs
   // Client-side sync removed for security reasons (CRON_SECRET should never be exposed)
@@ -82,6 +85,12 @@ export const UpcomingShows = React.memo(function UpcomingShows({
               Check back later for new tour dates. Shows are automatically
               updated from Ticketmaster.
             </p>
+            {/* Trigger background import once if we have IDs */}
+            <AutoSyncOnEmptyShows
+              artistId={artistId}
+              artistName={artistName}
+              spotifyId={spotifyId}
+            />
           </div>
         </CardContent>
       </Card>

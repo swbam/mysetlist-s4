@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useCSRFToken } from "~/hooks/use-csrf-token";
 
 interface AutoImportResult {
   success: boolean;
@@ -26,6 +27,7 @@ interface AutoImportResult {
 export function useArtistAutoImport() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { fetchWithCSRF } = useCSRFToken();
 
   const importArtist = useCallback(
     async (params: {
@@ -37,7 +39,7 @@ export function useArtistAutoImport() {
       setError(null);
 
       try {
-        const response = await fetch("/api/artists/auto-import", {
+        const response = await fetchWithCSRF("/api/artists/auto-import", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

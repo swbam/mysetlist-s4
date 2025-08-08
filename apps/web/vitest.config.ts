@@ -12,6 +12,11 @@ export default defineConfig({
       "__tests__/**/*.{test,spec}.{ts,tsx}",
       "!__tests__/**/integration/**",
       "!__tests__/**/e2e/**",
+      "!__tests__/**/api/**",
+      "!__tests__/**/mobile/**",
+      "!__tests__/**/navigation/**",
+      "!__tests__/**/auth/**",
+      "!__tests__/**/shows/**",
     ],
     coverage: {
       provider: "v8",

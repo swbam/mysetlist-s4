@@ -314,8 +314,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Sort results by relevance and type priority
-    const sortedResults = results.sort((a, b) => {
+    // Sort results by relevance and type priority (stable)
+    const sortedResults = [...results].sort((a, b) => {
       // Type priority: artists first, then shows, venues, songs
       const typePriority = { artist: 4, show: 3, venue: 2, song: 1 };
       const aPriority = typePriority[a.type] || 0;

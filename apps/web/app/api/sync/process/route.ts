@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSyncQueue } from "@repo/utils";
-import { spotifyApi } from "@repo/external-apis/spotify";
-import { ticketmasterApi } from "@repo/external-apis/ticketmaster";
-import { setlistfmApi } from "@repo/external-apis/setlistfm";
+import { spotify, ticketmaster, setlistfm } from "@repo/external-apis";
 import { db } from "@repo/database";
 import { artists, shows, venues, artistSongs } from "@repo/database";
 import { eq } from "drizzle-orm";
@@ -79,7 +77,7 @@ async function processArtistSync(job: any, syncQueue: any) {
   // Step 1: Fetch artist data from Spotify
   await syncQueue.updateProgress(job.id, "fetching_artist", 0, "Fetching artist information from Spotify...");
   
-  const spotifyArtist = await spotifyApi.getArtist(spotifyId);
+  const spotifyArtist = await spotify.getArtist(spotifyId);
   if (!spotifyArtist) {
     throw new Error("Artist not found on Spotify");
   }
@@ -102,7 +100,7 @@ async function processArtistSync(job: any, syncQueue: any) {
     // Step 2: Fetch shows from Ticketmaster
     await syncQueue.updateProgress(job.id, "importing_shows", 0, "Fetching shows from Ticketmaster...");
     
-    const ticketmasterShows = await ticketmasterApi.getArtistShows(spotifyArtist.name);
+    const ticketmasterShows = await ticketmaster.getArtistShows(spotifyArtist.name);
     let processedShows = 0;
     
     for (const show of ticketmasterShows || []) {
@@ -146,8 +144,8 @@ async function processArtistSync(job: any, syncQueue: any) {
     await syncQueue.updateProgress(job.id, "syncing_songs", 0, "Importing song catalog...");
     
     const [topTracks, albums] = await Promise.all([
-      spotifyApi.getArtistTopTracks(spotifyId),
-      spotifyApi.getArtistAlbums(spotifyId)
+      spotify.getArtistTopTracks(spotifyId),
+      spotify.getArtistAlbums(spotifyId)
     ]);
     
     const allTracks = [...(topTracks || [])];

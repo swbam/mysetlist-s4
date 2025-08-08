@@ -1,16 +1,15 @@
 "use client";
 
 import { Button } from "@repo/design-system/components/ui/button";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { createClient } from "~/lib/supabase/client";
 import { useRealtimeConnection } from "~/app/providers/realtime-provider";
 
 interface VoteData {
   upvotes: number;
-  downvotes: number;
   netVotes: number;
-  userVote: "up" | "down" | null;
+  userVote: "up" | null;
 }
 
 interface RealtimeVotingProps {
@@ -52,7 +51,6 @@ export function RealtimeVoting({
           setVotes((prev) => ({
             ...prev,
             upvotes: newData.upvotes || 0,
-            downvotes: newData.downvotes || 0,
             netVotes: newData.net_votes || 0,
           }));
         },
@@ -65,7 +63,7 @@ export function RealtimeVoting({
   }, [setlistSongId, isConnected, isRealtimeEnabled]);
 
   const handleVote = useCallback(
-    async (voteType: "up" | "down" | null) => {
+    async (voteType: "up" | null) => {
       if (!userId) {
         // Redirect to login or show login modal
         return;
@@ -81,27 +79,21 @@ export function RealtimeVoting({
         const newUserVote = votes.userVote === voteType ? null : voteType;
 
         let newUpvotes = votes.upvotes;
-        let newDownvotes = votes.downvotes;
 
         // Remove previous vote
         if (votes.userVote === "up") {
           newUpvotes--;
-        } else if (votes.userVote === "down") {
-          newDownvotes--;
         }
 
         // Add new vote
         if (newUserVote === "up") {
           newUpvotes++;
-        } else if (newUserVote === "down") {
-          newDownvotes++;
         }
 
-        const newNetVotes = newUpvotes - newDownvotes;
+        const newNetVotes = newUpvotes;
 
         setVotes({
           upvotes: newUpvotes,
-          downvotes: newDownvotes,
           netVotes: newNetVotes,
           userVote: newUserVote,
         });
@@ -127,7 +119,6 @@ export function RealtimeVoting({
         // Update with server response (in case of conflicts)
         setVotes({
           upvotes: result.upvotes,
-          downvotes: result.downvotes,
           netVotes: result.netVotes,
           userVote: result.userVote,
         });
@@ -160,16 +151,7 @@ export function RealtimeVoting({
         {votes.netVotes}
       </span>
 
-      <Button
-        variant={votes.userVote === "down" ? "default" : "outline"}
-        size="sm"
-        onClick={() => handleVote("down")}
-        disabled={isVoting || !userId}
-        className="flex items-center gap-1"
-      >
-        <ChevronDown className="h-4 w-4" />
-        {votes.downvotes}
-      </Button>
+      {/* Downvote removed */}
 
       {!isRealtimeEnabled && (
         <span className="text-xs text-muted-foreground ml-2">
