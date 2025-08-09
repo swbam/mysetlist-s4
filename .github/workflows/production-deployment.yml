@@ -11,9 +11,10 @@ env:
   PNPM_VERSION: '8'
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-  SENTRY_ORG: mysetlist
-  SENTRY_PROJECT: mysetlist-web
+  # Sentry disabled to prevent automated dependency PRs
+  # SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+  # SENTRY_ORG: mysetlist
+  # SENTRY_PROJECT: mysetlist-web
 
 jobs:
   # Quality Assurance Jobs
@@ -229,16 +230,17 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
 
-      - name: Create Sentry Release
-        uses: getsentry/action-release@v1
-        if: success()
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ env.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ env.SENTRY_PROJECT }}
-        with:
-          environment: production
-          version: ${{ github.sha }}
+      # Sentry Release disabled to prevent automated dependency PRs
+      # - name: Create Sentry Release
+      #   uses: getsentry/action-release@v1
+      #   if: success()
+      #   env:
+      #     SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+      #     SENTRY_ORG: ${{ env.SENTRY_ORG }}
+      #     SENTRY_PROJECT: ${{ env.SENTRY_PROJECT }}
+      #   with:
+      #     environment: production
+      #     version: ${{ github.sha }}
 
       - name: Health Check
         run: |

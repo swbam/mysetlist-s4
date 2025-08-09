@@ -64,15 +64,15 @@ updates:
       - "seth"
     priority: 1
 
-  # Keep GitHub Actions up to date
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "03:00"
-    labels:
-      - "ci/cd"
-      - "automated"
-    assignees:
-      - "seth"
+  # GitHub Actions updates disabled to prevent automated PRs
+  # - package-ecosystem: "github-actions"
+  #   directory: "/"
+  #   schedule:
+  #     interval: "weekly"
+  #     day: "monday"
+  #     time: "03:00"
+  #   labels:
+  #     - "ci/cd"
+  #     - "automated"
+  #   assignees:
+  #     - "seth"

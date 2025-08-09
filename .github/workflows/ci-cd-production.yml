@@ -574,14 +574,15 @@ jobs:
             curl -f -s "https://mysetlist-sonnet.vercel.app$endpoint" > /dev/null
           done
 
-      - name: Update Sentry release
-        if: success()
-        run: |
-          curl -X POST "https://sentry.io/api/0/organizations/mysetlist/releases/" \
-            -H "Authorization: Bearer ${{ secrets.SENTRY_AUTH_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d "{\"version\":\"${{ github.sha }}\",\"projects\":[\"mysetlist-web\"]}"
-        continue-on-error: true
+      # Sentry release disabled to prevent automated dependency PRs
+      # - name: Update Sentry release
+      #   if: success()
+      #   run: |
+      #     curl -X POST "https://sentry.io/api/0/organizations/mysetlist/releases/" \
+      #       -H "Authorization: Bearer ${{ secrets.SENTRY_AUTH_TOKEN }}" \
+      #       -H "Content-Type: application/json" \
+      #       -d "{\"version\":\"${{ github.sha }}\",\"projects\":[\"mysetlist-web\"]}"
+      #   continue-on-error: true
 
       - name: Rollback on failure
         if: failure() && steps.backup.outputs.current != ''

@@ -229,20 +229,21 @@ jobs:
           curl -f https://mysetlist.app/api/health || exit 1
           curl -f https://mysetlist.app/ || exit 1
 
-      - name: Notify Sentry of deployment
-        run: |
-          curl -X POST \
-            https://sentry.io/api/0/organizations/${{ secrets.SENTRY_ORG }}/releases/ \
-            -H 'Authorization: Bearer ${{ secrets.SENTRY_AUTH_TOKEN }}' \
-            -H 'Content-Type: application/json' \
-            -d '{
-              "version": "'$GITHUB_SHA'",
-              "projects": ["mysetlist"],
-              "refs": [{
-                "repository": "'$GITHUB_REPOSITORY'",
-                "commit": "'$GITHUB_SHA'"
-              }]
-            }'
+      # Sentry notification disabled to prevent automated dependency PRs
+      # - name: Notify Sentry of deployment
+      #   run: |
+      #     curl -X POST \
+      #       https://sentry.io/api/0/organizations/${{ secrets.SENTRY_ORG }}/releases/ \
+      #       -H 'Authorization: Bearer ${{ secrets.SENTRY_AUTH_TOKEN }}' \
+      #       -H 'Content-Type: application/json' \
+      #       -d '{
+      #         "version": "'$GITHUB_SHA'",
+      #         "projects": ["mysetlist"],
+      #         "refs": [{
+      #           "repository": "'$GITHUB_REPOSITORY'",
+      #           "commit": "'$GITHUB_SHA'"
+      #         }]
+      #       }'
 
       - name: Send deployment notification
         uses: 8398a7/action-slack@v3

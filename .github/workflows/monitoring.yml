@@ -96,27 +96,28 @@ jobs:
             "https://chromeuxreport.googleapis.com/v1/records:queryRecord?key=${{ secrets.GOOGLE_API_KEY }}"
   
   # Error rate monitoring
-  error-monitoring:
-    name: Error Rate Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check Sentry error rates
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-        run: |
-          # Get error stats from last hour
-          STATS=$(curl -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
-            "https://sentry.io/api/0/organizations/$SENTRY_ORG/stats/?project=$SENTRY_PROJECT&interval=1h&stat=received")
-          
-          # Calculate error rate
-          # Add error rate calculation logic
-      
-      - name: Check application logs
-        run: |
-          # Check Vercel logs for errors
-          # Add log analysis logic
+  # Sentry error monitoring disabled to prevent automated dependency PRs
+  # error-monitoring:
+  #   name: Error Rate Check
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Check Sentry error rates
+  #       env:
+  #         SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+  #         SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+  #         SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+  #       run: |
+  #         # Get error stats from last hour
+  #         STATS=$(curl -H "Authorization: Bearer $SENTRY_AUTH_TOKEN" \
+  #           "https://sentry.io/api/0/organizations/$SENTRY_ORG/stats/?project=$SENTRY_PROJECT&interval=1h&stat=received")
+  #         
+  #         # Calculate error rate
+  #         # Add error rate calculation logic
+  #   
+  #     - name: Check application logs
+  #       run: |
+  #         # Check Vercel logs for errors
+  #         # Add log analysis logic
   
   # Database monitoring
   database-health:
