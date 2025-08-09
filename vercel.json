@@ -1,9 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "name": "mysetlist-sonnet",
-  "buildCommand": "npx turbo build --filter=web",
-  "outputDirectory": "apps/web/.next", 
-  "installCommand": "npm install",
+  "buildCommand": "pnpm turbo build --filter=web",
+  "outputDirectory": "apps/web/.next",
   "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . || echo 'Changes detected, proceeding with build'",
   "framework": "nextjs",
   "regions": ["iad1"],
