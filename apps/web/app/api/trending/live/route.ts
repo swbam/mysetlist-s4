@@ -1,16 +1,5 @@
-<<<<<<< HEAD
-import {
-  calculateArtistGrowth,
-  calculateShowGrowth,
-  calculateVenueGrowth,
-} from "@repo/database";
-import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "~/lib/supabase/server";
-=======
 import { type NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "~/lib/supabase/server";
-// Removed unused growth calculation imports
->>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
 
 interface LiveTrendingItem {
   id: string;
@@ -41,12 +30,8 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type") as "artist" | "show" | "venue" | "all";
 
   try {
-<<<<<<< HEAD
-    const supabase = await createClient();
-=======
     console.log('Live trending API called with:', { timeframe, limit, type });
     const supabase = createServiceClient();
->>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
     const trending: LiveTrendingItem[] = [];
 
     // Calculate time window for trending based on timeframe

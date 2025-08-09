@@ -1,8 +1,23 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "extends": ["ultracite"],
   "javascript": {
     "globals": ["Liveblocks"]
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true
+    }
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 80
+  },
+  "organizeImports": {
+    "enabled": true
   },
   "files": {
     "ignore": [
@@ -11,7 +26,11 @@
       "packages/design-system/hooks/**",
       "packages/collaboration/config.ts",
       "apps/docs/**/*.json",
-      "apps/email/.react-email/**"
+      "apps/email/.react-email/**",
+      "node_modules/**",
+      "dist/**",
+      ".next/**",
+      "build/**"
     ]
   }
 }

@@ -36,29 +36,7 @@ const VenuesContent = async ({ searchParams }: { searchParams: any }) => {
     ...(searchParams.lng && { userLng: Number.parseFloat(searchParams.lng) }),
   });
 
-<<<<<<< HEAD
   const formattedVenues = venues;
-=======
-  const formattedVenues = venues.map((venue) => ({
-    id: venue.id,
-    name: venue.name,
-    slug: venue.slug,
-    address: venue.address,
-    city: venue.city,
-    state: venue.state,
-    country: venue.country,
-    capacity: venue.capacity,
-    venueType: venue.venueType,
-    imageUrl: venue.imageUrl,
-    avgRating: venue.avgRating ?? 0,
-    reviewCount: venue.reviewCount,
-    upcomingShowCount: venue.upcomingShowCount,
-    distance: venue.distance,
-    amenities: venue.amenities,
-    latitude: venue.latitude,
-    longitude: venue.longitude,
-  }));
->>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
 
   return (
     <div className="space-y-6">
@@ -95,11 +73,7 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
                     loading={true}
                     loadingCount={9}
                   >
-<<<<<<< HEAD
-                    {null}
-=======
                     <></>
->>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
                   </ResponsiveGrid>
                 </div>
               }
@@ -114,11 +88,7 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
                   loading={true}
                   loadingCount={6}
                 >
-<<<<<<< HEAD
-                  {null}
-=======
                   <></>
->>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
                 </ResponsiveGrid>
               }
             >

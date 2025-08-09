@@ -23,9 +23,8 @@
     "test:all": "pnpm test:unit && pnpm test:integration && pnpm test:e2e && pnpm test:a11y",
     "lighthouse": "lighthouse http://localhost:3001 --view",
     "lighthouse:ci": "lhci autorun",
-    "test:e2e": "tsx scripts/comprehensive-e2e-test.ts",
-    "seed:dev": "tsx scripts/seed-development-data.ts",
     "test:e2e:comprehensive": "tsx scripts/comprehensive-e2e-test.ts",
+    "seed:dev": "tsx scripts/seed-development-data.ts",
     "seed": "tsx scripts/seed-comprehensive.ts",
     "qa:security": "tsx scripts/security-audit.ts",
     "qa:accessibility": "npx playwright test tests/accessibility/comprehensive-a11y.spec.ts"
