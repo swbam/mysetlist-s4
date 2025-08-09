@@ -1,6 +1,5 @@
-// Core schema exports - Essential tables only for MySetlist MVP
-// Removed bloated analytics, data-pipeline, email-enhanced, admin, search, scalability
-// These were over-engineered and not required per mysetlist-docs specifications
+// Simplified schema exports - Core functionality only
+// This matches the documented requirements from mysetlist-docs/
 
 export * from "./users";
 export * from "./user-profiles";

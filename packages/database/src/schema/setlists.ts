@@ -82,10 +82,8 @@ export const setlistSongs = pgTable(
     isPlayed: boolean("is_played"), // For actual setlists
     playTime: timestamp("play_time"), // When song was played
 
-    // Vote aggregations (denormalized for performance)
+    // Vote aggregations (denormalized for performance) - upvotes only, no downvotes
     upvotes: integer("upvotes").default(0),
-    downvotes: integer("downvotes").default(0),
-    netVotes: integer("net_votes").default(0),
 
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -95,8 +93,7 @@ export const setlistSongs = pgTable(
   }),
 );
 
-export const voteTypeEnum = pgEnum("vote_type", ["up", "down"]);
-
+// Simplified voting system - upvotes only, no downvotes for positive user experience
 export const votes = pgTable(
   "votes",
   {
@@ -107,7 +104,7 @@ export const votes = pgTable(
     setlistSongId: uuid("setlist_song_id")
       .references(() => setlistSongs.id)
       .notNull(),
-    voteType: voteTypeEnum("vote_type").notNull(),
+    // No voteType field needed - presence of record = upvote, absence = no vote
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },

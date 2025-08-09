@@ -81,20 +81,4 @@ export const showArtists = pgTable("show_artists", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const showComments = pgTable("show_comments", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  showId: uuid("show_id")
-    .references(() => shows.id, { onDelete: "cascade" })
-    .notNull(),
-  userId: uuid("user_id")
-    .references(() => users.id, { onDelete: "cascade" })
-    .notNull(),
-  content: text("content").notNull(),
-  parentId: uuid("parent_id").references((): any => showComments.id),
-  isEdited: boolean("is_edited").default(false).notNull(),
-  editedAt: timestamp("edited_at"),
-  upvotes: integer("upvotes").default(0).notNull(),
-  downvotes: integer("downvotes").default(0).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+// Removed showComments table - not part of core MVP requirements

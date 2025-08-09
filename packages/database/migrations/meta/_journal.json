@@ -8,6 +8,34 @@
       "when": 1752075292473,
       "tag": "0000_ancient_fabian_cortez",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1754764651352,
+      "tag": "0001_silky_changeling",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1754765036818,
+      "tag": "0002_wooden_scorpion",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1754765089860,
+      "tag": "0003_equal_strong_guy",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1754765282030,
+      "tag": "0004_material_vampiro",
+      "breakpoints": true
     }
   ]
 }

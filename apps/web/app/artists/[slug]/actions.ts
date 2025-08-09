@@ -66,7 +66,77 @@ const _getArtist = async (slug: string) => {
         .single();
 
       if (error || !data) {
-        console.warn("Artist not found in Supabase:", slug);
+        console.warn("Artist not found in database:", slug);
+        
+        // Try to import artist automatically from external sources
+        try {
+          // First search for the artist to see if it exists in external APIs
+          const searchResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/search?q=${encodeURIComponent(slug.replace(/-/g, " "))}&limit=1`
+          );
+          
+          if (searchResponse.ok) {
+            const searchData = await searchResponse.json();
+            const externalArtist = searchData.artists?.find(
+              (a: any) => a.source !== "database"
+            );
+            
+            if (externalArtist) {
+              // Trigger import for this artist
+              const importResponse = await fetch(
+                `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/import`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    artistName: externalArtist.name,
+                    ticketmasterId: externalArtist.ticketmasterId,
+                    imageUrl: externalArtist.imageUrl,
+                    genres: externalArtist.genres,
+                  }),
+                }
+              );
+              
+              if (importResponse.ok) {
+                const importData = await importResponse.json();
+                console.log("Artist import triggered:", importData);
+                
+                // Return minimal data for now - full sync will happen in background
+                return {
+                  id: importData.artist.id,
+                  spotifyId: null,
+                  ticketmasterId: null,
+                  name: externalArtist.name,
+                  slug: importData.artist.slug,
+                  imageUrl: externalArtist.imageUrl,
+                  smallImageUrl: null,
+                  genres: JSON.stringify(externalArtist.genres || []),
+                  popularity: externalArtist.popularity || 0,
+                  followers: 0,
+                  followerCount: 0,
+                  monthlyListeners: null,
+                  verified: false,
+                  bio: null,
+                  externalUrls: null,
+                  lastSyncedAt: null,
+                  songCatalogSyncedAt: null,
+                  totalAlbums: 0,
+                  totalSongs: 0,
+                  lastFullSyncAt: null,
+                  trendingScore: 0,
+                  totalShows: 0,
+                  upcomingShows: 0,
+                  totalSetlists: 0,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                };
+              }
+            }
+          }
+        } catch (importError) {
+          console.error("Auto-import failed:", importError);
+        }
+        
         return null;
       }
 

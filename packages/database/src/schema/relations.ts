@@ -7,12 +7,10 @@ import {
   emailUnsubscribes,
 } from "./email-preferences";
 import { setlistSongs, setlists, songs, votes } from "./setlists";
-import { showArtists, showComments, shows } from "./shows";
-// import { userFollowsArtists } from './user-follows-artists'; // Table removed
+import { showArtists, shows } from "./shows";
 import { userProfiles } from "./user-profiles";
 import { users } from "./users";
-import { venueInsiderTips, venuePhotos, venueReviews } from "./venue-reviews";
-import { venueTips, venues } from "./venues";
+import { venues } from "./venues";
 
 export const usersRelations = relations(users, ({ many, one }) => ({
   profile: one(userProfiles, {
@@ -21,12 +19,6 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   }),
   votes: many(votes),
   createdSetlists: many(setlists),
-  venueReviews: many(venueReviews),
-  venuePhotos: many(venuePhotos),
-  venueTips: many(venueTips),
-  venueInsiderTips: many(venueInsiderTips),
-  showComments: many(showComments),
-  // followedArtists: many(userFollowsArtists), // Table removed
   emailPreferences: one(emailPreferences, {
     fields: [users.id],
     references: [emailPreferences.userId],
@@ -57,10 +49,6 @@ export const artistStatsRelations = relations(artistStats, ({ one }) => ({
 
 export const venuesRelations = relations(venues, ({ many }) => ({
   shows: many(shows),
-  reviews: many(venueReviews),
-  photos: many(venuePhotos),
-  tips: many(venueTips),
-  insiderTips: many(venueInsiderTips),
 }));
 
 export const showsRelations = relations(shows, ({ many, one }) => ({
@@ -74,7 +62,6 @@ export const showsRelations = relations(shows, ({ many, one }) => ({
   }),
   setlists: many(setlists),
   supportingArtists: many(showArtists),
-  comments: many(showComments),
 }));
 
 export const showArtistsRelations = relations(showArtists, ({ one }) => ({
@@ -135,56 +122,8 @@ export const votesRelations = relations(votes, ({ one }) => ({
   }),
 }));
 
-export const venueReviewsRelations = relations(venueReviews, ({ one }) => ({
-  venue: one(venues, {
-    fields: [venueReviews.venueId],
-    references: [venues.id],
-  }),
-  user: one(users, {
-    fields: [venueReviews.userId],
-    references: [users.id],
-  }),
-}));
-
-export const venuePhotosRelations = relations(venuePhotos, ({ one }) => ({
-  venue: one(venues, {
-    fields: [venuePhotos.venueId],
-    references: [venues.id],
-  }),
-  user: one(users, {
-    fields: [venuePhotos.userId],
-    references: [users.id],
-  }),
-}));
-
-export const venueInsiderTipsRelations = relations(
-  venueInsiderTips,
-  ({ one }) => ({
-    venue: one(venues, {
-      fields: [venueInsiderTips.venueId],
-      references: [venues.id],
-    }),
-    user: one(users, {
-      fields: [venueInsiderTips.userId],
-      references: [users.id],
-    }),
-  }),
-);
-
-// Table removed - userFollowsArtists relations
-// export const userFollowsArtistsRelations = relations(
-//   userFollowsArtists,
-//   ({ one }) => ({
-//     user: one(users, {
-//       fields: [userFollowsArtists.userId],
-//       references: [users.id],
-//     }),
-//     artist: one(artists, {
-//       fields: [userFollowsArtists.artistId],
-//       references: [artists.id],
-//     }),
-//   })
-// );
+// Removed venue reviews, photos, insider tips, and show comments relations
+// These features are not part of the core MVP requirements per mysetlist-docs
 
 export const artistSongsRelations = relations(artistSongs, ({ one }) => ({
   artist: one(artists, {
@@ -204,31 +143,7 @@ export const userProfilesRelations = relations(userProfiles, ({ one }) => ({
   }),
 }));
 
-export const showCommentsRelations = relations(showComments, ({ one }) => ({
-  show: one(shows, {
-    fields: [showComments.showId],
-    references: [shows.id],
-  }),
-  user: one(users, {
-    fields: [showComments.userId],
-    references: [users.id],
-  }),
-  parent: one(showComments, {
-    fields: [showComments.parentId],
-    references: [showComments.id],
-  }),
-}));
-
-export const venueTipsRelations = relations(venueTips, ({ one }) => ({
-  venue: one(venues, {
-    fields: [venueTips.venueId],
-    references: [venues.id],
-  }),
-  user: one(users, {
-    fields: [venueTips.userId],
-    references: [users.id],
-  }),
-}));
+// Removed show comments and venue tips relations - not in core MVP
 
 export const emailPreferencesRelations = relations(
   emailPreferences,
