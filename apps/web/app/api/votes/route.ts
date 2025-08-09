@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "~/lib/supabase/server";
+import { createAuthenticatedClient } from "~/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createAuthenticatedClient();
 
     // Check authentication
     const {
@@ -38,10 +38,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate voteType
-    if (!["up", "down", null].includes(voteType)) {
+    // Validate voteType - only allow upvoting
+    if (!["up", null].includes(voteType)) {
       return NextResponse.json(
-        { error: 'Invalid request: voteType must be "up", "down", or null' },
+        { error: 'Invalid request: voteType must be "up" or null' },
         { status: 400 },
       );
     }
@@ -89,9 +89,8 @@ export async function POST(request: NextRequest) {
       .eq("setlist_song_id", setlistSongId);
 
     const upvotes = allVotes?.filter((v) => v.vote_type === "up").length || 0;
-    const downvotes =
-      allVotes?.filter((v) => v.vote_type === "down").length || 0;
-    const netVotes = upvotes - downvotes;
+    const downvotes = 0; // Downvoting disabled
+    const netVotes = upvotes;
 
     // Update vote counts on setlist_songs table
     await supabase
@@ -108,8 +107,8 @@ export async function POST(request: NextRequest) {
       success: true,
       userVote: voteType,
       upvotes,
-      downvotes,
-      netVotes,
+      downvotes: 0, // Downvoting disabled
+      netVotes: upvotes,
     });
   } catch (error) {
     console.error("Vote error:", error);
@@ -122,7 +121,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createAuthenticatedClient();
     const { searchParams } = new URL(request.url);
     const setlistSongId = searchParams.get("setlistSongId");
 

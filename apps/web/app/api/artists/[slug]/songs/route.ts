@@ -51,10 +51,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           WHERE ss.song_id = ${songs.id} AND s.artist_id = ${artist[0].id}
         )`,
         avgRating: sql<number>`(
-          SELECT COALESCE(AVG(v.rating), 0)::int
+          SELECT COALESCE(
+            (COUNT(CASE WHEN v.vote_type = 'up' THEN 1 END) - COUNT(CASE WHEN v.vote_type = 'down' THEN 1 END))::float /
+            NULLIF(COUNT(*), 0) * 100, 0
+          )::int
           FROM setlist_songs ss 
           JOIN setlists s ON ss.setlist_id = s.id
-          JOIN votes v ON v.setlist_id = s.id
+          JOIN votes v ON v.setlist_song_id = ss.id
           WHERE ss.song_id = ${songs.id} AND s.artist_id = ${artist[0].id}
         )`,
       })
@@ -141,110 +144,47 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           },
           source: "spotify",
         });
-      } catch (_spotifyError) {
-        // Fall through to mock data
+      } catch (spotifyError) {
+        console.warn("Spotify API failed:", spotifyError);
+        
+        // Return empty result instead of mock data
+        return NextResponse.json({
+          songs: [],
+          total: 0,
+          artist: {
+            id: artist[0].id,
+            name: artist[0].name,
+            slug: artist[0].slug,
+            imageUrl: artist[0].imageUrl,
+          },
+          source: "empty",
+          message: "No songs available. Try again later or check back after the artist performs shows.",
+        });
       }
     }
 
-    // Fallback to generated mock data
-    const mockSongs = generateMockSongs(artist[0], limit, offset);
-
+    // Return empty result instead of mock data
     return NextResponse.json({
-      songs: mockSongs,
-      total: mockSongs.length,
+      songs: [],
+      total: 0,
       artist: {
         id: artist[0].id,
         name: artist[0].name,
         slug: artist[0].slug,
         imageUrl: artist[0].imageUrl,
       },
-      source: "mock",
+      source: "empty",
+      message: "No songs available. Song data will be populated as artists perform shows and fans create setlists.",
     });
-  } catch (_error) {
+  } catch (error) {
+    console.error("Error in artist songs API:", error);
     return NextResponse.json(
-      { error: "Failed to fetch artist songs" },
+      { 
+        error: "Failed to fetch artist songs",
+        details: error instanceof Error ? error.message : "Unknown error"
+      },
       { status: 500 },
     );
   }
 }
 
-function generateMockSongs(artist: any, limit: number, offset: number) {
-  const songTitles = [
-    "Electric Dreams",
-    "Midnight City",
-    "Neon Lights",
-    "Lost in Time",
-    "Summer Breeze",
-    "Cosmic Love",
-    "Digital Heart",
-    "Ocean Drive",
-    "City Streets",
-    "Golden Hour",
-    "Starlight",
-    "Paradise",
-    "Thunder Road",
-    "Crystal Clear",
-    "Wildfire",
-    "Echo Chamber",
-    "Velvet Sky",
-    "Silver Lining",
-    "Aurora",
-    "Phoenix Rising",
-    "Moonlight Sonata",
-    "Solar Flare",
-    "Gravity",
-    "Kaleidoscope",
-    "Prism",
-    "Horizon",
-    "Zenith",
-    "Wavelength",
-    "Frequency",
-    "Amplitude",
-    "Resonance",
-    "Harmony",
-    "Melody",
-    "Rhythm",
-  ];
-
-  const albums = [
-    "Debut Album",
-    "Sophomore Release",
-    "Greatest Hits",
-    "Live Sessions",
-    "Studio Collection",
-    "B-Sides & Rarities",
-    "Acoustic Sessions",
-    "Remix Album",
-  ];
-
-  const songs: any[] = [];
-  const startIdx = offset;
-  const endIdx = Math.min(startIdx + limit, songTitles.length);
-
-  for (let i = startIdx; i < endIdx; i++) {
-    songs.push({
-      id: `mock_${artist.id}_song_${i}`,
-      spotifyId: null,
-      title: songTitles[i] || `Song ${i + 1}`,
-      artist: artist.name,
-      album: albums[i % albums.length],
-      albumArtUrl: `https://via.placeholder.com/300x300.png?text=${encodeURIComponent(songTitles[i] || `Song ${i + 1}`)}`,
-      releaseDate: new Date(2020 + Math.floor(i / 10), i % 12, 1)
-        .toISOString()
-        .split("T")[0],
-      durationMs: 180000 + ((i * 5000) % 120000), // 3-5 minutes
-      popularity: Math.max(100 - i * 2, 30), // Decreasing popularity
-      previewUrl: null,
-      isExplicit: i % 7 === 0, // Some songs are explicit
-      isPlayable: true,
-      acousticness: null,
-      danceability: null,
-      energy: null,
-      valence: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-  }
-
-  return songs;
-}

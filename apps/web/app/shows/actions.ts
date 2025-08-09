@@ -131,6 +131,10 @@ export const fetchShows = cache(
         .from(shows)
         .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
         .leftJoin(venues, eq(shows.venueId, venues.id));
+<<<<<<< HEAD
+=======
+      // Note: Using Drizzle query approach above instead of Supabase client for better type safety
+>>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
 
       // Apply filters
       const conditions: SQL<unknown>[] = [];
@@ -186,6 +190,7 @@ export const fetchShows = cache(
       const showsData = await orderedQuery.limit(limit).offset(offset);
 
       // Get total count for pagination
+<<<<<<< HEAD
       const countBaseQuery = db
         .select({ count: sql<number>`count(*)` })
         .from(shows)
@@ -195,6 +200,14 @@ export const fetchShows = cache(
       const countQuery = conditions.length > 0
         ? countBaseQuery.where(and(...conditions))
         : countBaseQuery;
+=======
+      const countQuery = db
+        .select({ count: sql<number>`count(*)` })
+        .from(shows)
+        .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
+        .leftJoin(venues, eq(shows.venueId, venues.id))
+        .where(conditions.length > 0 ? and(...conditions) : sql`1=1`);
+>>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
 
       const countResult = await countQuery;
       const totalCount = countResult[0]?.count || 0;
@@ -263,14 +276,23 @@ export const fetchShows = cache(
         ticketUrl: show.ticketUrl,
         minPrice: show.minPrice,
         maxPrice: show.maxPrice,
+<<<<<<< HEAD
         currency: show.currency || "USD",
+=======
+        currency: show.currency || 'USD',
+>>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
         viewCount: show.viewCount || 0,
         attendeeCount: show.attendeeCount || 0,
         setlistCount: show.setlistCount || 0,
         voteCount: show.voteCount || 0,
         trendingScore: show.trendingScore || 0,
+<<<<<<< HEAD
         isFeatured: show.isFeatured || false,
         isVerified: show.isVerified || false,
+=======
+        isFeatured: show.isFeatured,
+        isVerified: show.isVerified,
+>>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
         headlinerArtist: {
           ...show.headlinerArtist,
           genres: safeJsonParse(show.headlinerArtist.genres),

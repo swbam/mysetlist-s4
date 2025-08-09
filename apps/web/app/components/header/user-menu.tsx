@@ -22,6 +22,24 @@ export const UserMenu = React.memo(function UserMenu() {
   const { user, signOut, loading } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
+  // Move useMemo above conditional returns to ensure it's called on every render
+  const initials = useMemo(() => {
+    const email = user?.email;
+    if (!email) return "U";
+
+    const atIndex = email.indexOf("@");
+    if (atIndex === -1) return "U";
+
+    const username = email.substring(0, atIndex);
+    const parts = username.split(".");
+    
+    if (parts.length >= 2) {
+      return (parts[0]?.[0] + parts[1]?.[0]).toUpperCase();
+    }
+    
+    return (username[0] || "U").toUpperCase();
+  }, [user?.email]);
+
   const handleSignOut = async () => {
     setIsSigningOut(true);
     try {
@@ -53,23 +71,6 @@ export const UserMenu = React.memo(function UserMenu() {
     );
   }
 
-  const initials = useMemo(() => {
-    const email = user?.email;
-    if (!email) return "U";
-
-    const atIndex = email.indexOf("@");
-    if (atIndex === -1) return "U";
-
-    const username = email.substring(0, atIndex);
-    const parts = username.split(".");
-    const initials = parts
-      .map((n) => n[0] || "")
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-
-    return initials || "U";
-  }, [user]);
 
   return (
     <DropdownMenu>

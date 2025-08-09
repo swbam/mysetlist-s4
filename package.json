@@ -3,13 +3,13 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
     "start": "cd apps/web && pnpm start",
     "lint": "biome check --diagnostic-level=error",
     "lint:fix": "biome check --write",
-    "test": "turbo test",
-    "typecheck": "turbo typecheck",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
     "clean": "git clean -xdf node_modules .turbo .next",
     "db:push": "cd packages/database && pnpm push",
     "db:generate": "cd packages/database && pnpm generate",
@@ -38,6 +38,8 @@
     "deploy:quick": "vercel --prod",
     "deploy:security": "./scripts/deploy-security-migration.sh",
     "test:security": "tsx scripts/test-security-fixes.ts",
+    "test:cache": "node test-cache-behavior.js",
+    "test:cache:dev": "TEST_BASE_URL=http://localhost:3001 node test-cache-behavior.js",
     "analyze": "cd apps/web && ANALYZE=true pnpm build",
     "benchmark:turbopack": "node scripts/benchmark-turbopack.js",
     "benchmark:turbopack:full": "node scripts/benchmark-turbopack.js --benchmark"
@@ -60,6 +62,7 @@
   },
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
+    "@paralleldrive/cuid2": "^2.2.2",
     "postgres": "^3.4.7"
   }
 }

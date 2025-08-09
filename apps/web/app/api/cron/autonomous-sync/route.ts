@@ -344,13 +344,22 @@ async function syncArtistShows(
           // Extract venue
           const venueData = event._embedded?.venues?.[0];
           let venueId: string | null = null;
+<<<<<<< HEAD
 
+=======
+          
+>>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
           if (venueData) {
-            // Check if venue exists
+            // Check if venue exists by name and city (venues don't have ticketmasterId)
             const existingVenue = await db
               .select()
               .from(venues)
-              .where(eq(venues.ticketmasterId, venueData.id))
+              .where(
+                and(
+                  eq(venues.name, venueData.name),
+                  eq(venues.city, venueData.city?.name || 'Unknown')
+                )
+              )
               .limit(1);
 
             if (existingVenue.length === 0) {
@@ -365,10 +374,17 @@ async function syncArtistShows(
                 .values({
                   name: venueData.name,
                   slug: venueSlug,
+<<<<<<< HEAD
                   ticketmasterId: venueData.id,
                   city: venueData.city?.name || "",
                   state: venueData.state?.stateCode || null,
                   country: venueData.country?.countryCode || "",
+=======
+                  city: venueData.city?.name || 'Unknown',
+                  state: venueData.state?.stateCode || null,
+                  country: venueData.country?.countryCode || 'US',
+                  timezone: venueData.timezone || 'America/New_York',
+>>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
                   address: venueData.address?.line1 || null,
                   latitude: venueData.location?.latitude
                     ? Number.parseFloat(venueData.location.latitude)
@@ -380,7 +396,11 @@ async function syncArtistShows(
                   timezone: venueData.timezone || "America/New_York",
                 })
                 .returning();
+<<<<<<< HEAD
 
+=======
+              
+>>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
               venueId = newVenue[0]?.id || null;
             } else {
               venueId = existingVenue[0]?.id || null;
@@ -409,8 +429,12 @@ async function syncArtistShows(
               headlinerArtistId: artist.id,
               venueId,
               date: event.dates.start.localDate,
+<<<<<<< HEAD
               status:
                 event.dates.status.code === "onsale" ? "upcoming" : "completed",
+=======
+              status: event.dates.status.code === "onsale" ? "upcoming" : "completed",
+>>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
               ticketUrl: event.url || null,
               minPrice: event.priceRanges?.[0]?.min || null,
               maxPrice: event.priceRanges?.[0]?.max || null,

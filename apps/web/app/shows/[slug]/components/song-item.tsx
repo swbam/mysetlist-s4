@@ -67,15 +67,15 @@ export function SongItem({
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  const handleVote = (voteType: "up" | "down") => {
+  const handleVote = () => {
     if (!canVote) {
       return;
     }
 
     startTransition(async () => {
       try {
-        // The vote action will trigger real-time updates
-        await voteSong(item.id, voteType);
+        // The vote action will trigger real-time updates - only upvoting allowed
+        await voteSong(item.id, "up");
         // Don't manually update state - real-time hook will handle it
       } catch (error: any) {
         if (error.message.includes("logged in")) {
@@ -156,18 +156,16 @@ export function SongItem({
         {/* Voting */}
         {canVote && !isEditing && (
           <>
-            {/* Desktop Vote Button */}
+            {/* Desktop Vote Button - Upvote Only */}
             <div className="hidden md:block">
               <AnonymousVoteButton
                 setlistSongId={item.id}
                 initialUpvotes={upvotes}
-                initialDownvotes={downvotes}
+                initialDownvotes={0}
                 isAuthenticated={!!session}
                 onVote={async (voteType) => {
                   if (voteType === "up") {
-                    await handleVote("up");
-                  } else if (voteType === "down") {
-                    await handleVote("down");
+                    await handleVote();
                   }
                 }}
                 variant="compact"
@@ -176,16 +174,12 @@ export function SongItem({
               />
             </div>
 
-            {/* Mobile Vote Button */}
+            {/* Mobile Vote Button - Upvote Only */}
             <div className="block md:hidden">
               <MobileVoteButton
                 songId={item.id}
-                onVote={async (_songId, voteType) => {
-                  if (voteType === "up") {
-                    await handleVote("up");
-                  } else if (voteType === "down") {
-                    await handleVote("down");
-                  }
+                onVote={async () => {
+                  await handleVote();
                 }}
                 compact={true}
                 disabled={isPending}

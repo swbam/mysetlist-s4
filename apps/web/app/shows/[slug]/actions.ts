@@ -65,6 +65,7 @@ export async function createSetlist(
     throw new Error("You must be logged in to create a setlist");
   }
 
+  // Create the setlist
   const { data: setlist, error } = await supabase
     .from("setlists")
     .insert({
@@ -79,6 +80,100 @@ export async function createSetlist(
 
   if (error) {
     throw error;
+  }
+
+  // Automatically add 5 random songs from artist catalog
+  try {
+    // First try artist_songs table
+    const { data: artistSongsData } = await supabase
+      .from("artist_songs")
+      .select("*")
+      .eq("artist_id", artistId)
+      .limit(50);
+
+    if (artistSongsData && artistSongsData.length > 0) {
+      // Shuffle and pick 5 random songs
+      const shuffled = artistSongsData.sort(() => 0.5 - Math.random());
+      const selectedSongs = shuffled.slice(0, 5);
+
+      // First, insert songs into the songs table if they don't exist
+      for (let i = 0; i < selectedSongs.length; i++) {
+        const song = selectedSongs[i];
+        
+        // Check if song exists in songs table
+        const { data: existingSong } = await supabase
+          .from("songs")
+          .select("id")
+          .eq("spotify_id", song.spotify_id)
+          .single();
+
+        let songId = existingSong?.id;
+
+        if (!songId) {
+          // Insert song into songs table
+          const { data: newSong } = await supabase
+            .from("songs")
+            .insert({
+              spotify_id: song.spotify_id,
+              title: song.title,
+              artist: song.artist_name || "Unknown Artist",
+              album: song.album_name,
+              album_art_url: song.album_art_url,
+              duration_ms: song.duration_ms,
+              popularity: song.popularity,
+              preview_url: song.preview_url,
+              is_explicit: song.is_explicit,
+              spotify_uri: song.spotify_uri,
+              external_urls: song.external_urls,
+            })
+            .select("id")
+            .single();
+          
+          songId = newSong?.id;
+        }
+
+        if (songId) {
+          // Add song to setlist
+          await supabase
+            .from("setlist_songs")
+            .insert({
+              setlist_id: setlist.id,
+              song_id: songId,
+              position: i + 1,
+            });
+        }
+      }
+    } else {
+      // Fallback: Try to get songs from the songs table by artist name
+      const { data: artist } = await supabase
+        .from("artists")
+        .select("name")
+        .eq("id", artistId)
+        .single();
+
+      if (artist) {
+        const { data: songsData } = await supabase
+          .from("songs")
+          .select("*")
+          .ilike("artist", `%${artist.name}%`)
+          .limit(5);
+
+        if (songsData && songsData.length > 0) {
+          for (let i = 0; i < songsData.length; i++) {
+            await supabase
+              .from("setlist_songs")
+              .insert({
+                setlist_id: setlist.id,
+                song_id: songsData[i].id,
+                position: i + 1,
+              });
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Failed to add initial songs to setlist:", error);
+    // Don't throw - setlist was created successfully, just without initial songs
   }
 
   revalidatePath("/shows/[slug]", "page");
@@ -253,7 +348,7 @@ export async function searchSongs(query: string, artistId?: string) {
   return data || [];
 }
 
-export async function voteSong(setlistSongId: string, voteType: "up" | "down") {
+export async function voteSong(setlistSongId: string, voteType: "up") {
   const supabase = await createClient();
   const user = await getCurrentUser();
 
@@ -270,25 +365,16 @@ export async function voteSong(setlistSongId: string, voteType: "up" | "down") {
     .single();
 
   if (existingVote) {
-    if (existingVote.vote_type === voteType) {
-      // Remove vote if clicking the same type
-      await supabase.from("votes").delete().eq("id", existingVote.id);
-
-      return { removed: true };
-    }
-    // Update vote type
-    await supabase
-      .from("votes")
-      .update({ vote_type: voteType })
-      .eq("id", existingVote.id);
-
-    return { updated: true };
+    // Remove vote if already upvoted (toggle behavior)
+    await supabase.from("votes").delete().eq("id", existingVote.id);
+    return { removed: true };
   }
-  // Create new vote
+  
+  // Create new upvote
   await supabase.from("votes").insert({
     setlist_song_id: setlistSongId,
     user_id: user.id,
-    vote_type: voteType,
+    vote_type: "up", // Only upvoting allowed
   });
 
   return { created: true };

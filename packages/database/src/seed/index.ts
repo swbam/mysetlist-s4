@@ -330,7 +330,7 @@ export class DatabaseSeeder {
         baseDate.getTime() + daysOffset * 24 * 60 * 60 * 1000,
       );
 
-      const _statuses = ["upcoming", "completed", "cancelled"] as const;
+      // const _statuses = ["upcoming", "completed", "cancelled"] as const;
       const status = showDate > new Date() ? "upcoming" : "completed";
 
       return {
@@ -343,7 +343,7 @@ export class DatabaseSeeder {
         date: showDate.toISOString().split("T")[0],
         startTime: `${19 + Math.floor(Math.random() * 3)}:00:00`, // 7-9 PM
         status,
-        description: `Join ${artist.name} for an unforgettable ${showName.toLowerCase()} experience.`,
+        description: `Join ${artist.name} for an unforgettable ${showName?.toLowerCase() || 'show'} experience.`,
         minPrice: Math.floor(Math.random() * 100) + 25,
         maxPrice: Math.floor(Math.random() * 200) + 100,
         viewCount: Math.floor(Math.random() * 10000),
@@ -359,7 +359,7 @@ export class DatabaseSeeder {
   }
 
   private async seedSetlists(showList: any[], songList: any[]): Promise<any[]> {
-    const setlists = [];
+    const setlistsArray: any[] = [];
 
     for (const show of showList) {
       // Each show gets 1-2 setlists
@@ -369,7 +369,7 @@ export class DatabaseSeeder {
         const setlistName = i === 0 ? "Main Set" : "Encore";
         const type = show.status === "completed" ? "actual" : "predicted";
 
-        const insertedSetlist = await db
+        const insertedSetlist: any[] = await db
           .insert(setlists)
           .values({
             showId: show.id,
@@ -382,7 +382,7 @@ export class DatabaseSeeder {
           .returning({ id: setlists.id });
 
         if (insertedSetlist[0]) {
-          setlists.push(insertedSetlist[0]);
+          setlistsArray.push(insertedSetlist[0]);
 
           // Add songs to the setlist
           const songCount = Math.floor(Math.random() * 15) + 8; // 8-22 songs
@@ -406,7 +406,7 @@ export class DatabaseSeeder {
       }
     }
 
-    return setlists;
+    return setlistsArray;
   }
 
   private shuffleArray<T>(array: T[]): T[] {
@@ -477,7 +477,7 @@ if (require.main === module) {
       if (operation === "clear") {
         await databaseSeeder.clearDatabase();
       } else if (operation === "stats") {
-        const _stats = await databaseSeeder.getSeededDataStats();
+        // const _stats = await databaseSeeder.getSeededDataStats();
       } else {
         await databaseSeeder.seedDatabase({
           artists: 30,

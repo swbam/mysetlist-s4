@@ -4,6 +4,12 @@ import { env } from "@repo/env";
 import { SpotifyClient, TicketmasterClient } from "@repo/external-apis";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
+<<<<<<< HEAD
+=======
+import { env } from "@repo/env";
+import { getSyncQueue } from "@repo/utils";
+import { createId } from "@paralleldrive/cuid2";
+>>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
 
 const spotify = new SpotifyClient({});
 
@@ -44,7 +50,15 @@ async function findTicketmasterId(artistName: string): Promise<string | null> {
 
 export async function POST(request: NextRequest) {
   try {
-    const { artistName, spotifyId, ticketmasterId } = await request.json();
+    const { 
+      artistName, 
+      spotifyId, 
+      ticketmasterId,
+      artistId,
+      jobType = "full_sync",
+      priority = 2,
+      useBackgroundSync = true
+    } = await request.json();
 
     if (!artistName && !spotifyId) {
       return NextResponse.json(
@@ -146,6 +160,7 @@ export async function POST(request: NextRequest) {
       artistRecord = created;
     }
 
+<<<<<<< HEAD
     // Fire-and-forget background jobs
     try {
       // Always sync song catalog
@@ -170,19 +185,59 @@ export async function POST(request: NextRequest) {
             `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/shows`,
             {
               method: "POST",
+=======
+    // Background sync system
+    let syncJobId: string | null = null;
+    
+    if (useBackgroundSync && artistRecord) {
+      try {
+        const syncQueue = getSyncQueue();
+        syncJobId = await syncQueue.enqueue({
+          entityType: "artist",
+          entityId: artistRecord.id,
+          spotifyId: artistRecord.spotifyId,
+          ticketmasterId: artistRecord.ticketmasterId || undefined,
+          jobType,
+          priority,
+          metadata: {
+            userTriggered: true,
+            source: "artist_sync_api",
+            artistName: artistRecord.name
+          }
+        });
+      } catch (syncError) {
+        console.error("Failed to enqueue background sync:", syncError);
+        // Fall back to old fire-and-forget method
+        try {
+          fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/songs`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ artistId: artistRecord.id }),
+          }).catch(() => {});
+
+          if (artistRecord.ticketmasterId) {
+            fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/shows`, {
+              method: "POST", 
+>>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 ticketmasterId: artistRecord.ticketmasterId,
                 artistId: artistRecord.id,
               }),
+<<<<<<< HEAD
             },
           ).catch(() => {
             // Log but don't fail the main request
             console.error("Failed to sync shows");
           });
         }
+=======
+            }).catch(() => {});
+          }
+        } catch (_err) {}
+>>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
       }
-    } catch (_err) {}
+    }
 
     if (!artistRecord) {
       return NextResponse.json(
@@ -198,6 +253,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       slug: artistRecord.slug,
+      syncJobId,
       artist: {
         id: artistRecord.id,
         name: artistRecord.name,

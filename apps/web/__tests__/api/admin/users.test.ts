@@ -10,12 +10,17 @@ const createMockSupabase = () => ({
   from: vi.fn(),
 });
 
+<<<<<<< HEAD
 // Create a variable to hold our mock instance
 let mockSupabase: ReturnType<typeof createMockSupabase>;
 
 // Mock the Supabase server client module
 vi.mock("~/lib/api/supabase/server", () => ({
   createClient: vi.fn(() => Promise.resolve(mockSupabase)),
+=======
+vi.mock("~/lib/supabase/server", () => ({
+  createClient: vi.fn(() => mockSupabase),
+>>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
 }));
 
 describe("/api/admin/users", () => {

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Toaster } from "@repo/design-system/components/ui/sonner";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -5,6 +6,16 @@ import dynamic from "next/dynamic";
 import { ResponsiveHeader } from "../components/layout/responsive-header";
 import { ThemeProvider } from "../components/ui/theme-provider";
 import { AuthProvider } from "./providers/auth-provider";
+=======
+import { Inter } from "next/font/google";
+import { Metadata } from "next";
+import { AuthProvider } from "./providers/auth-provider";
+import { Header } from "./components/header";
+import { Footer } from "./components/footer";
+import { ThemeProvider } from "../components/ui/theme-provider";
+import { Toaster } from "@repo/design-system/components/ui/sonner";
+import { CacheManager } from "../components/cache-manager";
+>>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
 import "@repo/design-system/styles/globals.css";
 
 // Import footer normally (can't use ssr: false in Server Components)
@@ -47,14 +58,16 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            <div className="min-h-screen flex flex-col">
-              <ResponsiveHeader />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-            <Toaster />
-          </AuthProvider>
+          <CacheManager enableAutoRefresh={true} refreshInterval={5 * 60 * 1000}>
+            <AuthProvider>
+              <div className="min-h-screen flex flex-col">
+                <Header />
+                <main className="flex-1">{children}</main>
+                <Footer />
+              </div>
+              <Toaster />
+            </AuthProvider>
+          </CacheManager>
         </ThemeProvider>
       </body>
     </html>

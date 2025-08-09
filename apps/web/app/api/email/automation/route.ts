@@ -4,7 +4,7 @@ import {
   processEmailAutomation,
   trackEmailEngagement,
 } from "~/lib/email/automation-engine";
-import { createClient } from "~/lib/supabase/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Check authentication
-    const supabase = await createClient();
+    const supabase = createServiceClient();
     const {
       data: { user },
       error: authError,
@@ -252,7 +252,7 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     // Check authentication
-    const supabase = await createClient();
+    const supabase = createServiceClient();
     const {
       data: { user },
       error: authError,
@@ -309,7 +309,7 @@ export async function PUT(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // Check authentication
-    const supabase = await createClient();
+    const supabase = createServiceClient();
     const {
       data: { user },
       error: authError,

@@ -75,7 +75,6 @@ const sampleArtists = [
 ];
 
 async function seedArtists() {
-  const db = createClient();
 
   for (const artist of sampleArtists) {
     try {

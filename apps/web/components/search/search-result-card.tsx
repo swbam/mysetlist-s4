@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { SyncStatusIndicator } from "~/components/sync-status-indicator";
+import { useArtistSync } from "~/hooks/use-sync-status";
 
 interface SearchResult {
   id: string;
@@ -32,6 +34,7 @@ interface SearchResult {
   genres?: string[];
   showCount?: number;
   followerCount?: number;
+  spotifyId?: string;
   date?: string;
   venue?: {
     name: string;
@@ -63,6 +66,7 @@ export function SearchResultCard({
   isFollowing = false,
   showType = true,
 }: SearchResultCardProps) {
+  const { triggerArtistSync, getSyncJobId } = useArtistSync();
   const getResultIcon = () => {
     switch (result.type) {
       case "artist":
@@ -115,15 +119,17 @@ export function SearchResultCard({
   };
 
   const handleClick = () => {
-    // Fire auto-import request for artist data; ignore errors
-    if (result.type === "artist") {
-      fetch("/api/artists/auto-import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ artistId: result.id }),
-      }).catch(() => {});
+    // Trigger background sync for artist data when clicking from search
+    if (result.type === "artist" && result.spotifyId) {
+      triggerArtistSync(result.id, result.spotifyId, 'full_sync')
+        .catch(() => {
+          // Silent fail - user still gets optimistic UI
+        });
     }
   };
+
+  // Get sync job ID for this artist
+  const syncJobId = result.type === "artist" ? getSyncJobId(result.id) : null;
 
   return (
     <Card
@@ -142,7 +148,7 @@ export function SearchResultCard({
                 alt={result.title}
                 fill
                 className="object-cover"
-                sizes="64px"
+                sizes="(max-width: 768px) 64px, 64px"
               />
             </div>
           ) : (
@@ -176,6 +182,11 @@ export function SearchResultCard({
                   <Star className="mr-1 h-3 w-3" />
                   Verified
                 </Badge>
+              )}
+
+              {/* Show sync status for artists */}
+              {result.type === "artist" && syncJobId && (
+                <SyncStatusIndicator jobId={syncJobId} size="sm" />
               )}
             </div>
 

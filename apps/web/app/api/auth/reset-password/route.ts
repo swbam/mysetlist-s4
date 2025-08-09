@@ -5,7 +5,7 @@ import {
   passwordResetRateLimiter,
 } from "~/lib/auth-rate-limit";
 import { validateCSRFToken } from "~/lib/csrf";
-import { createClient } from "~/lib/supabase/server";
+import { createAuthenticatedClient } from "~/lib/supabase/server";
 
 const resetPasswordSchema = z.object({
   email: z.string().email(),
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     const { email } = validationResult.data;
 
     // Send password reset email
-    const supabase = await createClient();
+    const supabase = await createAuthenticatedClient();
     const { error: _error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${request.nextUrl.origin}/auth/callback?next=/auth/update-password`,
     });

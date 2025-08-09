@@ -1,12 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "~/lib/api/supabase/server";
+import { createAuthenticatedClient } from "~/lib/supabase/server";
 
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const supabase = await createClient();
+    const supabase = await createAuthenticatedClient();
     const { id: userId } = await params;
 
     // Check admin authorization
@@ -183,7 +183,7 @@ export async function GET(
           reviews: reviewsWritten || 0,
           comments: commentsWritten || 0,
         }),
-        platform_tenure_days: calculateTenureDays(userId),
+        platform_tenure_days: await calculateTenureDays(userId, supabase),
       },
     };
 
@@ -264,8 +264,25 @@ function calculateCommunityEngagement(metrics: {
   return 90;
 }
 
-function calculateTenureDays(_userId: string): number {
-  // This would need to be calculated from user creation date
-  // For now, return a placeholder
-  return 90;
+async function calculateTenureDays(userId: string, supabase: any): Promise<number> {
+  try {
+    const { data: user } = await supabase
+      .from("users")
+      .select("created_at")
+      .eq("id", userId)
+      .single();
+      
+    if (!user?.created_at) {
+      return 0;
+    }
+    
+    const createdDate = new Date(user.created_at);
+    const currentDate = new Date();
+    const diffTime = Math.abs(currentDate.getTime() - createdDate.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    return diffDays;
+  } catch {
+    return 0;
+  }
 }

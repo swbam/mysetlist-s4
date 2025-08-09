@@ -4,7 +4,7 @@ import {
   getScalabilityRecommendations,
   scalabilityArchitect,
 } from "~/lib/scalability/architecture-design";
-import { createClient } from "~/lib/supabase/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
         );
 
         // Store the plan in database for tracking
-        const supabase = await createClient();
+        const supabase = createServiceClient();
         const { data: savedPlan, error: saveError } = await supabase
           .from("scalability_plans")
           .insert({
@@ -367,7 +367,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createServiceClient();
 
     // Update scalability plan
     const { data: updatedPlan, error: updateError } = await supabase
@@ -420,7 +420,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createServiceClient();
 
     // Archive the plan instead of deleting
     const { error: archiveError } = await supabase
