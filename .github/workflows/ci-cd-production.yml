@@ -367,8 +367,6 @@ jobs:
 
       - name: CodeQL Analysis
         uses: github/codeql-action/analyze@v3
-        with:
-          languages: javascript
 
   secrets-scan:
     name: 🔐 Secrets Scan
@@ -460,7 +458,7 @@ jobs:
       needs.security-scan.result == 'success' &&
       (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
     environment:
-      name: staging
+      name: production
       url: ${{ steps.deploy.outputs.url }}
     steps:
       - name: Checkout
@@ -644,7 +642,6 @@ jobs:
         with:
           status: ${{ needs.deploy-production.result == 'success' && '✅ Success' || '❌ Failed' }}
           fields: repo,message,commit,author,action,eventName,ref,workflow
-          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 

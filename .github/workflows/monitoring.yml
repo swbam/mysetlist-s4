@@ -180,7 +180,7 @@ jobs:
   alert-summary:
     name: Alert Summary
     runs-on: ubuntu-latest
-    needs: [uptime-check, performance-check, error-monitoring, database-health, security-check]
+    needs: [uptime-check, performance-check, database-health, security-check]
     if: failure()
     steps:
       - name: Send comprehensive alert

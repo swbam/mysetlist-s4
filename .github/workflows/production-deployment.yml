@@ -159,8 +159,6 @@ jobs:
 
       - name: Run CodeQL analysis
         uses: github/codeql-action/analyze@v2
-        with:
-          languages: javascript
 
   # Deployment Jobs
   deploy-preview:
