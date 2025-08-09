@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { ResponsiveHeader } from "../components/layout/responsive-header";
 import { ThemeProvider } from "../components/ui/theme-provider";
 import { AuthProvider } from "./providers/auth-provider";
-import { CacheManager } from "../components/cache-manager";
+// import { CacheManager } from "../components/cache-manager";
 import "@repo/design-system/styles/globals.css";
 
 // Import footer normally (can't use ssr: false in Server Components)
@@ -48,16 +48,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <CacheManager enableAutoRefresh={true} refreshInterval={5 * 60 * 1000}>
-            <AuthProvider>
-              <div className="min-h-screen flex flex-col">
-                <Header />
-                <main className="flex-1">{children}</main>
-                <Footer />
-              </div>
-              <Toaster />
-            </AuthProvider>
-          </CacheManager>
+          <AuthProvider>
+            <div className="min-h-screen flex flex-col">
+              <ResponsiveHeader />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
