@@ -1,6 +1,6 @@
-import { db, venues } from "@repo/database";
+import { venues, db } from "@repo/database";
 import { eq } from "drizzle-orm";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const venueSchema = z.object({

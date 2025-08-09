@@ -25,7 +25,7 @@ import {
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Suspense } from "react";
+import React, { Suspense } from "react";
 import { TrendingErrorBoundary } from "~/components/error-boundaries/trending-error-boundary";
 import { LiveTrending } from "~/components/trending/live-trending";
 import { createServiceClient } from "~/lib/supabase/server";
@@ -191,7 +191,6 @@ export default async function TrendingPage() {
             <h1 className="font-bold text-4xl">Trending</h1>
           </div>
           <p className="text-muted-foreground text-xl">
-            Discover what's hot in the live music world right now
           </p>
         </div>
 

@@ -1,6 +1,6 @@
 import { artists, db } from "@repo/database";
 import { SpotifyClient } from "@repo/external-apis";
-import { type SQL, and, eq, isNull, lt, or } from "drizzle-orm";
+import { eq, or, and, isNull, lt, type SQL } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {

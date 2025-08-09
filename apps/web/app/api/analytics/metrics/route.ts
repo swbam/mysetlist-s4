@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { monitor } from "~/lib/api/monitoring";
 
 export async function POST(request: NextRequest) {
@@ -84,9 +84,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
 
     const metricName = searchParams.get("name");
-    const timeRange = Number.parseInt(
-      searchParams.get("timeRange") || "3600000",
-    ); // 1 hour default
+    const timeRange = parseInt(searchParams.get("timeRange") || "3600000"); // 1 hour default
     const format = searchParams.get("format") || "json";
 
     if (!metricName) {

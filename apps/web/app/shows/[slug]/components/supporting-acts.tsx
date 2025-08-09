@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Users } from "lucide-react";
+import { CheckCircle2, Clock, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 

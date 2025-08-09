@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
-  getPersonalizedEmailData,
   processEmailAutomation,
+  getPersonalizedEmailData,
   trackEmailEngagement,
 } from "~/lib/email/automation-engine";
 import { createServiceClient } from "~/lib/supabase/server";

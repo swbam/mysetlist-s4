@@ -8,8 +8,8 @@
  */
 
 import { readFileSync, writeFileSync } from "fs";
-import path from "path";
 import { glob } from "glob";
+import path from "path";
 
 interface ConsoleFix {
   filePath: string;
@@ -174,7 +174,7 @@ function applyFixes(fixes: ConsoleFix[]): void {
 
   Object.entries(fileGroups).forEach(([filePath, fileFixes]) => {
     const content = readFileSync(filePath, "utf-8");
-    const lines = content.split("\n");
+    let lines = content.split("\n");
 
     // Sort fixes by line number in descending order to avoid index shifts
     fileFixes.sort((a, b) => b.lineNumber - a.lineNumber);

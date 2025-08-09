@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Alert,
-  AlertDescription,
-} from "@repo/design-system/components/ui/alert";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -13,9 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Progress } from "@repo/design-system/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -29,21 +24,26 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Progress } from "@repo/design-system/components/ui/progress";
 import {
-  Activity,
-  AlertTriangle,
-  BarChart3,
-  CheckCircle,
-  Clock,
+  Alert,
+  AlertDescription,
+} from "@repo/design-system/components/ui/alert";
+import {
   Database,
-  DollarSign,
   Server,
-  Settings,
   Shield,
-  Target,
+  DollarSign,
+  Clock,
+  AlertTriangle,
+  CheckCircle,
+  Activity,
+  BarChart3,
+  Settings,
   TrendingUp,
+  Target,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 
 interface ScalabilityRecommendations {
   database: {
@@ -228,9 +228,7 @@ export default function ScalabilityPlanner() {
                 id="currentUsers"
                 type="number"
                 value={currentUsers}
-                onChange={(e) =>
-                  setCurrentUsers(Number.parseInt(e.target.value))
-                }
+                onChange={(e) => setCurrentUsers(parseInt(e.target.value))}
                 min="1000"
                 max="10000000"
                 step="1000"
@@ -242,9 +240,7 @@ export default function ScalabilityPlanner() {
                 id="targetUsers"
                 type="number"
                 value={targetUsers}
-                onChange={(e) =>
-                  setTargetUsers(Number.parseInt(e.target.value))
-                }
+                onChange={(e) => setTargetUsers(parseInt(e.target.value))}
                 min="1000"
                 max="10000000"
                 step="1000"

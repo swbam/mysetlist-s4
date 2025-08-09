@@ -152,7 +152,7 @@ async function getOptimizedTrendingData(
       .order("trending_score", { ascending: false })
   ]);
 
-  const [artistsResult, showsResult] = promises;
+  const [artistsResult, showsResult] = promises as const;
 
   // Transform artists data
   let artists: OptimizedTrendingResult[] = [];

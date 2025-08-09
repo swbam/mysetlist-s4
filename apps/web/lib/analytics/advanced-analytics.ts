@@ -1,5 +1,5 @@
-import { getCachedQuery } from "~/lib/data-pipeline/optimization-service";
 import { createClient } from "~/lib/supabase/server";
+import { getCachedQuery } from "~/lib/data-pipeline/optimization-service";
 
 // Cohort Analysis Types
 export interface CohortData {

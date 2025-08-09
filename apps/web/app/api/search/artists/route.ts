@@ -1,9 +1,5 @@
+import { createServiceClient } from "~/lib/supabase/server";
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "~/lib/supabase/server";
-
-// Vercel function config to prevent timeouts
-export const maxDuration = 10; // 10 seconds max
-export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,7 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ artists: [] });
     }
 
-    const supabase = await createClient();
+    const supabase = createServiceClient();
 
     // Search artists by name with fuzzy matching
     const { data: searchResults, error } = await supabase

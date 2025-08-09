@@ -6,6 +6,7 @@ import {
   CardHeader,
 } from "@repo/design-system/components/ui/card";
 import { cn } from "@repo/design-system/lib/utils";
+import * as React from "react";
 
 interface MobileOptimizedCardProps {
   children: any;

@@ -1,7 +1,7 @@
-import { calculateVenueGrowth } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "~/lib/supabase/server";
+import { createServiceClient } from "~/lib/supabase/server";
 import type { TrendingVenue, TrendingVenuesResponse } from "~/types/api";
+import { calculateVenueGrowth } from "@repo/database";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     const limit = Number.parseInt(searchParams.get("limit") || "20");
     const timeframe = searchParams.get("timeframe") || "week";
 
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
 
     // Get venues with real analytics and historical data
     const { data: raw, error } = await supabase

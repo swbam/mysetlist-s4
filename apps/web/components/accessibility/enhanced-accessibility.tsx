@@ -1,6 +1,7 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { cn } from "@repo/design-system/lib/utils";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -8,19 +9,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { cn } from "@repo/design-system/lib/utils";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
-  Accessibility,
-  Contrast,
   Eye,
   EyeOff,
-  Keyboard,
-  Type,
   Volume2,
   VolumeX,
+  Keyboard,
+  Accessibility,
+  Contrast,
+  Type,
   Zap,
 } from "lucide-react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 // Focus management hook
 export function useFocusManagement() {
@@ -297,7 +297,7 @@ export function useFontSizeAdjustment() {
   useEffect(() => {
     const saved = localStorage.getItem("font-size");
     if (saved) {
-      const size = Number.parseInt(saved, 10);
+      const size = parseInt(saved, 10);
       setFontSize(size);
       document.documentElement.style.fontSize = `${size}px`;
     }
@@ -540,9 +540,9 @@ export function useColorContrast() {
     const getLuminance = (color: string) => {
       // Simple luminance calculation
       const hex = color.replace("#", "");
-      const r = Number.parseInt(hex.substr(0, 2), 16) / 255;
-      const g = Number.parseInt(hex.substr(2, 2), 16) / 255;
-      const b = Number.parseInt(hex.substr(4, 2), 16) / 255;
+      const r = parseInt(hex.substr(0, 2), 16) / 255;
+      const g = parseInt(hex.substr(2, 2), 16) / 255;
+      const b = parseInt(hex.substr(4, 2), 16) / 255;
 
       const gamma = 2.4;
       const rs =

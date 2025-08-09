@@ -4,7 +4,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, ChevronUp, Heart, Zap } from "lucide-react";
-import { useCallback, useState } from "react";
+import React, { useState, useCallback } from "react";
 import { toast } from "sonner";
 import { useAuth } from "~/app/providers/auth-provider";
 import { useRealtimeVotes } from "~/hooks/use-realtime-votes";

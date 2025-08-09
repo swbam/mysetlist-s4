@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { monitor, monitoringService } from "~/lib/api/monitoring";
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -6,9 +6,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const startTime = Date.now();
     const searchParams = request.nextUrl.searchParams;
 
-    const timeRange = Number.parseInt(
-      searchParams.get("timeRange") || "3600000",
-    ); // 1 hour default
+    const timeRange = parseInt(searchParams.get("timeRange") || "3600000"); // 1 hour default
     const includeSystemMetrics = searchParams.get("system") === "true";
     const includeWebVitals = searchParams.get("vitals") === "true";
 

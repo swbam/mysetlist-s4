@@ -1,11 +1,11 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { monitor } from "~/lib/api/monitoring";
+import { NextRequest, NextResponse } from "next/server";
 import {
-  type JobType,
   backgroundJobQueue,
-  getJobStatus,
   scheduleJob,
+  getJobStatus,
+  JobType,
 } from "~/lib/background-jobs";
+import { monitor } from "~/lib/api/monitoring";
 
 // GET /api/jobs - Get job status or queue statistics
 export async function GET(request: NextRequest) {

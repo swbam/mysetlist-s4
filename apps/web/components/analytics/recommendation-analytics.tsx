@@ -1,7 +1,6 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -9,25 +8,26 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Progress } from "@repo/design-system/components/ui/progress";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
+import { Progress } from "@repo/design-system/components/ui/progress";
 import {
   Brain,
-  Calendar,
-  Eye,
-  Filter,
-  Music,
   Target,
-  ThumbsUp,
   TrendingUp,
   Users,
+  Music,
+  Calendar,
+  Eye,
+  ThumbsUp,
+  Filter,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 
 interface RecommendationMetrics {
   totalRecommendations: number;
@@ -84,12 +84,114 @@ export function RecommendationAnalytics() {
     try {
       setLoading(true);
 
-      const response = await fetch("/api/analytics?metric=recommendations");
-      if (!response.ok) {
-        throw new Error("Failed to fetch recommendation metrics");
-      }
-      const data = await response.json();
-      setMetrics(data);
+      // Mock data - in production this would fetch from /api/analytics?metric=recommendations
+      const mockData: RecommendationMetrics = {
+        totalRecommendations: 45678,
+        clickThroughRate: 12.4,
+        conversionRate: 3.7,
+        userEngagement: 68.2,
+        accuracyScore: 82.5,
+        algorithmPerformance: [
+          {
+            algorithm: "Collaborative Filtering",
+            accuracy: 85.2,
+            engagement: 72.1,
+            usage: 45.3,
+          },
+          {
+            algorithm: "Content-Based",
+            accuracy: 78.9,
+            engagement: 68.4,
+            usage: 32.7,
+          },
+          {
+            algorithm: "Hybrid ML",
+            accuracy: 88.1,
+            engagement: 79.2,
+            usage: 22.0,
+          },
+        ],
+        categoryBreakdown: [
+          {
+            category: "Artists",
+            recommendations: 18520,
+            clicks: 2301,
+            conversions: 847,
+            ctr: 12.4,
+          },
+          {
+            category: "Shows",
+            recommendations: 15890,
+            clicks: 1968,
+            conversions: 723,
+            ctr: 12.4,
+          },
+          {
+            category: "Venues",
+            recommendations: 11268,
+            clicks: 1389,
+            conversions: 512,
+            ctr: 12.3,
+          },
+        ],
+        topRecommendations: [
+          {
+            type: "artist",
+            name: "Taylor Swift",
+            description: "Based on your listening history",
+            clicks: 1250,
+            conversions: 487,
+            score: 94.2,
+          },
+          {
+            type: "show",
+            name: "The Weeknd - After Hours Tour",
+            description: "Similar to shows you've attended",
+            clicks: 1180,
+            conversions: 445,
+            score: 91.8,
+          },
+          {
+            type: "venue",
+            name: "Madison Square Garden",
+            description: "Popular venue in your area",
+            clicks: 980,
+            conversions: 367,
+            score: 89.5,
+          },
+        ],
+        userSegmentPerformance: [
+          {
+            segment: "Power Users",
+            users: 2340,
+            avgRecommendations: 15.7,
+            engagement: 84.2,
+            satisfaction: 4.6,
+          },
+          {
+            segment: "Regular Users",
+            users: 8950,
+            avgRecommendations: 8.3,
+            engagement: 67.8,
+            satisfaction: 4.1,
+          },
+          {
+            segment: "Casual Users",
+            users: 12680,
+            avgRecommendations: 4.2,
+            engagement: 45.6,
+            satisfaction: 3.8,
+          },
+        ],
+        realTimeMetrics: {
+          activeRecommendations: 3456,
+          newRecommendations: 234,
+          clicksLast24h: 892,
+          conversionLast24h: 167,
+        },
+      };
+
+      setMetrics(mockData);
     } catch (err) {
       setError(
         err instanceof Error

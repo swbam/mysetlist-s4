@@ -1,13 +1,13 @@
 import { createServiceClient } from "../../server";
 import type {
+  UserProfile,
+  UserPreferences,
   EmailPreferences,
   PrivacySettings,
-  SpotifyProfile,
   SpotifyTokens,
-  UpdatePreferencesData,
+  SpotifyProfile,
   UpdateProfileData,
-  UserPreferences,
-  UserProfile,
+  UpdatePreferencesData,
 } from "../types/auth";
 
 export class UserService {

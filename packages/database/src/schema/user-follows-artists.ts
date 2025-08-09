@@ -1,6 +1,6 @@
-import { pgTable, primaryKey, timestamp, uuid } from "drizzle-orm/pg-core";
-import { artists } from "./artists";
+import { pgTable, uuid, timestamp, primaryKey } from "drizzle-orm/pg-core";
 import { users } from "./users";
+import { artists } from "./artists";
 
 // Temporary table definition to fix the relations error
 // This table is scheduled for removal but needed for backwards compatibility

@@ -202,7 +202,7 @@ export const analyzeBundleSize = () => {
           });
           const size = response.headers.get("content-length");
           if (size) {
-            totalSize += Number.parseInt(size, 10);
+            totalSize += parseInt(size, 10);
           }
         } catch (error) {
           // Ignore fetch errors

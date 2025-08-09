@@ -1,16 +1,17 @@
 import { db } from "@repo/database";
 import { artists, setlistSongs, setlists, shows, venues } from "@repo/database";
-import {
-  type SetlistFmArtist,
-  SetlistFmClient,
-  type SetlistFmSet,
-  type SetlistFmSetlist,
-  type SetlistFmVenue,
-  SpotifyClient,
-  TicketmasterClient,
-} from "@repo/external-apis";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  SpotifyClient,
+  TicketmasterClient,
+  SetlistFmClient,
+  type SetlistFmArtist,
+  type SetlistFmVenue,
+  type SetlistFmSong,
+  type SetlistFmSet,
+  type SetlistFmSetlist,
+} from "@repo/external-apis";
 
 // Types for external API responses
 interface SpotifyAuthResponse {

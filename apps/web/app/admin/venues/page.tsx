@@ -39,6 +39,7 @@ import {
   Phone,
   Plus,
   Search,
+  Star,
   Trash2,
   Users,
 } from "lucide-react";

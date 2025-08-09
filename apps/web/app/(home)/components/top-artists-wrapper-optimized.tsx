@@ -1,3 +1,4 @@
+import React from "react";
 import { absoluteUrl } from "~/lib/absolute-url";
 import OptimizedTopArtistsSliderWithBoundary from "./optimized-top-artists-slider";
 

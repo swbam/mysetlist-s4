@@ -1,23 +1,23 @@
 "use client";
 
-import { cn } from "@repo/design-system/lib/utils";
+import React, { memo, useCallback, useRef, useState } from "react";
 import {
-  type PanInfo,
   motion,
+  PanInfo,
   useAnimation,
   useMotionValue,
   useSpring,
 } from "framer-motion";
+import { cn } from "@repo/design-system/lib/utils";
 import {
   ChevronLeft,
   ChevronRight,
   Heart,
-  Share,
   Star,
   Trash2,
+  Share,
   X,
 } from "lucide-react";
-import React, { memo, useCallback, useRef, useState } from "react";
 
 interface GestureAction {
   id: string;

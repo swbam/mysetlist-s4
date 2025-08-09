@@ -7,7 +7,7 @@ import {
 import { createMetadata } from "@repo/seo/metadata";
 import { Grid3X3, List } from "lucide-react";
 import type { Metadata } from "next";
-import { Suspense } from "react";
+import React, { Suspense } from "react";
 import { ErrorBoundaryWrapper } from "~/components/error-boundary-wrapper";
 import { ShowListSkeleton } from "~/components/loading-states";
 import { ShowsFilter } from "./components/shows-filter";

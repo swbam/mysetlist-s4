@@ -1,12 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
   getCohortAnalysis,
-  getFunnelAnalysis,
-  getPredictiveAnalytics,
-  getRFMAnalysis,
   getRetentionMetrics,
+  getPredictiveAnalytics,
+  getFunnelAnalysis,
+  getRFMAnalysis,
 } from "~/lib/analytics/advanced-analytics";
-import { createClient } from "~/lib/supabase/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
         );
 
         // Apply filters if provided
-        const filteredCohort = customCohort;
+        let filteredCohort = customCohort;
         if (filters?.minCohortSize) {
           filteredCohort.cohorts = filteredCohort.cohorts.filter(
             (cohort) => cohort.cohortSize >= filters.minCohortSize,
@@ -371,7 +371,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createServiceClient();
 
     switch (updateType) {
       case "cohort_settings":
@@ -587,11 +587,11 @@ async function analyzeUserSegments(
   startDate: string,
   endDate: string,
 ): Promise<any> {
-  const supabase = await createClient();
+  const supabase = createServiceClient();
 
   const segmentAnalysis = await Promise.all(
     segments.map(async (segment) => {
-      const supabaseLocal = await createClient();
+      const supabaseLocal = createServiceClient();
       const { data: users, error } = await supabaseLocal
         .from("users")
         .select("id, created_at")

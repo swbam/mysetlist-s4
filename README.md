@@ -1,239 +1,138 @@
-# MySetlist - Concert Setlist Voting Platform
+# MySetlist - Concert Setlist Voting App
 
-MySetlist is a modern web application that allows music fans to discover artists, explore upcoming shows, and vote on predicted setlists. Built with Next.js 14, TypeScript, and Supabase, it provides a seamless experience for concert-goers to engage with their favorite artists' performances.
+A modern web application for concert-goers to vote on songs they want to hear at upcoming shows. Built with Next.js 15, Supabase, and the next-forge template.
 
-## 🚀 Quick Start
+## 🎸 Features
 
-```bash
-# Install dependencies
-pnpm install
+- **Artist Discovery**: Search and browse artists with Spotify integration
+- **Concert Listings**: View upcoming and past shows with Ticketmaster data
+- **Setlist Voting**: Vote on songs you want to hear at concerts
+- **Real-time Updates**: Live voting results and trending data
+- **Spotify Integration**: Sign in with Spotify for personalized experience
+- **Mobile Responsive**: Optimized for all devices
 
-# Set up environment variables
-cp .env.example .env.local
+## 🚀 Tech Stack
 
-# Run database migrations
-pnpm db:migrate
+- **Framework**: Next.js 15 (App Router)
+- **Database**: Supabase (PostgreSQL)
+- **Authentication**: Supabase Auth (Email + Spotify OAuth)
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Deployment**: Vercel
+- **External APIs**: Spotify, Ticketmaster, SetlistFM
+- **Monorepo**: Turborepo with pnpm
 
-# Start development server
-pnpm dev
+## 📦 Project Structure
+
+```
+apps/
+├── web/              # Main Next.js application
+├── docs/             # Documentation site
+└── api/              # API microservice
+
+packages/
+├── ui/               # Shared UI components
+├── database/         # Database schema and utilities
+├── auth/             # Authentication utilities
+├── external-apis/    # External API integrations
+└── config/           # Shared configuration
 ```
 
-## 📋 Deployment Guide
+## 🛠️ Development Setup
 
-### Pre-Deployment Checklist
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/mysetlist.git
+   cd mysetlist
+   ```
 
-Before deploying to production, ensure all requirements are met:
+2. **Install dependencies**
+   ```bash
+   pnpm install
+   ```
 
-```bash
-# Run comprehensive pre-deployment checks
-pnpm tsx scripts/pre-deployment-checklist.ts
-```
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   # Edit .env.local with your credentials
+   ```
 
-This script verifies:
+4. **Run database migrations**
+   ```bash
+   pnpm db:push
+   ```
 
-- ✅ All required environment variables are set
-- ✅ Database connection is established
-- ✅ Build completes without errors
-- ✅ TypeScript compilation passes
-- ✅ API endpoints are properly configured
-- ✅ Critical files exist
+5. **Start development server**
+   ```bash
+   pnpm dev
+   ```
 
-### Deployment Process
+   The app will be available at http://localhost:3001
 
-#### Option 1: Automated Deployment (Recommended)
+## 🔧 Environment Variables
 
-Use the interactive deployment guide for a step-by-step process:
-
-```bash
-# Run the deployment guide
-pnpm tsx scripts/deployment-guide.ts
-```
-
-This will:
-
-1. Run pre-deployment checks
-2. Verify git status
-3. Install dependencies
-4. Run database migrations
-5. Build the application
-6. Deploy to Vercel
-7. Optionally run post-deployment tests
-
-#### Option 2: Manual Deployment
+Required environment variables:
 
 ```bash
-# 1. Ensure environment is ready
-pnpm check:env
-
-# 2. Build the application
-pnpm build
-
-# 3. Run tests
-pnpm test
-
-# 4. Deploy to Vercel
-pnpm vercel:prod
-
-# 5. Run post-deployment verification
-NEXT_PUBLIC_SITE_URL=https://your-app.vercel.app pnpm tsx scripts/post-deployment-test.ts
-```
-
-#### Option 3: Quick Deployment (Use with caution)
-
-```bash
-# For emergency deployments only
-pnpm final:emergency
-```
-
-### Post-Deployment Verification
-
-After deployment, verify everything is working correctly:
-
-```bash
-# Run comprehensive post-deployment tests
-NEXT_PUBLIC_SITE_URL=https://your-app.vercel.app pnpm tsx scripts/post-deployment-test.ts
-```
-
-This tests:
-
-- 🧪 All pages load without 500 errors
-- 🧪 Search functionality works
-- 🧪 API endpoints respond correctly
-- 🧪 Database queries execute properly
-- 🧪 Critical user journeys complete successfully
-
-### Environment Variables
-
-Required environment variables for production:
-
-```env
-# Core Configuration
-NEXT_PUBLIC_SITE_URL=https://your-app.vercel.app
-NEXTAUTH_URL=https://your-app.vercel.app
-NEXTAUTH_SECRET=your-secret-key
+# Database
+DATABASE_URL=
+DIRECT_URL=
 
 # Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
-DATABASE_URL=postgresql://...
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_JWT_SECRET=
 
 # External APIs
-SPOTIFY_CLIENT_ID=your-spotify-client-id
-SPOTIFY_CLIENT_SECRET=your-spotify-client-secret
-TICKETMASTER_API_KEY=your-ticketmaster-key
-SETLIST_FM_API_KEY=your-setlist-fm-key
+SPOTIFY_CLIENT_ID=
+SPOTIFY_CLIENT_SECRET=
+TICKETMASTER_API_KEY=
+SETLISTFM_API_KEY=
+
+# Cron Jobs
+CRON_SECRET=
 ```
 
-### Deployment Scripts
+See `.env.example` for a complete list.
 
-| Script                                         | Description                               | When to Use             |
-| ---------------------------------------------- | ----------------------------------------- | ----------------------- |
-| `pnpm tsx scripts/pre-deployment-checklist.ts` | Comprehensive pre-deployment verification | Before every deployment |
-| `pnpm tsx scripts/deployment-guide.ts`         | Interactive deployment process            | For guided deployments  |
-| `pnpm tsx scripts/post-deployment-test.ts`     | Post-deployment verification              | After deployment        |
-| `pnpm final`                                   | Simple deployment script                  | Quick deployments       |
-| `pnpm final:validate`                          | Validation without deployment             | Testing readiness       |
-| `pnpm final:staging`                           | Deploy to staging                         | Testing changes         |
-| `pnpm final:emergency`                         | Emergency deployment                      | Critical fixes only     |
+## 📝 Scripts
 
-### Rollback Procedures
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production
+- `pnpm start` - Start production server
+- `pnpm lint` - Run linting
+- `pnpm test` - Run tests
+- `pnpm db:push` - Push database schema
+- `pnpm db:generate` - Generate database types
 
-If issues are detected after deployment:
+## 🚀 Deployment
 
-```bash
-# Option 1: Using Vercel CLI
-vercel rollback
+The app is configured for deployment on Vercel:
 
-# Option 2: Using deployment guide
-pnpm tsx scripts/deployment-guide.ts
-# Select rollback option when prompted
+1. Connect your GitHub repository to Vercel
+2. Configure environment variables in Vercel dashboard
+3. Deploy with `git push origin main`
 
-# Option 3: Manual rollback
-vercel ls --limit 5  # List recent deployments
-vercel alias set <deployment-url> <your-domain>
-```
+See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
-### Monitoring & Maintenance
+## 🔄 Data Synchronization
 
-After deployment:
+The app uses automated cron jobs to sync data:
 
-1. **Monitor Logs**: Check Vercel logs for errors
+- **Hourly Sync**: Updates artist and show data
+- **Song Sync**: Imports songs from Spotify
+- **Trending Calculation**: Updates trending scores
+- **Daily Deep Sync**: Comprehensive data update
 
-   ```bash
-   vercel logs --follow
-   ```
-
-2. **Check Performance**: Monitor Core Web Vitals
-
-   ```bash
-   pnpm perf:lighthouse
-   ```
-
-3. **Database Health**: Verify database connectivity
-
-   ```bash
-   curl https://your-app.vercel.app/api/health/db
-   ```
-
-4. **Error Tracking**: Monitor Sentry for any errors
-
-### Troubleshooting
-
-Common deployment issues and solutions:
-
-#### Build Failures
-
-```bash
-# Clear cache and rebuild
-rm -rf .next
-pnpm build
-```
-
-#### Environment Variable Issues
-
-```bash
-# Verify all variables are set
-pnpm check:env
-
-# Pull from Vercel
-vercel env pull .env.production
-```
-
-#### Database Connection Issues
-
-```bash
-# Test database connection
-pnpm tsx scripts/check-database.ts
-```
-
-#### TypeScript Errors
-
-```bash
-# Check for type errors
-pnpm typecheck
-```
+Cron jobs are managed by Supabase pg_cron.
 
 ## 🏗️ Architecture
 
-- **Frontend**: Next.js 14 with App Router
-- **Backend**: Next.js API Routes
-- **Database**: Supabase (PostgreSQL)
-- **Authentication**: Supabase Auth
-- **Styling**: Tailwind CSS
-- **Deployment**: Vercel
-- **Package Manager**: pnpm with Turborepo
-
-## 📱 Features
-
-- 🔍 Artist and venue search
-- 🎤 Show discovery and exploration
-- 🗳️ Setlist voting and predictions
-- 📊 Trending artists and shows
-- 🎵 Spotify integration
-- 🎫 Ticketmaster integration
-- 📱 Mobile-responsive design
-- 🔄 Real-time voting updates
+- **ISR (Incremental Static Regeneration)**: Artist pages are statically generated and revalidated
+- **Edge Functions**: API routes optimized for edge runtime
+- **Database**: Supabase provides PostgreSQL with Row Level Security
+- **Caching**: Redis/Upstash for API response caching
+- **CDN**: Vercel Edge Network for global distribution
 
 ## 🧪 Testing
 
@@ -241,40 +140,20 @@ pnpm typecheck
 # Run all tests
 pnpm test
 
-# Run specific test suites
-pnpm test:unit
-pnpm test:integration
+# Run tests in watch mode
+pnpm test:watch
+
+# Run E2E tests
 pnpm test:e2e
-
-# Run with coverage
-pnpm test:coverage
-```
-
-## 🔧 Development
-
-```bash
-# Start development server
-pnpm dev
-
-# Run database studio
-pnpm db:studio
-
-# Sync trending artists
-pnpm sync:artists
-
-# Seed database with test data
-pnpm seed:all
 ```
 
 ## 📊 Performance
 
 Target metrics:
-
 - Lighthouse Score: ≥90
-- First Contentful Paint: <1.8s
-- Largest Contentful Paint: <2.5s
-- Time to Interactive: <3.8s
-- Cumulative Layout Shift: <0.1
+- First Contentful Paint: <1.5s
+- Time to Interactive: <3s
+- Core Web Vitals: All green
 
 ## 🤝 Contributing
 
@@ -286,10 +165,10 @@ Target metrics:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
 ## 🙏 Acknowledgments
 
-- Built with [Next-Forge](https://github.com/haydenbleasel/next-forge)
-- Powered by [Supabase](https://supabase.com)
-- Deployed on [Vercel](https://vercel.com)
+- Built on [next-forge](https://github.com/haydenbleasel/next-forge) template
+- Uses [shadcn/ui](https://ui.shadcn.com/) components
+- Powered by [Supabase](https://supabase.com/)

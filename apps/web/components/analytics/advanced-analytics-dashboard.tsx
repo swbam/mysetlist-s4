@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Alert,
-  AlertDescription,
-} from "@repo/design-system/components/ui/alert";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -13,34 +8,39 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Progress } from "@repo/design-system/components/ui/progress";
+import {
+  Alert,
+  AlertDescription,
+} from "@repo/design-system/components/ui/alert";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
-  AlertTriangle,
-  BarChart3,
-  Brain,
-  CheckCircle,
-  DollarSign,
-  Filter,
-  PieChart,
-  RefreshCw,
-  Shield,
-  Star,
-  Target,
-  TrendingDown,
   TrendingUp,
+  TrendingDown,
   Users,
+  Target,
+  AlertTriangle,
+  CheckCircle,
   XCircle,
+  BarChart3,
+  PieChart,
   Zap,
+  Brain,
+  Filter,
+  RefreshCw,
+  Star,
+  Shield,
+  DollarSign,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 
 interface CohortData {
   cohortMonth: string;

@@ -4,8 +4,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { Card } from "@repo/design-system/components/ui/card";
 import { AlertTriangle, ChevronLeft, Home, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type React from "react";
-import { Component, type ReactNode } from "react";
+import React, { Component, type ReactNode } from "react";
 
 interface Props {
   children: ReactNode;

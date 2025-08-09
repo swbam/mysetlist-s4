@@ -1,4 +1,4 @@
-// Remove server import since this is used in client components
+import { createServiceClient } from "~/lib/supabase/server";
 
 export interface TrendingItem {
   id: string;

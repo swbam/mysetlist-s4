@@ -1,14 +1,16 @@
+import { sql } from "drizzle-orm";
 import {
-  boolean,
-  index,
-  integer,
-  jsonb,
   pgTable,
-  real,
-  serial,
   text,
+  integer,
   timestamp,
+  boolean,
+  jsonb,
+  serial,
+  real,
   varchar,
+  index,
+  primaryKey,
 } from "drizzle-orm/pg-core";
 
 // Scalability plans for tracking infrastructure scaling strategies

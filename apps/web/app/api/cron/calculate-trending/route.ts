@@ -1,12 +1,18 @@
 import {
   artists,
-  calculateArtistGrowth,
+  artistStats,
   db,
   shows,
-  userActivityLog,
   venues,
+  userActivityLog,
+  events,
+  artistAnalytics,
+  calculateArtistGrowth,
+  calculateShowGrowth,
+  calculateVenueGrowth,
+  createHistoricalSnapshot,
 } from "@repo/database";
-import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { sql, and, gte, eq, desc, asc } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 const CRON_SECRET = process.env["CRON_SECRET"];
@@ -269,8 +275,7 @@ async function calculateArtistTrendingScores(mode: TrendingMode) {
             .select({
               count: sql<number>`count(*)::int`,
             })
-            .from(shows)
-            .where(sql`${shows.headlinerArtistId} = ${artist.id} 
+            .from(shows).where(sql`${shows.headlinerArtistId} = ${artist.id} 
             AND ${shows.date} >= CURRENT_DATE - INTERVAL '30 days'`);
 
           const recentShowCount = recentShowsResult[0]?.count || 0;
@@ -497,7 +502,7 @@ async function logTrendingOperation(
 export async function GET(request: NextRequest) {
   // Verify cron secret
   const authHeader = request.headers.get("authorization");
-  if (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`) {
+  if (CRON_SECRET && (!authHeader || authHeader !== `Bearer ${CRON_SECRET}`)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

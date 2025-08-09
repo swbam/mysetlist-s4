@@ -1,5 +1,5 @@
+import type { SpotifyTokens, SpotifyProfile } from "../types/auth";
 import { env } from "@repo/env";
-import type { SpotifyProfile, SpotifyTokens } from "../types/auth";
 
 export class SpotifyService {
   private readonly clientId = env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
@@ -89,7 +89,7 @@ export class SpotifyService {
   async getUserTopArtists(
     accessToken: string,
     timeRange: "short_term" | "medium_term" | "long_term" = "medium_term",
-    limit = 20,
+    limit: number = 20,
   ): Promise<any[]> {
     try {
       const response = await fetch(
@@ -122,7 +122,7 @@ export class SpotifyService {
   async getUserTopTracks(
     accessToken: string,
     timeRange: "short_term" | "medium_term" | "long_term" = "medium_term",
-    limit = 20,
+    limit: number = 20,
   ): Promise<any[]> {
     try {
       const response = await fetch(
@@ -152,7 +152,10 @@ export class SpotifyService {
   /**
    * Get user's recently played tracks from Spotify
    */
-  async getUserRecentlyPlayed(accessToken: string, limit = 20): Promise<any[]> {
+  async getUserRecentlyPlayed(
+    accessToken: string,
+    limit: number = 20,
+  ): Promise<any[]> {
     try {
       const response = await fetch(
         `${this.baseUrl}/me/player/recently-played?limit=${limit}`,
@@ -184,7 +187,7 @@ export class SpotifyService {
   async searchArtists(
     accessToken: string,
     query: string,
-    limit = 20,
+    limit: number = 20,
   ): Promise<any[]> {
     try {
       const encodedQuery = encodeURIComponent(query);

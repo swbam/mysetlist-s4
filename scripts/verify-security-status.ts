@@ -5,8 +5,8 @@
  * This script verifies that all security issues have been resolved
  */
 
-import { join } from "path";
 import { config } from "dotenv";
+import { join } from "path";
 
 // Load environment variables first
 config({ path: join(process.cwd(), ".env.local") });
@@ -29,11 +29,11 @@ async function verifySecurityStatus() {
     `);
 
     console.log("📊 Row Level Security (RLS) Status:");
-    console.log("=".repeat(50));
-
+    console.log("=" .repeat(50));
+    
     let rlsEnabled = 0;
     let rlsDisabled = 0;
-
+    
     if (rlsCheck.rows && Array.isArray(rlsCheck.rows)) {
       rlsCheck.rows.forEach((row: any) => {
         const status = row.rowsecurity ? "✅ ENABLED" : "❌ DISABLED";
@@ -42,8 +42,8 @@ async function verifySecurityStatus() {
         else rlsDisabled++;
       });
     }
-
-    console.log("-".repeat(50));
+    
+    console.log("-" .repeat(50));
     console.log(`Total: ${rlsEnabled} enabled, ${rlsDisabled} disabled`);
     console.log("");
 
@@ -57,8 +57,8 @@ async function verifySecurityStatus() {
     `);
 
     console.log("📋 RLS Policies:");
-    console.log("=".repeat(50));
-
+    console.log("=" .repeat(50));
+    
     let currentTable = "";
     if (policiesCheck.rows && Array.isArray(policiesCheck.rows)) {
       policiesCheck.rows.forEach((row: any) => {
@@ -83,18 +83,12 @@ async function verifySecurityStatus() {
     `);
 
     console.log("👁️ View Security:");
-    console.log("=".repeat(50));
-
-    if (
-      viewCheck.rows &&
-      Array.isArray(viewCheck.rows) &&
-      viewCheck.rows.length > 0
-    ) {
+    console.log("=" .repeat(50));
+    
+    if (viewCheck.rows && Array.isArray(viewCheck.rows) && viewCheck.rows.length > 0) {
       const row = viewCheck.rows[0] as any;
-      const hasSecurity = row.definition?.includes("SECURITY DEFINER");
-      const status = hasSecurity
-        ? "❌ USES SECURITY DEFINER"
-        : "✅ NO SECURITY DEFINER";
+      const hasSecurity = row.definition?.includes('SECURITY DEFINER');
+      const status = hasSecurity ? "❌ USES SECURITY DEFINER" : "✅ NO SECURITY DEFINER";
       console.log(`cron_job_status: ${status}`);
     } else {
       console.log("cron_job_status: ⚠️ VIEW NOT FOUND");
@@ -103,32 +97,23 @@ async function verifySecurityStatus() {
 
     // Summary
     console.log("📊 Summary:");
-    console.log("=".repeat(50));
-
+    console.log("=" .repeat(50));
+    
     const allRlsEnabled = rlsDisabled === 0;
     const hasView = viewCheck.rows && viewCheck.rows.length > 0;
-    const viewSecure =
-      hasView &&
-      !(viewCheck.rows[0] as any).definition?.includes("SECURITY DEFINER");
-
-    console.log(
-      `RLS Enabled on all tables: ${allRlsEnabled ? "✅ YES" : "❌ NO"}`,
-    );
-    console.log(
-      `Policies configured: ${policiesCheck.rows && policiesCheck.rows.length > 0 ? "✅ YES" : "❌ NO"}`,
-    );
-    console.log(
-      `View security fixed: ${viewSecure ? "✅ YES" : hasView ? "❌ NO" : "⚠️ VIEW MISSING"}`,
-    );
+    const viewSecure = hasView && !(viewCheck.rows[0] as any).definition?.includes('SECURITY DEFINER');
+    
+    console.log(`RLS Enabled on all tables: ${allRlsEnabled ? '✅ YES' : '❌ NO'}`);
+    console.log(`Policies configured: ${policiesCheck.rows && policiesCheck.rows.length > 0 ? '✅ YES' : '❌ NO'}`);
+    console.log(`View security fixed: ${viewSecure ? '✅ YES' : hasView ? '❌ NO' : '⚠️ VIEW MISSING'}`);
     console.log("");
-
+    
     if (allRlsEnabled && policiesCheck.rows && policiesCheck.rows.length > 0) {
       console.log("🎉 All security issues have been resolved!");
     } else {
-      console.log(
-        "⚠️ Some security issues remain. Please check the details above.",
-      );
+      console.log("⚠️ Some security issues remain. Please check the details above.");
     }
+
   } catch (error) {
     console.error("❌ Error verifying security status:", error);
     process.exit(1);

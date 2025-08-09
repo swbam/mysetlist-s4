@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "../../client";
+import type { AuthUser, AuthSession } from "../types/auth";
 import { UnifiedAuthProvider } from "../providers/unified-auth";
-import type { AuthSession, AuthUser } from "../types/auth";
 
 export function useAuthState() {
   const [user, setUser] = useState<AuthUser | null>(null);

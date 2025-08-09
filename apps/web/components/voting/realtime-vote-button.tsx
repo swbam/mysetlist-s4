@@ -9,15 +9,8 @@ import {
 } from "@repo/design-system/components/ui/tooltip";
 import { cn } from "@repo/design-system/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  ChevronDown,
-  ChevronUp,
-  Loader2,
-  Wifi,
-  WifiOff,
-  Zap,
-} from "lucide-react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { ChevronUp, Loader2, Wifi, WifiOff, Zap } from "lucide-react";
+import { useCallback, useEffect, useRef, useState, memo } from "react";
 import { toast } from "sonner";
 import { useRealtimeConnection } from "~/app/providers/realtime-provider";
 import { useOptimisticVoting } from "~/hooks/use-optimistic-voting";
@@ -105,8 +98,8 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
     },
   });
 
-  const { upvotes = 0, downvotes = 0, userVote = null } = votes;
-  const netVotes = upvotes - downvotes;
+  const { upvotes = 0, userVote = null } = votes as any;
+  const netVotes = upvotes;
 
   // Animate vote count changes
   useEffect(() => {
@@ -132,7 +125,7 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
     [hapticFeedback],
   );
 
-  const handleVote = async (voteType: "up" | "down") => {
+  const handleVote = async (voteType: "up") => {
     if (isVoting || disabled) {
       return;
     }
@@ -216,7 +209,7 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
             aria-live="polite"
             aria-atomic="true"
           >
-            {netVotes > 0 ? `+${netVotes}` : netVotes}
+           {netVotes > 0 ? `+${netVotes}` : netVotes}
           </motion.span>
 
           {isOptimistic && (
@@ -310,60 +303,7 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
             {netVotes > 0 ? `+${netVotes}` : netVotes}
           </motion.span>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <motion.div
-                variants={buttonVariants}
-                whileHover="hover"
-                whileTap="tap"
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleVote("down")}
-                  disabled={
-                    isVoting || disabled || (voteLimits && !voteLimits.canVote)
-                  }
-                  className={cn(
-                    buttonSize,
-                    "touch-manipulation p-0 transition-all duration-150",
-                    "min-h-[32px] min-w-[32px]",
-                    "focus-visible:ring-2 focus-visible:ring-red-500/20",
-                    userVote === "down" &&
-                      "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400",
-                    isOptimistic && "opacity-80",
-                  )}
-                  aria-label="Downvote this song"
-                >
-                  <AnimatePresence mode="wait">
-                    {isVoting && votes.pendingVote === "down" ? (
-                      <motion.div
-                        key="loading"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                      >
-                        <Loader2 className={cn(iconSize, "animate-spin")} />
-                      </motion.div>
-                    ) : (
-                      <motion.div
-                        key="icon"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                      >
-                        <ChevronDown className={iconSize} />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </Button>
-              </motion.div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <div>Downvote</div>
-              <VoteLimitTooltip />
-            </TooltipContent>
-          </Tooltip>
+          {/* Downvote removed */}
 
           <div className="flex items-center gap-1">
             {isOptimistic && (
@@ -463,59 +403,7 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
           {netVotes > 0 ? `+${netVotes}` : netVotes}
         </motion.span>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <motion.div
-              variants={buttonVariants}
-              whileHover="hover"
-              whileTap="tap"
-            >
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleVote("down")}
-                disabled={
-                  isVoting || disabled || (voteLimits && !voteLimits.canVote)
-                }
-                className={cn(
-                  buttonSize,
-                  "touch-manipulation p-0 transition-all duration-150",
-                  "focus-visible:ring-2 focus-visible:ring-red-500/20",
-                  userVote === "down" &&
-                    "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400",
-                  isOptimistic && "opacity-80",
-                )}
-                aria-label="Downvote this song"
-              >
-                <AnimatePresence mode="wait">
-                  {isVoting && userVote === "down" ? (
-                    <motion.div
-                      key="loading"
-                      initial={{ opacity: 0, rotate: 0 }}
-                      animate={{ opacity: 1, rotate: 360 }}
-                      exit={{ opacity: 0 }}
-                    >
-                      <Loader2 className={cn(iconSize, "animate-spin")} />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="icon"
-                      initial={{ opacity: 0, y: -5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 5 }}
-                    >
-                      <ChevronDown className={iconSize} />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Button>
-            </motion.div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <div>Downvote</div>
-            <VoteLimitTooltip />
-          </TooltipContent>
-        </Tooltip>
+        {/* Downvote removed */}
 
         <div className="mt-1 flex items-center justify-center gap-1">
           {isOptimistic && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -8,18 +8,18 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
-  Activity,
-  Calendar,
-  Eye,
-  MapPin,
-  Music,
-  TrendingDown,
   TrendingUp,
+  TrendingDown,
   Users,
+  Music,
+  Calendar,
+  MapPin,
   Vote,
+  Eye,
+  Activity,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 
 interface OverviewMetrics {
   totalUsers: number;

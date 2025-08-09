@@ -8,7 +8,7 @@
  */
 
 import { execSync } from "child_process";
-import { existsSync, readFileSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import path from "path";
 
 interface CheckResult {
@@ -111,7 +111,7 @@ function checkConsoleStatements(): void {
     const output = runCommand(
       `find . -name "*.tsx" -o -name "*.ts" | grep -E "(app/|components/|lib/|hooks/)" | grep -v test | grep -v spec | xargs grep -l "console\\." | wc -l`,
     );
-    consoleCount = Number.parseInt(output.trim()) || 0;
+    consoleCount = parseInt(output.trim()) || 0;
 
     if (consoleCount > 0) {
       const fileList = runCommand(

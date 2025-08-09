@@ -1,13 +1,17 @@
 "use client";
 
 import {
-  addBreadcrumb,
   captureException,
-  setContext,
   setUser,
+  setContext,
+  addBreadcrumb,
 } from "@sentry/nextjs";
-import type React from "react";
-import { createContext, useCallback, useContext, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useCallback,
+  useEffect,
+} from "react";
 import { MonitoringService } from "~/lib/monitoring";
 
 interface ErrorTrackingContextType {

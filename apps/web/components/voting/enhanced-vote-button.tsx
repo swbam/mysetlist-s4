@@ -2,7 +2,7 @@
 
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
-import { ChevronDown, ChevronUp, Loader2, UserPlus } from "lucide-react";
+import { ChevronUp, Loader2, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { memo, useState, useTransition, useCallback } from "react";
 import { toast } from "sonner";
@@ -11,10 +11,9 @@ import { useAnonymousVoting } from "~/hooks/use-anonymous-voting";
 
 interface EnhancedVoteButtonProps {
   setlistSongId: string;
-  currentVote?: "up" | "down" | null;
+  currentVote?: "up" | null;
   upvotes: number;
-  downvotes: number;
-  onVote?: (voteType: "up" | "down" | null) => Promise<void>;
+  onVote?: (voteType: "up" | null) => Promise<void>;
   disabled?: boolean;
   size?: "sm" | "md" | "lg";
   variant?: "default" | "compact";
@@ -25,7 +24,6 @@ const EnhancedVoteButtonComponent = function EnhancedVoteButton({
   setlistSongId,
   currentVote,
   upvotes,
-  downvotes,
   onVote,
   disabled = false,
   size = "md",
@@ -53,7 +51,7 @@ const EnhancedVoteButtonComponent = function EnhancedVoteButton({
     },
   });
 
-  const netVotes = upvotes - downvotes;
+  const netVotes = upvotes;
   
   // Use anonymous vote if not authenticated
   const displayVote = session?.user 
@@ -61,7 +59,7 @@ const EnhancedVoteButtonComponent = function EnhancedVoteButton({
     : anonymousVoting.getVote(setlistSongId);
 
   const handleVote = useCallback(
-    async (voteType: "up" | "down") => {
+    async (voteType: "up") => {
       if (isVoting || disabled || isPending) {
         return;
       }
@@ -167,25 +165,7 @@ const EnhancedVoteButtonComponent = function EnhancedVoteButton({
           {netVotes > 0 ? `+${netVotes}` : netVotes}
         </span>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleVote("down")}
-          disabled={isVoting || disabled || isPending}
-          className={cn(
-            buttonSize,
-            "p-0",
-            displayVote === "down" &&
-              "bg-red-100 text-red-700 hover:bg-red-200",
-          )}
-          title={session?.user ? "Vote down" : `Vote down (${anonymousVoting.votesRemaining} anonymous votes remaining)`}
-        >
-          {isVoting && displayVote === "down" ? (
-            <Loader2 className={cn(iconSize, "animate-spin")} />
-          ) : (
-            <ChevronDown className={iconSize} />
-          )}
-        </Button>
+          {/* Downvote removed */}
 
         {/* Anonymous voting indicator */}
         {!session?.user && showSignInPrompt && anonymousVoting.hasVotes && (
@@ -237,24 +217,7 @@ const EnhancedVoteButtonComponent = function EnhancedVoteButton({
         {netVotes > 0 ? `+${netVotes}` : netVotes}
       </span>
 
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => handleVote("down")}
-        disabled={isVoting || disabled || isPending}
-        className={cn(
-          buttonSize,
-          "p-0",
-          displayVote === "down" && "bg-red-100 text-red-700 hover:bg-red-200",
-        )}
-        title={session?.user ? "Vote down" : `Vote down (${anonymousVoting.votesRemaining} anonymous votes remaining)`}
-      >
-        {isVoting && displayVote === "down" ? (
-          <Loader2 className={cn(iconSize, "animate-spin")} />
-        ) : (
-          <ChevronDown className={iconSize} />
-        )}
-      </Button>
+      {/* Downvote removed */}
       
       {/* Anonymous voting indicator for default variant */}
       {!session?.user && showSignInPrompt && anonymousVoting.hasVotes && (
@@ -280,7 +243,7 @@ export const EnhancedVoteButton = memo(EnhancedVoteButtonComponent, (prevProps, 
     prevProps.setlistSongId === nextProps.setlistSongId &&
     prevProps.currentVote === nextProps.currentVote &&
     prevProps.upvotes === nextProps.upvotes &&
-    prevProps.downvotes === nextProps.downvotes &&
+    true &&
     prevProps.disabled === nextProps.disabled &&
     prevProps.size === nextProps.size &&
     prevProps.variant === nextProps.variant &&

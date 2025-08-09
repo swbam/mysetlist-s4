@@ -80,9 +80,6 @@ export const getVenues = unstable_cache(
         amenities: venues.amenities,
         latitude: venues.latitude,
         longitude: venues.longitude,
-        venueType: venues.venueType,
-        imageUrl: venues.imageUrl,
-        amenities: venues.amenities,
         // Add distance calculation if user location is provided
         ...(userLat && userLng
           ? {

@@ -1,10 +1,9 @@
 "use client";
 
-import type { Session, User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
-import type React from "react";
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { createClient } from "./client";
+import type { User, Session } from "@supabase/supabase-js";
 
 type AuthContextType = {
   session: Session | null;

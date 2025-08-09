@@ -3,8 +3,8 @@
  * Provides health checks and status information for the trending calculation system
  */
 
-import { artists, db, shows, userActivityLog } from "@repo/database";
-import { and, desc, gte, sql } from "drizzle-orm";
+import { db, artists, shows, userActivityLog } from "@repo/database";
+import { sql, desc, gte, and } from "drizzle-orm";
 
 export interface TrendingSystemHealth {
   status: "healthy" | "degraded" | "error";
@@ -45,9 +45,7 @@ export async function checkTrendingSystemHealth(): Promise<TrendingSystemHealth>
       topTrendingShowResult,
     ] = await Promise.all([
       // Total artists
-      db
-        .select({ count: sql<number>`count(*)::int` })
-        .from(artists),
+      db.select({ count: sql<number>`count(*)::int` }).from(artists),
 
       // Artists with trending scores
       db
@@ -56,9 +54,7 @@ export async function checkTrendingSystemHealth(): Promise<TrendingSystemHealth>
         .where(sql`${artists.trendingScore} > 0`),
 
       // Total shows
-      db
-        .select({ count: sql<number>`count(*)::int` })
-        .from(shows),
+      db.select({ count: sql<number>`count(*)::int` }).from(shows),
 
       // Shows with trending scores
       db

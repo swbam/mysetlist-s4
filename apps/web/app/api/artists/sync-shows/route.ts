@@ -155,8 +155,7 @@ export async function POST(request: NextRequest) {
         message: "Ticketmaster API error occurred",
         showsCount: 0,
         shows: [],
-        error:
-          apiError instanceof Error ? apiError.message : "Unknown API error",
+        error: apiError instanceof Error ? apiError.message : "Unknown API error",
       });
     }
   } catch (error) {
@@ -195,10 +194,10 @@ async function getOrCreateVenue(tmVenue: any): Promise<string> {
       country: tmVenue.country?.name || "Unknown",
       postalCode: tmVenue.postalCode || null,
       latitude: tmVenue.location?.latitude
-        ? Number.parseFloat(tmVenue.location.latitude)
+        ? parseFloat(tmVenue.location.latitude)
         : null,
       longitude: tmVenue.location?.longitude
-        ? Number.parseFloat(tmVenue.location.longitude)
+        ? parseFloat(tmVenue.location.longitude)
         : null,
       timezone: tmVenue.timezone || null,
       website: tmVenue.url || null,
@@ -243,3 +242,4 @@ function mapTicketmasterStatus(
       return "upcoming";
   }
 }
+

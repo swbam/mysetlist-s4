@@ -5,6 +5,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -22,8 +23,8 @@ import {
   Music,
   Plus,
   Search,
-  TrendingUp,
   Vote,
+  TrendingUp,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import fs from "fs";
 import { chromium } from "playwright";
+import fs from "fs";
 
 async function captureConsoleErrors() {
   console.log("🔍 Starting console error capture...");

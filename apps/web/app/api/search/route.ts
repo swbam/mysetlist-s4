@@ -1,10 +1,6 @@
-import { TicketmasterClient } from "@repo/external-apis";
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "~/lib/supabase/server";
-
-// Vercel function config to prevent timeouts
-export const maxDuration = 10; // 10 seconds max
-export const dynamic = "force-dynamic";
+import { createServiceClient } from "~/lib/supabase/server";
+import { TicketmasterClient } from "@repo/external-apis";
 
 const ticketmaster = new TicketmasterClient({
   apiKey: process.env.TICKETMASTER_API_KEY!,
@@ -51,7 +47,7 @@ export async function GET(request: NextRequest) {
 
     let supabase;
     try {
-      supabase = await createClient();
+      supabase = createServiceClient();
     } catch (error) {
       console.error("Failed to create Supabase client:", error);
       return NextResponse.json(
@@ -97,26 +93,12 @@ export async function GET(request: NextRequest) {
       // Add Ticketmaster artists only if API key is available
       if (results.length < limit && process.env.TICKETMASTER_API_KEY) {
         try {
-          // Add timeout for Ticketmaster API call (5 seconds)
-          const ticketmasterPromise = ticketmaster.searchAttractions({
+          const ticketmasterResponse = await ticketmaster.searchAttractions({
             keyword: query,
             size: limit - results.length,
             classificationName: "music",
             sort: "relevance,desc",
           });
-
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(
-              () => reject(new Error("Ticketmaster API timeout")),
-              5000,
-            ),
-          );
-
-          const ticketmasterResponse = (await Promise.race([
-            ticketmasterPromise,
-            timeoutPromise,
-          ])) as any;
-
           const ticketmasterArtists =
             ticketmasterResponse._embedded?.attractions || [];
 
@@ -145,7 +127,6 @@ export async function GET(request: NextRequest) {
           }
         } catch (error) {
           console.warn("Ticketmaster search failed:", error);
-          // Continue without Ticketmaster results
         }
       }
     }
@@ -333,8 +314,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Sort results by relevance and type priority
-    const sortedResults = results.sort((a, b) => {
+    // Sort results by relevance and type priority (stable)
+    const sortedResults = [...results].sort((a, b) => {
       // Type priority: artists first, then shows, venues, songs
       const typePriority = { artist: 4, show: 3, venue: 2, song: 1 };
       const aPriority = typePriority[a.type] || 0;

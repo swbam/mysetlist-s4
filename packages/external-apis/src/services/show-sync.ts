@@ -1,11 +1,11 @@
+import { db, and, eq } from "../database";
+import { artists, shows, venues, showArtists } from "../schema";
 import { SetlistFmClient, type SetlistFmSetlist } from "../clients/setlistfm";
 import { SpotifyClient } from "../clients/spotify";
 import {
   TicketmasterClient,
   type TicketmasterEvent,
 } from "../clients/ticketmaster";
-import { and, db, eq } from "../database";
-import { artists, showArtists, shows, venues } from "../schema";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 
 export class ShowSyncService {

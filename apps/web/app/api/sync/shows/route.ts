@@ -88,9 +88,9 @@ export async function POST(request: NextRequest) {
 
       // Create Ticketmaster client
       const ticketmaster = new TicketmasterClient({
-        apiKey: process.env.TICKETMASTER_API_KEY!,
+        apiKey: process.env.TICKETMASTER_API_KEY!
       });
-
+      
       // Fetch shows from Ticketmaster API
       const searchResult = await ticketmaster.searchEvents({
         keyword: tmId,
@@ -198,8 +198,7 @@ export async function POST(request: NextRequest) {
         artist: artistData,
         showsCount: 0,
         shows: [],
-        error:
-          apiError instanceof Error ? apiError.message : "Unknown API error",
+        error: apiError instanceof Error ? apiError.message : "Unknown API error",
       });
     }
   } catch (error) {
@@ -218,7 +217,7 @@ export async function POST(request: NextRequest) {
 async function getOrCreateVenue(tmVenue: any): Promise<string> {
   if (!tmVenue) {
     // Return default venue
-    const defaultVenue = await db
+    let defaultVenue = await db
       .select()
       .from(venues)
       .where(eq(venues.name, "TBA Venue"))
@@ -270,10 +269,10 @@ async function getOrCreateVenue(tmVenue: any): Promise<string> {
       country: tmVenue.country?.name || "Unknown",
       postalCode: tmVenue.postalCode || null,
       latitude: tmVenue.location?.latitude
-        ? Number.parseFloat(tmVenue.location.latitude)
+        ? parseFloat(tmVenue.location.latitude)
         : null,
       longitude: tmVenue.location?.longitude
-        ? Number.parseFloat(tmVenue.location.longitude)
+        ? parseFloat(tmVenue.location.longitude)
         : null,
       timezone: tmVenue.timezone || "America/New_York",
       website: tmVenue.url || null,
@@ -312,3 +311,4 @@ function mapTicketmasterStatus(
       return "upcoming";
   }
 }
+

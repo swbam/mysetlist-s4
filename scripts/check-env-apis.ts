@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { resolve } from "path";
 import { config } from "dotenv";
+import { resolve } from "path";
 
 // Load environment variables
 config({ path: resolve(process.cwd(), ".env.local") });
@@ -25,7 +25,7 @@ const envChecks: EnvCheck[] = [
     key: "DIRECT_URL",
     required: false,
   },
-
+  
   // Supabase
   {
     name: "Supabase URL",
@@ -42,7 +42,7 @@ const envChecks: EnvCheck[] = [
     key: "SUPABASE_SERVICE_ROLE_KEY",
     required: true,
   },
-
+  
   // External APIs
   {
     name: "Spotify Client ID",
@@ -55,7 +55,7 @@ const envChecks: EnvCheck[] = [
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
             Authorization: `Basic ${Buffer.from(
-              `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`,
+              `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
             ).toString("base64")}`,
           },
           body: "grant_type=client_credentials",
@@ -78,7 +78,7 @@ const envChecks: EnvCheck[] = [
     testFunction: async () => {
       try {
         const response = await fetch(
-          `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${process.env.TICKETMASTER_API_KEY}&size=1`,
+          `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${process.env.TICKETMASTER_API_KEY}&size=1`
         );
         return response.ok;
       } catch {
@@ -92,29 +92,26 @@ const envChecks: EnvCheck[] = [
     required: true,
     testFunction: async () => {
       try {
-        const response = await fetch(
-          "https://api.setlist.fm/rest/1.0/search/artists?artistName=test&p=1",
-          {
-            headers: {
-              "x-api-key": process.env.SETLISTFM_API_KEY || "",
-              Accept: "application/json",
-            },
+        const response = await fetch("https://api.setlist.fm/rest/1.0/search/artists?artistName=test&p=1", {
+          headers: {
+            "x-api-key": process.env.SETLISTFM_API_KEY || "",
+            Accept: "application/json",
           },
-        );
+        });
         return response.ok;
       } catch {
         return false;
       }
     },
   },
-
+  
   // Cron Secret
   {
     name: "Cron Secret",
     key: "CRON_SECRET",
     required: true,
   },
-
+  
   // Optional APIs
   {
     name: "Resend API Key",
@@ -130,82 +127,72 @@ const envChecks: EnvCheck[] = [
 
 async function checkEnvironment() {
   console.log("🔍 Checking environment variables...\n");
-
+  
   let hasErrors = false;
-  const results: {
-    check: EnvCheck;
-    value: string | undefined;
-    testResult?: boolean;
-  }[] = [];
-
+  const results: { check: EnvCheck; value: string | undefined; testResult?: boolean }[] = [];
+  
   // Check each environment variable
   for (const check of envChecks) {
     const value = process.env[check.key];
-    const result = {
-      check,
-      value,
-      testResult: undefined as boolean | undefined,
-    };
-
+    const result = { check, value, testResult: undefined as boolean | undefined };
+    
     if (!value && check.required) {
       hasErrors = true;
     }
-
+    
     // Run test function if available and value exists
     if (value && check.testFunction) {
       console.log(`🧪 Testing ${check.name}...`);
       result.testResult = await check.testFunction();
     }
-
+    
     results.push(result);
   }
-
+  
   // Display results
   console.log("\n📊 Environment Variable Status:\n");
-  console.log("=".repeat(80));
-
+  console.log("=" .repeat(80));
+  
   for (const { check, value, testResult } of results) {
     const status = value
       ? testResult === false
         ? "❌ FAILED TEST"
         : testResult === true
-          ? "✅ VERIFIED"
-          : "✓ SET"
+        ? "✅ VERIFIED"
+        : "✓ SET"
       : check.required
-        ? "❌ MISSING"
-        : "⚪ NOT SET";
-
+      ? "❌ MISSING"
+      : "⚪ NOT SET";
+    
     const valueDisplay = value
       ? value.length > 40
         ? `${value.substring(0, 20)}...${value.substring(value.length - 10)}`
         : value
       : "undefined";
-
+    
     console.log(
       `${status.padEnd(15)} | ${check.name.padEnd(30)} | ${check.key.padEnd(35)} | ${
         value ? valueDisplay : "(not set)"
-      }`,
+      }`
     );
   }
-
-  console.log("=".repeat(80));
-
+  
+  console.log("=" .repeat(80));
+  
   // Summary
-  const totalRequired = envChecks.filter((c) => c.required).length;
-  const setRequired = results.filter((r) => r.check.required && r.value).length;
-  const totalOptional = envChecks.filter((c) => !c.required).length;
-  const setOptional = results.filter(
-    (r) => !r.check.required && r.value,
-  ).length;
-  const failedTests = results.filter((r) => r.testResult === false).length;
-
+  const totalRequired = envChecks.filter(c => c.required).length;
+  const setRequired = results.filter(r => r.check.required && r.value).length;
+  const totalOptional = envChecks.filter(c => !c.required).length;
+  const setOptional = results.filter(r => !r.check.required && r.value).length;
+  const failedTests = results.filter(r => r.testResult === false).length;
+  
   console.log("\n📈 Summary:");
   console.log(`   Required: ${setRequired}/${totalRequired} set`);
   console.log(`   Optional: ${setOptional}/${totalOptional} set`);
   if (failedTests > 0) {
     console.log(`   ⚠️  Failed Tests: ${failedTests}`);
   }
-
+  
   if (hasErrors) {
     console.log("\n❌ Missing required environment variables!");
     console.log("   Please set all required variables in your .env.local file");
@@ -217,21 +204,19 @@ async function checkEnvironment() {
   } else {
     console.log("\n✅ All required environment variables are set!");
     if (setRequired === totalRequired) {
-      console.log(
-        "   Your environment is properly configured for the sync system",
-      );
+      console.log("   Your environment is properly configured for the sync system");
     }
   }
-
+  
   // Additional sync-specific checks
   console.log("\n🔄 Sync System Requirements:");
-  const syncReady =
+  const syncReady = 
     process.env.SPOTIFY_CLIENT_ID &&
     process.env.SPOTIFY_CLIENT_SECRET &&
     process.env.TICKETMASTER_API_KEY &&
     process.env.SETLISTFM_API_KEY &&
     process.env.CRON_SECRET;
-
+  
   if (syncReady) {
     console.log("   ✅ All APIs configured for autonomous sync");
   } else {

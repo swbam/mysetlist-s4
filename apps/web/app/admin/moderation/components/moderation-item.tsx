@@ -1,5 +1,22 @@
 "use client";
 
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  Label,
+  Textarea,
+} from "~/components/ui-exports";
 import { toast } from "@repo/design-system/components/ui/use-toast";
 import { format } from "date-fns";
 import {
@@ -16,20 +33,6 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  Label,
-  Textarea,
-} from "~/components/ui-exports";
 import { createClient } from "~/lib/supabase/client";
 
 interface ModerationItemProps {

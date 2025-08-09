@@ -102,10 +102,10 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
           state: venue.state?.name,
           country: venue.country?.name || "USA",
           latitude: venue.location?.latitude
-            ? Number.parseFloat(venue.location.latitude)
+            ? parseFloat(venue.location.latitude)
             : null,
           longitude: venue.location?.longitude
-            ? Number.parseFloat(venue.location.longitude)
+            ? parseFloat(venue.location.longitude)
             : null,
           timezone: venue.timezone || "America/New_York",
           capacity: venue.capacity,

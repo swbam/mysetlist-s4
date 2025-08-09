@@ -3,11 +3,11 @@
  * Tests normal and peak user load scenarios with comprehensive metrics
  */
 
-import { textSummary } from "https://jslib.k6.io/k6-summary/0.0.1/index.js";
-import { htmlReport } from "https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js";
-import { check, group, sleep } from "k6";
+import { check, sleep, group } from "k6";
 import http from "k6/http";
-import { Counter, Rate, Trend } from "k6/metrics";
+import { Rate, Counter, Trend } from "k6/metrics";
+import { htmlReport } from "https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js";
+import { textSummary } from "https://jslib.k6.io/k6-summary/0.0.1/index.js";
 
 // Custom metrics
 const errorRate = new Rate("errors");

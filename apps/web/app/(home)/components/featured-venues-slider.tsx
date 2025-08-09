@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Building2, Calendar, MapPin, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import React from "react";
 import {
   ContentSlider,
   ContentSliderItem,

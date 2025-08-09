@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { monitor } from "~/lib/api/monitoring";
 
 export async function POST(request: NextRequest) {

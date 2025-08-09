@@ -5,24 +5,24 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { cn } from "@repo/design-system/lib/utils";
 import {
-  Accessibility,
   Calendar,
   Car,
   ExternalLink,
   Heart,
   MapPin,
-  Music,
   Star,
   Users,
   Wifi,
+  Accessibility,
+  Music,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import {
-  animations,
   focusRing,
   touchTargets,
+  animations,
 } from "~/components/layout/grid-utils";
 
 interface VenueCardProps {

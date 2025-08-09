@@ -1,5 +1,4 @@
-import { createRateLimiter } from "@repo/rate-limit";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 // Security headers configuration
 const securityHeaders = {
@@ -81,7 +80,7 @@ const ipRateLimit = new Map<string, { count: number; resetTime: number }>();
 
 const checkIPRateLimit = (
   ip: string,
-  limit = 1000,
+  limit: number = 1000,
   windowMs: number = 15 * 60 * 1000,
 ): boolean => {
   const now = Date.now();
@@ -171,25 +170,17 @@ export async function securityMiddleware(
     });
   }
 
-  // API-specific rate limiting
+  // API-specific rate limiting (Edge-safe, in-memory)
   if (pathname.startsWith("/api/")) {
     const rateLimitKey =
       Object.keys(rateLimitConfig).find(
         (key) => key !== "default" && pathname.startsWith(key),
       ) || "default";
-
     const config =
       rateLimitConfig[rateLimitKey as keyof typeof rateLimitConfig];
 
-    const limiter = createRateLimiter({
-      limit: config.requests,
-      window: config.window,
-      prefix: rateLimitKey,
-    });
-
-    const { success } = await limiter.limit(ip);
-
-    if (!success) {
+    const ok = checkIPRateLimit(ip, config.requests, parseWindow(config.window));
+    if (!ok) {
       return new NextResponse("Too Many Requests", {
         status: 429,
         headers: {
@@ -199,9 +190,20 @@ export async function securityMiddleware(
     }
   }
 
-  // CSRF protection for state-changing requests
-  if (pathname.startsWith("/api/") && !validateCSRFToken(request)) {
-    return new NextResponse("CSRF token validation failed", { status: 403 });
+  // CSRF protection for state-changing requests, with safe bypass for internal sync/import endpoints
+  if (pathname.startsWith("/api/") && ["POST","PUT","PATCH","DELETE"].includes(request.method)) {
+    const csrfBypassEndpoints = [
+      "/api/artists/auto-import",
+      "/api/artists/import-ticketmaster",
+      "/api/artists/sync",
+      "/api/artists/sync-shows",
+      "/api/sync",
+    ];
+
+    const isBypass = csrfBypassEndpoints.some((p) => pathname.startsWith(p));
+    if (!isBypass && !validateCSRFToken(request)) {
+      return new NextResponse("CSRF token validation failed", { status: 403 });
+    }
   }
 
   // Add security-related headers for API responses
@@ -273,3 +275,13 @@ export const validateInput = (
 ): boolean => {
   return validationSchemas[schema].test(input);
 };
+
+// Helpers
+function parseWindow(window: string): number {
+  // Supports m (minutes), h (hours)
+  const match = window.match(/^(\d+)([mh])$/);
+  if (!match) return 15 * 60 * 1000;
+  const value = Number(match[1]);
+  const unit = match[2];
+  return unit === "h" ? value * 60 * 60 * 1000 : value * 60 * 1000;
+}

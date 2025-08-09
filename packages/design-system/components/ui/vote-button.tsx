@@ -2,15 +2,14 @@
 
 import { useState } from "react";
 import { Button } from "./button";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import { cn } from "@repo/design-system/lib/utils";
 
 interface VoteButtonProps {
   songId: string;
-  currentVote?: "up" | "down" | null;
+  currentVote?: "up" | null;
   upvotes: number;
-  downvotes: number;
-  onVote: (songId: string, voteType: "up" | "down" | null) => Promise<void>;
+  onVote: (songId: string, voteType: "up" | null) => Promise<void>;
   disabled?: boolean;
 }
 
@@ -18,14 +17,13 @@ export function VoteButton({
   songId,
   currentVote,
   upvotes,
-  downvotes,
   onVote,
   disabled = false,
 }: VoteButtonProps) {
   const [isVoting, setIsVoting] = useState(false);
-  const netVotes = upvotes - downvotes;
+  const netVotes = upvotes;
 
-  const handleVote = async (voteType: "up" | "down") => {
+  const handleVote = async (voteType: "up") => {
     if (isVoting || disabled) return;
 
     setIsVoting(true);
@@ -67,18 +65,7 @@ export function VoteButton({
         {netVotes > 0 ? `+${netVotes}` : netVotes}
       </span>
 
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => handleVote("down")}
-        disabled={isVoting || disabled}
-        className={cn(
-          "h-8 w-8 p-0",
-          currentVote === "down" && "bg-red-100 text-red-700 hover:bg-red-200",
-        )}
-      >
-        <ChevronDown className="h-4 w-4" />
-      </Button>
+      {/* Downvote removed */}
     </div>
   );
 }

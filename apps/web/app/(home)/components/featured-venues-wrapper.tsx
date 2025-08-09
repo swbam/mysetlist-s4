@@ -1,3 +1,4 @@
+import React from "react";
 import { absoluteUrl } from "~/lib/absolute-url";
 import FeaturedVenuesSlider from "./featured-venues-slider";
 

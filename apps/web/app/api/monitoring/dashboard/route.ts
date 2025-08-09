@@ -1,6 +1,6 @@
-import * as Sentry from "@sentry/nextjs";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { type NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 
 interface DashboardMetrics {
   timestamp: string;

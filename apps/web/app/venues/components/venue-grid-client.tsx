@@ -1,11 +1,11 @@
 "use client";
 
-import { MapPin } from "lucide-react";
 import { VenueCard } from "~/components/cards/venue-card";
 import {
-  EmptyState,
   ResponsiveGrid,
+  EmptyState,
 } from "~/components/layout/responsive-grid";
+import { MapPin } from "lucide-react";
 
 interface Venue {
   id: string;
@@ -17,15 +17,12 @@ interface Venue {
   capacity: number | null;
   latitude: number | null;
   longitude: number | null;
-  avgRating: number | null;
-  reviewCount: number;
-  upcomingShowCount: number;
+  avgRating?: number;
+  reviewCount?: number;
+  upcomingShowCount?: number;
   distance?: number;
   amenities: string | null;
   website?: string | null;
-  address: string | null;
-  venueType: string | null;
-  imageUrl: string | null;
 }
 
 interface VenueGridClientProps {

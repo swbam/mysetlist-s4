@@ -1,6 +1,5 @@
 "use client";
 
-import { AlertCircle } from "lucide-react";
 import React, {
   type ReactNode,
   createContext,
@@ -10,6 +9,7 @@ import React, {
   useCallback,
 } from "react";
 import { createClient } from "~/lib/supabase/client";
+import { AlertCircle } from "lucide-react";
 
 type ConnectionStatus = "connecting" | "connected" | "disconnected" | "error";
 

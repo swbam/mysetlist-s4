@@ -25,7 +25,10 @@ export async function GET(request: NextRequest) {
       !userData ||
       (userData.role !== "admin" && userData.role !== "moderator")
     ) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json(
+        { error: "Forbidden - Admin access required" },
+        { status: 403 },
+      );
     }
 
     const period = searchParams.get("period") || "7d";
@@ -81,7 +84,7 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       return NextResponse.json(
-        { error: "Failed to fetch analytics" },
+        { error: "Failed to fetch vote analytics" },
         { status: 500 },
       );
     }
@@ -216,7 +219,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(analytics);
   } catch (_error) {
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to fetch vote analytics" },
       { status: 500 },
     );
   }

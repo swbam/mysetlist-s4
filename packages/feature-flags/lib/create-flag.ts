@@ -6,7 +6,10 @@ export interface Flag {
   decide(): Promise<boolean>;
 }
 
-export const createFlag = (key: string, defaultValue = false): Flag => ({
+export const createFlag = (
+  key: string,
+  defaultValue: boolean = false,
+): Flag => ({
   key,
   defaultValue,
   async decide() {

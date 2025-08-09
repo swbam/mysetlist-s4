@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "~/lib/supabase/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -41,13 +41,12 @@ export async function GET(request: NextRequest) {
     const limit = Number.parseInt(searchParams.get("limit") || "20");
     const timeframe = searchParams.get("timeframe") || "week";
 
-    const supabase = await createClient();
+    const supabase = createServiceClient();
 
     // Get trending shows (simplified query)
     const { data: shows, error } = await supabase
       .from("shows")
-      .select(
-        `
+      .select(`
         id,
         name,
         slug,
@@ -59,8 +58,7 @@ export async function GET(request: NextRequest) {
         trending_score,
         headliner_artist_id,
         venue_id
-      `,
-      )
+      `)
       .gt("trending_score", 0)
       .order("trending_score", { ascending: false })
       .limit(limit);
@@ -82,38 +80,26 @@ export async function GET(request: NextRequest) {
     }
 
     // Get related artists and venues
-    const artistIds = [
-      ...new Set(shows.map((s) => s.headliner_artist_id).filter(Boolean)),
-    ];
-    const venueIds = [...new Set(shows.map((s) => s.venue_id).filter(Boolean))];
+    const artistIds = [...new Set(shows.map(s => s.headliner_artist_id).filter(Boolean))];
+    const venueIds = [...new Set(shows.map(s => s.venue_id).filter(Boolean))];
 
     const [artistsResponse, venuesResponse] = await Promise.all([
-      artistIds.length > 0
-        ? supabase
-            .from("artists")
-            .select("id, name, slug, image_url")
-            .in("id", artistIds)
-        : Promise.resolve({ data: [] }),
-      venueIds.length > 0
-        ? supabase
-            .from("venues")
-            .select("id, name, city, state")
-            .in("id", venueIds)
-        : Promise.resolve({ data: [] }),
+      artistIds.length > 0 ? supabase
+        .from("artists")
+        .select("id, name, slug, image_url")
+        .in("id", artistIds) : Promise.resolve({ data: [] }),
+      venueIds.length > 0 ? supabase
+        .from("venues")
+        .select("id, name, city, state")
+        .in("id", venueIds) : Promise.resolve({ data: [] })
     ]);
 
-    const artistsMap = new Map(
-      (artistsResponse.data || []).map((a) => [a.id, a]),
-    );
-    const venuesMap = new Map(
-      (venuesResponse.data || []).map((v) => [v.id, v]),
-    );
+    const artistsMap = new Map((artistsResponse.data || []).map(a => [a.id, a]));
+    const venuesMap = new Map((venuesResponse.data || []).map(v => [v.id, v]));
 
     // Format the response
     const formatted: TrendingShow[] = shows.map((show, index) => {
-      const artist = show.headliner_artist_id
-        ? artistsMap.get(show.headliner_artist_id)
-        : null;
+      const artist = show.headliner_artist_id ? artistsMap.get(show.headliner_artist_id) : null;
       const venue = show.venue_id ? venuesMap.get(show.venue_id) : null;
 
       return {
@@ -151,9 +137,10 @@ export async function GET(request: NextRequest) {
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
       },
     });
+
   } catch (error) {
     console.error("Trending shows API error:", error);
-
+    
     const fallbackResponse: TrendingShowsResponse = {
       shows: [],
       timeframe: request.nextUrl.searchParams.get("timeframe") || "week",

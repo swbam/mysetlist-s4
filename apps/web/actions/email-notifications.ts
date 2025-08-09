@@ -70,8 +70,8 @@ export async function sendDailyShowReminders() {
     // TODO: Implement user attendance tracking
     // The userShowAttendance table doesn't exist yet in the schema
     // For now, return success without sending reminders
-    const totalUsersNotified = 0;
-    const totalShowsNotified = 0;
+    let totalUsersNotified = 0;
+    let totalShowsNotified = 0;
 
     /* Commented out until userShowAttendance table is implemented
     // Group attendees by show

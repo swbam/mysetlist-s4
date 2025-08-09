@@ -1,7 +1,7 @@
-import { SpotifyClient } from "@repo/external-apis";
 import { type NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "~/lib/supabase/server";
 import { EnhancedSyncService } from "~/app/api/sync/unified-pipeline/enhanced-sync-service";
-import { createClient } from "~/lib/supabase/server";
+import { TicketmasterClient, SpotifyClient } from "@repo/external-apis";
 import { generateSlug } from "~/lib/utils/slug";
 
 interface ImportArtistRequest {
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createServiceClient();
 
     // Check if artist already exists
     const { data: existingArtist } = await supabase
@@ -177,7 +177,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createServiceClient();
     const { data: artist } = await supabase
       .from("artists")
       .select("id, name, slug, verified, sync_status, last_sync_at")

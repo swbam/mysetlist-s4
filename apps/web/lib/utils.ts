@@ -69,7 +69,7 @@ export function getBaseUrl(): string {
   // Production
   if (process.env.NODE_ENV === "production") {
     if (process.env.VERCEL_ENV === "production") {
-      return "https://theset.live";
+      return "https://mysetlist-sonnet.vercel.app";
     }
     // Development/preview deployments on Vercel
     if (process.env.VERCEL_URL) {

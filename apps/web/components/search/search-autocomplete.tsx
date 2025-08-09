@@ -105,7 +105,7 @@ export function SearchAutocomplete({
       setLoading(true);
       try {
         const response = await fetch(
-          `/api/search/suggestions?q=${encodeURIComponent(debouncedValue)}&limit=8`,
+          `/api/search/suggestions?query=${encodeURIComponent(debouncedValue)}&limit=8`,
         );
 
         if (response.ok) {

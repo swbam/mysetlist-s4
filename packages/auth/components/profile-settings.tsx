@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../src/hooks/use-auth";
 import type {
-  UpdatePreferencesData,
   UpdateProfileData,
+  UpdatePreferencesData,
 } from "../src/types/auth";
 
 export const ProfileSettings = () => {

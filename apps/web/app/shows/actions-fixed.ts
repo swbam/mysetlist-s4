@@ -1,8 +1,8 @@
 "use server";
 
-import { artists, db, showArtists, shows, venues } from "@repo/database";
-import { and, asc, desc, eq, gte, ilike, inArray, lte, sql, SQL } from "drizzle-orm";
 import { cache } from "react";
+import { artists, db, shows, venues, showArtists } from "@repo/database";
+import { and, asc, desc, eq, gte, lte, ilike, sql, inArray } from "drizzle-orm";
 
 export type ShowWithDetails = {
   id: string;
@@ -89,7 +89,7 @@ export const fetchShows = cache(
 
     try {
       // Build base query with joins
-      const baseQuery = db
+      let query = db
         .select({
           id: shows.id,
           name: shows.name,
@@ -133,7 +133,7 @@ export const fetchShows = cache(
         .leftJoin(venues, eq(shows.venueId, venues.id));
 
       // Apply filters
-      const conditions: SQL<unknown>[] = [];
+      const conditions = [];
 
       if (status) {
         conditions.push(eq(shows.status, status));
@@ -170,31 +170,39 @@ export const fetchShows = cache(
         );
       }
 
-      // Build the complete query with all conditions, ordering, and pagination
-      const query = conditions.length > 0
-        ? baseQuery.where(and(...conditions))
-        : baseQuery;
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
 
-      // Apply ordering and pagination in chain
-      const orderedQuery = orderBy === "trending"
-        ? query.orderBy(desc(shows.trendingScore))
-        : orderBy === "popularity"
-        ? query.orderBy(desc(shows.viewCount))
-        : query.orderBy(asc(shows.date));
+      // Apply ordering
+      switch (orderBy) {
+        case "trending":
+          query = query.orderBy(desc(shows.trendingScore));
+          break;
+        case "popularity":
+          query = query.orderBy(desc(shows.viewCount));
+          break;
+        default:
+          query = query.orderBy(asc(shows.date));
+          break;
+      }
 
-      // Execute query with pagination
-      const showsData = await orderedQuery.limit(limit).offset(offset);
+      // Apply pagination
+      query = query.limit(limit).offset(offset);
+
+      // Execute query
+      const showsData = await query;
 
       // Get total count for pagination
-      const countBaseQuery = db
+      let countQuery = db
         .select({ count: sql<number>`count(*)` })
         .from(shows)
         .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
         .leftJoin(venues, eq(shows.venueId, venues.id));
 
-      const countQuery = conditions.length > 0
-        ? countBaseQuery.where(and(...conditions))
-        : countBaseQuery;
+      if (conditions.length > 0) {
+        countQuery = countQuery.where(and(...conditions));
+      }
 
       const countResult = await countQuery;
       const totalCount = countResult[0]?.count || 0;
@@ -228,7 +236,7 @@ export const fetchShows = cache(
           if (!acc[sa.showId]) {
             acc[sa.showId] = [];
           }
-          acc[sa.showId]!.push({
+          acc[sa.showId].push({
             id: sa.id,
             artistId: sa.artistId,
             orderIndex: sa.orderIndex,
@@ -263,18 +271,17 @@ export const fetchShows = cache(
         ticketUrl: show.ticketUrl,
         minPrice: show.minPrice,
         maxPrice: show.maxPrice,
-        currency: show.currency || "USD",
-        viewCount: show.viewCount || 0,
-        attendeeCount: show.attendeeCount || 0,
-        setlistCount: show.setlistCount || 0,
-        voteCount: show.voteCount || 0,
-        trendingScore: show.trendingScore || 0,
-        isFeatured: show.isFeatured || false,
-        isVerified: show.isVerified || false,
+        currency: show.currency,
+        viewCount: show.viewCount,
+        attendeeCount: show.attendeeCount,
+        setlistCount: show.setlistCount,
+        voteCount: show.voteCount,
+        trendingScore: show.trendingScore,
+        isFeatured: show.isFeatured,
+        isVerified: show.isVerified,
         headlinerArtist: {
           ...show.headlinerArtist,
           genres: safeJsonParse(show.headlinerArtist.genres),
-          verified: show.headlinerArtist.verified || false,
         },
         venue: show.venue,
         supportingArtists: supportingArtistsByShow[show.id] || [],

@@ -1,12 +1,13 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Avatar,
-  AvatarFallback,
   AvatarImage,
+  AvatarFallback,
 } from "@repo/design-system/components/ui/avatar";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import {
   Table,
   TableBody,
@@ -16,14 +17,13 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import {
-  Eye,
-  MapPin,
-  Music,
-  TrendingDown,
   TrendingUp,
+  TrendingDown,
+  Music,
+  MapPin,
   User,
+  Eye,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 
 interface TableProps {
   type:
@@ -64,14 +64,14 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        `/api/analytics/table?type=${type}&limit=${limit}`,
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch table data");
-      }
-      const result = await response.json();
-      setData(result.data || []);
+      // Mock data based on table type
+      const mockData = generateMockData(type, limit);
+      setData(mockData);
+
+      // In production, this would be:
+      // const response = await fetch(`/api/analytics/table?type=${type}&limit=${limit}`);
+      // const result = await response.json();
+      // setData(result.data);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load table data",
@@ -85,6 +85,10 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
     tableType: string,
     itemLimit: number,
   ): TableRow[] => {
+    // Do not generate mock data in production
+    if (typeof process !== "undefined" && process.env.NODE_ENV === "production") {
+      return [];
+    }
     switch (tableType) {
       case "engaged-users":
         return Array.from({ length: itemLimit }, (_, i) => ({

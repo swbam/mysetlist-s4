@@ -1,29 +1,7 @@
 {
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
-  "formatter": {
-    "enabled": true,
-    "formatWithErrors": false,
-    "indentStyle": "space",
-    "indentWidth": 2,
-    "lineWidth": 80
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
-      "correctness": {
-        "noUnusedImports": "error",
-        "noUnusedVariables": "error"
-      },
-      "style": {
-        "useImportType": "error"
-      }
-    }
-  },
+  "extends": ["ultracite"],
   "javascript": {
-    "formatter": {
-      "quoteStyle": "double"
-    },
     "globals": ["Liveblocks"]
   },
   "files": {
@@ -33,12 +11,7 @@
       "packages/design-system/hooks/**",
       "packages/collaboration/config.ts",
       "apps/docs/**/*.json",
-      "apps/email/.react-email/**",
-      ".turbo/**",
-      "node_modules/**",
-      ".next/**",
-      "dist/**",
-      "build/**"
+      "apps/email/.react-email/**"
     ]
   }
 }

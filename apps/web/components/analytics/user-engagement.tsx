@@ -1,7 +1,6 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -9,9 +8,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Progress } from "@repo/design-system/components/ui/progress";
-import { Activity, Clock, TrendingUp, Users } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Users, Activity, Clock, TrendingUp } from "lucide-react";
 
 interface EngagementMetrics {
   dailyActiveUsers: number;
@@ -53,12 +53,45 @@ export function UserEngagement() {
     try {
       setLoading(true);
 
-      const response = await fetch("/api/analytics?metric=engagement");
-      if (!response.ok) {
-        throw new Error("Failed to fetch engagement metrics");
-      }
-      const data = await response.json();
-      setMetrics(data);
+      // Mock data - in production this would fetch from /api/analytics?metric=engagement
+      const mockData: EngagementMetrics = {
+        dailyActiveUsers: 3240,
+        weeklyActiveUsers: 12850,
+        monthlyActiveUsers: 28940,
+        avgSessionDuration: 8.5,
+        avgPageViews: 12.3,
+        bounceRate: 32.1,
+        retentionRate: 68.7,
+        engagementScore: 74.2,
+        userActions: [
+          { action: "Page Views", count: 45678, percentage: 42.3 },
+          { action: "Voting", count: 18234, percentage: 16.9 },
+          { action: "Artist Follows", count: 12890, percentage: 11.9 },
+          { action: "Show Attendance", count: 9456, percentage: 8.8 },
+          { action: "Setlist Views", count: 8234, percentage: 7.6 },
+          { action: "Search", count: 6890, percentage: 6.4 },
+          { action: "Profile Updates", count: 4567, percentage: 4.2 },
+          { action: "Comments", count: 2134, percentage: 2.0 },
+        ],
+        cohortData: [
+          { cohort: "Week 1", users: 1200, retention: 85.2, engagement: 78.5 },
+          { cohort: "Week 2", users: 1100, retention: 72.1, engagement: 71.3 },
+          { cohort: "Week 3", users: 980, retention: 65.8, engagement: 68.9 },
+          { cohort: "Week 4", users: 890, retention: 62.4, engagement: 65.2 },
+          { cohort: "Month 2", users: 750, retention: 58.7, engagement: 61.8 },
+          { cohort: "Month 3", users: 620, retention: 55.3, engagement: 58.4 },
+        ],
+        timeSpentBreakdown: [
+          { category: "Browsing Artists", minutes: 145, percentage: 34.2 },
+          { category: "Viewing Shows", minutes: 98, percentage: 23.1 },
+          { category: "Voting on Songs", minutes: 67, percentage: 15.8 },
+          { category: "Setlist Exploration", minutes: 54, percentage: 12.7 },
+          { category: "Discovery/Search", minutes: 38, percentage: 9.0 },
+          { category: "Profile Management", minutes: 22, percentage: 5.2 },
+        ],
+      };
+
+      setMetrics(mockData);
     } catch (err) {
       setError(
         err instanceof Error

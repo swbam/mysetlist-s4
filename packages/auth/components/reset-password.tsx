@@ -1,7 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { useAuth } from "../src/hooks/use-auth";
 
 export const ResetPassword = () => {

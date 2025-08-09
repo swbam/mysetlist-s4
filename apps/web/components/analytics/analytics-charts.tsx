@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -8,25 +8,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Eye, TrendingDown, TrendingUp, Users } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
-  Area,
-  AreaChart,
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Legend,
-  Line,
   LineChart,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
+  Line,
   XAxis,
   YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  AreaChart,
+  Area,
+  PieChart,
+  Pie,
+  Cell,
 } from "recharts";
+import { TrendingUp, TrendingDown, Users, Eye } from "lucide-react";
 
 interface ChartData {
   period: string;
@@ -67,14 +67,14 @@ export function AnalyticsCharts({
     try {
       setLoading(true);
 
-      const response = await fetch(
-        `/api/analytics?metric=${type}&period=${period}&groupBy=day`,
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch chart data");
-      }
-      const result = await response.json();
-      setData(result.data || []);
+      // Mock data generation based on chart type
+      const mockData = generateMockData(type, period);
+      setData(mockData);
+
+      // In production, this would be:
+      // const response = await fetch(`/api/analytics?metric=${type}&period=${period}&groupBy=day`);
+      // const result = await response.json();
+      // setData(result.data);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load chart data",

@@ -1,5 +1,5 @@
-import { artists, db, showArtists, shows, venues } from "@repo/database";
-import { and, asc, desc, eq, gte, ilike, inArray, lte, sql, SQL } from "drizzle-orm";
+import { artists, db, shows, venues, showArtists } from "@repo/database";
+import { and, asc, desc, eq, gte, lte, ilike, sql, inArray } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     // Parse query parameters
     const limit = Number.parseInt(searchParams.get("limit") || "20");
     const offset = Number.parseInt(searchParams.get("offset") || "0");
-    const status = searchParams.get("status") as "upcoming" | "ongoing" | "completed" | "cancelled" | null || "upcoming";
+    const status = searchParams.get("status") || "upcoming";
     const city = searchParams.get("city");
     const artistId = searchParams.get("artistId");
     const venueId = searchParams.get("venueId");
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const orderBy = searchParams.get("orderBy") || "date";
 
     // Build base query with joins
-    const baseQuery = db
+    let query = db
       .select({
         id: shows.id,
         name: shows.name,
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       .leftJoin(venues, eq(shows.venueId, venues.id));
 
     // Apply filters
-    const conditions: SQL<unknown>[] = [];
+    const conditions = [];
 
     if (status) {
       conditions.push(eq(shows.status, status));
@@ -100,31 +100,39 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Build the complete query with all conditions, ordering, and pagination
-    const query = conditions.length > 0
-      ? baseQuery.where(and(...conditions))
-      : baseQuery;
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
 
-    // Apply ordering and pagination in chain
-    const orderedQuery = orderBy === "trending"
-      ? query.orderBy(desc(shows.trendingScore))
-      : orderBy === "popularity"
-      ? query.orderBy(desc(shows.viewCount))
-      : query.orderBy(asc(shows.date));
+    // Apply ordering
+    switch (orderBy) {
+      case "trending":
+        query = query.orderBy(desc(shows.trendingScore));
+        break;
+      case "popularity":
+        query = query.orderBy(desc(shows.viewCount));
+        break;
+      default:
+        query = query.orderBy(asc(shows.date));
+        break;
+    }
 
-    // Execute query with pagination
-    const showsData = await orderedQuery.limit(limit).offset(offset);
+    // Apply pagination
+    query = query.limit(limit).offset(offset);
+
+    // Execute query
+    const showsData = await query;
 
     // Get total count for pagination
-    const countBaseQuery = db
+    let countQuery = db
       .select({ count: sql<number>`count(*)` })
       .from(shows)
       .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
       .leftJoin(venues, eq(shows.venueId, venues.id));
 
-    const countQuery = conditions.length > 0
-      ? countBaseQuery.where(and(...conditions))
-      : countBaseQuery;
+    if (conditions.length > 0) {
+      countQuery = countQuery.where(and(...conditions));
+    }
 
     const countResult = await countQuery;
     const totalCount = countResult[0]?.count || 0;
@@ -158,7 +166,7 @@ export async function GET(request: NextRequest) {
         if (!acc[sa.showId]) {
           acc[sa.showId] = [];
         }
-        acc[sa.showId]!.push({
+        acc[sa.showId].push({
           id: sa.id,
           artistId: sa.artistId,
           orderIndex: sa.orderIndex,

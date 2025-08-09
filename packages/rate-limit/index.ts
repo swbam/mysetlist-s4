@@ -1,6 +1,6 @@
-import { and, db, eq, rateLimits, sql } from "@repo/database";
-import { type SupabaseClient, createClient } from "@supabase/supabase-js";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { keys } from "./keys";
+import { db, rateLimits, eq, and, sql } from "@repo/database";
 
 // Initialize Supabase client lazily
 let supabaseClient: SupabaseClient | null = null;
@@ -30,7 +30,7 @@ export function createRateLimiter(options: {
   // Parse window string (e.g., "15 m", "1 h", "1 d")
   const parseWindow = (windowStr: string): number => {
     const parts = windowStr.split(" ");
-    const value = Number.parseFloat(parts[0] || "1");
+    const value = parseFloat(parts[0] || "1");
     const unit = parts[1] || "s";
 
     switch (unit) {

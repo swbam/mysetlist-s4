@@ -5,15 +5,15 @@
  * This script executes the security migration SQL using the existing database connection
  */
 
-import { join } from "path";
 import { config } from "dotenv";
+import { join } from "path";
 
 // Load environment variables first
 config({ path: join(process.cwd(), ".env.local") });
 
-import { readFileSync } from "fs";
 import { db } from "@repo/database";
 import { sql } from "drizzle-orm";
+import { readFileSync } from "fs";
 
 async function applySecurityMigration() {
   console.log("🔒 Applying Database Security Migration...");
@@ -28,7 +28,7 @@ async function applySecurityMigration() {
     // Read the migration SQL file
     const migrationPath = join(
       process.cwd(),
-      "supabase/migrations/20250128_security_fixes.sql",
+      "supabase/migrations/20250128_security_fixes.sql"
     );
     const migrationSQL = readFileSync(migrationPath, "utf-8");
 
@@ -38,13 +38,11 @@ async function applySecurityMigration() {
       .map((s) => s.trim())
       .filter((s) => {
         // Filter out comments, empty lines, DO blocks, and RAISE NOTICE statements
-        return (
-          s.length > 0 &&
-          !s.startsWith("--") &&
-          !s.startsWith("DO $$") &&
-          !s.includes("RAISE NOTICE") &&
-          !s.includes("END $$")
-        );
+        return s.length > 0 && 
+               !s.startsWith("--") && 
+               !s.startsWith("DO $$") &&
+               !s.includes("RAISE NOTICE") &&
+               !s.includes("END $$");
       });
 
     console.log(`📤 Executing ${statements.length} SQL statements...`);
@@ -52,12 +50,10 @@ async function applySecurityMigration() {
     // Execute each statement
     for (let i = 0; i < statements.length; i++) {
       const statement = statements[i];
-
+      
       // Log progress
       const shortStatement = statement.substring(0, 60).replace(/\n/g, " ");
-      console.log(
-        `🔄 Statement ${i + 1}/${statements.length}: ${shortStatement}...`,
-      );
+      console.log(`🔄 Statement ${i + 1}/${statements.length}: ${shortStatement}...`);
 
       try {
         // Execute the raw SQL statement
@@ -138,8 +134,7 @@ async function applySecurityMigration() {
     console.log("\n👁️ View Status:");
     if (viewCheck.rows && Array.isArray(viewCheck.rows)) {
       viewCheck.rows.forEach((row: any) => {
-        const status =
-          row.security_status === "No SECURITY DEFINER" ? "✅" : "❌";
+        const status = row.security_status === "No SECURITY DEFINER" ? "✅" : "❌";
         console.log(`   ${row.viewname}: ${status} ${row.security_status}`);
       });
     } else {
@@ -147,11 +142,10 @@ async function applySecurityMigration() {
     }
 
     console.log("\n🎉 All security issues have been resolved!");
+
   } catch (error) {
     console.error("\n❌ Error applying migration:", error);
-    console.error(
-      "\nIf the error persists, please execute the migration manually:",
-    );
+    console.error("\nIf the error persists, please execute the migration manually:");
     console.error("1. Go to your Supabase dashboard");
     console.error("2. Navigate to SQL Editor");
     console.error("3. Copy and paste the contents of:");

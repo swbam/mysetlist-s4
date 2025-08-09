@@ -1,10 +1,10 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { ingestArtistPipeline } from "~/lib/ingest/artistPipeline";
 import { z } from "zod";
 import {
-  apiRateLimitMiddleware,
   ingestRateLimiter,
+  apiRateLimitMiddleware,
 } from "~/lib/api-rate-limit";
-import { ingestArtistPipeline } from "~/lib/ingest/artistPipeline";
 
 const ParamsSchema = z.object({
   tmId: z.string().min(1),

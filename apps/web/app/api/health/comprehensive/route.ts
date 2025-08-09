@@ -1,8 +1,8 @@
+import { NextResponse } from "next/server";
+import { createServiceClient } from "~/lib/supabase/server";
 import { spotify } from "@repo/external-apis";
 import { ticketmaster } from "@repo/external-apis";
 import { setlistfm } from "@repo/external-apis";
-import { NextResponse } from "next/server";
-import { createClient } from "~/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,7 +33,7 @@ const startTime = Date.now();
 async function checkDatabase(): Promise<HealthCheck> {
   const start = Date.now();
   try {
-    const supabase = await createClient();
+    const supabase = createServiceClient();
     const { data, error } = await supabase
       .from("artists")
       .select("id")
@@ -170,7 +170,7 @@ async function checkRedisCache(): Promise<HealthCheck> {
 async function checkRealtimeConnection(): Promise<HealthCheck> {
   const start = Date.now();
   try {
-    const supabase = await createClient();
+    const supabase = createServiceClient();
 
     // Try to create a test channel
     const channel = supabase.channel("health-check");

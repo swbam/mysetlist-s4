@@ -5,19 +5,20 @@ import { setlistSongs, setlists, shows, users, votes } from "../schema";
 export async function createVote(voteData: {
   userId: string;
   setlistSongId: string;
-  voteType: "up" | "down";
+  // Downvotes deprecated: force to 'up'
+  voteType?: "up";
 }) {
   const [vote] = await db
     .insert(votes)
     .values({
       userId: voteData.userId,
       setlistSongId: voteData.setlistSongId,
-      voteType: voteData.voteType,
+      voteType: "up",
     })
     .onConflictDoUpdate({
       target: [votes.userId, votes.setlistSongId],
       set: {
-        voteType: voteData.voteType,
+        voteType: "up",
         updatedAt: new Date(),
       },
     })
@@ -66,9 +67,12 @@ export async function getUserVotes(userId: string, setlistSongIds: string[]) {
       ),
     );
 
-  const voteMap: Record<string, "up" | "down"> = {};
+  // Downvotes removed: normalize to 'up' or omit
+  const voteMap: Record<string, "up"> = {} as Record<string, "up">;
   userVotes.forEach((vote) => {
-    voteMap[vote.setlistSongId] = vote.voteType;
+    if (vote.voteType === "up") {
+      voteMap[vote.setlistSongId] = "up";
+    }
   });
 
   return voteMap;
@@ -77,26 +81,16 @@ export async function getUserVotes(userId: string, setlistSongIds: string[]) {
 export async function getVoteCountsForSetlistSong(setlistSongId: string) {
   const counts = await db
     .select({
-      voteType: votes.voteType,
-      count: sql<number>`COUNT(*)`,
+      upvotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'up')`,
     })
     .from(votes)
-    .where(eq(votes.setlistSongId, setlistSongId))
-    .groupBy(votes.voteType);
+    .where(eq(votes.setlistSongId, setlistSongId));
 
-  const result = {
-    up: 0,
-    down: 0,
-  };
-
-  counts.forEach(({ voteType, count }) => {
-    result[voteType] = count;
-  });
-
+  const upvotes = counts[0]?.upvotes ?? 0;
   return {
-    upvotes: result.up,
-    downvotes: result.down,
-    netVotes: result.up - result.down,
+    upvotes,
+    downvotes: 0,
+    netVotes: upvotes,
   };
 }
 
@@ -104,35 +98,16 @@ export async function getVoteCountsForSetlist(setlistId: string) {
   const counts = await db
     .select({
       setlistSongId: setlistSongs.id,
-      voteType: votes.voteType,
-      count: sql<number>`COUNT(*)`,
+      upvotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'up')`,
     })
     .from(setlistSongs)
     .leftJoin(votes, eq(votes.setlistSongId, setlistSongs.id))
     .where(eq(setlistSongs.setlistId, setlistId))
-    .groupBy(setlistSongs.id, votes.voteType);
+    .groupBy(setlistSongs.id);
 
-  const songVotes: Record<
-    string,
-    { upvotes: number; downvotes: number; netVotes: number }
-  > = {};
-
-  counts.forEach(({ setlistSongId, voteType, count }) => {
-    if (!songVotes[setlistSongId]) {
-      songVotes[setlistSongId] = { upvotes: 0, downvotes: 0, netVotes: 0 };
-    }
-
-    if (voteType === "up") {
-      songVotes[setlistSongId].upvotes = count;
-    } else if (voteType === "down") {
-      songVotes[setlistSongId].downvotes = count;
-    }
-  });
-
-  // Calculate net votes
-  Object.keys(songVotes).forEach((songId) => {
-    songVotes[songId].netVotes =
-      songVotes[songId].upvotes - songVotes[songId].downvotes;
+  const songVotes: Record<string, { upvotes: number; downvotes: number; netVotes: number }> = {};
+  counts.forEach(({ setlistSongId, upvotes }) => {
+    songVotes[setlistSongId] = { upvotes, downvotes: 0, netVotes: upvotes };
   });
 
   return songVotes;
@@ -143,24 +118,19 @@ export async function getTopVotedSongsForShow(
   options?: {
     limit?: number;
     minVotes?: number;
-    voteType?: "up" | "down" | "net";
+    voteType?: "up" | "net";
   },
 ) {
   const { limit = 20, minVotes = 1, voteType = "net" } = options || {};
 
-  const orderColumn =
-    voteType === "up"
-      ? setlistSongs.upvotes
-      : voteType === "down"
-        ? setlistSongs.downvotes
-        : setlistSongs.netVotes;
+  const orderColumn = voteType === "up" ? setlistSongs.upvotes : setlistSongs.netVotes;
 
   const results = await db
     .select({
       setlistSong: setlistSongs,
       setlist: setlists,
       upvotes: setlistSongs.upvotes,
-      downvotes: setlistSongs.downvotes,
+      downvotes: sql<number>`0` as unknown as number,
       netVotes: setlistSongs.netVotes,
     })
     .from(setlistSongs)
@@ -177,7 +147,7 @@ export async function getUserVotingHistory(
   options?: {
     limit?: number;
     showId?: string;
-    voteType?: "up" | "down";
+    voteType?: "up";
     dateRange?: { from: Date; to: Date };
   },
 ) {
@@ -263,14 +233,12 @@ export async function getVotingStatistics(options?: {
       // Vote type breakdown
       db
         .select({
-          voteType: votes.voteType,
-          count: sql<number>`COUNT(*)`,
+          upvotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'up')`,
         })
         .from(votes)
         .innerJoin(setlistSongs, eq(votes.setlistSongId, setlistSongs.id))
         .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
-        .where(whereClause)
-        .groupBy(votes.voteType),
+        .where(whereClause),
 
       // Top voters
       db
@@ -279,7 +247,7 @@ export async function getVotingStatistics(options?: {
           username: users.username,
           totalVotes: sql<number>`COUNT(*)`,
           upvotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'up')`,
-          downvotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'down')`,
+          downvotes: sql<number>`0`,
         })
         .from(votes)
         .innerJoin(users, eq(votes.userId, users.id))
@@ -296,8 +264,8 @@ export async function getVotingStatistics(options?: {
           setlistSongId: setlistSongs.id,
           totalVotes: sql<number>`COUNT(*)`,
           upvotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'up')`,
-          downvotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'down')`,
-          netVotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'up') - COUNT(*) FILTER (WHERE ${votes.voteType} = 'down')`,
+          downvotes: sql<number>`0`,
+          netVotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'up')`,
         })
         .from(votes)
         .innerJoin(setlistSongs, eq(votes.setlistSongId, setlistSongs.id))
@@ -310,13 +278,7 @@ export async function getVotingStatistics(options?: {
 
   return {
     totalVotes: totalVotes[0].count,
-    voteBreakdown: voteBreakdown.reduce(
-      (acc, { voteType, count }) => {
-        acc[voteType] = count;
-        return acc;
-      },
-      { up: 0, down: 0 } as Record<string, number>,
-    ),
+    voteBreakdown: { up: voteBreakdown[0]?.upvotes ?? 0, down: 0 },
     topVoters,
     mostVotedSongs,
   };
@@ -349,7 +311,7 @@ export async function getVotingTrends(options?: {
     .select({
       period: dateFormat.as("period"),
       upvotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'up')`,
-      downvotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'down')`,
+      downvotes: sql<number>`0`,
       totalVotes: sql<number>`COUNT(*)`,
     })
     .from(votes)
@@ -372,7 +334,6 @@ export async function bulkUpdateVoteCounts(setlistSongIds: string[]) {
     .select({
       setlistSongId: votes.setlistSongId,
       upvotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'up')`,
-      downvotes: sql<number>`COUNT(*) FILTER (WHERE ${votes.voteType} = 'down')`,
     })
     .from(votes)
     .where(inArray(votes.setlistSongId, setlistSongIds))
@@ -380,13 +341,13 @@ export async function bulkUpdateVoteCounts(setlistSongIds: string[]) {
 
   // Update each setlist song with current vote counts
   const updates = await Promise.all(
-    voteCounts.map(({ setlistSongId, upvotes, downvotes }) =>
+    voteCounts.map(({ setlistSongId, upvotes }) =>
       db
         .update(setlistSongs)
         .set({
           upvotes,
-          downvotes,
-          netVotes: upvotes - downvotes,
+          downvotes: 0,
+          netVotes: upvotes,
           updatedAt: new Date(),
         })
         .where(eq(setlistSongs.id, setlistSongId))

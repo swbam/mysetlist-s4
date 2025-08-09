@@ -29,11 +29,11 @@ import {
   Unlock,
 } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { toast } from "sonner";
-import { createClient } from "~/lib/supabase/client";
 import { VoteButton } from "../voting/vote-button";
 import { AddSongModal } from "./add-song-modal";
+import { createClient } from "~/lib/supabase/client";
 
 interface SetlistSong {
   id: string;

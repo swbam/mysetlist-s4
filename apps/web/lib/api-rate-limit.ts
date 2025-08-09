@@ -25,7 +25,7 @@ try {
     const parts = props.window.split(" ");
     const value = parts[0] || "1";
     const unit = parts[1] || "s";
-    const num = Number.parseFloat(value);
+    const num = parseFloat(value);
     let windowMs = num * 1000; // default to seconds
 
     switch (unit) {

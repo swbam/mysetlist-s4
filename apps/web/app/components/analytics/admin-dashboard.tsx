@@ -1,7 +1,5 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -14,21 +12,23 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
+  Users,
+  Music,
+  Calendar,
+  TrendingUp,
   Activity,
   AlertTriangle,
-  Calendar,
   CheckCircle,
+  XCircle,
   Clock,
   Database,
-  Music,
   Server,
-  TrendingUp,
-  Users,
-  XCircle,
   Zap,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useRealtimeConnection } from "~/app/providers/realtime-provider";
 
 interface DashboardMetrics {

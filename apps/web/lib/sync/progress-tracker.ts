@@ -1,5 +1,5 @@
-import { env } from "@repo/env";
 import { Redis } from "@upstash/redis";
+import { env } from "@repo/env";
 
 export interface SyncProgress {
   artistId: string;

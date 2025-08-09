@@ -151,7 +151,7 @@ async function testMobileResponsiveness() {
             textElements.forEach((el) => {
               if (el.textContent?.trim()) {
                 const style = window.getComputedStyle(el);
-                const fontSize = Number.parseFloat(style.fontSize);
+                const fontSize = parseFloat(style.fontSize);
                 if (fontSize >= 14) {
                   // Minimum readable size
                   readableCount++;

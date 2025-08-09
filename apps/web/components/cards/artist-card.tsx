@@ -9,19 +9,19 @@ import {
   CheckCircle2,
   Heart,
   Music,
-  Play,
   TrendingUp,
   Users,
+  Play,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { parseGenres } from "~/lib/parse-genres";
 import {
-  animations,
   focusRing,
   touchTargets,
+  animations,
 } from "~/components/layout/grid-utils";
-import { parseGenres } from "~/lib/parse-genres";
 
 interface ArtistCardProps {
   artist: {

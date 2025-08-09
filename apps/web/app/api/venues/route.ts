@@ -1,11 +1,11 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "~/lib/supabase/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = Number.parseInt(searchParams.get("limit") || "20");
-    const page = Number.parseInt(searchParams.get("page") || "1");
+    const limit = parseInt(searchParams.get("limit") || "20");
+    const page = parseInt(searchParams.get("page") || "1");
     const offset = (page - 1) * limit;
     const city = searchParams.get("city");
     const state = searchParams.get("state");
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get("type");
     const sort = searchParams.get("sort") || "popular"; // popular, capacity, alphabetical
 
-    const supabase = await createClient();
+    const supabase = createServiceClient();
 
     // Build query
     let query = supabase
@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
 
     // Get upcoming show counts for each venue
     const venueIds = venues?.map((v) => v.id) || [];
-    const upcomingShowsCounts: any = {};
+    let upcomingShowsCounts: any = {};
 
     if (venueIds.length > 0) {
       const { data: showCounts } = await supabase

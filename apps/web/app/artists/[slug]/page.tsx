@@ -9,18 +9,15 @@ import { ArtistErrorBoundary } from "~/components/error-boundaries/artist-error-
 import { createArtistMetadata } from "~/lib/seo-metadata";
 import {
   getArtist,
-  getArtistSetlists,
   getArtistShows,
   getArtistStats,
+  getArtistSetlists,
   getSimilarArtists,
 } from "./actions";
 import { ArtistHeader } from "./components/artist-header";
 import { ArtistPageWrapper } from "./components/artist-page-wrapper";
 import { ArtistStats } from "./components/artist-stats";
 import { UpcomingShows } from "./components/upcoming-shows";
-
-// Enable ISR with 60 second revalidation
-export const revalidate = 60;
 
 // Dynamic imports for tab content to optimize initial bundle
 const ArtistBio = dynamic(
@@ -90,6 +87,7 @@ type ArtistPageProps = {
 };
 
 // Configure ISR with revalidation
+export const revalidate = 3600; // Revalidate every hour
 export const dynamicParams = true; // Allow dynamic params beyond generateStaticParams
 
 export const generateMetadata = async ({
@@ -235,23 +233,14 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
             <ArtistStats artistId={artist.id} />
           </div>
 
-          {/* Content Tabs */}
+          {/* Content Tabs (only Upcoming and Past as requested) */}
           <Tabs defaultValue="shows" className="mt-8 w-full">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="shows" aria-label="View upcoming shows">
                 Upcoming Shows
               </TabsTrigger>
               <TabsTrigger value="past" aria-label="View past shows">
                 Past Shows
-              </TabsTrigger>
-              <TabsTrigger value="setlists" aria-label="View setlists">
-                Setlists
-              </TabsTrigger>
-              <TabsTrigger value="music" aria-label="View artist music">
-                Music
-              </TabsTrigger>
-              <TabsTrigger value="about" aria-label="About the artist">
-                About
               </TabsTrigger>
             </TabsList>
 
@@ -265,6 +254,7 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
                   shows: transformedUpcomingShows,
                   artistName: artist.name,
                   artistId: artist.id,
+                  spotifyId: artist.spotifyId,
                 })}
               </React.Suspense>
             </TabsContent>
@@ -283,52 +273,7 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
               </React.Suspense>
             </TabsContent>
 
-            <TabsContent value="setlists" className="space-y-4">
-              <React.Suspense
-                fallback={
-                  <div className="h-64 animate-pulse rounded-lg bg-muted" />
-                }
-              >
-                <ArtistSetlistsView
-                  setlists={(artistSetlists || []) as any}
-                  artistName={artist.name}
-                  artistId={artist.id}
-                />
-              </React.Suspense>
-            </TabsContent>
-
-            <TabsContent value="music" className="space-y-4">
-              <React.Suspense
-                fallback={
-                  <div className="h-96 animate-pulse rounded-lg bg-muted" />
-                }
-              >
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  <ArtistTopTracks
-                    artistId={artist.id}
-                    spotifyId={artist.spotifyId}
-                  />
-                  {React.createElement(ArtistSongCatalog as any, {
-                    artistId: artist.id,
-                    artistSlug: artist.slug,
-                    artistName: artist.name,
-                  })}
-                </div>
-              </React.Suspense>
-            </TabsContent>
-
-            <TabsContent value="about" className="space-y-6">
-              <React.Suspense
-                fallback={
-                  <div className="h-64 animate-pulse rounded-lg bg-muted" />
-                }
-              >
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  {artist.bio && <ArtistBio bio={artist.bio} />}
-                  <SimilarArtists artistId={artist.id} genres={artist.genres} />
-                </div>
-              </React.Suspense>
-            </TabsContent>
+            {/* Removed Setlists, Music, About tabs per requirement */}
           </Tabs>
         </div>
       </ArtistPageWrapper>

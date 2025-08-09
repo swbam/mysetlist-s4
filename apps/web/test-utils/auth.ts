@@ -1,5 +1,5 @@
-import type { Session, User } from "@supabase/supabase-js";
 import { vi } from "vitest";
+import type { User, Session } from "@supabase/supabase-js";
 
 export interface MockUser extends Partial<User> {
   id: string;

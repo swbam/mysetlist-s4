@@ -379,7 +379,11 @@ class ComprehensiveQARunner {
 
     this.results.forEach((result, index) => {
       const icon =
-        result.status === "pass" ? "✅" : result.status === "fail" ? "❌" : "⏭️";
+        result.status === "pass"
+          ? "✅"
+          : result.status === "fail"
+            ? "❌"
+            : "⏭️";
       const duration = this.formatDuration(result.duration);
 
       console.log(`${index + 1}. ${icon} ${result.name} (${duration})`);

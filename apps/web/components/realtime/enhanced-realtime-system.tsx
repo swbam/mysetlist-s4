@@ -1,30 +1,30 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { createClient } from "~/lib/supabase/client";
+import { useScreenReaderAnnouncements } from "~/components/accessibility/enhanced-accessibility";
+import { cn } from "@repo/design-system/lib/utils";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import { Progress } from "@repo/design-system/components/ui/progress";
-import { cn } from "@repo/design-system/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
 import {
-  Activity,
+  WifiOff,
   AlertCircle,
   CheckCircle,
   RefreshCw,
+  Activity,
+  Users,
   Signal,
   TrendingUp,
-  Users,
-  WifiOff,
   Zap,
 } from "lucide-react";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { useScreenReaderAnnouncements } from "~/components/accessibility/enhanced-accessibility";
-import { createClient } from "~/lib/supabase/client";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Enhanced connection state
 interface ConnectionState {

@@ -1,4 +1,4 @@
-import { type ComponentType, type PropsWithChildren, memo } from "react";
+import React, { ComponentType, memo, PropsWithChildren } from "react";
 
 // Type-safe memoization helper with display name
 export function withMemo<P extends object>(

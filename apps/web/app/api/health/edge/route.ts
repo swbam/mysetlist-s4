@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { CacheClient } from "~/lib/cache/redis";
-import { createClient } from "~/lib/supabase/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 // Configure for nodejs runtime
 export const runtime = "nodejs";
@@ -49,7 +49,7 @@ export async function GET() {
   // Check database
   try {
     const dbStart = Date.now();
-    const supabase = await createClient();
+    const supabase = createServiceClient();
     const { error } = await supabase
       .from("artists")
       .select("id")
@@ -147,7 +147,7 @@ export async function POST() {
 
   // Database connection pool check
   try {
-    const supabase = await createClient();
+    const supabase = createServiceClient();
     const start = Date.now();
 
     // Test various operations

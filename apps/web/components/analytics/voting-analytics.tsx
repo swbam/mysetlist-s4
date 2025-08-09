@@ -1,7 +1,6 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -9,6 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Tabs,
   TabsContent,
@@ -16,15 +17,14 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import {
-  Activity,
-  Calendar,
-  Target,
-  TrendingUp,
-  Trophy,
-  Users,
   Vote,
+  TrendingUp,
+  Users,
+  Calendar,
+  Trophy,
+  Target,
+  Activity,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 
 interface VotingMetrics {
   totalVotes: number;
@@ -77,23 +77,94 @@ export function VotingAnalytics() {
     try {
       setLoading(true);
 
-      const response = await fetch(
-        `/api/analytics?metric=voting&period=${period}`,
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch voting metrics");
-      }
-      const data = await response.json();
+      // Mock data - in production this would fetch from /api/analytics?metric=voting
+      const mockData: VotingMetrics = {
+        totalVotes: 12547,
+        uniqueVoters: 3210,
+        avgVotesPerUser: 3.9,
+        votingParticipation: 67.5,
+        topVotedSongs: [
+          {
+            title: "Shake It Off",
+            artist: "Taylor Swift",
+            votes: 1250,
+            showName: "Eras Tour",
+            venue: "Madison Square Garden",
+          },
+          {
+            title: "Blinding Lights",
+            artist: "The Weeknd",
+            votes: 1180,
+            showName: "After Hours Til Dawn",
+            venue: "Staples Center",
+          },
+          {
+            title: "Bad Guy",
+            artist: "Billie Eilish",
+            votes: 1090,
+            showName: "Happier Than Ever Tour",
+            venue: "Red Rocks Amphitheatre",
+          },
+          {
+            title: "Circles",
+            artist: "Post Malone",
+            votes: 980,
+            showName: "Twelve Carat Tour",
+            venue: "The Forum",
+          },
+          {
+            title: "As It Was",
+            artist: "Harry Styles",
+            votes: 950,
+            showName: "Love On Tour",
+            venue: "Wembley Stadium",
+          },
+        ],
+        mostActiveVoters: [
+          { name: "MusicFan2024", votes: 847, favoriteArtist: "Taylor Swift" },
+          { name: "ConcertGoer", votes: 692, favoriteArtist: "The Weeknd" },
+          {
+            name: "SetlistExpert",
+            votes: 580,
+            favoriteArtist: "Billie Eilish",
+          },
+          { name: "VotingMachine", votes: 534, favoriteArtist: "Post Malone" },
+          { name: "MelodyMaster", votes: 489, favoriteArtist: "Harry Styles" },
+        ],
+        votingTrends: generateTrendData(period),
+        votingByTime: generateHourlyData(),
+        showVotingStats: [
+          {
+            showName: "Eras Tour",
+            artist: "Taylor Swift",
+            venue: "Madison Square Garden",
+            totalVotes: 3420,
+            uniqueVoters: 890,
+            avgVotesPerSong: 142.5,
+            date: "2024-01-15",
+          },
+          {
+            showName: "After Hours Til Dawn",
+            artist: "The Weeknd",
+            venue: "Staples Center",
+            totalVotes: 2890,
+            uniqueVoters: 720,
+            avgVotesPerSong: 120.4,
+            date: "2024-01-20",
+          },
+          {
+            showName: "Happier Than Ever Tour",
+            artist: "Billie Eilish",
+            venue: "Red Rocks Amphitheatre",
+            totalVotes: 2560,
+            uniqueVoters: 650,
+            avgVotesPerSong: 109.8,
+            date: "2024-01-25",
+          },
+        ],
+      };
 
-      // If the API doesn't return all fields, generate trend and hourly data
-      if (!data.votingTrends) {
-        data.votingTrends = generateTrendData(period);
-      }
-      if (!data.votingByTime) {
-        data.votingByTime = generateHourlyData();
-      }
-
-      setMetrics(data);
+      setMetrics(mockData);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load voting analytics",

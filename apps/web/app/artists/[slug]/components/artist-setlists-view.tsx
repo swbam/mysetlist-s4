@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Calendar, ExternalLink, MapPin, Music2, Vote } from "lucide-react";
+import { Calendar, MapPin, Music2, Vote, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { formatDate } from "~/lib/utils";
 

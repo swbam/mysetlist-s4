@@ -1,5 +1,5 @@
-import { createSupabaseAdminClient } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
+import { createSupabaseAdminClient } from "@repo/database";
 
 interface Artist {
   id: string;

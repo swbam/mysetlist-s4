@@ -1,6 +1,6 @@
 import { cn } from "@repo/design-system/lib/utils";
 import React from "react";
-import { focusRing, generateGridClasses, gridAriaLabels } from "./grid-utils";
+import { generateGridClasses, gridAriaLabels, focusRing } from "./grid-utils";
 
 interface ResponsiveGridProps {
   children: React.ReactNode;

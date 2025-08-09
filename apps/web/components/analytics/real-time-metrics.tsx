@@ -1,14 +1,14 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Activity, Eye, TrendingUp, Users, Vote, Zap } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Activity, Users, Vote, Eye, Zap, TrendingUp } from "lucide-react";
 
 interface RealTimeData {
   activeUsers: number;
@@ -37,12 +37,28 @@ export function RealTimeMetrics() {
 
   const fetchRealTimeData = async () => {
     try {
-      const response = await fetch("/api/analytics/realtime");
-      if (!response.ok) {
-        throw new Error("Failed to fetch real-time data");
-      }
-      const data = await response.json();
-      setData(data);
+      // Mock data for now - in production this would fetch from a real-time endpoint
+      const mockData: RealTimeData = {
+        activeUsers: Math.floor(Math.random() * 500) + 100,
+        votesLastMinute: Math.floor(Math.random() * 50) + 10,
+        pageViewsLastMinute: Math.floor(Math.random() * 200) + 50,
+        newSignupsLastHour: Math.floor(Math.random() * 20) + 5,
+        activeShowsCount: Math.floor(Math.random() * 10) + 3,
+        trending: {
+          artists: [
+            { name: "Taylor Swift", score: 95 },
+            { name: "The Weeknd", score: 87 },
+            { name: "Billie Eilish", score: 82 },
+          ],
+          shows: [
+            { name: "Eras Tour", venue: "Madison Square Garden", score: 98 },
+            { name: "After Hours", venue: "Staples Center", score: 89 },
+            { name: "Happier Than Ever", venue: "Red Rocks", score: 85 },
+          ],
+        },
+      };
+
+      setData(mockData);
       setLastUpdate(new Date());
       setLoading(false);
     } catch (error) {

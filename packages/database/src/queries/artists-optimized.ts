@@ -1,6 +1,6 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "../client";
-import { artists, showArtists, shows, userFollowsArtists } from "../schema";
+import { artists, userFollowsArtists, shows, showArtists } from "../schema";
 
 // Optimized artist queries with better performance
 // These queries use CTEs and join optimizations to reduce redundant subqueries

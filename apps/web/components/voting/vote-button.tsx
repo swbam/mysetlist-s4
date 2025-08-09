@@ -3,15 +3,14 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
-import { memo, useCallback, useState, useTransition } from "react";
+import { memo, useState, useTransition, useCallback } from "react";
 import { toast } from "sonner";
 
 interface VoteButtonProps {
   setlistSongId: string;
-  currentVote?: "up" | "down" | null;
+  currentVote?: "up" | null;
   upvotes: number;
-  downvotes: number;
-  onVote?: (voteType: "up" | "down" | null) => Promise<void>;
+  onVote?: (voteType: "up" | null) => Promise<void>;
   disabled?: boolean;
   size?: "sm" | "md" | "lg";
   variant?: "default" | "compact";
@@ -21,7 +20,6 @@ const VoteButtonComponent = function VoteButton({
   setlistSongId,
   currentVote,
   upvotes,
-  downvotes,
   onVote,
   disabled = false,
   size = "md",
@@ -29,10 +27,11 @@ const VoteButtonComponent = function VoteButton({
 }: VoteButtonProps) {
   const [isVoting, setIsVoting] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const netVotes = upvotes - downvotes;
+  const safeUpvotes = Number.isFinite(Number(upvotes)) ? Number(upvotes) : 0;
+  const netVotes = safeUpvotes;
 
   const handleVote = useCallback(
-    async (voteType: "up" | "down") => {
+    async () => {
       if (isVoting || disabled || isPending) {
         return;
       }
@@ -41,8 +40,8 @@ const VoteButtonComponent = function VoteButton({
 
       startTransition(async () => {
         try {
-          // Toggle vote if same type, otherwise switch
-          const newVote = currentVote === voteType ? null : voteType;
+          // Only upvote: toggle if already upvoted
+          const newVote: "up" | null = currentVote === "up" ? null : "up";
 
           if (onVote) {
             await onVote(newVote);
@@ -92,7 +91,7 @@ const VoteButtonComponent = function VoteButton({
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => handleVote("up")}
+          onClick={handleVote}
           disabled={isVoting || disabled || isPending}
           className={cn(
             buttonSize,
@@ -100,6 +99,9 @@ const VoteButtonComponent = function VoteButton({
             currentVote === "up" &&
               "bg-green-100 text-green-700 hover:bg-green-200",
           )}
+          aria-label="Upvote song"
+          data-testid="vote-up"
+          aria-pressed={currentVote === "up"}
         >
           {isVoting && currentVote === "up" ? (
             <Loader2 className={cn(iconSize, "animate-spin")} />
@@ -112,31 +114,11 @@ const VoteButtonComponent = function VoteButton({
           className={cn(
             "min-w-[2rem] text-center font-medium text-sm",
             netVotes > 0 && "text-green-600",
-            netVotes < 0 && "text-red-600",
             netVotes === 0 && "text-muted-foreground",
           )}
         >
           {netVotes > 0 ? `+${netVotes}` : netVotes}
         </span>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => handleVote("down")}
-          disabled={isVoting || disabled || isPending}
-          className={cn(
-            buttonSize,
-            "p-0",
-            currentVote === "down" &&
-              "bg-red-100 text-red-700 hover:bg-red-200",
-          )}
-        >
-          {isVoting && currentVote === "down" ? (
-            <Loader2 className={cn(iconSize, "animate-spin")} />
-          ) : (
-            <ChevronDown className={iconSize} />
-          )}
-        </Button>
       </div>
     );
   }
@@ -146,7 +128,7 @@ const VoteButtonComponent = function VoteButton({
       <Button
         variant="ghost"
         size="sm"
-        onClick={() => handleVote("up")}
+        onClick={handleVote}
         disabled={isVoting || disabled || isPending}
         className={cn(
           buttonSize,
@@ -154,6 +136,9 @@ const VoteButtonComponent = function VoteButton({
           currentVote === "up" &&
             "bg-green-100 text-green-700 hover:bg-green-200",
         )}
+        aria-label="Upvote song"
+        data-testid="vote-up"
+        aria-pressed={currentVote === "up"}
       >
         {isVoting && currentVote === "up" ? (
           <Loader2 className={cn(iconSize, "animate-spin")} />
@@ -166,30 +151,11 @@ const VoteButtonComponent = function VoteButton({
         className={cn(
           "font-medium text-sm",
           netVotes > 0 && "text-green-600",
-          netVotes < 0 && "text-red-600",
           netVotes === 0 && "text-muted-foreground",
         )}
       >
         {netVotes > 0 ? `+${netVotes}` : netVotes}
       </span>
-
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => handleVote("down")}
-        disabled={isVoting || disabled || isPending}
-        className={cn(
-          buttonSize,
-          "p-0",
-          currentVote === "down" && "bg-red-100 text-red-700 hover:bg-red-200",
-        )}
-      >
-        {isVoting && currentVote === "down" ? (
-          <Loader2 className={cn(iconSize, "animate-spin")} />
-        ) : (
-          <ChevronDown className={iconSize} />
-        )}
-      </Button>
     </div>
   );
 };
@@ -201,7 +167,6 @@ export const VoteButton = memo(VoteButtonComponent, (prevProps, nextProps) => {
     prevProps.setlistSongId === nextProps.setlistSongId &&
     prevProps.currentVote === nextProps.currentVote &&
     prevProps.upvotes === nextProps.upvotes &&
-    prevProps.downvotes === nextProps.downvotes &&
     prevProps.disabled === nextProps.disabled &&
     prevProps.size === nextProps.size &&
     prevProps.variant === nextProps.variant &&

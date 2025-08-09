@@ -200,7 +200,7 @@ describe("Show Page Components", () => {
   });
 
   describe("VoteButton", () => {
-    const mockOnVote = jest.fn();
+    const mockOnVote = vi.fn();
 
     beforeEach(() => {
       mockOnVote.mockClear();
@@ -212,12 +212,11 @@ describe("Show Page Components", () => {
           setlistSongId="song-1"
           currentVote={null}
           upvotes={10}
-          downvotes={2}
           onVote={mockOnVote}
         />,
       );
 
-      expect(screen.getByText("+8")).toBeInTheDocument(); // Net votes
+      expect(screen.getByText("+10")).toBeInTheDocument(); // Net votes = upvotes
     });
 
     it("handles upvote clicks", async () => {
@@ -226,7 +225,6 @@ describe("Show Page Components", () => {
           setlistSongId="song-1"
           currentVote={null}
           upvotes={10}
-          downvotes={2}
           onVote={mockOnVote}
         />,
       );
@@ -245,7 +243,6 @@ describe("Show Page Components", () => {
           setlistSongId="song-1"
           currentVote="up"
           upvotes={10}
-          downvotes={2}
           onVote={mockOnVote}
         />,
       );
@@ -256,8 +253,8 @@ describe("Show Page Components", () => {
   });
 
   describe("ReorderableSetlist", () => {
-    const mockOnReorder = jest.fn();
-    const mockOnCancel = jest.fn();
+    const mockOnReorder = vi.fn();
+    const mockOnCancel = vi.fn();
 
     it("renders drag and drop interface", () => {
       render(
@@ -336,8 +333,7 @@ describe("Show Page Components", () => {
           setlistSongId="song-1"
           currentVote={null}
           upvotes={10}
-          downvotes={2}
-          onVote={jest.fn()}
+          onVote={vi.fn()}
           variant="compact"
         />,
       );

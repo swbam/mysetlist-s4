@@ -1,7 +1,6 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -9,6 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Progress } from "@repo/design-system/components/ui/progress";
 import {
   Tabs,
@@ -17,16 +18,15 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import {
+  Zap,
+  Server,
+  Database,
+  Clock,
+  TrendingUp,
   AlertTriangle,
   CheckCircle,
-  Clock,
-  Database,
-  Server,
-  TrendingUp,
   XCircle,
-  Zap,
 } from "lucide-react";
-import { useEffect, useState } from "react";
 
 interface PerformanceData {
   apiMetrics: {
@@ -89,12 +89,130 @@ export function PerformanceMetrics() {
     try {
       setLoading(true);
 
-      const response = await fetch("/api/analytics?metric=performance");
-      if (!response.ok) {
-        throw new Error("Failed to fetch performance metrics");
-      }
-      const data = await response.json();
-      setData(data);
+      // Mock data - in production this would fetch from /api/analytics?metric=performance
+      const mockData: PerformanceData = {
+        apiMetrics: {
+          totalRequests: 234567,
+          avgResponseTime: 145,
+          medianResponseTime: 98,
+          p95ResponseTime: 320,
+          p99ResponseTime: 580,
+          errorRate: 0.8,
+          throughput: 1234,
+          uptime: 99.97,
+        },
+        databaseMetrics: {
+          totalQueries: 156789,
+          avgQueryTime: 23,
+          slowQueries: 45,
+          connectionPool: 85,
+          cachehitRate: 94.2,
+          deadlocks: 2,
+        },
+        systemMetrics: {
+          cpuUsage: 42.5,
+          memoryUsage: 68.3,
+          diskUsage: 34.7,
+          networkLatency: 12.5,
+          loadAverage: 1.8,
+        },
+        endpoints: [
+          {
+            path: "/api/artists",
+            method: "GET",
+            requests: 45678,
+            avgResponseTime: 89,
+            errorRate: 0.2,
+            status: "healthy",
+          },
+          {
+            path: "/api/shows",
+            method: "GET",
+            requests: 34567,
+            avgResponseTime: 156,
+            errorRate: 0.5,
+            status: "healthy",
+          },
+          {
+            path: "/api/votes",
+            method: "POST",
+            requests: 23456,
+            avgResponseTime: 234,
+            errorRate: 1.2,
+            status: "warning",
+          },
+          {
+            path: "/api/search",
+            method: "GET",
+            requests: 19876,
+            avgResponseTime: 345,
+            errorRate: 0.8,
+            status: "healthy",
+          },
+          {
+            path: "/api/analytics",
+            method: "GET",
+            requests: 12345,
+            avgResponseTime: 567,
+            errorRate: 2.1,
+            status: "error",
+          },
+          {
+            path: "/api/recommendations",
+            method: "GET",
+            requests: 9876,
+            avgResponseTime: 123,
+            errorRate: 0.3,
+            status: "healthy",
+          },
+        ],
+        errorBreakdown: [
+          {
+            type: "4xx Client Errors",
+            count: 1234,
+            percentage: 65.2,
+            trend: "down",
+          },
+          {
+            type: "5xx Server Errors",
+            count: 456,
+            percentage: 24.1,
+            trend: "stable",
+          },
+          {
+            type: "Database Errors",
+            count: 123,
+            percentage: 6.5,
+            trend: "down",
+          },
+          { type: "Timeout Errors", count: 78, percentage: 4.1, trend: "up" },
+        ],
+        performanceGoals: [
+          {
+            metric: "API Response Time",
+            target: 200,
+            current: 145,
+            status: "met",
+          },
+          { metric: "Error Rate", target: 1.0, current: 0.8, status: "met" },
+          { metric: "Uptime", target: 99.9, current: 99.97, status: "met" },
+          {
+            metric: "Cache Hit Rate",
+            target: 90,
+            current: 94.2,
+            status: "met",
+          },
+          {
+            metric: "Database Query Time",
+            target: 50,
+            current: 23,
+            status: "met",
+          },
+          { metric: "CPU Usage", target: 70, current: 42.5, status: "met" },
+        ],
+      };
+
+      setData(mockData);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load performance data",

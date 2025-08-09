@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
-import { readFileSync, writeFileSync } from "fs";
-import { join } from "path";
+import { readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
 
 /**
  * Script to update all edge function references to API routes
@@ -8,29 +8,29 @@ import { join } from "path";
  */
 
 const EDGE_FUNCTION_TO_API_ROUTE_MAP = {
-  "sync-artists": "/api/sync/artists",
-  "sync-shows": "/api/sync/shows",
-  "sync-setlists": "/api/sync/setlists",
-  "scheduled-sync": "/api/cron/master-sync",
-  "sync-artist-shows": "/api/sync/artist-shows",
-  "sync-song-catalog": "/api/sync/song-catalog",
-  "update-trending": "/api/cron/calculate-trending",
-  "backup-database": "/api/cron/backup",
-  "spotify-sync": "/api/sync/spotify",
-  "ticketmaster-sync": "/api/sync/ticketmaster",
-  "setlist-fm-sync": "/api/sync/setlist-fm",
-  "musicbrainz-sync": "/api/sync/musicbrainz",
-  "venue-sync": "/api/sync/venues",
-  "email-processor": "/api/cron/email-processor",
-  "send-email": "/api/email/send",
-  "analytics-processor": "/api/cron/analytics",
-  "notification-sender": "/api/notifications/send",
-  "calculate-trending": "/api/cron/calculate-trending",
+  'sync-artists': '/api/sync/artists',
+  'sync-shows': '/api/sync/shows',
+  'sync-setlists': '/api/sync/setlists',
+  'scheduled-sync': '/api/cron/master-sync',
+  'sync-artist-shows': '/api/sync/artist-shows',
+  'sync-song-catalog': '/api/sync/song-catalog',
+  'update-trending': '/api/cron/calculate-trending',
+  'backup-database': '/api/cron/backup',
+  'spotify-sync': '/api/sync/spotify',
+  'ticketmaster-sync': '/api/sync/ticketmaster',
+  'setlist-fm-sync': '/api/sync/setlist-fm',
+  'musicbrainz-sync': '/api/sync/musicbrainz',
+  'venue-sync': '/api/sync/venues',
+  'email-processor': '/api/cron/email-processor',
+  'send-email': '/api/email/send',
+  'analytics-processor': '/api/cron/analytics',
+  'notification-sender': '/api/notifications/send',
+  'calculate-trending': '/api/cron/calculate-trending',
 };
 
 function updateSyncFunctionsFile() {
-  const filePath = join(process.cwd(), "apps/web/lib/sync-functions.ts");
-
+  const filePath = join(process.cwd(), 'apps/web/lib/sync-functions.ts');
+  
   const newContent = `import { createClient } from "./supabase/client";
 
 export interface SyncArtistParams {
@@ -153,29 +153,24 @@ export async function triggerManualSync(
 `;
 
   writeFileSync(filePath, newContent);
-  console.log(
-    "✅ Updated sync-functions.ts to use API routes instead of edge functions",
-  );
+  console.log('✅ Updated sync-functions.ts to use API routes instead of edge functions');
 }
 
 function updateBackupRoute() {
-  const filePath = join(
-    process.cwd(),
-    "apps/web/app/api/scheduled/_deprecated/backup/route.ts",
-  );
-
+  const filePath = join(process.cwd(), 'apps/web/app/api/scheduled/_deprecated/backup/route.ts');
+  
   // Since this is in a _deprecated folder, we'll just add a comment noting it should be removed
   try {
-    const content = readFileSync(filePath, "utf-8");
-    if (!content.includes("DEPRECATED: This file uses edge functions")) {
+    const content = readFileSync(filePath, 'utf-8');
+    if (!content.includes('DEPRECATED: This file uses edge functions')) {
       const updatedContent = `// DEPRECATED: This file uses edge functions and should be removed
 // The backup functionality should be moved to a proper API route if needed
 ${content}`;
       writeFileSync(filePath, updatedContent);
-      console.log("✅ Marked backup route as deprecated");
+      console.log('✅ Marked backup route as deprecated');
     }
   } catch (error) {
-    console.log("⚠️  Could not update backup route (may already be removed)");
+    console.log('⚠️  Could not update backup route (may already be removed)');
   }
 }
 
@@ -189,9 +184,7 @@ function generateCleanupReport() {
 ## API Route Mappings
 The following edge functions should be replaced with API routes:
 
-${Object.entries(EDGE_FUNCTION_TO_API_ROUTE_MAP)
-  .map(([edge, api]) => `- \`${edge}\` → \`${api}\``)
-  .join("\n")}
+${Object.entries(EDGE_FUNCTION_TO_API_ROUTE_MAP).map(([edge, api]) => `- \`${edge}\` → \`${api}\``).join('\n')}
 
 ## Next Steps
 1. Delete all edge functions from Supabase dashboard
@@ -206,20 +199,20 @@ ${Object.entries(EDGE_FUNCTION_TO_API_ROUTE_MAP)
 - Debugging is easier as all code is in the Next.js app
 `;
 
-  writeFileSync(join(process.cwd(), "EDGE_FUNCTION_CLEANUP_REPORT.md"), report);
-  console.log("✅ Generated cleanup report at EDGE_FUNCTION_CLEANUP_REPORT.md");
+  writeFileSync(join(process.cwd(), 'EDGE_FUNCTION_CLEANUP_REPORT.md'), report);
+  console.log('✅ Generated cleanup report at EDGE_FUNCTION_CLEANUP_REPORT.md');
 }
 
 // Main execution
-console.log("🔄 Starting edge function reference updates...\n");
+console.log('🔄 Starting edge function reference updates...\n');
 
 updateSyncFunctionsFile();
 updateBackupRoute();
 generateCleanupReport();
 
-console.log("\n✅ All edge function references have been updated!");
-console.log("\n📋 Next steps:");
-console.log("1. Run: pnpm build to ensure no TypeScript errors");
-console.log("2. Test the sync functions to ensure they work properly");
-console.log("3. Delete all edge functions from Supabase dashboard");
-console.log("4. Review EDGE_FUNCTION_CLEANUP_REPORT.md for details");
+console.log('\n✅ All edge function references have been updated!');
+console.log('\n📋 Next steps:');
+console.log('1. Run: pnpm build to ensure no TypeScript errors');
+console.log('2. Test the sync functions to ensure they work properly');
+console.log('3. Delete all edge functions from Supabase dashboard');
+console.log('4. Review EDGE_FUNCTION_CLEANUP_REPORT.md for details');

@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Filter by type if specified
-    let response;
+    let response: any;
     if (type && type !== "combined") {
       response = data[type];
     } else if (type === "combined" || !type) {

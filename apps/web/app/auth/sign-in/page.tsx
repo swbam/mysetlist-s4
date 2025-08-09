@@ -3,9 +3,9 @@ import {
   AlertDescription,
 } from "@repo/design-system/components/ui/alert";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
+import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import { Music } from "lucide-react";
 import Link from "next/link";
 import { signIn, signInWithProvider } from "../actions";

@@ -11,8 +11,8 @@
  */
 
 import { readFileSync } from "fs";
-import path from "path";
 import { glob } from "glob";
+import path from "path";
 
 interface ImageIssue {
   filePath: string;

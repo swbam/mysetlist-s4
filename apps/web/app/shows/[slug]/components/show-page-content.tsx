@@ -1,31 +1,12 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { useRealtimeUpdates } from "../hooks/use-realtime-updates";
+import { SetlistSection } from "./setlist-section";
 import { ShareButtons } from "./share-buttons";
 import { ShowHeader } from "./show-header";
 import { SupportingActs } from "./supporting-acts";
 import { TicketInfo } from "./ticket-info";
 import { VenueDetails } from "./venue-details";
-
-// Dynamic import for heavy components
-const SetlistSection = dynamic(
-  () => import("./setlist-section").then((mod) => mod.SetlistSection),
-  {
-    loading: () => (
-      <div className="h-64 animate-pulse rounded-lg bg-muted">
-        <div className="p-4">
-          <div className="h-6 w-32 bg-muted-foreground/20 rounded mb-4" />
-          <div className="space-y-2">
-            <div className="h-4 w-full bg-muted-foreground/20 rounded" />
-            <div className="h-4 w-3/4 bg-muted-foreground/20 rounded" />
-          </div>
-        </div>
-      </div>
-    ),
-    ssr: false, // Disable SSR for this component since it uses realtime features
-  },
-);
 
 type ShowPageContentProps = {
   show: any;

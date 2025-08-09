@@ -19,7 +19,7 @@ export async function ingestArtistPipeline(tmId: string) {
 
     // TODO: Implement missing pipeline steps
     // Step 2: Try to resolve MusicBrainz ID for setlist.fm integration
-    const mbid: string | null = artist.mbid || null;
+    let mbid: string | null = artist.mbid || null;
     // if (!artist.mbid) {
     //   mbid = await resolveMusicBrainzMbid(artist.name);
     //   if (mbid) {

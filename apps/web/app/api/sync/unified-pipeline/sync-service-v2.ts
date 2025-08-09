@@ -1,21 +1,22 @@
 import { db } from "@repo/database";
 import {
-  artistSongs,
-  artistStats,
   artists,
-  setlists,
+  artistStats,
   shows,
+  setlists,
+  venues,
   songs,
+  artistSongs,
 } from "@repo/database";
+import { eq, sql, and, desc } from "drizzle-orm";
+import { SyncProgressTracker } from "~/lib/sync-progress-tracker";
 import {
   ArtistSyncService,
-  SetlistSyncService,
   ShowSyncService,
-  SyncScheduler,
+  SetlistSyncService,
   VenueSyncService,
+  SyncScheduler,
 } from "@repo/external-apis";
-import { and, eq, sql } from "drizzle-orm";
-import { SyncProgressTracker } from "~/lib/sync-progress-tracker";
 
 // Rate limiting utility
 export class RateLimiter {

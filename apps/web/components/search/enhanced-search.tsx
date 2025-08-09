@@ -5,6 +5,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";

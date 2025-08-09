@@ -1,7 +1,7 @@
-import { NextRequest } from "next/server";
 import { vi } from "vitest";
+import { NextRequest, NextResponse } from "next/server";
 import type { MockUser } from "./auth";
-import { createMockAdminUser, createMockUser } from "./auth";
+import { createMockUser, createMockAdminUser } from "./auth";
 
 export interface MockApiResponse {
   status: number;

@@ -1,14 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
+  initializePipelineEngine,
   addPipelineJob,
-  cleanPipeline,
   getPipelineMetrics,
   getPipelineStatus,
-  initializePipelineEngine,
   pausePipeline,
   resumePipeline,
+  cleanPipeline,
 } from "~/lib/data-pipeline/pipeline-engine";
-import { createClient } from "~/lib/supabase/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
           });
         } else {
           // Get all pipeline statuses
-          const supabase = await createClient();
+          const supabase = createServiceClient();
           const { data: pipelines } = await supabase
             .from("pipeline_configs")
             .select("id, name, active")
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
         };
 
         try {
-          const supabase = await createClient();
+          const supabase = createServiceClient();
           const { data: pipelineConfigs } = await supabase
             .from("pipeline_configs")
             .select("id, active");
@@ -259,7 +259,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createServiceClient();
 
     // Update pipeline configuration
     const { data: updatedConfig, error: updateError } = await supabase
@@ -311,7 +311,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const supabase = await createClient();
+    const supabase = createServiceClient();
 
     // First, pause the pipeline
     try {

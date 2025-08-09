@@ -1,8 +1,8 @@
 "use client";
 
+import { Component, type ReactNode } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
 import { AlertCircle } from "lucide-react";
-import { Component, type ReactNode } from "react";
 
 interface Props {
   children: ReactNode;

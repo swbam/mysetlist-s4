@@ -1,102 +1,73 @@
+import { createServiceClient } from "~/lib/supabase/server";
 import { type NextRequest, NextResponse } from "next/server";
-import { createClient } from "~/lib/supabase/server";
 
 export async function GET(_request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const supabase = await createServiceClient();
 
-    // Get songs with vote counts
-    const { data: votedSongs } = await supabase
-      .from("user_votes")
+    // Get top voted songs from recent setlists
+    const { data: topSongs } = await supabase
+      .from("setlist_songs")
       .select(
         `
-        song_id,
-        songs!user_votes_song_id_fkey(id, title, artist)
-      `
+        song:songs(id, title, artist),
+        votes:user_votes(count)
+      `,
       )
-      .not("song_id", "is", null)
-      .limit(100);
+      .order("votes", { ascending: false })
+      .limit(10);
 
-    if (!votedSongs || votedSongs.length === 0) {
-      // Fallback: get popular songs from the catalog
-      const { data: popularSongs } = await supabase
+    if (!topSongs || topSongs.length === 0) {
+      // Fallback: get any songs from the catalog
+      const { data: anySongs } = await supabase
         .from("songs")
-        .select("id, title, artist, popularity")
-        .order("popularity", { ascending: false })
+        .select("id, title, artist")
         .limit(4);
 
-      if (!popularSongs || popularSongs.length === 0) {
-        return NextResponse.json({ songs: [] });
-      }
-
-      // Return popular songs with simulated vote data
-      return NextResponse.json({
-        songs: popularSongs.map((song, index) => ({
-          id: song.id,
-          title: song.title,
-          artist: song.artist || "Unknown Artist",
-          votes: Math.floor(Math.random() * 5000) + 1000,
-          percentage: 100 - (index * 20),
-        })),
-      });
-    }
-
-    // Count votes for each song
-    const songVoteCounts = new Map<string, { song: any; count: number }>();
-    
-    for (const vote of votedSongs) {
-      if (vote.songs && vote.song_id) {
-        const existing = songVoteCounts.get(vote.song_id);
-        if (existing) {
-          existing.count++;
-        } else {
-          songVoteCounts.set(vote.song_id, { song: vote.songs, count: 1 });
-        }
-      }
-    }
-
-    // Sort by vote count and get top 4
-    const topSongs = Array.from(songVoteCounts.values())
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 4);
-
-    if (topSongs.length === 0) {
-      // Fallback to popular songs if no votes
-      const { data: popularSongs } = await supabase
-        .from("songs")
-        .select("id, title, artist, popularity")
-        .order("popularity", { ascending: false })
-        .limit(4);
-
-      if (!popularSongs) {
+      if (!anySongs) {
         return NextResponse.json({ songs: [] });
       }
 
       return NextResponse.json({
-        songs: popularSongs.map((song, index) => ({
+        songs: anySongs.map((song, index) => ({
           id: song.id,
           title: song.title,
-          artist: song.artist || "Unknown Artist",
-          votes: Math.floor(Math.random() * 5000) + 1000,
-          percentage: 100 - (index * 20),
+          artist: song.artist,
+          votes: 0,
+          percentage: 100 - index * 20,
         })),
       });
     }
 
-    // Calculate percentages based on total votes
-    const totalVotes = topSongs.reduce((sum, item) => sum + item.count, 0);
+    // Calculate vote counts and percentages
+    const songsWithVotes = await Promise.all(
+      topSongs
+        .filter((item) => item.song && item.song.length > 0)
+        .slice(0, 4)
+        .map(async (item, index) => {
+          const firstSong = item.song![0];
+          if (!firstSong) {
+            return null;
+          }
+          const { count } = await supabase
+            .from("user_votes")
+            .select("*", { count: "exact", head: true })
+            .eq("song_id", firstSong.id);
+
+          return {
+            id: firstSong.id,
+            title: firstSong.title,
+            artist: firstSong.artist,
+            votes: count || 0,
+            percentage: 100 - index * 10,
+          };
+        }),
+    ).then((results) => results.filter((r) => r !== null));
 
     return NextResponse.json({
-      songs: topSongs.map((item) => ({
-        id: item.song.id,
-        title: item.song.title,
-        artist: item.song.artist || "Unknown Artist",
-        votes: item.count * 100, // Multiply for display purposes
-        percentage: Math.round((item.count / totalVotes) * 100),
-      })),
+      songs: songsWithVotes,
     });
-  } catch (error) {
-    console.error("Top songs error:", error);
+  } catch (_error) {
     return NextResponse.json({ songs: [] });
   }
 }

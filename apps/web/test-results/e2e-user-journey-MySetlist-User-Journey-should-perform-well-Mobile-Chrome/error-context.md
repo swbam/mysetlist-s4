@@ -1,0 +1,223 @@
+# Page snapshot
+
+```yaml
+- alert
+- button "Open Next.js Dev Tools":
+  - img
+- button "Open issues overlay": 1 Issue
+- navigation:
+  - button "previous" [disabled]:
+    - img "previous"
+  - text: 1/1
+  - button "next" [disabled]:
+    - img "next"
+- img
+- link "Next.js 15.3.4 (stale) Turbopack":
+  - /url: https://nextjs.org/docs/messages/version-staleness
+  - img
+  - text: Next.js 15.3.4 (stale) Turbopack
+- img
+- text: Build Error
+- button "Copy Stack Trace":
+  - img
+- button "No related documentation found" [disabled]:
+  - img
+- link "Learn more about enabling Node.js inspector for server code with Chrome DevTools":
+  - /url: https://nextjs.org/docs/app/building-your-application/configuring/debugging#server-side-code
+  - img
+- paragraph: Code generation for chunk item errored
+- img
+- text: "[externals]/node:inspector"
+- button "Open in editor":
+  - img
+- text: "Code generation for chunk item errored An error occurred while generating the chunk item [externals]/node:inspector [external] (node:inspector, cjs, async loader) Caused by: - Cell CellId { type_id: ValueTypeId { id: 226, name: \"turbopack-core@TODO::::chunk::available_modules::AvailableModulesSet\" }, index: 0 } no longer exists in task <NodeJsChunkingContext as ChunkingContext>::chunk_group (no cell of this type exists) Debug info: - An error occurred while generating the chunk item [externals]/node:inspector [external] (node:inspector, cjs, async loader) - Execution of <AsyncLoaderChunkItem as EcmascriptChunkItem>::content failed - Execution of AsyncLoaderChunkItem::chunks_data failed - Execution of AsyncLoaderChunkItem::chunks failed - Execution of AvailableModules::get failed - Cell CellId { type_id: ValueTypeId { id: 226, name: \"turbopack-core@TODO::::chunk::available_modules::AvailableModulesSet\" }, index: 0 } no longer exists in task <NodeJsChunkingContext as ChunkingContext>::chunk_group (no cell of this type exists)"
+- contentinfo:
+  - paragraph: This error occurred during the build process and can only be dismissed by fixing the error.
+- banner:
+  - link "MySetlist Home":
+    - /url: /
+    - paragraph: MySetlist
+  - button "Search..."
+  - link "Sign in":
+    - /url: /auth/sign-in
+  - link "Get Started":
+    - /url: /auth/sign-up
+  - link "Sign in":
+    - /url: /auth/sign-in
+  - link "Sign up":
+    - /url: /auth/sign-up
+  - button "Toggle menu"
+- main:
+  - banner "Homepage hero section":
+    - status "Live statistics": "Trending Now: 1,247 Active Shows"
+    - heading "Crowd-Curated Setlists" [level=1]
+    - paragraph: Vote on the songs you want to hear at upcoming concerts and see what other fans are predicting.
+    - textbox "Search artists via Ticketmaster..."
+    - text: "Trending:"
+    - link "Taylor Swift":
+      - /url: /artists/taylor-swift
+    - link "The Weeknd":
+      - /url: /artists/the-weeknd
+    - link "Drake":
+      - /url: /artists/drake
+    - link "Olivia Rodrigo":
+      - /url: /artists/olivia-rodrigo
+    - link "Start Voting":
+      - /url: /artists
+    - link "Discover Music":
+      - /url: /discover
+    - region "Platform statistics": 10K+ Active Artists 50M+ Votes Cast 100K+ Music Fans
+  - heading "Trending Artists" [level=2]
+  - paragraph: Discover the hottest artists that fans are talking about
+  - heading "Trending Artists" [level=2]
+  - paragraph: Discover who's hot right now in the live music scene
+  - link "View All Artists":
+    - /url: /artists
+  - link "Taylor Swift Hot":
+    - /url: /artists/taylor-swift
+    - img "Taylor Swift"
+    - text: Hot
+  - link "Taylor Swift":
+    - /url: /artists/taylor-swift
+    - heading "Taylor Swift" [level=3]
+  - text: 140.9M 0
+  - link "The Weeknd Hot":
+    - /url: /artists/the-weeknd
+    - img "The Weeknd"
+    - text: Hot
+  - link "The Weeknd":
+    - /url: /artists/the-weeknd
+    - heading "The Weeknd" [level=3]
+  - text: 108.8M 0
+  - link "Drake Hot":
+    - /url: /artists/drake
+    - img "Drake"
+    - text: Hot
+  - link "Drake":
+    - /url: /artists/drake
+    - heading "Drake" [level=3]
+  - text: rap 100.5M 0
+  - link "Bad Bunny Hot":
+    - /url: /artists/bad-bunny
+    - img "Bad Bunny"
+    - text: Hot
+  - link "Bad Bunny":
+    - /url: /artists/bad-bunny
+    - heading "Bad Bunny" [level=3]
+  - text: reggaeton trap latino 98.7M 0
+  - heading "Trending Shows" [level=2]
+  - paragraph: Join the conversation about the most popular shows
+  - heading "Trending This Week" [level=2]
+  - paragraph: Discover what's hot in the live music scene
+  - heading "🔥 Hot Shows" [level=3]
+  - link "D Drake at Climate Pledge Arena in 15 days TBA 9 0":
+    - /url: /shows/drake-seattle-2025-08-10
+    - text: D
+    - heading "Drake at Climate Pledge Arena" [level=3]
+    - paragraph: in 15 days
+    - paragraph: TBA
+    - text: 9 0
+  - link "B Billie Eilish at Climate Pledge Arena in 22 days TBA 15 0":
+    - /url: /shows/billie-eilish-seattle-2025-08-03
+    - text: B
+    - heading "Billie Eilish at Climate Pledge Arena" [level=3]
+    - paragraph: in 22 days
+    - paragraph: TBA
+    - text: 15 0
+  - link "D Drake at O2 Arena 17 days ago TBA 11 0":
+    - /url: /shows/drake-london-2025-08-03
+    - text: D
+    - heading "Drake at O2 Arena" [level=3]
+    - paragraph: 17 days ago
+    - paragraph: TBA
+    - text: 11 0
+  - link "O Olivia Rodrigo at Bridgestone Arena in 1 day TBA 12 0":
+    - /url: /shows/olivia-rodrigo-nashville-2025-08-03
+    - text: O
+    - heading "Olivia Rodrigo at Bridgestone Arena" [level=3]
+    - paragraph: in 1 day
+    - paragraph: TBA
+    - text: 12 0
+  - link "O Olivia Rodrigo at The Forum in 14 days TBA 15 0":
+    - /url: /shows/olivia-rodrigo-inglewood-2025-08-17
+    - text: O
+    - heading "Olivia Rodrigo at The Forum" [level=3]
+    - paragraph: in 14 days
+    - paragraph: TBA
+    - text: 15 0
+  - link "View all trending shows →":
+    - /url: /trending?tab=shows
+  - heading "⭐ Rising Artists" [level=3]
+  - link "Taylor Swift Taylor Swift 99 1":
+    - /url: /artists/taylor-swift
+    - img "Taylor Swift"
+    - heading "Taylor Swift" [level=3]
+    - text: 99 1
+  - link "The Weeknd The Weeknd 97 1":
+    - /url: /artists/the-weeknd
+    - img "The Weeknd"
+    - heading "The Weeknd" [level=3]
+    - text: 97 1
+  - link "Drake Drake 99 1":
+    - /url: /artists/drake
+    - img "Drake"
+    - heading "Drake" [level=3]
+    - text: 99 1
+  - link "Bad Bunny Bad Bunny 100 1":
+    - /url: /artists/bad-bunny
+    - img "Bad Bunny"
+    - heading "Bad Bunny" [level=3]
+    - text: 100 1
+  - link "Billie Eilish Billie Eilish 95 1":
+    - /url: /artists/billie-eilish
+    - img "Billie Eilish"
+    - heading "Billie Eilish" [level=3]
+    - text: 95 1
+  - link "View all trending artists →":
+    - /url: /trending?tab=artists
+- contentinfo:
+  - heading "MySetlist" [level=3]
+  - paragraph: Vote for your dream setlist and connect with fellow music fans.
+  - heading "Product" [level=4]
+  - list:
+    - listitem:
+      - link "Artists":
+        - /url: /artists
+    - listitem:
+      - link "Shows":
+        - /url: /shows
+    - listitem:
+      - link "Venues":
+        - /url: /venues
+    - listitem:
+      - link "Setlists":
+        - /url: /setlists
+  - heading "Company" [level=4]
+  - list:
+    - listitem:
+      - link "About":
+        - /url: /about
+    - listitem:
+      - link "Contact":
+        - /url: /contact
+    - listitem:
+      - link "Privacy":
+        - /url: /privacy
+    - listitem:
+      - link "Terms":
+        - /url: /terms
+  - heading "Connect" [level=4]
+  - list:
+    - listitem:
+      - link "Twitter":
+        - /url: https://twitter.com
+    - listitem:
+      - link "Instagram":
+        - /url: https://instagram.com
+    - listitem:
+      - link "Facebook":
+        - /url: https://facebook.com
+  - paragraph: © 2025 MySetlist. All rights reserved.
+- region "Notifications alt+T"
+- text: "SW: OK | Cache: CLEAN | Last: NEVER"
+```

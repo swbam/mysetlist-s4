@@ -1,6 +1,6 @@
-import { artistSongs, db, songs } from "@repo/database";
+import { songs, artistSongs, db } from "@repo/database";
 import { eq } from "drizzle-orm";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const songSchema = z.object({

@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "~/app/providers/auth-provider";
 import { Button } from "@repo/design-system";
 import { SearchBox } from "@repo/design-system";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/design-system";
@@ -30,7 +31,6 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useAuth } from "~/app/providers/auth-provider";
 import { ThemeToggle } from "~/components/ui/theme-provider";
 
 interface ResponsiveHeaderProps {
@@ -342,12 +342,12 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                 </DropdownMenu>
               </>
             ) : (
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm" asChild className="hidden sm:flex">
+              <div className="hidden items-center space-x-2 sm:flex">
+                <Button variant="ghost" size="sm" asChild>
                   <Link href="/auth/sign-in">Sign In</Link>
                 </Button>
-                <Button size="sm" asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Link href="/auth/sign-up">Get Started</Link>
+                <Button size="sm" asChild>
+                  <Link href="/auth/sign-up">Sign Up</Link>
                 </Button>
               </div>
             )}
