@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { ResponsiveHeader } from "../components/layout/responsive-header";
 import { ThemeProvider } from "../components/ui/theme-provider";
 import { AuthProvider } from "./providers/auth-provider";
+import { CacheManager } from "../components/cache-manager";
 import "@repo/design-system/styles/globals.css";
 
 // Import footer normally (can't use ssr: false in Server Components)
