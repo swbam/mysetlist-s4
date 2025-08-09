@@ -1,57 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-<<<<<<< HEAD
   typescript: { ignoreBuildErrors: false },
   eslint: { ignoreDuringBuilds: false },
 
-  // Enable experimental optimizations
-  experimental: {
-    optimizeCss: true,
-    optimizePackageImports: [
-      "@repo/design-system",
-      "@repo/database",
-      "@repo/auth",
-      "@repo/external-apis",
-      "lucide-react",
-      "date-fns",
-      "@radix-ui/react-dialog",
-      "@radix-ui/react-dropdown-menu",
-      "@radix-ui/react-tabs",
-      "@radix-ui/react-popover",
-      "@radix-ui/react-avatar",
-      "@radix-ui/react-command",
-      "@supabase/supabase-js",
-      "@supabase/auth-helpers-nextjs",
-      "framer-motion",
-    ],
-  },
-
-  // Image optimization
-  images: {
-    domains: ["i.scdn.co", "s1.ticketm.net", "images.unsplash.com"],
-    formats: ["image/avif", "image/webp"],
-  },
-
-  // Production optimizations
-  swcMinify: true,
-  compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
-  },
-
-  // Turbopack configuration for optimal development performance
-  turbopack: {
-    // Configure module resolution for monorepo
-    resolveAlias: {
-      "@repo/design-system": "./packages/design-system/src",
-      "@repo/database": "./packages/database/src",
-      "@repo/auth": "./packages/auth/src",
-      "@repo/external-apis": "./packages/external-apis/src",
-    },
-=======
-  typescript: { ignoreBuildErrors: false }, // Enable TS checking in production
-  eslint: { ignoreDuringBuilds: false },
-  
   // Vercel deployment configuration
   output: "standalone",
   
@@ -60,20 +12,31 @@ const nextConfig: NextConfig = {
     // Enable React 19 optimizations
     ppr: false, // Partial Prerendering disabled for compatibility
     optimizeServerReact: true,
+    optimizeCss: true,
     // Enable optimizations for bundle size
     optimizePackageImports: [
+      "@repo/design-system",
+      "@repo/database", 
+      "@repo/auth",
+      "@repo/external-apis",
       "lucide-react",
       "framer-motion",
       "@radix-ui/react-icons",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-tabs",
+      "@radix-ui/react-popover",
+      "@radix-ui/react-avatar",
+      "@radix-ui/react-command",
+      "@supabase/supabase-js",
+      "@supabase/auth-helpers-nextjs",
       "recharts",
       "@hello-pangea/dnd",
+      "date-fns",
     ],
   },
-  
-  // Remove Turbopack config for Vercel deployment compatibility
-  // Turbopack aliases cause issues in production builds
-  
-  // Bundle optimization
+
+  // Production optimizations
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
@@ -97,7 +60,6 @@ const nextConfig: NextConfig = {
         hostname: "images.unsplash.com", // Placeholder images
       },
     ],
->>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
   },
 
   webpack: (config, { isServer }) => {

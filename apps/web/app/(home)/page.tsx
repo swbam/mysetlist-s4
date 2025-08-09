@@ -1,33 +1,6 @@
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
-import dynamic from "next/dynamic";
 import Hero from "./components/hero";
-<<<<<<< HEAD
-import { HomeLoadingSkeleton } from "./components/home-loading-skeleton";
-
-// Dynamic imports for non-critical components
-const TrendingArtists = dynamic(
-  () =>
-    import("./components/trending-artists").then((mod) => mod.TrendingArtists),
-  {
-    loading: () => <HomeLoadingSkeleton />,
-  },
-);
-
-const TrendingShows = dynamic(
-  () => import("./components/trending-optimized").then((mod) => mod.Trending),
-  {
-    loading: () => <HomeLoadingSkeleton />,
-  },
-);
-
-const FeaturedContent = dynamic(
-  () => import("./components/featured-content-optimized"),
-  {
-    loading: () => <HomeLoadingSkeleton />,
-  },
-);
-=======
 import { TrendingArtists } from "./components/trending-artists";
 import { Trending as TrendingShows } from "./components/trending";
 import { HomeLoadingSkeleton } from "./components/home-loading-skeleton";
@@ -42,7 +15,6 @@ const FeaturedContent = dynamic(() => import("./components/featured-content"), {
     </section>
   ),
 });
->>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
 
 export const metadata = {
   title: "MySetlist - Concert Setlist Voting Platform",
