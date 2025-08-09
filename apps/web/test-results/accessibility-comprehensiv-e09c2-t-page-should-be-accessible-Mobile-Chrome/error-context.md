@@ -1,0 +1,263 @@
+# Page snapshot
+
+```yaml
+- alert
+- button "Open Next.js Dev Tools":
+  - img
+- button "Open issues overlay": 1 Issue
+- navigation:
+  - button "previous" [disabled]:
+    - img "previous"
+  - text: 1/1
+  - button "next" [disabled]:
+    - img "next"
+- img
+- link "Next.js 15.3.4 (stale) Turbopack":
+  - /url: https://nextjs.org/docs/messages/version-staleness
+  - img
+  - text: Next.js 15.3.4 (stale) Turbopack
+- img
+- text: Build Error
+- button "Copy Stack Trace":
+  - img
+- button "No related documentation found" [disabled]:
+  - img
+- link "Learn more about enabling Node.js inspector for server code with Chrome DevTools":
+  - /url: https://nextjs.org/docs/app/building-your-application/configuring/debugging#server-side-code
+  - img
+- paragraph: Code generation for chunk item errored
+- img
+- text: "[externals]/node:inspector"
+- button "Open in editor":
+  - img
+- text: "Code generation for chunk item errored An error occurred while generating the chunk item [externals]/node:inspector [external] (node:inspector, cjs, async loader) Caused by: - Cell CellId { type_id: ValueTypeId { id: 226, name: \"turbopack-core@TODO::::chunk::available_modules::AvailableModulesSet\" }, index: 0 } no longer exists in task <NodeJsChunkingContext as ChunkingContext>::chunk_group (no cell of this type exists) Debug info: - An error occurred while generating the chunk item [externals]/node:inspector [external] (node:inspector, cjs, async loader) - Execution of <AsyncLoaderChunkItem as EcmascriptChunkItem>::content failed - Execution of AsyncLoaderChunkItem::chunks_data failed - Execution of AsyncLoaderChunkItem::chunks failed - Execution of AvailableModules::get failed - Cell CellId { type_id: ValueTypeId { id: 226, name: \"turbopack-core@TODO::::chunk::available_modules::AvailableModulesSet\" }, index: 0 } no longer exists in task <NodeJsChunkingContext as ChunkingContext>::chunk_group (no cell of this type exists)"
+- contentinfo:
+  - paragraph: This error occurred during the build process and can only be dismissed by fixing the error.
+- banner:
+  - link "MySetlist Home":
+    - /url: /
+    - paragraph: MySetlist
+  - button "Search..."
+  - link "Sign in":
+    - /url: /auth/sign-in
+  - link "Get Started":
+    - /url: /auth/sign-up
+  - link "Sign in":
+    - /url: /auth/sign-in
+  - link "Sign up":
+    - /url: /auth/sign-up
+  - button "Toggle menu"
+- main:
+  - heading "Discover Artists" [level=1]
+  - paragraph: Search for your favorite artists to discover their upcoming shows and past setlists
+  - textbox "Search for artists..."
+  - heading "Trending Artists" [level=2]
+  - link "#1 Taylor Swift Taylor Swift Verified +3831%":
+    - /url: /artists/taylor-swift
+    - text: "#1"
+    - img "Taylor Swift"
+    - heading "Taylor Swift" [level=3]
+    - text: Verified +3831%
+  - link "#2 The Weeknd The Weeknd Verified +3710%":
+    - /url: /artists/the-weeknd
+    - text: "#2"
+    - img "The Weeknd"
+    - heading "The Weeknd" [level=3]
+    - text: Verified +3710%
+  - link "#3 Drake Drake Verified rap +3553%":
+    - /url: /artists/drake
+    - text: "#3"
+    - img "Drake"
+    - heading "Drake" [level=3]
+    - text: Verified rap +3553%
+  - link "#4 Bad Bunny Bad Bunny Verified reggaeton trap latino +2632%":
+    - /url: /artists/bad-bunny
+    - text: "#4"
+    - img "Bad Bunny"
+    - heading "Bad Bunny" [level=3]
+    - text: Verified reggaeton trap latino +2632%
+  - link "#5 Billie Eilish Billie Eilish Verified +2508%":
+    - /url: /artists/billie-eilish
+    - text: "#5"
+    - img "Billie Eilish"
+    - heading "Billie Eilish" [level=3]
+    - text: Verified +2508%
+  - heading "Popular Artists" [level=2]
+  - grid "Grid of artists":
+    - 'gridcell "Artist: Arctic Monkeys"':
+      - 'article "Artist: Arctic Monkeys"':
+        - link "View Arctic Monkeys's profile":
+          - /url: /artists/arctic-monkeys
+          - img "Arctic Monkeys photo"
+          - text: Hot
+          - img "Verified artist"
+        - link "Arctic Monkeys":
+          - /url: /artists/arctic-monkeys
+          - heading "Arctic Monkeys" [level=3]
+        - text: indie garage rock 3 fans 0
+    - 'gridcell "Artist: Bad Bunny"':
+      - 'article "Artist: Bad Bunny"':
+        - link "View Bad Bunny's profile":
+          - /url: /artists/bad-bunny
+          - img "Bad Bunny photo"
+          - text: Hot
+          - img "Verified artist"
+        - link "Bad Bunny":
+          - /url: /artists/bad-bunny
+          - heading "Bad Bunny" [level=3]
+        - text: reggaeton trap latino +2 1 fans 0
+    - 'gridcell "Artist: Post Malone"':
+      - 'article "Artist: Post Malone"':
+        - link "View Post Malone's profile":
+          - /url: /artists/post-malone
+          - img "Post Malone photo"
+          - text: Hot
+          - img "Verified artist"
+        - link "Post Malone":
+          - /url: /artists/post-malone
+          - heading "Post Malone" [level=3]
+        - text: 1 fans 0
+    - 'gridcell "Artist: Billie Eilish"':
+      - 'article "Artist: Billie Eilish"':
+        - link "View Billie Eilish's profile":
+          - /url: /artists/billie-eilish
+          - img "Billie Eilish photo"
+          - text: Hot
+          - img "Verified artist"
+        - link "Billie Eilish":
+          - /url: /artists/billie-eilish
+          - heading "Billie Eilish" [level=3]
+        - text: 1 fans 0
+    - 'gridcell "Artist: Taylor Swift"':
+      - 'article "Artist: Taylor Swift"':
+        - link "View Taylor Swift's profile":
+          - /url: /artists/taylor-swift
+          - img "Taylor Swift photo"
+          - text: Hot
+          - img "Verified artist"
+        - link "Taylor Swift":
+          - /url: /artists/taylor-swift
+          - heading "Taylor Swift" [level=3]
+        - text: 1 fans 0
+    - 'gridcell "Artist: Olivia Rodrigo"':
+      - 'article "Artist: Olivia Rodrigo"':
+        - link "View Olivia Rodrigo's profile":
+          - /url: /artists/olivia-rodrigo
+          - img "Olivia Rodrigo photo"
+          - text: Hot
+          - img "Verified artist"
+        - link "Olivia Rodrigo":
+          - /url: /artists/olivia-rodrigo
+          - heading "Olivia Rodrigo" [level=3]
+        - text: 1 fans 0
+    - 'gridcell "Artist: The Weeknd"':
+      - 'article "Artist: The Weeknd"':
+        - link "View The Weeknd's profile":
+          - /url: /artists/the-weeknd
+          - img "The Weeknd photo"
+          - text: Hot
+          - img "Verified artist"
+        - link "The Weeknd":
+          - /url: /artists/the-weeknd
+          - heading "The Weeknd" [level=3]
+        - text: 1 fans 0
+    - 'gridcell "Artist: Dua Lipa"':
+      - 'article "Artist: Dua Lipa"':
+        - link "View Dua Lipa's profile":
+          - /url: /artists/dua-lipa
+          - img "Dua Lipa photo"
+          - text: Hot
+          - img "Verified artist"
+        - link "Dua Lipa":
+          - /url: /artists/dua-lipa
+          - heading "Dua Lipa" [level=3]
+        - text: pop 1 fans 0
+    - 'gridcell "Artist: Drake"':
+      - 'article "Artist: Drake"':
+        - link "View Drake's profile":
+          - /url: /artists/drake
+          - img "Drake photo"
+          - text: Hot
+          - img "Verified artist"
+        - link "Drake":
+          - /url: /artists/drake
+          - heading "Drake" [level=3]
+        - text: rap 1 fans 0
+    - 'gridcell "Artist: Dispatch"':
+      - 'article "Artist: Dispatch"':
+        - link "View Dispatch's profile":
+          - /url: /artists/dispatch
+          - text: Hot
+          - img "Verified artist"
+        - link "Dispatch":
+          - /url: /artists/dispatch
+          - heading "Dispatch" [level=3]
+        - text: indie rock jam band +1 0 fans 0
+    - 'gridcell "Artist: Twenty One Pilots"':
+      - 'article "Artist: Twenty One Pilots"':
+        - link "View Twenty One Pilots's profile":
+          - /url: /artists/twenty-one-pilots
+          - img "Twenty One Pilots photo"
+          - text: Hot
+          - img "Verified artist"
+        - link "Twenty One Pilots":
+          - /url: /artists/twenty-one-pilots
+          - heading "Twenty One Pilots" [level=3]
+        - text: 0 fans 0
+  - heading "How It Works" [level=2]
+  - text: 🔍
+  - heading "Search Artists" [level=3]
+  - paragraph: Use the search above to find artists. We'll automatically sync their data from Ticketmaster.
+  - text: 🎵
+  - heading "Discover Shows" [level=3]
+  - paragraph: View upcoming concerts, venues, and ticket information for your favorite artists.
+  - text: 📝
+  - heading "Vote on Setlists" [level=3]
+  - paragraph: Help predict what songs artists will play at their upcoming shows.
+  - paragraph: Try searching for popular artists like "Dave Matthews Band", "Taylor Swift", or "The Rolling Stones"
+- contentinfo:
+  - heading "MySetlist" [level=3]
+  - paragraph: Vote for your dream setlist and connect with fellow music fans.
+  - heading "Product" [level=4]
+  - list:
+    - listitem:
+      - link "Artists":
+        - /url: /artists
+    - listitem:
+      - link "Shows":
+        - /url: /shows
+    - listitem:
+      - link "Venues":
+        - /url: /venues
+    - listitem:
+      - link "Setlists":
+        - /url: /setlists
+  - heading "Company" [level=4]
+  - list:
+    - listitem:
+      - link "About":
+        - /url: /about
+    - listitem:
+      - link "Contact":
+        - /url: /contact
+    - listitem:
+      - link "Privacy":
+        - /url: /privacy
+    - listitem:
+      - link "Terms":
+        - /url: /terms
+  - heading "Connect" [level=4]
+  - list:
+    - listitem:
+      - link "Twitter":
+        - /url: https://twitter.com
+    - listitem:
+      - link "Instagram":
+        - /url: https://instagram.com
+    - listitem:
+      - link "Facebook":
+        - /url: https://facebook.com
+  - paragraph: © 2025 MySetlist. All rights reserved.
+- region "Notifications alt+T"
+- text: "SW: OK | Cache: CLEAN | Last: NEVER"
+```
