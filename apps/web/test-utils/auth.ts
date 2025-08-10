@@ -1,4 +1,4 @@
-import type { Session, User } from "@supabase/supabase-js";
+import type { Session, User, UserAppMetadata } from "@supabase/supabase-js";
 import { vi } from "vitest";
 
 export interface MockUser extends Partial<User> {
@@ -10,9 +10,15 @@ export interface MockUser extends Partial<User> {
     avatar_url?: string;
     [key: string]: any;
   };
+  /**
+   * Additional app-specific metadata required by Supabase `User` type.
+   * Added to satisfy `Partial<Session>` compatibility.
+   */
+  app_metadata?: Record<string, any>;
 }
 
-export interface MockSession extends Partial<Session> {
+export interface MockSession
+  extends Omit<Partial<Session>, "user"> {
   user: MockUser;
   access_token: string;
 }
