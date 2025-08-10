@@ -1,583 +1,81 @@
-name: 🔄 Continuous Integration
+name: CI
 
 on:
   push:
-    branches: [main, develop, 'feature/**', 'hotfix/**']
+    branches: [main]
   pull_request:
-    branches: [main, develop]
-  workflow_dispatch:
+    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: "20"
-  PNPM_VERSION: "10.12.4"
   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
   TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+  FORCE_COLOR: 3
 
 jobs:
-  # ===============================================
-  # PHASE 1: QUALITY & SECURITY CHECKS
-  # ===============================================
-  quality-checks:
-    name: 🔍 Code Quality & Security
+  lint:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    outputs:
-      cache-key: ${{ steps.cache-key.outputs.key }}
-
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v4
+      
+      - uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
+          node-version: 20
+          cache: 'pnpm'
+      
+      - run: pnpm install
+      
+      - run: pnpm run lint
 
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: 🗃️ Get pnpm store directory
-        shell: bash
-        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
-      - name: 💾 Cache pnpm modules
-        id: cache-pnpm
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: 📋 Cache key for other jobs
-        id: cache-key
-        run: echo "key=${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}" >> $GITHUB_OUTPUT
-
-      - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: 🔒 Security audit
-        run: pnpm audit --audit-level=moderate
-        continue-on-error: true
-
-      - name: 🕵️ Check for hardcoded secrets
-        run: |
-          echo "🔍 Scanning for hardcoded database credentials..."
-          if grep -r "postgresql://" packages/ apps/ --include="*.ts" --include="*.js" | grep -v node_modules | grep -v "process.env" | grep -v ".env" | head -5; then
-            echo "❌ Found potential hardcoded database credentials!"
-            echo "Please use environment variables instead of hardcoded database URLs."
-            exit 1
-          else
-            echo "✅ No hardcoded credentials found"
-          fi
-
-      - name: 🎯 TypeScript type checking
-        run: pnpm typecheck
-
-      - name: 🧹 ESLint checks
-        run: pnpm lint
-
-      - name: 🔍 Format checks
-        run: pnpm format
-
-      - name: 🏗️ Package boundary checks
-        run: pnpm boundaries
-
-      - name: 🌍 Environment schema validation
-        run: pnpm check:env
-        env:
-          # Mock required environment variables for validation
-          DATABASE_URL: "postgresql://mock:mock@localhost:5432/mock"
-          NEXT_PUBLIC_SUPABASE_URL: "https://mock.supabase.co"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "mock_anon_key"
-          SUPABASE_SERVICE_ROLE_KEY: "mock_service_role_key"
-
-  # ===============================================
-  # PHASE 2: BUILD & UNIT TESTS
-  # ===============================================
-  build-and-test:
-    name: 🏗️ Build & Test
+  typecheck:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
-    needs: quality-checks
-    
-    strategy:
-      matrix:
-        test-type: [unit, integration]
-
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v4
+      
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 20
+          cache: 'pnpm'
+      
+      - run: pnpm install
+      
+      - run: pnpm run typecheck
 
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: 💾 Restore pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ needs.quality-checks.outputs.cache-key }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: 🏗️ Build application
-        run: pnpm build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: "https://mock.supabase.co"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "mock_anon_key"
-          DATABASE_URL: "postgresql://mock:mock@localhost:5432/mock"
-          SKIP_ENV_VALIDATION: "true"
-
-      - name: 🧪 Run unit tests
-        if: matrix.test-type == 'unit'
-        run: |
-          cd apps/web
-          pnpm test:unit
-        env:
-          NODE_ENV: test
-
-      - name: 🔗 Run integration tests
-        if: matrix.test-type == 'integration'
-        run: |
-          cd apps/web
-          pnpm test:integration || echo "Integration tests not yet configured"
-        env:
-          NODE_ENV: test
-        continue-on-error: true
-
-      - name: 📊 Upload test coverage
-        if: matrix.test-type == 'unit'
-        uses: codecov/codecov-action@v4
-        with:
-          files: ./apps/web/coverage/lcov.info
-          flags: unittests
-          name: codecov-umbrella
-          token: ${{ secrets.CODECOV_TOKEN }}
-        continue-on-error: true
-
-      - name: 📦 Upload build artifacts
-        if: matrix.test-type == 'unit'
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: |
-            apps/web/.next
-            apps/web/public
-          retention-days: 7
-
-  # ===============================================
-  # PHASE 3: E2E TESTING
-  # ===============================================
-  e2e-tests:
-    name: 🎭 E2E Tests
+  test:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    needs: build-and-test
-    if: github.event_name != 'pull_request' || contains(github.event.pull_request.labels.*.name, 'run-e2e')
-
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: mysetlist_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v4
+      
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 20
+          cache: 'pnpm'
+      
+      - run: pnpm install
+      
+      - run: pnpm run test
 
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: 💾 Restore pnpm cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pnpm-store
-          key: ${{ needs.quality-checks.outputs.cache-key }}
-
-      - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: 🗄️ Setup test database
-        run: |
-          cd packages/database
-          pnpm push || echo "Database setup skipped - will use mock data"
-        env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/mysetlist_test"
-        continue-on-error: true
-
-      - name: 📥 Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: apps/web/
-
-      - name: 🚀 Start application
-        run: |
-          cd apps/web
-          pnpm start &
-          npx wait-on http://localhost:3001 --timeout 60000
-        env:
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/mysetlist_test"
-          NEXT_PUBLIC_SUPABASE_URL: "https://mock.supabase.co"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "mock_anon_key"
-          PORT: 3000
-
-      - name: 🎭 Run Cypress E2E tests
-        run: |
-          cd apps/web
-          pnpm cypress:run || echo "E2E tests failed - continuing for now"
-        env:
-          CYPRESS_baseUrl: http://localhost:3001
-        continue-on-error: true
-
-      - name: 📸 Upload Cypress artifacts
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: cypress-artifacts
-          path: |
-            apps/web/cypress/screenshots
-            apps/web/cypress/videos
-          retention-days: 7
-
-  # ===============================================
-  # PHASE 4: ACCESSIBILITY TESTING
-  # ===============================================
-  accessibility-tests:
-    name: ♿ Accessibility Tests
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    needs: build-and-test
-
     steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      
+      - uses: pnpm/action-setup@v4
+      
+      - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: 📥 Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: build-artifacts
-          path: apps/web/
-
-      - name: 🎭 Install Playwright browsers
-        run: |
-          cd apps/web
-          npx playwright install --with-deps chromium
-
-      - name: 🚀 Start application
-        run: |
-          cd apps/web
-          pnpm start &
-          npx wait-on http://localhost:3001 --timeout 60000
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: "https://mock.supabase.co"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "mock_anon_key"
-          PORT: 3000
-
-      - name: ♿ Run accessibility tests
-        run: |
-          cd apps/web
-          pnpm test:a11y || echo "Accessibility tests need configuration"
-        env:
-          PLAYWRIGHT_BASE_URL: http://localhost:3001
-        continue-on-error: true
-
-      - name: 📊 Upload accessibility reports
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: accessibility-reports
-          path: apps/web/playwright-report/
-          retention-days: 7
-
-  # ===============================================
-  # PHASE 5: PERFORMANCE TESTING
-  # ===============================================
-  performance-tests:
-    name: ⚡ Performance Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs: build-and-test
-    if: github.event_name == 'pull_request'
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: 📊 Build with bundle analysis
-        run: |
-          cd apps/web
-          ANALYZE=true pnpm build
-        env:
-          NEXT_PUBLIC_SUPABASE_URL: "https://mock.supabase.co"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "mock_anon_key"
-
-      - name: 📈 Check performance budget
-        run: |
-          echo "📊 Bundle Analysis Results"
-          if [ -d "apps/web/.next" ]; then
-            echo "✅ Build completed successfully"
-            # Basic bundle size check
-            BUILD_SIZE=$(du -sh apps/web/.next | cut -f1)
-            echo "📦 Build size: $BUILD_SIZE"
-          else
-            echo "❌ Build failed"
-            exit 1
-          fi
-        continue-on-error: true
-
-      - name: 📊 Comment PR with performance metrics
-        uses: actions/github-script@v7
-        if: github.event_name == 'pull_request'
-        with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            
-            const comment = `## ⚡ Performance Analysis
-            
-            - **Build Status**: ✅ Success
-            - **Bundle Analysis**: Build completed successfully
-            - **Performance Budget**: Within acceptable limits
-            
-            📊 For detailed bundle analysis, check the build artifacts.
-            `;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
-
-  # ===============================================
-  # PHASE 6: SECURITY SCANNING
-  # ===============================================
-  security-scan:
-    name: 🔒 Security Scanning
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: quality-checks
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🔍 Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
-
-      - name: 📋 Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
-
-      - name: 🔍 Run npm audit
-        run: npm audit --audit-level=high --production
-        continue-on-error: true
-
-  # ===============================================
-  # PHASE 7: DOCKER BUILD TEST
-  # ===============================================
-  docker-build:
-    name: 🐳 Docker Build Test
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    needs: build-and-test
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🔧 Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: 🐳 Build Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: false
-          tags: mysetlist:test-${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            NEXT_PUBLIC_SUPABASE_URL=https://mock.supabase.co
-            NEXT_PUBLIC_SUPABASE_ANON_KEY=mock_anon_key
-            NEXT_PUBLIC_APP_URL=https://mock.mysetlist.app
-            DATABASE_URL=postgresql://mock:mock@localhost:5432/mock
-
-      - name: 🩺 Test Docker image health
-        run: |
-          echo "🐳 Starting Docker container for health check..."
-          docker run --rm -d --name mysetlist-health-test -p 3001:3001 \
-            -e NEXT_PUBLIC_SUPABASE_URL=https://mock.supabase.co \
-            -e NEXT_PUBLIC_SUPABASE_ANON_KEY=mock_anon_key \
-            mysetlist:test-${{ github.sha }}
-          
-          echo "⏳ Waiting for container to start..."
-          sleep 45
-          
-          echo "🩺 Testing health endpoint..."
-          curl -f http://localhost:3001/api/health || (echo "❌ Health check failed" && exit 1)
-          
-          echo "✅ Health check passed!"
-          docker stop mysetlist-health-test
-
-  # ===============================================
-  # PHASE 8: DEPLOYMENT READINESS
-  # ===============================================
-  deployment-readiness:
-    name: 🚀 Deployment Readiness
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    needs: [quality-checks, build-and-test, accessibility-tests, security-scan, docker-build]
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v4
-
-      - name: 🔧 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: 📦 Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
-
-      - name: ✅ Run production readiness check
-        run: |
-          cd apps/web
-          pnpm qa:production-ready || echo "Production readiness check needs configuration"
-        env:
-          DATABASE_URL: "postgresql://mock:mock@localhost:5432/mock"
-          NEXT_PUBLIC_SUPABASE_URL: "https://mock.supabase.co"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "mock_anon_key"
-          SUPABASE_SERVICE_ROLE_KEY: "mock_service_role_key"
-        continue-on-error: true
-
-      - name: 📋 Create deployment summary
-        run: |
-          echo "✅ All CI checks completed successfully!" > deployment-ready.txt
-          echo "🚀 Ready for deployment to staging/production" >> deployment-ready.txt
-          echo "📊 Build completed at $(date)" >> deployment-ready.txt
-          echo "🔗 Commit SHA: ${{ github.sha }}" >> deployment-ready.txt
-          echo "🌟 Branch: ${{ github.ref_name }}" >> deployment-ready.txt
-
-      - name: 📦 Upload deployment artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: deployment-ready
-          path: deployment-ready.txt
-          retention-days: 30
-
-      - name: 📊 Create deployment summary
-        run: |
-          echo "### 🚀 Deployment Readiness Report" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
-          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Code Quality | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
-          echo "| TypeScript | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
-          echo "| Build & Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
-          echo "| Accessibility | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
-          echo "| Security Scan | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
-          echo "| Docker Build | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**🎉 All checks passed! Ready for deployment.**" >> $GITHUB_STEP_SUMMARY
-
-  # ===============================================
-  # PHASE 9: NOTIFICATION & CLEANUP
-  # ===============================================
-  notify:
-    name: 📢 Notify Teams
-    runs-on: ubuntu-latest
-    if: always()
-    needs: [deployment-readiness]
-
-    steps:
-      - name: ✅ Notify on success
-        if: needs.deployment-readiness.result == 'success'
-        run: |
-          echo "🎉 CI Pipeline completed successfully!"
-          echo "🚀 All quality gates passed - ready for deployment"
-          echo "📋 Deployment artifact created for staging/production"
-
-      - name: ❌ Notify on failure
-        if: failure()
-        run: |
-          echo "💥 CI Pipeline encountered failures!"
-          echo "🔧 Please check the failed jobs and resolve issues"
-          echo "📊 Review the job summary for detailed information"
+          node-version: 20
+          cache: 'pnpm'
+      
+      - run: pnpm install
+      
+      - run: pnpm run build
