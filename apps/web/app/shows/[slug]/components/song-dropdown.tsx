@@ -56,8 +56,7 @@ interface SetlistSong {
   id: string;
   position: number;
   upvotes: number;
-  downvotes: number;
-  userVote: "up" | "down" | null;
+  userVote: "up" | null;
   notes?: string;
   song: Song;
 }
@@ -95,7 +94,6 @@ export function SongDropdown({
         id: item.id,
         position: item.position,
         upvotes: item.upvotes || 0,
-        downvotes: item.downvotes || 0,
         userVote: item.userVote || null,
         notes: item.notes,
         song: item.song,
@@ -141,7 +139,7 @@ export function SongDropdown({
     }
   }, [debouncedSearchQuery, isOpen, activeTab, fetchSongs]);
 
-  const handleVote = async (setlistSongId: string, voteType: "up" | "down") => {
+  const handleVote = async (setlistSongId: string, voteType: "up") => {
     if (!session) {
       toast.error("Please sign in to vote");
       return;
@@ -151,7 +149,7 @@ export function SongDropdown({
     try {
       await voteSong(setlistSongId, voteType);
       // The real-time system will handle updating the UI
-      toast.success(`Vote ${voteType === "up" ? "added" : "noted"}!`);
+      toast.success("Vote added!");
     } catch (error: any) {
       toast.error(error.message || "Failed to vote");
     } finally {
@@ -197,15 +195,11 @@ export function SongDropdown({
               ...data,
               setlist_songs: data.setlist_songs?.map((item: any) => ({
                 ...item,
-                upvotes:
-                  item.votes?.filter((v: any) => v.vote_type === "up").length ||
-                  0,
-                downvotes:
-                  item.votes?.filter((v: any) => v.vote_type === "down")
-                    .length || 0,
+                upvotes: item.votes?.length || 0,
                 userVote:
                   item.votes?.find((v: any) => v.user_id === session?.user?.id)
-                    ?.vote_type || null,
+                    ? "up"
+                    : null,
               })),
             };
             setRealtimeSetlistData(processedData);
@@ -417,11 +411,11 @@ export function SongDropdown({
                       <AnonymousVoteButton
                         setlistSongId={setlistSong.id}
                         initialUpvotes={setlistSong.upvotes}
-                        initialDownvotes={setlistSong.downvotes}
+                        initialDownvotes={0} // Downvotes are not tracked in the new SetlistSong interface
                         isAuthenticated={!!session}
                         onVote={async (voteType) => {
-                          if (voteType) {
-                            await handleVote(setlistSong.id, voteType);
+                          if (voteType === "up") {
+                            await handleVote(setlistSong.id, "up");
                           }
                         }}
                         variant="compact"
