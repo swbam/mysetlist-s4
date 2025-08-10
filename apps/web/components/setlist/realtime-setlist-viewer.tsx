@@ -69,9 +69,8 @@ export function RealtimeSetlistViewer({
       const votes = data.setlists.reduce(
         (acc: any, setlist: any) => {
           setlist.songs?.forEach((song: any) => {
-            acc.total += song.upvotes + song.downvotes;
+            acc.total += song.upvotes;
             acc.upvotes += song.upvotes;
-            acc.downvotes += song.downvotes;
           });
           return acc;
         },
@@ -84,10 +83,7 @@ export function RealtimeSetlistViewer({
     }
   };
 
-  const handleVote = async (
-    setlistSongId: string,
-    voteType: "up" | "down" | null,
-  ) => {
+  const handleVote = async (setlistSongId: string, voteType: "up" | null) => {
     const response = await fetch("/api/votes", {
       method: "POST",
       headers: {
@@ -111,22 +107,16 @@ export function RealtimeSetlistViewer({
           if (song.id === setlistSongId) {
             const currentVote = song.userVote;
             let upvotes = song.upvotes;
-            let downvotes = song.downvotes;
+            let downvotes = 0;
 
             // Remove previous vote
             if (currentVote === "up") {
               upvotes--;
             }
-            if (currentVote === "down") {
-              downvotes--;
-            }
 
             // Add new vote
             if (voteType === "up") {
               upvotes++;
-            }
-            if (voteType === "down") {
-              downvotes++;
             }
 
             return {
@@ -179,7 +169,6 @@ export function RealtimeSetlistViewer({
           artist: song.song.artist,
           netVotes: song.netVotes,
           upvotes: song.upvotes,
-          downvotes: song.downvotes,
         });
       });
     });
@@ -322,9 +311,8 @@ export function RealtimeSetlistViewer({
                             setlist.type === "predicted" && (
                               <VoteButton
                                 setlistSongId={song.id}
-                                currentVote={song.userVote}
+                                currentVote={song.userVote === "up" ? "up" : null}
                                 upvotes={song.upvotes}
-                                downvotes={song.downvotes}
                                 onVote={(voteType) =>
                                   handleVote(song.id, voteType)
                                 }
