@@ -1,7 +1,6 @@
 import { NextRequest } from "next/server";
-import { db } from "@repo/database";
-import { artists } from "@repo/database";
-import { ilike, or, sql } from "drizzle-orm";
+import { db, artists } from "@repo/database";
+import { ilike, or, and, sql, type SQLWrapper } from "drizzle-orm";
 
 /**
  * POST /api/artists/discover
@@ -24,17 +23,14 @@ export async function POST(request: NextRequest) {
   };
 
   try {
-    let query = db
-      .select()
-      .from(artists)
-      .limit(40);
+    const conditions: SQLWrapper[] = [];
 
     // Filter by genres
     if (genres.length) {
-      genres.forEach((g, idx) => {
-        const cond = ilike(artists.genres, `%${g}%`);
-        query = idx === 0 ? query.where(cond) : query.or(cond);
-      });
+      const genreConds = genres.map((g) =>
+        ilike(artists.genres, `%${g}%`),
+      );
+      conditions.push(or(...genreConds) as SQLWrapper);
     }
 
     // Popularity bucketing (example based on followers field)
@@ -44,7 +40,7 @@ export async function POST(request: NextRequest) {
         medium: sql`${artists.followers} BETWEEN 100000 AND 1000000`,
         low: sql`${artists.followers} < 100000`,
       } as const;
-      query = query.where(buckets[popularity]);
+      conditions.push(buckets[popularity]!);
     }
 
     // TODO: Location based filtering can be implemented once we store geo coords
@@ -52,7 +48,11 @@ export async function POST(request: NextRequest) {
       console.info("Location based discovery requested but not yet implemented", location);
     }
 
-    const rows = await query;
+    const rows = await db
+      .select()
+      .from(artists)
+      .where(conditions.length ? and(...conditions) : sql`TRUE`)
+      .limit(40);
 
     return Response.json({ artists: rows });
   } catch (error) {

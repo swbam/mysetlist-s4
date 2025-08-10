@@ -1,0 +1,5 @@
+# Exclude legacy Conductor artifacts and generated build outputs
+.conductor/
+.next/
+.turbo/
+node_modules/
