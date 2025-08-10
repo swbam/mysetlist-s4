@@ -60,8 +60,8 @@ export async function GET(request: NextRequest) {
           .select(
             "id, name, slug, image_url, popularity, followers, follower_count, monthly_listeners, trending_score",
           )
-          .order("trending_score", { ascending: false, nullsLast: true })
-          .order("popularity", { ascending: false, nullsLast: true })
+          .order("trending_score", { ascending: false })
+          .order("popularity", { ascending: false })
           .limit(type === "artist" ? limit : Math.ceil(limit / 3));
 
         if (trendingArtists && trendingArtists.length > 0) {

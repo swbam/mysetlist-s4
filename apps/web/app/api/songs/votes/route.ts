@@ -12,13 +12,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { setlistSongId, voteType } = await request.json();
+    const { setlistSongId } = await request.json();
 
-    if (!setlistSongId || (voteType && !["up", "down"].includes(voteType))) {
-      return NextResponse.json(
-        { error: "Invalid request data" },
-        { status: 400 },
-      );
+    if (!setlistSongId) {
+      return NextResponse.json({ error: "Missing setlistSongId" }, { status: 400 });
     }
 
     // Check if user already voted on this setlist song
@@ -30,35 +27,18 @@ export async function POST(request: NextRequest) {
       )
       .limit(1);
 
-    if (voteType === null) {
-      // Remove vote
-      if (existingVote.length > 0) {
-        await db
-          .delete(votes)
-          .where(
-            and(
-              eq(votes.setlistSongId, setlistSongId),
-              eq(votes.userId, user.id),
-            ),
-          );
-      }
-    } else if (existingVote.length > 0) {
-      // Update existing vote
+    if (existingVote.length > 0) {
+      // Remove existing upvote (toggle off)
       await db
-        .update(votes)
-        .set({ voteType })
+        .delete(votes)
         .where(
-          and(
-            eq(votes.setlistSongId, setlistSongId),
-            eq(votes.userId, user.id),
-          ),
+          and(eq(votes.setlistSongId, setlistSongId), eq(votes.userId, user.id)),
         );
     } else {
-      // Create new vote
+      // Insert upvote
       await db.insert(votes).values({
         setlistSongId,
         userId: user.id,
-        voteType,
       });
     }
 
