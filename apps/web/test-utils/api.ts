@@ -64,7 +64,7 @@ export const createMockRequest = (
     requestInit.body = typeof body === "string" ? body : JSON.stringify(body);
   }
 
-  return new NextRequest(urlObj.toString(), requestInit);
+  return new NextRequest(urlObj.toString(), requestInit as any);
 };
 
 // Mock NextResponse helpers
@@ -365,6 +365,6 @@ export const mockAPIFetch = (responses: Record<string, MockApiResponse>) => {
 export const cleanupApiMocks = () => {
   vi.restoreAllMocks();
   if (global.fetch && vi.isMockFunction(global.fetch)) {
-    global.fetch.mockClear();
+    (global.fetch as any).mockClear();
   }
 };

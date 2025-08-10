@@ -218,7 +218,8 @@ export const fetchShows = cache(
         countQuery = countQuery.where(and(...conditions)) as any;
       }
 
-      const totalCount = countQuery[0]?.count || 0;
+      const countRows = await countQuery;
+      const totalCount = countRows[0]?.count || 0;
 
       // Get supporting artists for each show (separate query for performance)
       const showIds = showsData.map((show) => show.id);
