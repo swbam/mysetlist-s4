@@ -77,9 +77,5 @@ jobs:
           cache: 'pnpm'
       
       - run: pnpm install
-      
-<<<<<<< HEAD
+
       - run: pnpm run build
-=======
-      - run: pnpm run build
->>>>>>> terragon/fix-deploy-errors-complete-sync
