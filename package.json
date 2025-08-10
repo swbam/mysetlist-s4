@@ -55,7 +55,7 @@
     "vercel": "^44.5.0"
   },
   "engines": {
-    "node": ">=18"
+    "node": "20.x"
   },
   "packageManager": "pnpm@10.13.1",
   "dependencies": {

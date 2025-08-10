@@ -525,7 +525,7 @@ export function SetlistEditor({
                               {canVote && !isEditing && !setlist.isLocked && (
                                 <VoteButton
                                   setlistSongId={song.id}
-                                  currentVote={song.userVote}
+                                  currentVote={song.userVote === "up" ? "up" : null}
                                   upvotes={song.upvotes}
                                   onVote={(voteType) =>
                                     handleVote(song.id, voteType)

@@ -377,11 +377,13 @@ export const EnhancedSetlistViewer = ({
                         onVote: (voteType: any) =>
                           handleVote(setlistSong.id, voteType),
                         disabled:
+
                           !setlistSong.isPlayed &&
-                          currentSetlist.type === "actual",
-                        variant: "compact",
-                        size: "sm",
-                      })}
+                          currentSetlist.type === "actual"
+                        }
+                        variant="compact"
+                        size="sm"
+                      />
                     </div>
                   </div>
                 </motion.div>

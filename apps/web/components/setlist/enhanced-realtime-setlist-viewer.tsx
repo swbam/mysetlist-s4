@@ -95,16 +95,16 @@ export function EnhancedRealtimeSetlistViewer({
     let downvotes = 0;
 
     Object.values(voteCounts).forEach((voteData) => {
-      total += voteData.upvotes + voteData.downvotes;
+      total += voteData.upvotes;
       upvotes += voteData.upvotes;
-      downvotes += voteData.downvotes;
+      downvotes += 0;
     });
 
     setTotalVotes({ total, upvotes, downvotes });
   }, [voteCounts]);
 
   const handleVote = useCallback(
-    async (setlistSongId: string, voteType: "up" | "down" | null) => {
+    async (setlistSongId: string, voteType: "up" | null) => {
       try {
         await vote(setlistSongId, voteType);
       } catch (error) {
@@ -128,7 +128,6 @@ export function EnhancedRealtimeSetlistViewer({
       setlist.songs?.forEach((song: any) => {
         const voteData = voteCounts[song.id] || {
           upvotes: 0,
-          downvotes: 0,
           netVotes: 0,
         };
         allSongs.push({
@@ -137,7 +136,7 @@ export function EnhancedRealtimeSetlistViewer({
           artist: song.song.artist,
           netVotes: voteData.netVotes,
           upvotes: voteData.upvotes,
-          downvotes: voteData.downvotes,
+          downvotes: 0,
         });
       });
     });
@@ -204,9 +203,8 @@ export function EnhancedRealtimeSetlistViewer({
                       .map((song: any, index: number) => {
                         const voteData = voteCounts[song.id] || {
                           upvotes: song.upvotes || 0,
-                          downvotes: song.downvotes || 0,
                           netVotes: song.netVotes || 0,
-                          userVote: song.userVote || null,
+                          userVote: song.userVote === "up" ? "up" : null,
                         };
 
                         return (
@@ -287,7 +285,9 @@ export function EnhancedRealtimeSetlistViewer({
                               setlist.type === "predicted" && (
                                 <VoteButton
                                   setlistSongId={song.id}
-                                  currentVote={voteData.userVote}
+                                  currentVote={
+                                    voteData.userVote === "up" ? "up" : null
+                                  }
                                   upvotes={voteData.upvotes}
                                   onVote={(voteType) =>
                                     handleVote(song.id, voteType)
@@ -308,7 +308,6 @@ export function EnhancedRealtimeSetlistViewer({
                                     className={cn(
                                       "font-medium",
                                       voteData.netVotes > 0 && "text-green-600",
-                                      voteData.netVotes < 0 && "text-red-600",
                                     )}
                                   >
                                     {voteData.netVotes > 0 ? "+" : ""}

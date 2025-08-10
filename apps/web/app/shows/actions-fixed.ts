@@ -88,8 +88,21 @@ export const fetchShows = cache(
     } = params;
 
     try {
-      // Build base query with joins
-      let query = db
+      // Apply filters using a separate whereClause and build the select in one chain
+      const conds: any[] = [];
+      if (status) conds.push(eq(shows.status, status));
+      if (artistId) conds.push(eq(shows.headlinerArtistId, artistId));
+      if (venueId) conds.push(eq(shows.venueId, venueId));
+      if (dateFrom) conds.push(gte(shows.date, dateFrom));
+      if (dateTo) conds.push(lte(shows.date, dateTo));
+      if (featured) conds.push(eq(shows.isFeatured, true));
+      if (city) conds.push(ilike(venues.city, `%${city}%`));
+      if (!dateFrom && status === "upcoming") {
+        conds.push(gte(shows.date, new Date().toISOString().substring(0, 10)));
+      }
+      const whereClause = conds.length ? and(...conds) : sql`TRUE`;
+
+      const showsData = await db
         .select({
           id: shows.id,
           name: shows.name,
@@ -194,7 +207,7 @@ export const fetchShows = cache(
       const showsData = await query;
 
       // Get total count for pagination
-      let countQuery = db
+      const countResult = await db
         .select({ count: sql<number>`count(*)` })
         .from(shows)
         .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
@@ -269,9 +282,9 @@ export const fetchShows = cache(
         status: show.status,
         description: show.description,
         ticketUrl: show.ticketUrl,
-        minPrice: show.minPrice,
-        maxPrice: show.maxPrice,
-        currency: show.currency,
+        minPrice: show.minPrice ?? null,
+        maxPrice: show.maxPrice ?? null,
+        currency: show.currency ?? "USD",
         viewCount: show.viewCount,
         attendeeCount: show.attendeeCount,
         setlistCount: show.setlistCount,
@@ -283,7 +296,13 @@ export const fetchShows = cache(
           ...show.headlinerArtist,
           genres: safeJsonParse(show.headlinerArtist.genres),
         },
-        venue: show.venue,
+        venue: show.venue
+          ? {
+              ...show.venue,
+              state: show.venue.state ?? null,
+              capacity: show.venue.capacity ?? null,
+            }
+          : null,
         supportingArtists: supportingArtistsByShow[show.id] || [],
       }));
 

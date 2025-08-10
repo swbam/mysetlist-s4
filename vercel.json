@@ -1,7 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "name": "mysetlist-sonnet",
-  "buildCommand": "pnpm turbo build --filter=web",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "cd apps/web && pnpm build",
   "outputDirectory": "apps/web/.next",
   "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . || echo 'Changes detected, proceeding with build'",
   "framework": "nextjs",
@@ -58,43 +59,25 @@
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" },
+        { "key": "X-XSS-Protection", "value": "1; mode=block" },
         {
           "key": "Strict-Transport-Security",
           "value": "max-age=63072000; includeSubDomains; preload"
         },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
+        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
         {
           "key": "Content-Security-Policy",
           "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' *.vercel-analytics.com *.vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: *.spotify.com *.scdn.co images.unsplash.com; connect-src 'self' *.supabase.co *.spotify.com api.setlist.fm app.ticketmaster.com *.vercel-analytics.com wss:; font-src 'self' data:; frame-src 'self' accounts.spotify.com;"
         },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(), geolocation=()"
-        }
+        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
       ]
     },
     {
       "source": "/api/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        }
+        { "key": "Cache-Control", "value": "no-store, max-age=0" }
       ]
     },
     {
