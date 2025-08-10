@@ -119,8 +119,8 @@ export async function GET(request: NextRequest) {
           .select(
             "id, name, slug, view_count, vote_count, attendee_count, setlist_count, trending_score, date",
           )
-          .order("trending_score", { ascending: false, nullsLast: true })
-          .order("attendee_count", { ascending: false, nullsLast: true })
+          .order("trending_score", { ascending: false })
+          .order("attendee_count", { ascending: false })
           .limit(type === "show" ? limit : Math.ceil(limit / 3));
 
         if (trendingShows && trendingShows.length > 0) {
