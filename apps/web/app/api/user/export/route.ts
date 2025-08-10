@@ -60,7 +60,6 @@ async function collectUserData(userId: string) {
   const userVotes = await db
     .select({
       setlistSongId: votes.setlistSongId,
-      voteType: votes.voteType,
       createdAt: votes.createdAt,
     })
     .from(votes)
@@ -93,7 +92,6 @@ async function collectUserData(userId: string) {
     },
     votes: userVotes.map((v) => ({
       setlistSongId: v.setlistSongId,
-      voteType: v.voteType,
       votedAt: v.createdAt,
     })),
     venueReviews: reviews.map((r) => ({
