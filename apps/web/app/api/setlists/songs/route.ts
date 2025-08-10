@@ -64,8 +64,6 @@ export async function POST(request: NextRequest) {
         position: finalPosition,
         notes,
         upvotes: 0,
-        downvotes: 0,
-        netVotes: 0,
       })
       .returning();
 
