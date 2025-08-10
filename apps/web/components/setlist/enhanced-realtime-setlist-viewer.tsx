@@ -289,7 +289,6 @@ export function EnhancedRealtimeSetlistViewer({
                                   setlistSongId={song.id}
                                   currentVote={voteData.userVote}
                                   upvotes={voteData.upvotes}
-                                  downvotes={voteData.downvotes}
                                   onVote={(voteType) =>
                                     handleVote(song.id, voteType)
                                   }

@@ -99,28 +99,20 @@ export function UnifiedSearch({
       setError(null);
 
       try {
-        // Prefer optimized search with fallback to standard search
-        const optimizedEndpoint =
-          variant === "artists-only"
-            ? `/api/artists/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`
-            : `/api/search/optimized?q=${encodeURIComponent(searchQuery)}&limit=${limit}`;
+        // Use the new Ticketmaster-only endpoints
+        const endpoint = variant === "artists-only"
+          ? `/api/artists/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`
+          : `/api/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`;
 
-        const standardEndpoint = `/api/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`;
-
-        let response = await fetch(optimizedEndpoint, {
+        const response = await fetch(endpoint, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
         });
+
         if (!response.ok) {
-          // Retry with standard endpoint once
-          response = await fetch(standardEndpoint, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-          });
-          if (!response.ok)
-            throw new Error(`Search failed: ${response.status}`);
+          throw new Error(`Search failed: ${response.status}`);
         }
 
         const data = await response.json();
@@ -141,15 +133,29 @@ export function UnifiedSearch({
             subtitle: artist.genres?.slice(0, 2).join(", ") || "Artist",
             imageUrl: artist.imageUrl,
             slug: artist.id,
-            source: artist.source,
-            verified: artist.verified,
-            popularity: artist.popularity,
+            source: artist.source || "ticketmaster",
+            verified: false,
+            popularity: 0,
             genres: artist.genres,
-            externalId: artist.externalId,
-            requiresSync: artist.source !== "database",
+            externalId: artist.externalId || artist.id,
+            requiresSync: true,
           }));
         } else if (data.results) {
-          searchResults = data.results;
+          // Convert search results format
+          searchResults = data.results.map((result: any) => ({
+            id: result.id,
+            type: "artist" as const,
+            title: result.name,
+            subtitle: result.genre || "Artist",
+            imageUrl: result.imageUrl,
+            slug: result.id,
+            source: "ticketmaster",
+            verified: false,
+            popularity: 0,
+            genres: result.genre ? [result.genre] : [],
+            externalId: result.id,
+            requiresSync: true,
+          }));
         }
 
         setResults(searchResults);
@@ -187,56 +193,10 @@ export function UnifiedSearch({
       // Handle different result types
       switch (result.type) {
         case "artist":
-          if (result.requiresSync || result.source === "ticketmaster") {
-            // For Ticketmaster artists, use the import endpoint
-            if (result.source === "ticketmaster") {
-              const resp = await fetchWithCSRF(
-                "/api/artists/import-ticketmaster",
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    ticketmasterId: result.externalId || result.id,
-                    name: result.title,
-                    imageUrl: result.imageUrl,
-                    genres: result.genres,
-                  }),
-                },
-              );
-
-              const data = await resp.json();
-              if (resp.ok && data.artist?.slug) {
-                router.push(`/artists/${data.artist.slug}`);
-              } else {
-                console.warn("Artist import failed:", data.error);
-                // Fallback to search page
-                router.push(
-                  `/artists?search=${encodeURIComponent(result.title)}`,
-                );
-              }
-            } else {
-              // For other external sources, use auto-import
-              const resp = await fetchWithCSRF("/api/artists/auto-import", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  artistName: result.title,
-                  spotifyId:
-                    result.source === "spotify" ? result.id : undefined,
-                }),
-              });
-
-              const data = await resp.json();
-              if (resp.ok && data.artist?.slug) {
-                router.push(`/artists/${data.artist.slug}`);
-              } else {
-                console.warn("Artist import failed:", data.error);
-                // Fallback to search page
-                router.push(
-                  `/artists?search=${encodeURIComponent(result.title)}`,
-                );
-              }
-            }
+          // For Ticketmaster artists, navigate directly to artist page with Ticketmaster ID
+          if (result.source === "ticketmaster") {
+            const slug = result.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            router.push(`/artists/${slug}?ticketmaster=${result.externalId || result.id}`);
           } else {
             router.push(`/artists/${result.slug || result.id}`);
           }

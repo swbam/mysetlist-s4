@@ -73,12 +73,12 @@ export function MobileSearch({
 
   // Handle search
   useEffect(() => {
-    if (debouncedQuery.length >= 2 && onSearch) {
+    if (debouncedQuery.length >= 2) {
       performSearch(debouncedQuery);
     } else {
       setResults([]);
     }
-  }, [debouncedQuery, onSearch]);
+  }, [debouncedQuery]);
 
   const performSearch = async (searchQuery: string) => {
     setIsLoading(true);
@@ -101,12 +101,13 @@ export function MobileSearch({
               slug?: string;
               imageUrl?: string;
               genres?: string[];
+              externalId?: string;
             }) => ({
-              id: a.slug ?? a.id,
+              id: a.externalId || a.id,
               type: "artist" as const,
               title: a.name,
               imageUrl: a.imageUrl,
-              subtitle: a.genres?.[0],
+              subtitle: a.genres?.slice(0, 2).join(", ") || "Artist",
               trending: false,
             }),
           );
@@ -139,7 +140,9 @@ export function MobileSearch({
     if (onResultSelect) {
       onResultSelect(result);
     } else if (result.type === "artist") {
-      router.push(`/artists/${result.id}`);
+      // For Ticketmaster artists, navigate with Ticketmaster ID parameter
+      const slug = result.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      router.push(`/artists/${slug}?ticketmaster=${result.id}`);
     }
 
     // Note: persist recent searches can be implemented later

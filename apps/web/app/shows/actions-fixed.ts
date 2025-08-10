@@ -16,21 +16,21 @@ export type ShowWithDetails = {
   ticketUrl: string | null;
   minPrice: number | null;
   maxPrice: number | null;
-  currency: string;
-  viewCount: number;
-  attendeeCount: number;
-  setlistCount: number;
-  voteCount: number;
-  trendingScore: number;
-  isFeatured: boolean;
-  isVerified: boolean;
+  currency: string | null;
+  viewCount: number | null;
+  attendeeCount: number | null;
+  setlistCount: number | null;
+  voteCount: number | null;
+  trendingScore: number | null;
+  isFeatured: boolean | null;
+  isVerified: boolean | null;
   headlinerArtist: {
     id: string;
     name: string;
     slug: string;
     imageUrl: string | null;
     genres: string[] | null;
-    verified: boolean;
+    verified: boolean | null;
   };
   venue: {
     id: string;
@@ -133,7 +133,7 @@ export const fetchShows = cache(
         .leftJoin(venues, eq(shows.venueId, venues.id));
 
       // Apply filters
-      const conditions = [];
+      const conditions: any[] = [];
 
       if (status) {
         conditions.push(eq(shows.status, status));
@@ -171,24 +171,24 @@ export const fetchShows = cache(
       }
 
       if (conditions.length > 0) {
-        query = query.where(and(...conditions));
+        query = query.where(and(...conditions)) as any;
       }
 
       // Apply ordering
       switch (orderBy) {
         case "trending":
-          query = query.orderBy(desc(shows.trendingScore));
+          query = query.orderBy(desc(shows.trendingScore)) as any;
           break;
         case "popularity":
-          query = query.orderBy(desc(shows.viewCount));
+          query = query.orderBy(desc(shows.viewCount)) as any;
           break;
         default:
-          query = query.orderBy(asc(shows.date));
+          query = query.orderBy(asc(shows.date)) as any;
           break;
       }
 
       // Apply pagination
-      query = query.limit(limit).offset(offset);
+      query = query.limit(limit).offset(offset) as any;
 
       // Execute query
       const showsData = await query;
@@ -201,7 +201,7 @@ export const fetchShows = cache(
         .leftJoin(venues, eq(shows.venueId, venues.id));
 
       if (conditions.length > 0) {
-        countQuery = countQuery.where(and(...conditions));
+        countQuery = countQuery.where(and(...conditions)) as any;
       }
 
       const countResult = await countQuery;
@@ -236,7 +236,7 @@ export const fetchShows = cache(
           if (!acc[sa.showId]) {
             acc[sa.showId] = [];
           }
-          acc[sa.showId].push({
+          acc[sa.showId]!.push({
             id: sa.id,
             artistId: sa.artistId,
             orderIndex: sa.orderIndex,

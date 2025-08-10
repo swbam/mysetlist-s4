@@ -1,7 +1,22 @@
+import { TicketmasterClient } from "@repo/external-apis";
 import { type NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/supabase/server";
+
+const ticketmaster = new TicketmasterClient({
+  apiKey: process.env.TICKETMASTER_API_KEY!,
+});
 
 export const dynamic = "force-dynamic";
+
+interface SearchSuggestion {
+  id: string;
+  type: "artist";
+  title: string;
+  subtitle?: string;
+  imageUrl?: string;
+  metadata?: {
+    popularity?: number;
+  };
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,56 +31,55 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const supabase = createServiceClient();
-
-    // ARTIST-ONLY SEARCH as per PRD requirements
-    // Core flow: Search artists → Click artist → Triggers data sync → View shows
-    const { data: artists, error } = await supabase
-      .from("artists")
-      .select(
-        `
-        id,
-        name,
-        image_url,
-        small_image_url,
-        slug,
-        followers,
-        genres,
-        verified
-      `,
-      )
-      .or(`name.ilike.%${query}%,genres.ilike.%${query}%`)
-      .order("followers", { ascending: false })
-      .limit(limit);
-
-    if (error) {
-      return NextResponse.json({
-        suggestions: [],
-        count: 0,
-      });
+    if (!process.env.TICKETMASTER_API_KEY) {
+      return NextResponse.json(
+        {
+          error: "Ticketmaster API key not configured",
+          message: "Unable to search artists",
+        },
+        { status: 500 },
+      );
     }
 
-    const suggestions = (artists || []).map((artist: any) => ({
-      type: "artist" as const,
-      id: artist.id,
-      title: artist.name,
-      subtitle: artist.genres
-        ? JSON.parse(artist.genres).slice(0, 2).join(", ")
-        : undefined,
-      href: `/artists/${artist.slug}`,
-      imageUrl: artist.small_image_url || artist.image_url,
-      meta: `${artist.followers?.toLocaleString() || 0} followers`,
-      verified: artist.verified,
-      // This will trigger data sync when clicked
-      requiresSync: true,
-    }));
+    try {
+      // Use Ticketmaster API for consistent artist search experience
+      const ticketmasterResponse = await ticketmaster.searchAttractions({
+        keyword: query,
+        size: limit,
+        classificationName: "music",
+        sort: "relevance,desc",
+      });
 
-    return NextResponse.json({
-      suggestions,
-      count: suggestions.length,
-      searchType: "artists-only",
-    });
-  } catch (_error) {
+      const ticketmasterArtists = ticketmasterResponse._embedded?.attractions || [];
+
+      const suggestions: SearchSuggestion[] = ticketmasterArtists.map((attraction) => ({
+        id: attraction.id,
+        type: "artist" as const,
+        title: attraction.name,
+        subtitle: attraction.classifications?.map((c: any) => c.genre?.name).filter(Boolean).join(", ") || "",
+        imageUrl: attraction.images?.[0]?.url || undefined,
+        metadata: {
+          popularity: 100, // Default popularity since Ticketmaster doesn't provide this metric
+        },
+      }));
+
+      return NextResponse.json({
+        suggestions,
+        count: suggestions.length,
+        searchType: "artists-ticketmaster",
+      });
+    } catch (error) {
+      console.error("Ticketmaster suggestions search failed:", error);
+      return NextResponse.json(
+        {
+          error: "Search failed",
+          message: error instanceof Error ? error.message : "Unknown error",
+        },
+        { status: 500 },
+      );
+    }
+  } catch (error) {
+    console.error("Suggestions search error:", error);
     return NextResponse.json({ error: "Search failed" }, { status: 500 });
   }
 }

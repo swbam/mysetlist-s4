@@ -5,6 +5,7 @@
   "main": "./index.tsx",
   "types": "./index.tsx",
   "dependencies": {
+    "2": "^3.0.0",
     "@hookform/resolvers": "^5.1.1",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",

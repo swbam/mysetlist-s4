@@ -73,12 +73,12 @@ export function MobileSearch({
 
   // Handle search
   useEffect(() => {
-    if (debouncedQuery.length >= 2 && onSearch) {
+    if (debouncedQuery.length >= 2) {
       performSearch(debouncedQuery);
     } else {
       setResults([]);
     }
-  }, [debouncedQuery, onSearch]);
+  }, [debouncedQuery]);
 
   const performSearch = async (searchQuery: string) => {
     setIsLoading(true);
@@ -95,7 +95,7 @@ export function MobileSearch({
         if (res.ok) {
           const data = await res.json();
           searchResults = (data.artists || []).map((artist: any) => ({
-            id: artist.id,
+            id: artist.externalId || artist.id,
             type: "artist" as const,
             title: artist.name,
             imageUrl: artist.imageUrl,
@@ -134,7 +134,9 @@ export function MobileSearch({
       // Handle different result types
       switch (result.type) {
         case "artist":
-          router.push(`/artists/${result.id}`);
+          // For Ticketmaster artists, navigate with Ticketmaster ID parameter
+          const slug = result.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          router.push(`/artists/${slug}?ticketmaster=${result.id}`);
           break;
         case "show":
           router.push(`/shows/${result.id}`);

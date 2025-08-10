@@ -57,7 +57,7 @@ interface SetlistSong {
   position: number;
   upvotes: number;
   downvotes: number;
-  userVote: "up" | "down" | null;
+  userVote: "up" | null;
   notes?: string;
   song: Song;
 }
@@ -141,7 +141,7 @@ export function SongDropdown({
     }
   }, [debouncedSearchQuery, isOpen, activeTab, fetchSongs]);
 
-  const handleVote = async (setlistSongId: string, voteType: "up" | "down") => {
+  const handleVote = async (setlistSongId: string, voteType: "up") => {
     if (!session) {
       toast.error("Please sign in to vote");
       return;
@@ -420,7 +420,7 @@ export function SongDropdown({
                         initialDownvotes={setlistSong.downvotes}
                         isAuthenticated={!!session}
                         onVote={async (voteType) => {
-                          if (voteType) {
+                          if (voteType === "up") {
                             await handleVote(setlistSong.id, voteType);
                           }
                         }}

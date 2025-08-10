@@ -367,7 +367,7 @@ export const EnhancedSetlistViewer = ({
                       )}
 
                       {/* Vote Button */}
-                      {React.createElement(VoteButton as any, {
+                      {React.createElement(EnhancedVoteButton as any, {
                         setlistSongId: setlistSong.id,
                         ...(setlistSong.userVote !== undefined && {
                           currentVote: setlistSong.userVote,

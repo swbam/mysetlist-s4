@@ -17,7 +17,7 @@ interface Venue {
   capacity: number | null;
   latitude: number | null;
   longitude: number | null;
-  avgRating?: number;
+  avgRating?: number | null;
   reviewCount?: number;
   upcomingShowCount?: number;
   distance?: number;

@@ -324,7 +324,6 @@ export function RealtimeSetlistViewer({
                                 setlistSongId={song.id}
                                 currentVote={song.userVote}
                                 upvotes={song.upvotes}
-                                downvotes={song.downvotes}
                                 onVote={(voteType) =>
                                   handleVote(song.id, voteType)
                                 }

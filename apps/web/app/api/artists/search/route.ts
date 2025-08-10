@@ -5,16 +5,13 @@ const ticketmaster = new TicketmasterClient({
   apiKey: process.env.TICKETMASTER_API_KEY!,
 });
 
-interface SearchResult {
+interface ArtistResult {
   id: string;
-  type: "artist";
-  title: string;
-  subtitle?: string;
+  name: string;
   imageUrl?: string;
-  slug?: string;
-  verified?: boolean;
+  genres?: string[];
   source: "ticketmaster";
-  requiresSync?: boolean;
+  externalId: string;
 }
 
 export async function GET(request: NextRequest) {
@@ -24,7 +21,7 @@ export async function GET(request: NextRequest) {
     const limit = Number.parseInt(searchParams.get("limit") || "8", 10);
 
     if (!query || query.length < 2) {
-      return NextResponse.json({ results: [] });
+      return NextResponse.json({ artists: [] });
     }
 
     if (!process.env.TICKETMASTER_API_KEY) {
@@ -47,19 +44,16 @@ export async function GET(request: NextRequest) {
       
       const ticketmasterArtists = ticketmasterResponse._embedded?.attractions || [];
       
-      const results: SearchResult[] = ticketmasterArtists.map((attraction) => ({
+      const artists: ArtistResult[] = ticketmasterArtists.map((attraction) => ({
         id: attraction.id,
-        type: "artist" as const,
-        title: attraction.name,
-        subtitle: attraction.classifications?.map((c: any) => c.genre?.name).filter(Boolean).join(", ") || "",
+        name: attraction.name,
         imageUrl: attraction.images?.[0]?.url || undefined,
-        slug: attraction.id, // Use Ticketmaster ID as slug
-        verified: false,
+        genres: attraction.classifications?.map((c: any) => c.genre?.name).filter(Boolean) || [],
         source: "ticketmaster" as const,
-        requiresSync: true,
+        externalId: attraction.id,
       }));
 
-      return NextResponse.json({ results });
+      return NextResponse.json({ artists });
     } catch (error) {
       console.error("Ticketmaster search failed:", error);
       return NextResponse.json(
@@ -71,7 +65,7 @@ export async function GET(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error("Search error:", error);
+    console.error("Artist search error:", error);
     return NextResponse.json(
       {
         error: "Search failed",
