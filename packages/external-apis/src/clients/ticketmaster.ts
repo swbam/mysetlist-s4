@@ -187,6 +187,34 @@ export class TicketmasterClient extends BaseAPIClient {
     );
   }
 
+  /**
+   * Search Ticketmaster attractions (artists).
+   * Mirrors the Ticketmaster Discovery API /attractions.json endpoint.
+   * Docs: https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/#search-attraction-v2
+   */
+  async searchAttractions(options: {
+    keyword?: string;
+    size?: number;
+    page?: number;
+    classificationName?: string;
+    sort?: string;
+  }): Promise<{ _embedded?: { attractions: any[] }; page: any }> {
+    const params = new URLSearchParams();
+
+    Object.entries(options).forEach(([key, value]) => {
+      if (value !== undefined) {
+        params.append(key, value.toString());
+      }
+    });
+
+    return this.makeRequest(
+      `attractions.json?${params.toString()}`,
+      {},
+      `ticketmaster:attractions:${params.toString()}`,
+      3600, // 1 hour cache
+    );
+  }
+
   async searchVenues(options: {
     keyword?: string;
     city?: string;

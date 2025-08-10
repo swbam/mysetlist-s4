@@ -100,9 +100,9 @@ export const fetchShows = cache(
       if (!dateFrom && status === "upcoming") {
         conds.push(gte(shows.date, new Date().toISOString().substring(0, 10)));
       }
-      const whereClause = conds.length ? and(...conds) : sql`TRUE`;
 
-      const showsData = await db
+      // Build initial query object; we'll apply filters, ordering, and pagination before execution
+      let query = db
         .select({
           id: shows.id,
           name: shows.name,
@@ -147,6 +147,13 @@ export const fetchShows = cache(
 
       // Apply filters
       const conditions: any[] = [];
+
+      // We'll use a separate countQuery reference for counting later
+      let countQuery = db
+        .select({ count: sql<number>`count(*)` })
+        .from(shows)
+        .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
+        .leftJoin(venues, eq(shows.venueId, venues.id));
 
       if (status) {
         conditions.push(eq(shows.status, status));
@@ -207,18 +214,11 @@ export const fetchShows = cache(
       const showsData = await query;
 
       // Get total count for pagination
-      const countResult = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(shows)
-        .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
-        .leftJoin(venues, eq(shows.venueId, venues.id));
-
       if (conditions.length > 0) {
         countQuery = countQuery.where(and(...conditions)) as any;
       }
 
-      const countResult = await countQuery;
-      const totalCount = countResult[0]?.count || 0;
+      const totalCount = countQuery[0]?.count || 0;
 
       // Get supporting artists for each show (separate query for performance)
       const showIds = showsData.map((show) => show.id);
