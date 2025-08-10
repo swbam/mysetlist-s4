@@ -4,7 +4,7 @@ import {
   apiRateLimitMiddleware,
   ingestRateLimiter,
 } from "~/lib/api-rate-limit";
-import { ingestArtistPipeline } from "~/lib/ingest/artistPipeline";
+import { ingestArtistPipelineEnhanced } from "~/lib/ingest/artistPipelineEnhanced";
 
 const ParamsSchema = z.object({
   tmId: z.string().min(1),
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     // Queue the ingestion job asynchronously
     // This returns immediately while the job runs in the background
-    ingestArtistPipeline(tmId).catch((error) => {
+    ingestArtistPipelineEnhanced(tmId).catch((error) => {
       console.error(`Failed to ingest artist ${tmId}:`, error);
       // Log to monitoring service if available
     });

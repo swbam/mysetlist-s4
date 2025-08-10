@@ -114,6 +114,7 @@ export function EnhancedSearch({
           params.set("dateFrom", searchFilters.dateFrom);
         if (searchFilters.dateTo) params.set("dateTo", searchFilters.dateTo);
 
+        // Use the general search endpoint (now using Ticketmaster API consistently)
         const response = await fetch(`/api/search?${params}`);
         const data = await response.json();
 

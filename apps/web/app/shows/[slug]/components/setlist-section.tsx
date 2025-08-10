@@ -114,6 +114,7 @@ export function SetlistSection({
                 show={show}
                 currentUser={currentUser}
                 type="actual"
+                comparisonSetlists={predictedSetlists}
               />
             ))}
           </TabsContent>
@@ -126,6 +127,7 @@ export function SetlistSection({
                 show={show}
                 currentUser={currentUser}
                 type="predicted"
+                comparisonSetlists={actualSetlists}
               />
             ))}
           </TabsContent>

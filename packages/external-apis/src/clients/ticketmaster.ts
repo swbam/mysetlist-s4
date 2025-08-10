@@ -148,25 +148,6 @@ export class TicketmasterClient extends BaseAPIClient {
     return data;
   }
 
-  async searchAttractions(options: {
-    keyword?: string;
-    classificationName?: string;
-    size?: number;
-    sort?: string;
-    page?: number;
-  }): Promise<any> {
-    const params = new URLSearchParams();
-    Object.entries(options).forEach(([key, value]) => {
-      if (value !== undefined && value !== null)
-        params.append(key, String(value));
-    });
-    return this.makeRequest(
-      `/attractions.json?${params}`,
-      {},
-      `ticketmaster:attractions:${params.toString()}`,
-      900,
-    );
-  }
 
   async searchEvents(options: {
     keyword?: string;

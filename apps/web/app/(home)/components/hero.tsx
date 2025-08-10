@@ -1,11 +1,96 @@
 "use client";
 import { Button } from "@repo/design-system/components/ui/button";
-import { ChevronRight, Music, TrendingUp } from "lucide-react";
+import { Input } from "@repo/design-system/components/ui/input";
+import { ChevronRight, Music, TrendingUp, Search, Loader2 } from "lucide-react";
 import Link from "next/link";
-import React, { memo } from "react";
-import { SearchBar } from "~/components/search-bar";
+import React, { memo, useState, useCallback, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useDebounce } from "~/hooks/use-debounce";
+
+interface ArtistResult {
+  id: string;
+  name: string;
+  imageUrl?: string;
+  genres?: string[];
+  source: "ticketmaster";
+  externalId: string;
+}
 
 function HomeHero() {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<ArtistResult[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const debouncedQuery = useDebounce(query, 300);
+
+  const searchArtists = useCallback(async (searchQuery: string) => {
+    if (searchQuery.length < 2) {
+      setResults([]);
+      setShowDropdown(false);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&limit=6`);
+      if (response.ok) {
+        const data = await response.json();
+        setResults(data.results || []);
+        setShowDropdown(data.results?.length > 0);
+      } else {
+        setResults([]);
+        setShowDropdown(false);
+      }
+    } catch (error) {
+      console.error("Search error:", error);
+      setResults([]);
+      setShowDropdown(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (debouncedQuery) {
+      searchArtists(debouncedQuery);
+    } else {
+      setResults([]);
+      setShowDropdown(false);
+    }
+  }, [debouncedQuery, searchArtists]);
+
+  const handleArtistSelect = async (artist: ArtistResult) => {
+    setQuery("");
+    setResults([]);
+    setShowDropdown(false);
+    
+    // For Ticketmaster artists, navigate to artist page using the name as slug
+    const slug = artist.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    router.push(`/artists/${slug}?ticketmaster=${artist.id}`);
+  };
+
+  const handleClickOutside = useCallback((event: MouseEvent) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target as Node) &&
+      inputRef.current &&
+      !inputRef.current.contains(event.target as Node)
+    ) {
+      setShowDropdown(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [handleClickOutside]);
+
   return (
     <section
       className="relative overflow-hidden pt-32 pb-40 bg-background"
@@ -54,11 +139,58 @@ function HomeHero() {
           <div className="mt-12 space-y-4 px-4 sm:px-0 animate-slide-up-delay-1">
             {/* Search container with glow effect */}
             <div className="relative mx-auto w-full max-w-2xl">
-              <SearchBar
-                variant="artists-only"
-                placeholder="Search artists via Ticketmaster..."
-                className="w-full"
-              />
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                <Input
+                  ref={inputRef}
+                  type="text"
+                  placeholder="Search artists via Ticketmaster..."
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onFocus={() => setShowDropdown(results.length > 0)}
+                  className="h-12 border-2 border-primary/20 bg-background/95 pr-12 pl-12 text-base backdrop-blur transition-colors hover:border-primary/30 focus:border-primary/50 supports-[backdrop-filter]:bg-background/80 md:h-14 md:text-lg"
+                />
+                {isLoading && (
+                  <Loader2 className="absolute right-4 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin" />
+                )}
+              </div>
+
+              {/* Search results dropdown */}
+              {showDropdown && results.length > 0 && (
+                <div
+                  ref={dropdownRef}
+                  className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto"
+                >
+                  {results.map((artist) => (
+                    <button
+                      key={artist.id}
+                      onClick={() => handleArtistSelect(artist)}
+                      className="w-full px-4 py-3 text-left hover:bg-muted transition-colors flex items-center gap-3 border-b border-border last:border-b-0"
+                    >
+                      {artist.imageUrl && (
+                        <img
+                          src={artist.imageUrl}
+                          alt={artist.name}
+                          className="w-12 h-12 rounded-full object-cover"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-foreground truncate">
+                          {artist.name}
+                        </div>
+                        {artist.genres && artist.genres.length > 0 && (
+                          <div className="text-sm text-muted-foreground truncate">
+                            {artist.genres.slice(0, 2).join(", ")}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                        Ticketmaster
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Quick search suggestions */}

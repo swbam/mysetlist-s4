@@ -3,43 +3,38 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
+    "//": "=== DEVELOPMENT ===",
+    "dev": "turbo dev",
+    "build": "turbo build",
     "start": "cd apps/web && pnpm start",
+    
+    "//": "=== CODE QUALITY ===",
     "lint": "biome check --diagnostic-level=error",
     "lint:fix": "biome check --write",
-    "test": "turbo run test",
-    "typecheck": "turbo run typecheck",
-    "clean": "git clean -xdf node_modules .turbo .next",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    
+    "//": "=== DATABASE ===",
     "db:push": "cd packages/database && pnpm push",
     "db:generate": "cd packages/database && pnpm generate",
     "db:migrate": "cd packages/database && pnpm migrate",
     "db:studio": "cd packages/database && pnpm studio",
-    "seed": "tsx scripts/seed-database.ts",
-    "seed:comprehensive": "tsx scripts/seed-comprehensive-data.ts",
+    "db:seed": "tsx scripts/seed-top-artists-direct.ts",
+    
+    "//": "=== DATA SYNC ===",
     "sync:artists": "tsx scripts/sync-trending-artists.ts",
     "sync:popular": "tsx scripts/sync-popular-artists.ts",
-    "init:trending": "tsx scripts/initialize-trending-data.ts",
-    "trigger:trending": "curl -X POST http://localhost:3001/api/admin/trigger-trending",
-    "check:trending": "tsx scripts/check-trending-setup.ts",
-    "check:env": "tsx scripts/check-env.ts",
-    "check:env:apis": "tsx scripts/check-env-apis.ts",
-    "check:db:sync": "tsx scripts/check-db-sync.ts",
-    "check:sync:status": "tsx scripts/check-sync-status.ts",
-    "trigger:sync": "tsx scripts/trigger-sync.ts",
-    "trigger:sync:discovery": "tsx scripts/trigger-sync.ts autonomous-discovery --mode discovery",
-    "trigger:sync:master": "tsx scripts/trigger-sync.ts master-sync --mode daily",
-    "trigger:sync:trending": "tsx scripts/trigger-sync.ts trending --mode daily",
-    "deploy": "tsx scripts/deploy.ts",
+    "sync:trending": "tsx scripts/initialize-trending-data.ts",
+    
+    "//": "=== DEPLOYMENT ===",
+    "deploy": "tsx scripts/deploy-all.ts",
     "deploy:preview": "vercel",
-    "deploy:quick": "vercel --prod",
-    "deploy:security": "./scripts/deploy-security-migration.sh",
-    "test:security": "tsx scripts/test-security-fixes.ts",
-    "test:cache": "node test-cache-behavior.js",
-    "test:cache:dev": "TEST_BASE_URL=http://localhost:3001 node test-cache-behavior.js",
-    "analyze": "cd apps/web && ANALYZE=true pnpm build",
-    "benchmark:turbopack": "node scripts/benchmark-turbopack.js",
-    "benchmark:turbopack:full": "node scripts/benchmark-turbopack.js --benchmark"
+    "deploy:prod": "vercel --prod",
+    
+    "//": "=== UTILITIES ===",
+    "clean": "git clean -xdf node_modules .turbo .next",
+    "check:env": "tsx scripts/check-env.ts",
+    "analyze": "cd apps/web && ANALYZE=true pnpm build"
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
@@ -55,11 +50,12 @@
     "vercel": "^44.5.0"
   },
   "engines": {
-    "node": "20.x"
+    "node": ">=18"
   },
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
     "@paralleldrive/cuid2": "^2.2.2",
+    "@react-email/components": "^0.5.0",
     "postgres": "^3.4.7"
   }
 }

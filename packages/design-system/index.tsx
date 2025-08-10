@@ -99,6 +99,11 @@ export {
   AccordionItem,
   AccordionTrigger,
 } from "./components/ui/accordion";
+export {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "./components/ui/collapsible";
 
 // Music design tokens
 export { musicTokens, type MusicTokens } from "./lib/design-tokens";

@@ -5,8 +5,10 @@ import {
   artists,
   db,
   setlists,
+  setlistSongs,
   showArtists,
   shows,
+  songs,
   venues,
 } from "@repo/database";
 import { spotify } from "@repo/external-apis";
@@ -338,9 +340,10 @@ export async function getArtistTopTracks(spotifyId: string) {
   }
 }
 
-// New action for complete artist-to-setlist flow
+// Enhanced action for complete artist-to-setlist flow with songs
 const _getArtistSetlists = async (artistId: string, limit = 10) => {
   try {
+    // Get setlists with show and venue information
     const artistSetlists = await db
       .select({
         setlist: setlists,
@@ -362,18 +365,45 @@ const _getArtistSetlists = async (artistId: string, limit = 10) => {
       .leftJoin(shows, eq(setlists.showId, shows.id))
       .leftJoin(venues, eq(shows.venueId, venues.id))
       .where(eq(setlists.artistId, artistId))
-      .orderBy(desc(setlists.createdAt))
+      .orderBy(desc(shows.date), desc(setlists.createdAt))
       .limit(limit);
 
-    return artistSetlists
-      .filter(({ setlist }) => setlist && setlist.id)
-      .map(({ setlist, show, venue, songCount, voteCount }) => ({
-        setlist,
-        show: show || undefined,
-        venue: venue || undefined,
-        songCount: songCount || 0,
-        voteCount: voteCount || 0,
-      }));
+    // For each setlist, get the songs
+    const setlistsWithSongs = await Promise.all(
+      artistSetlists.map(async ({ setlist, show, venue, songCount, voteCount }) => {
+        // Get songs for this setlist
+        const setlistSongsData = await db
+          .select({
+            song: songs,
+            setlistSong: setlistSongs,
+          })
+          .from(setlistSongs)
+          .leftJoin(songs, eq(setlistSongs.songId, songs.id))
+          .where(eq(setlistSongs.setlistId, setlist.id))
+          .orderBy(setlistSongs.position);
+
+        return {
+          setlist,
+          show: show || undefined,
+          venue: venue || undefined,
+          songCount: songCount || 0,
+          voteCount: voteCount || 0,
+          songs: setlistSongsData
+            .filter(({ song }) => song)
+            .map(({ song, setlistSong }) => ({
+              id: song!.id,
+              title: song!.title,
+              artist: song!.artist,
+              position: setlistSong.position,
+              upvotes: setlistSong.upvotes || 0,
+              notes: setlistSong.notes,
+              isPlayed: setlistSong.isPlayed,
+            })),
+        };
+      })
+    );
+
+    return setlistsWithSongs.filter(({ setlist }) => setlist && setlist.id);
   } catch (error) {
     console.error(`Error fetching setlists for artist ${artistId}:`, error);
     return [];

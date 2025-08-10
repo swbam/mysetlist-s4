@@ -233,14 +233,17 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
             <ArtistStats artistId={artist.id} />
           </div>
 
-          {/* Content Tabs (only Upcoming and Past as requested) */}
+          {/* Content Tabs with Setlists added */}
           <Tabs defaultValue="shows" className="mt-8 w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="shows" aria-label="View upcoming shows">
                 Upcoming Shows
               </TabsTrigger>
               <TabsTrigger value="past" aria-label="View past shows">
                 Past Shows
+              </TabsTrigger>
+              <TabsTrigger value="setlists" aria-label="View setlists">
+                Setlists
               </TabsTrigger>
             </TabsList>
 
@@ -273,7 +276,19 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
               </React.Suspense>
             </TabsContent>
 
-            {/* Removed Setlists, Music, About tabs per requirement */}
+            <TabsContent value="setlists" className="space-y-4">
+              <React.Suspense
+                fallback={
+                  <div className="h-64 animate-pulse rounded-lg bg-muted" />
+                }
+              >
+                {React.createElement(ArtistSetlistsView as any, {
+                  setlists: artistSetlists,
+                  artistName: artist.name,
+                  artistId: artist.id,
+                })}
+              </React.Suspense>
+            </TabsContent>
           </Tabs>
         </div>
       </ArtistPageWrapper>

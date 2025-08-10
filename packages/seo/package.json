@@ -5,6 +5,7 @@
   "main": "./index.ts",
   "types": "./index.ts",
   "dependencies": {
+    "2": "^3.0.0",
     "lodash.merge": "^4.6.2",
     "next": "15.3.4"
   },

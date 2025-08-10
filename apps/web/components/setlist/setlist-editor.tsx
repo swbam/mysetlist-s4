@@ -52,7 +52,7 @@ interface SetlistSong {
   upvotes: number;
   downvotes: number;
   netVotes: number;
-  userVote?: "up" | "down" | null;
+  userVote?: "up" | null;
 }
 
 interface SetlistEditorProps {
@@ -272,7 +272,7 @@ export function SetlistEditor({
     });
   };
 
-  const handleVote = async (songId: string, voteType: "up" | "down" | null) => {
+  const handleVote = async (songId: string, voteType: "up" | null) => {
     // Optimistically update UI
     const previousSongs = [...songs];
     setSongs(
@@ -280,8 +280,7 @@ export function SetlistEditor({
         if (song.id === songId) {
           const currentVote = song.userVote;
           const upDelta = voteType === "up" ? 1 : currentVote === "up" ? -1 : 0;
-          const downDelta =
-            voteType === "down" ? 1 : currentVote === "down" ? -1 : 0;
+          const downDelta = 0; // No down votes supported
 
           return {
             ...song,

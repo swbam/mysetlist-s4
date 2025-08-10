@@ -16,21 +16,21 @@ export type ShowWithDetails = {
   ticketUrl: string | null;
   minPrice: number | null;
   maxPrice: number | null;
-  currency: string;
-  viewCount: number;
-  attendeeCount: number;
-  setlistCount: number;
-  voteCount: number;
-  trendingScore: number;
-  isFeatured: boolean;
-  isVerified: boolean;
+  currency: string | null;
+  viewCount: number | null;
+  attendeeCount: number | null;
+  setlistCount: number | null;
+  voteCount: number | null;
+  trendingScore: number | null;
+  isFeatured: boolean | null;
+  isVerified: boolean | null;
   headlinerArtist: {
     id: string;
     name: string;
     slug: string;
     imageUrl: string | null;
     genres: string[] | null;
-    verified: boolean;
+    verified: boolean | null;
   };
   venue: {
     id: string;
@@ -143,25 +143,81 @@ export const fetchShows = cache(
         })
         .from(shows)
         .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
-        .leftJoin(venues, eq(shows.venueId, venues.id))
-        .where(whereClause)
-        .orderBy(
-          orderBy === "trending"
-            ? desc(shows.trendingScore)
-            : orderBy === "popularity"
-            ? desc(shows.viewCount)
-            : asc(shows.date),
-        )
-        .limit(limit)
-        .offset(offset);
+        .leftJoin(venues, eq(shows.venueId, venues.id));
+
+      // Apply filters
+      const conditions: any[] = [];
+
+      if (status) {
+        conditions.push(eq(shows.status, status));
+      }
+
+      if (artistId) {
+        conditions.push(eq(shows.headlinerArtistId, artistId));
+      }
+
+      if (venueId) {
+        conditions.push(eq(shows.venueId, venueId));
+      }
+
+      if (dateFrom) {
+        conditions.push(gte(shows.date, dateFrom));
+      }
+
+      if (dateTo) {
+        conditions.push(lte(shows.date, dateTo));
+      }
+
+      if (featured) {
+        conditions.push(eq(shows.isFeatured, true));
+      }
+
+      if (city) {
+        conditions.push(ilike(venues.city, `%${city}%`));
+      }
+
+      // Default to upcoming shows if no specific status filter
+      if (!dateFrom && status === "upcoming") {
+        conditions.push(
+          gte(shows.date, new Date().toISOString().substring(0, 10)),
+        );
+      }
+
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions)) as any;
+      }
+
+      // Apply ordering
+      switch (orderBy) {
+        case "trending":
+          query = query.orderBy(desc(shows.trendingScore)) as any;
+          break;
+        case "popularity":
+          query = query.orderBy(desc(shows.viewCount)) as any;
+          break;
+        default:
+          query = query.orderBy(asc(shows.date)) as any;
+          break;
+      }
+
+      // Apply pagination
+      query = query.limit(limit).offset(offset) as any;
+
+      // Execute query
+      const showsData = await query;
 
       // Get total count for pagination
       const countResult = await db
         .select({ count: sql<number>`count(*)` })
         .from(shows)
         .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
-        .leftJoin(venues, eq(shows.venueId, venues.id))
-        .where(whereClause);
+        .leftJoin(venues, eq(shows.venueId, venues.id));
+
+      if (conditions.length > 0) {
+        countQuery = countQuery.where(and(...conditions)) as any;
+      }
+
+      const countResult = await countQuery;
       const totalCount = countResult[0]?.count || 0;
 
       // Get supporting artists for each show (separate query for performance)

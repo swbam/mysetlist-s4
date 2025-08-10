@@ -8,6 +8,7 @@
     ".": "./src/index.ts"
   },
   "dependencies": {
+    "2": "^3.0.0",
     "@repo/database": "workspace:*",
     "@supabase/supabase-js": "^2.50.3"
   }

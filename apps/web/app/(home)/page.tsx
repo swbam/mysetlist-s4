@@ -2,19 +2,24 @@ import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import Hero from "./components/hero";
 import { HomeLoadingSkeleton } from "./components/home-loading-skeleton";
+
+// Import async components correctly
 import { Trending as TrendingShows } from "./components/trending";
 import { TrendingArtists } from "./components/trending-artists";
 
 // Dynamic import for FeaturedContent to reduce initial bundle size
-const FeaturedContent = dynamic(() => import("./components/featured-content"), {
-  loading: () => (
-    <section className="py-12">
-      <div className="container mx-auto px-4">
-        <div className="h-96 animate-pulse rounded-lg bg-muted" />
-      </div>
-    </section>
-  ),
-});
+const FeaturedContent = dynamic(
+  () => import("./components/featured-content"),
+  {
+    loading: () => (
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          <div className="h-96 animate-pulse rounded-lg bg-muted" />
+        </div>
+      </section>
+    ),
+  }
+);
 
 export const metadata = {
   title: "MySetlist - Concert Setlist Voting Platform",
@@ -41,7 +46,11 @@ export default function HomePage() {
               Discover the hottest artists that fans are talking about
             </p>
           </div>
-          <Suspense fallback={<HomeLoadingSkeleton />}>
+          <Suspense
+            fallback={
+              <div className="h-64 animate-pulse rounded-lg bg-muted" />
+            }
+          >
             <TrendingArtists />
           </Suspense>
         </div>
@@ -58,7 +67,11 @@ export default function HomePage() {
               Join the conversation about the most popular shows
             </p>
           </div>
-          <Suspense fallback={<HomeLoadingSkeleton />}>
+          <Suspense
+            fallback={
+              <div className="h-64 animate-pulse rounded-lg bg-muted" />
+            }
+          >
             <TrendingShows />
           </Suspense>
         </div>
@@ -67,7 +80,11 @@ export default function HomePage() {
       {/* Featured Content */}
       <section className="py-12 bg-muted/50">
         <div className="container mx-auto px-4">
-          <Suspense fallback={<HomeLoadingSkeleton />}>
+          <Suspense
+            fallback={
+              <div className="h-96 animate-pulse rounded-lg bg-muted" />
+            }
+          >
             <FeaturedContent />
           </Suspense>
         </div>

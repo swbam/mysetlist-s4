@@ -104,13 +104,25 @@ export function SearchAutocomplete({
 
       setLoading(true);
       try {
+        // Use Ticketmaster API for artist search consistency
         const response = await fetch(
-          `/api/search/suggestions?query=${encodeURIComponent(debouncedValue)}&limit=8`,
+          `/api/artists/search?q=${encodeURIComponent(debouncedValue)}&limit=8`,
         );
 
         if (response.ok) {
           const data = await response.json();
-          setSuggestions(data.suggestions || []);
+          // Transform artist data to match SearchSuggestion interface
+          const artistSuggestions = (data.artists || []).map((artist: any) => ({
+            id: artist.id,
+            type: "artist" as const,
+            title: artist.name,
+            subtitle: artist.genres?.join(", ") || "",
+            imageUrl: artist.imageUrl,
+            metadata: {
+              popularity: 100, // Default popularity since Ticketmaster doesn't provide this
+            },
+          }));
+          setSuggestions(artistSuggestions);
         }
       } catch (_error) {
         setSuggestions([]);

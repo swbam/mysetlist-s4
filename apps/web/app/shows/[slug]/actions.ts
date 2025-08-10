@@ -6,7 +6,9 @@ import { createClient } from "~/lib/supabase/server";
 
 export async function getShowDetails(slug: string) {
   const supabase = await createClient();
+  const user = await getCurrentUser();
 
+  // First, get the basic show data
   let { data: show, error } = await supabase
     .from("shows")
     .select(
@@ -17,13 +19,6 @@ export async function getShowDetails(slug: string) {
       show_artists(
         *,
         artist:artists(*)
-      ),
-      setlists(
-        *,
-        setlist_songs(
-          *,
-          song:songs(*)
-        )
       )
     `,
     )
@@ -44,10 +39,58 @@ export async function getShowDetails(slug: string) {
     show = fallback.data;
   }
 
-  const user = await getCurrentUser();
+  if (!show) return null;
+
+  // Get setlists with detailed song information and vote counts
+  const { data: setlists } = await supabase
+    .from("setlists")
+    .select(
+      `
+      *,
+      setlist_songs(
+        *,
+        song:songs(*),
+        votes(
+          id,
+          user_id
+        )
+      )
+    `,
+    )
+    .eq("show_id", show.id)
+    .order("order_index", { ascending: true });
+
+  // Process setlists to calculate vote counts and separate by type
+  const processedSetlists = (setlists || []).map((setlist) => {
+    const processedSongs = (setlist.setlist_songs || []).map((setlistSong) => {
+      const votes = setlistSong.votes || [];
+      const upvotes = votes.length; // All votes are upvotes in simplified system
+      const userVote = user && votes.some((v) => v.user_id === user.id) ? "up" : null;
+
+      return {
+        ...setlistSong,
+        upvotes,
+        downvotes: 0, // No downvotes in simplified system
+        netVotes: upvotes,
+        userVote,
+      };
+    });
+
+    return {
+      ...setlist,
+      setlist_songs: processedSongs,
+    };
+  });
+
+  // Separate actual and predicted setlists
+  const actualSetlists = processedSetlists.filter((s) => s.type === "actual");
+  const predictedSetlists = processedSetlists.filter((s) => s.type === "predicted");
 
   return {
     ...show,
+    setlists: processedSetlists,
+    actualSetlists,
+    predictedSetlists,
     currentUser: user,
   };
 }
@@ -408,4 +451,85 @@ export async function lockSetlist(setlistId: string) {
   revalidatePath("/shows/[slug]", "page");
 
   return { success: true };
+}
+
+export async function importActualSetlistFromSetlistFm(showId: string) {
+  const user = await getCurrentUser();
+  
+  if (!user) {
+    throw new Error("You must be logged in to import setlists");
+  }
+
+  const supabase = await createClient();
+  
+  // Get show details
+  const { data: show } = await supabase
+    .from("shows")
+    .select(`
+      *,
+      headliner_artist:artists(*),
+      venue:venues(*)
+    `)
+    .eq("id", showId)
+    .single();
+
+  if (!show) {
+    throw new Error("Show not found");
+  }
+
+  const showDate = new Date(show.date);
+  const now = new Date();
+  
+  // Only allow importing for past shows
+  if (showDate >= now) {
+    throw new Error("Can only import setlists for past shows");
+  }
+
+  // Check if actual setlist already exists
+  const { data: existingActualSetlist } = await supabase
+    .from("setlists")
+    .select("id")
+    .eq("show_id", showId)
+    .eq("type", "actual")
+    .single();
+
+  if (existingActualSetlist) {
+    throw new Error("Actual setlist already exists for this show");
+  }
+
+  // Try to import from SetlistFM using the setlist sync service
+  try {
+    const { SetlistSyncService } = await import("@repo/external-apis/src/services/setlist-sync");
+    const syncService = new SetlistSyncService();
+    
+    await syncService.syncSetlistByShowId(showId);
+    
+    // Check if setlist was successfully imported
+    const { data: importedSetlist } = await supabase
+      .from("setlists")
+      .select("*")
+      .eq("show_id", showId)
+      .eq("type", "actual")
+      .single();
+
+    if (importedSetlist) {
+      revalidatePath("/shows/[slug]", "page");
+      return {
+        success: true,
+        message: "Actual setlist imported successfully from Setlist.fm",
+        setlist: importedSetlist
+      };
+    } else {
+      return {
+        success: false,
+        message: "No matching setlist found on Setlist.fm for this show"
+      };
+    }
+  } catch (error) {
+    console.error("Failed to import setlist:", error);
+    return {
+      success: false,
+      message: "Failed to import setlist from Setlist.fm"
+    };
+  }
 }

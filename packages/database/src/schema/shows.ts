@@ -11,7 +11,6 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { artists } from "./artists";
-import { users } from "./users";
 import { venues } from "./venues";
 
 export const showStatusEnum = pgEnum("show_status", [

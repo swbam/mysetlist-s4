@@ -415,7 +415,8 @@ export function SongDropdown({
                         isAuthenticated={!!session}
                         onVote={async (voteType) => {
                           if (voteType === "up") {
-                            await handleVote(setlistSong.id, "up");
+                            await handleVote(setlistSong.id, voteType);
+
                           }
                         }}
                         variant="compact"

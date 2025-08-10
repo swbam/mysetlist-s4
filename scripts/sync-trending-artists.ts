@@ -128,6 +128,7 @@ async function syncArtist(artist: TrendingArtist): Promise<boolean> {
       },
       body: JSON.stringify({
         spotifyId: artist.spotifyId,
+        ticketmasterId: artist.ticketmasterId,
         artistName: artist.name,
       }),
     });

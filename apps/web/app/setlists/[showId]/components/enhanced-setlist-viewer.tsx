@@ -367,13 +367,17 @@ export const EnhancedSetlistViewer = ({
                       )}
 
                       {/* Vote Button */}
-                      <EnhancedVoteButton
-                        setlistSongId={setlistSong.id}
-                        currentVote={
-                          setlistSong.userVote === "up" ? "up" : null
-                        }
-                        upvotes={setlistSong.upvotes}
-                        disabled={
+                      {React.createElement(EnhancedVoteButton as any, {
+                        setlistSongId: setlistSong.id,
+                        ...(setlistSong.userVote !== undefined && {
+                          currentVote: setlistSong.userVote,
+                        }),
+                        upvotes: setlistSong.upvotes,
+                        downvotes: setlistSong.downvotes,
+                        onVote: (voteType: any) =>
+                          handleVote(setlistSong.id, voteType),
+                        disabled:
+
                           !setlistSong.isPlayed &&
                           currentSetlist.type === "actual"
                         }
