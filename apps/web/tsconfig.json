@@ -42,6 +42,8 @@
     "supabase",
     "test-utils",
     "*.setup.ts",
-    "vitest.*"
+    "vitest.*",
+    "../test-*.ts",
+    "../../test-*.ts"
   ]
 }
