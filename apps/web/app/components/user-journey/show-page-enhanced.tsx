@@ -515,7 +515,6 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
                               setlistSongId={setlistSong.id}
                               initialVotes={{
                                 upvotes: setlistSong.upvotes,
-                                downvotes: setlistSong.downvotes,
                                 netVotes: setlistSong.netVotes,
                                 userVote:
                                   setlistSong.userVote === "up" ? "up" : null,
