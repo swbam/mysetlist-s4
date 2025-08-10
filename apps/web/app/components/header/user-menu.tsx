@@ -34,10 +34,13 @@ export const UserMenu = React.memo(function UserMenu() {
     const parts = username.split(".");
 
     if (parts.length >= 2) {
-      return (parts[0]?.[0] + parts[1]?.[0]).toUpperCase();
+      const first = (parts[0]?.[0] ?? "").toUpperCase();
+      const second = (parts[1]?.[0] ?? "").toUpperCase();
+      const combined = `${first}${second}`;
+      if (combined) return combined;
     }
 
-    return (username[0] || "U").toUpperCase();
+    return (username[0] ?? "U").toUpperCase();
   }, [user?.email]);
 
   const handleSignOut = async () => {

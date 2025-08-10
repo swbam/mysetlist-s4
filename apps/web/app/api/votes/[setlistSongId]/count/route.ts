@@ -15,50 +15,27 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     const { setlistSongId } = await params;
     const user = await getUser();
 
-    // Get vote counts
-    const upvoteCount = await db
+    const countResult = await db
       .select({ count: count() })
       .from(votes)
-      .where(
-        and(eq(votes.setlistSongId, setlistSongId), eq(votes.voteType, "up")),
-      );
+      .where(eq(votes.setlistSongId, setlistSongId));
 
-    const downvoteCount = await db
-      .select({ count: count() })
-      .from(votes)
-      .where(
-        and(eq(votes.setlistSongId, setlistSongId), eq(votes.voteType, "down")),
-      );
+    const upvotes = countResult[0]?.count || 0;
 
-    const upvotes = upvoteCount[0]?.count || 0;
-    const downvotes = downvoteCount[0]?.count || 0;
-    const netVotes = upvotes - downvotes;
-
-    // Get user's vote if authenticated
-    let userVote: "up" | "down" | null = null;
+    let userVoted = false;
     if (user) {
       const userVoteRecord = await db
-        .select({ voteType: votes.voteType })
+        .select({ id: votes.id })
         .from(votes)
-        .where(
-          and(
-            eq(votes.setlistSongId, setlistSongId),
-            eq(votes.userId, user.id),
-          ),
-        )
+        .where(and(eq(votes.setlistSongId, setlistSongId), eq(votes.userId, user.id)))
         .limit(1);
-
-      if (userVoteRecord.length > 0) {
-        userVote = userVoteRecord[0]?.voteType || null;
-      }
+      userVoted = userVoteRecord.length > 0;
     }
 
     return NextResponse.json({
       setlistSongId,
       upvotes,
-      downvotes,
-      netVotes,
-      userVote,
+      userVoted,
     });
   } catch (_error) {
     return NextResponse.json(

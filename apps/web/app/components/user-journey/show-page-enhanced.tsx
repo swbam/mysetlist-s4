@@ -517,7 +517,8 @@ export function ShowPageEnhanced({ show, userId }: ShowPageEnhancedProps) {
                                 upvotes: setlistSong.upvotes,
                                 downvotes: setlistSong.downvotes,
                                 netVotes: setlistSong.netVotes,
-                                userVote: setlistSong.userVote || null,
+                                userVote:
+                                  setlistSong.userVote === "up" ? "up" : null,
                               }}
                               userId={userId}
                             />
