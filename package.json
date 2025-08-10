@@ -4,22 +4,22 @@
   "private": true,
   "scripts": {
     "//": "=== DEVELOPMENT ===",
-    "dev": "turbo run dev",
-    "build": "turbo run build",
+    "dev": "turbo dev",
+    "build": "turbo build",
     "start": "cd apps/web && pnpm start",
     
     "//": "=== CODE QUALITY ===",
     "lint": "biome check --diagnostic-level=error",
     "lint:fix": "biome check --write",
-    "typecheck": "turbo run typecheck",
-    "test": "turbo run test",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
     
     "//": "=== DATABASE ===",
     "db:push": "cd packages/database && pnpm push",
     "db:generate": "cd packages/database && pnpm generate",
     "db:migrate": "cd packages/database && pnpm migrate",
     "db:studio": "cd packages/database && pnpm studio",
-    "db:seed": "tsx scripts/seed-comprehensive-data.ts",
+    "db:seed": "tsx scripts/seed-top-artists-direct.ts",
     
     "//": "=== DATA SYNC ===",
     "sync:artists": "tsx scripts/sync-trending-artists.ts",
@@ -50,7 +50,7 @@
     "vercel": "^44.5.0"
   },
   "engines": {
-    "node": "20.x"
+    "node": ">=18"
   },
   "packageManager": "pnpm@10.13.1",
   "dependencies": {

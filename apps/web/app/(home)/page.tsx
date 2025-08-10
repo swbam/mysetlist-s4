@@ -18,7 +18,6 @@ const FeaturedContent = dynamic(
         </div>
       </section>
     ),
-    ssr: false, // Add this to prevent SSR issues
   }
 );
 
