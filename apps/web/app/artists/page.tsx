@@ -60,7 +60,9 @@ export default function ArtistsPage() {
                       variant="artists"
                       loading
                       loadingCount={12}
-                    ></ResponsiveGrid>
+                    >
+                      <></>
+                    </ResponsiveGrid>
                   ),
                 },
                 <PopularArtists />,

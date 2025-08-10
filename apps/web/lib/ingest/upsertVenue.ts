@@ -18,7 +18,8 @@ export async function upsertVenue(tmVenue: any) {
     .where(and(eq(venues.name, venueName), eq(venues.city, venueCity)))
     .limit(1);
 
-  if (existingVenue.length > 0) {
+  if (existingVenue.length > 0 && existingVenue[0]) {
+    const venueId = existingVenue[0].id;
     // Update existing venue with new data
     await db
       .update(venues)
@@ -42,7 +43,7 @@ export async function upsertVenue(tmVenue: any) {
         ...(tmVenue.images?.[0]?.url && { imageUrl: tmVenue.images[0].url }),
         updatedAt: new Date(),
       })
-      .where(eq(venues.id, existingVenue[0]?.id));
+      .where(eq(venues.id, venueId));
 
     return existingVenue[0];
   }

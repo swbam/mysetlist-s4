@@ -72,7 +72,9 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
                     variant="venues"
                     loading={true}
                     loadingCount={9}
-                  ></ResponsiveGrid>
+                  >
+                    <></>
+                  </ResponsiveGrid>
                 </div>
               }
             >
@@ -85,7 +87,9 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
                   variant="venues"
                   loading={true}
                   loadingCount={6}
-                ></ResponsiveGrid>
+                >
+                  <></>
+                </ResponsiveGrid>
               }
             >
               <VenuesContent searchParams={resolvedSearchParams} />

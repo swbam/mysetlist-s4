@@ -1,14 +1,13 @@
-import { env } from "@repo/env";
-
-// Redis/Upstash cache implementation
+// Redis/Upstash cache implementation (optional - not used in this project)
 export class CacheClient {
   private static instance: CacheClient;
   private baseUrl: string;
   private token: string;
 
   private constructor() {
-    this.baseUrl = env.UPSTASH_REDIS_REST_URL || "";
-    this.token = env.UPSTASH_REDIS_REST_TOKEN || "";
+    // Since we don't use Redis/Upstash, these will be empty
+    this.baseUrl = "";
+    this.token = "";
   }
 
   static getInstance(): CacheClient {

@@ -1,5 +1,4 @@
-import { env } from "@repo/env";
-import { Redis } from "@upstash/redis";
+// Progress tracker implementation (Redis/Upstash not used in this project)
 
 export interface SyncProgress {
   artistId: string;
@@ -33,19 +32,14 @@ export interface SyncProgress {
 }
 
 export class SyncProgressTracker {
-  private redis: Redis | null;
+  private redis: any = null; // Redis not used in this project
   private keyPrefix = "sync:progress:";
   private ttl = 3600; // 1 hour TTL
+  private inMemoryStore: Map<string, SyncProgress> = new Map();
 
   constructor() {
-    if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
-      this.redis = new Redis({
-        url: env.UPSTASH_REDIS_REST_URL,
-        token: env.UPSTASH_REDIS_REST_TOKEN,
-      });
-    } else {
-      this.redis = null;
-    }
+    // We don't use Redis/Upstash, so we'll use in-memory storage
+    this.redis = null;
   }
 
   async startSync(artistId: string, artistName: string): Promise<void> {
@@ -63,13 +57,8 @@ export class SyncProgressTracker {
       },
     };
 
-    if (this.redis) {
-      await this.redis.setex(
-        `${this.keyPrefix}${artistId}`,
-        this.ttl,
-        JSON.stringify(progress),
-      );
-    }
+    // Store in memory instead of Redis
+    this.inMemoryStore.set(`${this.keyPrefix}${artistId}`, progress);
   }
 
   async updateStepStatus(
@@ -78,15 +67,10 @@ export class SyncProgressTracker {
     status: "pending" | "syncing" | "completed" | "failed",
     count?: number,
   ): Promise<void> {
-    if (!this.redis) {
-      return;
-    }
-
     const key = `${this.keyPrefix}${artistId}`;
-    const data = await this.redis.get(key);
+    const progress = this.inMemoryStore.get(key);
 
-    if (data) {
-      const progress = JSON.parse(data as string) as SyncProgress;
+    if (progress) {
       progress.steps[step].status = status;
       if (count !== undefined) {
         progress.steps[step].count = count;
@@ -103,41 +87,28 @@ export class SyncProgressTracker {
         progress.status = "syncing";
       }
 
-      await this.redis.setex(key, this.ttl, JSON.stringify(progress));
+      this.inMemoryStore.set(key, progress);
     }
   }
 
   async getProgress(artistId: string): Promise<SyncProgress | null> {
-    if (!this.redis) {
-      return null;
-    }
-
-    const data = await this.redis.get(`${this.keyPrefix}${artistId}`);
-    return data ? JSON.parse(data as string) : null;
+    return this.inMemoryStore.get(`${this.keyPrefix}${artistId}`) || null;
   }
 
   async setError(artistId: string, error: string): Promise<void> {
-    if (!this.redis) {
-      return;
-    }
-
     const key = `${this.keyPrefix}${artistId}`;
-    const data = await this.redis.get(key);
+    const progress = this.inMemoryStore.get(key);
 
-    if (data) {
-      const progress = JSON.parse(data as string) as SyncProgress;
+    if (progress) {
       progress.status = "failed";
       progress.error = error;
       progress.completedAt = new Date();
 
-      await this.redis.setex(key, this.ttl, JSON.stringify(progress));
+      this.inMemoryStore.set(key, progress);
     }
   }
 
   async clearProgress(artistId: string): Promise<void> {
-    if (!this.redis) {
-      return;
-    }
-    await this.redis.del(`${this.keyPrefix}${artistId}`);
+    this.inMemoryStore.delete(`${this.keyPrefix}${artistId}`);
   }
 }
