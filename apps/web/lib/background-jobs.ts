@@ -371,6 +371,11 @@ export class BackgroundJobQueue {
     return stats;
   }
 
+  // Get cache instance for external access (for API routes)
+  getCache() {
+    return this.cache;
+  }
+
   // Register custom processor
   registerProcessor(type: JobType, processor: JobProcessor) {
     this.processors.set(type, processor);

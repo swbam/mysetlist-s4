@@ -38,6 +38,8 @@ export async function PUT(request: NextRequest) {
       );
     }
 
+    const setlistSongData = setlistSong[0]!; // Safe because we checked length above
+
     // Check if user can edit the setlist
     const setlist = await db
       .select({
@@ -45,13 +47,18 @@ export async function PUT(request: NextRequest) {
         isLocked: setlists.isLocked,
       })
       .from(setlists)
-      .where(eq(setlists.id, setlistSong[0]?.setlistId))
+      .where(eq(setlists.id, setlistSongData.setlistId))
       .limit(1);
 
-    if (
-      setlist.length === 0 ||
-      (setlist[0]?.createdBy !== user.id && setlist[0]?.isLocked)
-    ) {
+    if (setlist.length === 0) {
+      return NextResponse.json(
+        { error: "Setlist not found" },
+        { status: 404 },
+      );
+    }
+
+    const setlistData = setlist[0]!; // Safe because we checked length above
+    if (setlistData.createdBy !== user.id && setlistData.isLocked) {
       return NextResponse.json(
         { error: "Cannot modify this setlist" },
         { status: 403 },

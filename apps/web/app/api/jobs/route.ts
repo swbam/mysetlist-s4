@@ -135,7 +135,7 @@ export async function PUT(request: NextRequest) {
           job.updatedAt = new Date();
 
           // Remove from queue and update cache
-          const cache = backgroundJobQueue.cache;
+          const cache = backgroundJobQueue.getCache();
           await cache.pipeline([
             ["ZREM", "job_queue", jobId],
             ["SET", `job:${jobId}`, JSON.stringify(job)],
@@ -170,7 +170,7 @@ export async function PUT(request: NextRequest) {
               : job.priority === "medium"
                 ? -500
                 : -100);
-          const cache = backgroundJobQueue.cache;
+          const cache = backgroundJobQueue.getCache();
           await cache.pipeline([
             ["SET", `job:${jobId}`, JSON.stringify(job)],
             ["ZADD", "job_queue", score, jobId],
@@ -227,7 +227,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete job from cache
-    const cache = backgroundJobQueue.cache;
+    const cache = backgroundJobQueue.getCache();
     await cache.pipeline([
       ["DEL", `job:${jobId}`],
       ["ZREM", "job_queue", jobId],

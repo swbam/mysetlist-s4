@@ -116,13 +116,21 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Check if user can edit the setlist
+    const setlistId = setlistSong[0]?.setlistId;
+    if (!setlistId) {
+      return NextResponse.json(
+        { error: "Invalid setlist song" },
+        { status: 400 },
+      );
+    }
+
     const setlist = await db
       .select({
         createdBy: setlists.createdBy,
         isLocked: setlists.isLocked,
       })
       .from(setlists)
-      .where(eq(setlists.id, setlistSong[0]?.setlistId))
+      .where(eq(setlists.id, setlistId))
       .limit(1);
 
     if (
