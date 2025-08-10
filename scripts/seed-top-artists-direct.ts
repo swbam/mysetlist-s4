@@ -79,7 +79,7 @@ async function seedArtist(artist: (typeof TOP_ARTISTS)[0]) {
 
     if (existingArtist.length > 0) {
       // Update existing artist
-      console.log(`  📝 Updating existing artist...`);
+      console.log("  📝 Updating existing artist...");
       const [updated] = await db
         .update(artists)
         .set({
@@ -98,7 +98,7 @@ async function seedArtist(artist: (typeof TOP_ARTISTS)[0]) {
       artistRecord = updated;
     } else {
       // Create new artist
-      console.log(`  ✨ Creating new artist...`);
+      console.log("  ✨ Creating new artist...");
       const [created] = await db
         .insert(artists)
         .values({

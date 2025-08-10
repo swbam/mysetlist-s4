@@ -5,9 +5,9 @@
  * Comprehensive checklist for production deployment
  */
 
-import { execSync } from "child_process";
-import { existsSync, readFileSync, statSync } from "fs";
-import { join } from "path";
+import { execSync } from "node:child_process";
+import { existsSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 
 interface CheckResult {
   name: string;
@@ -626,7 +626,7 @@ class ProductionReadinessChecker {
       });
     });
 
-    console.log("\n" + "=".repeat(50));
+    console.log(`\n${"=".repeat(50)}`);
     console.log("📈 SUMMARY:");
     console.log(`Total Checks: ${totalChecks}`);
     console.log(`✅ Passed: ${passedChecks}`);
@@ -642,7 +642,7 @@ class ProductionReadinessChecker {
       console.log("\n⚠️  PLEASE FIX FAILED CHECKS BEFORE PRODUCTION DEPLOYMENT");
     }
 
-    console.log("\n" + "=".repeat(50));
+    console.log(`\n${"=".repeat(50)}`);
   }
 }
 

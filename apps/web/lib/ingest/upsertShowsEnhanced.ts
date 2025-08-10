@@ -4,7 +4,9 @@ import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 export async function upsertShowsEnhanced(rawShows: any[], artistId: string) {
-  console.log(`🎪 Starting to upsert ${rawShows.length} shows for artist ${artistId}`);
+  console.log(
+    `🎪 Starting to upsert ${rawShows.length} shows for artist ${artistId}`,
+  );
   const upsertedShows: any[] = [];
 
   for (const show of rawShows) {
@@ -47,7 +49,7 @@ export async function upsertShowsEnhanced(rawShows: any[], artistId: string) {
         console.log(`✨ Creating new show: ${show.name}`);
         // Create new show with all available fields
         const slug = await generateUniqueShowSlug(show.name, show.date);
-        
+
         const newShow: any = {
           id: nanoid(),
           headlinerArtistId: artistId,
@@ -66,7 +68,7 @@ export async function upsertShowsEnhanced(rawShows: any[], artistId: string) {
           ticketLimit: show.ticketLimit,
           ageRestrictions: show.ageRestrictions,
           sales: show.sales,
-          status: show.status || 'onsale',
+          status: show.status || "onsale",
           images: show.images,
           trendingScore: 0,
           viewCount: 0,
@@ -83,36 +85,44 @@ export async function upsertShowsEnhanced(rawShows: any[], artistId: string) {
         upsertedShows.push(newShow);
       }
     } catch (error) {
-      console.error(`❌ Failed to upsert show ${show.ticketmasterId || show.name}:`, error);
+      console.error(
+        `❌ Failed to upsert show ${show.ticketmasterId || show.name}:`,
+        error,
+      );
       // Continue with other shows
     }
   }
 
-  console.log(`✅ Successfully upserted ${upsertedShows.length} shows for artist ${artistId}`);
+  console.log(
+    `✅ Successfully upserted ${upsertedShows.length} shows for artist ${artistId}`,
+  );
   return upsertedShows;
 }
 
 // Generate unique slug for shows
-async function generateUniqueShowSlug(name: string, date: string): Promise<string> {
+async function generateUniqueShowSlug(
+  name: string,
+  date: string,
+): Promise<string> {
   const baseSlug = `${name}-${date}`
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-  
+
   let slug = baseSlug;
   let counter = 1;
-  
+
   while (true) {
     const existing = await db
       .select()
       .from(shows)
       .where(eq(shows.slug, slug))
       .limit(1);
-    
+
     if (existing.length === 0) {
       return slug;
     }
-    
+
     slug = `${baseSlug}-${counter}`;
     counter++;
   }

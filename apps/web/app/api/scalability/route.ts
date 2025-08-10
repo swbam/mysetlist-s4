@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 function isAuthorizedScalabilityRequest(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
   const scalabilitySecret =
-    process.env["SCALABILITY_SECRET"] || process.env["ADMIN_SECRET"];
+    process.env.SCALABILITY_SECRET || process.env.ADMIN_SECRET;
 
   if (!scalabilitySecret) {
     return false;
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     const timeframe = searchParams.get("timeframe") || "12 months";
 
     switch (type) {
-      case "recommendations":
+      case "recommendations": {
         const recommendations = getScalabilityRecommendations(userCount);
         return NextResponse.json({
           success: true,
@@ -42,16 +42,18 @@ export async function GET(request: NextRequest) {
           recommendations,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "plan":
+      case "plan": {
         const plan = generateScalabilityPlan(userCount, targetUsers, timeframe);
         return NextResponse.json({
           success: true,
           plan,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "database_strategy":
+      case "database_strategy": {
         const dbStrategy =
           scalabilityArchitect.getDatabaseScalingStrategy(userCount);
         return NextResponse.json({
@@ -60,8 +62,9 @@ export async function GET(request: NextRequest) {
           strategy: dbStrategy,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "caching_strategy":
+      case "caching_strategy": {
         const cachingStrategy =
           scalabilityArchitect.getCachingStrategy(userCount);
         return NextResponse.json({
@@ -70,8 +73,9 @@ export async function GET(request: NextRequest) {
           strategy: cachingStrategy,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "infrastructure":
+      case "infrastructure": {
         const infraRecommendations =
           scalabilityArchitect.getInfrastructureRecommendations(userCount);
         return NextResponse.json({
@@ -80,8 +84,9 @@ export async function GET(request: NextRequest) {
           infrastructure: infraRecommendations,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "performance":
+      case "performance": {
         const perfOptimizations =
           scalabilityArchitect.getPerformanceOptimizations(userCount);
         return NextResponse.json({
@@ -90,8 +95,9 @@ export async function GET(request: NextRequest) {
           optimizations: perfOptimizations,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "monitoring":
+      case "monitoring": {
         const monitoringConfig =
           scalabilityArchitect.getMonitoringConfig(userCount);
         return NextResponse.json({
@@ -100,8 +106,9 @@ export async function GET(request: NextRequest) {
           monitoring: monitoringConfig,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "cost_optimization":
+      case "cost_optimization": {
         const costOptimizations =
           scalabilityArchitect.getCostOptimizations(userCount);
         return NextResponse.json({
@@ -110,8 +117,9 @@ export async function GET(request: NextRequest) {
           costOptimizations,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "security":
+      case "security": {
         const securityScaling =
           scalabilityArchitect.getSecurityScaling(userCount);
         return NextResponse.json({
@@ -120,8 +128,9 @@ export async function GET(request: NextRequest) {
           security: securityScaling,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "comparison":
+      case "comparison": {
         const currentUserCount = Number.parseInt(
           searchParams.get("currentUsers") || "10000",
         );
@@ -152,8 +161,9 @@ export async function GET(request: NextRequest) {
           },
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "health_check":
+      case "health_check": {
         // Check system health and scalability status
         const healthStatus = {
           scalabilityEngine: "operational",
@@ -174,6 +184,7 @@ export async function GET(request: NextRequest) {
           health: healthStatus,
           timestamp: new Date().toISOString(),
         });
+      }
 
       default:
         return NextResponse.json(
@@ -207,7 +218,7 @@ export async function POST(request: NextRequest) {
     }
 
     switch (action) {
-      case "assess_current":
+      case "assess_current": {
         const assessment = {
           userCount,
           recommendations: getScalabilityRecommendations(userCount),
@@ -226,8 +237,9 @@ export async function POST(request: NextRequest) {
           assessment,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "generate_migration_plan":
+      case "generate_migration_plan": {
         if (!targetUsers || !timeframe) {
           return NextResponse.json(
             {
@@ -270,8 +282,9 @@ export async function POST(request: NextRequest) {
           message: "Migration plan generated successfully",
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "estimate_costs":
+      case "estimate_costs": {
         const costEstimate = {
           current: scalabilityArchitect.getCostOptimizations(userCount),
           target: targetUsers
@@ -291,8 +304,9 @@ export async function POST(request: NextRequest) {
           costEstimate,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "validate_requirements":
+      case "validate_requirements": {
         const validationResults = {
           requirements: requirements || {},
           feasibility: "high",
@@ -314,8 +328,9 @@ export async function POST(request: NextRequest) {
           validation: validationResults,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "benchmark_performance":
+      case "benchmark_performance": {
         const benchmarks = {
           currentCapacity: userCount,
           theoreticalMax: userCount * 5,
@@ -334,6 +349,7 @@ export async function POST(request: NextRequest) {
           benchmarks,
           timestamp: new Date().toISOString(),
         });
+      }
 
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });

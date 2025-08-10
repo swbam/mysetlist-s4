@@ -196,10 +196,11 @@ export function SongDropdown({
               setlist_songs: data.setlist_songs?.map((item: any) => ({
                 ...item,
                 upvotes: item.votes?.length || 0,
-                userVote:
-                  item.votes?.find((v: any) => v.user_id === session?.user?.id)
-                    ? "up"
-                    : null,
+                userVote: item.votes?.find(
+                  (v: any) => v.user_id === session?.user?.id,
+                )
+                  ? "up"
+                  : null,
               })),
             };
             setRealtimeSetlistData(processedData);
@@ -416,7 +417,6 @@ export function SongDropdown({
                         onVote={async (voteType) => {
                           if (voteType === "up") {
                             await handleVote(setlistSong.id, voteType);
-
                           }
                         }}
                         variant="compact"

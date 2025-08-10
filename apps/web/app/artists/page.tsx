@@ -56,9 +56,11 @@ export default function ArtistsPage() {
                 Suspense as any,
                 {
                   fallback: (
-                    <ResponsiveGrid variant="artists" loading loadingCount={12}>
-                      <></>
-                    </ResponsiveGrid>
+                    <ResponsiveGrid
+                      variant="artists"
+                      loading
+                      loadingCount={12}
+                    ></ResponsiveGrid>
                   ),
                 },
                 <PopularArtists />,

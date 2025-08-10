@@ -216,7 +216,7 @@ async function testMobileResponsiveness() {
   await browser.close();
 
   // Generate summary report
-  console.log(`\n📊 MOBILE RESPONSIVENESS SUMMARY\n`);
+  console.log("\n📊 MOBILE RESPONSIVENESS SUMMARY\n");
 
   const pageScores = {};
   const deviceScores = {};
@@ -257,7 +257,7 @@ async function testMobileResponsiveness() {
   );
 
   if (overallScore < 80) {
-    console.log(`\n🔧 IMPROVEMENT AREAS:`);
+    console.log("\n🔧 IMPROVEMENT AREAS:");
 
     const failedTests = results.filter(
       (r) => r.status === "FAIL" || r.status === "WARN",
@@ -284,13 +284,13 @@ async function testMobileResponsiveness() {
   }
 
   // Save detailed results
-  require("fs").writeFileSync(
+  require("node:fs").writeFileSync(
     "mobile-responsiveness-results.json",
     JSON.stringify(results, null, 2),
   );
 
   console.log(
-    `\n📄 Detailed results saved to: mobile-responsiveness-results.json`,
+    "\n📄 Detailed results saved to: mobile-responsiveness-results.json",
   );
 
   return overallScore >= 80;

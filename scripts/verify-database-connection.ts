@@ -3,7 +3,7 @@
  * Verify database connection and SSL settings
  */
 
-import { existsSync } from "fs";
+import { existsSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 import * as dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -113,7 +113,7 @@ async function testDirectDatabaseConnection(): Promise<boolean> {
     const result = await sql`SELECT version()`;
     const version = result[0]?.version;
 
-    console.log(`✅ Direct database connection successful`);
+    console.log("✅ Direct database connection successful");
     console.log(`   PostgreSQL ${version.split(" ")[1]}`);
 
     // Test basic query
@@ -254,7 +254,7 @@ async function main() {
     }
   }
 
-  console.log("\n" + "=".repeat(50));
+  console.log(`\n${"=".repeat(50)}`);
 
   if (allPassed) {
     console.log("✅ All database connection tests passed!");

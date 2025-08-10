@@ -273,7 +273,7 @@ export async function sendWeeklyDigests() {
         upcomingShows: formattedShows,
         newSetlists: [], // Would need to track new setlists in production
         totalFollowedArtists: popularArtists.length,
-        appUrl: process.env["NEXT_PUBLIC_APP_URL"] || "https://mysetlist.app",
+        appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://mysetlist.app",
       });
 
       totalUsersNotified++;
@@ -353,7 +353,7 @@ export async function sendVoteNotification(params: {
       },
       milestone: params.milestone,
       totalVotes: params.totalVotes,
-      appUrl: process.env["NEXT_PUBLIC_APP_URL"] || "https://mysetlist.app",
+      appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://mysetlist.app",
     });
 
     return { success: true };
@@ -477,7 +477,7 @@ export async function sendWelcomeEmailAction(userId: string) {
     await sendWelcomeEmailTemplate({
       to: [toAddress],
       name: user[0].displayName || "there",
-      appUrl: process.env["NEXT_PUBLIC_APP_URL"] || "https://mysetlist.app",
+      appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://mysetlist.app",
     });
 
     return { success: true };

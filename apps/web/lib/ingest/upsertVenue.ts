@@ -42,7 +42,7 @@ export async function upsertVenue(tmVenue: any) {
         ...(tmVenue.images?.[0]?.url && { imageUrl: tmVenue.images[0].url }),
         updatedAt: new Date(),
       })
-      .where(eq(venues.id, existingVenue[0]!["id"]));
+      .where(eq(venues.id, existingVenue[0]?.id));
 
     return existingVenue[0];
   }

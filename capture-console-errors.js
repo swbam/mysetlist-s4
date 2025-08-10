@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import fs from "fs";
+import fs from "node:fs";
 import { chromium } from "playwright";
 
 async function captureConsoleErrors() {
@@ -82,7 +82,7 @@ async function captureConsoleErrors() {
       const reactErrors = await page.$$eval("*", (elements) => {
         const errors = [];
         elements.forEach((el) => {
-          if (el.textContent && el.textContent.includes("Error:")) {
+          if (el.textContent?.includes("Error:")) {
             errors.push(el.textContent);
           }
         });

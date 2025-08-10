@@ -3,7 +3,14 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
-import { ExternalLink, GripVertical, Music, Trash2, Check, X } from "lucide-react";
+import {
+  Check,
+  ExternalLink,
+  GripVertical,
+  Music,
+  Trash2,
+  X,
+} from "lucide-react";
 import Image from "next/image";
 import { useTransition } from "react";
 import { toast } from "sonner";
@@ -35,7 +42,12 @@ type SongItemProps = {
   isEditing: boolean;
   canVote: boolean;
   onDelete: () => void;
-  comparisonStatus?: "played" | "not-played" | "predicted" | "not-predicted" | null;
+  comparisonStatus?:
+    | "played"
+    | "not-played"
+    | "predicted"
+    | "not-predicted"
+    | null;
 };
 
 export function SongItem({
@@ -125,22 +137,31 @@ export function SongItem({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <h4 className="truncate font-medium">{song.title}</h4>
-          
+
           {/* Comparison Status Indicators */}
           {comparisonStatus === "played" && (
-            <Badge variant="default" className="text-xs bg-green-100 text-green-800 border-green-300">
+            <Badge
+              variant="default"
+              className="text-xs bg-green-100 text-green-800 border-green-300"
+            >
               <Check className="h-3 w-3 mr-1" />
               Played
             </Badge>
           )}
           {comparisonStatus === "not-played" && (
-            <Badge variant="outline" className="text-xs border-red-300 text-red-600">
+            <Badge
+              variant="outline"
+              className="text-xs border-red-300 text-red-600"
+            >
               <X className="h-3 w-3 mr-1" />
               Not Played
             </Badge>
           )}
           {comparisonStatus === "predicted" && (
-            <Badge variant="default" className="text-xs bg-blue-100 text-blue-800 border-blue-300">
+            <Badge
+              variant="default"
+              className="text-xs bg-blue-100 text-blue-800 border-blue-300"
+            >
               <Check className="h-3 w-3 mr-1" />
               Predicted
             </Badge>
@@ -150,7 +171,7 @@ export function SongItem({
               Surprise!
             </Badge>
           )}
-          
+
           {item.notes && (
             <Badge variant="secondary" className="text-xs">
               {item.notes}

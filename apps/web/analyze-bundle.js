@@ -1,5 +1,5 @@
 const { BundleAnalyzerPlugin } = require("webpack-bundle-analyzer");
-const { execSync } = require("child_process");
+const { execSync } = require("node:child_process");
 
 // Create a minimal Next.js config for analysis
 const nextConfig = {

@@ -98,7 +98,7 @@ export function CacheManager({
 
     return () => {
       if (typeof window !== "undefined") {
-        delete window.__cacheManager;
+        window.__cacheManager = undefined;
       }
     };
   }, [

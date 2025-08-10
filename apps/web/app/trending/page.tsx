@@ -190,7 +190,7 @@ export default async function TrendingPage() {
             <Flame className="h-8 w-8 text-orange-500" />
             <h1 className="font-bold text-4xl">Trending</h1>
           </div>
-          <p className="text-muted-foreground text-xl"></p>
+          <p className="text-muted-foreground text-xl" />
         </div>
 
         <Suspense fallback={<TrendingPageSkeleton />}>

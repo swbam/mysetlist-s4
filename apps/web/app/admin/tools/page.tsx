@@ -22,7 +22,7 @@ async function call(endpoint: string, body?: unknown) {
 export default function AdminToolsPage() {
   const [log, setLog] = useState<string>("");
   const append = (msg: string) =>
-    setLog((l) => `${new Date().toISOString()} ${msg}\n` + l);
+    setLog((l) => `${new Date().toISOString()} ${msg}\n${l}`);
 
   const triggerArtistImport = async () => {
     const name = prompt("Artist name to import (Ticketmaster/Spotify)")?.trim();

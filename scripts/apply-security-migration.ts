@@ -5,13 +5,13 @@
  * This script executes the security migration SQL using the existing database connection
  */
 
-import { join } from "path";
+import { join } from "node:path";
 import { config } from "dotenv";
 
 // Load environment variables first
 config({ path: join(process.cwd(), ".env.local") });
 
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 import { db } from "@repo/database";
 import { sql } from "drizzle-orm";
 
@@ -62,13 +62,13 @@ async function applySecurityMigration() {
       try {
         // Execute the raw SQL statement
         await db.execute(sql.raw(statement));
-        console.log(`   ✅ Success`);
+        console.log("   ✅ Success");
       } catch (error: any) {
         // Some errors are expected (e.g., policy already exists)
         if (error.message?.includes("already exists")) {
-          console.log(`   ⚠️  Already exists (skipping)`);
+          console.log("   ⚠️  Already exists (skipping)");
         } else if (error.message?.includes("multiple primary keys")) {
-          console.log(`   ⚠️  Primary key already exists (skipping)`);
+          console.log("   ⚠️  Primary key already exists (skipping)");
         } else {
           console.error(`   ❌ Error: ${error.message}`);
           // Don't throw on certain expected errors

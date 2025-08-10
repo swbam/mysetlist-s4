@@ -59,7 +59,7 @@ export class SyncErrorHandler {
 
         // Exponential backoff
         if (attempt < this.maxRetries) {
-          const delay = this.retryDelay * Math.pow(2, attempt - 1);
+          const delay = this.retryDelay * 2 ** (attempt - 1);
           await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }

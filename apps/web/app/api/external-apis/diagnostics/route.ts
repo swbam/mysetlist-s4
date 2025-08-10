@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
 
         case "ticketmaster": {
           const ticketmasterClient = new TicketmasterClient({
-            apiKey: process.env["TICKETMASTER_API_KEY"]!,
+            apiKey: process.env.TICKETMASTER_API_KEY!,
           });
 
           const healthStatus = await checkAPIHealth(
@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
 
         case "setlistfm": {
           const setlistfmClient = new SetlistFmClient({
-            apiKey: process.env["SETLISTFM_API_KEY"]!,
+            apiKey: process.env.SETLISTFM_API_KEY!,
           });
 
           const healthStatus = await checkAPIHealth(
@@ -152,7 +152,7 @@ export async function GET(request: NextRequest) {
           name: "Ticketmaster",
           check: async () => {
             const client = new TicketmasterClient({
-              apiKey: process.env["TICKETMASTER_API_KEY"]!,
+              apiKey: process.env.TICKETMASTER_API_KEY!,
             });
             return checkAPIHealth("Ticketmaster", client, async () => {
               return await client.searchEvents({ countryCode: "US", size: 1 });
@@ -163,7 +163,7 @@ export async function GET(request: NextRequest) {
           name: "Setlist.fm",
           check: async () => {
             const client = new SetlistFmClient({
-              apiKey: process.env["SETLISTFM_API_KEY"]!,
+              apiKey: process.env.SETLISTFM_API_KEY!,
             });
             return checkAPIHealth("Setlist.fm", client, async () => {
               return await client.searchSetlists({
@@ -288,7 +288,7 @@ export async function POST(request: NextRequest) {
 
       case "ticketmaster": {
         const client = new TicketmasterClient({
-          apiKey: process.env["TICKETMASTER_API_KEY"]!,
+          apiKey: process.env.TICKETMASTER_API_KEY!,
         });
 
         switch (action) {
@@ -323,7 +323,7 @@ export async function POST(request: NextRequest) {
 
       case "setlistfm": {
         const client = new SetlistFmClient({
-          apiKey: process.env["SETLISTFM_API_KEY"]!,
+          apiKey: process.env.SETLISTFM_API_KEY!,
         });
 
         switch (action) {

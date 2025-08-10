@@ -6,8 +6,8 @@
 
 import "dotenv/config";
 
-const APP_URL = process.env["NEXT_PUBLIC_URL"] || "http://localhost:3001";
-const ADMIN_KEY = process.env["ADMIN_API_KEY"];
+const APP_URL = process.env.NEXT_PUBLIC_URL || "http://localhost:3001";
+const ADMIN_KEY = process.env.ADMIN_API_KEY;
 
 async function checkDataStatus() {
   try {
@@ -52,7 +52,7 @@ async function initializeData() {
   };
 
   if (ADMIN_KEY) {
-    headers["Authorization"] = `Bearer ${ADMIN_KEY}`;
+    headers.Authorization = `Bearer ${ADMIN_KEY}`;
   }
 
   try {
@@ -152,7 +152,7 @@ async function main() {
     console.log("  2. Search should return results");
     console.log("  3. You can sync more real artists using the script");
 
-    const readline = await import("readline");
+    const readline = await import("node:readline");
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,

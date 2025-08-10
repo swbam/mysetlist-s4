@@ -10,8 +10,8 @@
  * 4. Image sources are optimized
  */
 
-import { readFileSync } from "fs";
-import path from "path";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { glob } from "glob";
 
 interface ImageIssue {

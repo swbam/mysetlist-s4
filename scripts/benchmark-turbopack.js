@@ -5,8 +5,8 @@
  * Compares development server startup times and build performance
  */
 
-const { spawn } = require("child_process");
-const { performance } = require("perf_hooks");
+const { spawn } = require("node:child_process");
+const { performance } = require("node:perf_hooks");
 
 async function runCommand(command, args, options = {}) {
   return new Promise((resolve, reject) => {
@@ -129,7 +129,7 @@ async function checkTurbopackStatus() {
     console.log("❌ Could not read next.config.ts");
   }
 
-  console.log("\n" + "=".repeat(50) + "\n");
+  console.log(`\n${"=".repeat(50)}\n`);
 }
 
 async function main() {

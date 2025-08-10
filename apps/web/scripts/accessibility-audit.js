@@ -131,12 +131,12 @@ async function runAccessibilityAudit() {
     console.log("");
   });
 
-  console.log(`\n📊 SUMMARY:`);
+  console.log("\n📊 SUMMARY:");
   console.log(`Total violations: ${totalViolations}`);
   console.log(`Critical/Serious issues: ${criticalIssues.length}`);
 
   if (criticalIssues.length > 0) {
-    console.log(`\n🚨 CRITICAL ISSUES TO FIX:`);
+    console.log("\n🚨 CRITICAL ISSUES TO FIX:");
     criticalIssues.forEach((issue, idx) => {
       console.log(`${idx + 1}. [${issue.page} - ${issue.device}] ${issue.id}`);
       console.log(`   Impact: ${issue.impact}`);
@@ -153,22 +153,22 @@ async function runAccessibilityAudit() {
   );
 
   if (!isCompliant) {
-    console.log(`\n📝 NEXT STEPS:`);
-    console.log(`1. Fix critical and serious violations first`);
-    console.log(`2. Test mobile touch interactions`);
-    console.log(`3. Verify keyboard navigation on all pages`);
-    console.log(`4. Test with screen readers`);
-    console.log(`5. Check color contrast ratios`);
+    console.log("\n📝 NEXT STEPS:");
+    console.log("1. Fix critical and serious violations first");
+    console.log("2. Test mobile touch interactions");
+    console.log("3. Verify keyboard navigation on all pages");
+    console.log("4. Test with screen readers");
+    console.log("5. Check color contrast ratios");
   }
 
   // Save detailed results
-  require("fs").writeFileSync(
+  require("node:fs").writeFileSync(
     "accessibility-audit-results.json",
     JSON.stringify(results, null, 2),
   );
 
   console.log(
-    `\n📄 Detailed results saved to: accessibility-audit-results.json`,
+    "\n📄 Detailed results saved to: accessibility-audit-results.json",
   );
 
   return isCompliant;

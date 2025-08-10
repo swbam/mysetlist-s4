@@ -79,8 +79,6 @@ export const AuthProvider = ({
 
       setSession(data.session);
       setUser(data.user);
-    } catch (error) {
-      throw error;
     } finally {
       setLoading(false);
     }
@@ -101,8 +99,6 @@ export const AuthProvider = ({
         setSession(data.session);
         setUser(data.user);
       }
-    } catch (error) {
-      throw error;
     } finally {
       setLoading(false);
     }
@@ -117,8 +113,6 @@ export const AuthProvider = ({
       setSession(null);
       setUser(null);
       router.push("/");
-    } catch (error) {
-      throw error;
     } finally {
       setLoading(false);
     }

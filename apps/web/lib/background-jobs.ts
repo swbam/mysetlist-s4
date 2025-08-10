@@ -386,7 +386,7 @@ class EmailNotificationProcessor implements JobProcessor {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${process.env["RESEND_API_KEY"]}`,
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -518,7 +518,7 @@ class CleanupProcessor implements JobProcessor {
     let deletedCount = 0;
 
     switch (type) {
-      case "logs":
+      case "logs": {
         const { error: logsError } = await supabase
           .from("logs")
           .delete()
@@ -527,8 +527,9 @@ class CleanupProcessor implements JobProcessor {
         if (logsError) throw logsError;
         deletedCount = 1; // Would be actual count in real implementation
         break;
+      }
 
-      case "sessions":
+      case "sessions": {
         const { error: sessionsError } = await supabase
           .from("user_sessions")
           .delete()
@@ -537,6 +538,7 @@ class CleanupProcessor implements JobProcessor {
         if (sessionsError) throw sessionsError;
         deletedCount = 1;
         break;
+      }
 
       default:
         throw new Error(`Unknown cleanup type: ${type}`);

@@ -9,8 +9,8 @@ const { drizzle } = require("drizzle-orm/postgres-js");
 const { migrate } = require("drizzle-orm/postgres-js/migrator");
 const postgres = require("postgres");
 const { config } = require("dotenv");
-const { resolve } = require("path");
-const { existsSync } = require("fs");
+const { resolve } = require("node:path");
+const { existsSync } = require("node:fs");
 
 // Load environment variables
 const envPaths = [

@@ -104,7 +104,7 @@ async function testSupabaseTrendingApis() {
             ? show.venues[0]
             : show.venues;
           console.log(
-            `  ${i + 1}. ${show.name || artist?.name + " Concert"}: trending_score=${show.trending_score}, views=${show.view_count}`,
+            `  ${i + 1}. ${show.name || `${artist?.name} Concert`}: trending_score=${show.trending_score}, views=${show.view_count}`,
           );
           console.log(
             `     Artist: ${artist?.name || "Unknown"}, Venue: ${venue?.name || "TBA"}`,

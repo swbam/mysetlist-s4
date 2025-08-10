@@ -41,14 +41,18 @@ export async function GET(request: NextRequest) {
         classificationName: "music",
         sort: "relevance,desc",
       });
-      
-      const ticketmasterArtists = ticketmasterResponse._embedded?.attractions || [];
-      
+
+      const ticketmasterArtists =
+        ticketmasterResponse._embedded?.attractions || [];
+
       const artists: ArtistResult[] = ticketmasterArtists.map((attraction) => ({
         id: attraction.id,
         name: attraction.name,
         imageUrl: attraction.images?.[0]?.url || undefined,
-        genres: attraction.classifications?.map((c: any) => c.genre?.name).filter(Boolean) || [],
+        genres:
+          attraction.classifications
+            ?.map((c: any) => c.genre?.name)
+            .filter(Boolean) || [],
         source: "ticketmaster" as const,
         externalId: attraction.id,
       }));

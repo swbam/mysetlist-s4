@@ -301,7 +301,7 @@ export default function ScalabilityPlanner() {
         <TabsContent value="recommendations" className="space-y-6">
           {loading ? (
             <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             </div>
           ) : recommendations ? (
             <div className="grid gap-6">
@@ -525,7 +525,7 @@ export default function ScalabilityPlanner() {
                           .slice(0, 3)
                           .map((strategy, idx) => (
                             <div key={idx} className="flex items-center gap-2">
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                              <div className="w-2 h-2 bg-green-500 rounded-full" />
                               <span className="text-sm">
                                 {strategy
                                   .replace(/_/g, " ")

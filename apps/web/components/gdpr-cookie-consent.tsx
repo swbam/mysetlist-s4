@@ -45,11 +45,10 @@ export function GDPRCookieConsent() {
         preferences ? JSON.parse(preferences) : { analytics: false },
       );
       return; // Add explicit return for this path
-    } else {
-      // Show banner after a short delay
-      const timer = setTimeout(() => setShowBanner(true), 1000);
-      return () => clearTimeout(timer);
     }
+    // Show banner after a short delay
+    const timer = setTimeout(() => setShowBanner(true), 1000);
+    return () => clearTimeout(timer);
   }, []);
 
   const initializeAnalytics = (prefs: CookiePreferences) => {

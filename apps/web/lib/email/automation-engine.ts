@@ -505,7 +505,7 @@ class EmailAutomationEngine {
     const supabase = await this.supabase;
 
     switch (trigger.id) {
-      case "welcome-series":
+      case "welcome-series": {
         const { data: newUsers } = await supabase
           .from("users")
           .select("id, email, display_name, created_at")
@@ -521,8 +521,7 @@ class EmailAutomationEngine {
           const emailResult = await sendWelcomeEmail({
             to: [{ email: user.email, name: personalizedData.userName }],
             name: personalizedData.userName,
-            appUrl:
-              process.env["NEXT_PUBLIC_APP_URL"] || "https://mysetlist.app",
+            appUrl: process.env.NEXT_PUBLIC_APP_URL || "https://mysetlist.app",
           });
 
           if (emailResult.success) {
@@ -540,6 +539,7 @@ class EmailAutomationEngine {
           }
         }
         break;
+      }
 
       case "new-show-notifications":
         await this.processNewShowNotifications(results);
@@ -553,7 +553,7 @@ class EmailAutomationEngine {
     const supabase = await this.supabase;
 
     switch (trigger.id) {
-      case "show-reminders":
+      case "show-reminders": {
         const { data: upcomingShows } = await supabase
           .from("shows")
           .select(
@@ -615,6 +615,7 @@ class EmailAutomationEngine {
           }
         }
         break;
+      }
 
       case "weekly-digest":
         await this.processWeeklyDigest(results);
@@ -628,7 +629,7 @@ class EmailAutomationEngine {
     const supabase = await this.supabase;
 
     switch (trigger.id) {
-      case "engagement-recovery":
+      case "engagement-recovery": {
         const { data: inactiveUsers } = await supabase
           .from("users")
           .select("id, email, display_name, last_sign_in_at")
@@ -678,6 +679,7 @@ class EmailAutomationEngine {
           }
         }
         break;
+      }
     }
 
     results.processed++;
@@ -687,7 +689,7 @@ class EmailAutomationEngine {
     const supabase = await this.supabase;
 
     switch (trigger.id) {
-      case "vote-milestone":
+      case "vote-milestone": {
         const milestones = [10, 50, 100, 500, 1000];
 
         for (const milestone of milestones) {
@@ -770,6 +772,7 @@ class EmailAutomationEngine {
           }
         }
         break;
+      }
     }
 
     results.processed++;

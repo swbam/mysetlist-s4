@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 // Performance measurement script for MySetlist app
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 console.log("🎯 PERFORMANCE ANALYSIS SUMMARY");
 console.log("================================\n");
@@ -67,7 +67,7 @@ if (fs.existsSync(homePagePath)) {
   const homeContent = fs.readFileSync(homePagePath, "utf8");
   const dynamicImports = (homeContent.match(/nextDynamic/g) || []).length;
 
-  console.log(`\n✅ HOMEPAGE OPTIMIZATION:`);
+  console.log("\n✅ HOMEPAGE OPTIMIZATION:");
   console.log(`   - ${dynamicImports} components lazy-loaded`);
   console.log("   - Above-the-fold: Hero component (immediate load)");
   console.log("   - Below-the-fold: Trending content (lazy loaded)");

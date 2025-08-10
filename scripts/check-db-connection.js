@@ -8,8 +8,8 @@
 const { drizzle } = require("drizzle-orm/postgres-js");
 const postgres = require("postgres");
 const { config } = require("dotenv");
-const { resolve } = require("path");
-const { existsSync } = require("fs");
+const { resolve } = require("node:path");
+const { existsSync } = require("node:fs");
 
 // Load environment variables
 const envPaths = [
@@ -51,7 +51,7 @@ async function checkDatabaseConnection() {
     const result = await sql`SELECT version()`;
     console.log(
       "📊 PostgreSQL Version:",
-      result[0].version.split(" ")[0] + " " + result[0].version.split(" ")[1],
+      `${result[0].version.split(" ")[0]} ${result[0].version.split(" ")[1]}`,
     );
 
     return sql;
@@ -110,10 +110,9 @@ async function checkTables(sql) {
         missingTables.join(", "),
       );
       return false;
-    } else {
-      console.log("\n✅ All required tables exist!");
-      return true;
     }
+    console.log("\n✅ All required tables exist!");
+    return true;
   } catch (error) {
     console.error("❌ Error checking tables:", error.message);
     throw error;

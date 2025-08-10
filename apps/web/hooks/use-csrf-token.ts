@@ -11,7 +11,7 @@ export function useCSRFToken() {
     if (typeof window === "undefined") return null;
 
     const value = `; ${document.cookie}`;
-    const parts = value.split(`; csrf-token=`);
+    const parts = value.split("; csrf-token=");
     if (parts.length === 2) {
       return parts.pop()?.split(";").shift() || null;
     }

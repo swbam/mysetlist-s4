@@ -78,7 +78,7 @@ export const useChartConfig = (type: string) => {
       // ... other configs
     };
 
-    return configs[type] || configs["growth"];
+    return configs[type] || configs.growth;
   }, [type]);
 };
 
@@ -262,9 +262,10 @@ export class PerformanceTracker {
 
     const measure = performance.getEntriesByName(measureName)[0];
     if (measure) {
-      const measurements = this.measurements.get(componentName) || [];
+      const measurements =
+        PerformanceTracker.measurements.get(componentName) || [];
       measurements.push(measure.duration);
-      this.measurements.set(componentName, measurements);
+      PerformanceTracker.measurements.set(componentName, measurements);
 
       // Log slow renders in development
       if (process.env.NODE_ENV === "development" && measure.duration > 16) {
@@ -281,7 +282,8 @@ export class PerformanceTracker {
   }
 
   static getAverageRenderTime(componentName: string): number {
-    const measurements = this.measurements.get(componentName) || [];
+    const measurements =
+      PerformanceTracker.measurements.get(componentName) || [];
     if (measurements.length === 0) return 0;
 
     const sum = measurements.reduce((a, b) => a + b, 0);
@@ -297,9 +299,12 @@ export class PerformanceTracker {
       { avgRenderTime: number; renderCount: number }
     > = {};
 
-    for (const [componentName, measurements] of this.measurements) {
+    for (const [
+      componentName,
+      measurements,
+    ] of PerformanceTracker.measurements) {
       report[componentName] = {
-        avgRenderTime: this.getAverageRenderTime(componentName),
+        avgRenderTime: PerformanceTracker.getAverageRenderTime(componentName),
         renderCount: measurements.length,
       };
     }

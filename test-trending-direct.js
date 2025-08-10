@@ -31,7 +31,6 @@ async function testTrendingLogic() {
       case "6h":
         timeWindow.setHours(now.getHours() - 6);
         break;
-      case "24h":
       default:
         timeWindow.setDate(now.getDate() - 1);
         break;

@@ -53,7 +53,7 @@ const observePerformance = () => {
                 navEntry.domContentLoadedEventStart,
               rating: "good", // We'll determine this based on thresholds
               delta: 0,
-              id: "nav-" + Date.now(),
+              id: `nav-${Date.now()}`,
             });
           }
         }
@@ -82,7 +82,7 @@ const observeResourceTiming = () => {
               value: resourceEntry.duration,
               rating: "poor",
               delta: 0,
-              id: "resource-" + Date.now(),
+              id: `resource-${Date.now()}`,
             });
           }
         }
@@ -116,7 +116,7 @@ export function WebVitalsReporter() {
         value: memoryInfo.usedJSHeapSize,
         rating: memoryInfo.usedJSHeapSize > 50000000 ? "poor" : "good", // 50MB threshold
         delta: 0,
-        id: "memory-" + Date.now(),
+        id: `memory-${Date.now()}`,
       });
     }
 
@@ -129,7 +129,7 @@ export function WebVitalsReporter() {
         rating:
           connection.effectiveType === "4g" ? "good" : "needs-improvement",
         delta: 0,
-        id: "connection-" + Date.now(),
+        id: `connection-${Date.now()}`,
       });
     }
   }, []);
@@ -160,9 +160,8 @@ export function usePerformanceTracking() {
       const duration = performance.now() - startTime;
       trackCustomMetric(name, duration);
       return duration;
-    } else {
-      return performance.now();
     }
+    return performance.now();
   };
 
   const trackPageLoad = () => {

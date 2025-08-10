@@ -219,7 +219,7 @@ const AdvancedGestureHandlerComponent = function AdvancedGestureHandler({
         setCurrentAction(action);
 
         // Haptic feedback when crossing action threshold
-        if (action && action.hapticPattern) {
+        if (action?.hapticPattern) {
           const distanceFromLast = Math.abs(
             Math.abs(offset.x) - lastHapticThreshold.current,
           );
@@ -367,7 +367,7 @@ const AdvancedGestureHandlerComponent = function AdvancedGestureHandler({
         )}
         whileDrag={{ scale: 0.98 }}
       >
-        <>{children}</>
+        {children}
       </motion.div>
 
       {/* Gesture hint overlay */}

@@ -235,5 +235,5 @@ export function teardown(data) {
   const duration = Date.now() - data.startTime;
   console.log("🏁 Load test completed");
   console.log(`⏱️  Total duration: ${Math.round(duration / 1000)}s`);
-  console.log(`📊 Check load-test-results.html for detailed report`);
+  console.log("📊 Check load-test-results.html for detailed report");
 }

@@ -380,7 +380,7 @@ export const EnhancedSetlistViewer = ({
                           !setlistSong.isPlayed &&
                           currentSetlist.type === "actual",
                         variant: "compact",
-                        size: "sm"
+                        size: "sm",
                       })}
                     </div>
                   </div>

@@ -107,7 +107,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     // Top endpoints by request count
     const endpointStats = requestCount.reduce(
       (acc, metric) => {
-        const endpoint = metric.tags?.["endpoint"] || "unknown";
+        const endpoint = metric.tags?.endpoint || "unknown";
         acc[endpoint] = (acc[endpoint] || 0) + 1;
         return acc;
       },

@@ -5,8 +5,8 @@
  * Tests the implemented optimizations to ensure they work correctly
  */
 
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 console.log("🔍 Testing Bundle Optimizations...\n");
 

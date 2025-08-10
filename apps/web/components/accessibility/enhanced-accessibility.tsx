@@ -545,12 +545,9 @@ export function useColorContrast() {
       const b = Number.parseInt(hex.substr(4, 2), 16) / 255;
 
       const gamma = 2.4;
-      const rs =
-        r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, gamma);
-      const gs =
-        g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, gamma);
-      const bs =
-        b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, gamma);
+      const rs = r <= 0.03928 ? r / 12.92 : ((r + 0.055) / 1.055) ** gamma;
+      const gs = g <= 0.03928 ? g / 12.92 : ((g + 0.055) / 1.055) ** gamma;
+      const bs = b <= 0.03928 ? b / 12.92 : ((b + 0.055) / 1.055) ** gamma;
 
       return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
     };

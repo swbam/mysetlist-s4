@@ -85,7 +85,8 @@ export const ArtistSongCatalog = React.memo(function ArtistSongCatalog({
 
     // Apply sorting
     filtered = [...filtered].sort((a, b) => {
-      let aValue: any, bValue: any;
+      let aValue: any;
+      let bValue: any;
 
       switch (sortBy) {
         case "title": {

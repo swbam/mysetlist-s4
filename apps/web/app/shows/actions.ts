@@ -238,7 +238,7 @@ export const fetchShows = cache(
           if (!acc[sa.showId]) {
             acc[sa.showId] = [];
           }
-          acc[sa.showId]!.push({
+          acc[sa.showId]?.push({
             id: sa.id,
             artistId: sa.artistId,
             orderIndex: sa.orderIndex,

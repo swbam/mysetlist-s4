@@ -35,7 +35,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Setlist not found" }, { status: 404 });
     }
 
-    if (setlist[0]!["createdBy"] !== user.id && setlist[0]!["isLocked"]) {
+    if (setlist[0]?.createdBy !== user.id && setlist[0]?.isLocked) {
       return NextResponse.json(
         { error: "Cannot modify this setlist" },
         { status: 403 },

@@ -8,8 +8,8 @@
 const { drizzle } = require("drizzle-orm/postgres-js");
 const postgres = require("postgres");
 const { config } = require("dotenv");
-const { resolve } = require("path");
-const { existsSync } = require("fs");
+const { resolve } = require("node:path");
+const { existsSync } = require("node:fs");
 
 // Load environment variables
 const envPaths = [
@@ -52,7 +52,7 @@ async function testDatabaseConnection() {
     const result = await sql`SELECT version()`;
     console.log(
       "✅ Database connected:",
-      result[0].version.split(" ")[0] + " " + result[0].version.split(" ")[1],
+      `${result[0].version.split(" ")[0]} ${result[0].version.split(" ")[1]}`,
     );
 
     return sql;
@@ -149,7 +149,7 @@ async function testAutonomousSyncEndpoint() {
     const result = await response.json();
 
     console.log("✅ Autonomous sync endpoint working");
-    console.log(`  📊 Discovery mode results:`);
+    console.log("  📊 Discovery mode results:");
     console.log(
       `    - Ticketmaster: ${result.discovery.ticketmaster.found} found, ${result.discovery.ticketmaster.added} added`,
     );
@@ -187,7 +187,7 @@ async function testTrendingCalculationEndpoint() {
     const result = await response.json();
 
     console.log("✅ Trending calculation endpoint working");
-    console.log(`  📊 Results:`);
+    console.log("  📊 Results:");
     console.log(`    - Artists updated: ${result.results.artists.updated}`);
     console.log(`    - Shows updated: ${result.results.shows.updated}`);
     if (result.results.trending) {
@@ -326,10 +326,9 @@ async function testSpotifyAPIConnection() {
       console.log("✅ Spotify API connection successful");
       console.log(`  🔑 Token obtained (expires in ${data.expires_in}s)`);
       return true;
-    } else {
-      console.log(`❌ Spotify API failed: HTTP ${response.status}`);
-      return false;
     }
+    console.log(`❌ Spotify API failed: HTTP ${response.status}`);
+    return false;
   } catch (error) {
     console.error("❌ Spotify API error:", error.message);
     return false;
@@ -357,10 +356,9 @@ async function testTicketmasterAPIConnection() {
         `  🎫 Found ${data._embedded?.events?.length || 0} events in test query`,
       );
       return true;
-    } else {
-      console.log(`❌ Ticketmaster API failed: HTTP ${response.status}`);
-      return false;
     }
+    console.log(`❌ Ticketmaster API failed: HTTP ${response.status}`);
+    return false;
   } catch (error) {
     console.error("❌ Ticketmaster API error:", error.message);
     return false;

@@ -8,8 +8,8 @@
 const { drizzle } = require("drizzle-orm/postgres-js");
 const postgres = require("postgres");
 const { config } = require("dotenv");
-const { resolve } = require("path");
-const { existsSync } = require("fs");
+const { resolve } = require("node:path");
+const { existsSync } = require("node:fs");
 const { sql, eq, or, isNull, lte, desc, gte, and } = require("drizzle-orm");
 
 // Load environment variables

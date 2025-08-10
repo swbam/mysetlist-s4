@@ -44,14 +44,19 @@ export async function GET(request: NextRequest) {
         classificationName: "music",
         sort: "relevance,desc",
       });
-      
-      const ticketmasterArtists = ticketmasterResponse._embedded?.attractions || [];
-      
+
+      const ticketmasterArtists =
+        ticketmasterResponse._embedded?.attractions || [];
+
       const results: SearchResult[] = ticketmasterArtists.map((attraction) => ({
         id: attraction.id,
         type: "artist" as const,
         title: attraction.name,
-        subtitle: attraction.classifications?.map((c: any) => c.genre?.name).filter(Boolean).join(", ") || "",
+        subtitle:
+          attraction.classifications
+            ?.map((c: any) => c.genre?.name)
+            .filter(Boolean)
+            .join(", ") || "",
         imageUrl: attraction.images?.[0]?.url || undefined,
         slug: attraction.id, // Use Ticketmaster ID as slug
         verified: false,

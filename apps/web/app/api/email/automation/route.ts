@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 function isValidAutomationRequest(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
   const automationSecret =
-    process.env["EMAIL_AUTOMATION_SECRET"] || process.env["CRON_SECRET"];
+    process.env.EMAIL_AUTOMATION_SECRET || process.env.CRON_SECRET;
 
   if (!automationSecret) {
     return false;
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     const { action, userId, metadata } = body;
 
     switch (action) {
-      case "process_triggers":
+      case "process_triggers": {
         const results = await processEmailAutomation();
         return NextResponse.json({
           success: true,
@@ -42,8 +42,9 @@ export async function POST(request: NextRequest) {
           results,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "get_personalized_data":
+      case "get_personalized_data": {
         if (!userId) {
           return NextResponse.json(
             { error: "userId is required for personalized data" },
@@ -57,6 +58,7 @@ export async function POST(request: NextRequest) {
           data: personalizedData,
           timestamp: new Date().toISOString(),
         });
+      }
 
       case "track_engagement":
         if (!userId || !metadata?.emailId || !metadata?.action) {
@@ -116,7 +118,7 @@ export async function GET(request: NextRequest) {
     const period = searchParams.get("period") || "week";
 
     switch (type) {
-      case "status":
+      case "status": {
         // Get automation status (simplified - no grouping for now)
         const { data: emailQueue } = await supabase
           .from("email_queue_enhanced")
@@ -137,8 +139,9 @@ export async function GET(request: NextRequest) {
           },
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "analytics":
+      case "analytics": {
         // Get email analytics
         const endDate = new Date();
         const startDate = new Date();
@@ -204,8 +207,9 @@ export async function GET(request: NextRequest) {
           },
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "user_preferences":
+      case "user_preferences": {
         // Get user's email preferences
         const { data: preferences } = await supabase
           .from("user_notification_preferences")
@@ -229,6 +233,7 @@ export async function GET(request: NextRequest) {
           },
           timestamp: new Date().toISOString(),
         });
+      }
 
       default:
         return NextResponse.json(

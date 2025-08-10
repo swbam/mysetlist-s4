@@ -266,7 +266,7 @@ async function runPerformanceAudit() {
               ? "⚠️"
               : "🐌";
       console.log(`  ${statusIcon} Overall Score: ${overallScore}%`);
-      console.log(`  📊 Core Web Vitals:`);
+      console.log("  📊 Core Web Vitals:");
       console.log(
         `     FCP: ${metrics.coreWebVitals.FCP?.toFixed(0) || "N/A"}ms`,
       );
@@ -297,7 +297,7 @@ async function runPerformanceAudit() {
   await browser.close();
 
   // Generate comprehensive report
-  console.log(`\n📈 PERFORMANCE AUDIT SUMMARY\n`);
+  console.log("\n📈 PERFORMANCE AUDIT SUMMARY\n");
 
   const successfulResults = results.filter((r) => !r.error);
   const averageScore =
@@ -311,7 +311,7 @@ async function runPerformanceAudit() {
   console.log(`🎯 Overall Performance Score: ${averageScore}%`);
 
   // Page rankings
-  console.log(`\n🏆 Page Performance Rankings:`);
+  console.log("\n🏆 Page Performance Rankings:");
   successfulResults
     .sort((a, b) => b.overallScore - a.overallScore)
     .forEach((result, idx) => {
@@ -324,7 +324,7 @@ async function runPerformanceAudit() {
 
   // Performance insights
   if (successfulResults.length > 0) {
-    console.log(`\n💡 PERFORMANCE INSIGHTS:`);
+    console.log("\n💡 PERFORMANCE INSIGHTS:");
 
     const avgMetrics = {
       FCP: successfulResults
@@ -373,7 +373,7 @@ async function runPerformanceAudit() {
     });
 
     if (issues.length > 0) {
-      console.log(`\n🔧 COMMON ISSUES FOUND:`);
+      console.log("\n🔧 COMMON ISSUES FOUND:");
       const issueCount = {};
       issues.forEach((issue) => {
         issueCount[issue] = (issueCount[issue] || 0) + 1;
@@ -389,22 +389,22 @@ async function runPerformanceAudit() {
 
   // Target recommendations
   if (averageScore < 80) {
-    console.log(`\n🎯 OPTIMIZATION RECOMMENDATIONS:`);
-    console.log(`  1. 🖼️  Optimize images (WebP format, proper sizing)`);
-    console.log(`  2. 📦 Reduce bundle size (code splitting, tree shaking)`);
-    console.log(`  3. ⚡ Implement caching strategies`);
-    console.log(`  4. 🔄 Add React.memo() to heavy components`);
-    console.log(`  5. 📊 Monitor Web Vitals in production`);
-    console.log(`  6. 🚀 Consider CDN for static assets`);
+    console.log("\n🎯 OPTIMIZATION RECOMMENDATIONS:");
+    console.log("  1. 🖼️  Optimize images (WebP format, proper sizing)");
+    console.log("  2. 📦 Reduce bundle size (code splitting, tree shaking)");
+    console.log("  3. ⚡ Implement caching strategies");
+    console.log("  4. 🔄 Add React.memo() to heavy components");
+    console.log("  5. 📊 Monitor Web Vitals in production");
+    console.log("  6. 🚀 Consider CDN for static assets");
   }
 
   // Save detailed results
-  require("fs").writeFileSync(
+  require("node:fs").writeFileSync(
     "performance-audit-results.json",
     JSON.stringify(results, null, 2),
   );
 
-  console.log(`\n📄 Detailed results saved to: performance-audit-results.json`);
+  console.log("\n📄 Detailed results saved to: performance-audit-results.json");
 
   return averageScore >= 80;
 }

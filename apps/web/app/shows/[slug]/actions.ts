@@ -65,7 +65,8 @@ export async function getShowDetails(slug: string) {
     const processedSongs = (setlist.setlist_songs || []).map((setlistSong) => {
       const votes = setlistSong.votes || [];
       const upvotes = votes.length; // All votes are upvotes in simplified system
-      const userVote = user && votes.some((v) => v.user_id === user.id) ? "up" : null;
+      const userVote =
+        user && votes.some((v) => v.user_id === user.id) ? "up" : null;
 
       return {
         ...setlistSong,
@@ -84,7 +85,9 @@ export async function getShowDetails(slug: string) {
 
   // Separate actual and predicted setlists
   const actualSetlists = processedSetlists.filter((s) => s.type === "actual");
-  const predictedSetlists = processedSetlists.filter((s) => s.type === "predicted");
+  const predictedSetlists = processedSetlists.filter(
+    (s) => s.type === "predicted",
+  );
 
   return {
     ...show,
@@ -455,13 +458,13 @@ export async function lockSetlist(setlistId: string) {
 
 export async function importActualSetlistFromSetlistFm(showId: string) {
   const user = await getCurrentUser();
-  
+
   if (!user) {
     throw new Error("You must be logged in to import setlists");
   }
 
   const supabase = await createClient();
-  
+
   // Get show details
   const { data: show } = await supabase
     .from("shows")
@@ -479,7 +482,7 @@ export async function importActualSetlistFromSetlistFm(showId: string) {
 
   const showDate = new Date(show.date);
   const now = new Date();
-  
+
   // Only allow importing for past shows
   if (showDate >= now) {
     throw new Error("Can only import setlists for past shows");
@@ -499,11 +502,13 @@ export async function importActualSetlistFromSetlistFm(showId: string) {
 
   // Try to import from SetlistFM using the setlist sync service
   try {
-    const { SetlistSyncService } = await import("@repo/external-apis/src/services/setlist-sync");
+    const { SetlistSyncService } = await import(
+      "@repo/external-apis/src/services/setlist-sync"
+    );
     const syncService = new SetlistSyncService();
-    
+
     await syncService.syncSetlistByShowId(showId);
-    
+
     // Check if setlist was successfully imported
     const { data: importedSetlist } = await supabase
       .from("setlists")
@@ -517,19 +522,18 @@ export async function importActualSetlistFromSetlistFm(showId: string) {
       return {
         success: true,
         message: "Actual setlist imported successfully from Setlist.fm",
-        setlist: importedSetlist
-      };
-    } else {
-      return {
-        success: false,
-        message: "No matching setlist found on Setlist.fm for this show"
+        setlist: importedSetlist,
       };
     }
+    return {
+      success: false,
+      message: "No matching setlist found on Setlist.fm for this show",
+    };
   } catch (error) {
     console.error("Failed to import setlist:", error);
     return {
       success: false,
-      message: "Failed to import setlist from Setlist.fm"
+      message: "Failed to import setlist from Setlist.fm",
     };
   }
 }

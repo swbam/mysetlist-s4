@@ -74,11 +74,7 @@ export const SafeLink: React.FC<SafeLinkProps> = ({
       linkProps.onClick = onClick;
     }
 
-    return (
-      <Link {...linkProps}>
-        <>{children}</>
-      </Link>
-    );
+    return <Link {...linkProps}>{children}</Link>;
   }
 
   return (
@@ -91,7 +87,7 @@ export const SafeLink: React.FC<SafeLinkProps> = ({
       onClick={handleClick}
       {...props}
     >
-      <>{children}</>
+      {children}
     </Link>
   );
 };

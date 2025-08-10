@@ -66,7 +66,7 @@ requiredEnvVars.forEach((varName) => {
   if (value) {
     const displayValue =
       varName.includes("SECRET") || varName.includes("KEY")
-        ? value.substring(0, 10) + "..."
+        ? `${value.substring(0, 10)}...`
         : value.substring(0, 30) + (value.length > 30 ? "..." : "");
     console.log(`  ✓ ${varName.padEnd(35)} = ${displayValue}`);
   } else {
@@ -103,7 +103,7 @@ async function testSupabase() {
 
   try {
     const response = await fetch(
-      process.env.NEXT_PUBLIC_SUPABASE_URL + "/rest/v1/",
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/`,
       {
         headers: {
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
@@ -134,13 +134,9 @@ async function testSpotify() {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        Authorization:
-          "Basic " +
-          Buffer.from(
-            process.env.SPOTIFY_CLIENT_ID +
-              ":" +
-              process.env.SPOTIFY_CLIENT_SECRET,
-          ).toString("base64"),
+        Authorization: `Basic ${Buffer.from(
+          `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`,
+        ).toString("base64")}`,
       },
       body: "grant_type=client_credentials",
     });
@@ -205,7 +201,7 @@ Promise.all([
   testTicketmaster(),
   testDatabase(),
 ]).then(() => {
-  console.log("\n" + "=".repeat(60));
+  console.log(`\n${"=".repeat(60)}`);
 
   if (hasErrors) {
     console.log("\n❌ Environment validation FAILED!\n");

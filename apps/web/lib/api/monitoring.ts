@@ -105,10 +105,10 @@ export class MonitoringService {
       await this.cache.pipeline(pipeline);
 
       // Expire old logs (keep for 7 days)
-      await this.cache.expire(`logs:info`, 604800);
-      await this.cache.expire(`logs:warn`, 604800);
-      await this.cache.expire(`logs:error`, 604800);
-      await this.cache.expire(`logs:debug`, 604800);
+      await this.cache.expire("logs:info", 604800);
+      await this.cache.expire("logs:warn", 604800);
+      await this.cache.expire("logs:error", 604800);
+      await this.cache.expire("logs:debug", 604800);
 
       // Send errors to external monitoring (Sentry, etc.)
       const errorLogs = logs.filter((log) => log.level === "error");
@@ -161,7 +161,7 @@ export class MonitoringService {
 
   private async sendToExternalMonitoring(errorLogs: LogEntry[]) {
     // Send to Sentry or other external monitoring service
-    if (process.env["SENTRY_DSN"]) {
+    if (process.env.SENTRY_DSN) {
       for (const log of errorLogs) {
         try {
           // This would integrate with Sentry SDK
@@ -185,7 +185,7 @@ export class MonitoringService {
     this.logQueue.push(entry);
 
     // Also log to console in development
-    if (process.env["NODE_ENV"] === "development") {
+    if (process.env.NODE_ENV === "development") {
       console.log(`[${entry.timestamp}] ${message}`, data);
     }
   }
@@ -201,7 +201,7 @@ export class MonitoringService {
 
     this.logQueue.push(entry);
 
-    if (process.env["NODE_ENV"] === "development") {
+    if (process.env.NODE_ENV === "development") {
       console.warn(`[${entry.timestamp}] ${message}`, data);
     }
   }
@@ -224,13 +224,13 @@ export class MonitoringService {
 
     this.logQueue.push(entry);
 
-    if (process.env["NODE_ENV"] === "development") {
+    if (process.env.NODE_ENV === "development") {
       console.error(`[${entry.timestamp}] ${message}`, error);
     }
   }
 
   debug(message: string, data?: any, context?: Partial<LogEntry>) {
-    if (process.env["NODE_ENV"] === "development") {
+    if (process.env.NODE_ENV === "development") {
       const entry: LogEntry = {
         timestamp: new Date().toISOString(),
         level: "debug",
@@ -363,7 +363,7 @@ export class MonitoringService {
     statusCode?: number,
   ) {
     this.metric(
-      `external_api_duration_ms`,
+      "external_api_duration_ms",
       duration,
       {
         service,

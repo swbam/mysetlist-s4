@@ -216,26 +216,21 @@ class ScalabilityArchitect {
         partitioning: ["events"],
         connectionPooling: 20,
       };
-    } else if (userCount < 500000) {
+    }
+    if (userCount < 500000) {
       return {
         readReplicas: 3,
         sharding: false,
         partitioning: ["events", "setlist_votes", "user_sessions"],
         connectionPooling: 50,
       };
-    } else {
-      return {
-        readReplicas: 5,
-        sharding: true,
-        partitioning: [
-          "events",
-          "setlist_votes",
-          "user_sessions",
-          "email_queue",
-        ],
-        connectionPooling: 100,
-      };
     }
+    return {
+      readReplicas: 5,
+      sharding: true,
+      partitioning: ["events", "setlist_votes", "user_sessions", "email_queue"],
+      connectionPooling: 100,
+    };
   }
 
   // Caching strategy for different user loads
@@ -256,7 +251,8 @@ class ScalabilityArchitect {
         memoryAllocation: "2GB",
         strategy: "cache_aside",
       };
-    } else if (userCount < 500000) {
+    }
+    if (userCount < 500000) {
       return {
         layers: ["cdn", "application", "database"],
         ttl: {
@@ -267,18 +263,17 @@ class ScalabilityArchitect {
         memoryAllocation: "8GB",
         strategy: "write_through",
       };
-    } else {
-      return {
-        layers: ["cdn", "edge", "application", "database"],
-        ttl: {
-          static: 86400,
-          dynamic: 7200,
-          user_specific: 3600,
-        },
-        memoryAllocation: "32GB",
-        strategy: "write_behind",
-      };
     }
+    return {
+      layers: ["cdn", "edge", "application", "database"],
+      ttl: {
+        static: 86400,
+        dynamic: 7200,
+        user_specific: 3600,
+      },
+      memoryAllocation: "32GB",
+      strategy: "write_behind",
+    };
   }
 
   // Infrastructure sizing recommendations
@@ -305,7 +300,8 @@ class ScalabilityArchitect {
           backups: "Daily, 7-day retention",
         },
       };
-    } else if (userCount < 500000) {
+    }
+    if (userCount < 500000) {
       return {
         servers: [
           { type: "web", count: 5, specs: "8 vCPU, 16GB RAM" },
@@ -322,28 +318,27 @@ class ScalabilityArchitect {
           backups: "Hourly, 30-day retention",
         },
       };
-    } else {
-      return {
-        servers: [
-          { type: "web", count: 15, specs: "16 vCPU, 32GB RAM" },
-          { type: "api", count: 15, specs: "16 vCPU, 32GB RAM" },
-          { type: "worker", count: 10, specs: "8 vCPU, 16GB RAM" },
-        ],
-        databases: [
-          { type: "primary", count: 5, specs: "32 vCPU, 64GB RAM, 2TB SSD" },
-          { type: "replica", count: 10, specs: "16 vCPU, 32GB RAM, 1TB SSD" },
-        ],
-        caches: [
-          { type: "redis", count: 5, specs: "8 vCPU, 16GB RAM" },
-          { type: "memcached", count: 5, specs: "4 vCPU, 8GB RAM" },
-        ],
-        storage: {
-          type: "NVMe SSD",
-          size: "20TB",
-          backups: "Continuous, 90-day retention",
-        },
-      };
     }
+    return {
+      servers: [
+        { type: "web", count: 15, specs: "16 vCPU, 32GB RAM" },
+        { type: "api", count: 15, specs: "16 vCPU, 32GB RAM" },
+        { type: "worker", count: 10, specs: "8 vCPU, 16GB RAM" },
+      ],
+      databases: [
+        { type: "primary", count: 5, specs: "32 vCPU, 64GB RAM, 2TB SSD" },
+        { type: "replica", count: 10, specs: "16 vCPU, 32GB RAM, 1TB SSD" },
+      ],
+      caches: [
+        { type: "redis", count: 5, specs: "8 vCPU, 16GB RAM" },
+        { type: "memcached", count: 5, specs: "4 vCPU, 8GB RAM" },
+      ],
+      storage: {
+        type: "NVMe SSD",
+        size: "20TB",
+        backups: "Continuous, 90-day retention",
+      },
+    };
   }
 
   // Performance optimization strategies

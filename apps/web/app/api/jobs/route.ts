@@ -135,7 +135,7 @@ export async function PUT(request: NextRequest) {
           job.updatedAt = new Date();
 
           // Remove from queue and update cache
-          const cache = backgroundJobQueue["cache"];
+          const cache = backgroundJobQueue.cache;
           await cache.pipeline([
             ["ZREM", "job_queue", jobId],
             ["SET", `job:${jobId}`, JSON.stringify(job)],
@@ -147,12 +147,11 @@ export async function PUT(request: NextRequest) {
             message: "Job cancelled successfully",
             job,
           });
-        } else {
-          return NextResponse.json(
-            { error: "Job cannot be cancelled in current state" },
-            { status: 400 },
-          );
         }
+        return NextResponse.json(
+          { error: "Job cannot be cancelled in current state" },
+          { status: 400 },
+        );
 
       case "retry":
         if (job.status === "failed") {
@@ -161,7 +160,7 @@ export async function PUT(request: NextRequest) {
           job.attempts = 0;
           job.scheduledAt = new Date();
           job.updatedAt = new Date();
-          delete job.error;
+          job.error = undefined;
 
           // Re-add to queue
           const score =
@@ -171,7 +170,7 @@ export async function PUT(request: NextRequest) {
               : job.priority === "medium"
                 ? -500
                 : -100);
-          const cache = backgroundJobQueue["cache"];
+          const cache = backgroundJobQueue.cache;
           await cache.pipeline([
             ["SET", `job:${jobId}`, JSON.stringify(job)],
             ["ZADD", "job_queue", score, jobId],
@@ -183,12 +182,11 @@ export async function PUT(request: NextRequest) {
             message: "Job retried successfully",
             job,
           });
-        } else {
-          return NextResponse.json(
-            { error: "Job cannot be retried in current state" },
-            { status: 400 },
-          );
         }
+        return NextResponse.json(
+          { error: "Job cannot be retried in current state" },
+          { status: 400 },
+        );
 
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });
@@ -229,7 +227,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete job from cache
-    const cache = backgroundJobQueue["cache"];
+    const cache = backgroundJobQueue.cache;
     await cache.pipeline([
       ["DEL", `job:${jobId}`],
       ["ZREM", "job_queue", jobId],

@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const { systemToken } = body;
 
     let supabase;
-    if (systemToken === process.env["EMAIL_SYSTEM_TOKEN"]) {
+    if (systemToken === process.env.EMAIL_SYSTEM_TOKEN) {
       supabase = createServiceClient();
     } else {
       supabase = await createAuthenticatedClient();
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     // Check authentication for non-system requests (only for authenticated client)
     let session = null;
-    if (systemToken !== process.env["EMAIL_SYSTEM_TOKEN"]) {
+    if (systemToken !== process.env.EMAIL_SYSTEM_TOKEN) {
       const {
         data: { session: userSession },
       } = await supabase.auth.getSession();
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     } = body;
 
     // Validate system token for automated emails
-    if (!session && systemToken !== process.env["EMAIL_SYSTEM_TOKEN"]) {
+    if (!session && systemToken !== process.env.EMAIL_SYSTEM_TOKEN) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -77,8 +77,7 @@ export async function POST(request: NextRequest) {
       : [{ email: recipientList }];
 
     let result;
-    const appUrl =
-      process.env["NEXT_PUBLIC_APP_URL"] || "https://mysetlist.app";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://mysetlist.app";
 
     // Route to appropriate email service
     switch (emailType) {

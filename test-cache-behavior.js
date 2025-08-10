@@ -5,8 +5,8 @@
  * Tests the caching behavior of MySetlist PWA fixes
  */
 
-const https = require("https");
-const http = require("http");
+const https = require("node:https");
+const http = require("node:http");
 
 const BASE_URL = process.env.TEST_BASE_URL || "http://localhost:3001";
 
@@ -64,7 +64,7 @@ async function fetchWithHeaders(url) {
               status: res.statusCode,
               headers: res.headers,
               data: null,
-              error: "JSON Parse Error: " + parseError.message,
+              error: `JSON Parse Error: ${parseError.message}`,
               responseTime,
               timestamp: new Date().toISOString(),
             });
@@ -96,9 +96,9 @@ function analyzeCacheHeaders(headers) {
   const analysis = {
     cacheControl: headers["cache-control"] || "none",
     lastModified: headers["last-modified"] || "none",
-    etag: headers["etag"] || "none",
-    expires: headers["expires"] || "none",
-    vary: headers["vary"] || "none",
+    etag: headers.etag || "none",
+    expires: headers.expires || "none",
+    vary: headers.vary || "none",
     xCacheStrategy: headers["x-cache-strategy"] || "none",
     xLastModified: headers["x-last-modified"] || "none",
   };
@@ -151,7 +151,7 @@ async function testEndpoint(url) {
     console.log(`   No-Cache: ${cacheAnalysis.noCache}`);
 
     // Data freshness check
-    if (firstResponse.data && firstResponse.data.generatedAt) {
+    if (firstResponse.data?.generatedAt) {
       const generatedAt = new Date(firstResponse.data.generatedAt);
       const requestTime = new Date(firstResponse.timestamp);
       const dataAge = requestTime - generatedAt;
@@ -314,7 +314,7 @@ async function testCacheBehavior() {
     );
   }
 
-  console.log("\n" + "=".repeat(80));
+  console.log(`\n${"=".repeat(80)}`);
   console.log("Test completed at:", new Date().toISOString());
 
   process.exit(issues.length > 0 ? 1 : 0);

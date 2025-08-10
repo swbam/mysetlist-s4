@@ -75,7 +75,7 @@ export const SignUp = () => {
 
       // Redirect after a short delay to show success message
       setTimeout(() => {
-        router.push("/auth/verify-email?email=" + encodeURIComponent(email));
+        router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
       }, 2000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");

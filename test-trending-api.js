@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const http = require("http");
+const http = require("node:http");
 
 async function testTrendingAPI() {
   const options = {
@@ -16,7 +16,7 @@ async function testTrendingAPI() {
   return new Promise((resolve, reject) => {
     const req = http.request(options, (res) => {
       console.log(`Status: ${res.statusCode}`);
-      console.log(`Headers:`, res.headers);
+      console.log("Headers:", res.headers);
 
       let data = "";
 

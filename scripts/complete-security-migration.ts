@@ -5,7 +5,7 @@
  * This script completes the remaining security migration steps
  */
 
-import { join } from "path";
+import { join } from "node:path";
 import { config } from "dotenv";
 
 // Load environment variables first
@@ -120,14 +120,14 @@ async function completeMigration() {
     console.log(`🔄 ${step.name}...`);
     try {
       await db.execute(sql.raw(step.sql));
-      console.log(`   ✅ Success`);
+      console.log("   ✅ Success");
       successCount++;
     } catch (error: any) {
       if (error.message?.includes("already exists")) {
-        console.log(`   ⚠️  Already exists (skipping)`);
+        console.log("   ⚠️  Already exists (skipping)");
         skipCount++;
       } else if (error.message?.includes("multiple primary keys")) {
-        console.log(`   ⚠️  Primary key already exists (skipping)`);
+        console.log("   ⚠️  Primary key already exists (skipping)");
         skipCount++;
       } else {
         console.error(`   ❌ Error: ${error.message}`);

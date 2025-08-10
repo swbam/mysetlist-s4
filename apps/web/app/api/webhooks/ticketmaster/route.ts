@@ -15,7 +15,7 @@ import { triggerNewShowNotifications } from "~/lib/email-triggers";
 
 // Protect webhook endpoint
 function isValidWebhookRequest(request: NextRequest): boolean {
-  const webhookSecret = process.env["TICKETMASTER_WEBHOOK_SECRET"];
+  const webhookSecret = process.env.TICKETMASTER_WEBHOOK_SECRET;
   const signature = request.headers.get("x-ticketmaster-signature");
 
   if (!webhookSecret || !signature) {

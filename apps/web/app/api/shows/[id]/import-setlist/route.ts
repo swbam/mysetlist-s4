@@ -1,28 +1,28 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { importActualSetlistFromSetlistFm } from "~/app/shows/[slug]/actions";
 import { getCurrentUser } from "~/lib/auth";
 import { createClient } from "~/lib/supabase/server";
-import { importActualSetlistFromSetlistFm } from "~/app/shows/[slug]/actions";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const user = await getCurrentUser();
-    
+
     if (!user) {
       return NextResponse.json(
         { error: "Authentication required" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     const { id: showId } = await params;
-    
+
     if (!showId) {
       return NextResponse.json(
         { error: "Show ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -35,19 +35,16 @@ export async function POST(
       .single();
 
     if (!show) {
-      return NextResponse.json(
-        { error: "Show not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Show not found" }, { status: 404 });
     }
 
     const showDate = new Date(show.date);
     const now = new Date();
-    
+
     if (showDate >= now) {
       return NextResponse.json(
         { error: "Can only import setlists for past shows" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -62,31 +59,26 @@ export async function POST(
     if (existingActualSetlist) {
       return NextResponse.json(
         { error: "Actual setlist already exists for this show" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
     // Import the setlist
     const result = await importActualSetlistFromSetlistFm(showId);
-    
+
     if (result.success) {
       return NextResponse.json({
         message: result.message,
-        setlist: result.setlist
+        setlist: result.setlist,
       });
-    } else {
-      return NextResponse.json(
-        { error: result.message },
-        { status: 404 }
-      );
     }
-
+    return NextResponse.json({ error: result.message }, { status: 404 });
   } catch (error: any) {
     console.error("Error importing setlist:", error);
-    
+
     return NextResponse.json(
       { error: error.message || "Failed to import setlist" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

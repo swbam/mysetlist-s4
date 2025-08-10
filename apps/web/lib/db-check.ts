@@ -9,19 +9,19 @@ export async function checkDatabaseConnection() {
 
   // Check 1: Environment variables
   checks.hasEnvVars = !!(
-    process.env["DATABASE_URL"] &&
-    process.env["NEXT_PUBLIC_SUPABASE_URL"] &&
-    process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]
+    process.env.DATABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
   if (!checks.hasEnvVars) {
     checks.error = {
       message: "Missing required environment variables",
       details: {
-        DATABASE_URL: !!process.env["DATABASE_URL"],
-        NEXT_PUBLIC_SUPABASE_URL: !!process.env["NEXT_PUBLIC_SUPABASE_URL"],
+        DATABASE_URL: !!process.env.DATABASE_URL,
+        NEXT_PUBLIC_SUPABASE_URL: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
         NEXT_PUBLIC_SUPABASE_ANON_KEY:
-          !!process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"],
+          !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
       },
     };
     return checks;
@@ -45,8 +45,7 @@ export async function checkDatabaseConnection() {
     checks.error = {
       message: error.message,
       code: error.code,
-      stack:
-        process.env["NODE_ENV"] === "development" ? error.stack : undefined,
+      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
     };
   }
 

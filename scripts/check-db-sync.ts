@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { resolve } from "path";
+import { resolve } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { config } from "dotenv";
 
@@ -116,7 +116,7 @@ async function checkDatabase() {
       }
 
       results.tablesOk++;
-      console.log(`   ✅ Table exists`);
+      console.log("   ✅ Table exists");
 
       // Check columns (if we got data)
       if (columns && columns.length > 0) {
@@ -134,7 +134,7 @@ async function checkDatabase() {
         }
 
         if (!missingColumns) {
-          console.log(`   ✅ All required columns present`);
+          console.log("   ✅ All required columns present");
         }
       }
 
@@ -181,7 +181,7 @@ async function checkDatabase() {
             .limit(5);
 
           if (trending && trending.length > 0) {
-            console.log(`   🔥 Top trending artists:`);
+            console.log("   🔥 Top trending artists:");
             trending.forEach((artist, i) => {
               console.log(
                 `      ${i + 1}. ${artist.name} (score: ${artist.trending_score.toFixed(2)})`,
@@ -231,7 +231,7 @@ async function checkDatabase() {
             results.syncStatus.recentActivity.lastActivity = new Date(
               recentActivity[0].created_at,
             );
-            console.log(`   📝 Recent activity:`);
+            console.log("   📝 Recent activity:");
             recentActivity.forEach((activity) => {
               const time = new Date(activity.created_at).toLocaleString();
               console.log(
@@ -248,7 +248,7 @@ async function checkDatabase() {
   }
 
   // Summary
-  console.log("\n" + "=".repeat(80));
+  console.log(`\n${"=".repeat(80)}`);
   console.log("📊 DATABASE CHECK SUMMARY");
   console.log("=".repeat(80));
 

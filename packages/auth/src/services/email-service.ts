@@ -124,7 +124,7 @@ export class EmailService {
    * Generate secure token for password reset
    */
   private generateSecureToken(): string {
-    const crypto = require("crypto");
+    const crypto = require("node:crypto");
     return crypto.randomBytes(32).toString("hex");
   }
 

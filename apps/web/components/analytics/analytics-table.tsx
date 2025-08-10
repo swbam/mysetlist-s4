@@ -108,7 +108,7 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
           lastActive: `${Math.floor(Math.random() * 24)} hours ago`,
         }));
 
-      case "trending-artists":
+      case "trending-artists": {
         const artists = [
           "Taylor Swift",
           "The Weeknd",
@@ -142,8 +142,9 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
             location: "Global",
           }),
         );
+      }
 
-      case "trending-shows":
+      case "trending-shows": {
         const shows = [
           "Eras Tour",
           "After Hours Til Dawn",
@@ -179,8 +180,9 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
             lastActive: `${Math.floor(Math.random() * 7)} days ago`,
           }),
         );
+      }
 
-      case "top-venues":
+      case "top-venues": {
         const venueNames = [
           "Madison Square Garden",
           "Staples Center",
@@ -210,8 +212,9 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
             location: cities[i] ?? "",
           }),
         );
+      }
 
-      case "recent-activity":
+      case "recent-activity": {
         const activities = [
           "Voted on song",
           "Followed artist",
@@ -229,6 +232,7 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
           type: "User Activity",
           status: "active",
         }));
+      }
 
       default:
         return [];

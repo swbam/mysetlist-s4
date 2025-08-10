@@ -88,17 +88,17 @@ export async function GET(request: NextRequest) {
 
         return NextResponse.json({
           totals: {
-            artists: artistCount[0]?.["count"] || 0,
-            venues: venueCount[0]?.["count"] || 0,
-            shows: showCount[0]?.["count"] || 0,
-            songs: songCount[0]?.["count"] || 0,
-            setlists: setlistCount[0]?.["count"] || 0,
-            votes: voteCount[0]?.["count"] || 0,
-            activeUsers: activeUsersCount[0]?.["count"] || 0,
+            artists: artistCount[0]?.count || 0,
+            venues: venueCount[0]?.count || 0,
+            shows: showCount[0]?.count || 0,
+            songs: songCount[0]?.count || 0,
+            setlists: setlistCount[0]?.count || 0,
+            votes: voteCount[0]?.count || 0,
+            activeUsers: activeUsersCount[0]?.count || 0,
           },
           distribution: dataDistribution.reduce(
             (acc, row) => {
-              acc[row["metric"] as string] = row["value"] as number;
+              acc[row.metric as string] = row.value as number;
               return acc;
             },
             {} as Record<string, number>,
@@ -127,9 +127,9 @@ export async function GET(request: NextRequest) {
             WHERE sh.id IS NULL
           `);
 
-          if (Number(orphanedSetlists[0]?.["count"]) > 0) {
+          if (Number(orphanedSetlists[0]?.count) > 0) {
             issues.push(
-              `${orphanedSetlists[0]?.["count"]} orphaned setlists found`,
+              `${orphanedSetlists[0]?.count} orphaned setlists found`,
             );
           }
 
@@ -140,8 +140,8 @@ export async function GET(request: NextRequest) {
             WHERE ss.id IS NULL
           `);
 
-          if (Number(orphanedVotes[0]?.["count"]) > 0) {
-            issues.push(`${orphanedVotes[0]?.["count"]} orphaned votes found`);
+          if (Number(orphanedVotes[0]?.count) > 0) {
+            issues.push(`${orphanedVotes[0]?.count} orphaned votes found`);
           }
 
           return NextResponse.json({
@@ -345,7 +345,7 @@ export async function POST(request: NextRequest) {
 
       case "seed_sample_data": {
         // Seed sample data for development/testing
-        if (process.env["NODE_ENV"] === "production") {
+        if (process.env.NODE_ENV === "production") {
           return NextResponse.json(
             { error: "Sample data seeding not allowed in production" },
             { status: 403 },

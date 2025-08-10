@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Setlist not found" }, { status: 404 });
     }
 
-    if (setlist[0]!["createdBy"] !== user.id && setlist[0]!["isLocked"]) {
+    if (setlist[0]?.createdBy !== user.id && setlist[0]?.isLocked) {
       return NextResponse.json(
         { error: "Cannot modify this setlist" },
         { status: 403 },
@@ -122,12 +122,12 @@ export async function DELETE(request: NextRequest) {
         isLocked: setlists.isLocked,
       })
       .from(setlists)
-      .where(eq(setlists.id, setlistSong[0]!["setlistId"]))
+      .where(eq(setlists.id, setlistSong[0]?.setlistId))
       .limit(1);
 
     if (
       setlist.length === 0 ||
-      (setlist[0]!["createdBy"] !== user.id && setlist[0]!["isLocked"])
+      (setlist[0]?.createdBy !== user.id && setlist[0]?.isLocked)
     ) {
       return NextResponse.json(
         { error: "Cannot modify this setlist" },

@@ -142,7 +142,7 @@ async function checkRedisCache(): Promise<HealthCheck> {
   const start = Date.now();
   try {
     // Try to set and get a test value
-    const testKey = "health-check-" + Date.now();
+    const testKey = `health-check-${Date.now()}`;
     const testValue = "ok";
 
     // This would use your cache implementation

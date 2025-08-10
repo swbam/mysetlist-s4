@@ -141,7 +141,10 @@ export function MobileSearch({
       onResultSelect(result);
     } else if (result.type === "artist") {
       // For Ticketmaster artists, navigate with Ticketmaster ID parameter
-      const slug = result.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const slug = result.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
       router.push(`/artists/${slug}?ticketmaster=${result.id}`);
     }
 

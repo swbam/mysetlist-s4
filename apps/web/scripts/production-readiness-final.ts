@@ -7,9 +7,9 @@
  * it's ready for production deployment with optimal performance and security.
  */
 
-import { execSync } from "child_process";
-import { existsSync, readFileSync } from "fs";
-import path from "path";
+import { execSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 
 interface CheckResult {
   name: string;

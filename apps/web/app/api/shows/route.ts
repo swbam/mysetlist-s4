@@ -1,7 +1,7 @@
 import { artists, db, showArtists, shows, venues } from "@repo/database";
 import { and, asc, desc, eq, gte, ilike, inArray, lte, sql } from "drizzle-orm";
+import type { SQL } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { SQL } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,17 +50,20 @@ export async function GET(request: NextRequest) {
       conditions.push(ilike(venues.city, `%${city}%`));
     }
     if (!status) {
-      conditions.push(gte(shows.date, new Date().toISOString().substring(0, 10)));
+      conditions.push(
+        gte(shows.date, new Date().toISOString().substring(0, 10)),
+      );
     }
 
     const whereClause = conditions.length ? and(...conditions) : sql`TRUE`;
 
     // Decide ordering expression
-    const orderExpr = orderBy === "trending"
-      ? desc(shows.trendingScore)
-      : orderBy === "popularity"
-      ? desc(shows.viewCount)
-      : asc(shows.date);
+    const orderExpr =
+      orderBy === "trending"
+        ? desc(shows.trendingScore)
+        : orderBy === "popularity"
+          ? desc(shows.viewCount)
+          : asc(shows.date);
 
     // Compose final query in a single chain so Drizzle keeps full type
     const query = db
@@ -153,7 +156,7 @@ export async function GET(request: NextRequest) {
         if (!acc[sa.showId]) {
           acc[sa.showId] = [];
         }
-        acc[sa.showId]!.push({
+        acc[sa.showId]?.push({
           id: sa.id,
           artistId: sa.artistId,
           orderIndex: sa.orderIndex,

@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
-import { readFileSync, writeFileSync } from "fs";
-import { join } from "path";
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 /**
  * Script to update all edge function references to API routes

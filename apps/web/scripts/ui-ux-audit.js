@@ -111,7 +111,7 @@ async function runComprehensiveUIUXAudit() {
   };
 
   // Generate comprehensive report
-  console.log("\n" + "=".repeat(60));
+  console.log(`\n${"=".repeat(60)}`);
   console.log("📊 COMPREHENSIVE UI/UX & PERFORMANCE AUDIT RESULTS");
   console.log("=".repeat(60));
 
@@ -147,9 +147,9 @@ async function runComprehensiveUIUXAudit() {
   const readyCount = Object.values(productionReady).filter(Boolean).length;
   const isProductionReady = readyCount === 3;
 
-  console.log(`┌─────────────────────────────┬─────────────────┐`);
-  console.log(`│ Criteria                    │ Ready           │`);
-  console.log(`├─────────────────────────────┼─────────────────┤`);
+  console.log("┌─────────────────────────────┬─────────────────┐");
+  console.log("│ Criteria                    │ Ready           │");
+  console.log("├─────────────────────────────┼─────────────────┤");
   console.log(
     `│ WCAG 2.1 AA Compliance     │ ${productionReady.accessibility ? "✅ YES" : "❌ NO"} ${"".padEnd(10)} │`,
   );
@@ -159,14 +159,14 @@ async function runComprehensiveUIUXAudit() {
   console.log(
     `│ Performance Standards       │ ${productionReady.performance ? "✅ YES" : "❌ NO"} ${"".padEnd(10)} │`,
   );
-  console.log(`└─────────────────────────────┴─────────────────┘`);
+  console.log("└─────────────────────────────┴─────────────────┘");
 
   console.log(`\n📊 Production Readiness: ${readyCount}/3 criteria met`);
 
   if (isProductionReady) {
     console.log("🎉 🎉 🎉 APPLICATION IS PRODUCTION READY! 🎉 🎉 🎉");
   } else {
-    console.log(`⚠️  APPLICATION NEEDS IMPROVEMENT BEFORE PRODUCTION`);
+    console.log("⚠️  APPLICATION NEEDS IMPROVEMENT BEFORE PRODUCTION");
 
     console.log("\n🔧 IMMEDIATE ACTION ITEMS:");
     if (!productionReady.accessibility) {
@@ -222,7 +222,7 @@ async function runComprehensiveUIUXAudit() {
     },
   };
 
-  require("fs").writeFileSync(
+  require("node:fs").writeFileSync(
     "comprehensive-ui-ux-audit-results.json",
     JSON.stringify(reportData, null, 2),
   );
@@ -235,7 +235,7 @@ async function runComprehensiveUIUXAudit() {
   );
   console.log("  • performance-audit-results.json (Detailed performance)");
 
-  console.log("\n" + "=".repeat(60));
+  console.log(`\n${"=".repeat(60)}`);
   console.log(
     `UI/UX & PERFORMANCE AUDIT COMPLETED - Grade: ${results.overall.grade}`,
   );

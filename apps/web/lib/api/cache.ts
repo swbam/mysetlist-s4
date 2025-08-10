@@ -45,10 +45,6 @@ export class CacheService {
 }
 
 export class CacheWarmer {
-  constructor() {
-    // CacheService will be used when methods are implemented
-  }
-
   async warmCache(_keys: string[]): Promise<void> {
     // Implementation would fetch and cache data for the given keys
   }

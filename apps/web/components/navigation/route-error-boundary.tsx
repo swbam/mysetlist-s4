@@ -46,7 +46,7 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
     this.setState({ errorInfo });
 
     // Log to external service in production
-    if (process.env["NODE_ENV"] === "production") {
+    if (process.env.NODE_ENV === "production") {
       // TODO: Send to error tracking service
     }
   }
@@ -156,33 +156,32 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
                 </div>
               )}
 
-              {process.env["NODE_ENV"] === "development" &&
-                this.state.error && (
-                  <details className="mt-4 text-left">
-                    <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
-                      Debug Information
-                    </summary>
-                    <div className="mt-2 space-y-2">
+              {process.env.NODE_ENV === "development" && this.state.error && (
+                <details className="mt-4 text-left">
+                  <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
+                    Debug Information
+                  </summary>
+                  <div className="mt-2 space-y-2">
+                    <div className="rounded-md bg-muted p-2">
+                      <h4 className="font-medium text-xs">Error:</h4>
+                      <pre className="mt-1 overflow-auto text-xs">
+                        {this.state.error.message}
+                      </pre>
+                    </div>
+                    {this.state.error.stack && (
                       <div className="rounded-md bg-muted p-2">
-                        <h4 className="font-medium text-xs">Error:</h4>
+                        <h4 className="font-medium text-xs">Stack:</h4>
                         <pre className="mt-1 overflow-auto text-xs">
-                          {this.state.error.message}
+                          {this.state.error.stack
+                            .split("\n")
+                            .slice(0, 10)
+                            .join("\n")}
                         </pre>
                       </div>
-                      {this.state.error.stack && (
-                        <div className="rounded-md bg-muted p-2">
-                          <h4 className="font-medium text-xs">Stack:</h4>
-                          <pre className="mt-1 overflow-auto text-xs">
-                            {this.state.error.stack
-                              .split("\n")
-                              .slice(0, 10)
-                              .join("\n")}
-                          </pre>
-                        </div>
-                      )}
-                    </div>
-                  </details>
-                )}
+                    )}
+                  </div>
+                </details>
+              )}
             </CardContent>
           </Card>
         </div>

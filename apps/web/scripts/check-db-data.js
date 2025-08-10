@@ -29,7 +29,7 @@ async function checkData() {
         if (data && data.length > 0) {
           console.log(
             "Sample data:",
-            JSON.stringify(data[0], null, 2).substring(0, 200) + "...",
+            `${JSON.stringify(data[0], null, 2).substring(0, 200)}...`,
           );
         }
       }

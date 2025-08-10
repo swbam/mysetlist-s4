@@ -21,10 +21,7 @@ export async function POST(request: NextRequest) {
   try {
     // Check for service role key
     const serviceRole = request.headers.get("x-supabase-service-role");
-    if (
-      !serviceRole ||
-      serviceRole !== process.env["SUPABASE_SERVICE_ROLE_KEY"]
-    ) {
+    if (!serviceRole || serviceRole !== process.env.SUPABASE_SERVICE_ROLE_KEY) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

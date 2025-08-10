@@ -27,7 +27,7 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
-const APP_URL = process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 
 // Top 5 trending artists in the US with upcoming shows (as of 2024)
 const TOP_US_ARTISTS = [
@@ -43,7 +43,7 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
     console.log(`\n🎤 Syncing ${artist.name}...`);
 
     // 1. Sync artist data from Spotify
-    console.log(`  📡 Fetching artist data from Spotify...`);
+    console.log("  📡 Fetching artist data from Spotify...");
     const spotifyArtist = await spotify.getArtist(artist.spotifyId);
 
     // Create/update artist via API
@@ -51,7 +51,7 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-supabase-service-role": process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
+        "x-supabase-service-role": process.env.SUPABASE_SERVICE_ROLE_KEY!,
       },
       body: JSON.stringify({
         spotifyId: artist.spotifyId,
@@ -71,7 +71,7 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
     console.log(`  ✅ Artist synced: ${artistData.artist.name}`);
 
     // 2. Sync upcoming shows from Ticketmaster
-    console.log(`  📅 Fetching upcoming shows from Ticketmaster...`);
+    console.log("  📅 Fetching upcoming shows from Ticketmaster...");
     const upcomingEvents = await ticketmaster.getUpcomingEvents(artist.name, {
       size: 10,
       startDateTime: new Date().toISOString(),
@@ -93,7 +93,7 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-supabase-service-role": process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
+          "x-supabase-service-role": process.env.SUPABASE_SERVICE_ROLE_KEY!,
         },
         body: JSON.stringify({
           ticketmasterId: venue.id,
@@ -124,7 +124,7 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-supabase-service-role": process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
+          "x-supabase-service-role": process.env.SUPABASE_SERVICE_ROLE_KEY!,
         },
         body: JSON.stringify({
           ticketmasterId: event.id,
@@ -144,7 +144,7 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
     }
 
     // 3. Sync song catalog
-    console.log(`  🎵 Fetching song catalog from Spotify...`);
+    console.log("  🎵 Fetching song catalog from Spotify...");
 
     // Get top tracks
     const topTracks = await spotify.getArtistTopTracks(artist.spotifyId);
@@ -166,8 +166,7 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "x-supabase-service-role":
-                process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
+              "x-supabase-service-role": process.env.SUPABASE_SERVICE_ROLE_KEY!,
             },
             body: JSON.stringify({
               spotifyId: track.id,
@@ -195,7 +194,7 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-supabase-service-role": process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
+        "x-supabase-service-role": process.env.SUPABASE_SERVICE_ROLE_KEY!,
       },
       body: JSON.stringify({
         trendingScore: spotifyArtist.popularity,

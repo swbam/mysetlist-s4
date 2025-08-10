@@ -208,7 +208,7 @@ export default function UserManagementEnhanced() {
       user: { variant: "secondary", className: "" },
     };
 
-    const config = variants[role] || variants["user"];
+    const config = variants[role] || variants.user;
     return <Badge {...config}>{role}</Badge>;
   };
 

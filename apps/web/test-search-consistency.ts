@@ -1,12 +1,12 @@
-import { describe, expect, it, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { GET as artistsSearchHandler } from "./app/api/artists/search/route";
 import { GET as generalSearchHandler } from "./app/api/search/route";
 import { GET as suggestionsHandler } from "./app/api/search/suggestions/route";
 import {
-  testApiRoute,
-  mockAPIFetch,
   cleanupApiMocks,
+  mockAPIFetch,
   mockSearchResponse,
+  testApiRoute,
 } from "./test-utils/api";
 
 /**
@@ -57,7 +57,7 @@ describe("Search API Consistency Tests", () => {
 
   afterEach(() => {
     cleanupApiMocks();
-    delete process.env.TICKETMASTER_API_KEY;
+    process.env.TICKETMASTER_API_KEY = undefined;
   });
 
   describe("/api/artists/search", () => {
@@ -100,7 +100,7 @@ describe("Search API Consistency Tests", () => {
     });
 
     it("should handle missing Ticketmaster API key", async () => {
-      delete process.env.TICKETMASTER_API_KEY;
+      process.env.TICKETMASTER_API_KEY = undefined;
 
       const response = await testApiRoute(
         artistsSearchHandler,
@@ -136,7 +136,7 @@ describe("Search API Consistency Tests", () => {
       expect(firstResult).toHaveProperty("title");
       expect(firstResult).toHaveProperty("source", "ticketmaster");
       expect(firstResult).toHaveProperty("requiresSync", true);
-      
+
       // Optional fields should be defined
       expect(firstResult).toHaveProperty("subtitle");
       expect(firstResult).toHaveProperty("slug");
@@ -150,7 +150,7 @@ describe("Search API Consistency Tests", () => {
 
       const data = await response.json();
       const firstResult = data.results[0];
-      
+
       // Subtitle should contain genres if available
       expect(typeof firstResult.subtitle).toBe("string");
     });
@@ -171,13 +171,13 @@ describe("Search API Consistency Tests", () => {
       const data = await response.json();
       expect(data).toHaveProperty("suggestions");
       expect(Array.isArray(data.suggestions)).toBe(true);
-      
+
       if (data.suggestions.length > 0) {
         const firstSuggestion = data.suggestions[0];
         expect(firstSuggestion).toHaveProperty("id");
         expect(firstSuggestion).toHaveProperty("type", "artist");
         expect(firstSuggestion).toHaveProperty("title");
-        
+
         // Should have metadata for popularity
         expect(firstSuggestion).toHaveProperty("metadata");
         if (firstSuggestion.metadata) {
@@ -190,19 +190,20 @@ describe("Search API Consistency Tests", () => {
   describe("Cross-endpoint consistency", () => {
     it("should return similar artist data across all endpoints", async () => {
       const query = "Coldplay";
-      
+
       // Test all three endpoints with same query
-      const [artistsResponse, searchResponse, suggestionsResponse] = await Promise.all([
-        testApiRoute(artistsSearchHandler, "/api/artists/search", {
-          searchParams: { q: query, limit: "3" },
-        }),
-        testApiRoute(generalSearchHandler, "/api/search", {
-          searchParams: { q: query, limit: "3" },
-        }),
-        testApiRoute(suggestionsHandler, "/api/search/suggestions", {
-          searchParams: { q: query, limit: "3" },
-        }),
-      ]);
+      const [artistsResponse, searchResponse, suggestionsResponse] =
+        await Promise.all([
+          testApiRoute(artistsSearchHandler, "/api/artists/search", {
+            searchParams: { q: query, limit: "3" },
+          }),
+          testApiRoute(generalSearchHandler, "/api/search", {
+            searchParams: { q: query, limit: "3" },
+          }),
+          testApiRoute(suggestionsHandler, "/api/search/suggestions", {
+            searchParams: { q: query, limit: "3" },
+          }),
+        ]);
 
       // All should succeed
       expect(artistsResponse.status).toBe(200);
@@ -265,14 +266,14 @@ describe("Search API Consistency Tests", () => {
 
       // Should transform attraction.name to artist.name
       expect(artist.name).toBe("Taylor Swift");
-      
+
       // Should include image URL
       expect(artist.imageUrl).toBe("https://example.com/taylor-swift.jpg");
-      
+
       // Should include genres array
       expect(Array.isArray(artist.genres)).toBe(true);
       expect(artist.genres[0]).toBe("Pop");
-      
+
       // Should mark as Ticketmaster source
       expect(artist.source).toBe("ticketmaster");
       expect(artist.externalId).toBe("K8vZ917G1V7");

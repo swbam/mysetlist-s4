@@ -33,7 +33,7 @@ export async function GET(_request: NextRequest) {
       .filter((show) => show.artist && show.artist.length > 0)
       .slice(0, 3)
       .map((show) => {
-        const firstArtist = show.artist![0];
+        const firstArtist = show.artist?.[0];
         if (!firstArtist) {
           return null;
         }

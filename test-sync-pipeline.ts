@@ -5,16 +5,16 @@ import { ingestArtistPipelineEnhanced } from "./apps/web/lib/ingest/artistPipeli
 
 async function testSyncPipeline() {
   console.log("🧪 Testing sync pipeline with sample artist...");
-  
+
   try {
     // Test with a known Ticketmaster ID (this would need to be a real one)
     // For demo purposes, let's use a mock ID - in real use you'd get this from Ticketmaster API
     const sampleTmId = "K8vZ9171ob7"; // This might be a real TM ID
-    
+
     console.log(`Testing with Ticketmaster ID: ${sampleTmId}`);
-    
+
     const result = await ingestArtistPipelineEnhanced(sampleTmId);
-    
+
     console.log("✅ Sync pipeline test results:");
     console.log("- Success:", result.success);
     console.log("- Artist ID:", result.artistId);
@@ -22,7 +22,7 @@ async function testSyncPipeline() {
     console.log("- Spotify ID:", result.spotifyId);
     console.log("- Popularity:", result.popularity);
     console.log("- Followers:", result.followers);
-    
+
     return true;
   } catch (error) {
     console.error("❌ Sync pipeline test failed:");
@@ -35,7 +35,9 @@ async function testSyncPipeline() {
 if (require.main === module) {
   testSyncPipeline()
     .then((success) => {
-      console.log(success ? "🎉 Test completed successfully!" : "💥 Test failed!");
+      console.log(
+        success ? "🎉 Test completed successfully!" : "💥 Test failed!",
+      );
       process.exit(success ? 0 : 1);
     })
     .catch((error) => {

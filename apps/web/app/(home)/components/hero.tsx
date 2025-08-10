@@ -1,10 +1,10 @@
 "use client";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
-import { ChevronRight, Music, TrendingUp, Search, Loader2 } from "lucide-react";
+import { ChevronRight, Loader2, Music, Search, TrendingUp } from "lucide-react";
 import Link from "next/link";
-import React, { memo, useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import React, { memo, useState, useCallback, useRef, useEffect } from "react";
 import { useDebounce } from "~/hooks/use-debounce";
 
 interface ArtistResult {
@@ -36,7 +36,9 @@ function HomeHero() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&limit=6`);
+      const response = await fetch(
+        `/api/search?q=${encodeURIComponent(searchQuery)}&limit=6`,
+      );
       if (response.ok) {
         const data = await response.json();
         setResults(data.results || []);
@@ -67,9 +69,12 @@ function HomeHero() {
     setQuery("");
     setResults([]);
     setShowDropdown(false);
-    
+
     // For Ticketmaster artists, navigate to artist page using the name as slug
-    const slug = artist.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const slug = artist.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
     router.push(`/artists/${slug}?ticketmaster=${artist.id}`);
   };
 
@@ -85,9 +90,9 @@ function HomeHero() {
   }, []);
 
   useEffect(() => {
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [handleClickOutside]);
 

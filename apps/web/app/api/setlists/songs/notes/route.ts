@@ -45,12 +45,12 @@ export async function PUT(request: NextRequest) {
         isLocked: setlists.isLocked,
       })
       .from(setlists)
-      .where(eq(setlists.id, setlistSong[0]!["setlistId"]))
+      .where(eq(setlists.id, setlistSong[0]?.setlistId))
       .limit(1);
 
     if (
       setlist.length === 0 ||
-      (setlist[0]!["createdBy"] !== user.id && setlist[0]!["isLocked"])
+      (setlist[0]?.createdBy !== user.id && setlist[0]?.isLocked)
     ) {
       return NextResponse.json(
         { error: "Cannot modify this setlist" },

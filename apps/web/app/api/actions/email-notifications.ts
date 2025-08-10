@@ -49,7 +49,7 @@ export async function sendShowReminders() {
             userName: user.displayName || "there",
             showId: show.id,
             email: user.email,
-            subject: `Reminder: Show tomorrow`,
+            subject: "Reminder: Show tomorrow",
           }),
           scheduledFor: new Date(),
         });

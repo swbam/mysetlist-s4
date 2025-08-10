@@ -16,17 +16,17 @@ export class ShowSyncService {
 
   constructor() {
     this.ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env["TICKETMASTER_API_KEY"] || "",
+      apiKey: process.env.TICKETMASTER_API_KEY || "",
     });
     this.setlistFmClient = new SetlistFmClient({
-      apiKey: process.env["SETLIST_FM_API_KEY"] || "",
+      apiKey: process.env.SETLIST_FM_API_KEY || "",
     });
     this.spotifyClient = new SpotifyClient({}); // SpotifyClient reads credentials from env in authenticate()
     this.errorHandler = new SyncErrorHandler({
       maxRetries: 3,
       retryDelay: 1000,
       onError: (error) => {
-        console.error(`[ShowSyncService] Error:`, error);
+        console.error("[ShowSyncService] Error:", error);
       },
     });
   }

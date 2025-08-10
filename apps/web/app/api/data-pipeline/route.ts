@@ -16,8 +16,7 @@ export const dynamic = "force-dynamic";
 // Check if request is authorized for pipeline management
 function isAuthorizedPipelineRequest(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
-  const pipelineSecret =
-    process.env["PIPELINE_SECRET"] || process.env["CRON_SECRET"];
+  const pipelineSecret = process.env.PIPELINE_SECRET || process.env.CRON_SECRET;
 
   if (!pipelineSecret) {
     return false;
@@ -37,7 +36,7 @@ export async function GET(request: NextRequest) {
     await initializePipelineEngine();
 
     switch (type) {
-      case "status":
+      case "status": {
         if (pipelineId) {
           const status = await getPipelineStatus(pipelineId);
           return NextResponse.json({
@@ -46,51 +45,51 @@ export async function GET(request: NextRequest) {
             status,
             timestamp: new Date().toISOString(),
           });
-        } else {
-          // Get all pipeline statuses
-          const supabase = createServiceClient();
-          const { data: pipelines } = await supabase
-            .from("pipeline_configs")
-            .select("id, name, active")
-            .eq("active", true);
-
-          const statuses = await Promise.all(
-            (pipelines || []).map(async (pipeline) => {
-              try {
-                const status = await getPipelineStatus(pipeline.id);
-                return {
-                  id: pipeline.id,
-                  name: pipeline.name,
-                  ...status,
-                };
-              } catch (error) {
-                return {
-                  id: pipeline.id,
-                  name: pipeline.name,
-                  active: false,
-                  error:
-                    error instanceof Error ? error.message : "Unknown error",
-                };
-              }
-            }),
-          );
-
-          return NextResponse.json({
-            success: true,
-            pipelines: statuses,
-            timestamp: new Date().toISOString(),
-          });
         }
+        // Get all pipeline statuses
+        const supabase = createServiceClient();
+        const { data: pipelines } = await supabase
+          .from("pipeline_configs")
+          .select("id, name, active")
+          .eq("active", true);
 
-      case "metrics":
+        const statuses = await Promise.all(
+          (pipelines || []).map(async (pipeline) => {
+            try {
+              const status = await getPipelineStatus(pipeline.id);
+              return {
+                id: pipeline.id,
+                name: pipeline.name,
+                ...status,
+              };
+            } catch (error) {
+              return {
+                id: pipeline.id,
+                name: pipeline.name,
+                active: false,
+                error: error instanceof Error ? error.message : "Unknown error",
+              };
+            }
+          }),
+        );
+
+        return NextResponse.json({
+          success: true,
+          pipelines: statuses,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      case "metrics": {
         const metrics = await getPipelineMetrics(pipelineId || undefined);
         return NextResponse.json({
           success: true,
           metrics,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "health":
+      case "health": {
         // Check overall pipeline health
         const healthStatus = {
           pipelineEngine: "healthy",
@@ -119,6 +118,7 @@ export async function GET(request: NextRequest) {
           health: healthStatus,
           timestamp: new Date().toISOString(),
         });
+      }
 
       default:
         return NextResponse.json(
@@ -155,7 +155,7 @@ export async function POST(request: NextRequest) {
     await initializePipelineEngine();
 
     switch (action) {
-      case "add_job":
+      case "add_job": {
         if (!data) {
           return NextResponse.json(
             { error: "data is required for add_job action" },
@@ -170,6 +170,7 @@ export async function POST(request: NextRequest) {
           message: "Job added to pipeline successfully",
           timestamp: new Date().toISOString(),
         });
+      }
 
       case "pause":
         if (!isAuthorizedPipelineRequest(request)) {
@@ -207,7 +208,7 @@ export async function POST(request: NextRequest) {
           timestamp: new Date().toISOString(),
         });
 
-      case "bulk_add":
+      case "bulk_add": {
         if (!Array.isArray(data)) {
           return NextResponse.json(
             { error: "data must be an array for bulk_add action" },
@@ -226,6 +227,7 @@ export async function POST(request: NextRequest) {
           message: "Bulk jobs added to pipeline successfully",
           timestamp: new Date().toISOString(),
         });
+      }
 
       default:
         return NextResponse.json({ error: "Invalid action" }, { status: 400 });

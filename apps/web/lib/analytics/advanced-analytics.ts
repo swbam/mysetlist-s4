@@ -205,11 +205,10 @@ class AdvancedAnalyticsService {
     const d = new Date(date);
     if (cohortType === "monthly") {
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-    } else {
-      // Weekly cohort
-      const weekNumber = Math.ceil(d.getDate() / 7);
-      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-W${weekNumber}`;
     }
+    // Weekly cohort
+    const weekNumber = Math.ceil(d.getDate() / 7);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-W${weekNumber}`;
   }
 
   private calculateRetentionRates(
@@ -509,7 +508,7 @@ class AdvancedAnalyticsService {
         dailyActiveUsers.set(day, new Set());
       }
       if (day) {
-        dailyActiveUsers.get(day)!.add(session.user_id);
+        dailyActiveUsers.get(day)?.add(session.user_id);
       }
     });
 
@@ -616,9 +615,7 @@ class AdvancedAnalyticsService {
       nextMonth.setMonth(nextMonth.getMonth() + i);
       const monthKey = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, "0")}`;
 
-      const predicted = Math.round(
-        lastMonthUsers * Math.pow(1 + avgGrowthRate, i),
-      );
+      const predicted = Math.round(lastMonthUsers * (1 + avgGrowthRate) ** i);
       const confidence = Math.max(0.5, 1 - i * 0.1); // Confidence decreases with time
 
       predictions.push({

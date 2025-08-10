@@ -27,7 +27,12 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       const userVoteRecord = await db
         .select({ id: votes.id })
         .from(votes)
-        .where(and(eq(votes.setlistSongId, setlistSongId), eq(votes.userId, user.id)))
+        .where(
+          and(
+            eq(votes.setlistSongId, setlistSongId),
+            eq(votes.userId, user.id),
+          ),
+        )
         .limit(1);
       userVoted = userVoteRecord.length > 0;
     }

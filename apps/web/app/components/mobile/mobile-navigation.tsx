@@ -136,18 +136,14 @@ export const MobileNavigation = React.memo(
               </div>
 
               {/* Navigation Items */}
-              <nav
-                className="flex-1 p-4"
-                role="navigation"
-                aria-label="Main navigation"
-              >
-                <ul className="space-y-2" role="list">
+              <nav className="flex-1 p-4" aria-label="Main navigation">
+                <ul className="space-y-2">
                   {visibleNavigationItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = pathname === item.href;
 
                     return (
-                      <li key={item.href} role="listitem">
+                      <li key={item.href}>
                         <Link
                           href={item.href}
                           onClick={closeSheet}

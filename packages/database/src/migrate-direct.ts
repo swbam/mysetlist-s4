@@ -101,8 +101,7 @@ class DirectMigrationRunner {
 
 // Run migrations
 async function main() {
-  const connectionString =
-    process.env["DATABASE_URL"] || process.env["POSTGRES_URL"];
+  const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 
   if (!connectionString) {
     process.exit(1);

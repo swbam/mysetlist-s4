@@ -8,18 +8,15 @@ import { Trending as TrendingShows } from "./components/trending";
 import { TrendingArtists } from "./components/trending-artists";
 
 // Dynamic import for FeaturedContent to reduce initial bundle size
-const FeaturedContent = dynamic(
-  () => import("./components/featured-content"),
-  {
-    loading: () => (
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <div className="h-96 animate-pulse rounded-lg bg-muted" />
-        </div>
-      </section>
-    ),
-  }
-);
+const FeaturedContent = dynamic(() => import("./components/featured-content"), {
+  loading: () => (
+    <section className="py-12">
+      <div className="container mx-auto px-4">
+        <div className="h-96 animate-pulse rounded-lg bg-muted" />
+      </div>
+    </section>
+  ),
+});
 
 export const metadata = {
   title: "MySetlist - Concert Setlist Voting Platform",

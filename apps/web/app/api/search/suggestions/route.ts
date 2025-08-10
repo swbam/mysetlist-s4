@@ -50,18 +50,25 @@ export async function GET(request: NextRequest) {
         sort: "relevance,desc",
       });
 
-      const ticketmasterArtists = ticketmasterResponse._embedded?.attractions || [];
+      const ticketmasterArtists =
+        ticketmasterResponse._embedded?.attractions || [];
 
-      const suggestions: SearchSuggestion[] = ticketmasterArtists.map((attraction) => ({
-        id: attraction.id,
-        type: "artist" as const,
-        title: attraction.name,
-        subtitle: attraction.classifications?.map((c: any) => c.genre?.name).filter(Boolean).join(", ") || "",
-        imageUrl: attraction.images?.[0]?.url || undefined,
-        metadata: {
-          popularity: 100, // Default popularity since Ticketmaster doesn't provide this metric
-        },
-      }));
+      const suggestions: SearchSuggestion[] = ticketmasterArtists.map(
+        (attraction) => ({
+          id: attraction.id,
+          type: "artist" as const,
+          title: attraction.name,
+          subtitle:
+            attraction.classifications
+              ?.map((c: any) => c.genre?.name)
+              .filter(Boolean)
+              .join(", ") || "",
+          imageUrl: attraction.images?.[0]?.url || undefined,
+          metadata: {
+            popularity: 100, // Default popularity since Ticketmaster doesn't provide this metric
+          },
+        }),
+      );
 
       return NextResponse.json({
         suggestions,

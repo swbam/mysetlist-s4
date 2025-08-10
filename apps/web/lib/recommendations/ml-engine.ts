@@ -896,8 +896,8 @@ class MLRecommendationEngine {
       if (diversifiedRecommendations.length >= config.limit) break;
 
       // Apply diversity constraints
-      const artistId = rec.metadata["artist_id"];
-      const venueId = rec.metadata["venue_id"];
+      const artistId = rec.metadata.artist_id;
+      const venueId = rec.metadata.venue_id;
 
       const artistCount = seenArtists.has(artistId) ? 1 : 0;
       const venueCount = seenVenues.has(venueId) ? 1 : 0;
@@ -955,7 +955,6 @@ export async function getMLRecommendations(
         userId,
         config,
       );
-    case "hybrid":
     default:
       return mlRecommendationEngine.getHybridRecommendations(userId, config);
   }

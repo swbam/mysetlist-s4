@@ -95,13 +95,13 @@ async function verifyShowPage() {
   console.log("\n===========================================");
   console.log("SUMMARY:");
   console.log("===========================================");
-  console.log(`Show: ✅ Loaded`);
+  console.log("Show: ✅ Loaded");
   console.log(
     `Artist: ✅ ${show.headliner_artist.name} (${show.headliner_artist.image_url ? "with image" : "NO IMAGE"})`,
   );
-  console.log(`Venue: ${show.venue ? "✅ " + show.venue.name : "❌ Missing"}`);
+  console.log(`Venue: ${show.venue ? `✅ ${show.venue.name}` : "❌ Missing"}`);
   console.log(
-    `Setlists: ${show.setlists?.length > 0 ? "✅ " + show.setlists.length + " setlist(s)" : "❌ None"}`,
+    `Setlists: ${show.setlists?.length > 0 ? `✅ ${show.setlists.length} setlist(s)` : "❌ None"}`,
   );
 
   if (show.setlists?.length > 0) {
@@ -110,7 +110,7 @@ async function verifyShowPage() {
       0,
     );
     console.log(
-      `Total Songs: ${totalSongs > 0 ? "✅ " + totalSongs + " songs" : "❌ No songs"}`,
+      `Total Songs: ${totalSongs > 0 ? `✅ ${totalSongs} songs` : "❌ No songs"}`,
     );
   }
 

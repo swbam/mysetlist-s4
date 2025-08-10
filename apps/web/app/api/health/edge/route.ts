@@ -139,8 +139,8 @@ export async function POST() {
     timestamp: new Date().toISOString(),
     environment: {
       runtime: "edge",
-      region: process.env["VERCEL_REGION"] || "unknown",
-      deployment: process.env["VERCEL_DEPLOYMENT_ID"] || "local",
+      region: process.env.VERCEL_REGION || "unknown",
+      deployment: process.env.VERCEL_DEPLOYMENT_ID || "local",
     },
     checks: [] as any[],
   };
@@ -225,7 +225,7 @@ export async function POST() {
     try {
       const start = Date.now();
       const response = await fetch(
-        `${process.env["NEXT_PUBLIC_APP_URL"]}${endpoint}`,
+        `${process.env.NEXT_PUBLIC_APP_URL}${endpoint}`,
         {
           method: "GET",
           signal: AbortSignal.timeout(5000), // 5 second timeout

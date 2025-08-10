@@ -38,7 +38,7 @@ class DataOptimizationService {
   constructor() {
     this.cache = CacheClient.getInstance();
     this.supabase = createClient();
-    this.compressionEnabled = process.env?.["ENABLE_COMPRESSION"] === "true";
+    this.compressionEnabled = process.env?.ENABLE_COMPRESSION === "true";
   }
 
   // Intelligent query caching with automatic invalidation
@@ -199,7 +199,7 @@ class DataOptimizationService {
   // Real-time data processing with batching
   async processBatchData(
     data: any[],
-    batchSize = 100,
+    batchSize,
     processor: (batch: any[]) => Promise<void>,
   ): Promise<{ processed: number; failed: number; errors: string[] }> {
     const results = {
@@ -359,8 +359,8 @@ class DataOptimizationService {
     if (!this.compressionEnabled) return data;
 
     // Simple compression using gzip
-    const { gzip } = await import("zlib");
-    const { promisify } = await import("util");
+    const { gzip } = await import("node:zlib");
+    const { promisify } = await import("node:util");
     const gzipAsync = promisify(gzip);
 
     const compressed = await gzipAsync(Buffer.from(data));
@@ -370,8 +370,8 @@ class DataOptimizationService {
   private async decompress(data: string): Promise<string> {
     if (!this.compressionEnabled) return data;
 
-    const { gunzip } = await import("zlib");
-    const { promisify } = await import("util");
+    const { gunzip } = await import("node:zlib");
+    const { promisify } = await import("node:util");
     const gunzipAsync = promisify(gunzip);
 
     const decompressed = await gunzipAsync(Buffer.from(data, "base64"));

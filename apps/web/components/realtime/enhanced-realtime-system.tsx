@@ -168,8 +168,7 @@ export function useEnhancedRealtimeConnection() {
     }));
 
     const delay = Math.min(
-      connectionState.reconnectDelay *
-        Math.pow(2, connectionState.reconnectAttempts),
+      connectionState.reconnectDelay * 2 ** connectionState.reconnectAttempts,
       30000, // Max 30 seconds
     );
 

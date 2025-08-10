@@ -102,7 +102,7 @@ async function measurePerformance(url: string): Promise<PerformanceMetrics> {
     observer.observe({ entryTypes: ["largest-contentful-paint"] });
     const lcpEntries = performance.getEntriesByType("largest-contentful-paint");
     if (lcpEntries.length > 0) {
-      LCP = lcpEntries[lcpEntries.length - 1]!.startTime;
+      LCP = lcpEntries[lcpEntries.length - 1]?.startTime;
     }
 
     // Calculate CLS

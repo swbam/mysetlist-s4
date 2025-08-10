@@ -24,9 +24,9 @@ export class ProductionMonitoringService extends MonitoringService {
   };
 
   private static alertChannels = {
-    slack: process.env["SLACK_WEBHOOK_URL"],
-    pagerduty: process.env["PAGERDUTY_INTEGRATION_KEY"],
-    email: process.env["ALERT_EMAIL"],
+    slack: process.env.SLACK_WEBHOOK_URL,
+    pagerduty: process.env.PAGERDUTY_INTEGRATION_KEY,
+    email: process.env.ALERT_EMAIL,
   };
 
   /**
@@ -696,7 +696,7 @@ export class ProductionMonitoringService extends MonitoringService {
 }
 
 // Initialize production monitoring
-if (typeof window !== "undefined" && process.env["NODE_ENV"] === "production") {
+if (typeof window !== "undefined" && process.env.NODE_ENV === "production") {
   ProductionMonitoringService.initializeProduction();
 }
 

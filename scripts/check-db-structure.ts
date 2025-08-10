@@ -5,7 +5,7 @@
  * This script checks the current database structure
  */
 
-import { join } from "path";
+import { join } from "node:path";
 import { config } from "dotenv";
 
 // Load environment variables first

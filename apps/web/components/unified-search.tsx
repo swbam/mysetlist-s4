@@ -100,9 +100,10 @@ export function UnifiedSearch({
 
       try {
         // Use the new Ticketmaster-only endpoints
-        const endpoint = variant === "artists-only"
-          ? `/api/artists/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`
-          : `/api/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`;
+        const endpoint =
+          variant === "artists-only"
+            ? `/api/artists/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`
+            : `/api/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`;
 
         const response = await fetch(endpoint, {
           method: "GET",
@@ -195,8 +196,13 @@ export function UnifiedSearch({
         case "artist":
           // For Ticketmaster artists, navigate directly to artist page with Ticketmaster ID
           if (result.source === "ticketmaster") {
-            const slug = result.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-            router.push(`/artists/${slug}?ticketmaster=${result.externalId || result.id}`);
+            const slug = result.title
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-|-$/g, "");
+            router.push(
+              `/artists/${slug}?ticketmaster=${result.externalId || result.id}`,
+            );
           } else {
             router.push(`/artists/${result.slug || result.id}`);
           }
@@ -499,7 +505,7 @@ function SearchResultsDropdown({
       if (!acc[result.type]) {
         acc[result.type] = [];
       }
-      acc[result.type]!.push(result);
+      acc[result.type]?.push(result);
       return acc;
     },
     {} as Record<string, SearchResult[]>,

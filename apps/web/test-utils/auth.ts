@@ -17,8 +17,7 @@ export interface MockUser extends Partial<User> {
   app_metadata?: Record<string, any>;
 }
 
-export interface MockSession
-  extends Omit<Partial<Session>, "user"> {
+export interface MockSession extends Omit<Partial<Session>, "user"> {
   user: MockUser;
   access_token: string;
 }

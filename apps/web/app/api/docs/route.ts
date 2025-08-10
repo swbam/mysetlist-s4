@@ -16,7 +16,7 @@ const API_DOCUMENTATION = {
   },
   servers: [
     {
-      url: process.env["NEXT_PUBLIC_APP_URL"] || "https://mysetlist.com",
+      url: process.env.NEXT_PUBLIC_APP_URL || "https://mysetlist.com",
       description: "Production server",
     },
   ],

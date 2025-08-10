@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { resolve } from "path";
-import { parseArgs } from "util";
+import { resolve } from "node:path";
+import { parseArgs } from "node:util";
 import { config } from "dotenv";
 
 // Load environment variables
@@ -60,7 +60,7 @@ async function triggerSync(options: SyncOptions) {
   if (options.limit) url.searchParams.append("limit", options.limit.toString());
   if (options.dryRun) url.searchParams.append("dry-run", "true");
 
-  console.log(`\n🚀 Triggering sync...`);
+  console.log("\n🚀 Triggering sync...");
   console.log(`   Endpoint: ${options.endpoint}`);
   console.log(`   URL: ${url.toString()}`);
   if (options.mode) console.log(`   Mode: ${options.mode}`);

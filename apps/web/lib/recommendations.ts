@@ -158,7 +158,7 @@ export async function getRecommendedShows(
         id: show.id,
         type: "show",
         name: `${artist?.name} at ${venue?.name}`,
-        reason: `Popular trending show`,
+        reason: "Popular trending show",
         score: 0.9,
         image_url: artist?.image_url,
         slug: show.slug,

@@ -90,23 +90,22 @@ export class ErrorBoundaryWrapper extends Component<
                 again.
               </p>
 
-              {process.env["NODE_ENV"] === "development" &&
-                this.state.error && (
-                  <details className="text-left text-xs">
-                    <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
-                      Error Details (Development)
-                    </summary>
-                    <pre className="mt-2 overflow-auto rounded bg-muted p-2 text-xs">
-                      {this.state.error.message}
-                      {this.state.errorInfo && (
-                        <>
-                          {"\n\nComponent Stack:"}
-                          {this.state.errorInfo}
-                        </>
-                      )}
-                    </pre>
-                  </details>
-                )}
+              {process.env.NODE_ENV === "development" && this.state.error && (
+                <details className="text-left text-xs">
+                  <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
+                    Error Details (Development)
+                  </summary>
+                  <pre className="mt-2 overflow-auto rounded bg-muted p-2 text-xs">
+                    {this.state.error.message}
+                    {this.state.errorInfo && (
+                      <>
+                        {"\n\nComponent Stack:"}
+                        {this.state.errorInfo}
+                      </>
+                    )}
+                  </pre>
+                </details>
+              )}
 
               <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
                 <Button onClick={this.retry} className="gap-2">

@@ -106,40 +106,39 @@ export class PageErrorBoundary extends React.Component<Props, State> {
                 </Button>
               </div>
 
-              {process.env["NODE_ENV"] === "development" &&
-                this.state.error && (
-                  <details className="mt-6 text-left">
-                    <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
-                      Error Details (Development)
-                    </summary>
-                    <div className="mt-2 space-y-2">
+              {process.env.NODE_ENV === "development" && this.state.error && (
+                <details className="mt-6 text-left">
+                  <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
+                    Error Details (Development)
+                  </summary>
+                  <div className="mt-2 space-y-2">
+                    <div className="rounded-md bg-muted p-3">
+                      <h4 className="font-medium text-sm">Error Message:</h4>
+                      <pre className="mt-1 overflow-auto text-xs">
+                        {this.state.error.message}
+                      </pre>
+                    </div>
+                    {this.state.error.stack && (
                       <div className="rounded-md bg-muted p-3">
-                        <h4 className="font-medium text-sm">Error Message:</h4>
+                        <h4 className="font-medium text-sm">Stack Trace:</h4>
                         <pre className="mt-1 overflow-auto text-xs">
-                          {this.state.error.message}
+                          {this.state.error.stack}
                         </pre>
                       </div>
-                      {this.state.error.stack && (
-                        <div className="rounded-md bg-muted p-3">
-                          <h4 className="font-medium text-sm">Stack Trace:</h4>
-                          <pre className="mt-1 overflow-auto text-xs">
-                            {this.state.error.stack}
-                          </pre>
-                        </div>
-                      )}
-                      {this.state.errorInfo && (
-                        <div className="rounded-md bg-muted p-3">
-                          <h4 className="font-medium text-sm">
-                            Component Stack:
-                          </h4>
-                          <pre className="mt-1 overflow-auto text-xs">
-                            {this.state.errorInfo.componentStack}
-                          </pre>
-                        </div>
-                      )}
-                    </div>
-                  </details>
-                )}
+                    )}
+                    {this.state.errorInfo && (
+                      <div className="rounded-md bg-muted p-3">
+                        <h4 className="font-medium text-sm">
+                          Component Stack:
+                        </h4>
+                        <pre className="mt-1 overflow-auto text-xs">
+                          {this.state.errorInfo.componentStack}
+                        </pre>
+                      </div>
+                    )}
+                  </div>
+                </details>
+              )}
             </CardContent>
           </Card>
         </div>

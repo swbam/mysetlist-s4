@@ -234,7 +234,7 @@ export function EnhancedSearch({
       if (!acc[result.type]) {
         acc[result.type] = [];
       }
-      acc[result.type]!.push(result);
+      acc[result.type]?.push(result);
       return acc;
     },
     {} as Record<string, SearchResult[]>,
@@ -499,79 +499,77 @@ export function EnhancedSearch({
           </div>
         )}
 
-        {!isLoading && results.length > 0 && (
-          <>
-            {["artist", "show", "venue", "song"].map((type) => {
-              const typeResults = groupedResults[type];
-              if (!typeResults?.length) return null;
+        {!isLoading &&
+          results.length > 0 &&
+          ["artist", "show", "venue", "song"].map((type) => {
+            const typeResults = groupedResults[type];
+            if (!typeResults?.length) return null;
 
-              const typeLabels = {
-                artist: "Artists",
-                show: "Shows",
-                venue: "Venues",
-                song: "Songs",
-              };
+            const typeLabels = {
+              artist: "Artists",
+              show: "Shows",
+              venue: "Venues",
+              song: "Songs",
+            };
 
-              return (
-                <Card key={type}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      {React.createElement(getResultIcon(type), {
-                        className: "h-5 w-5",
-                      })}
-                      {typeLabels[type as keyof typeof typeLabels]} (
-                      {typeResults.length})
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid gap-3">
-                      {typeResults.map((result) => {
-                        const Icon = getResultIcon(result.type);
-                        return (
-                          <div
-                            key={result.id}
-                            className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
-                            onClick={() => handleResultClick(result)}
-                          >
-                            <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
-                              <Icon className="h-4 w-4 text-muted-foreground" />
-                            </div>
-
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2">
-                                <span className="truncate font-medium">
-                                  {result.title}
-                                </span>
-                                {result.verified && (
-                                  <div className="h-1 w-1 rounded-full bg-blue-500" />
-                                )}
-                              </div>
-                              {result.subtitle && (
-                                <p className="truncate text-sm text-muted-foreground">
-                                  {result.subtitle}
-                                </p>
-                              )}
-                            </div>
-
-                            <Badge
-                              variant="outline"
-                              className={cn(
-                                "text-xs capitalize",
-                                getTypeBadgeColor(result.type),
-                              )}
-                            >
-                              {result.type}
-                            </Badge>
+            return (
+              <Card key={type}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {React.createElement(getResultIcon(type), {
+                      className: "h-5 w-5",
+                    })}
+                    {typeLabels[type as keyof typeof typeLabels]} (
+                    {typeResults.length})
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-3">
+                    {typeResults.map((result) => {
+                      const Icon = getResultIcon(result.type);
+                      return (
+                        <div
+                          key={result.id}
+                          className="flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
+                          onClick={() => handleResultClick(result)}
+                        >
+                          <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
+                            <Icon className="h-4 w-4 text-muted-foreground" />
                           </div>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </>
-        )}
+
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="truncate font-medium">
+                                {result.title}
+                              </span>
+                              {result.verified && (
+                                <div className="h-1 w-1 rounded-full bg-blue-500" />
+                              )}
+                            </div>
+                            {result.subtitle && (
+                              <p className="truncate text-sm text-muted-foreground">
+                                {result.subtitle}
+                              </p>
+                            )}
+                          </div>
+
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-xs capitalize",
+                              getTypeBadgeColor(result.type),
+                            )}
+                          >
+                            {result.type}
+                          </Badge>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
       </div>
     </div>
   );

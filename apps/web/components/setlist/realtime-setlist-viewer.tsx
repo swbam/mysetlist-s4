@@ -107,7 +107,7 @@ export function RealtimeSetlistViewer({
           if (song.id === setlistSongId) {
             const currentVote = song.userVote;
             let upvotes = song.upvotes;
-            let downvotes = 0;
+            const downvotes = 0;
 
             // Remove previous vote
             if (currentVote === "up") {
@@ -311,7 +311,9 @@ export function RealtimeSetlistViewer({
                             setlist.type === "predicted" && (
                               <VoteButton
                                 setlistSongId={song.id}
-                                currentVote={song.userVote === "up" ? "up" : null}
+                                currentVote={
+                                  song.userVote === "up" ? "up" : null
+                                }
                                 upvotes={song.upvotes}
                                 onVote={(voteType) =>
                                   handleVote(song.id, voteType)

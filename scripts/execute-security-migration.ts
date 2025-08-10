@@ -5,8 +5,8 @@
  * This script directly executes the security migration SQL to fix RLS and view issues
  */
 
-import { readFileSync } from "fs";
-import { join } from "path";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { config } from "dotenv";
 
@@ -71,7 +71,7 @@ async function executeMigration() {
 
       const { error } = await supabase
         .rpc("exec_sql", {
-          sql: statement + ";",
+          sql: `${statement};`,
         })
         .single();
 
@@ -83,7 +83,7 @@ async function executeMigration() {
 
         // For now, we'll need to use the Supabase SQL editor manually
         console.error(`❌ Unable to execute statement ${i + 1}:`);
-        console.error(statement.substring(0, 100) + "...");
+        console.error(`${statement.substring(0, 100)}...`);
         console.error("");
         console.error(
           "Please execute the migration manually in the Supabase SQL Editor:",

@@ -243,7 +243,7 @@ validatePackage("@repo/webhooks", () => {
 });
 
 // Summary
-console.log("\n" + "=".repeat(80));
+console.log(`\n${"=".repeat(80)}`);
 console.log("📊 ENVIRONMENT VALIDATION SUMMARY");
 console.log("=".repeat(80));
 
@@ -275,7 +275,7 @@ if (totalWarnings > 0) {
   });
 }
 
-console.log("\n" + "=".repeat(80));
+console.log(`\n${"=".repeat(80)}`);
 
 if (failed > 0) {
   console.log("❌ Environment validation failed. Please fix the errors above.");

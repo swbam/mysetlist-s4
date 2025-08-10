@@ -1,6 +1,6 @@
-import { NextRequest } from "next/server";
-import { db, artists } from "@repo/database";
-import { ilike, or, and, sql, type SQLWrapper } from "drizzle-orm";
+import { artists, db } from "@repo/database";
+import { type SQLWrapper, and, ilike, or, sql } from "drizzle-orm";
+import type { NextRequest } from "next/server";
 
 /**
  * POST /api/artists/discover
@@ -16,7 +16,11 @@ import { ilike, or, and, sql, type SQLWrapper } from "drizzle-orm";
  */
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => ({}));
-  const { genres = [], popularity, location } = body as {
+  const {
+    genres = [],
+    popularity,
+    location,
+  } = body as {
     genres?: string[];
     popularity?: "high" | "medium" | "low";
     location?: { lat: number; lng: number; radius: number };
@@ -27,9 +31,7 @@ export async function POST(request: NextRequest) {
 
     // Filter by genres
     if (genres.length) {
-      const genreConds = genres.map((g) =>
-        ilike(artists.genres, `%${g}%`),
-      );
+      const genreConds = genres.map((g) => ilike(artists.genres, `%${g}%`));
       conditions.push(or(...genreConds) as SQLWrapper);
     }
 
@@ -45,7 +47,10 @@ export async function POST(request: NextRequest) {
 
     // TODO: Location based filtering can be implemented once we store geo coords
     if (location) {
-      console.info("Location based discovery requested but not yet implemented", location);
+      console.info(
+        "Location based discovery requested but not yet implemented",
+        location,
+      );
     }
 
     const rows = await db

@@ -24,7 +24,8 @@ const featuredArtists = [
   {
     id: 1,
     name: "Taylor Swift",
-    image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop",
     genre: "Pop",
     upcomingShows: 5,
     trending: true,
@@ -32,7 +33,8 @@ const featuredArtists = [
   {
     id: 2,
     name: "The Weeknd",
-    image: "https://images.unsplash.com/photo-1598387993441-a364f854c3e1?w=400&h=400&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1598387993441-a364f854c3e1?w=400&h=400&fit=crop",
     genre: "R&B",
     upcomingShows: 3,
     trending: true,
@@ -40,7 +42,8 @@ const featuredArtists = [
   {
     id: 3,
     name: "Arctic Monkeys",
-    image: "https://images.unsplash.com/photo-1549834125-82d3c48159a3?w=400&h=400&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1549834125-82d3c48159a3?w=400&h=400&fit=crop",
     genre: "Rock",
     upcomingShows: 7,
     trending: false,
@@ -54,7 +57,8 @@ const featuredShows = [
     venue: "Madison Square Garden",
     city: "New York, NY",
     date: "2024-03-15",
-    image: "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=600&h=400&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=600&h=400&fit=crop",
     votesCount: 1234,
   },
   {
@@ -63,7 +67,8 @@ const featuredShows = [
     venue: "O2 Arena",
     city: "London, UK",
     date: "2024-03-22",
-    image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600&h=400&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600&h=400&fit=crop",
     votesCount: 987,
   },
 ];
@@ -115,7 +120,9 @@ function FeaturedContent() {
                 </CardHeader>
                 <CardContent className="p-6">
                   <h3 className="font-semibold text-xl">{artist.name}</h3>
-                  <p className="text-muted-foreground text-sm">{artist.genre}</p>
+                  <p className="text-muted-foreground text-sm">
+                    {artist.genre}
+                  </p>
                   <div className="mt-4 flex items-center justify-between">
                     <span className="text-sm">
                       {artist.upcomingShows} upcoming shows
@@ -205,8 +212,9 @@ function FeaturedContent() {
               Join the MySetlist Community
             </h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-              Be part of the revolution in concert experiences. Vote on setlists,
-              discover new artists, and help shape the future of live music.
+              Be part of the revolution in concert experiences. Vote on
+              setlists, discover new artists, and help shape the future of live
+              music.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/auth/sign-up">

@@ -23,23 +23,27 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import {
   ArrowUpDown,
+  Check,
   CheckCircle,
   Clock,
+  Download,
   Edit,
   Lock,
   MoreVertical,
   Music2,
   User,
-  Check,
   X,
-  Download,
 } from "lucide-react";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useAuth } from "~/app/providers/auth-provider";
 import { AnonymousAddSongButton } from "~/components/anonymous-add-song-button";
 import { createClient } from "~/lib/supabase/client";
-import { lockSetlist, removeSongFromSetlist, importActualSetlistFromSetlistFm } from "../actions";
+import {
+  importActualSetlistFromSetlistFm,
+  lockSetlist,
+  removeSongFromSetlist,
+} from "../actions";
 import { AnonymousAddSongDialog } from "./anonymous-add-song-dialog";
 import { ReorderableSetlist } from "./reorderable-setlist";
 import { SongItem } from "./song-item";
@@ -69,24 +73,32 @@ export function SetlistViewer({
   const isOwner = currentUser?.id === setlistData.created_by;
   const canEdit = isOwner && !setlistData.is_locked;
   const isPastShow = new Date(show.date) < new Date();
-  
+
   // For comparison: create a map of songs from comparison setlists (opposite type)
   const comparisonSongTitles = new Set(
-    comparisonSetlists.flatMap(compareSetlist => 
-      (compareSetlist.setlist_songs || []).map(song => 
-        song.song?.title?.toLowerCase().trim()
+    comparisonSetlists
+      .flatMap((compareSetlist) =>
+        (compareSetlist.setlist_songs || []).map((song) =>
+          song.song?.title?.toLowerCase().trim(),
+        ),
       )
-    ).filter(Boolean)
+      .filter(Boolean),
   );
-  
+
   // Helper function to check if a predicted song was actually played
   const wasSongPlayed = (songTitle: string) => {
-    return type === "predicted" && comparisonSongTitles.has(songTitle?.toLowerCase().trim());
+    return (
+      type === "predicted" &&
+      comparisonSongTitles.has(songTitle?.toLowerCase().trim())
+    );
   };
-  
+
   // Helper function to check if an actual song was predicted
   const wasSongPredicted = (songTitle: string) => {
-    return type === "actual" && comparisonSongTitles.has(songTitle?.toLowerCase().trim());
+    return (
+      type === "actual" &&
+      comparisonSongTitles.has(songTitle?.toLowerCase().trim())
+    );
   };
   const totalSongs = setlistData.setlist_songs?.length || 0;
   const totalDuration =
@@ -230,19 +242,20 @@ export function SetlistViewer({
                     <Check className="h-3 w-3" />
                     {(() => {
                       const predictedSongs = setlistData.setlist_songs || [];
-                      const correctPredictions = predictedSongs.filter((song: any) => 
-                        wasSongPlayed(song.song?.title)
+                      const correctPredictions = predictedSongs.filter(
+                        (song: any) => wasSongPlayed(song.song?.title),
                       ).length;
                       return `${Math.round((correctPredictions / predictedSongs.length) * 100)}% Accurate`;
                     })()}
                   </Badge>
                 )}
-                {type === "actual" && setlistData.imported_from === "setlist.fm" && (
-                  <Badge variant="outline" className="gap-1">
-                    <Download className="h-3 w-3" />
-                    Imported from Setlist.fm
-                  </Badge>
-                )}
+                {type === "actual" &&
+                  setlistData.imported_from === "setlist.fm" && (
+                    <Badge variant="outline" className="gap-1">
+                      <Download className="h-3 w-3" />
+                      Imported from Setlist.fm
+                    </Badge>
+                  )}
               </div>
 
               <div className="flex items-center gap-4 text-muted-foreground text-sm">
@@ -274,21 +287,21 @@ export function SetlistViewer({
 
             <div className="flex items-center gap-2">
               {/* Import Setlist button for past shows without actual setlists */}
-              {isPastShow && 
-               type === "predicted" && 
-               comparisonSetlists.length === 0 && 
-               currentUser && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleImportSetlist}
-                  disabled={isPending}
-                  className="gap-2"
-                >
-                  <Download className="h-4 w-4" />
-                  Import Actual Setlist
-                </Button>
-              )}
+              {isPastShow &&
+                type === "predicted" &&
+                comparisonSetlists.length === 0 &&
+                currentUser && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleImportSetlist}
+                    disabled={isPending}
+                    className="gap-2"
+                  >
+                    <Download className="h-4 w-4" />
+                    Import Actual Setlist
+                  </Button>
+                )}
 
               {/* Add Song button for anonymous users */}
               {!session && !setlistData.is_locked && (
@@ -357,15 +370,15 @@ export function SetlistViewer({
                     canVote={!setlistData.is_locked}
                     onDelete={() => handleDeleteSong(item.id)}
                     comparisonStatus={
-                      type === "predicted" 
-                        ? wasSongPlayed(item.song?.title) 
-                          ? "played" 
-                          : comparisonSetlists.length > 0 
-                            ? "not-played" 
+                      type === "predicted"
+                        ? wasSongPlayed(item.song?.title)
+                          ? "played"
+                          : comparisonSetlists.length > 0
+                            ? "not-played"
                             : null
-                        : type === "actual" 
-                          ? wasSongPredicted(item.song?.title) 
-                            ? "predicted" 
+                        : type === "actual"
+                          ? wasSongPredicted(item.song?.title)
+                            ? "predicted"
                             : "not-predicted"
                           : null
                     }

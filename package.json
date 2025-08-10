@@ -9,7 +9,7 @@
     "start": "cd apps/web && pnpm start",
     
     "_commentQuality": "CODE QUALITY",
-    "lint": "biome check --diagnostic-level=error",
+    "lint": "biome check --diagnostic-level=warning",
     "lint:fix": "biome check --write",
     "typecheck": "turbo typecheck",
     "test": "turbo test",

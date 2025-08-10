@@ -7,8 +7,8 @@
  * console.error/warn with proper Sentry logging where appropriate.
  */
 
-import { readFileSync, writeFileSync } from "fs";
-import path from "path";
+import { readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
 import { glob } from "glob";
 
 interface ConsoleFix {
@@ -166,7 +166,7 @@ function applyFixes(fixes: ConsoleFix[]): void {
       if (!acc[fix.filePath]) {
         acc[fix.filePath] = [];
       }
-      acc[fix.filePath]!.push(fix); // Non-null assertion - we just initialized it above
+      acc[fix.filePath]?.push(fix); // Non-null assertion - we just initialized it above
       return acc;
     },
     {} as Record<string, ConsoleFix[]>,

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { resolve } from "path";
+import { resolve } from "node:path";
 import { config } from "dotenv";
 
 // Load environment variables
@@ -89,7 +89,7 @@ async function checkSyncStatus(hours = 24) {
     // Display statistics
     console.log("\n📈 DATABASE STATISTICS");
     console.log("═".repeat(60));
-    console.log(`Artists:`);
+    console.log("Artists:");
     console.log(`  Total: ${data.statistics.artists.total.toLocaleString()}`);
     console.log(
       `  Synced: ${data.statistics.artists.synced.toLocaleString()} (${getPercentage(data.statistics.artists.synced, data.statistics.artists.total)}%)`,
@@ -101,7 +101,7 @@ async function checkSyncStatus(hours = 24) {
       `  With Trending: ${data.statistics.artists.withTrending.toLocaleString()}`,
     );
 
-    console.log(`\nShows:`);
+    console.log("\nShows:");
     console.log(`  Total: ${data.statistics.shows.total.toLocaleString()}`);
     console.log(
       `  Upcoming: ${data.statistics.shows.upcoming.toLocaleString()}`,
@@ -113,7 +113,7 @@ async function checkSyncStatus(hours = 24) {
       `  Recently Added: ${data.statistics.shows.createdRecently.toLocaleString()}`,
     );
 
-    console.log(`\nVenues:`);
+    console.log("\nVenues:");
     console.log(`  Total: ${data.statistics.venues.total.toLocaleString()}`);
     console.log(
       `  With Shows: ${data.statistics.venues.withShows.toLocaleString()}`,
@@ -128,13 +128,13 @@ async function checkSyncStatus(hours = 24) {
     displaySyncOperation("Trending Calc", data.syncSummary.trendingCalc);
 
     if (data.syncSummary.artistDiscovery.found > 0) {
-      console.log(`\n🎵 Artist Discovery:`);
+      console.log("\n🎵 Artist Discovery:");
       console.log(`  Found: ${data.syncSummary.artistDiscovery.found}`);
       console.log(`  Added: ${data.syncSummary.artistDiscovery.added}`);
     }
 
     if (data.syncSummary.showsSync.found > 0) {
-      console.log(`\n📅 Shows Sync:`);
+      console.log("\n📅 Shows Sync:");
       console.log(`  Processed: ${data.syncSummary.showsSync.found}`);
       console.log(`  Added: ${data.syncSummary.showsSync.added}`);
     }

@@ -38,10 +38,10 @@ export class SyncProgressTracker {
   private ttl = 3600; // 1 hour TTL
 
   constructor() {
-    if (env["UPSTASH_REDIS_REST_URL"] && env["UPSTASH_REDIS_REST_TOKEN"]) {
+    if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
       this.redis = new Redis({
-        url: env["UPSTASH_REDIS_REST_URL"],
-        token: env["UPSTASH_REDIS_REST_TOKEN"],
+        url: env.UPSTASH_REDIS_REST_URL,
+        token: env.UPSTASH_REDIS_REST_TOKEN,
       });
     } else {
       this.redis = null;

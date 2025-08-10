@@ -133,11 +133,15 @@ export function MobileSearch({
     } else {
       // Handle different result types
       switch (result.type) {
-        case "artist":
+        case "artist": {
           // For Ticketmaster artists, navigate with Ticketmaster ID parameter
-          const slug = result.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          const slug = result.title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "");
           router.push(`/artists/${slug}?ticketmaster=${result.id}`);
           break;
+        }
         case "show":
           router.push(`/shows/${result.id}`);
           break;

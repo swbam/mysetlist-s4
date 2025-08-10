@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 function isAuthorizedAnalyticsRequest(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
   const analyticsSecret =
-    process.env["ANALYTICS_SECRET"] || process.env["ADMIN_SECRET"];
+    process.env.ANALYTICS_SECRET || process.env.ADMIN_SECRET;
 
   if (!analyticsSecret) {
     return false;
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       (searchParams.get("cohortType") as "monthly" | "weekly") || "monthly";
 
     switch (type) {
-      case "cohort":
+      case "cohort": {
         const cohortAnalysis = await getCohortAnalysis(
           startDate,
           endDate,
@@ -48,16 +48,18 @@ export async function GET(request: NextRequest) {
           data: cohortAnalysis,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "retention":
+      case "retention": {
         const retentionMetrics = await getRetentionMetrics(startDate, endDate);
         return NextResponse.json({
           success: true,
           data: retentionMetrics,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "predictive":
+      case "predictive": {
         const predictiveAnalytics = await getPredictiveAnalytics(
           startDate,
           endDate,
@@ -67,8 +69,9 @@ export async function GET(request: NextRequest) {
           data: predictiveAnalytics,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "funnel":
+      case "funnel": {
         const funnelSteps = searchParams.get("steps")?.split(",") || [
           "user_signup",
           "first_vote",
@@ -87,16 +90,18 @@ export async function GET(request: NextRequest) {
           data: funnelAnalysis,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "rfm":
+      case "rfm": {
         const rfmAnalysis = await getRFMAnalysis(startDate, endDate);
         return NextResponse.json({
           success: true,
           data: rfmAnalysis,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "all":
+      case "all": {
         // Return all advanced analytics data
         const [cohort, retention, predictive, funnel, rfm] = await Promise.all([
           getCohortAnalysis(startDate, endDate, cohortType),
@@ -127,8 +132,9 @@ export async function GET(request: NextRequest) {
           },
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "insights":
+      case "insights": {
         // Generate key insights from all analytics
         const insights = await generateAdvancedInsights(startDate, endDate);
         return NextResponse.json({
@@ -136,8 +142,9 @@ export async function GET(request: NextRequest) {
           data: insights,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "health":
+      case "health": {
         // Check advanced analytics health
         const healthStatus = {
           analyticsEngine: "operational",
@@ -158,6 +165,7 @@ export async function GET(request: NextRequest) {
           health: healthStatus,
           timestamp: new Date().toISOString(),
         });
+      }
 
       default:
         return NextResponse.json(
@@ -209,7 +217,7 @@ export async function POST(request: NextRequest) {
     }
 
     switch (reportType) {
-      case "custom_cohort":
+      case "custom_cohort": {
         const customCohort = await getCohortAnalysis(
           startDate,
           endDate,
@@ -231,8 +239,9 @@ export async function POST(request: NextRequest) {
           parameters: { startDate, endDate, cohortType, filters },
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "segment_analysis":
+      case "segment_analysis": {
         const segmentAnalysis = await analyzeUserSegments(
           segments || [],
           startDate,
@@ -245,8 +254,9 @@ export async function POST(request: NextRequest) {
           parameters: { segments, startDate, endDate },
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "custom_funnel":
+      case "custom_funnel": {
         const customFunnel = await getFunnelAnalysis(
           customFunnelSteps || [
             "user_signup",
@@ -264,8 +274,9 @@ export async function POST(request: NextRequest) {
           parameters: { customFunnelSteps, startDate, endDate },
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "comparative_analysis":
+      case "comparative_analysis": {
         const currentPeriodData = await Promise.all([
           getCohortAnalysis(startDate, endDate, cohortType),
           getRetentionMetrics(startDate, endDate),
@@ -313,8 +324,9 @@ export async function POST(request: NextRequest) {
           data: comparison,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "predictive_report":
+      case "predictive_report": {
         const predictiveReport = await generatePredictiveReport(
           startDate,
           endDate,
@@ -325,6 +337,7 @@ export async function POST(request: NextRequest) {
           data: predictiveReport,
           timestamp: new Date().toISOString(),
         });
+      }
 
       default:
         return NextResponse.json(
@@ -374,7 +387,7 @@ export async function PUT(request: NextRequest) {
     const supabase = createServiceClient();
 
     switch (updateType) {
-      case "cohort_settings":
+      case "cohort_settings": {
         const { data: cohortConfig, error: cohortError } = await supabase
           .from("analytics_config")
           .upsert({
@@ -393,8 +406,9 @@ export async function PUT(request: NextRequest) {
           config: cohortConfig,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "retention_settings":
+      case "retention_settings": {
         const { data: retentionConfig, error: retentionError } = await supabase
           .from("analytics_config")
           .upsert({
@@ -413,8 +427,9 @@ export async function PUT(request: NextRequest) {
           config: retentionConfig,
           timestamp: new Date().toISOString(),
         });
+      }
 
-      case "predictive_settings":
+      case "predictive_settings": {
         const { data: predictiveConfig, error: predictiveError } =
           await supabase
             .from("analytics_config")
@@ -434,6 +449,7 @@ export async function PUT(request: NextRequest) {
           config: predictiveConfig,
           timestamp: new Date().toISOString(),
         });
+      }
 
       default:
         return NextResponse.json(

@@ -15,7 +15,10 @@ export async function POST(request: NextRequest) {
     const { setlistSongId } = await request.json();
 
     if (!setlistSongId) {
-      return NextResponse.json({ error: "Missing setlistSongId" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing setlistSongId" },
+        { status: 400 },
+      );
     }
 
     // Check if user already voted on this setlist song
@@ -32,7 +35,10 @@ export async function POST(request: NextRequest) {
       await db
         .delete(votes)
         .where(
-          and(eq(votes.setlistSongId, setlistSongId), eq(votes.userId, user.id)),
+          and(
+            eq(votes.setlistSongId, setlistSongId),
+            eq(votes.userId, user.id),
+          ),
         );
     } else {
       // Insert upvote

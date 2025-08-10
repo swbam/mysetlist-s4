@@ -5,9 +5,9 @@
  * Automated vulnerability scanning and security testing
  */
 
-import { execSync } from "child_process";
-import { existsSync, readFileSync, writeFileSync } from "fs";
-import { join } from "path";
+import { execSync } from "node:child_process";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 interface SecurityFinding {
   severity: "critical" | "high" | "medium" | "low" | "info";
@@ -800,7 +800,7 @@ class SecurityAuditor {
     // Console output
     console.log("\n🔒 SECURITY AUDIT REPORT");
     console.log("=".repeat(50));
-    console.log(`\n📊 SUMMARY:`);
+    console.log("\n📊 SUMMARY:");
     console.log(`Total Issues: ${report.summary.total}`);
     console.log(`🔴 Critical: ${report.summary.critical}`);
     console.log(`🟠 High: ${report.summary.high}`);
@@ -865,7 +865,7 @@ class SecurityAuditor {
       console.log("🔴 CRITICAL - Immediate security fixes required");
     }
 
-    console.log("\n" + "=".repeat(50));
+    console.log(`\n${"=".repeat(50)}`);
   }
 
   private generateRecommendations(): string[] {

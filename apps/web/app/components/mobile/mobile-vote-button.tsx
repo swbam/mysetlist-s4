@@ -151,9 +151,7 @@ export function MobileVoteButton({
             }
             transition={{ duration: 0.3 }}
           >
-            <>
-              {React.createElement(getVoteIcon("up"), { className: "h-3 w-3" })}
-            </>
+            {React.createElement(getVoteIcon("up"), { className: "h-3 w-3" })}
           </motion.div>
         </Button>
 
@@ -177,11 +175,9 @@ export function MobileVoteButton({
             }
             transition={{ duration: 0.3 }}
           >
-            <>
-              {React.createElement(getVoteIcon("down"), {
-                className: "h-3 w-3",
-              })}
-            </>
+            {React.createElement(getVoteIcon("down"), {
+              className: "h-3 w-3",
+            })}
           </motion.div>
         </Button>
       </div>
@@ -211,14 +207,12 @@ export function MobileVoteButton({
           }
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <>
-            {React.createElement(getVoteIcon("up"), {
-              className: cn(
-                "h-5 w-5 md:h-4 md:w-4",
-                votes.userVote === "up" && "drop-shadow-sm",
-              ),
-            })}
-          </>
+          {React.createElement(getVoteIcon("up"), {
+            className: cn(
+              "h-5 w-5 md:h-4 md:w-4",
+              votes.userVote === "up" && "drop-shadow-sm",
+            ),
+          })}
         </motion.div>
       </Button>
 
@@ -265,14 +259,12 @@ export function MobileVoteButton({
           }
           transition={{ duration: 0.4, ease: "easeOut" }}
         >
-          <>
-            {React.createElement(getVoteIcon("down"), {
-              className: cn(
-                "h-5 w-5 md:h-4 md:w-4",
-                votes.userVote === "down" && "drop-shadow-sm",
-              ),
-            })}
-          </>
+          {React.createElement(getVoteIcon("down"), {
+            className: cn(
+              "h-5 w-5 md:h-4 md:w-4",
+              votes.userVote === "down" && "drop-shadow-sm",
+            ),
+          })}
         </motion.div>
       </Button>
 

@@ -15,11 +15,9 @@ async function getSpotifyToken() {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
-      Authorization:
-        "Basic " +
-        Buffer.from(SPOTIFY_CLIENT_ID + ":" + SPOTIFY_CLIENT_SECRET).toString(
-          "base64",
-        ),
+      Authorization: `Basic ${Buffer.from(
+        `${SPOTIFY_CLIENT_ID}:${SPOTIFY_CLIENT_SECRET}`,
+      ).toString("base64")}`,
     },
     body: "grant_type=client_credentials",
   });
@@ -69,7 +67,7 @@ async function syncArtistImages() {
       console.log(`Fetching images for ${artist.name}...`);
       const spotifyData = await getSpotifyArtist(artist.spotify_id, token);
 
-      if (spotifyData && spotifyData.images && spotifyData.images.length > 0) {
+      if (spotifyData?.images && spotifyData.images.length > 0) {
         const largeImage = spotifyData.images[0]?.url;
         const smallImage =
           spotifyData.images[spotifyData.images.length - 1]?.url;

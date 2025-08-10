@@ -5,9 +5,9 @@
  * Runs all testing suites and generates unified report
  */
 
-import { execSync } from "child_process";
-import { writeFileSync } from "fs";
-import { join } from "path";
+import { execSync } from "node:child_process";
+import { writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 interface TestResult {
   name: string;
@@ -361,7 +361,7 @@ class ComprehensiveQARunner {
     };
 
     // Console summary
-    console.log("\n" + "=".repeat(60));
+    console.log(`\n${"=".repeat(60)}`);
     console.log("📊 COMPREHENSIVE QA REPORT SUMMARY");
     console.log("=".repeat(60));
     console.log(`\n⏱️  Total Duration: ${this.formatDuration(totalDuration)}`);
@@ -400,7 +400,7 @@ class ComprehensiveQARunner {
     }
 
     // Overall status
-    console.log("\n" + "=".repeat(60));
+    console.log(`\n${"=".repeat(60)}`);
     if (failed === 0) {
       console.log("🎉 ALL TESTS PASSED - READY FOR PRODUCTION!");
     } else if (failed <= 2) {

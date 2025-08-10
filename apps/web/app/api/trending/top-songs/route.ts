@@ -45,7 +45,7 @@ export async function GET(_request: NextRequest) {
         .filter((item) => item.song && item.song.length > 0)
         .slice(0, 4)
         .map(async (item, index) => {
-          const firstSong = item.song![0];
+          const firstSong = item.song?.[0];
           if (!firstSong) {
             return null;
           }

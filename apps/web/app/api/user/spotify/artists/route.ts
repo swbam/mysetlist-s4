@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get Spotify access token (would come from OAuth in production)
-    const accessToken = user.app_metadata?.["provider_token"] || "mock_token";
+    const accessToken = user.app_metadata?.provider_token || "mock_token";
 
     // Fetch user's followed artists from Spotify
     const spotifyData = await getSpotifyFollowedArtists(accessToken);

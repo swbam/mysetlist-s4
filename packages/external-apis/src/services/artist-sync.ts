@@ -13,7 +13,7 @@ export class ArtistSyncService {
       maxRetries: 3,
       retryDelay: 1000,
       onError: (error) => {
-        console.error(`[ArtistSyncService] Error:`, error);
+        console.error("[ArtistSyncService] Error:", error);
       },
     });
   }

@@ -7,8 +7,8 @@
 
 const postgres = require("postgres");
 const { config } = require("dotenv");
-const { resolve } = require("path");
-const { existsSync } = require("fs");
+const { resolve } = require("node:path");
+const { existsSync } = require("node:fs");
 
 // Load environment variables
 const envPaths = [
@@ -107,9 +107,9 @@ async function main() {
       console.log(`  ${i + 1}. Show: ${show.show_name} (${show.date})`);
       console.log(`     Headliner: ${show.headliner_name || "None"}`);
       console.log(`     Show Artists Count: ${show.show_artists_count}`);
-      if (show.show_artists && show.show_artists[0]) {
+      if (show.show_artists?.[0]) {
         console.log(
-          `     Show Artists:`,
+          "     Show Artists:",
           JSON.stringify(
             show.show_artists.filter((sa) => sa !== null),
             null,

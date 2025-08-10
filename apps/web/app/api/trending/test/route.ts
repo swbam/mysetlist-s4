@@ -86,7 +86,7 @@ export async function GET() {
 
       try {
         const baseUrl =
-          process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
+          process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
         const url = `${baseUrl}${endpoint.path}${endpoint.path.includes("?") ? "&" : "?"}limit=1`;
 
         const response = await fetch(url, {

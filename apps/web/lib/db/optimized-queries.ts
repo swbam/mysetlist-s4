@@ -235,25 +235,17 @@ export async function withQueryMetrics<T>(
   queryFn: () => Promise<T>,
 ): Promise<T> {
   const start = Date.now();
+  const result = await queryFn();
+  const duration = Date.now() - start;
 
-  try {
-    const result = await queryFn();
-    const duration = Date.now() - start;
-
-    // Log slow queries
-    if (duration > 100) {
-    }
-
-    // Track metrics (could send to analytics)
-    if (
-      typeof process !== "undefined" &&
-      process.env["NODE_ENV"] === "production"
-    ) {
-      // Track query performance metrics
-    }
-
-    return result;
-  } catch (error) {
-    throw error;
+  // Log slow queries
+  if (duration > 100) {
   }
+
+  // Track metrics (could send to analytics)
+  if (typeof process !== "undefined" && process.env.NODE_ENV === "production") {
+    // Track query performance metrics
+  }
+
+  return result;
 }

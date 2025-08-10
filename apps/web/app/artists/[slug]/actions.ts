@@ -4,8 +4,8 @@ import {
   artistStats,
   artists,
   db,
-  setlists,
   setlistSongs,
+  setlists,
   showArtists,
   shows,
   songs,
@@ -244,7 +244,7 @@ const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
 
     // Transform and validate each show record
     return artistShows
-      .filter(({ show }) => show && show.id) // Ensure valid show data
+      .filter(({ show }) => show?.id) // Ensure valid show data
       .map(
         ({
           show,
@@ -370,40 +370,42 @@ const _getArtistSetlists = async (artistId: string, limit = 10) => {
 
     // For each setlist, get the songs
     const setlistsWithSongs = await Promise.all(
-      artistSetlists.map(async ({ setlist, show, venue, songCount, voteCount }) => {
-        // Get songs for this setlist
-        const setlistSongsData = await db
-          .select({
-            song: songs,
-            setlistSong: setlistSongs,
-          })
-          .from(setlistSongs)
-          .leftJoin(songs, eq(setlistSongs.songId, songs.id))
-          .where(eq(setlistSongs.setlistId, setlist.id))
-          .orderBy(setlistSongs.position);
+      artistSetlists.map(
+        async ({ setlist, show, venue, songCount, voteCount }) => {
+          // Get songs for this setlist
+          const setlistSongsData = await db
+            .select({
+              song: songs,
+              setlistSong: setlistSongs,
+            })
+            .from(setlistSongs)
+            .leftJoin(songs, eq(setlistSongs.songId, songs.id))
+            .where(eq(setlistSongs.setlistId, setlist.id))
+            .orderBy(setlistSongs.position);
 
-        return {
-          setlist,
-          show: show || undefined,
-          venue: venue || undefined,
-          songCount: songCount || 0,
-          voteCount: voteCount || 0,
-          songs: setlistSongsData
-            .filter(({ song }) => song)
-            .map(({ song, setlistSong }) => ({
-              id: song!.id,
-              title: song!.title,
-              artist: song!.artist,
-              position: setlistSong.position,
-              upvotes: setlistSong.upvotes || 0,
-              notes: setlistSong.notes,
-              isPlayed: setlistSong.isPlayed,
-            })),
-        };
-      })
+          return {
+            setlist,
+            show: show || undefined,
+            venue: venue || undefined,
+            songCount: songCount || 0,
+            voteCount: voteCount || 0,
+            songs: setlistSongsData
+              .filter(({ song }) => song)
+              .map(({ song, setlistSong }) => ({
+                id: song?.id,
+                title: song?.title,
+                artist: song?.artist,
+                position: setlistSong.position,
+                upvotes: setlistSong.upvotes || 0,
+                notes: setlistSong.notes,
+                isPlayed: setlistSong.isPlayed,
+              })),
+          };
+        },
+      ),
     );
 
-    return setlistsWithSongs.filter(({ setlist }) => setlist && setlist.id);
+    return setlistsWithSongs.filter(({ setlist }) => setlist?.id);
   } catch (error) {
     console.error(`Error fetching setlists for artist ${artistId}:`, error);
     return [];

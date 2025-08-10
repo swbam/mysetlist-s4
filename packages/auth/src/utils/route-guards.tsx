@@ -37,7 +37,7 @@ export function ProtectedRoute({
 
     // Role-based access control
     if (allowedRoles && allowedRoles.length > 0) {
-      const userRole = user.user_metadata?.["role"] || "user";
+      const userRole = user.user_metadata?.role || "user";
       if (!allowedRoles.includes(userRole)) {
         router.push("/unauthorized");
         return;
@@ -56,7 +56,7 @@ export function ProtectedRoute({
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
       </div>
     );
   }
@@ -65,7 +65,7 @@ export function ProtectedRoute({
   if (!user) return null;
   if (requireEmailVerification && !user.email_confirmed_at) return null;
   if (allowedRoles && allowedRoles.length > 0) {
-    const userRole = user.user_metadata?.["role"] || "user";
+    const userRole = user.user_metadata?.role || "user";
     if (!allowedRoles.includes(userRole)) return null;
   }
 
@@ -98,7 +98,7 @@ export function PublicOnlyRoute({
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600" />
       </div>
     );
   }
@@ -129,7 +129,7 @@ export function ConditionalAuth({
   if (loading) {
     return (
       <div className="flex items-center justify-center p-4">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600" />
       </div>
     );
   }
@@ -148,7 +148,7 @@ export function ConditionalAuth({
   if (allowedRoles && allowedRoles.length > 0) {
     if (!user) return <>{fallback}</>;
 
-    const userRole = user.user_metadata?.["role"] || "user";
+    const userRole = user.user_metadata?.role || "user";
     if (!allowedRoles.includes(userRole)) {
       return <>{fallback}</>;
     }
