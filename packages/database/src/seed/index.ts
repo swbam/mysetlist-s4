@@ -343,7 +343,7 @@ export class DatabaseSeeder {
         date: showDate.toISOString().split("T")[0],
         startTime: `${19 + Math.floor(Math.random() * 3)}:00:00`, // 7-9 PM
         status,
-        description: `Join ${artist.name} for an unforgettable ${showName?.toLowerCase() || 'show'} experience.`,
+        description: `Join ${artist.name} for an unforgettable ${showName?.toLowerCase() || "show"} experience.`,
         minPrice: Math.floor(Math.random() * 100) + 25,
         maxPrice: Math.floor(Math.random() * 200) + 100,
         viewCount: Math.floor(Math.random() * 10000),

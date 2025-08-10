@@ -1,5 +1,5 @@
-import { createServiceClient } from "~/lib/supabase/server";
 import { type NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 export async function GET(_request: NextRequest) {
   try {

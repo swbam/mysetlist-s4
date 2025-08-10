@@ -146,7 +146,7 @@
     "SUPABASE_SERVICE_ROLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDY5MjMxNiwiZXhwIjoyMDY2MjY4MzE2fQ.ZMorLC_eZke3bvBAF0zyzqUONxpomfTN2RpE_mLjz18",
     "SUPABASE_JWT_SECRET": "8yUxq3AqzLiPV9mdG5jZk38ZonG5nXVUVgq6zlQKCKHcdLcee3Ssg62/8cATrxBC2uvBqFXAIQUjHLMz3Q45rg=="
   },
-  "buildCommand": "cd ../.. && pnpm build --filter=web",
-  "installCommand": "cd ../.. && pnpm install",
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install --frozen-lockfile",
   "outputDirectory": ".next"
 }

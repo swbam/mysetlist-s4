@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
-import { config } from "dotenv";
 import { resolve } from "path";
+import { config } from "dotenv";
 
 // Load environment variables
 config({ path: resolve(__dirname, "../.env.local") });
@@ -29,13 +29,16 @@ async function initializeTrendingData() {
   try {
     // Step 1: Seed initial trending data
     console.log("1️⃣ Seeding initial trending data...");
-    const seedResponse = await fetch(`${BASE_URL}/api/admin/seed-trending?type=all`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${ADMIN_API_KEY}`,
-        "Content-Type": "application/json",
+    const seedResponse = await fetch(
+      `${BASE_URL}/api/admin/seed-trending?type=all`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${ADMIN_API_KEY}`,
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
 
     if (!seedResponse.ok) {
       const error = await seedResponse.text();
@@ -47,13 +50,16 @@ async function initializeTrendingData() {
 
     // Step 2: Trigger master sync to update artist/show data
     console.log("\n2️⃣ Triggering master sync...");
-    const syncResponse = await fetch(`${BASE_URL}/api/cron/master-sync?mode=daily`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${CRON_SECRET}`,
-        "Content-Type": "application/json",
+    const syncResponse = await fetch(
+      `${BASE_URL}/api/cron/master-sync?mode=daily`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${CRON_SECRET}`,
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
 
     if (!syncResponse.ok) {
       const error = await syncResponse.text();
@@ -76,7 +82,7 @@ async function initializeTrendingData() {
           Authorization: `Bearer ${CRON_SECRET}`,
           "Content-Type": "application/json",
         },
-      }
+      },
     );
 
     if (!trendingResponse.ok) {
@@ -94,28 +100,36 @@ async function initializeTrendingData() {
 
     // Step 4: Verify trending data exists
     console.log("\n4️⃣ Verifying trending data...");
-    const verifyResponse = await fetch(`${BASE_URL}/api/trending/artists?limit=5`);
-    
+    const verifyResponse = await fetch(
+      `${BASE_URL}/api/trending/artists?limit=5`,
+    );
+
     if (verifyResponse.ok) {
       const verifyResult = await verifyResponse.json();
-      console.log("✅ Trending artists found:", verifyResult.artists?.length || 0);
-      
+      console.log(
+        "✅ Trending artists found:",
+        verifyResult.artists?.length || 0,
+      );
+
       if (verifyResult.artists?.length > 0) {
         console.log("\n📊 Top 5 Trending Artists:");
-        verifyResult.artists.slice(0, 5).forEach((artist: any, index: number) => {
-          console.log(
-            `${index + 1}. ${artist.name} - Score: ${artist.trendingScore?.toFixed(2) || 0}`
-          );
-        });
+        verifyResult.artists
+          .slice(0, 5)
+          .forEach((artist: any, index: number) => {
+            console.log(
+              `${index + 1}. ${artist.name} - Score: ${artist.trendingScore?.toFixed(2) || 0}`,
+            );
+          });
       }
     }
 
     console.log("\n✨ Trending data initialization complete!");
     console.log("\n📝 Next steps:");
-    console.log("1. Visit http://localhost:3001/trending to see the trending page");
+    console.log(
+      "1. Visit http://localhost:3001/trending to see the trending page",
+    );
     console.log("2. The cron job will run daily to update trending scores");
     console.log("3. To manually trigger updates, use: pnpm trigger:trending");
-
   } catch (error) {
     console.error("\n❌ Error initializing trending data:", error);
     process.exit(1);

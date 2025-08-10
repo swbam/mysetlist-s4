@@ -1,35 +1,35 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getSyncQueue } from "@repo/utils";
-import { spotify as spotifyApi, ticketmaster as ticketmasterApi, setlistfm as setlistfmApi } from "@repo/external-apis";
 import { db } from "@repo/database";
-import { artists, shows, venues, artistSongs } from "@repo/database";
+import { artistSongs, artists, shows, venues } from "@repo/database";
+import {
+  setlistfm as setlistfmApi,
+  spotify as spotifyApi,
+  ticketmaster as ticketmasterApi,
+} from "@repo/external-apis";
+import { getSyncQueue } from "@repo/utils";
 import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const { jobId } = await request.json();
-    
+
     if (!jobId) {
-      return NextResponse.json(
-        { error: "Job ID required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Job ID required" }, { status: 400 });
     }
 
     // Process the job in background (non-blocking response)
     processJobInBackground(jobId);
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: "Job processing started",
-      jobId 
+      jobId,
     });
-
   } catch (error) {
     console.error("Sync process error:", error);
     return NextResponse.json(
       { error: "Failed to start job processing" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -37,10 +37,10 @@ export async function POST(request: NextRequest) {
 // Background job processor
 async function processJobInBackground(jobId: string) {
   const syncQueue = getSyncQueue();
-  
+
   try {
     const { job } = await syncQueue.getJobStatus(jobId);
-    
+
     if (!job || job.status !== "pending") {
       return;
     }
@@ -48,9 +48,9 @@ async function processJobInBackground(jobId: string) {
     // Mark as in progress
     await syncQueue.supabase
       .from("sync_jobs")
-      .update({ 
-        status: "in_progress", 
-        started_at: new Date().toISOString() 
+      .update({
+        status: "in_progress",
+        started_at: new Date().toISOString(),
       })
       .eq("id", jobId);
 
@@ -64,7 +64,6 @@ async function processJobInBackground(jobId: string) {
     }
 
     await syncQueue.completeJob(jobId, "completed");
-
   } catch (error) {
     console.error(`Job ${jobId} failed:`, error);
     await syncQueue.completeJob(jobId, "failed", String(error));
@@ -75,15 +74,21 @@ async function processArtistSync(job: any, syncQueue: any) {
   const { entity_id: artistId, spotify_id: spotifyId, job_type: jobType } = job;
 
   // Step 1: Fetch artist data from Spotify
-  await syncQueue.updateProgress(job.id, "fetching_artist", 0, "Fetching artist information from Spotify...");
-  
+  await syncQueue.updateProgress(
+    job.id,
+    "fetching_artist",
+    0,
+    "Fetching artist information from Spotify...",
+  );
+
   const spotifyArtist = await spotifyApi.getArtist(spotifyId);
   if (!spotifyArtist) {
     throw new Error("Artist not found on Spotify");
   }
 
   // Update artist in database
-  await db.update(artists)
+  await db
+    .update(artists)
     .set({
       name: spotifyArtist.name,
       image_url: spotifyArtist.images?.[0]?.url,
@@ -94,22 +99,35 @@ async function processArtistSync(job: any, syncQueue: any) {
     })
     .where(eq(artists.id, artistId));
 
-  await syncQueue.updateProgress(job.id, "fetching_artist", 100, "Artist information updated");
+  await syncQueue.updateProgress(
+    job.id,
+    "fetching_artist",
+    100,
+    "Artist information updated",
+  );
 
   if (jobType === "full_sync" || jobType === "shows_only") {
     // Step 2: Fetch shows from Ticketmaster
-    await syncQueue.updateProgress(job.id, "importing_shows", 0, "Fetching shows from Ticketmaster...");
-    
-    const ticketmasterShows = await ticketmasterApi.getArtistShows(spotifyArtist.name);
+    await syncQueue.updateProgress(
+      job.id,
+      "importing_shows",
+      0,
+      "Fetching shows from Ticketmaster...",
+    );
+
+    const ticketmasterShows = await ticketmasterApi.getArtistShows(
+      spotifyArtist.name,
+    );
     let processedShows = 0;
-    
+
     for (const show of ticketmasterShows || []) {
       try {
         // Import venue if needed
-        let venueId = await getOrCreateVenue(show.venue);
-        
+        const venueId = await getOrCreateVenue(show.venue);
+
         // Import show
-        await db.insert(shows)
+        await db
+          .insert(shows)
           .values({
             artist_id: artistId,
             venue_id: venueId,
@@ -120,36 +138,47 @@ async function processArtistSync(job: any, syncQueue: any) {
             ticket_url: show.ticketUrl,
           })
           .onConflictDoNothing();
-          
+
         processedShows++;
-        
-        const progress = Math.round((processedShows / ticketmasterShows.length) * 100);
-        await syncQueue.updateProgress(
-          job.id, 
-          "importing_shows", 
-          progress, 
-          `Imported ${processedShows}/${ticketmasterShows.length} shows`
+
+        const progress = Math.round(
+          (processedShows / ticketmasterShows.length) * 100,
         );
-        
+        await syncQueue.updateProgress(
+          job.id,
+          "importing_shows",
+          progress,
+          `Imported ${processedShows}/${ticketmasterShows.length} shows`,
+        );
       } catch (error) {
         console.error(`Failed to import show ${show.id}:`, error);
       }
     }
-    
-    await syncQueue.updateProgress(job.id, "importing_shows", 100, `Imported ${processedShows} shows`);
+
+    await syncQueue.updateProgress(
+      job.id,
+      "importing_shows",
+      100,
+      `Imported ${processedShows} shows`,
+    );
   }
 
   if (jobType === "full_sync" || jobType === "catalog_only") {
     // Step 3: Fetch artist's top tracks and albums
-    await syncQueue.updateProgress(job.id, "syncing_songs", 0, "Importing song catalog...");
-    
+    await syncQueue.updateProgress(
+      job.id,
+      "syncing_songs",
+      0,
+      "Importing song catalog...",
+    );
+
     const [topTracks, albums] = await Promise.all([
       spotifyApi.getArtistTopTracks(spotifyId),
-      spotifyApi.getArtistAlbums(spotifyId)
+      spotifyApi.getArtistAlbums(spotifyId),
     ]);
-    
+
     const allTracks = [...(topTracks || [])];
-    
+
     // Get tracks from albums
     for (const album of albums || []) {
       const albumTracks = await spotifyApi.getAlbumTracks(album.id);
@@ -157,20 +186,24 @@ async function processArtistSync(job: any, syncQueue: any) {
         allTracks.push(...albumTracks);
       }
     }
-    
+
     // Deduplicate by Spotify ID
-    const uniqueTracks = allTracks.reduce((acc, track) => {
-      if (!acc.some(t => t.id === track.id)) {
-        acc.push(track);
-      }
-      return acc;
-    }, [] as typeof allTracks);
-    
+    const uniqueTracks = allTracks.reduce(
+      (acc, track) => {
+        if (!acc.some((t) => t.id === track.id)) {
+          acc.push(track);
+        }
+        return acc;
+      },
+      [] as typeof allTracks,
+    );
+
     let processedTracks = 0;
-    
+
     for (const track of uniqueTracks) {
       try {
-        await db.insert(artistSongs)
+        await db
+          .insert(artistSongs)
           .values({
             artist_id: artistId,
             title: track.name,
@@ -182,35 +215,53 @@ async function processArtistSync(job: any, syncQueue: any) {
             track_number: track.track_number,
           })
           .onConflictDoNothing();
-          
+
         processedTracks++;
-        
-        const progress = Math.round((processedTracks / uniqueTracks.length) * 100);
-        await syncQueue.updateProgress(
-          job.id, 
-          "syncing_songs", 
-          progress, 
-          `Imported ${processedTracks}/${uniqueTracks.length} songs`
+
+        const progress = Math.round(
+          (processedTracks / uniqueTracks.length) * 100,
         );
-        
+        await syncQueue.updateProgress(
+          job.id,
+          "syncing_songs",
+          progress,
+          `Imported ${processedTracks}/${uniqueTracks.length} songs`,
+        );
       } catch (error) {
         console.error(`Failed to import track ${track.id}:`, error);
       }
     }
-    
-    await syncQueue.updateProgress(job.id, "syncing_songs", 100, `Imported ${processedTracks} songs`);
+
+    await syncQueue.updateProgress(
+      job.id,
+      "syncing_songs",
+      100,
+      `Imported ${processedTracks} songs`,
+    );
   }
 
   // Final step: Update artist stats
-  await syncQueue.updateProgress(job.id, "finalizing", 0, "Updating artist statistics...");
-  
+  await syncQueue.updateProgress(
+    job.id,
+    "finalizing",
+    0,
+    "Updating artist statistics...",
+  );
+
   // Calculate stats (show count, song count, etc.)
   const [showCount, songCount] = await Promise.all([
-    db.select({ count: shows.id }).from(shows).where(eq(shows.artist_id, artistId)),
-    db.select({ count: artistSongs.id }).from(artistSongs).where(eq(artistSongs.artist_id, artistId))
+    db
+      .select({ count: shows.id })
+      .from(shows)
+      .where(eq(shows.artist_id, artistId)),
+    db
+      .select({ count: artistSongs.id })
+      .from(artistSongs)
+      .where(eq(artistSongs.artist_id, artistId)),
   ]);
-  
-  await db.update(artists)
+
+  await db
+    .update(artists)
     .set({
       show_count: showCount.length,
       song_count: songCount.length,
@@ -218,18 +269,33 @@ async function processArtistSync(job: any, syncQueue: any) {
       updated_at: new Date(),
     })
     .where(eq(artists.id, artistId));
-  
-  await syncQueue.updateProgress(job.id, "finalizing", 100, "Sync completed successfully");
+
+  await syncQueue.updateProgress(
+    job.id,
+    "finalizing",
+    100,
+    "Sync completed successfully",
+  );
 }
 
 async function processVenueSync(job: any, syncQueue: any) {
   // Venue sync implementation
-  await syncQueue.updateProgress(job.id, "venue_sync", 100, "Venue sync not implemented yet");
+  await syncQueue.updateProgress(
+    job.id,
+    "venue_sync",
+    100,
+    "Venue sync not implemented yet",
+  );
 }
 
 async function processShowSync(job: any, syncQueue: any) {
-  // Show sync implementation  
-  await syncQueue.updateProgress(job.id, "show_sync", 100, "Show sync not implemented yet");
+  // Show sync implementation
+  await syncQueue.updateProgress(
+    job.id,
+    "show_sync",
+    100,
+    "Show sync not implemented yet",
+  );
 }
 
 async function getOrCreateVenue(venueData: any): Promise<string> {
@@ -239,13 +305,14 @@ async function getOrCreateVenue(venueData: any): Promise<string> {
     .from(venues)
     .where(eq(venues.ticketmaster_id, venueData.id))
     .limit(1);
-    
+
   if (existingVenue.length > 0) {
     return existingVenue[0].id;
   }
-  
+
   // Create new venue
-  const newVenue = await db.insert(venues)
+  const newVenue = await db
+    .insert(venues)
     .values({
       name: venueData.name,
       city: venueData.city,
@@ -256,6 +323,6 @@ async function getOrCreateVenue(venueData: any): Promise<string> {
       capacity: venueData.capacity,
     })
     .returning({ id: venues.id });
-    
+
   return newVenue[0].id;
 }

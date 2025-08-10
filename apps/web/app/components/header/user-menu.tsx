@@ -32,11 +32,11 @@ export const UserMenu = React.memo(function UserMenu() {
 
     const username = email.substring(0, atIndex);
     const parts = username.split(".");
-    
+
     if (parts.length >= 2) {
       return (parts[0]?.[0] + parts[1]?.[0]).toUpperCase();
     }
-    
+
     return (username[0] || "U").toUpperCase();
   }, [user?.email]);
 
@@ -70,7 +70,6 @@ export const UserMenu = React.memo(function UserMenu() {
       </div>
     );
   }
-
 
   return (
     <DropdownMenu>

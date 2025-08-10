@@ -99,7 +99,7 @@ export async function createSetlist(
       // First, insert songs into the songs table if they don't exist
       for (let i = 0; i < selectedSongs.length; i++) {
         const song = selectedSongs[i];
-        
+
         // Check if song exists in songs table
         const { data: existingSong } = await supabase
           .from("songs")
@@ -128,19 +128,17 @@ export async function createSetlist(
             })
             .select("id")
             .single();
-          
+
           songId = newSong?.id;
         }
 
         if (songId) {
           // Add song to setlist
-          await supabase
-            .from("setlist_songs")
-            .insert({
-              setlist_id: setlist.id,
-              song_id: songId,
-              position: i + 1,
-            });
+          await supabase.from("setlist_songs").insert({
+            setlist_id: setlist.id,
+            song_id: songId,
+            position: i + 1,
+          });
         }
       }
     } else {
@@ -160,13 +158,11 @@ export async function createSetlist(
 
         if (songsData && songsData.length > 0) {
           for (let i = 0; i < songsData.length; i++) {
-            await supabase
-              .from("setlist_songs")
-              .insert({
-                setlist_id: setlist.id,
-                song_id: songsData[i].id,
-                position: i + 1,
-              });
+            await supabase.from("setlist_songs").insert({
+              setlist_id: setlist.id,
+              song_id: songsData[i].id,
+              position: i + 1,
+            });
           }
         }
       }
@@ -369,7 +365,7 @@ export async function voteSong(setlistSongId: string, voteType: "up") {
     await supabase.from("votes").delete().eq("id", existingVote.id);
     return { removed: true };
   }
-  
+
   // Create new upvote
   await supabase.from("votes").insert({
     setlist_song_id: setlistSongId,

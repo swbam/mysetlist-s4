@@ -7,9 +7,9 @@ import {
   getRecommendedVenues,
 } from "~/lib/recommendations";
 import {
+  type MLRecommendationConfig,
   getMLRecommendations,
   trackRecommendationPerformance,
-  type MLRecommendationConfig,
 } from "~/lib/recommendations/ml-engine";
 import { createServiceClient } from "~/lib/supabase/server";
 

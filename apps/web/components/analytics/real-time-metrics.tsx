@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Activity, Users, Vote, Eye, Zap, TrendingUp } from "lucide-react";
+import { Activity, Eye, TrendingUp, Users, Vote, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface RealTimeData {
   activeUsers: number;

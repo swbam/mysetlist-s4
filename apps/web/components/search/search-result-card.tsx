@@ -121,10 +121,9 @@ export function SearchResultCard({
   const handleClick = () => {
     // Trigger background sync for artist data when clicking from search
     if (result.type === "artist" && result.spotifyId) {
-      triggerArtistSync(result.id, result.spotifyId, 'full_sync')
-        .catch(() => {
-          // Silent fail - user still gets optimistic UI
-        });
+      triggerArtistSync(result.id, result.spotifyId, "full_sync").catch(() => {
+        // Silent fail - user still gets optimistic UI
+      });
     }
   };
 

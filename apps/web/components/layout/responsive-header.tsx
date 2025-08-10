@@ -1,6 +1,5 @@
 "use client";
 
-import { useAuth } from "~/app/providers/auth-provider";
 import { Button } from "@repo/design-system";
 import { SearchBox } from "@repo/design-system";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/design-system";
@@ -31,6 +30,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "~/app/providers/auth-provider";
 import { ThemeToggle } from "~/components/ui/theme-provider";
 
 interface ResponsiveHeaderProps {

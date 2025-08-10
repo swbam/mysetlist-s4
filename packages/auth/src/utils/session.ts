@@ -1,8 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
+import type { User } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { keys } from "../../keys";
 import type { AuthSession, AuthUser } from "../types";
-import type { User } from "@supabase/supabase-js";
 
 const env = keys();
 

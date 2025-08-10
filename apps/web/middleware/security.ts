@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Security headers configuration
 const securityHeaders = {
@@ -80,7 +80,7 @@ const ipRateLimit = new Map<string, { count: number; resetTime: number }>();
 
 const checkIPRateLimit = (
   ip: string,
-  limit: number = 1000,
+  limit = 1000,
   windowMs: number = 15 * 60 * 1000,
 ): boolean => {
   const now = Date.now();
@@ -179,7 +179,11 @@ export async function securityMiddleware(
     const config =
       rateLimitConfig[rateLimitKey as keyof typeof rateLimitConfig];
 
-    const ok = checkIPRateLimit(ip, config.requests, parseWindow(config.window));
+    const ok = checkIPRateLimit(
+      ip,
+      config.requests,
+      parseWindow(config.window),
+    );
     if (!ok) {
       return new NextResponse("Too Many Requests", {
         status: 429,
@@ -191,7 +195,10 @@ export async function securityMiddleware(
   }
 
   // CSRF protection for state-changing requests, with safe bypass for internal sync/import endpoints
-  if (pathname.startsWith("/api/") && ["POST","PUT","PATCH","DELETE"].includes(request.method)) {
+  if (
+    pathname.startsWith("/api/") &&
+    ["POST", "PUT", "PATCH", "DELETE"].includes(request.method)
+  ) {
     const csrfBypassEndpoints = [
       "/api/artists/auto-import",
       "/api/artists/import-ticketmaster",

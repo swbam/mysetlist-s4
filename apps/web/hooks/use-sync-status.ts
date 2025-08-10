@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback } from 'react';
-import { createClient } from '~/lib/supabase/client';
+import { useCallback, useEffect, useState } from "react";
+import { createClient } from "~/lib/supabase/client";
 
 // Define types locally since they may not exist in database package
 interface SyncJob {
   id: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
+  status: "pending" | "running" | "completed" | "failed";
   current_step: string | null;
   total_steps: number;
   completed_steps: number;
@@ -15,7 +15,7 @@ interface SyncJob {
 
 interface SyncProgress {
   step: string;
-  status: 'pending' | 'running' | 'completed' | 'failed';
+  status: "pending" | "running" | "completed" | "failed";
   message?: string;
 }
 
@@ -46,26 +46,22 @@ export function useSyncStatus(jobId: string | null): SyncStatus {
 
   const fetchStatus = useCallback(async () => {
     if (!jobId) {
-      setStatus(prev => ({ ...prev, isLoading: false }));
+      setStatus((prev) => ({ ...prev, isLoading: false }));
       return;
     }
 
     try {
       const [jobResult, progressResult] = await Promise.all([
+        supabase.from("sync_jobs").select("*").eq("id", jobId).single(),
         supabase
-          .from('sync_jobs')
-          .select('*')
-          .eq('id', jobId)
-          .single(),
-        supabase
-          .from('sync_progress')
-          .select('*')
-          .eq('job_id', jobId)
-          .order('created_at', { ascending: false })
+          .from("sync_progress")
+          .select("*")
+          .eq("job_id", jobId)
+          .order("created_at", { ascending: false }),
       ]);
 
       if (jobResult.error) {
-        setStatus(prev => ({
+        setStatus((prev) => ({
           ...prev,
           error: jobResult.error.message,
           isLoading: false,
@@ -75,11 +71,12 @@ export function useSyncStatus(jobId: string | null): SyncStatus {
 
       const job = jobResult.data;
       const progress = progressResult.data || [];
-      
+
       // Calculate overall progress
-      const overallProgress = job.total_steps > 0 
-        ? Math.round((job.completed_steps / job.total_steps) * 100)
-        : 0;
+      const overallProgress =
+        job.total_steps > 0
+          ? Math.round((job.completed_steps / job.total_steps) * 100)
+          : 0;
 
       setStatus({
         job,
@@ -88,14 +85,16 @@ export function useSyncStatus(jobId: string | null): SyncStatus {
         error: null,
         currentStep: job.current_step,
         overallProgress,
-        isCompleted: job.status === 'completed',
-        isFailed: job.status === 'failed',
+        isCompleted: job.status === "completed",
+        isFailed: job.status === "failed",
       });
-
     } catch (error) {
-      setStatus(prev => ({
+      setStatus((prev) => ({
         ...prev,
-        error: error instanceof Error ? error.message : 'Failed to fetch sync status',
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch sync status",
         isLoading: false,
       }));
     }
@@ -108,30 +107,30 @@ export function useSyncStatus(jobId: string | null): SyncStatus {
     const channel = supabase
       .channel(`sync-job-${jobId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'sync_progress',
+          event: "*",
+          schema: "public",
+          table: "sync_progress",
           filter: `job_id=eq.${jobId}`,
         },
         () => {
           // Refetch status on any progress update
           fetchStatus();
-        }
+        },
       )
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public', 
-          table: 'sync_jobs',
+          event: "*",
+          schema: "public",
+          table: "sync_jobs",
           filter: `id=eq.${jobId}`,
         },
         () => {
           // Refetch status on job update
           fetchStatus();
-        }
+        },
       )
       .subscribe();
 
@@ -150,48 +149,53 @@ export function useSyncStatus(jobId: string | null): SyncStatus {
 export function useArtistSync() {
   const [activeSyncs, setActiveSyncs] = useState<Record<string, string>>({});
 
-  const triggerArtistSync = useCallback(async (
-    artistId: string, 
-    spotifyId: string,
-    jobType: 'full_sync' | 'shows_only' | 'catalog_only' = 'full_sync'
-  ) => {
-    try {
-      const response = await fetch('/api/artists/sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          artistId,
-          spotifyId,
-          jobType,
-          priority: 1, // High priority for user-triggered syncs
-        }),
-      });
+  const triggerArtistSync = useCallback(
+    async (
+      artistId: string,
+      spotifyId: string,
+      jobType: "full_sync" | "shows_only" | "catalog_only" = "full_sync",
+    ) => {
+      try {
+        const response = await fetch("/api/artists/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            artistId,
+            spotifyId,
+            jobType,
+            priority: 1, // High priority for user-triggered syncs
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to trigger sync');
+        if (!response.ok) {
+          throw new Error("Failed to trigger sync");
+        }
+
+        const { jobId } = await response.json();
+
+        setActiveSyncs((prev) => ({
+          ...prev,
+          [artistId]: jobId,
+        }));
+
+        return jobId;
+      } catch (error) {
+        console.error("Failed to trigger artist sync:", error);
+        throw error;
       }
+    },
+    [],
+  );
 
-      const { jobId } = await response.json();
-      
-      setActiveSyncs(prev => ({
-        ...prev,
-        [artistId]: jobId,
-      }));
-
-      return jobId;
-
-    } catch (error) {
-      console.error('Failed to trigger artist sync:', error);
-      throw error;
-    }
-  }, []);
-
-  const getSyncJobId = useCallback((artistId: string) => {
-    return activeSyncs[artistId] || null;
-  }, [activeSyncs]);
+  const getSyncJobId = useCallback(
+    (artistId: string) => {
+      return activeSyncs[artistId] || null;
+    },
+    [activeSyncs],
+  );
 
   const clearSync = useCallback((artistId: string) => {
-    setActiveSyncs(prev => {
+    setActiveSyncs((prev) => {
       const updated = { ...prev };
       delete updated[artistId];
       return updated;

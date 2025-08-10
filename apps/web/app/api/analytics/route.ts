@@ -313,7 +313,9 @@ async function getPerformanceMetrics(dates: any, _filters?: any) {
   `;
 
   const [apiResult, dbResult] = await Promise.all([
-    db.execute(apiMetrics).catch(() => ({ rows: [{}] })), // Graceful fallback
+    db
+      .execute(apiMetrics)
+      .catch(() => ({ rows: [{}] })), // Graceful fallback
     db.execute(dbMetrics).catch(() => ({ rows: [{}] })),
   ]);
 

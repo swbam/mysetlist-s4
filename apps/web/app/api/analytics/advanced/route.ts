@@ -1,10 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
   getCohortAnalysis,
-  getRetentionMetrics,
-  getPredictiveAnalytics,
   getFunnelAnalysis,
+  getPredictiveAnalytics,
   getRFMAnalysis,
+  getRetentionMetrics,
 } from "~/lib/analytics/advanced-analytics";
 import { createServiceClient } from "~/lib/supabase/server";
 
@@ -217,7 +217,7 @@ export async function POST(request: NextRequest) {
         );
 
         // Apply filters if provided
-        let filteredCohort = customCohort;
+        const filteredCohort = customCohort;
         if (filters?.minCohortSize) {
           filteredCohort.cohorts = filteredCohort.cohorts.filter(
             (cohort) => cohort.cohortSize >= filters.minCohortSize,

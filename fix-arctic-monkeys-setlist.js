@@ -1,51 +1,51 @@
-import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
+import { createClient } from "@supabase/supabase-js";
+import dotenv from "dotenv";
 
-dotenv.config({ path: '.env.local' });
+dotenv.config({ path: ".env.local" });
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
 );
 
 async function fixArcticMonkeysSetlist() {
   try {
     // Get Arctic Monkeys show
     const { data: show } = await supabase
-      .from('shows')
-      .select('id, name, slug, headliner_artist_id')
-      .eq('slug', 'arctic-monkeys-inglewood-2025-08-10')
+      .from("shows")
+      .select("id, name, slug, headliner_artist_id")
+      .eq("slug", "arctic-monkeys-inglewood-2025-08-10")
       .single();
 
-    console.log('Show:', show);
+    console.log("Show:", show);
 
     // Get setlist for this show
     const { data: setlist } = await supabase
-      .from('setlists')
-      .select('*')
-      .eq('show_id', show.id)
+      .from("setlists")
+      .select("*")
+      .eq("show_id", show.id)
       .single();
 
-    console.log('Setlist:', setlist);
+    console.log("Setlist:", setlist);
 
     // First, delete ALL existing setlist_songs for this setlist
     const { error: deleteError } = await supabase
-      .from('setlist_songs')
+      .from("setlist_songs")
       .delete()
-      .eq('setlist_id', setlist.id);
+      .eq("setlist_id", setlist.id);
 
     if (deleteError) {
-      console.error('Error deleting existing songs:', deleteError);
+      console.error("Error deleting existing songs:", deleteError);
     } else {
-      console.log('Cleared existing setlist songs');
+      console.log("Cleared existing setlist songs");
     }
 
     // Now get the Arctic Monkeys songs we just created
     const { data: arcticSongs } = await supabase
-      .from('songs')
-      .select('id, title')
-      .eq('artist', 'Arctic Monkeys')
-      .in('title', [
+      .from("songs")
+      .select("id, title")
+      .eq("artist", "Arctic Monkeys")
+      .in("title", [
         "R U Mine?",
         "Do I Wanna Know?",
         "Brianstorm",
@@ -65,7 +65,7 @@ async function fixArcticMonkeysSetlist() {
         "American Sports",
         "The View from the Afternoon",
         "Pretty Visitors",
-        "Body Paint"
+        "Body Paint",
       ]);
 
     console.log(`Found ${arcticSongs?.length || 0} Arctic Monkeys songs`);
@@ -92,72 +92,81 @@ async function fixArcticMonkeysSetlist() {
         "Mardy Bum",
         "Body Paint",
         "I Bet You Look Good on the Dancefloor",
-        "R U Mine?"
+        "R U Mine?",
       ];
 
       // Create setlist_songs entries in the proper order
       const setlistSongs = [];
       for (let i = 0; i < setlistOrder.length; i++) {
         const songTitle = setlistOrder[i];
-        const song = arcticSongs.find(s => s.title === songTitle);
-        
+        const song = arcticSongs.find((s) => s.title === songTitle);
+
         if (song) {
           setlistSongs.push({
             setlist_id: setlist.id,
             song_id: song.id,
             position: i + 1,
-            notes: i === 0 ? "Opener" : i === setlistOrder.length - 1 ? "Closer" : 
-                   i === 15 ? "Encore" : null,
+            notes:
+              i === 0
+                ? "Opener"
+                : i === setlistOrder.length - 1
+                  ? "Closer"
+                  : i === 15
+                    ? "Encore"
+                    : null,
             is_played: false,
             upvotes: Math.floor(20 + Math.random() * 80),
             downvotes: Math.floor(Math.random() * 20),
-            net_votes: Math.floor(10 + Math.random() * 70)
+            net_votes: Math.floor(10 + Math.random() * 70),
           });
         }
       }
 
       // Insert all setlist songs
       const { data: insertedSongs, error: insertError } = await supabase
-        .from('setlist_songs')
+        .from("setlist_songs")
         .insert(setlistSongs)
-        .select('*');
+        .select("*");
 
       if (insertError) {
-        console.error('Error inserting setlist songs:', insertError);
+        console.error("Error inserting setlist songs:", insertError);
       } else {
-        console.log(`Successfully added ${insertedSongs.length} songs to setlist`);
+        console.log(
+          `Successfully added ${insertedSongs.length} songs to setlist`,
+        );
       }
 
       // Update setlist to be a predicted setlist with votes
       await supabase
-        .from('setlists')
+        .from("setlists")
         .update({
-          type: 'predicted',
+          type: "predicted",
           total_votes: 127,
           accuracy_score: 92,
-          name: 'Fan Predicted Setlist'
+          name: "Fan Predicted Setlist",
         })
-        .eq('id', setlist.id);
+        .eq("id", setlist.id);
 
-      console.log('Setlist updated to predicted type with votes!');
+      console.log("Setlist updated to predicted type with votes!");
 
       // Verify the final setlist
       const { data: finalCheck } = await supabase
-        .from('setlist_songs')
-        .select('*, songs(title, artist)')
-        .eq('setlist_id', setlist.id)
-        .order('position');
+        .from("setlist_songs")
+        .select("*, songs(title, artist)")
+        .eq("setlist_id", setlist.id)
+        .order("position");
 
-      console.log('\nFinal Arctic Monkeys Setlist:');
-      console.log('================================');
-      finalCheck?.forEach(s => {
-        const notes = s.notes ? ` [${s.notes}]` : '';
-        console.log(`${s.position}. ${s.songs?.title}${notes} - ${s.upvotes} upvotes`);
+      console.log("\nFinal Arctic Monkeys Setlist:");
+      console.log("================================");
+      finalCheck?.forEach((s) => {
+        const notes = s.notes ? ` [${s.notes}]` : "";
+        console.log(
+          `${s.position}. ${s.songs?.title}${notes} - ${s.upvotes} upvotes`,
+        );
       });
     }
-
   } catch (error) {
-    console.error('Error:', error);
+    console.error("Error:", error);
   }
 }
 

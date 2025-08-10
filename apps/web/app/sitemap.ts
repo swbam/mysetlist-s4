@@ -1,5 +1,5 @@
-import type { MetadataRoute } from "next";
 import { env } from "@repo/env";
+import type { MetadataRoute } from "next";
 
 const prodUrl = env["VERCEL_PROJECT_PRODUCTION_URL"] || "localhost:3001";
 const protocol = prodUrl.startsWith("https") ? "https" : "http";

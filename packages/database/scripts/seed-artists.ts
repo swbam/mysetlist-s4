@@ -76,7 +76,6 @@ const sampleArtists = [
 ];
 
 async function seedArtists() {
-
   for (const artist of sampleArtists) {
     try {
       await db.insert(artists).values(artist);

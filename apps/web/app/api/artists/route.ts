@@ -5,8 +5,8 @@ import { parseGenres } from "~/lib/utils";
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get("limit") || "20");
-    const page = parseInt(searchParams.get("page") || "1");
+    const limit = Number.parseInt(searchParams.get("limit") || "20");
+    const page = Number.parseInt(searchParams.get("page") || "1");
     const offset = (page - 1) * limit;
     const genre = searchParams.get("genre");
     const sort = searchParams.get("sort") || "trending"; // trending, popular, alphabetical

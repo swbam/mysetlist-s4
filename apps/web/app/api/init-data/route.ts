@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
 import { db } from "@repo/database";
-import { artists, venues, shows } from "@repo/database";
+import { artists, shows, venues } from "@repo/database";
 import { SpotifyClient } from "@repo/external-apis";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     for (const artistData of popularArtists) {
       try {
         const spotifyArtist = await spotify.getArtist(artistData.spotifyId);
-        
+
         await db
           .insert(artists)
           .values({
@@ -62,7 +62,10 @@ export async function POST(request: Request) {
             name: spotifyArtist.name,
             slug: spotifyArtist.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
             imageUrl: spotifyArtist.images[0]?.url || null,
-            smallImageUrl: spotifyArtist.images[2]?.url || spotifyArtist.images[1]?.url || null,
+            smallImageUrl:
+              spotifyArtist.images[2]?.url ||
+              spotifyArtist.images[1]?.url ||
+              null,
             genres: JSON.stringify(spotifyArtist.genres),
             popularity: spotifyArtist.popularity,
             followers: spotifyArtist.followers.total,
@@ -80,7 +83,7 @@ export async function POST(request: Request) {
               updatedAt: new Date(),
             },
           });
-        
+
         results.artists++;
       } catch (error) {
         console.error(`Error inserting artist ${artistData.name}:`, error);
@@ -145,7 +148,7 @@ export async function POST(request: Request) {
             slug: venueData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
           })
           .onConflictDoNothing();
-        
+
         results.venues++;
       } catch (error) {
         console.error(`Error inserting venue ${venueData.name}:`, error);
@@ -157,15 +160,14 @@ export async function POST(request: Request) {
       message: "Initial data populated successfully",
       results,
     });
-
   } catch (error) {
     console.error("Init data error:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to initialize data",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

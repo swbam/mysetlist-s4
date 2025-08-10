@@ -27,12 +27,12 @@ export interface SyncSetlistParams {
  * Get the app URL for API calls
  */
 function getAppUrl() {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     // Client-side
-    return '';
+    return "";
   }
   // Server-side
-  return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+  return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 }
 
 /**
@@ -40,9 +40,9 @@ function getAppUrl() {
  */
 export async function syncArtist(params: SyncArtistParams) {
   const response = await fetch(`${getAppUrl()}/api/sync/artists`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(params),
   });
@@ -60,9 +60,9 @@ export async function syncArtist(params: SyncArtistParams) {
  */
 export async function syncShows(params: SyncShowsParams) {
   const response = await fetch(`${getAppUrl()}/api/sync/shows`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(params),
   });
@@ -80,9 +80,9 @@ export async function syncShows(params: SyncShowsParams) {
  */
 export async function syncSetlist(params: SyncSetlistParams) {
   const response = await fetch(`${getAppUrl()}/api/sync/setlists`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(params),
   });
@@ -103,11 +103,11 @@ export async function triggerManualSync(
   limit = 10,
 ) {
   const response = await fetch(`${getAppUrl()}/api/cron/master-sync`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
-    body: JSON.stringify({ type, limit, mode: 'manual' }),
+    body: JSON.stringify({ type, limit, mode: "manual" }),
   });
 
   if (!response.ok) {

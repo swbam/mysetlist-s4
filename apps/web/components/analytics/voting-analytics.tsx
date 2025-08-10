@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,8 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Tabs,
   TabsContent,
@@ -17,14 +16,15 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import {
-  Vote,
-  TrendingUp,
-  Users,
-  Calendar,
-  Trophy,
-  Target,
   Activity,
+  Calendar,
+  Target,
+  TrendingUp,
+  Trophy,
+  Users,
+  Vote,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface VotingMetrics {
   totalVotes: number;

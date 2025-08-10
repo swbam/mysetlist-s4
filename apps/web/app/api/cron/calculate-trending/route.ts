@@ -1,18 +1,18 @@
 import {
-  artists,
-  artistStats,
-  db,
-  shows,
-  venues,
-  userActivityLog,
   events,
   artistAnalytics,
+  artistStats,
+  artists,
   calculateArtistGrowth,
   calculateShowGrowth,
   calculateVenueGrowth,
   createHistoricalSnapshot,
+  db,
+  shows,
+  userActivityLog,
+  venues,
 } from "@repo/database";
-import { sql, and, gte, eq, desc, asc } from "drizzle-orm";
+import { and, asc, desc, eq, gte, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 const CRON_SECRET = process.env["CRON_SECRET"];
@@ -275,7 +275,8 @@ async function calculateArtistTrendingScores(mode: TrendingMode) {
             .select({
               count: sql<number>`count(*)::int`,
             })
-            .from(shows).where(sql`${shows.headlinerArtistId} = ${artist.id} 
+            .from(shows)
+            .where(sql`${shows.headlinerArtistId} = ${artist.id} 
             AND ${shows.date} >= CURRENT_DATE - INTERVAL '30 days'`);
 
           const recentShowCount = recentShowsResult[0]?.count || 0;

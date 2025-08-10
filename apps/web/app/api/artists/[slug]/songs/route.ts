@@ -146,7 +146,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         });
       } catch (spotifyError) {
         console.warn("Spotify API failed:", spotifyError);
-        
+
         // Return empty result instead of mock data
         return NextResponse.json({
           songs: [],
@@ -158,7 +158,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             imageUrl: artist[0].imageUrl,
           },
           source: "empty",
-          message: "No songs available. Try again later or check back after the artist performs shows.",
+          message:
+            "No songs available. Try again later or check back after the artist performs shows.",
         });
       }
     }
@@ -174,17 +175,17 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         imageUrl: artist[0].imageUrl,
       },
       source: "empty",
-      message: "No songs available. Song data will be populated as artists perform shows and fans create setlists.",
+      message:
+        "No songs available. Song data will be populated as artists perform shows and fans create setlists.",
     });
   } catch (error) {
     console.error("Error in artist songs API:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Failed to fetch artist songs",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     );
   }
 }
-

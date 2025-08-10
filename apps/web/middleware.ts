@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { securityMiddleware } from "./middleware/security";
 import { updateSession } from "./middleware/auth";
+import { securityMiddleware } from "./middleware/security";
 
 export async function middleware(request: NextRequest) {
   // Apply security first (headers, basic rate limit, CSRF)

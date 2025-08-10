@@ -1,6 +1,6 @@
 import { db } from "@repo/database";
 import { artistSongs, artists, songs } from "@repo/database";
-import { TicketmasterClient, SpotifyClient } from "@repo/external-apis";
+import { SpotifyClient, TicketmasterClient } from "@repo/external-apis";
 import { and, eq } from "drizzle-orm";
 
 const spotify = new SpotifyClient({});
@@ -410,14 +410,17 @@ export async function syncArtist(
         // Sync shows if we have a Ticketmaster ID
         if (artistRecord.ticketmasterId) {
           // Call shows sync API directly instead of edge function
-          fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/shows`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ticketmasterId: artistRecord.ticketmasterId,
-              artistId: artistRecord.id,
-            }),
-          }).catch(() => {
+          fetch(
+            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/shows`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ticketmasterId: artistRecord.ticketmasterId,
+                artistId: artistRecord.id,
+              }),
+            },
+          ).catch(() => {
             // Log but don't fail the main request
             console.error("Failed to sync shows");
           });

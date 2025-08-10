@@ -19,7 +19,7 @@ export const cacheConfig = {
       immutable: true,
     },
   },
-  
+
   // API response caching
   api: {
     artists: {
@@ -41,7 +41,7 @@ export const cacheConfig = {
       shows: 1800, // 30 minutes
     },
   },
-  
+
   // ISR (Incremental Static Regeneration) timings
   isr: {
     homepage: 3600, // 1 hour
@@ -50,10 +50,10 @@ export const cacheConfig = {
     venuePage: 86400, // 1 day
     trending: 3600, // 1 hour
   },
-  
+
   // Redis/Upstash cache keys and TTLs
   redis: {
-    prefix: 'mysetlist:',
+    prefix: "mysetlist:",
     ttl: {
       session: 86400, // 1 day
       apiResponse: 600, // 10 minutes
@@ -61,56 +61,58 @@ export const cacheConfig = {
       rateLimit: 60, // 1 minute
     },
   },
-  
+
   // CDN headers for Vercel Edge Network
   cdn: {
     // Cache-Control headers
     control: {
-      public: 'public, max-age=0, must-revalidate',
-      private: 'private, no-cache, no-store, must-revalidate',
-      static: 'public, max-age=31536000, immutable',
-      api: 'public, max-age=0, s-maxage=300, stale-while-revalidate=600',
+      public: "public, max-age=0, must-revalidate",
+      private: "private, no-cache, no-store, must-revalidate",
+      static: "public, max-age=31536000, immutable",
+      api: "public, max-age=0, s-maxage=300, stale-while-revalidate=600",
     },
     // Vary headers for proper caching
-    vary: ['Accept-Encoding', 'Authorization'],
+    vary: ["Accept-Encoding", "Authorization"],
   },
 };
 
 // Helper to generate cache headers
 export function getCacheHeaders(type: keyof typeof cacheConfig.cdn.control) {
   return {
-    'Cache-Control': cacheConfig.cdn.control[type],
-    'CDN-Cache-Control': cacheConfig.cdn.control[type],
-    'Vercel-CDN-Cache-Control': cacheConfig.cdn.control[type],
+    "Cache-Control": cacheConfig.cdn.control[type],
+    "CDN-Cache-Control": cacheConfig.cdn.control[type],
+    "Vercel-CDN-Cache-Control": cacheConfig.cdn.control[type],
   };
 }
 
 // Helper to get API cache duration
 export function getApiCacheDuration(endpoint: string): number {
-  const parts = endpoint.split('/').filter(Boolean);
-  
-  if (parts.includes('artists')) {
-    if (parts.includes('shows')) return cacheConfig.api.artists.shows;
-    if (parts.includes('songs')) return cacheConfig.api.artists.songs;
+  const parts = endpoint.split("/").filter(Boolean);
+
+  if (parts.includes("artists")) {
+    if (parts.includes("shows")) return cacheConfig.api.artists.shows;
+    if (parts.includes("songs")) return cacheConfig.api.artists.songs;
     return cacheConfig.api.artists.detail;
   }
-  
-  if (parts.includes('shows')) {
-    return parts.length > 2 ? cacheConfig.api.shows.detail : cacheConfig.api.shows.list;
+
+  if (parts.includes("shows")) {
+    return parts.length > 2
+      ? cacheConfig.api.shows.detail
+      : cacheConfig.api.shows.list;
   }
-  
-  if (parts.includes('search')) {
-    return parts.includes('suggestions') 
-      ? cacheConfig.api.search.suggestions 
+
+  if (parts.includes("search")) {
+    return parts.includes("suggestions")
+      ? cacheConfig.api.search.suggestions
       : cacheConfig.api.search.results;
   }
-  
-  if (parts.includes('trending')) {
-    return parts.includes('artists') 
-      ? cacheConfig.api.trending.artists 
+
+  if (parts.includes("trending")) {
+    return parts.includes("artists")
+      ? cacheConfig.api.trending.artists
       : cacheConfig.api.trending.shows;
   }
-  
+
   // Default cache duration
   return 300; // 5 minutes
 }

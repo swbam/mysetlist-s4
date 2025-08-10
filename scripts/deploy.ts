@@ -25,11 +25,7 @@ async function deploy() {
     execSync("vercel --prod", { stdio: "inherit" });
 
     console.log(chalk.green("\n✅ Deployment successful!"));
-    console.log(
-      chalk.blue(
-        "🌐 Your app is now live at: https://theset.live",
-      ),
-    );
+    console.log(chalk.blue("🌐 Your app is now live at: https://theset.live"));
   } catch (error) {
     console.error(chalk.red("❌ Deployment failed:"), error);
     process.exit(1);

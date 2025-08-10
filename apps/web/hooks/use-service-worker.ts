@@ -280,32 +280,34 @@ export function useServiceWorker(options: ServiceWorkerOptions = {}) {
     if (!("caches" in window)) {
       return;
     }
-    
+
     try {
       const cacheNames = await caches.keys();
-      const oldCaches = cacheNames.filter(name => 
-        name.includes('mysetlist') && (name.includes('-v0') || name.includes('-v1'))
+      const oldCaches = cacheNames.filter(
+        (name) =>
+          name.includes("mysetlist") &&
+          (name.includes("-v0") || name.includes("-v1")),
       );
-      
+
       await Promise.all(
-        oldCaches.map(name => {
-          console.log('[Cache] Clearing stale cache:', name);
+        oldCaches.map((name) => {
+          console.log("[Cache] Clearing stale cache:", name);
           return caches.delete(name);
-        })
+        }),
       );
     } catch (error) {
-      console.warn('[Cache] Failed to clear stale caches:', error);
+      console.warn("[Cache] Failed to clear stale caches:", error);
     }
   }, []);
-  
+
   // Clear trending cache specifically
   const clearTrendingCache = useCallback(async () => {
-    await sendMessage({ type: 'CLEAR_API_CACHE' });
+    await sendMessage({ type: "CLEAR_API_CACHE" });
   }, [sendMessage]);
-  
+
   // Force trending data refresh
   const refreshTrendingData = useCallback(async () => {
-    await sendMessage({ type: 'UPDATE_TRENDING' });
+    await sendMessage({ type: "UPDATE_TRENDING" });
   }, [sendMessage]);
 
   // Clear stale caches on mount

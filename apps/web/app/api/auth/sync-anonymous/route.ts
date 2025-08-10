@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     if (authError || !user) {
       return NextResponse.json(
         { error: "You must be signed in to sync anonymous votes" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     } catch (_e) {
       return NextResponse.json(
         { error: "Invalid JSON in request body" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     if (!sessionId || !Array.isArray(votes)) {
       return NextResponse.json(
         { error: "Invalid request: sessionId and votes array are required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -62,27 +62,25 @@ export async function POST(request: NextRequest) {
 
         if (!existingVote) {
           // Create new vote with timestamp from anonymous session
-          const { error: insertError } = await supabase
-            .from("votes")
-            .insert({
-              setlist_song_id: vote.setlistSongId,
-              user_id: user.id,
-              vote_type: vote.voteType,
-              created_at: new Date(vote.timestamp).toISOString(),
-            });
+          const { error: insertError } = await supabase.from("votes").insert({
+            setlist_song_id: vote.setlistSongId,
+            user_id: user.id,
+            vote_type: vote.voteType,
+            created_at: new Date(vote.timestamp).toISOString(),
+          });
 
           if (!insertError) {
             results.votesSynced++;
           } else {
             results.errors.push(
-              `Failed to sync vote for song ${vote.setlistSongId}: ${insertError.message}`
+              `Failed to sync vote for song ${vote.setlistSongId}: ${insertError.message}`,
             );
           }
         }
         // If user already voted, keep their authenticated vote (don't overwrite)
       } catch (error) {
         results.errors.push(
-          `Failed to process vote for song ${vote.setlistSongId}`
+          `Failed to process vote for song ${vote.setlistSongId}`,
         );
       }
     }
@@ -99,8 +97,10 @@ export async function POST(request: NextRequest) {
           .select("vote_type")
           .eq("setlist_song_id", setlistSongId);
 
-        const upvotes = allVotes?.filter((v) => v.vote_type === "up").length || 0;
-        const downvotes = allVotes?.filter((v) => v.vote_type === "down").length || 0;
+        const upvotes =
+          allVotes?.filter((v) => v.vote_type === "up").length || 0;
+        const downvotes =
+          allVotes?.filter((v) => v.vote_type === "down").length || 0;
         const netVotes = upvotes - downvotes;
 
         // Update vote counts on setlist_songs table
@@ -124,17 +124,15 @@ export async function POST(request: NextRequest) {
 
     // Log successful sync for analytics
     try {
-      await supabase
-        .from("user_actions")
-        .insert({
-          user_id: user.id,
-          action: "sync_anonymous_votes",
-          metadata: {
-            session_id: sessionId,
-            votes_synced: results.votesSynced,
-            songs_synced: results.songsSynced,
-          },
-        });
+      await supabase.from("user_actions").insert({
+        user_id: user.id,
+        action: "sync_anonymous_votes",
+        metadata: {
+          session_id: sessionId,
+          votes_synced: results.votesSynced,
+          songs_synced: results.songsSynced,
+        },
+      });
     } catch {
       // Non-critical logging error
     }
@@ -147,7 +145,7 @@ export async function POST(request: NextRequest) {
     console.error("Anonymous vote sync error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

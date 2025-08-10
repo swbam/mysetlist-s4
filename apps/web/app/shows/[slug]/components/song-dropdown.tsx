@@ -23,8 +23,8 @@ import {
   Music,
   Plus,
   Search,
-  Vote,
   TrendingUp,
+  Vote,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";

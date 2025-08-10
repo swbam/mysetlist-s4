@@ -1,6 +1,6 @@
 import type {
-  User as SupabaseUser,
   Session as SupabaseSession,
+  User as SupabaseUser,
 } from "@supabase/supabase-js";
 
 export interface SpotifyTokens {

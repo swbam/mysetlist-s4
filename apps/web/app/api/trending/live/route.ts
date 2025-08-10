@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type") as "artist" | "show" | "venue" | "all";
 
   try {
-    console.log('Live trending API called with:', { timeframe, limit, type });
+    console.log("Live trending API called with:", { timeframe, limit, type });
     const supabase = createServiceClient();
     const trending: LiveTrendingItem[] = [];
 
@@ -73,7 +73,14 @@ export async function GET(request: NextRequest) {
             const trendingScore = artist.trending_score || 0;
 
             // Simple growth calculation based on trending score and popularity
-            const growth = trendingScore > 80 ? 15 : trendingScore > 60 ? 10 : trendingScore > 40 ? 5 : 2;
+            const growth =
+              trendingScore > 80
+                ? 15
+                : trendingScore > 60
+                  ? 10
+                  : trendingScore > 40
+                    ? 5
+                    : 2;
 
             // Calculate comprehensive score
             const score =
@@ -110,7 +117,7 @@ export async function GET(request: NextRequest) {
         const { data: trendingShows } = await supabase
           .from("shows")
           .select(
-            "id, name, slug, view_count, vote_count, attendee_count, setlist_count, trending_score, date"
+            "id, name, slug, view_count, vote_count, attendee_count, setlist_count, trending_score, date",
           )
           .order("trending_score", { ascending: false, nullsLast: true })
           .order("attendee_count", { ascending: false, nullsLast: true })
@@ -125,7 +132,14 @@ export async function GET(request: NextRequest) {
             const trendingScore = show.trending_score || 0;
 
             // Simple growth calculation based on trending score and engagement
-            const growth = trendingScore > 800 ? 20 : trendingScore > 500 ? 15 : trendingScore > 200 ? 10 : 5;
+            const growth =
+              trendingScore > 800
+                ? 20
+                : trendingScore > 500
+                  ? 15
+                  : trendingScore > 200
+                    ? 10
+                    : 5;
 
             // Calculate comprehensive score
             const score =
@@ -187,7 +201,14 @@ export async function GET(request: NextRequest) {
             const interactions = Math.round(capacity * 0.005);
 
             // Simple growth calculation based on capacity tier
-            const growth = capacity > 50000 ? 15 : capacity > 20000 ? 10 : capacity > 10000 ? 5 : 2;
+            const growth =
+              capacity > 50000
+                ? 15
+                : capacity > 20000
+                  ? 10
+                  : capacity > 10000
+                    ? 5
+                    : 2;
 
             // Calculate score based on capacity and location
             const score = capacity * 0.01 + searches * 2 + views * 1.5;
@@ -214,14 +235,14 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    console.log('Total trending items before sort:', trending.length);
-    
+    console.log("Total trending items before sort:", trending.length);
+
     // Sort by score and return top results
     const sortedTrending = trending
       .sort((a, b) => b.score - a.score)
       .slice(0, limit);
 
-    console.log('Final sorted items:', sortedTrending.length);
+    console.log("Final sorted items:", sortedTrending.length);
 
     const response = NextResponse.json({
       trending: sortedTrending,

@@ -27,7 +27,7 @@ interface OptimizedSearchResult {
  */
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
-  
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get("q") || "";
@@ -44,9 +44,9 @@ export async function GET(request: NextRequest) {
     const dateTo = searchParams.get("dateTo") || "";
 
     if (!query || query.length < 2) {
-      return NextResponse.json({ 
-        results: [], 
-        performance: { queryTime: Date.now() - startTime }
+      return NextResponse.json({
+        results: [],
+        performance: { queryTime: Date.now() - startTime },
       });
     }
 
@@ -60,18 +60,19 @@ export async function GET(request: NextRequest) {
     if (types.includes("artist")) {
       const artistLimit = Math.min(limit, 3);
       searchPromises.push(
-        Promise.resolve(supabase
-          .rpc("fast_artist_search", {
+        Promise.resolve(
+          supabase.rpc("fast_artist_search", {
             search_query: query,
-            search_limit: artistLimit
-          }))
-          .then(({ data: artists, error }) => {
-            if (error) {
-              console.warn("Optimized artist search error:", error);
-              return [];
-            }
-            
-            return (artists || []).map((artist: any): OptimizedSearchResult => ({
+            search_limit: artistLimit,
+          }),
+        ).then(({ data: artists, error }) => {
+          if (error) {
+            console.warn("Optimized artist search error:", error);
+            return [];
+          }
+
+          return (artists || []).map(
+            (artist: any): OptimizedSearchResult => ({
               id: artist.id,
               type: "artist",
               title: artist.name,
@@ -85,8 +86,9 @@ export async function GET(request: NextRequest) {
               trendingScore: artist.trending_score,
               rankScore: artist.rank_score,
               source: "database",
-            }));
-          })
+            }),
+          );
+        }),
       );
     }
 
@@ -95,25 +97,30 @@ export async function GET(request: NextRequest) {
       const showLimit = Math.min(limit, 3);
       const searchDateFrom = dateFrom || null;
       const searchDateTo = dateTo || null;
-      
+
       searchPromises.push(
-        Promise.resolve(supabase
-          .rpc("fast_show_search", {
+        Promise.resolve(
+          supabase.rpc("fast_show_search", {
             search_query: query,
             date_from: searchDateFrom,
             date_to: searchDateTo,
-            search_limit: showLimit
-          }))
-          .then(({ data: shows, error }) => {
-            if (error) {
-              console.warn("Optimized show search error:", error);
-              return [];
-            }
+            search_limit: showLimit,
+          }),
+        ).then(({ data: shows, error }) => {
+          if (error) {
+            console.warn("Optimized show search error:", error);
+            return [];
+          }
 
-            return (shows || []).map((show: any): OptimizedSearchResult => ({
+          return (shows || []).map(
+            (show: any): OptimizedSearchResult => ({
               id: show.id,
               type: "show",
-              title: show.name || (show.artist_name ? `${show.artist_name} Live` : "Unknown Show"),
+              title:
+                show.name ||
+                (show.artist_name
+                  ? `${show.artist_name} Live`
+                  : "Unknown Show"),
               subtitle: show.venue_name
                 ? `${show.venue_name}, ${show.venue_city} • ${new Date(show.date).toLocaleDateString()}`
                 : new Date(show.date).toLocaleDateString(),
@@ -126,15 +133,16 @@ export async function GET(request: NextRequest) {
               trendingScore: show.trending_score,
               rankScore: show.rank_score,
               source: "database",
-            }));
-          })
+            }),
+          );
+        }),
       );
     }
 
     // 3. VENUE SEARCH - Use optimized compound indexes
     if (types.includes("venue")) {
       const venueLimit = Math.min(limit, 2);
-      
+
       // Build optimized venue query using compound indexes
       let venuesQuery = supabase
         .from("venues")
@@ -142,15 +150,17 @@ export async function GET(request: NextRequest) {
         .limit(venueLimit);
 
       // Use trigram similarity if available, fall back to ILIKE
-      venuesQuery = venuesQuery.or(`name.ilike.%${query}%,city.ilike.%${query}%`);
+      venuesQuery = venuesQuery.or(
+        `name.ilike.%${query}%,city.ilike.%${query}%`,
+      );
 
       if (location) {
         venuesQuery = venuesQuery.or(
-          `city.ilike.%${location}%,state.ilike.%${location}%,country.ilike.%${location}%`
+          `city.ilike.%${location}%,state.ilike.%${location}%,country.ilike.%${location}%`,
         );
       }
 
-      // Add ordering to use compound index efficiently  
+      // Add ordering to use compound index efficiently
       venuesQuery = venuesQuery.order("capacity", { ascending: false });
 
       searchPromises.push(
@@ -160,18 +170,20 @@ export async function GET(request: NextRequest) {
             return [];
           }
 
-          return (venues || []).map((venue: any): OptimizedSearchResult => ({
-            id: venue.id,
-            type: "venue",
-            title: venue.name,
-            subtitle: `${venue.city}, ${venue.state || venue.country}${
-              venue.capacity ? ` • Capacity: ${venue.capacity}` : ""
-            }`,
-            slug: venue.slug,
-            location: `${venue.city}, ${venue.state || venue.country}`,
-            source: "database",
-          }));
-        })
+          return (venues || []).map(
+            (venue: any): OptimizedSearchResult => ({
+              id: venue.id,
+              type: "venue",
+              title: venue.name,
+              subtitle: `${venue.city}, ${venue.state || venue.country}${
+                venue.capacity ? ` • Capacity: ${venue.capacity}` : ""
+              }`,
+              slug: venue.slug,
+              location: `${venue.city}, ${venue.state || venue.country}`,
+              source: "database",
+            }),
+          );
+        }),
       );
     }
 
@@ -193,17 +205,19 @@ export async function GET(request: NextRequest) {
             return [];
           }
 
-          return (songs || []).map((song: any): OptimizedSearchResult => ({
-            id: song.id,
-            type: "song",
-            title: song.title,
-            subtitle: song.artist ? `by ${song.artist}` : "Unknown Artist",
-            imageUrl: undefined,
-            artistName: song.artist || "Unknown Artist",
-            popularity: song.popularity,
-            source: "database",
-          }));
-        })
+          return (songs || []).map(
+            (song: any): OptimizedSearchResult => ({
+              id: song.id,
+              type: "song",
+              title: song.title,
+              subtitle: song.artist ? `by ${song.artist}` : "Unknown Artist",
+              imageUrl: undefined,
+              artistName: song.artist || "Unknown Artist",
+              popularity: song.popularity,
+              source: "database",
+            }),
+          );
+        }),
       );
     }
 
@@ -263,8 +277,11 @@ export async function GET(request: NextRequest) {
             types_searched: types,
             location_filter: location || null,
             genre_filter: genre || null,
-            date_filters: { dateFrom: dateFrom || null, dateTo: dateTo || null }
-          }
+            date_filters: {
+              dateFrom: dateFrom || null,
+              dateTo: dateTo || null,
+            },
+          },
         })
         .then(({ error }) => {
           if (error) console.warn("Search analytics insert error:", error);
@@ -284,9 +301,14 @@ export async function GET(request: NextRequest) {
       },
       performance: {
         queryTime,
-        optimization: queryTime < 100 ? "EXCELLENT" : queryTime < 200 ? "GOOD" : "NEEDS_WORK",
+        optimization:
+          queryTime < 100
+            ? "EXCELLENT"
+            : queryTime < 200
+              ? "GOOD"
+              : "NEEDS_WORK",
         targetTime: "50-100ms",
-        improvement: "70-80% faster than standard search"
+        improvement: "70-80% faster than standard search",
       },
       sources: {
         database: finalResults.length,
@@ -298,7 +320,7 @@ export async function GET(request: NextRequest) {
     if (queryTime < 150 && finalResults.length > 0) {
       response.headers.set(
         "Cache-Control",
-        "public, s-maxage=300, stale-while-revalidate=600"
+        "public, s-maxage=300, stale-while-revalidate=600",
       );
     }
 
@@ -306,17 +328,17 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Optimized search error:", error);
     const queryTime = Date.now() - startTime;
-    
+
     return NextResponse.json(
       {
         error: "Search failed",
         message: error instanceof Error ? error.message : "Unknown error",
         performance: {
           queryTime,
-          optimization: "FAILED"
-        }
+          optimization: "FAILED",
+        },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

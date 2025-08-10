@@ -1,8 +1,8 @@
+import { calculateArtistGrowth } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { CACHE_HEADERS } from "~/lib/cache";
-import { parseGenres } from "~/lib/utils";
 import { createServiceClient } from "~/lib/supabase/server";
-import { calculateArtistGrowth } from "@repo/database";
+import { parseGenres } from "~/lib/utils";
 
 export async function GET(request: NextRequest) {
   try {

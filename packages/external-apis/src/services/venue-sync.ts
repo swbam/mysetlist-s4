@@ -1,10 +1,10 @@
-import { db } from "../database";
-import { venues } from "../schema";
 import { SetlistFmClient, type SetlistFmVenue } from "../clients/setlistfm";
 import {
   TicketmasterClient,
   type TicketmasterVenue,
 } from "../clients/ticketmaster";
+import { db } from "../database";
+import { venues } from "../schema";
 
 export class VenueSyncService {
   private ticketmasterClient: TicketmasterClient;

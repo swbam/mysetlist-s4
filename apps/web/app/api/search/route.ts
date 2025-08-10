@@ -1,6 +1,6 @@
+import { TicketmasterClient } from "@repo/external-apis";
 import { type NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "~/lib/supabase/server";
-import { TicketmasterClient } from "@repo/external-apis";
 
 const ticketmaster = new TicketmasterClient({
   apiKey: process.env.TICKETMASTER_API_KEY!,

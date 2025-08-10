@@ -1,8 +1,20 @@
-import { NextResponse } from "next/server";
 import { db } from "@repo/database";
-import { artists, shows, venues, songs, artistSongs } from "@repo/database";
-import { SpotifyClient, TicketmasterClient, SetlistFmClient } from "@repo/external-apis";
+import {
+  artistSongs,
+  artists,
+  setlistSongs,
+  setlists,
+  shows,
+  songs,
+  venues,
+} from "@repo/database";
+import {
+  SetlistFmClient,
+  SpotifyClient,
+  TicketmasterClient,
+} from "@repo/external-apis";
 import { eq, sql } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes
@@ -15,11 +27,11 @@ export async function POST(request: Request) {
     // Initialize API clients
     const spotify = new SpotifyClient({});
     await spotify.authenticate();
-    
+
     const ticketmaster = new TicketmasterClient({
       apiKey: process.env.TICKETMASTER_API_KEY!,
     });
-    
+
     const setlistFm = new SetlistFmClient({
       apiKey: process.env.SETLISTFM_API_KEY!,
     });
@@ -39,11 +51,11 @@ export async function POST(request: Request) {
         .from(artists)
         .where(eq(artists.id, artistId))
         .limit(1);
-      
+
       if (!artist) {
         return NextResponse.json(
           { error: "Artist not found" },
-          { status: 404 }
+          { status: 404 },
         );
       }
 
@@ -71,12 +83,14 @@ export async function POST(request: Request) {
       success: true,
       results,
     });
-
   } catch (error) {
     console.error("[Sync] Error:", error);
     return NextResponse.json(
-      { error: "Sync failed", details: error instanceof Error ? error.message : "Unknown error" },
-      { status: 500 }
+      {
+        error: "Sync failed",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
     );
   }
 }
@@ -87,20 +101,23 @@ async function syncArtistData(
   spotify: SpotifyClient,
   ticketmaster: TicketmasterClient,
   setlistFm: SetlistFmClient,
-  results: any
+  results: any,
 ) {
   try {
     // 1. Update artist info from Spotify
     if (artist.spotify_id) {
       try {
         const spotifyArtist = await spotify.getArtist(artist.spotify_id);
-        
+
         await db
           .update(artists)
           .set({
             name: spotifyArtist.name,
             imageUrl: spotifyArtist.images[0]?.url || null,
-            smallImageUrl: spotifyArtist.images[2]?.url || spotifyArtist.images[1]?.url || null,
+            smallImageUrl:
+              spotifyArtist.images[2]?.url ||
+              spotifyArtist.images[1]?.url ||
+              null,
             genres: JSON.stringify(spotifyArtist.genres),
             popularity: spotifyArtist.popularity,
             followers: spotifyArtist.followers.total,
@@ -110,21 +127,37 @@ async function syncArtistData(
             updatedAt: new Date(),
           })
           .where(eq(artists.id, artist.id));
-        
+
         results.artists.synced++;
 
         // 2. Sync songs from Spotify
-        const topTracks = await spotify.getArtistTopTracks(artist.spotify_id, 'US');
-        const albums = await spotify.getArtistAlbums(artist.spotify_id, 50);
-        
+        const topTracksResp = await spotify.getArtistTopTracks(
+          artist.spotify_id,
+          "US",
+        );
+        const topTracks = (topTracksResp as any).tracks || [];
+        const albumsResp = await spotify.getArtistAlbums(artist.spotify_id, {
+          limit: 50,
+        });
+        const albums = (albumsResp as any).items || [];
+
         const allTracks = [...topTracks];
-        
+
         // Get tracks from albums
-        for (const album of albums.slice(0, 5)) { // Limit to 5 albums to avoid timeout
+        for (const album of albums.slice(0, 5)) {
+          // Limit to 5 albums to avoid timeout
           try {
-            const albumTracks = await spotify.getAlbumTracks(album.id);
-            const artistTracks = albumTracks.filter(track =>
-              track.artists.some(a => a.id === artist.spotify_id)
+            const atResp = await fetch(
+              `https://api.spotify.com/v1/albums/${album.id}/tracks`,
+              {
+                headers: {
+                  Authorization: `Bearer ${(spotify as any).accessToken ?? ""}`,
+                },
+              },
+            ).then((r) => (r.ok ? r.json() : { items: [] }));
+            const albumTracks = atResp.items || [];
+            const artistTracks = albumTracks.filter((track: any) =>
+              track.artists.some((a) => a.id === artist.spotify_id),
             );
             allTracks.push(...artistTracks);
           } catch (error) {
@@ -134,7 +167,7 @@ async function syncArtistData(
 
         // Deduplicate and insert songs
         const uniqueTracks = Array.from(
-          new Map(allTracks.map(track => [track.id, track])).values()
+          new Map(allTracks.map((track) => [track.id, track])).values(),
         );
 
         for (const track of uniqueTracks) {
@@ -154,17 +187,17 @@ async function syncArtistData(
                 .set({
                   title: track.name,
                   artist: artist.name,
-                  album: track.album?.name || null,
-                  albumArtUrl: track.album?.images?.[0]?.url || null,
-                  releaseDate: track.album?.release_date || null,
+                  album: track.album?.name ?? null,
+                  albumArtUrl: track.album?.images?.[0]?.url ?? null,
+                  releaseDate: track.album?.release_date ?? null,
                   durationMs: track.duration_ms,
                   popularity: track.popularity,
-                  previewUrl: track.preview_url,
-                  isExplicit: track.explicit || false,
+                  previewUrl: track.preview_url ?? null,
+                  isExplicit: track.explicit ?? false,
                   updatedAt: new Date(),
                 })
                 .where(eq(songs.id, existingSong.id));
-              
+
               songId = existingSong.id;
             } else {
               const [newSong] = await db
@@ -172,18 +205,18 @@ async function syncArtistData(
                 .values({
                   title: track.name,
                   artist: artist.name,
-                  album: track.album?.name || null,
-                  albumArtUrl: track.album?.images?.[0]?.url || null,
-                  releaseDate: track.album?.release_date || null,
+                  album: track.album?.name ?? null,
+                  albumArtUrl: track.album?.images?.[0]?.url ?? null,
+                  releaseDate: track.album?.release_date ?? null,
                   durationMs: track.duration_ms,
                   popularity: track.popularity,
-                  previewUrl: track.preview_url,
+                  previewUrl: track.preview_url ?? null,
                   spotifyId: track.id,
-                  isExplicit: track.explicit || false,
+                  isExplicit: track.explicit ?? false,
                 })
                 .returning();
-              
-              songId = newSong.id;
+
+              songId = (newSong as any).id;
             }
 
             // Create artist-song relationship
@@ -210,7 +243,6 @@ async function syncArtistData(
             songCatalogSyncedAt: new Date(),
           })
           .where(eq(artists.id, artist.id));
-
       } catch (error) {
         console.error(`[Sync] Spotify sync error for ${artist.name}:`, error);
         results.artists.errors++;
@@ -221,10 +253,12 @@ async function syncArtistData(
     if (artist.ticketmaster_id || artist.name) {
       try {
         const events = await ticketmaster.searchEvents({
-          attractionId: artist.ticketmaster_id,
-          keyword: !artist.ticketmaster_id ? artist.name : undefined,
+          keyword: artist.ticketmaster_id
+            ? artist.ticketmaster_id
+            : artist.name,
           classificationName: "music",
           size: 50,
+          sort: "date,asc",
         });
 
         if (events._embedded?.events) {
@@ -233,55 +267,105 @@ async function syncArtistData(
               // Process venue first
               if (event._embedded?.venues?.[0]) {
                 const tmVenue = event._embedded.venues[0];
-                
+
                 await db
                   .insert(venues)
                   .values({
                     name: tmVenue.name,
-                    city: tmVenue.city?.name || 'Unknown',
-                    state: tmVenue.state?.stateCode || null,
-                    country: tmVenue.country?.countryCode || 'Unknown',
-                    latitude: tmVenue.location?.latitude ? parseFloat(tmVenue.location.latitude) : null,
-                    longitude: tmVenue.location?.longitude ? parseFloat(tmVenue.location.longitude) : null,
+                    city: tmVenue.city?.name ?? "Unknown",
+                    state: tmVenue.state?.stateCode ?? null,
+                    country: tmVenue.country?.countryCode ?? "Unknown",
+                    latitude: tmVenue.location?.latitude
+                      ? Number.parseFloat(tmVenue.location.latitude)
+                      : null,
+                    longitude: tmVenue.location?.longitude
+                      ? Number.parseFloat(tmVenue.location.longitude)
+                      : null,
                     ticketmasterId: tmVenue.id,
-                    slug: tmVenue.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-                  })
+                    slug: tmVenue.name
+                      .toLowerCase()
+                      .replace(/[^a-z0-9]+/g, "-"),
+                  } as any)
                   .onConflictDoUpdate({
                     target: venues.ticketmasterId,
                     set: {
                       name: tmVenue.name,
-                      city: tmVenue.city?.name || 'Unknown',
+                      city: tmVenue.city?.name ?? "Unknown",
                       updatedAt: new Date(),
                     },
                   });
-                
+
                 results.venues.synced++;
               }
 
               // Insert show
-              await db
+              const [insertedShow] = await db
                 .insert(shows)
                 .values({
                   name: event.name,
                   date: event.dates.start.localDate,
-                  time: event.dates.start.localTime || null,
+                  startTime: event.dates.start.localTime || null,
+                  doorsTime: null,
                   ticketmasterId: event.id,
                   ticketUrl: event.url,
                   headlinerArtistId: artist.id,
-                  venueId: event._embedded?.venues?.[0]?.id || null,
-                  status: event.dates.status.code.toLowerCase(),
+                  venueId: null,
+                  status: mapTicketmasterStatus(event.dates.status?.code),
                   slug: `${artist.slug}-${event.dates.start.localDate}`,
-                })
+                } as any)
                 .onConflictDoUpdate({
                   target: shows.ticketmasterId,
                   set: {
-                    status: event.dates.status.code.toLowerCase(),
+                    status: mapTicketmasterStatus(event.dates.status?.code),
                     ticketUrl: event.url,
                     updatedAt: new Date(),
                   },
-                });
-              
+                })
+                .returning();
+
               results.shows.synced++;
+
+              // Create an initial predicted setlist of 5 random songs from this artist's catalog
+              if (insertedShow) {
+                const artistCatalog = await db
+                  .select()
+                  .from(artistSongs)
+                  .leftJoin(songs, eq(artistSongs.songId, songs.id))
+                  .where(eq(artistSongs.artistId, artist.id));
+
+                const pool = artistCatalog
+                  .map((row: any) => row.songs)
+                  .filter((s: any) => !!s);
+
+                if (pool.length >= 5) {
+                  // pick 5 unique random songs
+                  const shuffled = pool.sort(() => 0.5 - Math.random());
+                  const selected = shuffled.slice(0, 5);
+
+                  const [newSetlist] = await db
+                    .insert(setlists)
+                    .values({
+                      showId: (insertedShow as any).id,
+                      artistId: artist.id,
+                      type: "predicted",
+                      name: "Predicted Set",
+                      orderIndex: 0,
+                      importedFrom: "api",
+                      importedAt: new Date(),
+                    } as any)
+                    .returning();
+
+                  if (newSetlist) {
+                    await db.insert(setlistSongs).values(
+                      selected.map((s: any, idx: number) => ({
+                        setlistId: (newSetlist as any).id,
+                        songId: s.id,
+                        position: idx + 1,
+                      })) as any,
+                    );
+                  }
+                }
+              }
             } catch (error) {
               console.error(`[Sync] Error syncing show:`, error);
               results.shows.errors++;
@@ -305,13 +389,31 @@ async function syncArtistData(
             upcomingShows: Number(showCounts[0]?.upcoming || 0),
           })
           .where(eq(artists.id, artist.id));
-
       } catch (error) {
-        console.error(`[Sync] Ticketmaster sync error for ${artist.name}:`, error);
+        console.error(
+          `[Sync] Ticketmaster sync error for ${artist.name}:`,
+          error,
+        );
       }
     }
-
   } catch (error) {
     console.error(`[Sync] Error syncing artist ${artist.name}:`, error);
+  }
+}
+
+// Normalize Ticketmaster status to our enum
+function mapTicketmasterStatus(
+  tmStatus?: string,
+): "upcoming" | "cancelled" | "completed" | "ongoing" {
+  switch ((tmStatus || "").toLowerCase()) {
+    case "cancelled":
+      return "cancelled";
+    // Ticketmaster’s "postponed", "rescheduled" treated as upcoming
+    case "postponed":
+    case "rescheduled":
+    case "onsale":
+    case "offsale":
+    default:
+      return "upcoming";
   }
 }

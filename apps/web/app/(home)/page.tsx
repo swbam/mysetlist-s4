@@ -1,9 +1,9 @@
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import Hero from "./components/hero";
-import { TrendingArtists } from "./components/trending-artists";
-import { Trending as TrendingShows } from "./components/trending";
 import { HomeLoadingSkeleton } from "./components/home-loading-skeleton";
+import { Trending as TrendingShows } from "./components/trending";
+import { TrendingArtists } from "./components/trending-artists";
 
 // Dynamic import for FeaturedContent to reduce initial bundle size
 const FeaturedContent = dynamic(() => import("./components/featured-content"), {

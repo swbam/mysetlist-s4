@@ -1,5 +1,5 @@
-import { artists, db, shows, venues, showArtists } from "@repo/database";
-import { and, asc, desc, eq, gte, lte, ilike, sql, inArray } from "drizzle-orm";
+import { artists, db, showArtists, shows, venues } from "@repo/database";
+import { and, asc, desc, eq, gte, ilike, inArray, lte, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {

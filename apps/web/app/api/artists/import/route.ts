@@ -1,8 +1,8 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/supabase/server";
 // Enhanced sync service temporarily disabled - using basic sync instead
 // import { EnhancedSyncService } from "~/app/api/sync/unified-pipeline/enhanced-sync-service";
-import { TicketmasterClient, SpotifyClient } from "@repo/external-apis";
+import { SpotifyClient, TicketmasterClient } from "@repo/external-apis";
+import { type NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "~/lib/supabase/server";
 import { generateSlug } from "~/lib/utils/slug";
 
 interface ImportArtistRequest {
@@ -41,14 +41,17 @@ export async function POST(request: NextRequest) {
         // Sync service temporarily disabled - using basic API calls instead
         // const syncService = new EnhancedSyncService();
         // await syncService.syncArtistComplete(existingArtist.id);
-        
+
         // Basic sync via API calls
         try {
-          await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/artist`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ artistId: existingArtist.id }),
-          });
+          await fetch(
+            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/artist`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ artistId: existingArtist.id }),
+            },
+          );
         } catch (error) {
           console.error("Sync API call failed:", error);
         }
@@ -133,11 +136,14 @@ export async function POST(request: NextRequest) {
 
     // Trigger immediate full sync in background via API
     // Don't await this to return quickly to user
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/artist`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ artistId: newArtist.id }),
-    })
+    fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/artist`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ artistId: newArtist.id }),
+      },
+    )
       .then(async () => {
         // Update verification status after sync
         await supabase

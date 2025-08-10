@@ -1,6 +1,6 @@
 import { artists, db } from "@repo/database";
 import { eq } from "drizzle-orm";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const trendingSchema = z.object({

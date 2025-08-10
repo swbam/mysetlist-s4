@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { db } from "@repo/database";
 import { sql } from "drizzle-orm";
+import { headers } from "next/headers";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 300; // 5 minutes
@@ -24,13 +24,13 @@ async function verifyCronAuth(): Promise<boolean> {
 
 export async function GET(request: Request) {
   try {
-    if (!await verifyCronAuth()) {
+    if (!(await verifyCronAuth())) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
     const mode = searchParams.get("mode") || "hourly";
-    const limit = parseInt(searchParams.get("limit") || "10");
+    const limit = Number.parseInt(searchParams.get("limit") || "10");
 
     console.log(`[Master Sync] Starting ${mode} sync with limit ${limit}`);
 
@@ -63,28 +63,35 @@ export async function GET(request: Request) {
         LIMIT ${limit}
       `);
 
-      console.log(`[Master Sync] Found ${artistsWithoutSongs.length} artists needing song sync`);
+      console.log(
+        `[Master Sync] Found ${artistsWithoutSongs.length} artists needing song sync`,
+      );
 
       // Sync each artist's songs
       for (const artist of artistsWithoutSongs) {
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/api/sync/artist-songs`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/artist-songs`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${process.env.CRON_SECRET}`,
+              },
+              body: JSON.stringify({
+                artistId: artist.id,
+                spotifyId: artist.spotify_id,
+                forceSync: true,
+              }),
             },
-            body: JSON.stringify({
-              artistId: artist.id,
-              spotifyId: artist.spotify_id,
-              forceSync: true,
-            }),
-          });
+          );
 
           if (response.ok) {
             results.artists.synced++;
             const data = await response.json();
-            console.log(`[Master Sync] Synced songs for ${artist.name}: ${data.songs?.synced || 0} songs`);
+            console.log(
+              `[Master Sync] Synced songs for ${artist.name}: ${data.songs?.synced || 0} songs`,
+            );
             results.songs.synced += data.songs?.synced || 0;
           } else {
             results.artists.errors++;
@@ -97,7 +104,7 @@ export async function GET(request: Request) {
           results.artists.errors++;
           results.errors.push({
             artist: artist.name,
-            error: error instanceof Error ? error.message : 'Unknown error',
+            error: error instanceof Error ? error.message : "Unknown error",
           });
         }
       }
@@ -120,26 +127,33 @@ export async function GET(request: Request) {
           LIMIT ${limit}
         `);
 
-        console.log(`[Master Sync] Found ${activeArtists.length} artists needing show sync`);
+        console.log(
+          `[Master Sync] Found ${activeArtists.length} artists needing show sync`,
+        );
 
         for (const artist of activeArtists) {
           try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/api/sync/shows`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+            const response = await fetch(
+              `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/shows`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${process.env.CRON_SECRET}`,
+                },
+                body: JSON.stringify({
+                  artistId: artist.id,
+                  artistName: artist.name,
+                }),
               },
-              body: JSON.stringify({
-                artistId: artist.id,
-                artistName: artist.name,
-              }),
-            });
+            );
 
             if (response.ok) {
               results.shows.synced++;
               const data = await response.json();
-              console.log(`[Master Sync] Synced shows for ${artist.name}: ${data.shows?.length || 0} shows`);
+              console.log(
+                `[Master Sync] Synced shows for ${artist.name}: ${data.shows?.length || 0} shows`,
+              );
             } else {
               results.shows.errors++;
             }
@@ -147,8 +161,8 @@ export async function GET(request: Request) {
             results.shows.errors++;
             results.errors.push({
               artist: artist.name,
-              type: 'shows',
-              error: error instanceof Error ? error.message : 'Unknown error',
+              type: "shows",
+              error: error instanceof Error ? error.message : "Unknown error",
             });
           }
         }
@@ -157,21 +171,26 @@ export async function GET(request: Request) {
       // Step 3: Calculate trending scores
       if (mode === "daily" || mode === "trending") {
         try {
-          const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001'}/api/cron/calculate-trending`, {
-            method: 'GET',
-            headers: {
-              'Authorization': `Bearer ${process.env.CRON_SECRET}`,
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/cron/calculate-trending`,
+            {
+              method: "GET",
+              headers: {
+                Authorization: `Bearer ${process.env.CRON_SECRET}`,
+              },
             },
-          });
+          );
 
           if (response.ok) {
             results.trending.calculated = true;
-            console.log('[Master Sync] Trending scores calculated successfully');
+            console.log(
+              "[Master Sync] Trending scores calculated successfully",
+            );
           }
         } catch (error) {
           results.errors.push({
-            type: 'trending',
-            error: error instanceof Error ? error.message : 'Unknown error',
+            type: "trending",
+            error: error instanceof Error ? error.message : "Unknown error",
           });
         }
       }
@@ -192,29 +211,27 @@ export async function GET(request: Request) {
           NOW()
         )
       `);
-
     } catch (error) {
-      console.error('[Master Sync] Error:', error);
+      console.error("[Master Sync] Error:", error);
       results.errors.push({
-        type: 'general',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        type: "general",
+        error: error instanceof Error ? error.message : "Unknown error",
       });
     }
 
     results.endTime = new Date().toISOString();
-    console.log('[Master Sync] Completed:', results);
+    console.log("[Master Sync] Completed:", results);
 
     return NextResponse.json({
       success: true,
       results,
     });
-
   } catch (error) {
-    console.error('[Master Sync] Fatal error:', error);
+    console.error("[Master Sync] Fatal error:", error);
     return NextResponse.json(
-      { 
-        error: "Master sync failed", 
-        details: error instanceof Error ? error.message : 'Unknown error',
+      {
+        error: "Master sync failed",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 },
     );

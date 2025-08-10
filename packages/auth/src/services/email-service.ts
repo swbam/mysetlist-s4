@@ -1,5 +1,5 @@
-import { Resend } from "resend";
 import { env } from "@repo/env";
+import { Resend } from "resend";
 
 export class EmailService {
   private resend: Resend;

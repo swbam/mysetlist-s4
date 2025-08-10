@@ -10,7 +10,7 @@ import {
 import { cn } from "@repo/design-system/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronUp, Loader2, Wifi, WifiOff, Zap } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, memo } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useRealtimeConnection } from "~/app/providers/realtime-provider";
 import { useOptimisticVoting } from "~/hooks/use-optimistic-voting";
@@ -209,7 +209,7 @@ const RealtimeVoteButtonComponent = function RealtimeVoteButton({
             aria-live="polite"
             aria-atomic="true"
           >
-           {netVotes > 0 ? `+${netVotes}` : netVotes}
+            {netVotes > 0 ? `+${netVotes}` : netVotes}
           </motion.span>
 
           {isOptimistic && (

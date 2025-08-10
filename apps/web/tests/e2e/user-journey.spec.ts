@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 test.describe("MySetlist User Journey", () => {
   test.beforeEach(async ({ page }) => {
@@ -68,7 +68,7 @@ test.describe("MySetlist User Journey", () => {
           await expect(page.locator("h1, h2")).toContainText(/sign in/i);
         } else {
           // Voting succeeded, check for updated counts
-          await expect(page.locator("text=/\d+/")).toBeVisible();
+          await expect(page.locator("text=/d+/")).toBeVisible();
         }
       }
     });

@@ -67,20 +67,20 @@ const _getArtist = async (slug: string) => {
 
       if (error || !data) {
         console.warn("Artist not found in database:", slug);
-        
+
         // Try to import artist automatically from external sources
         try {
           // First search for the artist to see if it exists in external APIs
           const searchResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/search?q=${encodeURIComponent(slug.replace(/-/g, " "))}&limit=1`
+            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/search?q=${encodeURIComponent(slug.replace(/-/g, " "))}&limit=1`,
           );
-          
+
           if (searchResponse.ok) {
             const searchData = await searchResponse.json();
             const externalArtist = searchData.artists?.find(
-              (a: any) => a.source !== "database"
+              (a: any) => a.source !== "database",
             );
-            
+
             if (externalArtist) {
               // Trigger import for this artist
               const importResponse = await fetch(
@@ -94,13 +94,13 @@ const _getArtist = async (slug: string) => {
                     imageUrl: externalArtist.imageUrl,
                     genres: externalArtist.genres,
                   }),
-                }
+                },
               );
-              
+
               if (importResponse.ok) {
                 const importData = await importResponse.json();
                 console.log("Artist import triggered:", importData);
-                
+
                 // Return minimal data for now - full sync will happen in background
                 return {
                   id: importData.artist.id,
@@ -136,7 +136,7 @@ const _getArtist = async (slug: string) => {
         } catch (importError) {
           console.error("Auto-import failed:", importError);
         }
-        
+
         return null;
       }
 
@@ -410,7 +410,10 @@ const _getArtistSongsWithSetlistData = async (artistId: string, limit = 50) => {
         drizzleSql`setlist_songs.song_id = songs.id`,
       )
       .leftJoin(setlists, drizzleSql`setlist_songs.setlist_id = setlists.id`)
-      .leftJoin(drizzleSql`votes`, drizzleSql`votes.setlist_song_id = setlist_songs.id`)
+      .leftJoin(
+        drizzleSql`votes`,
+        drizzleSql`votes.setlist_song_id = setlist_songs.id`,
+      )
       .where(
         drizzleSql`songs.artist = (SELECT name FROM artists WHERE id = ${artistId})`,
       )

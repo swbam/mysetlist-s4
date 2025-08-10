@@ -1,18 +1,21 @@
 #!/usr/bin/env node
 
-process.env.DATABASE_URL = "postgresql://postgres.yzwkimtdaabyjbpykquu:Bambseth1590@aws-0-us-east-1.pooler.supabase.com:5432/postgres?sslmode=require";
-process.env.NEXT_PUBLIC_SUPABASE_URL = "https://yzwkimtdaabyjbpykquu.supabase.co";
-process.env.SUPABASE_SERVICE_ROLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDY5MjMxNiwiZXhwIjoyMDY2MjY4MzE2fQ.ZMorLC_eZke3bvBAF0zyzqUONxpomfTN2RpE_mLjz18";
+process.env.DATABASE_URL =
+  "postgresql://postgres.yzwkimtdaabyjbpykquu:Bambseth1590@aws-0-us-east-1.pooler.supabase.com:5432/postgres?sslmode=require";
+process.env.NEXT_PUBLIC_SUPABASE_URL =
+  "https://yzwkimtdaabyjbpykquu.supabase.co";
+process.env.SUPABASE_SERVICE_ROLE_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDY5MjMxNiwiZXhwIjoyMDY2MjY4MzE2fQ.ZMorLC_eZke3bvBAF0zyzqUONxpomfTN2RpE_mLjz18";
 process.env.NODE_ENV = "development";
 
-const { createClient } = require('@supabase/supabase-js');
+const { createClient } = require("@supabase/supabase-js");
 
 async function testFixedTrendingSystem() {
-  console.log('=== Testing Fixed Trending System ===\n');
+  console.log("=== Testing Fixed Trending System ===\n");
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  
+
   const supabase = createClient(supabaseUrl, supabaseServiceKey, {
     auth: {
       autoRefreshToken: false,
@@ -22,7 +25,7 @@ async function testFixedTrendingSystem() {
 
   try {
     // Test the fixed shows query (without problematic joins)
-    console.log('1. Testing Fixed Shows Query...');
+    console.log("1. Testing Fixed Shows Query...");
     const { data: shows, error: showsError } = await supabase
       .from("shows")
       .select(`
@@ -45,20 +48,22 @@ async function testFixedTrendingSystem() {
       .limit(10);
 
     if (showsError) {
-      console.error('Shows query error:', showsError);
+      console.error("Shows query error:", showsError);
     } else {
       console.log(`✓ Found ${shows?.length || 0} trending shows`);
       if (shows && shows.length > 0) {
-        console.log('Top 3 shows:');
+        console.log("Top 3 shows:");
         shows.slice(0, 3).forEach((show, i) => {
-          console.log(`  ${i+1}. ${show.name}: trending_score=${show.trending_score}, views=${show.view_count}`);
+          console.log(
+            `  ${i + 1}. ${show.name}: trending_score=${show.trending_score}, views=${show.view_count}`,
+          );
         });
       }
     }
 
     // Test the main trending API logic
-    console.log('\n2. Testing Main Trending API Logic...');
-    
+    console.log("\n2. Testing Main Trending API Logic...");
+
     // Simulate API call logic
     const DEFAULT_CONFIG = {
       timeWindow: 168, // 7 days
@@ -88,7 +93,7 @@ async function testFixedTrendingSystem() {
       .limit(DEFAULT_CONFIG.limit);
 
     if (artistsError) {
-      console.error('Artists error:', artistsError);
+      console.error("Artists error:", artistsError);
     } else {
       console.log(`✓ Artists API: ${artists?.length || 0} results`);
     }
@@ -113,7 +118,7 @@ async function testFixedTrendingSystem() {
       .limit(DEFAULT_CONFIG.limit);
 
     if (showsDataError) {
-      console.error('Shows API error:', showsDataError);
+      console.error("Shows API error:", showsDataError);
     } else {
       console.log(`✓ Shows API: ${showsData?.length || 0} results`);
     }
@@ -162,34 +167,35 @@ async function testFixedTrendingSystem() {
       .sort((a, b) => b.score - a.score)
       .slice(0, DEFAULT_CONFIG.limit);
 
-    console.log('\n3. Final API Response Simulation:');
+    console.log("\n3. Final API Response Simulation:");
     console.log(`✓ Total trending items: ${combined.length}`);
-    console.log('✓ Top 5 items:');
+    console.log("✓ Top 5 items:");
     combined.slice(0, 5).forEach((item, i) => {
-      console.log(`  ${i+1}. [${item.type.toUpperCase()}] ${item.name}: score=${item.score}`);
+      console.log(
+        `  ${i + 1}. [${item.type.toUpperCase()}] ${item.name}: score=${item.score}`,
+      );
     });
 
     const apiResponse = {
-      shows: trendingItems.filter(item => item.type === 'show'),
-      artists: trendingItems.filter(item => item.type === 'artist'),
+      shows: trendingItems.filter((item) => item.type === "show"),
+      artists: trendingItems.filter((item) => item.type === "artist"),
       combined,
     };
 
-    console.log('\n4. API Response Structure:');
+    console.log("\n4. API Response Structure:");
     console.log(`  - Shows: ${apiResponse.shows.length} items`);
     console.log(`  - Artists: ${apiResponse.artists.length} items`);
     console.log(`  - Combined: ${apiResponse.combined.length} items`);
 
-    console.log('\n=== RESULT ===');
-    console.log('✅ Database queries working');
-    console.log('✅ Data transformations working');
-    console.log('✅ API response format correct');
-    console.log('✅ Foreign key issues resolved');
-    
-    return apiResponse;
+    console.log("\n=== RESULT ===");
+    console.log("✅ Database queries working");
+    console.log("✅ Data transformations working");
+    console.log("✅ API response format correct");
+    console.log("✅ Foreign key issues resolved");
 
+    return apiResponse;
   } catch (error) {
-    console.error('Test error:', error);
+    console.error("Test error:", error);
   }
 }
 

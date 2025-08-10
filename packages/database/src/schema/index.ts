@@ -11,5 +11,15 @@ export * from "./setlists";
 export * from "./email-preferences";
 export * from "./relations";
 
+// Essential system tables for API functionality
+export * from "./api-keys";
+export * from "./rate-limits";
+
+// Essential admin/monitoring tables
+export { userActivityLog } from "./admin";
+
+// Venue reviews (referenced by some routes)
+export { venueReviews } from "./venue-reviews";
+
 // Re-export artistSongs from artists file to avoid circular dependency
 export { artistSongs } from "./artists";

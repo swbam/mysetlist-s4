@@ -145,7 +145,6 @@ const HeaderContent = React.memo(() => {
             prefetch
             aria-label="MySetlist Home"
           >
-          
             <p className="whitespace-nowrap font-semibold text-base sm:text-lg">
               MySetlist
             </p>

@@ -1,13 +1,13 @@
 import { db } from "@repo/database";
 import {
   artists,
-  setlists,
   setlistSongs,
-  songs,
+  setlists,
   shows,
+  songs,
   venues,
 } from "@repo/database";
-import { eq, and } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 export async function upsertSetlists(rawSetlists: any[], artistId: string) {
@@ -136,10 +136,10 @@ async function findOrCreateVenueFromSetlistFm(sfVenue: any) {
       country: sfVenue.city?.country?.code || "",
       timezone: "UTC", // Default timezone
       latitude: sfVenue.city?.coords?.lat
-        ? parseFloat(sfVenue.city.coords.lat)
+        ? Number.parseFloat(sfVenue.city.coords.lat)
         : null,
       longitude: sfVenue.city?.coords?.long
-        ? parseFloat(sfVenue.city.coords.long)
+        ? Number.parseFloat(sfVenue.city.coords.long)
         : null,
       createdAt: new Date(),
       updatedAt: new Date(),

@@ -39,13 +39,14 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
         });
       } catch (spotifyError) {
         console.warn("Spotify API failed for top tracks:", spotifyError);
-        
+
         // Return empty result instead of mock data
         return NextResponse.json({
           tracks: [],
           total: 0,
           source: "empty",
-          message: "No top tracks available. Check back later for Spotify integration.",
+          message:
+            "No top tracks available. Check back later for Spotify integration.",
         });
       }
     }
@@ -54,7 +55,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({
       tracks: [],
       total: 0,
-      source: "empty", 
+      source: "empty",
       message: "Top tracks not available. Artist needs Spotify integration.",
     });
   } catch (_error) {

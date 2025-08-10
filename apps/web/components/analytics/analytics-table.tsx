@@ -1,13 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Avatar,
-  AvatarImage,
   AvatarFallback,
+  AvatarImage,
 } from "@repo/design-system/components/ui/avatar";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Table,
   TableBody,
@@ -17,13 +16,14 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import {
-  TrendingUp,
-  TrendingDown,
-  Music,
-  MapPin,
-  User,
   Eye,
+  MapPin,
+  Music,
+  TrendingDown,
+  TrendingUp,
+  User,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface TableProps {
   type:
@@ -86,7 +86,10 @@ export function AnalyticsTable({ type, limit = 10 }: TableProps) {
     itemLimit: number,
   ): TableRow[] => {
     // Do not generate mock data in production
-    if (typeof process !== "undefined" && process.env.NODE_ENV === "production") {
+    if (
+      typeof process !== "undefined" &&
+      process.env.NODE_ENV === "production"
+    ) {
       return [];
     }
     switch (tableType) {

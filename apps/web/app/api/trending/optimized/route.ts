@@ -30,7 +30,7 @@ interface OptimizedTrendingResult {
  */
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
-  
+
   // Apply rate limiting
   const rateLimitResult = await rateLimitMiddleware(request);
   if (rateLimitResult) {
@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       default:
         return NextResponse.json(
           { error: "Invalid period. Use: day, week, or month" },
-          { status: 400 }
+          { status: 400 },
         );
     }
 
@@ -74,9 +74,14 @@ export async function GET(request: NextRequest) {
         artists: data.artists || [],
         shows: data.shows || [],
         combined: [
-          ...(data.artists || []).map((item: any) => ({ ...item, type: "artist" })),
-          ...(data.shows || []).map((item: any) => ({ ...item, type: "show" }))
-        ].sort((a, b) => (b.trendingScore || 0) - (a.trendingScore || 0)).slice(0, limit)
+          ...(data.artists || []).map((item: any) => ({
+            ...item,
+            type: "artist",
+          })),
+          ...(data.shows || []).map((item: any) => ({ ...item, type: "show" })),
+        ]
+          .sort((a, b) => (b.trendingScore || 0) - (a.trendingScore || 0))
+          .slice(0, limit),
       };
     }
 
@@ -90,15 +95,20 @@ export async function GET(request: NextRequest) {
       data: response,
       performance: {
         queryTime,
-        optimization: queryTime < 200 ? "EXCELLENT" : queryTime < 500 ? "GOOD" : "NEEDS_WORK",
+        optimization:
+          queryTime < 200
+            ? "EXCELLENT"
+            : queryTime < 500
+              ? "GOOD"
+              : "NEEDS_WORK",
         targetTime: "200-500ms",
         improvement: "85-90% faster than standard trending",
-        dataSource: "materialized_views"
+        dataSource: "materialized_views",
       },
       metadata: {
         lastRefresh: await getLastTrendingRefresh(supabase),
         nextRefresh: "15 minutes",
-        cacheStrategy: "materialized_views + response_cache"
+        cacheStrategy: "materialized_views + response_cache",
       },
       timestamp: new Date().toISOString(),
     });
@@ -106,9 +116,9 @@ export async function GET(request: NextRequest) {
     // Aggressive caching for materialized view data
     jsonResponse.headers.set(
       "Cache-Control",
-      queryTime < 300 
+      queryTime < 300
         ? "public, s-maxage=600, stale-while-revalidate=1200" // 10 min cache if fast
-        : "public, s-maxage=300, stale-while-revalidate=600"   // 5 min cache if slower
+        : "public, s-maxage=300, stale-while-revalidate=600", // 5 min cache if slower
     );
 
     return jsonResponse;
@@ -122,19 +132,19 @@ export async function GET(request: NextRequest) {
         message: error instanceof Error ? error.message : "Unknown error",
         performance: {
           queryTime,
-          optimization: "FAILED"
-        }
+          optimization: "FAILED",
+        },
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 async function getOptimizedTrendingData(
-  supabase: any, 
-  limit: number, 
+  supabase: any,
+  limit: number,
   offset: number,
-  period: string
+  period: string,
 ) {
   const promises = await Promise.allSettled([
     // 1. Get trending artists from materialized view (super fast)
@@ -143,13 +153,13 @@ async function getOptimizedTrendingData(
       .select("*")
       .range(offset, offset + limit - 1)
       .order("trending_score", { ascending: false }),
-    
+
     // 2. Get trending shows from materialized view (super fast)
     supabase
-      .from("trending_shows_summary") 
+      .from("trending_shows_summary")
       .select("*")
       .range(offset, offset + limit - 1)
-      .order("trending_score", { ascending: false })
+      .order("trending_score", { ascending: false }),
   ]);
 
   const [artistsResult, showsResult] = promises as const;
@@ -171,14 +181,17 @@ async function getOptimizedTrendingData(
       totalShows: artist.total_shows || 0,
       upcomingShows: artist.upcoming_shows || 0,
       appFollowerCount: artist.app_follower_count || 0,
-      weeklyGrowth: calculateWeeklyGrowth(period, artist.popularity_growth || 0),
+      weeklyGrowth: calculateWeeklyGrowth(
+        period,
+        artist.popularity_growth || 0,
+      ),
       popularityGrowth: artist.popularity_growth || 0,
       followerGrowth: artist.follower_growth || 0,
-      updatedAt: artist.updated_at
+      updatedAt: artist.updated_at,
     }));
   }
 
-  // Transform shows data  
+  // Transform shows data
   let shows: any[] = [];
   if (showsResult.status === "fulfilled" && showsResult.value.data) {
     shows = showsResult.value.data.map((show: any) => ({
@@ -195,15 +208,15 @@ async function getOptimizedTrendingData(
         id: show.headliner_artist_id,
         name: show.artist_name,
         imageUrl: show.artist_image,
-        verified: show.artist_verified
+        verified: show.artist_verified,
       },
       venue: {
         id: show.venue_id,
         name: show.venue_name,
         city: show.venue_city,
-        state: show.venue_state
+        state: show.venue_state,
       },
-      updatedAt: show.updated_at
+      updatedAt: show.updated_at,
     }));
   }
 
@@ -212,8 +225,8 @@ async function getOptimizedTrendingData(
     shows,
     combined: [
       ...artists.map((item) => ({ ...item, type: "artist" })),
-      ...shows.map((item) => ({ ...item, type: "show" }))
-    ].sort((a, b) => (b.trendingScore || 0) - (a.trendingScore || 0))
+      ...shows.map((item) => ({ ...item, type: "show" })),
+    ].sort((a, b) => (b.trendingScore || 0) - (a.trendingScore || 0)),
   };
 }
 
@@ -224,7 +237,7 @@ async function getLastTrendingRefresh(supabase: any): Promise<string | null> {
       .select("value")
       .eq("key", "last_trending_refresh")
       .single();
-    
+
     return data?.value || null;
   } catch {
     return null;
@@ -245,7 +258,10 @@ function parseGenres(genres: any): string[] {
   return [];
 }
 
-function calculateWeeklyGrowth(period: string, popularityGrowth: number): number {
+function calculateWeeklyGrowth(
+  period: string,
+  popularityGrowth: number,
+): number {
   // Adjust growth rate based on period
   switch (period) {
     case "day":

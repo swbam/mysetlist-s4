@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
 import { getSyncQueue } from "@repo/utils";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> },
 ) {
   try {
     const { jobId } = await params;
@@ -11,7 +11,7 @@ export async function GET(
     if (!jobId) {
       return NextResponse.json(
         { error: "Job ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -19,12 +19,11 @@ export async function GET(
     const status = await syncQueue.getJobStatus(jobId);
 
     return NextResponse.json(status);
-
   } catch (error) {
     console.error("Failed to get sync status:", error);
     return NextResponse.json(
       { error: "Failed to get sync status" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -32,7 +31,7 @@ export async function GET(
 // Server-sent events for real-time updates
 export async function POST(
   request: NextRequest,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> },
 ) {
   try {
     const { jobId } = await params;
@@ -40,18 +39,18 @@ export async function POST(
     if (!jobId) {
       return NextResponse.json(
         { error: "Job ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // Set up SSE headers
     const headers = new Headers({
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      'Connection': 'keep-alive',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
     });
 
     const stream = new ReadableStream({
@@ -70,12 +69,12 @@ export async function POST(
             const data = `data: ${JSON.stringify(payload)}\n\n`;
             controller.enqueue(new TextEncoder().encode(data));
           } catch (error) {
-            console.error('SSE encoding error:', error);
+            console.error("SSE encoding error:", error);
           }
         });
 
         // Cleanup on close
-        request.signal.addEventListener('abort', () => {
+        request.signal.addEventListener("abort", () => {
           channel.unsubscribe();
           controller.close();
         });
@@ -92,19 +91,18 @@ export async function POST(
         }, 30000);
 
         // Cleanup on close
-        request.signal.addEventListener('abort', () => {
+        request.signal.addEventListener("abort", () => {
           clearInterval(keepAlive);
         });
       },
     });
 
     return new Response(stream, { headers });
-
   } catch (error) {
     console.error("Failed to set up sync status stream:", error);
     return NextResponse.json(
       { error: "Failed to set up real-time updates" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

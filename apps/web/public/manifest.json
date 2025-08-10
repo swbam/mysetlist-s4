@@ -31,7 +31,7 @@
     },
     {
       "src": "/icon-512.png",
-      "sizes": "512x512", 
+      "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     }
@@ -46,7 +46,7 @@
       "platform": "wide"
     },
     {
-      "src": "/screenshots/artist.png", 
+      "src": "/screenshots/artist.png",
       "sizes": "1280x720",
       "type": "image/png",
       "label": "Artist page with upcoming shows and setlist voting",
@@ -67,7 +67,7 @@
       ]
     },
     {
-      "name": "My Artists", 
+      "name": "My Artists",
       "url": "/my-artists",
       "description": "View your followed artists and upcoming shows",
       "icons": [
@@ -85,7 +85,7 @@
       "icons": [
         {
           "src": "/icon-192.png",
-          "sizes": "192x192", 
+          "sizes": "192x192",
           "type": "image/png"
         }
       ]

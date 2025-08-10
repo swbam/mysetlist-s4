@@ -80,26 +80,38 @@ export async function GET(request: NextRequest) {
     }
 
     // Get related artists and venues
-    const artistIds = [...new Set(shows.map(s => s.headliner_artist_id).filter(Boolean))];
-    const venueIds = [...new Set(shows.map(s => s.venue_id).filter(Boolean))];
+    const artistIds = [
+      ...new Set(shows.map((s) => s.headliner_artist_id).filter(Boolean)),
+    ];
+    const venueIds = [...new Set(shows.map((s) => s.venue_id).filter(Boolean))];
 
     const [artistsResponse, venuesResponse] = await Promise.all([
-      artistIds.length > 0 ? supabase
-        .from("artists")
-        .select("id, name, slug, image_url")
-        .in("id", artistIds) : Promise.resolve({ data: [] }),
-      venueIds.length > 0 ? supabase
-        .from("venues")
-        .select("id, name, city, state")
-        .in("id", venueIds) : Promise.resolve({ data: [] })
+      artistIds.length > 0
+        ? supabase
+            .from("artists")
+            .select("id, name, slug, image_url")
+            .in("id", artistIds)
+        : Promise.resolve({ data: [] }),
+      venueIds.length > 0
+        ? supabase
+            .from("venues")
+            .select("id, name, city, state")
+            .in("id", venueIds)
+        : Promise.resolve({ data: [] }),
     ]);
 
-    const artistsMap = new Map((artistsResponse.data || []).map(a => [a.id, a]));
-    const venuesMap = new Map((venuesResponse.data || []).map(v => [v.id, v]));
+    const artistsMap = new Map(
+      (artistsResponse.data || []).map((a) => [a.id, a]),
+    );
+    const venuesMap = new Map(
+      (venuesResponse.data || []).map((v) => [v.id, v]),
+    );
 
     // Format the response
     const formatted: TrendingShow[] = shows.map((show, index) => {
-      const artist = show.headliner_artist_id ? artistsMap.get(show.headliner_artist_id) : null;
+      const artist = show.headliner_artist_id
+        ? artistsMap.get(show.headliner_artist_id)
+        : null;
       const venue = show.venue_id ? venuesMap.get(show.venue_id) : null;
 
       return {
@@ -137,10 +149,9 @@ export async function GET(request: NextRequest) {
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
       },
     });
-
   } catch (error) {
     console.error("Trending shows API error:", error);
-    
+
     const fallbackResponse: TrendingShowsResponse = {
       shows: [],
       timeframe: request.nextUrl.searchParams.get("timeframe") || "week",

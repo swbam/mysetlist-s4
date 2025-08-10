@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/supabase/server";
 import { SetlistFmClient } from "@repo/external-apis";
+import { type NextRequest, NextResponse } from "next/server";
 import { monitor } from "~/lib/api/monitoring";
+import { createServiceClient } from "~/lib/supabase/server";
 import { withRateLimit } from "~/middleware/rate-limit";
 
 interface SyncRequest {

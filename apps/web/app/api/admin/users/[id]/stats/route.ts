@@ -264,23 +264,26 @@ function calculateCommunityEngagement(metrics: {
   return 90;
 }
 
-async function calculateTenureDays(userId: string, supabase: any): Promise<number> {
+async function calculateTenureDays(
+  userId: string,
+  supabase: any,
+): Promise<number> {
   try {
     const { data: user } = await supabase
       .from("users")
       .select("created_at")
       .eq("id", userId)
       .single();
-      
+
     if (!user?.created_at) {
       return 0;
     }
-    
+
     const createdDate = new Date(user.created_at);
     const currentDate = new Date();
     const diffTime = Math.abs(currentDate.getTime() - createdDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     return diffDays;
   } catch {
     return 0;

@@ -1,3 +1,19 @@
+import { format } from "date-fns";
+import {
+  Building,
+  Calendar,
+  CheckCircle,
+  Download,
+  Filter,
+  MapPin,
+  Music,
+  Music2,
+  RotateCcw,
+  Search,
+  Star,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import {
   Badge,
   Button,
@@ -19,22 +35,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "~/components/ui-exports";
-import { format } from "date-fns";
-import {
-  Building,
-  Calendar,
-  CheckCircle,
-  Download,
-  Filter,
-  MapPin,
-  Music,
-  Music2,
-  RotateCcw,
-  Search,
-  Star,
-  TrendingUp,
-  Users,
-} from "lucide-react";
 import { createClient } from "~/lib/supabase/server";
 import ContentActions from "./components/content-actions";
 import { SyncPopularArtistsButton } from "./components/sync-popular-artists-button";

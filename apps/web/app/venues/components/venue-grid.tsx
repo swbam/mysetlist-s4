@@ -8,9 +8,9 @@ import {
   CardHeader,
 } from "@repo/design-system/components/ui/card";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
-import { Car, Heart, MapPin, Star, Train, Users, Building } from "lucide-react";
+import { Building, Car, Heart, MapPin, Star, Train, Users } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 interface Venue {
   id: string;

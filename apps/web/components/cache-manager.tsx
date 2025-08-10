@@ -30,7 +30,7 @@ export function CacheManager({
   useEffect(() => {
     if (isSupported && !isRegistered) {
       register().then(() => {
-        console.log('[CacheManager] Service worker registered');
+        console.log("[CacheManager] Service worker registered");
       });
     }
   }, [isSupported, isRegistered, register]);
@@ -40,7 +40,7 @@ export function CacheManager({
     if (isSupported && !cacheCleared) {
       clearStaleCaches().then(() => {
         setCacheCleared(true);
-        console.log('[CacheManager] Stale caches cleared');
+        console.log("[CacheManager] Stale caches cleared");
       });
     }
   }, [isSupported, clearStaleCaches, cacheCleared]);
@@ -52,9 +52,9 @@ export function CacheManager({
     try {
       await refreshTrendingData();
       setLastRefresh(new Date());
-      console.log('[CacheManager] Trending data refreshed');
+      console.log("[CacheManager] Trending data refreshed");
     } catch (error) {
-      console.warn('[CacheManager] Failed to refresh trending data:', error);
+      console.warn("[CacheManager] Failed to refresh trending data:", error);
     }
   }, [isSupported, refreshTrendingData]);
 
@@ -79,13 +79,14 @@ export function CacheManager({
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [isSupported, refreshTrending]);
 
   // Expose cache management functions globally for debugging
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.__cacheManager = {
         clearTrendingCache,
         refreshTrendingData,
@@ -96,33 +97,39 @@ export function CacheManager({
     }
 
     return () => {
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         delete window.__cacheManager;
       }
     };
-  }, [clearTrendingCache, refreshTrendingData, clearStaleCaches, lastRefresh, isRegistered]);
+  }, [
+    clearTrendingCache,
+    refreshTrendingData,
+    clearStaleCaches,
+    lastRefresh,
+    isRegistered,
+  ]);
 
   return (
     <>
       {children}
       {/* Add a hidden div that displays cache status in dev mode */}
-      {process.env.NODE_ENV === 'development' && (
-        <div 
+      {process.env.NODE_ENV === "development" && (
+        <div
           style={{
-            position: 'fixed',
+            position: "fixed",
             bottom: 0,
             right: 0,
-            background: 'rgba(0,0,0,0.8)',
-            color: 'white',
-            padding: '4px 8px',
-            fontSize: '10px',
+            background: "rgba(0,0,0,0.8)",
+            color: "white",
+            padding: "4px 8px",
+            fontSize: "10px",
             zIndex: 9999,
-            pointerEvents: 'none',
+            pointerEvents: "none",
           }}
         >
-          SW: {isRegistered ? 'OK' : 'NO'} | 
-          Cache: {cacheCleared ? 'CLEAN' : 'DIRTY'} |
-          Last: {lastRefresh?.toLocaleTimeString() || 'NEVER'}
+          SW: {isRegistered ? "OK" : "NO"} | Cache:{" "}
+          {cacheCleared ? "CLEAN" : "DIRTY"} | Last:{" "}
+          {lastRefresh?.toLocaleTimeString() || "NEVER"}
         </div>
       )}
     </>
@@ -131,40 +138,42 @@ export function CacheManager({
 
 // Standalone function to clear all caches (useful for debugging)
 export async function clearAllCaches() {
-  if (!('caches' in window)) {
-    console.warn('Cache API not supported');
+  if (!("caches" in window)) {
+    console.warn("Cache API not supported");
     return;
   }
 
   try {
     const cacheNames = await caches.keys();
-    console.log('[Cache] Found caches:', cacheNames);
-    
-    await Promise.all(cacheNames.map(name => {
-      console.log('[Cache] Deleting cache:', name);
-      return caches.delete(name);
-    }));
-    
-    console.log('[Cache] All caches cleared');
-    
+    console.log("[Cache] Found caches:", cacheNames);
+
+    await Promise.all(
+      cacheNames.map((name) => {
+        console.log("[Cache] Deleting cache:", name);
+        return caches.delete(name);
+      }),
+    );
+
+    console.log("[Cache] All caches cleared");
+
     // Also clear localStorage cache data
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const keys = Object.keys(localStorage);
-      keys.forEach(key => {
-        if (key.startsWith('mysetlist-') || key.includes('trending')) {
+      keys.forEach((key) => {
+        if (key.startsWith("mysetlist-") || key.includes("trending")) {
           localStorage.removeItem(key);
         }
       });
     }
-    
+
     // Reload the page to ensure fresh data
     window.location.reload();
   } catch (error) {
-    console.error('[Cache] Failed to clear caches:', error);
+    console.error("[Cache] Failed to clear caches:", error);
   }
 }
 
 // Add global function for easy cache clearing in production
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   window.clearMySetlistCache = clearAllCaches;
 }

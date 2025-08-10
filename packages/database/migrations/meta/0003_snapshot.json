@@ -55,12 +55,8 @@
           "name": "artist_songs_artist_id_artists_id_fk",
           "tableFrom": "artist_songs",
           "tableTo": "artists",
-          "columnsFrom": [
-            "artist_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artist_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -68,12 +64,8 @@
           "name": "artist_songs_song_id_songs_id_fk",
           "tableFrom": "artist_songs",
           "tableTo": "songs",
-          "columnsFrom": [
-            "song_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["song_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -151,9 +143,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       }
     },
@@ -279,12 +269,8 @@
           "name": "user_profiles_user_id_users_id_fk",
           "tableFrom": "user_profiles",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -294,9 +280,7 @@
         "user_profiles_user_id_unique": {
           "name": "user_profiles_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id"
-          ]
+          "columns": ["user_id"]
         }
       }
     },
@@ -377,12 +361,8 @@
           "name": "artist_stats_artist_id_artists_id_fk",
           "tableFrom": "artist_stats",
           "tableTo": "artists",
-          "columnsFrom": [
-            "artist_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artist_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -607,30 +587,22 @@
         "artists_spotify_id_unique": {
           "name": "artists_spotify_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "spotify_id"
-          ]
+          "columns": ["spotify_id"]
         },
         "artists_ticketmaster_id_unique": {
           "name": "artists_ticketmaster_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "ticketmaster_id"
-          ]
+          "columns": ["ticketmaster_id"]
         },
         "artists_mbid_unique": {
           "name": "artists_mbid_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "mbid"
-          ]
+          "columns": ["mbid"]
         },
         "artists_slug_unique": {
           "name": "artists_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       }
     },
@@ -820,9 +792,7 @@
         "venues_slug_unique": {
           "name": "venues_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       }
     },
@@ -882,12 +852,8 @@
           "name": "show_artists_show_id_shows_id_fk",
           "tableFrom": "show_artists",
           "tableTo": "shows",
-          "columnsFrom": [
-            "show_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["show_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -895,12 +861,8 @@
           "name": "show_artists_artist_id_artists_id_fk",
           "tableFrom": "show_artists",
           "tableTo": "artists",
-          "columnsFrom": [
-            "artist_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artist_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1111,12 +1073,8 @@
           "name": "shows_headliner_artist_id_artists_id_fk",
           "tableFrom": "shows",
           "tableTo": "artists",
-          "columnsFrom": [
-            "headliner_artist_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["headliner_artist_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1124,12 +1082,8 @@
           "name": "shows_venue_id_venues_id_fk",
           "tableFrom": "shows",
           "tableTo": "venues",
-          "columnsFrom": [
-            "venue_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["venue_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1139,16 +1093,12 @@
         "shows_slug_unique": {
           "name": "shows_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         },
         "shows_ticketmaster_id_unique": {
           "name": "shows_ticketmaster_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "ticketmaster_id"
-          ]
+          "columns": ["ticketmaster_id"]
         }
       }
     },
@@ -1241,12 +1191,8 @@
           "name": "setlist_songs_setlist_id_setlists_id_fk",
           "tableFrom": "setlist_songs",
           "tableTo": "setlists",
-          "columnsFrom": [
-            "setlist_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["setlist_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1254,12 +1200,8 @@
           "name": "setlist_songs_song_id_songs_id_fk",
           "tableFrom": "setlist_songs",
           "tableTo": "songs",
-          "columnsFrom": [
-            "song_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["song_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1269,10 +1211,7 @@
         "setlist_songs_setlist_id_position_unique": {
           "name": "setlist_songs_setlist_id_position_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "setlist_id",
-            "position"
-          ]
+          "columns": ["setlist_id", "position"]
         }
       }
     },
@@ -1385,12 +1324,8 @@
           "name": "setlists_show_id_shows_id_fk",
           "tableFrom": "setlists",
           "tableTo": "shows",
-          "columnsFrom": [
-            "show_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["show_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1398,12 +1333,8 @@
           "name": "setlists_artist_id_artists_id_fk",
           "tableFrom": "setlists",
           "tableTo": "artists",
-          "columnsFrom": [
-            "artist_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["artist_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1411,12 +1342,8 @@
           "name": "setlists_created_by_users_id_fk",
           "tableFrom": "setlists",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1587,9 +1514,7 @@
         "songs_spotify_id_unique": {
           "name": "songs_spotify_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "spotify_id"
-          ]
+          "columns": ["spotify_id"]
         }
       }
     },
@@ -1643,12 +1568,8 @@
           "name": "votes_user_id_users_id_fk",
           "tableFrom": "votes",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1656,12 +1577,8 @@
           "name": "votes_setlist_song_id_setlist_songs_id_fk",
           "tableFrom": "votes",
           "tableTo": "setlist_songs",
-          "columnsFrom": [
-            "setlist_song_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["setlist_song_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1671,10 +1588,7 @@
         "votes_user_id_setlist_song_id_unique": {
           "name": "votes_user_id_setlist_song_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id",
-            "setlist_song_id"
-          ]
+          "columns": ["user_id", "setlist_song_id"]
         }
       }
     },
@@ -1771,12 +1685,8 @@
           "name": "email_logs_user_id_users_id_fk",
           "tableFrom": "email_logs",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1892,12 +1802,8 @@
           "name": "email_preferences_user_id_users_id_fk",
           "tableFrom": "email_preferences",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1907,9 +1813,7 @@
         "email_preferences_user_id_unique": {
           "name": "email_preferences_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id"
-          ]
+          "columns": ["user_id"]
         }
       }
     },
@@ -2001,12 +1905,8 @@
           "name": "email_queue_user_id_users_id_fk",
           "tableFrom": "email_queue",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2057,12 +1957,8 @@
           "name": "email_unsubscribes_user_id_users_id_fk",
           "tableFrom": "email_unsubscribes",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2072,10 +1968,7 @@
         "email_unsubscribes_user_id_email_type_unique": {
           "name": "email_unsubscribes_user_id_email_type_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id",
-            "email_type"
-          ]
+          "columns": ["user_id", "email_type"]
         }
       }
     }

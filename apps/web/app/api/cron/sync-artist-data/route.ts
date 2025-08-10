@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
+import { artistSongs, artists, db, shows, venues } from "@repo/database";
 import { spotify, ticketmaster } from "@repo/external-apis";
-import { db, artists, artistSongs, shows, venues } from "@repo/database";
 import { eq, inArray } from "drizzle-orm";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     // Verify cron secret
     const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
-    
+
     if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -30,12 +30,14 @@ export async function POST(request: NextRequest) {
     for (const artist of topArtists) {
       try {
         console.log(`Syncing ${artist.name}...`);
-        
+
         // 1. Sync artist songs from Spotify
         if (artist.spotifyId) {
           try {
-            const topTracks = await spotify.getArtistTopTracks(artist.spotifyId);
-            
+            const topTracks = await spotify.getArtistTopTracks(
+              artist.spotifyId,
+            );
+
             if (topTracks && topTracks.length > 0) {
               for (const track of topTracks.slice(0, 50)) {
                 try {
@@ -64,7 +66,7 @@ export async function POST(request: NextRequest) {
                         externalUrls: track.external_urls,
                       })
                       .onConflictDoNothing();
-                    
+
                     results.songsSynced++;
                   }
                 } catch (error) {
@@ -94,7 +96,7 @@ export async function POST(request: NextRequest) {
                 let venueId = null;
                 if (event._embedded?.venues?.[0]) {
                   const tmVenue = event._embedded.venues[0];
-                  
+
                   // Check if venue exists
                   const [existingVenue] = await db
                     .select()
@@ -116,13 +118,17 @@ export async function POST(request: NextRequest) {
                         country: tmVenue.country?.countryCode,
                         address: tmVenue.address?.line1,
                         postalCode: tmVenue.postalCode,
-                        latitude: tmVenue.location?.latitude ? parseFloat(tmVenue.location.latitude) : null,
-                        longitude: tmVenue.location?.longitude ? parseFloat(tmVenue.location.longitude) : null,
+                        latitude: tmVenue.location?.latitude
+                          ? Number.parseFloat(tmVenue.location.latitude)
+                          : null,
+                        longitude: tmVenue.location?.longitude
+                          ? Number.parseFloat(tmVenue.location.longitude)
+                          : null,
                         timezone: tmVenue.timezone,
                       })
                       .returning()
                       .onConflictDoNothing();
-                    
+
                     if (newVenue) {
                       venueId = newVenue.id;
                     }
@@ -145,17 +151,22 @@ export async function POST(request: NextRequest) {
                       headlinerArtistId: artist.id, // Link to artist!
                       venueId: venueId,
                       name: event.name,
-                      slug: event.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-                      date: new Date(event.dates.start.dateTime || event.dates.start.localDate),
+                      slug: event.name
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, "-"),
+                      date: new Date(
+                        event.dates.start.dateTime ||
+                          event.dates.start.localDate,
+                      ),
                       startTime: event.dates.start.localTime,
                       status: event.dates.status.code.toLowerCase(),
                       ticketUrl: event.url,
                       minPrice: event.priceRanges?.[0]?.min,
                       maxPrice: event.priceRanges?.[0]?.max,
-                      currency: event.priceRanges?.[0]?.currency || 'USD',
+                      currency: event.priceRanges?.[0]?.currency || "USD",
                     })
                     .onConflictDoNothing();
-                  
+
                   results.showsSynced++;
                 }
               } catch (error) {
@@ -194,7 +205,7 @@ export async function POST(request: NextRequest) {
     console.error("Sync error:", error);
     return NextResponse.json(
       { error: "Sync failed", details: error },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -203,7 +214,10 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   // Check for admin auth or dev environment
   if (process.env.NODE_ENV !== "development") {
-    return NextResponse.json({ error: "Not available in production" }, { status: 403 });
+    return NextResponse.json(
+      { error: "Not available in production" },
+      { status: 403 },
+    );
   }
 
   // Trigger the sync with the cron secret
@@ -213,7 +227,7 @@ export async function GET(request: NextRequest) {
       headers: {
         authorization: `Bearer ${process.env.CRON_SECRET}`,
       },
-    })
+    }),
   );
 
   return response;

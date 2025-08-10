@@ -1,8 +1,8 @@
 "use server";
 
+import { artists, db, showArtists, shows, venues } from "@repo/database";
+import { and, asc, desc, eq, gte, ilike, inArray, lte, sql } from "drizzle-orm";
 import { cache } from "react";
-import { artists, db, shows, venues, showArtists } from "@repo/database";
-import { and, asc, desc, eq, gte, lte, ilike, sql, inArray } from "drizzle-orm";
 
 export type ShowWithDetails = {
   id: string;

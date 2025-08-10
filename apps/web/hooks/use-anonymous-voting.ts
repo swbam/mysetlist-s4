@@ -14,7 +14,10 @@ interface UseAnonymousVotingOptions {
 }
 
 interface UseAnonymousVotingReturn {
-  vote: (setlistSongId: string, voteType: "up" | "down" | null) => Promise<void>;
+  vote: (
+    setlistSongId: string,
+    voteType: "up" | "down" | null,
+  ) => Promise<void>;
   getVote: (setlistSongId: string) => "up" | "down" | null;
   syncVotes: () => Promise<void>;
   votesRemaining: number;
@@ -48,11 +51,11 @@ export function useAnonymousVoting({
       const storedVotes = localStorage.getItem(STORAGE_KEY);
       if (storedVotes) {
         const parsedVotes = JSON.parse(storedVotes);
-        
+
         // Filter votes from today only
         const today = new Date().toDateString();
         const todayVotes: Record<string, Vote> = {};
-        
+
         for (const [key, vote] of Object.entries(parsedVotes)) {
           const typedVote = vote as Vote;
           const voteDate = new Date(typedVote.timestamp).toDateString();
@@ -60,9 +63,11 @@ export function useAnonymousVoting({
             todayVotes[key] = typedVote;
           }
         }
-        
+
         setVotes(todayVotes);
-        setVotesRemaining(Math.max(0, DAILY_VOTE_LIMIT - Object.keys(todayVotes).length));
+        setVotesRemaining(
+          Math.max(0, DAILY_VOTE_LIMIT - Object.keys(todayVotes).length),
+        );
       }
     } catch (error) {
       console.warn("Failed to load anonymous votes:", error);
@@ -163,7 +168,7 @@ export function useAnonymousVoting({
       if (response.ok) {
         const result = await response.json();
         toast.success(`Synced ${result.votesSynced} votes to your account!`);
-        
+
         // Clear local storage after successful sync
         localStorage.removeItem(STORAGE_KEY);
         setVotes({});

@@ -1,16 +1,22 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { Loader2 } from "lucide-react";
+import dynamic from "next/dynamic";
 
-const UnifiedSearch = dynamic(() => import("~/components/unified-search").then(mod => ({ default: mod.UnifiedSearch })), {
-  loading: () => (
-    <div className="flex items-center justify-center h-10 border rounded-md">
-      <Loader2 className="h-4 w-4 animate-spin" />
-    </div>
-  ),
-  ssr: false,
-});
+const UnifiedSearch = dynamic(
+  () =>
+    import("~/components/unified-search").then((mod) => ({
+      default: mod.UnifiedSearch,
+    })),
+  {
+    loading: () => (
+      <div className="flex items-center justify-center h-10 border rounded-md">
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </div>
+    ),
+    ssr: false,
+  },
+);
 
 interface SearchFilters {
   types: string[];

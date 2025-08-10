@@ -1,14 +1,14 @@
 import { db } from "@repo/database";
 import {
-  emailQueue,
-  shows,
   emailPreferences,
-  users,
+  emailQueue,
   setlistSongs,
-  votes,
   setlists,
+  shows,
   songs,
+  users,
   venues,
+  votes,
 } from "@repo/database";
 import { addDays } from "date-fns";
 import { and, eq, isNotNull, isNull, lte, sql } from "drizzle-orm";
@@ -219,8 +219,7 @@ export async function checkVoteMilestones(setlistSongId: string) {
     // Get vote count for the song
     const voteCount = await db
       .select({
-        upvotes: sql<number>`COUNT(CASE WHEN ${votes.voteType} = 'up' THEN 1 END)`,
-        downvotes: sql<number>`COUNT(CASE WHEN ${votes.voteType} = 'down' THEN 1 END)`,
+        upvotes: sql<number>`COUNT(*)`,
       })
       .from(votes)
       .where(eq(votes.setlistSongId, setlistSongId))

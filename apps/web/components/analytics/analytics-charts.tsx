@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,25 +8,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Button } from "@repo/design-system/components/ui/button";
+import { Eye, TrendingDown, TrendingUp, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 import {
-  LineChart,
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
   Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  AreaChart,
-  Area,
-  PieChart,
-  Pie,
-  Cell,
 } from "recharts";
-import { TrendingUp, TrendingDown, Users, Eye } from "lucide-react";
 
 interface ChartData {
   period: string;

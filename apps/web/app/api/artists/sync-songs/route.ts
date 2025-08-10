@@ -1,16 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
+import { artistSongs, artists, db } from "@repo/database";
 import { spotify } from "@repo/external-apis";
-import { db, artists, artistSongs } from "@repo/database";
 import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const { artistId } = await request.json();
-    
+
     if (!artistId) {
       return NextResponse.json(
         { error: "Artist ID required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -24,23 +24,24 @@ export async function POST(request: NextRequest) {
     if (!artist || !artist.spotifyId) {
       return NextResponse.json(
         { error: "Artist not found or missing Spotify ID" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Fetch top tracks from Spotify
     const topTracks = await spotify.getArtistTopTracks(artist.spotifyId);
-    
+
     if (!topTracks || topTracks.length === 0) {
       return NextResponse.json(
         { error: "No tracks found for artist" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // Insert songs into artist_songs table
     const insertedSongs = [];
-    for (const track of topTracks.slice(0, 50)) { // Limit to 50 songs
+    for (const track of topTracks.slice(0, 50)) {
+      // Limit to 50 songs
       try {
         // Check if song already exists
         const existing = await db
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
               externalUrls: track.external_urls,
             })
             .returning();
-          
+
           insertedSongs.push(newSong);
         }
       } catch (error) {
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
     console.error("Sync songs error:", error);
     return NextResponse.json(
       { error: "Failed to sync songs" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

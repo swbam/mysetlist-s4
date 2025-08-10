@@ -49,7 +49,7 @@ export const spotify = new Proxy({} as SpotifyClient, {
       _spotify = new SpotifyClient({});
     }
     return (_spotify as any)[prop];
-  }
+  },
 });
 
 export const ticketmaster = new Proxy({} as TicketmasterClient, {
@@ -58,7 +58,7 @@ export const ticketmaster = new Proxy({} as TicketmasterClient, {
       _ticketmaster = new TicketmasterClient({});
     }
     return (_ticketmaster as any)[prop];
-  }
+  },
 });
 
 export const setlistfm = new Proxy({} as SetlistFmClient, {
@@ -67,7 +67,7 @@ export const setlistfm = new Proxy({} as SetlistFmClient, {
       _setlistfm = new SetlistFmClient({});
     }
     return (_setlistfm as any)[prop];
-  }
+  },
 });
 
 // Export sync services

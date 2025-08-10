@@ -613,11 +613,7 @@ class ProductionReadinessChecker {
       category.checks.forEach((check) => {
         totalChecks++;
         const icon =
-          check.status === "pass"
-            ? "✅"
-            : check.status === "fail"
-              ? "❌"
-              : "⚠️";
+          check.status === "pass" ? "✅" : check.status === "fail" ? "❌" : "⚠️";
         console.log(`${icon} ${check.name}: ${check.message}`);
 
         if (check.details) {
@@ -643,9 +639,7 @@ class ProductionReadinessChecker {
     if (failedChecks === 0) {
       console.log("\n🚀 READY FOR PRODUCTION!");
     } else {
-      console.log(
-        "\n⚠️  PLEASE FIX FAILED CHECKS BEFORE PRODUCTION DEPLOYMENT",
-      );
+      console.log("\n⚠️  PLEASE FIX FAILED CHECKS BEFORE PRODUCTION DEPLOYMENT");
     }
 
     console.log("\n" + "=".repeat(50));

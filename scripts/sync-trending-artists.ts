@@ -5,8 +5,8 @@
  */
 
 import "dotenv/config";
-import { TicketmasterClient } from "../packages/external-apis/src/clients/ticketmaster";
 import { SpotifyClient } from "../packages/external-apis/src/clients/spotify";
+import { TicketmasterClient } from "../packages/external-apis/src/clients/ticketmaster";
 
 // API configuration - these should be in your .env file
 const requiredEnvVars = [
@@ -95,7 +95,7 @@ async function getTrendingArtistsFromTicketmaster(): Promise<TrendingArtist[]> {
 
   // Match with Spotify to get additional data
   await spotify.authenticate();
-  
+
   for (const artist of sortedArtists) {
     try {
       const spotifyResults = await spotify.searchArtists(artist.name, 1);

@@ -1,6 +1,6 @@
 import { db } from "@repo/database";
 import { venues } from "@repo/database";
-import { eq, and } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 export async function upsertVenue(tmVenue: any) {
@@ -28,10 +28,10 @@ export async function upsertVenue(tmVenue: any) {
         country: tmVenue.country?.countryCode || tmVenue.country?.name || null,
         postalCode: tmVenue.postalCode || null,
         ...(tmVenue.location?.latitude && {
-          latitude: parseFloat(tmVenue.location.latitude),
+          latitude: Number.parseFloat(tmVenue.location.latitude),
         }),
         ...(tmVenue.location?.longitude && {
-          longitude: parseFloat(tmVenue.location.longitude),
+          longitude: Number.parseFloat(tmVenue.location.longitude),
         }),
         ...(tmVenue.timezone && { timezone: tmVenue.timezone }),
         ...(tmVenue.url && { website: tmVenue.url }),
@@ -60,10 +60,10 @@ export async function upsertVenue(tmVenue: any) {
     state: tmVenue.state?.stateCode || tmVenue.state?.name || null,
     postalCode: tmVenue.postalCode || null,
     ...(tmVenue.location?.latitude && {
-      latitude: parseFloat(tmVenue.location.latitude),
+      latitude: Number.parseFloat(tmVenue.location.latitude),
     }),
     ...(tmVenue.location?.longitude && {
-      longitude: parseFloat(tmVenue.location.longitude),
+      longitude: Number.parseFloat(tmVenue.location.longitude),
     }),
     ...(tmVenue.url && { website: tmVenue.url }),
     ...(extractPhoneNumber(tmVenue) && {

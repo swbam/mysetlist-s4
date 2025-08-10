@@ -1,6 +1,6 @@
 import { db } from "@repo/database";
 import { artists, shows } from "@repo/database";
-import { sql, gte, desc } from "drizzle-orm";
+import { desc, gte, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 /**

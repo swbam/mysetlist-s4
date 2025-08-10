@@ -5,8 +5,8 @@ import {
   EnhancedContentSlider,
   EnhancedContentSliderItem,
 } from "~/components/ui/enhanced-content-slider";
-import EnhancedLoadingSkeleton from "~/components/ui/enhanced-loading-skeleton";
 import EnhancedErrorBoundary from "~/components/ui/enhanced-error-boundary";
+import EnhancedLoadingSkeleton from "~/components/ui/enhanced-loading-skeleton";
 import OptimizedArtistCard from "~/components/ui/optimized-artist-card";
 
 interface TrendingArtist {

@@ -26,7 +26,9 @@ export {
 
 // Conditional icon loading for admin and analytics
 export const getAnalyticsIcons = async () => {
-  const { Award, Trophy, Eye, BarChart3, PieChart } = await import("lucide-react");
+  const { Award, Trophy, Eye, BarChart3, PieChart } = await import(
+    "lucide-react"
+  );
   return { Award, Trophy, Eye, BarChart3, PieChart };
 };
 

@@ -5,9 +5,9 @@ import {
   createSupabaseClient,
 } from "../config/supabase";
 import type {
-  IAuthProvider,
   AuthSession,
   AuthUser,
+  IAuthProvider,
   OAuthConfig,
 } from "../types";
 

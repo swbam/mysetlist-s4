@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { createServiceClient } from "~/lib/supabase/server";
 import { spotify } from "@repo/external-apis";
 import { ticketmaster } from "@repo/external-apis";
 import { setlistfm } from "@repo/external-apis";
+import { NextResponse } from "next/server";
+import { createServiceClient } from "~/lib/supabase/server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

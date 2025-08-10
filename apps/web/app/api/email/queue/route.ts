@@ -12,14 +12,17 @@ import {
   sendWelcomeEmail,
 } from "@repo/email/services";
 import { type NextRequest, NextResponse } from "next/server";
-import { createAuthenticatedClient, createServiceClient } from "~/lib/supabase/server";
+import {
+  createAuthenticatedClient,
+  createServiceClient,
+} from "~/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   try {
     // Parse body first to check for system token
     const body = await request.json();
     const { systemToken } = body;
-    
+
     let supabase;
     if (systemToken === process.env["EMAIL_SYSTEM_TOKEN"]) {
       supabase = createServiceClient();
@@ -30,7 +33,9 @@ export async function POST(request: NextRequest) {
     // Check authentication for non-system requests (only for authenticated client)
     let session = null;
     if (systemToken !== process.env["EMAIL_SYSTEM_TOKEN"]) {
-      const { data: { session: userSession } } = await supabase.auth.getSession();
+      const {
+        data: { session: userSession },
+      } = await supabase.auth.getSession();
       session = userSession;
     }
 

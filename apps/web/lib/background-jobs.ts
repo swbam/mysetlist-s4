@@ -1,6 +1,6 @@
-import { createServiceClient } from "~/lib/supabase/server";
 import { monitor } from "~/lib/api/monitoring";
 import { CacheClient } from "~/lib/cache/redis";
+import { createServiceClient } from "~/lib/supabase/server";
 
 // Job types and their configurations
 export interface Job {

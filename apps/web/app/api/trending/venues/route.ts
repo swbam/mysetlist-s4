@@ -1,7 +1,7 @@
+import { calculateVenueGrowth } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "~/lib/supabase/server";
 import type { TrendingVenue, TrendingVenuesResponse } from "~/types/api";
-import { calculateVenueGrowth } from "@repo/database";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";

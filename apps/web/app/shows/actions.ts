@@ -1,7 +1,18 @@
 "use server";
 
 import { artists, db, showArtists, shows, venues } from "@repo/database";
-import { and, asc, desc, eq, gte, ilike, inArray, lte, sql, SQL } from "drizzle-orm";
+import {
+  type SQL,
+  and,
+  asc,
+  desc,
+  eq,
+  gte,
+  ilike,
+  inArray,
+  lte,
+  sql,
+} from "drizzle-orm";
 import { cache } from "react";
 
 export type ShowWithDetails = {
@@ -131,7 +142,7 @@ export const fetchShows = cache(
         .from(shows)
         .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
         .leftJoin(venues, eq(shows.venueId, venues.id));
-      
+
       // Note: Using Drizzle query approach above instead of Supabase client for better type safety
 
       // Apply filters
@@ -173,16 +184,16 @@ export const fetchShows = cache(
       }
 
       // Build the complete query with all conditions, ordering, and pagination
-      const query = conditions.length > 0
-        ? baseQuery.where(and(...conditions))
-        : baseQuery;
+      const query =
+        conditions.length > 0 ? baseQuery.where(and(...conditions)) : baseQuery;
 
       // Apply ordering and pagination in chain
-      const orderedQuery = orderBy === "trending"
-        ? query.orderBy(desc(shows.trendingScore))
-        : orderBy === "popularity"
-        ? query.orderBy(desc(shows.viewCount))
-        : query.orderBy(asc(shows.date));
+      const orderedQuery =
+        orderBy === "trending"
+          ? query.orderBy(desc(shows.trendingScore))
+          : orderBy === "popularity"
+            ? query.orderBy(desc(shows.viewCount))
+            : query.orderBy(asc(shows.date));
 
       // Execute query with pagination
       const showsData = await orderedQuery.limit(limit).offset(offset);

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { db, artists, shows, venues, songs } from "@repo/database";
+import { artists, db, shows, songs, venues } from "@repo/database";
 import { desc } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Dev-only initializer; blocked in production
 const MOCK_ARTISTS = [
@@ -272,7 +272,10 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  if (process.env.NODE_ENV === "production" || !process.env["ADMIN_ENABLE_INIT"]) {
+  if (
+    process.env.NODE_ENV === "production" ||
+    !process.env["ADMIN_ENABLE_INIT"]
+  ) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
   return NextResponse.json({

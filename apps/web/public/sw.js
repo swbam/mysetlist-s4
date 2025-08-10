@@ -344,7 +344,7 @@ async function staleWhileRevalidate(request, cacheName, maxAge) {
   // Return cached version if available and not too old
   if (cached) {
     const cacheTime = cached.headers.get('SW-Cache-Time');
-    const age = cacheTime ? Date.now() - parseInt(cacheTime) : Infinity;
+    const age = cacheTime ? Date.now() - Number.parseInt(cacheTime) : Number.POSITIVE_INFINITY;
     
     if (age < maxAge) {
       // Return cached version, fetch is happening in background
@@ -386,7 +386,7 @@ async function networkFirst(request, cacheName, maxAge) {
       
       if (cached && maxAge) {
         const cacheTime = cached.headers.get('SW-Cache-Time');
-        const age = cacheTime ? Date.now() - parseInt(cacheTime) : Infinity;
+        const age = cacheTime ? Date.now() - Number.parseInt(cacheTime) : Number.POSITIVE_INFINITY;
         
         if (age < maxAge) {
           return cached;

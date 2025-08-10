@@ -36,6 +36,20 @@
       "when": 1754765282030,
       "tag": "0004_material_vampiro",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1754768989320,
+      "tag": "0005_broad_devos",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1754780108356,
+      "tag": "0006_absurd_sage",
+      "breakpoints": true
     }
   ]
 }

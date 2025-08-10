@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,17 +16,17 @@ import {
 } from "@repo/design-system/components/ui/tabs";
 import {
   Calendar,
-  MapPin,
-  Music,
-  Users,
   ExternalLink,
   Heart,
+  MapPin,
+  Music,
   Play,
   TrendingUp,
+  Users,
 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { EnhancedSearch } from "../enhanced-search";
 
 interface Artist {

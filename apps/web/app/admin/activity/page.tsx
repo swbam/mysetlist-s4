@@ -1,3 +1,16 @@
+import { format, subDays } from "date-fns";
+import {
+  Activity,
+  AlertTriangle,
+  Ban,
+  CheckCircle,
+  FileText,
+  Search,
+  Shield,
+  Star,
+  User,
+  XCircle,
+} from "lucide-react";
 import {
   Avatar,
   AvatarFallback,
@@ -15,19 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui-exports";
-import { format, subDays } from "date-fns";
-import {
-  Activity,
-  AlertTriangle,
-  Ban,
-  CheckCircle,
-  FileText,
-  Search,
-  Shield,
-  Star,
-  User,
-  XCircle,
-} from "lucide-react";
 import { createClient } from "~/lib/supabase/server";
 
 // Force dynamic rendering due to user-specific data fetching

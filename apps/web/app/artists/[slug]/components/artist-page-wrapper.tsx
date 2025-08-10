@@ -21,7 +21,7 @@ export function ArtistPageWrapper({
 }: ArtistPageWrapperProps) {
   const [syncJobId, setSyncJobId] = useState<string | null>(null);
   const [isTriggeredSync, setIsTriggeredSync] = useState(false);
-  
+
   const { triggerArtistSync, getSyncJobId, clearSync } = useArtistSync();
 
   // Auto-trigger sync for new artists (when user first clicks from search)
@@ -30,15 +30,15 @@ export function ArtistPageWrapper({
       // Check if this is a fresh artist with minimal data that needs syncing
       // You could also check for specific indicators like missing show count, etc.
       const shouldSync = true; // For now, always sync - add logic as needed
-      
+
       if (shouldSync) {
-        triggerArtistSync(artistId, spotifyId, 'full_sync')
+        triggerArtistSync(artistId, spotifyId, "full_sync")
           .then((jobId) => {
             setSyncJobId(jobId);
             setIsTriggeredSync(true);
           })
           .catch((error) => {
-            console.error('Failed to trigger artist sync:', error);
+            console.error("Failed to trigger artist sync:", error);
           });
       }
     }

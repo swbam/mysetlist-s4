@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import {
   Card,
   CardContent,
@@ -13,6 +12,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
+import React from "react";
 import { FollowButton } from "~/components/auth/follow-button";
 import { InteractionChecklist } from "~/components/dev/interaction-checklist";
 import { MobileVoteButton } from "~/components/mobile/mobile-vote-button";

@@ -3,7 +3,7 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
-import { memo, useState, useTransition, useCallback } from "react";
+import { memo, useCallback, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 interface VoteButtonProps {
@@ -30,54 +30,51 @@ const VoteButtonComponent = function VoteButton({
   const safeUpvotes = Number.isFinite(Number(upvotes)) ? Number(upvotes) : 0;
   const netVotes = safeUpvotes;
 
-  const handleVote = useCallback(
-    async () => {
-      if (isVoting || disabled || isPending) {
-        return;
-      }
+  const handleVote = useCallback(async () => {
+    if (isVoting || disabled || isPending) {
+      return;
+    }
 
-      setIsVoting(true);
+    setIsVoting(true);
 
-      startTransition(async () => {
-        try {
-          // Only upvote: toggle if already upvoted
-          const newVote: "up" | null = currentVote === "up" ? null : "up";
+    startTransition(async () => {
+      try {
+        // Only upvote: toggle if already upvoted
+        const newVote: "up" | null = currentVote === "up" ? null : "up";
 
-          if (onVote) {
-            await onVote(newVote);
-          } else {
-            // Default API call
-            const response = await fetch("/api/votes", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                setlistSongId,
-                voteType: newVote,
-              }),
-            });
+        if (onVote) {
+          await onVote(newVote);
+        } else {
+          // Default API call
+          const response = await fetch("/api/votes", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              setlistSongId,
+              voteType: newVote,
+            }),
+          });
 
-            if (!response.ok) {
-              const error = await response.text();
-              throw new Error(error || "Failed to vote");
-            }
+          if (!response.ok) {
+            const error = await response.text();
+            throw new Error(error || "Failed to vote");
           }
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : "Failed to vote";
-          if (errorMessage.includes("Unauthorized")) {
-            toast.error("Please sign in to vote");
-          } else {
-            toast.error("Failed to vote");
-          }
-        } finally {
-          setIsVoting(false);
         }
-      });
-    },
-    [isVoting, disabled, isPending, currentVote, onVote, setlistSongId],
-  );
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to vote";
+        if (errorMessage.includes("Unauthorized")) {
+          toast.error("Please sign in to vote");
+        } else {
+          toast.error("Failed to vote");
+        }
+      } finally {
+        setIsVoting(false);
+      }
+    });
+  }, [isVoting, disabled, isPending, currentVote, onVote, setlistSongId]);
 
   // Updated touch targets for mobile accessibility (minimum 44px per Apple guidelines)
   const buttonSize =

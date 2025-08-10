@@ -1,11 +1,11 @@
 "use client";
 
+import { Card } from "@repo/design-system/components/ui/card";
 import { Music } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ShowCard } from "./show-card";
 import { type ShowWithDetails, fetchShows } from "../actions";
-import { Card } from "@repo/design-system/components/ui/card";
+import { ShowCard } from "./show-card";
 
 export const ShowsGrid = () => {
   const [shows, setShows] = useState<ShowWithDetails[]>([]);

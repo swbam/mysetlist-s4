@@ -3,7 +3,7 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import { Loader2 } from "lucide-react";
-import * as React from "react";
+import type * as React from "react";
 
 interface TouchOptimizedButtonProps {
   loading?: boolean;

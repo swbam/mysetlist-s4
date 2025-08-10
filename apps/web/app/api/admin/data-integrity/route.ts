@@ -132,24 +132,15 @@ export async function GET(_request: NextRequest) {
       .select({
         setlistSongId: setlistSongs.id,
         storedUpvotes: setlistSongs.upvotes,
-        storedDownvotes: setlistSongs.downvotes,
         actualUpvotes: sql<number>`(
           SELECT COUNT(*) FROM votes 
-          WHERE setlist_song_id = ${setlistSongs.id} 
-          AND vote_type = 'up'
-        )`,
-        actualDownvotes: sql<number>`(
-          SELECT COUNT(*) FROM votes 
-          WHERE setlist_song_id = ${setlistSongs.id} 
-          AND vote_type = 'down'
+          WHERE setlist_song_id = ${setlistSongs.id}
         )`,
       })
       .from(setlistSongs)
       .where(
         sql`
-          (upvotes != (SELECT COUNT(*) FROM votes WHERE setlist_song_id = ${setlistSongs.id} AND vote_type = 'up'))
-          OR 
-          (downvotes != (SELECT COUNT(*) FROM votes WHERE setlist_song_id = ${setlistSongs.id} AND vote_type = 'down'))
+          (upvotes != (SELECT COUNT(*) FROM votes WHERE setlist_song_id = ${setlistSongs.id}))
         `,
       );
 

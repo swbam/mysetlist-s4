@@ -33,8 +33,8 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useDebounce } from "~/hooks/use-debounce";
 import { useCSRFToken } from "~/hooks/use-csrf-token";
+import { useDebounce } from "~/hooks/use-debounce";
 
 interface SearchResult {
   id: string;
@@ -119,7 +119,8 @@ export function UnifiedSearch({
             method: "GET",
             headers: { "Content-Type": "application/json" },
           });
-          if (!response.ok) throw new Error(`Search failed: ${response.status}`);
+          if (!response.ok)
+            throw new Error(`Search failed: ${response.status}`);
         }
 
         const data = await response.json();
@@ -192,14 +193,14 @@ export function UnifiedSearch({
               const resp = await fetchWithCSRF(
                 "/api/artists/import-ticketmaster",
                 {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  ticketmasterId: result.externalId || result.id,
-                  name: result.title,
-                  imageUrl: result.imageUrl,
-                  genres: result.genres,
-                }),
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    ticketmasterId: result.externalId || result.id,
+                    name: result.title,
+                    imageUrl: result.imageUrl,
+                    genres: result.genres,
+                  }),
                 },
               );
 

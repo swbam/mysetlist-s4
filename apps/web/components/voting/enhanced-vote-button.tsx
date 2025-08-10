@@ -4,7 +4,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { cn } from "@repo/design-system/lib/utils";
 import { ChevronUp, Loader2, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { memo, useState, useTransition, useCallback } from "react";
+import { memo, useCallback, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { useAuth } from "~/app/providers/auth-provider";
 import { useAnonymousVoting } from "~/hooks/use-anonymous-voting";
@@ -34,28 +34,25 @@ const EnhancedVoteButtonComponent = function EnhancedVoteButton({
   const { session } = useAuth();
   const [isVoting, setIsVoting] = useState(false);
   const [isPending, startTransition] = useTransition();
-  
+
   const anonymousVoting = useAnonymousVoting({
     onVoteLimitReached: () => {
       if (showSignInPrompt) {
-        toast.error(
-          "Daily vote limit reached. Sign in for unlimited voting!",
-          {
-            action: {
-              label: "Sign In",
-              onClick: () => router.push("/auth/sign-in"),
-            },
+        toast.error("Daily vote limit reached. Sign in for unlimited voting!", {
+          action: {
+            label: "Sign In",
+            onClick: () => router.push("/auth/sign-in"),
           },
-        );
+        });
       }
     },
   });
 
   const netVotes = upvotes;
-  
+
   // Use anonymous vote if not authenticated
-  const displayVote = session?.user 
-    ? currentVote 
+  const displayVote = session?.user
+    ? currentVote
     : anonymousVoting.getVote(setlistSongId);
 
   const handleVote = useCallback(
@@ -95,9 +92,13 @@ const EnhancedVoteButtonComponent = function EnhancedVoteButton({
           } else {
             // Anonymous user - use local storage voting
             await anonymousVoting.vote(setlistSongId, newVote);
-            
+
             // Show helpful prompts
-            if (newVote && anonymousVoting.votesRemaining <= 5 && showSignInPrompt) {
+            if (
+              newVote &&
+              anonymousVoting.votesRemaining <= 5 &&
+              showSignInPrompt
+            ) {
               toast.info(
                 `${anonymousVoting.votesRemaining} votes remaining today. Sign in for unlimited voting!`,
                 {
@@ -122,7 +123,18 @@ const EnhancedVoteButtonComponent = function EnhancedVoteButton({
         }
       });
     },
-    [isVoting, disabled, isPending, displayVote, onVote, setlistSongId, session, anonymousVoting, showSignInPrompt, router],
+    [
+      isVoting,
+      disabled,
+      isPending,
+      displayVote,
+      onVote,
+      setlistSongId,
+      session,
+      anonymousVoting,
+      showSignInPrompt,
+      router,
+    ],
   );
 
   // Updated touch targets for mobile accessibility (minimum 44px per Apple guidelines)
@@ -145,7 +157,11 @@ const EnhancedVoteButtonComponent = function EnhancedVoteButton({
             displayVote === "up" &&
               "bg-green-100 text-green-700 hover:bg-green-200",
           )}
-          title={session?.user ? "Vote up" : `Vote up (${anonymousVoting.votesRemaining} anonymous votes remaining)`}
+          title={
+            session?.user
+              ? "Vote up"
+              : `Vote up (${anonymousVoting.votesRemaining} anonymous votes remaining)`
+          }
         >
           {isVoting && displayVote === "up" ? (
             <Loader2 className={cn(iconSize, "animate-spin")} />
@@ -165,7 +181,7 @@ const EnhancedVoteButtonComponent = function EnhancedVoteButton({
           {netVotes > 0 ? `+${netVotes}` : netVotes}
         </span>
 
-          {/* Downvote removed */}
+        {/* Downvote removed */}
 
         {/* Anonymous voting indicator */}
         {!session?.user && showSignInPrompt && anonymousVoting.hasVotes && (
@@ -197,7 +213,11 @@ const EnhancedVoteButtonComponent = function EnhancedVoteButton({
           displayVote === "up" &&
             "bg-green-100 text-green-700 hover:bg-green-200",
         )}
-        title={session?.user ? "Vote up" : `Vote up (${anonymousVoting.votesRemaining} anonymous votes remaining)`}
+        title={
+          session?.user
+            ? "Vote up"
+            : `Vote up (${anonymousVoting.votesRemaining} anonymous votes remaining)`
+        }
       >
         {isVoting && displayVote === "up" ? (
           <Loader2 className={cn(iconSize, "animate-spin")} />
@@ -218,7 +238,7 @@ const EnhancedVoteButtonComponent = function EnhancedVoteButton({
       </span>
 
       {/* Downvote removed */}
-      
+
       {/* Anonymous voting indicator for default variant */}
       {!session?.user && showSignInPrompt && anonymousVoting.hasVotes && (
         <Button
@@ -237,17 +257,20 @@ const EnhancedVoteButtonComponent = function EnhancedVoteButton({
 };
 
 // Memoized export with custom comparison for better performance
-export const EnhancedVoteButton = memo(EnhancedVoteButtonComponent, (prevProps, nextProps) => {
-  // Custom comparison to prevent unnecessary re-renders
-  return (
-    prevProps.setlistSongId === nextProps.setlistSongId &&
-    prevProps.currentVote === nextProps.currentVote &&
-    prevProps.upvotes === nextProps.upvotes &&
-    true &&
-    prevProps.disabled === nextProps.disabled &&
-    prevProps.size === nextProps.size &&
-    prevProps.variant === nextProps.variant &&
-    prevProps.onVote === nextProps.onVote &&
-    prevProps.showSignInPrompt === nextProps.showSignInPrompt
-  );
-});
+export const EnhancedVoteButton = memo(
+  EnhancedVoteButtonComponent,
+  (prevProps, nextProps) => {
+    // Custom comparison to prevent unnecessary re-renders
+    return (
+      prevProps.setlistSongId === nextProps.setlistSongId &&
+      prevProps.currentVote === nextProps.currentVote &&
+      prevProps.upvotes === nextProps.upvotes &&
+      true &&
+      prevProps.disabled === nextProps.disabled &&
+      prevProps.size === nextProps.size &&
+      prevProps.variant === nextProps.variant &&
+      prevProps.onVote === nextProps.onVote &&
+      prevProps.showSignInPrompt === nextProps.showSignInPrompt
+    );
+  },
+);

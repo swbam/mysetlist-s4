@@ -1,13 +1,13 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
+import dynamic from "next/dynamic";
 
 // Loading component for analytics charts
 function ChartSkeleton({ height = 300 }: { height?: number }) {

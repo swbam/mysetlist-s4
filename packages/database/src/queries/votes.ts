@@ -105,7 +105,10 @@ export async function getVoteCountsForSetlist(setlistId: string) {
     .where(eq(setlistSongs.setlistId, setlistId))
     .groupBy(setlistSongs.id);
 
-  const songVotes: Record<string, { upvotes: number; downvotes: number; netVotes: number }> = {};
+  const songVotes: Record<
+    string,
+    { upvotes: number; downvotes: number; netVotes: number }
+  > = {};
   counts.forEach(({ setlistSongId, upvotes }) => {
     songVotes[setlistSongId] = { upvotes, downvotes: 0, netVotes: upvotes };
   });
@@ -123,7 +126,8 @@ export async function getTopVotedSongsForShow(
 ) {
   const { limit = 20, minVotes = 1, voteType = "net" } = options || {};
 
-  const orderColumn = voteType === "up" ? setlistSongs.upvotes : setlistSongs.netVotes;
+  const orderColumn =
+    voteType === "up" ? setlistSongs.upvotes : setlistSongs.netVotes;
 
   const results = await db
     .select({

@@ -81,23 +81,18 @@ export interface TicketmasterVenue {
 
 export class TicketmasterClient extends BaseAPIClient {
   constructor(config: Omit<APIClientConfig, "baseURL">) {
-    const apiKey = process.env["TICKETMASTER_API_KEY"];
-    if (!apiKey) {
-      throw new Error("Ticketmaster API key not configured");
-    }
-
     super({
       ...config,
-      baseURL: "https://app.ticketmaster.com/discovery/v2/",
-      apiKey,
+      baseURL: "https://app.ticketmaster.com/discovery/v2",
       rateLimit: { requests: 5000, window: 24 * 3600 }, // 5000 requests per day
       cache: { defaultTTL: 1800 }, // 30 minutes default cache
     });
   }
 
   protected getAuthHeaders(): Record<string, string> {
-    // Ticketmaster uses API key in URL params, not headers
-    return {};
+    return {
+      apikey: this.apiKey!,
+    };
   }
 
   protected override async makeRequest<T>(
@@ -151,6 +146,26 @@ export class TicketmasterClient extends BaseAPIClient {
     }
 
     return data;
+  }
+
+  async searchAttractions(options: {
+    keyword?: string;
+    classificationName?: string;
+    size?: number;
+    sort?: string;
+    page?: number;
+  }): Promise<any> {
+    const params = new URLSearchParams();
+    Object.entries(options).forEach(([key, value]) => {
+      if (value !== undefined && value !== null)
+        params.append(key, String(value));
+    });
+    return this.makeRequest(
+      `/attractions.json?${params}`,
+      {},
+      `ticketmaster:attractions:${params.toString()}`,
+      900,
+    );
   }
 
   async searchEvents(options: {

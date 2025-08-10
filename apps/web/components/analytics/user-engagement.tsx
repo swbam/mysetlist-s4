@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,10 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Progress } from "@repo/design-system/components/ui/progress";
-import { Users, Activity, Clock, TrendingUp } from "lucide-react";
+import { Activity, Clock, TrendingUp, Users } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface EngagementMetrics {
   dailyActiveUsers: number;

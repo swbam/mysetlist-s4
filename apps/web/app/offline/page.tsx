@@ -1,6 +1,12 @@
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
-import { WifiOff, RefreshCw, Music2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { Music2, RefreshCw, WifiOff } from "lucide-react";
 import Link from "next/link";
 
 export default function OfflinePage() {
@@ -19,18 +25,19 @@ export default function OfflinePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Don't worry! You can still browse cached content and any offline actions will sync when you're back online.
+              Don't worry! You can still browse cached content and any offline
+              actions will sync when you're back online.
             </p>
-            
+
             <div className="space-y-2">
-              <Button 
+              <Button
                 className="w-full"
                 onClick={() => window.location.reload()}
               >
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Try Again
               </Button>
-              
+
               <Link href="/" className="w-full">
                 <Button variant="outline" className="w-full">
                   <Music2 className="mr-2 h-4 w-4" />
@@ -38,9 +45,12 @@ export default function OfflinePage() {
                 </Button>
               </Link>
             </div>
-            
+
             <div className="text-xs text-muted-foreground">
-              <p>Cached content may be limited to recently viewed artists and shows.</p>
+              <p>
+                Cached content may be limited to recently viewed artists and
+                shows.
+              </p>
             </div>
           </CardContent>
         </Card>

@@ -1,9 +1,9 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { NextRequest, NextResponse } from "next/server";
 // import { env } from '@repo/env';
 import {
-  searchRateLimiter,
   apiRateLimitMiddleware,
+  searchRateLimiter,
 } from "~/lib/api-rate-limit";
 
 const QuerySchema = z.object({

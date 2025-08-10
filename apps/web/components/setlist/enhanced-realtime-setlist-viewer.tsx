@@ -14,10 +14,10 @@ import {
 import { cn } from "@repo/design-system/lib/utils";
 import { Music2, TrendingUp, Wifi, WifiOff } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "~/app/providers/auth-provider";
-import { useRealtimeVotes } from "~/hooks/use-realtime-votes";
 import { useRealtimeSetlist } from "~/hooks/use-realtime-setlist";
+import { useRealtimeVotes } from "~/hooks/use-realtime-votes";
 import { VoteButton } from "../voting/vote-button";
 import { VoteSummary } from "../voting/vote-summary";
 

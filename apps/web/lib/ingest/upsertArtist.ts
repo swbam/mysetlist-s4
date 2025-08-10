@@ -1,7 +1,7 @@
 import { db } from "@repo/database";
 import { artists } from "@repo/database";
-import { eq } from "drizzle-orm";
 import { TicketmasterClient } from "@repo/external-apis";
+import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 async function fetchAttraction(tmId: string) {

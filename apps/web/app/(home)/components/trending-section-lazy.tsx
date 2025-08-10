@@ -3,16 +3,16 @@
 import { Suspense, lazy } from "react";
 
 // Lazy load all trending components
-const TrendingArtists = lazy(() => 
+const TrendingArtists = lazy(() =>
   import("./trending-artists").then((mod) => ({
     default: mod.TrendingArtists,
-  }))
+  })),
 );
 
-const TrendingShows = lazy(() => 
+const TrendingShows = lazy(() =>
   import("./trending").then((mod) => ({
     default: mod.Trending,
-  }))
+  })),
 );
 
 // Simple loading skeleton

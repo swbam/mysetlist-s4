@@ -49,80 +49,89 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // For now, create sample songs
-    // In production, this would call Spotify API or other music data sources
-    const sampleSongs = [
-      {
-        title: "Greatest Hit #1",
-        artist: artistData!.name,
-        album: "Best Of Collection",
-        albumType: "album" as const,
-        releaseDate: "2023-01-01",
-        durationMs: 210000, // 3:30
-        popularity: 85,
-        isExplicit: false,
-        isPlayable: true,
-      },
-      {
-        title: "Fan Favorite",
-        artist: artistData!.name,
-        album: "Live Sessions",
-        albumType: "album" as const,
-        releaseDate: "2023-06-15",
-        durationMs: 195000, // 3:15
-        popularity: 78,
-        isExplicit: false,
-        isPlayable: true,
-      },
-      {
-        title: "Acoustic Dreams",
-        artist: artistData!.name,
-        album: "Unplugged",
-        albumType: "album" as const,
-        releaseDate: "2023-09-20",
-        durationMs: 240000, // 4:00
-        popularity: 72,
-        isExplicit: false,
-        isPlayable: true,
-      },
-      {
-        title: "Electric Nights",
-        artist: artistData!.name,
-        album: "Dance Collection",
-        albumType: "album" as const,
-        releaseDate: "2024-01-10",
-        durationMs: 180000, // 3:00
-        popularity: 80,
-        isExplicit: false,
-        isPlayable: true,
-      },
-      {
-        title: "Summer Vibes",
-        artist: artistData!.name,
-        album: "Seasonal Hits",
-        albumType: "single" as const,
-        releaseDate: "2024-07-01",
-        durationMs: 200000, // 3:20
-        popularity: 75,
-        isExplicit: false,
-        isPlayable: true,
-      },
-    ];
+    // Fetch songs from Spotify (top tracks + first 5 albums)
+    if (!artistData.spotifyId) {
+      return NextResponse.json({
+        success: true,
+        message: "Artist does not have a Spotify ID; nothing to sync",
+        artist: artistData,
+        songsCount: 0,
+        songs: [],
+      });
+    }
 
-    // Insert songs
-    const insertedSongs = await db
-      .insert(songs)
-      .values(sampleSongs)
-      .returning();
+    // Initialize Spotify client
+    const { SpotifyClient } = await import("@repo/external-apis");
+    const spotify = new SpotifyClient({});
+    await spotify.authenticate();
 
-    // Create artist-song relationships
-    const artistSongRelations = insertedSongs.map((song) => ({
-      artistId: artistId,
-      songId: song.id,
-      isPrimaryArtist: true,
-    }));
+    const topTracksResp = await spotify.getArtistTopTracks(
+      artistData.spotifyId,
+      "US",
+    );
+    const topTracks = (topTracksResp as any).tracks || [];
 
-    await db.insert(artistSongs).values(artistSongRelations);
+    const albumsResp = await spotify.getArtistAlbums(artistData.spotifyId, {
+      limit: 20,
+    });
+    const albums = (albumsResp as any).items || [];
+
+    const albumTracks: any[] = [];
+    for (const album of albums.slice(0, 5)) {
+      try {
+        const tracksResp = await spotify.makeRequest<any>(
+          `/albums/${album.id}/tracks`,
+        );
+        albumTracks.push(...tracksResp.items);
+      } catch (_e) {}
+    }
+
+    const allTracks = [...topTracks, ...albumTracks];
+    const uniqueTracks = Array.from(
+      new Map(allTracks.map((t: any) => [t.id, t])).values(),
+    );
+
+    const insertedSongs = [] as any[];
+    for (const track of uniqueTracks) {
+      try {
+        const [songRow] = await db
+          .insert(songs)
+          .values({
+            title: track.name,
+            artist: artistData.name,
+            album: track.album?.name || null,
+            albumArtUrl: track.album?.images?.[0]?.url || null,
+            releaseDate: track.album?.release_date || null,
+            durationMs: track.duration_ms,
+            popularity: track.popularity,
+            previewUrl: track.preview_url,
+            spotifyId: track.id,
+            isExplicit: track.explicit ?? false,
+            isPlayable: track.is_playable ?? true,
+          })
+          .onConflictDoUpdate({
+            target: songs.spotifyId,
+            set: { popularity: track.popularity, title: track.name },
+          })
+          .returning();
+        insertedSongs.push(songRow);
+
+        await db
+          .insert(artistSongs)
+          .values({ artistId, songId: songRow.id, isPrimaryArtist: true })
+          .onConflictDoNothing();
+      } catch (_e) {}
+    }
+
+    if (insertedSongs.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: "No new songs added (all up to date)",
+        artist: artistData,
+        songsCount: 0,
+        songs: [],
+      });
+    }
 
     // Update artist's song catalog sync timestamp and counts
     await db

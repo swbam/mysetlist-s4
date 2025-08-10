@@ -1,11 +1,11 @@
+import { createId } from "@paralleldrive/cuid2";
 import { db } from "@repo/database";
 import { artists } from "@repo/database";
 import { env } from "@repo/env";
 import { SpotifyClient, TicketmasterClient } from "@repo/external-apis";
+import { getSyncQueue } from "@repo/utils";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { getSyncQueue } from "@repo/utils";
-import { createId } from "@paralleldrive/cuid2";
 
 const spotify = new SpotifyClient({});
 
@@ -46,14 +46,14 @@ async function findTicketmasterId(artistName: string): Promise<string | null> {
 
 export async function POST(request: NextRequest) {
   try {
-    const { 
-      artistName, 
-      spotifyId, 
+    const {
+      artistName,
+      spotifyId,
       ticketmasterId,
       artistId,
       jobType = "full_sync",
       priority = 2,
-      useBackgroundSync = true
+      useBackgroundSync = true,
     } = await request.json();
 
     if (!artistName && !spotifyId) {

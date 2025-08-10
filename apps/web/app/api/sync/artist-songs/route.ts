@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
 import { db } from "@repo/database";
-import { artists, songs, artistSongs } from "@repo/database";
-import { eq, and, sql } from "drizzle-orm";
+import { artistSongs, artists, songs } from "@repo/database";
 import { SpotifyClient } from "@repo/external-apis";
+import { and, eq, sql } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // 1 minute
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     if (!artistId) {
       return NextResponse.json(
         { error: "Artist ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -26,17 +26,14 @@ export async function POST(request: Request) {
       .limit(1);
 
     if (!artist) {
-      return NextResponse.json(
-        { error: "Artist not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
     const artistSpotifyId = spotifyId || artist.spotifyId;
     if (!artistSpotifyId) {
       return NextResponse.json(
         { error: "No Spotify ID available for this artist" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -54,18 +51,20 @@ export async function POST(request: Request) {
           message: "Songs already synced recently",
           songs: {
             synced: Number(existingSongs[0]?.count || 0),
-            errors: 0
-          }
+            errors: 0,
+          },
         });
       }
     }
 
-    console.log(`[Song Sync] Starting sync for ${artist.name} (${artistSpotifyId})`);
+    console.log(
+      `[Song Sync] Starting sync for ${artist.name} (${artistSpotifyId})`,
+    );
 
     const results = {
       synced: 0,
       errors: 0,
-      tracks: [] as any[]
+      tracks: [] as any[],
     };
 
     try {
@@ -74,7 +73,7 @@ export async function POST(request: Request) {
       await spotify.authenticate();
 
       // Fetch top tracks
-      const topTracks = await spotify.getArtistTopTracks(artistSpotifyId, 'US');
+      const topTracks = await spotify.getArtistTopTracks(artistSpotifyId, "US");
       console.log(`[Song Sync] Found ${topTracks.length} top tracks`);
 
       // Fetch albums and their tracks
@@ -88,22 +87,27 @@ export async function POST(request: Request) {
         try {
           const albumTracks = await spotify.getAlbumTracks(album.id);
           // Filter to only include tracks by this artist
-          const artistTracks = albumTracks.filter(track => 
-            track.artists.some(a => a.id === artistSpotifyId)
+          const artistTracks = albumTracks.filter((track) =>
+            track.artists.some((a) => a.id === artistSpotifyId),
           );
           allTracks.push(...artistTracks);
         } catch (error) {
-          console.error(`[Song Sync] Error fetching tracks for album ${album.name}:`, error);
+          console.error(
+            `[Song Sync] Error fetching tracks for album ${album.name}:`,
+            error,
+          );
           results.errors++;
         }
       }
 
       // Deduplicate tracks by Spotify ID
       const uniqueTracks = Array.from(
-        new Map(allTracks.map(track => [track.id, track])).values()
+        new Map(allTracks.map((track) => [track.id, track])).values(),
       );
 
-      console.log(`[Song Sync] Processing ${uniqueTracks.length} unique tracks`);
+      console.log(
+        `[Song Sync] Processing ${uniqueTracks.length} unique tracks`,
+      );
 
       // Batch insert songs
       for (const track of uniqueTracks) {
@@ -134,7 +138,7 @@ export async function POST(request: Request) {
                 updatedAt: new Date(),
               })
               .where(eq(songs.id, existingSong.id));
-            
+
             songId = existingSong.id;
           } else {
             // Insert new song
@@ -153,7 +157,7 @@ export async function POST(request: Request) {
                 isExplicit: track.explicit || false,
               })
               .returning();
-            
+
             songId = newSong.id;
           }
 
@@ -164,8 +168,8 @@ export async function POST(request: Request) {
             .where(
               and(
                 eq(artistSongs.artistId, artistId),
-                eq(artistSongs.songId, songId)
-              )
+                eq(artistSongs.songId, songId),
+              ),
             )
             .limit(1);
 
@@ -182,9 +186,11 @@ export async function POST(request: Request) {
             name: track.name,
             album: track.album?.name,
           });
-
         } catch (error) {
-          console.error(`[Song Sync] Error processing track ${track.name}:`, error);
+          console.error(
+            `[Song Sync] Error processing track ${track.name}:`,
+            error,
+          );
           results.errors++;
         }
       }
@@ -199,7 +205,9 @@ export async function POST(request: Request) {
         })
         .where(eq(artists.id, artistId));
 
-      console.log(`[Song Sync] Completed sync for ${artist.name}: ${results.synced} songs synced, ${results.errors} errors`);
+      console.log(
+        `[Song Sync] Completed sync for ${artist.name}: ${results.synced} songs synced, ${results.errors} errors`,
+      );
 
       return NextResponse.json({
         success: true,
@@ -215,7 +223,6 @@ export async function POST(request: Request) {
         },
         timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       console.error(`[Song Sync] Spotify API error:`, error);
       return NextResponse.json(
@@ -223,10 +230,9 @@ export async function POST(request: Request) {
           error: "Failed to sync with Spotify",
           details: error instanceof Error ? error.message : "Unknown error",
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
-
   } catch (error) {
     console.error("[Song Sync] Request error:", error);
     return NextResponse.json(
@@ -234,7 +240,7 @@ export async function POST(request: Request) {
         error: "Failed to process sync request",
         details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

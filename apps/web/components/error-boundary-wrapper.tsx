@@ -9,7 +9,8 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { AlertTriangle, Home, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import React, { Component, type ReactNode } from "react";
+import type React from "react";
+import { Component, type ReactNode } from "react";
 
 interface ErrorBoundaryState {
   hasError: boolean;

@@ -13,6 +13,7 @@ export const venues = pgTable("venues", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   slug: text("slug").unique().notNull(),
+  ticketmasterId: text("ticketmaster_id").unique(),
   address: text("address"),
   city: text("city").notNull(),
   state: text("state"),

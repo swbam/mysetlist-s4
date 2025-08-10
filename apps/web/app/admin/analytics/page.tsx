@@ -1,3 +1,15 @@
+import { endOfDay, format, startOfDay, subDays } from "date-fns";
+import {
+  Calendar,
+  Download,
+  MapPin,
+  Music,
+  RefreshCw,
+  Star,
+  TrendingDown,
+  TrendingUp,
+  Users,
+} from "lucide-react";
 import {
   Badge,
   Button,
@@ -17,18 +29,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "~/components/ui-exports";
-import { endOfDay, format, startOfDay, subDays } from "date-fns";
-import {
-  Calendar,
-  Download,
-  MapPin,
-  Music,
-  RefreshCw,
-  Star,
-  TrendingDown,
-  TrendingUp,
-  Users,
-} from "lucide-react";
 import { createClient } from "~/lib/supabase/server";
 
 // Force dynamic rendering due to user-specific data fetching
@@ -66,7 +66,9 @@ export default async function AnalyticsPage() {
     { data: platformStats },
   ] = await Promise.all([
     // Basic counts
-    supabase.from("users").select("*", { count: "exact", head: true }),
+    supabase
+      .from("users")
+      .select("*", { count: "exact", head: true }),
     supabase.from("shows").select("*", { count: "exact", head: true }),
     supabase.from("artists").select("*", { count: "exact", head: true }),
     supabase.from("venues").select("*", { count: "exact", head: true }),

@@ -1,7 +1,7 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@repo/database";
 import { artists } from "@repo/database";
 import { eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 // import { UnifiedSyncService } from "../unified-pipeline/sync-service";
 
 export async function POST(request: NextRequest) {
@@ -55,11 +55,14 @@ export async function POST(request: NextRequest) {
 
     // Trigger full sync in the background via API
     // Don't await - let it run in the background
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/artist`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ artistId }),
-    }).catch((error) => {
+    fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/artist`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ artistId }),
+      },
+    ).catch((error) => {
       console.error("Background sync error:", error);
     });
 

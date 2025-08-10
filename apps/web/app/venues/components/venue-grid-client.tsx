@@ -1,11 +1,11 @@
 "use client";
 
+import { MapPin } from "lucide-react";
 import { VenueCard } from "~/components/cards/venue-card";
 import {
-  ResponsiveGrid,
   EmptyState,
+  ResponsiveGrid,
 } from "~/components/layout/responsive-grid";
-import { MapPin } from "lucide-react";
 
 interface Venue {
   id: string;

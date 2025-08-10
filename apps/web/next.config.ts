@@ -6,8 +6,8 @@ const nextConfig: NextConfig = {
 
   // Vercel deployment configuration
   output: "standalone",
-  
-  // Production optimization features  
+
+  // Production optimization features
   experimental: {
     // Enable React 19 optimizations
     ppr: false, // Partial Prerendering disabled for compatibility
@@ -16,7 +16,7 @@ const nextConfig: NextConfig = {
     // Enable optimizations for bundle size
     optimizePackageImports: [
       "@repo/design-system",
-      "@repo/database", 
+      "@repo/database",
       "@repo/auth",
       "@repo/external-apis",
       "lucide-react",
@@ -40,7 +40,7 @@ const nextConfig: NextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
-  
+
   // Image optimization
   images: {
     formats: ["image/webp", "image/avif"],
@@ -52,7 +52,7 @@ const nextConfig: NextConfig = {
         hostname: "i.scdn.co", // Spotify images
       },
       {
-        protocol: "https", 
+        protocol: "https",
         hostname: "s1.ticketm.net", // Ticketmaster images
       },
       {
@@ -72,7 +72,7 @@ const nextConfig: NextConfig = {
           message: /Critical dependency/,
         },
       ];
-      
+
       // Optimize chunks
       config.optimization = {
         ...config.optimization,
@@ -161,7 +161,7 @@ const nextConfig: NextConfig = {
         },
       };
     }
-    
+
     return config;
   },
 };

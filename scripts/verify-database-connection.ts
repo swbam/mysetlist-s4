@@ -3,11 +3,11 @@
  * Verify database connection and SSL settings
  */
 
+import { existsSync } from "fs";
 import { createClient } from "@supabase/supabase-js";
+import * as dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import * as dotenv from "dotenv";
-import { existsSync } from "fs";
 
 // Load environment variables
 const envPaths = [".env.local", ".env.production", ".env"];

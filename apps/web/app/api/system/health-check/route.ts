@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
 import { db } from "@repo/database";
 import { sql } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
@@ -36,9 +36,9 @@ export async function GET() {
     const { createServiceClient } = await import("~/lib/supabase/server");
     const supabase = await createServiceClient();
     const { error } = await supabase.from("artists").select("id").limit(1);
-    
+
     if (error) throw error;
-    
+
     checks.checks.supabase = {
       status: "healthy",
       message: "Supabase connection successful",
@@ -54,7 +54,8 @@ export async function GET() {
   try {
     // Check external APIs availability
     const apiChecks = {
-      spotify: !!process.env.SPOTIFY_CLIENT_ID && !!process.env.SPOTIFY_CLIENT_SECRET,
+      spotify:
+        !!process.env.SPOTIFY_CLIENT_ID && !!process.env.SPOTIFY_CLIENT_SECRET,
       ticketmaster: !!process.env.TICKETMASTER_API_KEY,
       setlistfm: !!process.env.SETLISTFM_API_KEY,
     };
@@ -94,9 +95,8 @@ export async function GET() {
     `);
 
     const counts = dataCounts[0];
-    const hasData = counts && 
-      Number(counts.artists) > 0 && 
-      Number(counts.songs) > 0;
+    const hasData =
+      counts && Number(counts.artists) > 0 && Number(counts.songs) > 0;
 
     if (hasData) {
       checks.checks.data = {

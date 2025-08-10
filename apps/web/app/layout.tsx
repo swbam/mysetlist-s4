@@ -1,7 +1,7 @@
 import { Toaster } from "@repo/design-system/components/ui/sonner";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import dynamic from "next/dynamic";
+import { Inter } from "next/font/google";
 import { ResponsiveHeader } from "../components/layout/responsive-header";
 import { ThemeProvider } from "../components/ui/theme-provider";
 import { AuthProvider } from "./providers/auth-provider";
@@ -12,7 +12,7 @@ import "@repo/design-system/styles/globals.css";
 import { Footer } from "./components/footer";
 
 // Optimize font loading
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
   display: "swap",
   preload: true,
@@ -38,7 +38,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossOrigin="anonymous"
+        />
         <link rel="dns-prefetch" href="https://i.scdn.co" />
         <link rel="dns-prefetch" href="https://s1.ticketm.net" />
       </head>

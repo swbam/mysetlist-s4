@@ -1,31 +1,31 @@
-'use client';
+"use client";
 
-import { useSyncStatus } from '~/hooks/use-sync-status';
-import { Loader2, Check, X, AlertCircle } from 'lucide-react';
-import { cn } from '@repo/design-system/lib/utils';
+import { cn } from "@repo/design-system/lib/utils";
+import { AlertCircle, Check, Loader2, X } from "lucide-react";
+import { useSyncStatus } from "~/hooks/use-sync-status";
 
 interface SyncStatusIndicatorProps {
   jobId: string | null;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   showDetails?: boolean;
   className?: string;
 }
 
-export function SyncStatusIndicator({ 
-  jobId, 
-  size = 'md',
+export function SyncStatusIndicator({
+  jobId,
+  size = "md",
   showDetails = false,
-  className 
+  className,
 }: SyncStatusIndicatorProps) {
-  const { 
-    job, 
-    progress, 
-    isLoading, 
-    error, 
-    currentStep, 
-    overallProgress, 
-    isCompleted, 
-    isFailed 
+  const {
+    job,
+    progress,
+    isLoading,
+    error,
+    currentStep,
+    overallProgress,
+    isCompleted,
+    isFailed,
   } = useSyncStatus(jobId);
 
   if (!jobId || isLoading) {
@@ -35,7 +35,9 @@ export function SyncStatusIndicator({
   if (isCompleted) {
     return (
       <div className={cn("flex items-center gap-2 text-green-600", className)}>
-        <Check className={`${size === 'sm' ? 'h-3 w-3' : size === 'md' ? 'h-4 w-4' : 'h-5 w-5'}`} />
+        <Check
+          className={`${size === "sm" ? "h-3 w-3" : size === "md" ? "h-4 w-4" : "h-5 w-5"}`}
+        />
         {showDetails && <span className="text-sm">Sync completed</span>}
       </div>
     );
@@ -44,7 +46,9 @@ export function SyncStatusIndicator({
   if (isFailed) {
     return (
       <div className={cn("flex items-center gap-2 text-red-600", className)}>
-        <X className={`${size === 'sm' ? 'h-3 w-3' : size === 'md' ? 'h-4 w-4' : 'h-5 w-5'}`} />
+        <X
+          className={`${size === "sm" ? "h-3 w-3" : size === "md" ? "h-4 w-4" : "h-5 w-5"}`}
+        />
         {showDetails && <span className="text-sm">Sync failed</span>}
       </div>
     );
@@ -53,7 +57,9 @@ export function SyncStatusIndicator({
   if (error) {
     return (
       <div className={cn("flex items-center gap-2 text-amber-600", className)}>
-        <AlertCircle className={`${size === 'sm' ? 'h-3 w-3' : size === 'md' ? 'h-4 w-4' : 'h-5 w-5'}`} />
+        <AlertCircle
+          className={`${size === "sm" ? "h-3 w-3" : size === "md" ? "h-4 w-4" : "h-5 w-5"}`}
+        />
         {showDetails && <span className="text-sm">Sync error</span>}
       </div>
     );
@@ -62,17 +68,21 @@ export function SyncStatusIndicator({
   // Currently syncing
   return (
     <div className={cn("flex items-center gap-2 text-blue-600", className)}>
-      <Loader2 className={`${size === 'sm' ? 'h-3 w-3' : size === 'md' ? 'h-4 w-4' : 'h-5 w-5'} animate-spin`} />
+      <Loader2
+        className={`${size === "sm" ? "h-3 w-3" : size === "md" ? "h-4 w-4" : "h-5 w-5"} animate-spin`}
+      />
       {showDetails && (
         <div className="flex flex-col gap-1">
           <span className="text-sm">
-            {currentStep?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Syncing...'}
+            {currentStep
+              ?.replace(/_/g, " ")
+              .replace(/\b\w/g, (l) => l.toUpperCase()) || "Syncing..."}
           </span>
           {overallProgress > 0 && (
             <div className="flex items-center gap-2">
               <div className="w-16 bg-gray-200 rounded-full h-1">
-                <div 
-                  className="bg-blue-600 h-1 rounded-full transition-all duration-300" 
+                <div
+                  className="bg-blue-600 h-1 rounded-full transition-all duration-300"
                   style={{ width: `${overallProgress}%` }}
                 />
               </div>
@@ -87,15 +97,15 @@ export function SyncStatusIndicator({
 
 // More detailed sync progress component for dedicated sync views
 export function SyncProgressDetails({ jobId }: { jobId: string | null }) {
-  const { 
-    job, 
-    progress, 
-    isLoading, 
-    error, 
-    currentStep, 
-    overallProgress, 
-    isCompleted, 
-    isFailed 
+  const {
+    job,
+    progress,
+    isLoading,
+    error,
+    currentStep,
+    overallProgress,
+    isCompleted,
+    isFailed,
   } = useSyncStatus(jobId);
 
   if (!jobId || isLoading) {
@@ -142,9 +152,7 @@ export function SyncProgressDetails({ jobId }: { jobId: string | null }) {
           <X className="h-4 w-4" />
           <span className="font-medium">Sync Failed</span>
         </div>
-        {job?.error && (
-          <p className="text-red-700 text-sm">{job.error}</p>
-        )}
+        {job?.error && <p className="text-red-700 text-sm">{job.error}</p>}
       </div>
     );
   }
@@ -155,35 +163,42 @@ export function SyncProgressDetails({ jobId }: { jobId: string | null }) {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-          <span className="font-medium text-blue-800">Importing Artist Data</span>
+          <span className="font-medium text-blue-800">
+            Importing Artist Data
+          </span>
         </div>
         {overallProgress > 0 && (
           <span className="text-sm text-blue-700">{overallProgress}%</span>
         )}
       </div>
-      
+
       {overallProgress > 0 && (
         <div className="w-full bg-blue-200 rounded-full h-2 mb-3">
-          <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+          <div
+            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
             style={{ width: `${overallProgress}%` }}
           />
         </div>
       )}
-      
+
       {currentStep && (
         <p className="text-blue-700 text-sm">
-          {currentStep.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+          {currentStep
+            .replace(/_/g, " ")
+            .replace(/\b\w/g, (l) => l.toUpperCase())}
         </p>
       )}
 
       {progress.length > 0 && (
         <div className="mt-3 space-y-1">
           {progress.slice(0, 3).map((step, index) => (
-            <div key={index} className="flex items-center gap-2 text-xs text-blue-600">
-              {step.status === 'completed' ? (
+            <div
+              key={index}
+              className="flex items-center gap-2 text-xs text-blue-600"
+            >
+              {step.status === "completed" ? (
                 <Check className="h-3 w-3" />
-              ) : step.status === 'failed' ? (
+              ) : step.status === "failed" ? (
                 <X className="h-3 w-3 text-red-500" />
               ) : (
                 <Loader2 className="h-3 w-3 animate-spin" />
