@@ -14,6 +14,8 @@ export async function GET(request: NextRequest) {
     // Only support 'all' and 'popular' filters now
     const actualFilter = filter === "following" ? "all" : filter;
 
+    const today = new Date().toISOString().split("T")[0] as string;
+
     // Build the query - simplified without following logic
     const upcomingShows = await db
       .select({
@@ -44,7 +46,7 @@ export async function GET(request: NextRequest) {
       .from(shows)
       .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
       .leftJoin(venues, eq(shows.venueId, venues.id))
-      .where(gte(shows.date, new Date().toISOString().split("T")[0]))
+      .where(gte(shows.date, today))
       .orderBy(
         actualFilter === "popular" ? artists.trendingScore : asc(shows.date),
       )
@@ -55,7 +57,7 @@ export async function GET(request: NextRequest) {
     const countResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(shows)
-      .where(gte(shows.date, new Date().toISOString().split("T")[0]!));
+      .where(gte(shows.date, today));
 
     const count = countResult[0]?.count || 0;
 

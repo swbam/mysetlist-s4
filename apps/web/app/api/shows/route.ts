@@ -1,6 +1,7 @@
 import { artists, db, showArtists, shows, venues } from "@repo/database";
 import { and, asc, desc, eq, gte, ilike, inArray, lte, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
+import { SQL } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,8 +26,44 @@ export async function GET(request: NextRequest) {
     const featured = searchParams.get("featured") === "true";
     const orderBy = searchParams.get("orderBy") || "date";
 
-    // Build base query with joins
-    let query = db
+    // Build dynamic filter conditions first
+    const conditions: SQL[] = [];
+    if (status) {
+      conditions.push(eq(shows.status, status));
+    }
+    if (artistId) {
+      conditions.push(eq(shows.headlinerArtistId, artistId));
+    }
+    if (venueId) {
+      conditions.push(eq(shows.venueId, venueId));
+    }
+    if (dateFrom) {
+      conditions.push(gte(shows.date, dateFrom));
+    }
+    if (dateTo) {
+      conditions.push(lte(shows.date, dateTo));
+    }
+    if (featured) {
+      conditions.push(eq(shows.isFeatured, true));
+    }
+    if (city) {
+      conditions.push(ilike(venues.city, `%${city}%`));
+    }
+    if (!status) {
+      conditions.push(gte(shows.date, new Date().toISOString().substring(0, 10)));
+    }
+
+    const whereClause = conditions.length ? and(...conditions) : sql`TRUE`;
+
+    // Decide ordering expression
+    const orderExpr = orderBy === "trending"
+      ? desc(shows.trendingScore)
+      : orderBy === "popularity"
+      ? desc(shows.viewCount)
+      : asc(shows.date);
+
+    // Compose final query in a single chain so Drizzle keeps full type
+    const query = db
       .select({
         id: shows.id,
         name: shows.name,
@@ -67,77 +104,22 @@ export async function GET(request: NextRequest) {
       })
       .from(shows)
       .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
-      .leftJoin(venues, eq(shows.venueId, venues.id));
-
-    // Apply filters
-    const conditions = [];
-
-    // Status filtering temporarily disabled due to enum type mismatch
-
-    if (artistId) {
-      conditions.push(eq(shows.headlinerArtistId, artistId as any));
-    }
-
-    if (venueId) {
-      conditions.push(eq(shows.venueId, venueId as any));
-    }
-
-    if (dateFrom) {
-      conditions.push(gte(shows.date, dateFrom));
-    }
-
-    if (dateTo) {
-      conditions.push(lte(shows.date, dateTo));
-    }
-
-    if (featured) {
-      conditions.push(eq(shows.isFeatured, true));
-    }
-
-    if (city) {
-      conditions.push(ilike(venues.city, `%${city}%`));
-    }
-
-    // Default to upcoming shows if no specific status filter
-    if (!status) {
-      conditions.push(
-        gte(shows.date, new Date().toISOString().substring(0, 10)),
-      );
-    }
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
-
-    // Apply ordering
-    switch (orderBy) {
-      case "trending":
-        query = query.orderBy(desc(shows.trendingScore));
-        break;
-      case "popularity":
-        query = query.orderBy(desc(shows.viewCount));
-        break;
-      default:
-        query = query.orderBy(asc(shows.date));
-        break;
-    }
-
-    // Apply pagination
-    query = query.limit(limit).offset(offset);
+      .leftJoin(venues, eq(shows.venueId, venues.id))
+      .where(whereClause)
+      .orderBy(orderExpr)
+      .limit(limit)
+      .offset(offset);
 
     // Execute query
     const showsData = await query;
 
     // Get total count for pagination
-    let countQuery = db
+    const countQuery = db
       .select({ count: sql<number>`count(*)` })
       .from(shows)
       .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
-      .leftJoin(venues, eq(shows.venueId, venues.id));
-
-    if (conditions.length > 0) {
-      countQuery = countQuery.where(and(...conditions));
-    }
+      .leftJoin(venues, eq(shows.venueId, venues.id))
+      .where(whereClause);
 
     const countResult = await countQuery;
     const totalCount = countResult[0]?.count || 0;
@@ -171,7 +153,7 @@ export async function GET(request: NextRequest) {
         if (!acc[sa.showId]) {
           acc[sa.showId] = [];
         }
-        acc[sa.showId].push({
+        acc[sa.showId]!.push({
           id: sa.id,
           artistId: sa.artistId,
           orderIndex: sa.orderIndex,
