@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     const songData = parsed.data;
 
     // Check if song already exists by Spotify ID or by title + artist
-    let existingSong = null;
+    let existingSong: typeof songs.$inferSelect | null = null;
     
     if (songData.spotifyId) {
       const existing = await db
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
         .where(eq(songs.spotifyId, songData.spotifyId))
         .limit(1);
       
-      existingSong = existing[0];
+      existingSong = existing[0] || null;
     }
     
     // If no Spotify ID match, try title + artist match
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
         
       existingSong = existing.find(song => 
         song.artist.toLowerCase() === songData.artist.toLowerCase()
-      );
+      ) || null;
     }
 
     if (existingSong) {
@@ -100,6 +100,13 @@ export async function POST(request: NextRequest) {
       .returning();
 
     const song = newSong[0];
+
+    if (!song) {
+      return NextResponse.json(
+        { error: "Failed to create song" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       song: {

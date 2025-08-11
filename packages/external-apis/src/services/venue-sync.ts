@@ -4,7 +4,7 @@ import {
   type TicketmasterVenue,
 } from "../clients/ticketmaster";
 import { db } from "../database";
-import { venues } from "../schema";
+import { venues } from "@repo/database";
 
 export class VenueSyncService {
   private ticketmasterClient: TicketmasterClient;

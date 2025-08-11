@@ -1,6 +1,6 @@
 import { SpotifyClient } from "../clients/spotify";
 import { db, eq } from "../database";
-import { artistSongs, artists, songs } from "../schema";
+import { artistSongs, artists, songs } from "@repo/database";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 
 export class ArtistSyncService {

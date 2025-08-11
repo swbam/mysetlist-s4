@@ -93,6 +93,13 @@ export async function POST(request: NextRequest) {
 
     const setlistSong = newSetlistSong[0];
 
+    if (!setlistSong) {
+      return NextResponse.json(
+        { error: "Failed to create setlist song" },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json({
       setlistSong: {
         id: setlistSong.id,

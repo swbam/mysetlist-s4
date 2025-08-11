@@ -5,7 +5,7 @@ import {
   type TicketmasterEvent,
 } from "../clients/ticketmaster";
 import { and, db, eq } from "../database";
-import { artists, showArtists, shows, venues } from "../schema";
+import { artists, showArtists, shows, venues } from "@repo/database";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 
 export class ShowSyncService {

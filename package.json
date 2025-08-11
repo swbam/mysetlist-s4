@@ -7,30 +7,25 @@
     "dev": "turbo dev",
     "build": "turbo build",
     "start": "cd apps/web && pnpm start",
-    
     "_commentQuality": "CODE QUALITY",
     "lint": "biome check --diagnostic-level=warning",
     "lint:fix": "biome check --write",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
-    
     "_commentDatabase": "DATABASE",
     "db:push": "cd packages/database && pnpm push",
     "db:generate": "cd packages/database && pnpm generate",
     "db:migrate": "cd packages/database && pnpm migrate",
     "db:studio": "cd packages/database && pnpm studio",
     "db:seed": "tsx scripts/seed-top-artists-direct.ts",
-    
     "_commentDataSync": "DATA SYNC",
     "sync:artists": "tsx scripts/sync-trending-artists.ts",
     "sync:popular": "tsx scripts/sync-popular-artists.ts",
     "sync:trending": "tsx scripts/initialize-trending-data.ts",
-    
     "_commentDeployment": "DEPLOYMENT",
     "deploy": "tsx scripts/deploy-all.ts",
     "deploy:preview": "vercel",
     "deploy:prod": "vercel --prod",
-    
     "_commentUtilities": "UTILITIES",
     "clean": "git clean -xdf node_modules .turbo .next",
     "check:env": "tsx scripts/check-env.ts",
@@ -44,6 +39,7 @@
     "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",
     "dotenv": "^16.6.1",
+    "node-fetch": "^2.7.0",
     "tsx": "^4.20.3",
     "turbo": "^2.5.3",
     "typescript": "^5.8.3",

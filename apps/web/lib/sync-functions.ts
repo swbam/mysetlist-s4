@@ -106,6 +106,7 @@ export async function triggerManualSync(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.CRON_SECRET || ""}`,
     },
     body: JSON.stringify({ type, limit, mode: "manual" }),
   });
@@ -113,6 +114,47 @@ export async function triggerManualSync(
   if (!response.ok) {
     const error = await response.text();
     throw new Error(`Failed to trigger sync: ${error}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Trigger trending calculation update
+ */
+export async function triggerTrendingUpdate() {
+  const response = await fetch(`${getAppUrl()}/api/cron/calculate-trending`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.CRON_SECRET || ""}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to trigger trending update: ${error}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Trigger artist data sync
+ */
+export async function triggerArtistSync(limit = 20, mode = "auto") {
+  const response = await fetch(`${getAppUrl()}/api/cron/sync-artist-data`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${process.env.CRON_SECRET || ""}`,
+    },
+    body: JSON.stringify({ limit, mode }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to trigger artist sync: ${error}`);
   }
 
   return response.json();

@@ -12,7 +12,7 @@ import {
   shows,
   songs,
   venues,
-} from "../schema";
+} from "@repo/database";
 
 export class SetlistSyncService {
   private setlistFmClient: SetlistFmClient;

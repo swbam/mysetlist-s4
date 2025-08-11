@@ -1,0 +1,63 @@
+# Files and patterns to ignore for Claude hooks
+# One pattern per line, supports wildcards
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+dist/
+build/
+out/
+
+# Generated files
+*.generated.ts
+*.generated.js
+*.d.ts
+tsconfig.tsbuildinfo
+
+# Minified files
+*.min.js
+*.min.css
+
+# Source maps
+*.map
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Supabase
+supabase/.temp/
+supabase/.branches/
+
+# Environment files
+.env*
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+docs/
+
+# Config files that shouldn't be linted
+*.json
+*.yaml
+*.yml
+*.toml

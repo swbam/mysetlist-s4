@@ -83,8 +83,9 @@ export async function getTrendingShows(
 
     // Transform shows to trending items with real artist and venue data
     const trendingShows = shows.map((show) => {
-      const artist = show.artists;
-      const venue = show.venues;
+      // Handle joined data - Supabase returns arrays for joins, take first element
+      const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
+      const venue = Array.isArray(show.venues) ? show.venues[0] : show.venues;
       
       return {
         id: show.id,
