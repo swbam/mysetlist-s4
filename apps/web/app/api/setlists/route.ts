@@ -27,12 +27,23 @@ export async function GET(request: NextRequest) {
         artist_id,
         created_at,
         updated_at,
-        vote_count,
         total_votes,
         type,
         is_locked,
         accuracy_score,
-        order_index
+        order_index,
+        shows (
+          id,
+          name,
+          date,
+          slug
+        ),
+        artists (
+          id,
+          name,
+          slug,
+          image_url
+        )
       `);
 
     // Apply filters using correct column names from schema
@@ -47,7 +58,7 @@ export async function GET(request: NextRequest) {
     // Add pagination and ordering
     const offset = (page - 1) * limit;
     query = query
-      .order("vote_count", { ascending: false })
+      .order("total_votes", { ascending: false })
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 

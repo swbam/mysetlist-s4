@@ -145,6 +145,13 @@ const HeaderContent = React.memo(() => {
             prefetch
             aria-label="MySetlist Home"
           >
+            <Image
+              src={Logo}
+              alt="MySetlist Logo"
+              width={32}
+              height={32}
+              className="h-8 w-8"
+            />
             <p className="whitespace-nowrap font-semibold text-base sm:text-lg">
               MySetlist
             </p>

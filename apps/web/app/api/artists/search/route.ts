@@ -13,8 +13,9 @@ interface ArtistResult {
   name: string;
   imageUrl?: string;
   genres?: string[];
-  source: "ticketmaster";
+  source: "ticketmaster" | "database";
   externalId: string;
+  popularity?: number;
 }
 
 export async function GET(request: NextRequest) {
@@ -29,97 +30,124 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ artists: [] });
     }
 
-    // Check if Ticketmaster API key is configured
-    const apiKey = process.env["TICKETMASTER_API_KEY"];
-    if (!apiKey) {
-      console.error("TICKETMASTER_API_KEY not configured");
-      return NextResponse.json(
-        {
-          error: "Search service not configured",
-          message: "Artist search is temporarily unavailable",
-        },
-        { status: 503 }, // Service Unavailable instead of 500
-      );
+    // HYBRID SEARCH: Search local database first for better relevance
+    const { createServiceClient } = await import("~/lib/supabase/server");
+    const supabase = createServiceClient();
+    
+    // Search local database artists first (prioritized results)
+    const { data: dbArtists, error: dbError } = await supabase
+      .from("artists")
+      .select("id, name, slug, image_url, genres, popularity")
+      .ilike("name", `%${query}%`)
+      .order("popularity", { ascending: false })
+      .order("name")
+      .limit(limit);
+
+    let artists: ArtistResult[] = [];
+
+    // Add database results first (highest priority)
+    if (dbArtists && !dbError) {
+      const dbResults: ArtistResult[] = dbArtists.map((artist) => {
+        let genres: string[] = [];
+        if (artist.genres) {
+          try {
+            genres = JSON.parse(artist.genres);
+          } catch (e) {
+            console.warn(`Invalid JSON in genres for artist ${artist.name}:`, artist.genres);
+            genres = [];
+          }
+        }
+        
+        return {
+          id: artist.id,
+          name: artist.name,
+          imageUrl: artist.image_url || undefined,
+          genres,
+          source: "database" as const,
+          externalId: artist.id,
+          popularity: artist.popularity || 0,
+        };
+      });
+      artists = dbResults;
+      console.log(`Found ${dbResults.length} local database artists`);
     }
 
-    try {
-      console.log("Calling Ticketmaster API with params:", {
-        keyword: query,
-        size: limit,
-        classificationName: "music",
-        sort: "relevance,desc"
-      });
+    // If we haven't reached the limit, supplement with Ticketmaster results
+    const remainingLimit = limit - artists.length;
+    if (remainingLimit > 0) {
+      const apiKey = process.env["TICKETMASTER_API_KEY"];
+      if (apiKey) {
+        try {
+          console.log("Supplementing with Ticketmaster API, remaining slots:", remainingLimit);
 
-      const ticketmasterResponse = await ticketmaster.searchAttractions({
-        keyword: query,
-        size: limit,
-        classificationName: "music",
-        sort: "relevance,desc",
-      });
+          const ticketmasterResponse = await ticketmaster.searchAttractions({
+            keyword: query,
+            size: remainingLimit,
+            classificationName: "music",
+            sort: "relevance,desc",
+          });
 
-      console.log("Ticketmaster response received:", {
-        hasEmbedded: !!ticketmasterResponse._embedded,
-        attractionCount: ticketmasterResponse._embedded?.attractions?.length || 0
-      });
+          const ticketmasterArtists = ticketmasterResponse._embedded?.attractions || [];
+          
+          // Filter out artists that are already in database results
+          const existingNames = artists.map(a => a.name.toLowerCase());
+          const newTicketmasterResults: ArtistResult[] = ticketmasterArtists
+            .filter((attraction: any) => 
+              !existingNames.includes(attraction.name.toLowerCase())
+            )
+            .map((attraction: any) => ({
+              id: `tm_${attraction.id}`,
+              name: attraction.name,
+              imageUrl: attraction.images?.[0]?.url || undefined,
+              genres: attraction.classifications
+                ?.map((c: any) => c.genre?.name)
+                .filter(Boolean) || [],
+              source: "ticketmaster" as const,
+              externalId: attraction.id,
+              popularity: 0,
+            }));
 
-      const ticketmasterArtists =
-        ticketmasterResponse._embedded?.attractions || [];
-
-      const artists: ArtistResult[] = ticketmasterArtists.map((attraction) => ({
-        id: attraction.id,
-        name: attraction.name,
-        imageUrl: attraction.images?.[0]?.url || undefined,
-        genres:
-          attraction.classifications
-            ?.map((c: any) => c.genre?.name)
-            .filter(Boolean) || [],
-        source: "ticketmaster" as const,
-        externalId: attraction.id,
-      }));
-
-      console.log(`Successfully processed ${artists.length} artists`);
-      return NextResponse.json({ artists });
-    } catch (error) {
-      console.error("Ticketmaster search failed:", error);
-      
-      // Differentiate between different types of API errors
-      if (error instanceof Error) {
-        if (error.message.includes('401') || error.message.includes('403')) {
-          return NextResponse.json(
-            {
-              error: "Search service authentication failed",
-              message: "Invalid API credentials",
-            },
-            { status: 503 },
-          );
-        } else if (error.message.includes('429')) {
-          return NextResponse.json(
-            {
-              error: "Search service rate limited",
-              message: "Please try again later",
-            },
-            { status: 429 },
-          );
-        } else if (error.message.includes('timeout')) {
-          return NextResponse.json(
-            {
-              error: "Search service timeout",
-              message: "Request timed out, please try again",
-            },
-            { status: 408 },
-          );
+          artists = [...artists, ...newTicketmasterResults];
+          console.log(`Added ${newTicketmasterResults.length} Ticketmaster results`);
+        } catch (error) {
+          console.error("Ticketmaster search failed, using database results only:", error);
         }
+      } else {
+        console.log("Ticketmaster API not configured, using database results only");
+      }
+    }
+
+    // Sort final results: database results first (by popularity), then external results
+    artists.sort((a, b) => {
+      // Database results first
+      if (a.source === "database" && b.source !== "database") return -1;
+      if (b.source === "database" && a.source !== "database") return 1;
+      
+      // Within database results, sort by popularity then name relevance
+      if (a.source === "database" && b.source === "database") {
+        const popularityDiff = (b.popularity || 0) - (a.popularity || 0);
+        if (popularityDiff !== 0) return popularityDiff;
       }
       
-      return NextResponse.json(
-        {
-          error: "Search service error",
-          message: error instanceof Error ? error.message : "Unknown error",
-          timestamp: new Date().toISOString()
-        },
-        { status: 503 },
-      );
-    }
+      // For name relevance, exact matches first, then starts-with, then contains
+      const queryLower = query.toLowerCase();
+      const aNameLower = a.name.toLowerCase();
+      const bNameLower = b.name.toLowerCase();
+      
+      const aExact = aNameLower === queryLower ? 1 : 0;
+      const bExact = bNameLower === queryLower ? 1 : 0;
+      if (aExact !== bExact) return bExact - aExact;
+      
+      const aStartsWith = aNameLower.startsWith(queryLower) ? 1 : 0;
+      const bStartsWith = bNameLower.startsWith(queryLower) ? 1 : 0;
+      if (aStartsWith !== bStartsWith) return bStartsWith - aStartsWith;
+      
+      return a.name.localeCompare(b.name);
+    });
+
+    console.log(`Returning ${artists.length} total artists, search relevance optimized`);
+    return NextResponse.json({ artists: artists.slice(0, limit) });
+    
   } catch (error) {
     console.error("Artist search error:", error);
     return NextResponse.json(
