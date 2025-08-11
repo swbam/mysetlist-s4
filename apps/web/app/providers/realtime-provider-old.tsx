@@ -138,7 +138,7 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
               Continue Without Realtime
             </button>
           </div>
-          {process.env.NODE_ENV === "development" && (
+          {process.env["NODE_ENV"] === "development" && (
             <details className="mt-4 text-left">
               <summary className="cursor-pointer text-xs text-muted-foreground">
                 Error details

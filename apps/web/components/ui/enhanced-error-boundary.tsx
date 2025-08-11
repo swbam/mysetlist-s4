@@ -57,7 +57,7 @@ const DefaultErrorFallback = ({
       <h3 className="mb-2 font-semibold text-lg">{title}</h3>
       <p className="mb-4 text-muted-foreground text-sm">{description}</p>
 
-      {process.env.NODE_ENV === "development" && (
+      {process.env["NODE_ENV"] === "development" && (
         <details className="mb-4 max-w-md">
           <summary className="cursor-pointer text-sm text-muted-foreground">
             Error details (development only)
@@ -112,12 +112,12 @@ export class EnhancedErrorBoundary extends React.Component<
     this.props.onError?.(error, errorInfo);
 
     // Log to console in development
-    if (process.env.NODE_ENV === "development") {
+    if (process.env["NODE_ENV"] === "development") {
       console.error("ErrorBoundary caught an error:", error, errorInfo);
     }
 
     // In production, you might want to log to an error reporting service
-    if (process.env.NODE_ENV === "production") {
+    if (process.env["NODE_ENV"] === "production") {
       // Example: logErrorToService(error, errorInfo);
     }
   }

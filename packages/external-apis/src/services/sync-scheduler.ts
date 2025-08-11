@@ -310,7 +310,7 @@ export class SyncScheduler {
 
     if (job.status === "failed") {
       job.status = "pending";
-      job.error = undefined;
+      delete job.error;
     }
     return true;
   }

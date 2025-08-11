@@ -134,14 +134,14 @@ export function SpotifySync() {
           {syncStatus === "idle" && (
             <Button
               onClick={
-                user?.app_metadata?.provider === "spotify"
+                user?.app_metadata?.["provider"] === "spotify"
                   ? handleSpotifySync
                   : connectToSpotify
               }
               disabled={isSyncing}
               className="w-full"
             >
-              {user?.app_metadata?.provider === "spotify"
+              {user?.app_metadata?.["provider"] === "spotify"
                 ? "Start Sync"
                 : "Connect Spotify"}
             </Button>

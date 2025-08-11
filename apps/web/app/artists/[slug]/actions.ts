@@ -74,7 +74,7 @@ const _getArtist = async (slug: string) => {
         try {
           // First search for the artist to see if it exists in external APIs
           const searchResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/search?q=${encodeURIComponent(slug.replace(/-/g, " "))}&limit=1`,
+            `${process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001"}/api/artists/search?q=${encodeURIComponent(slug.replace(/-/g, " "))}&limit=1`,
           );
 
           if (searchResponse.ok) {
@@ -86,7 +86,7 @@ const _getArtist = async (slug: string) => {
             if (externalArtist) {
               // Trigger import for this artist
               const importResponse = await fetch(
-                `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/import`,
+                `${process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001"}/api/artists/import`,
                 {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },

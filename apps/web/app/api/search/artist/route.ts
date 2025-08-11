@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
     const url = new URL(
       "https://app.ticketmaster.com/discovery/v2/attractions",
     );
-    url.searchParams.append("apikey", process.env.TICKETMASTER_API_KEY!);
+    url.searchParams.append("apikey", process.env["TICKETMASTER_API_KEY"]!);
     url.searchParams.append("keyword", q);
     url.searchParams.append("size", "20");
     url.searchParams.append("classificationName", "music"); // Filter for music attractions only

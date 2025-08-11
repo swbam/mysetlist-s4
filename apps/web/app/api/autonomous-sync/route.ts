@@ -9,7 +9,7 @@ import { type NextRequest, NextResponse } from "next/server";
  * Achieves 5x performance improvement through batch processing
  */
 
-const CRON_SECRET = process.env.CRON_SECRET;
+const CRON_SECRET = process.env["CRON_SECRET"];
 
 // Unified trending calculation (replaces 3 separate implementations)
 async function calculateTrendingBatch() {

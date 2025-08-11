@@ -314,7 +314,7 @@ export function useComponentPerformance(
     measureRenderTime: _measureRenderTime,
     metrics,
   } = usePerformanceMonitor({
-    debug: process.env.NODE_ENV === "development",
+    debug: process.env["NODE_ENV"] === "development",
   });
 
   const mountTimeRef = useRef<number>(0);
@@ -329,7 +329,7 @@ export function useComponentPerformance(
   useEffect(() => {
     renderCountRef.current += 1;
 
-    if (process.env.NODE_ENV === "development") {
+    if (process.env["NODE_ENV"] === "development") {
       console.log(
         `Component ${componentName} rendered #${renderCountRef.current}`,
       );
@@ -342,7 +342,7 @@ export function useComponentPerformance(
       operation();
       const duration = performance.now() - startTime;
 
-      if (process.env.NODE_ENV === "development") {
+      if (process.env["NODE_ENV"] === "development") {
         console.log(
           `${componentName} operation ${_operationName}: ${duration}ms`,
         );

@@ -6,7 +6,7 @@ import { keys as auth } from "@repo/auth/keys";
 import { keys as nextConfig } from "@repo/next-config/keys";
 
 export const env = createEnv({
-  extends: [...(process.env.SKIP_ENV_VALIDATION ? [] : [auth(), nextConfig()])],
+  extends: [...(process.env["SKIP_ENV_VALIDATION"] ? [] : [auth(), nextConfig()])],
   server: {
     // Authentication
     NEXTAUTH_URL: z.string().url().optional(),
@@ -120,65 +120,65 @@ export const env = createEnv({
 
   runtimeEnv: {
     // Server
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-    TICKETMASTER_API_KEY: process.env.TICKETMASTER_API_KEY,
-    SETLISTFM_API_KEY: process.env.SETLISTFM_API_KEY,
-    SETLIST_FM_API_KEY: process.env.SETLIST_FM_API_KEY,
-    CRON_SECRET: process.env.CRON_SECRET,
-    CSRF_SECRET: process.env.CSRF_SECRET,
-    ADMIN_API_KEY: process.env.ADMIN_API_KEY,
-    SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET,
-    RESEND_API_KEY: process.env.RESEND_API_KEY,
-    EMAIL_SYSTEM_TOKEN: process.env.EMAIL_SYSTEM_TOKEN,
-    ADMIN_USER_IDS: process.env.ADMIN_USER_IDS,
-    TICKETMASTER_WEBHOOK_SECRET: process.env.TICKETMASTER_WEBHOOK_SECRET,
-    SPOTIFY_WEBHOOK_SECRET: process.env.SPOTIFY_WEBHOOK_SECRET,
-    POSTHOG_API_KEY: process.env.POSTHOG_API_KEY,
-    SENTRY_ORG: process.env.SENTRY_ORG,
-    SENTRY_PROJECT: process.env.SENTRY_PROJECT,
-    BETTERSTACK_API_KEY: process.env.BETTERSTACK_API_KEY,
-    BETTERSTACK_URL: process.env.BETTERSTACK_URL,
-    FLAGSMITH_ENVIRONMENT_KEY: process.env.FLAGSMITH_ENVIRONMENT_KEY,
-    REDIS_URL: process.env.REDIS_URL,
-    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
-    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
-    EDGE_CONFIG: process.env.EDGE_CONFIG,
-    RATE_LIMIT_WINDOW_MS: process.env.RATE_LIMIT_WINDOW_MS,
-    RATE_LIMIT_MAX_REQUESTS: process.env.RATE_LIMIT_MAX_REQUESTS,
+    NEXTAUTH_URL: process.env["NEXTAUTH_URL"],
+    NEXTAUTH_SECRET: process.env["NEXTAUTH_SECRET"],
+    TICKETMASTER_API_KEY: process.env["TICKETMASTER_API_KEY"],
+    SETLISTFM_API_KEY: process.env["SETLISTFM_API_KEY"],
+    SETLIST_FM_API_KEY: process.env["SETLIST_FM_API_KEY"],
+    CRON_SECRET: process.env["CRON_SECRET"],
+    CSRF_SECRET: process.env["CSRF_SECRET"],
+    ADMIN_API_KEY: process.env["ADMIN_API_KEY"],
+    SUPABASE_JWT_SECRET: process.env["SUPABASE_JWT_SECRET"],
+    RESEND_API_KEY: process.env["RESEND_API_KEY"],
+    EMAIL_SYSTEM_TOKEN: process.env["EMAIL_SYSTEM_TOKEN"],
+    ADMIN_USER_IDS: process.env["ADMIN_USER_IDS"],
+    TICKETMASTER_WEBHOOK_SECRET: process.env["TICKETMASTER_WEBHOOK_SECRET"],
+    SPOTIFY_WEBHOOK_SECRET: process.env["SPOTIFY_WEBHOOK_SECRET"],
+    POSTHOG_API_KEY: process.env["POSTHOG_API_KEY"],
+    SENTRY_ORG: process.env["SENTRY_ORG"],
+    SENTRY_PROJECT: process.env["SENTRY_PROJECT"],
+    BETTERSTACK_API_KEY: process.env["BETTERSTACK_API_KEY"],
+    BETTERSTACK_URL: process.env["BETTERSTACK_URL"],
+    FLAGSMITH_ENVIRONMENT_KEY: process.env["FLAGSMITH_ENVIRONMENT_KEY"],
+    REDIS_URL: process.env["REDIS_URL"],
+    UPSTASH_REDIS_REST_URL: process.env["UPSTASH_REDIS_REST_URL"],
+    UPSTASH_REDIS_REST_TOKEN: process.env["UPSTASH_REDIS_REST_TOKEN"],
+    EDGE_CONFIG: process.env["EDGE_CONFIG"],
+    RATE_LIMIT_WINDOW_MS: process.env["RATE_LIMIT_WINDOW_MS"],
+    RATE_LIMIT_MAX_REQUESTS: process.env["RATE_LIMIT_MAX_REQUESTS"],
 
     // Client
-    NEXT_PUBLIC_DOCS_URL: process.env.NEXT_PUBLIC_DOCS_URL,
-    NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
-    NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
-    NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-    NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
-    NEXT_PUBLIC_VERCEL_ANALYTICS: process.env.NEXT_PUBLIC_VERCEL_ANALYTICS,
-    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    NEXT_PUBLIC_DOCS_URL: process.env["NEXT_PUBLIC_DOCS_URL"],
+    NEXT_PUBLIC_URL: process.env["NEXT_PUBLIC_URL"],
+    NEXT_PUBLIC_POSTHOG_KEY: process.env["NEXT_PUBLIC_POSTHOG_KEY"],
+    NEXT_PUBLIC_POSTHOG_HOST: process.env["NEXT_PUBLIC_POSTHOG_HOST"],
+    NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env["NEXT_PUBLIC_GA_MEASUREMENT_ID"],
+    NEXT_PUBLIC_VERCEL_ANALYTICS: process.env["NEXT_PUBLIC_VERCEL_ANALYTICS"],
+    NEXT_PUBLIC_SENTRY_DSN: process.env["NEXT_PUBLIC_SENTRY_DSN"],
     NEXT_PUBLIC_FLAGSMITH_ENVIRONMENT_KEY:
-      process.env.NEXT_PUBLIC_FLAGSMITH_ENVIRONMENT_KEY,
-    NEXT_PUBLIC_ENABLE_SPOTIFY: process.env.NEXT_PUBLIC_ENABLE_SPOTIFY,
-    NEXT_PUBLIC_ENABLE_REALTIME: process.env.NEXT_PUBLIC_ENABLE_REALTIME,
+      process.env["NEXT_PUBLIC_FLAGSMITH_ENVIRONMENT_KEY"],
+    NEXT_PUBLIC_ENABLE_SPOTIFY: process.env["NEXT_PUBLIC_ENABLE_SPOTIFY"],
+    NEXT_PUBLIC_ENABLE_REALTIME: process.env["NEXT_PUBLIC_ENABLE_REALTIME"],
     NEXT_PUBLIC_ENABLE_PUSH_NOTIFICATIONS:
-      process.env.NEXT_PUBLIC_ENABLE_PUSH_NOTIFICATIONS,
+      process.env["NEXT_PUBLIC_ENABLE_PUSH_NOTIFICATIONS"],
     NEXT_PUBLIC_ENABLE_ADVANCED_SEARCH:
-      process.env.NEXT_PUBLIC_ENABLE_ADVANCED_SEARCH,
+      process.env["NEXT_PUBLIC_ENABLE_ADVANCED_SEARCH"],
     NEXT_PUBLIC_ENABLE_USER_GENERATED_CONTENT:
-      process.env.NEXT_PUBLIC_ENABLE_USER_GENERATED_CONTENT,
-    NEXT_PUBLIC_ENABLE_ANALYTICS: process.env.NEXT_PUBLIC_ENABLE_ANALYTICS,
+      process.env["NEXT_PUBLIC_ENABLE_USER_GENERATED_CONTENT"],
+    NEXT_PUBLIC_ENABLE_ANALYTICS: process.env["NEXT_PUBLIC_ENABLE_ANALYTICS"],
     NEXT_PUBLIC_ENABLE_PERFORMANCE_MONITORING:
-      process.env.NEXT_PUBLIC_ENABLE_PERFORMANCE_MONITORING,
-    NEXT_PUBLIC_ASSET_PREFIX: process.env.NEXT_PUBLIC_ASSET_PREFIX,
-    NEXT_PUBLIC_LOG_LEVEL: process.env.NEXT_PUBLIC_LOG_LEVEL,
-    NEXT_PUBLIC_DEBUG_MODE: process.env.NEXT_PUBLIC_DEBUG_MODE,
+      process.env["NEXT_PUBLIC_ENABLE_PERFORMANCE_MONITORING"],
+    NEXT_PUBLIC_ASSET_PREFIX: process.env["NEXT_PUBLIC_ASSET_PREFIX"],
+    NEXT_PUBLIC_LOG_LEVEL: process.env["NEXT_PUBLIC_LOG_LEVEL"],
+    NEXT_PUBLIC_DEBUG_MODE: process.env["NEXT_PUBLIC_DEBUG_MODE"],
   },
 
-  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+  skipValidation: !!process.env["SKIP_ENV_VALIDATION"],
 });
 
 // Server-side environment checks (only access on server-side)
-export const isDevelopment = process.env.NODE_ENV === "development";
-export const isProduction = process.env.NODE_ENV === "production";
+export const isDevelopment = process.env["NODE_ENV"] === "development";
+export const isProduction = process.env["NODE_ENV"] === "production";
 
 // Client-safe performance configurations (only using client-side variables)
 export const performanceConfig = {

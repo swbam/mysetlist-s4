@@ -75,7 +75,7 @@ function replacementForConsoleError(line: string): string {
     const content = match[1];
     return line.replace(
       /console\.error\s*\([^)]*\);?/,
-      `// Use Sentry for production error logging\n    if (process.env.NODE_ENV === 'production') {\n      // Sentry will capture this automatically via instrumentation\n    } else {\n      console.error(${content});\n    }`,
+      `// Use Sentry for production error logging\n    if (process.env["NODE_ENV"] === 'production') {\n      // Sentry will capture this automatically via instrumentation\n    } else {\n      console.error(${content});\n    }`,
     );
   }
 
@@ -132,7 +132,7 @@ function processFile(filePath: string): ConsoleFix[] {
       if (match) {
         const content = match[1];
         const indentation = line.match(/^\s*/)?.[0] || "";
-        const fixed = `${indentation}// Development-only warning\n${indentation}if (process.env.NODE_ENV === 'development') {\n${indentation}  console.warn(${content});\n${indentation}}`;
+        const fixed = `${indentation}// Development-only warning\n${indentation}if (process.env["NODE_ENV"] === 'development') {\n${indentation}  console.warn(${content});\n${indentation}}`;
 
         fixes.push({
           filePath,

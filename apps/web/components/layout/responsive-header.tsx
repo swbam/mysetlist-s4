@@ -288,7 +288,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                     >
                       <Avatar className="h-8 w-8">
                         <AvatarImage
-                          src={user.user_metadata?.avatar_url}
+                          src={user.user_metadata?.["avatar_url"]}
                           alt={user.email || ""}
                         />
                         <AvatarFallback>
@@ -301,7 +301,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                     <div className="flex items-center justify-start gap-2 p-2">
                       <div className="flex flex-col space-y-1 leading-none">
                         <p className="font-medium">
-                          {user.user_metadata?.full_name || "User"}
+                          {user.user_metadata?.["full_name"] || "User"}
                         </p>
                         <p className="w-[200px] truncate text-muted-foreground text-sm">
                           {user.email}
@@ -452,7 +452,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                   <div className="flex items-center space-x-3 px-4">
                     <Avatar className="h-10 w-10">
                       <AvatarImage
-                        src={user.user_metadata?.avatar_url}
+                        src={user.user_metadata?.["avatar_url"]}
                         alt={user.email || ""}
                       />
                       <AvatarFallback>
@@ -461,7 +461,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-base">
-                        {user.user_metadata?.full_name || "User"}
+                        {user.user_metadata?.["full_name"] || "User"}
                       </p>
                       <p className="text-muted-foreground text-sm truncate">
                         {user.email}

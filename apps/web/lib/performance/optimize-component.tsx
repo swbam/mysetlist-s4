@@ -67,7 +67,7 @@ export function PerformanceWrapper({
   threshold = 16, // One frame at 60fps
   children,
 }: PerformanceWrapperProps) {
-  if (process.env.NODE_ENV === "production") {
+  if (process.env["NODE_ENV"] === "production") {
     return <>{children}</>;
   }
 
@@ -127,7 +127,7 @@ export function optimizeComponent<P extends object>(
   OptimizedComponent = withMemo(Component, options?.propsComparator);
 
   // Apply performance tracking if requested
-  if (options?.trackPerformance && process.env.NODE_ENV !== "production") {
+  if (options?.trackPerformance && process.env["NODE_ENV"] !== "production") {
     OptimizedComponent = withPerformanceTracking(
       OptimizedComponent,
       options.componentName,

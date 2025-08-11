@@ -62,7 +62,7 @@ async function main() {
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
             Authorization: `Basic ${Buffer.from(
-              `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`,
+              `${process.env["SPOTIFY_CLIENT_ID"]}:${process.env["SPOTIFY_CLIENT_SECRET"]}`,
             ).toString("base64")}`,
           },
           body: "grant_type=client_credentials",
@@ -81,7 +81,7 @@ async function main() {
     // Test Ticketmaster
     try {
       const tmResponse = await fetch(
-        `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${process.env.TICKETMASTER_API_KEY}&size=1`,
+        `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${process.env["TICKETMASTER_API_KEY"]}&size=1`,
       );
 
       if (tmResponse.ok) {

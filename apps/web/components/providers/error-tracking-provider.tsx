@@ -86,7 +86,7 @@ export function ErrorTrackingProvider({
         MonitoringService.trackError(error, context);
 
         // Log in development
-        if (process.env.NODE_ENV === "development") {
+        if (process.env["NODE_ENV"] === "development") {
           console.group("🚨 Error Tracked");
           console.error("Error:", error);
           console.log("Context:", context);
@@ -117,7 +117,7 @@ export function ErrorTrackingProvider({
         // Track in monitoring service
         MonitoringService.trackUserAction(action, userId, metadata);
 
-        if (process.env.NODE_ENV === "development") {
+        if (process.env["NODE_ENV"] === "development") {
           console.log("👤 User Action Tracked:", action, metadata);
         }
       } catch (error) {
@@ -155,7 +155,7 @@ export function ErrorTrackingProvider({
           });
         }
 
-        if (process.env.NODE_ENV === "development") {
+        if (process.env["NODE_ENV"] === "development") {
           console.log(
             "⚡ Performance Tracked:",
             operation,
@@ -199,7 +199,7 @@ export function ErrorTrackingProvider({
           },
         });
 
-        if (process.env.NODE_ENV === "development") {
+        if (process.env["NODE_ENV"] === "development") {
           console.log("👤 User Context Set:", {
             id: user.id,
             email: user.email,
@@ -224,7 +224,7 @@ export function ErrorTrackingProvider({
         category: "auth",
       });
 
-      if (process.env.NODE_ENV === "development") {
+      if (process.env["NODE_ENV"] === "development") {
         console.log("👤 User Context Cleared");
       }
     } catch (error) {
@@ -240,7 +240,7 @@ export function ErrorTrackingProvider({
           timestamp: new Date().toISOString(),
         });
 
-        if (process.env.NODE_ENV === "development") {
+        if (process.env["NODE_ENV"] === "development") {
           console.log(`📝 Custom Context Added (${key}):`, data);
         }
       } catch (error) {
@@ -273,7 +273,7 @@ export function ErrorTrackingProvider({
           },
         });
 
-        if (process.env.NODE_ENV === "development") {
+        if (process.env["NODE_ENV"] === "development") {
           console.log("📄 Page View Tracked:", path, metadata);
         }
       } catch (error) {

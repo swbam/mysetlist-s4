@@ -59,10 +59,10 @@ validatePackage("@repo/next-config", () => {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  if (!process.env.NEXT_PUBLIC_APP_URL) {
+  if (!process.env["NEXT_PUBLIC_APP_URL"]) {
     errors.push("NEXT_PUBLIC_APP_URL is required");
   }
-  if (!process.env.NEXT_PUBLIC_WEB_URL) {
+  if (!process.env["NEXT_PUBLIC_WEB_URL"]) {
     errors.push("NEXT_PUBLIC_WEB_URL is required");
   }
 
@@ -74,18 +74,18 @@ validatePackage("@repo/database", () => {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  if (!process.env.DATABASE_URL) {
+  if (!process.env["DATABASE_URL"]) {
     errors.push("DATABASE_URL is required for database connections");
   }
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  if (!process.env["NEXT_PUBLIC_SUPABASE_URL"]) {
     errors.push("NEXT_PUBLIC_SUPABASE_URL is required for Supabase client");
   }
-  if (!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+  if (!process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]) {
     errors.push(
       "NEXT_PUBLIC_SUPABASE_ANON_KEY is required for Supabase client",
     );
   }
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
     errors.push(
       "SUPABASE_SERVICE_ROLE_KEY is required for server-side operations",
     );
@@ -99,22 +99,22 @@ validatePackage("@repo/auth", () => {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  if (!process.env.DATABASE_URL) {
+  if (!process.env["DATABASE_URL"]) {
     errors.push("DATABASE_URL is required for auth");
   }
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  if (!process.env["NEXT_PUBLIC_SUPABASE_URL"]) {
     errors.push("NEXT_PUBLIC_SUPABASE_URL is required for auth client");
   }
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  if (!process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
     errors.push("SUPABASE_SERVICE_ROLE_KEY is required for auth operations");
   }
 
-  if (!process.env.SPOTIFY_CLIENT_SECRET) {
+  if (!process.env["SPOTIFY_CLIENT_SECRET"]) {
     warnings.push(
       "SPOTIFY_CLIENT_SECRET not set - Spotify OAuth will not work",
     );
   }
-  if (!process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID) {
+  if (!process.env["NEXT_PUBLIC_SPOTIFY_CLIENT_ID"]) {
     warnings.push(
       "NEXT_PUBLIC_SPOTIFY_CLIENT_ID not set - Spotify OAuth will not work",
     );
@@ -128,20 +128,20 @@ validatePackage("@repo/external-apis", () => {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  if (!process.env.SPOTIFY_CLIENT_SECRET) {
+  if (!process.env["SPOTIFY_CLIENT_SECRET"]) {
     warnings.push("SPOTIFY_CLIENT_SECRET not set - Spotify API will not work");
   }
-  if (!process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID) {
+  if (!process.env["NEXT_PUBLIC_SPOTIFY_CLIENT_ID"]) {
     warnings.push(
       "NEXT_PUBLIC_SPOTIFY_CLIENT_ID not set - Spotify API will not work",
     );
   }
-  if (!process.env.TICKETMASTER_API_KEY) {
+  if (!process.env["TICKETMASTER_API_KEY"]) {
     warnings.push(
       "TICKETMASTER_API_KEY not set - Ticketmaster API will not work",
     );
   }
-  if (!process.env.SETLIST_FM_API_KEY) {
+  if (!process.env["SETLIST_FM_API_KEY"]) {
     warnings.push("SETLIST_FM_API_KEY not set - SetlistFM API will not work");
   }
 
@@ -153,10 +153,10 @@ validatePackage("@repo/observability", () => {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  if (!process.env.NEXT_PUBLIC_SENTRY_DSN && !process.env.SENTRY_DSN) {
+  if (!process.env["NEXT_PUBLIC_SENTRY_DSN"] && !process.env["SENTRY_DSN"]) {
     warnings.push("NEXT_PUBLIC_SENTRY_DSN not set - Error monitoring disabled");
   }
-  if (!process.env.BETTERSTACK_API_KEY) {
+  if (!process.env["BETTERSTACK_API_KEY"]) {
     warnings.push(
       "BETTERSTACK_API_KEY not set - BetterStack monitoring disabled",
     );
@@ -170,7 +170,7 @@ validatePackage("@repo/email", () => {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  if (!process.env.RESEND_API_KEY) {
+  if (!process.env["RESEND_API_KEY"]) {
     warnings.push("RESEND_API_KEY not set - Email functionality disabled");
   }
 
@@ -182,7 +182,7 @@ validatePackage("@repo/feature-flags", () => {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  if (!process.env.FLAGSMITH_ENVIRONMENT_KEY) {
+  if (!process.env["FLAGSMITH_ENVIRONMENT_KEY"]) {
     warnings.push(
       "FLAGSMITH_ENVIRONMENT_KEY not set - Feature flags will use defaults",
     );
@@ -196,7 +196,7 @@ validatePackage("@repo/rate-limit", () => {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  if (!process.env.REDIS_URL && !process.env.UPSTASH_REDIS_REST_URL) {
+  if (!process.env["REDIS_URL"] && !process.env["UPSTASH_REDIS_REST_URL"]) {
     warnings.push(
       "Redis configuration missing - Rate limiting will use memory store",
     );
@@ -210,9 +210,9 @@ validatePackage("@repo/security", () => {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  if (!process.env.NEXTAUTH_SECRET) {
+  if (!process.env["NEXTAUTH_SECRET"]) {
     errors.push("NEXTAUTH_SECRET is required for session encryption");
-  } else if (process.env.NEXTAUTH_SECRET.length < 32) {
+  } else if (process.env["NEXTAUTH_SECRET"].length < 32) {
     errors.push("NEXTAUTH_SECRET must be at least 32 characters");
   }
 
@@ -233,7 +233,7 @@ validatePackage("@repo/webhooks", () => {
   const errors: string[] = [];
   const warnings: string[] = [];
 
-  if (!process.env.TICKETMASTER_WEBHOOK_SECRET) {
+  if (!process.env["TICKETMASTER_WEBHOOK_SECRET"]) {
     warnings.push(
       "TICKETMASTER_WEBHOOK_SECRET not set - Ticketmaster webhooks disabled",
     );

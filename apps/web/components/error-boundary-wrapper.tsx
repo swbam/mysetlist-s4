@@ -90,7 +90,7 @@ export class ErrorBoundaryWrapper extends Component<
                 again.
               </p>
 
-              {process.env.NODE_ENV === "development" && this.state.error && (
+              {process.env["NODE_ENV"] === "development" && this.state.error && (
                 <details className="text-left text-xs">
                   <summary className="cursor-pointer text-muted-foreground hover:text-foreground">
                     Error Details (Development)

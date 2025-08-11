@@ -23,9 +23,9 @@ interface ConnectionTest {
 }
 
 async function testSupabaseConnection(): Promise<boolean> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = process.env["NEXT_PUBLIC_SUPABASE_URL"];
+  const anonKey = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
+  const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"];
 
   if (!url || !anonKey) {
     console.log("❌ Missing Supabase credentials");
@@ -74,7 +74,7 @@ async function testSupabaseConnection(): Promise<boolean> {
 }
 
 async function testDirectDatabaseConnection(): Promise<boolean> {
-  const databaseUrl = process.env.DATABASE_URL;
+  const databaseUrl = process.env["DATABASE_URL"];
 
   if (!databaseUrl) {
     console.log("❌ DATABASE_URL not set");
@@ -135,7 +135,7 @@ async function testDirectDatabaseConnection(): Promise<boolean> {
 }
 
 async function testDrizzleConnection(): Promise<boolean> {
-  const databaseUrl = process.env.DATABASE_URL;
+  const databaseUrl = process.env["DATABASE_URL"];
 
   if (!databaseUrl) {
     return false;
@@ -163,7 +163,7 @@ async function testDrizzleConnection(): Promise<boolean> {
 }
 
 async function checkDatabaseSchema(): Promise<boolean> {
-  const databaseUrl = process.env.DATABASE_URL;
+  const databaseUrl = process.env["DATABASE_URL"];
 
   if (!databaseUrl) {
     return false;

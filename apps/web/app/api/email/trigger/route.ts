@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     const { event, data, systemToken } = body;
 
     // Validate system token for automated triggers
-    if (systemToken !== process.env.EMAIL_SYSTEM_TOKEN) {
+    if (systemToken !== process.env["EMAIL_SYSTEM_TOKEN"]) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -412,7 +412,7 @@ export async function POST(request: NextRequest) {
                   ...emailData,
                   recipients: [recipient],
                   data: personalizedData,
-                  systemToken: process.env.EMAIL_SYSTEM_TOKEN,
+                  systemToken: process.env["EMAIL_SYSTEM_TOKEN"],
                 }),
               },
             );
@@ -436,7 +436,7 @@ export async function POST(request: NextRequest) {
               },
               body: JSON.stringify({
                 ...emailData,
-                systemToken: process.env.EMAIL_SYSTEM_TOKEN,
+                systemToken: process.env["EMAIL_SYSTEM_TOKEN"],
               }),
             },
           );

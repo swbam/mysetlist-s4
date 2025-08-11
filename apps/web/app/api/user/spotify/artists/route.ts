@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user has Spotify connected
-    if (user.app_metadata?.provider !== "spotify") {
+    if (user.app_metadata?.["provider"] !== "spotify") {
       return NextResponse.json(
         { error: "Spotify account not connected" },
         { status: 400 },
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get Spotify access token (would come from OAuth in production)
-    const accessToken = user.app_metadata?.provider_token || "mock_token";
+    const accessToken = user.app_metadata?.["provider_token"] || "mock_token";
 
     // Fetch user's followed artists from Spotify
     const spotifyData = await getSpotifyFollowedArtists(accessToken);
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check Spotify connection status
-    const isSpotifyConnected = user.app_metadata?.provider === "spotify";
+    const isSpotifyConnected = user.app_metadata?.["provider"] === "spotify";
 
     return NextResponse.json({
       isSpotifyConnected,

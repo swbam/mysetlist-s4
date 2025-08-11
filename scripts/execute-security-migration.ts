@@ -13,8 +13,8 @@ import { config } from "dotenv";
 // Load environment variables
 config({ path: join(process.cwd(), ".env.local") });
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env["NEXT_PUBLIC_SUPABASE_URL"];
+const supabaseServiceRoleKey = process.env["SUPABASE_SERVICE_ROLE_KEY"];
 
 if (!supabaseUrl || !supabaseServiceRoleKey) {
   console.error("❌ Missing required environment variables:");

@@ -2,7 +2,7 @@ import { TicketmasterClient } from "@repo/external-apis";
 import { type NextRequest, NextResponse } from "next/server";
 
 const ticketmaster = new TicketmasterClient({
-  apiKey: process.env.TICKETMASTER_API_KEY!,
+  apiKey: process.env["TICKETMASTER_API_KEY"]!,
 });
 
 export const dynamic = "force-dynamic";
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    if (!process.env.TICKETMASTER_API_KEY) {
+    if (!process.env["TICKETMASTER_API_KEY"]) {
       return NextResponse.json(
         {
           error: "Ticketmaster API key not configured",

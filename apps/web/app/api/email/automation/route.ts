@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 function isValidAutomationRequest(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
   const automationSecret =
-    process.env.EMAIL_AUTOMATION_SECRET || process.env.CRON_SECRET;
+    process.env["EMAIL_AUTOMATION_SECRET"] || process.env["CRON_SECRET"];
 
   if (!automationSecret) {
     return false;

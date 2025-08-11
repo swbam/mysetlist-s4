@@ -85,7 +85,7 @@ export class ErrorBoundary extends Component<
     }
 
     // Development logging
-    if (process.env.NODE_ENV === "development") {
+    if (process.env["NODE_ENV"] === "development") {
       console.group("🚨 React Error Boundary");
       console.error("Error:", error);
       console.error("Error Info:", errorInfo);
@@ -235,7 +235,7 @@ export class ErrorBoundary extends Component<
                 </Button>
               </div>
 
-              {process.env.NODE_ENV === "development" && error && (
+              {process.env["NODE_ENV"] === "development" && error && (
                 <details className="mt-4">
                   <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
                     Developer Details
@@ -277,7 +277,7 @@ interface WithErrorBoundaryProps {
 export function WithErrorBoundary({
   children,
   onError,
-  showErrorDetails = process.env.NODE_ENV === "development",
+  showErrorDetails = process.env["NODE_ENV"] === "development",
 }: WithErrorBoundaryProps) {
   return (
     <ErrorBoundary

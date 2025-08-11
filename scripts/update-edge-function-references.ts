@@ -65,7 +65,7 @@ function getAppUrl() {
     return '';
   }
   // Server-side
-  return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3001';
+  return process.env["NEXT_PUBLIC_APP_URL"] || 'http://localhost:3001';
 }
 
 /**

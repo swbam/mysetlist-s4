@@ -7,8 +7,8 @@ import { config } from "dotenv";
 config({ path: resolve(process.cwd(), ".env.local") });
 config({ path: resolve(process.cwd(), ".env") });
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
-const CRON_SECRET = process.env.CRON_SECRET;
+const APP_URL = process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
+const CRON_SECRET = process.env["CRON_SECRET"];
 
 interface SyncOptions {
   endpoint: string;

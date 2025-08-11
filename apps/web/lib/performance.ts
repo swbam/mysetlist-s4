@@ -45,7 +45,7 @@ function getMetricRating(
 // Send metrics to analytics endpoint
 async function sendToAnalytics(metric: Metric) {
   // Only send in production
-  if (process.env.NODE_ENV !== "production") {
+  if (process.env["NODE_ENV"] !== "production") {
     return;
   }
 
@@ -143,7 +143,7 @@ export const performanceUtils = {
         const entries = performance.getEntriesByName(name, "measure");
         const lastEntry = entries.at(-1);
 
-        if (lastEntry && process.env.NODE_ENV === "development") {
+        if (lastEntry && process.env["NODE_ENV"] === "development") {
         }
 
         return lastEntry?.duration;
@@ -178,11 +178,11 @@ export const performanceUtils = {
 
   // Track custom metrics
   trackMetric(name: string, value: number, unit = "ms") {
-    if (process.env.NODE_ENV === "development") {
+    if (process.env["NODE_ENV"] === "development") {
     }
 
     // Send to analytics in production
-    if (process.env.NODE_ENV === "production" && navigator.sendBeacon) {
+    if (process.env["NODE_ENV"] === "production" && navigator.sendBeacon) {
       const data = {
         name,
         value,

@@ -59,7 +59,7 @@ export const authConfig = {
   session: {
     cookieName: "mysetlist-auth",
     maxAge: 7 * 24 * 60 * 60, // 7 days in seconds
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env["NODE_ENV"] === "production",
     sameSite: "lax" as const,
   },
 

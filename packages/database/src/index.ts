@@ -17,8 +17,8 @@ try {
 // Use fallback DATABASE_URL if not available from env
 if (!databaseUrl) {
   databaseUrl =
-    process.env.DATABASE_URL ||
-    process.env.DIRECT_URL ||
+    process.env["DATABASE_URL"] ||
+    process.env["DIRECT_URL"] ||
     "postgresql://postgres.yzwkimtdaabyjbpykquu:Bambseth1590@aws-0-us-east-1.pooler.supabase.com:6543/postgres";
 }
 
@@ -39,7 +39,7 @@ try {
       prepare: false, // disable prepared statements for Supabase pooler
     });
 
-  if (process.env.NODE_ENV !== "production") {
+  if (process.env["NODE_ENV"] !== "production") {
     globalForDrizzle.client = client;
   }
 } catch (error) {
@@ -50,7 +50,7 @@ try {
 // Create drizzle instance
 export const db = globalForDrizzle.db ?? drizzle(client, { schema });
 
-if (process.env.NODE_ENV !== "production") globalForDrizzle.db = db;
+if (process.env["NODE_ENV"] !== "production") globalForDrizzle.db = db;
 
 // Export a function to test the connection
 export async function testConnection() {

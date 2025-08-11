@@ -5,11 +5,11 @@ export async function GET() {
     status: "checking",
     timestamp: new Date().toISOString(),
     environment: {
-      NODE_ENV: process.env.NODE_ENV,
-      hasDbUrl: !!process.env.DATABASE_URL,
-      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-      hasSupabaseAnon: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-      hasSupabaseService: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+      NODE_ENV: process.env["NODE_ENV"],
+      hasDbUrl: !!process.env["DATABASE_URL"],
+      hasSupabaseUrl: !!process.env["NEXT_PUBLIC_SUPABASE_URL"],
+      hasSupabaseAnon: !!process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"],
+      hasSupabaseService: !!process.env["SUPABASE_SERVICE_ROLE_KEY"],
     },
     database: {
       connected: false,
@@ -32,7 +32,7 @@ export async function GET() {
     }
 
     // Log db properties for debugging
-    if (process.env.NODE_ENV === "development") {
+    if (process.env["NODE_ENV"] === "development") {
       diagnostics.dbDebug = {
         type: typeof db,
         hasExecute: "execute" in db,
@@ -64,7 +64,7 @@ export async function GET() {
       code: error.code,
       detail: error.detail,
       hint: error.hint,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
+      stack: process.env["NODE_ENV"] === "development" ? error.stack : undefined,
     };
 
     // Check for specific error types

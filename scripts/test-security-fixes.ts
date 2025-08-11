@@ -9,9 +9,9 @@ import { config } from "dotenv";
 
 config({ path: ".env.local" });
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseUrl = process.env["NEXT_PUBLIC_SUPABASE_URL"]!;
+const supabaseAnonKey = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]!;
+const supabaseServiceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]!;
 
 // Create different client types for testing
 const anonClient = createClient(supabaseUrl, supabaseAnonKey);

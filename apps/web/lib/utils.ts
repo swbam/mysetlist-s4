@@ -62,18 +62,18 @@ export function parseGenres(
  */
 export function getBaseUrl(): string {
   // Check for explicitly set URL first
-  if (process.env.NEXT_PUBLIC_URL) {
-    return process.env.NEXT_PUBLIC_URL;
+  if (process.env["NEXT_PUBLIC_URL"]) {
+    return process.env["NEXT_PUBLIC_URL"];
   }
 
   // Production
-  if (process.env.NODE_ENV === "production") {
-    if (process.env.VERCEL_ENV === "production") {
+  if (process.env["NODE_ENV"] === "production") {
+    if (process.env["VERCEL_ENV"] === "production") {
       return "https://mysetlist-sonnet.vercel.app";
     }
     // Development/preview deployments on Vercel
-    if (process.env.VERCEL_URL) {
-      return `https://${process.env.VERCEL_URL}`;
+    if (process.env["VERCEL_URL"]) {
+      return `https://${process.env["VERCEL_URL"]}`;
     }
     // Fallback for production builds running locally
     return "http://localhost:3001";

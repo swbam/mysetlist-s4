@@ -108,7 +108,7 @@ export async function withCache<T>(
     const cached = cache.get(cacheKey);
     if (cached !== undefined) {
       // Track cache hit for monitoring
-      if (process.env.NODE_ENV === "development") {
+      if (process.env["NODE_ENV"] === "development") {
       }
       return cached;
     }
@@ -126,7 +126,7 @@ export async function withCache<T>(
     }
 
     // Track cache miss for monitoring
-    if (process.env.NODE_ENV === "development") {
+    if (process.env["NODE_ENV"] === "development") {
     }
 
     return result;

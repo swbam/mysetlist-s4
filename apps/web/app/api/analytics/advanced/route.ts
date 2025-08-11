@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 function isAuthorizedAnalyticsRequest(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
   const analyticsSecret =
-    process.env.ANALYTICS_SECRET || process.env.ADMIN_SECRET;
+    process.env["ANALYTICS_SECRET"] || process.env["ADMIN_SECRET"];
 
   if (!analyticsSecret) {
     return false;
@@ -175,7 +175,7 @@ export async function GET(request: NextRequest) {
     }
   } catch (error) {
     // Use Sentry for production error logging
-    if (process.env.NODE_ENV === "production") {
+    if (process.env["NODE_ENV"] === "production") {
       // Sentry will capture this automatically via instrumentation
     } else {
       console.error("Advanced analytics GET error:", error);
@@ -184,7 +184,7 @@ export async function GET(request: NextRequest) {
       {
         error: "Failed to fetch advanced analytics data",
         details:
-          process.env.NODE_ENV === "development"
+          process.env["NODE_ENV"] === "development"
             ? error instanceof Error
               ? error.message
               : "Unknown error"
@@ -347,7 +347,7 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     // Use Sentry for production error logging
-    if (process.env.NODE_ENV === "production") {
+    if (process.env["NODE_ENV"] === "production") {
       // Sentry will capture this automatically via instrumentation
     } else {
       console.error("Advanced analytics POST error:", error);
@@ -356,7 +356,7 @@ export async function POST(request: NextRequest) {
       {
         error: "Failed to generate analytics report",
         details:
-          process.env.NODE_ENV === "development"
+          process.env["NODE_ENV"] === "development"
             ? error instanceof Error
               ? error.message
               : "Unknown error"
@@ -459,7 +459,7 @@ export async function PUT(request: NextRequest) {
     }
   } catch (error) {
     // Use Sentry for production error logging
-    if (process.env.NODE_ENV === "production") {
+    if (process.env["NODE_ENV"] === "production") {
       // Sentry will capture this automatically via instrumentation
     } else {
       console.error("Advanced analytics PUT error:", error);
@@ -468,7 +468,7 @@ export async function PUT(request: NextRequest) {
       {
         error: "Failed to update analytics configuration",
         details:
-          process.env.NODE_ENV === "development"
+          process.env["NODE_ENV"] === "development"
             ? error instanceof Error
               ? error.message
               : "Unknown error"

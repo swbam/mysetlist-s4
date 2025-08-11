@@ -10,8 +10,8 @@ try {
   supabaseAnonKey = envModule.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 } catch {
   // Fallback to process.env only
-  supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  supabaseUrl = process.env["NEXT_PUBLIC_SUPABASE_URL"];
+  supabaseAnonKey = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
 }
 
 if (!supabaseUrl || !supabaseAnonKey) {

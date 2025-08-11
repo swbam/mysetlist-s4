@@ -23,7 +23,7 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+const APP_URL = process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
 
 // Create Spotify client instance
 const spotify = new SpotifyClient({});

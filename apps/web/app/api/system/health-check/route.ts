@@ -55,9 +55,9 @@ export async function GET() {
     // Check external APIs availability
     const apiChecks = {
       spotify:
-        !!process.env.SPOTIFY_CLIENT_ID && !!process.env.SPOTIFY_CLIENT_SECRET,
-      ticketmaster: !!process.env.TICKETMASTER_API_KEY,
-      setlistfm: !!process.env.SETLISTFM_API_KEY,
+        !!process.env["SPOTIFY_CLIENT_ID"] && !!process.env["SPOTIFY_CLIENT_SECRET"],
+      ticketmaster: !!process.env["TICKETMASTER_API_KEY"],
+      setlistfm: !!process.env["SETLISTFM_API_KEY"],
     };
 
     const missingApis = Object.entries(apiChecks)

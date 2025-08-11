@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 import React from "react";
 
 export function initSentry() {
-  const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN;
+  const SENTRY_DSN = process.env["NEXT_PUBLIC_SENTRY_DSN"];
 
   if (!SENTRY_DSN) {
     return;
@@ -10,10 +10,10 @@ export function initSentry() {
 
   Sentry.init({
     dsn: SENTRY_DSN,
-    environment: process.env.NODE_ENV,
+    environment: process.env["NODE_ENV"],
 
     // Performance Monitoring
-    tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
+    tracesSampleRate: process.env["NODE_ENV"] === "production" ? 0.1 : 1.0,
 
     // Session Replay
     replaysSessionSampleRate: 0.1,
@@ -27,7 +27,7 @@ export function initSentry() {
     // Configure error filtering
     beforeSend(event, hint) {
       // Filter out non-error events in production
-      if (process.env.NODE_ENV === "production") {
+      if (process.env["NODE_ENV"] === "production") {
         const error = hint.originalException;
 
         // Ignore certain errors
@@ -99,7 +99,7 @@ function getUserContext() {
 export function withSentryErrorBoundary(Component: any, fallback?: any) {
   return Sentry.withErrorBoundary(Component, {
     fallback: fallback || ErrorFallback,
-    showDialog: process.env.NODE_ENV !== "production",
+    showDialog: process.env["NODE_ENV"] !== "production",
   });
 }
 

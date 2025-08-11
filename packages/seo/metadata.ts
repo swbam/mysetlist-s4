@@ -14,9 +14,9 @@ const author: Metadata["authors"] = {
 };
 const publisher = "MySetlist";
 const twitterHandle = "@mysetlist";
-const protocol = process.env.NODE_ENV === "production" ? "https" : "http";
+const protocol = process.env["NODE_ENV"] === "production" ? "https" : "http";
 const productionUrl =
-  process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  process.env["VERCEL_PROJECT_PRODUCTION_URL"] || process.env["NEXT_PUBLIC_SITE_URL"];
 
 export const createMetadata = ({
   title,

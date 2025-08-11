@@ -1,5 +1,10 @@
 import type { NextConfig } from "next";
 
+// Bundle analyzer configuration
+const withBundleAnalyzer = require("@next/bundle-analyzer")({
+  enabled: process.env["ANALYZE"] === "true",
+});
+
 const nextConfig: NextConfig = {
   typescript: { ignoreBuildErrors: false },
   eslint: { ignoreDuringBuilds: false },
@@ -38,7 +43,7 @@ const nextConfig: NextConfig = {
 
   // Production optimizations
   compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
+    removeConsole: process.env["NODE_ENV"] === "production",
   },
 
   // Image optimization
@@ -73,42 +78,101 @@ const nextConfig: NextConfig = {
         },
       ];
 
-      // Optimize chunks
+    }
+
+    // Aggressive bundle splitting optimizations
+    if (!isServer) {
       config.optimization = {
         ...config.optimization,
         splitChunks: {
           chunks: "all",
+          maxInitialRequests: 30,
+          maxAsyncRequests: 30,
+          minSize: 20000,
+          maxSize: 200000,
           cacheGroups: {
             default: false,
             vendors: false,
-            // Framework chunk
+            // Framework chunk (React ecosystem)
             framework: {
               name: "framework",
               chunks: "all",
               test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types|use-subscription)[\\/]/,
               priority: 40,
               enforce: true,
+              reuseExistingChunk: true,
             },
-            // Design system chunk
-            designSystem: {
-              name: "design-system",
-              test: /[\\/]@repo[\\/]design-system[\\/]|[\\/]@radix-ui[\\/]|[\\/]class-variance-authority[\\/]|[\\/]clsx[\\/]|[\\/]tailwind-merge[\\/]/,
+            // Design system - smaller chunks
+            radixCore: {
+              name: "radix-core",
+              test: /[\\/]node_modules[\\/](@radix-ui[\\/]react-(avatar|button|dialog|dropdown-menu|input|tabs))[\\/]/,
+              priority: 35,
+              chunks: "all",
+              enforce: true,
+              reuseExistingChunk: true,
+            },
+            radixExtended: {
+              name: "radix-extended",
+              test: /[\\/]node_modules[\\/](@radix-ui[\\/]react-(badge|card|popover|command|select))[\\/]/,
+              priority: 34,
+              chunks: "all",
+              enforce: true,
+              reuseExistingChunk: true,
+            },
+            // Lucide icons - separate chunk
+            icons: {
+              name: "icons",
+              test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
+              priority: 33,
+              chunks: "all",
+              enforce: true,
+              reuseExistingChunk: true,
+            },
+            // Charts and visualization
+            charts: {
+              name: "charts",
+              test: /[\\/]node_modules[\\/](recharts|d3-)[\\/]/,
+              priority: 32,
+              chunks: "all",
+              enforce: true,
+              reuseExistingChunk: true,
+            },
+            // Authentication and API
+            auth: {
+              name: "auth",
+              test: /[\\/]node_modules[\\/](@supabase|otplib)[\\/]/,
+              priority: 31,
+              chunks: "all",
+              enforce: true,
+              reuseExistingChunk: true,
+            },
+            // Utilities and helpers
+            utils: {
+              name: "utils",
+              test: /[\\/]node_modules[\\/](clsx|tailwind-merge|class-variance-authority|date-fns)[\\/]/,
               priority: 30,
+              chunks: "all",
+              enforce: true,
               reuseExistingChunk: true,
             },
-            // Supabase chunk
-            supabase: {
-              name: "supabase",
-              test: /[\\/]@supabase[\\/]/,
-              priority: 20,
+            // Animation libraries
+            animation: {
+              name: "animation",
+              test: /[\\/]node_modules[\\/](framer-motion|@hello-pangea)[\\/]/,
+              priority: 29,
+              chunks: "all",
+              enforce: true,
               reuseExistingChunk: true,
             },
-            // Common chunk for shared modules
+            // Common chunk for shared modules (smaller threshold)
             commons: {
               name: "commons",
               minChunks: 2,
               priority: 10,
+              chunks: "all",
+              enforce: true,
               reuseExistingChunk: true,
+              maxSize: 150000,
             },
           },
         },
@@ -119,51 +183,8 @@ const nextConfig: NextConfig = {
       };
     }
 
-    // Bundle splitting optimizations (optimized for Vercel)
-    if (!isServer) {
-      config.optimization = {
-        ...config.optimization,
-        splitChunks: {
-          ...config.optimization?.splitChunks,
-          chunks: "all",
-          maxInitialRequests: 20,
-          maxAsyncRequests: 20,
-          cacheGroups: {
-            ...config.optimization?.splitChunks?.cacheGroups,
-            // Separate vendor chunk for heavy libraries
-            vendor: {
-              test: /[\/]node_modules[\/]/,
-              name: "vendors",
-              priority: 10,
-              chunks: "all",
-              enforce: true,
-              reuseExistingChunk: true,
-            },
-            // Separate UI framework chunk
-            ui: {
-              test: /[\/]node_modules[\/](@radix-ui|@hello-pangea|framer-motion)[\/]/,
-              name: "ui-framework",
-              priority: 20,
-              chunks: "all",
-              enforce: true,
-              reuseExistingChunk: true,
-            },
-            // Separate charts/visualization chunk
-            charts: {
-              test: /[\/]node_modules[\/](recharts|lucide-react)[\/]/,
-              name: "charts",
-              priority: 20,
-              chunks: "all",
-              enforce: true,
-              reuseExistingChunk: true,
-            },
-          },
-        },
-      };
-    }
-
     return config;
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

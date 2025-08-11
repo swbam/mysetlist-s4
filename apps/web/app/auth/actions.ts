@@ -54,7 +54,7 @@ export async function signUp(formData: FormData) {
     email,
     password,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      emailRedirectTo: `${process.env["NEXT_PUBLIC_SITE_URL"]}/auth/callback`,
     },
   });
 
@@ -125,7 +125,7 @@ export async function signIn(formData: FormData) {
 export async function signInWithProvider(provider: "spotify" | "google") {
   const supabase = await createClient();
 
-  const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`;
+  const redirectTo = `${process.env["NEXT_PUBLIC_SITE_URL"]}/auth/callback`;
 
   const options: any = { redirectTo };
   if (provider === "spotify") {
@@ -189,7 +189,7 @@ export async function resetPassword(formData: FormData) {
   }
 
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/update-password`,
+    redirectTo: `${process.env["NEXT_PUBLIC_SITE_URL"]}/auth/update-password`,
   });
 
   if (error) {

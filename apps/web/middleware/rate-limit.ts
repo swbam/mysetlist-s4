@@ -34,7 +34,7 @@ export async function rateLimitMiddleware(
   config?: RateLimitConfig,
 ): Promise<NextResponse | null> {
   // Skip rate limiting in development
-  if (process.env.NODE_ENV === "development") {
+  if (process.env["NODE_ENV"] === "development") {
     return null;
   }
 

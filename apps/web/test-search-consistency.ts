@@ -52,12 +52,12 @@ describe("Search API Consistency Tests", () => {
     });
 
     // Set environment variable for tests
-    process.env.TICKETMASTER_API_KEY = "test-api-key";
+    process.env["TICKETMASTER_API_KEY"] = "test-api-key";
   });
 
   afterEach(() => {
     cleanupApiMocks();
-    process.env.TICKETMASTER_API_KEY = undefined;
+    process.env["TICKETMASTER_API_KEY"] = undefined;
   });
 
   describe("/api/artists/search", () => {
@@ -100,7 +100,7 @@ describe("Search API Consistency Tests", () => {
     });
 
     it("should handle missing Ticketmaster API key", async () => {
-      process.env.TICKETMASTER_API_KEY = undefined;
+      process.env["TICKETMASTER_API_KEY"] = undefined;
 
       const response = await testApiRoute(
         artistsSearchHandler,

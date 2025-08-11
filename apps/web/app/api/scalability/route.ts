@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 function isAuthorizedScalabilityRequest(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
   const scalabilitySecret =
-    process.env.SCALABILITY_SECRET || process.env.ADMIN_SECRET;
+    process.env["SCALABILITY_SECRET"] || process.env["ADMIN_SECRET"];
 
   if (!scalabilitySecret) {
     return false;

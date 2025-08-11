@@ -12,7 +12,7 @@ export interface LogContext {
 }
 
 class Logger {
-  private isDevelopment = process.env.NODE_ENV === "development";
+  private isDevelopment = process.env["NODE_ENV"] === "development";
   private sentryLogger = Sentry.logger;
 
   private consoleLog(level: LogLevel, message: string, context?: LogContext) {

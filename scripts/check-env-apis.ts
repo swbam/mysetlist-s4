@@ -55,7 +55,7 @@ const envChecks: EnvCheck[] = [
           headers: {
             "Content-Type": "application/x-www-form-urlencoded",
             Authorization: `Basic ${Buffer.from(
-              `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`,
+              `${process.env["SPOTIFY_CLIENT_ID"]}:${process.env["SPOTIFY_CLIENT_SECRET"]}`,
             ).toString("base64")}`,
           },
           body: "grant_type=client_credentials",
@@ -78,7 +78,7 @@ const envChecks: EnvCheck[] = [
     testFunction: async () => {
       try {
         const response = await fetch(
-          `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${process.env.TICKETMASTER_API_KEY}&size=1`,
+          `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${process.env["TICKETMASTER_API_KEY"]}&size=1`,
         );
         return response.ok;
       } catch {
@@ -96,7 +96,7 @@ const envChecks: EnvCheck[] = [
           "https://api.setlist.fm/rest/1.0/search/artists?artistName=test&p=1",
           {
             headers: {
-              "x-api-key": process.env.SETLISTFM_API_KEY || "",
+              "x-api-key": process.env["SETLISTFM_API_KEY"] || "",
               Accept: "application/json",
             },
           },
@@ -226,26 +226,26 @@ async function checkEnvironment() {
   // Additional sync-specific checks
   console.log("\n🔄 Sync System Requirements:");
   const syncReady =
-    process.env.SPOTIFY_CLIENT_ID &&
-    process.env.SPOTIFY_CLIENT_SECRET &&
-    process.env.TICKETMASTER_API_KEY &&
-    process.env.SETLISTFM_API_KEY &&
-    process.env.CRON_SECRET;
+    process.env["SPOTIFY_CLIENT_ID"] &&
+    process.env["SPOTIFY_CLIENT_SECRET"] &&
+    process.env["TICKETMASTER_API_KEY"] &&
+    process.env["SETLISTFM_API_KEY"] &&
+    process.env["CRON_SECRET"];
 
   if (syncReady) {
     console.log("   ✅ All APIs configured for autonomous sync");
   } else {
     console.log("   ❌ Missing APIs for autonomous sync:");
-    if (!process.env.SPOTIFY_CLIENT_ID || !process.env.SPOTIFY_CLIENT_SECRET) {
+    if (!process.env["SPOTIFY_CLIENT_ID"] || !process.env["SPOTIFY_CLIENT_SECRET"]) {
       console.log("      - Spotify credentials");
     }
-    if (!process.env.TICKETMASTER_API_KEY) {
+    if (!process.env["TICKETMASTER_API_KEY"]) {
       console.log("      - Ticketmaster API key");
     }
-    if (!process.env.SETLISTFM_API_KEY) {
+    if (!process.env["SETLISTFM_API_KEY"]) {
       console.log("      - Setlist.fm API key");
     }
-    if (!process.env.CRON_SECRET) {
+    if (!process.env["CRON_SECRET"]) {
       console.log("      - Cron secret");
     }
   }

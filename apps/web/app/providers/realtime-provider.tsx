@@ -64,7 +64,7 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
       const supabase = createClient();
 
       // Check if we're using placeholder Supabase config
-      const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+      const url = process.env["NEXT_PUBLIC_SUPABASE_URL"] || "";
       if (url.includes("placeholder") || !url) {
         console.warn("Realtime disabled: Invalid Supabase configuration");
         setConnectionStatus("disabled");

@@ -16,7 +16,7 @@ export const dynamic = "force-dynamic";
 // Check if request is authorized for pipeline management
 function isAuthorizedPipelineRequest(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
-  const pipelineSecret = process.env.PIPELINE_SECRET || process.env.CRON_SECRET;
+  const pipelineSecret = process.env["PIPELINE_SECRET"] || process.env["CRON_SECRET"];
 
   if (!pipelineSecret) {
     return false;

@@ -293,7 +293,7 @@ export async function GET() {
     const health: SystemHealth = {
       status: overallStatus,
       timestamp: new Date().toISOString(),
-      version: process.env.VERCEL_GIT_COMMIT_SHA || "development",
+      version: process.env["VERCEL_GIT_COMMIT_SHA"] || "development",
       uptime: Date.now() - startTime,
       checks,
       summary,
@@ -312,7 +312,7 @@ export async function GET() {
     const health: SystemHealth = {
       status: "unhealthy",
       timestamp: new Date().toISOString(),
-      version: process.env.VERCEL_GIT_COMMIT_SHA || "development",
+      version: process.env["VERCEL_GIT_COMMIT_SHA"] || "development",
       uptime: Date.now() - startTime,
       checks: [
         {

@@ -63,7 +63,7 @@ if (existsSync(envLocalPath)) {
 }
 
 // Generate a sample CRON_SECRET if missing
-if (!process.env.CRON_SECRET) {
+if (!process.env["CRON_SECRET"]) {
   const generateSecret = () => {
     return Array.from({ length: 32 }, () =>
       Math.random().toString(36).charAt(2),

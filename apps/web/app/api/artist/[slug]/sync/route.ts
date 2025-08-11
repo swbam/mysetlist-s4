@@ -60,7 +60,7 @@ export async function POST(
     }
 
     // Use the unified pipeline for comprehensive sync
-    const syncUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+    const syncUrl = process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
 
     // Fire and forget the sync - don't make user wait
     fetch(`${syncUrl}/api/sync/unified-pipeline`, {
