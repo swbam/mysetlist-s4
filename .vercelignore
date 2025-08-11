@@ -1,76 +1,35 @@
-# Vercel ignore file
-
-# Version Control
-.git
-.gitignore
-.github
-
-# Documentation & Development
-docs/
-*.md
-README*
-CHANGELOG*
-
-# Environment & Config
-.env.local
-.env*.local
-.env.development*
-.env.test*
-
-# Testing
-__tests__/
-**/*.test.*
-**/*.spec.*
-cypress/
-jest.config.*
-vitest.config.*
-test-utils/
+# Development & Build Files
+node_modules/
+.turbo/
+.next/
+dist/
+build/
 coverage/
 .nyc_output/
 
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Environment Files (local development only)
+.env.local
+.env*.local
+
 # Development Tools
-scripts/*.sh
-tools/
 .vscode/
 .idea/
 *.log
 *.tsbuildinfo
 
-# Dependencies & Cache
-node_modules/
-.turbo/
-.next/
-apps/web/.next/
-dist/
-build/
-
-# Temporary Files
-tmp/
-temp/
-.cache/
-.npm/
-.yarn/
-.pnpm-debug.log*
-
-# OS Files
-.DS_Store
-Thumbs.db
-*.swp
-*.swo
-
-# Backup Files
-*.backup
-*.bak
-*~
-
 # Package Manager
 package-lock.json
 yarn.lock
+.pnpm-debug.log*
 
-# Supabase Local
-supabase/.env.local
-supabase/functions/
-supabase/seed.sql
+# Testing Results
+test-results/
 
-# Analytics & Monitoring
-.sentry/
+# Cache
+.cache/
+.npm/
+.yarn/

@@ -1,0 +1,32 @@
+{
+  "framework": "nextjs",
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "buildCommand": "cd ../.. && turbo build --filter=web",
+  "outputDirectory": ".next",
+  "functions": {
+    "app/api/*/route.ts": {
+      "maxDuration": 30,
+      "memory": 1024
+    },
+    "app/api/sync/*/route.ts": {
+      "maxDuration": 300,
+      "memory": 1024
+    },
+    "app/api/scheduled/*/route.ts": {
+      "maxDuration": 300,
+      "memory": 1024
+    },
+    "app/api/autonomous-sync/*/route.ts": {
+      "maxDuration": 300,
+      "memory": 1024
+    },
+    "app/api/admin/*/route.ts": {
+      "maxDuration": 60,
+      "memory": 512
+    },
+    "app/api/cron/*/route.ts": {
+      "maxDuration": 300,
+      "memory": 1024
+    }
+  }
+}
