@@ -1,15 +1,18 @@
-const { createServiceClient } = require('./apps/web/lib/supabase/server.ts');
+const { createClient } = require('@supabase/supabase-js');
 
 async function createSampleSetlists() {
   console.log('🚀 Creating sample setlists for shows...');
   
-  const supabase = createServiceClient();
+  const supabaseUrl = "https://yzwkimtdaabyjbpykquu.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDY5MjMxNiwiZXhwIjoyMDY2MjY4MzE2fQ.ZMorLC_eZke3bvBAF0zyzqUONxpomfTN2RpE_mLjz18";
+  
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
     // Get shows that don't have setlists yet
     const { data: shows, error: showsError } = await supabase
       .from('shows')
-      .select('id, name, headliner_artist_id, artists!headliner_artist_id(name)')
+      .select('id, name, headliner_artist_id')
       .eq('status', 'upcoming')
       .limit(10);
 
@@ -41,7 +44,7 @@ async function createSampleSetlists() {
         .insert({
           show_id: show.id,
           artist_id: show.headliner_artist_id,
-          name: `${show.artists?.name} - Predicted Setlist`,
+          name: `${show.name} - Predicted Setlist`,
           type: 'predicted',
           is_locked: false,
           total_votes: 0,
