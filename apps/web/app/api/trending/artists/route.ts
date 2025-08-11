@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
       period,
       limit,
       type: "artists",
-      data: response,
+      artists: response,
       timestamp: new Date().toISOString(),
     });
 

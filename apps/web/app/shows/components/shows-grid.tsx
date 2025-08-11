@@ -4,6 +4,10 @@ import { Card } from "@repo/design-system/components/ui/card";
 import { Music } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import {
+  EmptyState,
+  ResponsiveGrid,
+} from "~/components/layout/responsive-grid";
 import { type ShowWithDetails, fetchShows } from "../actions";
 import { ShowCard } from "./show-card";
 
@@ -43,40 +47,26 @@ export const ShowsGrid = () => {
     loadShows();
   }, [searchParams]);
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-          <Card key={i} className="overflow-hidden">
-            <div className="aspect-square animate-pulse bg-muted" />
-            <div className="p-4 space-y-2">
-              <div className="h-4 animate-pulse bg-muted rounded" />
-              <div className="h-3 animate-pulse bg-muted rounded w-3/4" />
-              <div className="h-3 animate-pulse bg-muted rounded w-1/2" />
-            </div>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  if (shows.length === 0) {
-    return (
-      <Card className="p-8 text-center">
-        <Music className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-        <h3 className="mb-2 font-semibold text-lg">No shows found</h3>
-        <p className="text-muted-foreground">
-          Try adjusting your filters or check back later for new shows.
-        </p>
-      </Card>
-    );
-  }
+  const emptyState = (
+    <EmptyState
+      icon={<Music className="h-8 w-8 text-muted-foreground" />}
+      title="No Shows Found"
+      description="Try adjusting your filters or check back later for new shows."
+    />
+  );
 
   return (
-    <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+    <ResponsiveGrid
+      variant="shows"
+      loading={loading}
+      loadingCount={8}
+      emptyState={emptyState}
+    >
       {shows.map((show) => (
-        <ShowCard key={show.id} show={show} />
+        <div key={show.id} role="gridcell">
+          <ShowCard show={show} />
+        </div>
       ))}
-    </div>
+    </ResponsiveGrid>
   );
 };

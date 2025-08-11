@@ -3,12 +3,14 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { cn } from "@repo/design-system/lib/utils";
 import { format } from "date-fns";
 import {
   Calendar,
   Heart,
   MapPin,
   Music,
+  Play,
   Star,
   Ticket,
   Users,
@@ -16,6 +18,11 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import {
+  animations,
+  focusRing,
+  touchTargets,
+} from "~/components/layout/grid-utils";
 
 interface ShowCardProps {
   show: {
@@ -60,6 +67,7 @@ interface ShowCardProps {
 
 export function ShowCard({ show }: ShowCardProps) {
   const [isSaved, setIsSaved] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const formatPrice = (
     minPrice: number | null,
@@ -88,19 +96,40 @@ export function ShowCard({ show }: ShowCardProps) {
     : 0;
 
   return (
-    <Card className="overflow-hidden transition-shadow hover:shadow-lg">
-      <Link href={`/shows/${show.slug}`}>
-        <div className="relative aspect-square cursor-pointer overflow-hidden bg-muted">
-          {show.headlinerArtist.imageUrl ? (
+    <Card
+      className={cn(
+        "group overflow-hidden",
+        animations.all,
+        animations.shadow,
+        animations.scale,
+        focusRing.card,
+      )}
+      role="article"
+      aria-label={`Show: ${show.headlinerArtist.name}`}
+    >
+      <Link
+        href={`/shows/${show.slug}`}
+        className="block focus:outline-none"
+        tabIndex={0}
+        aria-label={`View ${show.headlinerArtist.name} show details`}
+      >
+        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
+          {show.headlinerArtist.imageUrl && !imageError ? (
             <Image
               src={show.headlinerArtist.imageUrl}
-              alt={show.headlinerArtist.name}
+              alt={`${show.headlinerArtist.name} photo`}
               fill
-              className="object-cover transition-transform hover:scale-105"
+              className="object-cover transition-transform duration-300 group-hover:scale-110"
+              sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              onError={() => setImageError(true)}
+              priority={false}
             />
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
-              <Music className="h-16 w-16 text-primary/30" />
+            <div className="flex h-full w-full items-center justify-center">
+              <Music
+                className="h-16 w-16 text-muted-foreground/30"
+                aria-hidden="true"
+              />
             </div>
           )}
           {show.isFeatured && (
@@ -120,6 +149,15 @@ export function ShowCard({ show }: ShowCardProps) {
               <Badge variant="destructive">Nearly Sold Out</Badge>
             </div>
           )}
+
+          {/* Hover overlay */}
+          <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20">
+            <div className="flex h-full w-full items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
+              <div className="rounded-full bg-white/90 p-3">
+                <Play className="h-6 w-6 text-primary" aria-hidden="true" />
+              </div>
+            </div>
+          </div>
         </div>
       </Link>
       <CardContent className="p-4">
@@ -133,10 +171,18 @@ export function ShowCard({ show }: ShowCardProps) {
             variant="ghost"
             size="icon"
             onClick={() => setIsSaved(!isSaved)}
-            className="h-8 w-8 flex-shrink-0"
+            className={cn(
+              "h-8 w-8 flex-shrink-0",
+              touchTargets.comfortable,
+              focusRing.button,
+            )}
+            aria-label={
+              isSaved ? `Remove ${show.headlinerArtist.name} from saved shows` : `Save ${show.headlinerArtist.name} show`
+            }
           >
             <Heart
-              className={`h-4 w-4 ${isSaved ? "fill-current text-red-500" : ""}`}
+              className={cn("h-4 w-4", isSaved && "fill-current text-red-500")}
+              aria-hidden="true"
             />
           </Button>
         </div>

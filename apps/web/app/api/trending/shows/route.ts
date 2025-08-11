@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
       period,
       limit,
       type: "shows",
-      data: response,
+      shows: response,
       timestamp: new Date().toISOString(),
     });
 

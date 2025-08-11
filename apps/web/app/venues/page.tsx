@@ -66,27 +66,10 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
 
             <Suspense
               fallback={
-                <div className="space-y-6">
-                  <div className="h-12 bg-muted rounded animate-pulse" />
-                  <ResponsiveGrid
-                    variant="venues"
-                    loading={true}
-                    loadingCount={9}
-                  >
-                    <></>
-                  </ResponsiveGrid>
-                </div>
-              }
-            >
-              <VenueSearch />
-            </Suspense>
-
-            <Suspense
-              fallback={
                 <ResponsiveGrid
                   variant="venues"
                   loading={true}
-                  loadingCount={6}
+                  loadingCount={9}
                 >
                   <></>
                 </ResponsiveGrid>

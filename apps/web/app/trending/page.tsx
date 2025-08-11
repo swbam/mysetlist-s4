@@ -1,5 +1,3 @@
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -15,24 +13,23 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import {
-  Activity,
-  Clock,
-  Eye,
   Flame,
-  MapPin,
+  BarChart3,
   TrendingUp,
-  Users,
+  Music,
+  MapPin,
+  Sparkles,
 } from "lucide-react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import React, { Suspense } from "react";
 import { TrendingErrorBoundary } from "~/components/error-boundaries/trending-error-boundary";
-import { LiveTrending } from "~/components/trending/live-trending";
-import { createServiceClient } from "~/lib/supabase/server";
-import { RecentActivity } from "./components/recent-activity";
+import { TrendingStatistics } from "./components/trending-statistics";
 import { TrendingArtists } from "./components/trending-artists";
-import { TrendingShows } from "./components/trending-shows";
-import { TrendingVenues } from "./components/trending-venues";
+import { MostVotedSongs } from "./components/most-voted-songs";
+import { HotVenues } from "./components/hot-venues";
+import { TrendingLocations } from "./components/trending-locations";
+import { RisingArtists } from "./components/rising-artists";
+import { RecentSetlistActivity } from "./components/recent-setlist-activity";
 
 // Force dynamic rendering due to server-side auth check
 export const dynamic = "force-dynamic";
@@ -40,134 +37,76 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Trending - MySetlist",
   description:
-    "Discover what's trending in the live music world. See the hottest artists, most popular shows, and buzzing venues.",
+    "Discover what's trending in the live music world. See top artists, most voted songs, hot venues, and rising stars with real community data.",
   openGraph: {
-    title: "Trending Music & Shows | MySetlist",
+    title: "Music Trends & Insights | MySetlist",
     description:
-      "Stay up to date with the latest trends in live music. Discover trending artists, popular shows, and the hottest venues.",
+      "Explore real-time music trends: top artists, most voted songs, hot venues, and rising stars. Data-driven insights from the concert community.",
   },
 };
 
-// calculateRecentGrowth function removed - using real growth data from database only
-// No mathematical calculations allowed - all growth data comes from sync system
-
-async function getTrendingStats() {
-  try {
-    const supabase = await createServiceClient();
-
-    // Get counts for the last week
-    const lastWeek = new Date();
-    lastWeek.setDate(lastWeek.getDate() - 7);
-    const lastWeekISO = lastWeek.toISOString();
-
-    // Count trending artists
-    const { count: artistCount } = await supabase
-      .from("artists")
-      .select("*", { count: "exact", head: true })
-      .gt("trending_score", 0);
-
-    // Count upcoming shows
-    const { count: showCount } = await supabase
-      .from("shows")
-      .select("*", { count: "exact", head: true })
-      .gte("date", new Date().toISOString().split("T")[0]);
-
-    // Get total search volume (simulated based on view counts)
-    const { data: searchData } = await supabase
-      .from("shows")
-      .select("view_count")
-      .gte("created_at", lastWeekISO);
-
-    const searchVolume =
-      searchData?.reduce((sum, show) => sum + (show.view_count || 0), 0) || 0;
-
-    // Count active users based on recent votes
-    const { count: activeUsers } = await supabase
-      .from("votes")
-      .select("user_id", { count: "exact", head: true })
-      .gte("created_at", lastWeekISO);
-
-    return {
-      trendingArtists: artistCount || 0,
-      hotShows: showCount || 0,
-      searchVolume: searchVolume,
-      activeUsers: activeUsers || 0,
-      // Growth data removed - no mathematical calculations allowed
-      // All growth metrics should come from real historical tracking in sync system
-      artistGrowth: 0,
-      showGrowth: 0,
-      searchGrowth: 0,
-      userGrowth: 0,
-    };
-  } catch (_error) {
-    // Return default values on error
-    return {
-      trendingArtists: 0,
-      hotShows: 0,
-      searchVolume: 0,
-      activeUsers: 0,
-      artistGrowth: 0,
-      showGrowth: 0,
-      searchGrowth: 0,
-      userGrowth: 0,
-    };
-  }
-}
-
-function formatNumber(num: number): string {
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(1)}K`;
-  }
-  return num.toString();
-}
+// All data fetching moved to trending-insights.ts for better organization
 
 function TrendingPageSkeleton() {
   return (
     <div className="space-y-8">
+      {/* Statistics Skeleton */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
+        {Array.from({ length: 8 }).map((_, i) => (
           <Card key={i}>
-            <CardHeader>
+            <CardHeader className="pb-2">
               <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-8 w-16" />
             </CardHeader>
+            <CardContent>
+              <Skeleton className="h-8 w-16 mb-1" />
+              <Skeleton className="h-3 w-32" />
+            </CardContent>
           </Card>
         ))}
       </div>
+      
+      {/* Main Content Skeleton */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="space-y-6 lg:col-span-2">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader>
-                <Skeleton className="h-6 w-32" />
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {Array.from({ length: 5 }).map((_, j) => (
-                    <div key={j} className="flex items-center gap-4">
-                      <Skeleton className="h-12 w-12 rounded-full" />
-                      <div className="space-y-2">
-                        <Skeleton className="h-4 w-48" />
-                        <Skeleton className="h-3 w-32" />
-                      </div>
+        <div className="space-y-8 lg:col-span-2">
+          {/* Tab Content Skeleton */}
+          <Card>
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-4 w-48" />
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {Array.from({ length: 6 }).map((_, j) => (
+                  <div key={j} className="flex items-center gap-4 p-3 border rounded-lg">
+                    <Skeleton className="h-12 w-12 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-48" />
+                      <Skeleton className="h-3 w-32" />
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                    <Skeleton className="h-4 w-16" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
+        
+        {/* Sidebar Skeleton */}
         <div className="space-y-6">
           <Card>
             <CardHeader>
               <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-4 w-48" />
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {Array.from({ length: 8 }).map((_, j) => (
-                  <div key={j} className="flex justify-between">
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-8" />
+                {Array.from({ length: 6 }).map((_, j) => (
+                  <div key={j} className="flex items-start gap-3">
+                    <Skeleton className="h-8 w-8 rounded-full" />
+                    <div className="flex-1 space-y-1">
+                      <Skeleton className="h-3 w-full" />
+                      <Skeleton className="h-3 w-2/3" />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -179,125 +118,61 @@ function TrendingPageSkeleton() {
   );
 }
 
-export default async function TrendingPage() {
-  const stats = await getTrendingStats();
-
+export default function TrendingPage() {
   return (
     <TrendingErrorBoundary>
       <div className="container mx-auto px-4 py-8">
+        {/* Header */}
         <div className="mb-8">
           <div className="mb-4 flex items-center gap-3">
             <Flame className="h-8 w-8 text-orange-500" />
             <h1 className="font-bold text-4xl">Trending</h1>
           </div>
-          <p className="text-muted-foreground text-xl" />
+          <p className="text-muted-foreground text-xl">
+            Discover what's hot in the live music world with real community data
+          </p>
         </div>
 
         <Suspense fallback={<TrendingPageSkeleton />}>
           <div className="space-y-8">
-            {/* Live Trending Section */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              <LiveTrending
-                timeframe="1h"
-                type="artist"
-                limit={5}
-                autoRefresh={true}
-              />
-              <LiveTrending
-                timeframe="6h"
-                type="artist"
-                limit={5}
-                autoRefresh={false}
-              />
-              <LiveTrending
-                timeframe="24h"
-                type="artist"
-                limit={5}
-                autoRefresh={false}
-              />
-            </div>
+            {/* Statistics Dashboard */}
+            <section>
+              <TrendingStatistics />
+            </section>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="font-medium text-sm">
-                    Trending Artists
-                  </CardTitle>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="font-bold text-2xl">
-                    {stats.trendingArtists}
-                  </div>
-                  <p className="text-muted-foreground text-xs">
-                    Artists with high engagement
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="font-medium text-sm">
-                    Hot Shows
-                  </CardTitle>
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="font-bold text-2xl">
-                    {formatNumber(stats.hotShows)}
-                  </div>
-                  <p className="text-muted-foreground text-xs">
-                    Upcoming concerts
-                  </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="font-medium text-sm">
-                    Search Volume
-                  </CardTitle>
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="font-bold text-2xl">
-                    {formatNumber(stats.searchVolume)}
-                  </div>
-                  <p className="text-muted-foreground text-xs">
-                    Total page views
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Main Content */}
+            {/* Main Content Grid */}
             <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-              <div className="space-y-6 lg:col-span-2">
-                <Tabs defaultValue="all" className="w-full">
+              {/* Primary Content */}
+              <div className="space-y-8 lg:col-span-2">
+                <Tabs defaultValue="artists" className="w-full">
                   <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="all">All Trending</TabsTrigger>
-                    <TabsTrigger value="artists">Artists</TabsTrigger>
-                    <TabsTrigger value="shows">Shows</TabsTrigger>
-                    <TabsTrigger value="venues">Venues</TabsTrigger>
+                    <TabsTrigger value="artists" className="flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4" />
+                      <span className="hidden sm:inline">Artists</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="songs" className="flex items-center gap-2">
+                      <Music className="h-4 w-4" />
+                      <span className="hidden sm:inline">Songs</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="venues" className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      <span className="hidden sm:inline">Venues</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="rising" className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4" />
+                      <span className="hidden sm:inline">Rising</span>
+                    </TabsTrigger>
                   </TabsList>
 
-                  <TabsContent value="all" className="space-y-6">
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                      <LiveTrending timeframe="24h" type="artist" limit={8} />
-                      <LiveTrending timeframe="24h" type="show" limit={8} />
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="artists" className="space-y-4">
+                  <TabsContent value="artists" className="mt-6">
                     <Card>
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                          <TrendingUp className="h-5 w-5" />
-                          Trending Artists
+                          <TrendingUp className="h-5 w-5 text-orange-500" />
+                          Top Trending Artists
                         </CardTitle>
                         <CardDescription>
-                          Artists gaining the most momentum this week
+                          Artists with the highest engagement and vote activity
                         </CardDescription>
                       </CardHeader>
                       <CardContent>
@@ -306,127 +181,24 @@ export default async function TrendingPage() {
                     </Card>
                   </TabsContent>
 
-                  <TabsContent value="shows" className="space-y-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Clock className="h-5 w-5" />
-                          Hot Shows
-                        </CardTitle>
-                        <CardDescription>
-                          Shows with the most activity and votes
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <TrendingShows />
-                      </CardContent>
-                    </Card>
+                  <TabsContent value="songs" className="mt-6">
+                    <MostVotedSongs />
                   </TabsContent>
 
-                  <TabsContent value="venues" className="space-y-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <MapPin className="h-5 w-5" />
-                          Popular Venues
-                        </CardTitle>
-                        <CardDescription>
-                          Venues hosting the most buzz-worthy events
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <TrendingVenues />
-                      </CardContent>
-                    </Card>
+                  <TabsContent value="venues" className="mt-6">
+                    <HotVenues />
+                  </TabsContent>
+
+                  <TabsContent value="rising" className="mt-6">
+                    <RisingArtists />
                   </TabsContent>
                 </Tabs>
               </div>
 
               {/* Sidebar */}
               <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Activity className="h-5 w-5" />
-                      Recent Activity
-                    </CardTitle>
-                    <CardDescription>
-                      Latest updates from the community
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <RecentActivity />
-                  </CardContent>
-                </Card>
-
-                {/* Trending Actions */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Explore Trending</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <Link href="/search">
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start gap-2"
-                      >
-                        <TrendingUp className="h-4 w-4" />
-                        Advanced Search
-                      </Button>
-                    </Link>
-
-                    <Link href="/discover">
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start gap-2"
-                      >
-                        <Flame className="h-4 w-4" />
-                        Discover Music
-                      </Button>
-                    </Link>
-
-                    <Link href="/artists">
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start gap-2"
-                      >
-                        <Users className="h-4 w-4" />
-                        Browse Artists
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-
-                {/* Trending Categories */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Trending Categories</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2">
-                      {[
-                        "Pop",
-                        "Rock",
-                        "Hip-Hop",
-                        "Electronic",
-                        "Country",
-                        "Jazz",
-                      ].map((genre) => (
-                        <Link
-                          key={genre}
-                          href={`/search?genre=${encodeURIComponent(genre)}`}
-                        >
-                          <Badge
-                            variant="outline"
-                            className="cursor-pointer transition-colors hover:bg-primary hover:text-primary-foreground"
-                          >
-                            {genre}
-                          </Badge>
-                        </Link>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                <TrendingLocations />
+                <RecentSetlistActivity />
               </div>
             </div>
           </div>

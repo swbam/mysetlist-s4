@@ -23,6 +23,8 @@ interface Venue {
   distance?: number;
   amenities: string | null;
   website?: string | null;
+  imageUrl?: string | null;
+  venueType?: string | null;
 }
 
 interface VenueGridClientProps {
@@ -52,7 +54,23 @@ export function VenueGridClient({ venues }: VenueGridClientProps) {
       {venues.map((venue) => (
         <div key={venue.id} role="gridcell">
           <VenueCard
-            venue={venue}
+            venue={{
+              id: venue.id,
+              name: venue.name,
+              slug: venue.slug,
+              city: venue.city,
+              state: venue.state,
+              country: venue.country,
+              capacity: venue.capacity,
+              venueType: venue.venueType,
+              imageUrl: venue.imageUrl,
+              avgRating: venue.avgRating,
+              reviewCount: venue.reviewCount,
+              upcomingShowCount: venue.upcomingShowCount,
+              distance: venue.distance,
+              amenities: venue.amenities,
+              website: venue.website,
+            }}
             variant="default"
             showFavoriteButton={true}
             onFavorite={handleFavorite}
