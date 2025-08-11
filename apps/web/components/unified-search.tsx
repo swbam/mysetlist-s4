@@ -8,13 +8,6 @@ import {
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardHeader } from "@repo/design-system/components/ui/card";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "@repo/design-system/components/ui/command";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
   Popover,
@@ -23,37 +16,18 @@ import {
 } from "@repo/design-system/components/ui/popover";
 import { cn } from "@repo/design-system/lib/utils";
 import {
-  Calendar,
-  Disc,
   Loader2,
-  MapPin,
   Music,
   Search,
   X,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useCSRFToken } from "~/hooks/use-csrf-token";
 import { useDebounce } from "~/hooks/use-debounce";
+import { SearchResultsDropdown, type SearchResultItem } from "~/components/search/search-results-dropdown";
 
-interface SearchResult {
-  id: string;
-  type: "artist" | "show" | "venue" | "song";
-  title: string;
-  subtitle?: string;
-  imageUrl?: string;
-  slug?: string;
-  date?: string;
-  verified?: boolean;
-  source: "database" | "ticketmaster" | "spotify";
-  location?: string;
-  artistName?: string;
-  venueName?: string;
-  externalId?: string;
-  requiresSync?: boolean;
-  popularity?: number;
-  genres?: string[];
-}
+// Use SearchResultItem from our reusable component
+type SearchResult = SearchResultItem;
 
 interface UnifiedSearchProps {
   placeholder?: string;
@@ -65,7 +39,7 @@ interface UnifiedSearchProps {
 }
 
 export function UnifiedSearch({
-  placeholder = "Search artists, shows, venues...",
+  placeholder = "Search artists...",
   className,
   variant = "default",
   showFilters = false,
@@ -85,7 +59,7 @@ export function UnifiedSearch({
 
   const debouncedQuery = useDebounce(query, 300);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { fetchWithCSRF } = useCSRFToken();
+  // Removed unused CSRF token hook
 
   const performSearch = useCallback(
     async (searchQuery: string) => {
@@ -99,11 +73,8 @@ export function UnifiedSearch({
       setError(null);
 
       try {
-        // Use the new Ticketmaster-only endpoints
-        const endpoint =
-          variant === "artists-only"
-            ? `/api/artists/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`
-            : `/api/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`;
+        // Always use artist search endpoint - only artists are searchable
+        const endpoint = `/api/search?q=${encodeURIComponent(searchQuery)}&limit=${limit}`;
 
         const response = await fetch(endpoint, {
           method: "GET",
@@ -122,42 +93,20 @@ export function UnifiedSearch({
           throw new Error(data.error);
         }
 
-        // Handle different response formats
-        let searchResults: SearchResult[] = [];
-
-        if (variant === "artists-only" && data.artists) {
-          // Convert artist format to SearchResult format
-          searchResults = data.artists.map((artist: any) => ({
-            id: artist.id,
-            type: "artist" as const,
-            title: artist.name,
-            subtitle: artist.genres?.slice(0, 2).join(", ") || "Artist",
-            imageUrl: artist.imageUrl,
-            slug: artist.id,
-            source: artist.source || "ticketmaster",
-            verified: false,
-            popularity: 0,
-            genres: artist.genres,
-            externalId: artist.externalId || artist.id,
-            requiresSync: true,
-          }));
-        } else if (data.results) {
-          // Convert search results format
-          searchResults = data.results.map((result: any) => ({
-            id: result.id,
-            type: "artist" as const,
-            title: result.name,
-            subtitle: result.genre || "Artist",
-            imageUrl: result.imageUrl,
-            slug: result.id,
-            source: "ticketmaster",
-            verified: false,
-            popularity: 0,
-            genres: result.genre ? [result.genre] : [],
-            externalId: result.id,
-            requiresSync: true,
-          }));
-        }
+        // Convert all results to SearchResult format (all will be artists)
+        const searchResults: SearchResult[] = (data.results || []).map((result: any) => ({
+          id: result.id,
+          type: "artist" as const,
+          title: result.name,
+          subtitle: result.description || "Artist",
+          imageUrl: result.imageUrl,
+          slug: result.metadata?.slug,
+          source: result.metadata?.source || "ticketmaster",
+          popularity: result.metadata?.popularity || 0,
+          genres: result.metadata?.genres || [],
+          externalId: result.metadata?.externalId || result.id,
+          requiresSync: result.metadata?.source === "ticketmaster",
+        }));
 
         setResults(searchResults);
         setSearched(true);
@@ -191,42 +140,21 @@ export function UnifiedSearch({
     try {
       setImportingArtistId(result.id);
 
-      // Handle different result types
-      switch (result.type) {
-        case "artist":
-          // For Ticketmaster artists, navigate directly to artist page with Ticketmaster ID
-          if (result.source === "ticketmaster") {
-            const slug = result.title
-              .toLowerCase()
-              .replace(/[^a-z0-9]+/g, "-")
-              .replace(/^-|-$/g, "");
-            router.push(
-              `/artists/${slug}?ticketmaster=${result.externalId || result.id}`,
-            );
-          } else {
-            router.push(`/artists/${result.slug || result.id}`);
-          }
-          break;
-
-        case "show":
-          router.push(`/shows/${result.slug || result.id}`);
-          break;
-
-        case "venue":
-          router.push(`/venues/${result.slug || result.id}`);
-          break;
-
-        case "song":
-          if (result.artistName) {
-            router.push(
-              `/artists?search=${encodeURIComponent(result.artistName)}`,
-            );
-          }
-          break;
+      // Only artists are searchable, so only handle artist navigation
+      if (result.source === "ticketmaster" || result.requiresSync) {
+        const slug = result.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "");
+        router.push(
+          `/artists/${slug}?ticketmaster=${result.externalId || result.id}`,
+        );
+      } else {
+        router.push(`/artists/${result.slug || result.id}`);
       }
     } catch (error) {
       console.error("Navigation error:", error);
-      setError(`Failed to navigate to ${result.type}. Please try again.`);
+      setError(`Failed to navigate to artist. Please try again.`);
       setImportingArtistId(null);
       return;
     } finally {
@@ -312,11 +240,9 @@ export function UnifiedSearch({
                         <h3 className="font-semibold text-lg">
                           {result.title}
                         </h3>
-                        {result.source !== "database" && (
+                        {result.source === "ticketmaster" && (
                           <Badge variant="outline" className="text-xs">
-                            {result.source === "spotify"
-                              ? "Spotify"
-                              : "Ticketmaster"}
+                            Ticketmaster
                           </Badge>
                         )}
                       </div>
@@ -398,8 +324,10 @@ export function UnifiedSearch({
             isLoading={isLoading}
             query={query}
             onSelect={handleSelect}
-            searched={searched}
-            importingArtistId={importingArtistId}
+            onClose={() => setIsOpen(false)}
+            className="border-none shadow-none"
+            maxHeight="max-h-80"
+            showImportingState={true}
           />
         </PopoverContent>
       </Popover>
@@ -438,196 +366,16 @@ export function UnifiedSearch({
           isLoading={isLoading}
           query={query}
           onSelect={handleSelect}
-          searched={searched}
-          importingArtistId={importingArtistId}
+          onClose={() => setIsOpen(false)}
+          className="border-none shadow-none"
+          maxHeight="max-h-80"
+          showImportingState={true}
         />
       </PopoverContent>
     </Popover>
   );
 }
 
-function SearchResultsDropdown({
-  results,
-  isLoading,
-  query,
-  onSelect,
-  searched,
-  importingArtistId,
-}: {
-  results: SearchResult[];
-  isLoading: boolean;
-  query: string;
-  onSelect: (result: SearchResult) => void;
-  searched: boolean;
-  importingArtistId: string | null;
-}) {
-  const getResultIcon = (type: string) => {
-    switch (type) {
-      case "artist":
-        return Music;
-      case "show":
-        return Calendar;
-      case "venue":
-        return MapPin;
-      case "song":
-        return Disc;
-      default:
-        return Search;
-    }
-  };
-
-  const getResultBadgeColor = (type: string) => {
-    switch (type) {
-      case "artist":
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300";
-      case "show":
-        return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300";
-      case "venue":
-        return "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300";
-      case "song":
-        return "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300";
-      default:
-        return "bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300";
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  // Group results by type
-  const groupedResults = results.reduce(
-    (acc, result) => {
-      if (!acc[result.type]) {
-        acc[result.type] = [];
-      }
-      acc[result.type]?.push(result);
-      return acc;
-    },
-    {} as Record<string, SearchResult[]>,
-  );
-
-  const typeOrder = ["artist", "show", "venue", "song"];
-
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case "artist":
-        return "Artists";
-      case "show":
-        return "Shows";
-      case "venue":
-        return "Venues";
-      case "song":
-        return "Songs";
-      default:
-        return type;
-    }
-  };
-
-  return (
-    <Command shouldFilter={false}>
-      <CommandList className="max-h-80">
-        {isLoading && <CommandEmpty>Searching...</CommandEmpty>}
-        {!isLoading && results.length === 0 && searched && (
-          <CommandEmpty>
-            <div className="py-4 text-center">
-              <Search className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-              <p className="text-muted-foreground text-sm">
-                No results found for "{query}"
-              </p>
-              <p className="mt-1 text-muted-foreground text-xs">
-                Try searching for different terms
-              </p>
-            </div>
-          </CommandEmpty>
-        )}
-
-        {typeOrder.map((type) => {
-          const typeResults = groupedResults[type];
-          if (!typeResults?.length) {
-            return null;
-          }
-
-          return (
-            <CommandGroup key={type} heading={getTypeLabel(type)}>
-              {typeResults.map((result) => {
-                const Icon = getResultIcon(result.type);
-
-                return (
-                  <CommandItem
-                    key={result.id}
-                    onSelect={() =>
-                      importingArtistId !== result.id
-                        ? onSelect(result)
-                        : undefined
-                    }
-                    className={cn(
-                      "flex cursor-pointer items-center gap-3 p-3",
-                      importingArtistId === result.id &&
-                        "opacity-70 cursor-wait",
-                    )}
-                  >
-                    {result.imageUrl ? (
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={result.imageUrl} alt={result.title} />
-                        <AvatarFallback>
-                          <Icon className="h-4 w-4" />
-                        </AvatarFallback>
-                      </Avatar>
-                    ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
-                        <Icon className="h-4 w-4 text-muted-foreground" />
-                      </div>
-                    )}
-
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="truncate font-medium">
-                          {result.title}
-                        </span>
-                        {result.verified && (
-                          <div className="h-1 w-1 rounded-full bg-blue-500" />
-                        )}
-                      </div>
-                      {result.subtitle && (
-                        <p className="truncate text-muted-foreground text-sm">
-                          {result.subtitle}
-                          {result.date && ` • ${formatDate(result.date)}`}
-                        </p>
-                      )}
-                    </div>
-
-                    {importingArtistId === result.id ? (
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                        <span className="text-xs text-muted-foreground">
-                          Importing...
-                        </span>
-                      </div>
-                    ) : (
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "text-xs capitalize",
-                          getResultBadgeColor(result.type),
-                        )}
-                      >
-                        {result.type}
-                      </Badge>
-                    )}
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
-          );
-        })}
-      </CommandList>
-    </Command>
-  );
-}
+// SearchResultsDropdown component moved to ~/components/search/search-results-dropdown.tsx
 
 UnifiedSearch.displayName = "UnifiedSearch";

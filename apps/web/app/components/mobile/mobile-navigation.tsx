@@ -126,12 +126,12 @@ export const MobileNavigation = React.memo(
               {/* Search Section */}
               <div className="border-b p-4">
                 <Link
-                  href="/search"
+                  href="/artists"
                   onClick={closeSheet}
                   className="flex items-center gap-3 rounded-lg border p-3 text-muted-foreground transition-colors hover:bg-muted"
                 >
                   <Search className="h-4 w-4" />
-                  <span>Search artists, shows...</span>
+                  <span>Search artists...</span>
                 </Link>
               </div>
 

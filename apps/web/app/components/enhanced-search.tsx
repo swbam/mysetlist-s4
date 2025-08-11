@@ -23,25 +23,19 @@ import { useDebounce } from "~/hooks/use-debounce";
 
 interface SearchResult {
   id: string;
-  type: "artist" | "show" | "venue" | "song";
+  type: "artist"; // Only artists are searchable per PRD requirements
   title: string;
   subtitle?: string;
   imageUrl?: string;
-  slug: string;
-  metadata?: {
-    date?: string;
-    location?: string;
-    genre?: string;
-  };
+  slug?: string;
+  source?: "database" | "ticketmaster";
+  requiresSync?: boolean;
+  externalId?: string;
+  popularity?: number;
+  genres?: string[];
 }
 
 interface SearchFilters {
-  type: "all" | "artist" | "show" | "venue" | "song";
-  dateRange?: {
-    start: string;
-    end: string;
-  };
-  location?: string;
   genre?: string;
 }
 
@@ -53,7 +47,7 @@ interface EnhancedSearchProps {
 }
 
 export function EnhancedSearch({
-  placeholder = "Search artists, shows, venues...",
+  placeholder = "Search artists...",
   showFilters = true,
   onResultSelect,
   className = "",
@@ -62,7 +56,7 @@ export function EnhancedSearch({
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [filters, setFilters] = useState<SearchFilters>({ type: "all" });
+  const [filters, setFilters] = useState<SearchFilters>({});
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const router = useRouter();
 
@@ -81,22 +75,28 @@ export function EnhancedSearch({
         const params = new URLSearchParams({
           q: searchQuery,
           limit: "10",
-          ...(searchFilters.type !== "all" && { type: searchFilters.type }),
-          ...(searchFilters.location && { location: searchFilters.location }),
           ...(searchFilters.genre && { genre: searchFilters.genre }),
-          ...(searchFilters.dateRange?.start && {
-            startDate: searchFilters.dateRange.start,
-          }),
-          ...(searchFilters.dateRange?.end && {
-            endDate: searchFilters.dateRange.end,
-          }),
         });
 
         const response = await fetch(`/api/search?${params}`);
         if (!response.ok) throw new Error("Search failed");
 
         const data = await response.json();
-        setResults(data.results || []);
+        // Transform API response to SearchResult format
+        const searchResults: SearchResult[] = (data.results || []).map((result: any) => ({
+          id: result.id,
+          type: "artist" as const,
+          title: result.name,
+          subtitle: result.description,
+          imageUrl: result.imageUrl,
+          slug: result.metadata?.slug,
+          source: result.metadata?.source || "database",
+          requiresSync: result.metadata?.source === "ticketmaster",
+          externalId: result.metadata?.externalId,
+          popularity: result.metadata?.popularity,
+          genres: result.metadata?.genres,
+        }));
+        setResults(searchResults);
       } catch (error) {
         console.error("Search error:", error);
         setResults([]);
@@ -121,46 +121,38 @@ export function EnhancedSearch({
       if (onResultSelect) {
         onResultSelect(result);
       } else {
-        // Default navigation behavior
-        switch (result.type) {
-          case "artist":
+        // Only artists are searchable now
+        if (result.type === "artist") {
+          // Handle navigation based on source
+          if (result.source === "ticketmaster" && result.requiresSync !== false) {
+            // For Ticketmaster artists that need syncing, navigate with ticketmaster ID
+            const slug = result.title
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-|-$/g, "");
+            router.push(`/artists/${slug}?ticketmaster=${result.externalId || result.id}`);
+          } else if (result.slug) {
+            // For database artists with slug, use direct navigation
             router.push(`/artists/${result.slug}`);
-            break;
-          case "show":
-            router.push(`/shows/${result.slug}`);
-            break;
-          case "venue":
-            router.push(`/venues/${result.slug}`);
-            break;
-          default:
-            break;
+          } else {
+            // Fallback to ID-based navigation
+            router.push(`/artists/${result.id}`);
+          }
         }
       }
     },
     [onResultSelect, router],
   );
 
-  // Get icon for result type
+  // Get icon for result type (now only artist)
   const getResultIcon = (type: string) => {
-    switch (type) {
-      case "artist":
-        return <Music className="h-4 w-4" />;
-      case "show":
-        return <Calendar className="h-4 w-4" />;
-      case "venue":
-        return <MapPin className="h-4 w-4" />;
-      default:
-        return <Search className="h-4 w-4" />;
-    }
+    return <Music className="h-4 w-4" />;
   };
 
   // Active filters count
   const activeFiltersCount = useMemo(() => {
     let count = 0;
-    if (filters.type !== "all") count++;
-    if (filters.location) count++;
     if (filters.genre) count++;
-    if (filters.dateRange) count++;
     return count;
   }, [filters]);
 
@@ -235,20 +227,6 @@ export function EnhancedSearch({
                               {result.subtitle}
                             </p>
                           )}
-                          {result.metadata && (
-                            <div className="flex gap-2 mt-1">
-                              {result.metadata.date && (
-                                <span className="text-xs text-muted-foreground">
-                                  {result.metadata.date}
-                                </span>
-                              )}
-                              {result.metadata.location && (
-                                <span className="text-xs text-muted-foreground">
-                                  {result.metadata.location}
-                                </span>
-                              )}
-                            </div>
-                          )}
                         </div>
                       </CommandItem>
                     ))}
@@ -281,43 +259,12 @@ export function EnhancedSearch({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setFilters({ type: "all" })}
+                    onClick={() => setFilters({})}
                   >
                     Clear All
                   </Button>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Type</label>
-                  <div className="flex flex-wrap gap-2">
-                    {["all", "artist", "show", "venue", "song"].map((type) => (
-                      <Button
-                        key={type}
-                        variant={filters.type === type ? "default" : "outline"}
-                        size="sm"
-                        onClick={() =>
-                          setFilters((prev) => ({ ...prev, type: type as any }))
-                        }
-                      >
-                        {type.charAt(0).toUpperCase() + type.slice(1)}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Location</label>
-                  <Input
-                    placeholder="City, State"
-                    value={filters.location || ""}
-                    onChange={(e) =>
-                      setFilters((prev) => ({
-                        ...prev,
-                        location: e.target.value || undefined,
-                      }))
-                    }
-                  />
-                </div>
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Genre</label>
@@ -341,26 +288,6 @@ export function EnhancedSearch({
       {/* Active filters display */}
       {activeFiltersCount > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
-          {filters.type !== "all" && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              Type: {filters.type}
-              <X
-                className="h-3 w-3 cursor-pointer"
-                onClick={() => setFilters((prev) => ({ ...prev, type: "all" }))}
-              />
-            </Badge>
-          )}
-          {filters.location && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              Location: {filters.location}
-              <X
-                className="h-3 w-3 cursor-pointer"
-                onClick={() =>
-                  setFilters((prev) => ({ ...prev, location: undefined }))
-                }
-              />
-            </Badge>
-          )}
           {filters.genre && (
             <Badge variant="secondary" className="flex items-center gap-1">
               Genre: {filters.genre}

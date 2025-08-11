@@ -114,7 +114,7 @@ export const SearchBar = React.memo(
             role="combobox"
             aria-expanded={isOpen}
             aria-haspopup="listbox"
-            aria-label="Search for artists, shows, or venues"
+            aria-label="Search for artists"
             aria-describedby={isLoading ? "search-status" : undefined}
           />
           {query && (

@@ -1,13 +1,13 @@
 import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { EnhancedSearch } from "~/components/search/enhanced-search";
+import { EnhancedSearch } from "~/app/components/enhanced-search";
 
 export const generateMetadata = (): Metadata => {
   return createMetadata({
-    title: "Search - MySetlist",
+    title: "Search Artists - MySetlist",
     description:
-      "Search for artists, shows, venues, and songs. Discover your next concert experience with advanced filtering options.",
+      "Search for your favorite artists and discover their upcoming shows. Find concert setlists and vote on songs you want to hear.",
   });
 };
 
@@ -18,10 +18,10 @@ export default function SearchPage() {
         {/* Header */}
         <div className="text-center">
           <h1 className="text-4xl font-bold tracking-tighter md:text-6xl">
-            Search MySetlist
+            Find Artists
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Find artists, shows, venues, and songs with advanced filters
+            Discover your favorite artists and explore their upcoming shows
           </p>
         </div>
 
@@ -33,7 +33,7 @@ export default function SearchPage() {
             </div>
           }
         >
-          <EnhancedSearch showFilters={true} />
+          <EnhancedSearch showFilters={false} />
         </Suspense>
       </div>
     </div>

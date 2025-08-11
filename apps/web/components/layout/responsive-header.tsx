@@ -158,11 +158,22 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
 
     try {
       const response = await fetch(
-        `/api/search/suggestions?q=${encodeURIComponent(query)}`,
+        `/api/search?q=${encodeURIComponent(query)}&limit=8`,
       );
       if (response.ok) {
         const data = await response.json();
-        return data.suggestions || [];
+        // Transform API response to expected format for SearchBox component
+        return (data.results || []).map((result: any) => ({
+          id: result.id,
+          type: "artist",
+          title: result.name,
+          subtitle: result.description || "Artist",
+          imageUrl: result.imageUrl,
+          slug: result.metadata?.slug,
+          source: result.metadata?.source || "database",
+          requiresSync: result.metadata?.source === "ticketmaster",
+          externalId: result.metadata?.externalId,
+        }));
       }
     } catch (_error) {}
 
@@ -170,24 +181,53 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
   };
 
   const handleSearchSelect = (result: any) => {
-    switch (result.type) {
-      case "artist":
+    // Only artists are searchable now
+    if (result.type === "artist") {
+      // Handle navigation based on source
+      if (result.source === "ticketmaster" && result.requiresSync !== false) {
+        // For Ticketmaster artists that need syncing, navigate with ticketmaster ID
+        const slug = result.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "");
+        router.push(`/artists/${slug}?ticketmaster=${result.externalId || result.id}`);
+      } else if (result.slug) {
+        // For database artists with slug, use direct navigation
+        router.push(`/artists/${result.slug}`);
+      } else {
+        // Fallback to ID-based navigation
         router.push(`/artists/${result.id}`);
-        break;
-      case "show":
-        router.push(`/shows/${result.id}`);
-        break;
-      case "venue":
-        router.push(`/venues/${result.id}`);
-        break;
-      default:
-        router.push(`/search?q=${encodeURIComponent("")}`);
+      }
     }
     setIsSearchOpen(false);
   };
 
-  const handleSearchSubmit = (query: string) => {
-    router.push(`/search?q=${encodeURIComponent(query)}`);
+  const handleSearchSubmit = async (query: string) => {
+    // Instead of redirecting to search page, try to get the first result
+    if (query.length >= 2) {
+      try {
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=1`);
+        if (response.ok) {
+          const data = await response.json();
+          const firstResult = data.results?.[0];
+          if (firstResult) {
+            // Navigate directly to the first artist result
+            const slug = firstResult.metadata?.slug || firstResult.name
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-|-$/g, "");
+            
+            if (firstResult.metadata?.source === "ticketmaster") {
+              router.push(`/artists/${slug}?ticketmaster=${firstResult.metadata.externalId || firstResult.id}`);
+            } else {
+              router.push(`/artists/${slug}`);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Search submit failed:", error);
+      }
+    }
     setIsSearchOpen(false);
   };
 
@@ -239,7 +279,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
           {/* Desktop Search */}
           <div className="mx-4 hidden max-w-sm flex-1 lg:mx-6 lg:max-w-md xl:flex">
             <SearchBox
-              placeholder="Search artists, shows, venues..."
+              placeholder="Search artists..."
               onSearch={handleSearch}
               onSelect={handleSearchSelect}
               onSubmit={handleSearchSubmit}
@@ -375,7 +415,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
         {isSearchOpen && (
           <div className="border-t py-4 md:hidden">
             <SearchBox
-              placeholder="Search artists, shows, venues..."
+              placeholder="Search artists..."
               onSearch={handleSearch}
               onSelect={handleSearchSelect}
               onSubmit={handleSearchSubmit}

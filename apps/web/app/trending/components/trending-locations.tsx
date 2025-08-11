@@ -65,8 +65,9 @@ export function TrendingLocations() {
     return parts.join(", ");
   };
 
-  const getLocationSearchUrl = (location: TrendingLocation) => {
-    return `/search?location=${encodeURIComponent(formatLocation(location))}`;
+  const getLocationUrl = (location: TrendingLocation) => {
+    // Direct to artists page since we focus on artist discovery
+    return `/artists`;
   };
 
   if (loading) {
@@ -201,7 +202,7 @@ export function TrendingLocations() {
                   </Badge>
                 )}
                 
-                <Link href={getLocationSearchUrl(location)}>
+                <Link href={getLocationUrl(location)}>
                   <Button variant="outline" size="sm">
                     Explore
                   </Button>
@@ -213,9 +214,9 @@ export function TrendingLocations() {
 
         {/* View More */}
         <div className="mt-6 text-center">
-          <Link href="/search">
+          <Link href="/artists">
             <Button variant="outline" size="sm">
-              Search All Locations →
+              Browse All Artists →
             </Button>
           </Link>
         </div>

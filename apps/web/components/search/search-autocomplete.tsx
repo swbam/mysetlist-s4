@@ -55,7 +55,7 @@ export function SearchAutocomplete({
   onChange,
   onSelect,
   onSearch,
-  placeholder = "Search artists, shows, venues...",
+  placeholder = "Search artists...",
   className,
   disabled,
 }: SearchAutocompleteProps) {
@@ -106,7 +106,7 @@ export function SearchAutocomplete({
       try {
         // Use Ticketmaster API for artist search consistency
         const response = await fetch(
-          `/api/artists/search?q=${encodeURIComponent(debouncedValue)}&limit=8`,
+          `/api/search?q=${encodeURIComponent(debouncedValue)}&limit=8`,
         );
 
         if (response.ok) {

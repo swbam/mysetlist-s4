@@ -70,7 +70,7 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export function SearchBox({
-  placeholder = "Search artists, shows, venues...",
+  placeholder = "Search artists...",
   onSearch,
   onSelect,
   onSubmit,

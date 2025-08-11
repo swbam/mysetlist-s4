@@ -35,7 +35,7 @@ interface SearchBarProps {
 }
 
 export function SearchBar({
-  placeholder = "Search artists, shows, venues...",
+  placeholder = "Search artists...",
   className,
   variant = "default",
   showFilters = false,

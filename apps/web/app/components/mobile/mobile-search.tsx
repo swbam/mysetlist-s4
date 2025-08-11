@@ -1,17 +1,12 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import { cn } from "@repo/design-system/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
-  Calendar,
   Clock,
-  MapPin,
-  Music,
   Search,
   TrendingUp,
   X,
@@ -19,15 +14,10 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useDebounce } from "~/hooks/use-debounce";
+import { SearchResultsDropdown, type SearchResultItem } from "~/components/search/search-results-dropdown";
 
-interface SearchResult {
-  id: string;
-  type: "artist" | "show" | "venue" | "song";
-  title: string;
-  subtitle?: string;
-  imageUrl?: string;
-  trending?: boolean;
-}
+// Use consistent SearchResultItem type
+type SearchResult = SearchResultItem;
 
 interface MobileSearchProps {
   onSearch?: (query: string) => Promise<SearchResult[]>;
@@ -90,17 +80,22 @@ export function MobileSearch({
         searchResults = await onSearch(searchQuery);
       } else {
         const res = await fetch(
-          `/api/artists/search?q=${encodeURIComponent(searchQuery)}&limit=8`,
+          `/api/search?q=${encodeURIComponent(searchQuery)}&limit=8`,
         );
         if (res.ok) {
           const data = await res.json();
-          searchResults = (data.artists || []).map((artist: any) => ({
-            id: artist.externalId || artist.id,
+          searchResults = (data.results || []).map((result: any) => ({
+            id: result.id,
             type: "artist" as const,
-            title: artist.name,
-            imageUrl: artist.imageUrl,
-            subtitle: artist.genres?.slice(0, 2).join(", ") || "Artist",
-            trending: false,
+            title: result.name,
+            imageUrl: result.imageUrl,
+            subtitle: result.description || "Artist",
+            slug: result.metadata?.slug,
+            source: result.metadata?.source || "database",
+            requiresSync: result.metadata?.source === "ticketmaster",
+            externalId: result.metadata?.externalId || result.id,
+            popularity: result.metadata?.popularity || 0,
+            genres: result.metadata?.genres || [],
           }));
         }
       }
@@ -131,32 +126,8 @@ export function MobileSearch({
     if (onResultSelect) {
       onResultSelect(result);
     } else {
-      // Handle different result types
-      switch (result.type) {
-        case "artist": {
-          // For Ticketmaster artists, navigate with Ticketmaster ID parameter
-          const slug = result.title
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-|-$/g, "");
-          router.push(`/artists/${slug}?ticketmaster=${result.id}`);
-          break;
-        }
-        case "show":
-          router.push(`/shows/${result.id}`);
-          break;
-        case "venue":
-          router.push(`/venues/${result.id}`);
-          break;
-        case "song":
-          // For songs, try to navigate to the artist page
-          if (result.subtitle) {
-            router.push(
-              `/artists?search=${encodeURIComponent(result.subtitle)}`,
-            );
-          }
-          break;
-      }
+      // Navigation is handled by SearchResultsDropdown component
+      // Only artists are searchable in this version
     }
 
     // Note: persist recent searches can be implemented later
@@ -168,20 +139,7 @@ export function MobileSearch({
     performSearch(searchTerm);
   };
 
-  const getResultIcon = (type: string) => {
-    switch (type) {
-      case "artist":
-        return Music;
-      case "show":
-        return Calendar;
-      case "venue":
-        return MapPin;
-      case "song":
-        return Music;
-      default:
-        return Search;
-    }
-  };
+  // Icon handling moved to SearchResultsDropdown component
 
   // Prevent body scroll when search is open
   useEffect(() => {
@@ -261,76 +219,23 @@ export function MobileSearch({
                 )}
 
                 {/* Search Results */}
-                {results.length > 0 && !isLoading && (
+                {(results.length > 0 || isLoading) && (
                   <div className="p-4">
-                    <h3 className="mb-3 font-medium text-muted-foreground text-sm">
-                      Search Results
-                    </h3>
-                    <div className="space-y-2">
-                      {results.map((result, index) => {
-                        const Icon = getResultIcon(result.type);
-                        return (
-                          <Card
-                            key={result.id}
-                            className={cn(
-                              "cursor-pointer transition-colors hover:bg-muted/50",
-                              focusedIndex === index && "bg-muted",
-                            )}
-                            onClick={() => handleResultSelect(result)}
-                          >
-                            <CardContent className="flex items-center gap-3 p-3">
-                              {result.imageUrl ? (
-                                <img
-                                  src={result.imageUrl}
-                                  alt={result.title}
-                                  className="h-10 w-10 rounded object-cover"
-                                />
-                              ) : (
-                                <div className="flex h-10 w-10 items-center justify-center rounded bg-muted">
-                                  <Icon className="h-5 w-5 text-muted-foreground" />
-                                </div>
-                              )}
-
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center gap-2">
-                                  <p className="truncate font-medium text-sm">
-                                    {result.title}
-                                  </p>
-                                  {result.trending && (
-                                    <TrendingUp className="h-3 w-3 text-orange-500" />
-                                  )}
-                                </div>
-                                {result.subtitle && (
-                                  <p className="truncate text-muted-foreground text-xs">
-                                    {result.subtitle}
-                                  </p>
-                                )}
-                              </div>
-
-                              <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="text-xs">
-                                  {result.type}
-                                </Badge>
-                                <ArrowRight className="h-4 w-4 text-muted-foreground" />
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
+                    <SearchResultsDropdown
+                      results={results}
+                      isLoading={isLoading}
+                      query={query}
+                      onSelect={handleResultSelect}
+                      onClose={handleClose}
+                      className="border-none shadow-none bg-transparent p-0"
+                      maxHeight="max-h-none"
+                      emptyStateText="No artists found"
+                      showImportingState={true}
+                    />
                   </div>
                 )}
 
-                {/* No Results */}
-                {query.length >= 2 && results.length === 0 && !isLoading && (
-                  <div className="flex flex-col items-center justify-center p-8 text-center">
-                    <Search className="mb-4 h-12 w-12 text-muted-foreground" />
-                    <h3 className="mb-2 font-medium">No results found</h3>
-                    <p className="text-muted-foreground text-sm">
-                      Try searching with different keywords
-                    </p>
-                  </div>
-                )}
+                {/* No Results - handled by SearchResultsDropdown */}
 
                 {/* Recent & Trending */}
                 {query.length === 0 && (

@@ -156,7 +156,7 @@ export function MobileSearchInterface({
         <div className="flex items-center gap-3 p-4">
           <div className="flex-1">
             <SearchBox
-              placeholder="Search artists, shows, venues..."
+              placeholder="Search artists..."
               onSearch={async (query) => {
                 // Convert the sync onSearch to async for SearchBox
                 onSearch?.(query, filters);

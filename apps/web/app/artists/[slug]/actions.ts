@@ -86,13 +86,13 @@ const _getArtist = async (slug: string) => {
         try {
           // First search for the artist to see if it exists in external APIs
           const searchResponse = await fetch(
-            `${process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001"}/api/artists/search?q=${encodeURIComponent(slug.replace(/-/g, " "))}&limit=1`,
+            `${process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001"}/api/search?q=${encodeURIComponent(slug.replace(/-/g, " "))}&limit=1`,
           );
 
           if (searchResponse.ok) {
             const searchData = await searchResponse.json();
-            const externalArtist = searchData.artists?.find(
-              (a: any) => a.source !== "database",
+            const externalArtist = searchData.results?.find(
+              (a: any) => a.metadata?.source !== "database",
             );
 
             if (externalArtist) {

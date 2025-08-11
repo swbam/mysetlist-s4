@@ -191,33 +191,13 @@ export default function DiscoverPage() {
                     <CardTitle className="text-lg">Quick Discover</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <Link href="/search?dateFrom=2024-07-01&dateTo=2024-12-31">
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start gap-2"
-                      >
-                        <Calendar className="h-4 w-4" />
-                        This Weekend's Shows
-                      </Button>
-                    </Link>
-
-                    <Link href="/search?location=nearby">
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start gap-2"
-                      >
-                        <MapPin className="h-4 w-4" />
-                        Shows Near Me
-                      </Button>
-                    </Link>
-
                     <Link href="/trending">
                       <Button
                         variant="outline"
                         className="w-full justify-start gap-2"
                       >
-                        <TrendingUp className="h-4 w-4" />
-                        What's Trending
+                        <Calendar className="h-4 w-4" />
+                        Trending Artists
                       </Button>
                     </Link>
 
