@@ -4,24 +4,17 @@ import { createServiceClient } from "~/lib/supabase/server";
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
 
+// Flatten structure to match frontend component expectations and fix hydration
 interface TrendingShow {
   id: string;
-  name: string;
+  title: string;        // renamed from 'name' to match component
   slug: string;
-  date: string;
+  date?: string;
   status: "upcoming" | "ongoing" | "completed";
-  artist: {
-    name: string;
-    slug: string;
-    imageUrl?: string;
-  };
-  venue: {
-    name: string;
-    city: string;
-    state?: string;
-  };
-  voteCount: number;
-  attendeeCount: number;
+  artist_name?: string; // flattened from nested artist object
+  venue?: string;       // flattened from nested venue object
+  vote_count?: number;  // renamed from voteCount to match component
+  attendee_count?: number;
   trendingScore: number;
   weeklyGrowth: number;
 }
@@ -107,31 +100,28 @@ export async function GET(request: NextRequest) {
       (venuesResponse.data || []).map((v) => [v.id, v]),
     );
 
-    // Format the response
+    // Format the response with flattened structure to prevent hydration errors
     const formatted: TrendingShow[] = shows.map((show, index) => {
       const artist = show.headliner_artist_id
         ? artistsMap.get(show.headliner_artist_id)
         : null;
       const venue = show.venue_id ? venuesMap.get(show.venue_id) : null;
 
+      // Create venue string combining name, city, state
+      const venueString = venue 
+        ? `${venue.name}${venue.city ? ` - ${venue.city}` : ''}${venue.state ? `, ${venue.state}` : ''}`
+        : "Unknown Venue";
+
       return {
         id: show.id,
-        name: show.name || `${artist?.name || "Unknown Artist"} Live`,
+        title: show.name || `${artist?.name || "Unknown Artist"} Live`, // renamed to match component
         slug: show.slug,
         date: show.date,
         status: (show.status as any) || "upcoming",
-        artist: {
-          name: artist?.name || "Unknown Artist",
-          slug: artist?.slug || "",
-          imageUrl: artist?.image_url,
-        },
-        venue: {
-          name: venue?.name || "Unknown Venue",
-          city: venue?.city || "Unknown City",
-          state: venue?.state,
-        },
-        voteCount: show.vote_count || 0,
-        attendeeCount: show.attendee_count || 0,
+        artist_name: artist?.name || "Unknown Artist", // flattened
+        venue: venueString, // flattened to string
+        vote_count: show.vote_count || 0, // renamed to match component
+        attendee_count: show.attendee_count || 0,
         trendingScore: show.trending_score || 0,
         weeklyGrowth: 0, // Simplified - no growth calculation for now
       };
