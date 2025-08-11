@@ -40,7 +40,7 @@ export async function getTrendingShows(
   try {
     const supabase = createServiceClient();
 
-    // Get shows with highest trending scores (simplified query without problematic joins)
+    // Get shows with proper joins to get real artist and venue names
     const { data: shows, error } = await supabase
       .from("shows")
       .select(
@@ -56,7 +56,19 @@ export async function getTrendingShows(
         attendee_count,
         vote_count,
         headliner_artist_id,
-        venue_id
+        venue_id,
+        artists!headliner_artist_id (
+          id,
+          name,
+          image_url
+        ),
+        venues (
+          id,
+          name,
+          city,
+          state,
+          country
+        )
       `,
       )
       .gt("trending_score", 0)
@@ -65,11 +77,15 @@ export async function getTrendingShows(
       .limit(config.limit);
 
     if (error || !shows) {
+      console.error("Error fetching trending shows:", error);
       return [];
     }
 
-    // Transform shows to trending items (without joins for now to avoid FK issues)
+    // Transform shows to trending items with real artist and venue data
     const trendingShows = shows.map((show) => {
+      const artist = show.artists;
+      const venue = show.venues;
+      
       return {
         id: show.id,
         type: "show" as const,
@@ -78,16 +94,17 @@ export async function getTrendingShows(
         votes: show.vote_count || 0,
         attendees: show.attendee_count || 0,
         recent_activity: (show.vote_count || 0) + (show.attendee_count || 0),
-        image_url: undefined, // Will be populated by separate queries if needed
+        image_url: artist?.image_url || undefined,
         slug: show.slug,
-        artist_name: "Various Artists", // Will be populated by separate queries if needed
-        venue_name: "TBA", // Will be populated by separate queries if needed
+        artist_name: artist?.name || "Artist TBA",
+        venue_name: venue ? `${venue.name}${venue.city ? `, ${venue.city}` : ''}` : "Venue TBA",
         show_date: show.date,
       };
     });
 
     return trendingShows;
   } catch (_error) {
+    console.error("Error in getTrendingShows:", _error);
     return [];
   }
 }

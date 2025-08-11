@@ -23,16 +23,19 @@ export async function GET(request: NextRequest) {
       .select(`
         id,
         name,
-        slug,
         show_id,
         artist_id,
         created_at,
         updated_at,
         vote_count,
-        total_votes
+        total_votes,
+        type,
+        is_locked,
+        accuracy_score,
+        order_index
       `);
 
-    // Apply filters
+    // Apply filters using correct column names from schema
     if (artistId) {
       query = query.eq("artist_id", artistId);
     }
