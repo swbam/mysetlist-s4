@@ -1,4 +1,3 @@
-import "server-only";
 import axios from "axios";
 import { keys } from "../keys";
 import { CacheManager, cacheKeys } from "./utils/cache";

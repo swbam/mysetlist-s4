@@ -5,11 +5,14 @@
  */
 
 import "dotenv/config";
-// Import from the actual files that have the exports
-const { ticketmaster } = await import(
-  "../packages/external-apis/src/ticketmaster"
-);
-const { spotify } = await import("../packages/external-apis/src/spotify");
+
+// NOTE: Replaced dynamic `await import()` calls with static imports so that the
+// script can run in environments where TSX transpiles to CommonJS and esbuild
+// disallows top-level await. These modules are fully ESM-compatible, so static
+// imports work fine and avoid the top-level-await restriction.
+
+import { ticketmaster } from "../packages/external-apis/src/ticketmaster";
+import { spotify } from "../packages/external-apis/src/spotify";
 
 // Check for required environment variables
 const requiredEnvVars = [
