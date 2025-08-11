@@ -32,6 +32,7 @@ type ArtistPageProps = {
   params: Promise<{
     slug: string;
   }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 // Configure ISR with revalidation
@@ -40,9 +41,12 @@ export const dynamicParams = true; // Allow dynamic params beyond generateStatic
 
 export const generateMetadata = async ({
   params,
+  searchParams,
 }: ArtistPageProps): Promise<Metadata> => {
   try {
     const { slug } = await params;
+    const searchParamsData = await searchParams;
+    const ticketmasterId = searchParamsData.ticketmaster as string;
 
     if (!slug) {
       return createArtistMetadata({
@@ -52,7 +56,18 @@ export const generateMetadata = async ({
       });
     }
 
-    const artist = await getArtist(slug);
+    let artist = await getArtist(slug);
+
+    // For metadata generation, if artist not found but we have ticketmaster ID,
+    // create temporary metadata while import happens in the background
+    if (!artist && ticketmasterId) {
+      const artistName = slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+      return createArtistMetadata({
+        name: artistName,
+        bio: `${artistName} artist page - importing data from Ticketmaster.`,
+        slug: slug,
+      });
+    }
 
     if (!artist) {
       return createArtistMetadata({
@@ -80,9 +95,11 @@ export const generateMetadata = async ({
   }
 };
 
-const ArtistPage = async ({ params }: ArtistPageProps) => {
+const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
   try {
     const { slug } = await params;
+    const searchParamsData = await searchParams;
+    const ticketmasterId = searchParamsData.ticketmaster as string;
     
     // Validate slug parameter
     if (!slug || typeof slug !== 'string') {
@@ -94,7 +111,72 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
     void _user; // Intentionally unused - keeps session active
 
     // Fetch artist data with error handling
-    const artist = await getArtist(slug);
+    let artist = await getArtist(slug);
+
+    // If artist not found and we have a ticketmaster ID, try to import
+    if (!artist && ticketmasterId) {
+      console.log(`Artist not found for slug: ${slug}, attempting Ticketmaster import...`);
+      
+      try {
+        // Try to import the artist from Ticketmaster
+        const importResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/import`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              ticketmasterId,
+              artistName: slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+            }),
+          },
+        );
+
+        if (importResponse.ok) {
+          const importData = await importResponse.json();
+          console.log("Artist imported successfully:", importData.artist.name);
+          
+          // Try to fetch the artist again after import
+          artist = await getArtist(slug);
+          
+          if (!artist) {
+            // If still not found, create minimal artist data for display
+            const artistName = slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+            artist = {
+              id: importData.artist.id,
+              spotifyId: null,
+              ticketmasterId: ticketmasterId,
+              name: artistName,
+              slug: slug,
+              imageUrl: null,
+              smallImageUrl: null,
+              genres: "[]",
+              popularity: 0,
+              followers: 0,
+              followerCount: 0,
+              monthlyListeners: null,
+              verified: false,
+              bio: null,
+              externalUrls: null,
+              lastSyncedAt: null,
+              songCatalogSyncedAt: null,
+              totalAlbums: 0,
+              totalSongs: 0,
+              lastFullSyncAt: null,
+              trendingScore: 0,
+              totalShows: 0,
+              upcomingShows: 0,
+              totalSetlists: 0,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            };
+          }
+        } else {
+          console.error("Failed to import artist:", await importResponse.text());
+        }
+      } catch (importError) {
+        console.error("Artist import error:", importError);
+      }
+    }
 
     if (!artist) {
       console.log(`Artist not found for slug: ${slug}`);
