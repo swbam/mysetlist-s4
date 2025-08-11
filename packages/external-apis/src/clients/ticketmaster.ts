@@ -84,7 +84,8 @@ export class TicketmasterClient extends BaseAPIClient {
     super({
       ...config,
       baseURL: "https://app.ticketmaster.com/discovery/v2",
-      rateLimit: { requests: 5000, window: 24 * 3600 }, // 5000 requests per day
+      // More conservative rate limiting - 200 requests per hour to avoid 429s
+      rateLimit: { requests: 200, window: 3600 }, // 200 requests per hour
       cache: { defaultTTL: 1800 }, // 30 minutes default cache
     });
   }
@@ -128,10 +129,7 @@ export class TicketmasterClient extends BaseAPIClient {
       }
     }
 
-    // Check rate limits
-    if (this.rateLimit) {
-      await this.checkRateLimit();
-    }
+    // Rate limits are handled in the base class makeRequest method
 
     const response = await fetch(url.toString(), {
       ...options,
@@ -153,7 +151,7 @@ export class TicketmasterClient extends BaseAPIClient {
     // Cache if key provided and cache is available
     if (cacheKey && cacheTtl && this.cache) {
       try {
-        await this.cache.setex(cacheKey, cacheTtl, JSON.stringify(data));
+        await this.cache.set(cacheKey, data, cacheTtl);
       } catch (_error) {}
     }
 

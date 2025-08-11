@@ -1,9 +1,12 @@
 import { Button } from "@repo/design-system/components/ui/button";
-import { ChevronRight, Music, TrendingUp } from "lucide-react";
+import { ChevronRight, Music } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Suspense } from "react";
 import { LiteSearch } from "./components/lite-search";
+import { RealActiveShows } from "./components/real-active-shows";
+import { RealPopularArtists } from "./components/real-popular-artists";
+import { RealStats } from "./components/real-stats";
 
 // Ultra-light homepage component for initial render
 function LightHero() {
@@ -17,16 +20,7 @@ function LightHero() {
         <div className="mx-auto max-w-5xl text-center">
           <div className="space-y-6">
             {/* Badge */}
-            <div
-              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2"
-              role="status"
-              aria-label="Live statistics"
-            >
-              <TrendingUp className="h-4 w-4" aria-hidden="true" />
-              <span className="font-medium text-sm">
-                Trending Now: 1,247 Active Shows
-              </span>
-            </div>
+            <RealActiveShows />
 
             {/* Main heading */}
             <h1
@@ -55,22 +49,7 @@ function LightHero() {
             </div>
 
             {/* Quick search suggestions */}
-            <div className="flex flex-wrap items-center justify-center gap-2 px-4 text-sm sm:px-0">
-              <span className="text-muted-foreground hidden sm:inline">
-                Popular:
-              </span>
-              {["Taylor Swift", "The Weeknd", "Drake", "Olivia Rodrigo"].map(
-                (artist) => (
-                  <Link
-                    key={artist}
-                    href={`/artists/${artist.toLowerCase().replace(" ", "-")}`}
-                    className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-muted sm:text-sm"
-                  >
-                    {artist}
-                  </Link>
-                ),
-              )}
-            </div>
+            <RealPopularArtists />
           </div>
 
           {/* CTA buttons */}
@@ -99,36 +78,7 @@ function LightHero() {
           </div>
 
           {/* Stats */}
-          <div
-            className="mx-auto mt-16 grid max-w-2xl grid-cols-2 gap-6 px-4 sm:px-0 md:grid-cols-3 md:gap-8"
-            role="region"
-            aria-label="Platform statistics"
-          >
-            <div className="text-center">
-              <div className="font-bold text-2xl sm:text-3xl md:text-4xl">
-                10K+
-              </div>
-              <div className="mt-1 text-muted-foreground text-xs sm:text-sm">
-                Active Artists
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="font-bold text-2xl sm:text-3xl md:text-4xl">
-                50M+
-              </div>
-              <div className="mt-1 text-muted-foreground text-xs sm:text-sm">
-                Votes Cast
-              </div>
-            </div>
-            <div className="col-span-2 text-center md:col-span-1">
-              <div className="font-bold text-2xl sm:text-3xl md:text-4xl">
-                100K+
-              </div>
-              <div className="mt-1 text-muted-foreground text-xs sm:text-sm">
-                Music Fans
-              </div>
-            </div>
-          </div>
+          <RealStats />
         </div>
       </div>
     </section>

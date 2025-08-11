@@ -37,7 +37,7 @@ export function MobileOptimizedCard({
           "touch-manipulation",
           "active:scale-[0.98]",
           "hover:scale-[1.01] hover:shadow-md",
-          "focus-within:ring-2 focus-within:ring-primary/20",
+          "",
         ],
         // Variant styles
         variant === "compact" && "p-2",

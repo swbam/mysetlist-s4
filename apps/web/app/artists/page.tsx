@@ -98,8 +98,8 @@ export default function ArtistsPage() {
                 </div>
               </div>
               <p className="mt-6 text-muted-foreground">
-                Try searching for popular artists like "Dave Matthews Band",
-                "Taylor Swift", or "The Rolling Stones"
+                Try searching for any artist to discover their upcoming shows and
+                join the conversation about their setlists
               </p>
             </div>
           </div>

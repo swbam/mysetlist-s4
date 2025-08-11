@@ -1,6 +1,9 @@
 import { TicketmasterClient } from "@repo/external-apis";
 import { type NextRequest, NextResponse } from "next/server";
 
+// Force dynamic rendering for API route
+export const dynamic = "force-dynamic";
+
 const ticketmaster = new TicketmasterClient({
   apiKey: process.env["TICKETMASTER_API_KEY"]!,
 });

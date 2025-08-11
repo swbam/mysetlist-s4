@@ -4,6 +4,9 @@ import { setlists } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "~/lib/supabase/server";
 
+// Force dynamic rendering for API route
+export const dynamic = "force-dynamic";
+
 // GET method for fetching setlists
 export async function GET(request: NextRequest) {
   try {
@@ -129,4 +132,17 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
+}
+
+// OPTIONS handler for CORS
+export async function OPTIONS() {
+  return NextResponse.json(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Max-Age": "86400",
+    },
+  });
 }

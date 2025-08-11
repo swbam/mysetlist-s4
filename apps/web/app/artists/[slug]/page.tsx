@@ -9,71 +9,19 @@ import { ArtistErrorBoundary } from "~/components/error-boundaries/artist-error-
 import { createArtistMetadata } from "~/lib/seo-metadata";
 import {
   getArtist,
-  getArtistSetlists,
   getArtistShows,
   getArtistStats,
-  getSimilarArtists,
 } from "./actions";
 import { ArtistHeader } from "./components/artist-header";
 import { ArtistPageWrapper } from "./components/artist-page-wrapper";
 import { ArtistStats } from "./components/artist-stats";
 import { UpcomingShows } from "./components/upcoming-shows";
 
-// Dynamic imports for tab content to optimize initial bundle
-const ArtistBio = dynamic(
-  () =>
-    import("./components/artist-bio").then((mod) => ({
-      default: mod.ArtistBio,
-    })),
-  {
-    loading: () => <div className="h-32 animate-pulse rounded-lg bg-muted" />,
-  },
-);
-
-const ArtistSongCatalog = dynamic(
-  () =>
-    import("./components/artist-song-catalog").then((mod) => ({
-      default: mod.ArtistSongCatalog as any,
-    })),
-  {
-    loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
-  },
-);
-
-const ArtistTopTracks = dynamic(
-  () =>
-    import("./components/artist-top-tracks").then((mod) => ({
-      default: mod.ArtistTopTracks,
-    })),
-  {
-    loading: () => <div className="h-96 animate-pulse rounded-lg bg-muted" />,
-  },
-);
-
+// Dynamic imports for the two main tabs only
 const PastShows = dynamic(
   () =>
     import("./components/past-shows").then((mod) => ({
-      default: mod.PastShows as any,
-    })),
-  {
-    loading: () => <div className="h-64 animate-pulse rounded-lg bg-muted" />,
-  },
-);
-
-const SimilarArtists = dynamic(
-  () =>
-    import("./components/similar-artists").then((mod) => ({
-      default: mod.SimilarArtists,
-    })),
-  {
-    loading: () => <div className="h-64 animate-pulse rounded-lg bg-muted" />,
-  },
-);
-
-const ArtistSetlistsView = dynamic(
-  () =>
-    import("./components/artist-setlists-view").then((mod) => ({
-      default: mod.ArtistSetlistsView,
+      default: mod.PastShows,
     })),
   {
     loading: () => <div className="h-64 animate-pulse rounded-lg bg-muted" />,
@@ -93,60 +41,89 @@ export const dynamicParams = true; // Allow dynamic params beyond generateStatic
 export const generateMetadata = async ({
   params,
 }: ArtistPageProps): Promise<Metadata> => {
-  const { slug } = await params;
+  try {
+    const { slug } = await params;
 
-  const artist = await getArtist(slug);
+    if (!slug) {
+      return createArtistMetadata({
+        name: "Artist Not Found",
+        bio: "Invalid artist request.",
+        slug: "not-found",
+      });
+    }
 
-  if (!artist) {
+    const artist = await getArtist(slug);
+
+    if (!artist) {
+      return createArtistMetadata({
+        name: "Artist Not Found",
+        bio: "The requested artist could not be found.",
+        slug: "not-found",
+      });
+    }
+
     return createArtistMetadata({
-      name: "Artist Not Found",
-      bio: "The requested artist could not be found.",
-      slug: "not-found",
+      name: artist.name,
+      ...(artist.bio && { bio: artist.bio }),
+      ...(artist.imageUrl && { imageUrl: artist.imageUrl }),
+      slug: artist.slug,
+      ...(artist.followers && { followerCount: artist.followers }),
+      ...(artist.followerCount && { followerCount: artist.followerCount }),
+    });
+  } catch (error) {
+    console.error('Error generating metadata for artist page:', error);
+    return createArtistMetadata({
+      name: "Artist Error",
+      bio: "Unable to load artist metadata.",
+      slug: "error",
     });
   }
-
-  return createArtistMetadata({
-    name: artist.name,
-    ...(artist.bio && { bio: artist.bio }),
-    ...(artist.imageUrl && { imageUrl: artist.imageUrl }),
-    slug: artist.slug,
-    ...(artist.followers && { followerCount: artist.followers }),
-    ...(artist.followerCount && { followerCount: artist.followerCount }),
-  });
 };
 
 const ArtistPage = async ({ params }: ArtistPageProps) => {
-  const { slug } = await params;
-  const _user = await getUser();
-  void _user; // Intentionally unused - keeps session active
+  try {
+    const { slug } = await params;
+    
+    // Validate slug parameter
+    if (!slug || typeof slug !== 'string') {
+      console.error('Invalid slug parameter:', slug);
+      notFound();
+    }
 
-  // Fetch artist data
-  const artist = await getArtist(slug);
+    const _user = await getUser();
+    void _user; // Intentionally unused - keeps session active
 
-  if (!artist) {
-    notFound();
-  }
+    // Fetch artist data with error handling
+    const artist = await getArtist(slug);
 
-  // Fetch all related data in parallel with enhanced error handling
-  const results = await Promise.allSettled([
-    getArtistShows(artist.id, "upcoming"),
-    getArtistShows(artist.id, "past"),
-    getArtistStats(artist.id),
-    getSimilarArtists(artist.id, artist.genres),
-    getArtistSetlists(artist.id, 5), // Get recent setlists
-  ]);
+    if (!artist) {
+      console.log(`Artist not found for slug: ${slug}`);
+      notFound();
+    }
 
-  const upcomingShows =
-    results[0].status === "fulfilled" ? results[0].value : [];
-  const pastShows = results[1].status === "fulfilled" ? results[1].value : [];
-  const _stats = results[2].status === "fulfilled" ? results[2].value : null;
-  const _similarArtists =
-    results[3].status === "fulfilled" ? results[3].value : [];
-  const artistSetlists =
-    results[4].status === "fulfilled" ? results[4].value : [];
+    // Fetch only the data needed for upcoming and past shows with additional error handling
+    const results = await Promise.allSettled([
+      getArtistShows(artist.id, "upcoming"),
+      getArtistShows(artist.id, "past"),
+      getArtistStats(artist.id),
+    ]);
 
-  void _stats; // Future implementation: artist statistics display
-  void _similarArtists; // Future implementation: similar artists section
+    // Handle results with better error logging
+    const upcomingShows = results[0].status === "fulfilled" ? results[0].value : [];
+    const pastShows = results[1].status === "fulfilled" ? results[1].value : [];
+    const _stats = results[2].status === "fulfilled" ? results[2].value : null;
+
+    if (results[0].status === "rejected") {
+      console.error('Error fetching upcoming shows:', results[0].reason);
+    }
+    if (results[1].status === "rejected") {
+      console.error('Error fetching past shows:', results[1].reason);
+    }
+    if (results[2].status === "rejected") {
+      console.error('Error fetching artist stats:', results[2].reason);
+    }
+
+    void _stats; // Future implementation: artist statistics display
 
   const breadcrumbItems = [
     { label: "Artists", href: "/artists" },
@@ -169,48 +146,58 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
     spotifyId: artist.spotifyId || undefined,
   };
 
-  // Transform shows data
-  const transformedUpcomingShows = upcomingShows.map(
-    ({ show, venue, orderIndex, isHeadliner }) => ({
-      show: {
-        ...show,
-        ...(show.ticketUrl && { ticketUrl: show.ticketUrl }),
-        status: show.status || "confirmed",
-      },
-      venue: venue
-        ? {
-            id: venue.id,
-            name: venue.name,
-            city: venue.city,
-            ...(venue.state && { state: venue.state }),
-            country: venue.country,
-          }
-        : undefined,
-      orderIndex: orderIndex || 0,
-      isHeadliner: isHeadliner || false,
-    }),
-  );
+    // Transform shows data to match component interfaces
+    const transformedUpcomingShows = upcomingShows.map(
+      ({ show, venue, orderIndex, isHeadliner }) => ({
+        show: {
+          id: show.id,
+          name: show.name,
+          slug: show.slug,
+          date: show.date,
+          ticketUrl: show.ticketUrl,
+          status: show.status || "confirmed",
+        },
+        venue: venue
+          ? {
+              id: venue.id,
+              name: venue.name,
+              city: venue.city,
+              ...(venue.state && { state: venue.state }),
+              country: venue.country,
+            }
+          : undefined,
+        orderIndex: orderIndex || 0,
+        isHeadliner: isHeadliner || false,
+      }),
+    );
 
-  const transformedPastShows = pastShows.map(
-    ({ show, venue, orderIndex, isHeadliner }) => ({
-      show: {
-        ...show,
-        ...(show.ticketUrl && { ticketUrl: show.ticketUrl }),
-        status: show.status || "completed",
-      },
-      venue: venue
-        ? {
-            id: venue.id,
-            name: venue.name,
-            city: venue.city,
-            ...(venue.state && { state: venue.state }),
-            country: venue.country,
-          }
-        : undefined,
-      orderIndex: orderIndex || 0,
-      isHeadliner: isHeadliner || false,
-    }),
-  );
+    const transformedPastShows = pastShows.map(
+      ({ show, venue, orderIndex, isHeadliner }) => ({
+        show: {
+          id: show.id,
+          name: show.name,
+          slug: show.slug,
+          date: show.date,
+          venueId: show.venueId,
+          setlistCount: show.setlistCount,
+          attendeeCount: null, // Not tracked yet
+          voteCount: show.voteCount,
+          ticketUrl: show.ticketUrl,
+          status: show.status || "completed",
+        },
+        venue: venue
+          ? {
+              id: venue.id,
+              name: venue.name,
+              city: venue.city,
+              ...(venue.state && { state: venue.state }),
+              country: venue.country,
+            }
+          : undefined,
+        orderIndex: orderIndex || 0,
+        isHeadliner: isHeadliner || false,
+      }),
+    );
 
   return (
     <ArtistErrorBoundary artistName={artist.name}>
@@ -221,11 +208,9 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
       >
         <div className="container mx-auto py-8">
           {/* Breadcrumb Navigation */}
-          {/* @ts-ignore React 19 type compatibility */}
           <BreadcrumbNavigation items={breadcrumbItems} className="mb-6" />
 
           {/* Artist Header */}
-          {/* @ts-ignore React 19 type compatibility */}
           <ArtistHeader artist={artistData} />
 
           {/* Artist Stats */}
@@ -233,17 +218,14 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
             <ArtistStats artistId={artist.id} />
           </div>
 
-          {/* Content Tabs with Setlists added */}
+          {/* Content Tabs - Simplified to only show upcoming and past shows */}
           <Tabs defaultValue="shows" className="mt-8 w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="shows" aria-label="View upcoming shows">
                 Upcoming Shows
               </TabsTrigger>
               <TabsTrigger value="past" aria-label="View past shows">
                 Past Shows
-              </TabsTrigger>
-              <TabsTrigger value="setlists" aria-label="View setlists">
-                Setlists
               </TabsTrigger>
             </TabsList>
 
@@ -253,12 +235,12 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
                   <div className="h-64 animate-pulse rounded-lg bg-muted" />
                 }
               >
-                {React.createElement(UpcomingShows as any, {
-                  shows: transformedUpcomingShows,
-                  artistName: artist.name,
-                  artistId: artist.id,
-                  spotifyId: artist.spotifyId,
-                })}
+                <UpcomingShows
+                  shows={transformedUpcomingShows}
+                  artistName={artist.name}
+                  artistId={artist.id}
+                  spotifyId={artist.spotifyId}
+                />
               </React.Suspense>
             </TabsContent>
 
@@ -268,32 +250,37 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
                   <div className="h-64 animate-pulse rounded-lg bg-muted" />
                 }
               >
-                {React.createElement(PastShows as any, {
-                  shows: transformedPastShows,
-                  artistName: artist.name,
-                  artistId: artist.id,
-                })}
-              </React.Suspense>
-            </TabsContent>
-
-            <TabsContent value="setlists" className="space-y-4">
-              <React.Suspense
-                fallback={
-                  <div className="h-64 animate-pulse rounded-lg bg-muted" />
-                }
-              >
-                {React.createElement(ArtistSetlistsView as any, {
-                  setlists: artistSetlists,
-                  artistName: artist.name,
-                  artistId: artist.id,
-                })}
+                <PastShows
+                  shows={transformedPastShows}
+                  artistName={artist.name}
+                  artistId={artist.id}
+                />
               </React.Suspense>
             </TabsContent>
           </Tabs>
         </div>
       </ArtistPageWrapper>
     </ArtistErrorBoundary>
-  );
+    );
+  } catch (error) {
+    console.error('Critical error in ArtistPage:', error);
+    // Return a minimal error page instead of letting it crash
+    return (
+      <div className="container mx-auto py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">
+            Unable to Load Artist
+          </h1>
+          <p className="text-gray-600 mb-4">
+            We encountered an error while loading this artist page.
+          </p>
+          <p className="text-sm text-gray-500">
+            Please try refreshing the page or contact support if the problem persists.
+          </p>
+        </div>
+      </div>
+    );
+  }
 };
 
 // Generate static params for popular artists

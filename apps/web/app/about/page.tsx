@@ -7,6 +7,7 @@ import {
 import { Heart, Music, Users, Zap } from "lucide-react";
 import type { Metadata } from "next";
 import { createPageMetadata } from "~/lib/seo-metadata";
+import { AboutStats } from "./components/about-stats";
 
 export const metadata: Metadata = createPageMetadata({
   title: "About MySetlist | Your Concert Companion",
@@ -139,20 +140,7 @@ const AboutPage = () => {
             <CardTitle className="text-center">Join the Community</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 gap-8 text-center md:grid-cols-3">
-              <div>
-                <div className="font-bold text-3xl text-primary">10K+</div>
-                <div className="text-muted-foreground">Active Users</div>
-              </div>
-              <div>
-                <div className="font-bold text-3xl text-primary">500+</div>
-                <div className="text-muted-foreground">Artists Tracked</div>
-              </div>
-              <div>
-                <div className="font-bold text-3xl text-primary">1K+</div>
-                <div className="text-muted-foreground">Shows Covered</div>
-              </div>
-            </div>
+            <AboutStats />
           </CardContent>
         </Card>
       </div>

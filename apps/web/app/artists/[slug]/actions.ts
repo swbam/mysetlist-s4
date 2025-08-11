@@ -18,8 +18,14 @@ import { CACHE_TAGS, REVALIDATION_TIMES } from "~/lib/cache";
 
 const _getArtist = async (slug: string) => {
   try {
+    // Validate input
+    if (!slug || typeof slug !== 'string') {
+      console.error('Invalid slug provided to getArtist:', slug);
+      return null;
+    }
+
     // First try with Drizzle for better performance
-    const [artist] = await db
+    const artistResults = await db
       .select({
         id: artists.id,
         spotifyId: artists.spotifyId,
@@ -52,6 +58,7 @@ const _getArtist = async (slug: string) => {
       .where(eq(artists.slug, slug))
       .limit(1);
 
+    const [artist] = artistResults;
     if (artist) {
       return artist;
     }
@@ -60,6 +67,11 @@ const _getArtist = async (slug: string) => {
     try {
       const { createServiceClient } = await import("~/lib/supabase/server");
       const supabase = await createServiceClient();
+
+      if (!supabase) {
+        console.error('Failed to create Supabase service client');
+        return null;
+      }
 
       const { data, error } = await supabase
         .from("artists")
@@ -176,7 +188,8 @@ const _getArtist = async (slug: string) => {
       return null;
     }
   } catch (err: unknown) {
-    console.error("Error fetching artist:", err);
+    console.error("Critical error in getArtist for slug:", slug, err);
+    // Return null instead of throwing to prevent 500 errors
     return null;
   }
 };
@@ -189,6 +202,16 @@ export const getArtist = unstable_cache(_getArtist, ["artist-by-slug"], {
 
 const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
   try {
+    // Validate inputs
+    if (!artistId || typeof artistId !== 'string') {
+      console.error('Invalid artistId provided to getArtistShows:', artistId);
+      return [];
+    }
+
+    if (!type || !['upcoming', 'past'].includes(type)) {
+      console.error('Invalid type provided to getArtistShows:', type);
+      return [];
+    }
     // Enhanced query with better data handling and validation
     const artistShows = await db
       .select({
@@ -287,13 +310,24 @@ export const getArtistShows = unstable_cache(
 );
 
 const _getArtistStats = async (artistId: string) => {
-  const [stats] = await db
-    .select()
-    .from(artistStats)
-    .where(eq(artistStats.artistId, artistId))
-    .limit(1);
+  try {
+    // Validate input
+    if (!artistId || typeof artistId !== 'string') {
+      console.error('Invalid artistId provided to getArtistStats:', artistId);
+      return null;
+    }
 
-  return stats;
+    const [stats] = await db
+      .select()
+      .from(artistStats)
+      .where(eq(artistStats.artistId, artistId))
+      .limit(1);
+
+    return stats || null;
+  } catch (error) {
+    console.error(`Error fetching artist stats for ${artistId}:`, error);
+    return null;
+  }
 };
 
 // Cached version

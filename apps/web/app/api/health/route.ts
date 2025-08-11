@@ -1,6 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
+// Force dynamic rendering for API route
+export const dynamic = "force-dynamic";
+
 /**
  * Enhanced health check endpoint for deployment validation
  * Provides comprehensive system status including database, auth, and API integrations

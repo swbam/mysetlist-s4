@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 interface Artist {
   id: string;
   name: string;
+  slug: string;
   image_url?: string;
   follower_count?: number;
 }
@@ -18,6 +19,7 @@ interface Artist {
 interface Show {
   id: string;
   title: string;
+  slug: string;
   venue?: string;
   date?: string;
   artist_name?: string;
@@ -105,7 +107,7 @@ export default function TrendingSimple() {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
               {artists.map((artist) => (
                 <Card key={artist.id} className="overflow-hidden">
-                  <Link href={`/artists/${artist.id}`}>
+                  <Link href={`/artists/${artist.slug}`}>
                     <div className="aspect-square relative bg-muted">
                       {artist.image_url ? (
                         <Image
@@ -166,7 +168,7 @@ export default function TrendingSimple() {
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {shows.map((show) => (
                 <Card key={show.id} className="p-6">
-                  <Link href={`/shows/${show.id}`}>
+                  <Link href={`/shows/${show.slug}`}>
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <Badge variant="outline">Show</Badge>

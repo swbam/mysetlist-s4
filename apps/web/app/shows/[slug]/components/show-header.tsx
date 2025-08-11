@@ -11,8 +11,8 @@ type ShowHeaderProps = {
     name: string;
     slug: string;
     date: string;
-    start_time?: string;
-    doors_time?: string;
+    start_time?: string | null;
+    doors_time?: string | null;
     status: "upcoming" | "ongoing" | "completed" | "cancelled";
     headliner_artist: {
       id: string;
@@ -26,7 +26,7 @@ type ShowHeaderProps = {
       name: string;
       slug: string;
       city: string;
-      state?: string;
+      state?: string | null;
       country: string;
     };
     is_featured?: boolean;
@@ -62,10 +62,23 @@ export function ShowHeader({ show }: ShowHeaderProps) {
         <h1 className="mb-2 font-extrabold text-3xl md:text-5xl">
           {show.headliner_artist.name}
         </h1>
-        <p className="text-muted-foreground text-sm md:text-base">
-          {show.venue?.name ? `${show.venue.name} · ` : ""}
-          {format(showDate, "MMM d, yyyy")}
-        </p>
+        <div className="mb-3 space-y-1">
+          <p className="text-white text-sm md:text-base">
+            {show.venue?.name ? `${show.venue.name} · ` : ""}
+            {format(showDate, "MMM d, yyyy")}
+          </p>
+          <div className="flex flex-wrap gap-4 text-white/80 text-xs md:text-sm">
+            {show.doors_time && (
+              <span>Doors: {show.doors_time}</span>
+            )}
+            {show.start_time && (
+              <span>Show: {show.start_time}</span>
+            )}
+            {show.venue && (
+              <span>{show.venue.city}, {show.venue.state || show.venue.country}</span>
+            )}
+          </div>
+        </div>
         <div className="mt-4 flex gap-3">
           <Button size="sm" asChild>
             <Link href="#setlists">Vote Setlist</Link>

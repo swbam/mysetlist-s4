@@ -18,11 +18,10 @@ interface Show {
     slug: string;
     date: string;
     venueId?: string | null;
-    setlistCount?: number | null;
-    attendeeCount?: number | null;
-    voteCount?: number | null;
+    setlistCount: number;
+    voteCount: number;
     ticketUrl?: string;
-    status?: string;
+    status: "upcoming" | "ongoing" | "completed" | "cancelled";
   };
   venue?: {
     id: string;
@@ -113,17 +112,17 @@ export const PastShows = React.memo(function PastShows({
                       <span>{show.setlistCount} setlists</span>
                     </div>
                   )}
-                  {show.attendeeCount != null && show.attendeeCount > 0 && (
+                  {show.voteCount > 0 && (
                     <div className="flex items-center gap-1">
                       <Users className="h-3 w-3" />
-                      <span>{show.attendeeCount} attendees</span>
+                      <span>{show.voteCount} votes</span>
                     </div>
                   )}
                 </div>
               </div>
 
               <Button variant="ghost" size="sm" asChild>
-                <Link href={`/setlists/${show.id}`}>View Setlists</Link>
+                <Link href={`/shows/${show.slug}`}>View Setlist</Link>
               </Button>
             </div>
           ))}

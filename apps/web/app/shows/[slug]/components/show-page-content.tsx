@@ -4,6 +4,7 @@ import { useRealtimeUpdates } from "../hooks/use-realtime-updates";
 import { SetlistSection } from "./setlist-section";
 import { ShareButtons } from "./share-buttons";
 import { ShowHeader } from "./show-header";
+import { ShowStats } from "./show-stats";
 import { SupportingActs } from "./supporting-acts";
 import { TicketInfo } from "./ticket-info";
 import { VenueDetails } from "./venue-details";
@@ -62,6 +63,8 @@ export function ShowPageContent({ show }: ShowPageContentProps) {
           currency={show.currency}
           status={show.status}
         />
+
+        <ShowStats show={show} />
 
         {show.venue && <VenueDetails venue={show.venue} />}
       </div>

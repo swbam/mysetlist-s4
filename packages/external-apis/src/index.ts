@@ -1,4 +1,5 @@
 // External API Clients
+export * from "./clients/base";
 export * from "./clients/spotify";
 export * from "./clients/ticketmaster";
 export * from "./clients/setlistfm";

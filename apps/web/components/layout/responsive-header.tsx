@@ -223,7 +223,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                   href={item.href}
                   className={cn(
                     "flex items-center space-x-2 rounded-lg px-3 py-2 font-medium text-sm transition-all duration-200",
-                    "hover:bg-muted/50 focus:bg-muted focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                    "hover:bg-muted/50 focus:bg-muted focus:outline-none",
                     isActivePath(item.href)
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:text-foreground",

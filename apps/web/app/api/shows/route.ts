@@ -3,6 +3,9 @@ import { and, asc, desc, eq, gte, ilike, inArray, lte, sql } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
+// Force dynamic rendering for API route
+export const dynamic = "force-dynamic";
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);

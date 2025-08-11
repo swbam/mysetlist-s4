@@ -4,6 +4,9 @@ import { and, eq, sql } from "drizzle-orm";
 import { getUser } from "@repo/auth";
 import { z } from "zod";
 
+// Force dynamic rendering for API route
+export const dynamic = "force-dynamic";
+
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
@@ -78,7 +81,13 @@ export async function POST(req: NextRequest) {
     }
 
     const counts = await getCounts(setlistSongId, user.id);
-    return Response.json(counts);
+    return Response.json(counts, {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      },
+    });
   } catch (error) {
     console.error("Error in POST /api/votes:", error);
     return Response.json(
@@ -111,7 +120,13 @@ export async function GET(req: NextRequest) {
 
     const user = await getUser().catch(() => null);
     const counts = await getCounts(setlistSongId, user?.id);
-    return Response.json(counts);
+    return Response.json(counts, {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      },
+    });
   } catch (error) {
     console.error("Error in GET /api/votes:", error);
     return Response.json(
@@ -123,4 +138,19 @@ export async function GET(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// OPTIONS /api/votes - CORS preflight
+// ---------------------------------------------------------------------------
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Max-Age": "86400",
+    },
+  });
 }

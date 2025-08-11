@@ -1,5 +1,3 @@
-"use client";
-
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -18,62 +16,103 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { createServiceClient } from "~/lib/supabase/server";
+import { parseGenres } from "~/lib/utils";
 
-// Mock data for featured content
-const featuredArtists = [
-  {
-    id: 1,
-    name: "Taylor Swift",
-    image:
-      "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop",
-    genre: "Pop",
-    upcomingShows: 5,
-    trending: true,
-  },
-  {
-    id: 2,
-    name: "The Weeknd",
-    image:
-      "https://images.unsplash.com/photo-1598387993441-a364f854c3e1?w=400&h=400&fit=crop",
-    genre: "R&B",
-    upcomingShows: 3,
-    trending: true,
-  },
-  {
-    id: 3,
-    name: "Arctic Monkeys",
-    image:
-      "https://images.unsplash.com/photo-1549834125-82d3c48159a3?w=400&h=400&fit=crop",
-    genre: "Rock",
-    upcomingShows: 7,
-    trending: false,
-  },
-];
+// Server component to fetch real data from Supabase
+async function getFeaturedData() {
+  const supabase = createServiceClient();
 
-const featuredShows = [
-  {
-    id: 1,
-    artist: "Coldplay",
-    venue: "Madison Square Garden",
-    city: "New York, NY",
-    date: "2024-03-15",
-    image:
-      "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=600&h=400&fit=crop",
-    votesCount: 1234,
-  },
-  {
-    id: 2,
-    artist: "Ed Sheeran",
-    venue: "O2 Arena",
-    city: "London, UK",
-    date: "2024-03-22",
-    image:
-      "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600&h=400&fit=crop",
-    votesCount: 987,
-  },
-];
+  // Get featured artists (trending artists with upcoming shows)
+  const { data: featuredArtists } = await supabase
+    .from("artists")
+    .select("*")
+    .gt("upcoming_shows", 0)
+    .or("trending_score.gt.0,popularity.gt.50")
+    .order("trending_score", { ascending: false })
+    .order("popularity", { ascending: false })
+    .limit(3);
 
-function FeaturedContent() {
+  // Get featured shows (trending shows with high vote counts)
+  const { data: rawShows } = await supabase
+    .from("shows")
+    .select(`
+      id,
+      name,
+      slug,
+      date,
+      status,
+      vote_count,
+      attendee_count,
+      view_count,
+      trending_score,
+      headliner_artist_id,
+      venue_id
+    `)
+    .gte("date", new Date().toISOString().split("T")[0])
+    .gt("vote_count", 0)
+    .order("trending_score", { ascending: false })
+    .order("vote_count", { ascending: false })
+    .limit(2);
+
+  // Get artist and venue details for shows
+  let featuredShows: any[] = [];
+  if (rawShows && rawShows.length > 0) {
+    const artistIds = [...new Set(rawShows.map(s => s.headliner_artist_id).filter(Boolean))];
+    const venueIds = [...new Set(rawShows.map(s => s.venue_id).filter(Boolean))];
+
+    const [artistsResponse, venuesResponse] = await Promise.all([
+      artistIds.length > 0
+        ? supabase
+            .from("artists")
+            .select("id, name, slug, image_url")
+            .in("id", artistIds)
+        : Promise.resolve({ data: [] }),
+      venueIds.length > 0
+        ? supabase
+            .from("venues")
+            .select("id, name, city, state")
+            .in("id", venueIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+    const artistsMap = new Map((artistsResponse.data || []).map(a => [a.id, a]));
+    const venuesMap = new Map((venuesResponse.data || []).map(v => [v.id, v]));
+
+    featuredShows = rawShows.map(show => {
+      const artist = show.headliner_artist_id ? artistsMap.get(show.headliner_artist_id) : null;
+      const venue = show.venue_id ? venuesMap.get(show.venue_id) : null;
+
+      return {
+        id: show.id,
+        slug: show.slug,
+        artist: artist?.name || "Unknown Artist",
+        artistSlug: artist?.slug,
+        venue: venue?.name || "Unknown Venue",
+        city: venue ? `${venue.city}${venue.state ? `, ${venue.state}` : ''}` : "Unknown Location",
+        date: show.date,
+        image: artist?.image_url || "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=600&h=400&fit=crop",
+        votesCount: show.vote_count || 0,
+      };
+    });
+  }
+
+  return {
+    featuredArtists: (featuredArtists || []).map(artist => ({
+      id: artist.id,
+      name: artist.name,
+      slug: artist.slug,
+      image: artist.image_url || artist.small_image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop",
+      genre: parseGenres(artist.genres)?.[0] || "Music",
+      upcomingShows: artist.upcoming_shows || 0,
+      trending: (artist.trending_score || 0) > 0,
+    })),
+    featuredShows,
+  };
+}
+
+async function FeaturedContent() {
+  const { featuredArtists, featuredShows } = await getFeaturedData();
   return (
     <section className="py-16">
       <div className="space-y-16">
@@ -127,7 +166,7 @@ function FeaturedContent() {
                     <span className="text-sm">
                       {artist.upcomingShows} upcoming shows
                     </span>
-                    <Link href={`/artists/${artist.id}`}>
+                    <Link href={`/artists/${artist.slug}`}>
                       <Button size="sm" variant="secondary">
                         View Artist
                       </Button>
@@ -194,7 +233,7 @@ function FeaturedContent() {
                         {show.votesCount.toLocaleString()} votes
                       </span>
                     </div>
-                    <Link href={`/shows/${show.id}`}>
+                    <Link href={`/shows/${show.slug}`}>
                       <Button size="sm">Vote on Setlist</Button>
                     </Link>
                   </div>

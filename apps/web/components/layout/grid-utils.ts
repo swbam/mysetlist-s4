@@ -86,7 +86,7 @@ export const touchTargets = {
 export const focusRing = {
   default:
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
-  card: "focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2",
+  card: "",
   button:
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1",
 } as const;

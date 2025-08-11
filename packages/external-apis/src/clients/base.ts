@@ -1,4 +1,5 @@
-import { Redis } from "@upstash/redis";
+import { CacheManager } from "../utils/cache";
+import { RateLimiter } from "../utils/rate-limiter";
 
 export interface APIClientConfig {
   baseURL: string;
@@ -15,26 +16,27 @@ export interface APIClientConfig {
 export abstract class BaseAPIClient {
   protected baseURL: string;
   protected apiKey?: string | undefined;
-  protected rateLimit?: { requests: number; window: number } | undefined;
-  protected cache: Redis | null;
+  protected rateLimiter: RateLimiter | null;
+  protected cache: CacheManager;
 
   constructor(config: APIClientConfig) {
     this.baseURL = config.baseURL;
     this.apiKey = config.apiKey;
-    this.rateLimit = config.rateLimit;
+    
+    // Initialize rate limiter if configured
+    this.rateLimiter = config.rateLimit 
+      ? new RateLimiter({
+          requests: config.rateLimit.requests,
+          window: config.rateLimit.window,
+          keyPrefix: this.constructor.name.toLowerCase(),
+        })
+      : null;
 
-    // Only initialize Redis if environment variables are available
-    if (
-      process.env["UPSTASH_REDIS_REST_URL"] &&
-      process.env["UPSTASH_REDIS_REST_TOKEN"]
-    ) {
-      this.cache = new Redis({
-        url: process.env["UPSTASH_REDIS_REST_URL"],
-        token: process.env["UPSTASH_REDIS_REST_TOKEN"],
-      });
-    } else {
-      this.cache = null;
-    }
+    // Initialize cache manager
+    this.cache = new CacheManager({
+      defaultTTL: config.cache?.defaultTTL || 3600,
+      keyPrefix: this.constructor.name.toLowerCase(),
+    });
   }
 
   protected async makeRequest<T>(
@@ -43,12 +45,12 @@ export abstract class BaseAPIClient {
     cacheKey?: string,
     cacheTtl?: number,
   ): Promise<T> {
-    // Check cache first if key provided and cache is available
-    if (cacheKey && this.cache) {
+    // Check cache first if key provided
+    if (cacheKey) {
       try {
-        const cached = await this.cache.get(cacheKey);
+        const cached = await this.cache.get<T>(cacheKey);
         if (cached) {
-          return JSON.parse(cached as string) as T;
+          return cached;
         }
       } catch (_error) {
         // Cache miss or error, continue with API call
@@ -56,8 +58,13 @@ export abstract class BaseAPIClient {
     }
 
     // Check rate limits
-    if (this.rateLimit) {
-      await this.checkRateLimit();
+    if (this.rateLimiter) {
+      const rateCheck = await this.rateLimiter.checkLimit('global');
+      if (!rateCheck.allowed) {
+        throw new RateLimitError(
+          `Rate limit exceeded. Try again in ${rateCheck.resetIn} seconds.`
+        );
+      }
     }
 
     const url = new URL(endpoint, this.baseURL);
@@ -71,6 +78,14 @@ export abstract class BaseAPIClient {
     });
 
     if (!response.ok) {
+      // Handle rate limit responses specifically
+      if (response.status === 429) {
+        const retryAfter = response.headers.get('Retry-After') || '60';
+        throw new RateLimitError(
+          `API rate limit exceeded. Retry after ${retryAfter} seconds.`
+        );
+      }
+      
       throw new APIError(
         `API request failed: ${response.status} ${response.statusText}`,
         response.status,
@@ -80,10 +95,10 @@ export abstract class BaseAPIClient {
 
     const data = (await response.json()) as T;
 
-    // Cache if key provided and cache is available
-    if (cacheKey && cacheTtl && this.cache) {
+    // Cache the result if key provided
+    if (cacheKey && cacheTtl) {
       try {
-        await this.cache.setex(cacheKey, cacheTtl, JSON.stringify(data));
+        await this.cache.set(cacheKey, data, cacheTtl);
       } catch (_error) {}
     }
 
@@ -92,23 +107,12 @@ export abstract class BaseAPIClient {
 
   protected abstract getAuthHeaders(): Record<string, string>;
 
-  protected async checkRateLimit(): Promise<void> {
-    if (!this.rateLimit || !this.cache) {
-      return;
-    }
-
-    const key = `rate_limit:${this.constructor.name}`;
-    const current = await this.cache.incr(key);
-
-    if (current === 1) {
-      await this.cache.expire(key, this.rateLimit.window);
-    }
-
-    if (current > this.rateLimit.requests) {
-      const ttl = await this.cache.ttl(key);
-      throw new RateLimitError(
-        `Rate limit exceeded. Try again in ${ttl} seconds.`,
-      );
+  /**
+   * Clean up resources when the client is no longer needed
+   */
+  destroy(): void {
+    if (this.rateLimiter) {
+      this.rateLimiter.destroy();
     }
   }
 }

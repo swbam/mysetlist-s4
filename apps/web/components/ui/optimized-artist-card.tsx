@@ -90,12 +90,12 @@ export const OptimizedArtistCard = React.memo(function OptimizedArtistCard({
     <Link
       href={`/artists/${artist.slug}`}
       className={cn(
-        "group block focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-lg",
+        "group block focus:outline-none rounded-lg",
         className,
       )}
       prefetch
     >
-      <Card className="overflow-hidden border-0 bg-transparent transition-all duration-300 hover:bg-card/20 focus-within:bg-card/20">
+      <Card className="overflow-hidden border-0 bg-transparent transition-all duration-300 hover:bg-card/20">
         <CardContent className="relative p-0">
           {/* Artist image with gradient overlay */}
           <div

@@ -7,6 +7,9 @@ import {
 import { validateCSRFToken } from "~/lib/csrf";
 import { createAuthenticatedClient } from "~/lib/supabase/server";
 
+// Force dynamic rendering for API route
+export const dynamic = "force-dynamic";
+
 const signInSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),

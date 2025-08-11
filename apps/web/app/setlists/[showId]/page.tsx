@@ -91,7 +91,11 @@ const SetlistPage = async ({ params }: SetlistPageProps) => {
 
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <EnhancedSetlistViewer showId={showId} />
+            <EnhancedSetlistViewer 
+              showId={showId} 
+              artistId={showData.artists?.id}
+              artistName={showData.artists?.name}
+            />
           </div>
 
           <div className="lg:col-span-1">

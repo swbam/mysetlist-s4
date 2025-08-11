@@ -1,11 +1,14 @@
 "use client";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
-import { ChevronRight, Loader2, Music, Search, TrendingUp } from "lucide-react";
+import { ChevronRight, Loader2, Music, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { memo, useState, useCallback, useRef, useEffect } from "react";
 import { useDebounce } from "~/hooks/use-debounce";
+import { RealActiveShows } from "./real-active-shows";
+import { RealPopularArtists } from "./real-popular-artists";
+import { RealStats } from "./real-stats";
 
 interface ArtistResult {
   id: string;
@@ -112,16 +115,7 @@ function HomeHero() {
         <div className="mx-auto max-w-5xl text-center">
           <div className="space-y-6 animate-slide-up">
             {/* Badge */}
-            <div
-              className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2"
-              role="status"
-              aria-label="Live statistics"
-            >
-              <TrendingUp className="h-4 w-4" aria-hidden="true" />
-              <span className="font-medium text-sm">
-                Trending Now: 1,247 Active Shows
-              </span>
-            </div>
+            <RealActiveShows />
 
             {/* Main heading */}
             <h1
@@ -199,25 +193,7 @@ function HomeHero() {
             </div>
 
             {/* Quick search suggestions */}
-            <div className="flex flex-wrap items-center justify-center gap-2 px-4 text-sm sm:px-0">
-              <span className="text-muted-foreground hidden sm:inline">
-                Popular:
-              </span>
-              <span className="text-muted-foreground text-xs sm:hidden">
-                Trending:
-              </span>
-              {["Taylor Swift", "The Weeknd", "Drake", "Olivia Rodrigo"].map(
-                (artist) => (
-                  <Link
-                    key={artist}
-                    href={`/artists/${artist.toLowerCase().replace(" ", "-")}`}
-                    className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-muted sm:text-sm"
-                  >
-                    {artist}
-                  </Link>
-                ),
-              )}
-            </div>
+            <RealPopularArtists />
           </div>
 
           {/* CTA buttons */}
@@ -246,39 +222,7 @@ function HomeHero() {
           </div>
 
           {/* Stats */}
-          <div
-            className="mx-auto mt-16 grid max-w-2xl grid-cols-2 gap-6 px-4 sm:px-0 md:grid-cols-3 md:gap-8 animate-fade-in-delay-3"
-            role="region"
-            aria-label="Platform statistics"
-          >
-            <div className="text-center">
-              <div
-                className="font-bold text-2xl sm:text-3xl md:text-4xl"
-                aria-label="Ten thousand plus"
-              >
-                10K+
-              </div>
-              <div className="mt-1 text-muted-foreground text-xs sm:text-sm">
-                Active Artists
-              </div>
-            </div>
-            <div className="text-center">
-              <div className="font-bold text-2xl sm:text-3xl md:text-4xl">
-                50M+
-              </div>
-              <div className="mt-1 text-muted-foreground text-xs sm:text-sm">
-                Votes Cast
-              </div>
-            </div>
-            <div className="col-span-2 text-center md:col-span-1">
-              <div className="font-bold text-2xl sm:text-3xl md:text-4xl">
-                100K+
-              </div>
-              <div className="mt-1 text-muted-foreground text-xs sm:text-sm">
-                Music Fans
-              </div>
-            </div>
-          </div>
+          <RealStats />
         </div>
       </div>
     </section>

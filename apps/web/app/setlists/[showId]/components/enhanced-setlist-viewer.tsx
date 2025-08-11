@@ -30,13 +30,18 @@ import {
 import React, { useState } from "react";
 import { EnhancedVoteButton } from "~/components/voting/enhanced-vote-button";
 import { useRealtimeSetlist } from "~/hooks/use-realtime-setlist";
+import { SongSelector } from "./song-selector";
 
 type EnhancedSetlistViewerProps = {
   showId: string;
+  artistId?: string;
+  artistName?: string;
 };
 
 export const EnhancedSetlistViewer = ({
   showId,
+  artistId,
+  artistName,
 }: EnhancedSetlistViewerProps) => {
   const [activeSetlist, setActiveSetlist] = useState<string>("predicted");
   const [realtimeEvents, setRealtimeEvents] = useState<
@@ -117,6 +122,64 @@ export const EnhancedSetlistViewer = ({
       if (!response.ok) {
       }
     } catch (_error) {}
+  };
+
+  const handleSongSuggestion = async (song: any) => {
+    try {
+      // First, upsert the song to ensure it exists in our database
+      const songResponse = await fetch("/api/songs/upsert", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          spotify_id: song.spotify_id,
+          title: song.title,
+          artist: song.artist,
+          album: song.album,
+          album_art_url: song.album_art_url,
+          duration_ms: song.duration_ms,
+          is_explicit: song.is_explicit,
+          popularity: song.popularity,
+          previewUrl: song.preview_url,
+        }),
+      });
+
+      if (!songResponse.ok) {
+        throw new Error("Failed to save song");
+      }
+
+      const { song: savedSong } = await songResponse.json();
+
+      // Find the predicted setlist
+      const predictedSetlist = setlists.find((s) => s.type === "predicted");
+      if (!predictedSetlist) {
+        throw new Error("No predicted setlist found");
+      }
+
+      // Add the song to the predicted setlist
+      const addResponse = await fetch("/api/setlists/songs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          setlistId: predictedSetlist.id,
+          songId: savedSong.id,
+          position: 999, // Will be auto-assigned to the end
+        }),
+      });
+
+      if (!addResponse.ok) {
+        throw new Error("Failed to add song to setlist");
+      }
+
+      // Refetch the setlists to update the UI
+      await refetch();
+    } catch (error) {
+      console.error("Error suggesting song:", error);
+      // Could add toast notification here
+    }
   };
 
   const formatDuration = (durationMs?: number) => {
@@ -281,6 +344,18 @@ export const EnhancedSetlistViewer = ({
             </p>
           )}
         </CardHeader>
+
+        {/* Song Selector - Only show for predicted setlist and if artist info is available */}
+        {activeSetlist === "predicted" && artistId && artistName && (
+          <div className="px-6 py-4 border-b">
+            <SongSelector
+              artistId={artistId}
+              artistName={artistName}
+              onSongSelect={handleSongSuggestion}
+              disabled={loading}
+            />
+          </div>
+        )}
 
         <CardContent className="p-0">
           <div className="divide-y">

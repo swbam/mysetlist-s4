@@ -88,7 +88,7 @@ export function EnhancedSearch({
     dateTo: searchParams.get("dateTo") || "",
   });
 
-  const debouncedQuery = useDebounce(query, 500);
+  const debouncedQuery = useDebounce(query, 300);
 
   const performSearch = useCallback(
     async (searchQuery: string, searchFilters = filters) => {
@@ -134,6 +134,15 @@ export function EnhancedSearch({
           });
 
           router.replace(`/search?${newParams.toString()}`, { scroll: false });
+        } else if (response.status === 429) {
+          console.warn("Rate limit exceeded:", data);
+          // Don't show error to user immediately, just log and retry later
+          setResults([]);
+          setHasSearched(true);
+        } else {
+          console.error("Search failed:", data);
+          setResults([]);
+          setHasSearched(true);
         }
       } catch (error) {
         console.error("Search failed:", error);
@@ -177,10 +186,41 @@ export function EnhancedSearch({
     }
   };
 
-  const handleResultClick = (result: SearchResult) => {
+  const handleResultClick = async (result: SearchResult) => {
     switch (result.type) {
       case "artist":
-        router.push(`/artists/${result.slug || result.id}`);
+        if (result.source === "ticketmaster" && result.requiresSync) {
+          // Need to import artist first to get proper slug
+          try {
+            setIsLoading(true);
+            const importResponse = await fetch("/api/artists/import", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ticketmasterId: result.id,
+                name: result.title,
+                imageUrl: result.imageUrl,
+                genres: result.subtitle?.split(", ").filter(Boolean) || [],
+              }),
+            });
+            
+            if (importResponse.ok) {
+              const importData = await importResponse.json();
+              router.push(`/artists/${importData.artist.slug}`);
+            } else {
+              // Fallback to original behavior
+              router.push(`/artists/${result.slug || result.id}`);
+            }
+          } catch (error) {
+            console.error("Failed to import artist:", error);
+            // Fallback to original behavior
+            router.push(`/artists/${result.slug || result.id}`);
+          } finally {
+            setIsLoading(false);
+          }
+        } else {
+          router.push(`/artists/${result.slug || result.id}`);
+        }
         break;
       case "show":
         router.push(`/shows/${result.slug || result.id}`);
