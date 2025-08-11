@@ -101,9 +101,20 @@ export class TicketmasterClient extends BaseAPIClient {
     cacheKey?: string,
     cacheTtl?: number,
   ): Promise<T> {
-    // Add API key to URL params for Ticketmaster
-    const url = new URL(endpoint, this.baseURL);
-    url.searchParams.append("apikey", this.apiKey!);
+    // Construct URL properly handling existing query parameters
+    let url: URL;
+    
+    // Check if endpoint already has query parameters
+    if (endpoint.includes('?')) {
+      // If endpoint has parameters, construct the full URL and add apikey
+      const fullUrl = `${this.baseURL}/${endpoint}&apikey=${this.apiKey!}`;
+      url = new URL(fullUrl);
+    } else {
+      // If no existing parameters, use normal URL construction
+      url = new URL(endpoint, this.baseURL);
+      url.searchParams.append("apikey", this.apiKey!);
+    }
+
 
     // Check cache first if key provided and cache is available
     if (cacheKey && this.cache) {
@@ -129,6 +140,7 @@ export class TicketmasterClient extends BaseAPIClient {
         ...options.headers,
       },
     });
+
 
     if (!response.ok) {
       throw new Error(
@@ -206,8 +218,12 @@ export class TicketmasterClient extends BaseAPIClient {
       }
     });
 
+    // Pass the endpoint without parameters, let makeRequest handle URL construction
+    const endpoint = `attractions.json`;
+    const fullEndpoint = params.toString() ? `${endpoint}?${params.toString()}` : endpoint;
+
     return this.makeRequest(
-      `attractions.json?${params.toString()}`,
+      fullEndpoint,
       {},
       `ticketmaster:attractions:${params.toString()}`,
       3600, // 1 hour cache

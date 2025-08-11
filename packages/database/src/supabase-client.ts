@@ -6,12 +6,12 @@ let supabaseAnonKey: string | undefined;
 
 try {
   const envModule = require("@repo/env");
-  supabaseUrl = envModule.env?.NEXT_PUBLIC_SUPABASE_URL;
-  supabaseAnonKey = envModule.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  supabaseUrl = envModule.env?.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  supabaseAnonKey = envModule.env?.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 } catch {
-  // Fallback to process.env only
-  supabaseUrl = process.env["NEXT_PUBLIC_SUPABASE_URL"];
-  supabaseAnonKey = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
+  // Fallback to process.env only - trim to remove newlines/whitespace
+  supabaseUrl = process.env["NEXT_PUBLIC_SUPABASE_URL"]?.trim();
+  supabaseAnonKey = process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"]?.trim();
 }
 
 if (!supabaseUrl || !supabaseAnonKey) {

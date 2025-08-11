@@ -20,26 +20,43 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get("q") || "";
     const limit = Number.parseInt(searchParams.get("limit") || "8", 10);
 
+    console.log(`Artist search request: query="${query}", limit=${limit}`);
+
     if (!query || query.length < 2) {
       return NextResponse.json({ artists: [] });
     }
 
-    if (!process.env["TICKETMASTER_API_KEY"]) {
+    // Check if Ticketmaster API key is configured
+    const apiKey = process.env["TICKETMASTER_API_KEY"];
+    if (!apiKey) {
+      console.error("TICKETMASTER_API_KEY not configured");
       return NextResponse.json(
         {
-          error: "Ticketmaster API key not configured",
-          message: "Unable to search artists",
+          error: "Search service not configured",
+          message: "Artist search is temporarily unavailable",
         },
-        { status: 500 },
+        { status: 503 }, // Service Unavailable instead of 500
       );
     }
 
     try {
+      console.log("Calling Ticketmaster API with params:", {
+        keyword: query,
+        size: limit,
+        classificationName: "music",
+        sort: "relevance,desc"
+      });
+
       const ticketmasterResponse = await ticketmaster.searchAttractions({
         keyword: query,
         size: limit,
         classificationName: "music",
         sort: "relevance,desc",
+      });
+
+      console.log("Ticketmaster response received:", {
+        hasEmbedded: !!ticketmasterResponse._embedded,
+        attractionCount: ticketmasterResponse._embedded?.attractions?.length || 0
       });
 
       const ticketmasterArtists =
@@ -57,23 +74,56 @@ export async function GET(request: NextRequest) {
         externalId: attraction.id,
       }));
 
+      console.log(`Successfully processed ${artists.length} artists`);
       return NextResponse.json({ artists });
     } catch (error) {
       console.error("Ticketmaster search failed:", error);
+      
+      // Differentiate between different types of API errors
+      if (error instanceof Error) {
+        if (error.message.includes('401') || error.message.includes('403')) {
+          return NextResponse.json(
+            {
+              error: "Search service authentication failed",
+              message: "Invalid API credentials",
+            },
+            { status: 503 },
+          );
+        } else if (error.message.includes('429')) {
+          return NextResponse.json(
+            {
+              error: "Search service rate limited",
+              message: "Please try again later",
+            },
+            { status: 429 },
+          );
+        } else if (error.message.includes('timeout')) {
+          return NextResponse.json(
+            {
+              error: "Search service timeout",
+              message: "Request timed out, please try again",
+            },
+            { status: 408 },
+          );
+        }
+      }
+      
       return NextResponse.json(
         {
-          error: "Search failed",
+          error: "Search service error",
           message: error instanceof Error ? error.message : "Unknown error",
+          timestamp: new Date().toISOString()
         },
-        { status: 500 },
+        { status: 503 },
       );
     }
   } catch (error) {
     console.error("Artist search error:", error);
     return NextResponse.json(
       {
-        error: "Search failed",
+        error: "Internal server error",
         message: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString()
       },
       { status: 500 },
     );

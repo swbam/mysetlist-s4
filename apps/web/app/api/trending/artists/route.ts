@@ -84,11 +84,12 @@ export async function GET(request: NextRequest) {
           id: artist.id,
           name: artist.name,
           slug: artist.slug,
-          imageUrl: artist.image_url,
-          smallImageUrl: artist.small_image_url,
+          image_url: artist.image_url, // Keep original field name for component compatibility
+          small_image_url: artist.small_image_url,
           genres: parseGenres(artist.genres),
           popularity: artist.popularity || 0,
           followers: artist.followers || 0,
+          follower_count: artist.followers || 0, // Add follower_count field expected by component
           trendingScore: 0,
           verified: artist.verified || false,
           totalShows: artist.total_shows || 0,
@@ -133,11 +134,12 @@ export async function GET(request: NextRequest) {
         id: artist.id,
         name: artist.name,
         slug: artist.slug,
-        imageUrl: artist.image_url,
-        smallImageUrl: artist.small_image_url,
+        image_url: artist.image_url, // Keep original field name for component compatibility
+        small_image_url: artist.small_image_url,
         genres: parseGenres(artist.genres),
         popularity: artist.popularity || 0,
         followers: artist.followers || 0,
+        follower_count: artist.followers || 0, // Add follower_count field expected by component
         trendingScore: artist.trending_score || 0,
         verified: artist.verified || false,
         totalShows: artist.total_shows || 0,

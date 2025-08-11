@@ -2,6 +2,85 @@ import { getUser } from "@repo/auth/server";
 import { db } from "@repo/database";
 import { setlists } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
+import { createServiceClient } from "~/lib/supabase/server";
+
+// GET method for fetching setlists
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const page = Number.parseInt(searchParams.get("page") || "1");
+    const limit = Number.parseInt(searchParams.get("limit") || "20");
+    const artistId = searchParams.get("artistId");
+    const showId = searchParams.get("showId");
+
+    const supabase = createServiceClient();
+    
+    let query = supabase
+      .from("setlists")
+      .select(`
+        id,
+        name,
+        slug,
+        show_id,
+        artist_id,
+        created_at,
+        updated_at,
+        vote_count,
+        total_votes
+      `);
+
+    // Apply filters
+    if (artistId) {
+      query = query.eq("artist_id", artistId);
+    }
+    
+    if (showId) {
+      query = query.eq("show_id", showId);
+    }
+
+    // Add pagination and ordering
+    const offset = (page - 1) * limit;
+    query = query
+      .order("vote_count", { ascending: false })
+      .order("created_at", { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    const { data: setlistData, error } = await query;
+
+    if (error) {
+      console.error("Error fetching setlists:", error);
+      throw error;
+    }
+
+    return NextResponse.json({
+      setlists: setlistData || [],
+      total: setlistData?.length || 0,
+      page,
+      limit,
+      generatedAt: new Date().toISOString(),
+    }, {
+      headers: {
+        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+      },
+    });
+  } catch (error) {
+    console.error("Setlists API error:", error);
+    return NextResponse.json({
+      setlists: [],
+      total: 0,
+      page: 1,
+      limit: 20,
+      generatedAt: new Date().toISOString(),
+      fallback: true,
+      error: "Unable to load setlists at this time",
+    }, {
+      status: 200,
+      headers: {
+        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+      },
+    });
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
