@@ -1,3 +1,143 @@
+import { spotify, setlistfm, ticketmaster } from "@repo/external-apis";
+import { revalidateTag } from "next/cache";
+import { type NextRequest, NextResponse } from "next/server";
+import { CACHE_TAGS } from "~/lib/cache";
+import { db, artists, shows, songs, setlists, setlistSongs, artistSongs } from "@repo/database";
+import { eq } from "drizzle-orm";
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { tmAttractionId } = body;
+
+    if (!tmAttractionId) {
+      return NextResponse.json(
+        { error: "tmAttractionId is required" },
+        { status: 400 },
+      );
+    }
+
+    // Check if artist already exists by ticketmaster ID (idempotency)
+    const existingArtist = await db
+      .select()
+      .from(artists)
+      .where(eq(artists.ticketmasterId, tmAttractionId))
+      .limit(1);
+
+    if (existingArtist.length > 0) {
+      return NextResponse.json(
+        {
+          artistId: existingArtist[0].id,
+          slug: existingArtist[0].slug,
+        },
+        { status: 200 },
+      );
+    }
+
+    // First, get artist details from Ticketmaster
+    let artistName: string;
+    let imageUrl: string | undefined;
+    let genres: string[] = [];
+    
+    try {
+      const tmArtist = await ticketmaster.getArtistDetails(tmAttractionId);
+      if (!tmArtist) {
+        return NextResponse.json(
+          { error: "Artist not found on Ticketmaster" },
+          { status: 404 },
+        );
+      }
+      artistName = tmArtist.name;
+      imageUrl = tmArtist.imageUrl;
+      genres = tmArtist.genres || [];
+    } catch (error) {
+      console.error("Failed to fetch artist from Ticketmaster:", error);
+      return NextResponse.json(
+        { error: "Failed to fetch artist details from Ticketmaster" },
+        { status: 500 },
+      );
+    }
+
+    // Generate slug from artist name
+    const slug = artistName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    // Initialize artist data (stub record)
+    let artistData: any = {
+      name: artistName,
+      slug,
+      imageUrl: imageUrl,
+      genres: JSON.stringify(genres || []),
+      ticketmasterId: tmAttractionId,
+      verified: false,
+      popularity: 0,
+      songCatalogSyncedAt: null, // Will be updated during background sync
+    };
+
+    // Quick Spotify lookup for basic data (non-blocking)
+    try {
+      await spotify.authenticate();
+      const spotifyResults = await spotify.searchArtists(artistName, 1);
+      if (spotifyResults.artists.items.length > 0) {
+        const spotifyArtist = spotifyResults.artists.items[0];
+        if (spotifyArtist) {
+          artistData.spotifyId = spotifyArtist.id;
+          // Use Spotify image if Ticketmaster didn't provide one
+          if (!artistData.imageUrl && spotifyArtist.images[0]) {
+            artistData.imageUrl = spotifyArtist.images[0].url;
+          }
+        }
+      }
+    } catch (error) {
+      console.warn("Failed to fetch basic Spotify data:", error);
+    }
+
+    // Insert the new artist
+    const [newArtist] = await db
+      .insert(artists)
+      .values(artistData)
+      .returning({ id: artists.id, slug: artists.slug, name: artists.name });
+
+    if (!newArtist) {
+      console.error("Failed to insert artist");
+      return NextResponse.json(
+        { error: "Failed to create artist" },
+        { status: 500 },
+      );
+    }
+
+    // Revalidate cache
+    revalidateTag(CACHE_TAGS.artists);
+
+    // Trigger background tasks (fire and forget)
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : 'http://localhost:3001';
+    
+    const backgroundTasks = [
+      // 1. Sync identifiers (Spotify, MBID)
+      fetch(`${baseUrl}/api/cron/sync-artist-data`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.CRON_SECRET}`,
+        },
+        body: JSON.stringify({ artistId: newArtist.id }),
+      }).catch((error) => console.warn("Failed to trigger artist data sync:", error)),
+      
+      // 2. Import full song catalog (excluding live tracks)
+      fetch(`${baseUrl}/api/sync/songs`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.CRON_SECRET}`,
+        },
+        body: JSON.stringify({ 
+          artistId: newArtist.id, 
+          fullDiscography: true,
+          batchSize: 50 
         }),
       }).catch((error) => console.warn("Failed to trigger song sync:", error)),
       
