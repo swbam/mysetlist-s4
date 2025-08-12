@@ -135,9 +135,7 @@ export function EnhancedSearch({
               .toLowerCase()
               .replace(/[^a-z0-9]+/g, "-")
               .replace(/^-|-$/g, "");
-            router.push(
-              `/artists/${slug}?ticketmaster=${result.externalId || result.id}`,
-            );
+            router.push(`/artists/${slug}`);
           } else if (result.slug) {
             // For database artists with slug, use direct navigation
             router.push(`/artists/${result.slug}`);

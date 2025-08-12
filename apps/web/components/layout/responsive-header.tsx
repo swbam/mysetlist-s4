@@ -190,9 +190,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-|-$/g, "");
-        router.push(
-          `/artists/${slug}?ticketmaster=${result.externalId || result.id}`,
-        );
+        router.push(`/artists/${slug}`);
       } else if (result.slug) {
         // For database artists with slug, use direct navigation
         router.push(`/artists/${result.slug}`);
@@ -223,11 +221,9 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                 .replace(/[^a-z0-9]+/g, "-")
                 .replace(/^-|-$/g, "");
 
-            if (firstResult.metadata?.source === "ticketmaster") {
-              router.push(
-                `/artists/${slug}?ticketmaster=${firstResult.metadata.externalId || firstResult.id}`,
-              );
-            } else {
+                          if (firstResult.metadata?.source === "ticketmaster") {
+                router.push(`/artists/${slug}`);
+              } else {
               router.push(`/artists/${slug}`);
             }
           }

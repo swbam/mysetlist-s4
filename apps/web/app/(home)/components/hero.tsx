@@ -89,7 +89,7 @@ function HomeHero() {
       }),
     }).catch(() => {});
 
-    router.push(`/artists/${slug}?ticketmaster=${artist.id}`);
+    router.push(`/artists/${slug}`);
   };
 
   const handleClickOutside = useCallback((event: MouseEvent) => {

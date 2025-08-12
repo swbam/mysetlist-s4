@@ -142,10 +142,8 @@ export function UnifiedSearch({
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
 
-      // Navigate instantly to artist page with Ticketmaster ID for background sync
-      router.push(
-        `/artists/${slug}?ticketmaster=${result.externalId || result.id.replace("tm_", "")}`,
-      );
+      // Navigate instantly to artist page using slug only
+      router.push(`/artists/${slug}`);
 
       // Trigger artist import after navigation (no auth required)
       fetch("/api/artists/import", {
