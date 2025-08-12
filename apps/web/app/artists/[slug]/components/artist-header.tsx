@@ -149,6 +149,10 @@ export const ArtistHeader = React.memo(function ArtistHeader({
           </div>
         </div>
       </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> terragon/fix-finish-mysetlist-sync-cron
     </div>
   );
 });

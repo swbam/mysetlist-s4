@@ -291,6 +291,158 @@ export class SetlistSyncService {
     };
   }
 
+  /**
+   * Ensures initial setlists exist for new shows
+   * Creates 5-song initial setlist with songs randomly selected from artist's non-live catalog
+   * Optionally weights by popularity
+   */
+  async ensureInitialSetlists(showId: string, options: {
+    songCount?: number;
+    weightByPopularity?: boolean;
+    excludeLive?: boolean;
+  } = {}): Promise<{ created: boolean; songCount: number; skippedLive: number }> {
+    const {
+      songCount = 5,
+      weightByPopularity = true,
+      excludeLive = true
+    } = options;
+
+    // Get show details
+    const [show] = await db
+      .select()
+      .from(shows)
+      .where(eq(shows.id, showId))
+      .limit(1);
+
+    if (!show) {
+      throw new Error(`Show not found: ${showId}`);
+    }
+
+    // Check if setlist already exists
+    const existingSetlist = await db
+      .select()
+      .from(setlists)
+      .where(eq(setlists.showId, showId))
+      .limit(1);
+
+    if (existingSetlist.length > 0) {
+      return { created: false, songCount: 0, skippedLive: 0 };
+    }
+
+    // Get artist's catalog
+    let songQuery = db
+      .select({
+        id: songs.id,
+        title: songs.title,
+        artist: songs.artist,
+        album: songs.album,
+        popularity: songs.popularity,
+        durationMs: songs.durationMs,
+        albumType: songs.albumType,
+      })
+      .from(songs)
+      .innerJoin(artistSongs, eq(songs.id, artistSongs.songId))
+      .where(eq(artistSongs.artistId, show.headlinerArtistId));
+
+    // Apply ordering based on options
+    if (weightByPopularity) {
+      songQuery = songQuery.orderBy(sql`${songs.popularity} DESC NULLS LAST, RANDOM()`);
+    } else {
+      songQuery = songQuery.orderBy(sql`RANDOM()`);
+    }
+
+    const availableSongs = await songQuery.limit(50); // Get more than we need for filtering
+
+    // Filter out live tracks if requested
+    let filteredSongs = availableSongs;
+    let skippedLive = 0;
+
+    if (excludeLive) {
+      filteredSongs = availableSongs.filter(song => {
+        const isLive = this.isLiveTrack(song.title.toLowerCase(), song.album?.toLowerCase() || '');
+        if (isLive) skippedLive++;
+        return !isLive;
+      });
+    }
+
+    if (filteredSongs.length === 0) {
+      return { created: false, songCount: 0, skippedLive };
+    }
+
+    // Select the requested number of songs
+    const selectedSongs = filteredSongs.slice(0, Math.min(songCount, filteredSongs.length));
+
+    // Create predicted setlist
+    const [setlist] = await db
+      .insert(setlists)
+      .values({
+        showId: showId,
+        artistId: show.headlinerArtistId,
+        type: 'predicted',
+        name: 'Predicted Setlist',
+        orderIndex: 0,
+        isLocked: false,
+        importedFrom: 'api',
+      })
+      .returning();
+
+    if (!setlist) {
+      throw new Error('Failed to create setlist');
+    }
+
+    // Add songs to setlist
+    for (let i = 0; i < selectedSongs.length; i++) {
+      const song = selectedSongs[i];
+      if (!song?.id) continue;
+
+      await db
+        .insert(setlistSongsTable)
+        .values({
+          setlistId: setlist.id,
+          songId: song.id,
+          position: i + 1,
+          notes: null,
+          isPlayed: null, // Not applicable for predicted setlists
+        });
+    }
+
+    return { 
+      created: true, 
+      songCount: selectedSongs.length,
+      skippedLive 
+    };
+  }
+
+  /**
+   * Checks if a track is likely a live recording
+   */
+  private isLiveTrack(trackTitle: string, albumName: string): boolean {
+    const liveIndicators = [
+      'live at',
+      'live from',
+      'live in',
+      'live on',
+      '- live',
+      '(live)',
+      '[live]',
+      'live version',
+      'live recording',
+      'concert',
+      'acoustic session',
+      'unplugged',
+      'mtv unplugged',
+      'radio session',
+      'bbc session',
+      'peel session',
+    ];
+
+    const combinedText = `${trackTitle} ${albumName}`;
+    
+    return liveIndicators.some(indicator => 
+      combinedText.includes(indicator)
+    );
+  }
+
   async syncSetlistByShowId(showId: string): Promise<void> {
     const showResults = await db
       .select()
