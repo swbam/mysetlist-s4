@@ -1,3 +1,4 @@
+import { artists, showArtists, shows, venues } from "@repo/database";
 import { SetlistFmClient, type SetlistFmSetlist } from "../clients/setlistfm";
 import { SpotifyClient } from "../clients/spotify";
 import {
@@ -5,7 +6,6 @@ import {
   type TicketmasterEvent,
 } from "../clients/ticketmaster";
 import { and, db, eq } from "../database";
-import { artists, showArtists, shows, venues } from "@repo/database";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 import { VenueSyncService } from "./venue-sync";
 
@@ -39,7 +39,7 @@ export class ShowSyncService {
     let venueId: string | null = null;
     if (event._embedded?.venues?.[0]) {
       const ticketmasterVenue = event._embedded.venues[0];
-      
+
       // First check if venue already exists
       const venueSlug = this.generateSlug(ticketmasterVenue.name);
       const existingVenueResults = await db
@@ -47,26 +47,31 @@ export class ShowSyncService {
         .from(venues)
         .where(eq(venues.slug, venueSlug))
         .limit(1);
-      
+
       if (existingVenueResults.length > 0 && existingVenueResults[0]) {
         venueId = existingVenueResults[0].id;
       } else {
         // Create venue using VenueSyncService
         try {
-          await this.venueSyncService.syncVenueFromTicketmaster(ticketmasterVenue);
-          
+          await this.venueSyncService.syncVenueFromTicketmaster(
+            ticketmasterVenue,
+          );
+
           // Get the newly created venue
           const newVenueResults = await db
             .select()
             .from(venues)
             .where(eq(venues.slug, venueSlug))
             .limit(1);
-          
+
           if (newVenueResults.length > 0 && newVenueResults[0]) {
             venueId = newVenueResults[0].id;
           }
         } catch (error) {
-          console.error(`Failed to create venue ${ticketmasterVenue.name}:`, error);
+          console.error(
+            `Failed to create venue ${ticketmasterVenue.name}:`,
+            error,
+          );
           // Continue without venue
         }
       }
@@ -336,7 +341,9 @@ export class ShowSyncService {
     }
   }
 
-  async syncArtistShows(artistDbId: string): Promise<{ upcomingShows: number; created: number; updated: number }> {
+  async syncArtistShows(
+    artistDbId: string,
+  ): Promise<{ upcomingShows: number; created: number; updated: number }> {
     // Get artist info from database
     const [artist] = await db
       .select()
@@ -348,7 +355,7 @@ export class ShowSyncService {
       throw new SyncServiceError(
         `Artist not found with ID: ${artistDbId}`,
         "ShowSyncService",
-        "syncArtistShows"
+        "syncArtistShows",
       );
     }
 
@@ -359,7 +366,9 @@ export class ShowSyncService {
 
     // Strategy 1: Search by Ticketmaster artist ID if available
     if (artist.ticketmasterId) {
-      console.log(`Searching Ticketmaster events by artist ID: ${artist.ticketmasterId}`);
+      console.log(
+        `Searching Ticketmaster events by artist ID: ${artist.ticketmasterId}`,
+      );
       try {
         const artistEventsResult = await this.errorHandler.withRetry(
           () =>
@@ -382,7 +391,10 @@ export class ShowSyncService {
           }
         }
       } catch (error) {
-        console.warn(`Failed to search by attraction ID ${artist.ticketmasterId}:`, error);
+        console.warn(
+          `Failed to search by attraction ID ${artist.ticketmasterId}:`,
+          error,
+        );
       }
     }
 
@@ -408,7 +420,10 @@ export class ShowSyncService {
         for (const event of eventsResult._embedded.events) {
           // Check if this event is actually for our artist
           const attractionName = event._embedded?.attractions?.[0]?.name;
-          if (!attractionName || !this.isArtistMatch(artist.name, attractionName)) {
+          if (
+            !attractionName ||
+            !this.isArtistMatch(artist.name, attractionName)
+          ) {
             continue;
           }
           eventsToProcess.add(event.id);
@@ -418,7 +433,9 @@ export class ShowSyncService {
       console.warn(`Failed to search by artist name ${artist.name}:`, error);
     }
 
-    console.log(`Found ${eventsToProcess.size} unique events for artist ${artist.name}`);
+    console.log(
+      `Found ${eventsToProcess.size} unique events for artist ${artist.name}`,
+    );
 
     // Process all unique events found
     for (const eventId of eventsToProcess) {
@@ -449,7 +466,9 @@ export class ShowSyncService {
           await db
             .update(shows)
             .set({
-              status: this.mapTicketmasterStatus(eventDetails.dates.status.code),
+              status: this.mapTicketmasterStatus(
+                eventDetails.dates.status.code,
+              ),
               name: eventDetails.name,
               ticketUrl: eventDetails.url,
               ...(eventDetails.priceRanges?.[0]?.min && {
@@ -540,23 +559,29 @@ export class ShowSyncService {
     return `${this.generateSlug(name)}-${dateStr}`;
   }
 
-  private isArtistMatch(dbArtistName: string, ticketmasterArtistName: string): boolean {
+  private isArtistMatch(
+    dbArtistName: string,
+    ticketmasterArtistName: string,
+  ): boolean {
     const normalize = (name: string) =>
       name.toLowerCase().replace(/[^a-z0-9]/g, "");
-    
+
     const normalizedDb = normalize(dbArtistName);
     const normalizedTm = normalize(ticketmasterArtistName);
-    
+
     // Exact match
     if (normalizedDb === normalizedTm) {
       return true;
     }
-    
+
     // Check if one contains the other (for cases like "Artist" vs "Artist Band")
-    if (normalizedDb.includes(normalizedTm) || normalizedTm.includes(normalizedDb)) {
+    if (
+      normalizedDb.includes(normalizedTm) ||
+      normalizedTm.includes(normalizedDb)
+    ) {
       return true;
     }
-    
+
     return false;
   }
 

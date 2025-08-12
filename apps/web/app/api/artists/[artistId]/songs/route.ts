@@ -7,10 +7,10 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ artistId: string }> },
 ) {
   try {
-    const { id } = await params;
+    const { artistId } = await params;
     const { searchParams } = new URL(request.url);
     const limit = Number.parseInt(searchParams.get("limit") || "50");
     const search = searchParams.get("search") || "";
@@ -34,7 +34,7 @@ export async function GET(
       })
       .from(artistSongs)
       .innerJoin(songs, eq(artistSongs.songId, songs.id))
-      .where(eq(artistSongs.artistId, id))
+      .where(eq(artistSongs.artistId, artistId))
       .orderBy(desc(songs.popularity), songs.title)
       .limit(Math.min(limit, 200));
 

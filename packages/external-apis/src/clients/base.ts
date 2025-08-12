@@ -22,9 +22,9 @@ export abstract class BaseAPIClient {
   constructor(config: APIClientConfig) {
     this.baseURL = config.baseURL;
     this.apiKey = config.apiKey;
-    
+
     // Initialize rate limiter if configured
-    this.rateLimiter = config.rateLimit 
+    this.rateLimiter = config.rateLimit
       ? new RateLimiter({
           requests: config.rateLimit.requests,
           window: config.rateLimit.window,
@@ -59,10 +59,10 @@ export abstract class BaseAPIClient {
 
     // Check rate limits
     if (this.rateLimiter) {
-      const rateCheck = await this.rateLimiter.checkLimit('global');
+      const rateCheck = await this.rateLimiter.checkLimit("global");
       if (!rateCheck.allowed) {
         throw new RateLimitError(
-          `Rate limit exceeded. Try again in ${rateCheck.resetIn} seconds.`
+          `Rate limit exceeded. Try again in ${rateCheck.resetIn} seconds.`,
         );
       }
     }
@@ -80,12 +80,12 @@ export abstract class BaseAPIClient {
     if (!response.ok) {
       // Handle rate limit responses specifically
       if (response.status === 429) {
-        const retryAfter = response.headers.get('Retry-After') || '60';
+        const retryAfter = response.headers.get("Retry-After") || "60";
         throw new RateLimitError(
-          `API rate limit exceeded. Retry after ${retryAfter} seconds.`
+          `API rate limit exceeded. Retry after ${retryAfter} seconds.`,
         );
       }
-      
+
       throw new APIError(
         `API request failed: ${response.status} ${response.statusText}`,
         response.status,

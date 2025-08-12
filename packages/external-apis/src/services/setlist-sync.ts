@@ -1,19 +1,19 @@
 import {
-  SetlistFmClient,
-  type SetlistFmSet,
-  type SetlistFmSetlist,
-} from "../clients/setlistfm";
-import { SpotifyClient } from "../clients/spotify";
-import { and, db, eq, sql } from "../database";
-import {
-  artists,
   artistSongs,
+  artists,
   setlistSongs as setlistSongsTable,
   setlists,
   shows,
   songs,
   venues,
 } from "@repo/database";
+import {
+  SetlistFmClient,
+  type SetlistFmSet,
+  type SetlistFmSetlist,
+} from "../clients/setlistfm";
+import { SpotifyClient } from "../clients/spotify";
+import { and, db, eq, sql } from "../database";
 
 export class SetlistSyncService {
   private setlistFmClient: SetlistFmClient;
@@ -194,15 +194,23 @@ export class SetlistSyncService {
     return processedSongs;
   }
 
-  async createDefaultSetlists(artistId: string): Promise<{ upcomingShows: number; createdSetlists: number; skipped: number }> {
+  async createDefaultSetlists(
+    artistId: string,
+  ): Promise<{
+    upcomingShows: number;
+    createdSetlists: number;
+    skipped: number;
+  }> {
     // Get all upcoming shows for this artist without an existing setlist
     const upcomingShows = await db
       .select()
       .from(shows)
-      .where(and(
-        eq(shows.headlinerArtistId, artistId),
-        sql`${shows.date} >= CURRENT_DATE`
-      ));
+      .where(
+        and(
+          eq(shows.headlinerArtistId, artistId),
+          sql`${shows.date} >= CURRENT_DATE`,
+        ),
+      );
 
     let createdSetlists = 0;
 
@@ -220,7 +228,11 @@ export class SetlistSyncService {
 
       // Get non-live songs from catalog and pick 5 random
       const catalog = await db
-        .select({ id: songs.id, title: songs.title, popularity: songs.popularity })
+        .select({
+          id: songs.id,
+          title: songs.title,
+          popularity: songs.popularity,
+        })
         .from(songs)
         .innerJoin(artistSongs, eq(songs.id, artistSongs.songId))
         .where(eq(artistSongs.artistId, artistId));
@@ -256,11 +268,11 @@ export class SetlistSyncService {
         .values({
           showId: show.id,
           artistId: artistId,
-          type: 'predicted',
-          name: 'Predicted Setlist',
+          type: "predicted",
+          name: "Predicted Setlist",
           orderIndex: 0,
           isLocked: false,
-          importedFrom: 'api',
+          importedFrom: "api",
         })
         .returning();
 
@@ -284,10 +296,10 @@ export class SetlistSyncService {
       createdSetlists++;
     }
 
-    return { 
-      upcomingShows: upcomingShows.length, 
+    return {
+      upcomingShows: upcomingShows.length,
       createdSetlists,
-      skipped: upcomingShows.length - createdSetlists 
+      skipped: upcomingShows.length - createdSetlists,
     };
   }
 
@@ -296,15 +308,18 @@ export class SetlistSyncService {
    * Creates 5-song initial setlist with songs randomly selected from artist's non-live catalog
    * Optionally weights by popularity
    */
-  async ensureInitialSetlists(showId: string, options: {
-    songCount?: number;
-    weightByPopularity?: boolean;
-    excludeLive?: boolean;
-  } = {}): Promise<{ created: boolean; songCount: number; skippedLive: number }> {
+  async ensureInitialSetlists(
+    showId: string,
+    options: {
+      songCount?: number;
+      weightByPopularity?: boolean;
+      excludeLive?: boolean;
+    } = {},
+  ): Promise<{ created: boolean; songCount: number; skippedLive: number }> {
     const {
       songCount = 5,
       weightByPopularity = true,
-      excludeLive = true
+      excludeLive = true,
     } = options;
 
     // Get show details
@@ -347,7 +362,9 @@ export class SetlistSyncService {
     // Apply ordering based on options
     // Apply ordering based on options (cast to any to avoid narrowed builder issues)
     if (weightByPopularity) {
-      (songQuery as any) = (songQuery as any).orderBy(sql`${songs.popularity} DESC NULLS LAST, RANDOM()`);
+      (songQuery as any) = (songQuery as any).orderBy(
+        sql`${songs.popularity} DESC NULLS LAST, RANDOM()`,
+      );
     } else {
       (songQuery as any) = (songQuery as any).orderBy(sql`RANDOM()`);
     }
@@ -359,8 +376,11 @@ export class SetlistSyncService {
     let skippedLive = 0;
 
     if (excludeLive) {
-      filteredSongs = availableSongs.filter(song => {
-        const isLive = this.isLiveTrack(song.title.toLowerCase(), song.album?.toLowerCase() || '');
+      filteredSongs = availableSongs.filter((song: any) => {
+        const isLive = this.isLiveTrack(
+          song.title.toLowerCase(),
+          song.album?.toLowerCase() || "",
+        );
         if (isLive) skippedLive++;
         return !isLive;
       });
@@ -371,7 +391,10 @@ export class SetlistSyncService {
     }
 
     // Select the requested number of songs
-    const selectedSongs = filteredSongs.slice(0, Math.min(songCount, filteredSongs.length));
+    const selectedSongs = filteredSongs.slice(
+      0,
+      Math.min(songCount, filteredSongs.length),
+    );
 
     // Create predicted setlist
     const [setlist] = await db
@@ -379,16 +402,16 @@ export class SetlistSyncService {
       .values({
         showId: showId,
         artistId: show.headlinerArtistId,
-        type: 'predicted',
-        name: 'Predicted Setlist',
+        type: "predicted",
+        name: "Predicted Setlist",
         orderIndex: 0,
         isLocked: false,
-        importedFrom: 'api',
+        importedFrom: "api",
       })
       .returning();
 
     if (!setlist) {
-      throw new Error('Failed to create setlist');
+      throw new Error("Failed to create setlist");
     }
 
     // Add songs to setlist
@@ -396,21 +419,19 @@ export class SetlistSyncService {
       const song = selectedSongs[i];
       if (!song?.id) continue;
 
-      await db
-        .insert(setlistSongsTable)
-        .values({
-          setlistId: setlist.id,
-          songId: song.id,
-          position: i + 1,
-          notes: null,
-          isPlayed: null, // Not applicable for predicted setlists
-        });
+      await db.insert(setlistSongsTable).values({
+        setlistId: setlist.id,
+        songId: song.id,
+        position: i + 1,
+        notes: null,
+        isPlayed: null, // Not applicable for predicted setlists
+      });
     }
 
-    return { 
-      created: true, 
+    return {
+      created: true,
       songCount: selectedSongs.length,
-      skippedLive 
+      skippedLive,
     };
   }
 
@@ -419,29 +440,27 @@ export class SetlistSyncService {
    */
   private isLiveTrack(trackTitle: string, albumName: string): boolean {
     const liveIndicators = [
-      'live at',
-      'live from',
-      'live in',
-      'live on',
-      '- live',
-      '(live)',
-      '[live]',
-      'live version',
-      'live recording',
-      'concert',
-      'acoustic session',
-      'unplugged',
-      'mtv unplugged',
-      'radio session',
-      'bbc session',
-      'peel session',
+      "live at",
+      "live from",
+      "live in",
+      "live on",
+      "- live",
+      "(live)",
+      "[live]",
+      "live version",
+      "live recording",
+      "concert",
+      "acoustic session",
+      "unplugged",
+      "mtv unplugged",
+      "radio session",
+      "bbc session",
+      "peel session",
     ];
 
     const combinedText = `${trackTitle} ${albumName}`;
-    
-    return liveIndicators.some(indicator => 
-      combinedText.includes(indicator)
-    );
+
+    return liveIndicators.some((indicator) => combinedText.includes(indicator));
   }
 
   async syncSetlistByShowId(showId: string): Promise<void> {
