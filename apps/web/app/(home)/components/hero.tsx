@@ -78,6 +78,20 @@ function HomeHero() {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
+<<<<<<< Current (Your changes)
+=======
+
+    // Fire and forget import to ensure DB slug exists
+    fetch("/api/artists/import", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ticketmasterId: artist.id,
+        artistName: artist.name,
+      }),
+    }).catch(() => {});
+
+>>>>>>> Incoming (Background Agent changes)
     router.push(`/artists/${slug}?ticketmaster=${artist.id}`);
   };
 

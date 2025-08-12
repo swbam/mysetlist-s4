@@ -120,14 +120,13 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
           // Trigger background sync
 
           const syncResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/artist`,
+            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/import`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 ticketmasterId,
                 artistName,
-                syncType: "full",
               }),
             },
           );
