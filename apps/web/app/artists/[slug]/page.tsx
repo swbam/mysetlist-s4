@@ -307,7 +307,7 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
               <TabsContent value="past" className="space-y-4">
                 <React.Suspense
                   fallback={
-                    <div className="h-64 animate-pulse rounded-lg bg-muted" />
+                    <div className="h-64 animate-pulse rounded-lg bg muted" />
                   }
                 >
                   <PastShows
