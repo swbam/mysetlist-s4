@@ -40,15 +40,15 @@ export async function POST(request: NextRequest) {
     let genres: string[] = [];
     
     try {
-      const tmArtist = await ticketmaster.getArtistDetails(tmAttractionId);
-      if (!tmArtist) {
+      const tmArtist: any = await ticketmaster.getArtistDetails(tmAttractionId);
+      if (!tmArtist || !tmArtist.name) {
         return NextResponse.json(
           { error: "Artist not found on Ticketmaster" },
           { status: 404 },
         );
       }
-      artistName = tmArtist.name;
-      imageUrl = tmArtist.imageUrl;
+      artistName = tmArtist.name as string;
+      imageUrl = tmArtist.imageUrl as string | undefined;
       genres = tmArtist.genres || [];
     } catch (error) {
       console.error("Failed to fetch artist from Ticketmaster:", error);
@@ -233,10 +233,13 @@ async function createInitialSetlistsForNewShows(artistId: string): Promise<void>
         .insert(setlists)
         .values({
           showId: show.id,
+          artistId: show.headlinerArtistId,
+          type: 'predicted',
           name: `${show.name} - Predicted Setlist`,
-          isDefault: true,
+          orderIndex: 0,
+          isLocked: false,
           totalVotes: 0,
-        })
+        } as any)
         .returning({ id: setlists.id });
 
       if (newSetlist) {
@@ -251,11 +254,11 @@ async function createInitialSetlistsForNewShows(artistId: string): Promise<void>
         const setlistSongData = sortedSongs.map((song, index) => ({
           setlistId: newSetlist.id,
           songId: song.id,
-          orderIndex: index + 1,
-          votes: 0,
+          position: index + 1,
+          upvotes: 0,
         }));
 
-        await db.insert(setlistSongs).values(setlistSongData);
+        await db.insert(setlistSongs).values(setlistSongData as any);
         console.log(`Created initial setlist for ${show.name} with ${sortedSongs.length} songs`);
       }
     }

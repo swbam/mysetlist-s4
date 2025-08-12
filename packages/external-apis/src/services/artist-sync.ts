@@ -413,6 +413,7 @@ export class ArtistSyncService {
     };
   }
 
+  async syncFullDiscography(artistId: string): Promise<{ totalSongs: number; totalAlbums: number; processedAlbums: number }>;
   async syncFullDiscography(artistId: string): Promise<{ totalSongs: number; totalAlbums: number; processedAlbums: number }> {
     const result = await this.syncCatalog(artistId);
     return { 
@@ -430,7 +431,7 @@ export class ArtistSyncService {
     for (const genre of genres) {
       const searchResult = await this.spotifyClient.searchArtists(genre, 10);
 
-      for (const artist of searchResult.artists.items) {
+      for (const artist of (searchResult?.artists?.items ?? [])) {
         try {
           await this.syncArtist(artist.id);
         } catch (error) {
