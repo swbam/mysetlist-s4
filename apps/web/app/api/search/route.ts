@@ -24,11 +24,17 @@ interface SearchResult {
   };
 }
 
+// In-memory cache for search results to reduce API calls
+const searchCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 60000; // 60 seconds
+
 export async function GET(request: NextRequest) {
-  // Apply rate limiting
-  const rateLimitResult = await rateLimitMiddleware(request);
-  if (rateLimitResult) {
-    return rateLimitResult;
+  // Apply rate limiting only in production
+  if (process.env.NODE_ENV === 'production') {
+    const rateLimitResult = await rateLimitMiddleware(request);
+    if (rateLimitResult) {
+      return rateLimitResult;
+    }
   }
 
   try {
@@ -45,6 +51,14 @@ export async function GET(request: NextRequest) {
         totalCount: 0,
         timestamp: new Date().toISOString()
       });
+    }
+    
+    // Check cache first
+    const cacheKey = `${query}:${limit}`;
+    const cached = searchCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+      console.log(`Returning cached results for: ${query}`);
+      return NextResponse.json(cached.data);
     }
 
     // HYBRID SEARCH: Search local database first for better relevance
@@ -101,6 +115,9 @@ export async function GET(request: NextRequest) {
       if (apiKey) {
         try {
           console.log("Supplementing with Ticketmaster API, remaining slots:", remainingLimit);
+          
+          // Add a small delay to avoid rapid successive calls
+          await new Promise(resolve => setTimeout(resolve, 100));
 
           const ticketmasterResponse = await ticketmaster.searchAttractions({
             keyword: query,
@@ -137,8 +154,13 @@ export async function GET(request: NextRequest) {
 
           results = [...results, ...newTicketmasterResults];
           console.log(`Added ${newTicketmasterResults.length} Ticketmaster results`);
-        } catch (error) {
-          console.error("Ticketmaster search failed, using database results only:", error);
+        } catch (error: any) {
+          // Handle Ticketmaster rate limiting gracefully
+          if (error?.response?.status === 429 || error?.message?.includes('429')) {
+            console.warn("Ticketmaster API rate limit reached, using database results only");
+          } else {
+            console.error("Ticketmaster search failed, using database results only:", error);
+          }
         }
       } else {
         console.log("Ticketmaster API not configured, using database results only");
@@ -175,12 +197,28 @@ export async function GET(request: NextRequest) {
 
     console.log(`Returning ${results.length} total artists, search relevance optimized`);
     
-    const response = NextResponse.json({
+    const responseData = {
       query,
       results: results.slice(0, limit),
       totalCount: results.slice(0, limit).length,
       timestamp: new Date().toISOString()
-    });
+    };
+    
+    // Cache the results
+    searchCache.set(cacheKey, { data: responseData, timestamp: Date.now() });
+    
+    // Clean up old cache entries
+    if (searchCache.size > 100) {
+      const entries = Array.from(searchCache.entries());
+      const now = Date.now();
+      entries.forEach(([key, value]) => {
+        if (now - value.timestamp > CACHE_TTL * 2) {
+          searchCache.delete(key);
+        }
+      });
+    }
+    
+    const response = NextResponse.json(responseData);
 
     // Add cache headers for search results
     response.headers.set(

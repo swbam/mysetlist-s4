@@ -14,7 +14,7 @@ export const revalidate = 0;
 
 export const generateMetadata = (): Metadata => {
   return createMetadata({
-    title: "Artists - MySetlist",
+    title: "Artists",
     description: "Discover and explore artists, their shows, and setlists.",
   });
 };

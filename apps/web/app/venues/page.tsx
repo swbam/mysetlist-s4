@@ -9,7 +9,7 @@ import { VenueSearch } from "./components/venue-search";
 
 export const generateMetadata = async (): Promise<Metadata> => {
   return createMetadata({
-    title: "Venues - MySetlist",
+    title: "Venues",
     description:
       "Explore concert venues, get insider tips, and plan your perfect show experience",
   });

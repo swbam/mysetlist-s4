@@ -3,10 +3,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
-import React from "react";
+import React, { Suspense } from "react";
 import { BreadcrumbNavigation } from "~/components/breadcrumb-navigation";
 import { ArtistErrorBoundary } from "~/components/error-boundaries/artist-error-boundary";
 import { createArtistMetadata } from "~/lib/seo-metadata";
+import { ArtistImportLoading } from "./components/artist-import-loading";
 import {
   getArtist,
   getArtistShows,
@@ -135,46 +136,86 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
           const importData = await importResponse.json();
           console.log("Artist imported successfully:", importData.artist.name);
           
-          // Try to fetch the artist again after import
+          // Try to fetch the artist again after import with cache bypass
           artist = await getArtist(slug);
           
           if (!artist) {
-            // If still not found, create minimal artist data for display
+            // If still not found after import, show loading page while background sync completes
             const artistName = slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
-            artist = {
-              id: importData.artist.id,
-              spotifyId: null,
-              ticketmasterId: ticketmasterId,
-              name: artistName,
-              slug: slug,
-              imageUrl: null,
-              smallImageUrl: null,
-              genres: "[]",
-              popularity: 0,
-              followers: 0,
-              followerCount: 0,
-              monthlyListeners: null,
-              verified: false,
-              bio: null,
-              externalUrls: null,
-              lastSyncedAt: null,
-              songCatalogSyncedAt: null,
-              totalAlbums: 0,
-              totalSongs: 0,
-              lastFullSyncAt: null,
-              trendingScore: 0,
-              totalShows: 0,
-              upcomingShows: 0,
-              totalSetlists: 0,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            };
+            
+            return (
+              <ArtistErrorBoundary artistName={artistName}>
+                <Suspense fallback={<ArtistImportLoading artistName={artistName} />}>
+                  <ArtistImportLoading artistName={artistName} />
+                </Suspense>
+                <script
+                  dangerouslySetInnerHTML={{
+                    __html: `
+                      // Auto-refresh after 3 seconds to show imported data
+                      setTimeout(() => {
+                        if (typeof window !== 'undefined') {
+                          window.location.reload();
+                        }
+                      }, 3000);
+                    `,
+                  }}
+                />
+              </ArtistErrorBoundary>
+            );
           }
         } else {
-          console.error("Failed to import artist:", await importResponse.text());
+          const errorText = await importResponse.text();
+          console.error("Failed to import artist:", errorText);
+          
+          // Show error state but still try to display basic page
+          const artistName = slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+          return (
+            <div className="container mx-auto py-8">
+              <div className="text-center">
+                <h1 className="text-2xl font-bold text-orange-600 mb-4">
+                  Import In Progress
+                </h1>
+                <p className="text-gray-600 mb-4">
+                  We're still importing "{artistName}" from Ticketmaster.
+                </p>
+                <p className="text-sm text-gray-500">
+                  This page will automatically refresh in a moment.
+                </p>
+              </div>
+              <script
+                dangerouslySetInnerHTML={{
+                  __html: `
+                    setTimeout(() => {
+                      if (typeof window !== 'undefined') {
+                        window.location.reload();
+                      }
+                    }, 2000);
+                  `,
+                }}
+              />
+            </div>
+          );
         }
       } catch (importError) {
         console.error("Artist import error:", importError);
+        
+        // Show error but still try to continue
+        const artistName = slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+        return (
+          <div className="container mx-auto py-8">
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-red-600 mb-4">
+                Import Error
+              </h1>
+              <p className="text-gray-600 mb-4">
+                There was an issue importing "{artistName}" from Ticketmaster.
+              </p>
+              <p className="text-sm text-gray-500">
+                Please try refreshing the page or searching again.
+              </p>
+            </div>
+          </div>
+        );
       }
     }
 

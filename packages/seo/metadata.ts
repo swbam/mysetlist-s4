@@ -24,7 +24,8 @@ export const createMetadata = ({
   image,
   ...properties
 }: MetadataGenerator): Metadata => {
-  const parsedTitle = `${title} | ${applicationName}`;
+  // Don't add " | MySetlist" here since the layout template handles it
+  const parsedTitle = title;
   const defaultMetadata: Metadata = {
     title: parsedTitle,
     description,
@@ -40,10 +41,10 @@ export const createMetadata = ({
     appleWebApp: {
       capable: true,
       statusBarStyle: "default",
-      title: parsedTitle,
+      title: `${title} | ${applicationName}`,
     },
     openGraph: {
-      title: parsedTitle,
+      title: `${title} | ${applicationName}`,
       description,
       type: "website",
       siteName: applicationName,

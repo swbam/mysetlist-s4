@@ -288,4 +288,49 @@ export class TicketmasterClient extends BaseAPIClient {
 
     return result._embedded?.events || [];
   }
+
+  async getArtistDetails(attractionId: string): Promise<{
+    id: string;
+    name: string;
+    imageUrl?: string;
+    genres?: string[];
+    popularity?: number;
+  } | null> {
+    try {
+      const attraction = await this.getAttraction(attractionId);
+      
+      if (!attraction) {
+        return null;
+      }
+
+      // Extract image URL from images array
+      const imageUrl = attraction.images?.find((img: any) => 
+        img.width >= 300 && img.height >= 300
+      )?.url || attraction.images?.[0]?.url;
+
+      // Extract genres from classifications
+      const genres: string[] = [];
+      if (attraction.classifications) {
+        attraction.classifications.forEach((classification: any) => {
+          if (classification.genre?.name) {
+            genres.push(classification.genre.name);
+          }
+          if (classification.subGenre?.name) {
+            genres.push(classification.subGenre.name);
+          }
+        });
+      }
+
+      return {
+        id: attraction.id,
+        name: attraction.name,
+        imageUrl,
+        genres: [...new Set(genres)], // Remove duplicates
+        popularity: attraction.upcomingEvents?._total || 0,
+      };
+    } catch (error) {
+      console.error(`Error fetching artist details for ${attractionId}:`, error);
+      return null;
+    }
+  }
 }

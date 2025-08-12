@@ -200,6 +200,7 @@ export async function securityMiddleware(
     ["POST", "PUT", "PATCH", "DELETE"].includes(request.method)
   ) {
     const csrfBypassEndpoints = [
+      "/api/artists/import",
       "/api/artists/auto-import",
       "/api/artists/import-ticketmaster",
       "/api/artists/sync",

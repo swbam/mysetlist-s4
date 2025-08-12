@@ -16,15 +16,26 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { type, data } = body;
+    const { type, data, artistId, ticketmasterId } = body;
 
     // Basic sync operations
     switch (type) {
+      case "artist":
       case "artists":
-        // Handle artist sync
+        // Handle individual artist sync
+        console.log(`Background sync for artist: ${artistId || ticketmasterId}`);
+        
+        // For now, just acknowledge the sync request
+        // In a full implementation, this would:
+        // - Fetch shows from Ticketmaster
+        // - Update artist data from Spotify
+        // - Sync venue information
+        // - etc.
+        
         return NextResponse.json({
           message: "Artist sync initiated",
-          processed: data?.length || 0,
+          artistId: artistId || ticketmasterId,
+          processed: data?.length || 1,
         });
       case "shows":
         // Handle show sync
@@ -34,7 +45,7 @@ export async function POST(request: NextRequest) {
         });
       default:
         return NextResponse.json(
-          { error: "Invalid sync type. Use: artists, shows" },
+          { error: "Invalid sync type. Use: artist, artists, shows" },
           { status: 400 },
         );
     }

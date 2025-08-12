@@ -23,3 +23,6 @@ export { venueReviews } from "./venue-reviews";
 
 // Re-export artistSongs from artists file to avoid circular dependency
 export { artistSongs } from "./artists";
+
+// User follows artists relationship (needed for artist pages)
+export { userFollowsArtists } from "./user-follows-artists";
