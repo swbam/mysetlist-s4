@@ -336,7 +336,7 @@ export class ArtistSyncService {
           });
           
           for (const track of tracks) {
-<<<<<<< HEAD
+<<<<<<< ours
             // Insert song into database (idempotent by spotifyId); secondary dedupe by normalized title
             const normalizedTitle = track.name.replace(/\s*[-(].*$/,'').trim().toLowerCase();
 =======
@@ -367,7 +367,7 @@ export class ArtistSyncService {
             normalizedTitles.add(normalizedTitle);
 
             // Insert song into database
->>>>>>> terragon/fix-finish-mysetlist-sync-cron
+>>>>>>> theirs
             const [song] = await db
               .insert(songs)
               .values({
