@@ -15,6 +15,17 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# Load environment variables from .env files if present
+# Ensures child node processes receive the variables
+if [ -f ".env" ] || [ -f ".env.local" ] || [ -f "apps/web/.env.local" ]; then
+    echo -e "${YELLOW}ℹ️  Loading environment from .env files...${NC}"
+    set -a
+    [ -f ".env" ] && . ".env"
+    [ -f ".env.local" ] && . ".env.local"
+    [ -f "apps/web/.env.local" ] && . "apps/web/.env.local"
+    set +a
+fi
+
 # Test results tracking
 TOTAL_TESTS=0
 PASSED_TESTS=0

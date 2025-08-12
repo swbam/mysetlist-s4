@@ -25,21 +25,7 @@ async function testArtistImport() {
   console.log('');
 
   try {
-    // First, check if artist already exists
-    console.log('📋 Checking if artist already exists...');
-    const checkResponse = await fetch(`${APP_URL}/api/artists/import?tmAttractionId=${TEST_ARTIST_ID}`);
-    const checkResult = await checkResponse.json();
-    
-    console.log('Check result:', JSON.stringify(checkResult, null, 2));
-    
-    if (checkResult.exists) {
-      console.log('✅ Artist already exists in database');
-      console.log(`   Artist ID: ${checkResult.artistId}`);
-      console.log(`   Slug: ${checkResult.slug}`);
-      return true;
-    }
-
-    // Import the artist
+    // Import the artist (POST-only; GET may not be implemented for this route)
     console.log('🔄 Importing new artist...');
     const importResponse = await fetch(`${APP_URL}/api/artists/import`, {
       method: 'POST',
