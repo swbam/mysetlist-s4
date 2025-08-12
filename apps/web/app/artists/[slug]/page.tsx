@@ -115,13 +115,7 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
 
       setImmediate(async () => {
         try {
-<<<<<<< Current (Your changes)
-          // Trigger background sync
-
-          const syncResponse = await fetch(
-=======
           await fetch(
->>>>>>> Incoming (Background Agent changes)
             `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/import`,
             {
               method: "POST",
@@ -313,7 +307,7 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
               <TabsContent value="past" className="space-y-4">
                 <React.Suspense
                   fallback={
-                    <div className="h-64 animate-pulse rounded-lg bg-muted" />
+                    <div className="h-64 animate-pulse rounded-lg bg muted" />
                   }
                 >
                   <PastShows
