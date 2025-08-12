@@ -482,7 +482,7 @@ export class ArtistSyncService {
         );
 
         // Find the best match
-        for (const spotifyArtist of searchResult.artists.items) {
+        for (const spotifyArtist of (searchResult?.artists?.items ?? [])) {
           if (this.isArtistNameMatch(attractionName, spotifyArtist.name)) {
             spotifyId = spotifyArtist.id;
             break;

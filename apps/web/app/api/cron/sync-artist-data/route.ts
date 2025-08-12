@@ -43,9 +43,10 @@ export async function POST(request: NextRequest) {
         );
       }
       
-      if (artist[0].spotifyId) {
-        await syncService.syncArtist(artist[0].spotifyId);
-        result = { syncedCount: 1, artistName: artist[0].name };
+      const found = artist[0];
+      if (found && found.spotifyId) {
+        await syncService.syncArtist(found.spotifyId as string);
+        result = { syncedCount: 1, artistName: found.name };
       } else {
         result = { syncedCount: 0, error: "No Spotify ID found" };
       }

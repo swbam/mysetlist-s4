@@ -242,7 +242,7 @@ async function createInitialSetlistsForNewShows(artistId: string): Promise<void>
         } as any)
         .returning({ id: setlists.id });
 
-      if (newSetlist) {
+      if (newSetlist && newSetlist.id) {
         // Select 5 songs (prioritize by popularity, then random)
         const sortedSongs = nonLiveSongs
           .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
