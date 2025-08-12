@@ -1,6 +1,5 @@
 # Bundle Size Optimization Report
 
-<<<<<<< HEAD
 ## Overview
 This report summarizes the optimizations implemented to reduce bundle sizes for the MySetlist application.
 
@@ -33,14 +32,8 @@ This report summarizes the optimizations implemented to reduce bundle sizes for 
 ### 4. Next.js Configuration Enhancements
 - ✅ Added more packages to `optimizePackageImports`:
   - @radix-ui components
-  - @supabase packages
-  - framer-motion
-- ✅ Implemented custom webpack chunking strategy:
-  - Framework chunk (React, React-DOM)
-  - Design system chunk (Radix UI, styling utilities)
-  - Supabase chunk (auth and database)
-  - Commons chunk (shared modules)
-- ✅ Enabled runtime chunk separation
+  - lucide-react icons
+  - date-fns functions
 
 ### 5. Font Optimization
 - ✅ Added `display: swap` for Inter font
@@ -116,6 +109,7 @@ pnpm lighthouse
 
 ## Conclusion
 The implemented optimizations should bring the homepage bundle well under the 350kB target. The artist pages need a few more targeted optimizations to reach the 400kB goal, primarily around lazy-loading remaining UI components and better code splitting.
+<<<<<<< Current (Your changes)
 =======
 ## Performance Targets
 - **Homepage**: < 350kB (down from 493kB)
@@ -302,3 +296,5 @@ The implemented optimizations provide a comprehensive approach to meeting the bu
 
 The modular approach allows for gradual rollout and easy rollback if issues arise. The optimization strategy balances aggressive bundle size reduction with maintainable code structure and user experience quality.
 >>>>>>> fccdd438ab7273b15f8870d2cd1c08442bb2d530
+=======
+>>>>>>> Incoming (Background Agent changes)

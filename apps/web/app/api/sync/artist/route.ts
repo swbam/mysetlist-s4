@@ -9,8 +9,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { tmAttractionId, ticketmasterId, artistName, spotifyId, options } = body || {};
 
-    const cronSecret = process.env.CRON_SECRET;
-    const authHeader = cronSecret ? `Bearer ${cronSecret}` : "";
+    const tokens = [process.env.CRON_SECRET, process.env.SUPABASE_SERVICE_ROLE_KEY, process.env.ADMIN_API_KEY].filter(Boolean) as string[];
+    const authHeader = tokens[0] ? `Bearer ${tokens[0]}` : "";
 
     const r = await fetch(`${request.nextUrl.origin}/api/sync/orchestration`, {
       method: "POST",

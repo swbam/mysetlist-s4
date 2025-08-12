@@ -43,7 +43,7 @@ export const generateMetadata = async ({
   try {
     const { slug } = await params;
     const searchParamsData = await searchParams;
-    const ticketmasterId = searchParamsData.ticketmaster as string;
+    const ticketmasterId = undefined as unknown as string; // no longer read from URL
 
     if (!slug) {
       return createArtistMetadata({
@@ -93,7 +93,7 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
   try {
     const { slug } = await params;
     const searchParamsData = await searchParams;
-    const ticketmasterId = searchParamsData.ticketmaster as string;
+    const ticketmasterId = undefined as unknown as string; // no longer read from URL
 
     // Validate slug parameter
     if (!slug || typeof slug !== "string") {
@@ -107,45 +107,35 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
     // Fetch artist data with error handling
     const artist = await getArtist(slug);
 
-    // If artist not found and we have a ticketmaster ID, show loading state and trigger background sync
-    if (!artist && ticketmasterId) {
+    // If artist not found, show loading state and trigger import by name
+    if (!artist) {
       const artistName = slug
         .replace(/-/g, " ")
         .replace(/\b\w/g, (l) => l.toUpperCase());
-      // Show loading state and trigger background sync
 
-      // Trigger background sync immediately (non-blocking)
       setImmediate(async () => {
         try {
+<<<<<<< Current (Your changes)
           // Trigger background sync
 
           const syncResponse = await fetch(
+=======
+          await fetch(
+>>>>>>> Incoming (Background Agent changes)
             `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/import`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                ticketmasterId,
                 artistName,
               }),
             },
           );
-
-          if (syncResponse.ok) {
-            const syncData = await syncResponse.json();
-            // Background sync initiated successfully
-          } else {
-            console.error(
-              "Failed to trigger background sync:",
-              await syncResponse.text(),
-            );
-          }
         } catch (error) {
-          console.error("Background sync trigger failed:", error);
+          console.error("Background import trigger failed:", error);
         }
       });
 
-      // Show loading page with real-time updates via Supabase subscriptions
       return (
         <ArtistErrorBoundary artistName={artistName}>
           <Suspense fallback={<ArtistImportLoading artistName={artistName} />}>
@@ -154,19 +144,12 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
           <script
             dangerouslySetInnerHTML={{
               __html: `
-                // Auto-refresh every 5 seconds to check for imported data
                 const refreshInterval = setInterval(() => {
                   if (typeof window !== 'undefined') {
-                    // Check for updated artist data
                     window.location.reload();
                   }
                 }, 5000);
-                
-                // Stop checking after 2 minutes
-                setTimeout(() => {
-                  clearInterval(refreshInterval);
-                  // Stopped checking for artist updates
-                }, 120000);
+                setTimeout(() => { clearInterval(refreshInterval); }, 120000);
               `,
             }}
           />

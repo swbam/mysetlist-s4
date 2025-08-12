@@ -78,8 +78,6 @@ function HomeHero() {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
-<<<<<<< Current (Your changes)
-=======
 
     // Fire and forget import to ensure DB slug exists
     fetch("/api/artists/import", {
@@ -91,8 +89,7 @@ function HomeHero() {
       }),
     }).catch(() => {});
 
->>>>>>> Incoming (Background Agent changes)
-    router.push(`/artists/${slug}?ticketmaster=${artist.id}`);
+    router.push(`/artists/${slug}`);
   };
 
   const handleClickOutside = useCallback((event: MouseEvent) => {
