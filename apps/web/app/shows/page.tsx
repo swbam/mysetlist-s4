@@ -10,7 +10,6 @@ import type { Metadata } from "next";
 import React, { Suspense } from "react";
 import { ErrorBoundaryWrapper } from "~/components/error-boundary-wrapper";
 import { ShowListSkeleton } from "~/components/loading-states";
-import { ShowsFilter } from "./components/shows-filter";
 import { ShowsGrid } from "./components/shows-grid";
 import { ShowsList } from "./components/shows-list";
 import { ShowsSearch } from "./components/shows-search";
@@ -44,9 +43,6 @@ const ShowsPage = () => {
 
             <ShowsSearch />
 
-            <Suspense fallback={<div className="h-12" />}>
-              <ShowsFilter />
-            </Suspense>
 
             <Tabs defaultValue="grid" className="w-full">
               <TabsList className="w-full max-w-[400px]">

@@ -13,7 +13,8 @@ export const keys = () =>
     },
     runtimeEnv: {
       SPOTIFY_CLIENT_SECRET: process.env["SPOTIFY_CLIENT_SECRET"],
-      NEXT_PUBLIC_SPOTIFY_CLIENT_ID: process.env["NEXT_PUBLIC_SPOTIFY_CLIENT_ID"],
+      NEXT_PUBLIC_SPOTIFY_CLIENT_ID:
+        process.env["NEXT_PUBLIC_SPOTIFY_CLIENT_ID"],
       TICKETMASTER_API_KEY: process.env["TICKETMASTER_API_KEY"],
       SETLIST_FM_API_KEY: process.env["SETLIST_FM_API_KEY"],
     },

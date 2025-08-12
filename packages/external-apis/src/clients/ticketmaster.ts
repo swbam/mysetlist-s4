@@ -104,9 +104,9 @@ export class TicketmasterClient extends BaseAPIClient {
   ): Promise<T> {
     // Construct URL properly handling existing query parameters
     let url: URL;
-    
+
     // Check if endpoint already has query parameters
-    if (endpoint.includes('?')) {
+    if (endpoint.includes("?")) {
       // If endpoint has parameters, construct the full URL and add apikey
       const fullUrl = `${this.baseURL}/${endpoint}&apikey=${this.apiKey!}`;
       url = new URL(fullUrl);
@@ -115,7 +115,6 @@ export class TicketmasterClient extends BaseAPIClient {
       url = new URL(endpoint, this.baseURL);
       url.searchParams.append("apikey", this.apiKey!);
     }
-
 
     // Check cache first if key provided and cache is available
     if (cacheKey && this.cache) {
@@ -138,7 +137,6 @@ export class TicketmasterClient extends BaseAPIClient {
         ...options.headers,
       },
     });
-
 
     if (!response.ok) {
       throw new Error(
@@ -219,7 +217,9 @@ export class TicketmasterClient extends BaseAPIClient {
 
     // Pass the endpoint without parameters, let makeRequest handle URL construction
     const endpoint = `attractions.json`;
-    const fullEndpoint = params.toString() ? `${endpoint}?${params.toString()}` : endpoint;
+    const fullEndpoint = params.toString()
+      ? `${endpoint}?${params.toString()}`
+      : endpoint;
 
     return this.makeRequest(
       fullEndpoint,
@@ -299,15 +299,16 @@ export class TicketmasterClient extends BaseAPIClient {
   } | null> {
     try {
       const attraction = await this.getAttraction(attractionId);
-      
+
       if (!attraction) {
         return null;
       }
 
       // Extract image URL from images array
-      const imageUrl = attraction.images?.find((img: any) => 
-        img.width >= 300 && img.height >= 300
-      )?.url || attraction.images?.[0]?.url;
+      const imageUrl =
+        attraction.images?.find(
+          (img: any) => img.width >= 300 && img.height >= 300,
+        )?.url || attraction.images?.[0]?.url;
 
       // Extract genres from classifications
       const genres: string[] = [];
@@ -330,7 +331,10 @@ export class TicketmasterClient extends BaseAPIClient {
         popularity: attraction.upcomingEvents?._total || 0,
       };
     } catch (error) {
-      console.error(`Error fetching artist details for ${attractionId}:`, error);
+      console.error(
+        `Error fetching artist details for ${attractionId}:`,
+        error,
+      );
       return null;
     }
   }

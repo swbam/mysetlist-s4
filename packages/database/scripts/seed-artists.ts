@@ -11,7 +11,6 @@ const sampleArtists = [
     followers: 85000000,
     monthlyListeners: 75000000,
     verified: true,
-    bio: "Taylor Swift is an American singer-songwriter known for her narrative songwriting and multiple genre shifts throughout her career.",
   },
   {
     name: "The Weeknd",
@@ -26,7 +25,6 @@ const sampleArtists = [
     followers: 72000000,
     monthlyListeners: 95000000,
     verified: true,
-    bio: "The Weeknd is a Canadian singer-songwriter and record producer known for his distinctive falsetto and dark, atmospheric R&B style.",
   },
   {
     name: "Billie Eilish",
@@ -37,7 +35,6 @@ const sampleArtists = [
     followers: 92000000,
     monthlyListeners: 85000000,
     verified: true,
-    bio: "Billie Eilish is an American singer-songwriter who gained popularity for her distinctive vocal style and darkly poetic lyrics.",
   },
   {
     name: "Arctic Monkeys",
@@ -54,7 +51,6 @@ const sampleArtists = [
     followers: 25000000,
     monthlyListeners: 42000000,
     verified: true,
-    bio: "Arctic Monkeys are an English rock band formed in Sheffield in 2002. The group consists of Alex Turner, Jamie Cook, Nick O'Malley, and Matt Helders.",
   },
   {
     name: "Radiohead",
@@ -71,7 +67,6 @@ const sampleArtists = [
     followers: 12000000,
     monthlyListeners: 18000000,
     verified: true,
-    bio: "Radiohead are an English rock band formed in Abingdon, Oxfordshire, in 1985. They have been praised as one of the most innovative bands of their generation.",
   },
 ];
 

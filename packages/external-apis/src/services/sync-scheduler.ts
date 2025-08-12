@@ -1,10 +1,10 @@
+import { artists } from "@repo/database";
 import { SpotifyClient } from "../clients/spotify";
+import { db, eq } from "../database";
 import { ArtistSyncService } from "./artist-sync";
 import { SetlistSyncService } from "./setlist-sync";
 import { ShowSyncService } from "./show-sync";
 import { VenueSyncService } from "./venue-sync";
-import { db, eq } from "../database";
-import { artists } from "@repo/database";
 
 export interface SyncOptions {
   artists?: boolean;
@@ -128,7 +128,13 @@ export class SyncScheduler {
 
         // 3. Create default setlists for upcoming shows
         await this.setlistSync.createDefaultSetlists(
-          (await db.select({ id: artists.id }).from(artists).where(eq(artists.spotifyId, artist.id)).limit(1))[0]?.id || ""
+          (
+            await db
+              .select({ id: artists.id })
+              .from(artists)
+              .where(eq(artists.spotifyId, artist.id))
+              .limit(1)
+          )[0]?.id || "",
         );
       }
     } else {
