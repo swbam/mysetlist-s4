@@ -445,7 +445,7 @@ export class ArtistSyncService {
   /**
    * Maps TM attraction → Spotify artist → MBID for cross-platform identification
    */
-  async syncIdentifiers(attractionId: string): Promise<{
+  async syncIdentifiersForAttraction(attractionId: string): Promise<{
     spotifyId?: string;
     mbid?: string;
     ticketmasterId: string;
