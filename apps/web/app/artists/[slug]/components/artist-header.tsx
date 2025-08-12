@@ -69,7 +69,3 @@ function safeParseJsonArray(value?: string): string[] {
 }
 
 export default ArtistHeader;
-
-    </div>
-  );
-});
