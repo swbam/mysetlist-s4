@@ -336,40 +336,6 @@ export class ArtistSyncService {
           });
           
           for (const track of tracks) {
-<<<<<<< ours
-            // Insert song into database (idempotent by spotifyId); secondary dedupe by normalized title
-            const normalizedTitle = track.name.replace(/\s*[-(].*$/,'').trim().toLowerCase();
-=======
-            // Skip live tracks
-            const trackTitle = track.name.toLowerCase();
-            const albumName = album.name.toLowerCase();
-            
-            if (this.isLiveTrack(trackTitle, albumName)) {
-              skippedLiveTracks++;
-              continue;
-            }
-
-            // Check for duplicates by Spotify track ID
-            if (seenTracks.has(track.id)) {
-              deduplicatedTracks++;
-              continue;
-            }
-
-            // Check for duplicates by normalized title
-            const normalizedTitle = this.normalizeTrackTitle(track.name);
-            if (normalizedTitles.has(normalizedTitle)) {
-              deduplicatedTracks++;
-              continue;
-            }
-
-            // Mark as seen
-            seenTracks.set(track.id, track.name);
-            normalizedTitles.add(normalizedTitle);
-
-            // Insert song into database
->>>>>>> theirs
-            const [song] = await db
-              .insert(songs)
               .values({
                 spotifyId: track.id,
                 title: track.name,
