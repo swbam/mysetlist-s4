@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
   if (rateLimitResult) {
     return rateLimitResult;
   }
-  
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const limit = Number.parseInt(searchParams.get("limit") || "20");

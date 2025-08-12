@@ -190,7 +190,9 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
           .toLowerCase()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-|-$/g, "");
-        router.push(`/artists/${slug}?ticketmaster=${result.externalId || result.id}`);
+        router.push(
+          `/artists/${slug}?ticketmaster=${result.externalId || result.id}`,
+        );
       } else if (result.slug) {
         // For database artists with slug, use direct navigation
         router.push(`/artists/${result.slug}`);
@@ -206,19 +208,25 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
     // Instead of redirecting to search page, try to get the first result
     if (query.length >= 2) {
       try {
-        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=1`);
+        const response = await fetch(
+          `/api/search?q=${encodeURIComponent(query)}&limit=1`,
+        );
         if (response.ok) {
           const data = await response.json();
           const firstResult = data.results?.[0];
           if (firstResult) {
             // Navigate directly to the first artist result
-            const slug = firstResult.metadata?.slug || firstResult.name
-              .toLowerCase()
-              .replace(/[^a-z0-9]+/g, "-")
-              .replace(/^-|-$/g, "");
-            
+            const slug =
+              firstResult.metadata?.slug ||
+              firstResult.name
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-|-$/g, "");
+
             if (firstResult.metadata?.source === "ticketmaster") {
-              router.push(`/artists/${slug}?ticketmaster=${firstResult.metadata.externalId || firstResult.id}`);
+              router.push(
+                `/artists/${slug}?ticketmaster=${firstResult.metadata.externalId || firstResult.id}`,
+              );
             } else {
               router.push(`/artists/${slug}`);
             }
@@ -328,7 +336,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                     >
                       <Avatar className="h-8 w-8">
                         <AvatarImage
-                          src={user.user_metadata?.["avatar_url"]}
+                          src={user.user_metadata?.avatar_url}
                           alt={user.email || ""}
                         />
                         <AvatarFallback>
@@ -341,7 +349,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                     <div className="flex items-center justify-start gap-2 p-2">
                       <div className="flex flex-col space-y-1 leading-none">
                         <p className="font-medium">
-                          {user.user_metadata?.["full_name"] || "User"}
+                          {user.user_metadata?.full_name || "User"}
                         </p>
                         <p className="w-[200px] truncate text-muted-foreground text-sm">
                           {user.email}
@@ -492,7 +500,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                   <div className="flex items-center space-x-3 px-4">
                     <Avatar className="h-10 w-10">
                       <AvatarImage
-                        src={user.user_metadata?.["avatar_url"]}
+                        src={user.user_metadata?.avatar_url}
                         alt={user.email || ""}
                       />
                       <AvatarFallback>
@@ -501,7 +509,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-base">
-                        {user.user_metadata?.["full_name"] || "User"}
+                        {user.user_metadata?.full_name || "User"}
                       </p>
                       <p className="text-muted-foreground text-sm truncate">
                         {user.email}

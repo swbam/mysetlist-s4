@@ -10,13 +10,7 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
-import {
-  Calendar,
-  MapPin,
-  Music,
-  TrendingUp,
-  Users,
-} from "lucide-react";
+import { Calendar, MapPin, Music, TrendingUp, Users } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -43,7 +37,9 @@ export function TrendingLocations() {
 
   const fetchLocations = async () => {
     try {
-      const response = await fetch("/api/trending/insights?type=locations&limit=8");
+      const response = await fetch(
+        "/api/trending/insights?type=locations&limit=8",
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch trending locations");
       }
@@ -67,7 +63,7 @@ export function TrendingLocations() {
 
   const getLocationUrl = (location: TrendingLocation) => {
     // Direct to artists page since we focus on artist discovery
-    return `/artists`;
+    return "/artists";
   };
 
   if (loading) {
@@ -85,7 +81,10 @@ export function TrendingLocations() {
         <CardContent>
           <div className="space-y-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="flex items-center justify-between p-3 rounded-lg border">
+              <div
+                key={i}
+                className="flex items-center justify-between p-3 rounded-lg border"
+              >
                 <div className="flex items-center gap-3">
                   <Skeleton className="h-8 w-8 rounded-full" />
                   <div className="space-y-1">
@@ -149,9 +148,7 @@ export function TrendingLocations() {
           <MapPin className="h-5 w-5 text-indigo-500" />
           Trending Cities
         </CardTitle>
-        <CardDescription>
-          Cities with the most concert activity
-        </CardDescription>
+        <CardDescription>Cities with the most concert activity</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
@@ -193,15 +190,19 @@ export function TrendingLocations() {
               {/* Badges & Actions */}
               <div className="flex items-center gap-2">
                 {index < 3 && (
-                  <Badge 
-                    variant={index === 0 ? "default" : "secondary"} 
+                  <Badge
+                    variant={index === 0 ? "default" : "secondary"}
                     className="text-xs"
                   >
                     <TrendingUp className="h-3 w-3 mr-1" />
-                    {index === 0 ? "Hottest" : index === 1 ? "Rising" : "Popular"}
+                    {index === 0
+                      ? "Hottest"
+                      : index === 1
+                        ? "Rising"
+                        : "Popular"}
                   </Badge>
                 )}
-                
+
                 <Link href={getLocationUrl(location)}>
                   <Button variant="outline" size="sm">
                     Explore

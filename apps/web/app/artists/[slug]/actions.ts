@@ -19,8 +19,8 @@ import { CACHE_TAGS, REVALIDATION_TIMES } from "~/lib/cache";
 const _getArtist = async (slug: string) => {
   try {
     // Validate input
-    if (!slug || typeof slug !== 'string') {
-      console.error('Invalid slug provided to getArtist:', slug);
+    if (!slug || typeof slug !== "string") {
+      console.error("Invalid slug provided to getArtist:", slug);
       return null;
     }
 
@@ -69,7 +69,7 @@ const _getArtist = async (slug: string) => {
       const supabase = await createServiceClient();
 
       if (!supabase) {
-        console.error('Failed to create Supabase service client');
+        console.error("Failed to create Supabase service client");
         return null;
       }
 
@@ -86,7 +86,7 @@ const _getArtist = async (slug: string) => {
         try {
           // First search for the artist to see if it exists in external APIs
           const searchResponse = await fetch(
-            `${process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001"}/api/search?q=${encodeURIComponent(slug.replace(/-/g, " "))}&limit=1`,
+            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/search?q=${encodeURIComponent(slug.replace(/-/g, " "))}&limit=1`,
           );
 
           if (searchResponse.ok) {
@@ -98,7 +98,7 @@ const _getArtist = async (slug: string) => {
             if (externalArtist) {
               // Trigger import for this artist
               const importResponse = await fetch(
-                `${process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001"}/api/artists/import`,
+                `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/import`,
                 {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -203,13 +203,13 @@ export const getArtist = unstable_cache(_getArtist, ["artist-by-slug"], {
 const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
   try {
     // Validate inputs
-    if (!artistId || typeof artistId !== 'string') {
-      console.error('Invalid artistId provided to getArtistShows:', artistId);
+    if (!artistId || typeof artistId !== "string") {
+      console.error("Invalid artistId provided to getArtistShows:", artistId);
       return [];
     }
 
-    if (!type || !['upcoming', 'past'].includes(type)) {
-      console.error('Invalid type provided to getArtistShows:', type);
+    if (!type || !["upcoming", "past"].includes(type)) {
+      console.error("Invalid type provided to getArtistShows:", type);
       return [];
     }
     // Enhanced query with better data handling and validation
@@ -312,8 +312,8 @@ export const getArtistShows = unstable_cache(
 const _getArtistStats = async (artistId: string) => {
   try {
     // Validate input
-    if (!artistId || typeof artistId !== 'string') {
-      console.error('Invalid artistId provided to getArtistStats:', artistId);
+    if (!artistId || typeof artistId !== "string") {
+      console.error("Invalid artistId provided to getArtistStats:", artistId);
       return null;
     }
 

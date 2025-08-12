@@ -54,7 +54,7 @@ export function TicketmasterArtistSearch({
 
     try {
       const response = await fetch(
-        `/api/search/ticketmaster-artists?q=${encodeURIComponent(searchQuery)}&limit=8`
+        `/api/search/ticketmaster-artists?q=${encodeURIComponent(searchQuery)}&limit=8`,
       );
       const data = await response.json();
 
@@ -92,7 +92,7 @@ export function TicketmasterArtistSearch({
 
     try {
       setIsLoading(true);
-      
+
       // Import artist to get proper database slug
       const importResponse = await fetch("/api/artists/import", {
         method: "POST",
@@ -168,7 +168,10 @@ export function TicketmasterArtistSearch({
           {isLoading && results.length === 0 && (
             <div className="space-y-3">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="flex items-center gap-3 rounded-lg border p-3">
+                <div
+                  key={i}
+                  className="flex items-center gap-3 rounded-lg border p-3"
+                >
                   <Skeleton className="h-12 w-12 rounded" />
                   <div className="flex-1 space-y-2">
                     <Skeleton className="h-4 w-32" />
@@ -196,7 +199,7 @@ export function TicketmasterArtistSearch({
                 <Sparkles className="h-4 w-4" />
                 <span>Live results from Ticketmaster</span>
               </div>
-              
+
               <div className="space-y-2">
                 {results.map((artist) => (
                   <div
@@ -229,7 +232,7 @@ export function TicketmasterArtistSearch({
                           <Sparkles className="h-3 w-3 text-yellow-500" />
                         )}
                       </div>
-                      
+
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         {artist.genres.length > 0 && (
                           <span className="truncate">
@@ -251,7 +254,7 @@ export function TicketmasterArtistSearch({
                           variant="secondary"
                           className={cn(
                             "text-xs font-medium",
-                            getPopularityColor(artist.popularity)
+                            getPopularityColor(artist.popularity),
                           )}
                         >
                           {artist.popularity}%

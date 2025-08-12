@@ -46,7 +46,7 @@ export function RealStats() {
       >
         <div className="text-center">
           <div className="font-bold text-2xl sm:text-3xl md:text-4xl animate-pulse">
-            <div className="h-8 w-16 bg-muted rounded mx-auto"></div>
+            <div className="h-8 w-16 bg-muted rounded mx-auto" />
           </div>
           <div className="mt-1 text-muted-foreground text-xs sm:text-sm">
             Active Artists
@@ -54,7 +54,7 @@ export function RealStats() {
         </div>
         <div className="text-center">
           <div className="font-bold text-2xl sm:text-3xl md:text-4xl animate-pulse">
-            <div className="h-8 w-16 bg-muted rounded mx-auto"></div>
+            <div className="h-8 w-16 bg-muted rounded mx-auto" />
           </div>
           <div className="mt-1 text-muted-foreground text-xs sm:text-sm">
             Votes Cast
@@ -62,7 +62,7 @@ export function RealStats() {
         </div>
         <div className="col-span-2 text-center md:col-span-1">
           <div className="font-bold text-2xl sm:text-3xl md:text-4xl animate-pulse">
-            <div className="h-8 w-16 bg-muted rounded mx-auto"></div>
+            <div className="h-8 w-16 bg-muted rounded mx-auto" />
           </div>
           <div className="mt-1 text-muted-foreground text-xs sm:text-sm">
             Music Fans

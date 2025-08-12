@@ -22,9 +22,7 @@ type SetlistSong = {
   isPlayed?: boolean;
   playTime?: Date;
   upvotes: number;
-  downvotes: number;
-  netVotes: number;
-  userVote?: "up" | "down" | null;
+  userVote?: "up" | null;
 };
 
 type Setlist = {

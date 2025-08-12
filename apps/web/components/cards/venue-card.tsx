@@ -82,8 +82,17 @@ export function VenueCard({
     return `${venue.city}, ${venue.country}`;
   };
 
-  // Parse amenities
-  const amenities = venue.amenities ? JSON.parse(venue.amenities) : [];
+  // Parse amenities safely
+  let amenities: string[] = [];
+  if (venue.amenities) {
+    try {
+      const parsed = JSON.parse(venue.amenities);
+      amenities = Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      // If JSON parsing fails, check if it's a comma-separated string
+      amenities = venue.amenities.split(",").map((item) => item.trim());
+    }
+  }
   const hasParking = amenities.includes("parking");
   const hasWifi = amenities.includes("wifi");
   const hasAccessibility = amenities.includes("accessibility");

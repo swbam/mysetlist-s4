@@ -15,16 +15,15 @@ import {
   PopoverTrigger,
 } from "@repo/design-system/components/ui/popover";
 import { cn } from "@repo/design-system/lib/utils";
-import {
-  Music,
-  Search,
-  X,
-} from "lucide-react";
+import { Loader2, Music, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useDebounce } from "~/hooks/use-debounce";
-import { SearchResultsDropdown, type SearchResultItem } from "~/components/search/search-results-dropdown";
+import {
+  type SearchResultItem,
+  SearchResultsDropdown,
+} from "~/components/search/search-results-dropdown";
 import { SearchDropdownSkeleton } from "~/components/skeletons/search-skeleton";
+import { useDebounce } from "~/hooks/use-debounce";
 
 // Use SearchResultItem from our reusable component
 type SearchResult = SearchResultItem;
@@ -91,19 +90,21 @@ export function UnifiedSearch({
         }
 
         // Convert all results to SearchResult format (all will be artists)
-        const searchResults: SearchResult[] = (data.results || []).map((result: any) => ({
-          id: result.id,
-          type: "artist" as const,
-          title: result.name,
-          subtitle: result.description || "Artist",
-          imageUrl: result.imageUrl,
-          slug: result.metadata?.slug,
-          source: result.metadata?.source || "ticketmaster",
-          popularity: result.metadata?.popularity || 0,
-          genres: result.metadata?.genres || [],
-          externalId: result.metadata?.externalId || result.id,
-          requiresSync: result.metadata?.source === "ticketmaster",
-        }));
+        const searchResults: SearchResult[] = (data.results || []).map(
+          (result: any) => ({
+            id: result.id,
+            type: "artist" as const,
+            title: result.name,
+            subtitle: result.description || "Artist",
+            imageUrl: result.imageUrl,
+            slug: result.metadata?.slug,
+            source: result.metadata?.source || "ticketmaster",
+            popularity: result.metadata?.popularity || 0,
+            genres: result.metadata?.genres || [],
+            externalId: result.metadata?.externalId || result.id,
+            requiresSync: result.metadata?.source === "ticketmaster",
+          }),
+        );
 
         setResults(searchResults);
         setSearched(true);
@@ -142,8 +143,10 @@ export function UnifiedSearch({
         .replace(/^-|-$/g, "");
 
       // Navigate instantly to artist page with Ticketmaster ID for background sync
-      router.push(`/artists/${slug}?ticketmaster=${result.externalId || result.id.replace("tm_", "")}`);
-      
+      router.push(
+        `/artists/${slug}?ticketmaster=${result.externalId || result.id.replace("tm_", "")}`,
+      );
+
       // Trigger background sync after navigation
       fetch("/api/sync/artist", {
         method: "POST",
@@ -159,7 +162,7 @@ export function UnifiedSearch({
       });
     } catch (error) {
       console.error("Navigation error:", error);
-      setError(`Failed to navigate to artist. Please try again.`);
+      setError("Failed to navigate to artist. Please try again.");
       return;
     }
 

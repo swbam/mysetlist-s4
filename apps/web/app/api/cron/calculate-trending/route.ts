@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { db } from "@repo/database";
 import { sql } from "drizzle-orm";
+import { headers } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -31,13 +31,13 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Trending calculation failed:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: "Trending calculation failed",
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -67,13 +67,13 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Trending calculation failed:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: "Trending calculation failed",
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

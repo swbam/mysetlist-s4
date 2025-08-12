@@ -24,7 +24,6 @@ export const artists = pgTable("artists", {
   followerCount: integer("follower_count").default(0), // App followers
   monthlyListeners: integer("monthly_listeners"),
   verified: boolean("verified").default(false),
-  bio: text("bio"),
   externalUrls: text("external_urls"), // JSON object
   lastSyncedAt: timestamp("last_synced_at"),
   songCatalogSyncedAt: timestamp("song_catalog_synced_at"),

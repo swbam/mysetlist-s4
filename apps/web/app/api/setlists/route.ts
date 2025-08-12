@@ -17,10 +17,8 @@ export async function GET(request: NextRequest) {
     const showId = searchParams.get("showId");
 
     const supabase = createServiceClient();
-    
-    let query = supabase
-      .from("setlists")
-      .select(`
+
+    let query = supabase.from("setlists").select(`
         id,
         name,
         show_id,
@@ -50,7 +48,7 @@ export async function GET(request: NextRequest) {
     if (artistId) {
       query = query.eq("artist_id", artistId);
     }
-    
+
     if (showId) {
       query = query.eq("show_id", showId);
     }
@@ -69,33 +67,39 @@ export async function GET(request: NextRequest) {
       throw error;
     }
 
-    return NextResponse.json({
-      setlists: setlistData || [],
-      total: setlistData?.length || 0,
-      page,
-      limit,
-      generatedAt: new Date().toISOString(),
-    }, {
-      headers: {
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+    return NextResponse.json(
+      {
+        setlists: setlistData || [],
+        total: setlistData?.length || 0,
+        page,
+        limit,
+        generatedAt: new Date().toISOString(),
       },
-    });
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        },
+      },
+    );
   } catch (error) {
     console.error("Setlists API error:", error);
-    return NextResponse.json({
-      setlists: [],
-      total: 0,
-      page: 1,
-      limit: 20,
-      generatedAt: new Date().toISOString(),
-      fallback: true,
-      error: "Unable to load setlists at this time",
-    }, {
-      status: 200,
-      headers: {
-        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+    return NextResponse.json(
+      {
+        setlists: [],
+        total: 0,
+        page: 1,
+        limit: 20,
+        generatedAt: new Date().toISOString(),
+        fallback: true,
+        error: "Unable to load setlists at this time",
       },
-    });
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+        },
+      },
+    );
   }
 }
 

@@ -42,8 +42,17 @@ interface VenueDetailsProps {
 }
 
 export function VenueDetails({ venue }: VenueDetailsProps) {
-  // Parse amenities if they exist
-  const amenitiesList = venue.amenities ? JSON.parse(venue.amenities) : [];
+  // Parse amenities safely
+  let amenitiesList: string[] = [];
+  if (venue.amenities) {
+    try {
+      const parsed = JSON.parse(venue.amenities);
+      amenitiesList = Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      // If JSON parsing fails, check if it's a comma-separated string
+      amenitiesList = venue.amenities.split(",").map((item) => item.trim());
+    }
+  }
 
   const amenityIcons: Record<string, any> = {
     wifi: Wifi,

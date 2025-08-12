@@ -15,14 +15,14 @@ export async function GET() {
     // Basic system info
     const systemInfo = {
       timestamp: new Date().toISOString(),
-      environment: process.env["NODE_ENV"],
+      environment: process.env.NODE_ENV,
       version: process.env.npm_package_version || "1.0.0",
       deployment: {
         vercel: {
-          url: process.env["VERCEL_URL"],
-          region: process.env["VERCEL_REGION"],
-          branch: process.env["VERCEL_GIT_COMMIT_REF"],
-          commit: process.env["VERCEL_GIT_COMMIT_SHA"]?.slice(0, 7),
+          url: process.env.VERCEL_URL,
+          region: process.env.VERCEL_REGION,
+          branch: process.env.VERCEL_GIT_COMMIT_REF,
+          commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7),
         },
       },
     };
@@ -70,7 +70,7 @@ export async function GET() {
       error: {
         message: error instanceof Error ? error.message : "Unknown error",
         stack:
-          process.env["NODE_ENV"] === "development"
+          process.env.NODE_ENV === "development"
             ? (error as Error).stack
             : undefined,
       },
@@ -96,7 +96,7 @@ async function checkDatabase(): Promise<{
 
   try {
     // Check if we have database connection
-    if (!process.env["SUPABASE_URL"] || !process.env["SUPABASE_SERVICE_ROLE_KEY"]) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
       return {
         healthy: false,
         message: "Database configuration missing",
@@ -104,8 +104,8 @@ async function checkDatabase(): Promise<{
     }
 
     const supabase = createClient(
-      process.env["SUPABASE_URL"],
-      process.env["SUPABASE_SERVICE_ROLE_KEY"],
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
     );
 
     // Simple query to test database connectivity
@@ -145,7 +145,7 @@ async function checkAuth(): Promise<{
 
   try {
     // Check if we have auth configuration
-    if (!process.env["SUPABASE_URL"] || !process.env["SUPABASE_ANON_KEY"]) {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
       return {
         healthy: false,
         message: "Auth configuration missing",
@@ -153,8 +153,8 @@ async function checkAuth(): Promise<{
     }
 
     const supabase = createClient(
-      process.env["SUPABASE_URL"],
-      process.env["SUPABASE_ANON_KEY"],
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_ANON_KEY,
     );
 
     // Test auth service by checking session
@@ -221,7 +221,7 @@ async function checkSpotifyAPI(): Promise<{
   message: string;
 }> {
   try {
-    if (!process.env["SPOTIFY_CLIENT_ID"] || !process.env["SPOTIFY_CLIENT_SECRET"]) {
+    if (!process.env.SPOTIFY_CLIENT_ID || !process.env.SPOTIFY_CLIENT_SECRET) {
       return { healthy: false, message: "Spotify credentials missing" };
     }
 
@@ -230,7 +230,7 @@ async function checkSpotifyAPI(): Promise<{
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         Authorization: `Basic ${Buffer.from(
-          `${process.env["SPOTIFY_CLIENT_ID"]}:${process.env["SPOTIFY_CLIENT_SECRET"]}`,
+          `${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`,
         ).toString("base64")}`,
       },
       body: "grant_type=client_credentials",
@@ -257,12 +257,12 @@ async function checkTicketmasterAPI(): Promise<{
   message: string;
 }> {
   try {
-    if (!process.env["TICKETMASTER_API_KEY"]) {
+    if (!process.env.TICKETMASTER_API_KEY) {
       return { healthy: false, message: "Ticketmaster API key missing" };
     }
 
     const response = await fetch(
-      `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${process.env["TICKETMASTER_API_KEY"]}&size=1`,
+      `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${process.env.TICKETMASTER_API_KEY}&size=1`,
     );
 
     if (!response.ok) {

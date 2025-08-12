@@ -68,14 +68,12 @@ export function ShowHeader({ show }: ShowHeaderProps) {
             {format(showDate, "MMM d, yyyy")}
           </p>
           <div className="flex flex-wrap gap-4 text-white/80 text-xs md:text-sm">
-            {show.doors_time && (
-              <span>Doors: {show.doors_time}</span>
-            )}
-            {show.start_time && (
-              <span>Show: {show.start_time}</span>
-            )}
+            {show.doors_time && <span>Doors: {show.doors_time}</span>}
+            {show.start_time && <span>Show: {show.start_time}</span>}
             {show.venue && (
-              <span>{show.venue.city}, {show.venue.state || show.venue.country}</span>
+              <span>
+                {show.venue.city}, {show.venue.state || show.venue.country}
+              </span>
             )}
           </div>
         </div>

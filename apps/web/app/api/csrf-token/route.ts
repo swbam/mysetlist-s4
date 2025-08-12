@@ -1,8 +1,8 @@
+import { createHash, randomBytes } from "node:crypto";
+import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "~/lib/supabase/server";
 import { rateLimitMiddleware } from "~/middleware/rate-limit";
-import { randomBytes, createHash } from "crypto";
-import { cookies } from "next/headers";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   // Apply rate limiting - more lenient for CSRF token requests
   const rateLimitResult = await rateLimitMiddleware(request, {
     maxRequests: 30,
-    windowSeconds: 60
+    windowSeconds: 60,
   });
   if (rateLimitResult) {
     return rateLimitResult;
@@ -25,12 +25,16 @@ export async function GET(request: NextRequest) {
   try {
     // Get user session to bind token to user
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
     // CSRF tokens can be generated for both authenticated and anonymous users
     // Anonymous users get session-based tokens, authenticated users get user-bound tokens
     const userId = user?.id || "anonymous";
-    const sessionId = request.headers.get("x-session-id") || randomBytes(16).toString("hex");
+    const sessionId =
+      request.headers.get("x-session-id") || randomBytes(16).toString("hex");
 
     // Generate secure random token
     const tokenBytes = randomBytes(32);
@@ -51,7 +55,8 @@ export async function GET(request: NextRequest) {
       timestamp,
       expiresAt: expiresAt.toISOString(),
       userAgent: request.headers.get("user-agent") || "",
-      origin: request.headers.get("origin") || request.headers.get("referer") || ""
+      origin:
+        request.headers.get("origin") || request.headers.get("referer") || "",
     };
 
     // Set CSRF token in httpOnly cookie for additional security
@@ -61,16 +66,16 @@ export async function GET(request: NextRequest) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 60 * 60, // 1 hour
-      path: "/"
+      path: "/",
     });
 
     // Also set token hash in a separate cookie for client-side validation
     cookieStore.set("csrf-token-hash", tokenHash, {
       httpOnly: false,
-      secure: process.env.NODE_ENV === "production", 
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 60 * 60, // 1 hour
-      path: "/"
+      path: "/",
     });
 
     // Store token metadata in session storage if user is authenticated
@@ -79,17 +84,20 @@ export async function GET(request: NextRequest) {
         // Store in user metadata or session table
         const { error: storageError } = await supabase
           .from("user_sessions")
-          .upsert({
-            user_id: user.id,
-            session_id: sessionId,
-            csrf_token_hash: tokenHash,
-            expires_at: expiresAt.toISOString(),
-            user_agent: payload.userAgent,
-            origin: payload.origin,
-            created_at: timestamp
-          }, {
-            onConflict: "user_id,session_id"
-          });
+          .upsert(
+            {
+              user_id: user.id,
+              session_id: sessionId,
+              csrf_token_hash: tokenHash,
+              expires_at: expiresAt.toISOString(),
+              user_agent: payload.userAgent,
+              origin: payload.origin,
+              created_at: timestamp,
+            },
+            {
+              onConflict: "user_id,session_id",
+            },
+          );
 
         if (storageError) {
           console.warn("Failed to store CSRF token metadata:", storageError);
@@ -112,26 +120,28 @@ export async function GET(request: NextRequest) {
         usage: "Include this token in POST/PUT/DELETE requests",
         header: "X-CSRF-Token",
         cookie: "csrf-token (automatically set)",
-        expiration: "1 hour from generation"
-      }
+        expiration: "1 hour from generation",
+      },
     });
 
     // Security headers
-    response.headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
+    response.headers.set(
+      "Cache-Control",
+      "no-cache, no-store, must-revalidate",
+    );
     response.headers.set("X-Content-Type-Options", "nosniff");
     response.headers.set("X-Frame-Options", "DENY");
 
     return response;
-
   } catch (error) {
     console.error("CSRF token generation error:", error);
     return NextResponse.json(
       {
         error: "Failed to generate CSRF token",
         message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -144,7 +154,7 @@ export async function POST(request: NextRequest) {
   // Apply stricter rate limiting for validation requests
   const rateLimitResult = await rateLimitMiddleware(request, {
     maxRequests: 100,
-    windowSeconds: 60
+    windowSeconds: 60,
   });
   if (rateLimitResult) {
     return rateLimitResult;
@@ -157,7 +167,7 @@ export async function POST(request: NextRequest) {
     if (!token) {
       return NextResponse.json(
         { error: "CSRF token required", valid: false },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -169,7 +179,7 @@ export async function POST(request: NextRequest) {
     if (!storedToken || !storedHash) {
       return NextResponse.json(
         { error: "No CSRF token found in session", valid: false },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -179,7 +189,9 @@ export async function POST(request: NextRequest) {
 
     // Additional validation for authenticated users
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
 
     let sessionValid = true;
     if (user) {
@@ -193,7 +205,8 @@ export async function POST(request: NextRequest) {
 
         if (session) {
           const expiresAt = new Date(session.expires_at);
-          sessionValid = expiresAt > new Date() && session.csrf_token_hash === providedHash;
+          sessionValid =
+            expiresAt > new Date() && session.csrf_token_hash === providedHash;
         }
       } catch (error) {
         console.warn("Session validation error:", error);
@@ -207,9 +220,8 @@ export async function POST(request: NextRequest) {
       valid: isValid,
       authenticated: !!user,
       timestamp: new Date().toISOString(),
-      ...(isValid ? {} : { error: "Invalid CSRF token" })
+      ...(isValid ? {} : { error: "Invalid CSRF token" }),
     });
-
   } catch (error) {
     console.error("CSRF token validation error:", error);
     return NextResponse.json(
@@ -217,9 +229,9 @@ export async function POST(request: NextRequest) {
         error: "Failed to validate CSRF token",
         valid: false,
         message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -234,6 +246,6 @@ export async function OPTIONS() {
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, X-CSRF-Token",
       },
-    }
+    },
   );
 }

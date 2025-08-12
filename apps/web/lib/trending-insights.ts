@@ -44,7 +44,7 @@ export interface HotVenue {
 
 export interface RecentSetlistActivity {
   id: string;
-  type: 'new_vote' | 'new_setlist' | 'show_update';
+  type: "new_vote" | "new_setlist" | "show_update";
   showName: string;
   showSlug: string;
   artistName: string;
@@ -101,16 +101,20 @@ export interface TrendingStats {
 /**
  * Get top trending artists with real vote counts and activity metrics
  */
-export async function getTrendingArtistsInsights(limit = 20): Promise<TrendingArtistInsight[]> {
+export async function getTrendingArtistsInsights(
+  limit = 20,
+): Promise<TrendingArtistInsight[]> {
   try {
     const supabase = await createServiceClient();
-    
+
     // Use the database function for optimized query
-    const { data: artists, error } = await supabase
-      .rpc('get_trending_artists_with_votes', { limit_count: limit });
+    const { data: artists, error } = await supabase.rpc(
+      "get_trending_artists_with_votes",
+      { limit_count: limit },
+    );
 
     if (error || !artists) {
-      console.error('Error fetching trending artists:', error);
+      console.error("Error fetching trending artists:", error);
       return [];
     }
 
@@ -119,14 +123,17 @@ export async function getTrendingArtistsInsights(limit = 20): Promise<TrendingAr
       const previousFollowers = artist.previous_follower_count || 0;
       const currentPopularity = artist.popularity || 0;
       const previousPopularity = artist.previous_popularity || 0;
-      
+
       // Calculate growth rates (only if we have previous data)
-      const weeklyGrowth = previousFollowers > 0 
-        ? ((currentFollowers - previousFollowers) / previousFollowers) * 100 
-        : 0;
-      const monthlyGrowth = previousPopularity > 0 
-        ? ((currentPopularity - previousPopularity) / previousPopularity) * 100 
-        : 0;
+      const weeklyGrowth =
+        previousFollowers > 0
+          ? ((currentFollowers - previousFollowers) / previousFollowers) * 100
+          : 0;
+      const monthlyGrowth =
+        previousPopularity > 0
+          ? ((currentPopularity - previousPopularity) / previousPopularity) *
+            100
+          : 0;
 
       return {
         id: artist.id,
@@ -145,7 +152,7 @@ export async function getTrendingArtistsInsights(limit = 20): Promise<TrendingAr
       };
     });
   } catch (error) {
-    console.error('Error in getTrendingArtistsInsights:', error);
+    console.error("Error in getTrendingArtistsInsights:", error);
     return [];
   }
 }
@@ -153,42 +160,44 @@ export async function getTrendingArtistsInsights(limit = 20): Promise<TrendingAr
 /**
  * Get most voted songs across all shows
  */
-export async function getMostVotedSongs(timeframe: 'week' | 'month' | 'all' = 'week', limit = 20): Promise<MostVotedSong[]> {
+export async function getMostVotedSongs(
+  timeframe: "week" | "month" | "all" = "week",
+  limit = 20,
+): Promise<MostVotedSong[]> {
   try {
     const supabase = await createServiceClient();
-    
+
     // Convert timeframe to days for the database function
     let timeframeDays = 0; // 0 = all time
-    if (timeframe === 'week') {
+    if (timeframe === "week") {
       timeframeDays = 7;
-    } else if (timeframe === 'month') {
+    } else if (timeframe === "month") {
       timeframeDays = 30;
     }
 
     // Use the database function for optimized query
-    const { data: songs, error } = await supabase
-      .rpc('get_most_voted_songs', { 
-        timeframe_days: timeframeDays,
-        limit_count: limit 
-      });
+    const { data: songs, error } = await supabase.rpc("get_most_voted_songs", {
+      timeframe_days: timeframeDays,
+      limit_count: limit,
+    });
 
     if (error || !songs) {
-      console.error('Error fetching most voted songs:', error);
+      console.error("Error fetching most voted songs:", error);
       return [];
     }
 
-    return songs.map(song => ({
+    return songs.map((song) => ({
       id: song.song_id,
       title: song.title,
       artist: song.artist,
-      artistSlug: song.artist_slug || '',
+      artistSlug: song.artist_slug || "",
       totalVotes: Number(song.total_votes) || 0,
       showCount: Number(song.show_count) || 0,
       lastVotedAt: song.last_voted_at || new Date().toISOString(),
       albumArtUrl: song.album_art_url,
     }));
   } catch (error) {
-    console.error('Error in getMostVotedSongs:', error);
+    console.error("Error in getMostVotedSongs:", error);
     return [];
   }
 }
@@ -199,9 +208,9 @@ export async function getMostVotedSongs(timeframe: 'week' | 'month' | 'all' = 'w
 export async function getHotVenues(limit = 15): Promise<HotVenue[]> {
   try {
     const supabase = await createServiceClient();
-    
+
     const { data: venues, error } = await supabase
-      .from('venues')
+      .from("venues")
       .select(`
         id,
         name,
@@ -215,32 +224,32 @@ export async function getHotVenues(limit = 15): Promise<HotVenue[]> {
         total_attendance,
         average_rating
       `)
-      .gt('total_shows', 0)
-      .order('upcoming_shows', { ascending: false })
-      .order('total_shows', { ascending: false })
+      .gt("total_shows", 0)
+      .order("upcoming_shows", { ascending: false })
+      .order("total_shows", { ascending: false })
       .limit(limit);
 
     if (error || !venues) {
-      console.error('Error fetching hot venues:', error);
+      console.error("Error fetching hot venues:", error);
       return [];
     }
 
     // Get vote counts for venues through their shows
-    const venueIds = venues.map(v => v.id);
+    const venueIds = venues.map((v) => v.id);
     const { data: venuVotes } = await supabase
-      .from('shows')
-      .select('venue_id, vote_count')
-      .in('venue_id', venueIds);
+      .from("shows")
+      .select("venue_id, vote_count")
+      .in("venue_id", venueIds);
 
     const venueVoteMap = new Map<string, number>();
-    venuVotes?.forEach(show => {
+    venuVotes?.forEach((show) => {
       if (show.venue_id) {
         const existing = venueVoteMap.get(show.venue_id) || 0;
         venueVoteMap.set(show.venue_id, existing + (show.vote_count || 0));
       }
     });
 
-    return venues.map(venue => ({
+    return venues.map((venue) => ({
       id: venue.id,
       name: venue.name,
       slug: venue.slug,
@@ -252,10 +261,11 @@ export async function getHotVenues(limit = 15): Promise<HotVenue[]> {
       upcomingShows: venue.upcoming_shows || 0,
       totalVotes: venueVoteMap.get(venue.id) || 0,
       averageRating: venue.average_rating,
-      recentActivity: (venue.upcoming_shows || 0) + (venueVoteMap.get(venue.id) || 0),
+      recentActivity:
+        (venue.upcoming_shows || 0) + (venueVoteMap.get(venue.id) || 0),
     }));
   } catch (error) {
-    console.error('Error in getHotVenues:', error);
+    console.error("Error in getHotVenues:", error);
     return [];
   }
 }
@@ -263,20 +273,24 @@ export async function getHotVenues(limit = 15): Promise<HotVenue[]> {
 /**
  * Get recent setlist and voting activity
  */
-export async function getRecentSetlistActivity(limit = 20): Promise<RecentSetlistActivity[]> {
+export async function getRecentSetlistActivity(
+  limit = 20,
+): Promise<RecentSetlistActivity[]> {
   try {
     const supabase = await createServiceClient();
-    
+
     // Use the database function for optimized query
-    const { data: activities, error } = await supabase
-      .rpc('get_recent_setlist_activity', { limit_count: limit });
+    const { data: activities, error } = await supabase.rpc(
+      "get_recent_setlist_activity",
+      { limit_count: limit },
+    );
 
     if (error || !activities) {
-      console.error('Error fetching recent activity:', error);
+      console.error("Error fetching recent activity:", error);
       return [];
     }
 
-    return activities.map(activity => ({
+    return activities.map((activity) => ({
       id: activity.id,
       type: activity.type,
       showName: activity.show_name,
@@ -292,7 +306,7 @@ export async function getRecentSetlistActivity(limit = 20): Promise<RecentSetlis
       },
     }));
   } catch (error) {
-    console.error('Error in getRecentSetlistActivity:', error);
+    console.error("Error in getRecentSetlistActivity:", error);
     return [];
   }
 }
@@ -300,16 +314,20 @@ export async function getRecentSetlistActivity(limit = 20): Promise<RecentSetlis
 /**
  * Get trending locations by show and vote activity
  */
-export async function getTrendingLocations(limit = 10): Promise<TrendingLocation[]> {
+export async function getTrendingLocations(
+  limit = 10,
+): Promise<TrendingLocation[]> {
   try {
     const supabase = await createServiceClient();
-    
+
     // Use the database function for optimized query
-    const { data: locations, error } = await supabase
-      .rpc('get_trending_locations', { limit_count: limit });
+    const { data: locations, error } = await supabase.rpc(
+      "get_trending_locations",
+      { limit_count: limit },
+    );
 
     if (error || !locations) {
-      console.error('Error fetching trending locations:', error);
+      console.error("Error fetching trending locations:", error);
       return [];
     }
 
@@ -321,11 +339,11 @@ export async function getTrendingLocations(limit = 10): Promise<TrendingLocation
       upcomingShows: Number(location.upcoming_shows) || 0,
       totalVotes: Number(location.total_votes) || 0,
       totalVenues: Number(location.total_venues) || 0,
-      topArtist: location.top_artist || '',
+      topArtist: location.top_artist || "",
       rank: index + 1,
     }));
   } catch (error) {
-    console.error('Error in getTrendingLocations:', error);
+    console.error("Error in getTrendingLocations:", error);
     return [];
   }
 }
@@ -336,9 +354,11 @@ export async function getTrendingLocations(limit = 10): Promise<TrendingLocation
 export async function getTrendingStatistics(): Promise<TrendingStats> {
   try {
     const supabase = await createServiceClient();
-    
-    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    
+
+    const weekAgo = new Date(
+      Date.now() - 7 * 24 * 60 * 60 * 1000,
+    ).toISOString();
+
     // Get total counts
     const [
       { count: totalVotes },
@@ -349,38 +369,48 @@ export async function getTrendingStatistics(): Promise<TrendingStats> {
       { count: weeklyShows },
       { count: weeklyUsers },
     ] = await Promise.all([
-      supabase.from('votes').select('*', { count: 'exact', head: true }),
-      supabase.from('shows').select('*', { count: 'exact', head: true }),
-      supabase.from('setlists').select('*', { count: 'exact', head: true }),
-      supabase.from('users').select('*', { count: 'exact', head: true }),
-      supabase.from('votes').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo),
-      supabase.from('shows').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo),
-      supabase.from('users').select('*', { count: 'exact', head: true }).gte('created_at', weekAgo),
+      supabase.from("votes").select("*", { count: "exact", head: true }),
+      supabase.from("shows").select("*", { count: "exact", head: true }),
+      supabase.from("setlists").select("*", { count: "exact", head: true }),
+      supabase.from("users").select("*", { count: "exact", head: true }),
+      supabase
+        .from("votes")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", weekAgo),
+      supabase
+        .from("shows")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", weekAgo),
+      supabase
+        .from("users")
+        .select("*", { count: "exact", head: true })
+        .gte("created_at", weekAgo),
     ]);
 
     // Get most active city
     const { data: cityData } = await supabase
-      .from('venues')
-      .select('city, upcoming_shows')
-      .gt('upcoming_shows', 0)
-      .order('upcoming_shows', { ascending: false })
+      .from("venues")
+      .select("city, upcoming_shows")
+      .gt("upcoming_shows", 0)
+      .order("upcoming_shows", { ascending: false })
       .limit(1);
 
     // Get average setlist length from a simple count approach
     const { count: totalSetlistSongs } = await supabase
-      .from('setlist_songs')
-      .select('*', { count: 'exact', head: true });
-    
-    const { count: totalSetlistsCount } = await supabase
-      .from('setlists')
-      .select('*', { count: 'exact', head: true });
+      .from("setlist_songs")
+      .select("*", { count: "exact", head: true });
 
-    const averageSetlistLength = totalSetlistsCount && totalSetlistsCount > 0 
-      ? Math.round((totalSetlistSongs || 0) / totalSetlistsCount) 
-      : 0;
+    const { count: totalSetlistsCount } = await supabase
+      .from("setlists")
+      .select("*", { count: "exact", head: true });
+
+    const averageSetlistLength =
+      totalSetlistsCount && totalSetlistsCount > 0
+        ? Math.round((totalSetlistSongs || 0) / totalSetlistsCount)
+        : 0;
 
     // Get top genre (simplified - would need more complex query for real data)
-    const topGenre = 'Pop'; // Placeholder - would need genre analysis
+    const topGenre = "Pop"; // Placeholder - would need genre analysis
 
     return {
       totalVotes: totalVotes || 0,
@@ -390,12 +420,12 @@ export async function getTrendingStatistics(): Promise<TrendingStats> {
       weeklyVotes: weeklyVotes || 0,
       weeklyShows: weeklyShows || 0,
       weeklyUsers: weeklyUsers || 0,
-      mostActiveCity: cityData?.[0]?.city || 'Unknown',
+      mostActiveCity: cityData?.[0]?.city || "Unknown",
       averageSetlistLength,
       topGenre,
     };
   } catch (error) {
-    console.error('Error in getTrendingStatistics:', error);
+    console.error("Error in getTrendingStatistics:", error);
     return {
       totalVotes: 0,
       totalShows: 0,
@@ -404,9 +434,9 @@ export async function getTrendingStatistics(): Promise<TrendingStats> {
       weeklyVotes: 0,
       weeklyShows: 0,
       weeklyUsers: 0,
-      mostActiveCity: 'Unknown',
+      mostActiveCity: "Unknown",
       averageSetlistLength: 0,
-      topGenre: 'Pop',
+      topGenre: "Pop",
     };
   }
 }
@@ -417,11 +447,11 @@ export async function getTrendingStatistics(): Promise<TrendingStats> {
 export async function getRisingArtists(limit = 15): Promise<RisingArtist[]> {
   try {
     const supabase = await createServiceClient();
-    
+
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    
+
     const { data: artists, error } = await supabase
-      .from('artists')
+      .from("artists")
       .select(`
         id,
         name,
@@ -435,32 +465,36 @@ export async function getRisingArtists(limit = 15): Promise<RisingArtist[]> {
         upcoming_shows,
         created_at
       `)
-      .gte('created_at', thirtyDaysAgo.toISOString())
-      .gt('follower_count', 0)
-      .order('follower_count', { ascending: false })
+      .gte("created_at", thirtyDaysAgo.toISOString())
+      .gt("follower_count", 0)
+      .order("follower_count", { ascending: false })
       .limit(limit * 2); // Get more to filter
 
     if (error || !artists) {
-      console.error('Error fetching rising artists:', error);
+      console.error("Error fetching rising artists:", error);
       return [];
     }
 
     return artists
-      .map(artist => {
+      .map((artist) => {
         const currentFollowers = artist.follower_count || 0;
         const previousFollowers = artist.previous_follower_count || 0;
         const currentPopularity = artist.popularity || 0;
         const previousPopularity = artist.previous_popularity || 0;
-        
-        const followerGrowth = previousFollowers > 0 
-          ? ((currentFollowers - previousFollowers) / previousFollowers) * 100 
-          : 0;
-        const voteGrowth = previousPopularity > 0 
-          ? ((currentPopularity - previousPopularity) / previousPopularity) * 100 
-          : 0;
+
+        const followerGrowth =
+          previousFollowers > 0
+            ? ((currentFollowers - previousFollowers) / previousFollowers) * 100
+            : 0;
+        const voteGrowth =
+          previousPopularity > 0
+            ? ((currentPopularity - previousPopularity) / previousPopularity) *
+              100
+            : 0;
 
         const daysActive = Math.floor(
-          (new Date().getTime() - new Date(artist.created_at).getTime()) / (1000 * 60 * 60 * 24)
+          (new Date().getTime() - new Date(artist.created_at).getTime()) /
+            (1000 * 60 * 60 * 24),
         );
 
         return {
@@ -476,7 +510,7 @@ export async function getRisingArtists(limit = 15): Promise<RisingArtist[]> {
           rank: 0,
         };
       })
-      .filter(artist => artist.followerGrowth > 0 || artist.voteGrowth > 0) // Only growing artists
+      .filter((artist) => artist.followerGrowth > 0 || artist.voteGrowth > 0) // Only growing artists
       .sort((a, b) => {
         // Sort by growth rate and recency
         const aScore = a.followerGrowth + a.voteGrowth + (30 - a.daysActive);
@@ -486,7 +520,7 @@ export async function getRisingArtists(limit = 15): Promise<RisingArtist[]> {
       .slice(0, limit)
       .map((artist, index) => ({ ...artist, rank: index + 1 }));
   } catch (error) {
-    console.error('Error in getRisingArtists:', error);
+    console.error("Error in getRisingArtists:", error);
     return [];
   }
 }

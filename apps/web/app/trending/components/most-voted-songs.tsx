@@ -64,9 +64,15 @@ export function MostVotedSongs() {
   const fetchSongs = async () => {
     try {
       const [weekData, monthData, allData] = await Promise.all([
-        fetch("/api/trending/insights?type=songs&timeframe=week&limit=15").then(r => r.json()),
-        fetch("/api/trending/insights?type=songs&timeframe=month&limit=15").then(r => r.json()),
-        fetch("/api/trending/insights?type=songs&timeframe=all&limit=15").then(r => r.json()),
+        fetch("/api/trending/insights?type=songs&timeframe=week&limit=15").then(
+          (r) => r.json(),
+        ),
+        fetch(
+          "/api/trending/insights?type=songs&timeframe=month&limit=15",
+        ).then((r) => r.json()),
+        fetch("/api/trending/insights?type=songs&timeframe=all&limit=15").then(
+          (r) => r.json(),
+        ),
       ]);
 
       setSongs({
@@ -85,7 +91,9 @@ export function MostVotedSongs() {
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    const diffInHours = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60 * 60),
+    );
 
     if (diffInHours < 1) {
       return "Less than an hour ago";
@@ -102,12 +110,18 @@ export function MostVotedSongs() {
     return date.toLocaleDateString();
   };
 
-  const SongsList = ({ songs, timeframe }: { songs: MostVotedSong[]; timeframe: string }) => {
+  const SongsList = ({
+    songs,
+    timeframe,
+  }: { songs: MostVotedSong[]; timeframe: string }) => {
     if (loading) {
       return (
         <div className="space-y-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="flex items-center gap-4 p-4 rounded-lg border">
+            <div
+              key={i}
+              className="flex items-center gap-4 p-4 rounded-lg border"
+            >
               <div className="w-8 text-center">
                 <Skeleton className="h-4 w-4 mx-auto" />
               </div>

@@ -1,9 +1,9 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { db, userActivityLog } from "@repo/database";
-import { rateLimitMiddleware } from "~/middleware/rate-limit";
-import { getTrendingContent, type TrendingItem } from "~/lib/trending";
+import { and, desc, eq, gte, inArray } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { desc, eq, gte, inArray, and } from "drizzle-orm";
+import { type TrendingItem, getTrendingContent } from "~/lib/trending";
+import { rateLimitMiddleware } from "~/middleware/rate-limit";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -13,7 +13,7 @@ const liveQuerySchema = z.object({
   type: z.enum(["all", "artists", "shows"]).optional().default("all"),
   limit: z.number().min(1).max(100).optional().default(20),
   since: z.string().optional(), // ISO timestamp for incremental updates
-  include_metadata: z.boolean().optional().default(false)
+  include_metadata: z.boolean().optional().default(false),
 });
 
 interface LiveUpdate {
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
   // Apply rate limiting - more frequent for live updates
   const rateLimitResult = await rateLimitMiddleware(request, {
     maxRequests: 120,
-    windowSeconds: 60 // Allow more requests for live updates
+    windowSeconds: 60, // Allow more requests for live updates
   });
   if (rateLimitResult) {
     return rateLimitResult;
@@ -57,38 +57,42 @@ export async function GET(request: NextRequest) {
     const includeMetadata = searchParams.get("include_metadata") === "true";
 
     // Validate parameters
-    const validation = liveQuerySchema.safeParse({ 
-      type, 
-      limit, 
-      since, 
-      include_metadata: includeMetadata 
+    const validation = liveQuerySchema.safeParse({
+      type,
+      limit,
+      since,
+      include_metadata: includeMetadata,
     });
-    
+
     if (!validation.success) {
       return NextResponse.json(
-        { 
-          error: "Invalid parameters", 
-          details: validation.error.errors 
+        {
+          error: "Invalid parameters",
+          details: validation.error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const { type: queryType, limit: queryLimit, since: sinceParam } = validation.data;
+    const {
+      type: queryType,
+      limit: queryLimit,
+      since: sinceParam,
+    } = validation.data;
 
     const currentTime = new Date().toISOString();
 
     // Get current trending data
-    const trendingData = await getTrendingContent({ 
+    const trendingData = await getTrendingContent({
       timeWindow: 24, // Live trending focuses on last 24 hours
       weightVotes: 2.0,
       weightAttendees: 1.5,
       weightRecency: 2.5, // Higher recency weight for live updates
-      limit: queryLimit
+      limit: queryLimit,
     });
 
     let currentTrending: TrendingItem[] = [];
-    
+
     switch (queryType) {
       case "artists":
         currentTrending = trendingData.artists;
@@ -96,7 +100,6 @@ export async function GET(request: NextRequest) {
       case "shows":
         currentTrending = trendingData.shows;
         break;
-      case "all":
       default:
         currentTrending = trendingData.combined;
         break;
@@ -104,11 +107,11 @@ export async function GET(request: NextRequest) {
 
     // Get live updates since the specified timestamp
     const liveUpdates: LiveUpdate[] = [];
-    
+
     if (sinceParam) {
       try {
         const sinceDate = new Date(sinceParam);
-        
+
         // Query recent activity from database for incremental updates
         try {
           const recentActivity = await db
@@ -119,29 +122,36 @@ export async function GET(request: NextRequest) {
               targetType: userActivityLog.targetType,
               targetId: userActivityLog.targetId,
               createdAt: userActivityLog.createdAt,
-              details: userActivityLog.details
+              details: userActivityLog.details,
             })
             .from(userActivityLog)
-            .where(and(
-              gte(userActivityLog.createdAt, new Date(sinceDate)),
-              inArray(userActivityLog.action, ["vote", "attend", "follow", "view"]),
-              inArray(userActivityLog.targetType, ["show", "artist"])
-            ))
+            .where(
+              and(
+                gte(userActivityLog.createdAt, new Date(sinceDate)),
+                inArray(userActivityLog.action, [
+                  "vote",
+                  "attend",
+                  "follow",
+                  "view",
+                ]),
+                inArray(userActivityLog.targetType, ["show", "artist"]),
+              ),
+            )
             .orderBy(desc(userActivityLog.createdAt))
             .limit(50);
 
           if (recentActivity.length > 0) {
             // Process activity into trending updates
             const activityMap = new Map<string, any>();
-            
-            recentActivity.forEach(activity => {
+
+            recentActivity.forEach((activity) => {
               const key = `${activity.targetType}_${activity.targetId}`;
               if (!activityMap.has(key)) {
                 activityMap.set(key, {
                   entity_type: activity.targetType,
                   entity_id: activity.targetId,
                   activities: [],
-                  latest_timestamp: activity.createdAt
+                  latest_timestamp: activity.createdAt,
                 });
               }
               activityMap.get(key).activities.push(activity);
@@ -149,7 +159,9 @@ export async function GET(request: NextRequest) {
 
             // Convert activity to live updates
             for (const [_, activityData] of activityMap) {
-              const item = currentTrending.find(item => item.id === activityData.entity_id);
+              const item = currentTrending.find(
+                (item) => item.id === activityData.entity_id,
+              );
               if (item) {
                 liveUpdates.push({
                   id: item.id,
@@ -157,7 +169,7 @@ export async function GET(request: NextRequest) {
                   action: "update",
                   current_rank: currentTrending.indexOf(item) + 1,
                   timestamp: activityData.latest_timestamp,
-                  data: item
+                  data: item,
                 });
               }
             }
@@ -177,13 +189,14 @@ export async function GET(request: NextRequest) {
         // For MVP, we'll skip trending snapshots as it requires additional schema
         // This feature can be added later when needed
         const previousData: TrendingItem[] = [];
-        
+
         if (previousData.length > 0) {
-          
           // Compare rankings
           currentTrending.forEach((currentItem, currentIndex) => {
-            const previousIndex = previousData.findIndex(prev => prev.id === currentItem.id);
-            
+            const previousIndex = previousData.findIndex(
+              (prev) => prev.id === currentItem.id,
+            );
+
             if (previousIndex === -1) {
               // New trending item
               liveUpdates.push({
@@ -192,7 +205,7 @@ export async function GET(request: NextRequest) {
                 action: "new",
                 current_rank: currentIndex + 1,
                 timestamp: currentTime,
-                data: currentItem
+                data: currentItem,
               });
             } else if (previousIndex !== currentIndex) {
               // Rank change
@@ -205,7 +218,7 @@ export async function GET(request: NextRequest) {
                 previous_rank: previousIndex + 1,
                 score_change: currentItem.score - (previousItem?.score || 0),
                 timestamp: currentTime,
-                data: currentItem
+                data: currentItem,
               });
             }
           });
@@ -230,8 +243,8 @@ export async function GET(request: NextRequest) {
       stats: {
         total_items: currentTrending.length,
         updates_since_last: liveUpdates.length,
-        next_update_eta: nextUpdate.toISOString()
-      }
+        next_update_eta: nextUpdate.toISOString(),
+      },
     };
 
     // Add metadata if requested
@@ -240,7 +253,7 @@ export async function GET(request: NextRequest) {
         cache_strategy: "no-cache",
         update_frequency: "5 minutes",
         data_sources: ["votes", "attendance", "follows", "views"],
-        ranking_algorithm: "weighted_score_with_recency"
+        ranking_algorithm: "weighted_score_with_recency",
       };
     }
 
@@ -248,8 +261,8 @@ export async function GET(request: NextRequest) {
 
     // No caching for live updates
     jsonResponse.headers.set(
-      "Cache-Control", 
-      "no-cache, no-store, must-revalidate"
+      "Cache-Control",
+      "no-cache, no-store, must-revalidate",
     );
     jsonResponse.headers.set("Pragma", "no-cache");
     jsonResponse.headers.set("Expires", "0");
@@ -259,16 +272,15 @@ export async function GET(request: NextRequest) {
     jsonResponse.headers.set("Connection", "keep-alive");
 
     return jsonResponse;
-
   } catch (error) {
     console.error("Live trending error:", error);
     return NextResponse.json(
       {
         error: "Failed to fetch live trending data",
         message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -281,7 +293,7 @@ export async function POST(request: NextRequest) {
   // Stricter rate limiting for POST requests
   const rateLimitResult = await rateLimitMiddleware(request, {
     maxRequests: 30,
-    windowSeconds: 60
+    windowSeconds: 60,
   });
   if (rateLimitResult) {
     return rateLimitResult;
@@ -295,7 +307,7 @@ export async function POST(request: NextRequest) {
     if (!webhookSecret || authHeader !== `Bearer ${webhookSecret}`) {
       return NextResponse.json(
         { error: "Unauthorized webhook request" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -303,32 +315,29 @@ export async function POST(request: NextRequest) {
     const { type, entity_id, action, metadata } = body;
 
     // Log the activity that triggered the update
-    await db
-      .insert(userActivityLog)
-      .values({
-        userId: metadata?.user_id || null,
-        action: action,
-        targetType: type,
-        targetId: entity_id,
-        details: JSON.stringify(metadata),
-        createdAt: new Date()
-      });
+    await db.insert(userActivityLog).values({
+      userId: metadata?.user_id || null,
+      action: action,
+      targetType: type,
+      targetId: entity_id,
+      details: JSON.stringify(metadata),
+      createdAt: new Date(),
+    });
 
     return NextResponse.json({
       success: true,
       message: "Live trending update processed",
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error("Live trending webhook error:", error);
     return NextResponse.json(
       {
         error: "Failed to process trending update",
         message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -343,6 +352,6 @@ export async function OPTIONS() {
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization",
       },
-    }
+    },
   );
 }

@@ -1,7 +1,11 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@repo/design-system/components/ui/card";
-import { Loader2, Download } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+} from "@repo/design-system/components/ui/card";
+import { Download, Loader2 } from "lucide-react";
 import { ArtistPageSkeleton } from "~/components/skeletons/artist-page-skeleton";
 
 interface ArtistImportLoadingProps {
@@ -34,7 +38,9 @@ export function ArtistImportLoading({ artistName }: ArtistImportLoadingProps) {
       <div className="mt-8 text-center">
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary">
           <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="text-sm font-medium">This may take a few seconds...</span>
+          <span className="text-sm font-medium">
+            This may take a few seconds...
+          </span>
         </div>
       </div>
     </div>

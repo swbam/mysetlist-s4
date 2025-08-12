@@ -1,8 +1,8 @@
 "use client";
 
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Wifi, WifiOff, Loader2 } from "lucide-react";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { Loader2, Wifi, WifiOff } from "lucide-react";
 import { useArtistRealtime } from "~/hooks/use-artist-realtime";
 
 interface ArtistPageWrapperProps {
@@ -31,13 +31,17 @@ export function ArtistPageWrapper({
   });
 
   // Show sync progress notification
-  const showSyncNotification = syncProgress.isImporting || syncProgress.stage === "completed";
+  const showSyncNotification =
+    syncProgress.isImporting || syncProgress.stage === "completed";
 
   return (
     <>
       {/* Connection Status Indicator */}
       <div className="fixed top-4 right-4 z-50">
-        <Badge variant={isConnected ? "default" : "destructive"} className="flex items-center gap-1">
+        <Badge
+          variant={isConnected ? "default" : "destructive"}
+          className="flex items-center gap-1"
+        >
           {isConnected ? (
             <>
               <Wifi className="h-3 w-3" />
@@ -71,13 +75,14 @@ export function ArtistPageWrapper({
                         </span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-primary h-2 rounded-full transition-all duration-500"
                           style={{ width: `${syncProgress.progress}%` }}
                         />
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        {syncProgress.stage || "Importing data from external sources..."}
+                        {syncProgress.stage ||
+                          "Importing data from external sources..."}
                       </p>
                     </div>
                   </>

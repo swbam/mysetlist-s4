@@ -90,7 +90,9 @@ export function TrendingStatistics() {
     return (
       <Card>
         <CardContent className="py-8 text-center">
-          <p className="text-muted-foreground">{error || "No statistics available"}</p>
+          <p className="text-muted-foreground">
+            {error || "No statistics available"}
+          </p>
         </CardContent>
       </Card>
     );

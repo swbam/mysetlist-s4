@@ -4,17 +4,14 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { cn } from "@repo/design-system/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  ArrowRight,
-  Clock,
-  Search,
-  TrendingUp,
-  X,
-} from "lucide-react";
+import { ArrowRight, Clock, Search, TrendingUp, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import {
+  type SearchResultItem,
+  SearchResultsDropdown,
+} from "~/components/search/search-results-dropdown";
 import { useDebounce } from "~/hooks/use-debounce";
-import { SearchResultsDropdown, type SearchResultItem } from "~/components/search/search-results-dropdown";
 
 // Use consistent SearchResultItem type
 type SearchResult = SearchResultItem;
@@ -85,21 +82,19 @@ export function MobileSearch({
         );
         if (res.ok) {
           const data = await res.json();
-          searchResults = (data.results || []).map(
-            (result: any) => ({
-              id: result.id,
-              type: "artist" as const,
-              title: result.name,
-              imageUrl: result.imageUrl,
-              subtitle: result.description || "Artist",
-              slug: result.metadata?.slug,
-              source: result.metadata?.source || "database",
-              requiresSync: result.metadata?.source === "ticketmaster",
-              externalId: result.metadata?.externalId || result.id,
-              popularity: result.metadata?.popularity || 0,
-              genres: result.metadata?.genres || [],
-            }),
-          );
+          searchResults = (data.results || []).map((result: any) => ({
+            id: result.id,
+            type: "artist" as const,
+            title: result.name,
+            imageUrl: result.imageUrl,
+            subtitle: result.description || "Artist",
+            slug: result.metadata?.slug,
+            source: result.metadata?.source || "database",
+            requiresSync: result.metadata?.source === "ticketmaster",
+            externalId: result.metadata?.externalId || result.id,
+            popularity: result.metadata?.popularity || 0,
+            genres: result.metadata?.genres || [],
+          }));
         }
       }
 

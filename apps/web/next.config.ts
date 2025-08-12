@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 // Bundle analyzer configuration
 const withBundleAnalyzer = require("@next/bundle-analyzer")({
-  enabled: process.env["ANALYZE"] === "true",
+  enabled: process.env.ANALYZE === "true",
 });
 
 const nextConfig: NextConfig = {
@@ -43,7 +43,7 @@ const nextConfig: NextConfig = {
 
   // Production optimizations
   compiler: {
-    removeConsole: process.env["NODE_ENV"] === "production",
+    removeConsole: process.env.NODE_ENV === "production",
   },
 
   // Image optimization
@@ -77,7 +77,6 @@ const nextConfig: NextConfig = {
           message: /Critical dependency/,
         },
       ];
-
     }
 
     // Aggressive bundle splitting optimizations

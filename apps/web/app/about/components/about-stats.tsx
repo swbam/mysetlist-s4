@@ -11,7 +11,7 @@ interface AboutStats {
 export function AboutStats() {
   const [stats, setStats] = useState<AboutStats>({
     activeUsers: "0",
-    artistsTracked: "0", 
+    artistsTracked: "0",
     showsCovered: "0",
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -50,19 +50,19 @@ export function AboutStats() {
       <div className="grid grid-cols-1 gap-8 text-center md:grid-cols-3">
         <div>
           <div className="font-bold text-3xl text-primary animate-pulse">
-            <div className="h-8 w-16 bg-muted rounded mx-auto"></div>
+            <div className="h-8 w-16 bg-muted rounded mx-auto" />
           </div>
           <div className="text-muted-foreground">Active Users</div>
         </div>
         <div>
           <div className="font-bold text-3xl text-primary animate-pulse">
-            <div className="h-8 w-16 bg-muted rounded mx-auto"></div>
+            <div className="h-8 w-16 bg-muted rounded mx-auto" />
           </div>
           <div className="text-muted-foreground">Artists Tracked</div>
         </div>
         <div>
           <div className="font-bold text-3xl text-primary animate-pulse">
-            <div className="h-8 w-16 bg-muted rounded mx-auto"></div>
+            <div className="h-8 w-16 bg-muted rounded mx-auto" />
           </div>
           <div className="text-muted-foreground">Shows Covered</div>
         </div>
@@ -73,15 +73,21 @@ export function AboutStats() {
   return (
     <div className="grid grid-cols-1 gap-8 text-center md:grid-cols-3">
       <div>
-        <div className="font-bold text-3xl text-primary">{stats.activeUsers}</div>
+        <div className="font-bold text-3xl text-primary">
+          {stats.activeUsers}
+        </div>
         <div className="text-muted-foreground">Active Users</div>
       </div>
       <div>
-        <div className="font-bold text-3xl text-primary">{stats.artistsTracked}</div>
+        <div className="font-bold text-3xl text-primary">
+          {stats.artistsTracked}
+        </div>
         <div className="text-muted-foreground">Artists Tracked</div>
       </div>
       <div>
-        <div className="font-bold text-3xl text-primary">{stats.showsCovered}</div>
+        <div className="font-bold text-3xl text-primary">
+          {stats.showsCovered}
+        </div>
         <div className="text-muted-foreground">Shows Covered</div>
       </div>
     </div>

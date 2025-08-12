@@ -17,10 +17,10 @@ export const productionConfig = {
   // External services
   services: {
     supabase: {
-      projectRef: process.env["SUPABASE_PROJECT_REF"] || "yzwkimtdaabyjbpykquu",
+      projectRef: process.env.SUPABASE_PROJECT_REF || "yzwkimtdaabyjbpykquu",
     },
     spotify: {
-      clientId: process.env["SPOTIFY_CLIENT_ID"],
+      clientId: process.env.SPOTIFY_CLIENT_ID,
       redirectUri: "https://mysetlist-sonnet.vercel.app/auth/callback/spotify",
     },
   },
@@ -54,11 +54,11 @@ export const productionConfig = {
 
 // Helper to get the correct app URL
 export function getAppUrl(): string {
-  if (process.env["NODE_ENV"] === "production") {
+  if (process.env.NODE_ENV === "production") {
     // In production, always use the configured production URL
     return productionConfig.urls.app;
   }
 
   // In development or preview, use environment variables or fallback
-  return process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
+  return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 }

@@ -13,23 +13,23 @@ import {
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
 import {
-  Flame,
   BarChart3,
-  TrendingUp,
-  Music,
+  Flame,
   MapPin,
+  Music,
   Sparkles,
+  TrendingUp,
 } from "lucide-react";
 import type { Metadata } from "next";
 import React, { Suspense } from "react";
 import { TrendingErrorBoundary } from "~/components/error-boundaries/trending-error-boundary";
-import { TrendingStatistics } from "./components/trending-statistics";
-import { TrendingArtists } from "./components/trending-artists";
-import { MostVotedSongs } from "./components/most-voted-songs";
 import { HotVenues } from "./components/hot-venues";
-import { TrendingLocations } from "./components/trending-locations";
-import { RisingArtists } from "./components/rising-artists";
+import { MostVotedSongs } from "./components/most-voted-songs";
 import { RecentSetlistActivity } from "./components/recent-setlist-activity";
+import { RisingArtists } from "./components/rising-artists";
+import { TrendingArtists } from "./components/trending-artists";
+import { TrendingLocations } from "./components/trending-locations";
+import { TrendingStatistics } from "./components/trending-statistics";
 
 // Force dynamic rendering due to server-side auth check
 export const dynamic = "force-dynamic";
@@ -64,7 +64,7 @@ function TrendingPageSkeleton() {
           </Card>
         ))}
       </div>
-      
+
       {/* Main Content Skeleton */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="space-y-8 lg:col-span-2">
@@ -77,7 +77,10 @@ function TrendingPageSkeleton() {
             <CardContent>
               <div className="space-y-4">
                 {Array.from({ length: 6 }).map((_, j) => (
-                  <div key={j} className="flex items-center gap-4 p-3 border rounded-lg">
+                  <div
+                    key={j}
+                    className="flex items-center gap-4 p-3 border rounded-lg"
+                  >
                     <Skeleton className="h-12 w-12 rounded-full" />
                     <div className="flex-1 space-y-2">
                       <Skeleton className="h-4 w-48" />
@@ -90,7 +93,7 @@ function TrendingPageSkeleton() {
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Sidebar Skeleton */}
         <div className="space-y-6">
           <Card>
@@ -146,19 +149,31 @@ export default function TrendingPage() {
               <div className="space-y-8 lg:col-span-2">
                 <Tabs defaultValue="artists" className="w-full">
                   <TabsList className="grid w-full grid-cols-4">
-                    <TabsTrigger value="artists" className="flex items-center gap-2">
+                    <TabsTrigger
+                      value="artists"
+                      className="flex items-center gap-2"
+                    >
                       <TrendingUp className="h-4 w-4" />
                       <span className="hidden sm:inline">Artists</span>
                     </TabsTrigger>
-                    <TabsTrigger value="songs" className="flex items-center gap-2">
+                    <TabsTrigger
+                      value="songs"
+                      className="flex items-center gap-2"
+                    >
                       <Music className="h-4 w-4" />
                       <span className="hidden sm:inline">Songs</span>
                     </TabsTrigger>
-                    <TabsTrigger value="venues" className="flex items-center gap-2">
+                    <TabsTrigger
+                      value="venues"
+                      className="flex items-center gap-2"
+                    >
                       <MapPin className="h-4 w-4" />
                       <span className="hidden sm:inline">Venues</span>
                     </TabsTrigger>
-                    <TabsTrigger value="rising" className="flex items-center gap-2">
+                    <TabsTrigger
+                      value="rising"
+                      className="flex items-center gap-2"
+                    >
                       <Sparkles className="h-4 w-4" />
                       <span className="hidden sm:inline">Rising</span>
                     </TabsTrigger>

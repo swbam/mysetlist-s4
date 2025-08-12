@@ -9,17 +9,13 @@ import { createClient } from "~/lib/supabase/client";
 
 type VoteData = {
   upvotes: number;
-  downvotes: number;
-  netVotes: number;
-  userVote?: "up" | "down" | null;
+  userVote?: "up" | null;
 };
 
 type VoteUpdate = {
   setlistSongId: string;
   upvotes: number;
-  downvotes: number;
-  netVotes: number;
-  userVote?: "up" | "down" | null;
+  userVote?: "up" | null;
 };
 
 interface UseRealtimeVotesOptions {
@@ -45,8 +41,6 @@ export function useRealtimeVotes({
   // For single song interface
   const [votes, setVotes] = useState<VoteData>({
     upvotes: 0,
-    downvotes: 0,
-    netVotes: 0,
     userVote: null,
   });
 
@@ -124,10 +118,8 @@ export function useRealtimeVotes({
           const data = await response.json();
           const update: VoteUpdate = {
             setlistSongId,
-            upvotes: data.upvotes,
-            downvotes: data.downvotes,
-            netVotes: data.netVotes,
-            userVote: data.userVote,
+            upvotes: data.up || 0,
+            userVote: data.currentUserUpvoted ? "up" : null,
           };
 
           setVoteCounts((prev) => ({
@@ -138,10 +130,8 @@ export function useRealtimeVotes({
           // For single song interface
           if (songId === setlistSongId) {
             const voteData: VoteData = {
-              upvotes: data.upvotes,
-              downvotes: data.downvotes,
-              netVotes: data.netVotes,
-              userVote: data.userVote,
+              upvotes: data.up || 0,
+              userVote: data.currentUserUpvoted ? "up" : null,
             };
             setVotes(voteData);
 
@@ -169,7 +159,7 @@ export function useRealtimeVotes({
 
   const vote = async (
     setlistSongId: string,
-    voteType: "up" | "down" | null,
+    voteType: "up" | null,
   ) => {
     const response = await fetch("/api/votes", {
       method: "POST",
@@ -178,7 +168,6 @@ export function useRealtimeVotes({
       },
       body: JSON.stringify({
         setlistSongId,
-        voteType,
       }),
     });
 
@@ -188,10 +177,8 @@ export function useRealtimeVotes({
       // Update local state immediately
       const update: VoteUpdate = {
         setlistSongId,
-        upvotes: result.upvotes,
-        downvotes: result.downvotes,
-        netVotes: result.netVotes,
-        userVote: result.userVote,
+        upvotes: result.up || 0,
+        userVote: result.currentUserUpvoted ? "up" : null,
       };
 
       setVoteCounts((prev) => ({

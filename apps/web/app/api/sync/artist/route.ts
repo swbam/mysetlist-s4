@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -20,11 +20,11 @@ export async function POST(request: NextRequest) {
     if (!ticketmasterId && !spotifyId) {
       return NextResponse.json(
         { error: "Either ticketmasterId or spotifyId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    console.log(`Background artist sync requested:`, {
+    console.log("Background artist sync requested:", {
       ticketmasterId,
       spotifyId,
       artistName,
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
         estimatedDuration: "30-60 seconds",
         syncType,
       },
-      { status: 202 }
+      { status: 202 },
     );
 
     // Trigger background sync in a non-blocking way
@@ -70,15 +70,17 @@ export async function POST(request: NextRequest) {
         error: "Failed to initiate artist sync",
         message: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
 
 async function performBackgroundSync(params: SyncArtistRequest) {
   const { ticketmasterId, spotifyId, artistName, syncType } = params;
-  
-  console.log(`Starting background sync for artist: ${artistName || ticketmasterId || spotifyId}`);
+
+  console.log(
+    `Starting background sync for artist: ${artistName || ticketmasterId || spotifyId}`,
+  );
 
   try {
     // Step 1: Fetch artist data from Ticketmaster if we have an ID
@@ -96,14 +98,22 @@ async function performBackgroundSync(params: SyncArtistRequest) {
       await syncArtistShows(ticketmasterId, artistName);
     }
 
-    console.log(`Background sync completed for: ${artistName || ticketmasterId || spotifyId}`);
+    console.log(
+      `Background sync completed for: ${artistName || ticketmasterId || spotifyId}`,
+    );
   } catch (error) {
-    console.error(`Background sync failed for: ${artistName || ticketmasterId || spotifyId}`, error);
+    console.error(
+      `Background sync failed for: ${artistName || ticketmasterId || spotifyId}`,
+      error,
+    );
     throw error;
   }
 }
 
-async function syncArtistFromTicketmaster(ticketmasterId: string, artistName?: string) {
+async function syncArtistFromTicketmaster(
+  ticketmasterId: string,
+  artistName?: string,
+) {
   try {
     // Import artist from Ticketmaster using existing import endpoint
     const importResponse = await fetch(
@@ -115,7 +125,7 @@ async function syncArtistFromTicketmaster(ticketmasterId: string, artistName?: s
           ticketmasterId,
           artistName,
         }),
-      }
+      },
     );
 
     if (!importResponse.ok) {
@@ -124,7 +134,9 @@ async function syncArtistFromTicketmaster(ticketmasterId: string, artistName?: s
     }
 
     const importData = await importResponse.json();
-    console.log(`Artist imported from Ticketmaster: ${importData.artist?.name}`);
+    console.log(
+      `Artist imported from Ticketmaster: ${importData.artist?.name}`,
+    );
     return importData;
   } catch (error) {
     console.error("Ticketmaster sync failed:", error);

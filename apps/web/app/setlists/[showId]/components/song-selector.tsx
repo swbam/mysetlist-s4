@@ -1,31 +1,31 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Command,
-  CommandInput,
-  CommandList,
   CommandEmpty,
   CommandGroup,
+  CommandInput,
   CommandItem,
+  CommandList,
 } from "@repo/design-system/components/ui/command";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@repo/design-system/components/ui/popover";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { 
-  Plus,
-  Music,
-  Clock,
-  Volume2,
-  Search,
-  ChevronDown,
-  Loader2
-} from "lucide-react";
 import { cn } from "@repo/design-system/lib/utils";
+import {
+  ChevronDown,
+  Clock,
+  Loader2,
+  Music,
+  Plus,
+  Search,
+  Volume2,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 type Song = {
   id: string;
@@ -70,12 +70,12 @@ export function SongSelector({
         limit: "100",
         ...(search && { search }),
       });
-      
+
       const response = await fetch(`/api/artists/${artistId}/songs?${params}`);
       if (!response.ok) {
         throw new Error("Failed to fetch songs");
       }
-      
+
       const data = await response.json();
       setSongs(data.songs || []);
     } catch (error) {
@@ -96,7 +96,7 @@ export function SongSelector({
   // Search functionality with debouncing
   useEffect(() => {
     if (!open) return;
-    
+
     const timeoutId = setTimeout(() => {
       if (searchQuery.length >= 2) {
         fetchSongs(searchQuery);
@@ -137,9 +137,9 @@ export function SongSelector({
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </PopoverTrigger>
-        
-        <PopoverContent 
-          className="w-[--radix-popover-trigger-width] p-0" 
+
+        <PopoverContent
+          className="w-[--radix-popover-trigger-width] p-0"
           align="start"
         >
           <Command shouldFilter={false}>
@@ -148,7 +148,7 @@ export function SongSelector({
               value={searchQuery}
               onValueChange={setSearchQuery}
             />
-            
+
             <CommandList>
               {loading && (
                 <div className="flex items-center justify-center py-6">
@@ -158,7 +158,7 @@ export function SongSelector({
                   </span>
                 </div>
               )}
-              
+
               {!loading && songs.length === 0 && (
                 <CommandEmpty>
                   {searchQuery ? (
@@ -178,7 +178,7 @@ export function SongSelector({
                   )}
                 </CommandEmpty>
               )}
-              
+
               {!loading && songs.length > 0 && (
                 <CommandGroup heading={`${songs.length} songs found`}>
                   {songs.map((song) => (
@@ -199,7 +199,7 @@ export function SongSelector({
                           <Music className="h-4 w-4 text-muted-foreground" />
                         </div>
                       )}
-                      
+
                       {/* Song Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
@@ -207,12 +207,15 @@ export function SongSelector({
                             {song.title}
                           </h4>
                           {song.is_explicit && (
-                            <Badge variant="secondary" className="h-4 px-1 text-xs">
+                            <Badge
+                              variant="secondary"
+                              className="h-4 px-1 text-xs"
+                            >
                               E
                             </Badge>
                           )}
                         </div>
-                        
+
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           {song.album && (
                             <>
@@ -235,7 +238,7 @@ export function SongSelector({
                           )}
                         </div>
                       </div>
-                      
+
                       {/* Popularity indicator */}
                       {song.popularity && song.popularity > 70 && (
                         <Badge variant="secondary" className="text-xs">

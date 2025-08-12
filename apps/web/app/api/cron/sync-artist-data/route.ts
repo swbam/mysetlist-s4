@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
+import { artists, db } from "@repo/database";
 import { ArtistSyncService } from "@repo/external-apis";
-import { db, artists } from "@repo/database";
 import { desc, isNull, sql } from "drizzle-orm";
+import { headers } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
         .select({ spotifyId: artists.spotifyId, name: artists.name })
         .from(artists)
         .where(
-          sql`${artists.lastSyncedAt} IS NULL OR ${artists.lastSyncedAt} < NOW() - INTERVAL '7 days'`
+          sql`${artists.lastSyncedAt} IS NULL OR ${artists.lastSyncedAt} < NOW() - INTERVAL '7 days'`,
         )
         .orderBy(desc(artists.popularity))
         .limit(limit);
@@ -62,13 +62,13 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Artist sync failed:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: "Artist sync failed",
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const limit = Number.parseInt(searchParams.get("limit") || "20");
     const mode = searchParams.get("mode") || "auto";
 
     const syncService = new ArtistSyncService();
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
         .select({ spotifyId: artists.spotifyId, name: artists.name })
         .from(artists)
         .where(
-          sql`${artists.lastSyncedAt} IS NULL OR ${artists.lastSyncedAt} < NOW() - INTERVAL '7 days'`
+          sql`${artists.lastSyncedAt} IS NULL OR ${artists.lastSyncedAt} < NOW() - INTERVAL '7 days'`,
         )
         .orderBy(desc(artists.popularity))
         .limit(limit);
@@ -128,13 +128,13 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Artist sync failed:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: "Artist sync failed",
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

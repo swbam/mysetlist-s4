@@ -1,8 +1,8 @@
-import { createServiceClient } from "~/lib/supabase/server";
-import { ticketmaster } from "@repo/external-apis";
-import { NextRequest, NextResponse } from "next/server";
+import { spotify, setlistfm, ticketmaster } from "@repo/external-apis";
 import { revalidateTag } from "next/cache";
+import { type NextRequest, NextResponse } from "next/server";
 import { CACHE_TAGS } from "~/lib/cache";
+import { createServiceClient } from "~/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     if (!ticketmasterId && !artistName) {
       return NextResponse.json(
         { error: "Either ticketmasterId or artistName is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     if (!supabase) {
       return NextResponse.json(
         { error: "Unable to connect to database" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       .from("artists")
       .select("*")
       .or(
-        `slug.eq.${slug}${ticketmasterId ? `,ticketmaster_id.eq.${ticketmasterId}` : ""}`
+        `slug.eq.${slug}${ticketmasterId ? `,ticketmaster_id.eq.${ticketmasterId}` : ""}`,
       )
       .single();
 
@@ -50,21 +50,22 @@ export async function POST(request: NextRequest) {
           imported: false,
           message: "Artist already exists",
         },
-        { status: 200 }
+        { status: 200 },
       );
     }
 
-    // Try to get more data from Ticketmaster if we have the ID
+    // Initialize artist data
     let artistData: any = {
       name: artistName,
       slug,
-      image_url: imageUrl,
+      imageUrl: imageUrl,
       genres: JSON.stringify(genres || []),
-      ticketmaster_id: ticketmasterId,
+      ticketmasterId: ticketmasterId,
       verified: false,
       popularity: 0,
     };
 
+    // Fetch and integrate data from external APIs
     if (ticketmasterId) {
       try {
         const tmArtist = await ticketmaster.getArtistDetails(ticketmasterId);
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
           artistData = {
             ...artistData,
             name: tmArtist.name || artistName,
-            image_url: tmArtist.imageUrl || imageUrl,
+            imageUrl: tmArtist.imageUrl || imageUrl,
             genres: JSON.stringify(tmArtist.genres || genres || []),
             popularity: tmArtist.popularity || 0,
           };
@@ -80,6 +81,44 @@ export async function POST(request: NextRequest) {
       } catch (error) {
         console.warn("Failed to fetch additional Ticketmaster data:", error);
       }
+    }
+
+    // Try to find and set Spotify ID
+    try {
+      await spotify.authenticate();
+      const spotifyResults = await spotify.searchArtists(artistName, 1);
+      if (spotifyResults.artists.items.length > 0) {
+        const spotifyArtist = spotifyResults.artists.items[0];
+        if (spotifyArtist) {
+          artistData.spotifyId = spotifyArtist.id;
+          
+          // Use Spotify data if we don't have better data
+          if (!artistData.imageUrl && spotifyArtist.images[0]) {
+            artistData.imageUrl = spotifyArtist.images[0].url;
+          }
+          if (!artistData.smallImageUrl && spotifyArtist.images[1]) {
+            artistData.smallImageUrl = spotifyArtist.images[1].url;
+          }
+          if (spotifyArtist.genres.length > 0 && (!genres || genres.length === 0)) {
+            artistData.genres = JSON.stringify(spotifyArtist.genres);
+          }
+          artistData.followers = spotifyArtist.followers.total;
+          artistData.popularity = Math.max(artistData.popularity || 0, spotifyArtist.popularity);
+          artistData.externalUrls = JSON.stringify(spotifyArtist.external_urls);
+        }
+      }
+    } catch (error) {
+      console.warn("Failed to fetch Spotify data:", error);
+    }
+
+    // Try to find and set Setlist.fm MBID
+    try {
+      const setlistResults = await setlistfm.searchArtists(artistName, 1);
+      if (setlistResults.artist.length > 0) {
+        artistData.mbid = setlistResults.artist[0].mbid;
+      }
+    } catch (error) {
+      console.warn("Failed to fetch Setlist.fm data:", error);
     }
 
     // Insert the new artist
@@ -93,26 +132,37 @@ export async function POST(request: NextRequest) {
       console.error("Failed to insert artist:", insertError);
       return NextResponse.json(
         { error: "Failed to create artist" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     // Revalidate cache
     revalidateTag(CACHE_TAGS.artists);
 
-    // Trigger background sync for additional data (shows, etc.)
-    if (ticketmasterId) {
-      // Fire and forget - sync artist shows
+    // Trigger comprehensive sync orchestration for all external services
+    if (newArtist.id) {
+      // Fire and forget - sync artist with all external services
       fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/sync`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": process.env.CRON_SECRET ? `Bearer ${process.env.CRON_SECRET}` : "",
+        },
         body: JSON.stringify({
           type: "artist",
           artistId: newArtist.id,
-          ticketmasterId,
+          ticketmasterId: newArtist.ticketmasterId,
+          spotifyId: newArtist.spotifyId,
+          options: {
+            syncSongs: true,
+            syncShows: true,
+            syncSetlists: true,
+            createDefaultSetlists: true,
+            fullDiscography: true,
+          },
         }),
       }).catch((error) => {
-        console.warn("Background sync failed:", error);
+        console.warn("Background sync orchestration failed:", error);
       });
     }
 
@@ -126,13 +176,13 @@ export async function POST(request: NextRequest) {
         imported: true,
         message: "Artist imported successfully",
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error("Import API error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -145,7 +195,7 @@ export async function GET(request: NextRequest) {
   if (!ticketmasterId && !artistName) {
     return NextResponse.json(
       { error: "Either ticketmaster ID or artist name is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -155,7 +205,7 @@ export async function GET(request: NextRequest) {
     if (!supabase) {
       return NextResponse.json(
         { error: "Unable to connect to database" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -172,7 +222,7 @@ export async function GET(request: NextRequest) {
           ticketmasterId
             ? `${slug ? "," : ""}ticketmaster_id.eq.${ticketmasterId}`
             : ""
-        }`
+        }`,
       )
       .single();
 
@@ -192,7 +242,7 @@ export async function GET(request: NextRequest) {
     console.error("Import check error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -83,19 +83,21 @@ export function EnhancedSearch({
 
         const data = await response.json();
         // Transform API response to SearchResult format
-        const searchResults: SearchResult[] = (data.results || []).map((result: any) => ({
-          id: result.id,
-          type: "artist" as const,
-          title: result.name,
-          subtitle: result.description,
-          imageUrl: result.imageUrl,
-          slug: result.metadata?.slug,
-          source: result.metadata?.source || "database",
-          requiresSync: result.metadata?.source === "ticketmaster",
-          externalId: result.metadata?.externalId,
-          popularity: result.metadata?.popularity,
-          genres: result.metadata?.genres,
-        }));
+        const searchResults: SearchResult[] = (data.results || []).map(
+          (result: any) => ({
+            id: result.id,
+            type: "artist" as const,
+            title: result.name,
+            subtitle: result.description,
+            imageUrl: result.imageUrl,
+            slug: result.metadata?.slug,
+            source: result.metadata?.source || "database",
+            requiresSync: result.metadata?.source === "ticketmaster",
+            externalId: result.metadata?.externalId,
+            popularity: result.metadata?.popularity,
+            genres: result.metadata?.genres,
+          }),
+        );
         setResults(searchResults);
       } catch (error) {
         console.error("Search error:", error);
@@ -124,13 +126,18 @@ export function EnhancedSearch({
         // Only artists are searchable now
         if (result.type === "artist") {
           // Handle navigation based on source
-          if (result.source === "ticketmaster" && result.requiresSync !== false) {
+          if (
+            result.source === "ticketmaster" &&
+            result.requiresSync !== false
+          ) {
             // For Ticketmaster artists that need syncing, navigate with ticketmaster ID
             const slug = result.title
               .toLowerCase()
               .replace(/[^a-z0-9]+/g, "-")
               .replace(/^-|-$/g, "");
-            router.push(`/artists/${slug}?ticketmaster=${result.externalId || result.id}`);
+            router.push(
+              `/artists/${slug}?ticketmaster=${result.externalId || result.id}`,
+            );
           } else if (result.slug) {
             // For database artists with slug, use direct navigation
             router.push(`/artists/${result.slug}`);
@@ -264,7 +271,6 @@ export function EnhancedSearch({
                     Clear All
                   </Button>
                 </div>
-
 
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Genre</label>

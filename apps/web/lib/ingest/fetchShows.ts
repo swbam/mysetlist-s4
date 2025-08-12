@@ -3,7 +3,7 @@ import { TicketmasterClient } from "@repo/external-apis";
 export async function fetchShows(tmId: string) {
   try {
     const ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env["TICKETMASTER_API_KEY"] || "",
+      apiKey: process.env.TICKETMASTER_API_KEY || "",
     });
 
     const events: any[] = [];

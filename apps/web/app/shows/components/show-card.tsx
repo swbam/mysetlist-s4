@@ -177,7 +177,9 @@ export function ShowCard({ show }: ShowCardProps) {
               focusRing.button,
             )}
             aria-label={
-              isSaved ? `Remove ${show.headlinerArtist.name} from saved shows` : `Save ${show.headlinerArtist.name} show`
+              isSaved
+                ? `Remove ${show.headlinerArtist.name} from saved shows`
+                : `Save ${show.headlinerArtist.name} show`
             }
           >
             <Heart

@@ -30,7 +30,12 @@
       "node_modules/**",
       "dist/**",
       ".next/**",
-      "build/**"
+      "build/**",
+      ".turbo/**",
+      "turbo/**",
+      "coverage/**",
+      "**/.turbo/**",
+      "**/node_modules/**"
     ]
   }
 }

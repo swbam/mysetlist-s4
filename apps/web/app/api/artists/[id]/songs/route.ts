@@ -1,5 +1,5 @@
-import { db, songs, artistSongs } from "@repo/database";
-import { eq, desc } from "drizzle-orm";
+import { artistSongs, db, songs } from "@repo/database";
+import { desc, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 // Force dynamic rendering for API route

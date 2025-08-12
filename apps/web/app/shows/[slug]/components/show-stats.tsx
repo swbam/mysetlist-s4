@@ -34,9 +34,12 @@ export function ShowStats({ show }: ShowStatsProps) {
   };
 
   const getTrendingLevel = (score: number) => {
-    if (score >= 5000) return { level: "🔥 Hot", color: "destructive" as const };
-    if (score >= 2000) return { level: "📈 Trending", color: "default" as const };
-    if (score >= 500) return { level: "⚡ Rising", color: "secondary" as const };
+    if (score >= 5000)
+      return { level: "🔥 Hot", color: "destructive" as const };
+    if (score >= 2000)
+      return { level: "📈 Trending", color: "default" as const };
+    if (score >= 500)
+      return { level: "⚡ Rising", color: "secondary" as const };
     return { level: "🌟 New", color: "outline" as const };
   };
 
@@ -105,7 +108,9 @@ export function ShowStats({ show }: ShowStatsProps) {
               Attendees
             </div>
             <p className="font-semibold text-lg">
-              {(show.attendeeCount || 0) > 0 ? formatNumber(show.attendeeCount || 0) : "TBA"}
+              {(show.attendeeCount || 0) > 0
+                ? formatNumber(show.attendeeCount || 0)
+                : "TBA"}
             </p>
           </div>
         </div>

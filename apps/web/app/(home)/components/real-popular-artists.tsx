@@ -40,15 +40,13 @@ export function RealPopularArtists() {
   if (isLoading) {
     return (
       <div className="flex flex-wrap items-center justify-center gap-2 px-4 text-sm sm:px-0">
-        <span className="text-muted-foreground hidden sm:inline">
-          Popular:
-        </span>
+        <span className="text-muted-foreground hidden sm:inline">Popular:</span>
         <span className="text-muted-foreground text-xs sm:hidden">
           Trending:
         </span>
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className="animate-pulse">
-            <div className="h-7 w-20 bg-muted rounded-full"></div>
+            <div className="h-7 w-20 bg-muted rounded-full" />
           </div>
         ))}
       </div>
@@ -57,12 +55,8 @@ export function RealPopularArtists() {
 
   return (
     <div className="flex flex-wrap items-center justify-center gap-2 px-4 text-sm sm:px-0">
-      <span className="text-muted-foreground hidden sm:inline">
-        Popular:
-      </span>
-      <span className="text-muted-foreground text-xs sm:hidden">
-        Trending:
-      </span>
+      <span className="text-muted-foreground hidden sm:inline">Popular:</span>
+      <span className="text-muted-foreground text-xs sm:hidden">Trending:</span>
       {artists.map((artist) => (
         <Link
           key={artist.slug}

@@ -15,10 +15,11 @@ export async function GET(request: NextRequest) {
   if (rateLimitResult) {
     return rateLimitResult;
   }
-  
+
   try {
     const searchParams = request.nextUrl.searchParams;
-    const period = searchParams.get("period") || searchParams.get("timeframe") || "week";
+    const period =
+      searchParams.get("period") || searchParams.get("timeframe") || "week";
     const limit = Number.parseInt(searchParams.get("limit") || "20");
 
     let data;

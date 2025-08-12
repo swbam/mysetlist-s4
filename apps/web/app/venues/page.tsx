@@ -71,7 +71,7 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
                   loading={true}
                   loadingCount={9}
                 >
-                  <></>
+                  {/* Loading skeleton handled internally */}
                 </ResponsiveGrid>
               }
             >

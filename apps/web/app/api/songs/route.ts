@@ -1,6 +1,6 @@
 import { db } from "@repo/database";
 import { songs } from "@repo/database";
-import { sql, ilike, and, or } from "drizzle-orm";
+import { and, ilike, or, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "~/lib/supabase/server";
 
@@ -18,10 +18,8 @@ export async function GET(request: NextRequest) {
     const artistName = searchParams.get("artistName");
 
     const supabase = createServiceClient();
-    
-    let query = supabase
-      .from("songs")
-      .select(`
+
+    let query = supabase.from("songs").select(`
         id,
         title,
         artist,
@@ -34,27 +32,14 @@ export async function GET(request: NextRequest) {
         created_at
       `);
 
-    // Apply filters
-    let filters = [];
-    
+    // Apply filters using Supabase query methods
     if (search) {
-      // Search in title and artist fields
-      filters.push(
-        or(
-          ilike(songs.title, `%${search}%`),
-          ilike(songs.artist, `%${search}%`)
-        )
-      );
-    }
-    
-    if (artistName) {
-      filters.push(ilike(songs.artist, `%${artistName}%`));
+      // Search in title and artist fields using Supabase .or() method
+      query = query.or(`title.ilike.%${search}%,artist.ilike.%${search}%`);
     }
 
-    // Apply all filters
-    if (filters.length > 0) {
-      const combinedFilter = filters.length === 1 ? filters[0] : and(...filters);
-      query = query.where(combinedFilter);
+    if (artistName) {
+      query = query.ilike("artist", `%${artistName}%`);
     }
 
     // Add pagination and ordering
@@ -73,40 +58,50 @@ export async function GET(request: NextRequest) {
 
     // Get total count for pagination
     let countQuery = supabase.from("songs").select("*", { count: "exact" });
-    if (filters.length > 0) {
-      const combinedFilter = filters.length === 1 ? filters[0] : and(...filters);
-      countQuery = countQuery.where(combinedFilter);
+    if (search) {
+      countQuery = countQuery.or(
+        `title.ilike.%${search}%,artist.ilike.%${search}%`,
+      );
     }
-    
+    if (artistName) {
+      countQuery = countQuery.ilike("artist", `%${artistName}%`);
+    }
+
     const { count } = await countQuery;
 
-    return NextResponse.json({
-      songs: songsData || [],
-      total: count || 0,
-      page,
-      limit,
-      generatedAt: new Date().toISOString(),
-    }, {
-      headers: {
-        "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+    return NextResponse.json(
+      {
+        songs: songsData || [],
+        total: count || 0,
+        page,
+        limit,
+        generatedAt: new Date().toISOString(),
       },
-    });
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=600",
+        },
+      },
+    );
   } catch (error) {
     console.error("Songs API error:", error);
-    return NextResponse.json({
-      songs: [],
-      total: 0,
-      page: 1,
-      limit: 20,
-      generatedAt: new Date().toISOString(),
-      fallback: true,
-      error: "Unable to load songs at this time",
-    }, {
-      status: 200,
-      headers: {
-        "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+    return NextResponse.json(
+      {
+        songs: [],
+        total: 0,
+        page: 1,
+        limit: 20,
+        generatedAt: new Date().toISOString(),
+        fallback: true,
+        error: "Unable to load songs at this time",
       },
-    });
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300",
+        },
+      },
+    );
   }
 }
 
@@ -114,22 +109,22 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { 
-      title, 
-      artist, 
-      album, 
-      spotifyId, 
-      albumArtUrl, 
-      durationMs, 
+    const {
+      title,
+      artist,
+      album,
+      spotifyId,
+      albumArtUrl,
+      durationMs,
       popularity = 0,
       releaseDate,
-      albumType = "album"
+      albumType = "album",
     } = body;
 
     if (!title || !artist) {
       return NextResponse.json(
         { error: "Missing required fields: title, artist" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -154,7 +149,7 @@ export async function POST(request: NextRequest) {
     console.error("Error creating song:", error);
     return NextResponse.json(
       { error: "Failed to create song" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

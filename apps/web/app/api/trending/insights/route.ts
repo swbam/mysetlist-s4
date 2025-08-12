@@ -1,12 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
 import {
-  getTrendingArtistsInsights,
-  getMostVotedSongs,
   getHotVenues,
+  getMostVotedSongs,
   getRecentSetlistActivity,
+  getRisingArtists,
+  getTrendingArtistsInsights,
   getTrendingLocations,
   getTrendingStatistics,
-  getRisingArtists,
 } from "~/lib/trending-insights";
 import { rateLimitMiddleware } from "~/middleware/rate-limit";
 
@@ -24,7 +24,8 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const type = searchParams.get("type") || "all";
     const limit = Number.parseInt(searchParams.get("limit") || "20");
-    const timeframe = searchParams.get("timeframe") as "week" | "month" | "all" || "week";
+    const timeframe =
+      (searchParams.get("timeframe") as "week" | "month" | "all") || "week";
 
     let data: any = {};
 
@@ -50,18 +51,18 @@ export async function GET(request: NextRequest) {
       case "stats":
         data.stats = await getTrendingStatistics();
         break;
-      case "all":
-      default:
+      default: {
         // Get all insights in parallel with optimized limits for overview
-        const [artists, songs, venues, activity, locations, stats, rising] = await Promise.all([
-          getTrendingArtistsInsights(Math.min(limit, 8)),
-          getMostVotedSongs(timeframe, Math.min(limit, 12)),
-          getHotVenues(Math.min(limit, 8)),
-          getRecentSetlistActivity(Math.min(limit, 12)),
-          getTrendingLocations(Math.min(limit, 6)),
-          getTrendingStatistics(),
-          getRisingArtists(Math.min(limit, 8)),
-        ]);
+        const [artists, songs, venues, activity, locations, stats, rising] =
+          await Promise.all([
+            getTrendingArtistsInsights(Math.min(limit, 8)),
+            getMostVotedSongs(timeframe, Math.min(limit, 12)),
+            getHotVenues(Math.min(limit, 8)),
+            getRecentSetlistActivity(Math.min(limit, 12)),
+            getTrendingLocations(Math.min(limit, 6)),
+            getTrendingStatistics(),
+            getRisingArtists(Math.min(limit, 8)),
+          ]);
 
         data = {
           artists,
@@ -85,6 +86,7 @@ export async function GET(request: NextRequest) {
           },
         };
         break;
+      }
     }
 
     const jsonResponse = NextResponse.json({
@@ -97,7 +99,7 @@ export async function GET(request: NextRequest) {
 
     // Add cache headers - different caching strategies based on data type
     let cacheControl = "public, s-maxage=300, stale-while-revalidate=600"; // Default: 5min cache
-    
+
     if (type === "stats") {
       // Statistics can be cached longer
       cacheControl = "public, s-maxage=600, stale-while-revalidate=1200"; // 10min cache
@@ -108,9 +110,9 @@ export async function GET(request: NextRequest) {
       // Core trending data - moderate caching
       cacheControl = "public, s-maxage=300, stale-while-revalidate=600"; // 5min cache
     }
-    
+
     jsonResponse.headers.set("Cache-Control", cacheControl);
-    
+
     // Add performance headers
     jsonResponse.headers.set("X-Content-Type-Options", "nosniff");
     jsonResponse.headers.set("Vary", "Accept-Encoding");

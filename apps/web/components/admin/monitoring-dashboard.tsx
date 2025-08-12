@@ -101,9 +101,9 @@ export default function MonitoringDashboard() {
       // In a real implementation, these would be separate API calls
       const [_healthResponse, _dbResponse, _securityResponse] =
         await Promise.all([
-          fetch(`${process.env["NEXT_PUBLIC_API_URL"]}/admin/monitoring/health`),
-          fetch(`${process.env["NEXT_PUBLIC_API_URL"]}/admin/monitoring/database`),
-          fetch(`${process.env["NEXT_PUBLIC_API_URL"]}/admin/monitoring/security`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/monitoring/health`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/monitoring/database`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/monitoring/security`),
         ]);
 
       // For now, using mock data

@@ -89,10 +89,7 @@ export const OptimizedArtistCard = React.memo(function OptimizedArtistCard({
   return (
     <Link
       href={`/artists/${artist.slug}`}
-      className={cn(
-        "group block focus:outline-none rounded-lg",
-        className,
-      )}
+      className={cn("group block focus:outline-none rounded-lg", className)}
       prefetch
     >
       <Card className="overflow-hidden border-0 bg-transparent transition-all duration-300 hover:bg-card/20">

@@ -5,8 +5,11 @@ import { Input } from "@repo/design-system/components/ui/input";
 import { cn } from "@repo/design-system/lib/utils";
 import { Search, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  type SearchResultItem,
+  SearchResultsDropdown,
+} from "~/components/search/search-results-dropdown";
 import { useDebounce } from "~/hooks/use-debounce";
-import { SearchResultsDropdown, type SearchResultItem } from "~/components/search/search-results-dropdown";
 
 interface LiteSearchProps {
   placeholder?: string;
@@ -43,7 +46,10 @@ export function LiteSearch({
   // Handle clicks outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -57,8 +63,10 @@ export function LiteSearch({
     setHasSearched(false);
 
     try {
-      const response = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}&limit=8`);
-      
+      const response = await fetch(
+        `/api/search?q=${encodeURIComponent(searchQuery)}&limit=8`,
+      );
+
       if (!response.ok) {
         throw new Error(`Search failed: ${response.status}`);
       }
@@ -66,19 +74,21 @@ export function LiteSearch({
       const data = await response.json();
 
       // Transform API response to SearchResultItem format
-      const searchResults: SearchResultItem[] = (data.results || []).map((result: any) => ({
-        id: result.id,
-        type: "artist" as const,
-        title: result.name,
-        subtitle: result.description,
-        imageUrl: result.imageUrl,
-        slug: result.metadata?.slug,
-        source: result.metadata?.source || "database",
-        requiresSync: result.metadata?.source === "ticketmaster",
-        externalId: result.metadata?.externalId,
-        popularity: result.metadata?.popularity,
-        genres: result.metadata?.genres,
-      }));
+      const searchResults: SearchResultItem[] = (data.results || []).map(
+        (result: any) => ({
+          id: result.id,
+          type: "artist" as const,
+          title: result.name,
+          subtitle: result.description,
+          imageUrl: result.imageUrl,
+          slug: result.metadata?.slug,
+          source: result.metadata?.source || "database",
+          requiresSync: result.metadata?.source === "ticketmaster",
+          externalId: result.metadata?.externalId,
+          popularity: result.metadata?.popularity,
+          genres: result.metadata?.genres,
+        }),
+      );
 
       setResults(searchResults);
       setIsOpen(true);
@@ -104,7 +114,7 @@ export function LiteSearch({
     if (onResultSelect) {
       onResultSelect(result);
     }
-    
+
     // Clear search and close dropdown
     setQuery("");
     setResults([]);
@@ -141,7 +151,7 @@ export function LiteSearch({
           aria-expanded={isOpen}
           aria-haspopup="listbox"
         />
-        
+
         {query && (
           <Button
             type="button"
@@ -154,7 +164,7 @@ export function LiteSearch({
             <X className="h-4 w-4" />
           </Button>
         )}
-        
+
         <Button
           type="button"
           size="sm"

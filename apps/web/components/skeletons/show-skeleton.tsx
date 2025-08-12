@@ -1,6 +1,10 @@
 "use client";
 
-import { Card, CardContent, CardHeader } from "@repo/design-system/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+} from "@repo/design-system/components/ui/card";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 
 export function ShowCardSkeleton() {
@@ -13,7 +17,7 @@ export function ShowCardSkeleton() {
             <Skeleton className="h-6 w-12 mb-1 mx-auto" />
             <Skeleton className="h-4 w-8 mx-auto" />
           </div>
-          
+
           {/* Show details */}
           <div className="flex-1 space-y-2">
             <Skeleton className="h-5 w-48" />
@@ -23,7 +27,7 @@ export function ShowCardSkeleton() {
               <Skeleton className="h-4 w-20" />
             </div>
           </div>
-          
+
           {/* Action button */}
           <Skeleton className="h-9 w-24" />
         </div>
@@ -107,7 +111,10 @@ function SetlistCardSkeleton() {
       </CardHeader>
       <CardContent className="space-y-3">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="flex items-center justify-between p-2 border rounded">
+          <div
+            key={i}
+            className="flex items-center justify-between p-2 border rounded"
+          >
             <div className="flex items-center gap-3">
               <Skeleton className="h-4 w-6" />
               <Skeleton className="h-4 w-40" />

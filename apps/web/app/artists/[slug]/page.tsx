@@ -7,13 +7,9 @@ import React, { Suspense } from "react";
 import { BreadcrumbNavigation } from "~/components/breadcrumb-navigation";
 import { ArtistErrorBoundary } from "~/components/error-boundaries/artist-error-boundary";
 import { createArtistMetadata } from "~/lib/seo-metadata";
-import { ArtistImportLoading } from "./components/artist-import-loading";
-import {
-  getArtist,
-  getArtistShows,
-  getArtistStats,
-} from "./actions";
+import { getArtist, getArtistShows, getArtistStats } from "./actions";
 import { ArtistHeader } from "./components/artist-header";
+import { ArtistImportLoading } from "./components/artist-import-loading";
 import { ArtistPageWrapper } from "./components/artist-page-wrapper";
 import { ArtistStats } from "./components/artist-stats";
 import { UpcomingShows } from "./components/upcoming-shows";
@@ -57,12 +53,14 @@ export const generateMetadata = async ({
       });
     }
 
-    let artist = await getArtist(slug);
+    const artist = await getArtist(slug);
 
     // For metadata generation, if artist not found but we have ticketmaster ID,
     // create temporary metadata while import happens in the background
     if (!artist && ticketmasterId) {
-      const artistName = slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+      const artistName = slug
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
       return createArtistMetadata({
         name: artistName,
         bio: `${artistName} artist page - importing data from Ticketmaster.`,
@@ -87,7 +85,7 @@ export const generateMetadata = async ({
       ...(artist.followerCount && { followerCount: artist.followerCount }),
     });
   } catch (error) {
-    console.error('Error generating metadata for artist page:', error);
+    console.error("Error generating metadata for artist page:", error);
     return createArtistMetadata({
       name: "Artist Error",
       bio: "Unable to load artist metadata.",
@@ -101,10 +99,10 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
     const { slug } = await params;
     const searchParamsData = await searchParams;
     const ticketmasterId = searchParamsData.ticketmaster as string;
-    
+
     // Validate slug parameter
-    if (!slug || typeof slug !== 'string') {
-      console.error('Invalid slug parameter:', slug);
+    if (!slug || typeof slug !== "string") {
+      console.error("Invalid slug parameter:", slug);
       notFound();
     }
 
@@ -112,18 +110,20 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
     void _user; // Intentionally unused - keeps session active
 
     // Fetch artist data with error handling
-    let artist = await getArtist(slug);
+    const artist = await getArtist(slug);
 
     // If artist not found and we have a ticketmaster ID, show loading state and trigger background sync
     if (!artist && ticketmasterId) {
-      const artistName = slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+      const artistName = slug
+        .replace(/-/g, " ")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
       // Show loading state and trigger background sync
-      
+
       // Trigger background sync immediately (non-blocking)
       setImmediate(async () => {
         try {
           // Trigger background sync
-          
+
           const syncResponse = await fetch(
             `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/artist`,
             {
@@ -134,20 +134,23 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
                 artistName,
                 syncType: "full",
               }),
-            }
+            },
           );
 
           if (syncResponse.ok) {
             const syncData = await syncResponse.json();
             // Background sync initiated successfully
           } else {
-            console.error("Failed to trigger background sync:", await syncResponse.text());
+            console.error(
+              "Failed to trigger background sync:",
+              await syncResponse.text(),
+            );
           }
         } catch (error) {
           console.error("Background sync trigger failed:", error);
         }
       });
-      
+
       // Show loading page with real-time updates via Supabase subscriptions
       return (
         <ArtistErrorBoundary artistName={artistName}>
@@ -190,42 +193,43 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
     ]);
 
     // Handle results with better error logging
-    const upcomingShows = results[0].status === "fulfilled" ? results[0].value : [];
+    const upcomingShows =
+      results[0].status === "fulfilled" ? results[0].value : [];
     const pastShows = results[1].status === "fulfilled" ? results[1].value : [];
     const _stats = results[2].status === "fulfilled" ? results[2].value : null;
 
     if (results[0].status === "rejected") {
-      console.error('Error fetching upcoming shows:', results[0].reason);
+      console.error("Error fetching upcoming shows:", results[0].reason);
     }
     if (results[1].status === "rejected") {
-      console.error('Error fetching past shows:', results[1].reason);
+      console.error("Error fetching past shows:", results[1].reason);
     }
     if (results[2].status === "rejected") {
-      console.error('Error fetching artist stats:', results[2].reason);
+      console.error("Error fetching artist stats:", results[2].reason);
     }
 
     void _stats; // Future implementation: artist statistics display
 
-  const breadcrumbItems = [
-    { label: "Artists", href: "/artists" },
-    { label: artist.name, isCurrentPage: true },
-  ];
+    const breadcrumbItems = [
+      { label: "Artists", href: "/artists" },
+      { label: artist.name, isCurrentPage: true },
+    ];
 
-  // Transform artist data for components
-  const artistData = {
-    id: artist.id,
-    name: artist.name,
-    slug: artist.slug,
-    imageUrl: artist.imageUrl || undefined,
-    smallImageUrl: artist.smallImageUrl || undefined,
-    genres: artist.genres || "[]",
-    popularity: artist.popularity || 0,
-    followers: artist.followers || 0,
-    verified: artist.verified || false,
-    bio: artist.bio || undefined,
-    externalUrls: artist.externalUrls || undefined,
-    spotifyId: artist.spotifyId || undefined,
-  };
+    // Transform artist data for components
+    const artistData = {
+      id: artist.id,
+      name: artist.name,
+      slug: artist.slug,
+      imageUrl: artist.imageUrl || undefined,
+      smallImageUrl: artist.smallImageUrl || undefined,
+      genres: artist.genres || "[]",
+      popularity: artist.popularity || 0,
+      followers: artist.followers || 0,
+      verified: artist.verified || false,
+      bio: artist.bio || undefined,
+      externalUrls: artist.externalUrls || undefined,
+      spotifyId: artist.spotifyId || undefined,
+    };
 
     // Transform shows data to match component interfaces
     const transformedUpcomingShows = upcomingShows.map(
@@ -280,76 +284,76 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
       }),
     );
 
-  return (
-    <ArtistErrorBoundary artistName={artist.name}>
-      <ArtistPageWrapper
-        artistId={artist.id}
-        artistName={artist.name}
-        spotifyId={artist.spotifyId}
-        initialData={{
-          artist: artistData,
-          shows: [...transformedUpcomingShows, ...transformedPastShows],
-          stats: _stats,
-        }}
-      >
-        <div className="container mx-auto py-8">
-          {/* Breadcrumb Navigation */}
-          <BreadcrumbNavigation items={breadcrumbItems} className="mb-6" />
+    return (
+      <ArtistErrorBoundary artistName={artist.name}>
+        <ArtistPageWrapper
+          artistId={artist.id}
+          artistName={artist.name}
+          spotifyId={artist.spotifyId}
+          initialData={{
+            artist: artistData,
+            shows: [...transformedUpcomingShows, ...transformedPastShows],
+            stats: _stats,
+          }}
+        >
+          <div className="container mx-auto py-8">
+            {/* Breadcrumb Navigation */}
+            <BreadcrumbNavigation items={breadcrumbItems} className="mb-6" />
 
-          {/* Artist Header */}
-          <ArtistHeader artist={artistData} />
+            {/* Artist Header */}
+            <ArtistHeader artist={artistData} />
 
-          {/* Artist Stats */}
-          <div className="mt-8">
-            <ArtistStats artistId={artist.id} />
+            {/* Artist Stats */}
+            <div className="mt-8">
+              <ArtistStats artistId={artist.id} />
+            </div>
+
+            {/* Content Tabs - Simplified to only show upcoming and past shows */}
+            <Tabs defaultValue="shows" className="mt-8 w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="shows" aria-label="View upcoming shows">
+                  Upcoming Shows
+                </TabsTrigger>
+                <TabsTrigger value="past" aria-label="View past shows">
+                  Past Shows
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="shows" className="space-y-4">
+                <React.Suspense
+                  fallback={
+                    <div className="h-64 animate-pulse rounded-lg bg-muted" />
+                  }
+                >
+                  <UpcomingShows
+                    shows={transformedUpcomingShows}
+                    artistName={artist.name}
+                    artistId={artist.id}
+                    spotifyId={artist.spotifyId}
+                  />
+                </React.Suspense>
+              </TabsContent>
+
+              <TabsContent value="past" className="space-y-4">
+                <React.Suspense
+                  fallback={
+                    <div className="h-64 animate-pulse rounded-lg bg-muted" />
+                  }
+                >
+                  <PastShows
+                    shows={transformedPastShows}
+                    artistName={artist.name}
+                    artistId={artist.id}
+                  />
+                </React.Suspense>
+              </TabsContent>
+            </Tabs>
           </div>
-
-          {/* Content Tabs - Simplified to only show upcoming and past shows */}
-          <Tabs defaultValue="shows" className="mt-8 w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="shows" aria-label="View upcoming shows">
-                Upcoming Shows
-              </TabsTrigger>
-              <TabsTrigger value="past" aria-label="View past shows">
-                Past Shows
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="shows" className="space-y-4">
-              <React.Suspense
-                fallback={
-                  <div className="h-64 animate-pulse rounded-lg bg-muted" />
-                }
-              >
-                <UpcomingShows
-                  shows={transformedUpcomingShows}
-                  artistName={artist.name}
-                  artistId={artist.id}
-                  spotifyId={artist.spotifyId}
-                />
-              </React.Suspense>
-            </TabsContent>
-
-            <TabsContent value="past" className="space-y-4">
-              <React.Suspense
-                fallback={
-                  <div className="h-64 animate-pulse rounded-lg bg-muted" />
-                }
-              >
-                <PastShows
-                  shows={transformedPastShows}
-                  artistName={artist.name}
-                  artistId={artist.id}
-                />
-              </React.Suspense>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </ArtistPageWrapper>
-    </ArtistErrorBoundary>
+        </ArtistPageWrapper>
+      </ArtistErrorBoundary>
     );
   } catch (error) {
-    console.error('Critical error in ArtistPage:', error);
+    console.error("Critical error in ArtistPage:", error);
     // Return a minimal error page instead of letting it crash
     return (
       <div className="container mx-auto py-8">
@@ -361,7 +365,8 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
             We encountered an error while loading this artist page.
           </p>
           <p className="text-sm text-gray-500">
-            Please try refreshing the page or contact support if the problem persists.
+            Please try refreshing the page or contact support if the problem
+            persists.
           </p>
         </div>
       </div>

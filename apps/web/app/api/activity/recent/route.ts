@@ -1,8 +1,17 @@
+import {
+  artists,
+  db,
+  setlists,
+  shows,
+  songs,
+  userActivityLog,
+  users,
+  venues,
+} from "@repo/database";
+import { and, desc, eq, gte, inArray } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { db, userActivityLog, users, artists, venues, shows, setlists, songs } from "@repo/database";
-import { rateLimitMiddleware } from "~/middleware/rate-limit";
 import { z } from "zod";
-import { desc, eq, gte, inArray, and } from "drizzle-orm";
+import { rateLimitMiddleware } from "~/middleware/rate-limit";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -12,9 +21,12 @@ const activityQuerySchema = z.object({
   limit: z.number().min(1).max(100).optional().default(20),
   offset: z.number().min(0).optional().default(0),
   user_id: z.string().uuid().optional(),
-  type: z.enum(["all", "votes", "follows", "reviews", "shows", "setlists"]).optional().default("all"),
+  type: z
+    .enum(["all", "votes", "follows", "reviews", "shows", "setlists"])
+    .optional()
+    .default("all"),
   since: z.string().optional(), // ISO timestamp
-  include_user_details: z.boolean().optional().default(true)
+  include_user_details: z.boolean().optional().default(true),
 });
 
 interface ActivityItem {
@@ -61,7 +73,7 @@ export async function GET(request: NextRequest) {
   // Apply rate limiting
   const rateLimitResult = await rateLimitMiddleware(request, {
     maxRequests: 60,
-    windowSeconds: 60
+    windowSeconds: 60,
   });
   if (rateLimitResult) {
     return rateLimitResult;
@@ -74,29 +86,36 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get("user_id") || undefined;
     const type = searchParams.get("type") || "all";
     const since = searchParams.get("since") || undefined;
-    const includeUserDetails = searchParams.get("include_user_details") !== "false";
+    const includeUserDetails =
+      searchParams.get("include_user_details") !== "false";
 
     // Validate parameters
-    const validation = activityQuerySchema.safeParse({ 
-      limit, 
-      offset, 
-      user_id: userId, 
-      type, 
+    const validation = activityQuerySchema.safeParse({
+      limit,
+      offset,
+      user_id: userId,
+      type,
       since,
-      include_user_details: includeUserDetails
+      include_user_details: includeUserDetails,
     });
-    
+
     if (!validation.success) {
       return NextResponse.json(
-        { 
-          error: "Invalid parameters", 
-          details: validation.error.errors 
+        {
+          error: "Invalid parameters",
+          details: validation.error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    const { limit: queryLimit, offset: queryOffset, user_id, type: activityType, since: sinceParam } = validation.data;
+    const {
+      limit: queryLimit,
+      offset: queryOffset,
+      user_id,
+      type: activityType,
+      since: sinceParam,
+    } = validation.data;
 
     // Build filter conditions
     const conditions: any[] = [];
@@ -112,7 +131,7 @@ export async function GET(request: NextRequest) {
       } catch (error) {
         return NextResponse.json(
           { error: "Invalid since timestamp format" },
-          { status: 400 }
+          { status: 400 },
         );
       }
     }
@@ -138,7 +157,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const whereCondition = conditions.length > 0 ? and(...conditions) : undefined;
+    const whereCondition =
+      conditions.length > 0 ? and(...conditions) : undefined;
 
     // Execute query with pagination
     const query = db
@@ -150,12 +170,14 @@ export async function GET(request: NextRequest) {
         targetId: userActivityLog.targetId,
         details: userActivityLog.details,
         createdAt: userActivityLog.createdAt,
-        ...(includeUserDetails ? {
-          user: {
-            id: users.id,
-            displayName: users.displayName
-          }
-        } : {})
+        ...(includeUserDetails
+          ? {
+              user: {
+                id: users.id,
+                displayName: users.displayName,
+              },
+            }
+          : {}),
       })
       .from(userActivityLog)
       .orderBy(desc(userActivityLog.createdAt))
@@ -165,7 +187,7 @@ export async function GET(request: NextRequest) {
     if (includeUserDetails) {
       query.leftJoin(users, eq(userActivityLog.userId, users.id));
     }
-    
+
     if (whereCondition) {
       query.where(whereCondition);
     }
@@ -191,10 +213,10 @@ export async function GET(request: NextRequest) {
           total: 0,
           limit: queryLimit,
           offset: queryOffset,
-          has_more: false
+          has_more: false,
         },
         timestamp: new Date().toISOString(),
-        filters_applied: { type: activityType, user_id, since: sinceParam }
+        filters_applied: { type: activityType, user_id, since: sinceParam },
       });
     }
 
@@ -208,42 +230,43 @@ export async function GET(request: NextRequest) {
           target_id: activity.targetId,
           user_id: activity.userId,
           timestamp: activity.createdAt,
-          metadata: activity.details
+          metadata: activity.details,
         };
 
         // Add user details if available and requested
         if (includeUserDetails && activity.user) {
           baseActivity.user = {
             id: activity.user.id,
-            display_name: activity.user.displayName
+            display_name: activity.user.displayName,
           };
         }
 
         // Fetch target details based on target type
         try {
           switch (activity.targetType) {
-            case "artist":
+            case "artist": {
               const artistData = await db
                 .select({
                   name: artists.name,
                   slug: artists.slug,
-                  imageUrl: artists.imageUrl
+                  imageUrl: artists.imageUrl,
                 })
                 .from(artists)
                 .where(eq(artists.id, activity.targetId))
                 .limit(1);
-              
+
               if (artistData[0]) {
                 const artist = artistData[0];
                 baseActivity.target_details = {
                   name: artist.name,
                   slug: artist.slug || undefined,
-                  image_url: artist.imageUrl || undefined
+                  image_url: artist.imageUrl || undefined,
                 };
               }
               break;
+            }
 
-            case "show":
+            case "show": {
               const showData = await db
                 .select({
                   name: shows.name,
@@ -251,14 +274,14 @@ export async function GET(request: NextRequest) {
                   date: shows.date,
                   artistName: artists.name,
                   venueName: venues.name,
-                  venueCity: venues.city
+                  venueCity: venues.city,
                 })
                 .from(shows)
                 .leftJoin(artists, eq(shows.headlinerArtistId, artists.id))
                 .leftJoin(venues, eq(shows.venueId, venues.id))
                 .where(eq(shows.id, activity.targetId))
                 .limit(1);
-              
+
               if (showData[0]) {
                 const show = showData[0];
                 baseActivity.target_details = {
@@ -266,41 +289,45 @@ export async function GET(request: NextRequest) {
                   slug: show.slug || undefined,
                   date: show.date || undefined,
                   artist_name: show.artistName || undefined,
-                  venue_name: show.venueName ? `${show.venueName}, ${show.venueCity}` : undefined
+                  venue_name: show.venueName
+                    ? `${show.venueName}, ${show.venueCity}`
+                    : undefined,
                 };
               }
               break;
+            }
 
-            case "venue":
+            case "venue": {
               const venueData = await db
                 .select({
                   name: venues.name,
                   slug: venues.slug,
                   city: venues.city,
-                  state: venues.state
+                  state: venues.state,
                 })
                 .from(venues)
                 .where(eq(venues.id, activity.targetId))
                 .limit(1);
-              
+
               if (venueData[0]) {
                 const venue = venueData[0];
                 baseActivity.target_details = {
                   name: venue.name,
                   slug: venue.slug || undefined,
-                  venue_name: `${venue.city}, ${venue.state}`
+                  venue_name: `${venue.city}, ${venue.state}`,
                 };
               }
               break;
+            }
 
-            case "setlist":
+            case "setlist": {
               const setlistData = await db
                 .select({
                   showSlug: shows.slug,
                   showDate: shows.date,
                   artistName: artists.name,
                   artistImageUrl: artists.imageUrl,
-                  venueName: venues.name
+                  venueName: venues.name,
                 })
                 .from(setlists)
                 .leftJoin(shows, eq(setlists.showId, shows.id))
@@ -308,7 +335,7 @@ export async function GET(request: NextRequest) {
                 .leftJoin(venues, eq(shows.venueId, venues.id))
                 .where(eq(setlists.id, activity.targetId))
                 .limit(1);
-              
+
               if (setlistData[0]) {
                 const setlist = setlistData[0];
                 baseActivity.target_details = {
@@ -317,51 +344,57 @@ export async function GET(request: NextRequest) {
                   date: setlist.showDate || undefined,
                   artist_name: setlist.artistName || undefined,
                   venue_name: setlist.venueName || undefined,
-                  image_url: setlist.artistImageUrl || undefined
+                  image_url: setlist.artistImageUrl || undefined,
                 };
               }
               break;
+            }
 
-            case "song":
+            case "song": {
               const songData = await db
                 .select({
                   songTitle: songs.title,
-                  artistName: songs.artist
+                  artistName: songs.artist,
                 })
                 .from(songs)
                 .where(eq(songs.id, activity.targetId))
                 .limit(1);
-              
+
               if (songData[0]) {
                 const song = songData[0];
                 baseActivity.target_details = {
                   name: song.songTitle,
-                  artist_name: song.artistName || undefined
+                  artist_name: song.artistName || undefined,
                 };
               }
               break;
+            }
 
             default:
               // Generic target details from metadata
               if (activity.details) {
-                const details = typeof activity.details === 'string' 
-                  ? JSON.parse(activity.details) 
-                  : activity.details;
-                  
+                const details =
+                  typeof activity.details === "string"
+                    ? JSON.parse(activity.details)
+                    : activity.details;
+
                 baseActivity.target_details = {
                   name: details.name || details.title || "Unknown",
-                  ...details
+                  ...details,
                 };
               }
               break;
           }
         } catch (error) {
-          console.warn(`Failed to fetch details for ${activity.targetType} ${activity.targetId}:`, error);
+          console.warn(
+            `Failed to fetch details for ${activity.targetType} ${activity.targetId}:`,
+            error,
+          );
           // Continue without target details
         }
 
         return baseActivity;
-      })
+      }),
     );
 
     const response: RecentActivityResponse = {
@@ -370,14 +403,14 @@ export async function GET(request: NextRequest) {
         total: count || 0,
         limit: queryLimit,
         offset: queryOffset,
-        has_more: (count || 0) > queryOffset + queryLimit
+        has_more: (count || 0) > queryOffset + queryLimit,
       },
       timestamp: new Date().toISOString(),
       filters_applied: {
         type: activityType,
         user_id,
-        since: sinceParam
-      }
+        since: sinceParam,
+      },
     };
 
     const jsonResponse = NextResponse.json(response);
@@ -385,20 +418,19 @@ export async function GET(request: NextRequest) {
     // Add caching headers - cache for 1 minute since activity changes frequently
     jsonResponse.headers.set(
       "Cache-Control",
-      "public, s-maxage=60, stale-while-revalidate=120"
+      "public, s-maxage=60, stale-while-revalidate=120",
     );
 
     return jsonResponse;
-
   } catch (error) {
     console.error("Recent activity error:", error);
     return NextResponse.json(
       {
         error: "Failed to fetch recent activity",
         message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -411,7 +443,7 @@ export async function POST(request: NextRequest) {
   // Apply stricter rate limiting for POST requests
   const rateLimitResult = await rateLimitMiddleware(request, {
     maxRequests: 100,
-    windowSeconds: 60
+    windowSeconds: 60,
   });
   if (rateLimitResult) {
     return rateLimitResult;
@@ -425,7 +457,7 @@ export async function POST(request: NextRequest) {
     if (!action || !target_type || !target_id) {
       return NextResponse.json(
         { error: "Missing required fields: action, target_type, target_id" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -438,29 +470,33 @@ export async function POST(request: NextRequest) {
         targetType: target_type,
         targetId: target_id,
         details: details ? JSON.stringify(details) : null,
-        ipAddress: request.headers.get("x-forwarded-for")?.split(",")[0] || 
-                   request.headers.get("x-real-ip") || null,
+        ipAddress:
+          request.headers.get("x-forwarded-for")?.split(",")[0] ||
+          request.headers.get("x-real-ip") ||
+          null,
         userAgent: request.headers.get("user-agent") || null,
-        createdAt: new Date()
+        createdAt: new Date(),
       })
-      .returning({ id: userActivityLog.id, createdAt: userActivityLog.createdAt });
+      .returning({
+        id: userActivityLog.id,
+        createdAt: userActivityLog.createdAt,
+      });
 
     return NextResponse.json({
       success: true,
       activity_id: activity[0]?.id,
       timestamp: activity[0]?.createdAt,
-      message: "Activity logged successfully"
+      message: "Activity logged successfully",
     });
-
   } catch (error) {
     console.error("Activity logging error:", error);
     return NextResponse.json(
       {
         error: "Failed to log activity",
         message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -475,6 +511,6 @@ export async function OPTIONS() {
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization",
       },
-    }
+    },
   );
 }

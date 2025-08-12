@@ -50,7 +50,9 @@ export function RisingArtists() {
 
   const fetchArtists = async () => {
     try {
-      const response = await fetch("/api/trending/insights?type=rising&limit=10");
+      const response = await fetch(
+        "/api/trending/insights?type=rising&limit=10",
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch rising artists");
       }
@@ -67,7 +69,7 @@ export function RisingArtists() {
 
   const getRisingBadge = (artist: RisingArtist) => {
     const totalGrowth = artist.followerGrowth + artist.voteGrowth;
-    
+
     if (totalGrowth > 50 || artist.daysActive < 7) {
       return {
         label: "Breakout",
@@ -104,7 +106,10 @@ export function RisingArtists() {
         <CardContent>
           <div className="space-y-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-4 p-3 rounded-lg border">
+              <div
+                key={i}
+                className="flex items-center gap-4 p-3 rounded-lg border"
+              >
                 <Skeleton className="h-12 w-12 rounded-full" />
                 <div className="flex-1 space-y-2">
                   <Skeleton className="h-4 w-32" />
@@ -214,8 +219,8 @@ export function RisingArtists() {
 
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />
-                      +{artist.followerGrowth.toFixed(0)}% followers
+                      <Users className="h-3 w-3" />+
+                      {artist.followerGrowth.toFixed(0)}% followers
                     </span>
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
@@ -233,12 +238,10 @@ export function RisingArtists() {
                 {/* Growth Stats */}
                 <div className="text-right">
                   <div className="flex items-center gap-1 font-semibold text-green-600">
-                    <TrendingUp className={`h-3 w-3 ${badge.color}`} />
-                    +{(artist.followerGrowth + artist.voteGrowth).toFixed(0)}%
+                    <TrendingUp className={`h-3 w-3 ${badge.color}`} />+
+                    {(artist.followerGrowth + artist.voteGrowth).toFixed(0)}%
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    growth
-                  </p>
+                  <p className="text-xs text-muted-foreground">growth</p>
                 </div>
 
                 {/* Action */}

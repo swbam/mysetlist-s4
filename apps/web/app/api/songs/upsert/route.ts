@@ -1,8 +1,8 @@
+import { getUser } from "@repo/auth/server";
 import { db, songs } from "@repo/database";
 import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getUser } from "@repo/auth/server";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -27,14 +27,14 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json().catch(() => ({}));
     const parsed = upsertSongSchema.safeParse(body);
-    
+
     if (!parsed.success) {
       return NextResponse.json(
-        { 
-          error: "Invalid song data", 
-          details: parsed.error.errors 
+        {
+          error: "Invalid song data",
+          details: parsed.error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -42,17 +42,17 @@ export async function POST(request: NextRequest) {
 
     // Check if song already exists by Spotify ID or by title + artist
     let existingSong: typeof songs.$inferSelect | null = null;
-    
+
     if (songData.spotifyId) {
       const existing = await db
         .select()
         .from(songs)
         .where(eq(songs.spotifyId, songData.spotifyId))
         .limit(1);
-      
+
       existingSong = existing[0] || null;
     }
-    
+
     // If no Spotify ID match, try title + artist match
     if (!existingSong) {
       const existing = await db
@@ -60,10 +60,11 @@ export async function POST(request: NextRequest) {
         .from(songs)
         .where(eq(songs.title, songData.title))
         .limit(5); // Get a few results to check artist match
-        
-      existingSong = existing.find(song => 
-        song.artist.toLowerCase() === songData.artist.toLowerCase()
-      ) || null;
+
+      existingSong =
+        existing.find(
+          (song) => song.artist.toLowerCase() === songData.artist.toLowerCase(),
+        ) || null;
     }
 
     if (existingSong) {
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest) {
           popularity: existingSong.popularity,
           preview_url: existingSong.previewUrl,
         },
-        created: false
+        created: false,
       });
     }
 
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
     if (!song) {
       return NextResponse.json(
         { error: "Failed to create song" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -120,18 +121,17 @@ export async function POST(request: NextRequest) {
         popularity: song.popularity,
         preview_url: song.previewUrl,
       },
-      created: true
+      created: true,
     });
-
   } catch (error) {
     console.error("Error upserting song:", error);
     return NextResponse.json(
-      { 
-        error: "Internal server error", 
+      {
+        error: "Internal server error",
         message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString()
-      }, 
-      { status: 500 }
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 },
     );
   }
 }

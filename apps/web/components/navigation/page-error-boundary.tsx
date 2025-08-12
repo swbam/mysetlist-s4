@@ -106,7 +106,7 @@ export class PageErrorBoundary extends React.Component<Props, State> {
                 </Button>
               </div>
 
-              {process.env["NODE_ENV"] === "development" && this.state.error && (
+              {process.env.NODE_ENV === "development" && this.state.error && (
                 <details className="mt-6 text-left">
                   <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
                     Error Details (Development)

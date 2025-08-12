@@ -1,5 +1,5 @@
 import { db, venues } from "@repo/database";
-import { asc, desc, eq, ilike, sql, and } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, sql } from "drizzle-orm";
 import type { SQL } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 
     // Build dynamic filter conditions
     const conditions: SQL[] = [];
-    
+
     if (city) {
       conditions.push(ilike(venues.city, `%${city}%`));
     }

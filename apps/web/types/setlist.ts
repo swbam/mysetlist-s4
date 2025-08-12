@@ -25,8 +25,7 @@ export interface SetlistSong {
   isEncore?: boolean;
   song?: Song;
   upvotes: number;
-  downvotes: number;
-  currentUserVote?: "up" | "down" | null;
+  currentUserVote?: "up" | null;
 }
 
 export interface Setlist {
@@ -48,8 +47,6 @@ export interface Setlist {
 export interface VoteSummary {
   songId: string;
   songTitle: string;
-  netVotes: number;
   upvotes: number;
-  downvotes: number;
   percentage: number;
 }

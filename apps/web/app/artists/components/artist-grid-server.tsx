@@ -57,6 +57,10 @@ export async function ArtistGridServer() {
       />
     );
 
-    return <ResponsiveGrid variant="artists" emptyState={errorState}><></></ResponsiveGrid>;
+    return (
+      <ResponsiveGrid variant="artists" emptyState={errorState}>
+        {/* No children when showing empty state */}
+      </ResponsiveGrid>
+    );
   }
 }

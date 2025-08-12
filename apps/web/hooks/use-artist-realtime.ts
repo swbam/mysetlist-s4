@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
-import { realtimeManager, createSupabaseBrowserClient } from "@repo/database";
+import { createSupabaseBrowserClient, realtimeManager } from "@repo/database";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface ArtistRealtimeData {
   artist?: any;
@@ -13,7 +13,10 @@ export interface ArtistRealtimeData {
   error?: string;
 }
 
-export function useArtistRealtime(artistId: string, initialData: ArtistRealtimeData) {
+export function useArtistRealtime(
+  artistId: string,
+  initialData: ArtistRealtimeData,
+) {
   const [data, setData] = useState<ArtistRealtimeData>(initialData);
   const [syncProgress, setSyncProgress] = useState<{
     isImporting: boolean;
@@ -28,8 +31,8 @@ export function useArtistRealtime(artistId: string, initialData: ArtistRealtimeD
   // Function to refresh artist data from server
   const refreshArtistData = useCallback(async () => {
     try {
-      setData(prev => ({ ...prev, isLoading: true, error: undefined }));
-      
+      setData((prev) => ({ ...prev, isLoading: true, error: undefined }));
+
       const [artistRes, showsRes, statsRes] = await Promise.allSettled([
         fetch(`/api/artists/${artistId}`),
         fetch(`/api/artists/${artistId}/shows`),
@@ -53,13 +56,13 @@ export function useArtistRealtime(artistId: string, initialData: ArtistRealtimeD
         updates.stats = statsData;
       }
 
-      setData(prev => ({ ...prev, ...updates }));
+      setData((prev) => ({ ...prev, ...updates }));
     } catch (error) {
       console.error("Failed to refresh artist data:", error);
-      setData(prev => ({ 
-        ...prev, 
-        isLoading: false, 
-        error: "Failed to refresh data" 
+      setData((prev) => ({
+        ...prev,
+        isLoading: false,
+        error: "Failed to refresh data",
       }));
     }
   }, [artistId]);
@@ -67,39 +70,45 @@ export function useArtistRealtime(artistId: string, initialData: ArtistRealtimeD
   // Subscribe to artist updates
   useEffect(() => {
     // Subscribe to artist table changes
-    const artistChannel = realtimeManager.subscribeToArtistFollowers(artistId, (payload) => {
-      
-      if (payload.eventType === "UPDATE" && payload.new) {
-        setData(prev => ({
-          ...prev,
-          artist: { ...prev.artist, ...payload.new },
-          followers: payload.new.followerCount || prev.followers,
-        }));
-      } else if (payload.eventType === "INSERT") {
-        // New data imported, refresh everything
-        refreshArtistData();
-        setSyncProgress(prev => ({ ...prev, isImporting: false, stage: "completed" }));
-      }
-    });
+    const artistChannel = realtimeManager.subscribeToArtistFollowers(
+      artistId,
+      (payload) => {
+        if (payload.eventType === "UPDATE" && payload.new) {
+          setData((prev) => ({
+            ...prev,
+            artist: { ...prev.artist, ...payload.new },
+            followers: payload.new.followerCount || prev.followers,
+          }));
+        } else if (payload.eventType === "INSERT") {
+          // New data imported, refresh everything
+          refreshArtistData();
+          setSyncProgress((prev) => ({
+            ...prev,
+            isImporting: false,
+            stage: "completed",
+          }));
+        }
+      },
+    );
 
     // Subscribe to shows updates for this artist
     const showsChannelName = `artist_shows:${artistId}`;
     const supabase = createSupabaseBrowserClient();
-    
+
     const showsChannel = supabase
       .channel(showsChannelName)
       .on(
         "postgres_changes",
         {
           event: "*",
-          schema: "public", 
+          schema: "public",
           table: "show_artists",
           filter: `artist_id=eq.${artistId}`,
         },
         (payload: any) => {
           // Refresh shows data when artist's shows change
           refreshArtistData();
-        }
+        },
       )
       .on(
         "postgres_changes",
@@ -111,18 +120,22 @@ export function useArtistRealtime(artistId: string, initialData: ArtistRealtimeD
         },
         (payload: any) => {
           if (payload.new) {
-            setData(prev => ({
+            setData((prev) => ({
               ...prev,
               artist: { ...prev.artist, ...payload.new },
             }));
-            
+
             // Check if this is a sync completion
             if (payload.new.lastSyncedAt && !payload.old?.lastSyncedAt) {
-              setSyncProgress(prev => ({ ...prev, isImporting: false, stage: "completed" }));
+              setSyncProgress((prev) => ({
+                ...prev,
+                isImporting: false,
+                stage: "completed",
+              }));
               refreshArtistData(); // Full refresh on sync completion
             }
           }
-        }
+        },
       )
       .subscribe();
 
@@ -163,8 +176,11 @@ export function useArtistRealtime(artistId: string, initialData: ArtistRealtimeD
         const response = await fetch(`/api/sync/status?artistId=${artistId}`);
         if (response.ok) {
           const syncData = await response.json();
-          
-          setSyncProgress(prev => ({
+
+          // Check if sync just completed before updating state
+          const wasImporting = syncProgress.isImporting;
+
+          setSyncProgress((prev) => ({
             ...prev,
             stage: syncData.currentStage || prev.stage,
             progress: syncData.progress || prev.progress,
@@ -172,7 +188,7 @@ export function useArtistRealtime(artistId: string, initialData: ArtistRealtimeD
           }));
 
           // If sync completed, refresh data
-          if (!syncData.isActive && prev.isImporting) {
+          if (!syncData.isActive && wasImporting) {
             refreshArtistData();
           }
         }

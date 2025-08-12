@@ -36,7 +36,7 @@ export function RealActiveShows() {
       >
         <TrendingUp className="h-4 w-4" aria-hidden="true" />
         <span className="font-medium text-sm animate-pulse">
-          <span className="inline-block w-20 h-4 bg-muted rounded"></span>
+          <span className="inline-block w-20 h-4 bg-muted rounded" />
         </span>
       </div>
     );

@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 interface Vote {
   setlistSongId: string;
-  voteType: "up" | "down";
+  voteType: "up";
   timestamp: number;
 }
 
@@ -16,9 +16,9 @@ interface UseAnonymousVotingOptions {
 interface UseAnonymousVotingReturn {
   vote: (
     setlistSongId: string,
-    voteType: "up" | "down" | null,
+    voteType: "up" | null,
   ) => Promise<void>;
-  getVote: (setlistSongId: string) => "up" | "down" | null;
+  getVote: (setlistSongId: string) => "up" | null;
   syncVotes: () => Promise<void>;
   votesRemaining: number;
   sessionId: string;
@@ -82,7 +82,7 @@ export function useAnonymousVoting({
   }, [votes]);
 
   const vote = useCallback(
-    async (setlistSongId: string, voteType: "up" | "down" | null) => {
+    async (setlistSongId: string, voteType: "up" | null) => {
       if (voteType === null) {
         // Remove vote
         setVotes((prev) => {
@@ -105,7 +105,7 @@ export function useAnonymousVoting({
       // Add or update vote
       const newVote: Vote = {
         setlistSongId,
-        voteType,
+        voteType: "up",
         timestamp: Date.now(),
       };
 
@@ -128,7 +128,7 @@ export function useAnonymousVoting({
           },
           body: JSON.stringify({
             setlistSongId,
-            voteType,
+            voteType: "up",
             sessionId,
           }),
         });
@@ -141,7 +141,7 @@ export function useAnonymousVoting({
   );
 
   const getVote = useCallback(
-    (setlistSongId: string): "up" | "down" | null => {
+    (setlistSongId: string): "up" | null => {
       return votes[setlistSongId]?.voteType || null;
     },
     [votes],

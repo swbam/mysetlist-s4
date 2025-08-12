@@ -1,8 +1,8 @@
+import { getUser } from "@repo/auth/server";
 import { db, setlistSongs, setlists } from "@repo/database";
-import { eq, desc, and } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getUser } from "@repo/auth/server";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -23,14 +23,14 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json().catch(() => ({}));
     const parsed = addSongSchema.safeParse(body);
-    
+
     if (!parsed.success) {
       return NextResponse.json(
-        { 
-          error: "Invalid request data", 
-          details: parsed.error.errors 
+        {
+          error: "Invalid request data",
+          details: parsed.error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -44,26 +44,28 @@ export async function POST(request: NextRequest) {
       .limit(1);
 
     if (!existingSetlist.length) {
-      return NextResponse.json(
-        { error: "Setlist not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Setlist not found" }, { status: 404 });
     }
 
     // For now, allow any authenticated user to add songs to setlists
     // TODO: Add proper permission checking based on setlist type/ownership
-    
+
     // Check if this specific song is already in the setlist
     const existingSong = await db
       .select({ id: setlistSongs.id })
       .from(setlistSongs)
-      .where(and(eq(setlistSongs.setlistId, setlistId), eq(setlistSongs.songId, songId)))
+      .where(
+        and(
+          eq(setlistSongs.setlistId, setlistId),
+          eq(setlistSongs.songId, songId),
+        ),
+      )
       .limit(1);
 
     if (existingSong.length) {
       return NextResponse.json(
         { error: "Song already exists in this setlist" },
-        { status: 409 }
+        { status: 409 },
       );
     }
 
@@ -76,7 +78,7 @@ export async function POST(request: NextRequest) {
         .where(eq(setlistSongs.setlistId, setlistId))
         .orderBy(desc(setlistSongs.position))
         .limit(1);
-      
+
       position = (lastPosition[0]?.position || 0) + 1;
     }
 
@@ -96,7 +98,7 @@ export async function POST(request: NextRequest) {
     if (!setlistSong) {
       return NextResponse.json(
         { error: "Failed to create setlist song" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -109,18 +111,17 @@ export async function POST(request: NextRequest) {
         notes: setlistSong.notes,
         created_at: setlistSong.createdAt,
       },
-      message: "Song added to setlist successfully"
+      message: "Song added to setlist successfully",
     });
-
   } catch (error) {
     console.error("Error adding song to setlist:", error);
     return NextResponse.json(
-      { 
-        error: "Internal server error", 
+      {
+        error: "Internal server error",
         message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString()
-      }, 
-      { status: 500 }
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 },
     );
   }
 }
@@ -134,7 +135,7 @@ export async function GET(request: NextRequest) {
     if (!setlistId) {
       return NextResponse.json(
         { error: "setlistId parameter is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -155,12 +156,11 @@ export async function GET(request: NextRequest) {
       setlistSongs: setlistSongsData,
       total: setlistSongsData.length,
     });
-
   } catch (error) {
     console.error("Error fetching setlist songs:", error);
     return NextResponse.json(
       { error: "Failed to fetch setlist songs" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -179,7 +179,7 @@ export async function DELETE(request: NextRequest) {
     if (!setlistSongId) {
       return NextResponse.json(
         { error: "Setlist song ID is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -193,7 +193,7 @@ export async function DELETE(request: NextRequest) {
     if (!existing.length) {
       return NextResponse.json(
         { error: "Setlist song not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -201,18 +201,17 @@ export async function DELETE(request: NextRequest) {
     await db.delete(setlistSongs).where(eq(setlistSongs.id, setlistSongId));
 
     return NextResponse.json({
-      message: "Song removed from setlist successfully"
+      message: "Song removed from setlist successfully",
     });
-
   } catch (error) {
     console.error("Error removing song from setlist:", error);
     return NextResponse.json(
-      { 
-        error: "Internal server error", 
+      {
+        error: "Internal server error",
         message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString()
-      }, 
-      { status: 500 }
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 },
     );
   }
 }

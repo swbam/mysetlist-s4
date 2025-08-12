@@ -58,8 +58,12 @@ async function getFeaturedData() {
   // Get artist and venue details for shows
   let featuredShows: any[] = [];
   if (rawShows && rawShows.length > 0) {
-    const artistIds = [...new Set(rawShows.map(s => s.headliner_artist_id).filter(Boolean))];
-    const venueIds = [...new Set(rawShows.map(s => s.venue_id).filter(Boolean))];
+    const artistIds = [
+      ...new Set(rawShows.map((s) => s.headliner_artist_id).filter(Boolean)),
+    ];
+    const venueIds = [
+      ...new Set(rawShows.map((s) => s.venue_id).filter(Boolean)),
+    ];
 
     const [artistsResponse, venuesResponse] = await Promise.all([
       artistIds.length > 0
@@ -76,11 +80,17 @@ async function getFeaturedData() {
         : Promise.resolve({ data: [] }),
     ]);
 
-    const artistsMap = new Map((artistsResponse.data || []).map(a => [a.id, a]));
-    const venuesMap = new Map((venuesResponse.data || []).map(v => [v.id, v]));
+    const artistsMap = new Map(
+      (artistsResponse.data || []).map((a) => [a.id, a]),
+    );
+    const venuesMap = new Map(
+      (venuesResponse.data || []).map((v) => [v.id, v]),
+    );
 
-    featuredShows = rawShows.map(show => {
-      const artist = show.headliner_artist_id ? artistsMap.get(show.headliner_artist_id) : null;
+    featuredShows = rawShows.map((show) => {
+      const artist = show.headliner_artist_id
+        ? artistsMap.get(show.headliner_artist_id)
+        : null;
       const venue = show.venue_id ? venuesMap.get(show.venue_id) : null;
 
       return {
@@ -89,20 +99,27 @@ async function getFeaturedData() {
         artist: artist?.name || "Unknown Artist",
         artistSlug: artist?.slug,
         venue: venue?.name || "Unknown Venue",
-        city: venue ? `${venue.city}${venue.state ? `, ${venue.state}` : ''}` : "Unknown Location",
+        city: venue
+          ? `${venue.city}${venue.state ? `, ${venue.state}` : ""}`
+          : "Unknown Location",
         date: show.date,
-        image: artist?.image_url || "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=600&h=400&fit=crop",
+        image:
+          artist?.image_url ||
+          "https://images.unsplash.com/photo-1540039155733-5bb30b53aa14?w=600&h=400&fit=crop",
         votesCount: show.vote_count || 0,
       };
     });
   }
 
   return {
-    featuredArtists: (featuredArtists || []).map(artist => ({
+    featuredArtists: (featuredArtists || []).map((artist) => ({
       id: artist.id,
       name: artist.name,
       slug: artist.slug,
-      image: artist.image_url || artist.small_image_url || "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop",
+      image:
+        artist.image_url ||
+        artist.small_image_url ||
+        "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop",
       genre: parseGenres(artist.genres)?.[0] || "Music",
       upcomingShows: artist.upcoming_shows || 0,
       trending: (artist.trending_score || 0) > 0,

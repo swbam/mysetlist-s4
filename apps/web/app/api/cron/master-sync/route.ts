@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { SyncScheduler } from "@repo/external-apis";
+import { headers } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
       default:
         return NextResponse.json(
           { error: "Invalid sync mode. Use: initial, daily, hourly" },
-          { status: 400 }
+          { status: 400 },
         );
     }
 
@@ -52,13 +52,13 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Master sync failed:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: "Master sync failed",
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
       default:
         return NextResponse.json(
           { error: "Invalid sync mode. Use: initial, daily, hourly" },
-          { status: 400 }
+          { status: 400 },
         );
     }
 
@@ -109,13 +109,13 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Master sync failed:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: "Master sync failed",
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

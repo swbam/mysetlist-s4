@@ -1,7 +1,7 @@
-import { NextRequest } from "next/server";
+import { getUser } from "@repo/auth";
 import { db, votes } from "@repo/database";
 import { and, eq, sql } from "drizzle-orm";
-import { getUser } from "@repo/auth";
+import type { NextRequest } from "next/server";
 import { z } from "zod";
 
 // Force dynamic rendering for API route
@@ -31,7 +31,9 @@ async function getCounts(setlistSongId: string, userId?: string) {
       const [v] = await db
         .select({ id: votes.id })
         .from(votes)
-        .where(and(eq(votes.setlistSongId, setlistSongId), eq(votes.userId, userId)))
+        .where(
+          and(eq(votes.setlistSongId, setlistSongId), eq(votes.userId, userId)),
+        )
         .limit(1);
       currentUserUpvoted = Boolean(v);
     }
@@ -58,21 +60,26 @@ export async function POST(req: NextRequest) {
     const parsed = postSchema.safeParse(body);
     if (!parsed.success) {
       console.error("Invalid POST payload:", parsed.error);
-      return Response.json({ 
-        error: "Invalid payload", 
-        details: parsed.error.errors 
-      }, { status: 400 });
+      return Response.json(
+        {
+          error: "Invalid payload",
+          details: parsed.error.errors,
+        },
+        { status: 400 },
+      );
     }
     const { setlistSongId } = parsed.data;
 
     const existing = await db
       .select({ id: votes.id })
       .from(votes)
-      .where(and(eq(votes.setlistSongId, setlistSongId), eq(votes.userId, user.id)))
+      .where(
+        and(eq(votes.setlistSongId, setlistSongId), eq(votes.userId, user.id)),
+      )
       .limit(1);
 
-    if (existing.length) {
-      await db.delete(votes).where(eq(votes.id, existing[0]!.id));
+    if (existing.length && existing[0]?.id) {
+      await db.delete(votes).where(eq(votes.id, existing[0].id));
     } else {
       await db.insert(votes).values({
         setlistSongId,
@@ -91,12 +98,12 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Error in POST /api/votes:", error);
     return Response.json(
-      { 
-        error: "Internal server error", 
+      {
+        error: "Internal server error",
         message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString()
-      }, 
-      { status: 500 }
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 },
     );
   }
 }
@@ -109,13 +116,20 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const setlistSongId = searchParams.get("setlistSongId");
     if (!setlistSongId) {
-      return Response.json({ error: "setlistSongId required" }, { status: 400 });
+      return Response.json(
+        { error: "setlistSongId required" },
+        { status: 400 },
+      );
     }
 
     // Validate UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(setlistSongId)) {
-      return Response.json({ error: "Invalid setlistSongId format" }, { status: 400 });
+      return Response.json(
+        { error: "Invalid setlistSongId format" },
+        { status: 400 },
+      );
     }
 
     const user = await getUser().catch(() => null);
@@ -130,12 +144,12 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error("Error in GET /api/votes:", error);
     return Response.json(
-      { 
-        error: "Internal server error", 
+      {
+        error: "Internal server error",
         message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString()
-      }, 
-      { status: 500 }
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 },
     );
   }
 }

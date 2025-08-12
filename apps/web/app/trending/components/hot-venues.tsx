@@ -52,7 +52,9 @@ export function HotVenues() {
 
   const fetchVenues = async () => {
     try {
-      const response = await fetch("/api/trending/insights?type=venues&limit=12");
+      const response = await fetch(
+        "/api/trending/insights?type=venues&limit=12",
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch hot venues");
       }
@@ -89,7 +91,10 @@ export function HotVenues() {
         <CardContent>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3 p-3 rounded-lg border">
+              <div
+                key={i}
+                className="flex items-center gap-3 p-3 rounded-lg border"
+              >
                 <Skeleton className="h-12 w-12 rounded-lg" />
                 <div className="flex-1 space-y-2">
                   <Skeleton className="h-4 w-32" />
@@ -176,8 +181,7 @@ export function HotVenues() {
                   <h4 className="font-semibold truncate">{venue.name}</h4>
                   {index < 3 && (
                     <Badge variant="secondary" className="text-xs">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      #{index + 1}
+                      <TrendingUp className="h-3 w-3 mr-1" />#{index + 1}
                     </Badge>
                   )}
                 </div>

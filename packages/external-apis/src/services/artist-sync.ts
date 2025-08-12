@@ -1,14 +1,19 @@
 import { SpotifyClient } from "../clients/spotify";
+import { TicketmasterClient } from "../clients/ticketmaster";
 import { db, eq } from "../database";
 import { artistSongs, artists, songs } from "@repo/database";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 
 export class ArtistSyncService {
   private spotifyClient: SpotifyClient;
+  private ticketmasterClient: TicketmasterClient;
   private errorHandler: SyncErrorHandler;
 
   constructor() {
     this.spotifyClient = new SpotifyClient({});
+    this.ticketmasterClient = new TicketmasterClient({
+      apiKey: process.env["TICKETMASTER_API_KEY"] || "",
+    });
     this.errorHandler = new SyncErrorHandler({
       maxRetries: 3,
       retryDelay: 1000,
@@ -60,11 +65,39 @@ export class ArtistSyncService {
 
     const topTracks = topTracksResult || { tracks: [] };
 
+    // Try to find the artist on Ticketmaster
+    let ticketmasterId: string | null = null;
+    try {
+      const ticketmasterResult = await this.errorHandler.withRetry(
+        () => this.ticketmasterClient.searchAttractions({
+          keyword: spotifyArtist.name,
+          size: 1,
+          classificationName: "music",
+        }),
+        {
+          service: "ArtistSyncService",
+          operation: "searchAttractions",
+          context: { artistName: spotifyArtist.name },
+        },
+      );
+
+      if (ticketmasterResult?._embedded?.attractions?.[0]) {
+        const attraction = ticketmasterResult._embedded.attractions[0];
+        if (this.isArtistNameMatch(spotifyArtist.name, attraction.name)) {
+          ticketmasterId = attraction.id;
+          console.log(`Found Ticketmaster ID ${ticketmasterId} for ${spotifyArtist.name}`);
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to find Ticketmaster ID for ${spotifyArtist.name}:`, error);
+    }
+
     // Update or create artist in database
     await db
       .insert(artists)
       .values({
         spotifyId: spotifyArtist.id,
+        ticketmasterId,
         name: spotifyArtist.name,
         slug: this.generateSlug(spotifyArtist.name),
         imageUrl: spotifyArtist.images[0]?.url || null,
@@ -78,6 +111,7 @@ export class ArtistSyncService {
       .onConflictDoUpdate({
         target: artists.spotifyId,
         set: {
+          ticketmasterId,
           name: spotifyArtist.name,
           imageUrl: spotifyArtist.images[0]?.url || null,
           smallImageUrl: spotifyArtist.images[2]?.url || null,
@@ -314,5 +348,25 @@ export class ArtistSyncService {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
+  }
+
+  private isArtistNameMatch(name1: string, name2: string): boolean {
+    const normalize = (name: string) =>
+      name.toLowerCase().replace(/[^a-z0-9]/g, "");
+    
+    const normalized1 = normalize(name1);
+    const normalized2 = normalize(name2);
+    
+    // Exact match
+    if (normalized1 === normalized2) {
+      return true;
+    }
+    
+    // Check if one contains the other (for cases like "Artist" vs "Artist Band")
+    if (normalized1.includes(normalized2) || normalized2.includes(normalized1)) {
+      return true;
+    }
+    
+    return false;
   }
 }

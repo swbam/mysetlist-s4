@@ -1,10 +1,14 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@repo/design-system/components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@repo/design-system/components/ui/avatar";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { cn } from "@repo/design-system/lib/utils";
-import { Music, Search, Loader2 } from "lucide-react";
+import { Loader2, Music, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export interface SearchResultItem {
@@ -58,10 +62,12 @@ export function SearchResultsDropdown({
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-|-$/g, "");
-      
+
       // Navigate instantly to artist page with Ticketmaster ID for background sync
-      router.push(`/artists/${slug}?ticketmaster=${result.externalId || result.id.replace("tm_", "")}`);
-      
+      router.push(
+        `/artists/${slug}?ticketmaster=${result.externalId || result.id.replace("tm_", "")}`,
+      );
+
       // Trigger background sync after navigation
       fetch("/api/sync/artist", {
         method: "POST",
@@ -84,7 +90,12 @@ export function SearchResultsDropdown({
   };
 
   return (
-    <Card className={cn("border border-border/50 bg-card/95 shadow-lg backdrop-blur-sm", className)}>
+    <Card
+      className={cn(
+        "border border-border/50 bg-card/95 shadow-lg backdrop-blur-sm",
+        className,
+      )}
+    >
       <CardContent className={cn("p-1", maxHeight, "overflow-auto")}>
         {isLoading && (
           <div className="flex items-center justify-center p-4">
@@ -120,7 +131,9 @@ export function SearchResultsDropdown({
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-sm truncate">{result.title}</p>
+                    <p className="font-medium text-sm truncate">
+                      {result.title}
+                    </p>
                     {result.source === "ticketmaster" && (
                       <Badge variant="outline" className="text-xs shrink-0">
                         Ticketmaster

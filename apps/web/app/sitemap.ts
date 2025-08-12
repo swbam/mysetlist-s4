@@ -1,7 +1,8 @@
 import { env } from "@repo/env";
 import type { MetadataRoute } from "next";
 
-const prodUrl = env.NEXT_PUBLIC_URL || env.NEXT_PUBLIC_WEB_URL || "http://localhost:3001";
+const prodUrl =
+  env.NEXT_PUBLIC_URL || env.NEXT_PUBLIC_WEB_URL || "http://localhost:3001";
 const url = new URL(prodUrl);
 
 const sitemap = async (): Promise<MetadataRoute.Sitemap> => [

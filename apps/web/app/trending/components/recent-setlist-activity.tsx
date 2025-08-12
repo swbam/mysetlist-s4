@@ -15,19 +15,13 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
-import {
-  Calendar,
-  Clock,
-  Music,
-  Vote,
-  Users,
-} from "lucide-react";
+import { Calendar, Clock, Music, Users, Vote } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 interface RecentSetlistActivity {
   id: string;
-  type: 'new_vote' | 'new_setlist' | 'show_update';
+  type: "new_vote" | "new_setlist" | "show_update";
   showName: string;
   showSlug: string;
   artistName: string;
@@ -54,7 +48,9 @@ export function RecentSetlistActivity() {
 
   const fetchActivity = async () => {
     try {
-      const response = await fetch("/api/trending/insights?type=activity&limit=12");
+      const response = await fetch(
+        "/api/trending/insights?type=activity&limit=12",
+      );
       if (!response.ok) {
         throw new Error("Failed to fetch recent activity");
       }
@@ -115,7 +111,9 @@ export function RecentSetlistActivity() {
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    const diffInMinutes = Math.floor(
+      (now.getTime() - date.getTime()) / (1000 * 60),
+    );
 
     if (diffInMinutes < 1) {
       return "just now";
@@ -145,9 +143,7 @@ export function RecentSetlistActivity() {
             <Clock className="h-5 w-5 text-blue-500" />
             Recent Activity
           </CardTitle>
-          <CardDescription>
-            Latest setlist votes and updates
-          </CardDescription>
+          <CardDescription>Latest setlist votes and updates</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -214,14 +210,15 @@ export function RecentSetlistActivity() {
           <Clock className="h-5 w-5 text-blue-500" />
           Recent Activity
         </CardTitle>
-        <CardDescription>
-          Latest setlist votes and updates
-        </CardDescription>
+        <CardDescription>Latest setlist votes and updates</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
           {activities.map((activity) => (
-            <div key={activity.id} className="flex items-start gap-3 pb-3 border-b border-border/50 last:border-0 last:pb-0">
+            <div
+              key={activity.id}
+              className="flex items-start gap-3 pb-3 border-b border-border/50 last:border-0 last:pb-0"
+            >
               {/* Activity Icon */}
               <div className={`mt-1 ${getActivityColor(activity.type)}`}>
                 {getActivityIcon(activity.type)}
@@ -253,7 +250,9 @@ export function RecentSetlistActivity() {
                     {activity.artistName}
                   </Link>
                   <span>•</span>
-                  <span>{activity.venueName}, {activity.venueCity}</span>
+                  <span>
+                    {activity.venueName}, {activity.venueCity}
+                  </span>
                   <span>•</span>
                   <span>{formatTimeAgo(activity.createdAt)}</span>
                 </div>
@@ -264,7 +263,10 @@ export function RecentSetlistActivity() {
 
         {/* View More Link */}
         <div className="mt-6 text-center">
-          <Link href="/activity" className="text-sm text-primary hover:underline">
+          <Link
+            href="/activity"
+            className="text-sm text-primary hover:underline"
+          >
             View all activity →
           </Link>
         </div>

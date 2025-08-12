@@ -46,7 +46,7 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
     this.setState({ errorInfo });
 
     // Log to external service in production
-    if (process.env["NODE_ENV"] === "production") {
+    if (process.env.NODE_ENV === "production") {
       // TODO: Send to error tracking service
     }
   }
@@ -156,7 +156,7 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
                 </div>
               )}
 
-              {process.env["NODE_ENV"] === "development" && this.state.error && (
+              {process.env.NODE_ENV === "development" && this.state.error && (
                 <details className="mt-4 text-left">
                   <summary className="cursor-pointer text-muted-foreground text-sm hover:text-foreground">
                     Debug Information

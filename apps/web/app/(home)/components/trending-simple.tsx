@@ -68,7 +68,10 @@ export default function TrendingSimple() {
             <div className="h-8 w-64 animate-pulse rounded bg-muted mb-8" />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-64 animate-pulse rounded-lg bg-muted" />
+                <div
+                  key={i}
+                  className="h-64 animate-pulse rounded-lg bg-muted"
+                />
               ))}
             </div>
           </div>
@@ -80,7 +83,10 @@ export default function TrendingSimple() {
             <div className="h-8 w-64 animate-pulse rounded bg-muted mb-8" />
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-32 animate-pulse rounded-lg bg-muted" />
+                <div
+                  key={i}
+                  className="h-32 animate-pulse rounded-lg bg-muted"
+                />
               ))}
             </div>
           </div>
@@ -178,7 +184,9 @@ export default function TrendingSimple() {
                           </span>
                         )}
                       </div>
-                      <h3 className="font-semibold line-clamp-2">{show.title}</h3>
+                      <h3 className="font-semibold line-clamp-2">
+                        {show.title}
+                      </h3>
                       {show.artist_name && (
                         <p className="text-sm text-muted-foreground">
                           {show.artist_name}

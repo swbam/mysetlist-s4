@@ -61,7 +61,7 @@ export default function ArtistsPage() {
                       loading
                       loadingCount={12}
                     >
-                      <></>
+                      {/* Loading skeleton handled internally */}
                     </ResponsiveGrid>
                   ),
                 },
@@ -98,8 +98,8 @@ export default function ArtistsPage() {
                 </div>
               </div>
               <p className="mt-6 text-muted-foreground">
-                Try searching for any artist to discover their upcoming shows and
-                join the conversation about their setlists
+                Try searching for any artist to discover their upcoming shows
+                and join the conversation about their setlists
               </p>
             </div>
           </div>

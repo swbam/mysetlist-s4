@@ -1,11 +1,27 @@
+import {
+  and,
+  artists,
+  db,
+  desc,
+  eq,
+  ilike,
+  isNotNull,
+  setlists,
+  shows,
+  venues,
+} from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import { createMetadata } from "@repo/seo/metadata";
-import { db, setlists, shows, artists, venues, eq, desc, ilike, and, isNotNull } from "@repo/database";
-import { Calendar, Music, MapPin, Search, Users } from "lucide-react";
+import { Calendar, MapPin, Music, Search, Users } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -14,7 +30,8 @@ import { Suspense } from "react";
 export const generateMetadata = (): Metadata => {
   return createMetadata({
     title: "Setlists - MySetlist",
-    description: "Browse concert setlists, vote on songs, and discover what artists are playing live.",
+    description:
+      "Browse concert setlists, vote on songs, and discover what artists are playing live.",
   });
 };
 
@@ -59,7 +76,7 @@ async function getSetlists(search?: string): Promise<SetlistWithDetails[]> {
         showName: shows.name,
         showDate: shows.date,
         showSlug: shows.slug,
-        // Artist fields  
+        // Artist fields
         artistName: artists.name,
         artistSlug: artists.slug,
         artistImageUrl: artists.imageUrl,
@@ -76,14 +93,14 @@ async function getSetlists(search?: string): Promise<SetlistWithDetails[]> {
       .where(
         and(
           isNotNull(shows.id),
-          search ? ilike(setlists.name, `%${search}%`) : undefined
-        )
+          search ? ilike(setlists.name, `%${search}%`) : undefined,
+        ),
       )
       .orderBy(desc(setlists.createdAt))
       .limit(50);
 
     const result = await query;
-    
+
     return result.map((row) => ({
       id: row.id,
       name: row.name || "Main Set",
@@ -96,17 +113,21 @@ async function getSetlists(search?: string): Promise<SetlistWithDetails[]> {
         name: row.showName || "Unknown Show",
         date: row.showDate ? new Date(row.showDate) : null,
         slug: row.showSlug || "",
-        artist: row.artistName ? {
-          name: row.artistName,
-          slug: row.artistSlug || "",
-          imageUrl: row.artistImageUrl,
-        } : null,
-        venue: row.venueName ? {
-          name: row.venueName,
-          city: row.venueCity,
-          state: row.venueState,
-          slug: row.venueSlug || "",
-        } : null,
+        artist: row.artistName
+          ? {
+              name: row.artistName,
+              slug: row.artistSlug || "",
+              imageUrl: row.artistImageUrl,
+            }
+          : null,
+        venue: row.venueName
+          ? {
+              name: row.venueName,
+              city: row.venueCity,
+              state: row.venueState,
+              slug: row.venueSlug || "",
+            }
+          : null,
       },
     }));
   } catch (error) {
@@ -152,15 +173,19 @@ function SetlistCard({ setlist }: { setlist: SetlistWithDetails }) {
                     <MapPin className="h-3 w-3" />
                     <span className="line-clamp-1">
                       {setlist.show.venue.name}
-                      {setlist.show.venue.city && `, ${setlist.show.venue.city}`}
-                      {setlist.show.venue.state && `, ${setlist.show.venue.state}`}
+                      {setlist.show.venue.city &&
+                        `, ${setlist.show.venue.city}`}
+                      {setlist.show.venue.state &&
+                        `, ${setlist.show.venue.state}`}
                     </span>
                   </div>
                 )}
                 {setlist.show.date && (
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Calendar className="h-3 w-3" />
-                    <span>{new Date(setlist.show.date).toLocaleDateString()}</span>
+                    <span>
+                      {new Date(setlist.show.date).toLocaleDateString()}
+                    </span>
                   </div>
                 )}
               </div>
@@ -237,7 +262,9 @@ async function SetlistsContent({ search }: { search?: string }) {
         <Music className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
         <h3 className="mb-2 text-lg font-semibold">No setlists found</h3>
         <p className="text-muted-foreground">
-          {search ? "Try adjusting your search terms" : "No setlists have been created yet"}
+          {search
+            ? "Try adjusting your search terms"
+            : "No setlists have been created yet"}
         </p>
       </div>
     );
@@ -262,9 +289,12 @@ export default function SetlistsPage({
       <div className="space-y-8">
         {/* Header */}
         <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight">Concert Setlists</h1>
+          <h1 className="text-4xl font-bold tracking-tight">
+            Concert Setlists
+          </h1>
           <p className="text-muted-foreground text-lg">
-            Browse setlists from concerts around the world. Vote for songs and help create the ultimate setlists.
+            Browse setlists from concerts around the world. Vote for songs and
+            help create the ultimate setlists.
           </p>
         </div>
 
@@ -318,7 +348,9 @@ export default function SetlistsPage({
 
         {/* Call to Action */}
         <div className="text-center pt-8">
-          <p className="text-muted-foreground mb-4">Can't find a setlist for a show you attended?</p>
+          <p className="text-muted-foreground mb-4">
+            Can't find a setlist for a show you attended?
+          </p>
           <Button asChild>
             <Link href="/shows">Find Your Show</Link>
           </Button>

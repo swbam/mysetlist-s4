@@ -48,7 +48,7 @@ export class ShowSyncService {
         .where(eq(venues.slug, venueSlug))
         .limit(1);
       
-      if (existingVenueResults.length > 0) {
+      if (existingVenueResults.length > 0 && existingVenueResults[0]) {
         venueId = existingVenueResults[0].id;
       } else {
         // Create venue using VenueSyncService
@@ -62,7 +62,7 @@ export class ShowSyncService {
             .where(eq(venues.slug, venueSlug))
             .limit(1);
           
-          if (newVenueResults.length > 0) {
+          if (newVenueResults.length > 0 && newVenueResults[0]) {
             venueId = newVenueResults[0].id;
           }
         } catch (error) {
@@ -354,32 +354,86 @@ export class ShowSyncService {
 
     let created = 0;
     let updated = 0;
-
-    // Search for shows by artist name
-    const eventsResult = await this.errorHandler.withRetry(
-      () =>
-        this.ticketmasterClient.searchEvents({
-          keyword: artist.name,
-          size: 200,
-          sort: "date,asc",
-          startDateTime: new Date().toISOString(),
-        }),
-      {
-        service: "ShowSyncService",
-        operation: "searchEvents",
-        context: { artistName: artist.name },
-      },
-    );
-
     let upcomingShows = 0;
+    const eventsToProcess = new Set<string>(); // Avoid duplicates
 
-    if (eventsResult?._embedded?.events) {
-      for (const event of eventsResult._embedded.events) {
-        // Check if this event is actually for our artist
-        const attractionName = event._embedded?.attractions?.[0]?.name;
-        if (!attractionName || !this.isArtistMatch(artist.name, attractionName)) {
-          continue;
+    // Strategy 1: Search by Ticketmaster artist ID if available
+    if (artist.ticketmasterId) {
+      console.log(`Searching Ticketmaster events by artist ID: ${artist.ticketmasterId}`);
+      try {
+        const artistEventsResult = await this.errorHandler.withRetry(
+          () =>
+            this.ticketmasterClient.searchEvents({
+              attractionId: artist.ticketmasterId!,
+              size: 200,
+              sort: "date,asc",
+              startDateTime: new Date().toISOString(),
+            }),
+          {
+            service: "ShowSyncService",
+            operation: "searchEventsByAttractionId",
+            context: { attractionId: artist.ticketmasterId },
+          },
+        );
+
+        if (artistEventsResult?._embedded?.events) {
+          for (const event of artistEventsResult._embedded.events) {
+            eventsToProcess.add(event.id);
+          }
         }
+      } catch (error) {
+        console.warn(`Failed to search by attraction ID ${artist.ticketmasterId}:`, error);
+      }
+    }
+
+    // Strategy 2: Search by artist name (as fallback or additional)
+    try {
+      const eventsResult = await this.errorHandler.withRetry(
+        () =>
+          this.ticketmasterClient.searchEvents({
+            keyword: artist.name,
+            size: 200,
+            sort: "date,asc",
+            startDateTime: new Date().toISOString(),
+            classificationName: "music", // Focus on music events
+          }),
+        {
+          service: "ShowSyncService",
+          operation: "searchEvents",
+          context: { artistName: artist.name },
+        },
+      );
+
+      if (eventsResult?._embedded?.events) {
+        for (const event of eventsResult._embedded.events) {
+          // Check if this event is actually for our artist
+          const attractionName = event._embedded?.attractions?.[0]?.name;
+          if (!attractionName || !this.isArtistMatch(artist.name, attractionName)) {
+            continue;
+          }
+          eventsToProcess.add(event.id);
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to search by artist name ${artist.name}:`, error);
+    }
+
+    console.log(`Found ${eventsToProcess.size} unique events for artist ${artist.name}`);
+
+    // Process all unique events found
+    for (const eventId of eventsToProcess) {
+      try {
+        // Get event details
+        const eventDetails = await this.errorHandler.withRetry(
+          () => this.ticketmasterClient.getEvent(eventId),
+          {
+            service: "ShowSyncService",
+            operation: "getEvent",
+            context: { eventId },
+          },
+        );
+
+        if (!eventDetails) continue;
 
         upcomingShows++;
 
@@ -387,7 +441,7 @@ export class ShowSyncService {
         const existingShow = await db
           .select()
           .from(shows)
-          .where(eq(shows.ticketmasterId, event.id))
+          .where(eq(shows.ticketmasterId, eventId))
           .limit(1);
 
         if (existingShow.length > 0) {
@@ -395,21 +449,43 @@ export class ShowSyncService {
           await db
             .update(shows)
             .set({
-              status: this.mapTicketmasterStatus(event.dates.status.code),
+              status: this.mapTicketmasterStatus(eventDetails.dates.status.code),
+              name: eventDetails.name,
+              ticketUrl: eventDetails.url,
+              ...(eventDetails.priceRanges?.[0]?.min && {
+                minPrice: eventDetails.priceRanges[0].min,
+              }),
+              ...(eventDetails.priceRanges?.[0]?.max && {
+                maxPrice: eventDetails.priceRanges[0].max,
+              }),
+              currency: eventDetails.priceRanges?.[0]?.currency || "USD",
               updatedAt: new Date(),
             })
-            .where(eq(shows.ticketmasterId, event.id));
+            .where(eq(shows.ticketmasterId, eventId));
           updated++;
         } else {
           // Create new show
-          await this.syncShowFromTicketmaster(event);
+          await this.syncShowFromTicketmaster(eventDetails);
           created++;
         }
 
-        // Rate limit
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        // Rate limit to avoid overwhelming APIs
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      } catch (error) {
+        console.error(`Failed to process event ${eventId}:`, error);
+        // Continue with next event
       }
     }
+
+    // Update artist stats
+    await db
+      .update(artists)
+      .set({
+        upcomingShows,
+        totalShows: (artist.totalShows || 0) + created,
+        updatedAt: new Date(),
+      })
+      .where(eq(artists.id, artistDbId));
 
     return { upcomingShows, created, updated };
   }

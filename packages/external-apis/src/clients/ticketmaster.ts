@@ -160,6 +160,7 @@ export class TicketmasterClient extends BaseAPIClient {
 
   async searchEvents(options: {
     keyword?: string;
+    attractionId?: string;
     city?: string;
     stateCode?: string;
     countryCode?: string;

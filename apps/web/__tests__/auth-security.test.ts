@@ -4,9 +4,9 @@ import {
   canPerformAnonymousAction,
   getAnonymousActions,
   incrementAnonymousAction,
-} from "../anonymous-limits";
-import { getIdentifier } from "../auth-rate-limit";
-import { generateCSRFToken, validateCSRFToken } from "../csrf";
+} from "../lib/anonymous-limits";
+import { getIdentifier } from "../lib/auth-rate-limit";
+import { generateCSRFToken, validateCSRFToken } from "../lib/csrf";
 
 // Mock Next.js modules
 vi.mock("next/headers", () => ({
@@ -218,7 +218,7 @@ describe("Auth Endpoints Security", () => {
 
 describe("Security Headers", () => {
   it("should include all required security headers", async () => {
-    const { getSecurityHeaders } = await import("../security-middleware");
+    const { getSecurityHeaders } = await import("../lib/security-middleware");
     const headers = getSecurityHeaders();
 
     expect(headers["X-Frame-Options"]).toBe("DENY");

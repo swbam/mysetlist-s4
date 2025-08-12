@@ -8,7 +8,7 @@ import { and, db, eq, sql } from "../database";
 import {
   artists,
   artistSongs,
-  setlistSongs,
+  setlistSongs as setlistSongsTable,
   setlists,
   shows,
   songs,
@@ -82,7 +82,7 @@ export class SetlistSyncService {
       // Add songs to setlist
       for (const song of songs) {
         await db
-          .insert(setlistSongs)
+          .insert(setlistSongsTable)
           .values({
             setlistId: setlist.id,
             songId: song.id,
@@ -214,8 +214,10 @@ export class SetlistSyncService {
     const upcomingShows = await db
       .select()
       .from(shows)
-      .where(eq(shows.headlinerArtistId, artistId))
-      .where(sql`${shows.date} >= CURRENT_DATE`);
+      .where(and(
+        eq(shows.headlinerArtistId, artistId),
+        sql`${shows.date} >= CURRENT_DATE`
+      ));
 
     let createdSetlists = 0;
 
@@ -231,21 +233,32 @@ export class SetlistSyncService {
         continue; // Skip if setlist already exists
       }
 
-      // Get 15 random songs from the artist's catalog
-      const randomSongs = await db
-        .select()
+      // Get the artist's most popular songs for the predicted setlist
+      const popularSongs = await db
+        .select({
+          id: songs.id,
+          title: songs.title,
+          artist: songs.artist,
+          album: songs.album,
+          popularity: songs.popularity,
+          durationMs: songs.durationMs,
+        })
         .from(songs)
         .innerJoin(artistSongs, eq(songs.id, artistSongs.songId))
         .where(eq(artistSongs.artistId, artistId))
-        .orderBy(sql`RANDOM()`)
-        .limit(15);
+        .orderBy(sql`${songs.popularity} DESC NULLS LAST, ${songs.title} ASC`)
+        .limit(20); // Get 20 songs to have a good selection
 
-      if (randomSongs.length === 0) {
+      if (popularSongs.length === 0) {
         continue; // Skip if no songs available
       }
 
+      // If we have fewer than 15 songs, take what we have
+      // If we have 15+, take the top 15 most popular
+      const selectedSongs = popularSongs.slice(0, Math.min(15, popularSongs.length));
+
       // Create predicted setlist
-      const [setlist] = await db
+      const result = await db
         .insert(setlists)
         .values({
           showId: show.id,
@@ -258,13 +271,21 @@ export class SetlistSyncService {
         })
         .returning();
 
+      const setlist = result[0];
+      if (!setlist) {
+        continue; // Skip if setlist creation failed
+      }
+
       // Add songs to setlist
-      for (let i = 0; i < randomSongs.length; i++) {
+      for (let i = 0; i < selectedSongs.length; i++) {
+        const song = selectedSongs[i];
+        if (!song?.id) continue;
+
         await db
-          .insert(setlistSongs)
+          .insert(setlistSongsTable)
           .values({
             setlistId: setlist.id,
-            songId: randomSongs[i].songs.id,
+            songId: song.id,
             position: i + 1,
             notes: null,
             isPlayed: null, // Not applicable for predicted setlists

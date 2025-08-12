@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { ShowSyncService } from "@repo/external-apis";
+import { headers } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -47,10 +47,10 @@ export async function POST(request: NextRequest) {
       };
 
       await showSyncService.syncUpcomingShows(syncOptions);
-      
+
       result = {
         message: "General show sync completed",
-        options: syncOptions
+        options: syncOptions,
       };
     }
 
@@ -59,17 +59,16 @@ export async function POST(request: NextRequest) {
       result,
       timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error("Show sync failed:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: "Show sync failed",
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -93,7 +92,8 @@ export async function GET(request: NextRequest) {
       stateCode: searchParams.get("stateCode") || undefined,
       keyword: searchParams.get("keyword") || undefined,
       classificationName: searchParams.get("classificationName") || "music",
-      startDateTime: searchParams.get("startDateTime") || new Date().toISOString(),
+      startDateTime:
+        searchParams.get("startDateTime") || new Date().toISOString(),
       endDateTime: searchParams.get("endDateTime") || undefined,
     };
 
@@ -107,10 +107,10 @@ export async function GET(request: NextRequest) {
     } else {
       // Sync general upcoming shows
       await showSyncService.syncUpcomingShows(syncOptions);
-      
+
       result = {
         message: "General show sync completed",
-        options: syncOptions
+        options: syncOptions,
       };
     }
 
@@ -119,17 +119,16 @@ export async function GET(request: NextRequest) {
       result,
       timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error("Show sync failed:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: "Show sync failed",
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

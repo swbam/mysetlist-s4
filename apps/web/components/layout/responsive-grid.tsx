@@ -3,7 +3,7 @@ import React from "react";
 import { focusRing, generateGridClasses, gridAriaLabels } from "./grid-utils";
 
 interface ResponsiveGridProps {
-  children: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
   variant?: "artists" | "venues" | "shows" | "default";
   loading?: boolean;
@@ -74,7 +74,7 @@ export const ResponsiveGrid: React.FC<ResponsiveGridProps> = ({
   }
 
   // Handle empty state
-  const childArray = React.Children.toArray(children);
+  const childArray = React.Children.toArray(children || []);
   if (childArray.length === 0 && emptyState) {
     return (
       <div

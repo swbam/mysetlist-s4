@@ -24,8 +24,7 @@ type SongItemProps = {
   item: {
     id: string;
     upvotes: number;
-    downvotes: number;
-    userVote: "up" | "down" | null;
+    userVote: "up" | null;
     notes?: string;
     song: {
       id: string;
@@ -69,7 +68,6 @@ export function SongItem({
 
   // Use real-time data if available, otherwise fall back to props
   const upvotes = votes.upvotes || item.upvotes || 0;
-  const downvotes = votes.downvotes || item.downvotes || 0;
 
   const song = item.song;
   const position = index + 1;

@@ -84,9 +84,11 @@ export async function getTrendingShows(
     // Transform shows to trending items with real artist and venue data
     const trendingShows = shows.map((show) => {
       // Handle joined data - Supabase returns arrays for joins, take first element
-      const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
+      const artist = Array.isArray(show.artists)
+        ? show.artists[0]
+        : show.artists;
       const venue = Array.isArray(show.venues) ? show.venues[0] : show.venues;
-      
+
       return {
         id: show.id,
         type: "show" as const,
@@ -98,7 +100,9 @@ export async function getTrendingShows(
         image_url: artist?.image_url || undefined,
         slug: show.slug,
         artist_name: artist?.name || "Artist TBA",
-        venue_name: venue ? `${venue.name}${venue.city ? `, ${venue.city}` : ''}` : "Venue TBA",
+        venue_name: venue
+          ? `${venue.name}${venue.city ? `, ${venue.city}` : ""}`
+          : "Venue TBA",
         show_date: show.date,
       };
     });
