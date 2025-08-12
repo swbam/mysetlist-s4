@@ -81,7 +81,7 @@ CREATE INDEX IF NOT EXISTS idx_artists_trending_featured ON artists(trending_sco
 CREATE INDEX IF NOT EXISTS idx_setlists_trending_featured ON setlists(trending_score DESC, is_featured);
 
 -- Text search indexes (if using full-text search)
-CREATE INDEX IF NOT EXISTS idx_artists_search ON artists USING gin(to_tsvector('english', name || ' ' || COALESCE(bio, '')));
+-- Replaced idx_artists_search to drop bio usage; see 20250815_remove_bio_from_search_indexes.sql
 CREATE INDEX IF NOT EXISTS idx_songs_search ON songs USING gin(to_tsvector('english', name));
 CREATE INDEX IF NOT EXISTS idx_venues_search ON venues USING gin(to_tsvector('english', name || ' ' || city || ' ' || COALESCE(state, '')));
 

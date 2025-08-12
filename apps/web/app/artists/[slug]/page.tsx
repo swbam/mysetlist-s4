@@ -48,7 +48,6 @@ export const generateMetadata = async ({
     if (!slug) {
       return createArtistMetadata({
         name: "Artist Not Found",
-        bio: "Invalid artist request.",
         slug: "not-found",
       });
     }
@@ -63,7 +62,6 @@ export const generateMetadata = async ({
         .replace(/\b\w/g, (l) => l.toUpperCase());
       return createArtistMetadata({
         name: artistName,
-        bio: `${artistName} artist page - importing data from Ticketmaster.`,
         slug: slug,
       });
     }
@@ -71,14 +69,12 @@ export const generateMetadata = async ({
     if (!artist) {
       return createArtistMetadata({
         name: "Artist Not Found",
-        bio: "The requested artist could not be found.",
         slug: "not-found",
       });
     }
 
     return createArtistMetadata({
       name: artist.name,
-      ...(artist.bio && { bio: artist.bio }),
       ...(artist.imageUrl && { imageUrl: artist.imageUrl }),
       slug: artist.slug,
       ...(artist.followers && { followerCount: artist.followers }),
@@ -88,7 +84,6 @@ export const generateMetadata = async ({
     console.error("Error generating metadata for artist page:", error);
     return createArtistMetadata({
       name: "Artist Error",
-      bio: "Unable to load artist metadata.",
       slug: "error",
     });
   }
@@ -226,7 +221,6 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
       popularity: artist.popularity || 0,
       followers: artist.followers || 0,
       verified: artist.verified || false,
-      bio: artist.bio || undefined,
       externalUrls: artist.externalUrls || undefined,
       spotifyId: artist.spotifyId || undefined,
     };

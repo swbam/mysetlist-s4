@@ -54,12 +54,20 @@ export function TicketmasterArtistSearch({
 
     try {
       const response = await fetch(
-        `/api/search/ticketmaster-artists?q=${encodeURIComponent(searchQuery)}&limit=8`,
+        `/api/search/artists?q=${encodeURIComponent(searchQuery)}&limit=8`,
       );
       const data = await response.json();
 
       if (response.ok) {
-        setResults(data.artists || []);
+        setResults(
+          (data.artists || []).map((a: any) => ({
+            id: a.tmAttractionId,
+            name: a.name,
+            imageUrl: a.image,
+            genres: a.genreHints || [],
+            upcomingEvents: 0,
+          }))
+        );
         setHasSearched(true);
       } else {
         console.error("Search failed:", data);
@@ -97,14 +105,9 @@ export function TicketmasterArtistSearch({
       const importResponse = await fetch("/api/artists/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ticketmasterId: artist.id,
-          name: artist.name,
-          imageUrl: artist.imageUrl,
-          genres: artist.genres,
-          upcomingEvents: artist.upcomingEvents,
-          externalUrls: artist.externalUrls,
-        }),
+                  body: JSON.stringify({
+            tmAttractionId: artist.id,
+          }),
       });
 
       if (importResponse.ok) {

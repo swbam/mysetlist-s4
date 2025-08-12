@@ -3,6 +3,8 @@ import { ArtistSyncService } from "./artist-sync";
 import { SetlistSyncService } from "./setlist-sync";
 import { ShowSyncService } from "./show-sync";
 import { VenueSyncService } from "./venue-sync";
+import { db, eq } from "../database";
+import { artists } from "@repo/database";
 
 export interface SyncOptions {
   artists?: boolean;
@@ -124,8 +126,10 @@ export class SyncScheduler {
         // 2. Sync historical setlists
         await this.showSync.syncHistoricalSetlists(artistName);
 
-        // 3. Sync recent setlists with full data
-        await this.setlistSync.syncRecentSetlists(artistName, 10);
+        // 3. Create default setlists for upcoming shows
+        await this.setlistSync.createDefaultSetlists(
+          (await db.select({ id: artists.id }).from(artists).where(eq(artists.spotifyId, artist.id)).limit(1))[0]?.id || ""
+        );
       }
     } else {
     }
@@ -153,7 +157,7 @@ export class SyncScheduler {
     }
 
     if (options.setlists && options.artistName) {
-      await this.setlistSync.syncRecentSetlists(options.artistName);
+      // No-op: setlists for new shows are created via createDefaultSetlists
     }
   }
 

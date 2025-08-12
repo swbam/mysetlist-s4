@@ -75,10 +75,8 @@ export function EnhancedRealtimeSetlistViewer({
             if (song.id === update.setlistSongId) {
               return {
                 ...song,
-                upvotes: update.upvotes,
-                downvotes: update.downvotes,
-                netVotes: update.netVotes,
-                userVote: update.userVote,
+                                                  upvotes: update.upvotes,
+                 userVote: update.userVote,
               };
             }
             return song;
@@ -128,20 +126,17 @@ export function EnhancedRealtimeSetlistViewer({
       setlist.songs?.forEach((song: any) => {
         const voteData = voteCounts[song.id] || {
           upvotes: 0,
-          netVotes: 0,
         };
         allSongs.push({
           id: song.id,
           title: song.song.title,
           artist: song.song.artist,
-          netVotes: voteData.netVotes,
           upvotes: voteData.upvotes,
-          downvotes: 0,
         });
       });
     });
 
-    return allSongs.sort((a, b) => b.netVotes - a.netVotes);
+    return allSongs.sort((a, b) => b.upvotes - a.upvotes);
   }, [setlists, voteCounts]);
 
   return (
@@ -303,16 +298,15 @@ export function EnhancedRealtimeSetlistViewer({
                                 setlist.isLocked ||
                                 setlist.type === "actual") && (
                                 <div className="flex items-center gap-1 text-sm">
-                                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                                                                     <TrendingUp className="h-4 w-4 text-muted-foreground" />
                                   <span
-                                    className={cn(
-                                      "font-medium",
-                                      voteData.netVotes > 0 && "text-green-600",
-                                    )}
-                                  >
-                                    {voteData.netVotes > 0 ? "+" : ""}
-                                    {voteData.netVotes}
-                                  </span>
+                                     className={cn(
+                                       "font-medium",
+                                       voteData.upvotes > 0 && "text-green-600",
+                                     )}
+                                   >
+                                     {voteData.upvotes}
+                                   </span>
                                 </div>
                               )}
                           </div>

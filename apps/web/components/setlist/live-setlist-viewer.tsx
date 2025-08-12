@@ -481,8 +481,7 @@ export function LiveSetlistViewer({
             )}
             {showVotes && (
               <span>
-                {songs.reduce((sum, s) => sum + s.upvotes + s.downvotes, 0)}{" "}
-                votes
+                {songs.reduce((sum, s) => sum + s.upvotes, 0)} votes
               </span>
             )}
           </div>

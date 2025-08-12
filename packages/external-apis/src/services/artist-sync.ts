@@ -23,6 +23,65 @@ export class ArtistSyncService {
     });
   }
 
+  async syncIdentifiers(params: { artistDbId?: string; artistName?: string; ticketmasterAttractionId?: string }): Promise<{ spotifyId?: string; ticketmasterId?: string; mbid?: string }> {
+    const result: { spotifyId?: string; ticketmasterId?: string; mbid?: string } = {};
+
+    // Resolve DB artist
+    let artistRecord: any = null;
+    if (params.artistDbId) {
+      const [row] = await db.select().from(artists).where(eq(artists.id, params.artistDbId)).limit(1);
+      artistRecord = row || null;
+    }
+
+    const name = params.artistName || artistRecord?.name;
+
+    // Ticketmaster ID
+    if (!artistRecord?.ticketmasterId && params.ticketmasterAttractionId) {
+      result.ticketmasterId = params.ticketmasterAttractionId;
+      if (artistRecord) {
+        await db.update(artists).set({ ticketmasterId: params.ticketmasterAttractionId }).where(eq(artists.id, artistRecord.id));
+      }
+    }
+
+    // Spotify ID by name if missing
+    if (!artistRecord?.spotifyId && name) {
+      try {
+        await this.spotifyClient.authenticate();
+        const sr = await this.spotifyClient.searchArtists(name, 1);
+        const sp = sr.artists.items[0];
+        if (sp) {
+          result.spotifyId = sp.id;
+          if (artistRecord) {
+            await db.update(artists).set({ spotifyId: sp.id }).where(eq(artists.id, artistRecord.id));
+          }
+        }
+      } catch (e) {
+        console.warn("syncIdentifiers: Spotify search failed", e);
+      }
+    }
+
+    // MBID via Setlist.fm (if available via name)
+    try {
+      const { SetlistFmClient } = await import("../clients/setlistfm");
+      const s = new SetlistFmClient({});
+      const qName = name;
+      if (qName) {
+        const sr = await s.searchArtists(qName, 1);
+        const mbid = sr.artist?.[0]?.mbid;
+        if (mbid) {
+          result.mbid = mbid;
+          if (artistRecord) {
+            await db.update(artists).set({ mbid }).where(eq(artists.id, artistRecord.id));
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("syncIdentifiers: Setlist.fm search failed", e);
+    }
+
+    return result;
+  }
+
   async syncArtist(artistId: string): Promise<void> {
     try {
       await this.spotifyClient.authenticate();
@@ -250,10 +309,22 @@ export class ArtistSyncService {
             }
           );
 
-          const tracks = tracksResponse.items || [];
+          // Filter out live tracks and similar variants
+          const tracks = (tracksResponse.items || []).filter((t: any) => {
+            const name = (t.name || "").toLowerCase();
+            return !(
+              name.includes("(live") ||
+              name.includes(" - live") ||
+              name.includes(" live") ||
+              name.includes(" - live at") ||
+              name.includes(" (live at") ||
+              name.includes("[live]")
+            );
+          });
           
           for (const track of tracks) {
-            // Insert song into database
+            // Insert song into database (idempotent by spotifyId); secondary dedupe by normalized title
+            const normalizedTitle = track.name.replace(/\s*[-(].*$/,'').trim().toLowerCase();
             const [song] = await db
               .insert(songs)
               .values({

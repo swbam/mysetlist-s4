@@ -194,23 +194,8 @@ export class SetlistSyncService {
     return processedSongs;
   }
 
-  async syncRecentSetlists(artistName: string, limit = 20): Promise<void> {
-    const searchResult = await this.setlistFmClient.searchSetlists({
-      artistName,
-      p: 1,
-    });
-
-    const recentSetlists = searchResult.setlist.slice(0, limit);
-
-    for (const setlist of recentSetlists) {
-      await this.syncSetlistFromSetlistFm(setlist);
-      // Rate limit
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
-  }
-
   async createDefaultSetlists(artistId: string): Promise<{ upcomingShows: number; createdSetlists: number; skipped: number }> {
-    // Get all upcoming shows for this artist
+    // Get all upcoming shows for this artist without an existing setlist
     const upcomingShows = await db
       .select()
       .from(shows)
@@ -222,7 +207,7 @@ export class SetlistSyncService {
     let createdSetlists = 0;
 
     for (const show of upcomingShows) {
-      // Check if setlist already exists
+      // Skip if setlist already exists
       const existingSetlist = await db
         .select()
         .from(setlists)
@@ -230,32 +215,40 @@ export class SetlistSyncService {
         .limit(1);
 
       if (existingSetlist.length > 0) {
-        continue; // Skip if setlist already exists
+        continue;
       }
 
-      // Get the artist's most popular songs for the predicted setlist
-      const popularSongs = await db
-        .select({
-          id: songs.id,
-          title: songs.title,
-          artist: songs.artist,
-          album: songs.album,
-          popularity: songs.popularity,
-          durationMs: songs.durationMs,
-        })
+      // Get non-live songs from catalog and pick 5 random
+      const catalog = await db
+        .select({ id: songs.id, title: songs.title, popularity: songs.popularity })
         .from(songs)
         .innerJoin(artistSongs, eq(songs.id, artistSongs.songId))
-        .where(eq(artistSongs.artistId, artistId))
-        .orderBy(sql`${songs.popularity} DESC NULLS LAST, ${songs.title} ASC`)
-        .limit(20); // Get 20 songs to have a good selection
+        .where(eq(artistSongs.artistId, artistId));
 
-      if (popularSongs.length === 0) {
-        continue; // Skip if no songs available
+      const nonLive = catalog.filter((s) => {
+        const name = (s.title || "").toLowerCase();
+        return !(
+          name.includes("(live") ||
+          name.includes(" - live") ||
+          name.includes(" live") ||
+          name.includes(" - live at") ||
+          name.includes(" (live at") ||
+          name.includes("[live]")
+        );
+      });
+
+      if (nonLive.length === 0) continue;
+
+      // Shuffle and take 5 (optionally weight by popularity by partial sort)
+      nonLive.sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0));
+      const topPool = nonLive.slice(0, Math.min(25, nonLive.length));
+      for (let i = topPool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const tmp = topPool[i]!;
+        topPool[i] = topPool[j]!;
+        topPool[j] = tmp;
       }
-
-      // If we have fewer than 15 songs, take what we have
-      // If we have 15+, take the top 15 most popular
-      const selectedSongs = popularSongs.slice(0, Math.min(15, popularSongs.length));
+      const selected = topPool.slice(0, Math.min(5, topPool.length));
 
       // Create predicted setlist
       const result = await db
@@ -272,24 +265,20 @@ export class SetlistSyncService {
         .returning();
 
       const setlist = result[0];
-      if (!setlist) {
-        continue; // Skip if setlist creation failed
-      }
+      if (!setlist) continue;
 
       // Add songs to setlist
-      for (let i = 0; i < selectedSongs.length; i++) {
-        const song = selectedSongs[i];
-        if (!song?.id) continue;
-
+      for (let i = 0; i < selected.length; i++) {
         await db
           .insert(setlistSongsTable)
           .values({
             setlistId: setlist.id,
-            songId: song.id,
+            songId: selected[i]!.id,
             position: i + 1,
             notes: null,
-            isPlayed: null, // Not applicable for predicted setlists
-          });
+            isPlayed: null,
+          })
+          .onConflictDoNothing();
       }
 
       createdSetlists++;
