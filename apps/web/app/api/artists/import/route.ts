@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     // Try to find and set Setlist.fm MBID
     try {
       const setlistResults = await setlistfm.searchArtists(artistName, 1);
-      if (setlistResults.artist.length > 0) {
+      if (setlistResults.artist && setlistResults.artist.length > 0) {
         artistData.mbid = setlistResults.artist[0].mbid;
       }
     } catch (error) {
