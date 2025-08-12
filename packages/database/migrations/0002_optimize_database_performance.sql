@@ -70,8 +70,9 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_search_analytics_timestamp ON search
 CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- Create composite search indexes
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_search ON artists 
-USING gin((name || ' ' || COALESCE(bio, '')) gin_trgm_ops);
+-- Replaced by migration 20250815_remove_bio_from_search_indexes.sql
+-- CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_search ON artists 
+-- USING gin((name || ' ' || COALESCE(bio, '')) gin_trgm_ops);
 
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_songs_search ON songs 
 USING gin((title || ' ' || artist || ' ' || COALESCE(album, '')) gin_trgm_ops);

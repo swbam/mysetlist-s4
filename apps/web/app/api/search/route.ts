@@ -72,6 +72,7 @@ export async function GET(request: NextRequest) {
     try {
       console.log(`Searching Ticketmaster for: ${query}, limit: ${limit}`);
 
+      // Delegate to artists-specific search endpoint for minimal payload
       const ticketmasterResponse = await ticketmaster.searchAttractions({
         keyword: query,
         size: limit,

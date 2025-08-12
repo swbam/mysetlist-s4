@@ -1,8 +1,19 @@
-import { artistSongs, artists, db, eq, shows, songs } from "@repo/database";
+import {
+  artistSongs,
+  artists,
+  db,
+  eq,
+  setlistSongs,
+  setlists,
+  shows,
+  songs,
+  sql,
+} from "@repo/database";
 import {
   ArtistSyncService,
   SetlistSyncService,
   ShowSyncService,
+  spotify,
 } from "@repo/external-apis";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
@@ -10,10 +21,11 @@ import { type NextRequest, NextResponse } from "next/server";
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
 
-interface UnifiedSyncRequest {
-  artistId?: string;
-  artistIds?: string[];
-  mode: "single" | "bulk";
+interface SyncRequest {
+  spotifyId?: string;
+  ticketmasterId?: string;
+  mbid?: string;
+  artistName?: string;
   options?: {
     syncSongs?: boolean;
     syncShows?: boolean;
@@ -22,227 +34,243 @@ interface UnifiedSyncRequest {
   };
 }
 
-interface SyncResult {
-  success: boolean;
-  mode: string;
-  timestamp: string;
-  results: {
-    artist: { updated: boolean; data: any };
-    songs: { synced: number; errors: number };
-    shows: { synced: number; errors: number };
-    venues: { synced: number; errors: number };
-    setlists: { synced: number; errors: number };
-    stats: { calculated: boolean };
-  };
-}
-
-async function syncSingleArtist(
-  artistId: string,
-  options: UnifiedSyncRequest["options"] = {},
-): Promise<SyncResult> {
-  const {
-    syncSongs = true,
-    syncShows = true,
-    createDefaultSetlists = true,
-    fullDiscography = true,
-  } = options;
-
-  const result: SyncResult = {
-    success: false,
-    mode: "single",
-    timestamp: new Date().toISOString(),
-    results: {
-      artist: { updated: false, data: null },
-      songs: { synced: 0, errors: 0 },
-      shows: { synced: 0, errors: 0 },
-      venues: { synced: 0, errors: 0 },
-      setlists: { synced: 0, errors: 0 },
-      stats: { calculated: false },
-    },
-  };
-
-  try {
-    // Get artist from database
-    const [artist] = await db
-      .select()
-      .from(artists)
-      .where(eq(artists.id, artistId))
-      .limit(1);
-
-    if (!artist) {
-      throw new Error(`Artist not found: ${artistId}`);
-    }
-
-    if (!artist.spotifyId) {
-      throw new Error(`Artist ${artist.name} has no Spotify ID`);
-    }
-
-    console.log(`🎵 Starting unified sync for ${artist.name}...`);
-
-    // Step 1: Sync artist core details
-    const artistSyncService = new ArtistSyncService();
-    try {
-      await artistSyncService.syncArtist(artist.spotifyId);
-      result.results.artist.updated = true;
-      result.results.artist.data = artist;
-      console.log(`✅ Artist core details synced for ${artist.name}`);
-    } catch (error) {
-      console.error(`❌ Artist sync failed for ${artist.name}:`, error);
-      result.results.artist.updated = false;
-    }
-
-    // Step 2: Sync full song catalog
-    if (syncSongs) {
-      try {
-        console.log(`🎵 Starting full discography sync for ${artist.name}...`);
-        const songResult = await artistSyncService.syncFullDiscography(artist.spotifyId);
-        result.results.songs.synced = songResult.totalSongs;
-        console.log(
-          `✅ Songs synced for ${artist.name}: ${songResult.totalSongs} songs, ${songResult.totalAlbums} albums`,
-        );
-      } catch (error) {
-        console.error(`❌ Song sync failed for ${artist.name}:`, error);
-        result.results.songs.errors = 1;
-      }
-    }
-
-    // Step 3: Sync shows from Ticketmaster
-    if (syncShows) {
-      try {
-        const showSyncService = new ShowSyncService();
-        const showResult = await showSyncService.syncArtistShows(artist.id);
-        result.results.shows.synced = showResult.shows?.length || 0;
-        result.results.venues.synced = showResult.venues?.length || 0;
-        console.log(
-          `✅ Shows synced for ${artist.name}: ${result.results.shows.synced} shows, ${result.results.venues.synced} venues`,
-        );
-      } catch (error) {
-        console.error(`❌ Show sync failed for ${artist.name}:`, error);
-        result.results.shows.errors = 1;
-        result.results.venues.errors = 1;
-      }
-    }
-
-    // Step 4: Create default setlists
-    if (createDefaultSetlists) {
-      try {
-        const setlistSyncService = new SetlistSyncService();
-        const setlistResult = await setlistSyncService.createDefaultSetlists(artist.id);
-        result.results.setlists.synced = setlistResult.created || 0;
-        console.log(
-          `✅ Default setlists created for ${artist.name}: ${result.results.setlists.synced} setlists`,
-        );
-      } catch (error) {
-        console.error(`❌ Setlist creation failed for ${artist.name}:`, error);
-        result.results.setlists.errors = 1;
-      }
-    }
-
-    // Calculate final stats
-    const totalErrors =
-      result.results.songs.errors +
-      result.results.shows.errors +
-      result.results.venues.errors +
-      result.results.setlists.errors;
-
-    result.success = totalErrors === 0 && result.results.artist.updated;
-    result.results.stats.calculated = true;
-
-    console.log(`🎉 Unified sync completed for ${artist.name}:`, {
-      success: result.success,
-      songs: result.results.songs.synced,
-      shows: result.results.shows.synced,
-      setlists: result.results.setlists.synced,
-    });
-
-    return result;
-  } catch (error) {
-    console.error(`❌ Unified sync failed for artist ${artistId}:`, error);
-    result.success = false;
-    return result;
-  }
+interface SyncStep {
+  step: string;
+  status: "pending" | "running" | "completed" | "failed";
+  startTime?: string;
+  endTime?: string;
+  error?: string;
+  result?: any;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // Check for CSRF token in production
+    // Check for authorization
     const headersList = await headers();
-    const cronSecret = process.env.CRON_SECRET;
     const authHeader = headersList.get("authorization");
+    const cronSecret = process.env.CRON_SECRET;
 
     if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      // For development, we'll allow requests without auth
-      if (process.env.NODE_ENV === "production") {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body: UnifiedSyncRequest = await request.json();
-    const { artistId, artistIds, mode, options } = body;
+    const body: SyncRequest = await request.json();
+    const {
+      spotifyId,
+      ticketmasterId,
+      mbid,
+      artistName,
+      options = {
+        syncSongs: true,
+        syncShows: true,
+        createDefaultSetlists: true,
+        fullDiscography: true,
+      },
+    } = body;
 
-    console.log(`🚀 Unified sync request:`, { mode, artistId, artistIds, options });
-
-    if (mode === "single") {
-      if (!artistId) {
-        return NextResponse.json(
-          { error: "artistId is required for single mode" },
-          { status: 400 },
-        );
-      }
-
-      const result = await syncSingleArtist(artistId, options);
-      return NextResponse.json(result, {
-        status: result.success ? 200 : 500,
-      });
-    } else if (mode === "bulk") {
-      if (!artistIds || !Array.isArray(artistIds)) {
-        return NextResponse.json(
-          { error: "artistIds array is required for bulk mode" },
-          { status: 400 },
-        );
-      }
-
-      const results = [];
-      let totalSuccess = 0;
-
-      for (const id of artistIds) {
-        const result = await syncSingleArtist(id, options);
-        results.push(result);
-        if (result.success) totalSuccess++;
-
-        // Add small delay between bulk syncs to avoid rate limits
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-
-      const bulkResult: SyncResult = {
-        success: totalSuccess === artistIds.length,
-        mode: "bulk",
-        timestamp: new Date().toISOString(),
-        results: {
-          artist: { updated: totalSuccess > 0, data: { processed: artistIds.length, successful: totalSuccess } },
-          songs: { synced: results.reduce((sum, r) => sum + r.results.songs.synced, 0), errors: results.reduce((sum, r) => sum + r.results.songs.errors, 0) },
-          shows: { synced: results.reduce((sum, r) => sum + r.results.shows.synced, 0), errors: results.reduce((sum, r) => sum + r.results.shows.errors, 0) },
-          venues: { synced: results.reduce((sum, r) => sum + r.results.venues.synced, 0), errors: results.reduce((sum, r) => sum + r.results.venues.errors, 0) },
-          setlists: { synced: results.reduce((sum, r) => sum + r.results.setlists.synced, 0), errors: results.reduce((sum, r) => sum + r.results.setlists.errors, 0) },
-          stats: { calculated: true },
-        },
-      };
-
-      return NextResponse.json(bulkResult, {
-        status: bulkResult.success ? 200 : 500,
-      });
-    } else {
+    // Validate input
+    if (!spotifyId && !ticketmasterId && !mbid && !artistName) {
       return NextResponse.json(
-        { error: "Invalid mode. Must be 'single' or 'bulk'" },
+        {
+          error:
+            "Must provide at least one artist identifier (spotifyId, ticketmasterId, mbid, or artistName)",
+        },
         { status: 400 },
       );
     }
+
+    const steps: SyncStep[] = [
+      { step: "1. Sync artist core details from Spotify", status: "pending" },
+      { step: "2. Sync FULL song catalog from Spotify", status: "pending" },
+      { step: "3. Sync upcoming shows from Ticketmaster", status: "pending" },
+      { step: "4. Create default predicted setlists", status: "pending" },
+    ];
+
+    let artistData: any = null;
+    let artistId: string | null = null;
+
+    // Step 1: Sync artist core details from Spotify
+    if (steps[0]) {
+      steps[0].status = "running";
+      steps[0].startTime = new Date().toISOString();
+    }
+
+    try {
+      const artistSyncService = new ArtistSyncService();
+
+      // Find or resolve artist Spotify ID
+      let resolvedSpotifyId = spotifyId;
+      if (!resolvedSpotifyId && artistName) {
+        // Search for artist by name
+        await spotify.authenticate();
+        const searchResult = await spotify.searchArtists(artistName, 1);
+        if (
+          searchResult.artists.items.length > 0 &&
+          searchResult.artists.items[0]
+        ) {
+          resolvedSpotifyId = searchResult.artists.items[0].id;
+        }
+      }
+
+      if (!resolvedSpotifyId) {
+        throw new Error("Could not resolve Spotify ID for artist");
+      }
+
+      // Sync basic artist data
+      await artistSyncService.syncArtist(resolvedSpotifyId);
+
+      // Get artist from database
+      const [artist] = await db
+        .select()
+        .from(artists)
+        .where(eq(artists.spotifyId, resolvedSpotifyId))
+        .limit(1);
+
+      if (!artist) {
+        throw new Error("Artist not found in database after sync");
+      }
+
+      artistData = artist;
+      artistId = artist.id;
+      if (steps[0]) {
+        steps[0].status = "completed";
+        steps[0].endTime = new Date().toISOString();
+        steps[0].result = { artistId: artist.id, name: artist.name };
+      }
+    } catch (error) {
+      if (steps[0]) {
+        steps[0].status = "failed";
+        steps[0].endTime = new Date().toISOString();
+        steps[0].error =
+          error instanceof Error ? error.message : "Unknown error";
+      }
+
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Failed to sync artist core details",
+          steps,
+          timestamp: new Date().toISOString(),
+        },
+        { status: 500 },
+      );
+    }
+
+    // Step 2: Sync FULL song catalog from Spotify
+    if (options.syncSongs && artistData?.spotifyId) {
+      if (steps[1]) {
+        steps[1].status = "running";
+        steps[1].startTime = new Date().toISOString();
+      }
+
+      try {
+        const artistSyncService = new ArtistSyncService();
+        const songsResult = await artistSyncService.syncFullDiscography(artistData.spotifyId);
+
+        if (steps[1]) {
+          steps[1].status = "completed";
+          steps[1].endTime = new Date().toISOString();
+          steps[1].result = songsResult;
+        }
+      } catch (error) {
+        if (steps[1]) {
+          steps[1].status = "failed";
+          steps[1].endTime = new Date().toISOString();
+          steps[1].error =
+            error instanceof Error ? error.message : "Unknown error";
+        }
+      }
+    } else if (steps[1]) {
+      steps[1].status = "completed";
+      steps[1].result = {
+        skipped: true,
+        reason: "syncSongs disabled or no artistData.spotifyId",
+      };
+    }
+
+    // Step 3: Sync upcoming shows from Ticketmaster
+    if (options.syncShows && artistId) {
+      if (steps[2]) {
+        steps[2].status = "running";
+        steps[2].startTime = new Date().toISOString();
+      }
+
+      try {
+        const showSyncService = new ShowSyncService();
+        const showResult = await showSyncService.syncArtistShows(artistId);
+        if (steps[2]) {
+          steps[2].status = "completed";
+          steps[2].endTime = new Date().toISOString();
+          steps[2].result = showResult;
+        }
+      } catch (error) {
+        if (steps[2]) {
+          steps[2].status = "failed";
+          steps[2].endTime = new Date().toISOString();
+          steps[2].error =
+            error instanceof Error ? error.message : "Unknown error";
+        }
+      }
+    } else if (steps[2]) {
+      steps[2].status = "completed";
+      steps[2].result = {
+        skipped: true,
+        reason: "syncShows disabled or no artistId",
+      };
+    }
+
+    // Step 4: Create default predicted setlists
+    if (options.createDefaultSetlists && artistId) {
+      if (steps[3]) {
+        steps[3].status = "running";
+        steps[3].startTime = new Date().toISOString();
+      }
+
+      try {
+        const setlistSyncService = new SetlistSyncService();
+        const setlistResult = await setlistSyncService.createDefaultSetlists(artistId);
+        if (steps[3]) {
+          steps[3].status = "completed";
+          steps[3].endTime = new Date().toISOString();
+          steps[3].result = setlistResult;
+        }
+      } catch (error) {
+        if (steps[3]) {
+          steps[3].status = "failed";
+          steps[3].endTime = new Date().toISOString();
+          steps[3].error =
+            error instanceof Error ? error.message : "Unknown error";
+        }
+      }
+    } else if (steps[3]) {
+      steps[3].status = "completed";
+      steps[3].result = {
+        skipped: true,
+        reason: "createDefaultSetlists disabled or no artistId",
+      };
+    }
+
+    const completedSteps = steps.filter((s) => s.status === "completed").length;
+    const failedSteps = steps.filter((s) => s.status === "failed").length;
+
+    return NextResponse.json({
+      success: failedSteps === 0,
+      artist: artistData,
+      summary: {
+        totalSteps: steps.length,
+        completed: completedSteps,
+        failed: failedSteps,
+        successRate: `${Math.round((completedSteps / steps.length) * 100)}%`,
+      },
+      steps,
+      timestamp: new Date().toISOString(),
+    });
   } catch (error) {
-    console.error("Unified sync API error:", error);
+    console.error("Orchestration sync failed:", error);
     return NextResponse.json(
       {
         success: false,
-        error: "Unified sync failed",
+        error: "Orchestration sync failed",
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },

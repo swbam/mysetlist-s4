@@ -142,7 +142,7 @@ export async function upsertArtistEnhanced(tmId: string) {
     followers: 0,
     followerCount: 0,
     monthlyListeners: null,
-    bio: null,
+    // bio removed
     externalUrls: null,
     lastSyncedAt: new Date(),
     songCatalogSyncedAt: null,

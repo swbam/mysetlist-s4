@@ -1,5 +1,5 @@
-import { artistSongs, db, eq } from "@repo/database";
-import { artists, songs } from "@repo/database";
+import { artistSongs, artists, db, eq, songs } from "@repo/database";
+import { sql } from "drizzle-orm";
 import { ArtistSyncService } from "@repo/external-apis";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
@@ -7,21 +7,10 @@ import { type NextRequest, NextResponse } from "next/server";
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
 
-interface SongSyncRequest {
-  artistId?: string;
-  spotifyId?: string;
-  fullDiscography?: boolean;
-  batchSize?: number;
-}
-
 interface SongSyncResult {
   success: boolean;
-  artistId: string;
-  artistName: string;
-  totalSongs: number;
-  totalAlbums: number;
-  processedAlbums: number;
-  errors: string[];
+  message: string;
+  processed: number;
   timestamp: string;
 }
 
@@ -36,30 +25,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body: SongSyncRequest = await request.json();
-    const {
-      artistId,
-      spotifyId,
-      fullDiscography = true,
-      batchSize = 50,
-    } = body;
+    const body = await request.json();
+    const { artistId, spotifyId, fullDiscography = true } = body;
 
     // Validate input
     if (!artistId && !spotifyId) {
       return NextResponse.json(
-        {
-          error: "Must provide either artistId (database ID) or spotifyId",
-        },
+        { error: "Either artistId or spotifyId is required" },
         { status: 400 },
       );
     }
 
-    let targetArtist: any = null;
-    let targetSpotifyId: string;
+    // Resolve artist and spotifyId
+    let targetArtist: any | null = null;
+    let targetSpotifyId: string | null = null;
 
-    // Find the artist in the database
     if (artistId) {
-      // Get artist by database ID
       const [artist] = await db
         .select()
         .from(artists)
@@ -68,15 +49,8 @@ export async function POST(request: NextRequest) {
 
       if (!artist) {
         return NextResponse.json(
-          { error: `Artist not found with ID: ${artistId}` },
+          { error: `Artist not found: ${artistId}` },
           { status: 404 },
-        );
-      }
-
-      if (!artist.spotifyId) {
-        return NextResponse.json(
-          { error: `Artist ${artist.name} has no Spotify ID` },
-          { status: 400 },
         );
       }
 
@@ -101,6 +75,13 @@ export async function POST(request: NextRequest) {
       targetSpotifyId = spotifyId;
     }
 
+    if (!targetArtist || !targetSpotifyId) {
+      return NextResponse.json(
+        { error: "Unable to resolve artist and Spotify ID for sync" },
+        { status: 400 },
+      );
+    }
+
     console.log(
       `🎵 Starting song sync for ${targetArtist.name} (${targetSpotifyId})...`,
     );
@@ -123,96 +104,51 @@ export async function POST(request: NextRequest) {
         await artistSyncService.syncArtist(targetSpotifyId);
         
         // Get song count after sync
-        const songCount = await db
-          .select({ count: db.count() })
-          .from(artistSongs)
-          .innerJoin(songs, eq(artistSongs.songId, songs.id))
-          .where(eq(artistSongs.artistId, targetArtist.id));
-
-        syncResult = {
-          totalSongs: songCount[0]?.count || 0,
-          totalAlbums: 1, // Estimate for top tracks
-          processedAlbums: 1,
-        };
-
-        console.log(
-          `✅ Top tracks sync completed for ${targetArtist.name}:`,
-          syncResult,
-        );
+        const countResult = await db.execute(sql`
+          SELECT COUNT(*)::int as count
+          FROM ${artistSongs}
+          JOIN ${songs} ON ${artistSongs.songId} = ${songs.id}
+          WHERE ${artistSongs.artistId} = ${targetArtist.id}
+        `);
+        const count = (countResult as any)?.rows?.[0]?.count ?? 0;
+        
+        syncResult = { totalSongs: count };
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error";
-      errors.push(`Sync failed: ${errorMessage}`);
-      console.error(`❌ Song sync failed for ${targetArtist.name}:`, error);
+      console.error("Song sync failed:", error);
+      errors.push(error instanceof Error ? error.message : String(error));
     }
 
-    // Get final song count from database to verify
-    const finalSongCount = await db
-      .select({ count: db.count() })
-      .from(artistSongs)
-      .innerJoin(songs, eq(artistSongs.songId, songs.id))
-      .where(eq(artistSongs.artistId, targetArtist.id));
-
-    const result: SongSyncResult = {
+    return NextResponse.json({
       success: errors.length === 0,
-      artistId: targetArtist.id,
-      artistName: targetArtist.name,
-      totalSongs: syncResult?.totalSongs || finalSongCount[0]?.count || 0,
-      totalAlbums: syncResult?.totalAlbums || 0,
-      processedAlbums: syncResult?.processedAlbums || 0,
-      errors,
+      message: errors.length ? "Completed with errors" : "Song sync completed",
+      processed: syncResult?.totalSongs || 0,
       timestamp: new Date().toISOString(),
-    };
-
-    // Update artist stats if sync was successful
-    if (result.success && result.totalSongs > 0) {
-      await db
-        .update(artists)
-        .set({
-          totalSongs: result.totalSongs,
-          totalAlbums: result.totalAlbums,
-          songCatalogSyncedAt: new Date(),
-          lastSyncedAt: new Date(),
-        })
-        .where(eq(artists.id, targetArtist.id));
-    }
-
-    console.log(
-      `🎵 Song sync completed for ${targetArtist.name}: ${result.totalSongs} songs, ${result.totalAlbums} albums`,
-    );
-
-    return NextResponse.json(result, {
-      status: result.success ? 200 : 500,
-    });
+      ...(syncResult && { result: syncResult }),
+      ...(errors.length && { errors }),
+    } satisfies SongSyncResult);
   } catch (error) {
-    console.error("Song sync API error:", error);
+    console.error("Songs sync failed:", error);
     return NextResponse.json(
       {
         success: false,
-        error: "Song sync failed",
         message: error instanceof Error ? error.message : "Unknown error",
+        processed: 0,
         timestamp: new Date().toISOString(),
-      },
+      } satisfies SongSyncResult,
       { status: 500 },
     );
   }
 }
 
-// GET method to check song sync status for an artist
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const artistId = searchParams.get("artistId");
     const spotifyId = searchParams.get("spotifyId");
 
-    if (!artistId && !spotifyId) {
-      return NextResponse.json(
-        { error: "Must provide either artistId or spotifyId" },
-        { status: 400 },
-      );
-    }
-
-    let whereClause;
+    // Build where clause
+    let whereClause: any;
     if (artistId) {
       whereClause = eq(artists.id, artistId);
     } else {
@@ -242,13 +178,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Get actual song count
-    const songCount = await db
-      .select({ count: db.count() })
-      .from(artistSongs)
-      .innerJoin(songs, eq(artistSongs.songId, songs.id))
-      .where(eq(artistSongs.artistId, artist.id));
-
-    const actualSongCount = songCount[0]?.count || 0;
+    const countResult = await db.execute(sql`
+      SELECT COUNT(*)::int as count
+      FROM ${artistSongs}
+      JOIN ${songs} ON ${artistSongs.songId} = ${songs.id}
+      WHERE ${artistSongs.artistId} = ${artist.id}
+    `);
+    const actualSongCount = (countResult as any)?.rows?.[0]?.count ?? 0;
 
     return NextResponse.json({
       artistId: artist.id,
@@ -265,7 +201,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Song sync status API error:", error);
     return NextResponse.json(
-      { error: "Failed to get sync status" },
+      { error: "Song sync status failed" },
       { status: 500 },
     );
   }

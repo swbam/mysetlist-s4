@@ -1,6 +1,8 @@
 import { SyncScheduler } from "@repo/external-apis";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import { db } from "@repo/database";
+import { sql } from "drizzle-orm";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -42,6 +44,11 @@ export async function POST(request: NextRequest) {
           { status: 400 },
         );
     }
+
+    // Best-effort log entry
+    try {
+      await db.execute(sql`SELECT log_cron_run('master-sync', 'success')`);
+    } catch {}
 
     return NextResponse.json({
       success: true,
@@ -99,6 +106,11 @@ export async function GET(request: NextRequest) {
           { status: 400 },
         );
     }
+
+    // Best-effort log entry
+    try {
+      await db.execute(sql`SELECT log_cron_run('master-sync', 'success')`);
+    } catch {}
 
     return NextResponse.json({
       success: true,

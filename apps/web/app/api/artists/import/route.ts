@@ -7,9 +7,11 @@ import { createServiceClient } from "~/lib/supabase/server";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { ticketmasterId, artistName, imageUrl, genres } = body;
+    const { tmAttractionId, ticketmasterId, artistName, imageUrl, genres } = body;
 
-    if (!ticketmasterId && !artistName) {
+    const resolvedTmId = tmAttractionId || ticketmasterId;
+
+    if (!resolvedTmId && !artistName) {
       return NextResponse.json(
         { error: "Either ticketmasterId or artistName is required" },
         { status: 400 },
@@ -35,7 +37,7 @@ export async function POST(request: NextRequest) {
       .from("artists")
       .select("*")
       .or(
-        `slug.eq.${slug}${ticketmasterId ? `,ticketmaster_id.eq.${ticketmasterId}` : ""}`,
+        `slug.eq.${slug}${resolvedTmId ? `,ticketmaster_id.eq.${resolvedTmId}` : ""}`,
       )
       .single();
 
@@ -60,15 +62,15 @@ export async function POST(request: NextRequest) {
       slug,
       imageUrl: imageUrl,
       genres: JSON.stringify(genres || []),
-      ticketmasterId: ticketmasterId,
+      ticketmasterId: resolvedTmId, 
       verified: false,
       popularity: 0,
     };
 
     // Fetch and integrate data from external APIs
-    if (ticketmasterId) {
+    if (resolvedTmId) {
       try {
-        const tmArtist = await ticketmaster.getArtistDetails(ticketmasterId);
+        const tmArtist = await ticketmaster.getArtistDetails(resolvedTmId);
         if (tmArtist) {
           artistData = {
             ...artistData,
@@ -114,7 +116,7 @@ export async function POST(request: NextRequest) {
     // Try to find and set Setlist.fm MBID
     try {
       const setlistResults = await setlistfm.searchArtists(artistName, 1);
-      if (setlistResults.artist && setlistResults.artist.length > 0) {
+      if (setlistResults.artist && setlistResults.artist.length > 0 && setlistResults.artist[0]) {
         artistData.mbid = setlistResults.artist[0].mbid;
       }
     } catch (error) {
@@ -150,9 +152,10 @@ export async function POST(request: NextRequest) {
         },
         body: JSON.stringify({
           type: "artist",
-          artistId: newArtist.id,
-          ticketmasterId: newArtist.ticketmasterId,
-          spotifyId: newArtist.spotifyId,
+                     artistId: newArtist.id,
+           ticketmasterId: newArtist.ticketmasterId,
+           spotifyId: newArtist.spotifyId, 
+           mbid: newArtist.mbid, 
           options: {
             syncSongs: true,
             syncShows: true,

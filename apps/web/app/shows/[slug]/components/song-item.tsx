@@ -207,8 +207,7 @@ export function SongItem({
             <div className="hidden md:block">
               <AnonymousVoteButton
                 setlistSongId={item.id}
-                initialUpvotes={upvotes}
-                initialDownvotes={0}
+                                 initialUpvotes={upvotes}
                 isAuthenticated={!!session}
                 onVote={async (voteType) => {
                   if (voteType === "up") {

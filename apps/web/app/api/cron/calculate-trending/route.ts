@@ -23,6 +23,11 @@ export async function POST(request: NextRequest) {
     // Refresh materialized views
     await db.execute(sql`SELECT refresh_trending_data()`);
 
+    // Best-effort log entry
+    try {
+      await db.execute(sql`SELECT log_cron_run('calculate-trending', 'success')`);
+    } catch {}
+
     return NextResponse.json({
       success: true,
       message: "Trending scores updated successfully",
@@ -58,6 +63,11 @@ export async function GET(request: NextRequest) {
 
     // Refresh materialized views
     await db.execute(sql`SELECT refresh_trending_data()`);
+
+    // Best-effort log entry
+    try {
+      await db.execute(sql`SELECT log_cron_run('calculate-trending', 'success')`);
+    } catch {}
 
     return NextResponse.json({
       success: true,
