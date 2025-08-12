@@ -9,7 +9,6 @@ describe("Artist View Flow", () => {
           name: "Test Artist",
           genres: ["rock", "alternative"],
           imageUrl: "https://example.com/artist.jpg",
-          bio: "Test artist bio",
           stats: {
             totalShows: 150,
             totalSongs: 45,
@@ -57,7 +56,6 @@ describe("Artist View Flow", () => {
     // Check artist details
     cy.get("[data-cy=artist-name]").should("contain.text", "Test Artist");
     cy.get("[data-cy=artist-genres]").should("contain.text", "rock");
-    cy.get("[data-cy=artist-bio]").should("contain.text", "Test artist bio");
 
     // Check stats
     cy.get("[data-cy=artist-stats]").within(() => {

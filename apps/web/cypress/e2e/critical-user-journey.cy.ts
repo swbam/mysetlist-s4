@@ -19,7 +19,6 @@ describe("Critical User Journey", () => {
       // 3. Artist page loads with data
       cy.url().should("include", "/artists/dispatch");
       cy.get('[data-testid="artist-header"]').should("be.visible");
-      cy.get('[data-testid="artist-bio"]').should("be.visible");
       cy.get('[data-testid="upcoming-shows"]').should("be.visible");
       cy.checkA11y();
 

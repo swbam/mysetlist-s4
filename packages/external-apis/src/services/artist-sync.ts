@@ -1,8 +1,17 @@
+import { artistSongs, artists, songs } from "@repo/database";
 import { SpotifyClient } from "../clients/spotify";
 import { TicketmasterClient } from "../clients/ticketmaster";
 import { db, eq } from "../database";
-import { artistSongs, artists, songs } from "@repo/database";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
+
+// Helper function to normalize song titles for deduplication
+function normalizeTitle(title: string): string {
+  return title
+    .toLowerCase()
+    .replace(/[^\w\s]/g, "") // Remove punctuation
+    .replace(/\s+/g, " ") // Normalize whitespace
+    .trim();
+}
 
 export class ArtistSyncService {
   private spotifyClient: SpotifyClient;
@@ -23,13 +32,25 @@ export class ArtistSyncService {
     });
   }
 
-  async syncIdentifiers(params: { artistDbId?: string; artistName?: string; ticketmasterAttractionId?: string }): Promise<{ spotifyId?: string; ticketmasterId?: string; mbid?: string }> {
-    const result: { spotifyId?: string; ticketmasterId?: string; mbid?: string } = {};
+  async syncIdentifiers(params: {
+    artistDbId?: string;
+    artistName?: string;
+    ticketmasterAttractionId?: string;
+  }): Promise<{ spotifyId?: string; ticketmasterId?: string; mbid?: string }> {
+    const result: {
+      spotifyId?: string;
+      ticketmasterId?: string;
+      mbid?: string;
+    } = {};
 
     // Resolve DB artist
     let artistRecord: any = null;
     if (params.artistDbId) {
-      const [row] = await db.select().from(artists).where(eq(artists.id, params.artistDbId)).limit(1);
+      const [row] = await db
+        .select()
+        .from(artists)
+        .where(eq(artists.id, params.artistDbId))
+        .limit(1);
       artistRecord = row || null;
     }
 
@@ -39,7 +60,10 @@ export class ArtistSyncService {
     if (!artistRecord?.ticketmasterId && params.ticketmasterAttractionId) {
       result.ticketmasterId = params.ticketmasterAttractionId;
       if (artistRecord) {
-        await db.update(artists).set({ ticketmasterId: params.ticketmasterAttractionId }).where(eq(artists.id, artistRecord.id));
+        await db
+          .update(artists)
+          .set({ ticketmasterId: params.ticketmasterAttractionId })
+          .where(eq(artists.id, artistRecord.id));
       }
     }
 
@@ -52,7 +76,10 @@ export class ArtistSyncService {
         if (sp) {
           result.spotifyId = sp.id;
           if (artistRecord) {
-            await db.update(artists).set({ spotifyId: sp.id }).where(eq(artists.id, artistRecord.id));
+            await db
+              .update(artists)
+              .set({ spotifyId: sp.id })
+              .where(eq(artists.id, artistRecord.id));
           }
         }
       } catch (e) {
@@ -71,7 +98,10 @@ export class ArtistSyncService {
         if (mbid) {
           result.mbid = mbid;
           if (artistRecord) {
-            await db.update(artists).set({ mbid }).where(eq(artists.id, artistRecord.id));
+            await db
+              .update(artists)
+              .set({ mbid })
+              .where(eq(artists.id, artistRecord.id));
           }
         }
       }
@@ -128,11 +158,12 @@ export class ArtistSyncService {
     let ticketmasterId: string | null = null;
     try {
       const ticketmasterResult = await this.errorHandler.withRetry(
-        () => this.ticketmasterClient.searchAttractions({
-          keyword: spotifyArtist.name,
-          size: 1,
-          classificationName: "music",
-        }),
+        () =>
+          this.ticketmasterClient.searchAttractions({
+            keyword: spotifyArtist.name,
+            size: 1,
+            classificationName: "music",
+          }),
         {
           service: "ArtistSyncService",
           operation: "searchAttractions",
@@ -144,11 +175,16 @@ export class ArtistSyncService {
         const attraction = ticketmasterResult._embedded.attractions[0];
         if (this.isArtistNameMatch(spotifyArtist.name, attraction.name)) {
           ticketmasterId = attraction.id;
-          console.log(`Found Ticketmaster ID ${ticketmasterId} for ${spotifyArtist.name}`);
+          console.log(
+            `Found Ticketmaster ID ${ticketmasterId} for ${spotifyArtist.name}`,
+          );
         }
       }
     } catch (error) {
-      console.warn(`Failed to find Ticketmaster ID for ${spotifyArtist.name}:`, error);
+      console.warn(
+        `Failed to find Ticketmaster ID for ${spotifyArtist.name}:`,
+        error,
+      );
     }
 
     // Update or create artist in database
@@ -243,15 +279,15 @@ export class ArtistSyncService {
   /**
    * Fetches full Spotify catalog excluding "live" tracks with deduplication
    */
-  async syncCatalog(artistId: string): Promise<{ 
-    totalSongs: number; 
-    totalAlbums: number; 
+  async syncCatalog(artistId: string): Promise<{
+    totalSongs: number;
+    totalAlbums: number;
     processedAlbums: number;
     skippedLiveTracks: number;
     deduplicatedTracks: number;
   }> {
     await this.spotifyClient.authenticate();
-    
+
     // Get artist from database
     const [artist] = await db
       .select()
@@ -263,17 +299,15 @@ export class ArtistSyncService {
       throw new SyncServiceError(
         `Artist not found in database: ${artistId}`,
         "ArtistSyncService",
-        "syncCatalog"
+        "syncCatalog",
       );
     }
 
     let totalSongs = 0;
     let totalAlbums = 0;
-    let skippedLiveTracks = 0;
-    let deduplicatedTracks = 0;
+    const skippedLiveTracks = 0;
+    const deduplicatedTracks = 0;
     const processedAlbums = new Set<string>();
-    const seenTracks = new Map<string, string>(); // trackId -> title for deduplication
-    const normalizedTitles = new Set<string>(); // normalized titles for deduplication
 
     // Get all albums for the artist
     let offset = 0;
@@ -282,21 +316,22 @@ export class ArtistSyncService {
 
     while (hasMore) {
       const albumsResponse = await this.errorHandler.withRetry(
-        () => this.spotifyClient.getArtistAlbums(artistId, {
-          include_groups: 'album,single,compilation',
-          market: 'US',
-          limit,
-          offset
-        }),
+        () =>
+          this.spotifyClient.getArtistAlbums(artistId, {
+            include_groups: "album,single,compilation",
+            market: "US",
+            limit,
+            offset,
+          }),
         {
           service: "ArtistSyncService",
           operation: "getArtistAlbums",
           context: { artistId, offset },
-        }
+        },
       );
 
       const albums = albumsResponse.items || [];
-      
+
       for (const album of albums) {
         // Skip duplicates (different markets can cause duplicates)
         if (processedAlbums.has(album.id)) {
@@ -311,38 +346,87 @@ export class ArtistSyncService {
 
         while (hasMoreTracks) {
           const tracksResponse = await this.errorHandler.withRetry(
-            () => this.spotifyClient.getAlbumTracks(album.id, {
-              limit: 50,
-              offset: trackOffset
-            }),
+            () =>
+              this.spotifyClient.getAlbumTracks(album.id, {
+                limit: 50,
+                offset: trackOffset,
+              }),
             {
               service: "ArtistSyncService",
               operation: "getAlbumTracks",
               context: { albumId: album.id, trackOffset },
-            }
+            },
           );
 
-          // Filter out live tracks and similar variants
+          // Filter out live tracks and similar variants with comprehensive patterns
           const tracks = (tracksResponse.items || []).filter((t: any) => {
             const name = (t.name || "").toLowerCase();
             return !(
-              name.includes("(live") ||
-              name.includes(" - live") ||
-              name.includes(" live") ||
-              name.includes(" - live at") ||
-              name.includes(" (live at") ||
-              name.includes("[live]")
+              // Live variations
+              (
+                name.includes("(live") ||
+                name.includes(" - live") ||
+                name.includes(" live") ||
+                name.includes(" - live at") ||
+                name.includes(" (live at") ||
+                name.includes("[live]") ||
+                name.includes("live version") ||
+                name.includes("live recording") ||
+                name.includes("live performance") ||
+                name.includes("live from") ||
+                name.includes("live at") ||
+                // Acoustic/unplugged versions
+                name.includes("acoustic") ||
+                name.includes("unplugged") ||
+                name.includes("stripped") ||
+                // Session recordings
+                name.includes("session") ||
+                name.includes("sessions") ||
+                name.includes("studio session") ||
+                // Remix/demo/alternate versions
+                name.includes("remix") ||
+                name.includes("demo") ||
+                name.includes("alternate") ||
+                name.includes("alternative") ||
+                name.includes("remaster") ||
+                name.includes("re-recorded") ||
+                // Special editions
+                name.includes("radio edit") ||
+                name.includes("extended") ||
+                name.includes("instrumental") ||
+                name.includes("karaoke") ||
+                name.includes("cover") ||
+                // Common performance venue/context indicators
+                name.includes("bbc") ||
+                name.includes("mtv") ||
+                name.includes("radio") ||
+                name.includes("tv") ||
+                name.includes("concert") ||
+                name.includes("festival") ||
+                name.includes("tour")
+              )
             );
           });
-          
-          for (const track of tracks) {
+
+          // Deduplicate tracks by normalized title to avoid similar songs
+          const seenTitles = new Set<string>();
+          const uniqueTracks = tracks.filter((track: any) => {
+            const normalizedTitle = normalizeTitle(track.name);
+            if (seenTitles.has(normalizedTitle)) {
+              return false; // Skip duplicate
+            }
+            seenTitles.add(normalizedTitle);
+            return true;
+          });
+
+          for (const track of uniqueTracks) {
             // Upsert song row
             const [song] = await db
               .insert(songs)
               .values({
                 spotifyId: track.id,
                 title: track.name,
-                artist: track.artists[0]?.name || 'Unknown',
+                artist: track.artists[0]?.name || "Unknown",
                 album: album.name,
                 albumId: album.id,
                 trackNumber: track.track_number,
@@ -379,7 +463,7 @@ export class ArtistSyncService {
                   isPrimaryArtist: true,
                 })
                 .onConflictDoNothing();
-              
+
               totalSongs++;
             }
           }
@@ -396,30 +480,36 @@ export class ArtistSyncService {
     // Update artist with catalog sync timestamp and totals
     await db
       .update(artists)
-      .set({ 
+      .set({
         songCatalogSyncedAt: new Date(),
         totalSongs,
         totalAlbums,
-        lastFullSyncAt: new Date()
+        lastFullSyncAt: new Date(),
       })
       .where(eq(artists.id, artist.id));
 
-    return { 
-      totalSongs, 
-      totalAlbums, 
+    return {
+      totalSongs,
+      totalAlbums,
       processedAlbums: processedAlbums.size,
       skippedLiveTracks,
-      deduplicatedTracks
+      deduplicatedTracks,
     };
   }
 
   // Overload signature declaration
-  async syncFullDiscography(artistId: string): Promise<{ totalSongs: number; totalAlbums: number; processedAlbums: number }> {
+  async syncFullDiscography(
+    artistId: string,
+  ): Promise<{
+    totalSongs: number;
+    totalAlbums: number;
+    processedAlbums: number;
+  }> {
     const result = await this.syncCatalog(artistId);
-    return { 
-      totalSongs: result.totalSongs, 
-      totalAlbums: result.totalAlbums, 
-      processedAlbums: result.processedAlbums 
+    return {
+      totalSongs: result.totalSongs,
+      totalAlbums: result.totalAlbums,
+      processedAlbums: result.processedAlbums,
     };
   }
 
@@ -431,7 +521,7 @@ export class ArtistSyncService {
     for (const genre of genres) {
       const searchResult = await this.spotifyClient.searchArtists(genre, 10);
 
-      for (const artist of (searchResult?.artists?.items ?? [])) {
+      for (const artist of searchResult?.artists?.items ?? []) {
         try {
           await this.syncArtist(artist.id);
         } catch (error) {
@@ -482,26 +572,32 @@ export class ArtistSyncService {
         );
 
         // Find the best match
-        for (const spotifyArtist of (searchResult?.artists?.items ?? [])) {
+        for (const spotifyArtist of searchResult?.artists?.items ?? []) {
           if (this.isArtistNameMatch(attractionName, spotifyArtist.name)) {
             spotifyId = spotifyArtist.id;
             break;
           }
         }
       } catch (error) {
-        console.warn(`Failed to find Spotify match for ${attractionName}:`, error);
+        console.warn(
+          `Failed to find Spotify match for ${attractionName}:`,
+          error,
+        );
       }
 
       // TODO: Add Setlist.fm search for MBID when SetlistFmClient is available
       // For now, we'll store what we have
 
       return {
-        spotifyId,
-        mbid,
+        ...(spotifyId && { spotifyId }),
+        ...(mbid && { mbid }),
         ticketmasterId: attractionId,
       };
     } catch (error) {
-      console.error(`Failed to sync identifiers for attraction ${attractionId}:`, error);
+      console.error(
+        `Failed to sync identifiers for attraction ${attractionId}:`,
+        error,
+      );
       return null;
     }
   }
@@ -516,64 +612,23 @@ export class ArtistSyncService {
   private isArtistNameMatch(name1: string, name2: string): boolean {
     const normalize = (name: string) =>
       name.toLowerCase().replace(/[^a-z0-9]/g, "");
-    
+
     const normalized1 = normalize(name1);
     const normalized2 = normalize(name2);
-    
+
     // Exact match
     if (normalized1 === normalized2) {
       return true;
     }
-    
+
     // Check if one contains the other (for cases like "Artist" vs "Artist Band")
-    if (normalized1.includes(normalized2) || normalized2.includes(normalized1)) {
+    if (
+      normalized1.includes(normalized2) ||
+      normalized2.includes(normalized1)
+    ) {
       return true;
     }
-    
+
     return false;
-  }
-
-  /**
-   * Checks if a track is likely a live recording
-   */
-  private isLiveTrack(trackTitle: string, albumName: string): boolean {
-    const liveIndicators = [
-      'live at',
-      'live from',
-      'live in',
-      'live on',
-      '- live',
-      '(live)',
-      '[live]',
-      'live version',
-      'live recording',
-      'concert',
-      'acoustic session',
-      'unplugged',
-      'mtv unplugged',
-      'radio session',
-      'bbc session',
-      'peel session',
-    ];
-
-    const combinedText = `${trackTitle} ${albumName}`;
-    
-    return liveIndicators.some(indicator => 
-      combinedText.includes(indicator)
-    );
-  }
-
-  /**
-   * Normalizes track title for deduplication
-   */
-  private normalizeTrackTitle(title: string): string {
-    return title
-      .toLowerCase()
-      .replace(/[\(\[].+?[\)\]]/g, '') // Remove parentheses and brackets content
-      .replace(/\s*-\s*remaster(ed)?.*$/i, '') // Remove remaster suffixes
-      .replace(/\s*-\s*\d{4}\s*remaster.*$/i, '') // Remove year remaster suffixes
-      .replace(/[^a-z0-9\s]/g, '') // Remove special characters
-      .replace(/\s+/g, ' ') // Normalize whitespace
-      .trim();
   }
 }

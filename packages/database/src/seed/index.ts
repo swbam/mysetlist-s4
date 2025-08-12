@@ -204,7 +204,6 @@ export class DatabaseSeeder {
         followers: Math.floor(Math.random() * 1000000),
         followerCount: Math.floor(Math.random() * 10000),
         verified: Math.random() > 0.7,
-        bio: `${artistNames[i]} is an innovative music collective pushing the boundaries of their genre.`,
       }),
     );
 

@@ -48,15 +48,17 @@ export class RateLimiter {
     }
   }
 
-  private checkInMemoryLimit(
-    identifier: string,
-  ): { allowed: boolean; remaining: number; resetIn: number } {
+  private checkInMemoryLimit(identifier: string): {
+    allowed: boolean;
+    remaining: number;
+    resetIn: number;
+  } {
     const key = `${this.options.keyPrefix || "rate_limit"}:${identifier}`;
     const now = Date.now();
     const windowMs = this.options.window * 1000;
-    
+
     let entry = this.inMemoryStore.get(key);
-    
+
     // If entry doesn't exist or has expired, create a new one
     if (!entry || now >= entry.resetTime) {
       entry = {
@@ -64,21 +66,21 @@ export class RateLimiter {
         resetTime: now + windowMs,
       };
       this.inMemoryStore.set(key, entry);
-      
+
       return {
         allowed: true,
         remaining: this.options.requests - 1,
         resetIn: Math.ceil(windowMs / 1000),
       };
     }
-    
+
     // Increment the counter
     entry.count++;
-    
+
     const allowed = entry.count <= this.options.requests;
     const remaining = Math.max(0, this.options.requests - entry.count);
     const resetIn = Math.ceil((entry.resetTime - now) / 1000);
-    
+
     return {
       allowed,
       remaining,
@@ -124,7 +126,7 @@ export class RateLimiter {
 
   async reset(identifier: string): Promise<void> {
     const key = `${this.options.keyPrefix || "rate_limit"}:${identifier}`;
-    
+
     if (this.redis) {
       try {
         await this.redis.del(key);

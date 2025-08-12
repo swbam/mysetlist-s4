@@ -35,7 +35,6 @@ interface Artist {
   slug: string;
   imageUrl?: string;
   genres?: string[];
-  bio?: string;
   followers: number;
   monthlyListeners?: number;
   verified: boolean;
@@ -253,12 +252,6 @@ export function ArtistPageEnhanced({
                 </div>
               </div>
 
-              {/* Bio */}
-              {artist.bio && (
-                <p className="text-muted-foreground leading-relaxed">
-                  {artist.bio}
-                </p>
-              )}
             </div>
           </div>
         </div>
