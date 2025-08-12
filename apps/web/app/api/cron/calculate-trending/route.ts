@@ -11,9 +11,13 @@ export async function POST(request: NextRequest) {
     // Check for authorization
     const headersList = await headers();
     const authHeader = headersList.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
+    const validTokens = [
+      process.env.CRON_SECRET,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      process.env.ADMIN_API_KEY,
+    ].filter(Boolean) as string[];
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (validTokens.length > 0 && !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -52,9 +56,13 @@ export async function GET(request: NextRequest) {
     // Check for authorization
     const headersList = await headers();
     const authHeader = headersList.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
+    const validTokens = [
+      process.env.CRON_SECRET,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      process.env.ADMIN_API_KEY,
+    ].filter(Boolean) as string[];
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (validTokens.length > 0 && !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
