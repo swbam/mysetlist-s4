@@ -24,11 +24,11 @@ export async function POST(request: NextRequest) {
       .where(eq(artists.ticketmasterId, tmAttractionId))
       .limit(1);
 
-    if (existingArtist.length > 0) {
+      if (Array.isArray(existingArtist) && existingArtist.length > 0 && existingArtist[0]) {
       return NextResponse.json(
         {
-          artistId: existingArtist[0].id,
-          slug: existingArtist[0].slug,
+            artistId: (existingArtist[0] as any).id,
+            slug: (existingArtist[0] as any).slug,
         },
         { status: 200 },
       );
@@ -41,15 +41,15 @@ export async function POST(request: NextRequest) {
     
     try {
       const tmArtist: any = await ticketmaster.getArtistDetails(tmAttractionId);
-      if (!tmArtist || typeof tmArtist.name !== 'string') {
+      if (!tmArtist || typeof (tmArtist as any).name !== 'string') {
         return NextResponse.json(
           { error: "Artist not found on Ticketmaster" },
           { status: 404 },
         );
       }
-      artistName = tmArtist.name as string;
-      imageUrl = typeof tmArtist.imageUrl === 'string' ? tmArtist.imageUrl : undefined;
-      genres = tmArtist.genres || [];
+      artistName = (tmArtist as any).name as string;
+      imageUrl = typeof (tmArtist as any).imageUrl === 'string' ? (tmArtist as any).imageUrl : undefined;
+      genres = Array.isArray((tmArtist as any).genres) ? (tmArtist as any).genres as string[] : [];
     } catch (error) {
       console.error("Failed to fetch artist from Ticketmaster:", error);
       return NextResponse.json(
@@ -242,7 +242,7 @@ async function createInitialSetlistsForNewShows(artistId: string): Promise<void>
         } as any)
         .returning({ id: setlists.id });
 
-      if (newSetlist && newSetlist.id) {
+      if (newSetlist && (newSetlist as any).id) {
         // Select 5 songs (prioritize by popularity, then random)
         const sortedSongs = nonLiveSongs
           .sort((a, b) => (b.popularity || 0) - (a.popularity || 0))
@@ -252,8 +252,8 @@ async function createInitialSetlistsForNewShows(artistId: string): Promise<void>
 
         // Add songs to setlist
         const setlistSongData = sortedSongs.map((song, index) => ({
-          setlistId: newSetlist.id,
-          songId: song.id,
+          setlistId: (newSetlist as any).id as string,
+          songId: song.id as string,
           position: index + 1,
           upvotes: 0,
         }));
@@ -286,11 +286,11 @@ export async function GET(request: NextRequest) {
       .where(eq(artists.ticketmasterId, tmAttractionId))
       .limit(1);
 
-    if (existingArtist.length > 0) {
+    if (Array.isArray(existingArtist) && existingArtist.length > 0 && existingArtist[0]) {
       return NextResponse.json({
         exists: true,
-        artistId: existingArtist[0].id,
-        slug: existingArtist[0].slug,
+        artistId: (existingArtist[0] as any).id,
+        slug: (existingArtist[0] as any).slug,
       });
     }
 

@@ -345,13 +345,14 @@ export class SetlistSyncService {
       .where(eq(artistSongs.artistId, show.headlinerArtistId));
 
     // Apply ordering based on options
+    // Apply ordering based on options (cast to any to avoid narrowed builder issues)
     if (weightByPopularity) {
-      songQuery = songQuery.orderBy(sql`${songs.popularity} DESC NULLS LAST, RANDOM()`);
+      (songQuery as any) = (songQuery as any).orderBy(sql`${songs.popularity} DESC NULLS LAST, RANDOM()`);
     } else {
-      songQuery = songQuery.orderBy(sql`RANDOM()`);
+      (songQuery as any) = (songQuery as any).orderBy(sql`RANDOM()`);
     }
 
-    const availableSongs = await songQuery.limit(50); // Get more than we need for filtering
+    const availableSongs = await (songQuery as any).limit(50); // Get more than we need for filtering
 
     // Filter out live tracks if requested
     let filteredSongs = availableSongs;
