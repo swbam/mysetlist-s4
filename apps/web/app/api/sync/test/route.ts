@@ -4,6 +4,7 @@ import {
   SetlistSyncService,
   ShowSyncService,
 } from "@repo/external-apis";
+import { sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 // Test endpoint for syncing - no auth required (remove in production!)
@@ -59,19 +60,15 @@ export async function POST(request: NextRequest) {
         await artistSyncService.syncFullDiscography(artist.spotifyId);
         
         // Count imported songs
-        const songCount = await db.$count(
-          db.$with("song_count").as(
-            db.raw`
-              SELECT COUNT(*) as count 
-              FROM songs s
-              JOIN artist_songs ars ON s.id = ars.song_id
-              WHERE ars.artist_id = ${artist.id}
-            `
-          )
-        );
+        const countResult = await db.execute(sql`
+          SELECT COUNT(*)::int as count
+          FROM artist_songs ars
+          WHERE ars.artist_id = ${artist.id}
+        `);
+        const songCount = (countResult as any)?.rows?.[0]?.count ?? 0;
         
         results.songs.status = "completed";
-        results.songs.count = songCount || 0;
+        results.songs.count = songCount;
         console.log(`Imported ${results.songs.count} songs`);
       } catch (error) {
         console.error("Song sync failed:", error);
@@ -85,7 +82,7 @@ export async function POST(request: NextRequest) {
         console.log(`Syncing shows for ${artist.name}...`);
         results.shows.status = "running";
         
-        const showResults = await showSyncService.syncArtistShows(artist);
+        const showResults = await showSyncService.syncArtistShows(artist.id);
         
         results.shows.status = "completed";
         results.shows.count = showResults.created;
@@ -107,7 +104,7 @@ export async function POST(request: NextRequest) {
         );
         
         results.setlists.status = "completed";
-        results.setlists.count = setlistResults.created;
+        results.setlists.count = setlistResults.createdSetlists;
         console.log(`Created ${results.setlists.count} setlists`);
       } catch (error) {
         console.error("Setlist creation failed:", error);
@@ -122,13 +119,7 @@ export async function POST(request: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error("Sync test error:", error);
-    return NextResponse.json(
-      {
-        error: "Sync failed",
-        message: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
+    console.error("Sync test API error:", error);
+    return NextResponse.json({ error: "Sync test failed" }, { status: 500 });
   }
 }

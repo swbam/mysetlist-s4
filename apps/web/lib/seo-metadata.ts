@@ -45,15 +45,12 @@ export function createPageMetadata(props: BaseMetadataProps): Metadata {
 
 export function createArtistMetadata(artist: {
   name: string;
-  bio?: string;
   imageUrl?: string;
   slug: string;
   showCount?: number;
   followerCount?: number;
 }): Metadata {
-  const description = artist.bio
-    ? `${artist.bio.slice(0, 150)}...`
-    : `Discover ${artist.name} concerts, setlists, and upcoming shows. Join ${artist.followerCount || 0} fans tracking their favorite artist.`;
+  const description = `Discover ${artist.name} concerts, setlists, and upcoming shows. Join ${artist.followerCount || 0} fans tracking their favorite artist.`;
 
   return createPageMetadata({
     title: `${artist.name} - Concerts & Setlists | MySetlist`,
