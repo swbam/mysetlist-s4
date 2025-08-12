@@ -134,22 +134,18 @@ export function generateShowMeta({
 // Helper for artist pages
 export function generateArtistMeta({
   artistName,
-  bio,
   imageUrl,
   artistUrl,
   genres,
   followerCount,
 }: {
   artistName: string;
-  bio?: string;
   imageUrl?: string;
   artistUrl: string;
   genres?: string[];
   followerCount?: number;
 }): Metadata {
-  const description = bio
-    ? `${bio.slice(0, 160)}...`
-    : `Discover ${artistName} on MySetlist. View upcoming shows, past setlists, and vote on your favorite songs.`;
+  const description = `Discover ${artistName} on MySetlist. View upcoming shows, past setlists, and vote on your favorite songs.`;
 
   const enhancedDescription = followerCount
     ? `${description} Followed by ${followerCount.toLocaleString()} fans.`

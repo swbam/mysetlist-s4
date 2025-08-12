@@ -181,7 +181,16 @@ export class ArtistSyncService {
     }
   }
 
-  async syncFullDiscography(artistId: string): Promise<{ totalSongs: number; totalAlbums: number; processedAlbums: number }> {
+  /**
+   * Fetches full Spotify catalog excluding "live" tracks with deduplication
+   */
+  async syncCatalog(artistId: string): Promise<{ 
+    totalSongs: number; 
+    totalAlbums: number; 
+    processedAlbums: number;
+    skippedLiveTracks: number;
+    deduplicatedTracks: number;
+  }> {
     await this.spotifyClient.authenticate();
     
     // Get artist from database
@@ -195,13 +204,17 @@ export class ArtistSyncService {
       throw new SyncServiceError(
         `Artist not found in database: ${artistId}`,
         "ArtistSyncService",
-        "syncFullDiscography"
+        "syncCatalog"
       );
     }
 
     let totalSongs = 0;
     let totalAlbums = 0;
+    let skippedLiveTracks = 0;
+    let deduplicatedTracks = 0;
     const processedAlbums = new Set<string>();
+    const seenTracks = new Map<string, string>(); // trackId -> title for deduplication
+    const normalizedTitles = new Set<string>(); // normalized titles for deduplication
 
     // Get all albums for the artist
     let offset = 0;
@@ -253,6 +266,32 @@ export class ArtistSyncService {
           const tracks = tracksResponse.items || [];
           
           for (const track of tracks) {
+            // Skip live tracks
+            const trackTitle = track.name.toLowerCase();
+            const albumName = album.name.toLowerCase();
+            
+            if (this.isLiveTrack(trackTitle, albumName)) {
+              skippedLiveTracks++;
+              continue;
+            }
+
+            // Check for duplicates by Spotify track ID
+            if (seenTracks.has(track.id)) {
+              deduplicatedTracks++;
+              continue;
+            }
+
+            // Check for duplicates by normalized title
+            const normalizedTitle = this.normalizeTrackTitle(track.name);
+            if (normalizedTitles.has(normalizedTitle)) {
+              deduplicatedTracks++;
+              continue;
+            }
+
+            // Mark as seen
+            seenTracks.set(track.id, track.name);
+            normalizedTitles.add(normalizedTitle);
+
             // Insert song into database
             const [song] = await db
               .insert(songs)
@@ -310,7 +349,7 @@ export class ArtistSyncService {
       offset += limit;
     }
 
-    // Update artist with catalog sync timestamp
+    // Update artist with catalog sync timestamp and totals
     await db
       .update(artists)
       .set({ 
@@ -321,7 +360,22 @@ export class ArtistSyncService {
       })
       .where(eq(artists.id, artist.id));
 
-    return { totalSongs, totalAlbums, processedAlbums: processedAlbums.size };
+    return { 
+      totalSongs, 
+      totalAlbums, 
+      processedAlbums: processedAlbums.size,
+      skippedLiveTracks,
+      deduplicatedTracks
+    };
+  }
+
+  async syncFullDiscography(artistId: string): Promise<{ totalSongs: number; totalAlbums: number; processedAlbums: number }> {
+    const result = await this.syncCatalog(artistId);
+    return { 
+      totalSongs: result.totalSongs, 
+      totalAlbums: result.totalAlbums, 
+      processedAlbums: result.processedAlbums 
+    };
   }
 
   async syncPopularArtists(): Promise<void> {
@@ -340,6 +394,70 @@ export class ArtistSyncService {
           // Continue with next artist
         }
       }
+    }
+  }
+
+  /**
+   * Maps TM attraction → Spotify artist → MBID for cross-platform identification
+   */
+  async syncIdentifiers(attractionId: string): Promise<{
+    spotifyId?: string;
+    mbid?: string;
+    ticketmasterId: string;
+  } | null> {
+    try {
+      // Get attraction details from Ticketmaster
+      const attraction = await this.errorHandler.withRetry(
+        () => this.ticketmasterClient.getAttraction(attractionId),
+        {
+          service: "ArtistSyncService",
+          operation: "getAttraction",
+          context: { attractionId },
+        },
+      );
+
+      if (!attraction) {
+        return null;
+      }
+
+      const attractionName = attraction.name;
+      let spotifyId: string | undefined;
+      let mbid: string | undefined;
+
+      // Search for artist on Spotify
+      try {
+        await this.spotifyClient.authenticate();
+        const searchResult = await this.errorHandler.withRetry(
+          () => this.spotifyClient.searchArtists(attractionName, 5),
+          {
+            service: "ArtistSyncService",
+            operation: "searchArtists",
+            context: { attractionName },
+          },
+        );
+
+        // Find the best match
+        for (const spotifyArtist of searchResult.artists.items) {
+          if (this.isArtistNameMatch(attractionName, spotifyArtist.name)) {
+            spotifyId = spotifyArtist.id;
+            break;
+          }
+        }
+      } catch (error) {
+        console.warn(`Failed to find Spotify match for ${attractionName}:`, error);
+      }
+
+      // TODO: Add Setlist.fm search for MBID when SetlistFmClient is available
+      // For now, we'll store what we have
+
+      return {
+        spotifyId,
+        mbid,
+        ticketmasterId: attractionId,
+      };
+    } catch (error) {
+      console.error(`Failed to sync identifiers for attraction ${attractionId}:`, error);
+      return null;
     }
   }
 
@@ -368,5 +486,49 @@ export class ArtistSyncService {
     }
     
     return false;
+  }
+
+  /**
+   * Checks if a track is likely a live recording
+   */
+  private isLiveTrack(trackTitle: string, albumName: string): boolean {
+    const liveIndicators = [
+      'live at',
+      'live from',
+      'live in',
+      'live on',
+      '- live',
+      '(live)',
+      '[live]',
+      'live version',
+      'live recording',
+      'concert',
+      'acoustic session',
+      'unplugged',
+      'mtv unplugged',
+      'radio session',
+      'bbc session',
+      'peel session',
+    ];
+
+    const combinedText = `${trackTitle} ${albumName}`;
+    
+    return liveIndicators.some(indicator => 
+      combinedText.includes(indicator)
+    );
+  }
+
+  /**
+   * Normalizes track title for deduplication
+   */
+  private normalizeTrackTitle(title: string): string {
+    return title
+      .toLowerCase()
+      .replace(/[\(\[].+?[\)\]]/g, '') // Remove parentheses and brackets content
+      .replace(/\s*-\s*remaster(ed)?.*$/i, '') // Remove remaster suffixes
+      .replace(/\s*-\s*\d{4}\s*remaster.*$/i, '') // Remove year remaster suffixes
+      .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim();
   }
 }

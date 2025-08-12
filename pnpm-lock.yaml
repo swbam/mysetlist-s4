@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '2':
+        specifier: ^3.0.0
+        version: 3.0.0
       '@paralleldrive/cuid2':
         specifier: ^2.2.2
         version: 2.2.2
@@ -60,6 +63,9 @@ importers:
 
   apps/web:
     dependencies:
+      '2':
+        specifier: ^3.0.0
+        version: 3.0.0
       '@arcjet/next':
         specifier: 1.0.0-beta.8
         version: 1.0.0-beta.8(next@15.3.4(@opentelemetry/api@1.9.0)(@playwright/test@1.54.1)(babel-plugin-react-compiler@19.1.0-rc.2)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))

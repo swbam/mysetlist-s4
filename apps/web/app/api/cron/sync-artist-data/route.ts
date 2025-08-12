@@ -19,12 +19,33 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { limit = 20, mode = "auto" } = body;
+    const { limit = 20, mode = "auto", artistId } = body;
 
     const syncService = new ArtistSyncService();
 
     let result;
-    if (mode === "popular") {
+    if (artistId) {
+      // Sync specific artist by ID
+      const artist = await db
+        .select({ spotifyId: artists.spotifyId, name: artists.name })
+        .from(artists)
+        .where(sql`${artists.id} = ${artistId}`)
+        .limit(1);
+      
+      if (artist.length === 0) {
+        return NextResponse.json(
+          { error: `Artist not found with ID: ${artistId}` },
+          { status: 404 }
+        );
+      }
+      
+      if (artist[0].spotifyId) {
+        await syncService.syncArtist(artist[0].spotifyId);
+        result = { syncedCount: 1, artistName: artist[0].name };
+      } else {
+        result = { syncedCount: 0, error: "No Spotify ID found" };
+      }
+    } else if (mode === "popular") {
       // Sync popular artists from various genres
       result = await syncService.syncPopularArtists();
     } else {

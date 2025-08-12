@@ -71,7 +71,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 -- Create composite search indexes
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_artists_search ON artists 
-USING gin((name || ' ' || COALESCE(bio, '')) gin_trgm_ops);
+USING gin((name || ' ' || COALESCE(genres, '')) gin_trgm_ops);
 
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_songs_search ON songs 
 USING gin((title || ' ' || artist || ' ' || COALESCE(album, '')) gin_trgm_ops);

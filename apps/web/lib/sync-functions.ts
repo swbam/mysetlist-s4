@@ -159,3 +159,63 @@ export async function triggerArtistSync(limit = 20, mode = "auto") {
 
   return response.json();
 }
+
+/**
+ * Trigger finish MySetlist sync (creates setlists for shows)
+ */
+export async function triggerFinishSync(mode = "daily") {
+  const response = await fetch(`${getAppUrl()}/api/cron/finish-mysetlist-sync`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${process.env.CRON_SECRET || ""}`,
+    },
+    body: JSON.stringify({ mode }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Failed to trigger finish sync: ${error}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Trigger all sync operations
+ */
+export async function triggerAllSyncs() {
+  const results = {
+    masterSync: null as any,
+    trendingUpdate: null as any,
+    artistSync: null as any,
+    finishSync: null as any,
+    errors: [] as string[],
+  };
+
+  try {
+    results.masterSync = await triggerManualSync("all", 10);
+  } catch (error) {
+    results.errors.push(`Master sync failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  try {
+    results.trendingUpdate = await triggerTrendingUpdate();
+  } catch (error) {
+    results.errors.push(`Trending update failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  try {
+    results.artistSync = await triggerArtistSync(20, "manual");
+  } catch (error) {
+    results.errors.push(`Artist sync failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  try {
+    results.finishSync = await triggerFinishSync("manual");
+  } catch (error) {
+    results.errors.push(`Finish sync failed: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  return results;
+}

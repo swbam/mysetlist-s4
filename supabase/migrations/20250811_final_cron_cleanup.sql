@@ -145,6 +145,50 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+CREATE OR REPLACE FUNCTION trigger_finish_mysetlist_sync_api()
+RETURNS jsonb AS $$
+DECLARE
+  result jsonb;
+  app_url text;
+  cron_secret text;
+BEGIN
+  -- Get app URL and cron secret from settings
+  app_url := COALESCE(
+    current_setting('app.settings.app_url', true),
+    'https://mysetlist-s4-1.vercel.app'
+  );
+  
+  cron_secret := COALESCE(
+    current_setting('app.settings.cron_secret', true),
+    '6155002300'
+  );
+  
+  -- Make HTTP request to finish sync API (initializes setlists for shows)
+  SELECT content::jsonb INTO result
+  FROM http_post(
+    app_url || '/api/cron/finish-mysetlist-sync',
+    jsonb_build_object('mode', 'daily'),
+    'application/json',
+    ARRAY[
+      http_header('Authorization', 'Bearer ' || cron_secret),
+      http_header('Content-Type', 'application/json')
+    ]
+  );
+  
+  -- Log the sync result
+  INSERT INTO public.cron_job_logs (job_name, status, message, details, created_at)
+  VALUES (
+    'finish-mysetlist-sync',
+    CASE WHEN result->>'success' = 'true' THEN 'completed' ELSE 'failed' END,
+    COALESCE(result->>'message', 'Finish MySetlist sync via API'),
+    result,
+    NOW()
+  );
+  
+  RETURN COALESCE(result, '{"success": false, "error": "No response"}'::jsonb);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Schedule the corrected cron jobs
 SELECT cron.schedule(
   'master-sync-daily',
@@ -164,6 +208,12 @@ SELECT cron.schedule(
   'SELECT trigger_trending_update_api();'
 );
 
+SELECT cron.schedule(
+  'finish-mysetlist-sync-daily',
+  '0 4 * * *', -- Daily at 4:00 AM
+  'SELECT trigger_finish_mysetlist_sync_api();'
+);
+
 -- Ensure app settings are properly configured
 INSERT INTO app_settings (key, value, created_at, updated_at)
 VALUES 
@@ -176,6 +226,7 @@ SET value = EXCLUDED.value, updated_at = NOW();
 GRANT EXECUTE ON FUNCTION trigger_master_sync_api TO postgres, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION trigger_trending_update_api TO postgres, anon, authenticated, service_role;
 GRANT EXECUTE ON FUNCTION trigger_artist_sync_api TO postgres, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION trigger_finish_mysetlist_sync_api TO postgres, anon, authenticated, service_role;
 
 -- Create a function to manually trigger all syncs (for testing)
 CREATE OR REPLACE FUNCTION trigger_all_syncs()
@@ -184,18 +235,21 @@ DECLARE
   master_result jsonb;
   trending_result jsonb;
   artist_result jsonb;
+  finish_result jsonb;
   combined_result jsonb;
 BEGIN
   -- Trigger all sync operations
   SELECT trigger_master_sync_api('hourly') INTO master_result;
   SELECT trigger_trending_update_api() INTO trending_result;
   SELECT trigger_artist_sync_api() INTO artist_result;
+  SELECT trigger_finish_mysetlist_sync_api() INTO finish_result;
   
   -- Combine results
   combined_result := jsonb_build_object(
     'master_sync', master_result,
     'trending_update', trending_result,
     'artist_sync', artist_result,
+    'finish_sync', finish_result,
     'triggered_at', NOW()
   );
   

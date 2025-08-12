@@ -21,7 +21,6 @@ interface ArtistHeaderProps {
     followers: number;
     monthlyListeners?: number;
     verified: boolean;
-    bio?: string;
     externalUrls?: string;
     _count?: {
       shows: number;
@@ -151,17 +150,6 @@ export const ArtistHeader = React.memo(function ArtistHeader({
         </div>
       </div>
 
-      {/* Bio */}
-      {artist.bio && (
-        <Card className="mt-6">
-          <CardContent className="p-6">
-            <h3 className="mb-3 font-semibold">About</h3>
-            <p className="text-muted-foreground leading-relaxed">
-              {artist.bio}
-            </p>
-          </CardContent>
-        </Card>
-      )}
     </div>
   );
 });

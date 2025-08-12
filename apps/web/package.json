@@ -10,6 +10,7 @@
     "test": "vitest run --coverage"
   },
   "dependencies": {
+    "2": "^3.0.0",
     "@arcjet/next": "1.0.0-beta.8",
     "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^5.1.1",
