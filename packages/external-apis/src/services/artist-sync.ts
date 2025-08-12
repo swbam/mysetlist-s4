@@ -336,6 +336,9 @@ export class ArtistSyncService {
           });
           
           for (const track of tracks) {
+            // Upsert song row
+            const [song] = await db
+              .insert(songs)
               .values({
                 spotifyId: track.id,
                 title: track.name,
