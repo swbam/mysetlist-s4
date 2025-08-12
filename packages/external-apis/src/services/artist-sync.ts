@@ -413,6 +413,7 @@ export class ArtistSyncService {
     };
   }
 
+  // Overload signature declaration
   async syncFullDiscography(artistId: string): Promise<{ totalSongs: number; totalAlbums: number; processedAlbums: number }>;
   async syncFullDiscography(artistId: string): Promise<{ totalSongs: number; totalAlbums: number; processedAlbums: number }> {
     const result = await this.syncCatalog(artistId);

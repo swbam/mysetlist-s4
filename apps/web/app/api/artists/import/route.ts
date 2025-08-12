@@ -79,8 +79,8 @@ export async function POST(request: NextRequest) {
     // Quick Spotify lookup for basic data (non-blocking)
     try {
       await spotify.authenticate();
-      const spotifyResults = await spotify.searchArtists(artistName, 1);
-      if (spotifyResults.artists.items.length > 0) {
+      const spotifyResults: any = await spotify.searchArtists(artistName, 1);
+      if (spotifyResults?.artists?.items?.length > 0) {
         const spotifyArtist = spotifyResults.artists.items[0];
         if (spotifyArtist) {
           artistData.spotifyId = spotifyArtist.id;

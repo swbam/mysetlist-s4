@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     const scheduler = new SyncScheduler();
 
     // If orchestrate is true, run the full sync pipeline first
-    let orchestrationResult = null;
+    let orchestrationResult: any = null;
     if (orchestrate && mode === "daily") {
       try {
         console.log("Starting orchestrated sync pipeline...");
@@ -44,11 +44,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Get shows that need setlist initialization
-    const { data: showsWithoutSetlists, error: showsError } = await supabase
+      const { data: showsWithoutSetlists, error: showsError } = await supabase
       .from("shows")
       .select(`
         id,
-        external_id,
+        name,
         artist_name,
         venue_name,
         date,

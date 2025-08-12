@@ -34,7 +34,7 @@ BEGIN
   -- Get app URL and cron secret from settings
   app_url := COALESCE(
     current_setting('app.settings.app_url', true),
-    'https://mysetlist-s4-1.vercel.app'
+    'https://mysetlist-sonnet.vercel.app'
   );
   
   cron_secret := COALESCE(
@@ -80,7 +80,7 @@ BEGIN
   -- Get app URL and cron secret from settings
   app_url := COALESCE(
     current_setting('app.settings.app_url', true),
-    'https://mysetlist-s4-1.vercel.app'
+    'https://mysetlist-sonnet.vercel.app'
   );
   
   cron_secret := COALESCE(
@@ -126,7 +126,7 @@ BEGIN
   -- Get app URL and cron secret from settings
   app_url := COALESCE(
     current_setting('app.settings.app_url', true),
-    'https://mysetlist-s4-1.vercel.app'
+    'https://mysetlist-sonnet.vercel.app'
   );
   
   cron_secret := COALESCE(
@@ -188,7 +188,7 @@ CREATE INDEX IF NOT EXISTS idx_votes_user_id ON votes(user_id);
 -- Update app settings
 INSERT INTO app_settings (key, value, created_at, updated_at)
 VALUES 
-  ('app_url', 'https://mysetlist-s4-1.vercel.app', NOW(), NOW()),
+  ('app_url', 'https://mysetlist-sonnet.vercel.app', NOW(), NOW()),
   ('cron_secret', '6155002300', NOW(), NOW())
 ON CONFLICT (key) DO UPDATE 
 SET value = EXCLUDED.value, updated_at = NOW();
