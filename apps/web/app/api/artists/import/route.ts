@@ -41,14 +41,14 @@ export async function POST(request: NextRequest) {
     
     try {
       const tmArtist: any = await ticketmaster.getArtistDetails(tmAttractionId);
-      if (!tmArtist || !tmArtist.name) {
+      if (!tmArtist || typeof tmArtist.name !== 'string') {
         return NextResponse.json(
           { error: "Artist not found on Ticketmaster" },
           { status: 404 },
         );
       }
       artistName = tmArtist.name as string;
-      imageUrl = tmArtist.imageUrl as string | undefined;
+      imageUrl = typeof tmArtist.imageUrl === 'string' ? tmArtist.imageUrl : undefined;
       genres = tmArtist.genres || [];
     } catch (error) {
       console.error("Failed to fetch artist from Ticketmaster:", error);
@@ -187,7 +187,7 @@ async function createInitialSetlistsForNewShows(artistId: string): Promise<void>
     const artistSongsQuery = await db
       .select({
         id: songs.id,
-        name: songs.name,
+        name: songs.title,
         popularity: songs.popularity,
       })
       .from(songs)
