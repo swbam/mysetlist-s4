@@ -62,7 +62,7 @@ self.addEventListener('fetch', (event) => {
           return cachedResponse;
         }
         return caches.open(RUNTIME_CACHE).then((cache) => {
-        return fetch(request).then((response) => {
+          return fetch(request).then((response) => {
             cache.put(request, response.clone());
             return response;
           });
@@ -82,7 +82,7 @@ self.addEventListener('message', (event) => {
         event.ports[0]?.postMessage({ success: true });
       });
       break;
-      
+
     case 'CLEAR_API_CACHE':
       caches.delete(DATA_CACHE_NAME).then(() => {
         event.ports[0]?.postMessage({ success: true });
