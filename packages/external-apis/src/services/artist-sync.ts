@@ -147,6 +147,149 @@ export class ArtistSyncService {
     }
   }
 
+  async syncFullDiscography(artistId: string): Promise<{ totalSongs: number; totalAlbums: number; processedAlbums: number }> {
+    await this.spotifyClient.authenticate();
+    
+    // Get artist from database
+    const [artist] = await db
+      .select()
+      .from(artists)
+      .where(eq(artists.spotifyId, artistId))
+      .limit(1);
+
+    if (!artist) {
+      throw new SyncServiceError(
+        `Artist not found in database: ${artistId}`,
+        "ArtistSyncService",
+        "syncFullDiscography"
+      );
+    }
+
+    let totalSongs = 0;
+    let totalAlbums = 0;
+    const processedAlbums = new Set<string>();
+
+    // Get all albums for the artist
+    let offset = 0;
+    const limit = 50;
+    let hasMore = true;
+
+    while (hasMore) {
+      const albumsResponse = await this.errorHandler.withRetry(
+        () => this.spotifyClient.getArtistAlbums(artistId, {
+          include_groups: 'album,single,compilation',
+          market: 'US',
+          limit,
+          offset
+        }),
+        {
+          service: "ArtistSyncService",
+          operation: "getArtistAlbums",
+          context: { artistId, offset },
+        }
+      );
+
+      const albums = albumsResponse.items || [];
+      
+      for (const album of albums) {
+        // Skip duplicates (different markets can cause duplicates)
+        if (processedAlbums.has(album.id)) {
+          continue;
+        }
+        processedAlbums.add(album.id);
+        totalAlbums++;
+
+        // Get all tracks for this album
+        let trackOffset = 0;
+        let hasMoreTracks = true;
+
+        while (hasMoreTracks) {
+          const tracksResponse = await this.errorHandler.withRetry(
+            () => this.spotifyClient.getAlbumTracks(album.id, {
+              limit: 50,
+              offset: trackOffset
+            }),
+            {
+              service: "ArtistSyncService",
+              operation: "getAlbumTracks",
+              context: { albumId: album.id, trackOffset },
+            }
+          );
+
+          const tracks = tracksResponse.items || [];
+          
+          for (const track of tracks) {
+            // Insert song into database
+            const [song] = await db
+              .insert(songs)
+              .values({
+                spotifyId: track.id,
+                title: track.name,
+                artist: track.artists[0]?.name || 'Unknown',
+                album: album.name,
+                albumId: album.id,
+                trackNumber: track.track_number,
+                discNumber: track.disc_number,
+                albumType: album.album_type,
+                albumArtUrl: album.images[0]?.url,
+                releaseDate: album.release_date,
+                durationMs: track.duration_ms,
+                popularity: 0, // Track popularity not available in album tracks endpoint
+                previewUrl: track.preview_url,
+                spotifyUri: track.uri,
+                externalUrls: JSON.stringify(track.external_urls),
+                isExplicit: track.explicit,
+                isPlayable: !track.restrictions,
+              })
+              .onConflictDoUpdate({
+                target: songs.spotifyId,
+                set: {
+                  title: track.name,
+                  album: album.name,
+                  albumArtUrl: album.images[0]?.url,
+                  isPlayable: !track.restrictions,
+                },
+              })
+              .returning();
+
+            // Link to artist
+            if (song) {
+              await db
+                .insert(artistSongs)
+                .values({
+                  artistId: artist.id,
+                  songId: song.id,
+                  isPrimaryArtist: true,
+                })
+                .onConflictDoNothing();
+              
+              totalSongs++;
+            }
+          }
+
+          hasMoreTracks = tracks.length === 50;
+          trackOffset += 50;
+        }
+      }
+
+      hasMore = albums.length === limit;
+      offset += limit;
+    }
+
+    // Update artist with catalog sync timestamp
+    await db
+      .update(artists)
+      .set({ 
+        songCatalogSyncedAt: new Date(),
+        totalSongs,
+        totalAlbums,
+        lastFullSyncAt: new Date()
+      })
+      .where(eq(artists.id, artist.id));
+
+    return { totalSongs, totalAlbums, processedAlbums: processedAlbums.size };
+  }
+
   async syncPopularArtists(): Promise<void> {
     await this.spotifyClient.authenticate();
     // Get popular artists in different genres

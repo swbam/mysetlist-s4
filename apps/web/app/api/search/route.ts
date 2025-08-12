@@ -19,7 +19,7 @@ interface SearchResult {
     slug?: string;
     popularity?: number;
     genres?: string[];
-    source: "database" | "ticketmaster";
+    source: "ticketmaster";
     externalId: string;
   };
 }
@@ -61,137 +61,73 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(cached.data);
     }
 
-    // HYBRID SEARCH: Search local database first for better relevance
-    const { createServiceClient } = await import("~/lib/supabase/server");
-    const supabase = createServiceClient();
-    
-    // Search local database artists first (prioritized results)
-    const { data: dbArtists, error: dbError } = await supabase
-      .from("artists")
-      .select("id, name, slug, image_url, genres, popularity")
-      .ilike("name", `%${query}%`)
-      .order("popularity", { ascending: false })
-      .order("name")
-      .limit(limit);
+    // TICKETMASTER-ONLY SEARCH: Always query Ticketmaster API directly
+    const apiKey = process.env["TICKETMASTER_API_KEY"];
+    if (!apiKey) {
+      throw new Error("Ticketmaster API not configured");
+    }
 
     let results: SearchResult[] = [];
 
-    // Add database results first (highest priority)
-    if (dbArtists && !dbError) {
-      const dbResults: SearchResult[] = dbArtists.map((artist) => {
-        let genres: string[] = [];
-        if (artist.genres) {
-          try {
-            genres = JSON.parse(artist.genres);
-          } catch (e) {
-            console.warn(`Invalid JSON in genres for artist ${artist.name}:`, artist.genres);
-            genres = [];
-          }
-        }
-        
-        return {
-          id: artist.id,
-          type: "artist" as const,
-          name: artist.name,
-          imageUrl: artist.image_url || undefined,
-          description: genres.length > 0 ? `Genres: ${genres.join(", ")}` : undefined,
-          metadata: {
-            slug: artist.slug,
-            popularity: artist.popularity || 0,
-            genres,
-            source: "database" as const,
-            externalId: artist.id,
-          }
-        };
+    try {
+      console.log(`Searching Ticketmaster for: ${query}, limit: ${limit}`);
+      
+      const ticketmasterResponse = await ticketmaster.searchAttractions({
+        keyword: query,
+        size: limit,
+        classificationName: "music",
+        sort: "relevance,desc",
       });
-      results = dbResults;
-      console.log(`Found ${dbResults.length} local database artists`);
-    }
 
-    // If we haven't reached the limit, supplement with Ticketmaster results
-    const remainingLimit = limit - results.length;
-    if (remainingLimit > 0) {
-      const apiKey = process.env["TICKETMASTER_API_KEY"];
-      if (apiKey) {
-        try {
-          console.log("Supplementing with Ticketmaster API, remaining slots:", remainingLimit);
-          
-          // Add a small delay to avoid rapid successive calls
-          await new Promise(resolve => setTimeout(resolve, 100));
-
-          const ticketmasterResponse = await ticketmaster.searchAttractions({
-            keyword: query,
-            size: remainingLimit,
-            classificationName: "music",
-            sort: "relevance,desc",
-          });
-
-          const ticketmasterArtists = ticketmasterResponse._embedded?.attractions || [];
-          
-          // Filter out artists that are already in database results
-          const existingNames = results.map(a => a.name.toLowerCase());
-          const newTicketmasterResults: SearchResult[] = ticketmasterArtists
-            .filter((attraction: any) => 
-              !existingNames.includes(attraction.name.toLowerCase())
-            )
-            .map((attraction: any) => ({
-              id: `tm_${attraction.id}`,
-              type: "artist" as const,
-              name: attraction.name,
-              imageUrl: attraction.images?.[0]?.url || undefined,
-              description: attraction.classifications?.length > 0 
-                ? `Genres: ${attraction.classifications.map((c: any) => c.genre?.name).filter(Boolean).join(", ")}`
-                : undefined,
-              metadata: {
-                popularity: 0,
-                genres: attraction.classifications
-                  ?.map((c: any) => c.genre?.name)
-                  .filter(Boolean) || [],
-                source: "ticketmaster" as const,
-                externalId: attraction.id,
-              }
-            }));
-
-          results = [...results, ...newTicketmasterResults];
-          console.log(`Added ${newTicketmasterResults.length} Ticketmaster results`);
-        } catch (error: any) {
-          // Handle Ticketmaster rate limiting gracefully
-          if (error?.response?.status === 429 || error?.message?.includes('429')) {
-            console.warn("Ticketmaster API rate limit reached, using database results only");
-          } else {
-            console.error("Ticketmaster search failed, using database results only:", error);
-          }
+      const ticketmasterArtists = ticketmasterResponse._embedded?.attractions || [];
+      
+      results = ticketmasterArtists.map((attraction: any) => ({
+        id: `tm_${attraction.id}`,
+        type: "artist" as const,
+        name: attraction.name,
+        imageUrl: attraction.images?.[0]?.url || undefined,
+        description: attraction.classifications?.length > 0 
+          ? `Genres: ${attraction.classifications.map((c: any) => c.genre?.name).filter(Boolean).join(", ")}`
+          : undefined,
+        metadata: {
+          popularity: 0,
+          genres: attraction.classifications
+            ?.map((c: any) => c.genre?.name)
+            .filter(Boolean) || [],
+          source: "ticketmaster" as const,
+          externalId: attraction.id,
         }
+      }));
+
+      console.log(`Found ${results.length} Ticketmaster artists`);
+    } catch (error: any) {
+      // Handle Ticketmaster API errors
+      if (error?.response?.status === 429 || error?.message?.includes('429')) {
+        console.error("Ticketmaster API rate limit reached");
+        throw new Error("Search temporarily unavailable. Please try again in a moment.");
       } else {
-        console.log("Ticketmaster API not configured, using database results only");
+        console.error("Ticketmaster search failed:", error);
+        throw new Error("Search service unavailable. Please try again later.");
       }
     }
 
-    // Sort final results: database results first (by popularity), then external results
+    // Sort results by name relevance for better user experience
     results.sort((a, b) => {
-      // Database results first
-      if (a.metadata?.source === "database" && b.metadata?.source !== "database") return -1;
-      if (b.metadata?.source === "database" && a.metadata?.source !== "database") return 1;
-      
-      // Within database results, sort by popularity then name relevance
-      if (a.metadata?.source === "database" && b.metadata?.source === "database") {
-        const popularityDiff = (b.metadata.popularity || 0) - (a.metadata.popularity || 0);
-        if (popularityDiff !== 0) return popularityDiff;
-      }
-      
-      // For name relevance, exact matches first, then starts-with, then contains
       const queryLower = query.toLowerCase();
       const aNameLower = a.name.toLowerCase();
       const bNameLower = b.name.toLowerCase();
       
+      // Exact matches first
       const aExact = aNameLower === queryLower ? 1 : 0;
       const bExact = bNameLower === queryLower ? 1 : 0;
       if (aExact !== bExact) return bExact - aExact;
       
+      // Then starts-with matches
       const aStartsWith = aNameLower.startsWith(queryLower) ? 1 : 0;
       const bStartsWith = bNameLower.startsWith(queryLower) ? 1 : 0;
       if (aStartsWith !== bStartsWith) return bStartsWith - aStartsWith;
       
+      // Finally alphabetical order
       return a.name.localeCompare(b.name);
     });
 

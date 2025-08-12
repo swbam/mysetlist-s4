@@ -4,9 +4,10 @@ import {
   type SetlistFmSetlist,
 } from "../clients/setlistfm";
 import { SpotifyClient } from "../clients/spotify";
-import { and, db, eq } from "../database";
+import { and, db, eq, sql } from "../database";
 import {
   artists,
+  artistSongs,
   setlistSongs,
   setlists,
   shows,
@@ -206,6 +207,78 @@ export class SetlistSyncService {
       // Rate limit
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
+  }
+
+  async createDefaultSetlists(artistId: string): Promise<{ upcomingShows: number; createdSetlists: number; skipped: number }> {
+    // Get all upcoming shows for this artist
+    const upcomingShows = await db
+      .select()
+      .from(shows)
+      .where(eq(shows.headlinerArtistId, artistId))
+      .where(sql`${shows.date} >= CURRENT_DATE`);
+
+    let createdSetlists = 0;
+
+    for (const show of upcomingShows) {
+      // Check if setlist already exists
+      const existingSetlist = await db
+        .select()
+        .from(setlists)
+        .where(eq(setlists.showId, show.id))
+        .limit(1);
+
+      if (existingSetlist.length > 0) {
+        continue; // Skip if setlist already exists
+      }
+
+      // Get 15 random songs from the artist's catalog
+      const randomSongs = await db
+        .select()
+        .from(songs)
+        .innerJoin(artistSongs, eq(songs.id, artistSongs.songId))
+        .where(eq(artistSongs.artistId, artistId))
+        .orderBy(sql`RANDOM()`)
+        .limit(15);
+
+      if (randomSongs.length === 0) {
+        continue; // Skip if no songs available
+      }
+
+      // Create predicted setlist
+      const [setlist] = await db
+        .insert(setlists)
+        .values({
+          showId: show.id,
+          artistId: artistId,
+          type: 'predicted',
+          name: 'Predicted Setlist',
+          orderIndex: 0,
+          isLocked: false,
+          importedFrom: 'api',
+        })
+        .returning();
+
+      // Add songs to setlist
+      for (let i = 0; i < randomSongs.length; i++) {
+        await db
+          .insert(setlistSongs)
+          .values({
+            setlistId: setlist.id,
+            songId: randomSongs[i].songs.id,
+            position: i + 1,
+            notes: null,
+            isPlayed: null, // Not applicable for predicted setlists
+          });
+      }
+
+      createdSetlists++;
+    }
+
+    return { 
+      upcomingShows: upcomingShows.length, 
+      createdSetlists,
+      skipped: upcomingShows.length - createdSetlists 
+    };
   }
 
   async syncSetlistByShowId(showId: string): Promise<void> {

@@ -16,33 +16,69 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { type, data, artistId, ticketmasterId } = body;
+    const { type, data, artistId, ticketmasterId, spotifyId, options } = body;
 
-    // Basic sync operations
+    // Sync operations that delegate to specialized endpoints
     switch (type) {
       case "artist":
       case "artists":
-        // Handle individual artist sync
-        console.log(`Background sync for artist: ${artistId || ticketmasterId}`);
-        
-        // For now, just acknowledge the sync request
-        // In a full implementation, this would:
-        // - Fetch shows from Ticketmaster
-        // - Update artist data from Spotify
-        // - Sync venue information
-        // - etc.
+        // Delegate to orchestration endpoint for comprehensive artist sync
+        const orchestrationResponse = await fetch(`${request.nextUrl.origin}/api/sync/orchestration`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': authHeader || '',
+          },
+          body: JSON.stringify({
+            spotifyId: spotifyId || artistId,
+            ticketmasterId,
+            options: options || {
+              syncSongs: true,
+              syncShows: true,
+              createDefaultSetlists: true,
+              fullDiscography: true
+            }
+          })
+        });
+
+        if (!orchestrationResponse.ok) {
+          throw new Error(`Orchestration sync failed: ${orchestrationResponse.statusText}`);
+        }
+
+        const orchestrationResult = await orchestrationResponse.json();
         
         return NextResponse.json({
-          message: "Artist sync initiated",
-          artistId: artistId || ticketmasterId,
+          message: "Artist sync completed via orchestration",
+          result: orchestrationResult,
           processed: data?.length || 1,
         });
+
       case "shows":
-        // Handle show sync
+        // Delegate to show sync endpoint
+        const showSyncResponse = await fetch(`${request.nextUrl.origin}/api/sync/shows`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': authHeader || '',
+          },
+          body: JSON.stringify({
+            artistId,
+            ...options
+          })
+        });
+
+        if (!showSyncResponse.ok) {
+          throw new Error(`Show sync failed: ${showSyncResponse.statusText}`);
+        }
+
+        const showSyncResult = await showSyncResponse.json();
+        
         return NextResponse.json({
-          message: "Show sync initiated", 
+          message: "Show sync completed", 
+          result: showSyncResult,
           processed: data?.length || 0,
         });
+
       default:
         return NextResponse.json(
           { error: "Invalid sync type. Use: artist, artists, shows" },
@@ -50,8 +86,12 @@ export async function POST(request: NextRequest) {
         );
     }
   } catch (error) {
+    console.error("Sync operation failed:", error);
     return NextResponse.json(
-      { error: "Sync operation failed" },
+      { 
+        error: "Sync operation failed",
+        message: error instanceof Error ? error.message : "Unknown error"
+      },
       { status: 500 },
     );
   }

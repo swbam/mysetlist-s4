@@ -168,6 +168,28 @@ export class SpotifyClient extends BaseAPIClient {
     );
   }
 
+  async getAlbumTracks(
+    albumId: string,
+    options: {
+      market?: string;
+      limit?: number;
+      offset?: number;
+    } = {},
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      market: options.market || "US",
+      limit: (options.limit || 50).toString(),
+      offset: (options.offset || 0).toString(),
+    });
+
+    return this.makeRequest(
+      `/albums/${albumId}/tracks?${params}`,
+      {},
+      `spotify:album:${albumId}:tracks:${params.toString()}`,
+      3600, // 1 hour cache
+    );
+  }
+
   async getRecommendations(options: {
     seed_artists?: string[];
     seed_genres?: string[];

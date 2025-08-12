@@ -7,11 +7,13 @@ import {
 import { and, db, eq } from "../database";
 import { artists, showArtists, shows, venues } from "@repo/database";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
+import { VenueSyncService } from "./venue-sync";
 
 export class ShowSyncService {
   private ticketmasterClient: TicketmasterClient;
   private setlistFmClient: SetlistFmClient;
   private spotifyClient: SpotifyClient;
+  private venueSyncService: VenueSyncService;
   private errorHandler: SyncErrorHandler;
 
   constructor() {
@@ -22,6 +24,7 @@ export class ShowSyncService {
       apiKey: process.env["SETLIST_FM_API_KEY"] || "",
     });
     this.spotifyClient = new SpotifyClient({}); // SpotifyClient reads credentials from env in authenticate()
+    this.venueSyncService = new VenueSyncService();
     this.errorHandler = new SyncErrorHandler({
       maxRetries: 3,
       retryDelay: 1000,
@@ -32,17 +35,41 @@ export class ShowSyncService {
   }
 
   async syncShowFromTicketmaster(event: TicketmasterEvent): Promise<void> {
-    // Find or create venue
+    // Find or create venue using VenueSyncService
     let venueId: string | null = null;
     if (event._embedded?.venues?.[0]) {
-      const venue = event._embedded.venues[0];
-      const venueResults = await db
+      const ticketmasterVenue = event._embedded.venues[0];
+      
+      // First check if venue already exists
+      const venueSlug = this.generateSlug(ticketmasterVenue.name);
+      const existingVenueResults = await db
         .select()
         .from(venues)
-        .where(eq(venues.slug, this.generateSlug(venue.name)))
+        .where(eq(venues.slug, venueSlug))
         .limit(1);
-      const existingVenue = venueResults[0];
-      venueId = existingVenue?.id || null;
+      
+      if (existingVenueResults.length > 0) {
+        venueId = existingVenueResults[0].id;
+      } else {
+        // Create venue using VenueSyncService
+        try {
+          await this.venueSyncService.syncVenueFromTicketmaster(ticketmasterVenue);
+          
+          // Get the newly created venue
+          const newVenueResults = await db
+            .select()
+            .from(venues)
+            .where(eq(venues.slug, venueSlug))
+            .limit(1);
+          
+          if (newVenueResults.length > 0) {
+            venueId = newVenueResults[0].id;
+          }
+        } catch (error) {
+          console.error(`Failed to create venue ${ticketmasterVenue.name}:`, error);
+          // Continue without venue
+        }
+      }
     }
 
     // Find or create artist
@@ -309,6 +336,84 @@ export class ShowSyncService {
     }
   }
 
+  async syncArtistShows(artistDbId: string): Promise<{ upcomingShows: number; created: number; updated: number }> {
+    // Get artist info from database
+    const [artist] = await db
+      .select()
+      .from(artists)
+      .where(eq(artists.id, artistDbId))
+      .limit(1);
+
+    if (!artist) {
+      throw new SyncServiceError(
+        `Artist not found with ID: ${artistDbId}`,
+        "ShowSyncService",
+        "syncArtistShows"
+      );
+    }
+
+    let created = 0;
+    let updated = 0;
+
+    // Search for shows by artist name
+    const eventsResult = await this.errorHandler.withRetry(
+      () =>
+        this.ticketmasterClient.searchEvents({
+          keyword: artist.name,
+          size: 200,
+          sort: "date,asc",
+          startDateTime: new Date().toISOString(),
+        }),
+      {
+        service: "ShowSyncService",
+        operation: "searchEvents",
+        context: { artistName: artist.name },
+      },
+    );
+
+    let upcomingShows = 0;
+
+    if (eventsResult?._embedded?.events) {
+      for (const event of eventsResult._embedded.events) {
+        // Check if this event is actually for our artist
+        const attractionName = event._embedded?.attractions?.[0]?.name;
+        if (!attractionName || !this.isArtistMatch(artist.name, attractionName)) {
+          continue;
+        }
+
+        upcomingShows++;
+
+        // Check if show already exists
+        const existingShow = await db
+          .select()
+          .from(shows)
+          .where(eq(shows.ticketmasterId, event.id))
+          .limit(1);
+
+        if (existingShow.length > 0) {
+          // Update existing show
+          await db
+            .update(shows)
+            .set({
+              status: this.mapTicketmasterStatus(event.dates.status.code),
+              updatedAt: new Date(),
+            })
+            .where(eq(shows.ticketmasterId, event.id));
+          updated++;
+        } else {
+          // Create new show
+          await this.syncShowFromTicketmaster(event);
+          created++;
+        }
+
+        // Rate limit
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+    }
+
+    return { upcomingShows, created, updated };
+  }
+
   async syncHistoricalSetlists(artistName: string): Promise<void> {
     const searchResult = await this.setlistFmClient.searchArtists(artistName);
 
@@ -357,6 +462,26 @@ export class ShowSyncService {
   private generateShowSlug(name: string, date: Date): string {
     const dateStr = date.toISOString().split("T")[0];
     return `${this.generateSlug(name)}-${dateStr}`;
+  }
+
+  private isArtistMatch(dbArtistName: string, ticketmasterArtistName: string): boolean {
+    const normalize = (name: string) =>
+      name.toLowerCase().replace(/[^a-z0-9]/g, "");
+    
+    const normalizedDb = normalize(dbArtistName);
+    const normalizedTm = normalize(ticketmasterArtistName);
+    
+    // Exact match
+    if (normalizedDb === normalizedTm) {
+      return true;
+    }
+    
+    // Check if one contains the other (for cases like "Artist" vs "Artist Band")
+    if (normalizedDb.includes(normalizedTm) || normalizedTm.includes(normalizedDb)) {
+      return true;
+    }
+    
+    return false;
   }
 
   private mapTicketmasterStatus(

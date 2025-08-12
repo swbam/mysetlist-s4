@@ -16,7 +16,6 @@ import {
 } from "@repo/design-system/components/ui/popover";
 import { cn } from "@repo/design-system/lib/utils";
 import {
-  Loader2,
   Music,
   Search,
   X,
@@ -25,6 +24,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDebounce } from "~/hooks/use-debounce";
 import { SearchResultsDropdown, type SearchResultItem } from "~/components/search/search-results-dropdown";
+import { SearchDropdownSkeleton } from "~/components/skeletons/search-skeleton";
 
 // Use SearchResultItem from our reusable component
 type SearchResult = SearchResultItem;
@@ -53,9 +53,6 @@ export function UnifiedSearch({
   const [isOpen, setIsOpen] = useState(false);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [importingArtistId, setImportingArtistId] = useState<string | null>(
-    null,
-  );
 
   const debouncedQuery = useDebounce(query, 300);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -138,27 +135,32 @@ export function UnifiedSearch({
     }
 
     try {
-      setImportingArtistId(result.id);
+      // Generate slug from artist name
+      const slug = result.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
 
-      // Only artists are searchable, so only handle artist navigation
-      if (result.source === "ticketmaster" || result.requiresSync) {
-        const slug = result.title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-|-$/g, "");
-        router.push(
-          `/artists/${slug}?ticketmaster=${result.externalId || result.id}`,
-        );
-      } else {
-        router.push(`/artists/${result.slug || result.id}`);
-      }
+      // Navigate instantly to artist page with Ticketmaster ID for background sync
+      router.push(`/artists/${slug}?ticketmaster=${result.externalId || result.id.replace("tm_", "")}`);
+      
+      // Trigger background sync after navigation
+      fetch("/api/sync/artist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ticketmasterId: result.externalId || result.id.replace("tm_", ""),
+          artistName: result.title,
+          syncType: "full",
+        }),
+      }).catch((error) => {
+        console.error("Background sync trigger failed:", error);
+        // Silent fail - user still gets navigation
+      });
     } catch (error) {
       console.error("Navigation error:", error);
       setError(`Failed to navigate to artist. Please try again.`);
-      setImportingArtistId(null);
       return;
-    } finally {
-      setImportingArtistId(null);
     }
 
     setQuery("");
@@ -252,20 +254,7 @@ export function UnifiedSearch({
                         </p>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      {importingArtistId === result.id ? (
-                        <Button size="sm" disabled>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Importing...
-                        </Button>
-                      ) : (
-                        <Button size="sm" variant="default">
-                          {result.source === "ticketmaster"
-                            ? "Import & View"
-                            : "View"}
-                        </Button>
-                      )}
-                    </div>
+                    {/* Click anywhere on the card to navigate */}
                   </div>
                 </CardHeader>
               </Card>
@@ -319,16 +308,20 @@ export function UnifiedSearch({
           className="w-[90vw] max-w-[600px] p-0 md:w-[600px]"
           align="start"
         >
-          <SearchResultsDropdown
-            results={results}
-            isLoading={isLoading}
-            query={query}
-            onSelect={handleSelect}
-            onClose={() => setIsOpen(false)}
-            className="border-none shadow-none"
-            maxHeight="max-h-80"
-            showImportingState={true}
-          />
+          {isLoading && results.length === 0 ? (
+            <SearchDropdownSkeleton />
+          ) : (
+            <SearchResultsDropdown
+              results={results}
+              isLoading={isLoading}
+              query={query}
+              onSelect={handleSelect}
+              onClose={() => setIsOpen(false)}
+              className="border-none shadow-none"
+              maxHeight="max-h-80"
+              showImportingState={true}
+            />
+          )}
         </PopoverContent>
       </Popover>
     );
@@ -361,16 +354,20 @@ export function UnifiedSearch({
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-[400px] p-0" align="start">
-        <SearchResultsDropdown
-          results={results}
-          isLoading={isLoading}
-          query={query}
-          onSelect={handleSelect}
-          onClose={() => setIsOpen(false)}
-          className="border-none shadow-none"
-          maxHeight="max-h-80"
-          showImportingState={true}
-        />
+        {isLoading && results.length === 0 ? (
+          <SearchDropdownSkeleton />
+        ) : (
+          <SearchResultsDropdown
+            results={results}
+            isLoading={isLoading}
+            query={query}
+            onSelect={handleSelect}
+            onClose={() => setIsOpen(false)}
+            className="border-none shadow-none"
+            maxHeight="max-h-80"
+            showImportingState={true}
+          />
+        )}
       </PopoverContent>
     </Popover>
   );

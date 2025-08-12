@@ -2,12 +2,10 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/design-system/components/ui/avatar";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { cn } from "@repo/design-system/lib/utils";
-import { Loader2, Music, Search } from "lucide-react";
+import { Music, Search, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 export interface SearchResultItem {
   id: string;
@@ -47,48 +45,41 @@ export function SearchResultsDropdown({
   showImportingState = true,
 }: SearchResultsDropdownProps) {
   const router = useRouter();
-  const [importingArtistId, setImportingArtistId] = useState<string | null>(null);
 
   const handleResultSelect = async (result: SearchResultItem) => {
-    if (importingArtistId === result.id) {
-      return; // Already importing
-    }
-
     if (onSelect) {
       onSelect(result);
       return;
     }
 
     try {
-      if (showImportingState) {
-        setImportingArtistId(result.id);
-      }
-
-      // Handle navigation based on source
-      if (result.source === "ticketmaster" && result.requiresSync !== false) {
-        // For Ticketmaster artists that need syncing, navigate with ticketmaster ID
-        const slug = result.title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-|-$/g, "");
-        
-        router.push(`/artists/${slug}?ticketmaster=${result.externalId || result.id}`);
-      } else if (result.slug) {
-        // For database artists with slug, use direct navigation
-        router.push(`/artists/${result.slug}`);
-      } else {
-        // Fallback to ID-based navigation
-        router.push(`/artists/${result.id}`);
-      }
+      // Generate slug from artist name for Ticketmaster artists
+      const slug = result.title
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      
+      // Navigate instantly to artist page with Ticketmaster ID for background sync
+      router.push(`/artists/${slug}?ticketmaster=${result.externalId || result.id.replace("tm_", "")}`);
+      
+      // Trigger background sync after navigation
+      fetch("/api/sync/artist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ticketmasterId: result.externalId || result.id.replace("tm_", ""),
+          artistName: result.title,
+          syncType: "full",
+        }),
+      }).catch((error) => {
+        console.error("Background sync trigger failed:", error);
+        // Silent fail - user still gets navigation
+      });
 
       // Close dropdown after navigation
       onClose?.();
     } catch (error) {
       console.error("Navigation error:", error);
-    } finally {
-      if (showImportingState) {
-        setImportingArtistId(null);
-      }
     }
   };
 
@@ -117,10 +108,7 @@ export function SearchResultsDropdown({
             {results.map((result) => (
               <div
                 key={`${result.source}-${result.id}`}
-                className={cn(
-                  "flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors hover:bg-accent",
-                  importingArtistId === result.id && "opacity-70 cursor-wait"
-                )}
+                className="flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors hover:bg-accent"
                 onClick={() => handleResultSelect(result)}
               >
                 <Avatar className="h-10 w-10">
@@ -146,20 +134,7 @@ export function SearchResultsDropdown({
                   )}
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  {showImportingState && importingArtistId === result.id ? (
-                    <div className="flex items-center gap-1">
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      <span className="text-xs text-muted-foreground">
-                        Loading...
-                      </span>
-                    </div>
-                  ) : (
-                    <Button size="sm" variant="ghost" className="h-auto p-1 text-xs">
-                      {result.source === "ticketmaster" ? "Import" : "View"}
-                    </Button>
-                  )}
-                </div>
+                {/* No action buttons - clicking anywhere navigates */}
               </div>
             ))}
           </div>

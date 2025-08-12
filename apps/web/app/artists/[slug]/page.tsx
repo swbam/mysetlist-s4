@@ -114,113 +114,71 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
     // Fetch artist data with error handling
     let artist = await getArtist(slug);
 
-    // If artist not found and we have a ticketmaster ID, try to import
+    // If artist not found and we have a ticketmaster ID, show loading state and trigger background sync
     if (!artist && ticketmasterId) {
-      console.log(`Artist not found for slug: ${slug}, attempting Ticketmaster import...`);
+      const artistName = slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+      // Show loading state and trigger background sync
       
-      try {
-        // Try to import the artist from Ticketmaster
-        const importResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/import`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              ticketmasterId,
-              artistName: slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
-            }),
-          },
-        );
-
-        if (importResponse.ok) {
-          const importData = await importResponse.json();
-          console.log("Artist imported successfully:", importData.artist.name);
+      // Trigger background sync immediately (non-blocking)
+      setImmediate(async () => {
+        try {
+          // Trigger background sync
           
-          // Try to fetch the artist again after import with cache bypass
-          artist = await getArtist(slug);
-          
-          if (!artist) {
-            // If still not found after import, show loading page while background sync completes
-            const artistName = slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
-            
-            return (
-              <ArtistErrorBoundary artistName={artistName}>
-                <Suspense fallback={<ArtistImportLoading artistName={artistName} />}>
-                  <ArtistImportLoading artistName={artistName} />
-                </Suspense>
-                <script
-                  dangerouslySetInnerHTML={{
-                    __html: `
-                      // Auto-refresh after 3 seconds to show imported data
-                      setTimeout(() => {
-                        if (typeof window !== 'undefined') {
-                          window.location.reload();
-                        }
-                      }, 3000);
-                    `,
-                  }}
-                />
-              </ArtistErrorBoundary>
-            );
-          }
-        } else {
-          const errorText = await importResponse.text();
-          console.error("Failed to import artist:", errorText);
-          
-          // Show error state but still try to display basic page
-          const artistName = slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
-          return (
-            <div className="container mx-auto py-8">
-              <div className="text-center">
-                <h1 className="text-2xl font-bold text-orange-600 mb-4">
-                  Import In Progress
-                </h1>
-                <p className="text-gray-600 mb-4">
-                  We're still importing "{artistName}" from Ticketmaster.
-                </p>
-                <p className="text-sm text-gray-500">
-                  This page will automatically refresh in a moment.
-                </p>
-              </div>
-              <script
-                dangerouslySetInnerHTML={{
-                  __html: `
-                    setTimeout(() => {
-                      if (typeof window !== 'undefined') {
-                        window.location.reload();
-                      }
-                    }, 2000);
-                  `,
-                }}
-              />
-            </div>
+          const syncResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/sync/artist`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                ticketmasterId,
+                artistName,
+                syncType: "full",
+              }),
+            }
           );
+
+          if (syncResponse.ok) {
+            const syncData = await syncResponse.json();
+            // Background sync initiated successfully
+          } else {
+            console.error("Failed to trigger background sync:", await syncResponse.text());
+          }
+        } catch (error) {
+          console.error("Background sync trigger failed:", error);
         }
-      } catch (importError) {
-        console.error("Artist import error:", importError);
-        
-        // Show error but still try to continue
-        const artistName = slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
-        return (
-          <div className="container mx-auto py-8">
-            <div className="text-center">
-              <h1 className="text-2xl font-bold text-red-600 mb-4">
-                Import Error
-              </h1>
-              <p className="text-gray-600 mb-4">
-                There was an issue importing "{artistName}" from Ticketmaster.
-              </p>
-              <p className="text-sm text-gray-500">
-                Please try refreshing the page or searching again.
-              </p>
-            </div>
-          </div>
-        );
-      }
+      });
+      
+      // Show loading page with real-time updates via Supabase subscriptions
+      return (
+        <ArtistErrorBoundary artistName={artistName}>
+          <Suspense fallback={<ArtistImportLoading artistName={artistName} />}>
+            <ArtistImportLoading artistName={artistName} />
+          </Suspense>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                // Auto-refresh every 5 seconds to check for imported data
+                const refreshInterval = setInterval(() => {
+                  if (typeof window !== 'undefined') {
+                    // Check for updated artist data
+                    window.location.reload();
+                  }
+                }, 5000);
+                
+                // Stop checking after 2 minutes
+                setTimeout(() => {
+                  clearInterval(refreshInterval);
+                  // Stopped checking for artist updates
+                }, 120000);
+              `,
+            }}
+          />
+        </ArtistErrorBoundary>
+      );
     }
 
     if (!artist) {
-      console.log(`Artist not found for slug: ${slug}`);
+      // Artist not found
       notFound();
     }
 
@@ -328,6 +286,11 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
         artistId={artist.id}
         artistName={artist.name}
         spotifyId={artist.spotifyId}
+        initialData={{
+          artist: artistData,
+          shows: [...transformedUpcomingShows, ...transformedPastShows],
+          stats: _stats,
+        }}
       >
         <div className="container mx-auto py-8">
           {/* Breadcrumb Navigation */}

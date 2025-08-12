@@ -36,8 +36,8 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
     return null;
   }
 
-  // Get user votes if authenticated
-  const userVotes: Record<string, "up" | "down"> = {};
+  // Get user votes if authenticated (upvotes only)
+  const userVotes: Record<string, boolean> = {};
   if (userId) {
     const setlistSongIds = setlistData
       .filter(
@@ -53,7 +53,6 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
       const voteData = await db
         .select({
           setlistSongId: votes.setlistSongId,
-          voteType: votes.voteType,
         })
         .from(votes)
         .where(
@@ -64,7 +63,7 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
         );
 
       voteData.forEach((vote) => {
-        userVotes[vote.setlistSongId] = vote.voteType;
+        userVotes[vote.setlistSongId] = true;
       });
     }
   }
@@ -98,9 +97,7 @@ export async function getSetlistWithSongs(setlistId: string, userId?: string) {
       isPlayed: row.setlistSong.isPlayed,
       playTime: row.setlistSong.playTime,
       upvotes: row.setlistSong.upvotes,
-      downvotes: row.setlistSong.downvotes,
-      netVotes: row.setlistSong.netVotes,
-      userVote: userVotes[row.setlistSong.id] || null,
+      userVote: userVotes[row.setlistSong.id] || false,
     }));
 
   return {
@@ -170,8 +167,6 @@ export async function addSongToSetlist(
       notes: songData.notes ?? null,
       isPlayed: false,
       upvotes: 0,
-      downvotes: 0,
-      netVotes: 0,
     })
     .returning();
 
@@ -257,32 +252,28 @@ export async function getTopVotedSongs(showId: string, limit = 10) {
     .innerJoin(songs, eq(setlistSongs.songId, songs.id))
     .innerJoin(setlists, eq(setlistSongs.setlistId, setlists.id))
     .where(eq(setlists.showId, showId))
-    .orderBy(desc(setlistSongs.netVotes))
+    .orderBy(desc(setlistSongs.upvotes))
     .limit(limit);
 
   return results;
 }
 
 export async function updateSetlistSongVotes(setlistSongId: string) {
-  // Count votes for this setlist song
+  // Count votes for this setlist song (upvotes only)
   const voteCount = await db
     .select({
-      upvotes: sql<number>`COUNT(*) FILTER (WHERE vote_type = 'up')`,
-      downvotes: sql<number>`COUNT(*) FILTER (WHERE vote_type = 'down')`,
+      upvotes: sql<number>`COUNT(*)`,
     })
     .from(votes)
     .where(eq(votes.setlistSongId, setlistSongId));
 
-  const { upvotes, downvotes } = voteCount[0] || { upvotes: 0, downvotes: 0 };
-  const netVotes = upvotes - downvotes;
+  const { upvotes } = voteCount[0] || { upvotes: 0 };
 
   // Update the setlist song
   const [updated] = await db
     .update(setlistSongs)
     .set({
       upvotes,
-      downvotes,
-      netVotes,
       updatedAt: new Date(),
     })
     .where(eq(setlistSongs.id, setlistSongId))

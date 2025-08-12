@@ -1,15 +1,20 @@
 "use client";
 
-import { Card } from "@repo/design-system/components/ui/card";
-import { AlertCircle } from "lucide-react";
-import { useEffect, useState } from "react";
-import { SyncProgressDetails } from "~/components/sync-status-indicator";
-import { useArtistSync } from "~/hooks/use-sync-status";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Wifi, WifiOff, Loader2 } from "lucide-react";
+import { useArtistRealtime } from "~/hooks/use-artist-realtime";
 
 interface ArtistPageWrapperProps {
   artistId: string;
   artistName: string;
   spotifyId?: string | null;
+  initialData: {
+    artist?: any;
+    shows?: any[];
+    songs?: any[];
+    stats?: any;
+  };
   children: React.ReactNode;
 }
 
@@ -17,48 +22,83 @@ export function ArtistPageWrapper({
   artistId,
   artistName,
   spotifyId,
+  initialData,
   children,
 }: ArtistPageWrapperProps) {
-  const [syncJobId, setSyncJobId] = useState<string | null>(null);
-  const [isTriggeredSync, setIsTriggeredSync] = useState(false);
+  const { data, syncProgress, isConnected } = useArtistRealtime(artistId, {
+    ...initialData,
+    isLoading: false,
+  });
 
-  const { triggerArtistSync, getSyncJobId, clearSync } = useArtistSync();
-
-  // Auto-trigger sync for new artists (when user first clicks from search)
-  useEffect(() => {
-    if (spotifyId && !isTriggeredSync) {
-      // Check if this is a fresh artist with minimal data that needs syncing
-      // You could also check for specific indicators like missing show count, etc.
-      const shouldSync = true; // For now, always sync - add logic as needed
-
-      if (shouldSync) {
-        triggerArtistSync(artistId, spotifyId, "full_sync")
-          .then((jobId) => {
-            setSyncJobId(jobId);
-            setIsTriggeredSync(true);
-          })
-          .catch((error) => {
-            console.error("Failed to trigger artist sync:", error);
-          });
-      }
-    }
-  }, [artistId, spotifyId, isTriggeredSync, triggerArtistSync]);
-
-  // Check for existing sync job
-  useEffect(() => {
-    const existingJobId = getSyncJobId(artistId);
-    if (existingJobId) {
-      setSyncJobId(existingJobId);
-    }
-  }, [artistId, getSyncJobId]);
+  // Show sync progress notification
+  const showSyncNotification = syncProgress.isImporting || syncProgress.stage === "completed";
 
   return (
     <>
-      {syncJobId && (
+      {/* Connection Status Indicator */}
+      <div className="fixed top-4 right-4 z-50">
+        <Badge variant={isConnected ? "default" : "destructive"} className="flex items-center gap-1">
+          {isConnected ? (
+            <>
+              <Wifi className="h-3 w-3" />
+              Live
+            </>
+          ) : (
+            <>
+              <WifiOff className="h-3 w-3" />
+              Offline
+            </>
+          )}
+        </Badge>
+      </div>
+
+      {/* Sync Progress Notification */}
+      {showSyncNotification && (
         <div className="container mx-auto pt-8 mb-6">
-          <SyncProgressDetails jobId={syncJobId} />
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                {syncProgress.isImporting ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium text-sm">
+                          Syncing artist data...
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {syncProgress.progress}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-muted rounded-full h-2">
+                        <div 
+                          className="bg-primary h-2 rounded-full transition-all duration-500"
+                          style={{ width: `${syncProgress.progress}%` }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {syncProgress.stage || "Importing data from external sources..."}
+                      </p>
+                    </div>
+                  </>
+                ) : syncProgress.stage === "completed" ? (
+                  <>
+                    <div className="h-5 w-5 rounded-full bg-green-500 flex items-center justify-center">
+                      <span className="text-white text-xs">✓</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-sm text-green-700">
+                        Sync completed! Artist data is now up to date.
+                      </span>
+                    </div>
+                  </>
+                ) : null}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
+
       {children}
     </>
   );

@@ -69,7 +69,7 @@ export const ArtistGrid = () => {
 
   const handleFollow = (artistId: string) => {
     // TODO: Implement follow functionality
-    console.log("Following artist:", artistId);
+    // Follow artist action
   };
 
   // Error state
