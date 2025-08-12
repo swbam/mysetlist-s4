@@ -5,7 +5,7 @@ const securityHeaders = {
   // Content Security Policy
   "Content-Security-Policy": [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.sentry-cdn.com https://browser.sentry-cdn.com https://va.vercel-scripts.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.sentry-cdn.com https://browser.sentry-cdn.com https://va.vercel-scripts.com https://vercel.live",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob: https: http:",
@@ -206,6 +206,7 @@ export async function securityMiddleware(
       "/api/artists/sync",
       "/api/artists/sync-shows",
       "/api/sync",
+      "/api/cron",
     ];
 
     const isBypass = csrfBypassEndpoints.some((p) => pathname.startsWith(p));

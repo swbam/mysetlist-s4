@@ -147,17 +147,16 @@ export function UnifiedSearch({
         `/artists/${slug}?ticketmaster=${result.externalId || result.id.replace("tm_", "")}`,
       );
 
-      // Trigger background sync after navigation
-      fetch("/api/sync/artist", {
+      // Trigger artist import after navigation (no auth required)
+      fetch("/api/artists/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ticketmasterId: result.externalId || result.id.replace("tm_", ""),
           artistName: result.title,
-          syncType: "full",
         }),
       }).catch((error) => {
-        console.error("Background sync trigger failed:", error);
+        console.error("Background import trigger failed:", error);
         // Silent fail - user still gets navigation
       });
     } catch (error) {
