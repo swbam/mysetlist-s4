@@ -47,7 +47,7 @@ export async function triggerEmailVerification(
       return;
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://MySetlist.app";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://TheSet.app";
     const verificationUrl = `${appUrl}/auth/verify?token=${verificationToken}`;
 
     await queueEmail({
@@ -78,7 +78,7 @@ export async function triggerPasswordReset(userId: string, resetToken: string) {
       return;
     }
 
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://MySetlist.app";
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://TheSet.app";
     const resetUrl = `${appUrl}/auth/reset-password?token=${resetToken}`;
 
     await queueEmail({

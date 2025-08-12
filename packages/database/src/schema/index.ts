@@ -1,4 +1,4 @@
-// Core schema exports - Essential tables only for MySetlist MVP
+// Core schema exports - Essential tables only for TheSet MVP
 // Removed bloated analytics, data-pipeline, email-enhanced, admin, search, scalability
 // These were over-engineered and not required per mysetlist-docs specifications
 

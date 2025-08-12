@@ -1,4 +1,4 @@
--- Fix cron jobs and data sync for MySetlist
+-- Fix cron jobs and data sync for TheSet
 -- This migration sets up proper cron jobs for artist data sync
 
 -- First, ensure pg_cron extension is enabled

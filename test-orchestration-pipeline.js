@@ -175,7 +175,7 @@ async function testHealthCheck() {
 }
 
 async function runTests() {
-  console.log(`\n🚀 MySetlist Orchestration Pipeline Test`);
+  console.log(`\n🚀 TheSet Orchestration Pipeline Test`);
   console.log(`Base URL: ${TEST_CONFIG.BASE_URL}`);
   console.log(`Auth: ${TEST_CONFIG.CRON_SECRET ? 'Configured' : 'Not configured'}`);
 

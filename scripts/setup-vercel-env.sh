@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# MySetlist - Vercel Environment Variables Setup Script
+# TheSet - Vercel Environment Variables Setup Script
 # This script adds all required environment variables to your Vercel project
 
-echo "🚀 MySetlist - Vercel Environment Setup"
+echo "🚀 TheSet - Vercel Environment Setup"
 echo "======================================"
 echo ""
 

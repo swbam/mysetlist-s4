@@ -7,12 +7,12 @@ type MetadataGenerator = Omit<Metadata, "description" | "title"> & {
   image?: string;
 };
 
-const applicationName = "MySetlist";
+const applicationName = "TheSet";
 const author: Metadata["authors"] = {
-  name: "MySetlist",
+  name: "TheSet",
   url: "https://mysetlist.com/",
 };
-const publisher = "MySetlist";
+const publisher = "TheSet";
 const twitterHandle = "@mysetlist";
 const protocol = process.env["NODE_ENV"] === "production" ? "https" : "http";
 const productionUrl =
@@ -24,7 +24,7 @@ export const createMetadata = ({
   image,
   ...properties
 }: MetadataGenerator): Metadata => {
-  // Don't add " | MySetlist" here since the layout template handles it
+  // Don't add " | TheSet" here since the layout template handles it
   const parsedTitle = title;
   const defaultMetadata: Metadata = {
     title: parsedTitle,

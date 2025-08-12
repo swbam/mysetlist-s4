@@ -5,7 +5,7 @@ import { EnhancedSearch } from "~/app/components/enhanced-search";
 
 export const generateMetadata = (): Metadata => {
   return createMetadata({
-    title: "Search Artists - MySetlist",
+    title: "Search Artists - TheSet",
     description:
       "Search for your favorite artists and discover their upcoming shows. Find concert setlists and vote on songs you want to hear.",
   });

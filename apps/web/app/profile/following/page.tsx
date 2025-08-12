@@ -1,11 +1,11 @@
-// Following feature removed from MySetlist
+// Following feature removed from TheSet
 // This page has been disabled as the app no longer supports following artists
-// MySetlist is focused on setlist voting, not social following features
+// TheSet is focused on setlist voting, not social following features
 
 import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Feature Removed - MySetlist",
+  title: "Feature Removed - TheSet",
   description: "Following feature has been removed",
 };
 

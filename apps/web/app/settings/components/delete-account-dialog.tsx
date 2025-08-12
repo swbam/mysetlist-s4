@@ -123,7 +123,7 @@ export function DeleteAccountDialog() {
                 Delete Account
               </DialogTitle>
               <DialogDescription>
-                This action will permanently delete your MySetlist account and
+                This action will permanently delete your TheSet account and
                 all associated data.
               </DialogDescription>
             </DialogHeader>
@@ -302,7 +302,7 @@ export function DeleteAccountDialog() {
             <div className="flex flex-col items-center justify-center py-8">
               <CheckCircle2 className="mb-4 h-12 w-12 text-green-500" />
               <p className="mb-2 text-center text-sm">
-                Your MySetlist account and all associated data have been
+                Your TheSet account and all associated data have been
                 permanently deleted.
               </p>
               <p className="text-center text-muted-foreground text-xs">

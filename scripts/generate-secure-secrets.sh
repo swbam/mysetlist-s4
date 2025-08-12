@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Generate secure secrets for production deployment
-echo "Generating secure secrets for MySetlist production deployment..."
+echo "Generating secure secrets for TheSet production deployment..."
 
 # Function to generate secure random string
 generate_secret() {

@@ -1,7 +1,7 @@
 # Bundle Size Optimization Report
 
 ## Overview
-This report summarizes the optimizations implemented to reduce bundle sizes for the MySetlist application.
+This report summarizes the optimizations implemented to reduce bundle sizes for the TheSet application.
 
 ## Target Goals
 - Homepage: < 350 kB (from 493kB)

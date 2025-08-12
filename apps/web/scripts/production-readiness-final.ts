@@ -340,7 +340,7 @@ function checkErrorHandling(): void {
 
 // Main execution
 async function main() {
-  console.log("🚀 MySetlist Production Readiness Check\n");
+  console.log("🚀 TheSet Production Readiness Check\n");
   console.log("=======================================\n");
 
   // Run all checks

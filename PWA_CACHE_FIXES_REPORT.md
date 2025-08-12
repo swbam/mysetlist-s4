@@ -1,4 +1,4 @@
-# PWA Cache Fixes Report - MySetlist
+# PWA Cache Fixes Report - TheSet
 
 ## Executive Summary
 
@@ -60,7 +60,7 @@ const CACHEABLE_API_PATTERNS = [
 **API:**
 ```javascript
 // Global cache clearing function
-window.clearMySetlistCache();
+window.clearTheSetCache();
 
 // Development debug interface
 window.__cacheManager = {
@@ -194,7 +194,7 @@ If stale content issues occur in production:
 
 ```javascript
 // User can clear cache in browser console
-window.clearMySetlistCache();
+window.clearTheSetCache();
 
 // Or programmatically trigger refresh
 navigator.serviceWorker.controller?.postMessage({

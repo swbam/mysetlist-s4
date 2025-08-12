@@ -2,7 +2,7 @@
 
 /**
  * Cache Behavior Test Script
- * Tests the caching behavior of MySetlist PWA fixes
+ * Tests the caching behavior of TheSet PWA fixes
  */
 
 const https = require("node:https");
@@ -33,7 +33,7 @@ async function fetchWithHeaders(url) {
       requestUrl,
       {
         headers: {
-          "User-Agent": "MySetlist-Cache-Test/1.0",
+          "User-Agent": "TheSet-Cache-Test/1.0",
           Accept: "application/json",
         },
       },
@@ -215,7 +215,7 @@ async function testEndpoint(url) {
 }
 
 async function testCacheBehavior() {
-  console.log("🚀 MySetlist Cache Behavior Test");
+  console.log("🚀 TheSet Cache Behavior Test");
   console.log("Testing PWA cache fixes for stale content issues");
   console.log(`Base URL: ${BASE_URL}`);
   console.log("Timestamp:", new Date().toISOString());

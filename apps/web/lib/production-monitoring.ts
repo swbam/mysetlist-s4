@@ -512,7 +512,7 @@ export class ProductionMonitoringService extends MonitoringService {
     }
 
     const payload = {
-      text: `🚨 MySetlist Alert: ${type}`,
+      text: `🚨 TheSet Alert: ${type}`,
       attachments: [
         {
           color: ProductionMonitoringService.getAlertColor(type),
@@ -521,7 +521,7 @@ export class ProductionMonitoringService extends MonitoringService {
             value: String(value),
             short: true,
           })),
-          footer: "MySetlist Production Monitoring",
+          footer: "TheSet Production Monitoring",
           ts: Math.floor(Date.now() / 1000),
         },
       ],
@@ -546,9 +546,9 @@ export class ProductionMonitoringService extends MonitoringService {
       routing_key: ProductionMonitoringService.alertChannels.pagerduty,
       event_action: "trigger",
       payload: {
-        summary: `MySetlist Alert: ${type}`,
+        summary: `TheSet Alert: ${type}`,
         severity: ProductionMonitoringService.getAlertSeverity(type),
-        source: "MySetlist Production",
+        source: "TheSet Production",
         custom_details: data,
       },
     };

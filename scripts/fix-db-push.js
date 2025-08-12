@@ -31,7 +31,7 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-console.log("🔧 MySetlist Database Schema Push");
+console.log("🔧 TheSet Database Schema Push");
 console.log("==================================");
 
 async function createMissingTables() {

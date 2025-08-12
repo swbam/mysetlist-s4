@@ -24,8 +24,8 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_APP_URL ?? "https://mysetlist-sonnet.vercel.app",
   ),
   title: {
-    template: "%s | MySetlist",
-    default: "MySetlist - Concert Setlist Voting Platform",
+    template: "%s | TheSet",
+    default: "TheSet - Concert Setlist Voting Platform",
   },
   description:
     "Vote on concert setlists, discover new artists, and connect with music fans.",

@@ -52,7 +52,7 @@ END $$;
 
 -- Add comment documenting the real-time configuration
 COMMENT ON PUBLICATION supabase_realtime IS 
-'Real-time publication for MySetlist app. Includes:
+'Real-time publication for TheSet app. Includes:
 - artists: Real-time artist updates
 - shows: Real-time show updates  
 - venues: Real-time venue updates

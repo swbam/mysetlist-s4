@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 /**
- * Comprehensive Security Audit Script for MySetlist App
+ * Comprehensive Security Audit Script for TheSet App
  * Automated vulnerability scanning and security testing
  */
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * All-in-One Deployment Script for MySetlist
+ * All-in-One Deployment Script for TheSet
  *
  * This script handles the complete deployment process:
  * 1. Environment validation
@@ -78,7 +78,7 @@ function error(message: string) {
 async function main() {
   console.log(`${colors.bright}${colors.cyan}
 ╔════════════════════════════════════════════╗
-║   MySetlist - Complete Deployment Script   ║
+║   TheSet - Complete Deployment Script   ║
 ╚════════════════════════════════════════════╝
 ${colors.reset}`);
 

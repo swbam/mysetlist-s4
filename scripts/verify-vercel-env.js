@@ -51,7 +51,7 @@ const optionalEnvVars = [
   "NEXT_PUBLIC_ENABLE_PERFORMANCE_MONITORING",
 ];
 
-console.log("🔍 MySetlist - Vercel Environment Variables Verification\n");
+console.log("🔍 TheSet - Vercel Environment Variables Verification\n");
 console.log("=".repeat(60));
 
 let hasErrors = false;

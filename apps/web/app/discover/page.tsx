@@ -32,9 +32,9 @@ import { LiveTrending } from "~/components/trending/live-trending";
 import { DiscoverFilters } from "./components/discover-filters";
 
 export const metadata: Metadata = createMetadata({
-  title: "Discover Music - MySetlist",
+  title: "Discover Music - TheSet",
   description:
-    "Discover new artists, find local shows, explore trends, and get personalized recommendations on MySetlist.",
+    "Discover new artists, find local shows, explore trends, and get personalized recommendations on TheSet.",
 });
 
 function DiscoverSkeleton() {

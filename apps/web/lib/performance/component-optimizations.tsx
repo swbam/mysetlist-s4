@@ -1,4 +1,4 @@
-// Performance optimization implementations for critical MySetlist components
+// Performance optimization implementations for critical TheSet components
 // SUB-AGENT 2: Component Performance Specialist
 
 import React, { memo, useMemo, useCallback } from "react";

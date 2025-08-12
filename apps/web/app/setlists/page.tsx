@@ -29,7 +29,7 @@ import { Suspense } from "react";
 
 export const generateMetadata = (): Metadata => {
   return createMetadata({
-    title: "Setlists - MySetlist",
+    title: "Setlists - TheSet",
     description:
       "Browse concert setlists, vote on songs, and discover what artists are playing live.",
   });

@@ -13,7 +13,7 @@ import { redirect } from "next/navigation";
 import { createPageMetadata } from "~/lib/seo-metadata";
 
 export const metadata: Metadata = createPageMetadata({
-  title: "My Playlists | MySetlist",
+  title: "My Playlists | TheSet",
   description:
     "Manage your saved setlists and create custom playlists from your favorite concerts.",
 });

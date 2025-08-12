@@ -112,7 +112,7 @@ export const SignUp = () => {
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-indigo-600">🎵 MySetlist</h1>
+          <h1 className="text-3xl font-bold text-indigo-600">🎵 TheSet</h1>
         </div>
         <h2 className="mt-6 text-center font-bold text-2xl leading-9 tracking-tight">
           Create your account

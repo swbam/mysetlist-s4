@@ -2,7 +2,7 @@
 
 ## Overview
 
-The MySetlist app now includes comprehensive real-time features powered by Supabase's real-time subscriptions. These features provide instant updates across the application without requiring page refreshes.
+The TheSet app now includes comprehensive real-time features powered by Supabase's real-time subscriptions. These features provide instant updates across the application without requiring page refreshes.
 
 ## Architecture
 

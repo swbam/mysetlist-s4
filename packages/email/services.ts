@@ -114,7 +114,7 @@ export async function sendContactEmail({
 export async function sendWelcomeEmail({
   to,
   name,
-  appUrl = "https://MySetlist.app",
+  appUrl = "https://TheSet.app",
 }: {
   to: EmailAddress[];
   name: string;
@@ -124,7 +124,7 @@ export async function sendWelcomeEmail({
 
   return sendEmail({
     to,
-    subject: "Welcome to MySetlist! 🎵",
+    subject: "Welcome to TheSet! 🎵",
     html,
   });
 }
@@ -135,7 +135,7 @@ export async function sendShowReminderEmail({
   userName,
   show,
   daysUntilShow,
-  appUrl = "https://MySetlist.app",
+  appUrl = "https://TheSet.app",
 }: {
   to: EmailAddress[];
   userName: string;
@@ -166,7 +166,7 @@ export async function sendNewShowNotificationEmail({
   to,
   userName,
   show,
-  appUrl = "https://MySetlist.app",
+  appUrl = "https://TheSet.app",
 }: {
   to: EmailAddress[];
   userName: string;
@@ -192,7 +192,7 @@ export async function sendSetlistUpdateEmail({
   newSongs,
   totalSongs,
   updateType = "updated",
-  appUrl = "https://MySetlist.app",
+  appUrl = "https://TheSet.app",
 }: {
   to: EmailAddress[];
   userName: string;
@@ -242,7 +242,7 @@ export async function sendWeeklyDigestEmail({
   upcomingShows,
   newSetlists,
   totalFollowedArtists,
-  appUrl = "https://MySetlist.app",
+  appUrl = "https://TheSet.app",
 }: {
   to: EmailAddress[];
   userName: string;
@@ -278,7 +278,7 @@ export async function sendPasswordResetEmail({
   name,
   resetUrl,
   expirationHours = 24,
-  appUrl = "https://MySetlist.app",
+  appUrl = "https://TheSet.app",
 }: {
   to: EmailAddress[];
   name: string;
@@ -292,7 +292,7 @@ export async function sendPasswordResetEmail({
 
   return sendEmail({
     to,
-    subject: "Reset your MySetlist password",
+    subject: "Reset your TheSet password",
     html,
   });
 }
@@ -303,7 +303,7 @@ export async function sendEmailVerificationEmail({
   name,
   verificationUrl,
   expirationHours = 24,
-  appUrl = "https://MySetlist.app",
+  appUrl = "https://TheSet.app",
 }: {
   to: EmailAddress[];
   name: string;
@@ -322,7 +322,7 @@ export async function sendEmailVerificationEmail({
 
   return sendEmail({
     to,
-    subject: "Verify your MySetlist email address",
+    subject: "Verify your TheSet email address",
     html,
   });
 }
@@ -406,7 +406,7 @@ export async function sendArtistFollowNotificationEmail({
   artist,
   followerName,
   isFirstFollow = false,
-  appUrl = "https://MySetlist.app",
+  appUrl = "https://TheSet.app",
 }: {
   to: EmailAddress[];
   userName: string;
@@ -440,7 +440,7 @@ export async function sendVoteMilestoneEmail({
   song,
   milestone,
   totalVotes,
-  appUrl = "https://MySetlist.app",
+  appUrl = "https://TheSet.app",
 }: {
   to: EmailAddress[];
   userName: string;
@@ -474,7 +474,7 @@ export async function sendLiveShowAlertEmail({
   userName,
   show,
   alertType,
-  appUrl = "https://MySetlist.app",
+  appUrl = "https://TheSet.app",
 }: {
   to: EmailAddress[];
   userName: string;

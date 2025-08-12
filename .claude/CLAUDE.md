@@ -2,9 +2,9 @@
 
 ## PROJECT OVERVIEW
 
-MySetlist is a setlist voting web application that enables users to search for artists, view their shows, and interact with setlists and song catalogs. The application requires a complete finalization with **world-class engineering and design quality** while maintaining strict adherence to **next-forge architecture patterns**. This PRD mandates **ULTRATHINKING** every decision 3x before implementation and deploying **6 specialized sub-agents in parallel** to ensure rapid, high-quality completion.
+TheSet is a setlist voting web application that enables users to search for artists, view their shows, and interact with setlists and song catalogs. The application requires a complete finalization with **world-class engineering and design quality** while maintaining strict adherence to **next-forge architecture patterns**. This PRD mandates **ULTRATHINKING** every decision 3x before implementation and deploying **6 specialized sub-agents in parallel** to ensure rapid, high-quality completion.
 
-**CORE MISSION**: Transform MySetlist into a seamless, production-ready application representing the pinnacle of modern web development with zero compromises on quality, performance, or user experience.
+**CORE MISSION**: Transform TheSet into a seamless, production-ready application representing the pinnacle of modern web development with zero compromises on quality, performance, or user experience.
 
 ## CORE FEATURES
 
@@ -162,7 +162,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 
 ### Final Application State
 
-- **Production-ready** MySetlist web application
+- **Production-ready** TheSet web application
 - **Single unified codebase** with apps/web containing all functionality
 - **World-class user experience** with seamless interactions
 - **Professional code quality** following next-forge standards
@@ -173,7 +173,7 @@ MySetlist is a setlist voting web application that enables users to search for a
 
 # 🔍 **ULTRATHINK 3x COMPREHENSIVE ANALYSIS**
 
-# MySetlist Web App - Critical Issues & Implementation Gaps
+# TheSet Web App - Critical Issues & Implementation Gaps
 
 ---
 
@@ -196,7 +196,7 @@ After exhaustive analysis of the codebase, documentation, database schema, and c
 ```tsx
 <Link href="/" className="flex items-center gap-2">
   <Image src={Logo} alt="Logo" width={24} height={24} className="dark:invert" />
-  <p className="whitespace-nowrap font-semibold">MySetlist</p>
+  <p className="whitespace-nowrap font-semibold">TheSet</p>
 </Link>
 ```
 
@@ -443,7 +443,7 @@ Based on MCP analysis, the Supabase database is **fully operational** with:
 
 ## 🏁 **CONCLUSION**
 
-The MySetlist application has **excellent foundational architecture** with a comprehensive database schema, proper authentication system, and solid component structure. However, **critical performance issues**, **broken routing**, and **substantial technical debt** prevent it from being production-ready.
+The TheSet application has **excellent foundational architecture** with a comprehensive database schema, proper authentication system, and solid component structure. However, **critical performance issues**, **broken routing**, and **substantial technical debt** prevent it from being production-ready.
 
 The **most urgent priorities** are:
 
@@ -454,11 +454,11 @@ The **most urgent priorities** are:
 
 With focused effort on these issues, the application can reach production readiness within **3-4 weeks** of dedicated development work.
 
-# MySetlist App Completion - Requirements Document
+# TheSet App Completion - Requirements Document
 
 ## Introduction
 
-MySetlist is a concert setlist voting platform built on Next-Forge that allows users to discover artists, view shows, and vote on setlists. The core vision is to create a seamless experience where users can search for artists, explore their upcoming shows, and participate in setlist predictions through community voting. This requirements document focuses on the essential features needed to complete the core MySetlist functionality.
+TheSet is a concert setlist voting platform built on Next-Forge that allows users to discover artists, view shows, and vote on setlists. The core vision is to create a seamless experience where users can search for artists, explore their upcoming shows, and participate in setlist predictions through community voting. This requirements document focuses on the essential features needed to complete the core TheSet functionality.
 
 ## Requirements
 

@@ -28,7 +28,7 @@ export const Footer = () => {
       <div className="container py-12 md:py-16">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
           <div className="space-y-4">
-            <h3 className="font-semibold text-lg">MySetlist</h3>
+            <h3 className="font-semibold text-lg">TheSet</h3>
             <p className="text-muted-foreground text-sm">
               Vote for your dream setlist and connect with fellow music fans.
             </p>
@@ -87,7 +87,7 @@ export const Footer = () => {
 
         <div className="mt-12 border-t pt-8">
           <p className="text-center text-muted-foreground text-sm">
-            © {currentYear} MySetlist. All rights reserved.
+            © {currentYear} TheSet. All rights reserved.
           </p>
         </div>
       </div>

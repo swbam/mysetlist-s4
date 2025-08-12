@@ -1,5 +1,5 @@
 /**
- * Enhanced K6 Load Testing Suite for MySetlist App
+ * Enhanced K6 Load Testing Suite for TheSet App
  * Tests normal and peak user load scenarios with comprehensive metrics
  */
 
@@ -215,7 +215,7 @@ export function handleSummary(data) {
 
 // Setup function
 export function setup() {
-  console.log("🚀 Starting MySetlist Load Test");
+  console.log("🚀 Starting TheSet Load Test");
   console.log(`📍 Base URL: ${BASE_URL}`);
   console.log(`👥 Test Artists: ${TEST_ARTISTS.join(", ")}`);
 

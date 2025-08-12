@@ -41,7 +41,7 @@ async function main() {
       connect_timeout: 10,
     });
 
-    console.log("🔍 MySetlist Artist Shows Verification");
+    console.log("🔍 TheSet Artist Shows Verification");
     console.log("====================================");
     console.log("✅ Database connection established");
 

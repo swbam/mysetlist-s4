@@ -1,6 +1,6 @@
-# Email Notifications Setup for MySetlist
+# Email Notifications Setup for TheSet
 
-This guide covers the setup and configuration of the comprehensive email notification system for MySetlist.
+This guide covers the setup and configuration of the comprehensive email notification system for TheSet.
 
 ## Overview
 

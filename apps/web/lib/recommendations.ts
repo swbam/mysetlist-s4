@@ -18,7 +18,7 @@ export interface UserPreferences {
   favoriteVenues: string[];
   attendedShows: string[];
   votedShows: string[];
-  // Following feature removed from MySetlist
+  // Following feature removed from TheSet
 }
 
 export interface RecommendationConfig {

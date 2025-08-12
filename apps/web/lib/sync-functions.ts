@@ -161,7 +161,7 @@ export async function triggerArtistSync(limit = 20, mode = "auto") {
 }
 
 /**
- * Trigger finish MySetlist sync (creates setlists for shows)
+ * Trigger finish TheSet sync (creates setlists for shows)
  */
 export async function triggerFinishSync(mode = "daily") {
   const response = await fetch(`${getAppUrl()}/api/cron/finish-mysetlist-sync`, {

@@ -13,7 +13,7 @@ import { redirect } from "next/navigation";
 import { createPageMetadata } from "~/lib/seo-metadata";
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Notifications | MySetlist",
+  title: "Notifications | TheSet",
   description:
     "Stay updated on your favorite artists, shows, and venue announcements.",
 });

@@ -1,6 +1,6 @@
 # Database Seeding Scripts
 
-This directory contains scripts to seed the MySetlist database with realistic test data for development and testing.
+This directory contains scripts to seed the TheSet database with realistic test data for development and testing.
 
 ## Available Scripts
 

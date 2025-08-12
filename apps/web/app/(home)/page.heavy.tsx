@@ -19,7 +19,7 @@ const FeaturedContent = dynamic(() => import("./components/featured-content"), {
 });
 
 export const metadata = {
-  title: "MySetlist - Concert Setlist Voting Platform",
+  title: "TheSet - Concert Setlist Voting Platform",
   description:
     "Vote on concert setlists, discover new artists, and connect with music fans worldwide.",
 };

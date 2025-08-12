@@ -34,7 +34,7 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-console.log("🔄 MySetlist Manual Sync Script");
+console.log("🔄 TheSet Manual Sync Script");
 console.log("================================");
 
 // Create database connection

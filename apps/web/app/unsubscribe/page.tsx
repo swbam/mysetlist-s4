@@ -87,15 +87,15 @@ async function UnsubscribeContent({ searchParams }: UnsubscribePageProps) {
             <CardTitle>Unsubscribe from Emails</CardTitle>
             <CardDescription>
               You're about to unsubscribe from {getEmailTypeDisplay(type)} from
-              MySetlist.
+              TheSet.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Alert>
               <AlertDescription>
                 {type === "all"
-                  ? "This will disable all email notifications from MySetlist, except for important security emails."
-                  : `This will stop you from receiving ${getEmailTypeDisplay(type)} from MySetlist. You can always re-enable these in your settings.`}
+                  ? "This will disable all email notifications from TheSet, except for important security emails."
+                  : `This will stop you from receiving ${getEmailTypeDisplay(type)} from TheSet. You can always re-enable these in your settings.`}
               </AlertDescription>
             </Alert>
 

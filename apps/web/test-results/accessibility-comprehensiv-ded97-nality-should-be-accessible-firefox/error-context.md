@@ -22,9 +22,9 @@
       - listitem:
         - link "Trending":
           - /url: /trending
-  - link "MySetlist Home":
+  - link "TheSet Home":
     - /url: /
-    - paragraph: MySetlist
+    - paragraph: TheSet
   - textbox "Search artists..."
   - link "Contact":
     - /url: /contact
@@ -170,7 +170,7 @@
   - link "View all trending artists →":
     - /url: /trending?tab=artists
   - heading "Featured This Week" [level=2]
-  - paragraph: The most anticipated shows and hottest votes from the MySetlist community
+  - paragraph: The most anticipated shows and hottest votes from the TheSet community
   - heading "Top Voted Songs" [level=3]
   - text: Live Results 1
   - paragraph: Midnight Dreams
@@ -198,7 +198,7 @@
   - link "View All":
     - /url: /shows
 - contentinfo:
-  - heading "MySetlist" [level=3]
+  - heading "TheSet" [level=3]
   - paragraph: Vote for your dream setlist and connect with fellow music fans.
   - heading "Product" [level=4]
   - list:
@@ -239,7 +239,7 @@
     - listitem:
       - link "Facebook":
         - /url: https://facebook.com
-  - paragraph: © 2025 MySetlist. All rights reserved.
+  - paragraph: © 2025 TheSet. All rights reserved.
 - region "Notifications alt+T"
 - text: "SW: OK | Cache: CLEAN | Last: NEVER"
 ```

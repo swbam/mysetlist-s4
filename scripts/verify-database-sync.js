@@ -145,7 +145,7 @@ async function checkDataIntegrity() {
 }
 
 async function runVerification() {
-  console.log('🚀 MySetlist Database Verification');
+  console.log('🚀 TheSet Database Verification');
   console.log('');
 
   // Check basic table data

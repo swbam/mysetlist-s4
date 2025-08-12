@@ -1,7 +1,7 @@
-# MySetlist - Next-Forge Project Configuration
+# TheSet - Next-Forge Project Configuration
 
 ## 🎯 PROJECT OVERVIEW
-**MySetlist** is a Concert Setlist Voting Web App built on the **Next-Forge "web" starter** template. Fans vote on songs for upcoming concerts. This is a production-grade Turborepo monorepo for Next.js applications.
+**TheSet** is a Concert Setlist Voting Web App built on the **Next-Forge "web" starter** template. Fans vote on songs for upcoming concerts. This is a production-grade Turborepo monorepo for Next.js applications.
 
 **Key Project Context:**
 - Codebase contains partial implementations—**never rebuild, always extend**
@@ -299,7 +299,7 @@ export default async function ProtectedPage() {
 }
 ```
 
-## Development Workflow (MySetlist Specific)
+## Development Workflow (TheSet Specific)
 
 ### 📁 Key Directories & Files
 - `/mysetlist-docs` - **Single source of truth** for specs and requirements

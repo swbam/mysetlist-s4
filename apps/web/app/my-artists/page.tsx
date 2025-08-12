@@ -8,7 +8,7 @@ import { SpotifySync } from "./components/spotify-sync";
 import { UpcomingShowsTimeline } from "./components/upcoming-shows-timeline";
 
 export const metadata = {
-  title: "My Artists | MySetlist",
+  title: "My Artists | TheSet",
   description: "View your followed artists and discover upcoming concerts",
 };
 

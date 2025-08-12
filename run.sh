@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# MySetlist - Start Development Server
+# TheSet - Start Development Server
 
-echo "🎵 MySetlist - Concert Setlist Voting App"
+echo "🎵 TheSet - Concert Setlist Voting App"
 echo "========================================="
 echo ""
 

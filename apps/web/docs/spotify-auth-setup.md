@@ -2,14 +2,14 @@
 
 ## Overview
 
-The MySetlist app uses Spotify OAuth to allow users to sign in with their Spotify account and access their music data.
+The TheSet app uses Spotify OAuth to allow users to sign in with their Spotify account and access their music data.
 
 ## Features
 
 - Sign in with Spotify
 - View top artists from Spotify
 - View followed artists from Spotify
-- Sync artists to MySetlist database for show/setlist data
+- Sync artists to TheSet database for show/setlist data
 
 ## Setup Instructions
 

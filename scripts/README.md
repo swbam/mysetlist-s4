@@ -1,6 +1,6 @@
-# MySetlist Scripts
+# TheSet Scripts
 
-This directory contains all the automation scripts for the MySetlist application.
+This directory contains all the automation scripts for the TheSet application.
 
 ## 🚀 Main Deployment Command
 

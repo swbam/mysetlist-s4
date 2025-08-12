@@ -175,5 +175,5 @@ export async function clearAllCaches() {
 
 // Add global function for easy cache clearing in production
 if (typeof window !== "undefined") {
-  window.clearMySetlistCache = clearAllCaches;
+  window.clearTheSetCache = clearAllCaches;
 }

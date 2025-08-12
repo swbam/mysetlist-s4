@@ -395,7 +395,7 @@ export default function ProfilePage() {
               <CardHeader>
                 <CardTitle>Activity History</CardTitle>
                 <CardDescription>
-                  Your complete activity on MySetlist
+                  Your complete activity on TheSet
                 </CardDescription>
               </CardHeader>
               <CardContent>

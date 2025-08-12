@@ -486,7 +486,7 @@ export const ProductionMonitoringDashboard: React.FC = () => {
 
       {/* Footer */}
       <div className="border-t pt-6 text-center text-gray-500 text-sm">
-        <p>MySetlist Production Monitoring Dashboard</p>
+        <p>TheSet Production Monitoring Dashboard</p>
         <p>Powered by SUB-AGENT 6 Production Deployment Strategy</p>
       </div>
     </div>

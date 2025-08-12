@@ -10,9 +10,9 @@ import { createPageMetadata } from "~/lib/seo-metadata";
 import { AboutStats } from "./components/about-stats";
 
 export const metadata: Metadata = createPageMetadata({
-  title: "About MySetlist | Your Concert Companion",
+  title: "About TheSet | Your Concert Companion",
   description:
-    "Learn about MySetlist - the ultimate platform for concert fans to vote on setlists, discover new music, and connect with fellow music lovers.",
+    "Learn about TheSet - the ultimate platform for concert fans to vote on setlists, discover new music, and connect with fellow music lovers.",
 });
 
 const AboutPage = () => {
@@ -21,7 +21,7 @@ const AboutPage = () => {
       <div className="mx-auto max-w-4xl space-y-12">
         {/* Hero Section */}
         <div className="space-y-4 text-center">
-          <h1 className="font-bold text-4xl">About MySetlist</h1>
+          <h1 className="font-bold text-4xl">About TheSet</h1>
           <p className="text-muted-foreground text-xl">
             Your ultimate concert companion for discovering, voting, and
             experiencing live music
@@ -37,7 +37,7 @@ const AboutPage = () => {
               </div>
               <h2 className="font-semibold text-2xl">Our Mission</h2>
               <p className="mx-auto max-w-2xl text-muted-foreground">
-                MySetlist connects music fans with their favorite artists by
+                TheSet connects music fans with their favorite artists by
                 providing a platform to vote on concert setlists, discover
                 upcoming shows, and share the excitement of live music
                 experiences. We believe that fans should have a voice in shaping

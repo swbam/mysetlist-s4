@@ -150,7 +150,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
             headers: {
               'x-api-key': setlistFmApiKey,
               'Accept': 'application/json',
-              'User-Agent': 'MySetlistApp/1.0'
+              'User-Agent': 'TheSetApp/1.0'
             },
             signal: AbortSignal.timeout(5000)
           }

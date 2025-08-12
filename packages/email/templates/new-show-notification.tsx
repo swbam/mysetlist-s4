@@ -138,7 +138,7 @@ NewShowNotificationTemplate.PreviewProps = {
     ticketUrl: "https://example.com/tickets",
     announcedAt: "November 15, 2024",
   },
-  appUrl: "https://MySetlist.app",
+  appUrl: "https://TheSet.app",
 };
 
 export default NewShowNotificationTemplate;

@@ -1,4 +1,4 @@
-# Makefile for MySetlist pnpm monorepo
+# Makefile for TheSet pnpm monorepo
 .PHONY: help lint format test build dev clean
 
 help: ## Show this help message

@@ -143,7 +143,7 @@ const CTA = nextDynamic(() => import('./components/cta'), {
 
 export const generateMetadata = async (): Promise<Metadata> => {
   return createMetadata({
-    title: 'MySetlist - Never Miss a Beat',
+    title: 'TheSet - Never Miss a Beat',
     description:
       'Discover concerts, track setlists, and connect with live music fans around the world',
   });

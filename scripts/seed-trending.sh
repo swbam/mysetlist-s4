@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Seed trending scores for MySetlist app
+# Seed trending scores for TheSet app
 # Run this script to populate initial trending scores so the trending pages work
 
 echo "🌱 Seeding trending scores..."

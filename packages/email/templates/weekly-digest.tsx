@@ -255,7 +255,7 @@ WeeklyDigestTemplate.PreviewProps = {
       date: "Nov 12, 2024",
     },
   ],
-  appUrl: "https://MySetlist.app",
+  appUrl: "https://TheSet.app",
   totalFollowedArtists: 8,
 };
 

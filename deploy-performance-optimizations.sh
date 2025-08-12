@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# 🚀 MySetlist Database Performance Optimization Deployment Script
+# 🚀 TheSet Database Performance Optimization Deployment Script
 # This script applies all the database performance optimizations to fix slow search issues
 
 set -e  # Exit on any error
 
-echo "🚀 Starting MySetlist Database Performance Optimization Deployment..."
+echo "🚀 Starting TheSet Database Performance Optimization Deployment..."
 echo "================================================================="
 
 # Colors for output
@@ -183,7 +183,7 @@ validate_endpoints() {
 
 # Main deployment flow
 main() {
-    echo "🎯 MySetlist Performance Optimization Deployment"
+    echo "🎯 TheSet Performance Optimization Deployment"
     echo "================================================="
     echo ""
     echo "This script will apply comprehensive database optimizations to fix"
@@ -230,7 +230,7 @@ main() {
     echo "  Run: SELECT * FROM test_search_performance();"
     echo "  Target: Search < 100ms, Trending < 500ms"
     echo ""
-    print_status "🚀 MySetlist search performance optimization complete!"
+    print_status "🚀 TheSet search performance optimization complete!"
 }
 
 # Run the main deployment

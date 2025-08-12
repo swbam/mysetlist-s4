@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * Initialize MySetlist app with data and trending scores
+ * Initialize TheSet app with data and trending scores
  * This script populates the database and initializes the trending system
  */
 
@@ -45,7 +45,7 @@ async function checkDataStatus() {
 }
 
 async function initializeData() {
-  console.log("\n🚀 Initializing MySetlist data...");
+  console.log("\n🚀 Initializing TheSet data...");
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -139,7 +139,7 @@ async function syncRealArtists() {
 }
 
 async function main() {
-  console.log("🎸 MySetlist Data Initialization Script");
+  console.log("🎸 TheSet Data Initialization Script");
   console.log("=====================================\n");
 
   // Check current status

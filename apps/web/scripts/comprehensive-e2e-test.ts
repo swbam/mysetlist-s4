@@ -3,7 +3,7 @@
 /**
  * 🧪 COMPREHENSIVE END-TO-END TEST SUITE
  *
- * This script tests the complete MySetlist user journey:
+ * This script tests the complete TheSet user journey:
  * 1. Search for an artist
  * 2. Click artist and trigger sync
  * 3. View artist page with shows
@@ -381,7 +381,7 @@ class ComprehensiveE2ETest {
   }
 
   async run() {
-    logSection("MySetlist Comprehensive E2E Test Suite");
+    logSection("TheSet Comprehensive E2E Test Suite");
 
     log("info", "Starting comprehensive end-to-end testing...");
     log("info", `Testing against: ${BASE_URL}`);

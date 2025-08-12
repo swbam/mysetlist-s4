@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Comprehensive Database Integrity Test for MySetlist
+ * Comprehensive Database Integrity Test for TheSet
  * Tests database contents, relationships, and data quality
  */
 
@@ -532,7 +532,7 @@ async function checkBusinessLogic() {
  * MAIN FUNCTION
  */
 async function runDatabaseIntegrityTest() {
-  console.log('🚀 MySetlist Database Integrity Test');
+  console.log('🚀 TheSet Database Integrity Test');
   console.log('=====================================\n');
   
   const startTime = Date.now();

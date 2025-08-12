@@ -2,7 +2,7 @@
 
 # Vercel Deployment Script (Sonnet Project)
 
-echo "🚀 Deploying MySetlist (sonnet) to Vercel"
+echo "🚀 Deploying TheSet (sonnet) to Vercel"
 
 # Check if we're in the right directory
 if [ ! -f "package.json" ]; then

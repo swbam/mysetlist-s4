@@ -41,7 +41,7 @@ async function main() {
       connect_timeout: 10,
     });
 
-    console.log("🔍 MySetlist Show Artists Relationship Fix");
+    console.log("🔍 TheSet Show Artists Relationship Fix");
     console.log("==========================================");
     console.log("✅ Database connection established");
 

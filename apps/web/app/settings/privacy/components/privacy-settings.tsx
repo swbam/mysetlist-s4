@@ -70,7 +70,7 @@ export function PrivacySettings({
           analytics: settings.allowAnalytics,
           marketing: settings.allowMarketing,
         };
-        document.cookie = `MySetlist-cookie-consent=${encodeURIComponent(
+        document.cookie = `TheSet-cookie-consent=${encodeURIComponent(
           JSON.stringify(consent),
         )}; max-age=${365 * 24 * 60 * 60}; path=/; SameSite=Strict`;
 
@@ -131,7 +131,7 @@ export function PrivacySettings({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `MySetlist-data-export-${new Date().toISOString().split("T")[0]}.json`;
+      a.download = `TheSet-data-export-${new Date().toISOString().split("T")[0]}.json`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -285,7 +285,7 @@ export function PrivacySettings({
             <Label htmlFor="analytics" className="flex flex-col">
               <span>Analytics</span>
               <span className="font-normal text-muted-foreground text-sm">
-                Help us improve MySetlist by sharing usage data
+                Help us improve TheSet by sharing usage data
               </span>
             </Label>
             <Switch

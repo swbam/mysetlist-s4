@@ -27,9 +27,9 @@ export const authConfig = {
   email: {
     resendApiKey: env.RESEND_API_KEY,
     fromAddresses: {
-      welcome: "MySetlist <welcome@mysetlist.com>",
-      security: "MySetlist <security@mysetlist.com>",
-      verify: "MySetlist <verify@mysetlist.com>",
+      welcome: "TheSet <welcome@mysetlist.com>",
+      security: "TheSet <security@mysetlist.com>",
+      verify: "TheSet <verify@mysetlist.com>",
     },
   },
 
@@ -42,7 +42,7 @@ export const authConfig = {
   // App configuration
   app: {
     url: env.NEXT_PUBLIC_APP_URL,
-    name: "MySetlist",
+    name: "TheSet",
   },
 
   // Password requirements

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Testing MySetlist Scripts"
+echo "Testing TheSet Scripts"
 echo "========================="
 echo ""
 

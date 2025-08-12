@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Deployment script for MySetlist
+# Deployment script for TheSet
 # This script runs all necessary deployment commands with error handling
 
 # Colors for output
@@ -41,7 +41,7 @@ run_command() {
 
 # Start deployment
 log "${BLUE}========================================${NC}"
-log "${BLUE}Starting MySetlist Deployment${NC}"
+log "${BLUE}Starting TheSet Deployment${NC}"
 log "${BLUE}Log file: $LOG_FILE${NC}"
 log "${BLUE}========================================${NC}\n"
 

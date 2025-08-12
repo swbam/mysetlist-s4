@@ -1,4 +1,4 @@
-# MySetlist - Core Features & Components Architecture
+# TheSet - Core Features & Components Architecture
 
 ## Table of Contents
 
@@ -13,7 +13,7 @@
 
 ## Component Architecture Overview
 
-MySetlist builds upon Next-Forge's UI package structure, extending it with music-specific components while maintaining consistency with the design system. The architecture follows atomic design principles with shared components in the UI package and feature-specific components in the web app.
+TheSet builds upon Next-Forge's UI package structure, extending it with music-specific components while maintaining consistency with the design system. The architecture follows atomic design principles with shared components in the UI package and feature-specific components in the web app.
 
 ### Component Hierarchy
 
@@ -414,7 +414,7 @@ export async function generateMetadata({ params }: ArtistPageProps): Promise<Met
   }
 
   return {
-    title: `${artist.name} - Concert Setlists | MySetlist`,
+    title: `${artist.name} - Concert Setlists | TheSet`,
     description: `View ${artist.name}'s concert setlists, show history, and upcoming tour dates. Follow to get notified of new shows.`,
     openGraph: {
       title: artist.name,
@@ -939,4 +939,4 @@ The header component includes a responsive navigation system that adapts to diff
 - **Tablet**: Condensed navigation with dropdowns for secondary items
 - **Mobile**: Hamburger menu with slide-out navigation drawer
 
-This architecture provides a solid foundation for MySetlist's core features while maintaining the Next-Forge structure and patterns. The components are designed to be reusable, performant, and provide excellent user experience across desktop and mobile devices with a focus on responsive web design rather than PWA functionality.
+This architecture provides a solid foundation for TheSet's core features while maintaining the Next-Forge structure and patterns. The components are designed to be reusable, performant, and provide excellent user experience across desktop and mobile devices with a focus on responsive web design rather than PWA functionality.

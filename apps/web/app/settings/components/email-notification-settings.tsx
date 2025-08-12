@@ -160,7 +160,7 @@ export function EmailNotificationSettings() {
             Email Notifications
           </CardTitle>
           <CardDescription>
-            Control all email notifications from MySetlist
+            Control all email notifications from TheSet
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -170,7 +170,7 @@ export function EmailNotificationSettings() {
                 Enable Email Notifications
               </Label>
               <p className="text-muted-foreground text-sm">
-                Receive all email notifications from MySetlist
+                Receive all email notifications from TheSet
               </p>
             </div>
             <Switch

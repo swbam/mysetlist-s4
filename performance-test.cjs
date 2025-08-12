@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Performance measurement script for MySetlist app
+// Performance measurement script for TheSet app
 const fs = require("node:fs");
 const path = require("node:path");
 

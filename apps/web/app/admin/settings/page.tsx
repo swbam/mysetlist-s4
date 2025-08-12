@@ -85,7 +85,7 @@ export default async function SettingsPage() {
                 <Label htmlFor="platform-name">Platform Name</Label>
                 <Input
                   id="platform-name"
-                  defaultValue="MySetlist"
+                  defaultValue="TheSet"
                   placeholder="Enter platform name"
                 />
               </div>

@@ -143,17 +143,17 @@ const HeaderContent = React.memo(() => {
             href="/"
             className="flex items-center gap-2 transition-opacity hover:opacity-80 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded-md p-1"
             prefetch
-            aria-label="MySetlist Home"
+            aria-label="TheSet Home"
           >
             <Image
               src={Logo}
-              alt="MySetlist Logo"
+              alt="TheSet Logo"
               width={32}
               height={32}
               className="h-8 w-8"
             />
             <p className="whitespace-nowrap font-semibold text-base sm:text-lg">
-              MySetlist
+              TheSet
             </p>
           </SafeLink>
         </div>

@@ -1,4 +1,4 @@
--- Update cron schedules for MySetlist sync jobs
+-- Update cron schedules for TheSet sync jobs
 
 -- First unschedule existing cron jobs
 SELECT cron.unschedule('hourly-scheduled-sync');

@@ -1,4 +1,4 @@
-# MySetlist - Concert Setlist Voting App
+# TheSet - Concert Setlist Voting App
 
 A modern web application for concert-goers to vote on songs they want to hear at upcoming shows. Built with Next.js 15, Supabase, and the next-forge template.
 

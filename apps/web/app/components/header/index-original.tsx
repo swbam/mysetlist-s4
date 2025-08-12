@@ -151,7 +151,7 @@ const HeaderContent = React.memo(() => {
               height={24}
               className="dark:invert"
             />
-            <p className="whitespace-nowrap font-semibold">MySetlist</p>
+            <p className="whitespace-nowrap font-semibold">TheSet</p>
           </SafeLink>
         </div>
         <div className="flex w-full justify-end gap-4">

@@ -1,4 +1,4 @@
-// Service Worker for MySetlist
+// Service Worker for TheSet
 const CACHE_NAME = 'mysetlist-v1';
 const RUNTIME_CACHE = 'mysetlist-runtime';
 

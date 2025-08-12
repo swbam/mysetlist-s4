@@ -1,6 +1,6 @@
-// Following feature removed from MySetlist
+// Following feature removed from TheSet
 // This component has been disabled as the app no longer supports following artists
-// MySetlist is focused on setlist voting, not social following features
+// TheSet is focused on setlist voting, not social following features
 
 export async function FollowerCount() {
   return null; // Component disabled

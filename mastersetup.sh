@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# mastersetup.sh - One-shot setup for MySetlist (Next-Forge web)
+# mastersetup.sh - One-shot setup for TheSet (Next-Forge web)
 # - Installs deps, validates env, prepares DB, seeds data, warms caches, builds
 # - Safe to re-run; idempotent where possible
 

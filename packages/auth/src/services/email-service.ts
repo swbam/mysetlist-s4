@@ -15,9 +15,9 @@ export class EmailService {
   async sendWelcomeEmail(email: string, displayName?: string): Promise<void> {
     try {
       const { data, error } = await this.resend.emails.send({
-        from: "MySetlist <welcome@mysetlist.com>",
+        from: "TheSet <welcome@mysetlist.com>",
         to: [email],
-        subject: "Welcome to MySetlist! 🎵",
+        subject: "Welcome to TheSet! 🎵",
         html: this.getWelcomeEmailTemplate(displayName || "Music Fan"),
       });
 
@@ -43,9 +43,9 @@ export class EmailService {
       const resetUrl = `${env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
       const { data, error } = await this.resend.emails.send({
-        from: "MySetlist <security@mysetlist.com>",
+        from: "TheSet <security@mysetlist.com>",
         to: [email],
-        subject: "Reset Your MySetlist Password",
+        subject: "Reset Your TheSet Password",
         html: this.getPasswordResetEmailTemplate(resetUrl),
       });
 
@@ -72,9 +72,9 @@ export class EmailService {
   ): Promise<void> {
     try {
       const { data, error } = await this.resend.emails.send({
-        from: "MySetlist <verify@mysetlist.com>",
+        from: "TheSet <verify@mysetlist.com>",
         to: [email],
-        subject: "Verify Your MySetlist Email Address",
+        subject: "Verify Your TheSet Email Address",
         html: this.getEmailVerificationTemplate(verificationUrl),
       });
 
@@ -100,9 +100,9 @@ export class EmailService {
   ): Promise<void> {
     try {
       const { data, error } = await this.resend.emails.send({
-        from: "MySetlist <security@mysetlist.com>",
+        from: "TheSet <security@mysetlist.com>",
         to: [email],
-        subject: "Security Alert - MySetlist Account Activity",
+        subject: "Security Alert - TheSet Account Activity",
         html: this.getSecurityNotificationTemplate(action, details),
       });
 
@@ -138,7 +138,7 @@ export class EmailService {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Welcome to MySetlist</title>
+          <title>Welcome to TheSet</title>
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -152,13 +152,13 @@ export class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">🎵 MySetlist</div>
+              <div class="logo">🎵 TheSet</div>
             </div>
             
             <div class="content">
-              <h2>Welcome to MySetlist, ${displayName}!</h2>
+              <h2>Welcome to TheSet, ${displayName}!</h2>
               
-              <p>We're excited to have you join our community of music lovers! MySetlist is your go-to platform for discovering, tracking, and voting on live music setlists.</p>
+              <p>We're excited to have you join our community of music lovers! TheSet is your go-to platform for discovering, tracking, and voting on live music setlists.</p>
               
               <p>Here's what you can do with your new account:</p>
               <ul>
@@ -170,17 +170,17 @@ export class EmailService {
               </ul>
               
               <div style="text-align: center;">
-                <a href="${env.NEXT_PUBLIC_APP_URL}/dashboard" class="button">Explore MySetlist</a>
+                <a href="${env.NEXT_PUBLIC_APP_URL}/dashboard" class="button">Explore TheSet</a>
               </div>
               
               <p>If you have any questions, feel free to reach out to our support team. We're here to help!</p>
               
-              <p>Rock on! 🤘<br>The MySetlist Team</p>
+              <p>Rock on! 🤘<br>The TheSet Team</p>
             </div>
             
             <div class="footer">
-              <p>You're receiving this email because you signed up for MySetlist.</p>
-              <p>MySetlist • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
+              <p>You're receiving this email because you signed up for TheSet.</p>
+              <p>TheSet • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
             </div>
           </div>
         </body>
@@ -198,7 +198,7 @@ export class EmailService {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Reset Your MySetlist Password</title>
+          <title>Reset Your TheSet Password</title>
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -213,13 +213,13 @@ export class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">🎵 MySetlist</div>
+              <div class="logo">🎵 TheSet</div>
             </div>
             
             <div class="content">
               <h2>Reset Your Password</h2>
               
-              <p>We received a request to reset your MySetlist password. If you made this request, click the button below to set a new password:</p>
+              <p>We received a request to reset your TheSet password. If you made this request, click the button below to set a new password:</p>
               
               <div style="text-align: center;">
                 <a href="${resetUrl}" class="button">Reset Password</a>
@@ -239,12 +239,12 @@ export class EmailService {
               
               <p>If you didn't request a password reset, you can safely ignore this email. Your password will remain unchanged.</p>
               
-              <p>Stay secure! 🔒<br>The MySetlist Team</p>
+              <p>Stay secure! 🔒<br>The TheSet Team</p>
             </div>
             
             <div class="footer">
-              <p>This is an automated security email from MySetlist.</p>
-              <p>MySetlist • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
+              <p>This is an automated security email from TheSet.</p>
+              <p>TheSet • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
             </div>
           </div>
         </body>
@@ -262,7 +262,7 @@ export class EmailService {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Verify Your MySetlist Email</title>
+          <title>Verify Your TheSet Email</title>
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -276,13 +276,13 @@ export class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">🎵 MySetlist</div>
+              <div class="logo">🎵 TheSet</div>
             </div>
             
             <div class="content">
               <h2>Verify Your Email Address</h2>
               
-              <p>Thanks for signing up for MySetlist! To complete your account setup, please verify your email address by clicking the button below:</p>
+              <p>Thanks for signing up for TheSet! To complete your account setup, please verify your email address by clicking the button below:</p>
               
               <div style="text-align: center;">
                 <a href="${verificationUrl}" class="button">Verify Email Address</a>
@@ -295,15 +295,15 @@ export class EmailService {
               <ul>
                 <li>Receive notifications about your favorite artists</li>
                 <li>Get show reminders and setlist updates</li>
-                <li>Access all MySetlist features</li>
+                <li>Access all TheSet features</li>
               </ul>
               
-              <p>Welcome to the community! 🎵<br>The MySetlist Team</p>
+              <p>Welcome to the community! 🎵<br>The TheSet Team</p>
             </div>
             
             <div class="footer">
-              <p>You're receiving this email because you signed up for MySetlist.</p>
-              <p>MySetlist • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
+              <p>You're receiving this email because you signed up for TheSet.</p>
+              <p>TheSet • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
             </div>
           </div>
         </body>
@@ -324,7 +324,7 @@ export class EmailService {
         <head>
           <meta charset="utf-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Security Alert - MySetlist</title>
+          <title>Security Alert - TheSet</title>
           <style>
             body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
             .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -338,7 +338,7 @@ export class EmailService {
         <body>
           <div class="container">
             <div class="header">
-              <div class="logo">🎵 MySetlist</div>
+              <div class="logo">🎵 TheSet</div>
             </div>
             
             <div class="content">
@@ -358,12 +358,12 @@ export class EmailService {
                 <li>Contact our support team if you need help</li>
               </ul>
               
-              <p>Stay secure! 🔒<br>The MySetlist Team</p>
+              <p>Stay secure! 🔒<br>The TheSet Team</p>
             </div>
             
             <div class="footer">
-              <p>This is an automated security notification from MySetlist.</p>
-              <p>MySetlist • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
+              <p>This is an automated security notification from TheSet.</p>
+              <p>TheSet • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
             </div>
           </div>
         </body>

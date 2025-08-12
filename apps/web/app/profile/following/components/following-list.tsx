@@ -1,6 +1,6 @@
-// Following feature removed from MySetlist
+// Following feature removed from TheSet
 // This component has been disabled as the app no longer supports following artists
-// MySetlist is focused on setlist voting, not social following features
+// TheSet is focused on setlist voting, not social following features
 
 import { Card, CardContent } from "@repo/design-system";
 import { Music } from "lucide-react";
@@ -15,7 +15,7 @@ export function FollowingList() {
           Following Feature Removed
         </h3>
         <p className="mb-4 text-muted-foreground">
-          MySetlist now focuses on setlist voting instead of following artists.
+          TheSet now focuses on setlist voting instead of following artists.
           Discover artists through trending and search features.
         </p>
         <Link href="/artists" className="text-primary hover:underline">

@@ -263,7 +263,7 @@ export default function EditProfilePage() {
             <CardHeader>
               <CardTitle>Profile Information</CardTitle>
               <CardDescription>
-                This information will be visible to other users on MySetlist
+                This information will be visible to other users on TheSet
               </CardDescription>
             </CardHeader>
             <CardContent>

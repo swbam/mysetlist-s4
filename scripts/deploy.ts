@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * Simple deployment script for MySetlist
+ * Simple deployment script for TheSet
  *
  * Usage: pnpm deploy
  */
@@ -9,7 +9,7 @@ import { execSync } from "node:child_process";
 import chalk from "chalk";
 
 async function deploy() {
-  console.log(chalk.blue("🚀 Starting MySetlist deployment...\n"));
+  console.log(chalk.blue("🚀 Starting TheSet deployment...\n"));
 
   try {
     // 1. Check environment
