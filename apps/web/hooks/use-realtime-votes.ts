@@ -157,10 +157,7 @@ export function useRealtimeVotes({
     };
   }, [effectiveSongIds.join(","), userId, supabase]);
 
-  const vote = async (
-    setlistSongId: string,
-    voteType: "up" | null,
-  ) => {
+  const vote = async (setlistSongId: string, voteType: "up" | null) => {
     const response = await fetch("/api/votes", {
       method: "POST",
       headers: {

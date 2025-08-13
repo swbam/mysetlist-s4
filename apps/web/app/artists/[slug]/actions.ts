@@ -96,20 +96,20 @@ const _getArtist = async (slug: string) => {
 
             if (externalArtist) {
               // Trigger import for this artist
-          const importResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/import`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                tmAttractionId:
-                  externalArtist?.metadata?.externalId ||
-                  (typeof externalArtist?.id === "string"
-                    ? externalArtist.id.replace("tm_", "")
-                    : undefined),
-              }),
-            },
-          );
+              const importResponse = await fetch(
+                `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/import`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    tmAttractionId:
+                      externalArtist?.metadata?.externalId ||
+                      (typeof externalArtist?.id === "string"
+                        ? externalArtist.id.replace("tm_", "")
+                        : undefined),
+                  }),
+                },
+              );
 
               if (importResponse.ok) {
                 const importData = await importResponse.json();

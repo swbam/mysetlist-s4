@@ -1,13 +1,20 @@
-import { db, eq, sql, artists, songs as songsTable, artistSongs } from '@repo/database';
-import { SpotifyClient } from '@repo/external-apis';
+import {
+  artistSongs,
+  artists,
+  db,
+  eq,
+  songs as songsTable,
+  sql,
+} from "@repo/database";
+import { SpotifyClient } from "@repo/external-apis";
 
 // Extended Spotify interfaces for comprehensive data
 export interface SpotifyAlbum {
   id: string;
   name: string;
-  album_type: 'album' | 'single' | 'compilation';
+  album_type: "album" | "single" | "compilation";
   release_date: string;
-  release_date_precision: 'year' | 'month' | 'day';
+  release_date_precision: "year" | "month" | "day";
   total_tracks: number;
   images: Array<{
     url: string;
@@ -76,7 +83,14 @@ export interface SyncResult {
 }
 
 export interface SyncProgress {
-  stage: 'initializing' | 'fetching-albums' | 'processing-album' | 'deduplicating' | 'inserting' | 'completed' | 'failed';
+  stage:
+    | "initializing"
+    | "fetching-albums"
+    | "processing-album"
+    | "deduplicating"
+    | "inserting"
+    | "completed"
+    | "failed";
   progress: number; // 0-100
   message: string;
   currentAlbum?: string;
@@ -98,7 +112,10 @@ export class SpotifySongSyncService {
   /**
    * Sync complete artist catalog with smart live track filtering
    */
-  async syncArtistCatalog(artistId: string, spotifyId: string): Promise<SyncResult> {
+  async syncArtistCatalog(
+    artistId: string,
+    spotifyId: string,
+  ): Promise<SyncResult> {
     const startTime = Date.now();
     const errors: string[] = [];
     let totalSongs = 0;
@@ -108,18 +125,18 @@ export class SpotifySongSyncService {
 
     try {
       await this.updateProgress({
-        stage: 'initializing',
+        stage: "initializing",
         progress: 5,
-        message: 'Authenticating with Spotify...'
+        message: "Authenticating with Spotify...",
       });
 
       // Authenticate with Spotify
       await this.spotifyClient.authenticate();
 
       await this.updateProgress({
-        stage: 'fetching-albums',
+        stage: "fetching-albums",
         progress: 10,
-        message: 'Fetching artist discography...'
+        message: "Fetching artist discography...",
       });
 
       // Get all albums for the artist
@@ -127,10 +144,10 @@ export class SpotifySongSyncService {
       totalAlbums = allAlbums.length;
 
       await this.updateProgress({
-        stage: 'fetching-albums',
+        stage: "fetching-albums",
         progress: 20,
         message: `Found ${totalAlbums} albums. Processing tracks...`,
-        totalAlbums
+        totalAlbums,
       });
 
       // Process albums in batches for performance
@@ -140,50 +157,55 @@ export class SpotifySongSyncService {
 
       for (let i = 0; i < allAlbums.length; i += batchSize) {
         const batch = allAlbums.slice(i, i + batchSize);
-        
+
         const batchResults = await Promise.allSettled(
           batch.map(async (album) => {
             const result = await this.processAlbum(album);
-            
+
             await this.updateProgress({
-              stage: 'processing-album',
+              stage: "processing-album",
               progress: 20 + (processedAlbums / totalAlbums) * 50,
               message: `Processing "${album.name}"...`,
               currentAlbum: album.name,
               processedAlbums: processedAlbums + 1,
-              totalAlbums
+              totalAlbums,
             });
 
             return result;
-          })
+          }),
         );
 
         // Collect results and count metrics
         for (const [index, result] of batchResults.entries()) {
           processedAlbums++;
-          
-          if (result.status === 'fulfilled') {
+
+          if (result.status === "fulfilled") {
             const { songs: albumSongs, skippedLive } = result.value;
             allSongs.push(...albumSongs);
             skippedLiveTracks += skippedLive;
           } else {
-            const albumName = batch[index]?.name || 'Unknown';
-            errors.push(`Failed to process album "${albumName}": ${result.reason}`);
-            console.warn(`Failed to process album "${albumName}":`, result.reason);
+            const albumName = batch[index]?.name || "Unknown";
+            errors.push(
+              `Failed to process album "${albumName}": ${result.reason}`,
+            );
+            console.warn(
+              `Failed to process album "${albumName}":`,
+              result.reason,
+            );
           }
         }
 
         // Rate limiting: pause between batches
         if (i + batchSize < allAlbums.length) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
 
       await this.updateProgress({
-        stage: 'deduplicating',
+        stage: "deduplicating",
         progress: 75,
-        message: 'Removing duplicate tracks...',
-        processedAlbums
+        message: "Removing duplicate tracks...",
+        processedAlbums,
       });
 
       // Deduplicate tracks across all albums
@@ -191,10 +213,10 @@ export class SpotifySongSyncService {
       deduplicatedTracks = duplicateCount;
 
       await this.updateProgress({
-        stage: 'inserting',
+        stage: "inserting",
         progress: 85,
         message: `Inserting ${uniqueSongs.length} unique songs...`,
-        processedTracks: uniqueSongs.length
+        processedTracks: uniqueSongs.length,
       });
 
       // Insert songs in batches
@@ -213,11 +235,11 @@ export class SpotifySongSyncService {
         .where(eq(artists.id, artistId));
 
       await this.updateProgress({
-        stage: 'completed',
+        stage: "completed",
         progress: 100,
         message: `Catalog sync completed! ${totalSongs} songs imported.`,
         processedAlbums,
-        processedTracks: totalSongs
+        processedTracks: totalSongs,
       });
 
       const syncDuration = Date.now() - startTime;
@@ -231,17 +253,17 @@ export class SpotifySongSyncService {
         skippedLiveTracks,
         deduplicatedTracks,
         syncDuration,
-        errors
+        errors,
       };
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       errors.push(errorMessage);
 
       await this.updateProgress({
-        stage: 'failed',
+        stage: "failed",
         progress: 0,
-        message: 'Catalog sync failed',
+        message: "Catalog sync failed",
       });
 
       return {
@@ -253,7 +275,7 @@ export class SpotifySongSyncService {
         skippedLiveTracks,
         deduplicatedTracks,
         syncDuration: Date.now() - startTime,
-        errors
+        errors,
       };
     }
   }
@@ -269,8 +291,8 @@ export class SpotifySongSyncService {
 
     while (hasMore) {
       const response = await this.spotifyClient.getArtistAlbums(spotifyId, {
-        include_groups: 'album,single', // Exclude compilations
-        market: 'US',
+        include_groups: "album,single", // Exclude compilations
+        market: "US",
         limit,
         offset,
       });
@@ -283,7 +305,7 @@ export class SpotifySongSyncService {
 
       // Rate limiting
       if (hasMore) {
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
     }
 
@@ -295,7 +317,9 @@ export class SpotifySongSyncService {
   /**
    * Process individual album and filter out live tracks
    */
-  private async processAlbum(album: SpotifyAlbum): Promise<{ songs: Song[]; skippedLive: number }> {
+  private async processAlbum(
+    album: SpotifyAlbum,
+  ): Promise<{ songs: Song[]; skippedLive: number }> {
     const songs: Song[] = [];
     let skippedLive = 0;
 
@@ -308,7 +332,7 @@ export class SpotifySongSyncService {
       const tracksResponse = await this.spotifyClient.getAlbumTracks(album.id, {
         limit,
         offset,
-        market: 'US',
+        market: "US",
       });
 
       const tracks = tracksResponse.items || [];
@@ -324,7 +348,7 @@ export class SpotifySongSyncService {
         const song: Song = {
           spotifyId: track.id,
           title: track.name,
-          artist: track.artists[0]?.name || 'Unknown',
+          artist: track.artists[0]?.name || "Unknown",
           album: album.name,
           albumId: album.id,
           trackNumber: track.track_number,
@@ -349,7 +373,7 @@ export class SpotifySongSyncService {
 
       // Rate limiting between track fetches
       if (hasMore) {
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 300));
       }
     }
 
@@ -365,47 +389,42 @@ export class SpotifySongSyncService {
 
     return (
       // Clear live performance indicators with venue/location
-      track.includes('(live at') ||
-      track.includes('(live from') ||
-      track.includes('(live in') ||
-      track.includes(' - live at') ||
-      track.includes(' - live from') ||
-      track.includes(' - live in') ||
-      track.includes('[live]') ||
-      track.includes('live version') ||
-      track.includes('live recording') ||
-      track.includes('live performance') ||
-      track.includes('concert recording') ||
-      track.includes('bootleg') ||
-      track.includes('audience recording') ||
-      track.includes('soundboard') ||
-      
+      track.includes("(live at") ||
+      track.includes("(live from") ||
+      track.includes("(live in") ||
+      track.includes(" - live at") ||
+      track.includes(" - live from") ||
+      track.includes(" - live in") ||
+      track.includes("[live]") ||
+      track.includes("live version") ||
+      track.includes("live recording") ||
+      track.includes("live performance") ||
+      track.includes("concert recording") ||
+      track.includes("bootleg") ||
+      track.includes("audience recording") ||
+      track.includes("soundboard") ||
       // Album is clearly a live album
-      album.includes('live at') ||
-      album.includes('live from') ||
-      album.includes('live in') ||
-      album.includes('concert') ||
-      album.includes('unplugged') ||
-      album.includes('mtv unplugged') ||
-      
+      album.includes("live at") ||
+      album.includes("live from") ||
+      album.includes("live in") ||
+      album.includes("concert") ||
+      album.includes("unplugged") ||
+      album.includes("mtv unplugged") ||
       // Session recordings from radio/TV (not studio sessions)
-      (track.includes('session') && (
-        track.includes('bbc') ||
-        track.includes('radio') ||
-        track.includes('peel') ||
-        track.includes('tv')
-      )) ||
-      
+      (track.includes("session") &&
+        (track.includes("bbc") ||
+          track.includes("radio") ||
+          track.includes("peel") ||
+          track.includes("tv"))) ||
       // Additional live indicators
-      track.includes('(acoustic live') ||
-      track.includes('(live acoustic') ||
-      album.includes('live session') ||
-      album.includes('live acoustic') ||
-      album.includes('acoustic session') && (
-        album.includes('radio') ||
-        album.includes('bbc') ||
-        album.includes('tv')
-      )
+      track.includes("(acoustic live") ||
+      track.includes("(live acoustic") ||
+      album.includes("live session") ||
+      album.includes("live acoustic") ||
+      (album.includes("acoustic session") &&
+        (album.includes("radio") ||
+          album.includes("bbc") ||
+          album.includes("tv")))
     );
   }
 
@@ -420,7 +439,7 @@ export class SpotifySongSyncService {
       // Use album name + release year as deduplication key
       const releaseYear = album.release_date.slice(0, 4);
       const key = `${this.normalizeTitle(album.name)}_${releaseYear}`;
-      
+
       if (!seen.has(key)) {
         seen.add(key);
         unique.push(album);
@@ -433,7 +452,10 @@ export class SpotifySongSyncService {
   /**
    * Deduplicate tracks by similarity matching
    */
-  private deduplicateTracks(songs: Song[]): { uniqueSongs: Song[]; duplicateCount: number } {
+  private deduplicateTracks(songs: Song[]): {
+    uniqueSongs: Song[];
+    duplicateCount: number;
+  } {
     const seenTitles = new Map<string, Song>();
     const duplicates: Song[] = [];
 
@@ -456,7 +478,7 @@ export class SpotifySongSyncService {
 
     return {
       uniqueSongs: Array.from(seenTitles.values()),
-      duplicateCount: duplicates.length
+      duplicateCount: duplicates.length,
     };
   }
 
@@ -466,9 +488,12 @@ export class SpotifySongSyncService {
   private normalizeTitle(title: string): string {
     return title
       .toLowerCase()
-      .replace(/[^\w\s]/g, '') // Remove punctuation
-      .replace(/\s+/g, ' ') // Normalize whitespace
-      .replace(/\b(radio edit|album version|remaster|remastered|extended|extended mix|radio mix|single version|explicit|clean)\b/g, '')
+      .replace(/[^\w\s]/g, "") // Remove punctuation
+      .replace(/\s+/g, " ") // Normalize whitespace
+      .replace(
+        /\b(radio edit|album version|remaster|remastered|extended|extended mix|radio mix|single version|explicit|clean)\b/g,
+        "",
+      )
       .trim();
   }
 
@@ -477,32 +502,34 @@ export class SpotifySongSyncService {
    */
   private async insertSongs(artistId: string, songs: Song[]): Promise<void> {
     const batchSize = 100;
-    
+
     for (let i = 0; i < songs.length; i += batchSize) {
       const batch = songs.slice(i, i + batchSize);
-      
+
       // Insert songs
       const insertedSongs = await db
         .insert(songsTable)
-        .values(batch.map(song => ({
-          spotifyId: song.spotifyId,
-          title: song.title,
-          artist: song.artist,
-          album: song.album,
-          albumId: song.albumId,
-          trackNumber: song.trackNumber,
-          discNumber: song.discNumber,
-          albumType: song.albumType,
-          albumArtUrl: song.albumArtUrl,
-          releaseDate: song.releaseDate,
-          durationMs: song.durationMs,
-          popularity: song.popularity,
-          previewUrl: song.previewUrl,
-          spotifyUri: song.spotifyUri,
-          externalUrls: song.externalUrls,
-          isExplicit: song.isExplicit,
-          isPlayable: song.isPlayable,
-        })))
+        .values(
+          batch.map((song) => ({
+            spotifyId: song.spotifyId,
+            title: song.title,
+            artist: song.artist,
+            album: song.album,
+            albumId: song.albumId,
+            trackNumber: song.trackNumber,
+            discNumber: song.discNumber,
+            albumType: song.albumType,
+            albumArtUrl: song.albumArtUrl,
+            releaseDate: song.releaseDate,
+            durationMs: song.durationMs,
+            popularity: song.popularity,
+            previewUrl: song.previewUrl,
+            spotifyUri: song.spotifyUri,
+            externalUrls: song.externalUrls,
+            isExplicit: song.isExplicit,
+            isPlayable: song.isPlayable,
+          })),
+        )
         .onConflictDoUpdate({
           target: songsTable.spotifyId,
           set: {
@@ -515,7 +542,7 @@ export class SpotifySongSyncService {
         .returning({ id: songsTable.id, spotifyId: songsTable.spotifyId });
 
       // Create artist-song relationships
-      const relationshipData = insertedSongs.map(song => ({
+      const relationshipData = insertedSongs.map((song) => ({
         artistId,
         songId: song.id,
         isPrimaryArtist: true,
@@ -528,15 +555,15 @@ export class SpotifySongSyncService {
 
       // Progress update
       await this.updateProgress({
-        stage: 'inserting',
+        stage: "inserting",
         progress: 85 + ((i + batch.length) / songs.length) * 10,
         message: `Inserted ${Math.min(i + batch.length, songs.length)} of ${songs.length} songs...`,
-        processedTracks: Math.min(i + batch.length, songs.length)
+        processedTracks: Math.min(i + batch.length, songs.length),
       });
 
       // Rate limiting between batches
       if (i + batchSize < songs.length) {
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 200));
       }
     }
   }
@@ -547,14 +574,13 @@ export class SpotifySongSyncService {
   private async updateProgress(progress: Partial<SyncProgress>): Promise<void> {
     if (this.progressCallback) {
       const fullProgress: SyncProgress = {
-        stage: 'initializing',
+        stage: "initializing",
         progress: 0,
-        message: '',
-        ...progress
+        message: "",
+        ...progress,
       };
-      
+
       await this.progressCallback(fullProgress);
     }
   }
 }
-

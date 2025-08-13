@@ -1,8 +1,8 @@
+import { db } from "@repo/database";
 import { SyncScheduler } from "@repo/external-apis";
+import { sql } from "drizzle-orm";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
-import { db } from "@repo/database";
-import { sql } from "drizzle-orm";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -18,7 +18,10 @@ export async function POST(request: NextRequest) {
       process.env.ADMIN_API_KEY,
     ].filter(Boolean) as string[];
 
-    if (validTokens.length > 0 && !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))) {
+    if (
+      validTokens.length > 0 &&
+      !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))
+    ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -85,7 +88,10 @@ export async function GET(request: NextRequest) {
       process.env.ADMIN_API_KEY,
     ].filter(Boolean) as string[];
 
-    if (validTokens.length > 0 && !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))) {
+    if (
+      validTokens.length > 0 &&
+      !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))
+    ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

@@ -1,10 +1,10 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers':
-    'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 interface TicketmasterEvent {
@@ -54,16 +54,16 @@ async function fetchTicketmasterEvents(params: {
   endDateTime?: string;
   size?: number;
 }): Promise<TicketmasterEvent[]> {
-  const apiKey = Deno.env.get('TICKETMASTER_API_KEY');
+  const apiKey = Deno.env.get("TICKETMASTER_API_KEY");
 
   if (!apiKey) {
-    throw new Error('Ticketmaster API key not configured');
+    throw new Error("Ticketmaster API key not configured");
   }
 
-  const url = new URL('https://app.ticketmaster.com/discovery/v2/events.json');
-  url.searchParams.set('apikey', apiKey);
-  url.searchParams.set('classificationName', 'Music');
-  url.searchParams.set('sort', 'date,asc');
+  const url = new URL("https://app.ticketmaster.com/discovery/v2/events.json");
+  url.searchParams.set("apikey", apiKey);
+  url.searchParams.set("classificationName", "Music");
+  url.searchParams.set("sort", "date,asc");
 
   Object.entries(params).forEach(([key, value]) => {
     if (value) {
@@ -75,7 +75,7 @@ async function fetchTicketmasterEvents(params: {
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch events from Ticketmaster: ${response.statusText}`
+      `Failed to fetch events from Ticketmaster: ${response.statusText}`,
     );
   }
 
@@ -85,16 +85,16 @@ async function fetchTicketmasterEvents(params: {
 
 serve(async (req) => {
   // Handle CORS
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing Supabase configuration');
+      throw new Error("Missing Supabase configuration");
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -103,11 +103,11 @@ serve(async (req) => {
 
     if (!artistName && !artistId) {
       return new Response(
-        JSON.stringify({ error: 'Either artistName or artistId is required' }),
+        JSON.stringify({ error: "Either artistName or artistId is required" }),
         {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -136,8 +136,8 @@ serve(async (req) => {
         name: venue.name,
         slug: venue.name
           .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-|-$/g, ''),
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, ""),
         city: venue.city.name,
         state: venue.state?.name || null,
         country: venue.country.name,
@@ -152,30 +152,30 @@ serve(async (req) => {
       } as any;
 
       const { data: dbVenue } = await supabase
-        .from('venues')
+        .from("venues")
         .upsert(venueData, {
-          onConflict: 'slug',
+          onConflict: "slug",
         })
         .select()
         .single();
 
       // Ensure artist exists in database
       let { data: dbArtist } = await supabase
-        .from('artists')
-        .select('*')
-        .eq('name', mainArtist.name)
+        .from("artists")
+        .select("*")
+        .eq("name", mainArtist.name)
         .single();
 
       if (!dbArtist) {
         // Create a basic artist entry
         const { data: newArtist } = await supabase
-          .from('artists')
+          .from("artists")
           .insert({
             name: mainArtist.name,
             slug: mainArtist.name
               .toLowerCase()
-              .replace(/[^a-z0-9]+/g, '-')
-              .replace(/^-|-$/g, ''),
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-|-$/g, ""),
           })
           .select()
           .single();
@@ -199,25 +199,25 @@ serve(async (req) => {
         name: event.name,
         slug: `${event.dates.start.localDate}-${dbArtist.slug}-${dbVenue.slug}`
           .toLowerCase()
-          .replace(/[^a-z0-9-]+/g, '-'),
+          .replace(/[^a-z0-9-]+/g, "-"),
         date: event.dates.start.localDate,
         start_time: event.dates.start.localTime || null,
         ticket_url: event.url,
         min_price: minPrice,
         max_price: maxPrice,
-        currency: priceRange?.currency || 'USD',
+        currency: priceRange?.currency || "USD",
         ticketmaster_id: event.id,
         status:
           new Date(event.dates.start.localDate) > new Date()
-            ? 'upcoming'
-            : 'completed',
+            ? "upcoming"
+            : "completed",
       } as any;
 
       // Upsert show
       const { data: show, error: showError } = await supabase
-        .from('shows')
+        .from("shows")
         .upsert(showData, {
-          onConflict: 'slug',
+          onConflict: "slug",
         })
         .select()
         .single();
@@ -236,20 +236,20 @@ serve(async (req) => {
 
           // Ensure supporting artist exists
           let { data: dbSupportingArtist } = await supabase
-            .from('artists')
-            .select('*')
-            .eq('name', supportingArtist.name)
+            .from("artists")
+            .select("*")
+            .eq("name", supportingArtist.name)
             .single();
 
           if (!dbSupportingArtist) {
             const { data: newArtist } = await supabase
-              .from('artists')
+              .from("artists")
               .insert({
                 name: supportingArtist.name,
                 slug: supportingArtist.name
                   .toLowerCase()
-                  .replace(/[^a-z0-9]+/g, '-')
-                  .replace(/^-|-$/g, ''),
+                  .replace(/[^a-z0-9]+/g, "-")
+                  .replace(/^-|-$/g, ""),
               })
               .select()
               .single();
@@ -258,7 +258,7 @@ serve(async (req) => {
           }
 
           if (dbSupportingArtist) {
-            await supabase.from('show_artists').upsert(
+            await supabase.from("show_artists").upsert(
               {
                 show_id: show.id,
                 artist_id: dbSupportingArtist.id,
@@ -266,8 +266,8 @@ serve(async (req) => {
                 is_headliner: false,
               },
               {
-                onConflict: 'show_id,artist_id',
-              }
+                onConflict: "show_id,artist_id",
+              },
             );
           }
         }
@@ -282,14 +282,12 @@ serve(async (req) => {
         totalEvents: events.length,
         syncedCount: syncedShows.length,
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
-
-

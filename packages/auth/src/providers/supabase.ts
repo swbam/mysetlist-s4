@@ -263,7 +263,7 @@ export class SupabaseAuthProvider implements IAuthProvider {
         id: "",
         userId: user.id,
         displayName:
-          user.user_metadata?.["displayName"] || user.email?.split("@")[0] || "",
+          user.user_metadata?.displayName || user.email?.split("@")[0] || "",
         isPublic: true,
         showAttendedShows: true,
         showVotedSongs: true,

@@ -1,10 +1,10 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers':
-    'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 interface SetlistFmSetlist {
@@ -50,13 +50,13 @@ async function fetchSetlistFmSetlists(params: {
   year?: string;
   p?: number;
 }): Promise<SetlistFmSetlist[]> {
-  const apiKey = Deno.env.get('SETLIST_FM_API_KEY');
+  const apiKey = Deno.env.get("SETLIST_FM_API_KEY");
 
   if (!apiKey) {
-    throw new Error('Setlist.fm API key not configured');
+    throw new Error("Setlist.fm API key not configured");
   }
 
-  const url = new URL('https://api.setlist.fm/rest/1.0/search/setlists');
+  const url = new URL("https://api.setlist.fm/rest/1.0/search/setlists");
 
   Object.entries(params).forEach(([key, value]) => {
     if (value) {
@@ -66,14 +66,14 @@ async function fetchSetlistFmSetlists(params: {
 
   const response = await fetch(url, {
     headers: {
-      'x-api-key': apiKey,
-      Accept: 'application/json',
+      "x-api-key": apiKey,
+      Accept: "application/json",
     },
   });
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch setlists from Setlist.fm: ${response.statusText}`
+      `Failed to fetch setlists from Setlist.fm: ${response.statusText}`,
     );
   }
 
@@ -82,25 +82,25 @@ async function fetchSetlistFmSetlists(params: {
 }
 
 async function fetchSetlistById(setlistId: string): Promise<SetlistFmSetlist> {
-  const apiKey = Deno.env.get('SETLIST_FM_API_KEY');
+  const apiKey = Deno.env.get("SETLIST_FM_API_KEY");
 
   if (!apiKey) {
-    throw new Error('Setlist.fm API key not configured');
+    throw new Error("Setlist.fm API key not configured");
   }
 
   const response = await fetch(
     `https://api.setlist.fm/rest/1.0/setlist/${setlistId}`,
     {
       headers: {
-        'x-api-key': apiKey,
-        Accept: 'application/json',
+        "x-api-key": apiKey,
+        Accept: "application/json",
       },
-    }
+    },
   );
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch setlist from Setlist.fm: ${response.statusText}`
+      `Failed to fetch setlist from Setlist.fm: ${response.statusText}`,
     );
   }
 
@@ -118,7 +118,7 @@ function formatSetlistData(setlist: SetlistFmSetlist) {
           songs.push({
             name: song.name,
             position: position++,
-            notes: song.info || (song.tape ? '(tape)' : undefined),
+            notes: song.info || (song.tape ? "(tape)" : undefined),
           });
         }
       }
@@ -130,16 +130,16 @@ function formatSetlistData(setlist: SetlistFmSetlist) {
 
 serve(async (req) => {
   // Handle CORS
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing Supabase configuration');
+      throw new Error("Missing Supabase configuration");
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -162,12 +162,12 @@ serve(async (req) => {
       if (setlists.length === 0) {
         return new Response(
           JSON.stringify({
-            error: 'No setlist found for the specified criteria',
+            error: "No setlist found for the specified criteria",
           }),
           {
             status: 404,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          }
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
         );
       }
 
@@ -175,12 +175,12 @@ serve(async (req) => {
     } else {
       return new Response(
         JSON.stringify({
-          error: 'Either setlistId or both artistName and date are required',
+          error: "Either setlistId or both artistName and date are required",
         }),
         {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
@@ -188,9 +188,9 @@ serve(async (req) => {
     const songs = formatSetlistData(setlist);
 
     if (songs.length === 0) {
-      return new Response(JSON.stringify({ error: 'Setlist has no songs' }), {
+      return new Response(JSON.stringify({ error: "Setlist has no songs" }), {
         status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -198,24 +198,24 @@ serve(async (req) => {
     if (showId) {
       // Verify show exists
       const { data: show, error: showError } = await supabase
-        .from('shows')
-        .select('*, headliner_artist:artists!shows_headliner_artist_id_fkey(*)')
-        .eq('id', showId)
+        .from("shows")
+        .select("*, headliner_artist:artists!shows_headliner_artist_id_fkey(*)")
+        .eq("id", showId)
         .single();
 
       if (showError || !show) {
-        return new Response(JSON.stringify({ error: 'Show not found' }), {
+        return new Response(JSON.stringify({ error: "Show not found" }), {
           status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
       // Get user info from auth header (if available)
-      const authHeader = req.headers.get('Authorization');
+      const authHeader = req.headers.get("Authorization");
       let userId = null as string | null;
 
       if (authHeader) {
-        const token = authHeader.replace('Bearer ', '');
+        const token = authHeader.replace("Bearer ", "");
         const {
           data: { user },
         } = await supabase.auth.getUser(token);
@@ -224,12 +224,12 @@ serve(async (req) => {
 
       // Create setlist
       const { data: newSetlist, error: setlistError } = await supabase
-        .from('setlists')
+        .from("setlists")
         .insert({
           show_id: showId,
           created_by: userId,
           songs: JSON.stringify(songs),
-          source: 'setlist.fm',
+          source: "setlist.fm",
           setlistfm_id: setlist.id,
           is_verified: true, // Since it's from official source
           vote_count: 0,
@@ -244,24 +244,24 @@ serve(async (req) => {
       // Update show's setlistfm_id if not already set
       if (!show.setlistfm_id) {
         await supabase
-          .from('shows')
+          .from("shows")
           .update({ setlistfm_id: setlist.id })
-          .eq('id', showId);
+          .eq("id", showId);
       }
 
       // Increment setlist count for the show
       await supabase
-        .from('shows')
+        .from("shows")
         .update({ setlist_count: (show.setlist_count || 0) + 1 })
-        .eq('id', showId);
+        .eq("id", showId);
 
       return new Response(
         JSON.stringify({
           setlist: newSetlist,
           songs,
-          source: 'setlist.fm',
+          source: "setlist.fm",
         }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
@@ -277,16 +277,14 @@ serve(async (req) => {
           tour: setlist.tour?.name,
           url: setlist.url,
         },
-        source: 'setlist.fm',
+        source: "setlist.fm",
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
-
-

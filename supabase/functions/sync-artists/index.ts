@@ -1,10 +1,10 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers':
-    'authorization, x-client-info, apikey, content-type',
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
 };
 
 interface SpotifyArtist {
@@ -18,26 +18,26 @@ interface SpotifyArtist {
 }
 
 async function getSpotifyAccessToken(): Promise<string> {
-  const clientId = Deno.env.get('SPOTIFY_CLIENT_ID');
-  const clientSecret = Deno.env.get('SPOTIFY_CLIENT_SECRET');
+  const clientId = Deno.env.get("SPOTIFY_CLIENT_ID");
+  const clientSecret = Deno.env.get("SPOTIFY_CLIENT_SECRET");
 
   if (!clientId || !clientSecret) {
-    throw new Error('Spotify credentials not configured');
+    throw new Error("Spotify credentials not configured");
   }
 
   const credentials = btoa(`${clientId}:${clientSecret}`);
 
-  const response = await fetch('https://accounts.spotify.com/api/token', {
-    method: 'POST',
+  const response = await fetch("https://accounts.spotify.com/api/token", {
+    method: "POST",
     headers: {
       Authorization: `Basic ${credentials}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
+      "Content-Type": "application/x-www-form-urlencoded",
     },
-    body: 'grant_type=client_credentials',
+    body: "grant_type=client_credentials",
   });
 
   if (!response.ok) {
-    throw new Error('Failed to get Spotify access token');
+    throw new Error("Failed to get Spotify access token");
   }
 
   const data = await response.json();
@@ -46,7 +46,7 @@ async function getSpotifyAccessToken(): Promise<string> {
 
 async function fetchSpotifyArtist(
   spotifyId: string,
-  accessToken: string
+  accessToken: string,
 ): Promise<SpotifyArtist> {
   const response = await fetch(
     `https://api.spotify.com/v1/artists/${spotifyId}`,
@@ -54,12 +54,12 @@ async function fetchSpotifyArtist(
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-    }
+    },
   );
 
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch artist from Spotify: ${response.statusText}`
+      `Failed to fetch artist from Spotify: ${response.statusText}`,
     );
   }
 
@@ -68,7 +68,7 @@ async function fetchSpotifyArtist(
 
 async function searchSpotifyArtist(
   query: string,
-  accessToken: string
+  accessToken: string,
 ): Promise<SpotifyArtist[]> {
   const response = await fetch(
     `https://api.spotify.com/v1/search?q=${encodeURIComponent(query)}&type=artist&limit=10`,
@@ -76,12 +76,12 @@ async function searchSpotifyArtist(
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-    }
+    },
   );
 
   if (!response.ok) {
     throw new Error(
-      `Failed to search artists on Spotify: ${response.statusText}`
+      `Failed to search artists on Spotify: ${response.statusText}`,
     );
   }
 
@@ -91,16 +91,16 @@ async function searchSpotifyArtist(
 
 serve(async (req) => {
   // Handle CORS
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing Supabase configuration');
+      throw new Error("Missing Supabase configuration");
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -109,20 +109,20 @@ serve(async (req) => {
 
     if (!spotifyId && !artistName) {
       return new Response(
-        JSON.stringify({ error: 'Either spotifyId or artistName is required' }),
+        JSON.stringify({ error: "Either spotifyId or artistName is required" }),
         {
           status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
     // Check if artist already exists and is recently synced
     if (spotifyId && !forceSync) {
       const { data: existingArtist } = await supabase
-        .from('artists')
-        .select('*')
-        .eq('spotify_id', spotifyId)
+        .from("artists")
+        .select("*")
+        .eq("spotify_id", spotifyId)
         .single();
 
       if (existingArtist?.last_synced_at) {
@@ -134,7 +134,7 @@ serve(async (req) => {
         if (hoursSinceSync < 24) {
           return new Response(
             JSON.stringify({ artist: existingArtist, cached: true }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } },
           );
         }
       }
@@ -153,9 +153,9 @@ serve(async (req) => {
       const searchResults = await searchSpotifyArtist(artistName!, accessToken);
 
       if (searchResults.length === 0) {
-        return new Response(JSON.stringify({ error: 'Artist not found' }), {
+        return new Response(JSON.stringify({ error: "Artist not found" }), {
           status: 404,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
@@ -169,8 +169,8 @@ serve(async (req) => {
       name: spotifyArtist.name,
       slug: spotifyArtist.name
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, ''),
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, ""),
       image_url: spotifyArtist.images[0]?.url || null,
       small_image_url:
         spotifyArtist.images[2]?.url || spotifyArtist.images[1]?.url || null,
@@ -184,9 +184,9 @@ serve(async (req) => {
 
     // Upsert artist in database
     const { data: artist, error } = await supabase
-      .from('artists')
+      .from("artists")
       .upsert(artistData, {
-        onConflict: 'spotify_id',
+        onConflict: "spotify_id",
       })
       .select()
       .single();
@@ -196,25 +196,23 @@ serve(async (req) => {
     }
 
     // Update artist stats
-    await supabase.from('artist_stats').upsert(
+    await supabase.from("artist_stats").upsert(
       {
         artist_id: artist.id,
         updated_at: new Date().toISOString(),
       },
       {
-        onConflict: 'artist_id',
-      }
+        onConflict: "artist_id",
+      },
     );
 
     return new Response(JSON.stringify({ artist, cached: false }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
-
-

@@ -159,7 +159,11 @@ function HomeHero() {
                     onChange={(e) => setQuery(e.target.value)}
                     onFocus={() => setShowDropdown(results.length > 0)}
                     onKeyDown={(e) => {
-                      if (e.key === "Enter" && results.length > 0 && results[0]) {
+                      if (
+                        e.key === "Enter" &&
+                        results.length > 0 &&
+                        results[0]
+                      ) {
                         handleArtistSelect(results[0]);
                       }
                     }}

@@ -18,7 +18,10 @@ export async function POST(request: NextRequest) {
       process.env.ADMIN_API_KEY,
     ].filter(Boolean) as string[];
 
-    if (validTokens.length > 0 && !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))) {
+    if (
+      validTokens.length > 0 &&
+      !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))
+    ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -35,16 +38,16 @@ export async function POST(request: NextRequest) {
         .from(artists)
         .where(sql`${artists.id} = ${artistId}`)
         .limit(1);
-      
+
       if (artist.length === 0) {
         return NextResponse.json(
           { error: `Artist not found with ID: ${artistId}` },
-          { status: 404 }
+          { status: 404 },
         );
       }
-      
+
       const found = artist[0];
-      if (found && found.spotifyId) {
+      if (found?.spotifyId) {
         await syncService.syncArtist(found.spotifyId as string);
         result = { syncedCount: 1, artistName: found.name };
       } else {
@@ -110,7 +113,10 @@ export async function GET(request: NextRequest) {
       process.env.ADMIN_API_KEY,
     ].filter(Boolean) as string[];
 
-    if (validTokens.length > 0 && !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))) {
+    if (
+      validTokens.length > 0 &&
+      !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))
+    ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

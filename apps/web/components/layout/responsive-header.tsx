@@ -221,9 +221,9 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
                 .replace(/[^a-z0-9]+/g, "-")
                 .replace(/^-|-$/g, "");
 
-                          if (firstResult.metadata?.source === "ticketmaster") {
-                router.push(`/artists/${slug}`);
-              } else {
+            if (firstResult.metadata?.source === "ticketmaster") {
+              router.push(`/artists/${slug}`);
+            } else {
               router.push(`/artists/${slug}`);
             }
           }
@@ -253,7 +253,6 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
         <div className="flex h-16 items-center justify-between lg:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-
             <span className="font-bold text-xl">TheSet</span>
           </Link>
 

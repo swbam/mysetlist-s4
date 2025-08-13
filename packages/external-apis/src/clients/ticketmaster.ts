@@ -168,8 +168,10 @@ export class TicketmasterClient extends BaseAPIClient {
     let url: URL;
 
     // Properly construct the URL by ensuring baseURL ends with / and concatenating endpoint
-    const normalizedBaseURL = this.baseURL.endsWith('/') ? this.baseURL : `${this.baseURL}/`;
-    
+    const normalizedBaseURL = this.baseURL.endsWith("/")
+      ? this.baseURL
+      : `${this.baseURL}/`;
+
     if (endpoint.includes("?")) {
       // If endpoint has parameters, construct the full URL and add apikey
       const fullUrl = `${normalizedBaseURL}${endpoint}&apikey=${this.apiKey}`;
@@ -180,7 +182,6 @@ export class TicketmasterClient extends BaseAPIClient {
       url = new URL(fullUrl);
       url.searchParams.append("apikey", this.apiKey);
     }
-
 
     // Check cache first if key provided and cache is available
     if (cacheKey && this.cache) {
@@ -282,7 +283,7 @@ export class TicketmasterClient extends BaseAPIClient {
     });
 
     // Pass the endpoint without parameters, let makeRequest handle URL construction
-    const endpoint = `attractions.json`;
+    const endpoint = "attractions.json";
     const fullEndpoint = params.toString()
       ? `${endpoint}?${params.toString()}`
       : endpoint;
@@ -372,10 +373,8 @@ export class TicketmasterClient extends BaseAPIClient {
 
       // Extract image URL from images array - prefer larger images
       const imageUrl =
-        attraction.images?.find(
-          (img) => img.width >= 300 && img.height >= 300,
-        )?.url || 
-        attraction.images?.[0]?.url;
+        attraction.images?.find((img) => img.width >= 300 && img.height >= 300)
+          ?.url || attraction.images?.[0]?.url;
 
       // Extract genres from classifications
       const genres: string[] = [];
@@ -384,8 +383,10 @@ export class TicketmasterClient extends BaseAPIClient {
           if (classification.genre?.name) {
             genres.push(classification.genre.name);
           }
-          if (classification.subGenre?.name && 
-              classification.subGenre.name !== classification.genre?.name) {
+          if (
+            classification.subGenre?.name &&
+            classification.subGenre.name !== classification.genre?.name
+          ) {
             genres.push(classification.subGenre.name);
           }
         });

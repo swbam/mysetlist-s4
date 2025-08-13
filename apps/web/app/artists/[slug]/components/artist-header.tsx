@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React from "react";
+import type React from "react";
 
 type ArtistHeaderProps = {
   artist: {
@@ -49,8 +49,12 @@ export const ArtistHeader: React.FC<ArtistHeaderProps> = ({ artist }) => {
           </p>
         )}
         <div className="mt-2 flex flex-wrap gap-3 text-xs text-muted-foreground">
-          {artist.popularity ? <span>Popularity: {artist.popularity}</span> : null}
-          {artist.followers ? <span>Followers: {artist.followers.toLocaleString()}</span> : null}
+          {artist.popularity ? (
+            <span>Popularity: {artist.popularity}</span>
+          ) : null}
+          {artist.followers ? (
+            <span>Followers: {artist.followers.toLocaleString()}</span>
+          ) : null}
           {artist.verified ? <span>Verified</span> : null}
         </div>
       </div>

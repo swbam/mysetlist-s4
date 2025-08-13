@@ -1,7 +1,11 @@
 import { db } from "@repo/database";
 import { sql } from "drizzle-orm";
-import { type NextRequest } from "next/server";
-import { requireCronAuth, createSuccessResponse, createErrorResponse } from "~/lib/api/auth-helpers";
+import type { NextRequest } from "next/server";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  requireCronAuth,
+} from "~/lib/api/auth-helpers";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -33,7 +37,7 @@ export async function POST(request: NextRequest) {
     return createErrorResponse(
       "Trending calculation failed",
       500,
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
   }
 }

@@ -80,7 +80,10 @@ export async function POST(request: NextRequest) {
     }
 
     const steps: SyncStep[] = [
-      { step: "0. Resolve identifiers (TM → Spotify → MBID)", status: "pending" },
+      {
+        step: "0. Resolve identifiers (TM → Spotify → MBID)",
+        status: "pending",
+      },
       { step: "1. Sync artist core details from Spotify", status: "pending" },
       { step: "2. Sync FULL song catalog from Spotify", status: "pending" },
       { step: "3. Sync upcoming shows from Ticketmaster", status: "pending" },
@@ -153,7 +156,10 @@ export async function POST(request: NextRequest) {
         const updates: any = {};
         if (ticketmasterId) updates.ticketmasterId = ticketmasterId;
         if (mbid) updates.mbid = mbid;
-        await db.update(artists).set(updates).where(eq(artists.spotifyId, spotifyId));
+        await db
+          .update(artists)
+          .set(updates)
+          .where(eq(artists.spotifyId, spotifyId));
       }
 
       // Get artist from database
@@ -202,7 +208,8 @@ export async function POST(request: NextRequest) {
 
       try {
         const artistSyncService = new ArtistSyncService();
-        const songsResult = await artistSyncService.syncFullDiscography(spotifyId);
+        const songsResult =
+          await artistSyncService.syncFullDiscography(spotifyId);
 
         if (steps[2]) {
           steps[2].status = "completed";
@@ -266,9 +273,8 @@ export async function POST(request: NextRequest) {
 
       try {
         const setlistSyncService = new SetlistSyncService();
-        const setlistResult = await setlistSyncService.createDefaultSetlists(
-          artistId,
-        );
+        const setlistResult =
+          await setlistSyncService.createDefaultSetlists(artistId);
 
         if (steps[4]) {
           steps[4].status = "completed";

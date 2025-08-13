@@ -6,9 +6,9 @@ import { config } from "dotenv";
 // Load environment variables
 config({ path: resolve(__dirname, "../.env.local") });
 
-const ADMIN_API_KEY = process.env["ADMIN_API_KEY"];
-const CRON_SECRET = process.env["CRON_SECRET"];
-const BASE_URL = process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
+const ADMIN_API_KEY = process.env.ADMIN_API_KEY;
+const CRON_SECRET = process.env.CRON_SECRET;
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 
 async function initializeTrendingData() {
   console.log("🚀 Initializing trending data...\n");

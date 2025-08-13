@@ -141,7 +141,8 @@ export function AnonymousVoteButton({
             className={cn(
               "gap-1",
               variant === "compact" && "h-8 px-2",
-              currentVote === "up" && "bg-green-600 text-white hover:bg-green-700",
+              currentVote === "up" &&
+                "bg-green-600 text-white hover:bg-green-700",
             )}
             onClick={handleVote}
             disabled={disabled || isVoting || isPending}

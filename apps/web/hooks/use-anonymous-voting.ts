@@ -14,10 +14,7 @@ interface UseAnonymousVotingOptions {
 }
 
 interface UseAnonymousVotingReturn {
-  vote: (
-    setlistSongId: string,
-    voteType: "up" | null,
-  ) => Promise<void>;
+  vote: (setlistSongId: string, voteType: "up" | null) => Promise<void>;
   getVote: (setlistSongId: string) => "up" | null;
   syncVotes: () => Promise<void>;
   votesRemaining: number;

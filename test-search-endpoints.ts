@@ -7,7 +7,7 @@
 
 import fetch from "node-fetch";
 
-const BASE_URL = process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 
 interface TestResult {
   endpoint: string;
@@ -16,7 +16,7 @@ interface TestResult {
   responseTime: number;
   dataCount: number;
   error?: string;
-  sampleData?: any;
+  sampleData?: unknown;
 }
 
 async function testEndpoint(
@@ -163,9 +163,9 @@ async function runSearchTests() {
     const failures = endpointResults.filter((r) => !r.success);
     if (failures.length > 0) {
       console.log("  Failures:");
-      failures.forEach((f) => {
+      for (const f of failures) {
         console.log(`    - "${f.query}": ${f.error}`);
-      });
+      }
     }
   }
 

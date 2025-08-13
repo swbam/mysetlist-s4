@@ -7,6 +7,6 @@ export const keys = () =>
       FLAGS_SECRET: z.string().optional(),
     },
     runtimeEnv: {
-      FLAGS_SECRET: process.env["FLAGS_SECRET"],
+      FLAGS_SECRET: process.env.FLAGS_SECRET,
     },
   });

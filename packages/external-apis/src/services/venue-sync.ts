@@ -12,7 +12,7 @@ export class VenueSyncService {
 
   constructor() {
     this.ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env["TICKETMASTER_API_KEY"] || "",
+      apiKey: process.env.TICKETMASTER_API_KEY || "",
     });
     this.setlistFmClient = new SetlistFmClient({});
   }

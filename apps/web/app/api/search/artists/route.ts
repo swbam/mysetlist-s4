@@ -6,7 +6,8 @@ import { rateLimitMiddleware } from "~/middleware/rate-limit";
 export const dynamic = "force-dynamic";
 
 const ticketmaster = new TicketmasterClient({
-  apiKey: process.env["TICKETMASTER_API_KEY"] || "k8GrSAkbFaN0w7qDxGl7ohr8LwdAQm9b",
+  apiKey:
+    process.env.TICKETMASTER_API_KEY || "k8GrSAkbFaN0w7qDxGl7ohr8LwdAQm9b",
 });
 
 interface InlineSearchResult {
@@ -32,7 +33,10 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get("q") || "";
-    const limit = Math.min(Number.parseInt(searchParams.get("limit") || "10", 10), 20); // Cap at 20
+    const limit = Math.min(
+      Number.parseInt(searchParams.get("limit") || "10", 10),
+      20,
+    ); // Cap at 20
 
     console.log(`Inline artist search: query="${query}", limit=${limit}`);
 
@@ -63,7 +67,9 @@ export async function GET(request: NextRequest) {
     let results: InlineSearchResult[] = [];
 
     try {
-      console.log(`Searching Ticketmaster attractions for inline search: ${query}`);
+      console.log(
+        `Searching Ticketmaster attractions for inline search: ${query}`,
+      );
 
       const ticketmasterResponse = await ticketmaster.searchAttractions({
         keyword: query,
@@ -78,9 +84,10 @@ export async function GET(request: NextRequest) {
         tmAttractionId: attraction.id,
         name: attraction.name,
         image: attraction.images?.[0]?.url,
-        genreHints: attraction.classifications
-          ?.map((c: any) => c.genre?.name)
-          .filter(Boolean) || [],
+        genreHints:
+          attraction.classifications
+            ?.map((c: any) => c.genre?.name)
+            .filter(Boolean) || [],
       }));
 
       console.log(`Found ${results.length} attractions for inline search`);
@@ -90,7 +97,8 @@ export async function GET(request: NextRequest) {
         console.error("Ticketmaster API rate limit reached");
         return NextResponse.json(
           {
-            error: "Search temporarily unavailable. Please try again in a moment.",
+            error:
+              "Search temporarily unavailable. Please try again in a moment.",
             query,
             results: [],
             totalCount: 0,
@@ -99,7 +107,7 @@ export async function GET(request: NextRequest) {
           { status: 429 },
         );
       }
-      
+
       console.error("Ticketmaster inline search failed:", error);
       return NextResponse.json(
         {

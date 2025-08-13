@@ -25,7 +25,10 @@ export async function POST(request: NextRequest) {
       process.env.ADMIN_API_KEY,
     ].filter(Boolean) as string[];
 
-    if (validTokens.length > 0 && !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))) {
+    if (
+      validTokens.length > 0 &&
+      !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))
+    ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -54,7 +57,7 @@ export async function POST(request: NextRequest) {
             OR ${artists.songCatalogSyncedAt} IS NULL
             OR ${artists.songCatalogSyncedAt} < NOW() - INTERVAL '7 days'
           )
-        `
+        `,
       )
       .orderBy(
         // Order by trending score (combination of recent activity and popularity)
@@ -74,7 +77,7 @@ export async function POST(request: NextRequest) {
             WHERE s.artist_id = ${artists.id}
             AND v.created_at >= NOW() - INTERVAL '7 days'
           )
-        ) DESC`
+        ) DESC`,
       )
       .limit(limit);
 
@@ -91,7 +94,7 @@ export async function POST(request: NextRequest) {
 
     // Process artists in smaller batches with longer delays for deep sync
     const batchSize = 3; // Smaller batches for intensive operations
-    const batches: typeof trendingArtists[] = [];
+    const batches: (typeof trendingArtists)[] = [];
     for (let i = 0; i < trendingArtists.length; i += batchSize) {
       batches.push(trendingArtists.slice(i, i + batchSize));
     }
@@ -99,16 +102,19 @@ export async function POST(request: NextRequest) {
     for (const batch of batches) {
       const batchPromises = batch.map(async (artist) => {
         try {
-          if (!artist.spotifyId) return { success: false, reason: "No Spotify ID" };
+          if (!artist.spotifyId)
+            return { success: false, reason: "No Spotify ID" };
 
           // Perform deep sync including:
           // 1. Artist profile update
           // 2. Complete discography refresh
           // 3. Song popularity updates
-          const syncResult = await syncService.syncFullDiscography(artist.spotifyId);
+          const syncResult = await syncService.syncFullDiscography(
+            artist.spotifyId,
+          );
 
           results.processed++;
-          
+
           if (syncResult) {
             results.fullySynced++;
             results.newAlbumsFound += syncResult.totalAlbums || 0;
@@ -120,16 +126,16 @@ export async function POST(request: NextRequest) {
           // Update the song catalog synced timestamp
           await db
             .update(artists)
-            .set({ 
+            .set({
               songCatalogSyncedAt: new Date(),
               lastSyncedAt: new Date(),
             })
             .where(sql`${artists.id} = ${artist.id}`);
 
-          return { 
-            success: true, 
+          return {
+            success: true,
             artistName: artist.name,
-            syncResult 
+            syncResult,
           };
         } catch (error) {
           const errorMsg = `Deep sync failed for ${artist.name}: ${error instanceof Error ? error.message : String(error)}`;
@@ -144,7 +150,7 @@ export async function POST(request: NextRequest) {
 
       // Longer delay between batches for API rate limiting
       if (batches.indexOf(batch) < batches.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 3000)); // 3 seconds between batches
+        await new Promise((resolve) => setTimeout(resolve, 3000)); // 3 seconds between batches
       }
     }
 
@@ -177,7 +183,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Trending artist sync failed:", error);
-    
+
     // Log error
     try {
       await db.execute(sql`
@@ -196,7 +202,7 @@ export async function POST(request: NextRequest) {
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

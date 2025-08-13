@@ -1,6 +1,6 @@
-import { cronMonitor } from "../../../../lib/monitoring/cron-monitor";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import { cronMonitor } from "../../../../lib/monitoring/cron-monitor";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -20,7 +20,10 @@ export async function GET(request: NextRequest) {
       process.env.ADMIN_API_KEY,
     ].filter(Boolean) as string[];
 
-    if (validTokens.length > 0 && !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))) {
+    if (
+      validTokens.length > 0 &&
+      !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))
+    ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -37,14 +40,14 @@ export async function GET(request: NextRequest) {
     if (jobName) {
       // Get specific job health and metrics
       response.jobHealth = cronMonitor.getHealthStatus(jobName);
-      
+
       if (includeMetrics) {
         response.metrics = cronMonitor.getMetrics(jobName, 50);
       }
     } else {
       // Get all jobs health
       response.allJobs = cronMonitor.getHealthStatus();
-      
+
       if (includeReport) {
         response.fullReport = await cronMonitor.generateReport();
       }
@@ -66,7 +69,7 @@ export async function GET(request: NextRequest) {
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -85,7 +88,10 @@ export async function POST(request: NextRequest) {
       process.env.ADMIN_API_KEY,
     ].filter(Boolean) as string[];
 
-    if (validTokens.length > 0 && !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))) {
+    if (
+      validTokens.length > 0 &&
+      !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))
+    ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -102,7 +108,7 @@ export async function POST(request: NextRequest) {
         } else {
           return NextResponse.json(
             { error: "Alert rule data required" },
-            { status: 400 }
+            { status: 400 },
           );
         }
         break;
@@ -125,15 +131,18 @@ export async function POST(request: NextRequest) {
         } else {
           return NextResponse.json(
             { error: "Job name required for metrics" },
-            { status: 400 }
+            { status: 400 },
           );
         }
         break;
 
       default:
         return NextResponse.json(
-          { error: "Invalid action. Use: addAlertRule, triggerHealthCheck, getMetrics" },
-          { status: 400 }
+          {
+            error:
+              "Invalid action. Use: addAlertRule, triggerHealthCheck, getMetrics",
+          },
+          { status: 400 },
         );
     }
 
@@ -151,7 +160,7 @@ export async function POST(request: NextRequest) {
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

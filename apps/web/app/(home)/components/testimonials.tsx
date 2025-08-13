@@ -18,9 +18,8 @@ export default function Testimonials() {
                 ))}
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                "TheSet changed how I experience live music. Being able to
-                vote on setlists and track my favorite artists' shows is
-                incredible!"
+                "TheSet changed how I experience live music. Being able to vote
+                on setlists and track my favorite artists' shows is incredible!"
               </p>
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-full bg-primary/20" />

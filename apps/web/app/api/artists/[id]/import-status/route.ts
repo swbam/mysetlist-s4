@@ -1,12 +1,16 @@
-import { NextRequest, NextResponse } from "next/server";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * Calculate estimated time remaining based on current progress and elapsed time
  */
 function calculateEstimatedTime(importStatus: any): number | null {
-  if (!importStatus.created_at || importStatus.stage === 'completed' || importStatus.stage === 'failed') {
+  if (
+    !importStatus.created_at ||
+    importStatus.stage === "completed" ||
+    importStatus.stage === "failed"
+  ) {
     return null;
   }
 
@@ -29,46 +33,48 @@ function calculateEstimatedTime(importStatus: any): number | null {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id: artistId } = await params;
 
   if (!artistId) {
     return NextResponse.json(
       { error: "Artist ID is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   try {
-    const supabase = createRouteHandlerClient({ 
-      cookies 
+    const cookieStore = await cookies();
+    const supabase = createRouteHandlerClient({
+      cookies: () => Promise.resolve(cookieStore),
     });
 
     // Get the most recent import status for this artist
     const { data: importStatus, error } = await supabase
-      .from('import_status')
-      .select('*')
-      .eq('artist_id', artistId)
-      .order('created_at', { ascending: false })
+      .from("import_status")
+      .select("*")
+      .eq("artist_id", artistId)
+      .order("created_at", { ascending: false })
       .limit(1)
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
-      console.error('Error fetching import status:', error);
+    if (error && error.code !== "PGRST116") {
+      // PGRST116 = no rows returned
+      console.error("Error fetching import status:", error);
       return NextResponse.json(
         { error: "Failed to fetch import status", details: error.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     if (!importStatus) {
       // Return a default "waiting" status if no import status exists yet
       return NextResponse.json({
-        stage: 'initializing',
+        stage: "initializing",
         percentage: 0,
         progress: 0,
-        message: 'Waiting for import to start...',
+        message: "Waiting for import to start...",
         error: null,
         startedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -77,7 +83,7 @@ export async function GET(
         hasError: false,
         errorMessage: null,
         artistId: artistId,
-        estimatedTimeRemaining: null
+        estimatedTimeRemaining: null,
       });
     }
 
@@ -91,11 +97,11 @@ export async function GET(
       startedAt: importStatus.created_at,
       updatedAt: importStatus.updated_at,
       completedAt: importStatus.completed_at,
-      isComplete: importStatus.stage === 'completed',
-      hasError: importStatus.stage === 'failed',
+      isComplete: importStatus.stage === "completed",
+      hasError: importStatus.stage === "failed",
       errorMessage: importStatus.error,
       artistId: importStatus.artist_id,
-      estimatedTimeRemaining: calculateEstimatedTime(importStatus)
+      estimatedTimeRemaining: calculateEstimatedTime(importStatus),
     };
 
     return NextResponse.json(status);
@@ -103,7 +109,7 @@ export async function GET(
     console.error("Error fetching import status:", error);
     return NextResponse.json(
       { error: "Failed to fetch import status" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

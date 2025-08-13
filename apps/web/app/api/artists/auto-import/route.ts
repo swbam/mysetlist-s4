@@ -1,11 +1,11 @@
+import { artists, db } from "@repo/database";
 import { ArtistImportOrchestrator } from "@repo/external-apis";
 import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
+import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { CACHE_TAGS } from "~/lib/cache";
-import { db, artists } from "@repo/database";
-import { eq } from "drizzle-orm";
 import { updateImportStatus } from "~/lib/import-status";
 
 // Force dynamic rendering for API route
@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   let tempArtistId: string | null = null;
   let artistId: string | null = null;
-  
+
   try {
     const body = await request.json();
     const { tmAttractionId, spotifyId, artistName } = body;
@@ -33,14 +33,14 @@ export async function POST(request: NextRequest) {
 
     // Initialize import status tracking
     await updateImportStatus(tempArtistId, {
-      stage: 'initializing',
+      stage: "initializing",
       progress: 0,
-      message: 'Checking if artist already exists...',
+      message: "Checking if artist already exists...",
     });
 
     // Check if artist already exists (idempotency)
     let existingArtist: any[] = [];
-    
+
     if (tmAttractionId) {
       existingArtist = await db
         .select()
@@ -55,15 +55,19 @@ export async function POST(request: NextRequest) {
         .limit(1);
     }
 
-    if (Array.isArray(existingArtist) && existingArtist.length > 0 && existingArtist[0]) {
+    if (
+      Array.isArray(existingArtist) &&
+      existingArtist.length > 0 &&
+      existingArtist[0]
+    ) {
       artistId = (existingArtist[0] as any).id;
-      
+
       // Update status for existing artist
       if (artistId) {
         await updateImportStatus(artistId, {
-          stage: 'completed',
+          stage: "completed",
           progress: 100,
-          message: 'Artist already exists in database',
+          message: "Artist already exists in database",
           completedAt: new Date().toISOString(),
         });
       }
@@ -87,7 +91,9 @@ export async function POST(request: NextRequest) {
 
     if (tmAttractionId) {
       // Direct Ticketmaster import using ArtistImportOrchestrator
-      console.log(`[AUTO-IMPORT] Starting direct import for tmAttractionId: ${tmAttractionId}`);
+      console.log(
+        `[AUTO-IMPORT] Starting direct import for tmAttractionId: ${tmAttractionId}`,
+      );
 
       // Create orchestrator with progress callback
       const orchestrator = new ArtistImportOrchestrator(async (progress) => {
@@ -104,17 +110,18 @@ export async function POST(request: NextRequest) {
       });
 
       importResult = await orchestrator.importArtist(tmAttractionId);
-      
+
       if (!importResult.success) {
-        throw new Error('Direct import failed in orchestrator');
+        throw new Error("Direct import failed in orchestrator");
       }
 
       artistId = importResult.artistId;
-
     } else {
       // Fallback to orchestration endpoint for Spotify ID or name-based imports
-      console.log(`[AUTO-IMPORT] Using orchestration endpoint for: ${spotifyId || artistName}`);
-      
+      console.log(
+        `[AUTO-IMPORT] Using orchestration endpoint for: ${spotifyId || artistName}`,
+      );
+
       const orchestrationResponse = await fetch(
         `${request.nextUrl.origin}/api/sync/orchestration`,
         {
@@ -137,7 +144,9 @@ export async function POST(request: NextRequest) {
 
       if (!orchestrationResponse.ok) {
         const errorText = await orchestrationResponse.text();
-        throw new Error(`Orchestration auto-import failed: ${orchestrationResponse.status} ${errorText}`);
+        throw new Error(
+          `Orchestration auto-import failed: ${orchestrationResponse.status} ${errorText}`,
+        );
       }
 
       importResult = await orchestrationResponse.json();
@@ -163,33 +172,39 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 },
     );
-
   } catch (error) {
     // Enhanced error handling with status update
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
     console.error("[AUTO-IMPORT] Auto-import API error:", error);
 
     const targetArtistId = artistId || tempArtistId;
     if (targetArtistId) {
       try {
         await updateImportStatus(targetArtistId, {
-          stage: 'failed',
+          stage: "failed",
           progress: 0,
-          message: 'Auto-import failed due to unexpected error',
+          message: "Auto-import failed due to unexpected error",
           error: errorMessage,
           completedAt: new Date().toISOString(),
         });
       } catch (statusError) {
-        console.error("[AUTO-IMPORT] Failed to update error status:", statusError);
+        console.error(
+          "[AUTO-IMPORT] Failed to update error status:",
+          statusError,
+        );
       }
     }
 
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: "Auto-import failed",
-        details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
-        statusEndpoint: targetArtistId ? `/api/sync/status?artistId=${targetArtistId}` : undefined,
+        details:
+          process.env.NODE_ENV === "development" ? errorMessage : undefined,
+        statusEndpoint: targetArtistId
+          ? `/api/sync/status?artistId=${targetArtistId}`
+          : undefined,
       },
       { status: 500 },
     );
@@ -211,7 +226,7 @@ export async function GET(request: NextRequest) {
   try {
     // Check if artist exists
     let existingArtist: any[] = [];
-    
+
     if (tmAttractionId) {
       existingArtist = await db
         .select()
@@ -226,7 +241,11 @@ export async function GET(request: NextRequest) {
         .limit(1);
     }
 
-    if (Array.isArray(existingArtist) && existingArtist.length > 0 && existingArtist[0]) {
+    if (
+      Array.isArray(existingArtist) &&
+      existingArtist.length > 0 &&
+      existingArtist[0]
+    ) {
       return NextResponse.json({
         exists: true,
         artistId: (existingArtist[0] as any).id,
@@ -235,11 +254,10 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       exists: false,
       canAutoImport: Boolean(tmAttractionId || spotifyId),
     });
-
   } catch (error) {
     console.error("Auto-import check error:", error);
     return NextResponse.json(

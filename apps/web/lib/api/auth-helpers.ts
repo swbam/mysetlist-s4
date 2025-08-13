@@ -5,15 +5,15 @@ import { NextResponse } from "next/server";
  * Standardized authentication for API routes
  * Supports multiple token types for different use cases
  */
-export async function validateApiAuth(): Promise<{ 
-  isValid: boolean; 
+export async function validateApiAuth(): Promise<{
+  isValid: boolean;
   authHeader?: string;
   error?: NextResponse;
 }> {
   try {
     const headersList = await headers();
     const authHeader = headersList.get("authorization");
-    
+
     const validTokens = [
       process.env.CRON_SECRET,
       process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -28,16 +28,24 @@ export async function validateApiAuth(): Promise<{
     if (!authHeader) {
       return {
         isValid: false,
-        error: NextResponse.json({ error: "Authorization header required" }, { status: 401 })
+        error: NextResponse.json(
+          { error: "Authorization header required" },
+          { status: 401 },
+        ),
       };
     }
 
-    const isValidToken = validTokens.some((token) => authHeader === `Bearer ${token}`);
-    
+    const isValidToken = validTokens.some(
+      (token) => authHeader === `Bearer ${token}`,
+    );
+
     if (!isValidToken) {
       return {
         isValid: false,
-        error: NextResponse.json({ error: "Invalid authorization token" }, { status: 401 })
+        error: NextResponse.json(
+          { error: "Invalid authorization token" },
+          { status: 401 },
+        ),
       };
     }
 
@@ -45,7 +53,10 @@ export async function validateApiAuth(): Promise<{
   } catch (error) {
     return {
       isValid: false,
-      error: NextResponse.json({ error: "Authentication failed" }, { status: 500 })
+      error: NextResponse.json(
+        { error: "Authentication failed" },
+        { status: 500 },
+      ),
     };
   }
 }
@@ -56,11 +67,11 @@ export async function validateApiAuth(): Promise<{
  */
 export async function requireCronAuth(): Promise<string | null> {
   const authResult = await validateApiAuth();
-  
+
   if (!authResult.isValid) {
     throw authResult.error;
   }
-  
+
   return authResult.authHeader || null;
 }
 
@@ -68,9 +79,9 @@ export async function requireCronAuth(): Promise<string | null> {
  * Standard error response format for API routes
  */
 export function createErrorResponse(
-  message: string, 
-  statusCode: number = 500, 
-  details?: any
+  message: string,
+  statusCode = 500,
+  details?: any,
 ): NextResponse {
   return NextResponse.json(
     {
@@ -79,7 +90,7 @@ export function createErrorResponse(
       timestamp: new Date().toISOString(),
       ...(details && { details }),
     },
-    { status: statusCode }
+    { status: statusCode },
   );
 }
 
@@ -87,8 +98,8 @@ export function createErrorResponse(
  * Standard success response format for API routes
  */
 export function createSuccessResponse(
-  data: any, 
-  message?: string
+  data: any,
+  message?: string,
 ): NextResponse {
   return NextResponse.json({
     success: true,

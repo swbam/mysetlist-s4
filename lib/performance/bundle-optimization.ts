@@ -282,7 +282,7 @@ export class BundleSizeMonitor {
    */
   static trackBundleSize(route: string, size: number) {
     if (process.env.NODE_ENV === 'development') {
-      const threshold = this.sizeThresholds[route] || 500 * 1024;
+      const threshold = BundleSizeMonitor.sizeThresholds[route] || 500 * 1024;
       
       console.group(`Bundle Size: ${route}`);
       console.log(`Current: ${(size / 1024).toFixed(2)}kB`);
@@ -291,7 +291,7 @@ export class BundleSizeMonitor {
       if (size > threshold) {
         console.warn(`⚠️ Bundle size exceeds threshold by ${((size - threshold) / 1024).toFixed(2)}kB`);
       } else {
-        console.log(`✅ Bundle size within limits`);
+        console.log("✅ Bundle size within limits");
       }
       console.groupEnd();
     }
@@ -312,7 +312,7 @@ export class BundleSizeMonitor {
     // This would integrate with webpack-bundle-analyzer or similar
     // For now, return mock data structure
     
-    const routes = Object.entries(this.sizeThresholds).map(([route, threshold]) => ({
+    const routes = Object.entries(BundleSizeMonitor.sizeThresholds).map(([route, threshold]) => ({
       route,
       size: threshold * 0.85, // Mock: 85% of threshold
       threshold,
@@ -462,7 +462,7 @@ export {
 };
 
 // Helper React imports (to be imported by components)
-import React, { Suspense } from 'react';
+import React, { type Suspense } from 'react';
 
 // Error boundary component for lazy loading
 class ErrorBoundary extends React.Component<
@@ -484,7 +484,7 @@ class ErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
-        return <this.props.fallback error={this.state.error!} />;
+        return <this.props.fallback error=this.state.error!/>;
       }
       return <div>Something went wrong loading this component.</div>;
     }

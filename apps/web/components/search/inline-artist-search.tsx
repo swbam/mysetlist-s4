@@ -1,14 +1,18 @@
 "use client";
 
-import * as React from "react";
-import { useState, useCallback, useRef, useEffect } from "react";
-import { Search, Loader2, Music, X } from "lucide-react";
-import { cn } from "@repo/design-system/lib/utils";
-import { Input } from "@repo/design-system/components/ui/input";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@repo/design-system/components/ui/avatar";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@repo/design-system/components/ui/avatar";
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { Input } from "@repo/design-system/components/ui/input";
+import { cn } from "@repo/design-system/lib/utils";
+import { Loader2, Music, Search, X } from "lucide-react";
+import type * as React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useDebounce } from "~/hooks/use-debounce";
 
 interface Artist {
@@ -58,48 +62,53 @@ export function InlineArtistSearch({
   const debouncedQuery = useDebounce(query, 300);
 
   // Search function
-  const searchArtists = useCallback(async (searchQuery: string) => {
-    if (!searchQuery || searchQuery.length < 2) {
-      setResults([]);
-      setIsOpen(false);
+  const searchArtists = useCallback(
+    async (searchQuery: string) => {
+      if (!searchQuery || searchQuery.length < 2) {
+        setResults([]);
+        setIsOpen(false);
+        setError(null);
+        return;
+      }
+
+      setIsLoading(true);
       setError(null);
-      return;
-    }
 
-    setIsLoading(true);
-    setError(null);
+      try {
+        const searchParams = new URLSearchParams({
+          q: searchQuery,
+          limit: maxResults.toString(),
+        });
 
-    try {
-      const searchParams = new URLSearchParams({
-        q: searchQuery,
-        limit: maxResults.toString(),
-      });
+        const response = await fetch(`/api/search/artists?${searchParams}`);
 
-      const response = await fetch(`/api/search/artists?${searchParams}`);
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || errorData.message || "Search failed");
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            errorData.error || errorData.message || "Search failed",
+          );
+        }
+
+        const data: SearchResponse = await response.json();
+
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        setResults(data.results);
+        setIsOpen(data.results.length > 0);
+        setSelectedIndex(-1);
+      } catch (err) {
+        console.error("Search error:", err);
+        setError(err instanceof Error ? err.message : "Search failed");
+        setResults([]);
+        setIsOpen(false);
+      } finally {
+        setIsLoading(false);
       }
-
-      const data: SearchResponse = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
-      }
-      
-      setResults(data.results);
-      setIsOpen(data.results.length > 0);
-      setSelectedIndex(-1);
-    } catch (err) {
-      console.error("Search error:", err);
-      setError(err instanceof Error ? err.message : "Search failed");
-      setResults([]);
-      setIsOpen(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [maxResults]);
+    },
+    [maxResults],
+  );
 
   // Effect to trigger search when debounced query changes
   useEffect(() => {
@@ -107,46 +116,56 @@ export function InlineArtistSearch({
   }, [debouncedQuery, searchArtists]);
 
   // Keyboard navigation
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (!isOpen || results.length === 0) return;
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (!isOpen || results.length === 0) return;
 
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < results.length - 1 ? prev + 1 : 0
-        );
-        break;
-      case "ArrowUp":
-        e.preventDefault();
-        setSelectedIndex(prev => 
-          prev > 0 ? prev - 1 : results.length - 1
-        );
-        break;
-      case "Enter":
-        e.preventDefault();
-        if (selectedIndex >= 0 && selectedIndex < results.length && results[selectedIndex]) {
-          handleSelect(results[selectedIndex]);
-        }
-        break;
-      case "Escape":
-        e.preventDefault();
-        setIsOpen(false);
-        setSelectedIndex(-1);
-        inputRef.current?.blur();
-        break;
-    }
-  }, [isOpen, results, selectedIndex]);
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          setSelectedIndex((prev) =>
+            prev < results.length - 1 ? prev + 1 : 0,
+          );
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          setSelectedIndex((prev) =>
+            prev > 0 ? prev - 1 : results.length - 1,
+          );
+          break;
+        case "Enter":
+          e.preventDefault();
+          if (
+            selectedIndex >= 0 &&
+            selectedIndex < results.length &&
+            results[selectedIndex]
+          ) {
+            handleSelect(results[selectedIndex]);
+          }
+          break;
+        case "Escape":
+          e.preventDefault();
+          setIsOpen(false);
+          setSelectedIndex(-1);
+          inputRef.current?.blur();
+          break;
+      }
+    },
+    [isOpen, results, selectedIndex],
+  );
 
   // Handle artist selection
-  const handleSelect = useCallback((artist: Artist) => {
-    onSelect(artist);
-    setQuery("");
-    setResults([]);
-    setIsOpen(false);
-    setSelectedIndex(-1);
-    inputRef.current?.blur();
-  }, [onSelect]);
+  const handleSelect = useCallback(
+    (artist: Artist) => {
+      onSelect(artist);
+      setQuery("");
+      setResults([]);
+      setIsOpen(false);
+      setSelectedIndex(-1);
+      inputRef.current?.blur();
+    },
+    [onSelect],
+  );
 
   // Handle clear
   const handleClear = useCallback(() => {
@@ -210,12 +229,12 @@ export function InlineArtistSearch({
           role="combobox"
           aria-controls="search-results"
         />
-        
+
         {/* Loading indicator */}
         {isLoading && (
           <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
         )}
-        
+
         {/* Clear button */}
         {showClearButton && query && !isLoading && (
           <Button
@@ -269,7 +288,7 @@ export function InlineArtistSearch({
                       "flex items-center space-x-3 p-3 cursor-pointer transition-colors border-b border-border/30 last:border-b-0",
                       selectedIndex === index
                         ? "bg-accent/50 text-accent-foreground"
-                        : "hover:bg-muted/30"
+                        : "hover:bg-muted/30",
                     )}
                     onClick={() => handleSelect(artist)}
                     onMouseEnter={() => setSelectedIndex(index)}
@@ -296,7 +315,7 @@ export function InlineArtistSearch({
                           Ticketmaster
                         </Badge>
                       </div>
-                      
+
                       {artist.genreHints && artist.genreHints.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {artist.genreHints.slice(0, 3).map((genre) => (

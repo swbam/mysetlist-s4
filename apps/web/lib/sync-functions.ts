@@ -164,14 +164,17 @@ export async function triggerArtistSync(limit = 20, mode = "auto") {
  * Trigger finish TheSet sync (creates setlists for shows)
  */
 export async function triggerFinishSync(mode = "daily") {
-  const response = await fetch(`${getAppUrl()}/api/cron/finish-mysetlist-sync`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${process.env.CRON_SECRET || ""}`,
+  const response = await fetch(
+    `${getAppUrl()}/api/cron/finish-mysetlist-sync`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.CRON_SECRET || ""}`,
+      },
+      body: JSON.stringify({ mode }),
     },
-    body: JSON.stringify({ mode }),
-  });
+  );
 
   if (!response.ok) {
     const error = await response.text();
@@ -196,25 +199,33 @@ export async function triggerAllSyncs() {
   try {
     results.masterSync = await triggerManualSync("all", 10);
   } catch (error) {
-    results.errors.push(`Master sync failed: ${error instanceof Error ? error.message : String(error)}`);
+    results.errors.push(
+      `Master sync failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 
   try {
     results.trendingUpdate = await triggerTrendingUpdate();
   } catch (error) {
-    results.errors.push(`Trending update failed: ${error instanceof Error ? error.message : String(error)}`);
+    results.errors.push(
+      `Trending update failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 
   try {
     results.artistSync = await triggerArtistSync(20, "manual");
   } catch (error) {
-    results.errors.push(`Artist sync failed: ${error instanceof Error ? error.message : String(error)}`);
+    results.errors.push(
+      `Artist sync failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 
   try {
     results.finishSync = await triggerFinishSync("manual");
   } catch (error) {
-    results.errors.push(`Finish sync failed: ${error instanceof Error ? error.message : String(error)}`);
+    results.errors.push(
+      `Finish sync failed: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 
   return results;

@@ -1,9 +1,9 @@
 /**
  * Performance-Optimized Query Patterns
- * 
+ *
  * This file contains optimized queries that leverage the new indexes and materialized views
  * created in migration 0009_comprehensive_performance_optimization.sql
- * 
+ *
  * Key optimizations:
  * 1. Uses materialized views for frequently accessed data
  * 2. Leverages composite indexes for complex WHERE clauses
@@ -14,16 +14,16 @@
 
 import { and, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 import { db } from "../client";
-import { 
-  artists, 
-  shows, 
-  songs, 
-  votes, 
-  setlists, 
+import {
+  artistSongs,
+  artists,
   setlistSongs,
-  venues,
+  setlists,
+  shows,
+  songs,
   userFollowsArtists,
-  artistSongs
+  venues,
+  votes,
 } from "../schema";
 
 // ================================
@@ -48,8 +48,8 @@ export async function getArtistsNeedingSync(limit = 50) {
     .where(
       and(
         sql`${artists.spotifyId} IS NOT NULL`,
-        sql`(${artists.lastSyncedAt} IS NULL OR ${artists.lastSyncedAt} < NOW() - INTERVAL '6 hours')`
-      )
+        sql`(${artists.lastSyncedAt} IS NULL OR ${artists.lastSyncedAt} < NOW() - INTERVAL '6 hours')`,
+      ),
     )
     .orderBy(desc(artists.popularity))
     .limit(limit);
@@ -75,7 +75,9 @@ export async function getTrendingArtistsOptimized(limit = 20, offset = 0) {
       cachedAt: sql`apc.cached_at`,
     })
     .from(sql`artist_performance_cache apc`)
-    .orderBy(sql`apc.trending_score DESC NULLS LAST, apc.popularity DESC NULLS LAST`)
+    .orderBy(
+      sql`apc.trending_score DESC NULLS LAST, apc.popularity DESC NULLS LAST`,
+    )
     .limit(limit)
     .offset(offset);
 }
@@ -103,7 +105,7 @@ export async function searchArtistsFullText(query: string, limit = 20) {
     })
     .from(artists)
     .where(
-      sql`to_tsvector('english', ${artists.name} || ' ' || COALESCE(${artists.genres}::text, '')) @@ plainto_tsquery('english', ${query})`
+      sql`to_tsvector('english', ${artists.name} || ' ' || COALESCE(${artists.genres}::text, '')) @@ plainto_tsquery('english', ${query})`,
     )
     .orderBy(sql`relevance DESC`, desc(artists.popularity))
     .limit(limit);
@@ -127,7 +129,7 @@ export async function getArtistBySlugOptimized(slug: string) {
       externalUrls: artists.externalUrls,
       totalShows: artists.totalShows,
       upcomingShows: artists.upcomingShows,
-      
+
       // Cached performance data
       appFollowers: sql<number>`COALESCE(apc.app_followers, 0)`,
       recentShows: sql<number>`COALESCE(apc.recent_shows, 0)`,
@@ -135,10 +137,7 @@ export async function getArtistBySlugOptimized(slug: string) {
       trendingScore: sql<number>`COALESCE(apc.trending_score, 0)`,
     })
     .from(artists)
-    .leftJoin(
-      sql`artist_performance_cache apc`,
-      eq(sql`apc.id`, artists.id)
-    )
+    .leftJoin(sql`artist_performance_cache apc`, eq(sql`apc.id`, artists.id))
     .where(eq(artists.slug, slug))
     .limit(1);
 
@@ -153,7 +152,10 @@ export async function getArtistBySlugOptimized(slug: string) {
  * Get upcoming shows for artist with optimization
  * Uses: idx_shows_artist_date_status, show_performance_cache
  */
-export async function getUpcomingShowsForArtistOptimized(artistId: string, limit = 10) {
+export async function getUpcomingShowsForArtistOptimized(
+  artistId: string,
+  limit = 10,
+) {
   return db
     .select({
       id: sql`spc.id`,
@@ -172,8 +174,8 @@ export async function getUpcomingShowsForArtistOptimized(artistId: string, limit
     .where(
       and(
         eq(sql`spc.headliner_artist_id`, artistId),
-        gte(sql`spc.date`, sql`CURRENT_DATE`)
-      )
+        gte(sql`spc.date`, sql`CURRENT_DATE`),
+      ),
     )
     .orderBy(sql`spc.date ASC`)
     .limit(limit);
@@ -187,7 +189,7 @@ export async function getTrendingShowsOptimized(limit = 20) {
   return db
     .select({
       id: sql`spc.id`,
-      name: sql`spc.name`, 
+      name: sql`spc.name`,
       slug: sql`spc.slug`,
       date: sql`spc.date`,
       status: sql`spc.status`,
@@ -213,7 +215,7 @@ export async function getTrendingShowsOptimized(limit = 20) {
 export async function getShowsByDateRangeOptimized(
   startDate: string,
   endDate: string,
-  limit = 50
+  limit = 50,
 ) {
   return db
     .select({
@@ -230,12 +232,7 @@ export async function getShowsByDateRangeOptimized(
     .from(shows)
     .innerJoin(artists, eq(shows.headlinerArtistId, artists.id))
     .leftJoin(venues, eq(shows.venueId, venues.id))
-    .where(
-      and(
-        gte(shows.date, startDate),
-        lte(shows.date, endDate)
-      )
-    )
+    .where(and(gte(shows.date, startDate), lte(shows.date, endDate)))
     .orderBy(desc(shows.date))
     .limit(limit);
 }
@@ -291,7 +288,7 @@ export async function getSetlistVoteCountsOptimized(setlistId: string) {
       setlistSongs.songId,
       songs.title,
       setlistSongs.position,
-      setlistSongs.upvotes
+      setlistSongs.upvotes,
     )
     .orderBy(setlistSongs.position);
 }
@@ -302,7 +299,7 @@ export async function getSetlistVoteCountsOptimized(setlistId: string) {
  */
 export async function getUserVoteStatusBatch(
   userId: string,
-  setlistSongIds: string[]
+  setlistSongIds: string[],
 ) {
   if (setlistSongIds.length === 0) return [];
 
@@ -315,8 +312,8 @@ export async function getUserVoteStatusBatch(
     .where(
       and(
         eq(votes.userId, userId),
-        inArray(votes.setlistSongId, setlistSongIds)
-      )
+        inArray(votes.setlistSongId, setlistSongIds),
+      ),
     );
 }
 
@@ -328,7 +325,10 @@ export async function getUserVoteStatusBatch(
  * Get songs needing Spotify sync
  * Uses: idx_songs_sync_ready (partial index)
  */
-export async function getSongsNeedingSpotifySync(artistName: string, limit = 100) {
+export async function getSongsNeedingSpotifySync(
+  artistName: string,
+  limit = 100,
+) {
   return db
     .select({
       id: songs.id,
@@ -338,12 +338,7 @@ export async function getSongsNeedingSpotifySync(artistName: string, limit = 100
       popularity: songs.popularity,
     })
     .from(songs)
-    .where(
-      and(
-        eq(songs.artist, artistName),
-        sql`${songs.spotifyId} IS NULL`
-      )
-    )
+    .where(and(eq(songs.artist, artistName), sql`${songs.spotifyId} IS NULL`))
     .orderBy(desc(songs.popularity))
     .limit(limit);
 }
@@ -369,7 +364,7 @@ export async function searchSongsFullText(query: string, limit = 20) {
     })
     .from(songs)
     .where(
-      sql`to_tsvector('english', ${songs.title} || ' ' || ${songs.artist} || ' ' || COALESCE(${songs.album}, '')) @@ plainto_tsquery('english', ${query})`
+      sql`to_tsvector('english', ${songs.title} || ' ' || ${songs.artist} || ' ' || COALESCE(${songs.album}, '')) @@ plainto_tsquery('english', ${query})`,
     )
     .orderBy(sql`relevance DESC`, desc(songs.popularity))
     .limit(limit);
@@ -379,7 +374,10 @@ export async function searchSongsFullText(query: string, limit = 20) {
  * Get popular songs for artist with optimization
  * Uses: idx_artist_songs_composite, idx_songs_popularity_desc
  */
-export async function getPopularSongsForArtistOptimized(artistId: string, limit = 50) {
+export async function getPopularSongsForArtistOptimized(
+  artistId: string,
+  limit = 50,
+) {
   return db
     .select({
       id: songs.id,
@@ -453,8 +451,12 @@ export async function getPerformanceStats() {
   return {
     cacheHitRatio: await db.execute(sql`SELECT * FROM get_cache_performance()`),
     indexUsage: await db.execute(sql`SELECT * FROM index_usage_stats LIMIT 10`),
-    tableStats: await db.execute(sql`SELECT * FROM table_performance_stats LIMIT 10`),
-    bottlenecks: await db.execute(sql`SELECT * FROM analyze_performance_bottlenecks() LIMIT 5`),
+    tableStats: await db.execute(
+      sql`SELECT * FROM table_performance_stats LIMIT 10`,
+    ),
+    bottlenecks: await db.execute(
+      sql`SELECT * FROM analyze_performance_bottlenecks() LIMIT 5`,
+    ),
   };
 }
 
@@ -481,7 +483,7 @@ export async function getTrendingCalculationData() {
       .where(sql`${artists.verified} = true OR ${artists.popularity} > 50`)
       .orderBy(desc(artists.popularity))
       .limit(100),
-      
+
     recentActivity: await db
       .select({
         artistId: shows.headlinerArtistId,
@@ -505,26 +507,26 @@ export const performanceOptimizedQueries = {
   getTrendingArtistsOptimized,
   searchArtistsFullText,
   getArtistBySlugOptimized,
-  
+
   // Show queries
   getUpcomingShowsForArtistOptimized,
   getTrendingShowsOptimized,
   getShowsByDateRangeOptimized,
-  
+
   // Voting queries
   getRecentVotesOptimized,
   getSetlistVoteCountsOptimized,
   getUserVoteStatusBatch,
-  
+
   // Song queries
   getSongsNeedingSpotifySync,
   searchSongsFullText,
   getPopularSongsForArtistOptimized,
-  
+
   // Batch operations
   getArtistsBatch,
   getShowsBatch,
-  
+
   // Analytics
   getPerformanceStats,
   refreshPerformanceCaches,

@@ -251,7 +251,6 @@ export function ArtistPageEnhanced({
                   </div>
                 </div>
               </div>
-
             </div>
           </div>
         </div>

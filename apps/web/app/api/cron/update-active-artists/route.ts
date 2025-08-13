@@ -25,7 +25,10 @@ export async function POST(request: NextRequest) {
       process.env.ADMIN_API_KEY,
     ].filter(Boolean) as string[];
 
-    if (validTokens.length > 0 && !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))) {
+    if (
+      validTokens.length > 0 &&
+      !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))
+    ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -58,7 +61,7 @@ export async function POST(request: NextRequest) {
             OR ${artists.lastSyncedAt} < NOW() - INTERVAL '6 hours'
           )
           AND ${artists.spotifyId} IS NOT NULL
-        `
+        `,
       )
       .orderBy(desc(artists.popularity))
       .limit(limit);
@@ -73,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     // Process artists in parallel batches to respect API rate limits
     const batchSize = 5;
-    const batches: typeof activeArtists[] = [];
+    const batches: (typeof activeArtists)[] = [];
     for (let i = 0; i < activeArtists.length; i += batchSize) {
       batches.push(activeArtists.slice(i, i + batchSize));
     }
@@ -82,7 +85,8 @@ export async function POST(request: NextRequest) {
       // Process batch in parallel
       const batchPromises = batch.map(async (artist) => {
         try {
-          if (!artist.spotifyId) return { success: false, reason: "No Spotify ID" };
+          if (!artist.spotifyId)
+            return { success: false, reason: "No Spotify ID" };
 
           // Skip if recently synced (unless forced)
           if (!forceSync && artist.lastSyncedAt) {
@@ -112,7 +116,7 @@ export async function POST(request: NextRequest) {
 
       // Rate limiting - wait between batches
       if (batches.indexOf(batch) < batches.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second between batches
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 second between batches
       }
     }
 
@@ -137,7 +141,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Active artists sync failed:", error);
-    
+
     // Log error
     try {
       await db.execute(sql`
@@ -156,7 +160,7 @@ export async function POST(request: NextRequest) {
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
