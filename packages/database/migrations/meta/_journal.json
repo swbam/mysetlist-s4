@@ -50,6 +50,13 @@
       "when": 1754780108356,
       "tag": "0006_absurd_sage",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1755105673335,
+      "tag": "0007_thin_odin",
+      "breakpoints": true
     }
   ]
 }
