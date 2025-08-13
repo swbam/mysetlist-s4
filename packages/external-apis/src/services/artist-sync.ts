@@ -360,7 +360,7 @@ export class ArtistSyncService {
 
           // Filter out ONLY genuine live tracks - keep studio acoustic/remix versions
           const allTracks = tracksResponse.items || [];
-          const tracks = [];
+          const tracks: any[] = [];
           
           for (const t of allTracks) {
             const trackName = (t.name || "").toLowerCase();

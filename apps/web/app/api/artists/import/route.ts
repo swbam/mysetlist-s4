@@ -4,7 +4,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { CACHE_TAGS } from "~/lib/cache";
 import { db, artists, shows, songs, setlists, setlistSongs, artistSongs } from "@repo/database";
 import { eq } from "drizzle-orm";
-import { updateImportStatus } from "../[artistId]/import-status/route";
+import { updateImportStatus } from "~/lib/import-status";
 
 export async function POST(request: NextRequest) {
   let tempArtistId: string | null = null;

@@ -1,9 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { CacheClient, cacheKeys } from "~/lib/cache/redis";
+import { updateImportStatus } from "~/lib/import-status";
 
 export const dynamic = "force-dynamic";
 
-interface ImportStatus {
+export interface ImportStatus {
   artistId: string;
   stage: 'initializing' | 'fetching-artist' | 'syncing-identifiers' | 'importing-songs' | 'importing-shows' | 'creating-setlists' | 'completed' | 'failed';
   progress: number; // 0-100
@@ -20,10 +21,10 @@ const cache = CacheClient.getInstance();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { artistId: string } }
+  context: { params: Promise<{ artistId: string }> }
 ) {
   try {
-    const { artistId } = params;
+    const { artistId } = await context.params;
     
     if (!artistId) {
       return NextResponse.json(
@@ -85,37 +86,4 @@ export async function GET(
   }
 }
 
-// Helper function to update import status (used by import route)
-export async function updateImportStatus(
-  artistId: string,
-  update: Partial<ImportStatus>
-): Promise<void> {
-  try {
-    const statusKey = cacheKeys.syncProgress(artistId);
-    const existingStatus = await cache.get<ImportStatus>(statusKey) || {
-      artistId,
-      stage: 'initializing' as const,
-      progress: 0,
-      message: 'Starting import...',
-      startedAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    const updatedStatus: ImportStatus = {
-      ...existingStatus,
-      ...update,
-      updatedAt: new Date().toISOString(),
-    };
-
-    // Set TTL based on stage - completed/failed statuses expire after 1 hour
-    const ttl = (updatedStatus.stage === 'completed' || updatedStatus.stage === 'failed') 
-      ? 3600 // 1 hour
-      : 1800; // 30 minutes for active imports
-
-    await cache.set(statusKey, updatedStatus, { ex: ttl });
-    
-    console.log(`[IMPORT STATUS] ${artistId}: ${updatedStatus.stage} (${updatedStatus.progress}%) - ${updatedStatus.message}`);
-  } catch (error) {
-    console.error("Failed to update import status:", error);
-  }
-}
+// updateImportStatus is now provided by ~/lib/import-status to avoid invalid exports on route files

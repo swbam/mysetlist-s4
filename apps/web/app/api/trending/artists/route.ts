@@ -126,7 +126,12 @@ async function getTrendingArtistsFromDB(limit: number) {
     return MOCK_TRENDING_ARTISTS.slice(0, limit);
   }
 
-  // Transform to match frontend interface
+  // Note: the function already returned in all branches above.
+  // The code below was unreachable; keeping a typed transformer for reference if needed in future.
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  return [] as any;
+  /* Transform to match frontend interface (reference)
   return artists.map((artist) => {
     // Calculate weekly growth based on previous data
     const currentFollowers = artist.followers || 0;
@@ -157,7 +162,7 @@ async function getTrendingArtistsFromDB(limit: number) {
       recentShows: artist.upcoming_shows || 0,
       weeklyGrowth: Number(weeklyGrowth.toFixed(1)),
     };
-  });
+  });*/
 }
 
 export async function GET(request: NextRequest) {

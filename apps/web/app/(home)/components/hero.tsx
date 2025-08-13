@@ -146,54 +146,73 @@ function HomeHero() {
 
           {/* Enhanced search section */}
           <div className="mt-12 space-y-4 px-4 sm:px-0 animate-slide-up-delay-1">
-            {/* Search container with glow effect */}
-            <div className="relative mx-auto w-full max-w-2xl">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                  ref={inputRef}
-                  type="text"
-                  placeholder="Search artists via Ticketmaster..."
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  onFocus={() => setShowDropdown(results.length > 0)}
-                  className="h-12 border-2 border-primary/20 bg-background/95 pr-12 pl-12 text-base backdrop-blur transition-colors hover:border-primary/30 focus:border-primary/50 supports-[backdrop-filter]:bg-background/80 md:h-14 md:text-lg"
-                />
-                {isLoading && (
-                  <Loader2 className="absolute right-4 top-1/2 transform -translate-y-1/2 h-4 w-4 animate-spin" />
-                )}
+            {/* Search container - input and button aligned, responsive */}
+            <div className="mx-auto w-full max-w-2xl">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="relative flex-1 min-w-0">
+                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    ref={inputRef}
+                    type="text"
+                    placeholder="Search artists via Ticketmaster..."
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onFocus={() => setShowDropdown(results.length > 0)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && results.length > 0 && results[0]) {
+                        handleArtistSelect(results[0]);
+                      }
+                    }}
+                    className="h-12 md:h-14 border-2 border-primary/20 bg-background/95 pl-12 pr-4 text-base md:text-lg backdrop-blur transition-colors hover:border-primary/30 focus:border-primary/50 supports-[backdrop-filter]:bg-background/80"
+                  />
+                  {isLoading && (
+                    <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin" />
+                  )}
+                </div>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (query.trim() && results.length > 0 && results[0]) {
+                      handleArtistSelect(results[0]);
+                    }
+                  }}
+                  disabled={!query.trim()}
+                  className="h-12 md:h-14 px-4 md:px-6 whitespace-nowrap"
+                >
+                  Search
+                </Button>
               </div>
 
               {/* Search results dropdown */}
               {showDropdown && results.length > 0 && (
                 <div
                   ref={dropdownRef}
-                  className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto"
+                  className="absolute left-1/2 z-50 mt-2 w-[calc(100%-2rem)] max-w-2xl -translate-x-1/2 rounded-lg border border-border bg-background shadow-lg max-h-96 overflow-y-auto"
                 >
                   {results.map((artist) => (
                     <button
                       key={artist.id}
                       onClick={() => handleArtistSelect(artist)}
-                      className="w-full px-4 py-3 text-left hover:bg-muted transition-colors flex items-center gap-3 border-b border-border last:border-b-0"
+                      className="flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-muted"
                     >
                       {artist.imageUrl && (
                         <img
                           src={artist.imageUrl}
                           alt={artist.name}
-                          className="w-12 h-12 rounded-full object-cover"
+                          className="h-12 w-12 rounded-full object-cover"
                         />
                       )}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-foreground truncate">
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate font-medium text-foreground">
                           {artist.name}
                         </div>
                         {artist.genres && artist.genres.length > 0 && (
-                          <div className="text-sm text-muted-foreground truncate">
+                          <div className="truncate text-sm text-muted-foreground">
                             {artist.genres.slice(0, 2).join(", ")}
                           </div>
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                      <div className="rounded bg-muted px-2 py-1 text-xs text-muted-foreground">
                         Ticketmaster
                       </div>
                     </button>

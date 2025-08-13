@@ -20,6 +20,7 @@ import {
   LogOut,
   MapPin,
   Menu,
+  Music,
   Search,
   Settings,
   TrendingUp,
