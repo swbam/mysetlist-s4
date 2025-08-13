@@ -96,7 +96,7 @@ async function testCronJobManual() {
 }
 
 async function runTests() {
-  console.log('🚀 MySetlist Artist Import Test');
+  console.log('🚀 TheSet Artist Import Test');
   console.log('=' .repeat(40));
   console.log('');
 

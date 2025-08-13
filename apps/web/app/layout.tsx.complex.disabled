@@ -24,14 +24,14 @@ export const metadata: Metadata = {
     : 'http://localhost:3001'
   ),
   title: {
-    default: 'MySetlist - Vote on Concert Setlists',
-    template: '%s | MySetlist'
+    default: 'TheSet - Vote on Concert Setlists',
+    template: '%s | TheSet'
   },
   description: 'Vote on concert setlists, discover upcoming shows, and connect with music fans. Join the community predicting what artists will play live.',
   keywords: ['concerts', 'setlists', 'music', 'live shows', 'voting', 'artists', 'venues'],
-  authors: [{ name: 'MySetlist Team' }],
-  creator: 'MySetlist',
-  publisher: 'MySetlist',
+  authors: [{ name: 'TheSet Team' }],
+  creator: 'TheSet',
+  publisher: 'TheSet',
   robots: {
     index: true,
     follow: true,
@@ -47,21 +47,21 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: '/',
-    title: 'MySetlist - Vote on Concert Setlists',
+    title: 'TheSet - Vote on Concert Setlists',
     description: 'Vote on concert setlists, discover upcoming shows, and connect with music fans.',
-    siteName: 'MySetlist',
+    siteName: 'TheSet',
     images: [
       {
         url: '/opengraph-image.png',
         width: 1200,
         height: 630,
-        alt: 'MySetlist - Vote on Concert Setlists',
+        alt: 'TheSet - Vote on Concert Setlists',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MySetlist - Vote on Concert Setlists',
+    title: 'TheSet - Vote on Concert Setlists',
     description: 'Vote on concert setlists, discover upcoming shows, and connect with music fans.',
     images: ['/opengraph-image.png'],
   },

@@ -3,7 +3,7 @@
 # Kill any existing processes
 pkill -f "next dev" 2>/dev/null
 
-echo "Starting MySetlist development server..."
+echo "Starting TheSet development server..."
 
 # Start web server
 cd /Users/seth/mysetlist-sonnet/apps/web

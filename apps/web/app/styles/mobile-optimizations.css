@@ -1,4 +1,4 @@
-/* Mobile-Specific CSS Optimizations for MySetlist */
+/* Mobile-Specific CSS Optimizations for TheSet */
 
 /* iOS Safe Area Support */
 @supports (padding: env(safe-area-inset-top)) {

@@ -1,8 +1,8 @@
-# 🚀 MySetlist CI/CD Pipeline Documentation
+# 🚀 TheSet CI/CD Pipeline Documentation
 
 ## Overview
 
-MySetlist uses a comprehensive CI/CD pipeline built with GitHub Actions, providing automated testing, security scanning, performance monitoring, and deployment capabilities. This documentation covers the complete setup and operation of the pipeline.
+TheSet uses a comprehensive CI/CD pipeline built with GitHub Actions, providing automated testing, security scanning, performance monitoring, and deployment capabilities. This documentation covers the complete setup and operation of the pipeline.
 
 ## 🏗️ Pipeline Architecture
 

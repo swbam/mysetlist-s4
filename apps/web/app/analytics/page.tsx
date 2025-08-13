@@ -67,7 +67,7 @@ export default function AnalyticsPage() {
               Analytics Dashboard
             </h1>
             <p className="text-muted-foreground">
-              Comprehensive insights and real-time metrics for MySetlist
+              Comprehensive insights and real-time metrics for TheSet
             </p>
           </div>
           <div className="flex items-center gap-2">

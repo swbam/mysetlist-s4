@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 
 /**
- * Comprehensive test script for the MySetlist sync system
+ * Comprehensive test script for the TheSet sync system
  * Tests artist import, cron job triggering, and data creation
  */
 
@@ -288,7 +288,7 @@ async function testSyncFunctions() {
  * Main test runner
  */
 async function runAllTests() {
-  console.log('🚀 Starting MySetlist Sync System Tests\n');
+  console.log('🚀 Starting TheSet Sync System Tests\n');
   console.log('='  .repeat(50));
   
   const testResults: Record<string, boolean> = {};

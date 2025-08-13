@@ -53,7 +53,7 @@ export function createArtistMetadata(artist: {
   const description = `Discover ${artist.name} concerts, setlists, and upcoming shows. Join ${artist.followerCount || 0} fans tracking their favorite artist.`;
 
   return createPageMetadata({
-    title: `${artist.name} - Concerts & Setlists | MySetlist`,
+    title: `${artist.name} - Concerts & Setlists | TheSet`,
     description,
     ...(artist.imageUrl && { image: artist.imageUrl }),
     canonicalUrl: `/artists/${artist.slug}`,
@@ -79,7 +79,7 @@ export function createShowMetadata(show: {
     : show.city || "TBA";
 
   return createPageMetadata({
-    title: `${show.headliner} - ${formattedDate} at ${location} | MySetlist`,
+    title: `${show.headliner} - ${formattedDate} at ${location} | TheSet`,
     description: `Get tickets and setlist for ${show.headliner} performing at ${location} on ${formattedDate}. View predicted setlist, vote on songs, and connect with other fans.`,
     ...(show.image && { image: show.image }),
     canonicalUrl: `/shows/${show.slug}`,
@@ -106,7 +106,7 @@ export function createVenueMetadata(venue: {
     `Concert venue in ${location}. ${venue.capacity ? `Capacity: ${venue.capacity.toLocaleString()}. ` : ""}${venue.upcomingShowCount ? `${venue.upcomingShowCount} upcoming shows. ` : ""}Get insider tips, parking info, and plan your perfect show experience.`;
 
   return createPageMetadata({
-    title: `${venue.name} - ${location} | MySetlist`,
+    title: `${venue.name} - ${location} | TheSet`,
     description,
     ...(venue.imageUrl && { image: venue.imageUrl }),
     canonicalUrl: `/venues/${venue.slug}`,
@@ -115,8 +115,8 @@ export function createVenueMetadata(venue: {
 
 export function createSearchMetadata(query?: string): Metadata {
   const title = query
-    ? `Search results for "${query}" | MySetlist`
-    : "Search Artists, Shows & Venues | MySetlist";
+    ? `Search results for "${query}" | TheSet`
+    : "Search Artists, Shows & Venues | TheSet";
 
   const description = query
     ? `Find artists, concerts, and venues matching "${query}". Discover setlists, upcoming shows, and connect with fans.`

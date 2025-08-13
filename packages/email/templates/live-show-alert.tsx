@@ -272,7 +272,7 @@ LiveShowAlertTemplate.PreviewProps = {
     estimatedDuration: "2 hours",
   },
   alertType: "live-now",
-  appUrl: "https://MySetlist.app",
+  appUrl: "https://TheSet.app",
 };
 
 export default LiveShowAlertTemplate;

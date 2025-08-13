@@ -202,7 +202,7 @@ SetlistUpdateTemplate.PreviewProps = {
     { title: "I Wanna Be Yours", encore: true },
   ],
   totalSongs: 18,
-  appUrl: "https://MySetlist.app",
+  appUrl: "https://TheSet.app",
   updateType: "updated",
 };
 

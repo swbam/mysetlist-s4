@@ -1,4 +1,4 @@
-# MySetlist - How to Run Song Import and Tests
+# TheSet - How to Run Song Import and Tests
 
 ## 🎵 Song Import Commands
 

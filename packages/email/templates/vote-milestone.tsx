@@ -189,7 +189,7 @@ VoteMilestoneTemplate.PreviewProps = {
   },
   milestone: 100,
   totalVotes: 1250,
-  appUrl: "https://MySetlist.app",
+  appUrl: "https://TheSet.app",
 };
 
 export default VoteMilestoneTemplate;

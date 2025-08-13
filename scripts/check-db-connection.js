@@ -30,7 +30,7 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-console.log("🔍 MySetlist Database Connection Check");
+console.log("🔍 TheSet Database Connection Check");
 console.log("=====================================");
 
 async function checkDatabaseConnection() {

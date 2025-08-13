@@ -111,7 +111,7 @@ export const MobileNavigation = React.memo(
               <div className="flex items-center justify-between border-b p-4">
                 <div className="flex items-center gap-2">
                   <Music className="h-6 w-6 text-primary" />
-                  <span className="font-bold text-lg">MySetlist</span>
+                  <span className="font-bold text-lg">TheSet</span>
                 </div>
                 <Button
                   variant="ghost"
@@ -226,7 +226,7 @@ export const MobileNavigation = React.memo(
                   <div className="space-y-3">
                     <div className="px-3 py-2">
                       <p className="text-center text-sm text-muted-foreground">
-                        Join MySetlist to follow artists and vote on setlists
+                        Join TheSet to follow artists and vote on setlists
                       </p>
                     </div>
                     <Link href="/auth/sign-up" onClick={closeSheet}>

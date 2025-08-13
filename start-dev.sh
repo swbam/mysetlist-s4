@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Starting MySetlist development server..."
+echo "Starting TheSet development server..."
 
 # Kill any existing processes on our port
 lsof -ti:3001 | xargs kill -9 2>/dev/null

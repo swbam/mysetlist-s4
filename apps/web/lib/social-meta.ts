@@ -23,7 +23,7 @@ export function generateSocialMeta(options: SocialMetaOptions): Metadata {
     image,
     url,
     type = "website",
-    siteName = "MySetlist",
+    siteName = "TheSet",
     locale = "en_US",
     author,
     publishedTime,
@@ -145,14 +145,14 @@ export function generateArtistMeta({
   genres?: string[];
   followerCount?: number;
 }): Metadata {
-  const description = `Discover ${artistName} on MySetlist. View upcoming shows, past setlists, and vote on your favorite songs.`;
+  const description = `Discover ${artistName} on TheSet. View upcoming shows, past setlists, and vote on your favorite songs.`;
 
   const enhancedDescription = followerCount
     ? `${description} Followed by ${followerCount.toLocaleString()} fans.`
     : description;
 
   return generateSocialMeta({
-    title: `${artistName} | MySetlist`,
+    title: `${artistName} | TheSet`,
     description: enhancedDescription,
     ...(imageUrl && { image: imageUrl }),
     url: artistUrl,
@@ -189,7 +189,7 @@ export function generateVenueMeta({
     : `${venueName} in ${location}. ${capacity ? `Capacity: ${capacity.toLocaleString()}.` : ""} ${upcomingShows ? `${upcomingShows} upcoming shows.` : ""}`;
 
   return generateSocialMeta({
-    title: `${venueName} - ${location} | MySetlist`,
+    title: `${venueName} - ${location} | TheSet`,
     description: venueDescription.trim(),
     ...(imageUrl && { image: imageUrl }),
     url: venueUrl,
@@ -211,8 +211,8 @@ export function generateTrendingMeta({
   };
 
   return generateSocialMeta({
-    title: `Trending ${periodText[period]} | MySetlist`,
-    description: `Discover what's hot in live music ${periodText[period].toLowerCase()}. See trending shows, artists, and venues on MySetlist.`,
+    title: `Trending ${periodText[period]} | TheSet`,
+    description: `Discover what's hot in live music ${periodText[period].toLowerCase()}. See trending shows, artists, and venues on TheSet.`,
     type: "website",
     tags: ["trending", "live music", "concerts", "popular shows"],
   });
@@ -221,9 +221,9 @@ export function generateTrendingMeta({
 // Helper for discover page
 export function generateDiscoverMeta(): Metadata {
   return generateSocialMeta({
-    title: "Discover Music | MySetlist",
+    title: "Discover Music | TheSet",
     description:
-      "Get personalized recommendations for shows, artists, and venues based on your music taste. Discover your next favorite concert on MySetlist.",
+      "Get personalized recommendations for shows, artists, and venues based on your music taste. Discover your next favorite concert on TheSet.",
     type: "website",
     tags: [
       "discover",

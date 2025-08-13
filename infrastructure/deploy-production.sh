@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# MySetlist Production Deployment Script
+# TheSet Production Deployment Script
 # Comprehensive DevOps automation for zero-downtime deployment
 
 set -e
@@ -27,7 +27,7 @@ LOG_FILE="/tmp/mysetlist-deploy-$(date +%Y%m%d-%H%M%S).log"
 exec > >(tee -a "$LOG_FILE")
 exec 2>&1
 
-echo -e "${BLUE}🚀 Starting MySetlist Production Deployment${NC}"
+echo -e "${BLUE}🚀 Starting TheSet Production Deployment${NC}"
 echo "Deployment started at: $(date)"
 echo "Log file: $LOG_FILE"
 
@@ -315,9 +315,9 @@ send_deployment_notification() {
     local message="$2"
     
     if [[ "$status" == "success" ]]; then
-        send_slack_notification "🚀 MySetlist deployment successful: $message" "good"
+        send_slack_notification "🚀 TheSet deployment successful: $message" "good"
     else
-        send_slack_notification "❌ MySetlist deployment failed: $message" "danger"
+        send_slack_notification "❌ TheSet deployment failed: $message" "danger"
     fi
 }
 

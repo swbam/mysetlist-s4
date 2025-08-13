@@ -22,9 +22,9 @@
       - listitem:
         - link "Trending":
           - /url: /trending
-  - link "MySetlist Home":
+  - link "TheSet Home":
     - /url: /
-    - paragraph: MySetlist
+    - paragraph: TheSet
   - textbox "Search artists..."
   - link "Contact":
     - /url: /contact
@@ -101,7 +101,7 @@
   - heading "Trending Shows" [level=2]
   - paragraph: Join the conversation about the most popular shows
 - contentinfo:
-  - heading "MySetlist" [level=3]
+  - heading "TheSet" [level=3]
   - paragraph: Vote for your dream setlist and connect with fellow music fans.
   - heading "Product" [level=4]
   - list:
@@ -142,7 +142,7 @@
     - listitem:
       - link "Facebook":
         - /url: https://facebook.com
-  - paragraph: © 2025 MySetlist. All rights reserved.
+  - paragraph: © 2025 TheSet. All rights reserved.
 - region "Notifications alt+T"
 - text: "SW: OK | Cache: CLEAN | Last: NEVER"
 ```

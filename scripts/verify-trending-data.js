@@ -30,7 +30,7 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-console.log("🔍 MySetlist Trending Data Verification");
+console.log("🔍 TheSet Trending Data Verification");
 console.log("========================================");
 
 async function verifyTrendingData() {

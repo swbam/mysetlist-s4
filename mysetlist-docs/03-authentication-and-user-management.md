@@ -1,4 +1,4 @@
-# MySetlist - Authentication & User Management with Next-Forge + Supabase
+# TheSet - Authentication & User Management with Next-Forge + Supabase
 
 ## Table of Contents
 
@@ -13,7 +13,7 @@
 
 ## Authentication Overview
 
-MySetlist replaces Next-Forge's default authentication with Supabase Auth while maintaining the package structure and patterns. This provides seamless integration with Spotify OAuth for music data access and traditional email/password authentication.
+TheSet replaces Next-Forge's default authentication with Supabase Auth while maintaining the package structure and patterns. This provides seamless integration with Spotify OAuth for music data access and traditional email/password authentication.
 
 ### Authentication Flow
 
@@ -604,4 +604,4 @@ export const signUpSchema = z.object({
 });
 ```
 
-This authentication system provides a robust foundation for MySetlist using Next-Forge's package structure with Supabase integration. It supports multiple authentication methods and secure session management for basic user authentication.
+This authentication system provides a robust foundation for TheSet using Next-Forge's package structure with Supabase integration. It supports multiple authentication methods and secure session management for basic user authentication.

@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error("Finish MySetlist sync failed:", error);
+    console.error("Finish TheSet sync failed:", error);
     
     // Log error to Supabase
     try {
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: "Finish MySetlist sync failed",
+        error: "Finish TheSet sync failed",
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
@@ -222,11 +222,11 @@ export async function GET(request: NextRequest) {
     return response;
 
   } catch (error) {
-    console.error("Finish MySetlist sync failed:", error);
+    console.error("Finish TheSet sync failed:", error);
     return NextResponse.json(
       {
         success: false,
-        error: "Finish MySetlist sync failed",
+        error: "Finish TheSet sync failed",
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },

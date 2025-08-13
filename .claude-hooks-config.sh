@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# MySetlist Claude Hooks Configuration
+# TheSet Claude Hooks Configuration
 # This file customizes hook behavior for this project
 
 # Enable/disable hooks

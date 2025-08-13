@@ -252,6 +252,7 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
         <div className="flex h-16 items-center justify-between lg:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center">
+
             <span className="font-bold text-xl">TheSet</span>
           </Link>
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This report documents the verification and updates made to ensure consistent search functionality across all MySetlist search components. All artist search components now use the Ticketmaster API consistently and display results below the search input as expected.
+This report documents the verification and updates made to ensure consistent search functionality across all TheSet search components. All artist search components now use the Ticketmaster API consistently and display results below the search input as expected.
 
 ## Changes Made
 

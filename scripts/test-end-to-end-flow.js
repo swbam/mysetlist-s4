@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * End-to-End Test Script for MySetlist Sync and Trending System
+ * End-to-End Test Script for TheSet Sync and Trending System
  * Tests the complete flow: API sync → Database → Trending calculation → Frontend data
  */
 
@@ -33,7 +33,7 @@ if (!DATABASE_URL) {
   process.exit(1);
 }
 
-console.log("🧪 MySetlist End-to-End Test Suite");
+console.log("🧪 TheSet End-to-End Test Suite");
 console.log("=====================================");
 
 async function testDatabaseConnection() {

@@ -42,7 +42,7 @@ export const authConfig = {
   // App configuration
   app: {
     url: env.NEXT_PUBLIC_APP_URL,
-    name: "MySetlist",
+    name: "TheSet",
   },
 
   // Password requirements

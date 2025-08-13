@@ -51,14 +51,14 @@ export default async function UnsubscribeSuccessPage({
             <CardTitle>Successfully Unsubscribed</CardTitle>
             <CardDescription>
               You have been unsubscribed from {getEmailTypeDisplay(type)} from
-              MySetlist.
+              TheSet.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-center text-muted-foreground text-sm">
               {type === "all"
-                ? "You will no longer receive any email notifications from MySetlist, except for important security emails."
-                : `You will no longer receive ${getEmailTypeDisplay(type)} from MySetlist.`}
+                ? "You will no longer receive any email notifications from TheSet, except for important security emails."
+                : `You will no longer receive ${getEmailTypeDisplay(type)} from TheSet.`}
             </div>
 
             <div className="flex flex-col space-y-2">

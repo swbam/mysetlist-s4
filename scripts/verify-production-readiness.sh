@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# MySetlist Production Readiness Verification Script
+# TheSet Production Readiness Verification Script
 # This script performs comprehensive checks to ensure the application is ready for production
 
 set -e
@@ -85,7 +85,7 @@ check_security_header() {
 }
 
 main() {
-    echo "🚀 MySetlist Production Readiness Verification"
+    echo "🚀 TheSet Production Readiness Verification"
     echo "=============================================="
     echo "Base URL: $BASE_URL"
     echo "Timestamp: $(date)"

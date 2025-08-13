@@ -234,7 +234,7 @@ resource "cloudflare_rate_limit" "api" {
 # Cloudflare WAF Rules
 resource "cloudflare_ruleset" "waf" {
   zone_id = data.cloudflare_zone.main.id
-  name    = "MySetlist WAF Rules"
+  name    = "TheSet WAF Rules"
   kind    = "zone"
   phase   = "http_request_firewall_custom"
   

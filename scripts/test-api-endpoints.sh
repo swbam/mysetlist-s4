@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # API Endpoints Test Script
-# Tests the MySetlist API endpoints without requiring Node.js dependencies
+# Tests the TheSet API endpoints without requiring Node.js dependencies
 
 set -e
 

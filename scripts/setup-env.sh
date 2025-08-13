@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Script to set up .env.local file for MySetlist
+# Script to set up .env.local file for TheSet
 
 cat > .env.local << 'EOF'
 # =================================================================
-# MySetlist - Local Development Environment Variables
+# TheSet - Local Development Environment Variables
 # =================================================================
 
 # Application Configuration

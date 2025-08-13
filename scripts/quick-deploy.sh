@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Quick deployment script for MySetlist
+# Quick deployment script for TheSet
 # This is a simplified wrapper around the main deployment script
 
 set -e  # Exit on error
 
-echo "🚀 MySetlist Quick Deploy"
+echo "🚀 TheSet Quick Deploy"
 echo "========================="
 echo ""
 

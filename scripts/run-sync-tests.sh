@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# MySetlist Sync System Test Runner
+# TheSet Sync System Test Runner
 # This script runs all tests to verify the sync system is working correctly
 
 set -e
 
-echo "🚀 MySetlist Sync System Test Suite"
+echo "🚀 TheSet Sync System Test Suite"
 echo "===================================="
 echo ""
 

@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 /// <reference types="cypress-axe" />
 
-// -- Custom Commands for MySetlist --
+// -- Custom Commands for TheSet --
 
 // Authentication commands
 Cypress.Commands.add(

@@ -8,9 +8,9 @@ import type { Metadata } from "next";
 import { createPageMetadata } from "~/lib/seo-metadata";
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Privacy Policy | MySetlist",
+  title: "Privacy Policy | TheSet",
   description:
-    "Learn how MySetlist collects, uses, and protects your personal information.",
+    "Learn how TheSet collects, uses, and protects your personal information.",
 });
 
 const PrivacyPage = () => {

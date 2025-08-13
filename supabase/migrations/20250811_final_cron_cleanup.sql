@@ -180,7 +180,7 @@ BEGIN
   VALUES (
     'finish-mysetlist-sync',
     CASE WHEN result->>'success' = 'true' THEN 'completed' ELSE 'failed' END,
-    COALESCE(result->>'message', 'Finish MySetlist sync via API'),
+    COALESCE(result->>'message', 'Finish TheSet sync via API'),
     result,
     NOW()
   );

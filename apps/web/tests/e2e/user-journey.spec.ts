@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("MySetlist User Journey", () => {
+test.describe("TheSet User Journey", () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to homepage
     await page.goto("/");

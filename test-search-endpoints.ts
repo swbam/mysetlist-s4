@@ -80,7 +80,7 @@ async function testEndpoint(
 }
 
 async function runSearchTests() {
-  console.log("🔍 Testing Search Endpoints for MySetlist App");
+  console.log("🔍 Testing Search Endpoints for TheSet App");
   console.log("=".repeat(50));
 
   const testQueries = [

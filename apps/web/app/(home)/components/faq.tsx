@@ -8,7 +8,7 @@ function Faq() {
             Frequently Asked Questions
           </h2>
           <p className="mt-4 text-lg text-gray-600 dark:text-gray-400">
-            Everything you need to know about MySetlist
+            Everything you need to know about TheSet
           </p>
           <div className="mt-8">
             <p className="text-gray-600 dark:text-gray-400">

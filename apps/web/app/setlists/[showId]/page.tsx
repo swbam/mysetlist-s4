@@ -35,14 +35,14 @@ export const generateMetadata = async ({
 
   if (show.length === 0 || !show[0]) {
     return createMetadata({
-      title: "Show Not Found - MySetlist",
+      title: "Show Not Found - TheSet",
       description: "The requested show could not be found.",
     });
   }
 
   const firstShow = show[0];
   return createMetadata({
-    title: `${firstShow.artist} at ${firstShow.venue} - MySetlist`,
+    title: `${firstShow.artist} at ${firstShow.venue} - TheSet`,
     description: `Live setlist and voting for ${firstShow.artist} at ${firstShow.venue}`,
   });
 };

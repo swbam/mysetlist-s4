@@ -87,7 +87,7 @@ export const Cases = () => {
                 </span>
               </div>
               <h2 className="font-regular text-3xl tracking-tighter md:text-5xl lg:max-w-4xl">
-                Top Artists on MySetlist
+                Top Artists on TheSet
               </h2>
               <p className="max-w-2xl text-lg text-muted-foreground">
                 Discover the most popular artists and their upcoming shows
@@ -122,7 +122,7 @@ export const Cases = () => {
               </span>
             </div>
             <h2 className="font-regular text-3xl tracking-tighter md:text-5xl lg:max-w-4xl">
-              Top Artists on MySetlist
+              Top Artists on TheSet
             </h2>
             <p className="max-w-2xl text-lg text-muted-foreground">
               Discover the most popular artists and their upcoming shows

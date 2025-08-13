@@ -1,8 +1,8 @@
-# Testing Guide for MySetlist
+# Testing Guide for TheSet
 
 ## Overview
 
-This guide covers the testing infrastructure and best practices for the MySetlist application.
+This guide covers the testing infrastructure and best practices for the TheSet application.
 
 ## Test Types
 

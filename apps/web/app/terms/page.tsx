@@ -8,8 +8,8 @@ import type { Metadata } from "next";
 import { createPageMetadata } from "~/lib/seo-metadata";
 
 export const metadata: Metadata = createPageMetadata({
-  title: "Terms of Service | MySetlist",
-  description: "Read the terms and conditions for using MySetlist services.",
+  title: "Terms of Service | TheSet",
+  description: "Read the terms and conditions for using TheSet services.",
 });
 
 const TermsPage = () => {
@@ -29,7 +29,7 @@ const TermsPage = () => {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm">
-              By accessing and using MySetlist, you accept and agree to be bound
+              By accessing and using TheSet, you accept and agree to be bound
               by the terms and provision of this agreement. If you do not agree
               to abide by the above, please do not use this service.
             </p>
@@ -128,7 +128,7 @@ const TermsPage = () => {
               <h3 className="mb-2 font-semibold">Our Content</h3>
               <p className="text-muted-foreground text-sm">
                 Our service and its original content, features, and
-                functionality are owned by MySetlist and are protected by
+                functionality are owned by TheSet and are protected by
                 international copyright, trademark, and other intellectual
                 property laws.
               </p>
@@ -156,7 +156,7 @@ const TermsPage = () => {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm">
-              In no event shall MySetlist, nor its directors, employees,
+              In no event shall TheSet, nor its directors, employees,
               partners, agents, suppliers, or affiliates, be liable for any
               indirect, incidental, special, consequential, or punitive damages
               arising from your use of the service.

@@ -22,9 +22,9 @@
       - listitem:
         - link "Trending":
           - /url: /trending
-  - link "MySetlist Home":
+  - link "TheSet Home":
     - /url: /
-    - paragraph: MySetlist
+    - paragraph: TheSet
   - link "Contact":
     - /url: /contact
   - link "Sign in":
@@ -58,7 +58,7 @@
   - text: Or continue with
   - button "Sign in with Spotify"
 - contentinfo:
-  - heading "MySetlist" [level=3]
+  - heading "TheSet" [level=3]
   - paragraph: Vote for your dream setlist and connect with fellow music fans.
   - heading "Product" [level=4]
   - list:
@@ -99,7 +99,7 @@
     - listitem:
       - link "Facebook":
         - /url: https://facebook.com
-  - paragraph: © 2025 MySetlist. All rights reserved.
+  - paragraph: © 2025 TheSet. All rights reserved.
 - region "Notifications alt+T"
 - text: "SW: OK | Cache: CLEAN | Last: NEVER"
 ```

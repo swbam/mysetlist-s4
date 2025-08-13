@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# MySetlist CI/CD Setup Script
+# TheSet CI/CD Setup Script
 # Helps configure GitHub repository secrets and validate CI/CD pipeline setup
 
 set -e
@@ -371,9 +371,9 @@ display_summary() {
 
 # Main execution
 main() {
-    print_header "MySetlist CI/CD Pipeline Setup"
+    print_header "TheSet CI/CD Pipeline Setup"
     
-    echo "This script will help you configure the CI/CD pipeline for MySetlist."
+    echo "This script will help you configure the CI/CD pipeline for TheSet."
     echo "It will set up repository secrets, configure branch protection, and validate the setup."
     echo ""
     

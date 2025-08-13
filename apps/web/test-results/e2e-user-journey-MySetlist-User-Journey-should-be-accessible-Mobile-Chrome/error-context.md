@@ -5,9 +5,9 @@
 - button "Open Next.js Dev Tools":
   - img
 - banner:
-  - link "MySetlist Home":
+  - link "TheSet Home":
     - /url: /
-    - paragraph: MySetlist
+    - paragraph: TheSet
   - button "Search..."
   - link "Sign in":
     - /url: /auth/sign-in
@@ -146,7 +146,7 @@
   - link "View all trending artists →":
     - /url: /trending?tab=artists
 - contentinfo:
-  - heading "MySetlist" [level=3]
+  - heading "TheSet" [level=3]
   - paragraph: Vote for your dream setlist and connect with fellow music fans.
   - heading "Product" [level=4]
   - list:
@@ -187,7 +187,7 @@
     - listitem:
       - link "Facebook":
         - /url: https://facebook.com
-  - paragraph: © 2025 MySetlist. All rights reserved.
+  - paragraph: © 2025 TheSet. All rights reserved.
 - region "Notifications alt+T"
 - text: "SW: NO | Cache: CLEAN | Last: NEVER"
 ```

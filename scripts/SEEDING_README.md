@@ -1,6 +1,6 @@
 # Database Seeding Guide
 
-This guide explains how to seed your MySetlist database with test data.
+This guide explains how to seed your TheSet database with test data.
 
 ## Available Seeding Scripts
 
@@ -175,4 +175,4 @@ After seeding:
 4. Vote on setlist songs
 5. Follow artists as different users
 
-The seeded data provides a complete testing environment for all MySetlist features!
+The seeded data provides a complete testing environment for all TheSet features!

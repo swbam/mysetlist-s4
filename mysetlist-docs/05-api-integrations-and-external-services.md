@@ -1,4 +1,4 @@
-# MySetlist - API Integrations & External Services
+# TheSet - API Integrations & External Services
 
 ## Table of Contents
 
@@ -13,13 +13,13 @@
 
 ## External APIs Overview
 
-MySetlist integrates with multiple external APIs to provide comprehensive music data. The integration follows Next-Forge's package structure with a dedicated external-apis package that handles all third-party service interactions.
+TheSet integrates with multiple external APIs to provide comprehensive music data. The integration follows Next-Forge's package structure with a dedicated external-apis package that handles all third-party service interactions.
 
 ### API Service Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│                MySetlist Application                        │
+│                TheSet Application                        │
 ├─────────────────────────────────────────────────────────┤
 │  @repo/external-apis Package                            │
 │  ├── Spotify API     ├── Ticketmaster  ├── Setlist.fm  │

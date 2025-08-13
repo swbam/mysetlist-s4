@@ -1,6 +1,6 @@
 #!/usr/bin/env tsx
 /**
- * Simple test runner for MySetlist
+ * Simple test runner for TheSet
  * Runs tests in the web app since that's where all the tests are
  */
 
@@ -8,7 +8,7 @@ import { execSync } from "node:child_process";
 import chalk from "chalk";
 
 async function runTests() {
-  console.log(chalk.blue("🧪 Running MySetlist tests...\n"));
+  console.log(chalk.blue("🧪 Running TheSet tests...\n"));
 
   try {
     // Run tests in web app

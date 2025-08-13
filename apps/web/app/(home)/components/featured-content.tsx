@@ -265,7 +265,7 @@ async function FeaturedContent() {
           <CardContent className="p-8 text-center">
             <Trophy className="mx-auto h-12 w-12 text-primary mb-4" />
             <h3 className="font-bold text-2xl mb-2">
-              Join the MySetlist Community
+              Join the TheSet Community
             </h3>
             <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
               Be part of the revolution in concert experiences. Vote on

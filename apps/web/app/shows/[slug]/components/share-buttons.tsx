@@ -57,11 +57,11 @@ export function ShareButtons({
   const encodedUrl = encodeURIComponent(fullUrl);
   const encodedTitle = encodeURIComponent(title);
   const encodedDescription = encodeURIComponent(
-    description || `Check out ${title} on MySetlist`,
+    description || `Check out ${title} on TheSet`,
   );
 
   const shareLinks = {
-    twitter: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}&hashtags=MySetlist,LiveMusic`,
+    twitter: `https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}&hashtags=TheSet,LiveMusic`,
     facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`,
     whatsapp: `https://wa.me/?text=${encodedTitle}%20${encodedUrl}`,
     reddit: `https://reddit.com/submit?url=${encodedUrl}&title=${encodedTitle}`,

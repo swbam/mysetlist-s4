@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
 /**
- * MySetlist System Status Summary
+ * TheSet System Status Summary
  * Shows the current status of the database and sync system
  */
 
-console.log("🎉 MySetlist Database & Sync System - STATUS REPORT");
+console.log("🎉 TheSet Database & Sync System - STATUS REPORT");
 console.log("==================================================");
 
 console.log("\n✅ ISSUES FIXED:");
@@ -93,7 +93,7 @@ console.log("  📊 Historical data tracking for growth analysis");
 
 console.log("\n✨ CONCLUSION:");
 console.log(
-  "The MySetlist database and sync system is now fully functional with:",
+  "The TheSet database and sync system is now fully functional with:",
 );
 console.log("  - ✅ Complete database schema");
 console.log("  - ✅ Real API data integration");

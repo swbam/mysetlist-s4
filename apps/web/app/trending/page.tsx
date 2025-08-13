@@ -35,11 +35,11 @@ import { TrendingStatistics } from "./components/trending-statistics";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Trending - MySetlist",
+  title: "Trending - TheSet",
   description:
     "Discover what's trending in the live music world. See top artists, most voted songs, hot venues, and rising stars with real community data.",
   openGraph: {
-    title: "Music Trends & Insights | MySetlist",
+    title: "Music Trends & Insights | TheSet",
     description:
       "Explore real-time music trends: top artists, most voted songs, hot venues, and rising stars. Data-driven insights from the concert community.",
   },

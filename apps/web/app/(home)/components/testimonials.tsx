@@ -18,7 +18,7 @@ export default function Testimonials() {
                 ))}
               </div>
               <p className="text-muted-foreground leading-relaxed">
-                "MySetlist changed how I experience live music. Being able to
+                "TheSet changed how I experience live music. Being able to
                 vote on setlists and track my favorite artists' shows is
                 incredible!"
               </p>

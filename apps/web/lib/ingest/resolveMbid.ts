@@ -1,5 +1,5 @@
 const MUSICBRAINZ_BASE_URL = "https://musicbrainz.org/ws/2";
-const USER_AGENT = "MySetlist/1.0 (https://mysetlist.com)";
+const USER_AGENT = "TheSet/1.0 (https://mysetlist.com)";
 
 // Rate limit: 1 request per second for MusicBrainz
 let lastMusicBrainzRequest = 0;

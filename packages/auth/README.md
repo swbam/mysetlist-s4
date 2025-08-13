@@ -1,6 +1,6 @@
 # @repo/auth
 
-A comprehensive authentication package for MySetlist, built on top of Supabase Auth with enhanced features for music applications.
+A comprehensive authentication package for TheSet, built on top of Supabase Auth with enhanced features for music applications.
 
 ## Features
 
@@ -16,7 +16,7 @@ A comprehensive authentication package for MySetlist, built on top of Supabase A
 
 ## Installation
 
-This package is part of the MySetlist monorepo and uses workspace dependencies.
+This package is part of the TheSet monorepo and uses workspace dependencies.
 
 ```bash
 # Install dependencies
@@ -349,8 +349,8 @@ try {
 
 ## Contributing
 
-This package is part of the MySetlist monorepo. See the main README for contribution guidelines.
+This package is part of the TheSet monorepo. See the main README for contribution guidelines.
 
 ## License
 
-Private - MySetlist Project
+Private - TheSet Project

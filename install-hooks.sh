@@ -7,7 +7,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🚀 Installing Claude Code Hooks for MySetlist${NC}"
+echo -e "${BLUE}🚀 Installing Claude Code Hooks for TheSet${NC}"
 echo "================================================"
 
 # Get project root
@@ -566,7 +566,7 @@ while [[ "$PROJECT_ROOT" != "/" ]]; do
   PROJECT_ROOT=$(dirname "$PROJECT_ROOT")
 done
 
-echo "🎵 MySetlist Development Session Started"
+echo "🎵 TheSet Development Session Started"
 echo "========================================"
 echo ""
 
@@ -707,7 +707,7 @@ Steps:
 5. Test error handling and edge cases
 6. Check rate limiting compliance
 
-For MySetlist APIs:
+For TheSet APIs:
 - Spotify: Test artist search, artist details, top tracks
 - Ticketmaster: Test event search, venue details
 - Setlist.fm: Test setlist retrieval, artist setlists
@@ -828,7 +828,7 @@ echo -e "${BLUE}📁 Creating project files...${NC}"
 
 # Create Makefile in project root
 cat > "$PROJECT_ROOT/Makefile" << 'EOF'
-# Makefile for MySetlist pnpm monorepo
+# Makefile for TheSet pnpm monorepo
 .PHONY: help lint format test build dev clean
 
 help: ## Show this help message
@@ -894,7 +894,7 @@ EOF
 cat > "$PROJECT_ROOT/.claude-hooks-config.sh" << 'EOF'
 #!/usr/bin/env bash
 
-# MySetlist Claude Hooks Configuration
+# TheSet Claude Hooks Configuration
 # This file customizes hook behavior for this project
 
 # Enable/disable hooks
@@ -1006,10 +1006,10 @@ EOF
 
 # Create CLAUDE.md for project context
 cat > "$PROJECT_ROOT/CLAUDE.md" << 'EOF'
-# MySetlist Project Context
+# TheSet Project Context
 
 ## Project Overview
-MySetlist is a concert setlist platform built with Next.js 14, Supabase, and TypeScript.
+TheSet is a concert setlist platform built with Next.js 14, Supabase, and TypeScript.
 
 ## Tech Stack
 - **Frontend**: Next.js 14, React 18, TypeScript, Tailwind CSS

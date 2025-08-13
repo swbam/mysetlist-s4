@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Setup Edge Function Secrets for MySetlist
+# Setup Edge Function Secrets for TheSet
 
 echo "Setting up Edge Function secrets..."
 

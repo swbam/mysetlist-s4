@@ -9,7 +9,7 @@
 
 ## EXECUTIVE SUMMARY
 
-After comprehensive analysis of the MySetlist codebase, **the sync and import system requires significant fixes and completion**. While foundational components exist, critical issues prevent autonomous operation:
+After comprehensive analysis of the TheSet codebase, **the sync and import system requires significant fixes and completion**. While foundational components exist, critical issues prevent autonomous operation:
 
 - **Database schema mismatches** breaking sync operations
 - **Incomplete sync service implementations** with syntax errors  
@@ -557,15 +557,15 @@ describe('Artist Import & Sync System', () => {
 
 ```bash
 # Manual cron job testing commands
-curl -X POST "https://mysetlist-s4-1.vercel.app/api/cron/master-sync" \
+curl -X POST "https://mysetlist-sonnet.vercel.app/api/cron/master-sync" \
   -H "Authorization: Bearer $CRON_SECRET" \
   -H "Content-Type: application/json" \
   -d '{"mode":"daily"}'
 
-curl -X POST "https://mysetlist-s4-1.vercel.app/api/cron/calculate-trending" \
+curl -X POST "https://mysetlist-sonnet.vercel.app/api/cron/calculate-trending" \
   -H "Authorization: Bearer $CRON_SECRET"
 
-curl -X POST "https://mysetlist-s4-1.vercel.app/api/cron/sync-artist-data" \
+curl -X POST "https://mysetlist-sonnet.vercel.app/api/cron/sync-artist-data" \
   -H "Authorization: Bearer $CRON_SECRET" \
   -d '{"limit":10,"mode":"auto"}'
 ```
@@ -623,7 +623,7 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 CRON_SECRET=your_secure_cron_secret
 
 # App
-NEXT_PUBLIC_APP_URL=https://mysetlist-s4-1.vercel.app
+NEXT_PUBLIC_APP_URL=https://mysetlist-sonnet.vercel.app
 ```
 
 ### Database Preparation
@@ -718,7 +718,7 @@ CREATE TABLE IF NOT EXISTS cron_job_logs (
 
 ## CONCLUSION
 
-The MySetlist sync system has solid foundations but requires focused implementation work to achieve autonomous operation. The critical path involves:
+The TheSet sync system has solid foundations but requires focused implementation work to achieve autonomous operation. The critical path involves:
 
 1. **Fix database schema mismatches** (blocking all operations)
 2. **Complete sync service implementations** (core functionality)

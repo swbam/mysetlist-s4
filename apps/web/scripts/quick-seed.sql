@@ -1,4 +1,4 @@
--- Quick seed data for testing MySetlist app
+-- Quick seed data for testing TheSet app
 -- Insert some popular artists with realistic data
 
 INSERT INTO artists (

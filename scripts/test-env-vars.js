@@ -238,7 +238,7 @@ async function testExternalAPIs() {
 }
 
 async function runAllChecks() {
-  console.log('🚀 MySetlist Environment Configuration Check');
+  console.log('🚀 TheSet Environment Configuration Check');
   console.log('');
 
   // Check environment variables

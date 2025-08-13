@@ -2,7 +2,7 @@
 
 ## Email System Overview
 
-MySetlist uses Resend for email delivery and React Email for templates. The system includes:
+TheSet uses Resend for email delivery and React Email for templates. The system includes:
 
 - **Email Queue**: Stores emails to be sent with retry logic
 - **Email Templates**: React-based email templates for various notifications
