@@ -3,19 +3,19 @@
  * Implements smart caching strategy with Redis fallback and performance optimization
  */
 
-import { CacheClient, cacheKeys } from "../cache/redis";
 import { cache as dbCache } from "@repo/database/src/cache-strategy";
+import { CacheClient, cacheKeys } from "../cache/redis";
 
 // Cache TTL Configuration (in seconds)
 const CACHE_TTL = {
-  ARTIST_PAGES: 3600,      // 1 hour - shows change rarely
-  SHOW_DATA: 21600,        // 6 hours - venues/dates stable
-  SONG_CATALOG: 86400,     // 24 hours - discographies change rarely  
-  SETLISTS: 3600,          // 1 hour - voting changes frequently
-  TRENDING: 1800,          // 30 minutes - trending data
-  SEARCH_RESULTS: 3600,    // 1 hour - search results
-  API_RESPONSES: 300,      // 5 minutes - API responses
-  USER_DATA: 1800,         // 30 minutes - user-specific data
+  ARTIST_PAGES: 3600, // 1 hour - shows change rarely
+  SHOW_DATA: 21600, // 6 hours - venues/dates stable
+  SONG_CATALOG: 86400, // 24 hours - discographies change rarely
+  SETLISTS: 3600, // 1 hour - voting changes frequently
+  TRENDING: 1800, // 30 minutes - trending data
+  SEARCH_RESULTS: 3600, // 1 hour - search results
+  API_RESPONSES: 300, // 5 minutes - API responses
+  USER_DATA: 1800, // 30 minutes - user-specific data
 } as const;
 
 interface CacheOptions {
@@ -54,8 +54,8 @@ export class CacheManager {
   }
 
   private initializeMetrics() {
-    const categories = ['redis', 'memory', 'api', 'database'];
-    categories.forEach(category => {
+    const categories = ["redis", "memory", "api", "database"];
+    categories.forEach((category) => {
       this.metrics.set(category, {
         hits: 0,
         misses: 0,
@@ -67,12 +67,26 @@ export class CacheManager {
     });
   }
 
-  private recordMetric(category: string, operation: 'hit' | 'miss' | 'set' | 'delete' | 'error', responseTime?: number) {
+  private recordMetric(
+    category: string,
+    operation: "hit" | "miss" | "set" | "delete" | "error",
+    responseTime?: number,
+  ) {
     const metric = this.metrics.get(category);
     if (!metric) return;
 
-    metric[operation === 'hit' ? 'hits' : operation === 'miss' ? 'misses' : operation === 'set' ? 'sets' : operation === 'delete' ? 'deletes' : 'errors']++;
-    
+    metric[
+      operation === "hit"
+        ? "hits"
+        : operation === "miss"
+          ? "misses"
+          : operation === "set"
+            ? "sets"
+            : operation === "delete"
+              ? "deletes"
+              : "errors"
+    ]++;
+
     if (responseTime) {
       metric.avgResponseTime = (metric.avgResponseTime + responseTime) / 2;
     }
@@ -90,35 +104,37 @@ export class CacheManager {
       if (useRedis) {
         const redisResult = await this.redisClient.get<T>(key);
         if (redisResult !== null) {
-          this.recordMetric('redis', 'hit', Date.now() - startTime);
+          this.recordMetric("redis", "hit", Date.now() - startTime);
           return redisResult;
         }
-        this.recordMetric('redis', 'miss');
+        this.recordMetric("redis", "miss");
       }
 
       // Fallback to memory cache
       if (useMemory && this.fallbackToMemory) {
         const memoryResult = await dbCache.getCachedSearchResults({
           query: key,
-          type: 'generic',
+          type: "generic",
           limit: 1,
           filters: {},
         });
         if (memoryResult !== null) {
-          this.recordMetric('memory', 'hit', Date.now() - startTime);
+          this.recordMetric("memory", "hit", Date.now() - startTime);
           // Store in Redis for next time
           if (useRedis) {
-            await this.redisClient.set(key, memoryResult, { ex: options.ttl || CACHE_TTL.API_RESPONSES });
+            await this.redisClient.set(key, memoryResult, {
+              ex: options.ttl || CACHE_TTL.API_RESPONSES,
+            });
           }
           return memoryResult as T;
         }
-        this.recordMetric('memory', 'miss');
+        this.recordMetric("memory", "miss");
       }
 
       return null;
     } catch (error) {
-      this.recordMetric('redis', 'error');
-      console.warn('Cache get error:', error);
+      this.recordMetric("redis", "error");
+      console.warn("Cache get error:", error);
       return null;
     }
   }
@@ -126,36 +142,50 @@ export class CacheManager {
   /**
    * Set cached data in multiple layers
    */
-  async set<T>(key: string, value: T, options: CacheOptions = {}): Promise<boolean> {
-    const { ttl = CACHE_TTL.API_RESPONSES, useRedis = true, useMemory = true, pattern } = options;
+  async set<T>(
+    key: string,
+    value: T,
+    options: CacheOptions = {},
+  ): Promise<boolean> {
+    const {
+      ttl = CACHE_TTL.API_RESPONSES,
+      useRedis = true,
+      useMemory = true,
+      pattern,
+    } = options;
     let success = false;
 
     try {
       // Set in Redis
       if (useRedis) {
         if (pattern) {
-          success = await this.redisClient.setWithPattern(key, value, pattern, ttl);
+          success = await this.redisClient.setWithPattern(
+            key,
+            value,
+            pattern,
+            ttl,
+          );
         } else {
           success = await this.redisClient.set(key, value, { ex: ttl });
         }
-        this.recordMetric('redis', 'set');
+        this.recordMetric("redis", "set");
       }
 
       // Set in memory cache
       if (useMemory && this.fallbackToMemory) {
         await dbCache.setCachedSearchResults(
-          { query: key, type: 'generic', limit: 1, filters: {} },
+          { query: key, type: "generic", limit: 1, filters: {} },
           value,
-          ttl * 1000 // Convert to ms
+          ttl * 1000, // Convert to ms
         );
-        this.recordMetric('memory', 'set');
+        this.recordMetric("memory", "set");
         success = true;
       }
 
       return success;
     } catch (error) {
-      this.recordMetric('redis', 'error');
-      console.warn('Cache set error:', error);
+      this.recordMetric("redis", "error");
+      console.warn("Cache set error:", error);
       return false;
     }
   }
@@ -166,16 +196,16 @@ export class CacheManager {
   async delete(key: string): Promise<boolean> {
     try {
       const redisResult = await this.redisClient.del(key);
-      this.recordMetric('redis', 'delete');
-      
+      this.recordMetric("redis", "delete");
+
       // Also clear from memory cache
       dbCache.invalidateSearchCache(key);
-      this.recordMetric('memory', 'delete');
-      
+      this.recordMetric("memory", "delete");
+
       return redisResult > 0;
     } catch (error) {
-      this.recordMetric('redis', 'error');
-      console.warn('Cache delete error:', error);
+      this.recordMetric("redis", "error");
+      console.warn("Cache delete error:", error);
       return false;
     }
   }
@@ -188,7 +218,7 @@ export class CacheManager {
       await this.redisClient.invalidatePattern(pattern);
       dbCache.invalidateSearchCache(); // Clear all memory cache for safety
     } catch (error) {
-      console.warn('Pattern invalidation error:', error);
+      console.warn("Pattern invalidation error:", error);
     }
   }
 
@@ -199,8 +229,8 @@ export class CacheManager {
     const key = cacheKeys.artist(artistId);
     return this.set(key, data, {
       ttl: CACHE_TTL.ARTIST_PAGES,
-      pattern: 'artists',
-      invalidateRelated: ['trending', 'search']
+      pattern: "artists",
+      invalidateRelated: ["trending", "search"],
     });
   }
 
@@ -216,7 +246,7 @@ export class CacheManager {
     const key = cacheKeys.show(showId);
     return this.set(key, data, {
       ttl: CACHE_TTL.SHOW_DATA,
-      pattern: 'shows'
+      pattern: "shows",
     });
   }
 
@@ -228,15 +258,24 @@ export class CacheManager {
   /**
    * Trending data caching
    */
-  async cacheTrending(period: string, type: string, limit: number, data: any): Promise<boolean> {
+  async cacheTrending(
+    period: string,
+    type: string,
+    limit: number,
+    data: any,
+  ): Promise<boolean> {
     const key = cacheKeys.trending(period, type, limit);
     return this.set(key, data, {
       ttl: CACHE_TTL.TRENDING,
-      pattern: 'trending'
+      pattern: "trending",
     });
   }
 
-  async getCachedTrending(period: string, type: string, limit: number): Promise<any> {
+  async getCachedTrending(
+    period: string,
+    type: string,
+    limit: number,
+  ): Promise<any> {
     const key = cacheKeys.trending(period, type, limit);
     return this.get(key);
   }
@@ -244,11 +283,15 @@ export class CacheManager {
   /**
    * Search results caching
    */
-  async cacheSearchResults(query: string, type: string, data: any): Promise<boolean> {
+  async cacheSearchResults(
+    query: string,
+    type: string,
+    data: any,
+  ): Promise<boolean> {
     const key = cacheKeys.searchResults(query, type);
     return this.set(key, data, {
       ttl: CACHE_TTL.SEARCH_RESULTS,
-      pattern: 'search'
+      pattern: "search",
     });
   }
 
@@ -260,21 +303,23 @@ export class CacheManager {
   /**
    * Cache warming strategies
    */
-  async warmCache(strategy: 'trending' | 'popular-artists' | 'upcoming-shows' | 'all'): Promise<void> {
+  async warmCache(
+    strategy: "trending" | "popular-artists" | "upcoming-shows" | "all",
+  ): Promise<void> {
     console.log(`Starting cache warming: ${strategy}`);
-    
+
     try {
       switch (strategy) {
-        case 'trending':
+        case "trending":
           await this.warmTrendingCache();
           break;
-        case 'popular-artists':
+        case "popular-artists":
           await this.warmPopularArtistsCache();
           break;
-        case 'upcoming-shows':
+        case "upcoming-shows":
           await this.warmUpcomingShowsCache();
           break;
-        case 'all':
+        case "all":
           await Promise.all([
             this.warmTrendingCache(),
             this.warmPopularArtistsCache(),
@@ -283,14 +328,14 @@ export class CacheManager {
           break;
       }
     } catch (error) {
-      console.error('Cache warming failed:', error);
+      console.error("Cache warming failed:", error);
     }
   }
 
   private async warmTrendingCache(): Promise<void> {
-    const periods = ['day', 'week', 'month'];
-    const types = ['artists', 'shows'];
-    
+    const periods = ["day", "week", "month"];
+    const types = ["artists", "shows"];
+
     for (const period of periods) {
       for (const type of types) {
         // This would fetch trending data and cache it
@@ -302,12 +347,12 @@ export class CacheManager {
 
   private async warmPopularArtistsCache(): Promise<void> {
     // Fetch and cache popular artists
-    console.log('Warming popular artists cache');
+    console.log("Warming popular artists cache");
   }
 
   private async warmUpcomingShowsCache(): Promise<void> {
     // Fetch and cache upcoming shows
-    console.log('Warming upcoming shows cache');
+    console.log("Warming upcoming shows cache");
   }
 
   /**
@@ -345,12 +390,12 @@ export class CacheManager {
    */
   async multiGet<T>(keys: string[]): Promise<Map<string, T | null>> {
     const results = new Map<string, T | null>();
-    
+
     // Use Redis pipeline for efficiency
     try {
-      const pipeline = keys.map(key => ['GET', key]);
+      const pipeline = keys.map((key) => ["GET", key]);
       const redisResults = await this.redisClient.pipeline(pipeline);
-      
+
       keys.forEach((key, index) => {
         const result = redisResults[index];
         try {
@@ -360,39 +405,41 @@ export class CacheManager {
         }
       });
     } catch (error) {
-      console.warn('Multi-get error:', error);
+      console.warn("Multi-get error:", error);
       // Fallback to individual gets
       for (const key of keys) {
         results.set(key, await this.get<T>(key));
       }
     }
-    
+
     return results;
   }
 
-  async multiSet<T>(entries: Array<{ key: string; value: T; ttl?: number }>): Promise<boolean[]> {
+  async multiSet<T>(
+    entries: Array<{ key: string; value: T; ttl?: number }>,
+  ): Promise<boolean[]> {
     const results: boolean[] = [];
-    
+
     try {
       // Use Redis pipeline for efficiency
       const pipeline = entries.map(({ key, value, ttl }) => {
-        const cmd = ['SET', key, JSON.stringify(value)];
+        const cmd = ["SET", key, JSON.stringify(value)];
         if (ttl) {
-          cmd.push('EX', ttl.toString());
+          cmd.push("EX", ttl.toString());
         }
         return cmd;
       });
-      
+
       const redisResults = await this.redisClient.pipeline(pipeline);
-      results.push(...redisResults.map(result => result === 'OK'));
+      results.push(...redisResults.map((result) => result === "OK"));
     } catch (error) {
-      console.warn('Multi-set error:', error);
+      console.warn("Multi-set error:", error);
       // Fallback to individual sets
       for (const { key, value, ttl } of entries) {
         results.push(await this.set(key, value, { ttl }));
       }
     }
-    
+
     return results;
   }
 }
@@ -407,25 +454,25 @@ export const cacheTTL = CACHE_TTL;
 export function withCache<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   keyGenerator: (...args: Parameters<T>) => string,
-  options: CacheOptions = {}
+  options: CacheOptions = {},
 ): T {
   return (async (...args: Parameters<T>) => {
     const key = keyGenerator(...args);
-    
+
     // Try cache first
     const cached = await cacheManager.get(key, options);
     if (cached !== null) {
       return cached;
     }
-    
+
     // Execute function
     const result = await fn(...args);
-    
+
     // Cache result
     if (result !== null && result !== undefined) {
       await cacheManager.set(key, result, options);
     }
-    
+
     return result;
   }) as T;
 }

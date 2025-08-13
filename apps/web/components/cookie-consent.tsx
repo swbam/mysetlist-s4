@@ -119,8 +119,8 @@ export function CookieConsent() {
         </div>
 
         <p className="mb-4 text-muted-foreground text-sm">
-          We use cookies to enhance your experience on TheSet. By continuing
-          to use our site, you agree to our use of cookies. You can manage your
+          We use cookies to enhance your experience on TheSet. By continuing to
+          use our site, you agree to our use of cookies. You can manage your
           preferences below.
         </p>
 

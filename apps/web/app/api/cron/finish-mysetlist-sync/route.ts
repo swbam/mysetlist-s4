@@ -1,8 +1,12 @@
-import { createClient } from "~/lib/supabase/server";
 import { SetlistSyncService, SyncScheduler } from "@repo/external-apis";
-import { type NextRequest, NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { requireCronAuth, createSuccessResponse, createErrorResponse } from "~/lib/api/auth-helpers";
+import { type NextRequest, NextResponse } from "next/server";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  requireCronAuth,
+} from "~/lib/api/auth-helpers";
+import { createClient } from "~/lib/supabase/server";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -26,20 +30,23 @@ export async function POST(request: NextRequest) {
         console.log("Starting orchestrated sync pipeline...");
         orchestrationResult = await scheduler.runDailySync();
         console.log("Orchestrated sync completed:", orchestrationResult);
-        
+
         // Wait a bit for data to propagate
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        await new Promise((resolve) => setTimeout(resolve, 5000));
       } catch (error) {
-        console.error("Orchestration failed, proceeding with setlist creation only:", error);
-        orchestrationResult = { 
+        console.error(
+          "Orchestration failed, proceeding with setlist creation only:",
+          error,
+        );
+        orchestrationResult = {
           error: error instanceof Error ? error.message : "Unknown error",
-          status: "failed"
+          status: "failed",
         };
       }
     }
 
     // Get shows that need setlist initialization
-      const { data: showsWithoutSetlists, error: showsError } = await supabase
+    const { data: showsWithoutSetlists, error: showsError } = await supabase
       .from("shows")
       .select(`
         id,
@@ -68,12 +75,14 @@ export async function POST(request: NextRequest) {
     const errorDetails: string[] = [];
 
     if (showsWithoutSetlists && showsWithoutSetlists.length > 0) {
-      console.log(`Processing ${showsWithoutSetlists.length} shows for setlist initialization`);
+      console.log(
+        `Processing ${showsWithoutSetlists.length} shows for setlist initialization`,
+      );
 
       for (const show of showsWithoutSetlists) {
         try {
           processed++;
-          
+
           // Check if show already has setlist (race condition protection)
           const { data: existingSetlist } = await supabase
             .from("setlists")
@@ -104,7 +113,10 @@ export async function POST(request: NextRequest) {
             .single();
 
           if (setlistError) {
-            console.error(`Failed to create setlist for show ${show.id}:`, setlistError);
+            console.error(
+              `Failed to create setlist for show ${show.id}:`,
+              setlistError,
+            );
             errors++;
             errorDetails.push(`Show ${show.id}: ${setlistError.message}`);
             continue;
@@ -113,29 +125,35 @@ export async function POST(request: NextRequest) {
           // Update show with setlist_id
           const { error: updateError } = await supabase
             .from("shows")
-            .update({ 
+            .update({
               setlist_id: newSetlist.id,
-              updated_at: new Date().toISOString()
+              updated_at: new Date().toISOString(),
             })
             .eq("id", show.id);
 
           if (updateError) {
-            console.error(`Failed to update show ${show.id} with setlist_id:`, updateError);
+            console.error(
+              `Failed to update show ${show.id} with setlist_id:`,
+              updateError,
+            );
             // Don't count as error since setlist was created
           }
 
           created++;
-          console.log(`Created setlist ${newSetlist.id} for show ${show.id} (${show.artist_name})`);
+          console.log(
+            `Created setlist ${newSetlist.id} for show ${show.id} (${show.artist_name})`,
+          );
 
           // Add delay to prevent overwhelming the database
           if (processed % 10 === 0) {
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise((resolve) => setTimeout(resolve, 500));
           }
-
         } catch (error) {
           console.error(`Error processing show ${show.id}:`, error);
           errors++;
-          errorDetails.push(`Show ${show.id}: ${error instanceof Error ? error.message : "Unknown error"}`);
+          errorDetails.push(
+            `Show ${show.id}: ${error instanceof Error ? error.message : "Unknown error"}`,
+          );
         }
       }
     }
@@ -148,40 +166,39 @@ export async function POST(request: NextRequest) {
       orchestrate,
       orchestrationResult,
       timestamp: new Date().toISOString(),
-      ...(errorDetails.length > 0 && { errorDetails: errorDetails.slice(0, 10) }) // Limit error details
+      ...(errorDetails.length > 0 && {
+        errorDetails: errorDetails.slice(0, 10),
+      }), // Limit error details
     };
 
     // Log to Supabase cron_job_logs table
-    await supabase
-      .from("cron_job_logs")
-      .insert({
-        job_name: "finish-mysetlist-sync",
-        status: errors === 0 ? "completed" : "completed_with_errors",
-        message: `${orchestrate ? 'Orchestrated sync + ' : ''}Processed ${processed} shows, created ${created} setlists, ${errors} errors`,
-        details: result,
-        created_at: new Date().toISOString(),
-      });
+    await supabase.from("cron_job_logs").insert({
+      job_name: "finish-mysetlist-sync",
+      status: errors === 0 ? "completed" : "completed_with_errors",
+      message: `${orchestrate ? "Orchestrated sync + " : ""}Processed ${processed} shows, created ${created} setlists, ${errors} errors`,
+      details: result,
+      created_at: new Date().toISOString(),
+    });
 
     return NextResponse.json({
       success: true,
       result,
     });
-
   } catch (error) {
     console.error("Finish TheSet sync failed:", error);
-    
+
     // Log error to Supabase
     try {
       const supabase = await createClient();
-      await supabase
-        .from("cron_job_logs")
-        .insert({
-          job_name: "finish-mysetlist-sync",
-          status: "failed",
-          message: error instanceof Error ? error.message : "Unknown error",
-          details: { error: error instanceof Error ? error.message : String(error) },
-          created_at: new Date().toISOString(),
-        });
+      await supabase.from("cron_job_logs").insert({
+        job_name: "finish-mysetlist-sync",
+        status: "failed",
+        message: error instanceof Error ? error.message : "Unknown error",
+        details: {
+          error: error instanceof Error ? error.message : String(error),
+        },
+        created_at: new Date().toISOString(),
+      });
     } catch (logError) {
       console.error("Failed to log error:", logError);
     }
@@ -215,7 +232,6 @@ export async function GET(request: NextRequest) {
     // Forward to POST method
     const response = await POST(request);
     return response;
-
   } catch (error) {
     console.error("Finish TheSet sync failed:", error);
     return NextResponse.json(

@@ -6,7 +6,7 @@ import { config } from "dotenv";
 config({ path: resolve(process.cwd(), ".env.local") });
 config({ path: resolve(process.cwd(), ".env") });
 
-const APP_URL = process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 
 interface SyncStatus {
   healthScore: {

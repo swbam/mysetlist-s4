@@ -480,9 +480,7 @@ export function LiveSetlistViewer({
               <span>{songs.filter((s) => s.isPlayed).length} played</span>
             )}
             {showVotes && (
-              <span>
-                {songs.reduce((sum, s) => sum + s.upvotes, 0)} votes
-              </span>
+              <span>{songs.reduce((sum, s) => sum + s.upvotes, 0)} votes</span>
             )}
           </div>
 

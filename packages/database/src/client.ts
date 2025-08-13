@@ -11,7 +11,7 @@ let _client: postgres.Sql | null = null;
 // Get database URL from environment variables
 function getDatabaseUrl(): string {
   // Try env first
-  const url = process.env["DATABASE_URL"] || process.env["DIRECT_URL"];
+  const url = process.env.DATABASE_URL || process.env.DIRECT_URL;
 
   // Throw error if not found - never use hardcoded credentials
   if (!url) {
@@ -41,7 +41,7 @@ export function getDb() {
 
   _db = drizzle(_client, {
     schema,
-    logger: process.env["NODE_ENV"] === "development",
+    logger: process.env.NODE_ENV === "development",
   });
 
   return _db;

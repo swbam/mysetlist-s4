@@ -75,7 +75,7 @@ async function seedArtist(artist: (typeof TOP_ARTISTS)[0]) {
       .where(eq(artists.spotifyId, artist.spotifyId))
       .limit(1);
 
-    let artistRecord;
+    let artistRecord: any;
 
     if (existingArtist.length > 0) {
       // Update existing artist

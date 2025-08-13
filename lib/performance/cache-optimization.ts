@@ -1,6 +1,6 @@
 /**
  * Comprehensive Caching Optimization System
- * 
+ *
  * Multi-layer caching strategy for TheSet application:
  * 1. Database query result caching (Redis + memory fallback)
  * 2. API response caching with intelligent invalidation
@@ -9,7 +9,7 @@
  * 5. User session and preference caching
  */
 
-import { Redis } from '@upstash/redis';
+import { Redis } from "@upstash/redis";
 
 // ================================
 // CACHE LAYER CONFIGURATION
@@ -23,30 +23,30 @@ export const cacheConfig = {
   memory: {
     maxSize: 100, // 100 MB
     ttl: {
-      short: 60,        // 1 minute
-      medium: 300,      // 5 minutes  
-      long: 900,        // 15 minutes
-    }
+      short: 60, // 1 minute
+      medium: 300, // 5 minutes
+      long: 900, // 15 minutes
+    },
   },
-  
+
   // Redis cache (L2) - fast, larger capacity
   redis: {
     ttl: {
-      short: 300,       // 5 minutes
-      medium: 900,      // 15 minutes
-      long: 1800,       // 30 minutes
-      veryLong: 3600,   // 1 hour
-    }
+      short: 300, // 5 minutes
+      medium: 900, // 15 minutes
+      long: 1800, // 30 minutes
+      veryLong: 3600, // 1 hour
+    },
   },
-  
+
   // CDN/Edge cache (L3) - global distribution
   cdn: {
     ttl: {
-      static: 86400,    // 24 hours
-      dynamic: 300,     // 5 minutes
-      api: 60,          // 1 minute
-    }
-  }
+      static: 86400, // 24 hours
+      dynamic: 300, // 5 minutes
+      api: 60, // 1 minute
+    },
+  },
 };
 
 /**
@@ -59,48 +59,54 @@ export const cacheKeys = {
     bySlug: (slug: string) => `artist:slug:${slug}`,
     trending: (limit: number) => `artists:trending:${limit}`,
     popular: (limit: number) => `artists:popular:${limit}`,
-    search: (query: string, limit: number) => `artists:search:${encodeURIComponent(query)}:${limit}`,
+    search: (query: string, limit: number) =>
+      `artists:search:${encodeURIComponent(query)}:${limit}`,
     importStatus: (id: string) => `artist:import:${id}`,
   },
-  
+
   // Show data caching
   show: {
     byId: (id: string) => `show:${id}`,
     bySlug: (slug: string) => `show:slug:${slug}`,
-    byArtist: (artistId: string, limit: number) => `shows:artist:${artistId}:${limit}`,
+    byArtist: (artistId: string, limit: number) =>
+      `shows:artist:${artistId}:${limit}`,
     upcoming: (limit: number) => `shows:upcoming:${limit}`,
     trending: (limit: number) => `shows:trending:${limit}`,
     dateRange: (start: string, end: string) => `shows:range:${start}:${end}`,
   },
-  
+
   // Voting and real-time data
   voting: {
     setlistVotes: (setlistId: string) => `votes:setlist:${setlistId}`,
-    userVotes: (userId: string, setlistId: string) => `votes:user:${userId}:${setlistId}`,
+    userVotes: (userId: string, setlistId: string) =>
+      `votes:user:${userId}:${setlistId}`,
     recentActivity: (hours: number) => `votes:recent:${hours}h`,
     leaderboard: (showId: string) => `votes:leaderboard:${showId}`,
   },
-  
+
   // Search and discovery
   search: {
-    autocomplete: (query: string, type: string) => `search:autocomplete:${type}:${encodeURIComponent(query)}`,
-    results: (query: string, type: string, limit: number) => `search:${type}:${encodeURIComponent(query)}:${limit}`,
+    autocomplete: (query: string, type: string) =>
+      `search:autocomplete:${type}:${encodeURIComponent(query)}`,
+    results: (query: string, type: string, limit: number) =>
+      `search:${type}:${encodeURIComponent(query)}:${limit}`,
   },
-  
+
   // User data and preferences
   user: {
     profile: (userId: string) => `user:profile:${userId}`,
     follows: (userId: string) => `user:follows:${userId}`,
     preferences: (userId: string) => `user:prefs:${userId}`,
-    activity: (userId: string, limit: number) => `user:activity:${userId}:${limit}`,
+    activity: (userId: string, limit: number) =>
+      `user:activity:${userId}:${limit}`,
   },
-  
+
   // Performance and analytics
   performance: {
     stats: () => `perf:stats:${Math.floor(Date.now() / 300000)}`, // 5-minute buckets
     trending: () => `perf:trending:${Math.floor(Date.now() / 900000)}`, // 15-minute buckets
     importMetrics: () => `perf:imports:${Math.floor(Date.now() / 600000)}`, // 10-minute buckets
-  }
+  },
 };
 
 // ================================
@@ -154,7 +160,11 @@ export class MultiLayerCacheManager {
   /**
    * Set value in cache with intelligent distribution
    */
-  async set<T>(key: string, value: T, ttl: number = cacheConfig.redis.ttl.medium): Promise<void> {
+  async set<T>(
+    key: string,
+    value: T,
+    ttl: number = cacheConfig.redis.ttl.medium,
+  ): Promise<void> {
     try {
       // Store in both memory and Redis
       const memoryTtl = Math.min(ttl, cacheConfig.memory.ttl.long);
@@ -202,7 +212,9 @@ export class MultiLayerCacheManager {
       if (this.redis) {
         // Note: Pattern deletion in Redis requires lua script or manual key scanning
         // For now, we'll implement targeted invalidation
-        console.warn(`Pattern invalidation for ${pattern} requires manual implementation`);
+        console.warn(
+          `Pattern invalidation for ${pattern} requires manual implementation`,
+        );
       }
     } catch (error) {
       console.warn(`Cache pattern invalidation error for ${pattern}:`, error);
@@ -225,7 +237,7 @@ export class MultiLayerCacheManager {
       redis: {
         connected: this.redis !== null,
         hitRate: 0.76, // Would track this in production
-      }
+      },
     };
   }
 
@@ -244,7 +256,7 @@ export class MultiLayerCacheManager {
 
   private setInMemory<T>(key: string, value: T, ttl: number): void {
     const size = JSON.stringify(value).length;
-    
+
     // Evict items if memory cache is too large
     if (this.memoryCacheSize + size > this.maxMemorySize) {
       this.evictLeastRecentlyUsed();
@@ -252,9 +264,9 @@ export class MultiLayerCacheManager {
 
     this.memoryCache.set(key, {
       value,
-      expires: Date.now() + (ttl * 1000)
+      expires: Date.now() + ttl * 1000,
     });
-    
+
     this.memoryCacheSize += size;
   }
 
@@ -270,7 +282,7 @@ export class MultiLayerCacheManager {
     // Simple LRU eviction - remove 25% of entries
     const entriesToRemove = Math.floor(this.memoryCache.size * 0.25);
     let removed = 0;
-    
+
     for (const key of this.memoryCache.keys()) {
       if (removed >= entriesToRemove) break;
       this.deleteFromMemory(key);
@@ -289,7 +301,10 @@ export class CacheInvalidationManager {
   /**
    * Invalidate caches when artist data changes
    */
-  async invalidateArtistCaches(artistId: string, artistSlug?: string): Promise<void> {
+  async invalidateArtistCaches(
+    artistId: string,
+    artistSlug?: string,
+  ): Promise<void> {
     const keysToInvalidate = [
       cacheKeys.artist.byId(artistId),
       ...(artistSlug ? [cacheKeys.artist.bySlug(artistSlug)] : []),
@@ -297,8 +312,10 @@ export class CacheInvalidationManager {
       cacheKeys.artist.popular(20),
     ];
 
-    await Promise.all(keysToInvalidate.map(key => this.cacheManager.delete(key)));
-    
+    await Promise.all(
+      keysToInvalidate.map((key) => this.cacheManager.delete(key)),
+    );
+
     // Invalidate related show caches
     await this.cacheManager.delete(cacheKeys.show.byArtist(artistId, 10));
   }
@@ -306,7 +323,11 @@ export class CacheInvalidationManager {
   /**
    * Invalidate caches when show data changes
    */
-  async invalidateShowCaches(showId: string, artistId: string, showSlug?: string): Promise<void> {
+  async invalidateShowCaches(
+    showId: string,
+    artistId: string,
+    showSlug?: string,
+  ): Promise<void> {
     const keysToInvalidate = [
       cacheKeys.show.byId(showId),
       ...(showSlug ? [cacheKeys.show.bySlug(showSlug)] : []),
@@ -315,20 +336,27 @@ export class CacheInvalidationManager {
       cacheKeys.show.trending(20),
     ];
 
-    await Promise.all(keysToInvalidate.map(key => this.cacheManager.delete(key)));
+    await Promise.all(
+      keysToInvalidate.map((key) => this.cacheManager.delete(key)),
+    );
   }
 
   /**
    * Invalidate voting caches when votes change
    */
-  async invalidateVotingCaches(setlistId: string, userId?: string): Promise<void> {
+  async invalidateVotingCaches(
+    setlistId: string,
+    userId?: string,
+  ): Promise<void> {
     const keysToInvalidate = [
       cacheKeys.voting.setlistVotes(setlistId),
       cacheKeys.voting.recentActivity(24),
       ...(userId ? [cacheKeys.voting.userVotes(userId, setlistId)] : []),
     ];
 
-    await Promise.all(keysToInvalidate.map(key => this.cacheManager.delete(key)));
+    await Promise.all(
+      keysToInvalidate.map((key) => this.cacheManager.delete(key)),
+    );
   }
 
   /**
@@ -356,7 +384,6 @@ export class CacheInvalidationManager {
 
       // Clear old search caches (would need pattern matching in production)
       // This is a simplified version
-      
     } catch (error) {
       errors.push(`Cache maintenance error: ${error}`);
     }
@@ -371,15 +398,15 @@ export class CacheInvalidationManager {
 
 export function withQueryCache<T extends any[], R>(
   cacheKey: (...args: T) => string,
-  ttl: number = cacheConfig.redis.ttl.medium
+  ttl: number = cacheConfig.redis.ttl.medium,
 ) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     const originalMethod = descriptor.value;
     const cacheManager = new MultiLayerCacheManager();
 
     descriptor.value = async function (...args: T): Promise<R> {
       const key = cacheKey(...args);
-      
+
       // Try to get from cache first
       const cached = await cacheManager.get<R>(key);
       if (cached !== null) {
@@ -388,10 +415,10 @@ export function withQueryCache<T extends any[], R>(
 
       // Execute original method
       const result = await originalMethod.apply(this, args);
-      
+
       // Cache the result
       await cacheManager.set(key, result, ttl);
-      
+
       return result;
     };
 
@@ -410,10 +437,10 @@ export class APIResponseCache {
    * Cache API responses with automatic serialization
    */
   async cacheAPIResponse<T>(
-    endpoint: string, 
+    endpoint: string,
     params: Record<string, any>,
     data: T,
-    ttl: number = cacheConfig.redis.ttl.medium
+    ttl: number = cacheConfig.redis.ttl.medium,
   ): Promise<void> {
     const key = this.generateAPIKey(endpoint, params);
     await this.cacheManager.set(key, data, ttl);
@@ -424,7 +451,7 @@ export class APIResponseCache {
    */
   async getCachedAPIResponse<T>(
     endpoint: string,
-    params: Record<string, any>
+    params: Record<string, any>,
   ): Promise<T | null> {
     const key = this.generateAPIKey(endpoint, params);
     return this.cacheManager.get<T>(key);
@@ -437,14 +464,22 @@ export class APIResponseCache {
     await this.cacheManager.invalidatePattern(`api:${endpoint}`);
   }
 
-  private generateAPIKey(endpoint: string, params: Record<string, any>): string {
-    const sortedParams = Object.keys(params).sort().reduce((result, key) => {
-      result[key] = params[key];
-      return result;
-    }, {} as Record<string, any>);
+  private generateAPIKey(
+    endpoint: string,
+    params: Record<string, any>,
+  ): string {
+    const sortedParams = Object.keys(params)
+      .sort()
+      .reduce(
+        (result, key) => {
+          result[key] = params[key];
+          return result;
+        },
+        {} as Record<string, any>,
+      );
 
     const paramString = JSON.stringify(sortedParams);
-    return `api:${endpoint}:${Buffer.from(paramString).toString('base64')}`;
+    return `api:${endpoint}:${Buffer.from(paramString).toString("base64")}`;
   }
 }
 
@@ -459,9 +494,9 @@ export class RealTimeCacheManager {
    * Cache trending data with shorter TTL
    */
   async cacheTrendingData<T>(
-    type: 'artists' | 'shows' | 'songs',
+    type: "artists" | "shows" | "songs",
     data: T,
-    ttl: number = cacheConfig.redis.ttl.short
+    ttl: number = cacheConfig.redis.ttl.short,
   ): Promise<void> {
     const key = `trending:${type}:${Date.now()}`;
     await this.cacheManager.set(key, data, ttl);
@@ -477,7 +512,7 @@ export class RealTimeCacheManager {
       status: string;
       progress: number;
       message?: string;
-    }
+    },
   ): Promise<void> {
     const key = cacheKeys.artist.importStatus(artistId);
     await this.cacheManager.set(key, progress, cacheConfig.redis.ttl.short);
@@ -505,23 +540,26 @@ export const cdnOptimization = {
   /**
    * Generate optimized image URLs with caching headers
    */
-  generateImageURL(baseUrl: string, options: {
-    width?: number;
-    height?: number;
-    quality?: number;
-    format?: 'webp' | 'avif' | 'jpg';
-  } = {}): string {
+  generateImageURL(
+    baseUrl: string,
+    options: {
+      width?: number;
+      height?: number;
+      quality?: number;
+      format?: "webp" | "avif" | "jpg";
+    } = {},
+  ): string {
     const params = new URLSearchParams();
-    
-    if (options.width) params.set('w', options.width.toString());
-    if (options.height) params.set('h', options.height.toString());
-    if (options.quality) params.set('q', options.quality.toString());
-    if (options.format) params.set('f', options.format);
-    
+
+    if (options.width) params.set("w", options.width.toString());
+    if (options.height) params.set("h", options.height.toString());
+    if (options.quality) params.set("q", options.quality.toString());
+    if (options.format) params.set("f", options.format);
+
     // Add cache busting parameter based on hour to enable CDN caching
     const cacheKey = Math.floor(Date.now() / 3600000); // Hour-based cache key
-    params.set('v', cacheKey.toString());
-    
+    params.set("v", cacheKey.toString());
+
     return `${baseUrl}?${params.toString()}`;
   },
 
@@ -530,18 +568,18 @@ export const cdnOptimization = {
    */
   cacheHeaders: {
     static: {
-      'Cache-Control': 'public, max-age=86400, s-maxage=86400', // 24 hours
-      'Expires': new Date(Date.now() + 86400 * 1000).toUTCString(),
+      "Cache-Control": "public, max-age=86400, s-maxage=86400", // 24 hours
+      Expires: new Date(Date.now() + 86400 * 1000).toUTCString(),
     },
     api: {
-      'Cache-Control': 'public, max-age=300, s-maxage=300', // 5 minutes
-      'Expires': new Date(Date.now() + 300 * 1000).toUTCString(),
+      "Cache-Control": "public, max-age=300, s-maxage=300", // 5 minutes
+      Expires: new Date(Date.now() + 300 * 1000).toUTCString(),
     },
     dynamic: {
-      'Cache-Control': 'public, max-age=60, s-maxage=60', // 1 minute
-      'Expires': new Date(Date.now() + 60 * 1000).toUTCString(),
-    }
-  }
+      "Cache-Control": "public, max-age=60, s-maxage=60", // 1 minute
+      Expires: new Date(Date.now() + 60 * 1000).toUTCString(),
+    },
+  },
 };
 
 // ================================
@@ -551,7 +589,7 @@ export const cdnOptimization = {
 export class CacheWarmingManager {
   constructor(
     private cacheManager: MultiLayerCacheManager,
-    private apiCache: APIResponseCache
+    private apiCache: APIResponseCache,
   ) {}
 
   /**
@@ -568,19 +606,30 @@ export class CacheWarmingManager {
       // Warm trending artists cache
       // This would call the actual trending artists API
       const trendingArtists = await this.fetchTrendingArtists(20);
-      await this.cacheManager.set(cacheKeys.artist.trending(20), trendingArtists, cacheConfig.redis.ttl.long);
-      warmed.push('trending_artists');
+      await this.cacheManager.set(
+        cacheKeys.artist.trending(20),
+        trendingArtists,
+        cacheConfig.redis.ttl.long,
+      );
+      warmed.push("trending_artists");
 
-      // Warm upcoming shows cache  
+      // Warm upcoming shows cache
       const upcomingShows = await this.fetchUpcomingShows(20);
-      await this.cacheManager.set(cacheKeys.show.upcoming(20), upcomingShows, cacheConfig.redis.ttl.long);
-      warmed.push('upcoming_shows');
+      await this.cacheManager.set(
+        cacheKeys.show.upcoming(20),
+        upcomingShows,
+        cacheConfig.redis.ttl.long,
+      );
+      warmed.push("upcoming_shows");
 
       // Warm popular artists cache
       const popularArtists = await this.fetchPopularArtists(50);
-      await this.cacheManager.set(cacheKeys.artist.popular(50), popularArtists, cacheConfig.redis.ttl.long);
-      warmed.push('popular_artists');
-
+      await this.cacheManager.set(
+        cacheKeys.artist.popular(50),
+        popularArtists,
+        cacheConfig.redis.ttl.long,
+      );
+      warmed.push("popular_artists");
     } catch (error) {
       errors.push(`Cache warming error: ${error}`);
     }
@@ -595,7 +644,7 @@ export class CacheWarmingManager {
   }
 
   private async fetchUpcomingShows(limit: number): Promise<any[]> {
-    // Mock implementation  
+    // Mock implementation
     return [];
   }
 
@@ -616,9 +665,4 @@ export const realTimeCache = new RealTimeCacheManager(cacheManager);
 export const cacheWarming = new CacheWarmingManager(cacheManager, apiCache);
 
 // Export configuration and utilities
-export {
-  cacheConfig,
-  cacheKeys,
-  withQueryCache,
-  cdnOptimization
-};
+export { cacheConfig, cacheKeys, withQueryCache, cdnOptimization };

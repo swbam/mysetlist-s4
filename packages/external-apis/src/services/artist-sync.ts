@@ -1,7 +1,7 @@
 import { artistSongs, artists, songs } from "@repo/database";
+import { SetlistFmClient } from "../clients/setlistfm";
 import { SpotifyClient } from "../clients/spotify";
 import { TicketmasterClient } from "../clients/ticketmaster";
-import { SetlistFmClient } from "../clients/setlistfm";
 import { db, eq } from "../database";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 
@@ -22,7 +22,7 @@ export class ArtistSyncService {
   constructor() {
     this.spotifyClient = new SpotifyClient({});
     this.ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env["TICKETMASTER_API_KEY"] || "",
+      apiKey: process.env.TICKETMASTER_API_KEY || "",
     });
     this.errorHandler = new SyncErrorHandler({
       maxRetries: 3,
@@ -361,13 +361,13 @@ export class ArtistSyncService {
           // Filter out ONLY genuine live tracks - keep studio acoustic/remix versions
           const allTracks = tracksResponse.items || [];
           const tracks: any[] = [];
-          
+
           for (const t of allTracks) {
             const trackName = (t.name || "").toLowerCase();
             const albumName = (album.name || "").toLowerCase();
-            
+
             // Check if this is a genuine live performance
-            const isLivePerformance = (
+            const isLivePerformance =
               // Clear live performance indicators with venue/location
               trackName.includes("(live at") ||
               trackName.includes("(live from") ||
@@ -391,14 +391,12 @@ export class ArtistSyncService {
               albumName.includes("unplugged") ||
               albumName.includes("mtv unplugged") ||
               // Session recordings from radio/TV (not studio sessions)
-              (trackName.includes("session") && (
-                trackName.includes("bbc") ||
-                trackName.includes("radio") ||
-                trackName.includes("peel") ||
-                trackName.includes("tv")
-              ))
-            );
-            
+              (trackName.includes("session") &&
+                (trackName.includes("bbc") ||
+                  trackName.includes("radio") ||
+                  trackName.includes("peel") ||
+                  trackName.includes("tv")));
+
             if (isLivePerformance) {
               skippedLiveTracks++;
             } else {
@@ -497,9 +495,7 @@ export class ArtistSyncService {
   }
 
   // Overload signature declaration
-  async syncFullDiscography(
-    artistId: string,
-  ): Promise<{
+  async syncFullDiscography(artistId: string): Promise<{
     totalSongs: number;
     totalAlbums: number;
     processedAlbums: number;

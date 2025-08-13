@@ -1,7 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = "https://yzwkimtdaabyjbpykquu.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDY5MjMxNiwiZXhwIjoyMDY2MjY4MzE2fQ.ZMorLC_eZke3bvBAF0zyzqUONxpomfTN2RpE_mLjz18";
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDY5MjMxNiwiZXhwIjoyMDY2MjY4MzE2fQ.ZMorLC_eZke3bvBAF0zyzqUONxpomfTN2RpE_mLjz18";
 
 const supabase = createClient(supabaseUrl.trim(), supabaseKey.trim());
 
@@ -20,7 +21,7 @@ async function checkData() {
   } else {
     console.log(`Found ${artists?.length || 0} artists`);
     if (artists && artists.length > 0) {
-      console.log("Sample artists:", artists.map(a => a.name).join(", "));
+      console.log("Sample artists:", artists.map((a) => a.name).join(", "));
     }
   }
 
@@ -37,7 +38,7 @@ async function checkData() {
   } else {
     console.log(`\nFound ${shows?.length || 0} upcoming shows`);
     if (shows && shows.length > 0) {
-      console.log("Sample shows:", shows.map(s => s.name).join(", "));
+      console.log("Sample shows:", shows.map((s) => s.name).join(", "));
     }
   }
 

@@ -3,8 +3,8 @@
  * Implements intelligent code splitting for optimal performance
  */
 
-import { lazy, ComponentType } from 'react';
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
+import { ComponentType, lazy } from "react";
 
 // ================================
 // Performance Configuration
@@ -16,17 +16,17 @@ export const PERFORMANCE_TARGETS = {
   ARTIST_PAGE_BUNDLE: 400 * 1024, // 400KB
   SHOW_PAGE_BUNDLE: 450 * 1024, // 450KB
   ADMIN_BUNDLE: 600 * 1024, // 600KB (more lenient for admin)
-  
+
   // Performance timing targets (in milliseconds)
   PHASE_1_TARGET: 3000, // 3 seconds
   PHASE_2_TARGET: 15000, // 15 seconds
   PHASE_3_TARGET: 90000, // 90 seconds
-  
+
   // Core Web Vitals targets
   LCP_TARGET: 2500, // Largest Contentful Paint
   FID_TARGET: 100, // First Input Delay
   CLS_TARGET: 0.1, // Cumulative Layout Shift
-  
+
   // Chunk size limits
   MAX_CHUNK_SIZE: 200 * 1024, // 200KB per chunk
   MIN_CHUNK_SIZE: 20 * 1024, // 20KB minimum chunk
@@ -66,7 +66,7 @@ export const PERFORMANCE_TARGETS = {
 // Removed dynamic imports due to missing component files
 // TODO: Create analytics components when needed
 // - voting-analytics
-// - performance-metrics  
+// - performance-metrics
 // - user-engagement
 
 /**
@@ -104,11 +104,14 @@ export interface BundleAnalysis {
 export function analyzeBundleComposition(
   bundleStats: any,
   targetSize: number,
-  pageName: string
+  pageName: string,
 ): BundleAnalysis {
   const chunks = bundleStats.chunks || [];
-  const totalSize = chunks.reduce((sum: number, chunk: any) => sum + chunk.size, 0);
-  
+  const totalSize = chunks.reduce(
+    (sum: number, chunk: any) => sum + chunk.size,
+    0,
+  );
+
   const analysis: BundleAnalysis = {
     totalSize,
     chunks: chunks.map((chunk: any) => ({
@@ -126,29 +129,34 @@ export function analyzeBundleComposition(
   };
 
   // Generate recommendations based on analysis
-  analysis.recommendations = generateOptimizationRecommendations(analysis, pageName);
+  analysis.recommendations = generateOptimizationRecommendations(
+    analysis,
+    pageName,
+  );
 
   return analysis;
 }
 
 function generateOptimizationRecommendations(
   analysis: BundleAnalysis,
-  pageName: string
+  pageName: string,
 ): string[] {
   const recommendations: string[] = [];
   const { chunks, totalSize, performance } = analysis;
 
   if (!performance.meetsTargets) {
     recommendations.push(
-      `Bundle exceeds target by ${(performance.savings / 1024).toFixed(1)}KB`
+      `Bundle exceeds target by ${(performance.savings / 1024).toFixed(1)}KB`,
     );
   }
 
   // Check for oversized chunks
-  const oversizedChunks = chunks.filter(chunk => chunk.size > PERFORMANCE_TARGETS.MAX_CHUNK_SIZE);
+  const oversizedChunks = chunks.filter(
+    (chunk) => chunk.size > PERFORMANCE_TARGETS.MAX_CHUNK_SIZE,
+  );
   if (oversizedChunks.length > 0) {
     recommendations.push(
-      `Consider splitting large chunks: ${oversizedChunks.map(c => c.name).join(', ')}`
+      `Consider splitting large chunks: ${oversizedChunks.map((c) => c.name).join(", ")}`,
     );
   }
 
@@ -156,27 +164,31 @@ function generateOptimizationRecommendations(
   const duplicates = findDuplicateDependencies(chunks);
   if (duplicates.length > 0) {
     recommendations.push(
-      `Potential duplicate dependencies detected: ${duplicates.join(', ')}`
+      `Potential duplicate dependencies detected: ${duplicates.join(", ")}`,
     );
   }
 
   // Page-specific recommendations
   switch (pageName) {
-    case 'homepage':
-      if (chunks.some(c => c.name.includes('admin'))) {
-        recommendations.push('Remove admin components from homepage bundle');
+    case "homepage":
+      if (chunks.some((c) => c.name.includes("admin"))) {
+        recommendations.push("Remove admin components from homepage bundle");
       }
       break;
-      
-    case 'artist':
-      if (!chunks.some(c => c.name.includes('import'))) {
-        recommendations.push('Consider preloading import components for artist pages');
+
+    case "artist":
+      if (!chunks.some((c) => c.name.includes("import"))) {
+        recommendations.push(
+          "Consider preloading import components for artist pages",
+        );
       }
       break;
-      
-    case 'admin':
-      if (chunks.some(c => c.name.includes('mobile'))) {
-        recommendations.push('Remove mobile-specific components from admin bundle');
+
+    case "admin":
+      if (chunks.some((c) => c.name.includes("mobile"))) {
+        recommendations.push(
+          "Remove mobile-specific components from admin bundle",
+        );
       }
       break;
   }
@@ -186,11 +198,11 @@ function generateOptimizationRecommendations(
 
 function findDuplicateDependencies(chunks: any[]): string[] {
   const dependencies = new Map<string, number>();
-  
-  chunks.forEach(chunk => {
+
+  chunks.forEach((chunk) => {
     const modules = chunk.modules || [];
     modules.forEach((module: any) => {
-      if (module.name && module.name.includes('node_modules')) {
+      if (module.name?.includes("node_modules")) {
         const depName = extractDependencyName(module.name);
         dependencies.set(depName, (dependencies.get(depName) || 0) + 1);
       }
@@ -204,7 +216,7 @@ function findDuplicateDependencies(chunks: any[]): string[] {
 
 function extractDependencyName(modulePath: string): string {
   const match = modulePath.match(/node_modules\/(@?[^\/]+(?:\/[^\/]+)?)/);
-  return match ? match[1]! : 'unknown';
+  return match ? match[1]! : "unknown";
 }
 
 // ================================
@@ -228,14 +240,14 @@ export class PerformanceMonitor {
   private observers: Map<string, PerformanceObserver> = new Map();
 
   startMonitoring(pageName: string): void {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     // Monitor bundle loading
     this.monitorBundleLoading(pageName);
-    
+
     // Monitor rendering performance
     this.monitorRenderingPerformance(pageName);
-    
+
     // Monitor memory usage
     this.monitorMemoryUsage(pageName);
   }
@@ -249,7 +261,7 @@ export class PerformanceMonitor {
       let loadTime = 0;
 
       entries.forEach((entry) => {
-        if (entry.name.includes('.js') || entry.name.includes('.css')) {
+        if (entry.name.includes(".js") || entry.name.includes(".css")) {
           totalSize += (entry as any).transferSize || 0;
           loadTime = Math.max(loadTime, entry.duration);
         }
@@ -258,7 +270,7 @@ export class PerformanceMonitor {
       this.updateMetrics(pageName, { bundleSize: totalSize, loadTime });
     });
 
-    observer.observe({ type: 'resource', buffered: true });
+    observer.observe({ type: "resource", buffered: true });
     this.observers.set(`${pageName}-bundle`, observer);
   }
 
@@ -267,25 +279,30 @@ export class PerformanceMonitor {
 
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
-      
+
       entries.forEach((entry) => {
-        if (entry.entryType === 'paint' && entry.name === 'first-contentful-paint') {
+        if (
+          entry.entryType === "paint" &&
+          entry.name === "first-contentful-paint"
+        ) {
           this.updateMetrics(pageName, { renderTime: entry.startTime });
         }
-        
-        if (entry.entryType === 'first-input') {
-          this.updateMetrics(pageName, { interactionTime: (entry as any).processingStart - entry.startTime });
+
+        if (entry.entryType === "first-input") {
+          this.updateMetrics(pageName, {
+            interactionTime: (entry as any).processingStart - entry.startTime,
+          });
         }
       });
     });
 
-    observer.observe({ type: 'paint', buffered: true });
-    observer.observe({ type: 'first-input', buffered: true });
+    observer.observe({ type: "paint", buffered: true });
+    observer.observe({ type: "first-input", buffered: true });
     this.observers.set(`${pageName}-render`, observer);
   }
 
   private monitorMemoryUsage(pageName: string): void {
-    if (typeof window === 'undefined' || !(performance as any).memory) return;
+    if (typeof window === "undefined" || !(performance as any).memory) return;
 
     const measureMemory = () => {
       const memory = (performance as any).memory;
@@ -301,7 +318,10 @@ export class PerformanceMonitor {
     (this.observers as any).set(`${pageName}-memory`, interval);
   }
 
-  private updateMetrics(pageName: string, newMetrics: Partial<PerformanceMetrics>): void {
+  private updateMetrics(
+    pageName: string,
+    newMetrics: Partial<PerformanceMetrics>,
+  ): void {
     const existing = this.metrics.get(pageName) || {
       bundleSize: 0,
       loadTime: 0,
@@ -332,8 +352,8 @@ export class PerformanceMonitor {
 
     // Remove from maps
     Array.from(this.observers.keys())
-      .filter(key => key.startsWith(pageName))
-      .forEach(key => this.observers.delete(key));
+      .filter((key) => key.startsWith(pageName))
+      .forEach((key) => this.observers.delete(key));
   }
 
   generateReport(): Record<string, PerformanceMetrics> {
@@ -350,17 +370,8 @@ export const OPTIMIZATION_STRATEGIES = {
    * Critical path optimization - load essential components first
    */
   criticalPath: {
-    preload: [
-      'framework',
-      'radix-core',
-      'utils',
-    ],
-    defer: [
-      'charts',
-      'animation',
-      'admin',
-      'analytics',
-    ],
+    preload: ["framework", "radix-core", "utils"],
+    defer: ["charts", "animation", "admin", "analytics"],
   },
 
   /**
@@ -368,21 +379,21 @@ export const OPTIMIZATION_STRATEGIES = {
    */
   routeSplitting: {
     homepage: {
-      essential: ['framework', 'radix-core', 'utils'],
-      optional: ['animation'],
-      exclude: ['admin', 'charts', 'analytics'],
+      essential: ["framework", "radix-core", "utils"],
+      optional: ["animation"],
+      exclude: ["admin", "charts", "analytics"],
     },
     artist: {
-      essential: ['framework', 'radix-core', 'utils', 'icons'],
-      progressive: ['import-orchestrator', 'sse-progress'],
-      optional: ['charts', 'animation'],
-      exclude: ['admin'],
+      essential: ["framework", "radix-core", "utils", "icons"],
+      progressive: ["import-orchestrator", "sse-progress"],
+      optional: ["charts", "animation"],
+      exclude: ["admin"],
     },
     admin: {
-      essential: ['framework', 'radix-core', 'utils'],
-      progressive: ['charts', 'analytics', 'monitoring'],
-      optional: ['animation'],
-      exclude: ['mobile'],
+      essential: ["framework", "radix-core", "utils"],
+      progressive: ["charts", "analytics", "monitoring"],
+      optional: ["animation"],
+      exclude: ["mobile"],
     },
   },
 
@@ -390,10 +401,10 @@ export const OPTIMIZATION_STRATEGIES = {
    * Progressive enhancement strategy
    */
   progressiveEnhancement: {
-    core: 'Load basic functionality first',
-    enhanced: 'Add interactive features',
-    advanced: 'Load analytics and monitoring',
-    premium: 'Load admin and power user features',
+    core: "Load basic functionality first",
+    enhanced: "Add interactive features",
+    advanced: "Load analytics and monitoring",
+    premium: "Load admin and power user features",
   },
 } as const;
 
@@ -406,7 +417,7 @@ export const OPTIMIZATION_STRATEGIES = {
  */
 export function generateOptimalSplitChunks() {
   return {
-    chunks: 'all' as const,
+    chunks: "all" as const,
     maxInitialRequests: 30,
     maxAsyncRequests: 30,
     minSize: PERFORMANCE_TARGETS.MIN_CHUNK_SIZE,
@@ -414,85 +425,85 @@ export function generateOptimalSplitChunks() {
     cacheGroups: {
       default: false,
       vendors: false,
-      
+
       // Core framework (highest priority)
       framework: {
-        name: 'framework',
+        name: "framework",
         test: /[\\/]node_modules[\\/](react|react-dom|scheduler|prop-types)[\\/]/,
         priority: 40,
         enforce: true,
         reuseExistingChunk: true,
       },
-      
+
       // Essential UI components
       uiCore: {
-        name: 'ui-core',
+        name: "ui-core",
         test: /[\\/]node_modules[\\/](@radix-ui[\\/]react-(avatar|button|dialog|dropdown-menu|input|tabs))[\\/]/,
         priority: 35,
         enforce: true,
         reuseExistingChunk: true,
       },
-      
+
       // Extended UI components
       uiExtended: {
-        name: 'ui-extended',
+        name: "ui-extended",
         test: /[\\/]node_modules[\\/](@radix-ui[\\/]react-(popover|command|select|toast))[\\/]/,
         priority: 34,
-        chunks: 'async' as const,
+        chunks: "async" as const,
         reuseExistingChunk: true,
       },
-      
+
       // Icons (separate for caching)
       icons: {
-        name: 'icons',
+        name: "icons",
         test: /[\\/]node_modules[\\/](lucide-react|@radix-ui[\\/]react-icons)[\\/]/,
         priority: 33,
-        chunks: 'async' as const,
+        chunks: "async" as const,
         reuseExistingChunk: true,
       },
-      
+
       // Data visualization (lazy load)
       charts: {
-        name: 'charts',
+        name: "charts",
         test: /[\\/]node_modules[\\/](recharts|d3-)[\\/]/,
         priority: 25,
-        chunks: 'async' as const,
+        chunks: "async" as const,
         reuseExistingChunk: true,
       },
-      
+
       // Animation libraries (lazy load)
       animation: {
-        name: 'animation',
+        name: "animation",
         test: /[\\/]node_modules[\\/](framer-motion|@hello-pangea)[\\/]/,
         priority: 24,
-        chunks: 'async' as const,
+        chunks: "async" as const,
         reuseExistingChunk: true,
       },
-      
+
       // Authentication and API
       auth: {
-        name: 'auth',
+        name: "auth",
         test: /[\\/]node_modules[\\/](@supabase|otplib)[\\/]/,
         priority: 30,
-        chunks: 'async' as const,
+        chunks: "async" as const,
         reuseExistingChunk: true,
       },
-      
+
       // Utilities (small, shared across pages)
       utils: {
-        name: 'utils',
+        name: "utils",
         test: /[\\/]node_modules[\\/](clsx|tailwind-merge|date-fns|nanoid)[\\/]/,
         priority: 32,
-        chunks: 'all' as const,
+        chunks: "all" as const,
         reuseExistingChunk: true,
       },
-      
+
       // Common vendor chunk for smaller libraries
       vendorLibs: {
-        name: 'vendors',
+        name: "vendors",
         test: /[\\/]node_modules[\\/]/,
         priority: 10,
-        chunks: 'async' as const,
+        chunks: "async" as const,
         minChunks: 2,
         maxSize: PERFORMANCE_TARGETS.MAX_CHUNK_SIZE,
         reuseExistingChunk: true,

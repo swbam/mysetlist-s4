@@ -1,5 +1,5 @@
-import useSWR from "swr";
 import { useCallback } from "react";
+import useSWR from "swr";
 
 type VoteResponse = {
   up: number;

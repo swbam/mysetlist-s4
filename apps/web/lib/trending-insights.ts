@@ -157,7 +157,10 @@ export async function getTrendingArtistsInsights(
           genres = JSON.parse(artist.genres);
         } catch {
           // If genres is not JSON, treat as comma-separated string
-          genres = artist.genres.split(',').map(g => g.trim()).filter(Boolean);
+          genres = artist.genres
+            .split(",")
+            .map((g) => g.trim())
+            .filter(Boolean);
         }
       }
 
@@ -194,7 +197,7 @@ export async function getMostVotedSongs(
     const supabase = await createServiceClient();
 
     // Fallback direct query for songs with votes
-    let query = supabase
+    const query = supabase
       .from("songs")
       .select(`
         id,
@@ -214,7 +217,9 @@ export async function getMostVotedSongs(
     }
 
     return songs.map((song, index) => {
-      const artist = Array.isArray(song.artists) ? song.artists[0] : song.artists;
+      const artist = Array.isArray(song.artists)
+        ? song.artists[0]
+        : song.artists;
       return {
         id: song.id,
         title: song.title,
@@ -330,9 +335,11 @@ export async function getRecentSetlistActivity(
     }
 
     return shows.map((show) => {
-      const artist = Array.isArray(show.artists) ? show.artists[0] : show.artists;
+      const artist = Array.isArray(show.artists)
+        ? show.artists[0]
+        : show.artists;
       const venue = Array.isArray(show.venues) ? show.venues[0] : show.venues;
-      
+
       return {
         id: show.id,
         type: "show_update" as const,
@@ -382,19 +389,22 @@ export async function getTrendingLocations(
     }
 
     // Group venues by city
-    const cityMap = new Map<string, {
-      city: string;
-      state: string | null;
-      country: string;
-      showCount: number;
-      upcomingShows: number;
-      totalVenues: number;
-    }>();
+    const cityMap = new Map<
+      string,
+      {
+        city: string;
+        state: string | null;
+        country: string;
+        showCount: number;
+        upcomingShows: number;
+        totalVenues: number;
+      }
+    >();
 
     venues.forEach((venue) => {
-      const key = `${venue.city}-${venue.state || ''}-${venue.country}`;
+      const key = `${venue.city}-${venue.state || ""}-${venue.country}`;
       const existing = cityMap.get(key);
-      
+
       if (existing) {
         existing.showCount += venue.total_shows || 0;
         existing.upcomingShows += venue.upcoming_shows || 0;
@@ -446,22 +456,27 @@ export async function getTrendingStatistics(): Promise<TrendingStats> {
     let weeklyShows = 0;
     let weeklyUsers = 0;
     let mostActiveCity = "New York";
-    let averageSetlistLength = 18;
-    let topGenre = "Pop";
+    const averageSetlistLength = 18;
+    const topGenre = "Pop";
 
     try {
       // Try to get real counts
-      const [votesResult, showsResult, setlistsResult, usersResult] = await Promise.allSettled([
-        supabase.from("votes").select("*", { count: "exact", head: true }),
-        supabase.from("shows").select("*", { count: "exact", head: true }),
-        supabase.from("setlists").select("*", { count: "exact", head: true }),
-        supabase.from("users").select("*", { count: "exact", head: true }),
-      ]);
+      const [votesResult, showsResult, setlistsResult, usersResult] =
+        await Promise.allSettled([
+          supabase.from("votes").select("*", { count: "exact", head: true }),
+          supabase.from("shows").select("*", { count: "exact", head: true }),
+          supabase.from("setlists").select("*", { count: "exact", head: true }),
+          supabase.from("users").select("*", { count: "exact", head: true }),
+        ]);
 
-      if (votesResult.status === 'fulfilled') totalVotes = votesResult.value.count || 0;
-      if (showsResult.status === 'fulfilled') totalShows = showsResult.value.count || 0;
-      if (setlistsResult.status === 'fulfilled') totalSetlists = setlistsResult.value.count || 0;
-      if (usersResult.status === 'fulfilled') totalUsers = usersResult.value.count || 0;
+      if (votesResult.status === "fulfilled")
+        totalVotes = votesResult.value.count || 0;
+      if (showsResult.status === "fulfilled")
+        totalShows = showsResult.value.count || 0;
+      if (setlistsResult.status === "fulfilled")
+        totalSetlists = setlistsResult.value.count || 0;
+      if (usersResult.status === "fulfilled")
+        totalUsers = usersResult.value.count || 0;
 
       // If we have no real data, use mock data
       if (totalVotes === 0 && totalShows === 0) {
@@ -482,10 +497,9 @@ export async function getTrendingStatistics(): Promise<TrendingStats> {
         .order("upcoming_shows", { ascending: false })
         .limit(1);
 
-      if (cityData && cityData[0]) {
+      if (cityData?.[0]) {
         mostActiveCity = cityData[0].city;
       }
-
     } catch (dbError) {
       console.log("Using mock statistics data:", dbError);
       // Use mock data when database is not available

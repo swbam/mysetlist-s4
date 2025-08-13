@@ -4,6 +4,11 @@ import {
   Alert,
   AlertDescription,
 } from "@repo/design-system/components/ui/alert";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@repo/design-system/components/ui/avatar";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -12,7 +17,6 @@ import {
   CardHeader,
 } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
-import { Avatar, AvatarImage, AvatarFallback } from "@repo/design-system/components/ui/avatar";
 import { Music, Search, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -44,7 +48,9 @@ export function ShowsSearch() {
 
     try {
       // Always search for artists only via Ticketmaster API
-      const response = await fetch(`/api/search/artists?q=${encodeURIComponent(searchQuery)}&limit=8`);
+      const response = await fetch(
+        `/api/search/artists?q=${encodeURIComponent(searchQuery)}&limit=8`,
+      );
       const data = await response.json();
 
       if (!response.ok) {
@@ -66,7 +72,7 @@ export function ShowsSearch() {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-|-$/g, "");
-    
+
     // Navigate to artist page
     router.push(`/artists/${slug}`);
   };
@@ -143,7 +149,7 @@ export function ShowsSearch() {
                         <Music className="h-6 w-6 text-primary" />
                       </AvatarFallback>
                     </Avatar>
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="font-semibold text-lg truncate">
@@ -156,7 +162,7 @@ export function ShowsSearch() {
                           Artist
                         </Badge>
                       </div>
-                      
+
                       {/* Genres */}
                       {artist.genreHints && artist.genreHints.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
@@ -177,7 +183,7 @@ export function ShowsSearch() {
                         </div>
                       )}
                     </div>
-                    
+
                     <Button size="sm" variant="default">
                       View Artist
                     </Button>
@@ -194,7 +200,8 @@ export function ShowsSearch() {
           <Music className="mx-auto mb-4 h-12 w-12 text-muted-foreground/50" />
           <h3 className="mb-2 font-semibold text-lg">No artists found</h3>
           <p className="text-muted-foreground text-sm">
-            No artists found for "{query}". Try searching for different artist names.
+            No artists found for "{query}". Try searching for different artist
+            names.
           </p>
           <p className="mt-2 text-muted-foreground text-xs">
             Example searches: "Taylor Swift", "The Beatles", "Arctic Monkeys"

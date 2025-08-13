@@ -77,6 +77,7 @@ export function LiteSearch({
 
       // Transform API response to SearchResultItem format
       const searchResults: SearchResultItem[] = (data.results || []).map(
+        // biome-ignore lint/suspicious/noExplicitAny: API response type
         (result: any) => ({
           id: result.id,
           type: "artist" as const,

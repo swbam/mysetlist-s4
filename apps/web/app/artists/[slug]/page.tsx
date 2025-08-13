@@ -110,8 +110,12 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
     // If artist not found, show loading skeleton (no auto-reload, no background import-by-name)
     if (!artist) {
       return (
-        <ArtistErrorBoundary artistName={slug.replace(/-/g, " ")}> 
-          <Suspense fallback={<ArtistImportLoading artistName={slug.replace(/-/g, " ")} />}>
+        <ArtistErrorBoundary artistName={slug.replace(/-/g, " ")}>
+          <Suspense
+            fallback={
+              <ArtistImportLoading artistName={slug.replace(/-/g, " ")} />
+            }
+          >
             <ArtistImportLoading artistName={slug.replace(/-/g, " ")} />
           </Suspense>
         </ArtistErrorBoundary>

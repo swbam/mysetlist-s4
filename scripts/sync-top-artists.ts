@@ -11,8 +11,8 @@ import "dotenv/config";
 // disallows top-level await. These modules are fully ESM-compatible, so static
 // imports work fine and avoid the top-level-await restriction.
 
-import { ticketmaster } from "../packages/external-apis/src/ticketmaster";
 import { spotify } from "../packages/external-apis/src/spotify";
+import { ticketmaster } from "../packages/external-apis/src/ticketmaster";
 
 // Check for required environment variables
 const requiredEnvVars = [
@@ -30,7 +30,7 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
-const APP_URL = process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 
 // Top 5 trending artists in the US with upcoming shows (as of 2024)
 const TOP_US_ARTISTS = [
@@ -54,7 +54,7 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-supabase-service-role": process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
+        "x-supabase-service-role": process.env.SUPABASE_SERVICE_ROLE_KEY!,
       },
       body: JSON.stringify({
         spotifyId: artist.spotifyId,
@@ -96,7 +96,7 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-supabase-service-role": process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
+          "x-supabase-service-role": process.env.SUPABASE_SERVICE_ROLE_KEY!,
         },
         body: JSON.stringify({
           ticketmasterId: venue.id,
@@ -127,7 +127,7 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-supabase-service-role": process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
+          "x-supabase-service-role": process.env.SUPABASE_SERVICE_ROLE_KEY!,
         },
         body: JSON.stringify({
           ticketmasterId: event.id,
@@ -169,7 +169,7 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              "x-supabase-service-role": process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
+              "x-supabase-service-role": process.env.SUPABASE_SERVICE_ROLE_KEY!,
             },
             body: JSON.stringify({
               spotifyId: track.id,
@@ -197,7 +197,7 @@ async function syncArtistData(artist: { name: string; spotifyId: string }) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-supabase-service-role": process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
+        "x-supabase-service-role": process.env.SUPABASE_SERVICE_ROLE_KEY!,
       },
       body: JSON.stringify({
         trendingScore: spotifyArtist.popularity,

@@ -149,7 +149,7 @@ async function testSupabaseTrendingApis() {
 
     // Process artists
     if (liveArtists && liveArtists.length > 0) {
-      liveArtists.forEach((artist) => {
+      for (const artist of liveArtists) {
         const searches = Math.round((artist.popularity || 0) * 1.5);
         const views = artist.popularity || 0;
         const interactions = artist.follower_count || artist.followers || 0;
@@ -172,12 +172,12 @@ async function testSupabaseTrendingApis() {
           score: Math.round(score),
           metrics: { searches, views, interactions, growth },
         });
-      });
+      }
     }
 
     // Process shows
     if (liveShows && liveShows.length > 0) {
-      liveShows.forEach((show) => {
+      for (const show of liveShows) {
         const searches = Math.round((show.view_count || 0) * 0.3);
         const views = show.view_count || 0;
         const interactions =
@@ -201,12 +201,12 @@ async function testSupabaseTrendingApis() {
           score: Math.round(score),
           metrics: { searches, views, interactions, growth },
         });
-      });
+      }
     }
 
     // Process venues
     if (liveVenues && liveVenues.length > 0) {
-      liveVenues.forEach((venue) => {
+      for (const venue of liveVenues) {
         const capacity = venue.capacity || 1000;
         const searches = Math.round(capacity * 0.01);
         const views = Math.round(capacity * 0.02);
@@ -228,7 +228,7 @@ async function testSupabaseTrendingApis() {
           score: Math.round(score),
           metrics: { searches, views, interactions, growth },
         });
-      });
+      }
     }
 
     // Sort and show results
@@ -257,11 +257,11 @@ async function testSupabaseTrendingApis() {
 
     if (artistsWithoutScores && artistsWithoutScores.length > 0) {
       console.log("Artists without trending scores or popularity:");
-      artistsWithoutScores.forEach((artist) => {
+      for (const artist of artistsWithoutScores) {
         console.log(
           `  - ${artist.name}: trending_score=${artist.trending_score}, popularity=${artist.popularity}`,
         );
-      });
+      }
     } else {
       console.log("✓ All sampled artists have scoring data");
     }
@@ -275,11 +275,11 @@ async function testSupabaseTrendingApis() {
 
     if (showsWithoutScores && showsWithoutScores.length > 0) {
       console.log("Shows without trending scores:");
-      showsWithoutScores.forEach((show) => {
+      for (const show of showsWithoutScores) {
         console.log(
           `  - ${show.name}: trending_score=${show.trending_score}, views=${show.view_count}`,
         );
-      });
+      }
     } else {
       console.log("✓ All sampled shows have scoring data");
     }

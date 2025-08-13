@@ -1,10 +1,10 @@
 // deno-lint-ignore-file no-explicit-any
 // @ts-nocheck
 // Edge runtime automatically provided by Supabase – no explicit import required
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 interface Payload {
@@ -19,13 +19,13 @@ class SpotifyClient {
     if (this.accessToken && Date.now() < this.tokenExpiry) {
       return;
     }
-    const res = await fetch('https://accounts.spotify.com/api/token', {
-      method: 'POST',
+    const res = await fetch("https://accounts.spotify.com/api/token", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: `Basic ${btoa(`${Deno.env.get('SPOTIFY_CLIENT_ID')}:${Deno.env.get('SPOTIFY_CLIENT_SECRET')}`)}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${btoa(`${Deno.env.get("SPOTIFY_CLIENT_ID")}:${Deno.env.get("SPOTIFY_CLIENT_SECRET")}`)}`,
       },
-      body: 'grant_type=client_credentials',
+      body: "grant_type=client_credentials",
     });
     const data = await res.json();
     this.accessToken = data.access_token;
@@ -43,6 +43,7 @@ class SpotifyClient {
       if (!res.ok) {
         throw new Error(`Spotify error ${res.status}`);
       }
+      // biome-ignore lint/suspicious/noExplicitAny: External API response
       const json: any = await res.json();
       items = items.concat(json.items || json.tracks?.items || []);
       next = json.next;
@@ -51,14 +52,16 @@ class SpotifyClient {
   }
 
   async getAlbums(artistId: string) {
+    // biome-ignore lint/suspicious/noExplicitAny: External API response
     return this.fetchAll<any>(
-      `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album%2Csingle%2Cappears_on&limit=50`
+      `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album%2Csingle%2Cappears_on&limit=50`,
     );
   }
 
   async getAlbumTracks(albumId: string) {
+    // biome-ignore lint/suspicious/noExplicitAny: External API response
     return this.fetchAll<any>(
-      `https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`
+      `https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`,
     );
   }
 }
@@ -69,13 +72,14 @@ Deno.serve(async (req: Request) => {
   try {
     const payload = (await req.json()) as Payload;
     if (!payload.spotifyId || !payload.artistId) {
-      return new Response(JSON.stringify({ error: 'Invalid payload' }), {
+      return new Response(JSON.stringify({ error: "Invalid payload" }), {
         status: 400,
       });
     }
 
     // fetch albums
     const albums = await spotify.getAlbums(payload.spotifyId);
+    // biome-ignore lint/suspicious/noExplicitAny: External API response
     const trackPromises: Promise<any[]>[] = [];
     for (const album of albums) {
       trackPromises.push(spotify.getAlbumTracks(album.id));
@@ -105,37 +109,37 @@ Deno.serve(async (req: Request) => {
     for (let i = 0; i < rows.length; i += chunkSize) {
       const chunk = rows.slice(i, i + chunkSize);
       await supabase
-        .from('songs')
+        .from("songs")
         .insert(chunk)
-        .onConflict('spotify_id')
+        .onConflict("spotify_id")
         .upsert();
     }
 
     // update artist timestamp
     await supabase
-      .from('artists')
+      .from("artists")
       .update({ song_catalog_synced_at: new Date().toISOString() })
-      .eq('id', payload.artistId);
+      .eq("id", payload.artistId);
 
     // ------------------------------------------------------------------
     // Update artist_stats.total_songs (create row if missing)
     // ------------------------------------------------------------------
     const { data: statRow } = await supabase
-      .from('artist_stats')
-      .select('id, total_songs')
-      .eq('artist_id', payload.artistId)
+      .from("artist_stats")
+      .select("id, total_songs")
+      .eq("artist_id", payload.artistId)
       .maybeSingle();
 
     const newTotal = (statRow?.total_songs ?? 0) + rows.length;
 
     if (statRow?.id) {
       await supabase
-        .from('artist_stats')
+        .from("artist_stats")
         .update({ total_songs: newTotal, updated_at: new Date().toISOString() })
-        .eq('id', statRow.id);
+        .eq("id", statRow.id);
     } else {
       await supabase
-        .from('artist_stats')
+        .from("artist_stats")
         .insert({ artist_id: payload.artistId, total_songs: newTotal });
     }
 
@@ -145,11 +149,9 @@ Deno.serve(async (req: Request) => {
         imported: rows.length,
         totalSongs: newTotal,
       }),
-      { headers: { 'Content-Type': 'application/json' } }
+      { headers: { "Content-Type": "application/json" } },
     );
   } catch (e) {
     return new Response(JSON.stringify({ error: e.message }), { status: 500 });
   }
 });
-
-

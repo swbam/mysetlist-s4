@@ -1,21 +1,30 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@repo/design-system/components/ui/avatar";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@repo/design-system/components/ui/avatar";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { 
-  MapPin, 
-  Calendar, 
-  Users, 
-  ExternalLink, 
-  Music,
-  Clock,
-  Ticket
-} from "lucide-react";
 import { format } from "date-fns";
+import {
+  Calendar,
+  Clock,
+  ExternalLink,
+  MapPin,
+  Music,
+  Ticket,
+  Users,
+} from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 import { BreadcrumbNavigation } from "~/components/breadcrumb-navigation";
 import { createVenueMetadata } from "~/lib/seo-metadata";
 import { getNearbyVenues, getVenueBySlug, getVenueShows } from "./actions";
@@ -97,7 +106,7 @@ const VenuePage = async ({ params }: VenuePageProps) => {
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <BreadcrumbNavigation items={breadcrumbItems} className="mb-6" />
-        
+
         {/* Modern Hero Section */}
         <div className="relative mb-12">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent rounded-2xl" />
@@ -117,9 +126,7 @@ const VenuePage = async ({ params }: VenuePageProps) => {
                     </AvatarFallback>
                   </Avatar>
                   {processedUpcomingShows.length > 0 && (
-                    <Badge 
-                      className="absolute -top-2 -right-2 bg-green-500 hover:bg-green-600 text-white"
-                    >
+                    <Badge className="absolute -top-2 -right-2 bg-green-500 hover:bg-green-600 text-white">
                       Live
                     </Badge>
                   )}
@@ -134,7 +141,8 @@ const VenuePage = async ({ params }: VenuePageProps) => {
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <MapPin className="h-4 w-4" />
                       <span>
-                        {venue.city}, {venue.state && `${venue.state}, `}{venue.country}
+                        {venue.city}, {venue.state && `${venue.state}, `}
+                        {venue.country}
                       </span>
                     </div>
                   </div>
@@ -205,8 +213,8 @@ const VenuePage = async ({ params }: VenuePageProps) => {
                 ) : (
                   <div className="space-y-4">
                     {processedUpcomingShows.slice(0, 10).map((show, index) => (
-                      <Card 
-                        key={show.id} 
+                      <Card
+                        key={show.id}
                         className="border border-border/50 hover:border-primary/20 transition-all duration-200 hover:shadow-md"
                       >
                         <CardContent className="p-4">
@@ -232,30 +240,36 @@ const VenuePage = async ({ params }: VenuePageProps) => {
                                 <p className="text-muted-foreground text-sm mb-2 line-clamp-1">
                                   {show.name}
                                 </p>
-                                
+
                                 <div className="flex items-center gap-4 text-sm">
                                   <div className="flex items-center gap-1 text-muted-foreground">
                                     <Clock className="h-3 w-3" />
                                     <span>
-                                      {format(show.date, "MMM d, yyyy • h:mm a")}
+                                      {format(
+                                        show.date,
+                                        "MMM d, yyyy • h:mm a",
+                                      )}
                                     </span>
                                   </div>
                                 </div>
 
                                 {/* Genres */}
-                                {show.artist.genres && show.artist.genres.length > 0 && (
-                                  <div className="flex gap-1 mt-2">
-                                    {show.artist.genres.slice(0, 2).map((genre) => (
-                                      <Badge
-                                        key={genre}
-                                        variant="outline"
-                                        className="text-xs"
-                                      >
-                                        {genre}
-                                      </Badge>
-                                    ))}
-                                  </div>
-                                )}
+                                {show.artist.genres &&
+                                  show.artist.genres.length > 0 && (
+                                    <div className="flex gap-1 mt-2">
+                                      {show.artist.genres
+                                        .slice(0, 2)
+                                        .map((genre) => (
+                                          <Badge
+                                            key={genre}
+                                            variant="outline"
+                                            className="text-xs"
+                                          >
+                                            {genre}
+                                          </Badge>
+                                        ))}
+                                    </div>
+                                  )}
                               </div>
 
                               {/* Action Button */}
@@ -288,7 +302,7 @@ const VenuePage = async ({ params }: VenuePageProps) => {
                         </CardContent>
                       </Card>
                     ))}
-                    
+
                     {processedUpcomingShows.length > 10 && (
                       <div className="text-center pt-4">
                         <Button variant="outline" asChild>
@@ -344,10 +358,15 @@ const VenuePage = async ({ params }: VenuePageProps) => {
                       </div>
                     </Link>
                   ))}
-                  
+
                   {processedPastShows.length > 5 && (
                     <div className="pt-2">
-                      <Button variant="ghost" size="sm" className="w-full" asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full"
+                        asChild
+                      >
                         <Link href={`/venues/${venue.slug}/past-shows`}>
                           View All Past Shows
                         </Link>
@@ -412,11 +431,12 @@ const VenuePage = async ({ params }: VenuePageProps) => {
                     <div className="text-sm">
                       <p className="font-medium">{venue.name}</p>
                       <p className="text-muted-foreground">
-                        {venue.city}, {venue.state && `${venue.state}, `}{venue.country}
+                        {venue.city}, {venue.state && `${venue.state}, `}
+                        {venue.country}
                       </p>
                     </div>
                   </div>
-                  
+
                   {venue.capacity && (
                     <div className="flex items-center gap-3">
                       <Users className="h-4 w-4 text-muted-foreground" />

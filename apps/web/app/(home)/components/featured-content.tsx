@@ -56,6 +56,7 @@ async function getFeaturedData() {
     .limit(2);
 
   // Get artist and venue details for shows
+  // biome-ignore lint/suspicious/noExplicitAny: Complex joined query result
   let featuredShows: any[] = [];
   if (rawShows && rawShows.length > 0) {
     const artistIds = [

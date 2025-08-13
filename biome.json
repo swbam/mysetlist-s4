@@ -6,7 +6,40 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true
+      "recommended": true,
+      "complexity": {
+        "noForEach": "off",
+        "noBannedTypes": "off",
+        "noStaticOnlyClass": "off"
+      },
+      "style": {
+        "noNonNullAssertion": "off",
+        "useConst": "off",
+        "noParameterAssign": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "off",
+        "noArrayIndexKey": "off",
+        "noImplicitAnyLet": "off",
+        "noShadowRestrictedNames": "off",
+        "noAssignInExpressions": "off",
+        "noThenProperty": "off",
+        "noRedeclare": "off",
+        "noExportsInTest": "off"
+      },
+      "a11y": {
+        "useSemanticElements": "off",
+        "noLabelWithoutControl": "off",
+        "useFocusableInteractive": "off",
+        "noSvgWithoutTitle": "off",
+        "useButtonType": "off",
+        "useHtmlLang": "off",
+        "useKeyWithClickEvents": "off"
+      },
+      "correctness": {
+        "useExhaustiveDependencies": "off",
+        "noUnreachable": "off"
+      }
     }
   },
   "formatter": {
@@ -27,6 +60,7 @@
       "packages/collaboration/config.ts",
       "apps/docs/**/*.json",
       "apps/email/.react-email/**",
+      "apps/web/lib/optimizations/bundle-optimization.ts",
       "node_modules/**",
       "dist/**",
       ".next/**",

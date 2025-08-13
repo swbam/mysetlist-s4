@@ -19,7 +19,7 @@
       "schedule": "0 */6 * * *"
     },
     {
-      "path": "/api/cron/trending-artist-sync", 
+      "path": "/api/cron/trending-artist-sync",
       "schedule": "0 2 * * *"
     },
     {

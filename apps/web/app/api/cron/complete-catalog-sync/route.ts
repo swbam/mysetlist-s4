@@ -25,16 +25,19 @@ export async function POST(request: NextRequest) {
       process.env.ADMIN_API_KEY,
     ].filter(Boolean) as string[];
 
-    if (validTokens.length > 0 && !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))) {
+    if (
+      validTokens.length > 0 &&
+      !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))
+    ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json().catch(() => ({}));
-    const { 
-      skipRecentlyUpdated = true, 
+    const {
+      skipRecentlyUpdated = true,
       maxArtists = 500,
       includeDataCleanup = true,
-      performIntegrityChecks = true 
+      performIntegrityChecks = true,
     } = body;
 
     const artistSyncService = new ArtistSyncService();
@@ -80,13 +83,13 @@ export async function POST(request: NextRequest) {
               OR ${artists.songCatalogSyncedAt} IS NULL
               OR ${artists.songCatalogSyncedAt} < NOW() - INTERVAL '7 days'
             )
-          `
+          `,
         )
         .limit(maxArtists);
 
       // Process artists in small batches with conservative rate limiting
       const batchSize = 2;
-      const batches: typeof artistsToSync[] = [];
+      const batches: (typeof artistsToSync)[] = [];
       for (let i = 0; i < artistsToSync.length; i += batchSize) {
         batches.push(artistsToSync.slice(i, i + batchSize));
       }
@@ -102,7 +105,7 @@ export async function POST(request: NextRequest) {
             // Update sync timestamp
             await db
               .update(artists)
-              .set({ 
+              .set({
                 songCatalogSyncedAt: new Date(),
                 lastSyncedAt: new Date(),
               })
@@ -120,14 +123,16 @@ export async function POST(request: NextRequest) {
 
         // Conservative rate limiting for weekly job
         if (batches.indexOf(batch) < batches.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 5000)); // 5 seconds between batches
+          await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 seconds between batches
         }
       }
 
       results.phases.artistSync.completed = true;
       results.phases.artistSync.duration = Date.now() - phase1Start;
     } catch (error) {
-      results.errors.push(`Artist sync phase failed: ${error instanceof Error ? error.message : String(error)}`);
+      results.errors.push(
+        `Artist sync phase failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
       results.phases.artistSync.errors++;
     }
 
@@ -149,18 +154,22 @@ export async function POST(request: NextRequest) {
           await showSyncService.syncHistoricalSetlists(artist.name);
           results.showsRefreshed++;
         } catch (error) {
-          results.errors.push(`Show sync failed for ${artist.name}: ${error instanceof Error ? error.message : String(error)}`);
+          results.errors.push(
+            `Show sync failed for ${artist.name}: ${error instanceof Error ? error.message : String(error)}`,
+          );
           results.phases.showSync.errors++;
         }
 
         // Rate limiting
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
 
       results.phases.showSync.completed = true;
       results.phases.showSync.duration = Date.now() - phase2Start;
     } catch (error) {
-      results.errors.push(`Show sync phase failed: ${error instanceof Error ? error.message : String(error)}`);
+      results.errors.push(
+        `Show sync phase failed: ${error instanceof Error ? error.message : String(error)}`,
+      );
       results.phases.showSync.errors++;
     }
 
@@ -205,7 +214,9 @@ export async function POST(request: NextRequest) {
         results.phases.dataCleanup.completed = true;
         results.phases.dataCleanup.duration = Date.now() - phase3Start;
       } catch (error) {
-        results.errors.push(`Data cleanup phase failed: ${error instanceof Error ? error.message : String(error)}`);
+        results.errors.push(
+          `Data cleanup phase failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
         results.phases.dataCleanup.errors++;
       }
     }
@@ -246,7 +257,9 @@ export async function POST(request: NextRequest) {
         results.phases.integrityCheck.completed = true;
         results.phases.integrityCheck.duration = Date.now() - phase4Start;
       } catch (error) {
-        results.errors.push(`Integrity check phase failed: ${error instanceof Error ? error.message : String(error)}`);
+        results.errors.push(
+          `Integrity check phase failed: ${error instanceof Error ? error.message : String(error)}`,
+        );
         results.phases.integrityCheck.errors++;
       }
     }
@@ -281,7 +294,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Complete catalog sync failed:", error);
-    
+
     // Log error
     try {
       await db.execute(sql`
@@ -300,7 +313,7 @@ export async function POST(request: NextRequest) {
         message: error instanceof Error ? error.message : "Unknown error",
         timestamp: new Date().toISOString(),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

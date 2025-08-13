@@ -29,9 +29,9 @@ const TermsPage = () => {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm">
-              By accessing and using TheSet, you accept and agree to be bound
-              by the terms and provision of this agreement. If you do not agree
-              to abide by the above, please do not use this service.
+              By accessing and using TheSet, you accept and agree to be bound by
+              the terms and provision of this agreement. If you do not agree to
+              abide by the above, please do not use this service.
             </p>
           </CardContent>
         </Card>
@@ -156,10 +156,10 @@ const TermsPage = () => {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground text-sm">
-              In no event shall TheSet, nor its directors, employees,
-              partners, agents, suppliers, or affiliates, be liable for any
-              indirect, incidental, special, consequential, or punitive damages
-              arising from your use of the service.
+              In no event shall TheSet, nor its directors, employees, partners,
+              agents, suppliers, or affiliates, be liable for any indirect,
+              incidental, special, consequential, or punitive damages arising
+              from your use of the service.
             </p>
           </CardContent>
         </Card>

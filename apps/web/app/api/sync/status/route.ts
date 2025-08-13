@@ -18,24 +18,24 @@ export async function GET(request: NextRequest) {
     }
 
     const cookieStore = await cookies();
-    const supabase = createRouteHandlerClient({ 
-      cookies: () => cookieStore
+    const supabase = createRouteHandlerClient({
+      cookies: () => Promise.resolve(cookieStore),
     });
 
     // Get the latest import status for the artist
     const { data: importStatus, error } = await supabase
-      .from('import_status')
-      .select('*')
-      .eq('artist_id', artistId)
-      .order('created_at', { ascending: false })
+      .from("import_status")
+      .select("*")
+      .eq("artist_id", artistId)
+      .order("created_at", { ascending: false })
       .limit(1)
       .single();
 
-    if (error && error.code !== 'PGRST116') {
+    if (error && error.code !== "PGRST116") {
       console.error("Failed to fetch import status:", error);
-      
+
       // Handle invalid UUID format gracefully
-      if (error.code === '22P02') {
+      if (error.code === "22P02") {
         return NextResponse.json({
           artistId,
           status: "invalid_id",
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
           isImporting: false,
         });
       }
-      
+
       return NextResponse.json(
         { error: "Failed to fetch import status" },
         { status: 500 },
@@ -67,7 +67,8 @@ export async function GET(request: NextRequest) {
       progress: importStatus.percentage || 0,
       message: importStatus.message,
       error: importStatus.error || null,
-      isImporting: importStatus.stage !== 'completed' && importStatus.stage !== 'failed',
+      isImporting:
+        importStatus.stage !== "completed" && importStatus.stage !== "failed",
       startedAt: importStatus.created_at,
       updatedAt: importStatus.updated_at,
       completedAt: importStatus.completed_at || null,
@@ -77,9 +78,14 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("Sync status API error:", error);
     return NextResponse.json(
-      { 
+      {
         error: "Internal server error",
-        details: process.env.NODE_ENV === "development" ? error instanceof Error ? error.message : "Unknown error" : undefined,
+        details:
+          process.env.NODE_ENV === "development"
+            ? error instanceof Error
+              ? error.message
+              : "Unknown error"
+            : undefined,
       },
       { status: 500 },
     );

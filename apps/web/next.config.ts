@@ -76,8 +76,54 @@ const nextConfig: NextConfig = {
           module: /@opentelemetry\/instrumentation/,
           message: /Critical dependency/,
         },
+        // Suppress Edge Runtime warnings for Supabase
+        {
+          module: /@supabase\/supabase-js/,
+          message: /Critical dependency/,
+        },
+        {
+          module: /@supabase\/auth-helpers-nextjs/,
+          message: /Critical dependency/,
+        },
+        // Suppress process.version warnings
+        {
+          module: /@supabase\/supabase-js/,
+          message: /process\.version/,
+        },
       ];
     }
+
+    // Add fallbacks for Edge Runtime compatibility with Supabase
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      net: false,
+      dns: false,
+      tls: false,
+      assert: false,
+      path: false,
+      url: false,
+      util: false,
+      querystring: false,
+      stream: false,
+      buffer: false,
+      crypto: false,
+      http: false,
+      https: false,
+      os: false,
+      zlib: false,
+      process: false,
+    };
+
+    // Define process globals for Edge Runtime compatibility
+    config.plugins = config.plugins || [];
+    const webpack = require("webpack");
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        "process.version": JSON.stringify("v16.0.0"),
+        "process.env.NODE_ENV": JSON.stringify(process.env.NODE_ENV),
+      }),
+    );
 
     // Aggressive bundle splitting optimizations
     if (!isServer) {

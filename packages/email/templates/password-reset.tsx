@@ -96,8 +96,8 @@ export const PasswordResetTemplate = ({
 
               <Text className="text-xs text-zinc-400">
                 This email was sent to you because a password reset was
-                requested for your TheSet account. If you did not request
-                this reset, please disregard this email.
+                requested for your TheSet account. If you did not request this
+                reset, please disregard this email.
               </Text>
             </Section>
           </Section>

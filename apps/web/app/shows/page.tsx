@@ -43,7 +43,6 @@ const ShowsPage = () => {
 
             <ShowsSearch />
 
-
             <Tabs defaultValue="grid" className="w-full">
               <TabsList className="w-full max-w-[400px]">
                 <TabsTrigger value="grid" className="gap-2">

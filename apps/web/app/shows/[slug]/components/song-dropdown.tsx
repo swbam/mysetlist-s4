@@ -411,7 +411,7 @@ export function SongDropdown({
                     <div className="flex-shrink-0">
                       <AnonymousVoteButton
                         setlistSongId={setlistSong.id}
-                                                 initialUpvotes={setlistSong.upvotes}
+                        initialUpvotes={setlistSong.upvotes}
                         isAuthenticated={!!session}
                         onVote={async (voteType) => {
                           if (voteType === "up") {

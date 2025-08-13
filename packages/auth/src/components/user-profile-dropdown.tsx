@@ -51,9 +51,9 @@ export function UserProfileDropdown() {
   }
 
   const displayName =
-    user.user_metadata?.["displayName"] || user.email?.split("@")[0] || "User";
+    user.user_metadata?.displayName || user.email?.split("@")[0] || "User";
   const avatarUrl =
-    user.user_metadata?.["avatar"] || user.user_metadata?.["avatar_url"];
+    user.user_metadata?.avatar || user.user_metadata?.avatar_url;
   const initials = displayName
     .split(" ")
     .map((name: string) => name[0])

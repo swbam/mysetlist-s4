@@ -30,8 +30,7 @@ export const productionConfig = {
     // All cron jobs should call these endpoints
     endpoints: {
       masterSync: "https://theset.live/api/cron/master-sync",
-      calculateTrending:
-        "https://theset.live/api/cron/calculate-trending",
+      calculateTrending: "https://theset.live/api/cron/calculate-trending",
       syncArtists: "https://theset.live/api/cron/sync/artists",
     },
     // Cron schedules (in cron format)

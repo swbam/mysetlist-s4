@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const body: ShowSyncRequest = await request.json();
     const showSyncService = new ShowSyncService();
 
-    let result;
+    let result: any;
 
     if (body.artistId) {
       // Sync shows for a specific artist
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
 
     const artistId = searchParams.get("artistId");
 
-    let result;
+    let result: any;
 
     if (artistId) {
       // Sync shows for a specific artist

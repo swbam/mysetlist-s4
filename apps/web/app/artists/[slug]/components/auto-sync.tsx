@@ -28,7 +28,7 @@ export function AutoSyncOnEmptyShows({
 
   useEffect(() => {
     // no-op; hook triggers import on mount
-  }, [loading, error]);
+  }, []);
 
   return null;
 }

@@ -447,7 +447,7 @@ export const EnhancedSetlistViewer = ({
                         ...(setlistSong.userVote !== undefined && {
                           currentVote: setlistSong.userVote,
                         }),
-                                                 upvotes: setlistSong.upvotes,
+                        upvotes: setlistSong.upvotes,
                         onVote: (voteType: any) =>
                           handleVote(setlistSong.id, voteType),
                         disabled:

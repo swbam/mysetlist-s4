@@ -29,29 +29,27 @@ export function RealActiveShows() {
 
   if (isLoading) {
     return (
-      <div
+      <output
         className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2"
-        role="status"
         aria-label="Live statistics"
       >
         <TrendingUp className="h-4 w-4" aria-hidden="true" />
         <span className="font-medium text-sm animate-pulse">
           <span className="inline-block w-20 h-4 bg-muted rounded" />
         </span>
-      </div>
+      </output>
     );
   }
 
   return (
-    <div
+    <output
       className="inline-flex items-center gap-2 rounded-full border border-border px-4 py-2"
-      role="status"
       aria-label="Live statistics"
     >
       <TrendingUp className="h-4 w-4" aria-hidden="true" />
       <span className="font-medium text-sm">
         Trending Now: {activeShows} Active Shows
       </span>
-    </div>
+    </output>
   );
 }

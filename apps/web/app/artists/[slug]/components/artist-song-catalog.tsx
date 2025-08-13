@@ -69,7 +69,7 @@ export const ArtistSongCatalog = React.memo(function ArtistSongCatalog({
 
   useEffect(() => {
     fetchSongs();
-  }, [artistSlug]);
+  }, []);
 
   useEffect(() => {
     let filtered = songs;
@@ -153,7 +153,7 @@ export const ArtistSongCatalog = React.memo(function ArtistSongCatalog({
         setLoadingMore(false);
       }
     },
-    [artistSlug, limit, offset],
+    [artistSlug, offset],
   );
 
   const formatDuration = (ms: number) => {

@@ -14,7 +14,7 @@ function mapSupabaseUserToAuthUser(user: User): AuthUser {
       id: "",
       userId: user.id,
       displayName:
-        user.user_metadata?.["displayName"] || user.email?.split("@")[0] || "",
+        user.user_metadata?.displayName || user.email?.split("@")[0] || "",
       isPublic: true,
       showAttendedShows: true,
       showVotedSongs: true,
@@ -134,7 +134,7 @@ export async function requireServerRole(
   requiredRole: "user" | "moderator" | "admin",
 ): Promise<AuthUser> {
   const user = await requireServerAuth();
-  const userRole = user.app_metadata?.["role"] || "user";
+  const userRole = user.app_metadata?.role || "user";
 
   const roleHierarchy = { user: 0, moderator: 1, admin: 2 };
   const userLevel = roleHierarchy[userRole as keyof typeof roleHierarchy] ?? 0;

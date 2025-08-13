@@ -1,5 +1,5 @@
 import { db } from "@repo/database";
-import { artists, shows, songs, setlists } from "@repo/database/schema";
+import { artists, setlists, shows, songs } from "@repo/database/schema";
 import { desc } from "drizzle-orm";
 
 async function checkDatabase() {
@@ -11,20 +11,22 @@ async function checkDatabase() {
     .from(artists)
     .orderBy(desc(artists.trendingScore))
     .limit(10);
-  
+
   console.log(`Total artists with trending scores: ${topArtists.length}`);
   console.log("Top artists:");
-  topArtists.forEach(artist => {
-    console.log(`  - ${artist.name} (slug: ${artist.slug}, score: ${artist.trendingScore})`);
+  topArtists.forEach((artist) => {
+    console.log(
+      `  - ${artist.name} (slug: ${artist.slug}, score: ${artist.trendingScore})`,
+    );
   });
 
-  // Check shows  
+  // Check shows
   const recentShows = await db
     .select()
     .from(shows)
     .orderBy(desc(shows.date))
     .limit(5);
-  
+
   console.log(`\nRecent shows: ${recentShows.length}`);
 
   // Check songs
@@ -33,7 +35,9 @@ async function checkDatabase() {
 
   // Check setlists
   const setlistsCount = await db.select().from(setlists).limit(1);
-  console.log(`Setlists in database: ${setlistsCount.length > 0 ? "Yes" : "No"}`);
+  console.log(
+    `Setlists in database: ${setlistsCount.length > 0 ? "Yes" : "No"}`,
+  );
 
   process.exit(0);
 }

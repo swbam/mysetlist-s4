@@ -123,8 +123,8 @@ export function DeleteAccountDialog() {
                 Delete Account
               </DialogTitle>
               <DialogDescription>
-                This action will permanently delete your TheSet account and
-                all associated data.
+                This action will permanently delete your TheSet account and all
+                associated data.
               </DialogDescription>
             </DialogHeader>
 

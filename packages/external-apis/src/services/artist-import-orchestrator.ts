@@ -1,12 +1,30 @@
-import { artists, shows, venues, songs, artistSongs, setlists, setlistSongs, db, eq, sql } from "@repo/database";
+import {
+  artistSongs,
+  artists,
+  db,
+  eq,
+  setlistSongs,
+  setlists,
+  shows,
+  songs,
+  sql,
+  venues,
+} from "@repo/database";
 import { SpotifyClient } from "../clients/spotify";
 import { TicketmasterClient } from "../clients/ticketmaster";
+import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 import { ArtistSyncService } from "./artist-sync";
 import { ShowSyncService } from "./show-sync";
-import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 
 export interface ImportProgress {
-  stage: 'initializing' | 'syncing-identifiers' | 'importing-songs' | 'importing-shows' | 'creating-setlists' | 'completed' | 'failed';
+  stage:
+    | "initializing"
+    | "syncing-identifiers"
+    | "importing-songs"
+    | "importing-shows"
+    | "creating-setlists"
+    | "completed"
+    | "failed";
   progress: number; // 0-100
   message: string;
   error?: string;
@@ -34,12 +52,14 @@ export class ArtistImportOrchestrator {
   private artistSyncService: ArtistSyncService;
   private showSyncService: ShowSyncService;
   private errorHandler: SyncErrorHandler;
-  private progressCallback: ((progress: ImportProgress) => Promise<void>) | undefined;
+  private progressCallback:
+    | ((progress: ImportProgress) => Promise<void>)
+    | undefined;
 
   constructor(progressCallback?: (progress: ImportProgress) => Promise<void>) {
     this.spotifyClient = new SpotifyClient({});
     this.ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env["TICKETMASTER_API_KEY"] || "",
+      apiKey: process.env.TICKETMASTER_API_KEY || "",
     });
     this.artistSyncService = new ArtistSyncService();
     this.showSyncService = new ShowSyncService();
@@ -59,39 +79,39 @@ export class ArtistImportOrchestrator {
   async importArtist(tmAttractionId: string): Promise<ImportResult> {
     const startTime = Date.now();
     const stages: ImportProgress[] = [];
-    let artistId: string = '';
-    let slug: string = '';
+    let artistId = "";
+    let slug = "";
 
     try {
       // Phase 1: Instant Artist Page Load (< 3 seconds)
       await this.updateProgress({
-        stage: 'initializing',
+        stage: "initializing",
         progress: 5,
-        message: 'Getting artist details from Ticketmaster...'
+        message: "Getting artist details from Ticketmaster...",
       });
 
       // Get artist from Ticketmaster
       const tmArtist = await this.errorHandler.withRetry(
         () => this.ticketmasterClient.getAttraction(tmAttractionId),
         {
-          service: 'ArtistImportOrchestrator',
-          operation: 'getAttraction',
-          context: { tmAttractionId }
-        }
+          service: "ArtistImportOrchestrator",
+          operation: "getAttraction",
+          context: { tmAttractionId },
+        },
       );
 
       if (!tmArtist || !tmArtist.name) {
         throw new SyncServiceError(
           `Artist not found on Ticketmaster: ${tmAttractionId}`,
-          'ArtistImportOrchestrator',
-          'getAttraction'
+          "ArtistImportOrchestrator",
+          "getAttraction",
         );
       }
 
       await this.updateProgress({
-        stage: 'syncing-identifiers',
+        stage: "syncing-identifiers",
         progress: 15,
-        message: `Found ${tmArtist.name}. Looking up on Spotify...`
+        message: `Found ${tmArtist.name}. Looking up on Spotify...`,
       });
 
       // Quick Spotify lookup for basic data
@@ -99,31 +119,35 @@ export class ArtistImportOrchestrator {
       const spotifySearch = await this.errorHandler.withRetry(
         () => this.spotifyClient.searchArtists(tmArtist.name, 5),
         {
-          service: 'ArtistImportOrchestrator',
-          operation: 'searchArtists',
-          context: { artistName: tmArtist.name }
-        }
+          service: "ArtistImportOrchestrator",
+          operation: "searchArtists",
+          context: { artistName: tmArtist.name },
+        },
       );
 
       // Find best Spotify match
       let spotifyArtist: any = null;
-      if (spotifySearch?.artists?.items && spotifySearch.artists.items.length > 0) {
-        spotifyArtist = spotifySearch.artists.items.find((artist: any) =>
-          this.isArtistNameMatch(tmArtist.name, artist.name)
-        ) || spotifySearch.artists.items[0];
+      if (
+        spotifySearch?.artists?.items &&
+        spotifySearch.artists.items.length > 0
+      ) {
+        spotifyArtist =
+          spotifySearch.artists.items.find((artist: any) =>
+            this.isArtistNameMatch(tmArtist.name, artist.name),
+          ) || spotifySearch.artists.items[0];
       }
 
       if (!spotifyArtist) {
         throw new SyncServiceError(
           `No Spotify match found for ${tmArtist.name}`,
-          'ArtistImportOrchestrator',
-          'searchArtists'
+          "ArtistImportOrchestrator",
+          "searchArtists",
         );
       }
 
       // Create minimal artist record for instant page load
       slug = this.generateSlug(spotifyArtist.name);
-      
+
       const [newArtist] = await db
         .insert(artists)
         .values({
@@ -156,9 +180,9 @@ export class ArtistImportOrchestrator {
 
       if (!newArtist) {
         throw new SyncServiceError(
-          'Failed to create artist record',
-          'ArtistImportOrchestrator',
-          'insertArtist'
+          "Failed to create artist record",
+          "ArtistImportOrchestrator",
+          "insertArtist",
         );
       }
 
@@ -166,59 +190,59 @@ export class ArtistImportOrchestrator {
       slug = newArtist.slug;
 
       await this.updateProgress({
-        stage: 'syncing-identifiers',
+        stage: "syncing-identifiers",
         progress: 25,
-        message: 'Artist created! Starting comprehensive import...',
-        artistId
+        message: "Artist created! Starting comprehensive import...",
+        artistId,
       });
 
       // Phase 2: Priority Background Sync (15-90 seconds)
       // Run shows and songs import in parallel for optimal performance
       const [songResult, showResult] = await Promise.allSettled([
         this.importCompleteDiscography(artistId, spotifyArtist.id),
-        this.importShowsAndVenues(artistId, tmAttractionId, spotifyArtist.name)
+        this.importShowsAndVenues(artistId, tmAttractionId, spotifyArtist.name),
       ]);
 
       // Handle song import result
       let totalSongs = 0;
-      if (songResult.status === 'fulfilled') {
+      if (songResult.status === "fulfilled") {
         totalSongs = songResult.value;
       } else {
-        console.error('Song import failed:', songResult.reason);
+        console.error("Song import failed:", songResult.reason);
         // Continue with show import even if songs fail
       }
 
       // Handle show import result
       let totalShows = 0;
       let totalVenues = 0;
-      if (showResult.status === 'fulfilled') {
+      if (showResult.status === "fulfilled") {
         totalShows = showResult.value.shows;
         totalVenues = showResult.value.venues;
       } else {
-        console.error('Show import failed:', showResult.reason);
+        console.error("Show import failed:", showResult.reason);
         // Continue even if shows fail
       }
 
       // Phase 3: Setlist Creation
       await this.updateProgress({
-        stage: 'creating-setlists',
+        stage: "creating-setlists",
         progress: 95,
-        message: 'Creating initial setlists for upcoming shows...',
-        artistId
+        message: "Creating initial setlists for upcoming shows...",
+        artistId,
       });
 
       await this.createInitialSetlists(artistId);
 
       // Mark as completed
       await this.updateProgress({
-        stage: 'completed',
+        stage: "completed",
         progress: 100,
         message: `Import completed! ${totalSongs} songs, ${totalShows} shows imported.`,
         artistId,
         completedAt: new Date().toISOString(),
         totalSongs,
         totalShows,
-        totalVenues
+        totalVenues,
       });
 
       const importDuration = Date.now() - startTime;
@@ -231,19 +255,19 @@ export class ArtistImportOrchestrator {
         totalShows,
         totalVenues,
         importDuration,
-        stages
+        stages,
       };
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+
       await this.updateProgress({
-        stage: 'failed',
+        stage: "failed",
         progress: 0,
-        message: 'Import failed',
+        message: "Import failed",
         error: errorMessage,
         artistId,
-        completedAt: new Date().toISOString()
+        completedAt: new Date().toISOString(),
       });
 
       throw error;
@@ -253,20 +277,23 @@ export class ArtistImportOrchestrator {
   /**
    * Import complete studio discography (Phase 2)
    */
-  private async importCompleteDiscography(_artistId: string, spotifyId: string): Promise<number> {
+  private async importCompleteDiscography(
+    _artistId: string,
+    spotifyId: string,
+  ): Promise<number> {
     await this.updateProgress({
-      stage: 'importing-songs',
+      stage: "importing-songs",
       progress: 40,
-      message: 'Importing complete song catalog...'
+      message: "Importing complete song catalog...",
     });
 
     // Use the enhanced sync catalog method from ArtistSyncService
     const catalogResult = await this.artistSyncService.syncCatalog(spotifyId);
-    
+
     await this.updateProgress({
-      stage: 'importing-songs',
+      stage: "importing-songs",
       progress: 70,
-      message: `Imported ${catalogResult.totalSongs} studio songs (filtered ${catalogResult.skippedLiveTracks} live tracks)`
+      message: `Imported ${catalogResult.totalSongs} studio songs (filtered ${catalogResult.skippedLiveTracks} live tracks)`,
     });
 
     return catalogResult.totalSongs;
@@ -275,17 +302,21 @@ export class ArtistImportOrchestrator {
   /**
    * Import shows and venues (Phase 2)
    */
-  private async importShowsAndVenues(artistId: string, _tmAttractionId: string, artistName: string): Promise<{ shows: number, venues: number }> {
+  private async importShowsAndVenues(
+    artistId: string,
+    _tmAttractionId: string,
+    artistName: string,
+  ): Promise<{ shows: number; venues: number }> {
     await this.updateProgress({
-      stage: 'importing-shows',
+      stage: "importing-shows",
       progress: 75,
-      message: 'Importing upcoming shows and venues...'
+      message: "Importing upcoming shows and venues...",
     });
 
     // Import shows using both attraction ID and name search for comprehensive coverage
     await Promise.allSettled([
       this.showSyncService.syncArtistShows(artistId),
-      this.importShowsByName(artistName, artistId)
+      this.importShowsByName(artistName, artistId),
     ]);
 
     // Count total shows and venues
@@ -293,9 +324,9 @@ export class ArtistImportOrchestrator {
     const venueCount = await this.getVenueCount(artistId);
 
     await this.updateProgress({
-      stage: 'importing-shows',
+      stage: "importing-shows",
       progress: 85,
-      message: `Imported ${showCount} shows and ${venueCount} venues`
+      message: `Imported ${showCount} shows and ${venueCount} venues`,
     });
 
     return { shows: showCount, venues: venueCount };
@@ -304,13 +335,16 @@ export class ArtistImportOrchestrator {
   /**
    * Import shows by artist name (fallback method)
    */
-  private async importShowsByName(artistName: string, artistId: string): Promise<void> {
+  private async importShowsByName(
+    artistName: string,
+    artistId: string,
+  ): Promise<void> {
     try {
       const tmShows = await this.ticketmasterClient.searchEvents({
         keyword: artistName,
-        classificationName: 'music',
+        classificationName: "music",
         size: 50,
-        sort: 'date,asc'
+        sort: "date,asc",
       });
 
       if (tmShows?._embedded?.events) {
@@ -322,7 +356,7 @@ export class ArtistImportOrchestrator {
         }
       }
     } catch (error) {
-      console.warn('Show import by name failed:', error);
+      console.warn("Show import by name failed:", error);
       // Don't throw - this is a fallback method
     }
   }
@@ -336,30 +370,37 @@ export class ArtistImportOrchestrator {
       let venueId: string | null = null;
       if (event._embedded?.venues?.[0]) {
         const venue = event._embedded.venues[0];
-        
+
         const [newVenue] = await db
           .insert(venues)
           .values({
             ticketmasterId: venue.id,
             name: venue.name,
-            slug: venue.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
-            city: venue.city?.name || 'Unknown',
+            slug: venue.name
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/(^-|-$)/g, ""),
+            city: venue.city?.name || "Unknown",
             state: venue.state?.stateCode || null,
-            country: venue.country?.countryCode || 'US',
-            timezone: venue.timezone || 'America/New_York',
+            country: venue.country?.countryCode || "US",
+            timezone: venue.timezone || "America/New_York",
             address: venue.address?.line1 || null,
             postalCode: venue.postalCode || null,
-            latitude: venue.location ? parseFloat(venue.location.latitude) : null,
-            longitude: venue.location ? parseFloat(venue.location.longitude) : null,
+            latitude: venue.location
+              ? Number.parseFloat(venue.location.latitude)
+              : null,
+            longitude: venue.location
+              ? Number.parseFloat(venue.location.longitude)
+              : null,
             updatedAt: new Date(),
           })
           .onConflictDoUpdate({
             target: venues.ticketmasterId,
             set: {
               name: venue.name,
-              city: venue.city?.name || 'Unknown',
+              city: venue.city?.name || "Unknown",
               state: venue.state?.stateCode || null,
-              country: venue.country?.countryCode || 'US',
+              country: venue.country?.countryCode || "US",
               updatedAt: new Date(),
             },
           })
@@ -375,8 +416,9 @@ export class ArtistImportOrchestrator {
         .replace(/(^-|-$)/g, "");
 
       // Create show with proper date format
-      const showDate = event.dates.start.dateTime || event.dates.start.localDate;
-      
+      const showDate =
+        event.dates.start.dateTime || event.dates.start.localDate;
+
       await db
         .insert(shows)
         .values({
@@ -386,7 +428,7 @@ export class ArtistImportOrchestrator {
           date: showDate,
           headlinerArtistId: artistId,
           venueId: venueId,
-          status: 'upcoming',
+          status: "upcoming",
           ticketUrl: event.url || null,
           updatedAt: new Date(),
         })
@@ -395,12 +437,12 @@ export class ArtistImportOrchestrator {
           set: {
             name: event.name,
             date: showDate,
-            status: 'upcoming',
+            status: "upcoming",
             updatedAt: new Date(),
           },
         });
     } catch (error) {
-      console.warn('Failed to process event:', error);
+      console.warn("Failed to process event:", error);
     }
   }
 
@@ -423,7 +465,7 @@ export class ArtistImportOrchestrator {
         .limit(20);
 
       if (topSongs.length === 0) {
-        console.log('No songs found for setlist creation');
+        console.log("No songs found for setlist creation");
         return;
       }
 
@@ -452,7 +494,7 @@ export class ArtistImportOrchestrator {
           .values({
             showId: show.id,
             artistId: show.headlinerArtistId,
-            type: 'predicted',
+            type: "predicted",
             name: `${show.name} - Predicted Setlist`,
             orderIndex: 0,
             isLocked: false,
@@ -477,19 +519,21 @@ export class ArtistImportOrchestrator {
         }
       }
     } catch (error) {
-      console.warn('Failed to create initial setlists:', error);
+      console.warn("Failed to create initial setlists:", error);
     }
   }
 
   /**
    * Update import progress
    */
-  private async updateProgress(progress: Partial<ImportProgress>): Promise<void> {
+  private async updateProgress(
+    progress: Partial<ImportProgress>,
+  ): Promise<void> {
     const fullProgress: ImportProgress = {
-      stage: 'initializing',
+      stage: "initializing",
       progress: 0,
-      message: '',
-      ...progress
+      message: "",
+      ...progress,
     };
 
     if (this.progressCallback) {
@@ -514,9 +558,11 @@ export class ArtistImportOrchestrator {
     const normalized1 = normalize(name1);
     const normalized2 = normalize(name2);
 
-    return normalized1 === normalized2 ||
-           normalized1.includes(normalized2) ||
-           normalized2.includes(normalized1);
+    return (
+      normalized1 === normalized2 ||
+      normalized1.includes(normalized2) ||
+      normalized2.includes(normalized1)
+    );
   }
 
   private async getShowCount(artistId: string): Promise<number> {

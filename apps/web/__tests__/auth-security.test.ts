@@ -18,6 +18,13 @@ vi.mock("next/headers", () => ({
   })),
 }));
 
+// Type for mock Request
+interface MockRequest {
+  method: string;
+  headers: Headers;
+  clone?: () => MockRequest;
+}
+
 describe("CSRF Protection", () => {
   it("should generate a valid CSRF token", () => {
     const token = generateCSRFToken();
@@ -32,11 +39,12 @@ describe("CSRF Protection", () => {
         "x-csrf-token": "test-token",
       }),
       clone: () => mockRequest,
-    } as any;
+    } as MockRequest;
 
     // Mock cookie store
     const { cookies } = await import("next/headers");
-    (cookies as any).mockReturnValue({
+    const mockedCookies = vi.mocked(cookies);
+    mockedCookies.mockReturnValue({
       get: vi.fn(() => ({ value: "test-token" })),
     });
 
@@ -51,11 +59,12 @@ describe("CSRF Protection", () => {
         "x-csrf-token": "wrong-token",
       }),
       clone: () => mockRequest,
-    } as any;
+    } as MockRequest;
 
     // Mock cookie store
     const { cookies } = await import("next/headers");
-    (cookies as any).mockReturnValue({
+    const mockedCookies = vi.mocked(cookies);
+    mockedCookies.mockReturnValue({
       get: vi.fn(() => ({ value: "test-token" })),
     });
 
@@ -67,7 +76,7 @@ describe("CSRF Protection", () => {
     const mockRequest = {
       method: "GET",
       headers: new Headers(),
-    } as any;
+    } as MockRequest;
 
     const isValid = await validateCSRFToken(mockRequest);
     expect(isValid).toBe(true);
@@ -81,7 +90,8 @@ describe("Anonymous User Limits", () => {
 
   it("should track anonymous user actions", async () => {
     const { cookies } = await import("next/headers");
-    (cookies as any).mockReturnValue({
+    const mockedCookies = vi.mocked(cookies);
+    mockedCookies.mockReturnValue({
       get: vi.fn(() => null),
       set: vi.fn(),
     });
@@ -100,7 +110,8 @@ describe("Anonymous User Limits", () => {
       lastReset: new Date().toISOString(),
     };
 
-    (cookies as any).mockReturnValue({
+    const mockedCookies = vi.mocked(cookies);
+    mockedCookies.mockReturnValue({
       get: vi.fn(() => ({ value: JSON.stringify(mockActions) })),
       set: vi.fn(),
     });
@@ -115,7 +126,8 @@ describe("Anonymous User Limits", () => {
 
     // Update mock to reflect incremented value
     mockActions.votes = ANONYMOUS_LIMITS.votes;
-    (cookies as any).mockReturnValue({
+    const mockedCookies2 = vi.mocked(cookies);
+    mockedCookies2.mockReturnValue({
       get: vi.fn(() => ({ value: JSON.stringify(mockActions) })),
       set: vi.fn(),
     });
@@ -136,7 +148,8 @@ describe("Anonymous User Limits", () => {
       lastReset: yesterday.toISOString(),
     };
 
-    (cookies as any).mockReturnValue({
+    const mockedCookies = vi.mocked(cookies);
+    mockedCookies.mockReturnValue({
       get: vi.fn(() => ({ value: JSON.stringify(oldActions) })),
       set: vi.fn(),
     });
@@ -157,7 +170,7 @@ describe("Rate Limiting", () => {
         "x-forwarded-for": "192.168.1.1, 10.0.0.1",
         "x-real-ip": "192.168.1.2",
       }),
-    } as any;
+    } as MockRequest;
 
     const ip = getIdentifier(mockRequest);
     expect(ip).toBe("192.168.1.1");
@@ -168,7 +181,7 @@ describe("Rate Limiting", () => {
       headers: new Headers({
         "x-real-ip": "192.168.1.2",
       }),
-    } as any;
+    } as MockRequest;
 
     const ip = getIdentifier(mockRequest);
     expect(ip).toBe("192.168.1.2");
@@ -179,7 +192,7 @@ describe("Rate Limiting", () => {
       headers: new Headers({
         "cf-connecting-ip": "192.168.1.3",
       }),
-    } as any;
+    } as MockRequest;
 
     const ip = getIdentifier(mockRequest);
     expect(ip).toBe("192.168.1.3");
@@ -199,20 +212,20 @@ describe("Auth Endpoints Security", () => {
     const strongPasswords = ["Password123", "SecureP@ss1", "MyStr0ngP@ssw0rd"];
 
     // Test weak passwords
-    weakPasswords.forEach((password) => {
+    for (const password of weakPasswords) {
       const isValid =
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password) &&
         password.length >= 8;
       expect(isValid).toBe(false);
-    });
+    }
 
     // Test strong passwords
-    strongPasswords.forEach((password) => {
+    for (const password of strongPasswords) {
       const isValid =
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password) &&
         password.length >= 8;
       expect(isValid).toBe(true);
-    });
+    }
   });
 });
 

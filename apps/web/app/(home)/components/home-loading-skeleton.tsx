@@ -31,7 +31,7 @@ export function HomeLoadingSkeleton() {
       <section className="container mx-auto px-4">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="text-center">
+            <div key={`stats-skeleton-${i}`} className="text-center">
               <div className="mx-auto h-10 w-24 rounded-lg bg-muted animate-pulse" />
               <div className="mx-auto mt-2 h-4 w-16 rounded bg-muted/60 animate-pulse" />
             </div>

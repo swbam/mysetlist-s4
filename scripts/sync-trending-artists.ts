@@ -27,7 +27,7 @@ for (const envVar of requiredEnvVars) {
 }
 console.log("✅ All required environment variables are set");
 
-const APP_URL = process.env["NEXT_PUBLIC_APP_URL"] || "http://localhost:3001";
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
 
 // Create Spotify client instance
 const spotify = new SpotifyClient({
@@ -62,8 +62,10 @@ async function getTrendingArtistsFromTicketmaster(): Promise<TrendingArtist[]> {
         .split(".")[0]
     }Z`, // Next 3 months instead of 6
   });
-  
-  console.log(`📊 Ticketmaster API returned ${eventsResponse._embedded?.events?.length || 0} events`);
+
+  console.log(
+    `📊 Ticketmaster API returned ${eventsResponse._embedded?.events?.length || 0} events`,
+  );
 
   if (!eventsResponse._embedded?.events) {
     return [];
@@ -83,15 +85,17 @@ async function getTrendingArtistsFromTicketmaster(): Promise<TrendingArtist[]> {
 
     for (const attraction of event._embedded.attractions) {
       processedAttractions++;
-      
+
       // More lenient filtering - check if it's an artist OR has Music classification
       const isArtist = attraction.type?.toLowerCase() === "artist";
       const isMusicClassification = attraction.classifications?.some(
-        (c: any) => c.segment?.name === "Music"
+        (c: any) => c.segment?.name === "Music",
       );
-      
+
       if (!isArtist && !isMusicClassification) {
-        console.log(`    Skipping ${attraction.name}: type=${attraction.type}, not music`);
+        console.log(
+          `    Skipping ${attraction.name}: type=${attraction.type}, not music`,
+        );
         continue;
       }
 
@@ -109,8 +113,10 @@ async function getTrendingArtistsFromTicketmaster(): Promise<TrendingArtist[]> {
       }
     }
   }
-  
-  console.log(`🔍 Processed ${processedEvents} events with ${processedAttractions} attractions`);
+
+  console.log(
+    `🔍 Processed ${processedEvents} events with ${processedAttractions} attractions`,
+  );
   console.log(`🎤 Found ${artistMap.size} unique artists`);
 
   // Sort by number of upcoming shows and take top artists
@@ -135,12 +141,17 @@ async function getTrendingArtistsFromTicketmaster(): Promise<TrendingArtist[]> {
         if (!artist.imageUrl && spotifyArtist.images?.length > 0) {
           artist.imageUrl = spotifyArtist.images[0].url;
         }
-        console.log(`  ✅ Found on Spotify: ${spotifyArtist.name} (${spotifyArtist.id})`);
+        console.log(
+          `  ✅ Found on Spotify: ${spotifyArtist.name} (${spotifyArtist.id})`,
+        );
       } else {
         console.log(`  ❌ Not found on Spotify: ${artist.name}`);
       }
     } catch (error) {
-      console.log(`  ⚠️ Spotify search error for ${artist.name}:`, error instanceof Error ? error.message : 'Unknown error');
+      console.log(
+        `  ⚠️ Spotify search error for ${artist.name}:`,
+        error instanceof Error ? error.message : "Unknown error",
+      );
     }
   }
 
@@ -149,9 +160,13 @@ async function getTrendingArtistsFromTicketmaster(): Promise<TrendingArtist[]> {
     .filter((a) => a.spotifyId)
     .slice(0, 10);
 
-  console.log(`🎯 Final result: ${artistsWithSpotify.length} artists with Spotify data`);
+  console.log(
+    `🎯 Final result: ${artistsWithSpotify.length} artists with Spotify data`,
+  );
   artistsWithSpotify.forEach((artist, index) => {
-    console.log(`  ${index + 1}. ${artist.name} - ${artist.upcomingShows} shows - Spotify: ${artist.spotifyId}`);
+    console.log(
+      `  ${index + 1}. ${artist.name} - ${artist.upcomingShows} shows - Spotify: ${artist.spotifyId}`,
+    );
   });
 
   return artistsWithSpotify;
@@ -187,7 +202,7 @@ async function syncArtist(artist: TrendingArtist): Promise<boolean> {
 async function main() {
   try {
     console.log("🎯 Starting trending artists sync...");
-    
+
     // Get trending artists
     console.log("📡 Fetching trending artists from Ticketmaster...");
     const trendingArtists = await getTrendingArtistsFromTicketmaster();
@@ -196,13 +211,15 @@ async function main() {
       console.error("❌ No trending artists found");
       process.exit(1);
     }
-    
+
     console.log(`✅ Found ${trendingArtists.length} trending artists`);
-    
+
     trendingArtists.forEach((artist, index) => {
-      console.log(`  ${index + 1}. ${artist.name} - ${artist.upcomingShows} shows - Spotify ID: ${artist.spotifyId || 'None'}`);
+      console.log(
+        `  ${index + 1}. ${artist.name} - ${artist.upcomingShows} shows - Spotify ID: ${artist.spotifyId || "None"}`,
+      );
     });
-    
+
     let successCount = 0;
 
     console.log("\n🔄 Starting sync process...");
@@ -219,12 +236,16 @@ async function main() {
       // Add a small delay to avoid rate limiting
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
-    
-    console.log(`\n🎉 Sync completed! Successfully synced ${successCount}/${trendingArtists.length} artists`);
-    
+
+    console.log(
+      `\n🎉 Sync completed! Successfully synced ${successCount}/${trendingArtists.length} artists`,
+    );
   } catch (error) {
     console.error("💥 Fatal error in main sync:", error);
-    console.error("Stack trace:", error instanceof Error ? error.stack : 'No stack trace');
+    console.error(
+      "Stack trace:",
+      error instanceof Error ? error.stack : "No stack trace",
+    );
     process.exit(1);
   }
 }

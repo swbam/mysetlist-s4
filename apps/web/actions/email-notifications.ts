@@ -40,8 +40,8 @@ export async function sendDailyShowReminders() {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    const todayStr = today.toISOString().split("T")[0]!;
-    const tomorrowStr = tomorrow.toISOString().split("T")[0]!;
+    const todayStr = today.toISOString().split("T")[0] ?? "";
+    const tomorrowStr = tomorrow.toISOString().split("T")[0] ?? "";
 
     // Get all shows happening today or tomorrow
     const upcomingShows = await db
@@ -224,7 +224,7 @@ export async function sendWeeklyDigests() {
         continue;
       }
 
-      const artistIds = popularArtists.map((f: any) => f.artist.id);
+      const artistIds = popularArtists.map((f) => f.artist.id);
 
       // Get upcoming shows for popular artists
       const upcomingShows = await db
@@ -237,22 +237,21 @@ export async function sendWeeklyDigests() {
         .where(
           and(
             inArray(shows.headlinerArtistId, artistIds),
-            gte(shows.date, today.toISOString().split("T")[0]!),
-            lte(shows.date, weekAhead.toISOString().split("T")[0]!),
+            gte(shows.date, today.toISOString().split("T")[0] ?? ""),
+            lte(shows.date, weekAhead.toISOString().split("T")[0] ?? ""),
           ),
         )
         .limit(10);
 
       // Format data for email
-      const artistsWithActivity = popularArtists.slice(0, 5).map((f: any) => ({
+      const artistsWithActivity = popularArtists.slice(0, 5).map((f) => ({
         id: f.artist.id,
         name: f.artist.name,
-        upcomingShows: upcomingShows.filter(
-          (s: any) => s.artist.id === f.artist.id,
-        ).length,
+        upcomingShows: upcomingShows.filter((s) => s.artist.id === f.artist.id)
+          .length,
       }));
 
-      const formattedShows = upcomingShows.slice(0, 5).map((s: any) => ({
+      const formattedShows = upcomingShows.slice(0, 5).map((s) => ({
         id: s.show.id,
         name: s.show.name,
         artistName: s.artist.name,
@@ -549,7 +548,7 @@ export async function processQueuedEmails() {
             const showReminderResult = await sendShowReminderEmail({
               to: [
                 {
-                  email: record.user.email!,
+                  email: record.user.email ?? "",
                   name: record.user.displayName || "there",
                 },
               ],
@@ -600,7 +599,7 @@ export async function processQueuedEmails() {
             userId: record.queue.userId,
             emailType: record.queue.emailType,
             subject: `${record.queue.emailType} email`,
-            recipient: record.user.email!,
+            recipient: record.user.email ?? "",
             status: "sent",
             sentAt: new Date(),
           });
@@ -677,7 +676,7 @@ export async function getUserEmailPreferences() {
 }
 
 // Update user email preferences
-export async function updateEmailPreferences(_data: any) {
+export async function updateEmailPreferences(_data: unknown) {
   return { success: true };
 }
 
@@ -692,7 +691,7 @@ export async function queueEmail(params: {
     | "weekly_digest"
     | "password_reset"
     | "email_verification";
-  emailData: any;
+  emailData: unknown;
   scheduledFor: Date;
 }) {
   try {

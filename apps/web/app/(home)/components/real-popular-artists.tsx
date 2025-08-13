@@ -45,7 +45,7 @@ export function RealPopularArtists() {
           Trending:
         </span>
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="animate-pulse">
+          <div key={`trending-skeleton-${i}`} className="animate-pulse">
             <div className="h-7 w-20 bg-muted rounded-full" />
           </div>
         ))}

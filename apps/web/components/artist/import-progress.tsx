@@ -1,13 +1,18 @@
 "use client";
 
-import * as React from "react";
-import { useState, useEffect, useCallback } from "react";
-import { CheckCircle, AlertCircle, Loader2, RefreshCw } from "lucide-react";
-import { cn } from "@repo/design-system/lib/utils";
-import { Progress } from "@repo/design-system/components/ui/progress";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
-import { Button } from "@repo/design-system/components/ui/button";
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { Progress } from "@repo/design-system/components/ui/progress";
+import { cn } from "@repo/design-system/lib/utils";
+import { AlertCircle, CheckCircle, Loader2, RefreshCw } from "lucide-react";
+import * as React from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface ImportStatus {
   stage: string;
@@ -46,7 +51,7 @@ export function ImportProgress({
   const fetchStatus = useCallback(async () => {
     try {
       const response = await fetch(`/api/artists/${artistId}/import-status`);
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to fetch import status");
@@ -69,7 +74,8 @@ export function ImportProgress({
 
       return data;
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Failed to fetch status";
+      const errorMsg =
+        err instanceof Error ? err.message : "Failed to fetch status";
       console.error("Import status fetch error:", err);
       setError(errorMsg);
       return null;
@@ -83,14 +89,15 @@ export function ImportProgress({
     const poll = async () => {
       if (attempts >= maxAttempts) {
         setIsPolling(false);
-        const timeoutMsg = "Import is taking longer than expected. Please refresh the page or contact support.";
+        const timeoutMsg =
+          "Import is taking longer than expected. Please refresh the page or contact support.";
         setError(timeoutMsg);
         onError?.(timeoutMsg);
         return;
       }
 
       await fetchStatus();
-      setAttempts(prev => prev + 1);
+      setAttempts((prev) => prev + 1);
     };
 
     // Initial fetch
@@ -142,17 +149,16 @@ export function ImportProgress({
               <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
             )}
             <span>
-              {status?.isComplete 
-                ? "Import Complete" 
-                : error 
-                ? "Import Error" 
-                : "Importing Artist Data"
-              }
+              {status?.isComplete
+                ? "Import Complete"
+                : error
+                  ? "Import Error"
+                  : "Importing Artist Data"}
             </span>
           </CardTitle>
         </CardHeader>
       )}
-      
+
       <CardContent className="space-y-4">
         {error ? (
           <div className="space-y-4">
@@ -163,13 +169,11 @@ export function ImportProgress({
                   <h4 className="text-sm font-medium text-red-800">
                     Import Failed
                   </h4>
-                  <p className="text-sm text-red-700 mt-1">
-                    {error}
-                  </p>
+                  <p className="text-sm text-red-700 mt-1">{error}</p>
                 </div>
               </div>
             </div>
-            
+
             <div className="flex space-x-2">
               <Button
                 onClick={handleRetry}
@@ -182,88 +186,91 @@ export function ImportProgress({
               </Button>
             </div>
           </div>
-        ) : status && (
-          <div className="space-y-4">
-            {/* Stage and Status */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Badge
-                  variant={status.isComplete ? "default" : "secondary"}
-                  className="text-xs"
-                >
-                  {status.stage}
-                </Badge>
-                <span className="text-sm font-medium">
-                  {status.percentage}%
-                </span>
+        ) : (
+          status && (
+            <div className="space-y-4">
+              {/* Stage and Status */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Badge
+                    variant={status.isComplete ? "default" : "secondary"}
+                    className="text-xs"
+                  >
+                    {status.stage}
+                  </Badge>
+                  <span className="text-sm font-medium">
+                    {status.percentage}%
+                  </span>
+                </div>
+
+                {isPolling && !status.isComplete && (
+                  <Button
+                    onClick={handleStop}
+                    size="sm"
+                    variant="ghost"
+                    className="text-xs"
+                  >
+                    Stop
+                  </Button>
+                )}
               </div>
-              
-              {isPolling && !status.isComplete && (
-                <Button
-                  onClick={handleStop}
-                  size="sm"
-                  variant="ghost"
-                  className="text-xs"
-                >
-                  Stop
-                </Button>
-              )}
-            </div>
 
-            {/* Progress Bar */}
-            <div className="space-y-2">
-              <Progress 
-                value={status.percentage} 
-                className="h-2"
-                style={{
-                  transition: "all 0.3s ease-in-out",
-                }}
-              />
-              
-              {/* Message */}
-              <p className="text-sm text-muted-foreground">
-                {status.message}
-              </p>
-            </div>
+              {/* Progress Bar */}
+              <div className="space-y-2">
+                <Progress
+                  value={status.percentage}
+                  className="h-2"
+                  style={{
+                    transition: "all 0.3s ease-in-out",
+                  }}
+                />
 
-            {/* Additional Info */}
-            {status.isComplete && (
-              <div className="rounded-md bg-green-50 border border-green-200 p-4">
-                <div className="flex items-start space-x-3">
-                  <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <h4 className="text-sm font-medium text-green-800">
-                      Import Successful
-                    </h4>
-                    <p className="text-sm text-green-700 mt-1">
-                      Artist data has been successfully imported and is ready for use.
-                    </p>
+                {/* Message */}
+                <p className="text-sm text-muted-foreground">
+                  {status.message}
+                </p>
+              </div>
+
+              {/* Additional Info */}
+              {status.isComplete && (
+                <div className="rounded-md bg-green-50 border border-green-200 p-4">
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <h4 className="text-sm font-medium text-green-800">
+                        Import Successful
+                      </h4>
+                      <p className="text-sm text-green-700 mt-1">
+                        Artist data has been successfully imported and is ready
+                        for use.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Polling indicator */}
-            {isPolling && !status.isComplete && (
-              <div className="flex items-center space-x-2 text-xs text-muted-foreground">
-                <div className="flex space-x-1">
-                  <div 
-                    className="w-1 h-1 bg-current rounded-full animate-pulse"
-                    style={{ animationDelay: "0ms" }}
-                  />
-                  <div 
-                    className="w-1 h-1 bg-current rounded-full animate-pulse"
-                    style={{ animationDelay: "150ms" }}
-                  />
-                  <div 
-                    className="w-1 h-1 bg-current rounded-full animate-pulse"
-                    style={{ animationDelay: "300ms" }}
-                  />
+              {/* Polling indicator */}
+              {isPolling && !status.isComplete && (
+                <div className="flex items-center space-x-2 text-xs text-muted-foreground">
+                  <div className="flex space-x-1">
+                    <div
+                      className="w-1 h-1 bg-current rounded-full animate-pulse"
+                      style={{ animationDelay: "0ms" }}
+                    />
+                    <div
+                      className="w-1 h-1 bg-current rounded-full animate-pulse"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <div
+                      className="w-1 h-1 bg-current rounded-full animate-pulse"
+                      style={{ animationDelay: "300ms" }}
+                    />
+                  </div>
+                  <span>Checking for updates...</span>
                 </div>
-                <span>Checking for updates...</span>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )
         )}
       </CardContent>
     </Card>

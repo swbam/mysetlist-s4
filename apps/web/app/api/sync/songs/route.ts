@@ -1,6 +1,6 @@
 import { artistSongs, artists, db, eq, songs } from "@repo/database";
-import { sql } from "drizzle-orm";
 import { ArtistSyncService } from "@repo/external-apis";
+import { sql } from "drizzle-orm";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -94,7 +94,8 @@ export async function POST(request: NextRequest) {
 
       if (fullDiscography) {
         // Sync the full discography
-        syncResult = await artistSyncService.syncFullDiscography(targetSpotifyId);
+        syncResult =
+          await artistSyncService.syncFullDiscography(targetSpotifyId);
         console.log(
           `✅ Full discography sync completed for ${targetArtist.name}:`,
           syncResult,
@@ -102,7 +103,7 @@ export async function POST(request: NextRequest) {
       } else {
         // Just sync top tracks (fallback)
         await artistSyncService.syncArtist(targetSpotifyId);
-        
+
         // Get song count after sync
         const countResult = await db.execute(sql`
           SELECT COUNT(*)::int as count
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
           WHERE ${artistSongs.artistId} = ${targetArtist.id}
         `);
         const count = (countResult as any)?.rows?.[0]?.count ?? 0;
-        
+
         syncResult = { totalSongs: count };
       }
     } catch (error) {
@@ -171,10 +172,7 @@ export async function GET(request: NextRequest) {
       .limit(1);
 
     if (!artist) {
-      return NextResponse.json(
-        { error: "Artist not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Artist not found" }, { status: 404 });
     }
 
     // Get actual song count

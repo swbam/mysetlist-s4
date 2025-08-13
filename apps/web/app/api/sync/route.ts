@@ -20,14 +20,14 @@ export async function POST(request: NextRequest) {
 
     // Import the orchestration service directly to avoid internal API calls
     const { ArtistImportOrchestrator } = await import("@repo/external-apis");
-    
+
     switch (type) {
       case "artist":
       case "artists": {
         // Use orchestrator directly for better performance and error handling
         const orchestrator = new ArtistImportOrchestrator();
-        
-        let result;
+
+        let result: any;
         if (ticketmasterId) {
           result = await orchestrator.importArtist(ticketmasterId);
         } else if (spotifyId || artistId) {
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
           const orchestrationResponse = await fetch(
             `${request.nextUrl.origin}/api/sync/orchestration`,
             {
-              method: "POST", 
+              method: "POST",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: authHeader || "",

@@ -66,7 +66,7 @@ export function TicketmasterArtistSearch({
             imageUrl: a.image,
             genres: a.genreHints || [],
             upcomingEvents: 0,
-          }))
+          })),
         );
         setHasSearched(true);
       } else {
@@ -105,9 +105,9 @@ export function TicketmasterArtistSearch({
       const importResponse = await fetch("/api/artists/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-            tmAttractionId: artist.id,
-          }),
+        body: JSON.stringify({
+          tmAttractionId: artist.id,
+        }),
       });
 
       if (importResponse.ok) {
