@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
     const jsonResponse = NextResponse.json({
       limit,
       type: "popular-artists",
-      data: artists,
+      artists: artists,  // Changed from 'data' to 'artists' to match frontend expectation
       timestamp: new Date().toISOString(),
     });
 
