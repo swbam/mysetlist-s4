@@ -13,6 +13,36 @@
       "main": true
     }
   },
+  "crons": [
+    {
+      "path": "/api/cron/update-active-artists",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/trending-artist-sync", 
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/complete-catalog-sync",
+      "schedule": "0 3 * * 0"
+    },
+    {
+      "path": "/api/cron/calculate-trending",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/master-sync",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/sync-artist-data",
+      "schedule": "0 */12 * * *"
+    },
+    {
+      "path": "/api/cron/finish-mysetlist-sync",
+      "schedule": "0 5 * * *"
+    }
+  ],
   "functions": {
     "apps/web/app/api/*/route.ts": {
       "maxDuration": 30,

@@ -12,7 +12,6 @@
     "sync:location": "tsx src/cli.ts location"
   },
   "dependencies": {
-    "2": "^3.0.0",
     "@repo/database": "workspace:*",
     "@t3-oss/env-nextjs": "^0.13.4",
     "@upstash/redis": "^1.28.0",

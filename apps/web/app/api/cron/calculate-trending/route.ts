@@ -1,97 +1,44 @@
 import { db } from "@repo/database";
 import { sql } from "drizzle-orm";
-import { headers } from "next/headers";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
+import { requireCronAuth, createSuccessResponse, createErrorResponse } from "~/lib/api/auth-helpers";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
 
+async function executeTrendingUpdate() {
+  // Call the database function to update trending scores
+  await db.execute(sql`SELECT update_trending_scores()`);
+
+  // Refresh materialized views
+  await db.execute(sql`SELECT refresh_trending_data()`);
+
+  // Best-effort log entry
+  try {
+    await db.execute(sql`SELECT log_cron_run('calculate-trending', 'success')`);
+  } catch {}
+
+  return { message: "Trending scores updated successfully" };
+}
+
 export async function POST(request: NextRequest) {
   try {
-    // Check for authorization
-    const headersList = await headers();
-    const authHeader = headersList.get("authorization");
-    const validTokens = [
-      process.env.CRON_SECRET,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-      process.env.ADMIN_API_KEY,
-    ].filter(Boolean) as string[];
+    // Standardized authentication
+    await requireCronAuth();
 
-    if (validTokens.length > 0 && !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Call the database function to update trending scores
-    await db.execute(sql`SELECT update_trending_scores()`);
-
-    // Refresh materialized views
-    await db.execute(sql`SELECT refresh_trending_data()`);
-
-    // Best-effort log entry
-    try {
-      await db.execute(sql`SELECT log_cron_run('calculate-trending', 'success')`);
-    } catch {}
-
-    return NextResponse.json({
-      success: true,
-      message: "Trending scores updated successfully",
-      timestamp: new Date().toISOString(),
-    });
+    const result = await executeTrendingUpdate();
+    return createSuccessResponse(result);
   } catch (error) {
     console.error("Trending calculation failed:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Trending calculation failed",
-        message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 },
+    return createErrorResponse(
+      "Trending calculation failed",
+      500,
+      error instanceof Error ? error.message : "Unknown error"
     );
   }
 }
 
 export async function GET(request: NextRequest) {
-  try {
-    // Check for authorization
-    const headersList = await headers();
-    const authHeader = headersList.get("authorization");
-    const validTokens = [
-      process.env.CRON_SECRET,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-      process.env.ADMIN_API_KEY,
-    ].filter(Boolean) as string[];
-
-    if (validTokens.length > 0 && !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Call the database function to update trending scores
-    await db.execute(sql`SELECT update_trending_scores()`);
-
-    // Refresh materialized views
-    await db.execute(sql`SELECT refresh_trending_data()`);
-
-    // Best-effort log entry
-    try {
-      await db.execute(sql`SELECT log_cron_run('calculate-trending', 'success')`);
-    } catch {}
-
-    return NextResponse.json({
-      success: true,
-      message: "Trending scores updated successfully",
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error) {
-    console.error("Trending calculation failed:", error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Trending calculation failed",
-        message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 },
-    );
-  }
+  // Support GET requests for manual triggers - delegate to POST
+  return POST(request);
 }

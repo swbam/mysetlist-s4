@@ -7,7 +7,6 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "2": "^3.0.0",
     "@liveblocks/client": "^2.24.2",
     "@liveblocks/node": "^3.0.0",
     "@liveblocks/react": "^2.24.2",

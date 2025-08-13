@@ -18,43 +18,54 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { type, data, artistId, ticketmasterId, spotifyId, options } = body;
 
-    // Sync operations that delegate to specialized endpoints
+    // Import the orchestration service directly to avoid internal API calls
+    const { ArtistImportOrchestrator } = await import("@repo/external-apis");
+    
     switch (type) {
       case "artist":
       case "artists": {
-        // Delegate to orchestration endpoint for comprehensive artist sync
-        const orchestrationResponse = await fetch(
-          `${request.nextUrl.origin}/api/sync/orchestration`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: authHeader || "",
-            },
-            body: JSON.stringify({
-              spotifyId: spotifyId || artistId,
-              ticketmasterId,
-              options: options || {
-                syncSongs: true,
-                syncShows: true,
-                createDefaultSetlists: true,
-                fullDiscography: true,
+        // Use orchestrator directly for better performance and error handling
+        const orchestrator = new ArtistImportOrchestrator();
+        
+        let result;
+        if (ticketmasterId) {
+          result = await orchestrator.importArtist(ticketmasterId);
+        } else if (spotifyId || artistId) {
+          // For Spotify ID based sync, use the orchestration endpoint
+          const orchestrationResponse = await fetch(
+            `${request.nextUrl.origin}/api/sync/orchestration`,
+            {
+              method: "POST", 
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: authHeader || "",
               },
-            }),
-          },
-        );
-
-        if (!orchestrationResponse.ok) {
-          throw new Error(
-            `Orchestration sync failed: ${orchestrationResponse.statusText}`,
+              body: JSON.stringify({
+                spotifyId: spotifyId || artistId,
+                options: options || {
+                  syncSongs: true,
+                  syncShows: true,
+                  createDefaultSetlists: true,
+                  fullDiscography: true,
+                },
+              }),
+            },
           );
+
+          if (!orchestrationResponse.ok) {
+            throw new Error(
+              `Orchestration sync failed: ${orchestrationResponse.statusText}`,
+            );
+          }
+
+          result = await orchestrationResponse.json();
+        } else {
+          throw new Error("Either tmAttractionId or spotifyId is required");
         }
 
-        const orchestrationResult = await orchestrationResponse.json();
-
         return NextResponse.json({
-          message: "Artist sync completed via orchestration",
-          result: orchestrationResult,
+          message: "Artist sync completed",
+          result,
           processed: data?.length || 1,
         });
       }

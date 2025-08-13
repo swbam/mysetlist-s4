@@ -3,7 +3,6 @@ import { SpotifyClient } from "../clients/spotify";
 import { TicketmasterClient } from "../clients/ticketmaster";
 import { ArtistSyncService } from "./artist-sync";
 import { ShowSyncService } from "./show-sync";
-import { VenueSyncService } from "./venue-sync";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 
 export interface ImportProgress {
@@ -34,9 +33,8 @@ export class ArtistImportOrchestrator {
   private ticketmasterClient: TicketmasterClient;
   private artistSyncService: ArtistSyncService;
   private showSyncService: ShowSyncService;
-  private venueSyncService: VenueSyncService;
   private errorHandler: SyncErrorHandler;
-  private progressCallback?: (progress: ImportProgress) => Promise<void>;
+  private progressCallback: ((progress: ImportProgress) => Promise<void>) | undefined;
 
   constructor(progressCallback?: (progress: ImportProgress) => Promise<void>) {
     this.spotifyClient = new SpotifyClient({});
@@ -45,8 +43,7 @@ export class ArtistImportOrchestrator {
     });
     this.artistSyncService = new ArtistSyncService();
     this.showSyncService = new ShowSyncService();
-    this.venueSyncService = new VenueSyncService();
-    this.progressCallback = progressCallback || undefined;
+    this.progressCallback = progressCallback ?? undefined;
     this.errorHandler = new SyncErrorHandler({
       maxRetries: 3,
       retryDelay: 2000,
@@ -110,7 +107,7 @@ export class ArtistImportOrchestrator {
 
       // Find best Spotify match
       let spotifyArtist: any = null;
-      if (spotifySearch?.artists?.items?.length > 0) {
+      if (spotifySearch?.artists?.items && spotifySearch.artists.items.length > 0) {
         spotifyArtist = spotifySearch.artists.items.find((artist: any) =>
           this.isArtistNameMatch(tmArtist.name, artist.name)
         ) || spotifySearch.artists.items[0];
@@ -256,7 +253,7 @@ export class ArtistImportOrchestrator {
   /**
    * Import complete studio discography (Phase 2)
    */
-  private async importCompleteDiscography(artistId: string, spotifyId: string): Promise<number> {
+  private async importCompleteDiscography(_artistId: string, spotifyId: string): Promise<number> {
     await this.updateProgress({
       stage: 'importing-songs',
       progress: 40,
@@ -278,7 +275,7 @@ export class ArtistImportOrchestrator {
   /**
    * Import shows and venues (Phase 2)
    */
-  private async importShowsAndVenues(artistId: string, tmAttractionId: string, artistName: string): Promise<{ shows: number, venues: number }> {
+  private async importShowsAndVenues(artistId: string, _tmAttractionId: string, artistName: string): Promise<{ shows: number, venues: number }> {
     await this.updateProgress({
       stage: 'importing-shows',
       progress: 75,
@@ -286,7 +283,7 @@ export class ArtistImportOrchestrator {
     });
 
     // Import shows using both attraction ID and name search for comprehensive coverage
-    const showResults = await Promise.allSettled([
+    await Promise.allSettled([
       this.showSyncService.syncArtistShows(artistId),
       this.importShowsByName(artistName, artistId)
     ]);
@@ -345,23 +342,25 @@ export class ArtistImportOrchestrator {
           .values({
             ticketmasterId: venue.id,
             name: venue.name,
-            city: venue.city?.name || null,
+            slug: venue.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""),
+            city: venue.city?.name || 'Unknown',
             state: venue.state?.stateCode || null,
-            country: venue.country?.countryCode || null,
+            country: venue.country?.countryCode || 'US',
+            timezone: venue.timezone || 'America/New_York',
             address: venue.address?.line1 || null,
             postalCode: venue.postalCode || null,
             latitude: venue.location ? parseFloat(venue.location.latitude) : null,
             longitude: venue.location ? parseFloat(venue.location.longitude) : null,
-            lastSyncedAt: new Date().toISOString(),
+            updatedAt: new Date(),
           })
           .onConflictDoUpdate({
             target: venues.ticketmasterId,
             set: {
               name: venue.name,
-              city: venue.city?.name || null,
+              city: venue.city?.name || 'Unknown',
               state: venue.state?.stateCode || null,
-              country: venue.country?.countryCode || null,
-              lastSyncedAt: new Date().toISOString(),
+              country: venue.country?.countryCode || 'US',
+              updatedAt: new Date(),
             },
           })
           .returning({ id: venues.id });
@@ -381,24 +380,23 @@ export class ArtistImportOrchestrator {
       await db
         .insert(shows)
         .values({
+          ticketmasterId: event.id,
           name: event.name,
           slug: showSlug,
           date: showDate,
           headlinerArtistId: artistId,
           venueId: venueId,
-          status: event.dates.status?.code || 'onsale',
+          status: 'upcoming',
           ticketUrl: event.url || null,
-          priceRange: event.priceRanges?.[0] ? JSON.stringify(event.priceRanges[0]) : null,
-          saleInfo: event.sales ? JSON.stringify(event.sales) : null,
-          lastSyncedAt: new Date().toISOString(),
+          updatedAt: new Date(),
         })
         .onConflictDoUpdate({
-          target: shows.slug,
+          target: shows.ticketmasterId,
           set: {
             name: event.name,
             date: showDate,
-            status: event.dates.status?.code || 'onsale',
-            lastSyncedAt: new Date().toISOString(),
+            status: 'upcoming',
+            updatedAt: new Date(),
           },
         });
     } catch (error) {

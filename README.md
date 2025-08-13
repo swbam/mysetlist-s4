@@ -7,7 +7,7 @@ A modern web application for concert-goers to vote on songs they want to hear at
 - **Artist Discovery**: Search and browse artists with Spotify integration
 - **Concert Listings**: View upcoming and past shows with Ticketmaster data
 - **Setlist Voting**: Vote on songs you want to hear at concerts
-- **Real-time Updates**: Live voting results and trending data
+- **Real-time Updates**: Live voting results, import progress, and trending data via SSE
 - **Spotify Integration**: Sign in with Spotify for personalized experience
 - **Mobile Responsive**: Optimized for all devices
 
@@ -117,22 +117,37 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions.
 
 ## 🔄 Data Synchronization
 
-The app uses automated cron jobs to sync data:
+The app uses a modern **ArtistImportOrchestrator** system for intelligent data sync:
 
-- **Hourly Sync**: Updates artist and show data
-- **Song Sync**: Imports songs from Spotify
-- **Trending Calculation**: Updates trending scores
-- **Daily Deep Sync**: Comprehensive data update
+### Real-time Import System
+- **Phase 1 (< 3 seconds)**: Instant artist page creation with basic data
+- **Phase 2 (Background)**: Show and venue import via Ticketmaster API  
+- **Phase 3 (Background)**: Complete song catalog sync via Spotify API
+- **SSE Progress Tracking**: Real-time progress updates via Server-Sent Events
+- **Smart Caching**: Multi-layer caching with Redis and memory fallback
 
-Cron jobs are managed by Supabase pg_cron.
+### Automated Background Jobs
+- **Active Artists Sync**: Every 6 hours for artists with recent activity
+- **Trending Artists Sync**: Daily deep catalog refresh for top 100 artists
+- **Weekly Full Sync**: Complete system maintenance and data integrity checks
+
+All cron jobs are managed by Supabase Edge Functions with intelligent rate limiting.
 
 ## 🏗️ Architecture
 
+### Modern Import System
+- **ArtistImportOrchestrator**: Production-grade background sync system
+- **SSE Progress Tracking**: Real-time import progress via Server-Sent Events
+- **Multi-phase Processing**: Optimized 3-phase import strategy
+- **Intelligent Caching**: Redis + memory fallback with pattern-based invalidation
+
+### Core Infrastructure  
 - **ISR (Incremental Static Regeneration)**: Artist pages are statically generated and revalidated
 - **Edge Functions**: API routes optimized for edge runtime
 - **Database**: Supabase provides PostgreSQL with Row Level Security
-- **Caching**: Redis/Upstash for API response caching
+- **Caching**: Multi-layer caching (Redis + LRU memory cache)
 - **CDN**: Vercel Edge Network for global distribution
+- **Bundle Optimization**: Dynamic imports and code splitting (< 350kB homepage)
 
 ## 🧪 Testing
 

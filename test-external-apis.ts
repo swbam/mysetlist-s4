@@ -79,7 +79,7 @@ testExternalAPIs()
       console.log("\n🎉 All external APIs are working correctly!");
       
       if (result.sampleTmId) {
-        console.log(`\n💡 You can test the sync pipeline with: tsx test-sync-pipeline-fixed.ts ${result.sampleTmId}`);
+        console.log(`\n💡 You can test the sync pipeline with: tsx test-sync-pipeline.ts ${result.sampleTmId}`);
       }
     } else {
       console.log("\n💥 External API test failed!");

@@ -85,6 +85,14 @@ export interface TicketmasterAttraction {
   type: string;
   url: string;
   locale: string;
+  imageUrl?: string;
+  images?: Array<{
+    url: string;
+    width: number;
+    height: number;
+    ratio?: string;
+  }>;
+  genres?: string[];
   externalLinks?: {
     youtube?: Array<{ url: string }>;
     twitter?: Array<{ url: string }>;
@@ -98,13 +106,6 @@ export interface TicketmasterAttraction {
     homepage?: Array<{ url: string }>;
   };
   aliases?: string[];
-  images?: Array<{
-    url: string;
-    width: number;
-    height: number;
-    ratio?: string;
-    fallback?: boolean;
-  }>;
   classifications?: Array<{
     primary?: boolean;
     segment?: {
@@ -372,9 +373,8 @@ export class TicketmasterClient extends BaseAPIClient {
       // Extract image URL from images array - prefer larger images
       const imageUrl =
         attraction.images?.find(
-          (img) => img.width >= 300 && img.height >= 300 && !img.fallback,
+          (img) => img.width >= 300 && img.height >= 300,
         )?.url || 
-        attraction.images?.find((img) => !img.fallback)?.url ||
         attraction.images?.[0]?.url;
 
       // Extract genres from classifications
@@ -394,7 +394,7 @@ export class TicketmasterClient extends BaseAPIClient {
       return {
         id: attraction.id,
         name: attraction.name,
-        imageUrl: imageUrl || undefined,
+        ...(imageUrl && { imageUrl }),
         genres: [...new Set(genres)], // Remove duplicates
         popularity: attraction.upcomingEvents?._total || 0,
       };

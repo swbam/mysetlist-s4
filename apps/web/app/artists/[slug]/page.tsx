@@ -111,8 +111,8 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
     if (!artist) {
       return (
         <ArtistErrorBoundary artistName={slug.replace(/-/g, " ")}> 
-          <Suspense fallback={<ArtistImportLoading />}>
-            <ArtistImportLoading />
+          <Suspense fallback={<ArtistImportLoading artistName={slug.replace(/-/g, " ")} />}>
+            <ArtistImportLoading artistName={slug.replace(/-/g, " ")} />
           </Suspense>
         </ArtistErrorBoundary>
       );

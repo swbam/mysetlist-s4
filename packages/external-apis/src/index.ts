@@ -10,7 +10,7 @@ export const syncScheduler = new SyncScheduler();
 
 // Sync Services
 export * from "./services";
-export { SyncScheduler } from "./services";
+export { SyncScheduler, ArtistImportOrchestrator } from "./services";
 
 // Utilities
 export * from "./utils";

@@ -3,8 +3,5 @@
   "version": "0.0.0",
   "private": true,
   "main": "./index.ts",
-  "types": "./index.ts",
-  "dependencies": {
-    "2": "^3.0.0"
-  }
+  "types": "./index.ts"
 }
