@@ -2,16 +2,16 @@
 export const productionConfig = {
   // Production URLs
   urls: {
-    app: "https://mysetlist-sonnet.vercel.app",
-    web: "https://mysetlist-sonnet.vercel.app",
-    api: "https://mysetlist-sonnet.vercel.app/api",
-    docs: "https://docs.mysetlist-sonnet.vercel.app",
+    app: "https://theset.live",
+    web: "https://theset.live",
+    api: "https://theset.live/api",
+    docs: "https://docs.theset.live",
   },
 
   // Vercel configuration
   vercel: {
     projectName: "mysetlist-sonnet",
-    productionUrl: "mysetlist-sonnet.vercel.app",
+    productionUrl: "theset.live",
   },
 
   // External services
@@ -21,7 +21,7 @@ export const productionConfig = {
     },
     spotify: {
       clientId: process.env.SPOTIFY_CLIENT_ID,
-      redirectUri: "https://mysetlist-sonnet.vercel.app/auth/callback/spotify",
+      redirectUri: "https://theset.live/auth/callback/spotify",
     },
   },
 
@@ -29,10 +29,10 @@ export const productionConfig = {
   cron: {
     // All cron jobs should call these endpoints
     endpoints: {
-      masterSync: "https://mysetlist-sonnet.vercel.app/api/cron/master-sync",
+      masterSync: "https://theset.live/api/cron/master-sync",
       calculateTrending:
-        "https://mysetlist-sonnet.vercel.app/api/cron/calculate-trending",
-      syncArtists: "https://mysetlist-sonnet.vercel.app/api/cron/sync/artists",
+        "https://theset.live/api/cron/calculate-trending",
+      syncArtists: "https://theset.live/api/cron/sync/artists",
     },
     // Cron schedules (in cron format)
     schedules: {

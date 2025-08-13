@@ -1,13 +1,14 @@
 // CORS configuration for production security
 // Only allow specific origins instead of wildcard
 const allowedOrigins = [
-  "https://mysetlist-sonnet.vercel.app",
-  "https://www.mysetlist-sonnet.vercel.app",
   "https://theset.live",
   "https://www.theset.live",
   // Add localhost for development
   "http://localhost:3000",
   "http://localhost:3001",
+  // Legacy domains for backward compatibility
+  "https://mysetlist-sonnet.vercel.app",
+  "https://www.mysetlist-sonnet.vercel.app",
 ];
 
 export const corsHeaders = (origin?: string) => {

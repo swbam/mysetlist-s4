@@ -32,8 +32,8 @@ export function GDPRCookieConsent() {
 
   useEffect(() => {
     // Check if user has already made a choice
-    const consent = localStorage.getItem("mysetlist-cookie-consent");
-    const preferences = localStorage.getItem("mysetlist-cookie-preferences");
+    const consent = localStorage.getItem("theset-cookie-consent");
+    const preferences = localStorage.getItem("theset-cookie-preferences");
 
     if (consent) {
       // Load saved preferences
@@ -86,10 +86,10 @@ export function GDPRCookieConsent() {
   };
 
   const savePreferences = (prefs: CookiePreferences) => {
-    localStorage.setItem("mysetlist-cookie-consent", "given");
-    localStorage.setItem("mysetlist-cookie-preferences", JSON.stringify(prefs));
+    localStorage.setItem("theset-cookie-consent", "given");
+    localStorage.setItem("theset-cookie-preferences", JSON.stringify(prefs));
     localStorage.setItem(
-      "mysetlist-cookie-consent-date",
+      "theset-cookie-consent-date",
       new Date().toISOString(),
     );
 

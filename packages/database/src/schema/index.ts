@@ -1,6 +1,6 @@
 // Core schema exports - Essential tables only for TheSet MVP
 // Removed bloated analytics, data-pipeline, email-enhanced, admin, search, scalability
-// These were over-engineered and not required per mysetlist-docs specifications
+// These were over-engineered and not required per theset-docs specifications
 
 export * from "./users";
 export * from "./user-profiles";

@@ -22,6 +22,7 @@ export type {
 export type {
   TicketmasterEvent,
   TicketmasterVenue,
+  TicketmasterAttraction,
 } from "./src/clients/ticketmaster";
 
 export type {
@@ -55,7 +56,9 @@ export const spotify = new Proxy({} as SpotifyClient, {
 export const ticketmaster = new Proxy({} as TicketmasterClient, {
   get: (_target, prop) => {
     if (!_ticketmaster) {
-      _ticketmaster = new TicketmasterClient({});
+      _ticketmaster = new TicketmasterClient({
+        apiKey: process.env["TICKETMASTER_API_KEY"] || "k8GrSAkbFaN0w7qDxGl7ohr8LwdAQm9b"
+      });
     }
     return (_ticketmaster as any)[prop];
   },

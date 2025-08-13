@@ -20,7 +20,6 @@ import {
   LogOut,
   MapPin,
   Menu,
-  Music,
   Search,
   Settings,
   TrendingUp,
@@ -252,8 +251,8 @@ export function ResponsiveHeader({ className }: ResponsiveHeaderProps) {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between lg:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <Music className="h-8 w-8 text-primary" />
+          <Link href="/" className="flex items-center">
+
             <span className="font-bold text-xl">TheSet</span>
           </Link>
 

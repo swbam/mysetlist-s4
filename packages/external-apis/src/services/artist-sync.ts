@@ -305,8 +305,8 @@ export class ArtistSyncService {
 
     let totalSongs = 0;
     let totalAlbums = 0;
-    const skippedLiveTracks = 0;
-    const deduplicatedTracks = 0;
+    let skippedLiveTracks = 0;
+    let deduplicatedTracks = 0;
     const processedAlbums = new Set<string>();
 
     // Get all albums for the artist
@@ -358,61 +358,60 @@ export class ArtistSyncService {
             },
           );
 
-          // Filter out live tracks and similar variants with comprehensive patterns
-          const tracks = (tracksResponse.items || []).filter((t: any) => {
-            const name = (t.name || "").toLowerCase();
-            return !(
-              // Live variations
-              (
-                name.includes("(live") ||
-                name.includes(" - live") ||
-                name.includes(" live") ||
-                name.includes(" - live at") ||
-                name.includes(" (live at") ||
-                name.includes("[live]") ||
-                name.includes("live version") ||
-                name.includes("live recording") ||
-                name.includes("live performance") ||
-                name.includes("live from") ||
-                name.includes("live at") ||
-                // Acoustic/unplugged versions
-                name.includes("acoustic") ||
-                name.includes("unplugged") ||
-                name.includes("stripped") ||
-                // Session recordings
-                name.includes("session") ||
-                name.includes("sessions") ||
-                name.includes("studio session") ||
-                // Remix/demo/alternate versions
-                name.includes("remix") ||
-                name.includes("demo") ||
-                name.includes("alternate") ||
-                name.includes("alternative") ||
-                name.includes("remaster") ||
-                name.includes("re-recorded") ||
-                // Special editions
-                name.includes("radio edit") ||
-                name.includes("extended") ||
-                name.includes("instrumental") ||
-                name.includes("karaoke") ||
-                name.includes("cover") ||
-                // Common performance venue/context indicators
-                name.includes("bbc") ||
-                name.includes("mtv") ||
-                name.includes("radio") ||
-                name.includes("tv") ||
-                name.includes("concert") ||
-                name.includes("festival") ||
-                name.includes("tour")
-              )
+          // Filter out ONLY genuine live tracks - keep studio acoustic/remix versions
+          const allTracks = tracksResponse.items || [];
+          const tracks = [];
+          
+          for (const t of allTracks) {
+            const trackName = (t.name || "").toLowerCase();
+            const albumName = (album.name || "").toLowerCase();
+            
+            // Check if this is a genuine live performance
+            const isLivePerformance = (
+              // Clear live performance indicators with venue/location
+              trackName.includes("(live at") ||
+              trackName.includes("(live from") ||
+              trackName.includes("(live in") ||
+              trackName.includes(" - live at") ||
+              trackName.includes(" - live from") ||
+              trackName.includes(" - live in") ||
+              trackName.includes("[live]") ||
+              trackName.includes("live version") ||
+              trackName.includes("live recording") ||
+              trackName.includes("live performance") ||
+              trackName.includes("concert recording") ||
+              trackName.includes("bootleg") ||
+              trackName.includes("audience recording") ||
+              trackName.includes("soundboard") ||
+              // Album is clearly a live album
+              albumName.includes("live at") ||
+              albumName.includes("live from") ||
+              albumName.includes("live in") ||
+              albumName.includes("concert") ||
+              albumName.includes("unplugged") ||
+              albumName.includes("mtv unplugged") ||
+              // Session recordings from radio/TV (not studio sessions)
+              (trackName.includes("session") && (
+                trackName.includes("bbc") ||
+                trackName.includes("radio") ||
+                trackName.includes("peel") ||
+                trackName.includes("tv")
+              ))
             );
-          });
+            
+            if (isLivePerformance) {
+              skippedLiveTracks++;
+            } else {
+              tracks.push(t);
+            }
+          }
 
           // Deduplicate tracks by normalized title to avoid similar songs
           const seenTitles = new Set<string>();
           const uniqueTracks = tracks.filter((track: any) => {
             const normalizedTitle = normalizeTitle(track.name);
             if (seenTitles.has(normalizedTitle)) {
+              deduplicatedTracks++;
               return false; // Skip duplicate
             }
             seenTitles.add(normalizedTitle);

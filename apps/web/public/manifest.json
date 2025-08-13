@@ -98,7 +98,7 @@
   },
   "protocol_handlers": [
     {
-      "protocol": "web+mysetlist",
+      "protocol": "web+theset",
       "url": "/artist/%s"
     }
   ],
