@@ -13,7 +13,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 BASE_URL="${BASE_URL:-https://theset.live}"
-CRON_SECRET="${CRON_SECRET:-20812ee7bcf7daf3f7309d03d5cb424cf78866f064ddc4fbf12a42508e5dbf8e}"
+CRON_SECRET="${CRON_SECRET:-6155002300}"
 
 echo "🚀 TheSet Deployment Verification"
 echo "================================="
