@@ -89,7 +89,7 @@ export class ArtistSyncService {
 
     // MBID via Setlist.fm (if available via name)
     try {
-      const { SetlistFmClient } = await import("../clients/setlistfm");
+      const { SetlistFmClient } = await import("../clients/setlistfm.js");
       const s = new SetlistFmClient({});
       const qName = name;
       if (qName) {
