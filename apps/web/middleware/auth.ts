@@ -1,6 +1,9 @@
-import { type CookieOptions, createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 
+/**
+ * Simplified session update for Edge Runtime compatibility
+ * Actual Supabase auth verification happens in server components/API routes
+ */
 export async function updateSession(request: NextRequest) {
   try {
     let response = NextResponse.next({
@@ -9,61 +12,34 @@ export async function updateSession(request: NextRequest) {
       },
     });
 
-    // Validate environment variables
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-    if (!supabaseUrl || !supabaseAnonKey) {
-      return response;
+    // Check for auth-related paths that need protection
+    const pathname = request.nextUrl.pathname;
+    const protectedPaths = ['/profile', '/admin', '/my-artists', '/settings'];
+    const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
+    
+    if (isProtectedPath) {
+      // Check for Supabase auth cookies (Edge-compatible check)
+      const cookies = request.cookies.getAll();
+      const hasAuthToken = cookies.some(cookie => 
+        cookie.name.startsWith('sb-') && 
+        (cookie.name.includes('auth-token') || 
+         cookie.name.includes('access-token') ||
+         cookie.name.includes('access_token'))
+      );
+      
+      if (!hasAuthToken) {
+        const signInUrl = new URL('/auth/sign-in', request.url);
+        signInUrl.searchParams.set('redirectTo', pathname);
+        return NextResponse.redirect(signInUrl);
+      }
     }
 
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value;
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          });
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value: "",
-            ...options,
-          });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
-          response.cookies.set({
-            name,
-            value: "",
-            ...options,
-          });
-        },
-      },
-    });
-
-    // Safely attempt to get user
-    try {
-      await supabase.auth.getUser();
-    } catch (_error) {
-      // Continue without user session
+    // For auth callback, ensure cookies are properly forwarded
+    if (pathname === '/auth/callback') {
+      const cookiesToForward = request.cookies.getAll();
+      cookiesToForward.forEach(cookie => {
+        response.cookies.set(cookie.name, cookie.value);
+      });
     }
 
     return response;
