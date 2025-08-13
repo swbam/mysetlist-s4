@@ -391,7 +391,7 @@ export class UserService {
         last_used_at: new Date().toISOString(),
       };
 
-      let error;
+      let error: any;
       if (existingTokens) {
         // Update existing tokens
         ({ error } = await supabase
@@ -726,7 +726,7 @@ export class UserService {
         updated_at: new Date().toISOString(),
       };
 
-      let error;
+      let error: any;
       if (existing) {
         // Update existing preferences
         ({ error } = await supabase

@@ -65,11 +65,11 @@ async function fetchTicketmasterEvents(params: {
   url.searchParams.set("classificationName", "Music");
   url.searchParams.set("sort", "date,asc");
 
-  Object.entries(params).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(params)) {
     if (value) {
       url.searchParams.set(key, value.toString());
     }
-  });
+  }
 
   const response = await fetch(url);
 
@@ -121,6 +121,7 @@ serve(async (req) => {
       size: 50,
     });
 
+    // biome-ignore lint/suspicious/noExplicitAny: Complex API response structure
     const syncedShows = [] as any[];
 
     for (const event of events) {
@@ -149,7 +150,8 @@ serve(async (req) => {
           : null,
         timezone: venue.timezone,
         address: venue.address?.line1 || null,
-      } as any;
+        // biome-ignore lint/suspicious/noExplicitAny: Database insert type
+      } as unknown;
 
       const { data: dbVenue } = await supabase
         .from("venues")
@@ -211,7 +213,7 @@ serve(async (req) => {
           new Date(event.dates.start.localDate) > new Date()
             ? "upcoming"
             : "completed",
-      } as any;
+      } as unknown;
 
       // Upsert show
       const { data: show, error: showError } = await supabase

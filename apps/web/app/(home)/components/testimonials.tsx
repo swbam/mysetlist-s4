@@ -14,7 +14,10 @@ export default function Testimonials() {
             <div className="flex flex-col gap-4 rounded-md border p-6">
               <div className="flex text-yellow-500">
                 {Array.from({ length: 5 }).map((_, index) => (
-                  <Star className="h-4 w-4 fill-current" key={index} />
+                  <Star
+                    className="h-4 w-4 fill-current"
+                    key={`star-1-${index}`}
+                  />
                 ))}
               </div>
               <p className="text-muted-foreground leading-relaxed">
@@ -34,7 +37,10 @@ export default function Testimonials() {
             <div className="flex flex-col gap-4 rounded-md border p-6">
               <div className="flex text-yellow-500">
                 {Array.from({ length: 5 }).map((_, index) => (
-                  <Star className="h-4 w-4 fill-current" key={index} />
+                  <Star
+                    className="h-4 w-4 fill-current"
+                    key={`star-2-${index}`}
+                  />
                 ))}
               </div>
               <p className="text-muted-foreground leading-relaxed">
@@ -54,7 +60,10 @@ export default function Testimonials() {
             <div className="flex flex-col gap-4 rounded-md border p-6">
               <div className="flex text-yellow-500">
                 {Array.from({ length: 5 }).map((_, index) => (
-                  <Star className="h-4 w-4 fill-current" key={index} />
+                  <Star
+                    className="h-4 w-4 fill-current"
+                    key={`star-3-${index}`}
+                  />
                 ))}
               </div>
               <p className="text-muted-foreground leading-relaxed">

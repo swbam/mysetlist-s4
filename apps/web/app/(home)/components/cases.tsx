@@ -94,8 +94,11 @@ export const Cases = () => {
               </p>
             </div>
             <div className="flex gap-4 justify-center">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="basis-1/3 md:basis-1/4 lg:basis-1/6">
+              {Array.from({ length: 6 }, (_, i) => i).map((index) => (
+                <div
+                  key={`skeleton-${index}`}
+                  className="basis-1/3 md:basis-1/4 lg:basis-1/6"
+                >
                   <Skeleton className="aspect-square rounded-lg" />
                 </div>
               ))}

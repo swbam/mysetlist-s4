@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
         // Use orchestrator directly for better performance and error handling
         const orchestrator = new ArtistImportOrchestrator();
 
-        let result;
+        let result: any;
         if (ticketmasterId) {
           result = await orchestrator.importArtist(ticketmasterId);
         } else if (spotifyId || artistId) {

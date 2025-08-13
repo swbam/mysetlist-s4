@@ -61,7 +61,7 @@ const missingVars = [];
 console.log("\n✅ Required Variables:");
 console.log("-".repeat(60));
 
-requiredEnvVars.forEach((varName) => {
+for (const varName of requiredEnvVars) {
   const value = process.env[varName];
   if (value) {
     const displayValue =
@@ -74,19 +74,19 @@ requiredEnvVars.forEach((varName) => {
     hasErrors = true;
     missingVars.push(varName);
   }
-});
+}
 
 console.log("\n📋 Optional Variables:");
 console.log("-".repeat(60));
 
-optionalEnvVars.forEach((varName) => {
+for (const varName of optionalEnvVars) {
   const value = process.env[varName];
   if (value) {
     console.log(`  ✓ ${varName.padEnd(35)} = ${value}`);
   } else {
     console.log(`  - ${varName.padEnd(35)} = not set`);
   }
-});
+}
 
 // Test API connections
 console.log("\n🔌 Testing API Connections:");
@@ -206,9 +206,9 @@ Promise.all([
   if (hasErrors) {
     console.log("\n❌ Environment validation FAILED!\n");
     console.log("Missing required variables:");
-    missingVars.forEach((varName) => {
+    for (const varName of missingVars) {
       console.log(`  - ${varName}`);
-    });
+    }
     console.log("\nPlease add these variables in your Vercel dashboard:");
     console.log("Settings → Environment Variables → Add Variable");
     console.log("\nRefer to VERCEL_ENV_SETUP.md for the exact values.");

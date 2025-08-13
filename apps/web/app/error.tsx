@@ -4,7 +4,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { AlertTriangle, Home, RefreshCw } from "lucide-react";
 import { useEffect } from "react";
 
-export default function Error({
+export default function ErrorPage({
   error,
   reset,
 }: {

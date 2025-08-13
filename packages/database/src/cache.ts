@@ -69,7 +69,7 @@ function getCache(type: string): LRUCache<string, any> {
       throw new Error(`No cache config found for type: ${type}`);
     }
   }
-  return caches.get(type)!;
+  return caches.get(type) ?? createLRUCache();
 }
 
 // Generate a cache key from query parameters

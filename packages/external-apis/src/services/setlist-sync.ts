@@ -281,7 +281,7 @@ export class SetlistSyncService {
       for (let i = 0; i < selected.length; i++) {
         const song = selected[i];
         if (!song?.id) continue; // Skip if song or id is undefined
-        
+
         await db
           .insert(setlistSongsTable)
           .values({

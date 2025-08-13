@@ -39,10 +39,14 @@
   "exclude": [
     "apps",
     "packages",
+    "components",
+    "lib",
     "node_modules",
     "supabase/functions",
     "scripts/**/*.ts",
     "*.spec.ts",
-    "test-*.ts"
+    "test-*.ts",
+    "tsup.config.ts",
+    "turbo/**/*.ts"
   ]
 }

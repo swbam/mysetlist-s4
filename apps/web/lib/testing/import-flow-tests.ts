@@ -512,7 +512,7 @@ describe("Artist Import Flow - Comprehensive Tests", () => {
 
   describe("Error Handling and Resilience", () => {
     it("should handle partial failures gracefully", async () => {
-      // Mock Phase 3 to fail - skipped for now due to private property access  
+      // Mock Phase 3 to fail - skipped for now due to private property access
       // vi.mocked(
       //   orchestrator.artistSyncService.syncCatalog,
       // ).mockRejectedValueOnce(new Error("Catalog sync failed"));

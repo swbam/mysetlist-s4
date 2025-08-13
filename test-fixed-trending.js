@@ -128,7 +128,7 @@ async function testFixedTrendingSystem() {
 
     // Transform shows
     if (showsData && showsData.length > 0) {
-      showsData.forEach((show) => {
+      for (const show of showsData) {
         trendingItems.push({
           id: show.id,
           type: "show",
@@ -140,12 +140,12 @@ async function testFixedTrendingSystem() {
           slug: show.slug,
           show_date: show.date,
         });
-      });
+      }
     }
 
     // Transform artists
     if (artists && artists.length > 0) {
-      artists.forEach((artist) => {
+      for (const artist of artists) {
         const votes = artist.popularity || 0;
         const attendees = artist.follower_count || 0;
 
@@ -159,7 +159,7 @@ async function testFixedTrendingSystem() {
           recent_activity: votes + attendees,
           slug: artist.slug,
         });
-      });
+      }
     }
 
     // Sort combined results

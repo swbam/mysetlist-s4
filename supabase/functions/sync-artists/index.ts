@@ -150,7 +150,10 @@ serve(async (req) => {
       spotifyArtist = await fetchSpotifyArtist(spotifyId, accessToken);
     } else {
       // Search for artist by name
-      const searchResults = await searchSpotifyArtist(artistName!, accessToken);
+      const searchResults = await searchSpotifyArtist(
+        artistName ?? "",
+        accessToken,
+      );
 
       if (searchResults.length === 0) {
         return new Response(JSON.stringify({ error: "Artist not found" }), {

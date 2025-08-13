@@ -58,11 +58,11 @@ async function fetchSetlistFmSetlists(params: {
 
   const url = new URL("https://api.setlist.fm/rest/1.0/search/setlists");
 
-  Object.entries(params).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(params)) {
     if (value) {
       url.searchParams.set(key, value.toString());
     }
-  });
+  }
 
   const response = await fetch(url, {
     headers: {

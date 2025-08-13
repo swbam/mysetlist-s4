@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     const scheduler = new SyncScheduler();
 
-    let result;
+    let result: any;
     switch (mode) {
       case "initial":
         result = await scheduler.runInitialSync();
@@ -100,7 +100,7 @@ export async function GET(request: NextRequest) {
 
     const scheduler = new SyncScheduler();
 
-    let result;
+    let result: any;
     switch (mode) {
       case "initial":
         result = await scheduler.runInitialSync();

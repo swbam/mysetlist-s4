@@ -3,8 +3,8 @@
 // Edge runtime automatically provided by Supabase – no explicit import required
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 interface Payload {
@@ -43,6 +43,7 @@ class SpotifyClient {
       if (!res.ok) {
         throw new Error(`Spotify error ${res.status}`);
       }
+      // biome-ignore lint/suspicious/noExplicitAny: External API response
       const json: any = await res.json();
       items = items.concat(json.items || json.tracks?.items || []);
       next = json.next;
@@ -51,12 +52,14 @@ class SpotifyClient {
   }
 
   async getAlbums(artistId: string) {
+    // biome-ignore lint/suspicious/noExplicitAny: External API response
     return this.fetchAll<any>(
       `https://api.spotify.com/v1/artists/${artistId}/albums?include_groups=album%2Csingle%2Cappears_on&limit=50`,
     );
   }
 
   async getAlbumTracks(albumId: string) {
+    // biome-ignore lint/suspicious/noExplicitAny: External API response
     return this.fetchAll<any>(
       `https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`,
     );
@@ -76,6 +79,7 @@ Deno.serve(async (req: Request) => {
 
     // fetch albums
     const albums = await spotify.getAlbums(payload.spotifyId);
+    // biome-ignore lint/suspicious/noExplicitAny: External API response
     const trackPromises: Promise<any[]>[] = [];
     for (const album of albums) {
       trackPromises.push(spotify.getAlbumTracks(album.id));

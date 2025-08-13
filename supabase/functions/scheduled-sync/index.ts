@@ -2,8 +2,8 @@
 // @ts-nocheck  Supabase Edge Runtime (Deno)
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const supabase = createClient(supabaseUrl, serviceKey);
 
 interface Payload {
@@ -55,8 +55,8 @@ Deno.serve(async (req: Request) => {
   const { type = "all", limit = 20 } = (await req.json()) as Payload;
 
   const results = {
-    artistSync: null as any,
-    trendingUpdate: null as any,
+    artistSync: null as unknown,
+    trendingUpdate: null as unknown,
     errors: [] as string[],
   };
 

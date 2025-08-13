@@ -195,6 +195,7 @@ function HomeHero() {
                 >
                   {results.map((artist) => (
                     <button
+                      type="button"
                       key={artist.id}
                       onClick={() => handleArtistSelect(artist)}
                       className="flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-muted"

@@ -101,6 +101,7 @@ export function ArtistImportLoading({
   useEffect(() => {
     if (!artistId) return;
 
+    // biome-ignore lint/style/useConst: assigned in async callback
     let pollInterval: NodeJS.Timeout;
 
     const pollStatus = async () => {
@@ -252,6 +253,7 @@ export function ArtistImportLoading({
                   {importStatus.error}
                 </p>
                 <button
+                  type="button"
                   onClick={() => window.location.reload()}
                   className="mt-2 text-red-600 hover:text-red-800 text-sm underline"
                 >

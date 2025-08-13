@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
 
     const syncService = new ArtistSyncService();
 
-    let result;
+    let result: any;
     if (artistId) {
       // Sync specific artist by ID
       const artist = await db
@@ -126,7 +126,7 @@ export async function GET(request: NextRequest) {
 
     const syncService = new ArtistSyncService();
 
-    let result;
+    let result: any;
     if (mode === "popular") {
       result = await syncService.syncPopularArtists();
     } else {

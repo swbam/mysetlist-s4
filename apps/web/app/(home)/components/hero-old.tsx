@@ -25,16 +25,15 @@ function HomeHero() {
         <div className="mx-auto max-w-5xl text-center">
           <div className="space-y-6 animate-slide-up">
             {/* Badge */}
-            <div
+            <output
               className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-2 text-primary"
-              role="status"
               aria-label="Live statistics"
             >
               <TrendingUp className="h-4 w-4" aria-hidden="true" />
               <span className="font-medium text-sm">
                 Trending Now: 1,247 Active Shows
               </span>
-            </div>
+            </output>
 
             {/* Main heading */}
             <h1
@@ -122,12 +121,11 @@ function HomeHero() {
           </motion.div>
 
           {/* Stats */}
-          <motion.div
+          <motion.section
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             className="mx-auto mt-16 grid max-w-2xl grid-cols-2 gap-6 px-4 sm:px-0 md:grid-cols-3 md:gap-8"
-            role="region"
             aria-label="Platform statistics"
           >
             <div className="text-center">
@@ -157,7 +155,7 @@ function HomeHero() {
                 Music Fans
               </div>
             </div>
-          </motion.div>
+          </motion.section>
         </div>
       </div>
     </section>
