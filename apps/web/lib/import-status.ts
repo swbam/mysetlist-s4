@@ -1,4 +1,5 @@
-import { CacheClient, cacheKeys } from "~/lib/cache/redis";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 
 export interface ImportStatus {
 	artistId: string;
@@ -21,44 +22,72 @@ export interface ImportStatus {
 	estimatedTimeRemaining?: number;
 }
 
-const cache = CacheClient.getInstance();
-
 export async function updateImportStatus(
 	artistId: string,
 	update: Partial<ImportStatus>
 ): Promise<void> {
 	try {
-		const statusKey = cacheKeys.syncProgress(artistId);
-		const existingStatus =
-			(await cache.get<ImportStatus>(statusKey)) || {
-				artistId,
-				stage: "initializing" as const,
-				progress: 0,
-				message: "Starting import...",
-				startedAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString(),
+		const supabase = createRouteHandlerClient({ 
+			cookies: () => ({
+				get: () => undefined,
+				has: () => false,
+				set: () => {},
+				delete: () => {},
+				getAll: () => [],
+				[Symbol.iterator]: function* () {}
+			} as any)
+		});
+
+		// Check if a record already exists for this artist
+		const { data: existingStatus } = await supabase
+			.from('import_status')
+			.select('*')
+			.eq('artist_id', artistId)
+			.order('created_at', { ascending: false })
+			.limit(1)
+			.single();
+
+		const now = new Date().toISOString();
+
+		if (existingStatus) {
+			// Update existing record
+			const updatedData = {
+				stage: update.stage || existingStatus.stage,
+				percentage: update.progress ?? existingStatus.percentage,
+				message: update.message || existingStatus.message,
+				error: update.error || existingStatus.error,
+				updated_at: now,
+				completed_at: update.completedAt || existingStatus.completed_at,
 			};
 
-		const updatedStatus: ImportStatus = {
-			...existingStatus,
-			...update,
-			updatedAt: new Date().toISOString(),
-		};
+			await supabase
+				.from('import_status')
+				.update(updatedData)
+				.eq('id', existingStatus.id);
 
-		// TTL: completed/failed 1h, otherwise 30m
-		const ttl =
-			updatedStatus.stage === "completed" || updatedStatus.stage === "failed"
-				? 3600
-				: 1800;
+		} else {
+			// Create new record
+			const newRecord = {
+				artist_id: artistId,
+				stage: update.stage || 'initializing',
+				percentage: update.progress || 0,
+				message: update.message || 'Starting import...',
+				error: update.error || null,
+				created_at: now,
+				updated_at: now,
+				completed_at: update.completedAt || null,
+			};
 
-		await cache.set(statusKey, updatedStatus, { ex: ttl });
+			await supabase
+				.from('import_status')
+				.insert(newRecord);
+		}
 
 		console.log(
-			`[IMPORT STATUS] ${artistId}: ${updatedStatus.stage} (${updatedStatus.progress}%) - ${updatedStatus.message}`
+			`[IMPORT STATUS] ${artistId}: ${update.stage} (${update.progress}%) - ${update.message}`
 		);
 	} catch (error) {
 		console.error("Failed to update import status:", error);
+		// Fallback: don't let import status failures break the actual import
 	}
 }
-
-
