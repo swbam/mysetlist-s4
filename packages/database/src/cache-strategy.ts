@@ -318,7 +318,7 @@ export function withCache<T extends Record<string, any>>(
     if (!skipCache) {
       const cached = getCached(cacheKey, cache);
       if (cached) {
-        return cached;
+        return cached as T;
       }
     }
 
