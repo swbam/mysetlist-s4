@@ -84,8 +84,7 @@ function HomeHero() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        ticketmasterId: artist.id,
-        artistName: artist.name,
+        tmAttractionId: artist.id,
       }),
     }).catch(() => {});
 

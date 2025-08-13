@@ -112,7 +112,17 @@ export function TicketmasterArtistSearch({
 
       if (importResponse.ok) {
         const importData = await importResponse.json();
-        router.push(`/artists/${importData.artist.slug}`);
+        const slug = importData.slug || importData.artist?.slug;
+        if (slug) {
+          router.push(`/artists/${slug}`);
+        } else {
+          // Fallback
+          const fallbackSlug = artist.name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+          router.push(`/artists/${fallbackSlug}`);
+        }
       } else {
         // Fallback to search slug
         const slug = artist.name

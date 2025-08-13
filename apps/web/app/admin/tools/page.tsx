@@ -25,10 +25,10 @@ export default function AdminToolsPage() {
     setLog((l) => `${new Date().toISOString()} ${msg}\n${l}`);
 
   const triggerArtistImport = async () => {
-    const name = prompt("Artist name to import (Ticketmaster/Spotify)")?.trim();
-    if (!name) return;
-    append(`Importing artist: ${name}`);
-    const r = await call("/api/artists/import", { artistName: name });
+    const id = prompt("Ticketmaster Attraction ID to import (e.g., K8vZ9171ofV)")?.trim();
+    if (!id) return;
+    append(`Importing artist by Ticketmaster ID: ${id}`);
+    const r = await call("/api/artists/import", { tmAttractionId: id });
     append(`POST /api/artists/import -> ${r.status}`);
   };
 

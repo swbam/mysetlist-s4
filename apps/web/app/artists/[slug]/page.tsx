@@ -107,46 +107,13 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
     // Fetch artist data with error handling
     const artist = await getArtist(slug);
 
-    // If artist not found, show loading state and trigger import by name
+    // If artist not found, show loading skeleton (no auto-reload, no background import-by-name)
     if (!artist) {
-      const artistName = slug
-        .replace(/-/g, " ")
-        .replace(/\b\w/g, (l) => l.toUpperCase());
-
-      setImmediate(async () => {
-        try {
-          await fetch(
-            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/import`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                artistName,
-              }),
-            },
-          );
-        } catch (error) {
-          console.error("Background import trigger failed:", error);
-        }
-      });
-
       return (
-        <ArtistErrorBoundary artistName={artistName}>
-          <Suspense fallback={<ArtistImportLoading artistName={artistName} />}>
-            <ArtistImportLoading artistName={artistName} />
+        <ArtistErrorBoundary artistName={slug.replace(/-/g, " ")}> 
+          <Suspense fallback={<ArtistImportLoading />}>
+            <ArtistImportLoading />
           </Suspense>
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                const refreshInterval = setInterval(() => {
-                  if (typeof window !== 'undefined') {
-                    window.location.reload();
-                  }
-                }, 5000);
-                setTimeout(() => { clearInterval(refreshInterval); }, 120000);
-              `,
-            }}
-          />
         </ArtistErrorBoundary>
       );
     }

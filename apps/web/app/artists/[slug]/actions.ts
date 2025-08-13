@@ -96,31 +96,32 @@ const _getArtist = async (slug: string) => {
 
             if (externalArtist) {
               // Trigger import for this artist
-              const importResponse = await fetch(
-                `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/import`,
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    artistName: externalArtist.name,
-                    ticketmasterId: externalArtist.ticketmasterId,
-                    imageUrl: externalArtist.imageUrl,
-                    genres: externalArtist.genres,
-                  }),
-                },
-              );
+          const importResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/import`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                tmAttractionId:
+                  externalArtist?.metadata?.externalId ||
+                  (typeof externalArtist?.id === "string"
+                    ? externalArtist.id.replace("tm_", "")
+                    : undefined),
+              }),
+            },
+          );
 
               if (importResponse.ok) {
                 const importData = await importResponse.json();
-                console.log("Artist import triggered:", importData);
+                const returnedSlug = importData.slug || importData.artist?.slug;
 
                 // Return minimal data for now - full sync will happen in background
                 return {
-                  id: importData.artist.id,
+                  id: importData.artistId || importData.artist?.id,
                   spotifyId: null,
                   ticketmasterId: null,
                   name: externalArtist.name,
-                  slug: importData.artist.slug,
+                  slug: returnedSlug,
                   imageUrl: externalArtist.imageUrl,
                   smallImageUrl: null,
                   genres: JSON.stringify(externalArtist.genres || []),

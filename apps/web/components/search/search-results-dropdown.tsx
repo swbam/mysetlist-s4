@@ -71,8 +71,7 @@ export function SearchResultsDropdown({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ticketmasterId: result.externalId || result.id.replace("tm_", ""),
-          artistName: result.title,
+          tmAttractionId: result.externalId || result.id.replace("tm_", ""),
         }),
       }).catch((error) => {
         console.error("Background import trigger failed:", error);
