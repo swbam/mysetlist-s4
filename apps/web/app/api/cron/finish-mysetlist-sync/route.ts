@@ -1,6 +1,7 @@
 import { createClient } from "~/lib/supabase/server";
 import { SetlistSyncService, SyncScheduler } from "@repo/external-apis";
-import { type NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { requireCronAuth, createSuccessResponse, createErrorResponse } from "~/lib/api/auth-helpers";
 
 // Force dynamic rendering for API route
