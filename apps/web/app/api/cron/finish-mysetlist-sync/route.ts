@@ -1,21 +1,15 @@
 import { createClient } from "~/lib/supabase/server";
 import { SetlistSyncService, SyncScheduler } from "@repo/external-apis";
-import { headers } from "next/headers";
-import { type NextRequest, NextResponse } from "next/server";
+import { type NextRequest } from "next/server";
+import { requireCronAuth, createSuccessResponse, createErrorResponse } from "~/lib/api/auth-helpers";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
-    // Check for authorization
-    const headersList = await headers();
-    const authHeader = headersList.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
-
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Standardized authentication
+    await requireCronAuth();
 
     const body = await request.json().catch(() => ({}));
     const { mode = "daily", orchestrate = true } = body;
