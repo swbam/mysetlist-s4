@@ -15,9 +15,9 @@ export class EmailService {
   async sendWelcomeEmail(email: string, displayName?: string): Promise<void> {
     try {
       const { data, error } = await this.resend.emails.send({
-        from: "MySetlist <welcome@mysetlist.com>",
+        from: "TheSet <welcome@theset.live>",
         to: [email],
-        subject: "Welcome to MySetlist! 🎵",
+        subject: "Welcome to TheSet! 🎵",
         html: this.getWelcomeEmailTemplate(displayName || "Music Fan"),
       });
 
@@ -43,7 +43,7 @@ export class EmailService {
       const resetUrl = `${env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}&email=${encodeURIComponent(email)}`;
 
       const { data, error } = await this.resend.emails.send({
-        from: "MySetlist <security@mysetlist.com>",
+        from: "TheSet <security@theset.live>",
         to: [email],
         subject: "Reset Your MySetlist Password",
         html: this.getPasswordResetEmailTemplate(resetUrl),
@@ -72,7 +72,7 @@ export class EmailService {
   ): Promise<void> {
     try {
       const { data, error } = await this.resend.emails.send({
-        from: "MySetlist <verify@mysetlist.com>",
+        from: "TheSet <verify@theset.live>",
         to: [email],
         subject: "Verify Your MySetlist Email Address",
         html: this.getEmailVerificationTemplate(verificationUrl),
@@ -100,7 +100,7 @@ export class EmailService {
   ): Promise<void> {
     try {
       const { data, error } = await this.resend.emails.send({
-        from: "MySetlist <security@mysetlist.com>",
+        from: "TheSet <security@theset.live>",
         to: [email],
         subject: "Security Alert - MySetlist Account Activity",
         html: this.getSecurityNotificationTemplate(action, details),
@@ -180,7 +180,7 @@ export class EmailService {
             
             <div class="footer">
               <p>You're receiving this email because you signed up for MySetlist.</p>
-              <p>MySetlist • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
+              <p>TheSet • <a href="${env.NEXT_PUBLIC_APP_URL}">theset.live</a></p>
             </div>
           </div>
         </body>
@@ -244,7 +244,7 @@ export class EmailService {
             
             <div class="footer">
               <p>This is an automated security email from MySetlist.</p>
-              <p>MySetlist • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
+              <p>TheSet • <a href="${env.NEXT_PUBLIC_APP_URL}">theset.live</a></p>
             </div>
           </div>
         </body>
@@ -303,7 +303,7 @@ export class EmailService {
             
             <div class="footer">
               <p>You're receiving this email because you signed up for MySetlist.</p>
-              <p>MySetlist • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
+              <p>TheSet • <a href="${env.NEXT_PUBLIC_APP_URL}">theset.live</a></p>
             </div>
           </div>
         </body>
@@ -363,7 +363,7 @@ export class EmailService {
             
             <div class="footer">
               <p>This is an automated security notification from MySetlist.</p>
-              <p>MySetlist • <a href="${env.NEXT_PUBLIC_APP_URL}">mysetlist.com</a></p>
+              <p>TheSet • <a href="${env.NEXT_PUBLIC_APP_URL}">theset.live</a></p>
             </div>
           </div>
         </body>

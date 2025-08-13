@@ -7,13 +7,13 @@ type MetadataGenerator = Omit<Metadata, "description" | "title"> & {
   image?: string;
 };
 
-const applicationName = "MySetlist";
+const applicationName = "TheSet";
 const author: Metadata["authors"] = {
-  name: "MySetlist",
-  url: "https://mysetlist.com/",
+  name: "TheSet",
+  url: "https://theset.live/",
 };
-const publisher = "MySetlist";
-const twitterHandle = "@mysetlist";
+const publisher = "TheSet";
+const twitterHandle = "@theset";
 const protocol = process.env["NODE_ENV"] === "production" ? "https" : "http";
 const productionUrl =
   process.env["VERCEL_PROJECT_PRODUCTION_URL"] || process.env["NEXT_PUBLIC_SITE_URL"];
@@ -24,7 +24,7 @@ export const createMetadata = ({
   image,
   ...properties
 }: MetadataGenerator): Metadata => {
-  // Don't add " | MySetlist" here since the layout template handles it
+  // Don't add " | TheSet" here since the layout template handles it
   const parsedTitle = title;
   const defaultMetadata: Metadata = {
     title: parsedTitle,

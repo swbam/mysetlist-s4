@@ -1,5 +1,5 @@
 /**
- * Database Caching Strategy for MySetlist Performance Optimization
+ * Database Caching Strategy for TheSet Performance Optimization
  *
  * Implements multi-layer caching to reduce database load and improve response times:
  * 1. In-Memory Cache (Node.js) - 30 seconds for hot data

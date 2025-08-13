@@ -17,7 +17,7 @@ declare global {
         logCacheOperations: boolean;
       };
     };
-    clearMySetlistCache?: () => Promise<void>;
+    clearTheSetCache?: () => Promise<void>;
   }
 }
 

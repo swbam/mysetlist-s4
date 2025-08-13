@@ -72,7 +72,7 @@ export function SearchAutocomplete({
 
   // Load recent searches from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem("mysetlist-recent-searches");
+    const saved = localStorage.getItem("theset-recent-searches");
     if (saved) {
       try {
         setRecentSearches(JSON.parse(saved).slice(0, 5));
@@ -91,7 +91,7 @@ export function SearchAutocomplete({
       5,
     );
     setRecentSearches(updated);
-    localStorage.setItem("mysetlist-recent-searches", JSON.stringify(updated));
+    localStorage.setItem("theset-recent-searches", JSON.stringify(updated));
   };
 
   // Fetch suggestions

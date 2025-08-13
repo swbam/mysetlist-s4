@@ -21,11 +21,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_APP_URL ?? "https://mysetlist-sonnet.vercel.app",
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://theset.live",
   ),
   title: {
-    template: "%s | MySetlist",
-    default: "MySetlist - Concert Setlist Voting Platform",
+    template: "%s | TheSet",
+    default: "TheSet - Concert Setlist Voting Platform",
   },
   description:
     "Vote on concert setlists, discover new artists, and connect with music fans.",

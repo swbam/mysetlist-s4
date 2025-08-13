@@ -79,6 +79,62 @@ export interface TicketmasterVenue {
   }>;
 }
 
+export interface TicketmasterAttraction {
+  id: string;
+  name: string;
+  type: string;
+  url: string;
+  locale: string;
+  externalLinks?: {
+    youtube?: Array<{ url: string }>;
+    twitter?: Array<{ url: string }>;
+    itunes?: Array<{ url: string }>;
+    lastfm?: Array<{ url: string }>;
+    spotify?: Array<{ url: string }>;
+    wiki?: Array<{ url: string }>;
+    facebook?: Array<{ url: string }>;
+    musicbrainz?: Array<{ id: string; url: string }>;
+    instagram?: Array<{ url: string }>;
+    homepage?: Array<{ url: string }>;
+  };
+  aliases?: string[];
+  images?: Array<{
+    url: string;
+    width: number;
+    height: number;
+    ratio?: string;
+    fallback?: boolean;
+  }>;
+  classifications?: Array<{
+    primary?: boolean;
+    segment?: {
+      id: string;
+      name: string;
+    };
+    genre?: {
+      id: string;
+      name: string;
+    };
+    subGenre?: {
+      id: string;
+      name: string;
+    };
+    type?: {
+      id: string;
+      name: string;
+    };
+    subType?: {
+      id: string;
+      name: string;
+    };
+    family?: boolean;
+  }>;
+  upcomingEvents?: {
+    _total: number;
+    _filtered: number;
+  };
+}
+
 export class TicketmasterClient extends BaseAPIClient {
   constructor(config: Omit<APIClientConfig, "baseURL">) {
     super({
@@ -102,19 +158,28 @@ export class TicketmasterClient extends BaseAPIClient {
     cacheKey?: string,
     cacheTtl?: number,
   ): Promise<T> {
+    // Ensure we have an API key
+    if (!this.apiKey) {
+      throw new Error("Ticketmaster API key is required");
+    }
+
     // Construct URL properly handling existing query parameters
     let url: URL;
 
-    // Check if endpoint already has query parameters
+    // Properly construct the URL by ensuring baseURL ends with / and concatenating endpoint
+    const normalizedBaseURL = this.baseURL.endsWith('/') ? this.baseURL : `${this.baseURL}/`;
+    
     if (endpoint.includes("?")) {
       // If endpoint has parameters, construct the full URL and add apikey
-      const fullUrl = `${this.baseURL}/${endpoint}&apikey=${this.apiKey!}`;
+      const fullUrl = `${normalizedBaseURL}${endpoint}&apikey=${this.apiKey}`;
       url = new URL(fullUrl);
     } else {
-      // If no existing parameters, use normal URL construction
-      url = new URL(endpoint, this.baseURL);
-      url.searchParams.append("apikey", this.apiKey!);
+      // If no existing parameters, construct URL and add apikey as parameter
+      const fullUrl = `${normalizedBaseURL}${endpoint}`;
+      url = new URL(fullUrl);
+      url.searchParams.append("apikey", this.apiKey);
     }
+
 
     // Check cache first if key provided and cache is available
     if (cacheKey && this.cache) {
@@ -263,8 +328,8 @@ export class TicketmasterClient extends BaseAPIClient {
     );
   }
 
-  async getAttraction(attractionId: string): Promise<any> {
-    return this.makeRequest(
+  async getAttraction(attractionId: string): Promise<TicketmasterAttraction> {
+    return this.makeRequest<TicketmasterAttraction>(
       `attractions/${attractionId}.json`,
       {},
       `ticketmaster:attraction:${attractionId}`,
@@ -300,24 +365,27 @@ export class TicketmasterClient extends BaseAPIClient {
     try {
       const attraction = await this.getAttraction(attractionId);
 
-      if (!attraction) {
+      if (!attraction || !attraction.name) {
         return null;
       }
 
-      // Extract image URL from images array
+      // Extract image URL from images array - prefer larger images
       const imageUrl =
         attraction.images?.find(
-          (img: any) => img.width >= 300 && img.height >= 300,
-        )?.url || attraction.images?.[0]?.url;
+          (img) => img.width >= 300 && img.height >= 300 && !img.fallback,
+        )?.url || 
+        attraction.images?.find((img) => !img.fallback)?.url ||
+        attraction.images?.[0]?.url;
 
       // Extract genres from classifications
       const genres: string[] = [];
       if (attraction.classifications) {
-        attraction.classifications.forEach((classification: any) => {
+        attraction.classifications.forEach((classification) => {
           if (classification.genre?.name) {
             genres.push(classification.genre.name);
           }
-          if (classification.subGenre?.name) {
+          if (classification.subGenre?.name && 
+              classification.subGenre.name !== classification.genre?.name) {
             genres.push(classification.subGenre.name);
           }
         });
@@ -326,7 +394,7 @@ export class TicketmasterClient extends BaseAPIClient {
       return {
         id: attraction.id,
         name: attraction.name,
-        imageUrl,
+        imageUrl: imageUrl || undefined,
         genres: [...new Set(genres)], // Remove duplicates
         popularity: attraction.upcomingEvents?._total || 0,
       };

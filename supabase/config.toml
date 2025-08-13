@@ -44,14 +44,14 @@ enabled = true
 # Port to use for Supabase Studio.
 port = 54323
 # External URL of the API server that frontend connects to.
-api_url = "https://mysetlist-sonnet.vercel.app/api"
+api_url = "https://theset.live/api"
 
 [auth]
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-site_url = "https://mysetlist-sonnet.vercel.app"
+site_url = "https://theset.live"
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["https://mysetlist-sonnet.vercel.app", "https://mysetlist-sonnet.vercel.app/*", "https://*.vercel.app"]
+additional_redirect_urls = ["https://theset.live", "https://theset.live/*", "https://*.vercel.app"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 seconds (one
 # week).
 jwt_expiry = 3600

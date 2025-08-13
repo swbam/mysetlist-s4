@@ -1,4 +1,4 @@
-# 🚀 MySetlist Deployment Guide
+# 🚀 TheSet Deployment Guide
 
 ## Quick Start
 

@@ -20,7 +20,7 @@ export const revalidate = 0;
 
 export const generateMetadata = (): Metadata => {
   return createMetadata({
-    title: "Shows - MySetlist",
+    title: "Shows - TheSet",
     description:
       "Find upcoming concerts and shows near you. Get tickets and plan your next live music experience.",
   });

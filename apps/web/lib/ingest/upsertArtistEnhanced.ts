@@ -5,7 +5,9 @@ import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 async function fetchAttraction(tmId: string) {
-  const tmClient = new TicketmasterClient({});
+  const tmClient = new TicketmasterClient({
+    apiKey: process.env["TICKETMASTER_API_KEY"] || "",
+  });
   return await tmClient.getAttraction(tmId);
 }
 

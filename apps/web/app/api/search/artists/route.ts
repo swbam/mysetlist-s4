@@ -6,7 +6,7 @@ import { rateLimitMiddleware } from "~/middleware/rate-limit";
 export const dynamic = "force-dynamic";
 
 const ticketmaster = new TicketmasterClient({
-  apiKey: process.env.TICKETMASTER_API_KEY!,
+  apiKey: process.env["TICKETMASTER_API_KEY"] || "k8GrSAkbFaN0w7qDxGl7ohr8LwdAQm9b",
 });
 
 interface InlineSearchResult {

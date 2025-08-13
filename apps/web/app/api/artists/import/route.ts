@@ -435,13 +435,19 @@ async function createInitialSetlistsForNewShows(artistId: string): Promise<void>
       .where(eq(artistSongs.artistId, artistId))
       .limit(50); // Get up to 50 songs for selection
 
-    // Filter out live tracks by name patterns
+    // Filter out ONLY genuine live tracks (keep studio acoustic versions)
     const nonLiveSongs = artistSongsQuery.filter(song => {
       const songName = song.title.toLowerCase();
-      return !songName.includes('live') && 
-             !songName.includes('acoustic') &&
-             !songName.includes('unplugged') &&
-             !songName.includes('session');
+      // Only exclude tracks with clear live performance indicators
+      return !(
+        songName.includes('(live at') ||
+        songName.includes('(live from') ||
+        songName.includes(' - live at') ||
+        songName.includes(' - live from') ||
+        songName.includes('[live]') ||
+        songName.includes('live version') ||
+        songName.includes('live recording')
+      );
     });
 
     if (nonLiveSongs.length === 0) {

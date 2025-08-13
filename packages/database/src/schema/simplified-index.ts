@@ -1,5 +1,5 @@
 // Simplified schema exports - Core functionality only
-// This matches the documented requirements from mysetlist-docs/
+// This matches the documented requirements from theset-docs/
 
 export * from "./users";
 export * from "./user-profiles";

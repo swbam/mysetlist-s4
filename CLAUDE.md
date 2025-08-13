@@ -2,11 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# MySetlist - Concert Setlist Voting Platform
+# TheSet - Concert Setlist Voting Platform
 
 ## Project Overview
 
-MySetlist is a production-ready web application for concert setlist voting, built with Next.js 15 and Supabase. The app allows fans to discover artists, browse shows, and vote on songs they want to hear at upcoming concerts.
+TheSet is a production-ready web application for concert setlist voting, built with Next.js 15 and Supabase. The app allows fans to discover artists, browse shows, and vote on songs they want to hear at upcoming concerts.
 
 **Core Business Features:**
 - Artist discovery with Spotify integration  

@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "name": "mysetlist-sonnet",
+  "name": "theset-sonnet",
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "turbo build --filter=web",
   "outputDirectory": "apps/web/.next",

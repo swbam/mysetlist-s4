@@ -28,7 +28,7 @@ interface ThemeProviderProps {
 export function ThemeProvider({
   children,
   defaultTheme = "system",
-  storageKey = "mysetlist-theme",
+  storageKey = "theset-theme",
   enableSystem: _enableSystem = true,
   disableTransitionOnChange = false,
 }: ThemeProviderProps) {

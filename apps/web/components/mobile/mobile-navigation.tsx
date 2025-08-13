@@ -192,7 +192,7 @@ export const MobileNavigation = React.memo(function MobileNavigation({
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary">
                       <Music className="h-4 w-4 text-primary-foreground" />
                     </div>
-                    <span className="font-semibold text-lg">MySetlist</span>
+                    <span className="font-semibold text-lg">TheSet</span>
                   </div>
                   <Button
                     variant="ghost"
@@ -353,7 +353,7 @@ export const MobileNavigation = React.memo(function MobileNavigation({
                     <ModeToggle />
                   </div>
                   <p className="text-center text-muted-foreground text-xs">
-                    MySetlist © 2024
+                    TheSet © 2024
                   </p>
                 </div>
               </div>

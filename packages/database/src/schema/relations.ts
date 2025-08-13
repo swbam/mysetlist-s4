@@ -123,7 +123,7 @@ export const votesRelations = relations(votes, ({ one }) => ({
 }));
 
 // Removed venue reviews, photos, insider tips, and show comments relations
-// These features are not part of the core MVP requirements per mysetlist-docs
+// These features are not part of the core MVP requirements per theset-docs
 
 export const artistSongsRelations = relations(artistSongs, ({ one }) => ({
   artist: one(artists, {

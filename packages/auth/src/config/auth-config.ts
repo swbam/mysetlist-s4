@@ -27,9 +27,9 @@ export const authConfig = {
   email: {
     resendApiKey: env.RESEND_API_KEY,
     fromAddresses: {
-      welcome: "MySetlist <welcome@mysetlist.com>",
-      security: "MySetlist <security@mysetlist.com>",
-      verify: "MySetlist <verify@mysetlist.com>",
+      welcome: "TheSet <welcome@theset.live>",
+      security: "TheSet <security@theset.live>",
+      verify: "TheSet <verify@theset.live>",
     },
   },
 

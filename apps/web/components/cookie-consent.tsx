@@ -6,7 +6,7 @@ import { X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-const CONSENT_COOKIE_NAME = "MySetlist-cookie-consent";
+const CONSENT_COOKIE_NAME = "TheSet-cookie-consent";
 const CONSENT_COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 1 year
 
 interface CookiePreferences {
@@ -119,7 +119,7 @@ export function CookieConsent() {
         </div>
 
         <p className="mb-4 text-muted-foreground text-sm">
-          We use cookies to enhance your experience on MySetlist. By continuing
+          We use cookies to enhance your experience on TheSet. By continuing
           to use our site, you agree to our use of cookies. You can manage your
           preferences below.
         </p>

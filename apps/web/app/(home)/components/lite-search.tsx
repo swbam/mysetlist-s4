@@ -4,6 +4,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { cn } from "@repo/design-system/lib/utils";
 import { Search, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   type SearchResultItem,
@@ -28,6 +29,7 @@ export function LiteSearch({
   const [isOpen, setIsOpen] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
+  const router = useRouter();
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debouncedQuery = useDebounce(query, 300);
@@ -110,9 +112,35 @@ export function LiteSearch({
     inputRef.current?.focus();
   };
 
-  const handleResultSelect = (result: SearchResultItem) => {
+  const handleResultSelect = async (result: SearchResultItem) => {
     if (onResultSelect) {
       onResultSelect(result);
+    } else {
+      // If no custom handler, navigate to artist page and trigger import
+      try {
+        // Generate slug from artist name
+        const slug = result.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "");
+
+        // Navigate to artist page
+        router.push(`/artists/${slug}`);
+
+        // Trigger artist import in background
+        fetch("/api/artists/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ticketmasterId: result.externalId || result.id.replace("tm_", ""),
+            artistName: result.title,
+          }),
+        }).catch((error) => {
+          console.error("Background import trigger failed:", error);
+        });
+      } catch (error) {
+        console.error("Navigation error:", error);
+      }
     }
 
     // Clear search and close dropdown

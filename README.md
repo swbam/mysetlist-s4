@@ -1,4 +1,4 @@
-# MySetlist - Concert Setlist Voting App
+# TheSet - Concert Setlist Voting App
 
 A modern web application for concert-goers to vote on songs they want to hear at upcoming shows. Built with Next.js 15, Supabase, and the next-forge template.
 
@@ -41,8 +41,8 @@ packages/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/mysetlist.git
-   cd mysetlist
+   git clone https://github.com/yourusername/theset.git
+   cd theset
    ```
 
 2. **Install dependencies**

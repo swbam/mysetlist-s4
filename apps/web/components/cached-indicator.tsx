@@ -23,7 +23,7 @@ export function CachedIndicator({ cacheKey, className }: CachedIndicatorProps) {
     const checkCache = async () => {
       if ("caches" in window) {
         try {
-          const cache = await caches.open("MySetlist-v1");
+          const cache = await caches.open("TheSet-v1");
           const response = await cache.match(cacheKey);
 
           if (response) {

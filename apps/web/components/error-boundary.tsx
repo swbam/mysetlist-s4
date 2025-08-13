@@ -157,7 +157,7 @@ export class ErrorBoundary extends Component<
       );
 
       window.open(
-        `mailto:support@mysetlist.com?subject=${subject}&body=${body}`,
+        `mailto:support@theset.live?subject=${subject}&body=${body}`,
         "_blank",
       );
     }

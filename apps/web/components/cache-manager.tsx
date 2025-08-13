@@ -160,7 +160,7 @@ export async function clearAllCaches() {
     if (typeof window !== "undefined") {
       const keys = Object.keys(localStorage);
       keys.forEach((key) => {
-        if (key.startsWith("mysetlist-") || key.includes("trending")) {
+        if (key.startsWith("theset-") || key.includes("trending")) {
           localStorage.removeItem(key);
         }
       });
@@ -175,5 +175,5 @@ export async function clearAllCaches() {
 
 // Add global function for easy cache clearing in production
 if (typeof window !== "undefined") {
-  window.clearMySetlistCache = clearAllCaches;
+  window.clearTheSetCache = clearAllCaches;
 }

@@ -1,4 +1,4 @@
-# MySetlist Deployment Guide
+# TheSet Deployment Guide
 
 ## 🚀 Production Deployment Checklist
 
@@ -44,7 +44,7 @@ NEXT_PUBLIC_API_URL=https://mysetlist-sonnet.vercel.app/api
    ```bash
    # Push to main branch
    git add .
-   git commit -m "Deploy MySetlist v1.0.0"
+   git commit -m "Deploy TheSet v1.0.0"
    git push origin main
    ```
 

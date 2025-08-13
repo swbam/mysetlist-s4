@@ -1,6 +1,6 @@
 {
-  "name": "MySetlist - Concert Setlist Voting",
-  "short_name": "MySetlist",
+  "name": "TheSet - Concert Setlist Voting",
+  "short_name": "TheSet",
   "description": "Vote on concert setlists, discover trending artists, and connect with music fans worldwide",
   "start_url": "/",
   "scope": "/",
@@ -98,7 +98,7 @@
   },
   "protocol_handlers": [
     {
-      "protocol": "web+mysetlist",
+      "protocol": "web+theset",
       "url": "/artist/%s"
     }
   ],
