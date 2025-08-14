@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Homepage Components</title>
+    <script>
+        // Test the API endpoints that the homepage uses
+        async function testHomepageAPIs() {
+            console.log('Testing homepage APIs...');
+            
+            try {
+                // Test popular artists
+                const popularResponse = await fetch('http://localhost:3001/api/popular-artists?limit=4');
+                const popularData = await popularResponse.json();
+                console.log('Popular Artists API:', popularData);
+                
+                // Test trending artists
+                const trendingArtistsResponse = await fetch('http://localhost:3001/api/trending/artists?limit=4');
+                const trendingArtistsData = await trendingArtistsResponse.json();
+                console.log('Trending Artists API:', trendingArtistsData);
+                
+                // Test trending shows
+                const trendingShowsResponse = await fetch('http://localhost:3001/api/trending/shows?limit=4');
+                const trendingShowsData = await trendingShowsResponse.json();
+                console.log('Trending Shows API:', trendingShowsData);
+                
+                // Test stats
+                const statsResponse = await fetch('http://localhost:3001/api/stats');
+                const statsData = await statsResponse.json();
+                console.log('Stats API:', statsData);
+                
+                // Update page with results
+                document.getElementById('results').innerHTML = `
+                    <h2>API Test Results:</h2>
+                    <h3>Popular Artists (${popularData.artists?.length || 0} found):</h3>
+                    <ul>${(popularData.artists || []).map(a => `<li>${a.name}</li>`).join('')}</ul>
+                    
+                    <h3>Trending Artists (${trendingArtistsData.artists?.length || 0} found):</h3>
+                    <ul>${(trendingArtistsData.artists || []).map(a => `<li>${a.name}</li>`).join('')}</ul>
+                    
+                    <h3>Trending Shows (${trendingShowsData.shows?.length || 0} found):</h3>
+                    <ul>${(trendingShowsData.shows || []).map(s => `<li>${s.name} - ${s.artist_name}</li>`).join('')}</ul>
+                    
+                    <h3>Stats:</h3>
+                    <ul>
+                        <li>Active Artists: ${statsData.stats?.activeArtists}</li>
+                        <li>Active Shows: ${statsData.stats?.activeShows}</li>
+                        <li>Votes Cast: ${statsData.stats?.votesCast}</li>
+                        <li>Music Fans: ${statsData.stats?.musicFans}</li>
+                    </ul>
+                `;
+                
+            } catch (error) {
+                console.error('API test failed:', error);
+                document.getElementById('results').innerHTML = `<p>Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Homepage API Test</h1>
+    <button onclick="testHomepageAPIs()">Test APIs</button>
+    <div id="results">Click the button to test APIs...</div>
+</body>
+</html>

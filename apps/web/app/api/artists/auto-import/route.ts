@@ -14,10 +14,12 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   let tempArtistId: string | null = null;
   let artistId: string | null = null;
+  let retryCount = 0;
+  const maxRetries = 2;
 
   try {
     const body = await request.json();
-    const { tmAttractionId, spotifyId, artistName } = body;
+    const { tmAttractionId, spotifyId, artistName, retryOnFailure = true } = body;
 
     // Require at least one identifier
     if (!tmAttractionId && !spotifyId && !artistName) {

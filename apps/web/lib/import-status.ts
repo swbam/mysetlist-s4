@@ -91,23 +91,8 @@ export async function getImportStatus(jobId: string): Promise<ImportStatus | nul
       updatedAt: data.updated_at,
     };
   } catch (error) {
-    console.error("Failed to get import status:", error);
-    return null;
-  }
-}
+    console.warn("\[IMPORT STATUS\] Failed to update import status (non-blocking):", error);
+    // Fallback: don't let import status failures break the actual import
 
-export async function cleanupOldImportStatus(): Promise<void> {
-  try {
-    const supabase = createServiceClient();
-    
-    // Delete records older than 24 hours
-    const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    
-    await supabase
-      .from("import_status")
-      .delete()
-      .lt("created_at", cutoff);
-  } catch (error) {
-    console.error("Failed to cleanup old import status:", error);
   }
 }

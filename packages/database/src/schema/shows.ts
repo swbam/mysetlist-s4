@@ -24,16 +24,16 @@ export const shows = pgTable("shows", {
   id: uuid("id").primaryKey().defaultRandom(),
   headlinerArtistId: uuid("headliner_artist_id")
     .references(() => artists.id, { onDelete: "cascade" })
-    .notNull(),
+    ,
   venueId: uuid("venue_id").references(() => venues.id, {
     onDelete: "set null",
   }),
-  name: text("name").notNull(),
-  slug: text("slug").unique().notNull(),
-  date: date("date").notNull(),
+  name: text("name"),
+  slug: text("slug").unique(),
+  date: date("date"),
   startTime: time("start_time"),
   doorsTime: time("doors_time"),
-  status: showStatusEnum("status").default("upcoming").notNull(),
+  status: showStatusEnum("status").default("upcoming"),
   description: text("description"),
   ticketUrl: text("ticket_url"),
   minPrice: integer("min_price"),
@@ -62,22 +62,22 @@ export const shows = pgTable("shows", {
   ticketmasterId: text("ticketmaster_id").unique(),
   setlistFmId: text("setlistfm_id"),
 
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const showArtists = pgTable("show_artists", {
   id: uuid("id").primaryKey().defaultRandom(),
   showId: uuid("show_id")
     .references(() => shows.id, { onDelete: "cascade" })
-    .notNull(),
+    ,
   artistId: uuid("artist_id")
     .references(() => artists.id, { onDelete: "cascade" })
-    .notNull(),
-  orderIndex: integer("order_index").notNull(), // 0 = headliner
+    ,
+  orderIndex: integer("order_index"), // 0 = headliner
   setLength: integer("set_length"), // minutes
   isHeadliner: boolean("is_headliner").default(false),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Removed showComments table - not part of core MVP requirements

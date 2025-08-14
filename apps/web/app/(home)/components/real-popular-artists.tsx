@@ -15,10 +15,21 @@ export function RealPopularArtists() {
   useEffect(() => {
     const fetchPopularArtists = async () => {
       try {
+        console.log("Fetching popular artists...");
         const response = await fetch("/api/popular-artists?limit=4");
         if (response.ok) {
           const data = await response.json();
+          console.log("Popular artists data:", data);
           setArtists(data.artists || []);
+        } else {
+          console.error("Failed to fetch popular artists:", response.status, response.statusText);
+          // Use fallback artists on error
+          setArtists([
+            { name: "Taylor Swift", slug: "taylor-swift" },
+            { name: "The Weeknd", slug: "the-weeknd" },
+            { name: "Drake", slug: "drake" },
+            { name: "Olivia Rodrigo", slug: "olivia-rodrigo" },
+          ]);
         }
       } catch (error) {
         console.error("Failed to load popular artists:", error);

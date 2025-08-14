@@ -55,7 +55,7 @@ export function MonitoringDashboard({
   return (
     <div className="space-y-8">
       {/* Health Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="font-medium text-sm">System Health</CardTitle>
@@ -151,7 +151,7 @@ export function MonitoringDashboard({
 
       {/* Detailed Metrics */}
       <Tabs defaultValue="database" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
           <TabsTrigger value="database">Database</TabsTrigger>
           <TabsTrigger value="api">API</TabsTrigger>
           <TabsTrigger value="errors">Errors</TabsTrigger>
@@ -159,7 +159,7 @@ export function MonitoringDashboard({
         </TabsList>
 
         <TabsContent value="database" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Database Performance</CardTitle>
@@ -251,9 +251,9 @@ export function MonitoringDashboard({
                 {Object.entries(apiStats.endpoints || {}).map(
                   ([endpoint, stats]: [string, any]) => (
                     <div key={endpoint} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm">{endpoint}</span>
-                        <div className="flex items-center gap-2">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <span className="font-medium text-sm break-words">{endpoint}</span>
+                        <div className="flex flex-wrap items-center gap-2">
                           <Badge
                             variant={
                               stats.errorRate > 5 ? "destructive" : "secondary"
@@ -287,22 +287,22 @@ export function MonitoringDashboard({
                     key={error.id}
                     className="space-y-1 rounded-lg border p-3"
                   >
-                    <div className="flex items-center justify-between">
-                      <Badge variant="destructive">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <Badge variant="destructive" className="w-fit">
                         {error.level || "ERROR"}
                       </Badge>
                       <span className="text-muted-foreground text-xs">
                         {format(new Date(error.created_at), "MMM d, HH:mm:ss")}
                       </span>
                     </div>
-                    <p className="font-medium text-sm">{error.message}</p>
+                    <p className="font-medium text-sm break-words">{error.message}</p>
                     {error.endpoint && (
-                      <p className="text-muted-foreground text-xs">
+                      <p className="text-muted-foreground text-xs break-words">
                         Endpoint: {error.endpoint}
                       </p>
                     )}
                     {error.user_id && (
-                      <p className="text-muted-foreground text-xs">
+                      <p className="text-muted-foreground text-xs break-words">
                         User: {error.user_id}
                       </p>
                     )}

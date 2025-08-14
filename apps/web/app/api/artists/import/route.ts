@@ -1,5 +1,5 @@
 import { artists, db } from "@repo/database";
-import { ArtistImportOrchestrator } from "@repo/external-apis";
+import { ArtistImportOrchestrator } from "~/lib/services/artist-import-orchestrator";
 import { eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
@@ -85,29 +85,17 @@ export async function POST(request: NextRequest) {
       `[IMPORT] Starting orchestrator import for tmAttractionId: ${tmAttractionId} with jobId: ${jobId}`,
     );
 
-    // Start the comprehensive import asynchronously
-    orchestrator.importArtist(tmAttractionId).then((result) => {
-      console.log(`[IMPORT] Completed import for job ${jobId}:`, {
-        success: result.success,
-        artistId: result.artistId,
-        totalSongs: result.totalSongs,
-        totalShows: result.totalShows,
-        importDuration: result.importDuration,
-      });
-      
-      // Revalidate cache after successful import
-      revalidateTag(CACHE_TAGS.artists);
-    }).catch((error) => {
-      console.error(`[IMPORT] Background import failed for job ${jobId}:`, error);
-      // Update status to failed
-      updateImportStatus(jobId, {
-        stage: "failed",
-        progress: 0,
-        message: "Import failed",
-        error: error instanceof Error ? error.message : "Unknown error",
-        completedAt: new Date().toISOString(),
-      });
-    });
+    // Execute Phase 1: Fast artist creation and immediate response (< 3 seconds)
+    const importResult = await orchestrator.importArtist(tmAttractionId, body.adminImport || false);
+
+    if (!importResult.success) {
+      throw new Error("Import failed in orchestrator");
+    }
+
+    artistId = importResult.artistId;
+
+    // Revalidate cache
+    revalidateTag(CACHE_TAGS.artists);
 
     // Return immediately with job ID for progress tracking
     return NextResponse.json(

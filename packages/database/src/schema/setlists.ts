@@ -13,6 +13,13 @@ import { artists } from "./artists";
 import { shows } from "./shows";
 import { users } from "./users";
 
+export const moderationStatusEnum = pgEnum("moderation_status", [
+  "pending",
+  "approved",
+  "rejected",
+  "flagged",
+]);
+
 export const songs = pgTable("songs", {
   id: uuid("id").primaryKey().defaultRandom(),
   spotifyId: text("spotify_id").unique(),
@@ -56,6 +63,9 @@ export const setlists = pgTable("setlists", {
   isLocked: boolean("is_locked").default(false),
   totalVotes: integer("total_votes").default(0),
   accuracyScore: integer("accuracy_score").default(0), // 0-100
+  
+  // Moderation status
+  moderationStatus: moderationStatusEnum("moderation_status").default("approved"),
 
   // Import tracking
   importedFrom: text("imported_from"), // 'setlist.fm', 'manual', 'api'

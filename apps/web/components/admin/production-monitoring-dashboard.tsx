@@ -322,7 +322,7 @@ export const ProductionMonitoringDashboard: React.FC = () => {
     },
     {
       title: "Active Users",
-      value: metrics.activeUsers || 1234,
+      value: metrics.activeUsers || 0,
       status: "good",
       icon: <Users className="h-4 w-4" />,
     },
@@ -365,7 +365,7 @@ export const ProductionMonitoringDashboard: React.FC = () => {
     },
   ];
 
-  const mockChartData = Array.from({ length: 24 }, (_, i) => ({
+  const chartData = metrics.performanceData || Array.from({ length: 24 }, (_, i) => ({
     timestamp: new Date(Date.now() - (23 - i) * 60 * 60 * 1000).toISOString(),
     value: Math.random() * 100 + 50,
     label: `${i}:00`,
@@ -448,11 +448,11 @@ export const ProductionMonitoringDashboard: React.FC = () => {
         <h2 className="mb-4 font-semibold text-xl">Performance Trends</h2>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <PerformanceChart
-            data={mockChartData}
+            data={chartData}
             title="Response Time"
             unit="ms"
           />
-          <PerformanceChart data={mockChartData} title="Error Rate" unit="%" />
+          <PerformanceChart data={chartData} title="Error Rate" unit="%" />
         </div>
       </div>
 

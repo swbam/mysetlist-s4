@@ -85,7 +85,7 @@ export class ShowSyncService {
         await this.spotifyClient.authenticate();
       } catch (error) {
         console.error("Failed to authenticate with Spotify:", error);
-        return; // Continue without Spotify data
+        // Continue without artist data - still create the show
       }
 
       try {
@@ -100,9 +100,9 @@ export class ShowSyncService {
         );
 
         if (!searchResult) {
-          return;
-        }
-        if (searchResult.artists.items.length > 0) {
+          console.warn(`No Spotify search result for attraction: ${attraction.name}`);
+          // Continue without artist data - still create the show
+        } else if (searchResult.artists.items.length > 0) {
           const spotifyArtist = searchResult.artists.items[0];
 
           if (spotifyArtist) {
@@ -145,7 +145,40 @@ export class ShowSyncService {
       }
     }
 
+    // If we still don't have an artist, create a placeholder one based on the Ticketmaster data
+    if (!artistId && event._embedded?.attractions?.[0]) {
+      const attraction = event._embedded.attractions[0];
+      try {
+        console.log(`Creating placeholder artist for: ${attraction.name}`);
+        const [placeholderArtist] = await db
+          .insert(artists)
+          .values({
+            name: attraction.name,
+            slug: this.generateSlug(attraction.name),
+            ticketmasterId: attraction.id,
+            lastSyncedAt: new Date(),
+          })
+          .onConflictDoUpdate({
+            target: artists.ticketmasterId,
+            set: {
+              name: attraction.name,
+              lastSyncedAt: new Date(),
+            },
+          })
+          .returning({ id: artists.id });
+
+        if (placeholderArtist) {
+          artistId = placeholderArtist.id;
+          console.log(`Created placeholder artist with ID: ${artistId}`);
+        }
+      } catch (error) {
+        console.error(`Failed to create placeholder artist for ${attraction.name}:`, error);
+      }
+    }
+
+    // If we STILL don't have an artist, skip this show
     if (!artistId) {
+      console.warn(`Skipping show "${event.name}" - no artist found or created`);
       return;
     }
 
@@ -376,7 +409,6 @@ export class ShowSyncService {
               attractionId: artist.ticketmasterId!,
               size: 200,
               sort: "date,asc",
-              startDateTime: new Date().toISOString(),
             }),
           {
             service: "ShowSyncService",
@@ -406,8 +438,7 @@ export class ShowSyncService {
             keyword: artist.name,
             size: 200,
             sort: "date,asc",
-            startDateTime: new Date().toISOString(),
-            classificationName: "music", // Focus on music events
+            classificationName: "Music", // Focus on music events
           }),
         {
           service: "ShowSyncService",

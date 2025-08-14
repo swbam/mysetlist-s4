@@ -1,12 +1,12 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { ChevronRight, Music } from "lucide-react";
-import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Suspense } from "react";
 import { LiteSearch } from "./components/lite-search";
 import { RealActiveShows } from "./components/real-active-shows";
 import { RealPopularArtists } from "./components/real-popular-artists";
 import { RealStats } from "./components/real-stats";
+import TrendingSection from "./components/trending-simple";
 
 // Ultra-light homepage component for initial render
 function LightHero() {
@@ -85,16 +85,7 @@ function LightHero() {
   );
 }
 
-// Dynamic import for trending sections to load after initial render
-const TrendingSection = dynamic(() => import("./components/trending-simple"), {
-  loading: () => (
-    <section className="py-12">
-      <div className="container mx-auto px-4">
-        <div className="h-64 animate-pulse rounded-lg bg-muted" />
-      </div>
-    </section>
-  ),
-});
+// Static import for faster loading - we can optimize this later if needed
 
 export const metadata = {
   title: "TheSet - Concert Setlist Voting Platform",
@@ -108,18 +99,8 @@ export default function LiteHomePage() {
       {/* Hero Section - Critical render path */}
       <LightHero />
 
-      {/* Trending sections - Load after initial render */}
-      <Suspense
-        fallback={
-          <section className="py-12">
-            <div className="container mx-auto px-4">
-              <div className="h-96 animate-pulse rounded-lg bg-muted" />
-            </div>
-          </section>
-        }
-      >
-        <TrendingSection />
-      </Suspense>
+      {/* Trending sections */}
+      <TrendingSection />
     </div>
   );
 }

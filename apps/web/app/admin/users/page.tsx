@@ -64,14 +64,14 @@ export default async function UsersPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-bold text-3xl">User Management</h1>
-          <p className="mt-2 text-muted-foreground">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="font-bold text-2xl md:text-3xl">User Management</h1>
+          <p className="text-muted-foreground text-sm md:text-base">
             Manage user accounts, roles, and permissions
           </p>
         </div>
-        <Button variant="outline">
+        <Button variant="outline" className="w-full sm:w-auto">
           <Download className="mr-2 h-4 w-4" />
           Export Users
         </Button>
@@ -83,7 +83,7 @@ export default async function UsersPage() {
           <CardTitle className="text-lg">Search & Filter</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
             <div className="relative flex-1">
               <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-muted-foreground" />
               <Input
@@ -93,7 +93,7 @@ export default async function UsersPage() {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">
+                <Button variant="outline" className="w-full sm:w-auto">
                   <Filter className="mr-2 h-4 w-4" />
                   Filter
                 </Button>
@@ -118,7 +118,8 @@ export default async function UsersPage() {
       {/* Users Table */}
       <Card>
         <CardContent className="p-0">
-          <Table>
+          <div className="overflow-x-auto">
+            <Table className="min-w-[800px]">
             <TableHeader>
               <TableRow>
                 <TableHead>User</TableHead>
@@ -220,7 +221,8 @@ export default async function UsersPage() {
                 );
               })}
             </TableBody>
-          </Table>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>
