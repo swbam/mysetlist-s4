@@ -1,9 +1,7 @@
 import { artists, db } from "@repo/database";
 import { ArtistImportOrchestrator } from "@repo/external-apis";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
-import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { CACHE_TAGS } from "~/lib/cache";
 import { updateImportStatus } from "~/lib/import-status";
@@ -88,71 +86,121 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Auto-import logic: Try tmAttractionId first, then fallback to orchestration endpoint
+    // Auto-import logic with retry mechanism
     let importResult: any;
+    let lastError: Error | null = null;
 
-    if (tmAttractionId) {
-      // Direct Ticketmaster import using ArtistImportOrchestrator
-      console.log(
-        `[AUTO-IMPORT] Starting direct import for tmAttractionId: ${tmAttractionId}`,
-      );
+    // Retry loop for resilient import
+    while (retryCount <= maxRetries) {
+      try {
+        await updateImportStatus(tempArtistId, {
+          stage: "fetching-artist",
+          progress: 10,
+          message: `Attempting import... (try ${retryCount + 1}/${maxRetries + 1})`,
+        });
 
-      // Create orchestrator with progress callback
-      const orchestrator = new ArtistImportOrchestrator(async (progress) => {
-        const targetArtistId = artistId || tempArtistId;
-        if (targetArtistId) {
-          await updateImportStatus(targetArtistId, {
-            stage: progress.stage,
-            progress: progress.progress,
-            message: progress.message,
-            error: progress.error,
-            completedAt: progress.completedAt,
+        if (tmAttractionId) {
+          // Direct Ticketmaster import using ArtistImportOrchestrator
+          console.log(
+            `[AUTO-IMPORT] Starting direct import for tmAttractionId: ${tmAttractionId} (attempt ${retryCount + 1})`,
+          );
+
+          // Create orchestrator with enhanced progress callback
+          const orchestrator = new ArtistImportOrchestrator(async (progress) => {
+            const targetArtistId = artistId || tempArtistId;
+            if (targetArtistId) {
+              await updateImportStatus(targetArtistId, {
+                stage: progress.stage,
+                progress: progress.progress,
+                message: `${progress.message} (attempt ${retryCount + 1})`,
+                error: progress.error,
+                completedAt: progress.completedAt,
+              });
+            }
           });
-        }
-      });
 
-      importResult = await orchestrator.importArtist(tmAttractionId);
+          importResult = await orchestrator.importArtist(tmAttractionId);
 
-      if (!importResult.success) {
-        throw new Error("Direct import failed in orchestrator");
-      }
+          if (!importResult.success) {
+            throw new Error(
+              `Direct import failed: ${importResult.error || "Unknown orchestrator error"}`,
+            );
+          }
 
-      artistId = importResult.artistId;
-    } else {
-      // Fallback to orchestration endpoint for Spotify ID or name-based imports
-      console.log(
-        `[AUTO-IMPORT] Using orchestration endpoint for: ${spotifyId || artistName}`,
-      );
+          artistId = importResult.artistId;
+        } else {
+          // Fallback to orchestration endpoint for Spotify ID or name-based imports
+          console.log(
+            `[AUTO-IMPORT] Using orchestration endpoint for: ${spotifyId || artistName} (attempt ${retryCount + 1})`,
+          );
 
-      const orchestrationResponse = await fetch(
-        `${request.nextUrl.origin}/api/sync/orchestration`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            spotifyId: spotifyId,
-            artistName: artistName,
-            options: {
-              syncSongs: true,
-              syncShows: true,
-              createDefaultSetlists: true,
-              fullDiscography: false, // Keep it lighter for auto-import
+          const orchestrationResponse = await fetch(
+            `${request.nextUrl.origin}/api/sync/orchestration`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${process.env.CRON_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+                "User-Agent": "TheSet-AutoImport/1.0",
+              },
+              body: JSON.stringify({
+                spotifyId: spotifyId,
+                artistName: artistName,
+                options: {
+                  syncSongs: true,
+                  syncShows: true,
+                  createDefaultSetlists: true,
+                  fullDiscography: false, // Keep it lighter for auto-import
+                },
+              }),
+              signal: AbortSignal.timeout(120000), // 2 minute timeout
             },
-          }),
-        },
-      );
+          );
 
-      if (!orchestrationResponse.ok) {
-        const errorText = await orchestrationResponse.text();
-        throw new Error(
-          `Orchestration auto-import failed: ${orchestrationResponse.status} ${errorText}`,
-        );
+          if (!orchestrationResponse.ok) {
+            const errorText = await orchestrationResponse.text();
+            throw new Error(
+              `Orchestration auto-import failed: ${orchestrationResponse.status} ${errorText}`,
+            );
+          }
+
+          importResult = await orchestrationResponse.json();
+          
+          // Check if orchestration was successful
+          if (!importResult.success) {
+            throw new Error(
+              `Orchestration reported failure: ${importResult.error || "Unknown error"}`,
+            );
+          }
+
+          artistId = importResult.artist?.id || importResult.artistId;
+        }
+
+        // If we get here, import was successful
+        break;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        retryCount++;
+
+        console.error(`[AUTO-IMPORT] Attempt ${retryCount} failed:`, lastError.message);
+
+        if (retryCount <= maxRetries && retryOnFailure) {
+          // Update status to show retry
+          await updateImportStatus(tempArtistId, {
+            stage: "fetching-artist",
+            progress: 5,
+            message: `Import attempt ${retryCount} failed, retrying... (${lastError.message})`,
+            error: lastError.message,
+          });
+
+          // Exponential backoff: wait 2^retryCount seconds
+          const waitTime = Math.pow(2, retryCount) * 1000;
+          await new Promise((resolve) => setTimeout(resolve, waitTime));
+        } else {
+          // All retries exhausted or retry disabled
+          throw lastError;
+        }
       }
-
-      importResult = await orchestrationResponse.json();
-      artistId = importResult.artistId;
     }
 
     // Revalidate cache
@@ -164,13 +212,14 @@ export async function POST(request: NextRequest) {
         artistId: importResult.artistId || artistId,
         slug: importResult.slug,
         importStarted: true,
-        message: "Artist import started successfully",
+        message: "Artist import completed successfully",
         statusEndpoint: `/api/sync/status?artistId=${importResult.artistId || artistId}`,
         importProgressEndpoint: `/api/artists/${importResult.artistId || artistId}/import-progress`,
         totalSongs: importResult.totalSongs || 0,
         totalShows: importResult.totalShows || 0,
         totalVenues: importResult.totalVenues || 0,
         importDuration: importResult.importDuration,
+        retriesUsed: retryCount,
       },
       { status: 201 },
     );
@@ -186,7 +235,7 @@ export async function POST(request: NextRequest) {
         await updateImportStatus(targetArtistId, {
           stage: "failed",
           progress: 0,
-          message: "Auto-import failed due to unexpected error",
+          message: `Auto-import failed after ${retryCount} attempts`,
           error: errorMessage,
           completedAt: new Date().toISOString(),
         });
@@ -207,6 +256,7 @@ export async function POST(request: NextRequest) {
         statusEndpoint: targetArtistId
           ? `/api/sync/status?artistId=${targetArtistId}`
           : undefined,
+        retriesUsed: retryCount,
       },
       { status: 500 },
     );

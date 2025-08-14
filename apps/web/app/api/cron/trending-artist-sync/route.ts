@@ -1,8 +1,12 @@
 import { artists, db } from "@repo/database";
 import { ArtistSyncService } from "@repo/external-apis";
 import { desc, sql } from "drizzle-orm";
-import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  requireCronAuth,
+} from "~/lib/api/auth-helpers";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -16,21 +20,8 @@ export const dynamic = "force-dynamic";
  */
 export async function POST(request: NextRequest) {
   try {
-    // Check for authorization
-    const headersList = await headers();
-    const authHeader = headersList.get("authorization");
-    const validTokens = [
-      process.env.CRON_SECRET,
-      process.env.SUPABASE_SERVICE_ROLE_KEY,
-      process.env.ADMIN_API_KEY,
-    ].filter(Boolean) as string[];
-
-    if (
-      validTokens.length > 0 &&
-      !(authHeader && validTokens.some((t) => authHeader === `Bearer ${t}`))
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Standardized authentication
+    await requireCronAuth();
 
     const body = await request.json().catch(() => ({}));
     const { limit = 100, skipRecentlyUpdated = true } = body;
@@ -175,11 +166,9 @@ export async function POST(request: NextRequest) {
       `);
     } catch {}
 
-    return NextResponse.json({
-      success: true,
+    return createSuccessResponse({
       message: "Trending artists deep sync completed",
       results,
-      timestamp: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Trending artist sync failed:", error);
@@ -195,14 +184,10 @@ export async function POST(request: NextRequest) {
       `);
     } catch {}
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Trending artist sync failed",
-        message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString(),
-      },
-      { status: 500 },
+    return createErrorResponse(
+      "Trending artist sync failed",
+      500,
+      error instanceof Error ? error.message : "Unknown error",
     );
   }
 }

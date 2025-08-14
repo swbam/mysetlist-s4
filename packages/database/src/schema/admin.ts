@@ -50,6 +50,16 @@ export const backupStatusEnum = pgEnum("backup_status", [
   "failed",
 ]);
 
+export const importStageEnum = pgEnum("import_stage", [
+  "initializing",
+  "syncing-identifiers", 
+  "importing-songs",
+  "importing-shows",
+  "creating-setlists",
+  "completed",
+  "failed",
+]);
+
 // System health monitoring
 export const systemHealth = pgTable("system_health", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -173,6 +183,19 @@ export const dataBackups = pgTable("data_backups", {
   completedAt: timestamp("completed_at"),
   errorMessage: text("error_message"),
   metadata: jsonb("metadata"),
+});
+
+// Import status tracking for artist imports
+export const importStatus = pgTable("import_status", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  artistId: varchar("artist_id", { length: 255 }).notNull(), // Can be temp ID like "tmp_123" or real UUID
+  stage: importStageEnum("stage").notNull(),
+  percentage: integer("percentage").default(0),
+  message: text("message"),
+  error: text("error"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
 });
 
 // Tables are exported individually above

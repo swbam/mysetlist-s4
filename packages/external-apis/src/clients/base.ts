@@ -67,8 +67,12 @@ export abstract class BaseAPIClient {
       }
     }
 
-    const url = new URL(endpoint, this.baseURL);
-    const response = await fetch(url.toString(), {
+    // Ensure proper URL construction
+    const baseUrl = this.baseURL.endsWith('/') ? this.baseURL : `${this.baseURL}/`;
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    const fullUrl = `${baseUrl}${cleanEndpoint}`;
+    
+    const response = await fetch(fullUrl, {
       ...options,
       headers: {
         "Content-Type": "application/json",

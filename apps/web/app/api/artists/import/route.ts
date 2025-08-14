@@ -1,5 +1,5 @@
 import { artists, db } from "@repo/database";
-import { ArtistImportOrchestrator } from "@repo/external-apis";
+import { ArtistImportOrchestrator } from "~/lib/services/artist-import-orchestrator";
 import { eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";

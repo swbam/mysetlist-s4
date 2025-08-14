@@ -1,18 +1,24 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Get Supabase credentials with fallbacks - trim to remove newlines/whitespace
+// Get Supabase credentials - trim to remove newlines/whitespace
 const getSupabaseUrl = () => {
-  return (
-    process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    "https://yzwkimtdaabyjbpykquu.supabase.co"
-  ).trim();
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  if (!url) {
+    throw new Error(
+      "SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL must be set in environment variables"
+    );
+  }
+  return url.trim();
 };
 
 const getSupabaseServiceRoleKey = () => {
-  return (
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl6d2tpbXRkYWFieWpicHlrcXV1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcyOTQ0NDY3MCwiZXhwIjoyMDQ1MDIwNjcwfQ.6lCBSPxerFdHqOIkTyKOoCtrrmgortHdMj85WeJVGHk"
-  ).trim();
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!key) {
+    throw new Error(
+      "SUPABASE_SERVICE_ROLE_KEY must be set in environment variables"
+    );
+  }
+  return key.trim();
 };
 
 export const createSupabaseAdminClient = () => {

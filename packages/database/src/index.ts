@@ -16,10 +16,15 @@ try {
 
 // Use fallback DATABASE_URL if not available from env
 if (!databaseUrl) {
-  databaseUrl =
-    process.env.DATABASE_URL ||
-    process.env.DIRECT_URL ||
-    "postgresql://postgres.yzwkimtdaabyjbpykquu:Bambseth1590@aws-0-us-east-1.pooler.supabase.com:6543/postgres";
+  databaseUrl = process.env.DATABASE_URL || process.env.DIRECT_URL;
+}
+
+// Ensure we have a database URL
+if (!databaseUrl) {
+  throw new Error(
+    "DATABASE_URL or DIRECT_URL must be set in environment variables. " +
+      "Please check your .env.local file and ensure database credentials are properly configured.",
+  );
 }
 
 const globalForDrizzle = global as unknown as {
@@ -36,6 +41,7 @@ try {
       max: 10, // connection pool size
       idle_timeout: 20,
       connect_timeout: 10,
+      ssl: "require", // Always use SSL for Supabase
       prepare: false, // disable prepared statements for Supabase pooler
     });
 

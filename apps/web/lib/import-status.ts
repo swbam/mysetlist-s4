@@ -85,7 +85,7 @@ export async function updateImportStatus(
       `[IMPORT STATUS] ${artistId}: ${update.stage} (${update.progress}%) - ${update.message}`,
     );
   } catch (error) {
-    console.error("Failed to update import status:", error);
+    console.warn("\[IMPORT STATUS\] Failed to update import status (non-blocking):", error);
     // Fallback: don't let import status failures break the actual import
   }
 }
