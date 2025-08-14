@@ -16,7 +16,7 @@ export * from "./api-keys";
 export * from "./rate-limits";
 
 // Essential admin/monitoring tables
-export { userActivityLog, importStatus } from "./admin";
+export { userActivityLog, importStatus, importLogs, type ImportStatus, type ImportLog } from "./admin";
 
 // Venue reviews (referenced by some routes)
 export { venueReviews } from "./venue-reviews";

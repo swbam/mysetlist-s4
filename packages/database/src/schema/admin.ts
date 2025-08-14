@@ -193,9 +193,59 @@ export const importStatus = pgTable("import_status", {
   percentage: integer("percentage").default(0),
   message: text("message"),
   error: text("error"),
+  jobId: varchar("job_id", { length: 255 }),
+  totalSongs: integer("total_songs").default(0),
+  totalShows: integer("total_shows").default(0),
+  totalVenues: integer("total_venues").default(0),
+  artistName: varchar("artist_name", { length: 255 }),
+  startedAt: timestamp("started_at"),
+  phaseTimings: jsonb("phase_timings"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   completedAt: timestamp("completed_at"),
 });
+
+// Log level enum
+export const logLevelEnum = pgEnum("log_level", [
+  "info",
+  "warning",
+  "error",
+  "success",
+  "debug",
+]);
+
+// Import logs for detailed tracking
+export const importLogs = pgTable("import_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  artistId: varchar("artist_id", { length: 255 }).notNull(),
+  artistName: varchar("artist_name", { length: 255 }),
+  ticketmasterId: varchar("ticketmaster_id", { length: 255 }),
+  spotifyId: varchar("spotify_id", { length: 255 }),
+  jobId: varchar("job_id", { length: 255 }),
+  
+  // Log details
+  level: logLevelEnum("level").notNull(),
+  stage: varchar("stage", { length: 50 }).notNull(),
+  message: text("message").notNull(),
+  details: jsonb("details"),
+  
+  // Metrics
+  itemsProcessed: integer("items_processed").default(0),
+  itemsTotal: integer("items_total"),
+  durationMs: integer("duration_ms"),
+  
+  // Error tracking
+  errorCode: varchar("error_code", { length: 50 }),
+  errorStack: text("error_stack"),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Export types
+export type ImportStatus = typeof importStatus.$inferSelect;
+export type InsertImportStatus = typeof importStatus.$inferInsert;
+export type ImportLog = typeof importLogs.$inferSelect;
+export type InsertImportLog = typeof importLogs.$inferInsert;
 
 // Tables are exported individually above

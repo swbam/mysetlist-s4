@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Execute Phase 1: Fast artist creation and immediate response (< 3 seconds)
-    const importResult = await orchestrator.importArtist(tmAttractionId);
+    const importResult = await orchestrator.importArtist(tmAttractionId, body.adminImport || false);
 
     if (!importResult.success) {
       throw new Error("Import failed in orchestrator");
