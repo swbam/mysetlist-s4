@@ -440,106 +440,56 @@ export async function getTrendingLocations(
  * Get comprehensive trending statistics
  */
 export async function getTrendingStatistics(): Promise<TrendingStats> {
-  try {
-    const supabase = await createServiceClient();
+	const supabase = await createServiceClient();
 
-    const weekAgo = new Date(
-      Date.now() - 7 * 24 * 60 * 60 * 1000,
-    ).toISOString();
+	// Defaults to real zeros if unavailable
+	let totalVotes = 0;
+	let totalShows = 0;
+	let totalSetlists = 0;
+	let totalUsers = 0;
+	let weeklyVotes = 0;
+	let weeklyShows = 0;
+	let weeklyUsers = 0;
+	let mostActiveCity = "";
+	const averageSetlistLength = 0;
+	const topGenre = "";
 
-    // Try to get counts with fallback to mock data
-    let totalVotes = 0;
-    let totalShows = 0;
-    let totalSetlists = 0;
-    let totalUsers = 0;
-    let weeklyVotes = 0;
-    let weeklyShows = 0;
-    let weeklyUsers = 0;
-    let mostActiveCity = "New York";
-    const averageSetlistLength = 18;
-    const topGenre = "Pop";
+	const [votesRes, showsRes, setlistsRes, usersRes] = await Promise.all([
+		supabase.from("votes").select("*", { count: "exact", head: true }),
+		supabase.from("shows").select("*", { count: "exact", head: true }),
+		supabase.from("setlists").select("*", { count: "exact", head: true }),
+		supabase.from("users").select("*", { count: "exact", head: true }),
+	]);
 
-    try {
-      // Try to get real counts
-      const [votesResult, showsResult, setlistsResult, usersResult] =
-        await Promise.allSettled([
-          supabase.from("votes").select("*", { count: "exact", head: true }),
-          supabase.from("shows").select("*", { count: "exact", head: true }),
-          supabase.from("setlists").select("*", { count: "exact", head: true }),
-          supabase.from("users").select("*", { count: "exact", head: true }),
-        ]);
+	totalVotes = votesRes.count || 0;
+	totalShows = showsRes.count || 0;
+	totalSetlists = setlistsRes.count || 0;
+	totalUsers = usersRes.count || 0;
 
-      if (votesResult.status === "fulfilled")
-        totalVotes = votesResult.value.count || 0;
-      if (showsResult.status === "fulfilled")
-        totalShows = showsResult.value.count || 0;
-      if (setlistsResult.status === "fulfilled")
-        totalSetlists = setlistsResult.value.count || 0;
-      if (usersResult.status === "fulfilled")
-        totalUsers = usersResult.value.count || 0;
+	// Most active city by upcoming_shows if available
+	const { data: cityData } = await supabase
+		.from("venues")
+		.select("city, upcoming_shows")
+		.gt("upcoming_shows", 0)
+		.order("upcoming_shows", { ascending: false })
+		.limit(1);
 
-      // If we have no real data, use mock data
-      if (totalVotes === 0 && totalShows === 0) {
-        totalVotes = 12450;
-        totalShows = 186;
-        totalSetlists = 89;
-        totalUsers = 2341;
-        weeklyVotes = 156;
-        weeklyShows = 8;
-        weeklyUsers = 23;
-      }
+	if (cityData?.[0]) {
+		mostActiveCity = cityData[0].city;
+	}
 
-      // Try to get most active city
-      const { data: cityData } = await supabase
-        .from("venues")
-        .select("city, upcoming_shows")
-        .gt("upcoming_shows", 0)
-        .order("upcoming_shows", { ascending: false })
-        .limit(1);
-
-      if (cityData?.[0]) {
-        mostActiveCity = cityData[0].city;
-      }
-    } catch (dbError) {
-      console.log("Using mock statistics data:", dbError);
-      // Use mock data when database is not available
-      totalVotes = 12450;
-      totalShows = 186;
-      totalSetlists = 89;
-      totalUsers = 2341;
-      weeklyVotes = 156;
-      weeklyShows = 8;
-      weeklyUsers = 23;
-    }
-
-    return {
-      totalVotes,
-      totalShows,
-      totalSetlists,
-      totalUsers,
-      weeklyVotes,
-      weeklyShows,
-      weeklyUsers,
-      mostActiveCity,
-      averageSetlistLength,
-      topGenre,
-    };
-  } catch (error) {
-    console.error("Error in getTrendingStatistics:", error);
-    // Final fallback with mock data
-    return {
-      totalVotes: 12450,
-      totalShows: 186,
-      totalSetlists: 89,
-      totalUsers: 2341,
-      weeklyVotes: 156,
-      weeklyShows: 8,
-      weeklyUsers: 23,
-      mostActiveCity: "New York",
-      averageSetlistLength: 18,
-      topGenre: "Pop",
-    };
-  }
+	return {
+		totalVotes,
+		totalShows,
+		totalSetlists,
+		totalUsers,
+		weeklyVotes,
+		weeklyShows,
+		weeklyUsers,
+		mostActiveCity,
+		averageSetlistLength,
+		topGenre,
+	};
 }
 
 /**

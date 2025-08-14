@@ -113,10 +113,10 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
         <ArtistErrorBoundary artistName={slug.replace(/-/g, " ")}>
           <Suspense
             fallback={
-              <ArtistImportLoading artistName={slug.replace(/-/g, " ")} />
+              <ArtistImportLoading artistSlug={slug} jobId={""} />
             }
           >
-            <ArtistImportLoading artistName={slug.replace(/-/g, " ")} />
+            <ArtistImportLoading artistSlug={slug} jobId={""} />
           </Suspense>
         </ArtistErrorBoundary>
       );

@@ -701,7 +701,6 @@ export class ArtistImportOrchestrator {
         message: fullProgress.message,
         error: fullProgress.error,
         completedAt: fullProgress.completedAt,
-        estimatedTimeRemaining: fullProgress.estimatedTimeRemaining,
       });
     }
   }

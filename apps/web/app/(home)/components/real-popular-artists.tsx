@@ -19,16 +19,12 @@ export function RealPopularArtists() {
         if (response.ok) {
           const data = await response.json();
           setArtists(data.artists || []);
+        } else {
+          setArtists([]);
         }
       } catch (error) {
         console.error("Failed to load popular artists:", error);
-        // Use fallback artists on error
-        setArtists([
-          { name: "Taylor Swift", slug: "taylor-swift" },
-          { name: "The Weeknd", slug: "the-weeknd" },
-          { name: "Drake", slug: "drake" },
-          { name: "Olivia Rodrigo", slug: "olivia-rodrigo" },
-        ]);
+        setArtists([]);
       } finally {
         setIsLoading(false);
       }
