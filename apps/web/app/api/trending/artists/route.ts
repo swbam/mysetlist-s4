@@ -124,53 +124,49 @@ async function getTrendingArtistsFromDB(limit: number) {
         "Using mock data for trending artists:",
         error?.message || "No data",
       );
-      // Return mock data when database is not available or empty
-      return MOCK_TRENDING_ARTISTS.slice(0, limit);
+      // Transform mock data to match frontend format
+      return MOCK_TRENDING_ARTISTS.slice(0, limit).map(transformArtist);
     }
 
-    return artists;
+    // Transform to match frontend interface
+    return artists.map(transformArtist);
   } catch (dbError) {
     console.log("Database connection failed, using mock data:", dbError);
-    return MOCK_TRENDING_ARTISTS.slice(0, limit);
+    return MOCK_TRENDING_ARTISTS.slice(0, limit).map(transformArtist);
+  }
+}
+
+// Transform function to match frontend interface
+function transformArtist(artist: any) {
+  // Calculate weekly growth based on previous data
+  const currentFollowers = artist.followers || artist.follower_count || 0;
+  const previousFollowers = artist.previous_followers || currentFollowers;
+  const weeklyGrowth = previousFollowers > 0 
+    ? ((currentFollowers - previousFollowers) / previousFollowers) * 100
+    : 0;
+
+  // Parse genres from JSON string
+  let genres: string[] = [];
+  if (artist.genres) {
+    try {
+      genres = typeof artist.genres === 'string' ? JSON.parse(artist.genres) : artist.genres;
+    } catch {
+      genres = [];
+    }
   }
 
-  // Note: the function already returned in all branches above.
-  // The code below was unreachable; keeping a typed transformer for reference if needed in future.
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  return [] as any;
-  /* Transform to match frontend interface (reference)
-  return artists.map((artist) => {
-    // Calculate weekly growth based on previous data
-    const currentFollowers = artist.followers || 0;
-    const previousFollowers = artist.previous_followers || currentFollowers;
-    const weeklyGrowth = previousFollowers > 0 
-      ? ((currentFollowers - previousFollowers) / previousFollowers) * 100
-      : 0;
-
-    // Parse genres from JSON string
-    let genres: string[] = [];
-    if (artist.genres) {
-      try {
-        genres = JSON.parse(artist.genres);
-      } catch {
-        genres = [];
-      }
-    }
-
-    return {
-      id: artist.id,
-      name: artist.name,
-      slug: artist.slug,
-      imageUrl: artist.image_url,
-      followers: currentFollowers,
-      popularity: artist.popularity || 0,
-      trendingScore: artist.trending_score || 0,
-      genres,
-      recentShows: artist.upcoming_shows || 0,
-      weeklyGrowth: Number(weeklyGrowth.toFixed(1)),
-    };
-  });*/
+  return {
+    id: artist.id,
+    name: artist.name,
+    slug: artist.slug,
+    imageUrl: artist.image_url,
+    followers: currentFollowers,
+    popularity: artist.popularity || 0,
+    trendingScore: artist.trending_score || 0,
+    genres,
+    recentShows: artist.upcoming_shows || 0,
+    weeklyGrowth: Number(weeklyGrowth.toFixed(1)),
+  };
 }
 
 export async function GET(request: NextRequest) {

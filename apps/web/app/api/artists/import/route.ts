@@ -7,9 +7,6 @@ import { CACHE_TAGS } from "~/lib/cache";
 import { updateImportStatus } from "~/lib/import-status";
 
 export async function POST(request: NextRequest) {
-  let tempArtistId: string | null = null;
-  let artistId: string | null = null;
-
   try {
     const body = await request.json();
     const { tmAttractionId } = body;
@@ -21,15 +18,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create a temporary artist ID for status tracking before we have a real one
-    tempArtistId = `tmp_${tmAttractionId}`;
-
-    // Initialize import status tracking
-    await updateImportStatus(tempArtistId, {
-      stage: "initializing",
-      progress: 0,
-      message: "Checking if artist already exists...",
-    });
+    // Generate unique job ID for tracking
+    const jobId = `import_${tmAttractionId}_${Date.now()}`;
 
     // Check if artist already exists by ticketmaster ID (idempotency)
     const existingArtist = await db
@@ -43,45 +33,56 @@ export async function POST(request: NextRequest) {
       existingArtist.length > 0 &&
       existingArtist[0]
     ) {
-      artistId = (existingArtist[0] as any).id;
-
+      const artist = existingArtist[0] as any;
+      
       // Update status for existing artist
-      if (artistId) {
-        await updateImportStatus(artistId, {
-          stage: "completed",
-          progress: 100,
-          message: "Artist already exists in database",
-          completedAt: new Date().toISOString(),
-        });
-      }
+      await updateImportStatus(jobId, {
+        stage: "completed",
+        progress: 100,
+        message: "Artist already exists in database",
+        artistId: artist.id,
+        slug: artist.slug,
+        completedAt: new Date().toISOString(),
+      });
 
       return NextResponse.json(
         {
-          artistId,
-          slug: (existingArtist[0] as any).slug,
+          success: true,
+          jobId,
+          artistId: artist.id,
+          slug: artist.slug,
           alreadyExists: true,
-          progressEndpoint: `/api/artists/${artistId}/import-progress`,
+          message: "Artist already exists",
         },
         { status: 200 },
       );
     }
 
-    // Create orchestrator with progress callback
+    // Initialize import status tracking
+    await updateImportStatus(jobId, {
+      stage: "initializing",
+      progress: 0,
+      message: "Starting artist import...",
+    });
+
+    // Create orchestrator with real-time progress tracking
     const orchestrator = new ArtistImportOrchestrator(async (progress) => {
-      const targetArtistId = artistId || tempArtistId;
-      if (targetArtistId) {
-        await updateImportStatus(targetArtistId, {
-          stage: progress.stage,
-          progress: progress.progress,
-          message: progress.message,
-          error: progress.error,
-          completedAt: progress.completedAt,
-        });
-      }
+      await updateImportStatus(jobId, {
+        stage: progress.stage,
+        progress: progress.progress,
+        message: progress.message,
+        error: progress.error,
+        artistId: progress.artistId,
+        slug: progress.slug,
+        totalSongs: progress.totalSongs,
+        totalShows: progress.totalShows,
+        totalVenues: progress.totalVenues,
+        completedAt: progress.completedAt,
+      });
     });
 
     console.log(
-      `[IMPORT] Starting orchestrator import for tmAttractionId: ${tmAttractionId}`,
+      `[IMPORT] Starting orchestrator import for tmAttractionId: ${tmAttractionId} with jobId: ${jobId}`,
     );
 
     // Execute Phase 1: Fast artist creation and immediate response (< 3 seconds)
@@ -96,56 +97,28 @@ export async function POST(request: NextRequest) {
     // Revalidate cache
     revalidateTag(CACHE_TAGS.artists);
 
+    // Return immediately with job ID for progress tracking
     return NextResponse.json(
       {
-        artistId: importResult.artistId,
-        slug: importResult.slug,
-        importStarted: true,
-        progressEndpoint: `/api/artists/${importResult.artistId}/import-progress`,
-        totalSongs: importResult.totalSongs,
-        totalShows: importResult.totalShows,
-        totalVenues: importResult.totalVenues,
-        importDuration: importResult.importDuration,
+        success: true,
+        jobId,
+        message: "Import started successfully. Use the jobId to track progress.",
       },
-      { status: 201 },
+      { status: 202 }, // 202 Accepted - processing started
     );
   } catch (error) {
-    // Enhanced error handling with status update
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
     console.error("[IMPORT] Import API error:", error);
-
-    const targetArtistId = artistId || tempArtistId;
-    if (targetArtistId) {
-      try {
-        await updateImportStatus(targetArtistId, {
-          stage: "failed",
-          progress: 0,
-          message: "Import failed due to unexpected error",
-          error: errorMessage,
-          completedAt: new Date().toISOString(),
-        });
-      } catch (statusError) {
-        console.error("[IMPORT] Failed to update error status:", statusError);
-      }
-    }
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
     return NextResponse.json(
       {
         error: "Internal server error",
-        details:
-          process.env.NODE_ENV === "development" ? errorMessage : undefined,
-        progressEndpoint: targetArtistId
-          ? `/api/artists/${targetArtistId}/import-progress`
-          : undefined,
+        details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
       },
       { status: 500 },
     );
   }
 }
-
-// Note: Background processing is now handled by the ArtistImportOrchestrator
-// The orchestrator runs all phases including background tasks in a single coordinated flow
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);

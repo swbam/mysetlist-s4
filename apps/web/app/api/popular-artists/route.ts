@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
       limit,
       type: "popular-artists",
       artists: artists, // Change 'data' to 'artists' to match frontend expectations
+
       timestamp: new Date().toISOString(),
     });
 

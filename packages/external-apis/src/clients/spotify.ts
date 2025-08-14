@@ -69,9 +69,9 @@ export class SpotifyClient extends BaseAPIClient {
 
   async authenticate(): Promise<void> {
     const clientId =
-      process.env.SPOTIFY_CLIENT_ID ||
-      process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
-    const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+      process.env["SPOTIFY_CLIENT_ID"] ||
+      process.env["NEXT_PUBLIC_SPOTIFY_CLIENT_ID"];
+    const clientSecret = process.env["SPOTIFY_CLIENT_SECRET"];
 
     if (!clientId || !clientSecret) {
       throw new Error("Spotify credentials not configured");
@@ -116,7 +116,7 @@ export class SpotifyClient extends BaseAPIClient {
     });
 
     return this.makeRequest<SpotifySearchResult>(
-      `/search?${params}`,
+      `/search?${params.toString()}`,
       {},
       `spotify:search:artists:${query}:${limit}`,
       1800, // 30 minutes cache
