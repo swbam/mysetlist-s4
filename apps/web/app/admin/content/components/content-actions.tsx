@@ -186,7 +186,14 @@ export default function ContentActions({
             View {type}
           </a>
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => {
+            toast({
+              title: "Feature coming soon",
+              description: `Edit ${type} functionality will be available soon.`,
+            });
+          }}
+        >
           <Edit className="mr-2 h-4 w-4" />
           Edit {type}
         </DropdownMenuItem>
@@ -232,7 +239,17 @@ export default function ContentActions({
         )}
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem className="text-red-600">
+        <DropdownMenuItem 
+          className="text-red-600"
+          onClick={() => {
+            if (confirm(`Are you sure you want to delete this ${type}? This action cannot be undone.`)) {
+              toast({
+                title: "Feature coming soon",
+                description: `Delete ${type} functionality will be available soon.`,
+              });
+            }
+          }}
+        >
           <Trash className="mr-2 h-4 w-4" />
           Delete {type}
         </DropdownMenuItem>

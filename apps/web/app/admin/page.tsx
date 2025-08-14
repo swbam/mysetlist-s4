@@ -177,9 +177,9 @@ export default async function AdminDashboard({
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="font-bold text-3xl">Admin Dashboard</h1>
-        <p className="mt-2 text-muted-foreground">
+      <div className="space-y-2">
+        <h1 className="font-bold text-2xl md:text-3xl">Admin Dashboard</h1>
+        <p className="text-muted-foreground text-sm md:text-base">
           Monitor platform activity and manage content
         </p>
       </div>
@@ -225,7 +225,7 @@ export default async function AdminDashboard({
       )}
 
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatsCard
           title="Total Users"
           value={totalUsers?.toLocaleString() ?? 0}
@@ -256,7 +256,7 @@ export default async function AdminDashboard({
       </div>
 
       {/* Recent Activity and Charts */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
         {/* Recent Activity */}
         <Card>
           <CardHeader>

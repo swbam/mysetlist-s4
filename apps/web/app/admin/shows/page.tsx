@@ -108,14 +108,57 @@ const getStatusIcon = (status: string) => {
 
 export default function ShowsManagementPage() {
   const [shows, setShows] = useState<Show[]>([]);
+  const [filteredShows, setFilteredShows] = useState<Show[]>([]);
   const [totalShows, setTotalShows] = useState(0);
   const [upcomingShows, setUpcomingShows] = useState(0);
   const [completedShows, setCompletedShows] = useState(0);
+  const [averageSetlists, setAverageSetlists] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("date_desc");
 
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    // Filter and sort shows
+    let filtered = shows;
+
+    // Apply search filter
+    if (searchTerm) {
+      filtered = filtered.filter(show =>
+        show.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        show.artist?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        show.venue?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        `${show.venue?.city}, ${show.venue?.state}`.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter(show => show.status === statusFilter);
+    }
+
+    // Apply sorting
+    filtered = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case "date_asc":
+          return new Date(a.date).getTime() - new Date(b.date).getTime();
+        case "date_desc":
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        case "name_asc":
+          return a.title.localeCompare(b.title);
+        case "name_desc":
+          return b.title.localeCompare(a.title);
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredShows(filtered);
+  }, [shows, searchTerm, statusFilter, sortBy]);
 
   const loadData = async () => {
     const supabase = createClient();
@@ -164,6 +207,15 @@ export default function ShowsManagementPage() {
       .select("*", { count: "exact", head: true })
       .eq("status", "completed");
 
+    // Calculate average setlists per show
+    const { data: setlistsData } = await supabase
+      .from("setlists")
+      .select("show_id")
+      .not("show_id", "is", null);
+      
+    const totalSetlists = setlistsData?.length || 0;
+    const avgSetlists = total && total > 0 ? Number((totalSetlists / total).toFixed(1)) : 0;
+
     // Transform the data to match the expected structure
     const transformedShows = (showsData || []).map((show: any) => ({
       ...show,
@@ -177,7 +229,71 @@ export default function ShowsManagementPage() {
     setTotalShows(total || 0);
     setUpcomingShows(upcoming || 0);
     setCompletedShows(completed || 0);
+    setAverageSetlists(avgSetlists);
     setLoading(false);
+  };
+
+  const handleExportShows = async () => {
+    try {
+      const response = await fetch('/api/admin/shows/export');
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `shows-export-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } else {
+        console.error('Export failed');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+    }
+  };
+
+  const handleDeleteShow = async (showId: string, showTitle: string) => {
+    if (!confirm(`Are you sure you want to delete "${showTitle}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/shows/${showId}`, {
+        method: 'DELETE',
+      });
+      
+      if (response.ok) {
+        // Remove from local state
+        setShows(shows.filter(show => show.id !== showId));
+        alert('Show deleted successfully');
+      } else {
+        alert('Failed to delete show');
+      }
+    } catch (error) {
+      console.error('Delete error:', error);
+      alert('Error deleting show');
+    }
+  };
+
+  const handleSyncShow = async (showId: string) => {
+    try {
+      const response = await fetch(`/api/admin/shows/${showId}/sync`, {
+        method: 'POST',
+      });
+      
+      if (response.ok) {
+        // Reload data to get updated information
+        await loadData();
+        alert('Show synced successfully');
+      } else {
+        alert('Failed to sync show');
+      }
+    } catch (error) {
+      console.error('Sync error:', error);
+      alert('Error syncing show');
+    }
   };
 
   if (loading) {
@@ -187,19 +303,19 @@ export default function ShowsManagementPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-bold text-3xl">Show Management</h1>
-          <p className="mt-2 text-muted-foreground">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="font-bold text-2xl md:text-3xl">Show Management</h1>
+          <p className="text-muted-foreground text-sm md:text-base">
             Manage concerts, events, and show information
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline">
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
+          <Button variant="outline" className="w-full sm:w-auto" onClick={handleExportShows}>
             <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
-          <Button asChild>
+          <Button asChild className="w-full sm:w-auto">
             <Link href="/admin/shows/new">
               <Plus className="mr-2 h-4 w-4" />
               Add Show
@@ -209,7 +325,7 @@ export default function ShowsManagementPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="font-medium text-sm">Total Shows</CardTitle>
@@ -258,7 +374,7 @@ export default function ShowsManagementPage() {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="font-bold text-2xl">2.4</div>
+            <div className="font-bold text-2xl">{averageSetlists}</div>
             <p className="text-muted-foreground text-xs">Per show average</p>
           </CardContent>
         </Card>
@@ -273,15 +389,17 @@ export default function ShowsManagementPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col gap-4 md:flex-row">
+          <div className="flex flex-col gap-3 md:flex-row">
             <div className="relative flex-1">
               <Search className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search shows, artists, venues..."
                 className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Select defaultValue="all">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
               <SelectTrigger className="w-full md:w-[180px]">
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
@@ -293,7 +411,7 @@ export default function ShowsManagementPage() {
                 <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
-            <Select defaultValue="date_desc">
+            <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-full md:w-[180px]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -320,7 +438,8 @@ export default function ShowsManagementPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
+          <div className="overflow-x-auto">
+            <Table className="min-w-[900px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Show</TableHead>
@@ -333,7 +452,7 @@ export default function ShowsManagementPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {shows.map((show) => {
+              {filteredShows.map((show) => {
                 const StatusIcon = getStatusIcon(show.status);
                 return (
                   <TableRow key={show.id}>
@@ -427,12 +546,15 @@ export default function ShowsManagementPage() {
                             </DropdownMenuItem>
                           )}
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleSyncShow(show.id)}>
                             <RefreshCw className="mr-2 h-4 w-4" />
                             Sync from Ticketmaster
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-destructive">
+                          <DropdownMenuItem 
+                            className="text-destructive"
+                            onClick={() => handleDeleteShow(show.id, show.title)}
+                          >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete Show
                           </DropdownMenuItem>
@@ -443,7 +565,8 @@ export default function ShowsManagementPage() {
                 );
               })}
             </TableBody>
-          </Table>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, importLogs, eq, desc, and, or } from "@repo/database";
+import { db, importLogs, artists, eq, desc, and, or } from "@repo/database";
 import { like } from "drizzle-orm";
 import { createClient } from "~/lib/supabase/server";
 
@@ -25,11 +25,33 @@ export async function GET(request: NextRequest) {
     const conditions = [];
     
     if (artistId) {
-      // Support both exact ID match and slug-like matching
+      // First, try to find the artist by internal ID or ticketmaster ID
+      let possibleArtistIds = [artistId]; // Start with the provided ID
+      
+      // If it's a UUID (internal ID), look up the ticketmaster ID
+      if (artistId.length === 36 && artistId.includes('-')) {
+        try {
+          const artist = await db
+            .select({ ticketmasterId: artists.ticketmasterId })
+            .from(artists)
+            .where(eq(artists.id, artistId))
+            .limit(1);
+          
+          if (artist[0]?.ticketmasterId) {
+            possibleArtistIds.push(artist[0].ticketmasterId);
+          }
+        } catch (error) {
+          console.warn('Failed to lookup ticketmaster ID for artist:', artistId);
+        }
+      }
+      
+      // Add temp ID pattern
+      possibleArtistIds.push(`tmp_${artistId}`);
+      
+      // Build condition to match any of the possible IDs
       conditions.push(
         or(
-          eq(importLogs.artistId, artistId),
-          like(importLogs.artistId, `%${artistId}%`)
+          ...possibleArtistIds.map(id => eq(importLogs.artistId, id))
         )
       );
     }

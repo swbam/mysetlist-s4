@@ -133,9 +133,9 @@ export default async function ImportLogsPage({
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="font-bold text-3xl">Import Logs</h1>
-        <p className="mt-2 text-muted-foreground">
+      <div className="space-y-2">
+        <h1 className="font-bold text-2xl md:text-3xl">Import Logs</h1>
+        <p className="text-muted-foreground text-sm md:text-base">
           Monitor artist import processes and troubleshoot issues
         </p>
       </div>

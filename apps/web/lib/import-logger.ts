@@ -1,4 +1,4 @@
-import { db, importLogs, type InsertImportLog } from "@repo/database";
+import { db, importLogs, eq, type InsertImportLog } from "@repo/database";
 import { createId } from "@paralleldrive/cuid2";
 
 export type LogLevel = "info" | "warning" | "error" | "success" | "debug";
@@ -155,6 +155,27 @@ export class ImportLogger {
 
   getJobId() {
     return this.jobId;
+  }
+
+  updateArtistId(newArtistId: string) {
+    const oldArtistId = this.artistId;
+    this.artistId = newArtistId;
+    
+    // Also update any existing logs in the database
+    this.updateExistingLogsArtistId(oldArtistId, newArtistId);
+  }
+
+  private async updateExistingLogsArtistId(oldArtistId: string, newArtistId: string) {
+    try {
+      // Update logs in database that match the old artist ID
+      const result = await db.update(importLogs)
+        .set({ artistId: newArtistId })
+        .where(eq(importLogs.artistId, oldArtistId));
+      
+      console.log(`[LOGGER] Updated existing logs from ${oldArtistId} to ${newArtistId}`);
+    } catch (error) {
+      console.error('Failed to update existing logs artist ID:', error);
+    }
   }
 }
 

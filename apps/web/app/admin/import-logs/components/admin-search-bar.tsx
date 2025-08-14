@@ -51,9 +51,9 @@ export function AdminSearchBar() {
       />
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-hidden">
+        <DialogContent className="w-[95vw] max-w-6xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-sm md:text-lg pr-6">
               Import Logs - {selectedArtist?.title || "Unknown Artist"}
             </DialogTitle>
           </DialogHeader>

@@ -302,7 +302,36 @@ export default function ReportItem({
                   )}
                 </div>
               </div>
-              <Button size="sm" variant="outline">
+              <Button 
+                size="sm" 
+                variant="outline"
+                onClick={() => {
+                  // Generate URL based on content type
+                  let url = '';
+                  switch (report.content_type) {
+                    case 'setlist':
+                      url = `/setlists/${report.content_id}`;
+                      break;
+                    case 'review':
+                      url = `/admin/content/reviews/${report.content_id}`;
+                      break;
+                    case 'photo':
+                      url = `/admin/content/photos/${report.content_id}`;
+                      break;
+                    case 'tip':
+                      url = `/admin/content/tips/${report.content_id}`;
+                      break;
+                    default:
+                      toast({
+                        title: "Content not found",
+                        description: "Unable to locate the reported content.",
+                        variant: "destructive",
+                      });
+                      return;
+                  }
+                  window.open(url, '_blank');
+                }}
+              >
                 <Eye className="mr-1 h-4 w-4" />
                 View Content
               </Button>

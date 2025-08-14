@@ -234,11 +234,38 @@ export default function UserManagementEnhanced() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline">
+          <Button 
+            variant="outline"
+            onClick={async () => {
+              try {
+                const response = await fetch('/api/admin/users/export');
+                if (response.ok) {
+                  const blob = await response.blob();
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `users-export-${new Date().toISOString().split('T')[0]}.csv`;
+                  document.body.appendChild(a);
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                  document.body.removeChild(a);
+                  toast.success('Users exported successfully');
+                } else {
+                  toast.error('Export failed');
+                }
+              } catch (error) {
+                toast.error('Export error');
+              }
+            }}
+          >
             <Download className="mr-2 h-4 w-4" />
             Export Users
           </Button>
-          <Button>
+          <Button
+            onClick={() => {
+              toast.info('Bulk actions feature coming soon');
+            }}
+          >
             <Users className="mr-2 h-4 w-4" />
             Bulk Actions
           </Button>
@@ -455,11 +482,19 @@ export default function UserManagementEnhanced() {
                           <Eye className="mr-2 h-4 w-4" />
                           View Details
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            toast.info('Edit profile feature coming soon');
+                          }}
+                        >
                           <Edit className="mr-2 h-4 w-4" />
                           Edit Profile
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => {
+                            window.location.href = `mailto:${user.email}`;
+                          }}
+                        >
                           <Mail className="mr-2 h-4 w-4" />
                           Send Email
                         </DropdownMenuItem>

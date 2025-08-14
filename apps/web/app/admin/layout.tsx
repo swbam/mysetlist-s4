@@ -1,6 +1,5 @@
 import {
   Activity,
-  AlertCircle,
   Calendar,
   Database,
   FileText,
@@ -12,9 +11,10 @@ import {
   Shield,
   Users,
 } from "lucide-react";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "~/lib/supabase/server";
+import { AdminLayoutClient } from "./admin-layout-client";
+
 export default async function AdminLayout({
   children,
   params,
@@ -84,53 +84,12 @@ export default async function AdminLayout({
   );
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="min-h-screen w-64 border-r bg-card">
-          <div className="p-6">
-            <h2 className="font-semibold text-lg">Admin Panel</h2>
-            <p className="mt-1 text-muted-foreground text-sm">
-              {isAdmin ? "Administrator" : "Moderator"}
-            </p>
-          </div>
-
-          <nav className="px-4 pb-6">
-            <ul className="space-y-1">
-              {visibleNavigation.map((item) => (
-                <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    className="flex items-center gap-3 rounded-md px-3 py-2 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground"
-                  >
-                    <item.icon className="h-4 w-4" />
-                    {item.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-
-          {/* Quick Stats */}
-          <div className="border-t px-6 py-4">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm">
-                <AlertCircle className="h-4 w-4 text-yellow-500" />
-                <span>5 pending reports</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Shield className="h-4 w-4 text-orange-500" />
-                <span>12 items in queue</span>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1">
-          <div className="p-8">{children}</div>
-        </main>
-      </div>
-    </div>
+    <AdminLayoutClient
+      navigation={visibleNavigation}
+      locale={locale}
+      isAdmin={isAdmin}
+    >
+      {children}
+    </AdminLayoutClient>
   );
 }

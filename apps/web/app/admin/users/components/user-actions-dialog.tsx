@@ -309,11 +309,21 @@ export default function UserActionsDialog({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-          <DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              // Navigate to user profile
+              window.open(`/users/${user.id}`, '_blank');
+            }}
+          >
             <Eye className="mr-2 h-4 w-4" />
             View Profile
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              // Open email client with user's email
+              window.location.href = `mailto:${user.email}`;
+            }}
+          >
             <Mail className="mr-2 h-4 w-4" />
             Send Email
           </DropdownMenuItem>

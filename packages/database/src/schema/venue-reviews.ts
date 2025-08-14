@@ -1,6 +1,13 @@
-import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { users } from "./users";
 import { venues } from "./venues";
+
+export const moderationStatusEnum = pgEnum("moderation_status", [
+  "pending",
+  "approved",
+  "rejected",
+  "flagged",
+]);
 
 export const venueReviews = pgTable("venue_reviews", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -19,6 +26,7 @@ export const venueReviews = pgTable("venue_reviews", {
   concessions: integer("concessions"), // 1-5 rating
   visitedAt: timestamp("visited_at").notNull(),
   helpful: integer("helpful").default(0),
+  moderationStatus: moderationStatusEnum("moderation_status").default("approved"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -34,6 +42,7 @@ export const venuePhotos = pgTable("venue_photos", {
   imageUrl: text("image_url").notNull(),
   caption: text("caption"),
   photoType: text("photo_type"), // interior, exterior, seating, stage, etc.
+  moderationStatus: moderationStatusEnum("moderation_status").default("approved"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -48,5 +57,6 @@ export const venueInsiderTips = pgTable("venue_insider_tips", {
   tipCategory: text("tip_category").notNull(), // parking, food, seating, entrance, etc.
   tip: text("tip").notNull(),
   helpful: integer("helpful").default(0),
+  moderationStatus: moderationStatusEnum("moderation_status").default("approved"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

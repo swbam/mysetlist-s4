@@ -134,8 +134,10 @@ export class ArtistImportOrchestrator {
     const phase1StartTime = Date.now();
     
     // Initialize logger for tracking (especially important for admin imports)
+    // Use temp ID initially, will update with real artist ID after Phase 1
+    const tempArtistId = `tmp_${tmAttractionId}`;
     const logger = new ImportLogger({
-      artistId: tmAttractionId,
+      artistId: tempArtistId,
       ticketmasterId: tmAttractionId,
     });
 
@@ -158,6 +160,9 @@ export class ArtistImportOrchestrator {
 
       artistData = await this.processPhase1(tmAttractionId, logger);
       const phase1Duration = Date.now() - phase1StartTime;
+      
+      // Update logger with real artist ID after Phase 1
+      logger.updateArtistId(artistData.artistId);
 
       await this.updateProgress({
         stage: "syncing-identifiers",

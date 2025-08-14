@@ -71,22 +71,12 @@ interface SecurityEvent {
 }
 
 export default function MonitoringDashboard() {
-  const [systemHealth, _setSystemHealth] = useState<SystemHealth>({
-    status: "healthy",
-    uptime: 99.9,
-    responseTime: 245,
-    errorRate: 0.1,
-    lastChecked: new Date().toISOString(),
-  });
-
-  const [databaseMetrics, _setDatabaseMetrics] = useState<DatabaseMetrics>({
-    connectionPool: { active: 12, idle: 8, total: 20 },
-    queries: { slow: 3, failed: 1, total: 15420 },
-    size: { users: 1250, shows: 890, artists: 450, venues: 120 },
-  });
-
+  const [systemHealth, setSystemHealth] = useState<SystemHealth | null>(null);
+  const [databaseMetrics, setDatabaseMetrics] = useState<DatabaseMetrics | null>(null);
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [apiPerformance, setApiPerformance] = useState<Array<{endpoint: string, time: number, requests: number}>>([]);
+  const [resourceUsage, setResourceUsage] = useState<{cpu: number, memory: number, disk: number}>({cpu: 0, memory: 0, disk: 0});
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchMonitoringData();
@@ -98,52 +88,57 @@ export default function MonitoringDashboard() {
   const fetchMonitoringData = async () => {
     setIsLoading(true);
     try {
-      // In a real implementation, these would be separate API calls
-      const [_healthResponse, _dbResponse, _securityResponse] =
-        await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/monitoring/health`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/monitoring/database`),
-          fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/monitoring/security`),
-        ]);
+      const response = await fetch("/api/admin/monitoring");
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
 
-      // For now, using mock data
-      // const healthData = await healthResponse.json();
-      // const dbData = await dbResponse.json();
-      // const securityData = await securityResponse.json();
+      // Update system health
+      setSystemHealth({
+        status: data.metrics.systemStatus.toLowerCase() as "healthy" | "warning" | "critical",
+        uptime: data.metrics.uptime,
+        responseTime: data.metrics.averageResponseTime,
+        errorRate: data.metrics.errorRate,
+        lastChecked: data.lastUpdated,
+      });
 
-      // Mock security events
-      setSecurityEvents([
-        {
-          id: "1",
-          type: "login_attempt",
-          severity: "medium",
-          description: "Multiple failed login attempts from IP 192.168.1.100",
-          ip_address: "192.168.1.100",
-          timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-          resolved: false,
-        },
-        {
-          id: "2",
-          type: "suspicious_activity",
-          severity: "high",
-          description: "Unusual data access pattern detected",
-          user_id: "user_123",
-          ip_address: "10.0.0.45",
-          timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-          resolved: true,
-        },
-        {
-          id: "3",
-          type: "data_access",
-          severity: "low",
-          description: "Admin panel accessed from new location",
-          user_id: "admin_456",
-          ip_address: "203.0.113.0",
-          timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-          resolved: true,
-        },
-      ]);
-    } catch (_error) {
+      // Update database metrics
+      setDatabaseMetrics({
+        connectionPool: data.metrics.database.connectionPool,
+        queries: data.metrics.database.queries,
+        size: data.metrics.database.size,
+      });
+
+      // Update security events
+      setSecurityEvents(data.securityEvents || []);
+
+      // Update API performance data
+      setApiPerformance(data.metrics.apiPerformance || []);
+
+      // Update resource usage
+      setResourceUsage(data.metrics.resourceUsage || {cpu: 0, memory: 0, disk: 0});
+    } catch (error) {
+      console.error("Error fetching monitoring data:", error);
+      // Set fallback data on error if no data exists
+      if (!systemHealth) {
+        setSystemHealth({
+          status: "critical",
+          uptime: 0,
+          responseTime: 0,
+          errorRate: 100,
+          lastChecked: new Date().toISOString(),
+        });
+      }
+      if (!databaseMetrics) {
+        setDatabaseMetrics({
+          connectionPool: { active: 0, idle: 0, total: 0 },
+          queries: { slow: 0, failed: 0, total: 0 },
+          size: { users: 0, shows: 0, artists: 0, venues: 0 },
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -176,6 +171,29 @@ export default function MonitoringDashboard() {
         return "outline";
     }
   };
+
+  if (isLoading && !systemHealth) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
+        <span className="ml-2 text-muted-foreground">Loading monitoring data...</span>
+      </div>
+    );
+  }
+
+  if (!systemHealth || !databaseMetrics) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+          <span className="text-red-500">Failed to load monitoring data</span>
+          <Button onClick={fetchMonitoringData} className="mt-2 block mx-auto" variant="outline">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -470,12 +488,7 @@ export default function MonitoringDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {[
-                    { endpoint: "/api/shows", time: 125, requests: 1240 },
-                    { endpoint: "/api/artists", time: 89, requests: 890 },
-                    { endpoint: "/api/venues", time: 156, requests: 670 },
-                    { endpoint: "/api/users", time: 78, requests: 450 },
-                  ].map((api) => (
+                  {apiPerformance.map((api) => (
                     <div
                       key={api.endpoint}
                       className="flex items-center justify-between"
@@ -510,36 +523,36 @@ export default function MonitoringDashboard() {
                   <div>
                     <div className="mb-2 flex items-center justify-between">
                       <span className="font-medium text-sm">CPU Usage</span>
-                      <span className="text-sm">42%</span>
+                      <span className="text-sm">{resourceUsage.cpu}%</span>
                     </div>
                     <div className="h-2 w-full rounded-full bg-secondary">
                       <div
                         className="h-2 rounded-full bg-blue-500"
-                        style={{ width: "42%" }}
+                        style={{ width: `${resourceUsage.cpu}%` }}
                       />
                     </div>
                   </div>
                   <div>
                     <div className="mb-2 flex items-center justify-between">
                       <span className="font-medium text-sm">Memory Usage</span>
-                      <span className="text-sm">68%</span>
+                      <span className="text-sm">{resourceUsage.memory}%</span>
                     </div>
                     <div className="h-2 w-full rounded-full bg-secondary">
                       <div
                         className="h-2 rounded-full bg-green-500"
-                        style={{ width: "68%" }}
+                        style={{ width: `${resourceUsage.memory}%` }}
                       />
                     </div>
                   </div>
                   <div>
                     <div className="mb-2 flex items-center justify-between">
                       <span className="font-medium text-sm">Disk Usage</span>
-                      <span className="text-sm">23%</span>
+                      <span className="text-sm">{resourceUsage.disk}%</span>
                     </div>
                     <div className="h-2 w-full rounded-full bg-secondary">
                       <div
                         className="h-2 rounded-full bg-yellow-500"
-                        style={{ width: "23%" }}
+                        style={{ width: `${resourceUsage.disk}%` }}
                       />
                     </div>
                   </div>

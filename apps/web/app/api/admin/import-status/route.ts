@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, importStatus, eq, desc, or } from "@repo/database";
+import { db, importStatus, artists, eq, desc, or } from "@repo/database";
 import { like } from "drizzle-orm";
 import { createClient } from "~/lib/supabase/server";
 
@@ -25,14 +25,36 @@ export async function GET(request: NextRequest) {
     }
 
     // Get the latest import status for the artist
-    // Support both exact ID match and slug-like matching
+    // First, try to find the artist by internal ID or ticketmaster ID
+    let possibleArtistIds = [artistId]; // Start with the provided ID
+    
+    // If it's a UUID (internal ID), look up the ticketmaster ID
+    if (artistId.length === 36 && artistId.includes('-')) {
+      try {
+        const artist = await db
+          .select({ ticketmasterId: artists.ticketmasterId })
+          .from(artists)
+          .where(eq(artists.id, artistId))
+          .limit(1);
+        
+        if (artist[0]?.ticketmasterId) {
+          possibleArtistIds.push(artist[0].ticketmasterId);
+        }
+      } catch (error) {
+        console.warn('Failed to lookup ticketmaster ID for artist:', artistId);
+      }
+    }
+    
+    // Add temp ID pattern
+    possibleArtistIds.push(`tmp_${artistId}`);
+    
+    // Query with all possible IDs
     const statuses = await db
       .select()
       .from(importStatus)
       .where(
         or(
-          eq(importStatus.artistId, artistId),
-          like(importStatus.artistId, `%${artistId}%`)
+          ...possibleArtistIds.map(id => eq(importStatus.artistId, id))
         )
       )
       .orderBy(desc(importStatus.createdAt))

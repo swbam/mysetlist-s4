@@ -16,10 +16,23 @@ export * from "./api-keys";
 export * from "./rate-limits";
 
 // Essential admin/monitoring tables
-export { userActivityLog, importStatus, importLogs, type ImportStatus, type ImportLog } from "./admin";
+export { 
+  userActivityLog, 
+  importStatus, 
+  importLogs, 
+  reports,
+  contentModeration,
+  moderationLogs,
+  platformStats,
+  type ImportStatus, 
+  type ImportLog 
+} from "./admin";
 
-// Venue reviews (referenced by some routes)
-export { venueReviews } from "./venue-reviews";
+// Venue reviews and related tables (referenced by admin pages)
+export { venueReviews, venuePhotos, venueInsiderTips } from "./venue-reviews";
+
+// User bans table (referenced by admin pages)
+export { userBans } from "./search";
 
 // Re-export artistSongs from artists file to avoid circular dependency
 export { artistSongs } from "./artists";
