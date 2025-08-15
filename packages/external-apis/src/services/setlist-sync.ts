@@ -147,14 +147,14 @@ export class SetlistSyncService {
                     spotifyId: track.id,
                     title: track.name,
                     artist: track.artists[0]?.name || "Unknown Artist",
-                    album: track.album.name,
-                    albumArtUrl: track.album.images[0]?.url || null,
-                    releaseDate: track.album.release_date,
+                    album: track.album?.name || "Unknown Album",
+                    albumArtUrl: track.album?.images?.[0]?.url || null,
+                    releaseDate: track.album?.release_date || "",
                     durationMs: track.duration_ms,
                     popularity: track.popularity,
                     previewUrl: track.preview_url,
                     isExplicit: track.explicit,
-                    isPlayable: track.is_playable,
+                    isPlayable: track.is_playable ?? true,
                   })
                   .onConflictDoNothing()
                   .returning({ id: songs.id });
@@ -233,7 +233,7 @@ export class SetlistSyncService {
         })
         .from(songs)
         .innerJoin(artistSongs, eq(songs.id, artistSongs.songId))
-        .where(eq(artistSongs.artistId, artistId));
+        .where(eq(artistSongs.artistId, artistId as any));
 
       const nonLive = catalog.filter((s) => {
         const name = (s.title || "").toLowerCase();
@@ -358,7 +358,7 @@ export class SetlistSyncService {
       })
       .from(songs)
       .innerJoin(artistSongs, eq(songs.id, artistSongs.songId))
-      .where(eq(artistSongs.artistId, show.headlinerArtistId));
+      .where(eq(artistSongs.artistId, show.headlinerArtistId!));
 
     // Apply ordering based on options
     // Apply ordering based on options (cast to any to avoid narrowed builder issues)
@@ -402,8 +402,8 @@ export class SetlistSyncService {
       .insert(setlists)
       .values({
         showId: showId,
-        artistId: show.headlinerArtistId,
-        type: "predicted",
+        artistId: show.headlinerArtistId!,
+        type: "predicted" as const,
         name: "Predicted Setlist",
         orderIndex: 0,
         isLocked: false,
@@ -480,7 +480,7 @@ export class SetlistSyncService {
     const headlinerResults = await db
       .select()
       .from(artists)
-      .where(eq(artists.id, show.headlinerArtistId))
+      .where(eq(artists.id, show.headlinerArtistId!))
       .limit(1);
     const headlinerArtist = headlinerResults[0];
 

@@ -93,7 +93,7 @@ export async function RecommendedConcerts({
 
                 <div className="mt-1 flex items-center gap-2 text-muted-foreground text-xs">
                   <Calendar className="h-3 w-3" />
-                  <span>{format(new Date(show.date), "MMM d")}</span>
+                  <span>{show.date ? format(new Date(show.date), "MMM d") : "Date TBA"}</span>
                 </div>
 
                 {show.venue && (

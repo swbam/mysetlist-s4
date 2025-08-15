@@ -73,7 +73,6 @@ export async function POST(request: NextRequest) {
         message: progress.message,
         error: progress.error,
         artistId: progress.artistId,
-        slug: progress.slug,
         totalSongs: progress.totalSongs,
         totalShows: progress.totalShows,
         totalVenues: progress.totalVenues,
@@ -92,7 +91,7 @@ export async function POST(request: NextRequest) {
       throw new Error("Import failed in orchestrator");
     }
 
-    artistId = importResult.artistId;
+    const artistId = importResult.artistId;
 
     // Revalidate cache
     revalidateTag(CACHE_TAGS.artists);

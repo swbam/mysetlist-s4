@@ -25,7 +25,8 @@ export {
   moderationLogs,
   platformStats,
   type ImportStatus, 
-  type ImportLog 
+  type ImportLog,
+  type InsertImportLog 
 } from "./admin";
 
 // Venue reviews and related tables (referenced by admin pages)

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "1000");
 
     // Build query conditions
-    const conditions = [];
+    const conditions: any[] = [];
     
     if (artistId) {
       // First, try to find the artist by internal ID or ticketmaster ID
@@ -49,11 +49,15 @@ export async function GET(request: NextRequest) {
       possibleArtistIds.push(`tmp_${artistId}`);
       
       // Build condition to match any of the possible IDs
-      conditions.push(
-        or(
-          ...possibleArtistIds.map(id => eq(importLogs.artistId, id))
-        )
-      );
+      const orConditions = possibleArtistIds.map(id => eq(importLogs.artistId, id));
+      if (orConditions.length > 0) {
+        const orCondition = orConditions.length === 1 
+          ? orConditions[0] 
+          : or(...orConditions);
+        if (orCondition) {
+          conditions.push(orCondition);
+        }
+      }
     }
     
     if (artistName) {

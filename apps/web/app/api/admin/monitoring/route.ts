@@ -181,7 +181,7 @@ export async function GET(req: NextRequest) {
       severity: event.action === "ban_user" ? "high" : 
                 event.action === "warn_user" ? "medium" : "low",
       description: `${event.action.replace("_", " ")} action on ${event.target_type}: ${event.reason || "No reason provided"}`,
-      user_id: event.moderator?.display_name || "System",
+      user_id: Array.isArray(event.moderator) && event.moderator[0]?.display_name || "System",
       ip_address: "N/A", // Would come from actual security logs
       timestamp: event.created_at,
       resolved: true, // Assume moderation actions are already resolved

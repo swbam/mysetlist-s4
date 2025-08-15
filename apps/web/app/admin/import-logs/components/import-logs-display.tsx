@@ -87,7 +87,7 @@ export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLo
   // Group logs by stage
   const logsByStage = filteredLogs.reduce((acc, log) => {
     if (!acc[log.stage]) acc[log.stage] = [];
-    acc[log.stage].push(log);
+    acc[log.stage]!.push(log);
     return acc;
   }, {} as Record<string, ImportLog[]>);
 
@@ -329,11 +329,11 @@ export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLo
                             </span>
                           </div>
                         )}
-                        {log.details && (
+                        {log.details ? (
                           <pre className="text-xs text-muted-foreground bg-accent/30 p-2 rounded mt-2 overflow-x-auto">
                             {JSON.stringify(log.details, null, 2)}
                           </pre>
-                        )}
+                        ) : null}
                         {log.errorStack && (
                           <pre className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 p-2 rounded mt-2 overflow-x-auto">
                             {log.errorStack}
@@ -382,11 +382,11 @@ export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLo
                                   {format(new Date(log.createdAt), "HH:mm:ss")}
                                 </span>
                                 {log.message}
-                                {log.details && (
+                                {log.details ? (
                                   <pre className="text-xs text-muted-foreground mt-1">
                                     {JSON.stringify(log.details, null, 2)}
                                   </pre>
-                                )}
+                                ) : null}
                               </div>
                             </div>
                           ))}

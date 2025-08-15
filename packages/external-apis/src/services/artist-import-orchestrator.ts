@@ -59,7 +59,7 @@ export class ArtistImportOrchestrator {
   constructor(progressCallback?: (progress: ImportProgress) => Promise<void>) {
     this.spotifyClient = new SpotifyClient({});
     this.ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env["TICKETMASTER_API_KEY"] || "",
+      apiKey: process.env['TICKETMASTER_API_KEY'] || "",
     });
     this.artistSyncService = new ArtistSyncService();
     this.showSyncService = new ShowSyncService();

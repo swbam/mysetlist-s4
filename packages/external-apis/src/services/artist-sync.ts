@@ -22,7 +22,7 @@ export class ArtistSyncService {
   constructor() {
     this.spotifyClient = new SpotifyClient({});
     this.ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env.TICKETMASTER_API_KEY || "",
+      apiKey: process.env['TICKETMASTER_API_KEY'] || "",
     });
     this.errorHandler = new SyncErrorHandler({
       maxRetries: 3,
@@ -330,7 +330,7 @@ export class ArtistSyncService {
         },
       );
 
-      const albums = albumsResponse.items || [];
+      const albums = albumsResponse?.items || [];
 
       for (const album of albums) {
         // Skip duplicates (different markets can cause duplicates)
@@ -359,7 +359,7 @@ export class ArtistSyncService {
           );
 
           // Filter out ONLY genuine live tracks - keep studio acoustic/remix versions
-          const allTracks = tracksResponse.items || [];
+          const allTracks = tracksResponse?.items || [];
           const tracks: any[] = [];
 
           for (const t of allTracks) {
@@ -429,7 +429,7 @@ export class ArtistSyncService {
                 trackNumber: track.track_number,
                 discNumber: track.disc_number,
                 albumType: album.album_type,
-                albumArtUrl: album.images[0]?.url,
+                albumArtUrl: album.images[0]?.url || null,
                 releaseDate: album.release_date,
                 durationMs: track.duration_ms,
                 popularity: 0, // Track popularity not available in album tracks endpoint
@@ -444,7 +444,7 @@ export class ArtistSyncService {
                 set: {
                   title: track.name,
                   album: album.name,
-                  albumArtUrl: album.images[0]?.url,
+                  albumArtUrl: album.images[0]?.url || null,
                   isPlayable: !track.restrictions,
                 },
               })

@@ -113,10 +113,10 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
         <ArtistErrorBoundary artistName={slug.replace(/-/g, " ")}>
           <Suspense
             fallback={
-              <ArtistImportLoading artistName={slug.replace(/-/g, " ")} />
+              <ArtistImportLoading artistSlug={slug} />
             }
           >
-            <ArtistImportLoading artistName={slug.replace(/-/g, " ")} />
+            <ArtistImportLoading artistSlug={slug} />
           </Suspense>
         </ArtistErrorBoundary>
       );
@@ -177,11 +177,11 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
       ({ show, venue, orderIndex, isHeadliner }) => ({
         show: {
           id: show.id,
-          name: show.name,
-          slug: show.slug,
-          date: show.date,
+          name: show.name || "Untitled Show",
+          slug: show.slug || "",
+          date: show.date || "",
           ticketUrl: show.ticketUrl,
-          status: show.status || "confirmed",
+          status: (show.status as "upcoming" | "ongoing" | "completed" | "cancelled") || "upcoming",
         },
         venue: venue
           ? {
@@ -201,15 +201,15 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
       ({ show, venue, orderIndex, isHeadliner }) => ({
         show: {
           id: show.id,
-          name: show.name,
-          slug: show.slug,
-          date: show.date,
+          name: show.name || "Untitled Show",
+          slug: show.slug || "",
+          date: show.date || "",
           venueId: show.venueId,
           setlistCount: show.setlistCount,
           attendeeCount: null, // Not tracked yet
           voteCount: show.voteCount,
           ticketUrl: show.ticketUrl,
-          status: show.status || "completed",
+          status: (show.status as "upcoming" | "ongoing" | "completed" | "cancelled") || "completed",
         },
         venue: venue
           ? {
@@ -226,10 +226,10 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
     );
 
     return (
-      <ArtistErrorBoundary artistName={artist.name}>
+      <ArtistErrorBoundary artistName={artist.name || "Unknown Artist"}>
         <ArtistPageWrapper
           artistId={artist.id}
-          artistName={artist.name}
+          artistName={artist.name || "Unknown Artist"}
           spotifyId={artist.spotifyId}
           initialData={{
             artist: artistData,
@@ -268,7 +268,7 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
                 >
                   <UpcomingShows
                     shows={transformedUpcomingShows}
-                    artistName={artist.name}
+                    artistName={artist.name || "Unknown Artist"}
                     artistId={artist.id}
                     spotifyId={artist.spotifyId}
                   />
@@ -283,7 +283,7 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
                 >
                   <PastShows
                     shows={transformedPastShows}
-                    artistName={artist.name}
+                    artistName={artist.name || "Unknown Artist"}
                     artistId={artist.id}
                   />
                 </React.Suspense>

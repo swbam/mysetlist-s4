@@ -86,7 +86,7 @@ const VenuePage = async ({ params }: VenuePageProps) => {
   // Process shows data
   const processedUpcomingShows = upcomingShows.map((show) => ({
     ...show,
-    date: new Date(show.date),
+    date: show.date ? new Date(show.date) : new Date(),
     artist: {
       ...show.artist,
       genres: show.artist.genres ? JSON.parse(show.artist.genres) : [],
@@ -95,7 +95,7 @@ const VenuePage = async ({ params }: VenuePageProps) => {
 
   const processedPastShows = pastShows.map((show) => ({
     ...show,
-    date: new Date(show.date),
+    date: show.date ? new Date(show.date) : new Date(),
     artist: {
       ...show.artist,
       genres: show.artist.genres ? JSON.parse(show.artist.genres) : [],

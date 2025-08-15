@@ -235,16 +235,18 @@ export const fetchShows = cache(
       // Group supporting artists by show
       const supportingArtistsByShow = supportingArtistsData.reduce(
         (acc, sa) => {
-          if (!acc[sa.showId]) {
+          if (sa.showId && !acc[sa.showId]) {
             acc[sa.showId] = [];
           }
-          acc[sa.showId]?.push({
-            id: sa.id,
-            artistId: sa.artistId,
-            orderIndex: sa.orderIndex,
-            setLength: sa.setLength,
-            artist: sa.artist,
-          });
+          if (sa.showId) {
+            acc[sa.showId]!.push({
+              id: sa.id,
+              artistId: sa.artistId,
+              orderIndex: sa.orderIndex,
+              setLength: sa.setLength,
+              artist: sa.artist,
+            });
+          }
           return acc;
         },
         {} as Record<string, any[]>,
@@ -263,12 +265,12 @@ export const fetchShows = cache(
       // Format response data
       const formattedShows: ShowWithDetails[] = showsData.map((show) => ({
         id: show.id,
-        name: show.name,
-        slug: show.slug,
-        date: show.date,
-        startTime: show.startTime,
-        doorsTime: show.doorsTime,
-        status: show.status,
+        name: show.name || "Untitled Show",
+        slug: show.slug || "untitled-show",
+        date: show.date || new Date().toISOString().split('T')[0]!,
+        startTime: show.startTime || null,
+        doorsTime: show.doorsTime || null,
+        status: show.status || "upcoming",
         description: show.description,
         ticketUrl: show.ticketUrl,
         minPrice: show.minPrice,

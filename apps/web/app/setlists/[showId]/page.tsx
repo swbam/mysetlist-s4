@@ -87,7 +87,15 @@ const SetlistPage = async ({ params }: SetlistPageProps) => {
   return (
     <div className="flex flex-col gap-8 py-8 md:py-16">
       <div className="container mx-auto">
-        <ShowInfo showId={showId} show={showData} />
+        <ShowInfo showId={showId} show={{
+          ...showData,
+          shows: {
+            ...showData.shows,
+            name: showData.shows.name || "Untitled Show",
+            date: showData.shows.date || new Date().toISOString().split('T')[0]!,
+            status: showData.shows.status || "upcoming"
+          }
+        }} />
 
         <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">

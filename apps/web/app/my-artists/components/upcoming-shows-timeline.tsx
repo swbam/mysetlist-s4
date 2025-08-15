@@ -96,15 +96,15 @@ export async function UpcomingShowsTimeline({
             <div className="flex">
               {/* Date Badge */}
               <div
-                className={`flex w-24 flex-col items-center justify-center p-4 ${getDateColor(show.date)}`}
+                className={`flex w-24 flex-col items-center justify-center p-4 ${getDateColor(show.date || new Date().toISOString())}`}
               >
                 <div className="font-bold text-2xl">
-                  {format(new Date(show.date), "d")}
+                  {format(new Date(show.date || new Date()), "d")}
                 </div>
                 <div className="text-sm uppercase">
-                  {format(new Date(show.date), "MMM")}
+                  {format(new Date(show.date || new Date()), "MMM")}
                 </div>
-                <div className="mt-1 text-xs">{getDateLabel(show.date)}</div>
+                <div className="mt-1 text-xs">{getDateLabel(show.date || new Date().toISOString())}</div>
               </div>
 
               {/* Show Details */}

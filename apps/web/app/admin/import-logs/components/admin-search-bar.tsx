@@ -44,11 +44,10 @@ export function AdminSearchBar() {
 
   return (
     <>
-      <SearchBar
-        placeholder="Search for an artist to view import logs..."
-        variant="default"
-        onSelect={handleArtistSelect}
-      />
+      {/* Note: SearchBar doesn't support onSelect, need to implement custom search */}
+      <div className="text-muted-foreground">
+        Search functionality needs to be implemented for admin panel
+      </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="w-[95vw] max-w-6xl max-h-[90vh] overflow-hidden">

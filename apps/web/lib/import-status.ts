@@ -13,6 +13,7 @@ export interface ImportStatus {
   message: string;
   error?: string;
   artistId?: string;
+  artistName?: string;
   slug?: string;
   totalSongs?: number;
   totalShows?: number;
@@ -41,22 +42,24 @@ export async function updateImportStatus(
     const updateData = {
       job_id: jobId,
       stage: status.stage,
-      progress: status.progress || 0,
+      percentage: status.progress || 0,  // Map progress to percentage
       message: status.message || "",
       error: status.error || null,
       artist_id: status.artistId || null,
-      slug: status.slug || null,
       total_songs: status.totalSongs || null,
       total_shows: status.totalShows || null,
       total_venues: status.totalVenues || null,
+      artist_name: status.artistName || null,
       completed_at: status.completedAt || null,
       updated_at: now,
       ...(existing ? {} : { created_at: now }),
     };
 
-    await supabase.from("import_status").upsert(updateData, {
-      onConflict: "job_id",
-    });
+    const { error } = await supabase.from("import_status").upsert(updateData);
+    
+    if (error) {
+      console.error(`[IMPORT STATUS] Failed to update status for ${jobId}:`, error);
+    }
   } catch (error) {
     console.error("Failed to update import status:", error);
   }
@@ -78,11 +81,11 @@ export async function getImportStatus(jobId: string): Promise<ImportStatus | nul
 
     return {
       stage: data.stage,
-      progress: data.progress || 0,
+      progress: data.percentage || 0,  // Map percentage to progress
       message: data.message || "",
       error: data.error,
       artistId: data.artist_id,
-      slug: data.slug,
+      artistName: data.artist_name,
       totalSongs: data.total_songs,
       totalShows: data.total_shows,
       totalVenues: data.total_venues,
@@ -91,8 +94,8 @@ export async function getImportStatus(jobId: string): Promise<ImportStatus | nul
       updatedAt: data.updated_at,
     };
   } catch (error) {
-    console.warn("\[IMPORT STATUS\] Failed to update import status (non-blocking):", error);
+    console.warn("[IMPORT STATUS] Failed to get import status (non-blocking):", error);
     // Fallback: don't let import status failures break the actual import
-
+    return null;
   }
 }

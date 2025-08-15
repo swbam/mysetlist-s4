@@ -18,10 +18,10 @@ export class ShowSyncService {
 
   constructor() {
     this.ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env.TICKETMASTER_API_KEY || "",
+      apiKey: process.env['TICKETMASTER_API_KEY'] || "",
     });
     this.setlistFmClient = new SetlistFmClient({
-      apiKey: process.env.SETLIST_FM_API_KEY || "",
+      apiKey: process.env['SETLIST_FM_API_KEY'] || "",
     });
     this.spotifyClient = new SpotifyClient({}); // SpotifyClient reads credentials from env in authenticate()
     this.venueSyncService = new VenueSyncService();
@@ -34,7 +34,7 @@ export class ShowSyncService {
     });
   }
 
-  async syncShowFromTicketmaster(event: TicketmasterEvent): Promise<void> {
+  async syncShowFromTicketmaster(event: TicketmasterEvent): Promise<{ isNew: boolean; isUpdated: boolean }> {
     // Find or create venue using VenueSyncService
     let venueId: string | null = null;
     if (event._embedded?.venues?.[0]) {
@@ -179,8 +179,17 @@ export class ShowSyncService {
     // If we STILL don't have an artist, skip this show
     if (!artistId) {
       console.warn(`Skipping show "${event.name}" - no artist found or created`);
-      return;
+      return { isNew: false, isUpdated: false };
     }
+
+    // Check if show already exists before creating/updating
+    const existingShowCheck = await db
+      .select({ id: shows.id })
+      .from(shows)
+      .where(eq(shows.ticketmasterId, event.id))
+      .limit(1);
+    
+    const showExisted = existingShowCheck.length > 0;
 
     // Create or update show
     const showDate = new Date(event.dates.start.localDate);
@@ -222,8 +231,12 @@ export class ShowSyncService {
       .returning({ id: shows.id });
 
     if (!show) {
-      return;
+      return { isNew: false, isUpdated: false };
     }
+
+    // Determine if this was a new show or an update based on prior existence
+    const isNew = !showExisted;
+    const isUpdated = showExisted;
 
     // Add supporting acts if available
     if (
@@ -282,6 +295,8 @@ export class ShowSyncService {
         } catch (_error) {}
       }
     }
+
+    return { isNew, isUpdated };
   }
 
   async syncShowFromSetlistFm(setlist: SetlistFmSetlist): Promise<void> {
@@ -340,7 +355,7 @@ export class ShowSyncService {
     classificationName?: string;
     startDateTime?: string;
     endDateTime?: string;
-  }): Promise<void> {
+  }): Promise<{ newShows: number; updatedShows: number }> {
     const eventsResult = await this.errorHandler.withRetry(
       () =>
         this.ticketmasterClient.searchEvents({
@@ -364,19 +379,33 @@ export class ShowSyncService {
     }
 
     const events = eventsResult;
+    let newShows = 0;
+    let updatedShows = 0;
 
     if (events._embedded?.events) {
       for (const event of events._embedded.events) {
-        await this.syncShowFromTicketmaster(event);
+        try {
+          const result = await this.syncShowFromTicketmaster(event);
+          if (result.isNew) {
+            newShows++;
+          } else if (result.isUpdated) {
+            updatedShows++;
+          }
+        } catch (error) {
+          console.error(`Failed to sync show from event ${event.id}:`, error);
+          // Continue with next event
+        }
         // Rate limit
         await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }
+
+    return { newShows, updatedShows };
   }
 
   async syncArtistShows(
     artistDbId: string,
-  ): Promise<{ upcomingShows: number; created: number; updated: number }> {
+  ): Promise<{ upcomingShows: number; pastShows: number; newShows: number; updatedShows: number }> {
     // Get artist info from database
     const [artist] = await db
       .select()
@@ -395,6 +424,8 @@ export class ShowSyncService {
     let created = 0;
     let updated = 0;
     let upcomingShows = 0;
+    let newShows = 0;
+    let updatedShows = 0;
     const eventsToProcess = new Set<string>(); // Avoid duplicates
 
     // Strategy 1: Search by Ticketmaster artist ID if available
@@ -513,10 +544,14 @@ export class ShowSyncService {
             })
             .where(eq(shows.ticketmasterId, eventId));
           updated++;
+          updatedShows++;
         } else {
           // Create new show
-          await this.syncShowFromTicketmaster(eventDetails);
-          created++;
+          const result = await this.syncShowFromTicketmaster(eventDetails);
+          if (result.isNew) {
+            created++;
+            newShows++;
+          }
         }
 
         // Rate limit to avoid overwhelming APIs
@@ -537,7 +572,7 @@ export class ShowSyncService {
       })
       .where(eq(artists.id, artistDbId));
 
-    return { upcomingShows, created, updated };
+    return { upcomingShows, pastShows: 0, newShows, updatedShows };
   }
 
   async syncHistoricalSetlists(artistName: string): Promise<void> {

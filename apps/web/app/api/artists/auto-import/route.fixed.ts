@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     while (retryCount <= maxRetries) {
       try {
         await updateImportStatus(tempArtistId, {
-          stage: "fetching-artist",
+          stage: "initializing",
           progress: 10,
           message: `Attempting import... (try ${retryCount + 1}/${maxRetries + 1})`,
         });
@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
         if (retryCount <= maxRetries && retryOnFailure) {
           // Update status to show retry
           await updateImportStatus(tempArtistId, {
-            stage: "fetching-artist",
+            stage: "initializing",
             progress: 5,
             message: `Import attempt ${retryCount} failed, retrying... (${lastError.message})`,
             error: lastError.message,

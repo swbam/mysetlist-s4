@@ -156,16 +156,18 @@ export async function GET(request: NextRequest) {
     // Group supporting artists by show
     const supportingArtistsByShow = supportingArtistsData.reduce(
       (acc, sa) => {
-        if (!acc[sa.showId]) {
+        if (sa.showId && !acc[sa.showId]) {
           acc[sa.showId] = [];
         }
-        acc[sa.showId]?.push({
-          id: sa.id,
-          artistId: sa.artistId,
-          orderIndex: sa.orderIndex,
-          setLength: sa.setLength,
-          artist: sa.artist,
-        });
+        if (sa.showId) {
+          acc[sa.showId]!.push({
+            id: sa.id,
+            artistId: sa.artistId,
+            orderIndex: sa.orderIndex,
+            setLength: sa.setLength,
+            artist: sa.artist,
+          });
+        }
         return acc;
       },
       {} as Record<string, any[]>,

@@ -253,10 +253,10 @@ export async function sendWeeklyDigests() {
 
       const formattedShows = upcomingShows.slice(0, 5).map((s) => ({
         id: s.show.id,
-        name: s.show.name,
+        name: s.show.name || "TBA",
         artistName: s.artist.name,
         venue: "Venue TBA", // In production, join with venues
-        date: new Date(s.show.date).toLocaleDateString(),
+        date: s.show.date ? new Date(s.show.date).toLocaleDateString() : "Date TBA",
       }));
 
       await sendWeeklyDigestEmail({
@@ -340,10 +340,10 @@ export async function sendVoteNotification(params: {
       userName: user[0].displayName || "there",
       show: {
         id: showData[0].show.id,
-        name: showData[0].show.name,
+        name: showData[0].show.name || "TBA",
         artistName: showData[0].artist.name,
         venue: "Venue TBA",
-        date: new Date(showData[0].show.date).toLocaleDateString(),
+        date: showData[0].show.date ? new Date(showData[0].show.date).toLocaleDateString() : "Date TBA",
       },
       song: {
         title: "Song Title", // Would need to join with songs table

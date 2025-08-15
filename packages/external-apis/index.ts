@@ -58,7 +58,7 @@ export const ticketmaster = new Proxy({} as TicketmasterClient, {
     if (!_ticketmaster) {
       _ticketmaster = new TicketmasterClient({
         apiKey:
-          process.env.TICKETMASTER_API_KEY ||
+          process.env['TICKETMASTER_API_KEY'] ||
           "k8GrSAkbFaN0w7qDxGl7ohr8LwdAQm9b",
       });
     }

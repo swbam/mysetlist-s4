@@ -6,49 +6,9 @@ import {
   songs as songsTable,
   sql,
 } from "@repo/database";
-import { SpotifyClient } from "@repo/external-apis";
+import { SpotifyClient, type SpotifyAlbum, type SpotifyTrack } from "@repo/external-apis";
 
-// Extended Spotify interfaces for comprehensive data
-export interface SpotifyAlbum {
-  id: string;
-  name: string;
-  album_type: "album" | "single" | "compilation";
-  release_date: string;
-  release_date_precision: "year" | "month" | "day";
-  total_tracks: number;
-  images: Array<{
-    url: string;
-    height: number;
-    width: number;
-  }>;
-  tracks?: {
-    items: SpotifyTrack[];
-    total: number;
-  };
-}
-
-export interface SpotifyTrack {
-  id: string;
-  name: string;
-  track_number: number;
-  disc_number: number;
-  duration_ms: number;
-  explicit: boolean;
-  preview_url: string | null;
-  popularity: number;
-  uri: string;
-  external_urls: {
-    spotify: string;
-  };
-  album: SpotifyAlbum;
-  artists: Array<{
-    id: string;
-    name: string;
-  }>;
-  restrictions?: {
-    reason: string;
-  };
-}
+// Using SpotifyAlbum and SpotifyTrack types from @repo/external-apis
 
 export interface Song {
   spotifyId: string;
@@ -359,10 +319,10 @@ export class SpotifySongSyncService {
           durationMs: track.duration_ms,
           popularity: track.popularity || 0,
           previewUrl: track.preview_url,
-          spotifyUri: track.uri,
+          spotifyUri: (track as any).uri,
           externalUrls: JSON.stringify(track.external_urls),
           isExplicit: track.explicit,
-          isPlayable: !track.restrictions,
+          isPlayable: !(track as any).restrictions,
         };
 
         songs.push(song);

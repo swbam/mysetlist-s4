@@ -12,7 +12,7 @@ export class VenueSyncService {
 
   constructor() {
     this.ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env.TICKETMASTER_API_KEY || "",
+      apiKey: process.env['TICKETMASTER_API_KEY'] || "",
     });
     this.setlistFmClient = new SetlistFmClient({});
   }
@@ -104,6 +104,66 @@ export class VenueSyncService {
           country: setlistFmVenue.city.country.name,
           latitude: setlistFmVenue.city.coords.lat,
           longitude: setlistFmVenue.city.coords.long,
+          updatedAt: new Date(),
+        },
+      });
+  }
+
+  /**
+   * Unified venue sync method that handles different venue data sources
+   * Accepts data from Ticketmaster, Setlist.fm, or other sources
+   */
+  async syncVenue(venueData: any): Promise<void> {
+    // Detect data source and delegate to appropriate method
+    if (venueData.id && venueData.city && venueData.country) {
+      // Looks like Ticketmaster venue data
+      if (venueData.timezone || venueData.location || venueData.address) {
+        await this.syncVenueFromTicketmaster(venueData as TicketmasterVenue);
+        return;
+      }
+    }
+
+    if (venueData.city?.name && venueData.city?.country?.name) {
+      // Looks like Setlist.fm venue data
+      await this.syncVenueFromSetlistFm(venueData as SetlistFmVenue);
+      return;
+    }
+
+    // Fallback: treat as generic venue data and create basic record
+    await this.syncGenericVenue(venueData);
+  }
+
+  /**
+   * Handle generic venue data that doesn't match specific API formats
+   */
+  private async syncGenericVenue(venueData: any): Promise<void> {
+    const slug = this.generateSlug(venueData.name || "unknown-venue");
+    
+    await db
+      .insert(venues)
+      .values({
+        name: venueData.name || "Unknown Venue",
+        slug,
+        city: venueData.city || "Unknown",
+        state: venueData.state || null,
+        country: venueData.country || "US",
+        address: venueData.address || null,
+        latitude: venueData.latitude ? Number.parseFloat(venueData.latitude.toString()) : null,
+        longitude: venueData.longitude ? Number.parseFloat(venueData.longitude.toString()) : null,
+        timezone: venueData.timezone || "America/New_York",
+        capacity: venueData.capacity ? Number.parseInt(venueData.capacity.toString()) : null,
+        venueType: venueData.type || venueData.venueType || null,
+        imageUrl: venueData.imageUrl || null,
+        website: venueData.website || null,
+        phoneNumber: venueData.phoneNumber || null,
+      })
+      .onConflictDoUpdate({
+        target: venues.slug,
+        set: {
+          name: venueData.name || "Unknown Venue",
+          city: venueData.city || "Unknown",
+          state: venueData.state || null,
+          country: venueData.country || "US",
           updatedAt: new Date(),
         },
       });

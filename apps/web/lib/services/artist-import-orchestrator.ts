@@ -10,11 +10,13 @@ import {
   sql,
   venues,
 } from "@repo/database";
-import { SpotifyClient } from "@repo/external-apis/src/clients/spotify";
-import { TicketmasterClient } from "@repo/external-apis/src/clients/ticketmaster";
-import { ArtistSyncService } from "@repo/external-apis/src/services/artist-sync";
-import { ShowSyncService } from "@repo/external-apis/src/services/show-sync";
-import { VenueSyncService } from "@repo/external-apis/src/services/venue-sync";
+import { 
+  SpotifyClient, 
+  TicketmasterClient,
+  ArtistSyncService,
+  ShowSyncService,
+  VenueSyncService
+} from "@repo/external-apis";
 import { updateImportStatus } from "~/lib/import-status";
 import { ImportLogger } from "~/lib/import-logger";
 
@@ -719,7 +721,6 @@ export class ArtistImportOrchestrator {
         message: fullProgress.message,
         error: fullProgress.error,
         completedAt: fullProgress.completedAt,
-        estimatedTimeRemaining: fullProgress.estimatedTimeRemaining,
       });
     }
   }

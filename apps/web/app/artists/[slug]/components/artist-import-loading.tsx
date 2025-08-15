@@ -27,7 +27,7 @@ interface ImportProgress {
 
 interface ArtistImportLoadingProps {
   artistSlug: string;
-  jobId: string;
+  jobId?: string;
   onComplete?: (result: { artistId: string; slug: string }) => void;
 }
 
