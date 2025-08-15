@@ -1,8 +1,5 @@
-"use server";
-
 import { artistSongs, artists, db, songs } from "@repo/database";
 import { and, eq, ilike, sql } from "drizzle-orm";
-import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";

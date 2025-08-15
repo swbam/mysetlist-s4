@@ -27,44 +27,123 @@ export class SetlistSyncService {
   async syncSetlistFromSetlistFm(setlistData: SetlistFmSetlist): Promise<void> {
     await this.spotifyClient.authenticate();
 
-    // Find the show
-    const showResults = await db
-      .select()
-      .from(shows)
-      .where(eq(shows.setlistFmId, setlistData.id))
-      .limit(1);
-    const show = showResults[0];
-
-    if (!show) {
-      return;
-    }
-
-    // Find the artist
-    const artistResults = await db
+    // Find or create artist
+    let [artist] = await db
       .select()
       .from(artists)
       .where(eq(artists.name, setlistData.artist.name))
       .limit(1);
-    const artist = artistResults[0];
 
     if (!artist) {
-      return;
+      // Create artist if doesn't exist
+      const slug = setlistData.artist.name.toLowerCase().replace(/\s+/g, '-');
+      const [newArtist] = await db
+        .insert(artists)
+        .values({
+          name: setlistData.artist.name,
+          slug,
+          mbid: setlistData.artist.mbid || null,
+        })
+        .returning();
+      artist = newArtist;
+      if (!artist) return;
     }
 
-    // Create setlist
-    const [setlist] = await db
-      .insert(setlists)
-      .values({
-        showId: show.id,
-        artistId: artist.id,
-        type: "actual" as const,
-        name: "Main Set",
-        importedFrom: "setlist.fm",
-        externalId: setlistData.id,
-        importedAt: new Date(),
-      })
-      .onConflictDoNothing()
-      .returning({ id: setlists.id });
+    // Find or create venue
+    let venue = null;
+    if (setlistData.venue) {
+      const [existingVenue] = await db
+        .select()
+        .from(venues)
+        .where(
+          and(
+            eq(venues.name, setlistData.venue.name),
+            eq(venues.city, setlistData.venue.city.name)
+          )
+        )
+        .limit(1);
+
+      if (existingVenue) {
+        venue = existingVenue;
+      } else {
+        const [newVenue] = await db
+          .insert(venues)
+          .values({
+            name: setlistData.venue.name,
+            slug: setlistData.venue.name.toLowerCase().replace(/\s+/g, '-'),
+            city: setlistData.venue.city.name,
+            state: setlistData.venue.city.stateCode || null,
+            country: setlistData.venue.city.country.name,
+            latitude: setlistData.venue.city.coords?.lat || null,
+            longitude: setlistData.venue.city.coords?.long || null,
+          })
+          .returning();
+        venue = newVenue;
+      }
+    }
+
+    // Find or create show
+    const showDate = setlistData.eventDate.split('-').reverse().join('-'); // Convert DD-MM-YYYY to YYYY-MM-DD
+    
+    let [show] = await db
+      .select()
+      .from(shows)
+      .where(
+        and(
+          eq(shows.headlinerArtistId, artist.id),
+          eq(shows.date, showDate)
+        )
+      )
+      .limit(1);
+
+    if (!show) {
+      const [newShow] = await db
+        .insert(shows)
+        .values({
+          headlinerArtistId: artist.id,
+          venueId: venue?.id || null,
+          name: `${artist.name} at ${setlistData.venue?.name || 'Unknown Venue'}`,
+          slug: `${artist.slug}-${showDate}`,
+          date: showDate,
+          status: new Date(showDate) < new Date() ? 'completed' : 'upcoming',
+          setlistFmId: setlistData.id,
+        })
+        .returning();
+      show = newShow;
+    } else {
+      // Update show with setlistFM ID if missing
+      if (!show.setlistFmId) {
+        await db
+          .update(shows)
+          .set({
+            setlistFmId: setlistData.id,
+            updatedAt: new Date(),
+          })
+          .where(eq(shows.id, show.id));
+      }
+    }
+
+    if (!show) return;
+
+    // Check if setlist already exists
+    const [existingSetlist] = await db
+      .select()
+      .from(setlists)
+      .where(eq(setlists.showId, show.id))
+      .limit(1);
+
+    if (existingSetlist) {
+      return; // Setlist already synced
+    }
+
+    // Create setlist using raw SQL to avoid moderation_status issue
+    const setlistResult = await db.execute(sql`
+      INSERT INTO setlists (show_id, artist_id, type, name, imported_from, external_id, imported_at)
+      VALUES (${show.id}, ${artist.id}, 'actual', 'Main Set', 'setlist.fm', ${setlistData.id}, NOW())
+      RETURNING id
+    `);
+    
+    const setlist = setlistResult[0] as any;
 
     if (!setlist) {
       return;
@@ -140,27 +219,55 @@ export class SetlistSyncService {
               const track = searchResult.tracks.items[0];
 
               if (track) {
-                // Create song
-                const [newSong] = await db
-                  .insert(songs)
-                  .values({
-                    spotifyId: track.id,
-                    title: track.name,
-                    artist: track.artists[0]?.name || "Unknown Artist",
-                    album: track.album?.name || "Unknown Album",
-                    albumArtUrl: track.album?.images?.[0]?.url || null,
-                    releaseDate: track.album?.release_date || "",
-                    durationMs: track.duration_ms,
-                    popularity: track.popularity,
-                    previewUrl: track.preview_url,
-                    isExplicit: track.explicit,
-                    isPlayable: track.is_playable ?? true,
-                  })
-                  .onConflictDoNothing()
-                  .returning({ id: songs.id });
+                // Create song handling duplicate Spotify IDs
+                try {
+                  const [newSong] = await db
+                    .insert(songs)
+                    .values({
+                      spotifyId: track.id,
+                      title: track.name,
+                      artist: track.artists[0]?.name || "Unknown Artist",
+                      album: track.album?.name || "Unknown Album",
+                      albumArtUrl: track.album?.images?.[0]?.url || null,
+                      releaseDate: track.album?.release_date || "",
+                      durationMs: track.duration_ms,
+                      popularity: track.popularity,
+                      previewUrl: track.preview_url,
+                      isExplicit: track.explicit,
+                      isPlayable: track.is_playable ?? true,
+                    })
+                    .onConflictDoNothing()
+                    .returning({ id: songs.id });
 
-                if (newSong) {
-                  song = newSong;
+                  if (newSong) {
+                    song = newSong;
+                    // Add to artist_songs junction
+                    await db
+                      .insert(artistSongs)
+                      .values({
+                        artistId: artistId,
+                        songId: newSong.id,
+                      })
+                      .onConflictDoNothing();
+                  }
+                } catch (error) {
+                  // If Spotify ID conflict, create without it
+                  const [newSong] = await db
+                    .insert(songs)
+                    .values({
+                      title: track.name,
+                      artist: track.artists[0]?.name || "Unknown Artist",
+                      album: track.album?.name || "Unknown Album",
+                      albumArtUrl: track.album?.images?.[0]?.url || null,
+                      durationMs: track.duration_ms,
+                      popularity: track.popularity,
+                      previewUrl: track.preview_url,
+                    })
+                    .returning({ id: songs.id });
+
+                  if (newSong) {
+                    song = newSong;
+                  }
                 }
               }
             }
@@ -179,6 +286,14 @@ export class SetlistSyncService {
 
           if (newSong) {
             song = newSong;
+            // Add to artist_songs junction
+            await db
+              .insert(artistSongs)
+              .values({
+                artistId: artistId,
+                songId: newSong.id,
+              })
+              .onConflictDoNothing();
           }
         }
 
