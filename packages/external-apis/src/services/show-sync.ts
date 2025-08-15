@@ -8,12 +8,14 @@ import {
 import { and, db, eq } from "../database";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 import { VenueSyncService } from "./venue-sync";
+import { SetlistSyncService } from "./setlist-sync";
 
 export class ShowSyncService {
   private ticketmasterClient: TicketmasterClient;
   private setlistFmClient: SetlistFmClient;
   private spotifyClient: SpotifyClient;
   private venueSyncService: VenueSyncService;
+  private setlistSyncService: SetlistSyncService;
   private errorHandler: SyncErrorHandler;
 
   constructor() {
@@ -25,6 +27,7 @@ export class ShowSyncService {
     });
     this.spotifyClient = new SpotifyClient({}); // SpotifyClient reads credentials from env in authenticate()
     this.venueSyncService = new VenueSyncService();
+    this.setlistSyncService = new SetlistSyncService();
     this.errorHandler = new SyncErrorHandler({
       maxRetries: 3,
       retryDelay: 1000,
@@ -293,6 +296,32 @@ export class ShowSyncService {
             }
           }
         } catch (_error) {}
+      }
+    }
+
+    // Create initial setlist for new shows (only for upcoming shows)
+    if (isNew && show.id) {
+      try {
+        const showDate = new Date(event.dates.start.localDate);
+        const isUpcoming = showDate > new Date();
+        
+        if (isUpcoming) {
+          console.log(`Creating initial setlist for new show: ${event.name}`);
+          const setlistResult = await this.setlistSyncService.ensureInitialSetlists(show.id, {
+            songCount: 5,
+            weightByPopularity: true,
+            excludeLive: true,
+          });
+          
+          if (setlistResult.created) {
+            console.log(`Created initial setlist with ${setlistResult.songCount} songs (skipped ${setlistResult.skippedLive} live tracks)`);
+          } else {
+            console.log("Initial setlist already exists for this show");
+          }
+        }
+      } catch (error) {
+        console.error(`Failed to create initial setlist for show ${show.id}:`, error);
+        // Don't fail the entire show sync if setlist creation fails
       }
     }
 
