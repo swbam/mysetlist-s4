@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     await spotifyClient.authenticate();
 
     // Get artists to sync based on mode
-    let artistsToSync = [];
+    let artistsToSync: typeof artists.$inferSelect[] = [];
     
     if (mode === "specific" && artistId) {
       artistsToSync = await db
@@ -104,10 +104,11 @@ export async function POST(request: NextRequest) {
               const spotifyArtist = spotifyResults.artists.items[0];
               
               // Check for name similarity
-              const nameSimilar = spotifyArtist.name.toLowerCase().includes(artist.name.toLowerCase()) ||
-                                artist.name.toLowerCase().includes(spotifyArtist.name.toLowerCase());
-              
-              if (nameSimilar) {
+              if (spotifyArtist) {
+                const nameSimilar = spotifyArtist.name.toLowerCase().includes(artist.name.toLowerCase()) ||
+                                  artist.name.toLowerCase().includes(spotifyArtist.name.toLowerCase());
+                
+                if (nameSimilar) {
                 await db
                   .update(artists)
                   .set({
@@ -122,6 +123,7 @@ export async function POST(request: NextRequest) {
                   .where(eq(artists.id, artist.id));
                 artist.spotifyId = spotifyArtist.id;
                 dataUpdated = true;
+                }
               }
             }
           } catch (error: any) {
@@ -173,7 +175,7 @@ export async function POST(request: NextRequest) {
         if (artist.ticketmasterId) {
           try {
             const showsResult = await showSync.syncArtistShows(artist.id);
-            artistResult.shows = showsResult.created;
+            artistResult.shows = showsResult.newShows;
             
             // Rate limit
             await new Promise(resolve => setTimeout(resolve, 300));
@@ -189,7 +191,6 @@ export async function POST(request: NextRequest) {
           try {
             const setlistResults = await setlistFmClient.searchSetlists({
               artistName: artist.name,
-              maxResults: 5, // Get recent setlists
             });
 
             for (const setlistData of setlistResults.setlist) {

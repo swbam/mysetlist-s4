@@ -113,7 +113,7 @@ export function ShowCard({ show }: ShowCardProps) {
         tabIndex={0}
         aria-label={`View ${show.headlinerArtist.name} show details`}
       >
-        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
+        <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
           {show.headlinerArtist.imageUrl && !imageError ? (
             <Image
               src={show.headlinerArtist.imageUrl}
@@ -150,14 +150,6 @@ export function ShowCard({ show }: ShowCardProps) {
             </div>
           )}
 
-          {/* Hover overlay */}
-          <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20">
-            <div className="flex h-full w-full items-center justify-center opacity-0 transition-opacity group-hover:opacity-100">
-              <div className="rounded-full bg-white/90 p-3">
-                <Play className="h-6 w-6 text-primary" aria-hidden="true" />
-              </div>
-            </div>
-          </div>
         </div>
       </Link>
       <CardContent className="p-4">

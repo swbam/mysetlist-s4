@@ -61,81 +61,88 @@ export const PastShows = React.memo(function PastShows({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Past Shows</CardTitle>
-          <Badge variant="secondary">{shows.length} shows</Badge>
+    <div>
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h2 className="font-bold text-2xl">Past Shows</h2>
+          <p className="text-muted-foreground text-sm mt-1">
+            Historical setlists and performances
+          </p>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {shows.map(({ show, venue, isHeadliner }) => (
-            <div
-              key={show.id}
-              className="group flex items-center justify-between gap-4 rounded-lg border p-4 transition-colors hover:bg-muted/50"
-            >
-              <div className="flex-1 space-y-2">
-                <div>
-                  <Link
-                    href={`/shows/${show.slug}`}
-                    className="font-semibold hover:underline"
-                  >
-                    {show.name}
-                  </Link>
-                  <div className="mt-1 flex items-center gap-2 text-muted-foreground text-sm">
-                    <Calendar className="h-3 w-3" />
-                    <span>{formatDate(show.date)}</span>
+        <Badge variant="secondary">{shows.length} shows</Badge>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {shows.map(({ show, venue, isHeadliner }) => (
+          <Card
+            key={show.id}
+            className="group transition-shadow hover:shadow-lg h-fit"
+          >
+            <CardContent className="p-4">
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <Link
+                      href={`/shows/${show.slug}`}
+                      className="font-semibold hover:underline text-sm line-clamp-2"
+                    >
+                      {show.name}
+                    </Link>
                     {isHeadliner && (
-                      <>
-                        <span>·</span>
-                        <Badge variant="outline" className="text-xs">
-                          Headliner
-                        </Badge>
-                      </>
+                      <Badge variant="outline" className="text-xs shrink-0">
+                        Headliner
+                      </Badge>
                     )}
                   </div>
-                  {venue && (
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                      <MapPin className="h-3 w-3" />
-                      <span>
-                        {venue.name}, {venue.city}
-                      </span>
+
+                  <div className="space-y-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      <span>{formatDate(show.date)}</span>
                     </div>
-                  )}
+
+                    {venue && (
+                      <div className="flex items-start gap-1">
+                        <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
+                        <span className="line-clamp-2">
+                          {venue.name}, {venue.city}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    {show.setlistCount != null && show.setlistCount > 0 && (
+                      <div className="flex items-center gap-1">
+                        <Music2 className="h-3 w-3" />
+                        <span>{show.setlistCount} setlists</span>
+                      </div>
+                    )}
+                    {show.voteCount > 0 && (
+                      <div className="flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        <span>{show.voteCount} votes</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                  {show.setlistCount != null && show.setlistCount > 0 && (
-                    <div className="flex items-center gap-1">
-                      <Music2 className="h-3 w-3" />
-                      <span>{show.setlistCount} setlists</span>
-                    </div>
-                  )}
-                  {show.voteCount > 0 && (
-                    <div className="flex items-center gap-1">
-                      <Users className="h-3 w-3" />
-                      <span>{show.voteCount} votes</span>
-                    </div>
-                  )}
-                </div>
+                <Button variant="ghost" size="sm" className="w-full" asChild>
+                  <Link href={`/shows/${show.slug}`}>View Setlist</Link>
+                </Button>
               </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-              <Button variant="ghost" size="sm" asChild>
-                <Link href={`/shows/${show.slug}`}>View Setlist</Link>
-              </Button>
-            </div>
-          ))}
+      {shows.length >= 20 && (
+        <div className="mt-6 text-center">
+          <Button variant="outline" asChild>
+            <Link href={`/shows?artist=${artistName}`}>View All Shows</Link>
+          </Button>
         </div>
-
-        {shows.length >= 20 && (
-          <div className="mt-6 text-center">
-            <Button variant="outline" asChild>
-              <Link href={`/shows?artist=${artistName}`}>View All Shows</Link>
-            </Button>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 });

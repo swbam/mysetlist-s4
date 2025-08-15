@@ -138,7 +138,7 @@ export function VenueCard({
         aria-label={`View ${venue.name} details`}
       >
         {/* Venue Image */}
-        <div className="relative h-48 overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
+        <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
           {venue.imageUrl && !imageError ? (
             <Image
               src={venue.imageUrl}

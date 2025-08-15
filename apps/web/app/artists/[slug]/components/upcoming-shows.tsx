@@ -98,73 +98,76 @@ export const UpcomingShows = React.memo(function UpcomingShows({
   }
 
   return (
-    <div className="space-y-4">
-      <div className="mb-4">
+    <div>
+      <div className="mb-6">
         <h2 className="font-bold text-2xl">Upcoming Shows</h2>
         <p className="text-muted-foreground text-sm mt-1">
           Shows automatically updated from Ticketmaster
         </p>
       </div>
 
-      {shows.map(({ show, venue, isHeadliner }) => (
-        <Card key={show.id} className="transition-shadow hover:shadow-lg">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Link href={`/shows/${show.slug}`}>
-                    <h3 className="font-semibold hover:underline">
-                      {show.name}
-                    </h3>
-                  </Link>
-                  {isHeadliner && <Badge variant="secondary">Headliner</Badge>}
-                </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {shows.map(({ show, venue, isHeadliner }) => (
+          <Card key={show.id} className="transition-shadow hover:shadow-lg h-fit">
+            <CardContent className="p-4">
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <Link href={`/shows/${show.slug}`}>
+                      <h3 className="font-semibold hover:underline text-sm line-clamp-2">
+                        {show.name}
+                      </h3>
+                    </Link>
+                    {isHeadliner && <Badge variant="secondary" className="text-xs shrink-0">Headliner</Badge>}
+                  </div>
 
-                <div className="flex items-center gap-4 text-muted-foreground text-sm">
-                  <span className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    {format(new Date(show.date), "PPP")}
-                  </span>
+                  <div className="space-y-1 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      <span>{format(new Date(show.date), "PPP")}</span>
+                    </div>
 
-                  {venue && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      <Link
-                        href={`/venues/${venue.id}`}
-                        className="hover:underline"
-                      >
-                        {venue.name}, {venue.city}
-                        {venue.state && `, ${venue.state}`}
-                      </Link>
-                    </span>
-                  )}
-                </div>
+                    {venue && (
+                      <div className="flex items-start gap-1">
+                        <MapPin className="h-3 w-3 mt-0.5 shrink-0" />
+                        <Link
+                          href={`/venues/${venue.id}`}
+                          className="hover:underline line-clamp-2"
+                        >
+                          {venue.name}, {venue.city}
+                          {venue.state && `, ${venue.state}`}
+                        </Link>
+                      </div>
+                    )}
+                  </div>
 
-                <Badge
-                  variant={
-                    show.status === "confirmed" ? "default" : "secondary"
-                  }
-                >
-                  {show.status}
-                </Badge>
-              </div>
-
-              {show.ticketUrl && (
-                <Button asChild>
-                  <a
-                    href={show.ticketUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <Badge
+                    variant={
+                      show.status === "confirmed" ? "default" : "secondary"
+                    }
+                    className="text-xs"
                   >
-                    <Ticket className="mr-2 h-4 w-4" />
-                    Get Tickets
-                  </a>
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+                    {show.status}
+                  </Badge>
+                </div>
+
+                {show.ticketUrl && (
+                  <Button asChild size="sm" className="w-full">
+                    <a
+                      href={show.ticketUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Ticket className="mr-1 h-3 w-3" />
+                      Get Tickets
+                    </a>
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 });

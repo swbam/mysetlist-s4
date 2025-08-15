@@ -50,7 +50,7 @@ export class SetlistSyncService {
     }
 
     // Find or create venue
-    let venue = null;
+    let venue: typeof venues.$inferSelect | null = null;
     if (setlistData.venue) {
       const [existingVenue] = await db
         .select()
@@ -66,6 +66,32 @@ export class SetlistSyncService {
       if (existingVenue) {
         venue = existingVenue;
       } else {
+        // Determine timezone based on country/state (basic mapping, can be improved)
+        let timezone = 'America/New_York'; // Default
+        const country = setlistData.venue.city.country.code;
+        const state = setlistData.venue.city.stateCode;
+        
+        if (country === 'US') {
+          // Basic US timezone mapping
+          if (['CA', 'WA', 'OR', 'NV'].includes(state || '')) {
+            timezone = 'America/Los_Angeles';
+          } else if (['AZ', 'UT', 'CO', 'NM', 'WY', 'ID', 'MT'].includes(state || '')) {
+            timezone = 'America/Denver';
+          } else if (['TX', 'OK', 'AR', 'LA', 'MN', 'IA', 'WI', 'IL', 'MO', 'KS', 'NE', 'SD', 'ND'].includes(state || '')) {
+            timezone = 'America/Chicago';
+          }
+        } else if (country === 'GB') {
+          timezone = 'Europe/London';
+        } else if (country === 'DE') {
+          timezone = 'Europe/Berlin';
+        } else if (country === 'FR') {
+          timezone = 'Europe/Paris';
+        } else if (country === 'JP') {
+          timezone = 'Asia/Tokyo';
+        } else if (country === 'AU') {
+          timezone = 'Australia/Sydney';
+        }
+        
         const [newVenue] = await db
           .insert(venues)
           .values({
@@ -76,9 +102,10 @@ export class SetlistSyncService {
             country: setlistData.venue.city.country.name,
             latitude: setlistData.venue.city.coords?.lat || null,
             longitude: setlistData.venue.city.coords?.long || null,
+            timezone: timezone,
           })
           .returning();
-        venue = newVenue;
+        venue = newVenue || null;
       }
     }
 

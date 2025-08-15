@@ -104,7 +104,7 @@ export function ArtistCard({
         aria-label={`View ${artist.name}'s profile`}
       >
         {/* Artist Image */}
-        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
+        <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-primary/10 to-primary/5">
           {imageUrl && !imageError ? (
             <Image
               src={imageUrl}

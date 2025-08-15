@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
 
       if (artist[0]) {
         // Find or create venue
-        let venue = null;
+        let venue: typeof venues.$inferSelect | null = null;
         if (setlistFmData.venue) {
           const venueResult = await db
             .select()
@@ -55,6 +55,32 @@ export async function POST(request: NextRequest) {
 
           if (venueResult.length === 0) {
             // Create venue
+            // Determine timezone based on country/state
+            let timezone = 'America/New_York'; // Default
+            const country = setlistFmData.venue.city.country.code;
+            const state = setlistFmData.venue.city.stateCode;
+            
+            if (country === 'US') {
+              // Basic US timezone mapping
+              if (['CA', 'WA', 'OR', 'NV'].includes(state || '')) {
+                timezone = 'America/Los_Angeles';
+              } else if (['AZ', 'UT', 'CO', 'NM', 'WY', 'ID', 'MT'].includes(state || '')) {
+                timezone = 'America/Denver';
+              } else if (['TX', 'OK', 'AR', 'LA', 'MN', 'IA', 'WI', 'IL', 'MO', 'KS', 'NE', 'SD', 'ND'].includes(state || '')) {
+                timezone = 'America/Chicago';
+              }
+            } else if (country === 'GB') {
+              timezone = 'Europe/London';
+            } else if (country === 'DE') {
+              timezone = 'Europe/Berlin';
+            } else if (country === 'FR') {
+              timezone = 'Europe/Paris';
+            } else if (country === 'JP') {
+              timezone = 'Asia/Tokyo';
+            } else if (country === 'AU') {
+              timezone = 'Australia/Sydney';
+            }
+            
             const newVenue = await db
               .insert(venues)
               .values({
@@ -65,11 +91,12 @@ export async function POST(request: NextRequest) {
                 country: setlistFmData.venue.city.country.name,
                 latitude: setlistFmData.venue.city.coords?.lat || null,
                 longitude: setlistFmData.venue.city.coords?.long || null,
+                timezone: timezone,
               })
               .returning();
-            venue = newVenue[0];
+            venue = newVenue[0] || null;
           } else {
-            venue = venueResult[0];
+            venue = venueResult[0] || null;
           }
         }
 
