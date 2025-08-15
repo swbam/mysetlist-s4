@@ -28,13 +28,24 @@ async function fixMissingData() {
 
   console.log(`   Found ${artistsNeedingTM.length} artists needing Ticketmaster IDs`);
 
+  let tmSuccessCount = 0;
+  let tmErrorCount = 0;
+  
   for (const artist of artistsNeedingTM.slice(0, 10)) {
     try {
       console.log(`   Searching Ticketmaster for: ${artist.name}`);
-      const tmResult = await ticketmasterClient.searchAttractions({
+      
+      // Add timeout wrapper for API call
+      const tmPromise = ticketmasterClient.searchAttractions({
         keyword: artist.name,
         size: 1,
       });
+      
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Ticketmaster API timeout')), 5000)
+      );
+      
+      const tmResult = await Promise.race([tmPromise, timeoutPromise]) as any;
 
       if (tmResult._embedded?.attractions?.[0]) {
         const attraction = tmResult._embedded.attractions[0];
@@ -49,6 +60,7 @@ async function fixMissingData() {
             })
             .where(eq(artists.id, artist.id));
           console.log(`   ✅ Updated ${artist.name} with TM ID: ${attraction.id}`);
+          tmSuccessCount++;
         } else {
           console.log(`   ⚠️ Name mismatch: "${attraction.name}" vs "${artist.name}"`);
         }
@@ -57,11 +69,21 @@ async function fixMissingData() {
       }
       
       // Rate limiting
-      await new Promise(resolve => setTimeout(resolve, 500));
-    } catch (error) {
-      console.error(`   ❌ Error for ${artist.name}:`, error);
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error: any) {
+      console.error(`   ❌ Error for ${artist.name}: ${error.message}`);
+      tmErrorCount++;
+      
+      // Continue to next artist on error
+      if (tmErrorCount > 3) {
+        console.log(`   ⚠️ Too many Ticketmaster errors (${tmErrorCount}), skipping remaining...`);
+        break;
+      }
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
   }
+  
+  console.log(`   Ticketmaster update summary: ${tmSuccessCount} success, ${tmErrorCount} errors`);
 
   // 2. Fix artists missing Spotify IDs
   console.log("\n2. Fixing artists with Ticketmaster ID but no Spotify ID...");
@@ -80,6 +102,9 @@ async function fixMissingData() {
 
   console.log(`   Found ${artistsNeedingSpotify.length} artists needing Spotify IDs`);
 
+  let spotifySuccessCount = 0;
+  let spotifyErrorCount = 0;
+  
   for (const artist of artistsNeedingSpotify.slice(0, 10)) {
     try {
       console.log(`   Searching Spotify for: ${artist.name}`);
@@ -87,6 +112,18 @@ async function fixMissingData() {
 
       if (spotifyResult.artists.items.length > 0) {
         const spotifyArtist = spotifyResult.artists.items[0]!;
+        
+        // Check for duplicate Spotify ID
+        const existingWithSpotifyId = await db
+          .select()
+          .from(artists)
+          .where(eq(artists.spotifyId, spotifyArtist.id))
+          .limit(1);
+        
+        if (existingWithSpotifyId.length > 0 && existingWithSpotifyId[0]!.id !== artist.id) {
+          console.log(`   ⚠️ Spotify ID ${spotifyArtist.id} already exists for ${existingWithSpotifyId[0]!.name}`);
+          continue;
+        }
         
         await db
           .update(artists)
@@ -101,16 +138,25 @@ async function fixMissingData() {
           })
           .where(eq(artists.id, artist.id));
         console.log(`   ✅ Updated ${artist.name} with Spotify data`);
+        spotifySuccessCount++;
       } else {
         console.log(`   ❌ No Spotify match for ${artist.name}`);
       }
       
       // Rate limiting
       await new Promise(resolve => setTimeout(resolve, 500));
-    } catch (error) {
-      console.error(`   ❌ Error for ${artist.name}:`, error);
+    } catch (error: any) {
+      console.error(`   ❌ Error for ${artist.name}: ${error.message}`);
+      spotifyErrorCount++;
+      
+      if (spotifyErrorCount > 3) {
+        console.log(`   ⚠️ Too many Spotify errors (${spotifyErrorCount}), skipping remaining...`);
+        break;
+      }
     }
   }
+  
+  console.log(`   Spotify update summary: ${spotifySuccessCount} success, ${spotifyErrorCount} errors`);
 
   // 3. Fix artists missing images
   console.log("\n3. Fixing artists with no image URL...");

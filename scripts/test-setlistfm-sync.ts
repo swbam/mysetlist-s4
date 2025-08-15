@@ -1,8 +1,8 @@
 #!/usr/bin/env tsx
+import 'dotenv/config';
 
 import { artists, db, shows, setlists, setlistSongs, songs, venues } from "@repo/database";
-import { SetlistFmClient } from "@repo/external-apis";
-import { SetlistSyncService } from "@repo/external-apis/src/services/setlist-sync";
+import { SetlistFmClient, SetlistSyncService } from "@repo/external-apis";
 import { eq, ilike, isNull, sql } from "drizzle-orm";
 
 async function testSetlistFMSync() {
