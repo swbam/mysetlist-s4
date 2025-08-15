@@ -36,7 +36,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const conditions = [eq(artistSongs.artistId, artistId)];
 
     if (search && search.length >= 2) {
-      conditions.push(ilike(songs.title, `%${search}%`));
+      conditions.push(ilike(songs.name, `%${search}%`));
     }
 
     // Fetch songs with pagination
@@ -44,9 +44,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       .select({
         id: songs.id,
         spotify_id: songs.spotifyId,
-        title: songs.title,
+        title: songs.name,
         artist: songs.artist,
-        album: songs.album,
+        album: songs.albumName,
         album_art_url: songs.albumArtUrl,
         duration_ms: songs.durationMs,
         popularity: songs.popularity,
@@ -58,7 +58,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       .from(artistSongs)
       .innerJoin(songs, eq(artistSongs.songId, songs.id))
       .where(and(...conditions))
-      .orderBy(sql`${songs.popularity} DESC NULLS LAST, ${songs.title} ASC`)
+      .orderBy(sql`${songs.popularity} DESC NULLS LAST, ${songs.name} ASC`)
       .limit(limit)
       .offset(offset);
 

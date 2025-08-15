@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { type, data, artistId, ticketmasterId, spotifyId, options } = body;
+    const { type, data, artistId, tmAttractionId, spotifyId, options } = body;
 
     // Import the orchestration service directly to avoid internal API calls
     const { ArtistImportOrchestrator } = await import("@repo/external-apis");
@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
         const orchestrator = new ArtistImportOrchestrator();
 
         let result: any;
-        if (ticketmasterId) {
-          result = await orchestrator.importArtist(ticketmasterId);
+        if (tmAttractionId) {
+          result = await orchestrator.importArtist(tmAttractionId);
         } else if (spotifyId || artistId) {
           // For Spotify ID based sync, use the orchestration endpoint
           const orchestrationResponse = await fetch(

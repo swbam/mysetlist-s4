@@ -159,7 +159,7 @@ export const SearchBar = React.memo(
                           method: "POST",
                           headers: { "Content-Type": "application/json" },
                           body: JSON.stringify({
-                            ticketmasterId: result.ticketmasterId,
+                            tmAttractionId: result.tmAttractionId,
                             name: result.title,
                             imageUrl: result.imageUrl,
                           }),

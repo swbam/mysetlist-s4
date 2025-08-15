@@ -68,7 +68,7 @@ export async function upsertArtistEnhanced(tmId: string) {
   const existingArtist = await db
     .select()
     .from(artists)
-    .where(eq(artists.ticketmasterId, tmId))
+    .where(eq(artists.tmAttractionId, tmId))
     .limit(1);
 
   if (existingArtist.length > 0) {
@@ -119,7 +119,7 @@ export async function upsertArtistEnhanced(tmId: string) {
     await db
       .update(artists)
       .set(updateData)
-      .where(eq(artists.ticketmasterId, tmId));
+      .where(eq(artists.tmAttractionId, tmId));
 
     console.log(`Successfully updated artist: ${attraction.name}`);
     return existingArtist[0];
@@ -133,7 +133,7 @@ export async function upsertArtistEnhanced(tmId: string) {
     id: nanoid(),
     name: attraction.name,
     slug,
-    ticketmasterId: tmId,
+    tmAttractionId: tmId,
     mbid: null,
     imageUrl: attraction.images?.[0]?.url || null,
     smallImageUrl:

@@ -32,7 +32,7 @@ export async function upsertShows(rawShows: any[], artistId: string) {
       const existingShow = await db
         .select()
         .from(shows)
-        .where(eq(shows.ticketmasterId, show.tm_event_id))
+        .where(eq(shows.tmEventId, show.tm_event_id))
         .limit(1);
 
       if (existingShow.length > 0) {
@@ -48,7 +48,7 @@ export async function upsertShows(rawShows: any[], artistId: string) {
             description: show.pleaseNote || show.info || null,
             updatedAt: new Date(),
           })
-          .where(eq(shows.ticketmasterId, show.tm_event_id));
+          .where(eq(shows.tmEventId, show.tm_event_id));
 
         upsertedShows.push(existingShow[0]);
       } else {
@@ -57,7 +57,7 @@ export async function upsertShows(rawShows: any[], artistId: string) {
           id: nanoid(),
           headlinerArtistId: artistId,
           venueId: venue.id,
-          ticketmasterId: show.tm_event_id,
+          tmAttractionId: show.tm_event_id,
           name: show.name,
           slug: show.name
             .toLowerCase()

@@ -213,7 +213,7 @@ async function findOrCreateSong(songData: any, artistId: string) {
     const existingSong = await db
       .select()
       .from(songs)
-      .where(and(eq(songs.title, songName), eq(songs.artist, artistName)))
+      .where(and(eq(songs.name, songName), eq(songs.artist, artistName)))
       .limit(1);
 
     if (existingSong.length > 0) {
@@ -223,7 +223,7 @@ async function findOrCreateSong(songData: any, artistId: string) {
     // Create new song
     const newSong = {
       id: nanoid(),
-      title: songName,
+      name: songName,
       artist: artistName,
       createdAt: new Date(),
       updatedAt: new Date(),

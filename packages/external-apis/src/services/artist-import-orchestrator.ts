@@ -152,7 +152,7 @@ export class ArtistImportOrchestrator {
         .insert(artists)
         .values({
           spotifyId: spotifyArtist.id,
-          ticketmasterId: tmAttractionId,
+          tmAttractionId: tmAttractionId,
           name: spotifyArtist.name,
           slug,
           imageUrl: spotifyArtist.images[0]?.url || null,
@@ -167,7 +167,7 @@ export class ArtistImportOrchestrator {
         .onConflictDoUpdate({
           target: artists.spotifyId,
           set: {
-            ticketmasterId: tmAttractionId,
+            tmAttractionId: tmAttractionId,
             name: spotifyArtist.name,
             imageUrl: spotifyArtist.images[0]?.url || null,
             smallImageUrl: spotifyArtist.images[2]?.url || null,
@@ -374,7 +374,7 @@ export class ArtistImportOrchestrator {
         const [newVenue] = await db
           .insert(venues)
           .values({
-            ticketmasterId: venue.id,
+            tmVenueId: venue.id,
             name: venue.name,
             slug: venue.name
               .toLowerCase()
@@ -395,7 +395,7 @@ export class ArtistImportOrchestrator {
             updatedAt: new Date(),
           })
           .onConflictDoUpdate({
-            target: venues.ticketmasterId,
+            target: venues.tmVenueId,
             set: {
               name: venue.name,
               city: venue.city?.name || "Unknown",
@@ -422,7 +422,7 @@ export class ArtistImportOrchestrator {
       await db
         .insert(shows)
         .values({
-          ticketmasterId: event.id,
+          tmEventId: event.id,
           name: event.name,
           slug: showSlug,
           date: showDate,
@@ -433,7 +433,7 @@ export class ArtistImportOrchestrator {
           updatedAt: new Date(),
         })
         .onConflictDoUpdate({
-          target: shows.ticketmasterId,
+          target: shows.tmEventId,
           set: {
             name: event.name,
             date: showDate,
@@ -455,7 +455,7 @@ export class ArtistImportOrchestrator {
       const topSongs = await db
         .select({
           id: songs.id,
-          title: songs.title,
+          name: songs.name,
           popularity: songs.popularity,
         })
         .from(songs)

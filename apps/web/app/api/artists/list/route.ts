@@ -10,7 +10,7 @@ export async function GET() {
         name: artists.name,
         slug: artists.slug,
         spotifyId: artists.spotifyId,
-        ticketmasterId: artists.ticketmasterId,
+        tmAttractionId: artists.tmAttractionId,
         popularity: artists.popularity,
         trendingScore: artists.trendingScore,
         totalSongs: artists.totalSongs,

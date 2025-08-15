@@ -67,7 +67,7 @@ export interface ArtistBasicData {
   name: string;
   imageUrl?: string;
   spotifyId?: string;
-  ticketmasterId: string;
+  tmAttractionId: string;
   genres: string[];
   popularity: number;
   followers: number;
@@ -140,7 +140,7 @@ export class ArtistImportOrchestrator {
     const tempArtistId = `tmp_${tmAttractionId}`;
     const logger = new ImportLogger({
       artistId: tempArtistId,
-      ticketmasterId: tmAttractionId,
+      tmAttractionId: tmAttractionId,
     });
 
     try {
@@ -362,7 +362,7 @@ export class ArtistImportOrchestrator {
 
       const artistData = {
         spotifyId: spotifyArtist?.id || null,
-        ticketmasterId: tmAttractionId,
+        tmAttractionId: tmAttractionId,
         name: spotifyArtist?.name || tmArtist.name,
         slug,
         imageUrl: spotifyArtist?.images?.[0]?.url || tmArtist.imageUrl || null,
@@ -379,7 +379,7 @@ export class ArtistImportOrchestrator {
         .insert(artists)
         .values(artistData)
         .onConflictDoUpdate({
-          target: artists.ticketmasterId,
+          target: artists.tmAttractionId,
           set: {
             ...artistData,
             updatedAt: new Date(),
@@ -403,7 +403,7 @@ export class ArtistImportOrchestrator {
         name: newArtist.name,
         imageUrl: artistData.imageUrl || undefined,
         spotifyId: artistData.spotifyId || undefined,
-        ticketmasterId: tmAttractionId,
+        tmAttractionId: tmAttractionId,
         genres: spotifyArtist?.genres || tmArtist.genres || [],
         popularity: artistData.popularity,
         followers: artistData.followers,
@@ -560,7 +560,7 @@ export class ArtistImportOrchestrator {
       const topSongs = await db
         .select({
           id: songs.id,
-          title: songs.title,
+          title: songs.name,
           popularity: songs.popularity,
         })
         .from(songs)

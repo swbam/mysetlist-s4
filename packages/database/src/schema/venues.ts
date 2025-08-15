@@ -1,5 +1,6 @@
 import {
   doublePrecision,
+  index,
   integer,
   pgTable,
   text,
@@ -11,7 +12,7 @@ export const venues = pgTable("venues", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
   slug: text("slug").unique().notNull(),
-  ticketmasterId: text("ticketmaster_id").unique(),
+  tmVenueId: text("tm_venue_id").unique(), // Ticketmaster Venue ID
   address: text("address"),
   city: text("city").notNull(),
   state: text("state"),
@@ -42,6 +43,8 @@ export const venues = pgTable("venues", {
 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  tmVenueIdIdx: index("idx_venue_tm").on(table.tmVenueId),
+}));
 
 // Removed venueTips table and venueTipCategoryEnum - not part of core MVP requirements

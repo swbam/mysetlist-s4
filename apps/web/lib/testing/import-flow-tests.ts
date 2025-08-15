@@ -179,7 +179,7 @@ async function createMockArtist(): Promise<string> {
       name: faker.person.fullName(),
       slug: faker.lorem.slug(),
       spotifyId: faker.string.alphanumeric(22),
-      ticketmasterId: faker.string.alphanumeric(10),
+      tmAttractionId: faker.string.alphanumeric(10),
       genres: JSON.stringify(["pop", "rock"]),
       popularity: faker.number.int({ min: 0, max: 100 }),
       followers: faker.number.int({ min: 1000, max: 10000000 }),
@@ -279,7 +279,7 @@ describe("Artist Import Flow - Comprehensive Tests", () => {
         artistId: expect.any(String),
         slug: expect.any(String),
         name: "Taylor Swift",
-        ticketmasterId: "K8vZ917G7x0",
+        tmAttractionId: "K8vZ917G7x0",
       });
     });
 
@@ -316,7 +316,7 @@ describe("Artist Import Flow - Comprehensive Tests", () => {
 
       expect(dbArtist).toMatchObject({
         name: "Taylor Swift",
-        ticketmasterId: "K8vZ917G7x0",
+        tmAttractionId: "K8vZ917G7x0",
         slug: expect.stringMatching(/^[a-z0-9-]+$/),
       });
     });

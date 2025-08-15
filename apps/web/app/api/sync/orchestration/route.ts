@@ -23,7 +23,7 @@ export const dynamic = "force-dynamic";
 
 interface SyncRequest {
   spotifyId?: string;
-  ticketmasterId?: string;
+  tmAttractionId?: string;
   mbid?: string;
   artistName?: string;
   options?: {
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     const body: SyncRequest = await request.json();
     const {
       spotifyId: inputSpotifyId,
-      ticketmasterId: inputTicketmasterId,
+      tmAttractionId: inputTicketmasterId,
       mbid: inputMbid,
       artistName,
       options = {
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Must provide at least one artist identifier (spotifyId, ticketmasterId, mbid, or artistName)",
+            "Must provide at least one artist identifier (spotifyId, tmAttractionId, mbid, or artistName)",
         },
         { status: 400 },
       );
@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     let artistData: any = null;
     let spotifyId: string | null = inputSpotifyId || null;
-    let ticketmasterId: string | null = inputTicketmasterId || null;
+    let tmAttractionId: string | null = inputTicketmasterId || null;
     let mbid: string | null = inputMbid || null;
 
     // Step 0: Resolve identifiers
@@ -104,16 +104,16 @@ export async function POST(request: NextRequest) {
       // If we only know TM or name, resolve the rest into DB and locals
       const idResult = await artistSyncService.syncIdentifiers({
         artistName,
-        ticketmasterAttractionId: ticketmasterId || undefined,
+        ticketmasterAttractionId: tmAttractionId || undefined,
       });
 
       spotifyId = spotifyId || idResult.spotifyId || null;
-      ticketmasterId = ticketmasterId || idResult.ticketmasterId || null;
+      tmAttractionId = tmAttractionId || idResult.tmAttractionId || null;
       mbid = mbid || idResult.mbid || null;
 
       steps[0]!.status = "completed";
       steps[0]!.endTime = new Date().toISOString();
-      steps[0]!.result = { spotifyId, ticketmasterId, mbid };
+      steps[0]!.result = { spotifyId, tmAttractionId, mbid };
     } catch (e: any) {
       steps[0]!.status = "failed";
       steps[0]!.endTime = new Date().toISOString();
@@ -152,9 +152,9 @@ export async function POST(request: NextRequest) {
       await artistSyncService.syncArtist(spotifyId);
 
       // Ensure DB has external IDs
-      if (ticketmasterId || mbid) {
+      if (tmAttractionId || mbid) {
         const updates: any = {};
-        if (ticketmasterId) updates.ticketmasterId = ticketmasterId;
+        if (tmAttractionId) updates.tmAttractionId = tmAttractionId;
         if (mbid) updates.mbid = mbid;
         await db
           .update(artists)

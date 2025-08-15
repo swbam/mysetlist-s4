@@ -353,7 +353,7 @@ export async function GET(request: NextRequest) {
             case "song": {
               const songData = await db
                 .select({
-                  songTitle: songs.title,
+                  songTitle: songs.name,
                   artistName: songs.artist,
                 })
                 .from(songs)

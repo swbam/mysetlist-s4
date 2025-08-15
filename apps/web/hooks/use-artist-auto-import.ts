@@ -8,7 +8,7 @@ interface AutoImportResult {
     name: string;
     slug: string;
     spotifyId?: string;
-    ticketmasterId?: string;
+    tmAttractionId?: string;
     imageUrl?: string;
     genres: string[];
     popularity: number;

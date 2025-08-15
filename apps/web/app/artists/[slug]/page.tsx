@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import React, { Suspense } from "react";
 import { BreadcrumbNavigation } from "~/components/breadcrumb-navigation";
 import { ArtistErrorBoundary } from "~/components/error-boundaries/artist-error-boundary";
+import { ImportProgressWrapper } from "~/components/import/ImportProgressWrapper";
 import { createArtistMetadata } from "~/lib/seo-metadata";
 import { getArtist, getArtistShows, getArtistStats } from "./actions";
 import { ArtistHeader } from "./components/artist-header";
@@ -43,7 +44,7 @@ export const generateMetadata = async ({
   try {
     const { slug } = await params;
     const searchParamsData = await searchParams;
-    const ticketmasterId = undefined as unknown as string; // no longer read from URL
+    const tmAttractionId = undefined as unknown as string; // no longer read from URL
 
     if (!slug) {
       return createArtistMetadata({
@@ -56,7 +57,7 @@ export const generateMetadata = async ({
 
     // For metadata generation, if artist not found but we have ticketmaster ID,
     // create temporary metadata while import happens in the background
-    if (!artist && ticketmasterId) {
+    if (!artist && tmAttractionId) {
       const artistName = slug
         .replace(/-/g, " ")
         .replace(/\b\w/g, (l) => l.toUpperCase());
@@ -93,7 +94,7 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
   try {
     const { slug } = await params;
     const searchParamsData = await searchParams;
-    const ticketmasterId = undefined as unknown as string; // no longer read from URL
+    const tmAttractionId = undefined as unknown as string; // no longer read from URL
 
     // Validate slug parameter
     if (!slug || typeof slug !== "string") {
@@ -227,70 +228,76 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
 
     return (
       <ArtistErrorBoundary artistName={artist.name || "Unknown Artist"}>
-        <ArtistPageWrapper
+        <ImportProgressWrapper
           artistId={artist.id}
           artistName={artist.name || "Unknown Artist"}
-          spotifyId={artist.spotifyId}
-          initialData={{
-            artist: artistData,
-            shows: [...transformedUpcomingShows, ...transformedPastShows],
-            stats: _stats,
-          }}
+          initialImportStatus={(artist as any).importStatus}
         >
-          <div className="container mx-auto py-8">
-            {/* Breadcrumb Navigation */}
-            <BreadcrumbNavigation items={breadcrumbItems} className="mb-6" />
+          <ArtistPageWrapper
+            artistId={artist.id}
+            artistName={artist.name || "Unknown Artist"}
+            spotifyId={artist.spotifyId}
+            initialData={{
+              artist: artistData,
+              shows: [...transformedUpcomingShows, ...transformedPastShows],
+              stats: _stats,
+            }}
+          >
+            <div className="container mx-auto py-8">
+              {/* Breadcrumb Navigation */}
+              <BreadcrumbNavigation items={breadcrumbItems} className="mb-6" />
 
-            {/* Artist Header */}
-            <ArtistHeader artist={artistData} />
+              {/* Artist Header */}
+              <ArtistHeader artist={artistData} />
 
-            {/* Artist Stats */}
-            <div className="mt-8">
-              <ArtistStats artistId={artist.id} />
+              {/* Artist Stats */}
+              <div className="mt-8">
+                <ArtistStats artistId={artist.id} />
+              </div>
+
+              {/* Content Tabs - Simplified to only show upcoming and past shows */}
+              <Tabs defaultValue="shows" className="mt-8 w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="shows" aria-label="View upcoming shows">
+                    Upcoming Shows
+                  </TabsTrigger>
+                  <TabsTrigger value="past" aria-label="View past shows">
+                    Past Shows
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="shows" className="space-y-4">
+                  <React.Suspense
+                    fallback={
+                      <div className="h-64 animate-pulse rounded-lg bg-muted" />
+                    }
+                  >
+                    <UpcomingShows
+                      shows={transformedUpcomingShows}
+                      artistName={artist.name || "Unknown Artist"}
+                      artistId={artist.id}
+                      spotifyId={artist.spotifyId}
+                    />
+                  </React.Suspense>
+                </TabsContent>
+
+                <TabsContent value="past" className="space-y-4">
+                  <React.Suspense
+                    fallback={
+                      <div className="h-64 animate-pulse rounded-lg bg-muted" />
+                    }
+                  >
+                    <PastShows
+                      shows={transformedPastShows}
+                      artistName={artist.name || "Unknown Artist"}
+                      artistId={artist.id}
+                    />
+                  </React.Suspense>
+                </TabsContent>
+              </Tabs>
             </div>
-
-            {/* Content Tabs - Simplified to only show upcoming and past shows */}
-            <Tabs defaultValue="shows" className="mt-8 w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="shows" aria-label="View upcoming shows">
-                  Upcoming Shows
-                </TabsTrigger>
-                <TabsTrigger value="past" aria-label="View past shows">
-                  Past Shows
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="shows" className="space-y-4">
-                <React.Suspense
-                  fallback={
-                    <div className="h-64 animate-pulse rounded-lg bg-muted" />
-                  }
-                >
-                  <UpcomingShows
-                    shows={transformedUpcomingShows}
-                    artistName={artist.name || "Unknown Artist"}
-                    artistId={artist.id}
-                    spotifyId={artist.spotifyId}
-                  />
-                </React.Suspense>
-              </TabsContent>
-
-              <TabsContent value="past" className="space-y-4">
-                <React.Suspense
-                  fallback={
-                    <div className="h-64 animate-pulse rounded-lg bg muted" />
-                  }
-                >
-                  <PastShows
-                    shows={transformedPastShows}
-                    artistName={artist.name || "Unknown Artist"}
-                    artistId={artist.id}
-                  />
-                </React.Suspense>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </ArtistPageWrapper>
+          </ArtistPageWrapper>
+        </ImportProgressWrapper>
       </ArtistErrorBoundary>
     );
   } catch (error) {

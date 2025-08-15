@@ -472,9 +472,9 @@ export class SpotifySongSyncService {
         .values(
           batch.map((song) => ({
             spotifyId: song.spotifyId,
-            title: song.title,
+            name: song.title,
             artist: song.artist,
-            album: song.album,
+            albumName: song.album,
             albumId: song.albumId,
             trackNumber: song.trackNumber,
             discNumber: song.discNumber,
@@ -493,7 +493,7 @@ export class SpotifySongSyncService {
         .onConflictDoUpdate({
           target: songsTable.spotifyId,
           set: {
-            title: sql`excluded.title`,
+            name: sql`excluded.name`,
             popularity: sql`excluded.popularity`,
             isPlayable: sql`excluded.is_playable`,
             albumArtUrl: sql`excluded.album_art_url`,

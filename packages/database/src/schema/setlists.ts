@@ -1,6 +1,7 @@
 import {
   boolean,
   date,
+  index,
   integer,
   pgEnum,
   pgTable,
@@ -23,9 +24,10 @@ export const moderationStatusEnum = pgEnum("moderation_status", [
 export const songs = pgTable("songs", {
   id: uuid("id").primaryKey().defaultRandom(),
   spotifyId: text("spotify_id").unique(),
-  title: text("title").notNull(),
+  isrc: text("isrc"), // International Standard Recording Code
+  name: text("name").notNull(), // Renamed from title
+  albumName: text("album_name"), // Renamed from album
   artist: text("artist").notNull(), // Primary artist name
-  album: text("album"),
   albumId: text("album_id"),
   trackNumber: integer("track_number"),
   discNumber: integer("disc_number").default(1),
@@ -39,13 +41,19 @@ export const songs = pgTable("songs", {
   externalUrls: text("external_urls"), // JSON object
   isExplicit: boolean("is_explicit").default(false),
   isPlayable: boolean("is_playable").default(true),
+  isLive: boolean("is_live").default(false), // Track is live performance
+  isRemix: boolean("is_remix").default(false), // Track is a remix
   acousticness: text("acousticness"), // Spotify audio features
   danceability: text("danceability"),
   energy: text("energy"),
   valence: text("valence"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  isrcIdx: index("idx_song_isrc").on(table.isrc),
+  popularityIdx: index("idx_song_popularity").on(table.popularity),
+  spotifyIdIdx: index("idx_song_spotify").on(table.spotifyId),
+}));
 
 export const setlistTypeEnum = pgEnum("setlist_type", ["predicted", "actual"]);
 

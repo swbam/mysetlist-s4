@@ -158,11 +158,11 @@ export class ShowSyncService {
           .values({
             name: attraction.name,
             slug: this.generateSlug(attraction.name),
-            ticketmasterId: attraction.id,
+            tmAttractionId: attraction.id,
             lastSyncedAt: new Date(),
           })
           .onConflictDoUpdate({
-            target: artists.ticketmasterId,
+            target: artists.tmAttractionId,
             set: {
               name: attraction.name,
               lastSyncedAt: new Date(),
@@ -189,7 +189,7 @@ export class ShowSyncService {
     const existingShowCheck = await db
       .select({ id: shows.id })
       .from(shows)
-      .where(eq(shows.ticketmasterId, event.id))
+      .where(eq(shows.tmEventId, event.id))
       .limit(1);
     
     const showExisted = existingShowCheck.length > 0;
@@ -216,10 +216,10 @@ export class ShowSyncService {
           maxPrice: event.priceRanges[0].max,
         }),
         currency: event.priceRanges?.[0]?.currency || "USD",
-        ticketmasterId: event.id,
+        tmEventId: event.id,
       })
       .onConflictDoUpdate({
-        target: shows.ticketmasterId,
+        target: shows.tmEventId,
         set: {
           status: this.mapTicketmasterStatus(event.dates.status.code),
           ...(event.priceRanges?.[0]?.min && {
@@ -458,22 +458,22 @@ export class ShowSyncService {
     const eventsToProcess = new Set<string>(); // Avoid duplicates
 
     // Strategy 1: Search by Ticketmaster artist ID if available
-    if (artist.ticketmasterId) {
+    if (artist.tmAttractionId) {
       console.log(
-        `Searching Ticketmaster events by artist ID: ${artist.ticketmasterId}`,
+        `Searching Ticketmaster events by artist ID: ${artist.tmAttractionId}`,
       );
       try {
         const artistEventsResult = await this.errorHandler.withRetry(
           () =>
             this.ticketmasterClient.searchEvents({
-              attractionId: artist.ticketmasterId!,
+              attractionId: artist.tmAttractionId!,
               size: 200,
               sort: "date,asc",
             }),
           {
             service: "ShowSyncService",
             operation: "searchEventsByAttractionId",
-            context: { attractionId: artist.ticketmasterId },
+            context: { attractionId: artist.tmAttractionId },
           },
         );
 
@@ -484,7 +484,7 @@ export class ShowSyncService {
         }
       } catch (error) {
         console.warn(
-          `Failed to search by attraction ID ${artist.ticketmasterId}:`,
+          `Failed to search by attraction ID ${artist.tmAttractionId}:`,
           error,
         );
       }
@@ -549,7 +549,7 @@ export class ShowSyncService {
         const existingShow = await db
           .select()
           .from(shows)
-          .where(eq(shows.ticketmasterId, eventId))
+          .where(eq(shows.tmEventId, eventId))
           .limit(1);
 
         if (existingShow.length > 0) {
@@ -571,7 +571,7 @@ export class ShowSyncService {
               currency: eventDetails.priceRanges?.[0]?.currency || "USD",
               updatedAt: new Date(),
             })
-            .where(eq(shows.ticketmasterId, eventId));
+            .where(eq(shows.tmEventId, eventId));
           updated++;
           updatedShows++;
         } else {

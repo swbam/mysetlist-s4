@@ -2,6 +2,7 @@ import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
 import React, { Suspense } from "react";
 import { PageErrorBoundary } from "~/components/error-boundary-wrapper";
+import { ImportButton } from "~/components/import";
 import { ResponsiveGrid } from "~/components/layout/responsive-grid";
 import { TrendingListSkeleton } from "~/components/loading-states";
 import { ArtistSearch } from "./components/artist-search";
@@ -26,16 +27,30 @@ export default function ArtistsPage() {
         <div className="container mx-auto">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-4">
-              <h1 className="font-regular text-4xl tracking-tighter md:text-6xl">
-                Discover Artists
-              </h1>
+              <div className="flex items-center justify-between">
+                <h1 className="font-regular text-4xl tracking-tighter md:text-6xl">
+                  Discover Artists
+                </h1>
+                <ImportButton
+                  showDropdown
+                  className="hidden sm:flex"
+                />
+              </div>
               <p className="max-w-2xl text-lg text-muted-foreground">
                 Search for your favorite artists to discover their upcoming
-                shows and past setlists
+                shows and past setlists, or import new artists directly.
               </p>
             </div>
 
-            <ArtistSearch />
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-stretch sm:items-center">
+              <div className="flex-1">
+                <ArtistSearch />
+              </div>
+              <ImportButton
+                className="sm:hidden"
+                compact
+              />
+            </div>
 
             {/* Trending Artists Section */}
             <div className="mt-12">

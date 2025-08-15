@@ -272,9 +272,9 @@ export class DatabaseSeeder {
       (_, i) => {
         const artist = artistList[i % artistList.length];
         return {
-          title: songTitles[i],
+          name: songTitles[i],
           artist: artist.name,
-          album: `Album ${Math.floor(i / 10) + 1}`,
+          albumName: `Album ${Math.floor(i / 10) + 1}`,
           durationMs: Math.floor(Math.random() * 300000) + 120000, // 2-7 minutes
           popularity: Math.floor(Math.random() * 100),
           isExplicit: Math.random() > 0.8,
@@ -286,7 +286,7 @@ export class DatabaseSeeder {
     return await db
       .insert(songs)
       .values(sampleSongs)
-      .returning({ id: songs.id, title: songs.title });
+      .returning({ id: songs.id, name: songs.name });
   }
 
   private async seedShows(

@@ -29,7 +29,7 @@ const _getArtist = async (slug: string) => {
       .select({
         id: artists.id,
         spotifyId: artists.spotifyId,
-        ticketmasterId: artists.ticketmasterId,
+        tmAttractionId: artists.tmAttractionId,
         name: artists.name,
         slug: artists.slug,
         imageUrl: artists.imageUrl,
@@ -41,6 +41,7 @@ const _getArtist = async (slug: string) => {
         monthlyListeners: artists.monthlyListeners,
         verified: artists.verified,
         externalUrls: artists.externalUrls,
+        importStatus: artists.importStatus,
         lastSyncedAt: artists.lastSyncedAt,
         songCatalogSyncedAt: artists.songCatalogSyncedAt,
         totalAlbums: artists.totalAlbums,
@@ -119,7 +120,7 @@ const _getArtist = async (slug: string) => {
                 return {
                   id: importData.artistId || importData.artist?.id,
                   spotifyId: null,
-                  ticketmasterId: null,
+                  tmAttractionId: null,
                   name: externalArtist.name,
                   slug: returnedSlug,
                   imageUrl: externalArtist.imageUrl,
@@ -157,7 +158,7 @@ const _getArtist = async (slug: string) => {
       return {
         id: data.id,
         spotifyId: data.spotify_id,
-        ticketmasterId: data.ticketmaster_id,
+        tmAttractionId: data.ticketmaster_id,
         name: data.name,
         slug: data.slug,
         imageUrl: data.image_url,
@@ -425,7 +426,7 @@ const _getArtistSetlists = async (artistId: string, limit = 10) => {
               .filter(({ song }) => song)
               .map(({ song, setlistSong }) => ({
                 id: song?.id,
-                title: song?.title,
+                title: song?.name,
                 artist: song?.artist,
                 position: setlistSong.position,
                 upvotes: setlistSong.upvotes || 0,

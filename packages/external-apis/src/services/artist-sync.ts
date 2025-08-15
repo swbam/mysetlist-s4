@@ -37,12 +37,18 @@ export class ArtistSyncService {
     artistDbId?: string;
     artistName?: string;
     ticketmasterAttractionId?: string;
-  }): Promise<{ spotifyId?: string; ticketmasterId?: string; mbid?: string }> {
+  }): Promise<{ spotifyId?: string; tmAttractionId: string; mbid?: string }> {
+    if (!params.ticketmasterAttractionId) {
+      throw new Error('ticketmasterAttractionId is required for syncIdentifiers');
+    }
+
     const result: {
       spotifyId?: string;
-      ticketmasterId?: string;
+      tmAttractionId: string;
       mbid?: string;
-    } = {};
+    } = {
+      tmAttractionId: params.ticketmasterAttractionId,
+    };
 
     // Resolve DB artist
     let artistRecord: any = null;
@@ -58,12 +64,12 @@ export class ArtistSyncService {
     const name = params.artistName || artistRecord?.name;
 
     // Ticketmaster ID
-    if (!artistRecord?.ticketmasterId && params.ticketmasterAttractionId) {
-      result.ticketmasterId = params.ticketmasterAttractionId;
+    if (!artistRecord?.tmAttractionId && params.ticketmasterAttractionId) {
+      result.tmAttractionId = params.ticketmasterAttractionId;
       if (artistRecord) {
         await db
           .update(artists)
-          .set({ ticketmasterId: params.ticketmasterAttractionId })
+          .set({ tmAttractionId: params.ticketmasterAttractionId })
           .where(eq(artists.id, artistRecord.id));
       }
     }
@@ -155,7 +161,7 @@ export class ArtistSyncService {
     const topTracks = topTracksResult || { tracks: [] };
 
     // Try to find the artist on Ticketmaster
-    let ticketmasterId: string | null = null;
+    let tmAttractionId: string | null = null;
     try {
       const ticketmasterResult = await this.errorHandler.withRetry(
         () =>
@@ -174,9 +180,9 @@ export class ArtistSyncService {
       if (ticketmasterResult?._embedded?.attractions?.[0]) {
         const attraction = ticketmasterResult._embedded.attractions[0];
         if (this.isArtistNameMatch(spotifyArtist.name, attraction.name)) {
-          ticketmasterId = attraction.id;
+          tmAttractionId = attraction.id;
           console.log(
-            `Found Ticketmaster ID ${ticketmasterId} for ${spotifyArtist.name}`,
+            `Found Ticketmaster ID ${tmAttractionId} for ${spotifyArtist.name}`,
           );
         }
       }
@@ -192,7 +198,7 @@ export class ArtistSyncService {
       .insert(artists)
       .values({
         spotifyId: spotifyArtist.id,
-        ticketmasterId,
+        tmAttractionId,
         name: spotifyArtist.name,
         slug: this.generateSlug(spotifyArtist.name),
         imageUrl: spotifyArtist.images[0]?.url || null,
@@ -206,7 +212,7 @@ export class ArtistSyncService {
       .onConflictDoUpdate({
         target: artists.spotifyId,
         set: {
-          ticketmasterId,
+          tmAttractionId,
           name: spotifyArtist.name,
           imageUrl: spotifyArtist.images[0]?.url || null,
           smallImageUrl: spotifyArtist.images[2]?.url || null,
@@ -241,9 +247,9 @@ export class ArtistSyncService {
         .insert(songs)
         .values({
           spotifyId: track.id,
-          title: track.name,
+          name: track.name,
           artist: track.artists[0].name,
-          album: track.album.name,
+          albumName: track.album.name,
           albumArtUrl: track.album.images[0]?.url,
           releaseDate: track.album.release_date,
           durationMs: track.duration_ms,
@@ -255,7 +261,7 @@ export class ArtistSyncService {
         .onConflictDoUpdate({
           target: songs.spotifyId,
           set: {
-            title: track.name,
+            name: track.name,
             popularity: track.popularity,
             isPlayable: track.is_playable,
           },
@@ -422,9 +428,9 @@ export class ArtistSyncService {
               .insert(songs)
               .values({
                 spotifyId: track.id,
-                title: track.name,
+                name: track.name,
                 artist: track.artists[0]?.name || "Unknown",
-                album: album.name,
+                albumName: album.name,
                 albumId: album.id,
                 trackNumber: track.track_number,
                 discNumber: track.disc_number,
@@ -442,8 +448,8 @@ export class ArtistSyncService {
               .onConflictDoUpdate({
                 target: songs.spotifyId,
                 set: {
-                  title: track.name,
-                  album: album.name,
+                  name: track.name,
+                  albumName: album.name,
                   albumArtUrl: album.images[0]?.url || null,
                   isPlayable: !track.restrictions,
                 },
@@ -533,7 +539,7 @@ export class ArtistSyncService {
   async syncIdentifiersForAttraction(attractionId: string): Promise<{
     spotifyId?: string;
     mbid?: string;
-    ticketmasterId: string;
+    tmAttractionId: string;
   } | null> {
     try {
       // Get attraction details from Ticketmaster
@@ -586,7 +592,7 @@ export class ArtistSyncService {
       return {
         ...(spotifyId && { spotifyId }),
         ...(mbid && { mbid }),
-        ticketmasterId: attractionId,
+        tmAttractionId: attractionId,
       };
     } catch (error) {
       console.error(

@@ -284,7 +284,7 @@ export class DatabasePerformanceTester {
         const results = await db
           .select({
             songId: songs.id,
-            title: songs.title,
+            title: songs.name,
             totalVotes: sql<number>`COALESCE(${voteCounts.count}, 0)`,
           })
           .from(songs)

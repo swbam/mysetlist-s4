@@ -57,7 +57,7 @@ export interface AudioFeatures {
 // Venue-related types
 export interface Venue extends BaseEntity {
   slug: string;
-  ticketmasterId?: string;
+  tmVenueId?: string;
   setlistfmId?: string;
   address?: string;
   city: string;
@@ -78,7 +78,7 @@ export interface Venue extends BaseEntity {
 export interface Show extends BaseEntity {
   artistId: string;
   venueId: string;
-  ticketmasterId?: string;
+  tmEventId?: string;
   date: Date;
   doors?: Date;
   time?: string;

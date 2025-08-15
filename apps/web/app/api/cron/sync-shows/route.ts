@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
           .select({
             id: artists.id,
             name: artists.name,
-            ticketmasterId: artists.ticketmasterId,
+            tmAttractionId: artists.tmAttractionId,
             lastSyncedAt: artists.lastSyncedAt,
           })
           .from(artists)
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
                 OR ${artists.lastSyncedAt} IS NULL
                 OR ${artists.lastSyncedAt} < NOW() - INTERVAL '12 hours'
               )
-              AND ${artists.ticketmasterId} IS NOT NULL
+              AND ${artists.tmAttractionId} IS NOT NULL
             `,
           )
           .orderBy(desc(artists.popularity))
@@ -82,11 +82,11 @@ export async function POST(request: NextRequest) {
           .select({
             id: artists.id,
             name: artists.name,
-            ticketmasterId: artists.ticketmasterId,
+            tmAttractionId: artists.tmAttractionId,
             lastSyncedAt: artists.lastSyncedAt,
           })
           .from(artists)
-          .where(sql`${artists.ticketmasterId} IS NOT NULL`)
+          .where(sql`${artists.tmAttractionId} IS NOT NULL`)
           .orderBy(desc(artists.popularity))
           .limit(limit);
         break;
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
       for (const batch of batches) {
         const batchPromises = batch.map(async (artist) => {
           try {
-            if (!artist.ticketmasterId) {
+            if (!artist.tmAttractionId) {
               return { success: false, reason: "No Ticketmaster ID" };
             }
 

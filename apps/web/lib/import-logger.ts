@@ -6,7 +6,7 @@ export type LogLevel = "info" | "warning" | "error" | "success" | "debug";
 export interface ImportLogEntry {
   artistId: string;
   artistName?: string;
-  ticketmasterId?: string;
+  tmAttractionId?: string;
   spotifyId?: string;
   jobId?: string;
   level: LogLevel;
@@ -23,7 +23,7 @@ export interface ImportLogEntry {
 export class ImportLogger {
   private artistId: string;
   private artistName?: string;
-  private ticketmasterId?: string;
+  private tmAttractionId?: string;
   private spotifyId?: string;
   private jobId?: string;
   private logs: ImportLogEntry[] = [];
@@ -33,13 +33,13 @@ export class ImportLogger {
   constructor(config: {
     artistId: string;
     artistName?: string;
-    ticketmasterId?: string;
+    tmAttractionId?: string;
     spotifyId?: string;
     jobId?: string;
   }) {
     this.artistId = config.artistId;
     this.artistName = config.artistName;
-    this.ticketmasterId = config.ticketmasterId;
+    this.tmAttractionId = config.tmAttractionId;
     this.spotifyId = config.spotifyId;
     this.jobId = config.jobId || createId();
   }
@@ -55,7 +55,7 @@ export class ImportLogger {
         logsToFlush.map((log) => ({
           artistId: log.artistId,
           artistName: log.artistName,
-          ticketmasterId: log.ticketmasterId,
+          tmAttractionId: log.tmAttractionId,
           spotifyId: log.spotifyId,
           jobId: log.jobId,
           level: log.level as any,
@@ -81,12 +81,12 @@ export class ImportLogger {
     this.flushTimer = setTimeout(() => this.flush(), 1000);
   }
 
-  private async log(entry: Omit<ImportLogEntry, "artistId" | "artistName" | "ticketmasterId" | "spotifyId" | "jobId">) {
+  private async log(entry: Omit<ImportLogEntry, "artistId" | "artistName" | "tmAttractionId" | "spotifyId" | "jobId">) {
     const logEntry: ImportLogEntry = {
       ...entry,
       artistId: this.artistId,
       artistName: this.artistName,
-      ticketmasterId: this.ticketmasterId,
+      tmAttractionId: this.tmAttractionId,
       spotifyId: this.spotifyId,
       jobId: this.jobId,
     };

@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       const existing = await db
         .select()
         .from(songs)
-        .where(eq(songs.title, songData.title))
+        .where(eq(songs.name, songData.title))
         .limit(5); // Get a few results to check artist match
 
       existingSong =
@@ -73,9 +73,9 @@ export async function POST(request: NextRequest) {
         song: {
           id: existingSong.id,
           spotify_id: existingSong.spotifyId,
-          title: existingSong.title,
+          title: existingSong.name,
           artist: existingSong.artist,
-          album: existingSong.album,
+          album: existingSong.albumName,
           album_art_url: existingSong.albumArtUrl,
           duration_ms: existingSong.durationMs,
           popularity: existingSong.popularity,
@@ -90,9 +90,9 @@ export async function POST(request: NextRequest) {
       .insert(songs)
       .values({
         spotifyId: songData.spotifyId,
-        title: songData.title,
+        name: songData.title,
         artist: songData.artist,
-        album: songData.album,
+        albumName: songData.album,
         albumArtUrl: songData.albumArtUrl,
         durationMs: songData.duration,
         popularity: songData.popularity,
@@ -113,9 +113,9 @@ export async function POST(request: NextRequest) {
       song: {
         id: song.id,
         spotify_id: song.spotifyId,
-        title: song.title,
+        title: song.name,
         artist: song.artist,
-        album: song.album,
+        album: song.albumName,
         album_art_url: song.albumArtUrl,
         duration_ms: song.durationMs,
         popularity: song.popularity,

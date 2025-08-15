@@ -224,7 +224,7 @@ export class SetlistSyncService {
           .from(songs)
           .where(
             and(
-              eq(songs.title, songData.name),
+              eq(songs.name, songData.name),
               eq(songs.artist, songData.cover?.name || artistId),
             ),
           )
@@ -252,9 +252,9 @@ export class SetlistSyncService {
                     .insert(songs)
                     .values({
                       spotifyId: track.id,
-                      title: track.name,
+                      name: track.name,
                       artist: track.artists[0]?.name || "Unknown Artist",
-                      album: track.album?.name || "Unknown Album",
+                      albumName: track.album?.name || "Unknown Album",
                       albumArtUrl: track.album?.images?.[0]?.url || null,
                       releaseDate: track.album?.release_date || "",
                       durationMs: track.duration_ms,
@@ -282,9 +282,9 @@ export class SetlistSyncService {
                   const [newSong] = await db
                     .insert(songs)
                     .values({
-                      title: track.name,
+                      name: track.name,
                       artist: track.artists[0]?.name || "Unknown Artist",
-                      album: track.album?.name || "Unknown Album",
+                      albumName: track.album?.name || "Unknown Album",
                       albumArtUrl: track.album?.images?.[0]?.url || null,
                       durationMs: track.duration_ms,
                       popularity: track.popularity,
@@ -306,7 +306,7 @@ export class SetlistSyncService {
           const [newSong] = await db
             .insert(songs)
             .values({
-              title: songData.name,
+              name: songData.name,
               artist: songData.cover?.name || artistId,
             })
             .returning({ id: songs.id });
@@ -370,7 +370,7 @@ export class SetlistSyncService {
       const catalog = await db
         .select({
           id: songs.id,
-          title: songs.title,
+          title: songs.name,
           popularity: songs.popularity,
         })
         .from(songs)
@@ -491,9 +491,9 @@ export class SetlistSyncService {
     let songQuery = db
       .select({
         id: songs.id,
-        title: songs.title,
+        title: songs.name,
         artist: songs.artist,
-        album: songs.album,
+        albumName: songs.albumName,
         popularity: songs.popularity,
         durationMs: songs.durationMs,
         albumType: songs.albumType,

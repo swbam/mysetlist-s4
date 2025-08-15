@@ -132,9 +132,9 @@ export async function POST(request: NextRequest) {
     const newSong = await db
       .insert(songs)
       .values({
-        title,
+        name: title,
         artist,
-        album,
+        albumName: album,
         spotifyId,
         albumArtUrl,
         durationMs,

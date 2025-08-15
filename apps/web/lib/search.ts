@@ -8,7 +8,7 @@ export interface SearchResult {
   slug: string;
   source?: "database" | "ticketmaster";
   requiresSync?: boolean;
-  ticketmasterId?: string;
+  tmAttractionId?: string;
 }
 
 export interface SearchResponse {

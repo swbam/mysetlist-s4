@@ -2,6 +2,7 @@ import {
   boolean,
   date,
   doublePrecision,
+  index,
   integer,
   pgEnum,
   pgTable,
@@ -59,12 +60,16 @@ export const shows = pgTable("shows", {
   isVerified: boolean("is_verified").default(false),
 
   // External integrations
-  ticketmasterId: text("ticketmaster_id").unique(),
+  tmEventId: text("tm_event_id").unique(), // Ticketmaster Event ID
   setlistFmId: text("setlistfm_id"),
+  setlistReady: boolean("setlist_ready").default(false),
 
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  artistDateIdx: index("idx_show_artist_date").on(table.headlinerArtistId, table.date),
+  tmEventIdIdx: index("idx_show_tm_event").on(table.tmEventId),
+}));
 
 export const showArtists = pgTable("show_artists", {
   id: uuid("id").primaryKey().defaultRandom(),

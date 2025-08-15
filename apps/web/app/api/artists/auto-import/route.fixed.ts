@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       existingArtist = await db
         .select()
         .from(artists)
-        .where(eq(artists.ticketmasterId, tmAttractionId))
+        .where(eq(artists.tmAttractionId, tmAttractionId))
         .limit(1);
     } else if (spotifyId) {
       existingArtist = await db
@@ -283,7 +283,7 @@ export async function GET(request: NextRequest) {
       existingArtist = await db
         .select()
         .from(artists)
-        .where(eq(artists.ticketmasterId, tmAttractionId))
+        .where(eq(artists.tmAttractionId, tmAttractionId))
         .limit(1);
     } else if (spotifyId) {
       existingArtist = await db

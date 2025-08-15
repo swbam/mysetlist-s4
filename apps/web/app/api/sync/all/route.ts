@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         .where(
           and(
             isNotNull(artists.spotifyId),
-            isNull(artists.ticketmasterId)
+            isNull(artists.tmAttractionId)
           )
         )
         .limit(limit);
@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Get Ticketmaster data if missing
-        if (!artist.ticketmasterId && artist.name) {
+        if (!artist.tmAttractionId && artist.name) {
           try {
             const tmResults = await ticketmasterClient.searchAttractions({
               keyword: artist.name,
@@ -153,11 +153,11 @@ export async function POST(request: NextRequest) {
                 await db
                   .update(artists)
                   .set({
-                    ticketmasterId: attraction.id,
+                    tmAttractionId: attraction.id,
                     updatedAt: new Date(),
                   })
                   .where(eq(artists.id, artist.id));
-                artist.ticketmasterId = attraction.id;
+                artist.tmAttractionId = attraction.id;
                 dataUpdated = true;
               }
             }
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
         }
 
         // 2. Sync shows from Ticketmaster if we have the ID
-        if (artist.ticketmasterId) {
+        if (artist.tmAttractionId) {
           try {
             const showsResult = await showSync.syncArtistShows(artist.id);
             artistResult.shows = showsResult.newShows;

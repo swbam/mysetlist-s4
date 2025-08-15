@@ -1,8 +1,10 @@
 import {
   boolean,
   doublePrecision,
+  index,
   integer,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -11,8 +13,8 @@ import { songs } from "./setlists";
 
 export const artists = pgTable("artists", {
   id: uuid("id").primaryKey().defaultRandom(),
+  tmAttractionId: text("tm_attraction_id").unique(), // Ticketmaster Attraction ID
   spotifyId: text("spotify_id").unique(),
-  ticketmasterId: text("ticketmaster_id").unique(),
   mbid: text("mbid").unique(), // MusicBrainz ID for Setlist.fm
   name: text("name").notNull(),
   slug: text("slug").unique().notNull(),
@@ -25,8 +27,10 @@ export const artists = pgTable("artists", {
   monthlyListeners: integer("monthly_listeners"),
   verified: boolean("verified").default(false),
   externalUrls: text("external_urls"), // JSON object
+  importStatus: text("import_status"), // "pending" | "in_progress" | "complete" | "failed"
   lastSyncedAt: timestamp("last_synced_at"),
   songCatalogSyncedAt: timestamp("song_catalog_synced_at"),
+  showsSyncedAt: timestamp("shows_synced_at"),
   totalAlbums: integer("total_albums").default(0),
   totalSongs: integer("total_songs").default(0),
   lastFullSyncAt: timestamp("last_full_sync_at"),
@@ -44,7 +48,10 @@ export const artists = pgTable("artists", {
   totalSetlists: integer("total_setlists").default(0),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  tmAttractionIdIdx: index("idx_artist_tm_attraction").on(table.tmAttractionId),
+  spotifyIdIdx: index("idx_artist_spotify").on(table.spotifyId),
+}));
 
 export const artistStats = pgTable("artist_stats", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -62,7 +69,6 @@ export const artistStats = pgTable("artist_stats", {
 });
 
 export const artistSongs = pgTable("artist_songs", {
-  id: uuid("id").primaryKey().defaultRandom(),
   artistId: uuid("artist_id")
     .references(() => artists.id, { onDelete: "cascade" })
     .notNull(),
@@ -72,4 +78,6 @@ export const artistSongs = pgTable("artist_songs", {
   isPrimaryArtist: boolean("is_primary_artist").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => ({
+  pk: primaryKey({ columns: [table.artistId, table.songId] }),
+}));

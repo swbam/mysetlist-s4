@@ -2,6 +2,7 @@ import {
   boolean,
   date,
   inet,
+  index,
   integer,
   jsonb,
   pgEnum,
@@ -13,6 +14,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { users } from "./users";
+import { artists } from "./artists";
 
 // Enums for admin tables
 export const systemHealthStatusEnum = pgEnum("system_health_status", [
@@ -188,9 +190,12 @@ export const dataBackups = pgTable("data_backups", {
 // Import status tracking for artist imports
 export const importStatus = pgTable("import_status", {
   id: uuid("id").primaryKey().defaultRandom(),
-  artistId: varchar("artist_id", { length: 255 }).notNull(), // Can be temp ID like "tmp_123" or real UUID
+  artistId: uuid("artist_id")
+    .references(() => artists.id, { onDelete: "cascade" })
+    .notNull()
+    .unique(),
   stage: importStageEnum("stage").notNull(),
-  percentage: integer("percentage").default(0),
+  progress: integer("progress").default(0), // Renamed from percentage for GROK.md compatibility
   message: text("message"),
   error: text("error"),
   jobId: varchar("job_id", { length: 255 }),
@@ -203,7 +208,9 @@ export const importStatus = pgTable("import_status", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   completedAt: timestamp("completed_at"),
-});
+}, (table) => ({
+  artistIdIdx: index("idx_import_status_artist").on(table.artistId),
+}));
 
 // Log level enum
 export const logLevelEnum = pgEnum("log_level", [

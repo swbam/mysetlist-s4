@@ -32,13 +32,13 @@ export async function GET(request: NextRequest) {
       if (artistId.length === 36 && artistId.includes('-')) {
         try {
           const artist = await db
-            .select({ ticketmasterId: artists.ticketmasterId })
+            .select({ tmAttractionId: artists.tmAttractionId })
             .from(artists)
             .where(eq(artists.id, artistId))
             .limit(1);
           
-          if (artist[0]?.ticketmasterId) {
-            possibleArtistIds.push(artist[0].ticketmasterId);
+          if (artist[0]?.tmAttractionId) {
+            possibleArtistIds.push(artist[0].tmAttractionId);
           }
         } catch (error) {
           console.warn('Failed to lookup ticketmaster ID for artist:', artistId);
