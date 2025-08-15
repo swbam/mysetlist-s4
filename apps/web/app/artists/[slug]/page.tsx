@@ -108,23 +108,8 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
     // Fetch artist data with error handling
     const artist = await getArtist(slug);
 
-    // If artist not found, show loading skeleton (no auto-reload, no background import-by-name)
+    // If artist not found, show not found page
     if (!artist) {
-      return (
-        <ArtistErrorBoundary artistName={slug.replace(/-/g, " ")}>
-          <Suspense
-            fallback={
-              <ArtistImportLoading artistSlug={slug} />
-            }
-          >
-            <ArtistImportLoading artistSlug={slug} />
-          </Suspense>
-        </ArtistErrorBoundary>
-      );
-    }
-
-    if (!artist) {
-      // Artist not found
       notFound();
     }
 
@@ -236,7 +221,7 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
           <ArtistPageWrapper
             artistId={artist.id}
             artistName={artist.name || "Unknown Artist"}
-            spotifyId={artist.spotifyId}
+            spotifyId={artist.spotifyId || undefined}
             initialData={{
               artist: artistData,
               shows: [...transformedUpcomingShows, ...transformedPastShows],
@@ -276,7 +261,7 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
                       shows={transformedUpcomingShows}
                       artistName={artist.name || "Unknown Artist"}
                       artistId={artist.id}
-                      spotifyId={artist.spotifyId}
+                      spotifyId={artist.spotifyId || undefined}
                     />
                   </React.Suspense>
                 </TabsContent>

@@ -24,7 +24,7 @@ const _getArtist = async (slug: string) => {
       return null;
     }
 
-    // First try with Drizzle for better performance
+    // Use Drizzle ORM for consistent database access
     const artistResults = await db
       .select({
         id: artists.id,
@@ -63,129 +63,9 @@ const _getArtist = async (slug: string) => {
       return artist;
     }
 
-    // If not found with Drizzle, try Supabase client as fallback
-    try {
-      const { createServiceClient } = await import("~/lib/supabase/server");
-      const supabase = await createServiceClient();
-
-      if (!supabase) {
-        console.error("Failed to create Supabase service client");
-        return null;
-      }
-
-      const { data, error } = await supabase
-        .from("artists")
-        .select("*")
-        .eq("slug", slug)
-        .single();
-
-      if (error || !data) {
-        console.warn("Artist not found in database:", slug);
-
-        // Try to import artist automatically from external sources
-        try {
-          // First search for the artist to see if it exists in external APIs
-          const searchResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/search?q=${encodeURIComponent(slug.replace(/-/g, " "))}&limit=1`,
-          );
-
-          if (searchResponse.ok) {
-            const searchData = await searchResponse.json();
-            const externalArtist = searchData.results?.find(
-              (a: any) => a.metadata?.source !== "database",
-            );
-
-            if (externalArtist) {
-              // Trigger import for this artist
-              const importResponse = await fetch(
-                `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001"}/api/artists/import`,
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    tmAttractionId:
-                      externalArtist?.metadata?.externalId ||
-                      (typeof externalArtist?.id === "string"
-                        ? externalArtist.id.replace("tm_", "")
-                        : undefined),
-                  }),
-                },
-              );
-
-              if (importResponse.ok) {
-                const importData = await importResponse.json();
-                const returnedSlug = importData.slug || importData.artist?.slug;
-
-                // Return minimal data for now - full sync will happen in background
-                return {
-                  id: importData.artistId || importData.artist?.id,
-                  spotifyId: null,
-                  tmAttractionId: null,
-                  name: externalArtist.name,
-                  slug: returnedSlug,
-                  imageUrl: externalArtist.imageUrl,
-                  smallImageUrl: null,
-                  genres: JSON.stringify(externalArtist.genres || []),
-                  popularity: externalArtist.popularity || 0,
-                  followers: 0,
-                  followerCount: 0,
-                  monthlyListeners: null,
-                  verified: false,
-                  externalUrls: null,
-                  lastSyncedAt: null,
-                  songCatalogSyncedAt: null,
-                  totalAlbums: 0,
-                  totalSongs: 0,
-                  lastFullSyncAt: null,
-                  trendingScore: 0,
-                  totalShows: 0,
-                  upcomingShows: 0,
-                  totalSetlists: 0,
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
-                };
-              }
-            }
-          }
-        } catch (importError) {
-          console.error("Auto-import failed:", importError);
-        }
-
-        return null;
-      }
-
-      // Transform snake_case to camelCase
-      return {
-        id: data.id,
-        spotifyId: data.spotify_id,
-        tmAttractionId: data.ticketmaster_id,
-        name: data.name,
-        slug: data.slug,
-        imageUrl: data.image_url,
-        smallImageUrl: data.small_image_url,
-        genres: data.genres,
-        popularity: data.popularity,
-        followers: data.followers,
-        followerCount: data.follower_count,
-        monthlyListeners: data.monthly_listeners,
-        verified: data.verified,
-        externalUrls: data.external_urls,
-        lastSyncedAt: data.last_synced_at,
-        songCatalogSyncedAt: data.song_catalog_synced_at,
-        totalAlbums: data.total_albums,
-        totalSongs: data.total_songs,
-        lastFullSyncAt: data.last_full_sync_at,
-        trendingScore: data.trending_score,
-        totalShows: data.total_shows,
-        upcomingShows: data.upcoming_shows,
-        totalSetlists: data.total_setlists,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
-      };
-    } catch (supabaseError) {
-      console.error("Supabase fallback error:", supabaseError);
-      return null;
-    }
+    // Artist not found - return null instead of auto-importing
+    console.warn("Artist not found in database:", slug);
+    return null;
   } catch (err: unknown) {
     console.error("Critical error in getArtist for slug:", slug, err);
     // Return null instead of throwing to prevent 500 errors
@@ -457,36 +337,40 @@ export const getArtistSetlists = unstable_cache(
 // Enhanced action for artist songs with setlist integration
 const _getArtistSongsWithSetlistData = async (artistId: string, limit = 50) => {
   try {
+    // Simplified query to avoid complex raw SQL that might fail in production
+    // First get the artist name
+    const [artist] = await db
+      .select({ name: artists.name })
+      .from(artists)
+      .where(eq(artists.id, artistId))
+      .limit(1);
+
+    if (!artist) {
+      return [];
+    }
+
+    // Get songs for this artist using a simpler approach
     const artistSongs = await db
       .select({
-        song: drizzleSql`DISTINCT songs.*`,
-        timesPlayed: drizzleSql<number>`COUNT(setlist_songs.song_id)::int`,
-        lastPlayed: drizzleSql<string>`MAX(setlists.created_at)`,
-        popularity: drizzleSql<number>`
-          COALESCE(
-            (COUNT(CASE WHEN votes.vote_type = 'up' THEN 1 END) - COUNT(CASE WHEN votes.vote_type = 'down' THEN 1 END))::float /
-            NULLIF(COUNT(votes.id), 0) * 100, 0
-          )::int
-        `,
+        id: songs.id,
+        name: songs.name,
+        artist: songs.artist,
+        albumName: songs.albumName,
+        popularity: songs.popularity,
+        durationMs: songs.durationMs,
+        spotifyId: songs.spotifyId,
       })
-      .from(drizzleSql`songs`)
-      .leftJoin(
-        drizzleSql`setlist_songs`,
-        drizzleSql`setlist_songs.song_id = songs.id`,
-      )
-      .leftJoin(setlists, drizzleSql`setlist_songs.setlist_id = setlists.id`)
-      .leftJoin(
-        drizzleSql`votes`,
-        drizzleSql`votes.setlist_song_id = setlist_songs.id`,
-      )
-      .where(
-        drizzleSql`songs.artist = (SELECT name FROM artists WHERE id = ${artistId})`,
-      )
-      .groupBy(drizzleSql`songs.id`)
-      .orderBy(drizzleSql`COUNT(setlist_songs.song_id) DESC`)
+      .from(songs)
+      .where(eq(songs.artist, artist.name))
+      .orderBy(desc(songs.popularity))
       .limit(limit);
 
-    return artistSongs;
+    return artistSongs.map(song => ({
+      song,
+      timesPlayed: 0, // Simplified for now
+      lastPlayed: null,
+      popularity: song.popularity || 0,
+    }));
   } catch (error) {
     console.error(
       `Error fetching songs with setlist data for artist ${artistId}:`,
