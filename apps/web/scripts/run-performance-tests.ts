@@ -278,11 +278,17 @@ class PerformanceTestRunner {
       return { allPassed: true, violations: [] };
     }
 
-    const violations = [];
+    const violations: Array<{
+      sloKey: string;
+      actualValue: number;
+      threshold: number;
+      margin: number;
+    }> = [];
     let allPassed = true;
 
     for (const match of matches) {
       try {
+        if (!match[1]) continue;
         const sloData = JSON.parse(match[1]);
         if (!sloData.passed) {
           allPassed = false;
@@ -344,7 +350,7 @@ class PerformanceTestRunner {
   private generateSLOSummary() {
     const allSLOResults = this.results
       .map(r => r.sloResults)
-      .filter(Boolean);
+      .filter((slo): slo is NonNullable<typeof slo> => Boolean(slo));
 
     const totalViolations = allSLOResults
       .flatMap(slo => slo.violations || []);
@@ -360,7 +366,7 @@ class PerformanceTestRunner {
   private generateCoverageSummary() {
     const coverageResults = this.results
       .map(r => r.coverage)
-      .filter(Boolean);
+      .filter((cov): cov is NonNullable<typeof cov> => Boolean(cov));
 
     if (coverageResults.length === 0) {
       return null;

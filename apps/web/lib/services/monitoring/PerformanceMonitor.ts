@@ -144,6 +144,10 @@ export class PerformanceMonitor {
     margin: number;
   } {
     const slo = SLO_TARGETS[sloKey];
+    if (!slo) {
+      throw new Error(`Unknown SLO key: ${sloKey}`);
+    }
+    
     const passed = actualValue <= slo.threshold;
     const margin = slo.threshold - actualValue;
 
@@ -302,9 +306,9 @@ ${failedSLOs.map(slo =>
     catalogMs: number
   ): boolean {
     return (
-      identityMs <= SLO_TARGETS.IDENTITY_PHASE.threshold &&
-      showsMs <= SLO_TARGETS.SHOWS_PHASE.threshold &&
-      catalogMs <= SLO_TARGETS.CATALOG_PHASE.threshold
+      identityMs <= SLO_TARGETS.IDENTITY_PHASE!.threshold &&
+      showsMs <= SLO_TARGETS.SHOWS_PHASE!.threshold &&
+      catalogMs <= SLO_TARGETS.CATALOG_PHASE!.threshold
     );
   }
 }

@@ -241,7 +241,7 @@ export class ArtistImportOrchestrator {
 
       // Phase 4: Wrap-up (setlists pre-seed, cache invalidation)
       if (this.progressReporter) {
-        await this.progressReporter.report('wrap-up', 95, 'Starting wrap-up phase...');
+        await this.progressReporter.report('creating-setlists', 95, 'Starting wrap-up phase...');
       }
       
       const wrapUpResult = await this.runWrapUpPhase(artistId);
@@ -477,12 +477,12 @@ export class ArtistImportOrchestrator {
   private async runWrapUpPhase(artistId: string): Promise<{ setlistsCreated: number }> {
     try {
       if (this.progressReporter) {
-        await this.progressReporter.report('wrap-up', 96, 'Starting wrap-up phase...');
+        await this.progressReporter.report('creating-setlists', 96, 'Starting wrap-up phase...');
       }
 
       // Step 1: Pre-seed setlists for upcoming shows
       if (this.progressReporter) {
-        await this.progressReporter.report('wrap-up', 97, 'Creating initial setlists...');
+        await this.progressReporter.report('creating-setlists', 97, 'Creating initial setlists...');
       }
 
       const setlistResult = await setlistPreseeder.preseedSetlistsForArtist(artistId, {
@@ -494,7 +494,7 @@ export class ArtistImportOrchestrator {
 
       if (this.progressReporter) {
         await this.progressReporter.report(
-          'wrap-up', 
+          'creating-setlists', 
           98, 
           `Created ${setlistResult.setlistsCreated} setlists for ${setlistResult.showsProcessed} shows`
         );
@@ -502,7 +502,7 @@ export class ArtistImportOrchestrator {
 
       // Step 2: Cache invalidation
       if (this.progressReporter) {
-        await this.progressReporter.report('wrap-up', 99, 'Invalidating caches...');
+        await this.progressReporter.report('creating-setlists', 99, 'Invalidating caches...');
       }
 
       // Get artist details for cache invalidation
@@ -516,7 +516,7 @@ export class ArtistImportOrchestrator {
       await invalidateArtistCache(artistId, artist?.slug);
 
       if (this.progressReporter) {
-        await this.progressReporter.report('wrap-up', 100, 'Wrap-up phase completed successfully');
+        await this.progressReporter.report('creating-setlists', 100, 'Wrap-up phase completed successfully');
       }
 
       return { setlistsCreated: setlistResult.setlistsCreated };
@@ -526,7 +526,7 @@ export class ArtistImportOrchestrator {
       // Don't throw - wrap-up failures shouldn't fail the entire import
       if (this.progressReporter) {
         await this.progressReporter.report(
-          'wrap-up', 
+          'creating-setlists', 
           95, 
           `Wrap-up phase failed: ${error instanceof Error ? error.message : 'Unknown error'}`
         );

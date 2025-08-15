@@ -228,8 +228,8 @@ export class SetlistPreseeder {
     options: PreseedOptions
   ): Promise<Array<{ id: string; name: string; popularity: number }>> {
     try {
-      // Build query for artist's songs
-      let query = db
+      // Build base query for artist's songs
+      const baseQuery = db
         .select({
           id: songs.id,
           name: songs.name,
@@ -241,14 +241,10 @@ export class SetlistPreseeder {
         .innerJoin(artistSongs, eq(songs.id, artistSongs.songId))
         .where(eq(artistSongs.artistId, artistId));
 
-      // Apply ordering based on options
-      if (options.weightByPopularity) {
-        query = query.orderBy(desc(songs.popularity));
-      } else {
-        query = query.orderBy(sql`RANDOM()`);
-      }
-
-      const allSongs = await query.limit(100); // Get more than we need for filtering
+      // Apply ordering based on options and execute
+      const allSongs = options.weightByPopularity
+        ? await baseQuery.orderBy(desc(songs.popularity)).limit(100)
+        : await baseQuery.orderBy(sql`RANDOM()`).limit(100);
 
       // Filter songs based on options
       let filteredSongs = allSongs;
