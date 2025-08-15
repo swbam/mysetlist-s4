@@ -38,11 +38,14 @@ try {
   client =
     globalForDrizzle.client ??
     postgres(databaseUrl, {
-      max: 10, // connection pool size
-      idle_timeout: 20,
-      connect_timeout: 10,
+      max: 20, // increased connection pool size for better concurrency
+      idle_timeout: 30, // increased from 20
+      connect_timeout: 30, // increased from 10 to handle slow connections
       ssl: "require", // Always use SSL for Supabase
       prepare: false, // disable prepared statements for Supabase pooler
+      connection: {
+        application_name: 'mysetlist_app', // better connection tracking
+      },
     });
 
   if (process.env['NODE_ENV'] !== "production") {

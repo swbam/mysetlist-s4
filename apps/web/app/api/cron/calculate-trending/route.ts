@@ -11,18 +11,35 @@ import {
 export const dynamic = "force-dynamic";
 
 async function executeTrendingUpdate() {
-  // Call the database function to update trending scores
-  await db.execute(sql`SELECT update_trending_scores()`);
-
-  // Refresh materialized views
-  await db.execute(sql`SELECT refresh_trending_data()`);
-
-  // Best-effort log entry
   try {
-    await db.execute(sql`SELECT log_cron_run('calculate-trending', 'success')`);
-  } catch {}
+    // Call the database function to update trending scores
+    await db.execute(sql`SELECT update_trending_scores()`);
 
-  return { message: "Trending scores updated successfully" };
+    // Try to refresh materialized views (if function exists)
+    try {
+      await db.execute(sql`SELECT refresh_trending_data()`);
+    } catch (refreshError) {
+      console.warn("refresh_trending_data function not available, skipping materialized view refresh:", refreshError);
+    }
+
+    // Best-effort log entry
+    try {
+      await db.execute(sql`SELECT log_cron_run('calculate-trending', 'success')`);
+    } catch (logError) {
+      console.warn("log_cron_run function not available, skipping log:", logError);
+    }
+
+    return { message: "Trending scores updated successfully" };
+  } catch (error) {
+    console.error("Trending calculation error:", error);
+    
+    // Try to log the error
+    try {
+      await db.execute(sql`SELECT log_cron_run('calculate-trending', 'error')`);
+    } catch {}
+    
+    throw error;
+  }
 }
 
 export async function POST(request: NextRequest) {

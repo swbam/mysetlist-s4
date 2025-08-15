@@ -1,9 +1,7 @@
 import { artists, db } from "@repo/database";
 import { ArtistImportOrchestrator } from "@repo/external-apis";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
 import { eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
-import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import { CACHE_TAGS } from "~/lib/cache";
 import { updateImportStatus } from "~/lib/import-status";
