@@ -17,13 +17,18 @@ export function AutoSyncOnEmptyShows({
   spotifyId,
   enabled = true,
 }: AutoSyncProps) {
+  // Only auto-import if we have proper identifiers (spotifyId)
+  // Don't auto-import based on artistName alone to avoid API errors
+  // artistId is the database UUID, not an external identifier
+  const shouldAutoImport = enabled && Boolean(spotifyId);
+  
   // Ensure CSRF cookie exists before auto-import
   useCSRFToken();
   const { loading, error } = useAutoImportOnMount({
     artistId,
-    artistName,
+    artistName: shouldAutoImport ? artistName : undefined,
     spotifyId,
-    enabled,
+    enabled: shouldAutoImport,
   });
 
   useEffect(() => {

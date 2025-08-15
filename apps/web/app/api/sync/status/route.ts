@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
     const cookieStore = await cookies();
     const supabase = createRouteHandlerClient({
-      cookies: () => Promise.resolve(cookieStore),
+      cookies: () => cookieStore,
     });
 
     // Get the latest import status for the artist

@@ -55,6 +55,14 @@ export async function POST(request: NextRequest) {
         .from(artists)
         .where(eq(artists.spotifyId, spotifyId))
         .limit(1);
+    } else if (artistName) {
+      // Check by name slug for artistName-only imports
+      const slug = artistName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      existingArtist = await db
+        .select()
+        .from(artists)
+        .where(eq(artists.slug, slug))
+        .limit(1);
     }
 
     if (
@@ -130,6 +138,9 @@ export async function POST(request: NextRequest) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            ...(process.env.CRON_SECRET && {
+              "Authorization": `Bearer ${process.env.CRON_SECRET}`
+            }),
           },
           body: JSON.stringify({
             spotifyId: spotifyId,
@@ -152,7 +163,18 @@ export async function POST(request: NextRequest) {
       }
 
       importResult = await orchestrationResponse.json();
-      artistId = importResult.artistId;
+      artistId = importResult.artist?.id;
+      
+      // Transform orchestration result to auto-import format
+      importResult = {
+        success: importResult.success,
+        artistId: importResult.artist?.id,
+        slug: importResult.artist?.slug,
+        totalSongs: 0, // Will be populated during sync
+        totalShows: 0, // Will be populated during sync
+        totalVenues: 0, // Will be populated during sync
+        importDuration: null,
+      };
     }
 
     // Revalidate cache
