@@ -28,23 +28,16 @@ export async function GET(
         stage: "initializing",
         progress: 0,
         message: "Waiting for import to start...",
-        at: new Date().toISOString(),
-        isComplete: false,
-        hasError: false,
+        updatedAt: new Date().toISOString(),
       });
     }
 
-    // Transform to include additional computed fields
+    // Return exact GROK.md specification: { stage, progress, message, updatedAt }
     const response = {
       stage: status.stage,
       progress: status.progress,
       message: status.message,
-      at: status.at,
-      error: status.error,
-      phaseTimings: status.phaseTimings,
-      isComplete: status.stage === "completed",
-      hasError: status.stage === "failed",
-      artistId,
+      updatedAt: status.at,
     };
 
     return NextResponse.json(response);

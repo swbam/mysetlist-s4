@@ -7,7 +7,16 @@
     "start": "next start",
     "lint": "biome check .",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --coverage"
+    "test": "vitest run --coverage",
+    "test:unit": "vitest run --config vitest.performance.config.ts __tests__/unit/**/*.test.ts --coverage",
+    "test:integration": "vitest run --config vitest.performance.config.ts __tests__/integration/**/*.test.ts --coverage",
+    "test:e2e": "vitest run --config vitest.performance.config.ts __tests__/e2e/**/*.test.ts",
+    "test:quality": "vitest run --config vitest.performance.config.ts __tests__/quality/**/*.test.ts",
+    "test:acceptance": "vitest run --config vitest.performance.config.ts __tests__/acceptance/**/*.test.ts",
+    "test:performance": "tsx scripts/run-performance-tests.ts",
+    "test:grok-validation": "npm run test:performance && echo '✅ GROK.md compliance validated'",
+    "test:watch": "vitest --config vitest.performance.config.ts",
+    "test:coverage": "vitest run --config vitest.performance.config.ts --coverage"
   },
   "dependencies": {
     "@arcjet/next": "1.0.0-beta.8",

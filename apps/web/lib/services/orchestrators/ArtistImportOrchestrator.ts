@@ -23,6 +23,8 @@ import {
   isRemixTitle,
   generateMatchingKey 
 } from '../util/strings';
+import { setlistPreseeder } from '../ingest/SetlistPreseeder';
+import { invalidateArtistCache } from '../../cache';
 
 /**
  * Core orchestrator interface
@@ -237,6 +239,13 @@ export class ArtistImportOrchestrator {
         }
       }
 
+      // Phase 4: Wrap-up (setlists pre-seed, cache invalidation)
+      if (this.progressReporter) {
+        await this.progressReporter.report('wrap-up', 95, 'Starting wrap-up phase...');
+      }
+      
+      const wrapUpResult = await this.runWrapUpPhase(artistId);
+
       // Mark import as complete
       await db
         .update(artists)
@@ -250,7 +259,7 @@ export class ArtistImportOrchestrator {
       
       if (this.progressReporter) {
         await this.progressReporter.reportComplete(
-          `Import completed: ${stats.songsImported} songs, ${stats.showsImported} shows`,
+          `Import completed: ${stats.songsImported} songs, ${stats.showsImported} shows, ${wrapUpResult.setlistsCreated} setlists`,
           { stats }
         );
       }
@@ -458,6 +467,71 @@ export class ArtistImportOrchestrator {
     } catch (error) {
       console.error('Studio catalog import failed:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Phase 4: Wrap-up (setlists pre-seed, cache invalidation)
+   * Implements GROK.md Phase 4 requirements to complete import at 100%
+   */
+  private async runWrapUpPhase(artistId: string): Promise<{ setlistsCreated: number }> {
+    try {
+      if (this.progressReporter) {
+        await this.progressReporter.report('wrap-up', 96, 'Starting wrap-up phase...');
+      }
+
+      // Step 1: Pre-seed setlists for upcoming shows
+      if (this.progressReporter) {
+        await this.progressReporter.report('wrap-up', 97, 'Creating initial setlists...');
+      }
+
+      const setlistResult = await setlistPreseeder.preseedSetlistsForArtist(artistId, {
+        songsPerSetlist: 5,
+        weightByPopularity: true,
+        excludeLive: true,
+        setlistName: 'Predicted Setlist',
+      });
+
+      if (this.progressReporter) {
+        await this.progressReporter.report(
+          'wrap-up', 
+          98, 
+          `Created ${setlistResult.setlistsCreated} setlists for ${setlistResult.showsProcessed} shows`
+        );
+      }
+
+      // Step 2: Cache invalidation
+      if (this.progressReporter) {
+        await this.progressReporter.report('wrap-up', 99, 'Invalidating caches...');
+      }
+
+      // Get artist details for cache invalidation
+      const [artist] = await db
+        .select({ slug: artists.slug })
+        .from(artists)
+        .where(eq(artists.id, artistId))
+        .limit(1);
+
+      // Invalidate artist-related caches
+      await invalidateArtistCache(artistId, artist?.slug);
+
+      if (this.progressReporter) {
+        await this.progressReporter.report('wrap-up', 100, 'Wrap-up phase completed successfully');
+      }
+
+      return { setlistsCreated: setlistResult.setlistsCreated };
+
+    } catch (error) {
+      console.error('Wrap-up phase failed:', error);
+      // Don't throw - wrap-up failures shouldn't fail the entire import
+      if (this.progressReporter) {
+        await this.progressReporter.report(
+          'wrap-up', 
+          95, 
+          `Wrap-up phase failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+      }
+      return { setlistsCreated: 0 };
     }
   }
 

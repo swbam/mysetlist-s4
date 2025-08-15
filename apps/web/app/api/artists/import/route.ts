@@ -21,12 +21,11 @@ export async function POST(request: NextRequest) {
     // Phase 1: Create artist record immediately (< 200ms)
     const result = await initiateImport(tmAttractionId);
 
+    // Return exact GROK.md specification: { artistId: string, slug: string }
     return NextResponse.json(
       {
         artistId: result.artistId,
-        slug: result.slug,
-        success: true,
-        message: "Artist created successfully. Use the stream endpoint for progress updates."
+        slug: result.slug
       },
       { status: 200 }
     );
