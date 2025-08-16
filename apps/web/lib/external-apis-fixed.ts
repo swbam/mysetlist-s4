@@ -33,7 +33,7 @@ export class SpotifyClient {
   }
   
   async searchArtists(query: string, token?: string) {
-    return SpotifyAPI.searchArtists(query, token);
+  return SpotifyAPI.searchArtists(query, { token });
   }
   
   async getArtist(artistId: string, token?: string) {

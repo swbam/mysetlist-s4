@@ -127,21 +127,21 @@ export const EnhancedSetlistViewer = ({
   const handleSongSuggestion = async (song: any) => {
     try {
       // First, upsert the song to ensure it exists in our database
-      const songResponse = await fetch("/api/songs/upsert", {
+    const songResponse = await fetch("/api/songs/upsert", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          spotify_id: song.spotify_id,
-          title: song.title,
-          artist: song.artist,
-          album: song.album,
-          album_art_url: song.album_art_url,
-          duration_ms: song.duration_ms,
-          is_explicit: song.is_explicit,
-          popularity: song.popularity,
-          previewUrl: song.preview_url,
+      spotifyId: song.spotify_id,
+      title: song.title,
+      artist: song.artist,
+      album: song.album,
+      albumArtUrl: song.album_art_url,
+      duration: song.duration_ms,
+      isExplicit: song.is_explicit,
+      popularity: song.popularity,
+      previewUrl: song.preview_url,
         }),
       });
 
@@ -228,25 +228,10 @@ export const EnhancedSetlistViewer = ({
     );
   }
 
-  if (!currentSetlist || currentSetlist.songs.length === 0) {
-    return (
-      <Card>
-        <CardContent className="p-8 text-center">
-          <Music className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-          <h3 className="mb-2 font-semibold text-lg">No setlist available</h3>
-          <p className="text-muted-foreground">
-            The setlist for this show hasn't been created yet.
-          </p>
-          <Button onClick={refetch} variant="outline" className="mt-4">
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
+  // If there's no setlist yet, render an empty shell with song selector to let users start adding
+  const isEmpty = !currentSetlist || currentSetlist.songs.length === 0;
 
-  const songs = currentSetlist.songs.sort((a, b) => a.position - b.position);
+  const songs = (currentSetlist?.songs || []).sort((a, b) => a.position - b.position);
   const playedSongs = songs.filter((song) => song.isPlayed).length;
   const progress = songs.length > 0 ? (playedSongs / songs.length) * 100 : 0;
   const currentlyPlaying = songs.find(
@@ -282,7 +267,7 @@ export const EnhancedSetlistViewer = ({
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Music className="h-5 w-5" />
-              {currentSetlist.name}
+              {currentSetlist?.name ?? "Setlist"}
             </CardTitle>
 
             <div className="flex items-center gap-4">
@@ -345,8 +330,8 @@ export const EnhancedSetlistViewer = ({
           )}
         </CardHeader>
 
-        {/* Song Selector - Only show for predicted setlist and if artist info is available */}
-        {activeSetlist === "predicted" && artistId && artistName && (
+  {/* Song Selector - Show when predicted list active or when empty to bootstrap */}
+  {((activeSetlist === "predicted" || isEmpty) && artistId && artistName) && (
           <div className="px-6 py-4 border-b">
             <SongSelector
               artistId={artistId}
@@ -452,7 +437,7 @@ export const EnhancedSetlistViewer = ({
                           handleVote(setlistSong.id, voteType),
                         disabled:
                           !setlistSong.isPlayed &&
-                          currentSetlist.type === "actual",
+                          (currentSetlist?.type === "actual"),
                         variant: "compact",
                         size: "sm",
                       })}
