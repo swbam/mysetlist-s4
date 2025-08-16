@@ -195,7 +195,7 @@ export const importStatus = pgTable("import_status", {
     .notNull()
     .unique(),
   stage: importStageEnum("stage").notNull(),
-  progress: integer("progress").default(0), // Renamed from percentage for GROK.md compatibility
+  percentage: integer("percentage").default(0), // Database column name
   message: text("message"),
   error: text("error"),
   jobId: varchar("job_id", { length: 255 }),

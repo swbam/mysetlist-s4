@@ -76,9 +76,8 @@ async function handleTrendingPipeline() {
     const trendingResult = await trendingResponse.json();
     
     // Update autonomous sync health
-    const cookieStore = await cookies();
     const supabase = createRouteHandlerClient({ 
-      cookies: () => cookieStore 
+      cookies: cookies
     });
 
     await supabase.rpc('log_autonomous_sync', {
@@ -100,9 +99,8 @@ async function handleTrendingPipeline() {
     
     // Log failure
     try {
-      const cookieStore = await cookies();
       const supabase = createRouteHandlerClient({ 
-        cookies: () => cookieStore 
+        cookies: cookies
       });
 
       await supabase.rpc('log_autonomous_sync', {
@@ -147,9 +145,8 @@ async function handleSyncPipeline() {
     const syncResult = await syncResponse.json();
 
     // Update autonomous sync health
-    const cookieStore = await cookies();
     const supabase = createRouteHandlerClient({ 
-      cookies: () => cookieStore 
+      cookies: cookies
     });
 
     await supabase.rpc('log_autonomous_sync', {
@@ -171,9 +168,8 @@ async function handleSyncPipeline() {
 
     // Log failure
     try {
-      const cookieStore = await cookies();
       const supabase = createRouteHandlerClient({ 
-        cookies: () => cookieStore 
+        cookies: cookies
       });
 
       await supabase.rpc('log_autonomous_sync', {
@@ -202,9 +198,8 @@ async function handleMaintenancePipeline() {
   };
 
   try {
-    const cookieStore = await cookies();
     const supabase = createRouteHandlerClient({ 
-      cookies: () => cookieStore 
+      cookies: cookies
     });
 
     // 1. Database Maintenance
@@ -275,9 +270,8 @@ async function handleMaintenancePipeline() {
 
     // Log failure
     try {
-      const cookieStore = await cookies();
       const supabase = createRouteHandlerClient({ 
-        cookies: () => cookieStore 
+        cookies: cookies
       });
 
       await supabase.rpc('log_autonomous_sync', {

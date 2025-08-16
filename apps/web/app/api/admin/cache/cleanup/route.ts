@@ -4,7 +4,7 @@ import {
   createSuccessResponse,
   requireCronAuth,
 } from "~/lib/api/auth-helpers";
-import { CacheManager } from "~/lib/cache";
+import { CacheManager } from "~/lib/services/cache-manager";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";

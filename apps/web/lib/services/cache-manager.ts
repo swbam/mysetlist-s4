@@ -453,9 +453,16 @@ export class CacheManager {
   static async clearExpired(): Promise<number> {
     try {
       const instance = CacheManager.getInstance();
-      // This would depend on Redis implementation
-      // For now, return a placeholder
-      return await instance.redisClient.clearExpired();
+      // Redis automatically handles expired keys, but we can manually clean up patterns
+      const patterns = ['artists:*', 'shows:*', 'trending:*', 'search:*'];
+      let clearedKeys = 0;
+      
+      for (const pattern of patterns) {
+        await instance.invalidatePattern(pattern);
+        clearedKeys++;
+      }
+      
+      return clearedKeys;
     } catch (error) {
       console.warn("Clear expired cache error:", error);
       return 0;
