@@ -19,6 +19,13 @@ export const env = createEnv({
     TICKETMASTER_API_KEY: z.string().optional(),
     SETLISTFM_API_KEY: z.string().optional(),
 
+    // Redis (optional)
+    REDIS_URL: z.string().optional(),
+    REDIS_HOST: z.string().optional(),
+    REDIS_PORT: z.preprocess((v) => (v ? Number(v) : undefined), z.number().optional()),
+    REDIS_USERNAME: z.string().optional(),
+    REDIS_PASSWORD: z.string().optional(),
+
     // Email
     RESEND_API_KEY: z.string().optional(),
 
@@ -58,6 +65,11 @@ export const env = createEnv({
     SPOTIFY_CLIENT_SECRET: process.env['SPOTIFY_CLIENT_SECRET'],
     TICKETMASTER_API_KEY: process.env['TICKETMASTER_API_KEY'],
     SETLISTFM_API_KEY: process.env['SETLISTFM_API_KEY'],
+    REDIS_URL: process.env['REDIS_URL'],
+    REDIS_HOST: process.env['REDIS_HOST'],
+    REDIS_PORT: process.env['REDIS_PORT'] as any,
+    REDIS_USERNAME: process.env['REDIS_USERNAME'],
+    REDIS_PASSWORD: process.env['REDIS_PASSWORD'],
     RESEND_API_KEY: process.env['RESEND_API_KEY'],
     CRON_SECRET: process.env['CRON_SECRET'],
     JWT_SECRET: process.env['JWT_SECRET'],
