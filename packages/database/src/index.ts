@@ -2,22 +2,8 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema";
 
-// Use dynamic import to handle env import issues
-let databaseUrl: string | undefined;
-
-try {
-  // Try to import env package
-  const envModule = require("@repo/env");
-  databaseUrl = envModule.env?.DATABASE_URL;
-} catch (error) {
-  // Fallback to process.env if @repo/env is not available
-  console.warn("Failed to import @repo/env, falling back to process.env");
-}
-
-// Use fallback DATABASE_URL if not available from env
-if (!databaseUrl) {
-  databaseUrl = process.env['DATABASE_URL'] || process.env['DIRECT_URL'];
-}
+// Get database URL from environment variables
+const databaseUrl = process.env.DATABASE_URL || process.env.DIRECT_URL;
 
 // Ensure we have a database URL
 if (!databaseUrl) {
