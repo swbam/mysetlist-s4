@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { initiateImport } from "~/lib/services/orchestrators/ArtistImportOrchestrator";
+import { enqueueArtistImport } from "~/lib/services/queue/bullmq";
 
 /**
  * POST /api/artists/import - Kickoff endpoint for artist imports
@@ -20,6 +21,13 @@ export async function POST(request: NextRequest) {
 
     // Phase 1: Create artist record immediately (< 200ms)
     const result = await initiateImport(tmAttractionId);
+
+    // Enqueue durable background import to BullMQ worker
+    try {
+      await enqueueArtistImport(result.artistId);
+    } catch (e) {
+      // Non-fatal; SSE route can still start work if opened by client
+    }
 
     // Return exact GROK.md specification: { artistId: string, slug: string }
     return NextResponse.json(
