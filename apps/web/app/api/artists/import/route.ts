@@ -1,15 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { initiateImport } from "~/lib/services/orchestrators/ArtistImportOrchestrator";
+import { queueManager, QueueName, Priority } from "~/lib/queues/queue-manager";
+import { v4 as uuidv4 } from "uuid";
 
 /**
- * POST /api/artists/import - Kickoff endpoint for artist imports
- * Implements GROK.md Phase 1: Identity/Bootstrap (< 200ms)
- * Returns artist shell immediately for instant page loads
+ * POST /api/artists/import - Kickoff endpoint for artist imports using BullMQ
+ * Returns immediately with job ID for tracking
  */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { tmAttractionId } = body;
+    const { tmAttractionId, userId, adminImport } = body;
 
     if (!tmAttractionId) {
       return NextResponse.json(
@@ -18,25 +18,50 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Phase 1: Create artist record immediately (< 200ms)
-    const result = await initiateImport(tmAttractionId);
+    // Generate job ID for tracking
+    const jobId = `import_${tmAttractionId}_${Date.now()}`;
+    
+    // Queue the import job with high priority for user-initiated imports
+    const job = await queueManager.addJob(
+      QueueName.ARTIST_IMPORT,
+      `artist-import-${tmAttractionId}`,
+      {
+        tmAttractionId,
+        userId,
+        adminImport: adminImport || false,
+        priority: Priority.CRITICAL,
+      },
+      {
+        jobId,
+        priority: Priority.CRITICAL,
+        removeOnComplete: {
+          age: 3600, // Keep for 1 hour
+          count: 100,
+        },
+        removeOnFail: {
+          age: 86400, // Keep failed jobs for 24 hours
+        },
+      }
+    );
 
-    // Return exact GROK.md specification: { artistId: string, slug: string }
+    // Return job ID for progress tracking
     return NextResponse.json(
       {
-        artistId: result.artistId,
-        slug: result.slug
+        success: true,
+        jobId: job.id,
+        tmAttractionId,
+        message: "Import queued successfully",
       },
-      { status: 200 }
+      { status: 202 } // 202 Accepted - request accepted for processing
     );
 
   } catch (error) {
-    console.error("[IMPORT] Import kickoff failed:", error);
+    console.error("[IMPORT] Failed to queue import:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
 
     return NextResponse.json(
       {
-        error: "Failed to initiate import",
+        error: "Failed to queue import",
         details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
       },
       { status: 500 }
