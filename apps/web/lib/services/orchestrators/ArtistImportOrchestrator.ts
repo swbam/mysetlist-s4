@@ -25,6 +25,7 @@ import {
 } from '../util/strings';
 import { setlistPreseeder } from '../ingest/SetlistPreseeder';
 import { invalidateArtistCache } from '../../cache';
+import { getAttraction } from '../adapters/TicketmasterClient';
 
 /**
  * Core orchestrator interface
@@ -111,21 +112,62 @@ export class ArtistImportOrchestrator {
     const startTime = Date.now();
     
     try {
-      // Generate temporary slug
-      const tempSlug = `tm-${tmAttractionId}`;
+      // Fetch artist details from Ticketmaster
+      const attraction = await getAttraction(tmAttractionId, this.config.ticketmasterApiKey);
       
-      // Upsert artist with minimal data for instant availability
+      if (!attraction) {
+        throw new Error(`Attraction ${tmAttractionId} not found in Ticketmaster`);
+      }
+
+      // Generate proper slug from artist name
+      const slug = attraction.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+      
+      // Extract Spotify ID if available
+      const spotifyUrl = attraction.externalLinks?.spotify?.[0]?.url;
+      const spotifyId = spotifyUrl ? spotifyUrl.split('/').pop() : null;
+
+      // Extract MusicBrainz ID if available  
+      const mbid = attraction.externalLinks?.musicbrainz?.[0]?.id || null;
+
+      // Extract genres
+      const genres = attraction.classifications?.map(c => 
+        [c.genre?.name, c.subGenre?.name]
+          .filter(Boolean)
+          .join(', ')
+      ).filter(Boolean) || [];
+
+      // Get best image
+      const imageUrl = attraction.images?.find((img: any) => img.width && img.width >= 500)?.url ||
+                       attraction.images?.[0]?.url || null;
+      const smallImageUrl = attraction.images?.find((img: any) => img.width && img.width < 500)?.url || imageUrl;
+      
+      // Upsert artist with full data from Ticketmaster
       const [artist] = await db
         .insert(artists)
         .values({
           tmAttractionId,
-          name: 'Loading...', // Temporary name
-          slug: tempSlug,
+          name: attraction.name,
+          slug,
+          spotifyId,
+          mbid,
+          imageUrl,
+          smallImageUrl,
+          genres: JSON.stringify(genres),
           importStatus: 'initializing',
         })
         .onConflictDoUpdate({
           target: artists.tmAttractionId,
           set: {
+            name: attraction.name,
+            slug,
+            spotifyId,
+            mbid,
+            imageUrl,
+            smallImageUrl,
+            genres: JSON.stringify(genres),
             importStatus: 'initializing',
             lastSyncedAt: new Date(),
           },

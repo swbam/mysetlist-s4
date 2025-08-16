@@ -136,35 +136,42 @@ export function UnifiedSearch({
     }
 
     try {
-      // Generate slug from artist name
-      const slug = result.title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "");
-
-      // Navigate instantly to artist page using slug only
-      router.push(`/artists/${slug}`);
-
-      // Trigger artist import after navigation (no auth required)
-      fetch("/api/artists/import", {
+      setIsLoading(true);
+      setError(null);
+      
+      // Extract Ticketmaster ID
+      const tmAttractionId = result.externalId || result.id.replace("tm_", "");
+      
+      // Trigger artist import Phase 1 and wait for response
+      const importResponse = await fetch("/api/artists/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tmAttractionId: result.externalId || result.id.replace("tm_", ""),
-        }),
-      }).catch((error) => {
-        console.error("Background import trigger failed:", error);
-        // Silent fail - user still gets navigation
+        body: JSON.stringify({ tmAttractionId }),
       });
+
+      if (!importResponse.ok) {
+        throw new Error("Failed to import artist");
+      }
+
+      const importData = await importResponse.json();
+      
+      // Navigate to the actual slug returned by the import
+      if (importData.slug) {
+        router.push(`/artists/${importData.slug}`);
+        
+        // Clear search after successful navigation
+        setQuery("");
+        setResults([]);
+        setIsOpen(false);
+      } else {
+        throw new Error("Import did not return a valid slug");
+      }
     } catch (error) {
-      console.error("Navigation error:", error);
-      setError("Failed to navigate to artist. Please try again.");
+      console.error("Import/Navigation error:", error);
+      setError("Failed to import artist. Please try again.");
+      setIsLoading(false);
       return;
     }
-
-    setQuery("");
-    setResults([]);
-    setIsOpen(false);
   };
 
   const clearSearch = () => {

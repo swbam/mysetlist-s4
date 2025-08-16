@@ -6,7 +6,7 @@
 import { fetchJson } from '../util/http';
 import { env } from '../../env';
 
-const TICKETMASTER_BASE_URL = 'https://app.ticketmaster.com/discovery/v2';
+const TICKETMASTER_BASE_URL = 'https://app.ticketmaster.com';
 
 export interface TicketmasterEvent {
   id: string;
@@ -178,7 +178,7 @@ function getApiKey(): string {
  * Build URL with proper parameter encoding
  */
 function buildUrl(endpoint: string, params: Record<string, string | number | boolean>): string {
-  const url = new URL(endpoint, TICKETMASTER_BASE_URL);
+  const url = new URL(`/discovery/v2${endpoint}`, TICKETMASTER_BASE_URL);
   
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
@@ -329,6 +329,57 @@ export async function searchAttractions(
   } catch (error: any) {
     console.error('Ticketmaster attraction search error:', error);
     throw new Error(`Failed to search attractions: ${error.message}`);
+  }
+}
+
+/**
+ * Get attraction (artist) details by ID
+ */
+export async function getAttraction(
+  attractionId: string,
+  apiKey?: string
+): Promise<{
+  id: string;
+  name: string;
+  url?: string;
+  images?: Array<{
+    url: string;
+    width?: number;
+    height?: number;
+  }>;
+  classifications?: Array<{
+    segment?: { name: string };
+    genre?: { name: string };
+    subGenre?: { name: string };
+  }>;
+  externalLinks?: {
+    spotify?: Array<{ url: string }>;
+    musicbrainz?: Array<{ id: string }>;
+  };
+} | null> {
+  const key = apiKey || getApiKey();
+  
+  const url = buildUrl(`/attractions/${encodeURIComponent(attractionId)}.json`, {
+    apikey: key,
+  });
+
+  try {
+    const attraction = await fetchJson(url, {}, {
+      tries: 3,
+      baseDelay: 500,
+      retryOn: (response) => response.status === 429 || response.status >= 500,
+      timeout: 15000,
+    });
+
+    return attraction;
+  } catch (error: any) {
+    if (error.status === 404) {
+      console.warn(`Attraction ${attractionId} not found`);
+      return null;
+    }
+    
+    console.error('Ticketmaster attraction fetch error:', error);
+    throw new Error(`Failed to fetch attraction: ${error.message}`);
   }
 }
 
