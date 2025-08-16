@@ -60,3 +60,6 @@ export async function testConnection() {
 
 export * from "./schema";
 export * from "./utils/growth-calculation";
+
+// Export commonly used Drizzle ORM functions
+export { sql, eq, and, or, desc, asc, ilike, isNull, isNotNull, inArray } from "drizzle-orm";
