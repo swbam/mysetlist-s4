@@ -86,6 +86,8 @@ const _getArtist = async (slug: string) => {
   }
 };
 
+
+
 // Auto-import function that searches external APIs and triggers import
 async function attemptAutoImport(slug: string) {
   try {
@@ -195,7 +197,7 @@ function getImportUrl(): string {
 // Search Spotify for artist
 async function searchSpotifyArtist(name: string) {
   try {
-    const spotifyClient = new SpotifyClient();
+    const spotifyClient = new SpotifyClient({});
     const result = await spotifyClient.searchArtists(name);
     const artist = result.artists?.items?.[0];
     if (!artist) return null;
@@ -217,7 +219,7 @@ async function searchSpotifyArtist(name: string) {
 // Search Ticketmaster for artist
 async function searchTicketmasterArtist(name: string) {
   try {
-    const ticketmasterClient = new TicketmasterClient();
+    const ticketmasterClient = new TicketmasterClient({});
     const attractions = await ticketmasterClient.searchAttractions({
       keyword: name,
       size: 1,
@@ -553,220 +555,3 @@ export const getArtistSongsWithSetlistData = unstable_cache(
     tags: [CACHE_TAGS.stats],
   },
 );
-
-/**
- * Attempt to auto-import an artist when not found in database
- * Searches external APIs and triggers import if found
- */
-async function attemptAutoImport(slug: string) {
-  try {
-    // Convert slug back to artist name for searching
-    const artistName = slug
-      .replace(/-/g, " ")
-      .replace(/\b\w/g, (l) => l.toUpperCase());
-
-    console.log(`[AUTO-IMPORT] Searching for artist: ${artistName}`);
-
-    // Initialize API clients
-    const spotifyClient = new SpotifyClient({});
-    const ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env.TICKETMASTER_API_KEY || "",
-    });
-
-    // Search external APIs in parallel
-    const [spotifyResult, ticketmasterResult] = await Promise.allSettled([
-      searchSpotifyArtist(spotifyClient, artistName),
-      searchTicketmasterArtist(ticketmasterClient, artistName),
-    ]);
-
-    let spotifyMatch: any = null;
-    let tmAttractionId: string | null = null;
-
-    if (spotifyResult.status === "fulfilled" && spotifyResult.value) {
-      spotifyMatch = spotifyResult.value;
-      console.log(`[AUTO-IMPORT] Found Spotify match: ${spotifyMatch.name}`);
-    }
-
-    if (ticketmasterResult.status === "fulfilled" && ticketmasterResult.value) {
-      tmAttractionId = ticketmasterResult.value;
-      console.log(`[AUTO-IMPORT] Found Ticketmaster match: ${tmAttractionId}`);
-    }
-
-    // If we found matches, trigger import and return minimal artist data
-    if (spotifyMatch || tmAttractionId) {
-      // Trigger background import
-      triggerBackgroundImport({
-        artistName: spotifyMatch?.name || artistName,
-        spotifyId: spotifyMatch?.id,
-        tmAttractionId: tmAttractionId || undefined,
-        slug,
-      });
-
-      // Return minimal artist data for immediate page load
-      return createMinimalArtistData(spotifyMatch, artistName, slug);
-    }
-
-    return null;
-  } catch (error) {
-    console.error(`[AUTO-IMPORT] Error during auto-import for ${slug}:`, error);
-    return null;
-  }
-}
-
-/**
- * Search for artist on Spotify
- */
-async function searchSpotifyArtist(client: SpotifyClient, artistName: string) {
-  try {
-    await client.authenticate();
-    const searchResult = await client.searchArtists(artistName, 5);
-    
-    if (searchResult?.artists?.items && searchResult.artists.items.length > 0) {
-      // Find best match
-      const exactMatch = searchResult.artists.items.find((artist: any) =>
-        normalizeArtistName(artist.name) === normalizeArtistName(artistName)
-      );
-      
-      return exactMatch || searchResult.artists.items[0];
-    }
-    
-    return null;
-  } catch (error) {
-    console.warn(`[AUTO-IMPORT] Spotify search failed for ${artistName}:`, error);
-    return null;
-  }
-}
-
-/**
- * Search for artist on Ticketmaster
- */
-async function searchTicketmasterArtist(client: TicketmasterClient, artistName: string) {
-  try {
-    const searchResult = await client.searchAttractions({
-      keyword: artistName,
-      classificationName: "music",
-      size: 10,
-    });
-
-    if (searchResult?._embedded?.attractions) {
-      // Find best match
-      const exactMatch = searchResult._embedded.attractions.find((attraction: any) =>
-        normalizeArtistName(attraction.name) === normalizeArtistName(artistName)
-      );
-      
-      const match = exactMatch || searchResult._embedded.attractions[0];
-      return match?.id || null;
-    }
-    
-    return null;
-  } catch (error) {
-    console.warn(`[AUTO-IMPORT] Ticketmaster search failed for ${artistName}:`, error);
-    return null;
-  }
-}
-
-/**
- * Trigger background import via API call
- */
-async function triggerBackgroundImport({
-  artistName,
-  spotifyId,
-  tmAttractionId,
-  slug,
-}: {
-  artistName: string;
-  spotifyId?: string;
-  tmAttractionId?: string;
-  slug: string;
-}) {
-  try {
-    // Use absolute URL for production compatibility
-    const apiUrl = absoluteUrl("/api/artists/auto-import");
-    
-    const importPayload = {
-      artistName,
-      ...(spotifyId && { spotifyId }),
-      ...(tmAttractionId && { tmAttractionId }),
-      retryOnFailure: false, // Don't retry for auto-imports
-    };
-
-    console.log(`[AUTO-IMPORT] Triggering background import for ${artistName}`);
-
-    // Fire and forget - don't await this call
-    fetch(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(importPayload),
-    }).catch((error) => {
-      console.error(`[AUTO-IMPORT] Background import API call failed:`, error);
-    });
-
-  } catch (error) {
-    console.error(`[AUTO-IMPORT] Failed to trigger background import:`, error);
-  }
-}
-
-/**
- * Create minimal artist data for immediate page load
- */
-function createMinimalArtistData(spotifyMatch: any, artistName: string, slug: string) {
-  const now = new Date();
-  
-  return {
-    id: `temp_${slug}`, // Temporary ID
-    spotifyId: spotifyMatch?.id || null,
-    tmAttractionId: null,
-    name: spotifyMatch?.name || artistName,
-    slug,
-    imageUrl: spotifyMatch?.images?.[0]?.url || null,
-    smallImageUrl: spotifyMatch?.images?.[2]?.url || null,
-    genres: spotifyMatch?.genres ? JSON.stringify(spotifyMatch.genres) : "[]",
-    popularity: spotifyMatch?.popularity || 0,
-    followers: spotifyMatch?.followers?.total || 0,
-    followerCount: spotifyMatch?.followers?.total || 0,
-    monthlyListeners: null,
-    verified: false,
-    externalUrls: spotifyMatch?.external_urls ? JSON.stringify(spotifyMatch.external_urls) : null,
-    importStatus: "importing",
-    lastSyncedAt: now,
-    songCatalogSyncedAt: null,
-    totalAlbums: null,
-    totalSongs: null,
-    lastFullSyncAt: null,
-    trendingScore: null,
-    totalShows: null,
-    upcomingShows: null,
-    totalSetlists: null,
-    createdAt: now,
-    updatedAt: now,
-  };
-}
-
-/**
- * Check if artist exists after import completion
- * This helps handle the case where the import completes while we're using temp data
- */
-async function checkForCompletedImport(slug: string): Promise<any> {
-  try {
-    // Check if the actual artist now exists in the database
-    const artistResults = await db
-      .select()
-      .from(artists)
-      .where(eq(artists.slug, slug))
-      .limit(1);
-
-    return artistResults[0] || null;
-  } catch (error) {
-    console.warn(`[AUTO-IMPORT] Failed to check for completed import: ${slug}`, error);
-    return null;
-  }
-}
-
-/**
- * Normalize artist name for comparison
- */
-function normalizeArtistName(name: string): string {
-  return name.toLowerCase().replace(/[^a-z0-9]/g, "");
-}

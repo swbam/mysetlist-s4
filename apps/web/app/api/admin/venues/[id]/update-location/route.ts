@@ -38,7 +38,7 @@ export async function POST(
     }
 
     // Implement real geocoding using a geocoding service
-    let coordinates = null;
+    let coordinates: { latitude: number; longitude: number } | null = null;
     
     try {
       // Construct address string for geocoding
