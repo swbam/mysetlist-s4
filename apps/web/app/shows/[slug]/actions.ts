@@ -130,59 +130,42 @@ export async function createSetlist(
 
   // Automatically add 5 random songs from artist catalog
   try {
-    // First try artist_songs table
+    // Get songs via artist_songs junction table
     const { data: artistSongsData } = await supabase
       .from("artist_songs")
-      .select("*")
+      .select(`
+        song_id,
+        songs (
+          id,
+          spotify_id,
+          name,
+          artist,
+          album_name,
+          album_art_url,
+          duration_ms,
+          popularity,
+          preview_url,
+          is_explicit,
+          spotify_uri,
+          external_urls
+        )
+      `)
       .eq("artist_id", artistId)
       .limit(50);
 
     if (artistSongsData && artistSongsData.length > 0) {
-      // Shuffle and pick 5 random songs
-      const shuffled = artistSongsData.sort(() => 0.5 - Math.random());
+      // Filter out songs without full data and shuffle
+      const validSongs = artistSongsData.filter(item => item.songs && item.songs.id);
+      const shuffled = validSongs.sort(() => 0.5 - Math.random());
       const selectedSongs = shuffled.slice(0, 5);
 
-      // First, insert songs into the songs table if they don't exist
+      // Add songs to setlist
       for (let i = 0; i < selectedSongs.length; i++) {
-        const song = selectedSongs[i];
-
-        // Check if song exists in songs table
-        const { data: existingSong } = await supabase
-          .from("songs")
-          .select("id")
-          .eq("spotify_id", song.spotify_id)
-          .single();
-
-        let songId = existingSong?.id;
-
-        if (!songId) {
-          // Insert song into songs table
-          const { data: newSong } = await supabase
-            .from("songs")
-            .insert({
-              spotify_id: song.spotify_id,
-              title: song.title,
-              artist: song.artist_name || "Unknown Artist",
-              album: song.album_name,
-              album_art_url: song.album_art_url,
-              duration_ms: song.duration_ms,
-              popularity: song.popularity,
-              preview_url: song.preview_url,
-              is_explicit: song.is_explicit,
-              spotify_uri: song.spotify_uri,
-              external_urls: song.external_urls,
-            })
-            .select("id")
-            .single();
-
-          songId = newSong?.id;
-        }
-
-        if (songId) {
-          // Add song to setlist
+        const songData = selectedSongs[i].songs;
+        if (songData && songData.id) {
           await supabase.from("setlist_songs").insert({
             setlist_id: setlist.id,
-            song_id: songId,
+            song_id: songData.id,
             position: i + 1,
           });
         }
@@ -200,6 +183,7 @@ export async function createSetlist(
           .from("songs")
           .select("*")
           .ilike("artist", `%${artist.name}%`)
+          .order("popularity", { ascending: false })
           .limit(5);
 
         if (songsData && songsData.length > 0) {

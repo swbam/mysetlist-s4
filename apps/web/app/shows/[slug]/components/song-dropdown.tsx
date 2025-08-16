@@ -102,18 +102,18 @@ export function SongDropdown({
 
   const fetchSongs = useCallback(
     async (query = "") => {
-      if (!show.headliner_artist?.slug) {
+      if (!show.headliner_artist?.id) {
         return;
       }
 
       setLoading(true);
       try {
         const url = new URL(
-          `/api/artists/${show.headliner_artist.slug}/songs`,
+          `/api/artists/${show.headliner_artist.id}/songs`,
           window.location.origin,
         );
         if (query) {
-          url.searchParams.set("q", query);
+          url.searchParams.set("search", query);
         }
         url.searchParams.set("limit", "20");
 
@@ -130,7 +130,7 @@ export function SongDropdown({
         setLoading(false);
       }
     },
-    [show.headliner_artist?.slug],
+    [show.headliner_artist?.id],
   );
 
   useEffect(() => {
