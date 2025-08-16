@@ -71,6 +71,13 @@
       "when": 1755198620288,
       "tag": "0009_dazzling_raider",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1755374688276,
+      "tag": "0010_wooden_valkyrie",
+      "breakpoints": true
     }
   ]
 }

@@ -198,6 +198,7 @@ function getImportUrl(): string {
 async function searchSpotifyArtist(name: string) {
   try {
     const spotifyClient = new SpotifyClient({});
+    await spotifyClient.authenticate(); // Need to authenticate first
     const result = await spotifyClient.searchArtists(name);
     const artist = result.artists?.items?.[0];
     if (!artist) return null;
@@ -219,7 +220,9 @@ async function searchSpotifyArtist(name: string) {
 // Search Ticketmaster for artist
 async function searchTicketmasterArtist(name: string) {
   try {
-    const ticketmasterClient = new TicketmasterClient({});
+    const ticketmasterClient = new TicketmasterClient({
+      apiKey: process.env.TICKETMASTER_API_KEY || ""
+    });
     const attractions = await ticketmasterClient.searchAttractions({
       keyword: name,
       size: 1,
