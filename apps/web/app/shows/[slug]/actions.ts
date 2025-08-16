@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "~/lib/auth";
 import { createClient } from "~/lib/supabase/server";
+import { setlistPreseeder } from "~/lib/services/ingest/SetlistPreseeder";
 
 export async function getShowDetails(slug: string) {
   const supabase = await createClient();
@@ -40,6 +41,31 @@ export async function getShowDetails(slug: string) {
   }
 
   if (!show) return null;
+
+  // Ensure a predicted setlist exists (autonomous preseed per GROK.md)
+  try {
+    const { data: existingSetlists } = await supabase
+      .from("setlists")
+      .select("id, type")
+      .eq("show_id", show.id);
+
+    const hasPredicted = (existingSetlists || []).some((s: any) => s.type === "predicted");
+
+    if (!hasPredicted && show.headliner_artist?.id) {
+      const result = await setlistPreseeder.createInitialSetlistForShow(show.id, {
+        songsPerSetlist: 5,
+        weightByPopularity: true,
+        excludeLive: true,
+      });
+
+      if (result?.success) {
+        // Re-fetch show setlists after preseed
+        await revalidatePath("/shows/[slug]", "page");
+      }
+    }
+  } catch (_e) {
+    // best-effort; continue without blocking page
+  }
 
   // Get setlists with detailed song information and vote counts
   const { data: setlists } = await supabase

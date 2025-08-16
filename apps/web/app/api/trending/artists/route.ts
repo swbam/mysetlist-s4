@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "~/lib/supabase/server";
 import { rateLimitMiddleware } from "~/middleware/rate-limit";
+import { db } from "@repo/database";
+import { sql } from "drizzle-orm";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -38,12 +40,19 @@ async function getTrendingArtistsFromDB(limit: number) {
       .limit(limit);
 
     if (error || !artists || artists.length === 0) {
-      console.log(
-        "No trending artists found in database:",
-        error?.message || "No data",
-      );
-      // Return empty array instead of mock data
-      return [];
+      // Attempt a best-effort recalculation to keep homepage fresh
+      try {
+        await db.execute(sql`SELECT update_trending_scores()`);
+      } catch {}
+      const { data: artistsRetry } = await supabase
+        .from("artists")
+        .select(
+          `id,name,slug,image_url,popularity,followers,follower_count,trending_score,genres,total_shows,upcoming_shows,previous_followers,previous_popularity,created_at,updated_at`,
+        )
+        .gt("trending_score", 0)
+        .order("trending_score", { ascending: false })
+        .limit(limit);
+      return (artistsRetry || []).map(transformArtist);
     }
 
     // Transform to match frontend interface

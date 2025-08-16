@@ -1,136 +1,143 @@
-import { getUser } from "@repo/auth/server";
-import { db, songs } from "@repo/database";
-import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
+import { db, songs } from "@repo/database";
+import { eq, and, sql } from "drizzle-orm";
 
-// Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
-
-const upsertSongSchema = z.object({
-  spotifyId: z.string().optional(),
-  title: z.string().min(1, "Title is required"),
-  artist: z.string().min(1, "Artist is required"),
-  album: z.string().optional(),
-  albumArtUrl: z.string().url().optional(),
-  duration: z.number().optional(),
-  popularity: z.number().min(0).max(100).optional(),
-  previewUrl: z.string().url().optional(),
-});
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getUser();
-    if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const body = await request.json();
+    const {
+      spotifyId,
+      title,
+      artist,
+      album,
+      albumArtUrl,
+      duration,
+      durationMs,
+      popularity,
+      previewUrl,
+      isExplicit,
+      releaseDate,
+      albumType,
+      externalUrls,
+      spotifyUri,
+    } = body || {};
 
-    const body = await request.json().catch(() => ({}));
-    const parsed = upsertSongSchema.safeParse(body);
-
-    if (!parsed.success) {
+    if (!spotifyId && !(title && artist)) {
       return NextResponse.json(
-        {
-          error: "Invalid song data",
-          details: parsed.error.errors,
-        },
+        { error: "spotifyId or (title and artist) required" },
         { status: 400 },
       );
     }
 
-    const songData = parsed.data;
+    const name = title;
+    const durMs = typeof durationMs === "number" ? durationMs : typeof duration === "number" ? duration : null;
 
-    // Check if song already exists by Spotify ID or by title + artist
-    let existingSong: typeof songs.$inferSelect | null = null;
+    let upserted;
 
-    if (songData.spotifyId) {
+    if (spotifyId) {
+      const [row] = await db
+        .insert(songs)
+        .values({
+          spotifyId,
+          name: name ?? undefined,
+          artist: artist ?? undefined,
+          albumName: album ?? undefined,
+          albumArtUrl: albumArtUrl ?? undefined,
+          durationMs: durMs ?? undefined,
+          popularity: typeof popularity === "number" ? popularity : undefined,
+          previewUrl: previewUrl ?? undefined,
+          isExplicit: typeof isExplicit === "boolean" ? isExplicit : undefined,
+          releaseDate: releaseDate ?? undefined,
+          albumType: albumType ?? undefined,
+          externalUrls: externalUrls ?? undefined,
+          spotifyUri: spotifyUri ?? undefined,
+        })
+        .onConflictDoUpdate({
+          target: songs.spotifyId,
+          set: {
+            name: name ?? sql`COALESCE(${songs.name}, ${name})`,
+            artist: artist ?? sql`COALESCE(${songs.artist}, ${artist})`,
+            albumName: album ?? sql`COALESCE(${songs.albumName}, ${album})`,
+            albumArtUrl: albumArtUrl ?? sql`COALESCE(${songs.albumArtUrl}, ${albumArtUrl})`,
+            durationMs: durMs ?? sql`COALESCE(${songs.durationMs}, ${durMs})`,
+            popularity: typeof popularity === "number" ? popularity : songs.popularity,
+            previewUrl: previewUrl ?? sql`COALESCE(${songs.previewUrl}, ${previewUrl})`,
+            isExplicit: typeof isExplicit === "boolean" ? isExplicit : songs.isExplicit,
+            releaseDate: releaseDate ?? sql`COALESCE(${songs.releaseDate}, ${releaseDate})`,
+            albumType: albumType ?? sql`COALESCE(${songs.albumType}, ${albumType})`,
+            externalUrls: externalUrls ?? sql`COALESCE(${songs.externalUrls}, ${externalUrls})`,
+            spotifyUri: spotifyUri ?? sql`COALESCE(${songs.spotifyUri}, ${spotifyUri})`,
+            updatedAt: new Date(),
+          },
+        })
+        .returning();
+      upserted = row;
+    } else {
+      // Fallback upsert by name + artist + duration if no spotifyId
+      // Try to find an existing song first
       const existing = await db
-        .select()
+        .select({ id: songs.id })
         .from(songs)
-        .where(eq(songs.spotifyId, songData.spotifyId))
+        .where(
+          and(
+            eq(songs.name, name!),
+            eq(songs.artist, artist!),
+          ),
+        )
         .limit(1);
 
-      existingSong = existing[0] || null;
+      if (existing.length) {
+        const [row] = await db
+          .update(songs)
+          .set({
+            albumName: album ?? undefined,
+            albumArtUrl: albumArtUrl ?? undefined,
+            durationMs: durMs ?? undefined,
+            popularity: typeof popularity === "number" ? popularity : undefined,
+            previewUrl: previewUrl ?? undefined,
+            isExplicit: typeof isExplicit === "boolean" ? isExplicit : undefined,
+            releaseDate: releaseDate ?? undefined,
+            albumType: albumType ?? undefined,
+            externalUrls: externalUrls ?? undefined,
+            spotifyUri: spotifyUri ?? undefined,
+            updatedAt: new Date(),
+          })
+          .where(eq(songs.id, existing[0]!.id))
+          .returning();
+        upserted = row;
+      } else {
+        const [row] = await db
+          .insert(songs)
+          .values({
+            name,
+            artist,
+            albumName: album ?? undefined,
+            albumArtUrl: albumArtUrl ?? undefined,
+            durationMs: durMs ?? undefined,
+            popularity: typeof popularity === "number" ? popularity : undefined,
+            previewUrl: previewUrl ?? undefined,
+            isExplicit: typeof isExplicit === "boolean" ? isExplicit : undefined,
+            releaseDate: releaseDate ?? undefined,
+            albumType: albumType ?? undefined,
+            externalUrls: externalUrls ?? undefined,
+            spotifyUri: spotifyUri ?? undefined,
+          })
+          .returning();
+        upserted = row;
+      }
     }
 
-    // If no Spotify ID match, try title + artist match
-    if (!existingSong) {
-      const existing = await db
-        .select()
-        .from(songs)
-        .where(eq(songs.name, songData.title))
-        .limit(5); // Get a few results to check artist match
-
-      existingSong =
-        existing.find(
-          (song) => song.artist.toLowerCase() === songData.artist.toLowerCase(),
-        ) || null;
+    if (!upserted) {
+      return NextResponse.json({ error: "Failed to upsert song" }, { status: 500 });
     }
 
-    if (existingSong) {
-      // Song exists, return it
-      return NextResponse.json({
-        song: {
-          id: existingSong.id,
-          spotify_id: existingSong.spotifyId,
-          title: existingSong.name,
-          artist: existingSong.artist,
-          album: existingSong.albumName,
-          album_art_url: existingSong.albumArtUrl,
-          duration_ms: existingSong.durationMs,
-          popularity: existingSong.popularity,
-          preview_url: existingSong.previewUrl,
-        },
-        created: false,
-      });
-    }
-
-    // Create new song
-    const newSong = await db
-      .insert(songs)
-      .values({
-        spotifyId: songData.spotifyId,
-        name: songData.title,
-        artist: songData.artist,
-        albumName: songData.album,
-        albumArtUrl: songData.albumArtUrl,
-        durationMs: songData.duration,
-        popularity: songData.popularity,
-        previewUrl: songData.previewUrl,
-      })
-      .returning();
-
-    const song = newSong[0];
-
-    if (!song) {
-      return NextResponse.json(
-        { error: "Failed to create song" },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json({
-      song: {
-        id: song.id,
-        spotify_id: song.spotifyId,
-        title: song.name,
-        artist: song.artist,
-        album: song.albumName,
-        album_art_url: song.albumArtUrl,
-        duration_ms: song.durationMs,
-        popularity: song.popularity,
-        preview_url: song.previewUrl,
-      },
-      created: true,
-    });
+    return NextResponse.json({ song: upserted });
   } catch (error) {
-    console.error("Error upserting song:", error);
+    console.error("Song upsert error:", error);
     return NextResponse.json(
-      {
-        error: "Internal server error",
-        message: error instanceof Error ? error.message : "Unknown error",
-        timestamp: new Date().toISOString(),
-      },
+      { error: "Internal server error" },
       { status: 500 },
     );
   }
