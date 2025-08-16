@@ -1,10 +1,10 @@
 import { artists, db } from "@repo/database";
 import { ArtistImportOrchestrator } from "@repo/external-apis";
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 import { CACHE_TAGS } from "~/lib/cache";
-import { updateImportStatus } from "~/lib/import-status";
+import { updateImportStatus, getImportStatus } from "~/lib/import-status";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -38,20 +38,33 @@ export async function POST(request: NextRequest) {
       message: "Checking if artist already exists...",
     });
 
-    // Check if artist already exists (idempotency)
+    // Enhanced idempotency checks (check by multiple identifiers)
     let existingArtist: any[] = [];
 
+    // Check by Ticketmaster ID first
     if (tmAttractionId) {
       existingArtist = await db
         .select()
         .from(artists)
         .where(eq(artists.tmAttractionId, tmAttractionId))
         .limit(1);
-    } else if (spotifyId) {
+    }
+    
+    // If not found by TM ID, check by Spotify ID
+    if (existingArtist.length === 0 && spotifyId) {
       existingArtist = await db
         .select()
         .from(artists)
         .where(eq(artists.spotifyId, spotifyId))
+        .limit(1);
+    }
+    
+    // If not found by IDs, check by name (fuzzy match)
+    if (existingArtist.length === 0 && artistName) {
+      existingArtist = await db
+        .select()
+        .from(artists)
+        .where(eq(artists.name, artistName))
         .limit(1);
     }
 
@@ -81,6 +94,25 @@ export async function POST(request: NextRequest) {
           message: "Artist already exists in database",
           statusEndpoint: `/api/sync/status?artistId=${artistId}`,
           importProgressEndpoint: `/api/artists/${artistId}/import-progress`,
+        },
+        { status: 200 },
+      );
+    }
+
+    // Check for ongoing imports to prevent concurrent imports
+    const ongoingImportKey = tmAttractionId || spotifyId || artistName;
+    const ongoingImportStatus = await getImportStatus(`tmp_${ongoingImportKey}`);
+    
+    if (ongoingImportStatus && ongoingImportStatus.stage !== "completed" && ongoingImportStatus.stage !== "failed") {
+      console.log(`[AUTO-IMPORT] Import already in progress for: ${ongoingImportKey}`);
+      
+      return NextResponse.json(
+        {
+          success: true,
+          message: "Import already in progress",
+          statusEndpoint: `/api/sync/status?artistId=tmp_${ongoingImportKey}`,
+          importProgressEndpoint: `/api/artists/import/progress/tmp_${ongoingImportKey}`,
+          alreadyInProgress: true,
         },
         { status: 200 },
       );
@@ -122,12 +154,23 @@ export async function POST(request: NextRequest) {
         `[AUTO-IMPORT] Using orchestration endpoint for: ${spotifyId || artistName}`,
       );
 
+      // Use proper URL construction for production
+      const baseUrl = process.env.VERCEL_URL 
+        ? `https://${process.env.VERCEL_URL}`
+        : process.env.NEXT_PUBLIC_APP_URL
+        ? process.env.NEXT_PUBLIC_APP_URL
+        : request.nextUrl.origin;
+        
       const orchestrationResponse = await fetch(
-        `${request.nextUrl.origin}/api/sync/orchestration`,
+        `${baseUrl}/api/sync/orchestration`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            // Add authorization for internal API calls
+            ...(process.env.CRON_SECRET && {
+              "Authorization": `Bearer ${process.env.CRON_SECRET}`
+            }),
           },
           body: JSON.stringify({
             spotifyId: spotifyId,

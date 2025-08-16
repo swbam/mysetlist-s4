@@ -607,6 +607,123 @@ describe('End-to-End Import Flow Tests', () => {
     });
   });
 
+  describe('Auto-Import Functionality', () => {
+    it('should auto-import artist when not found in database', async () => {
+      // Mock successful external API search
+      const mockSpotifySearch = vi.fn().mockResolvedValue({
+        artists: {
+          items: [{
+            id: 'test-spotify-id',
+            name: 'Test Artist',
+            popularity: 75,
+            followers: { total: 1000000 },
+            genres: ['rock', 'alternative'],
+            images: [{ url: 'https://test.com/image.jpg' }],
+            external_urls: { spotify: 'https://open.spotify.com/artist/test' }
+          }]
+        }
+      });
+
+      const mockTicketmasterSearch = vi.fn().mockResolvedValue({
+        _embedded: {
+          attractions: [{
+            id: 'test-tm-id',
+            name: 'Test Artist',
+            classifications: [{ genre: { name: 'Rock' } }]
+          }]
+        }
+      });
+
+      // Mock the clients
+      vi.mock('@repo/external-apis', () => ({
+        SpotifyClient: class {
+          async authenticate() { return true; }
+          async searchArtists() { return mockSpotifySearch(); }
+        },
+        TicketmasterClient: class {
+          async searchAttractions() { return mockTicketmasterSearch(); }
+        }
+      }));
+
+      // Import the function after mocking
+      const { getArtist } = await import('../../app/artists/[slug]/actions');
+
+      // Test auto-import with non-existent artist
+      const result = await getArtist('test-artist');
+
+      // Should return minimal artist data
+      expect(result).toBeTruthy();
+      expect(result.name).toBe('Test Artist');
+      expect(result.slug).toBe('test-artist');
+      expect(result.spotifyId).toBe('test-spotify-id');
+      expect(result.importStatus).toBe('importing');
+
+      // Verify external API was called
+      expect(mockSpotifySearch).toHaveBeenCalledWith('Test Artist', 5);
+      expect(mockTicketmasterSearch).toHaveBeenCalledWith({
+        keyword: 'Test Artist',
+        classificationName: 'music',
+        size: 10,
+      });
+    });
+
+    it('should return null when artist not found in external APIs', async () => {
+      // Mock no results from external APIs
+      const mockSpotifySearch = vi.fn().mockResolvedValue({
+        artists: { items: [] }
+      });
+
+      const mockTicketmasterSearch = vi.fn().mockResolvedValue({
+        _embedded: { attractions: [] }
+      });
+
+      vi.mock('@repo/external-apis', () => ({
+        SpotifyClient: class {
+          async authenticate() { return true; }
+          async searchArtists() { return mockSpotifySearch(); }
+        },
+        TicketmasterClient: class {
+          async searchAttractions() { return mockTicketmasterSearch(); }
+        }
+      }));
+
+      const { getArtist } = await import('../../app/artists/[slug]/actions');
+
+      const result = await getArtist('nonexistent-artist');
+
+      expect(result).toBeNull();
+      expect(mockSpotifySearch).toHaveBeenCalledWith('Nonexistent Artist', 5);
+      expect(mockTicketmasterSearch).toHaveBeenCalledWith({
+        keyword: 'Nonexistent Artist',
+        classificationName: 'music',
+        size: 10,
+      });
+    });
+
+    it('should handle auto-import API failures gracefully', async () => {
+      // Mock API failures
+      const mockSpotifySearch = vi.fn().mockRejectedValue(new Error('Spotify API Error'));
+      const mockTicketmasterSearch = vi.fn().mockRejectedValue(new Error('Ticketmaster API Error'));
+
+      vi.mock('@repo/external-apis', () => ({
+        SpotifyClient: class {
+          async authenticate() { return true; }
+          async searchArtists() { return mockSpotifySearch(); }
+        },
+        TicketmasterClient: class {
+          async searchAttractions() { return mockTicketmasterSearch(); }
+        }
+      }));
+
+      const { getArtist } = await import('../../app/artists/[slug]/actions');
+
+      const result = await getArtist('test-artist');
+
+      // Should return null when APIs fail
+      expect(result).toBeNull();
+    });
+  });
+
   describe('Memory and Resource Management', () => {
     it('should not leak memory during large imports', async () => {
       const initialMemory = process.memoryUsage();
