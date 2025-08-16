@@ -196,8 +196,8 @@ export function ImportLogsDisplay({ artistId, artistName, externalId }: ImportLo
               <div>
                 <p className="text-sm text-muted-foreground">Progress</p>
                 <div className="flex items-center gap-2">
-                  <Progress value={status.progress || 0} className="w-[100px]" />
-                  <span className="text-sm font-medium">{status.progress || 0}%</span>
+                  <Progress value={status.percentage || 0} className="w-[100px]" />
+                  <span className="text-sm font-medium">{status.percentage || 0}%</span>
                 </div>
               </div>
             </div>

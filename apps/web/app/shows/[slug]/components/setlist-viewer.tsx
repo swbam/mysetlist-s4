@@ -144,15 +144,11 @@ export function SetlistViewer({
               ...data,
               setlist_songs: data.setlist_songs?.map((item: any) => ({
                 ...item,
-                upvotes:
-                  item.votes?.filter((v: any) => v.vote_type === "up").length ||
-                  0,
-                downvotes:
-                  item.votes?.filter((v: any) => v.vote_type === "down")
-                    .length || 0,
+                upvotes: item.votes?.length || 0, // Simplified: presence = upvote
+                downvotes: 0, // No downvotes in simplified system
                 userVote:
                   item.votes?.find((v: any) => v.user_id === currentUser?.id)
-                    ?.vote_type || null,
+                    ? "up" : null,
               })),
             };
             setSetlistData(processedData);

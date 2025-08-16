@@ -155,14 +155,14 @@ export async function createSetlist(
 
     if (artistSongsData && artistSongsData.length > 0) {
       // Filter out songs without full data and shuffle
-      const validSongs = artistSongsData.filter(item => item.songs && item.songs.id);
+      const validSongs = artistSongsData.filter(item => item.songs && (item.songs as any).id);
       const shuffled = validSongs.sort(() => 0.5 - Math.random());
       const selectedSongs = shuffled.slice(0, 5);
 
       // Add songs to setlist
       for (let i = 0; i < selectedSongs.length; i++) {
-        const songData = selectedSongs[i].songs;
-        if (songData && songData.id) {
+        const songData = selectedSongs[i]?.songs as any;
+        if (songData?.id) {
           await supabase.from("setlist_songs").insert({
             setlist_id: setlist.id,
             song_id: songData.id,
@@ -385,7 +385,7 @@ export async function voteSong(setlistSongId: string, voteType: "up") {
   // Check for existing vote
   const { data: existingVote } = await supabase
     .from("votes")
-    .select("id, vote_type")
+    .select("id")
     .eq("setlist_song_id", setlistSongId)
     .eq("user_id", user.id)
     .single();
@@ -396,11 +396,10 @@ export async function voteSong(setlistSongId: string, voteType: "up") {
     return { removed: true };
   }
 
-  // Create new upvote
+  // Create new upvote (simplified system - presence = upvote)
   await supabase.from("votes").insert({
     setlist_song_id: setlistSongId,
     user_id: user.id,
-    vote_type: "up", // Only upvoting allowed
   });
 
   return { created: true };

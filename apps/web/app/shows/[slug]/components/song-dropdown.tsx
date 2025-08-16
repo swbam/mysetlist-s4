@@ -139,6 +139,13 @@ export function SongDropdown({
     }
   }, [debouncedSearchQuery, isOpen, activeTab, fetchSongs]);
 
+  // Load initial songs when catalog tab opens
+  useEffect(() => {
+    if (isOpen && activeTab === "catalog" && songs.length === 0 && !loading) {
+      fetchSongs("");
+    }
+  }, [isOpen, activeTab, songs.length, loading, fetchSongs]);
+
   const handleVote = async (setlistSongId: string, voteType: "up") => {
     if (!session) {
       toast.error("Please sign in to vote");
@@ -237,15 +244,11 @@ export function SongDropdown({
               ...data,
               setlist_songs: data.setlist_songs?.map((item: any) => ({
                 ...item,
-                upvotes:
-                  item.votes?.filter((v: any) => v.vote_type === "up").length ||
-                  0,
-                downvotes:
-                  item.votes?.filter((v: any) => v.vote_type === "down")
-                    .length || 0,
+                upvotes: item.votes?.length || 0, // Simplified: presence = upvote
+                downvotes: 0, // No downvotes in simplified system
                 userVote:
                   item.votes?.find((v: any) => v.user_id === session?.user?.id)
-                    ?.vote_type || null,
+                    ? "up" : null,
               })),
             };
             setRealtimeSetlistData(processedData);

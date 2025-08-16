@@ -61,6 +61,8 @@ export const env = createEnv({
     // Public URLs (ensuring these are available on client)
     NEXT_PUBLIC_DOCS_URL: z.string().url().optional(),
     NEXT_PUBLIC_URL: z.string().url().optional(),
+    NEXT_PUBLIC_APP_URL: z.string().url().optional(),
+    NEXT_PUBLIC_API_URL: z.string().url().optional(),
 
     // Analytics
     NEXT_PUBLIC_POSTHOG_KEY: z.string().min(1).optional(),
@@ -150,6 +152,8 @@ export const env = createEnv({
     // Client
     NEXT_PUBLIC_DOCS_URL: process.env.NEXT_PUBLIC_DOCS_URL,
     NEXT_PUBLIC_URL: process.env.NEXT_PUBLIC_URL,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
@@ -198,7 +202,7 @@ export const getServerCacheConfig = () => ({
 
 // Client-safe API configuration (only using client-side variables)
 export const apiConfig = {
-  baseUrl: env.NEXT_PUBLIC_API_URL || env.NEXT_PUBLIC_APP_URL,
+  baseUrl: env.NEXT_PUBLIC_API_URL || env.NEXT_PUBLIC_APP_URL || env.NEXT_PUBLIC_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001'),
   timeout: isProduction ? 30000 : 60000, // 30s in prod, 60s in dev
   retries: isProduction ? 3 : 1,
 };
