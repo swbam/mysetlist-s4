@@ -155,14 +155,14 @@ export async function createSetlist(
 
     if (artistSongsData && artistSongsData.length > 0) {
       // Filter out songs without full data and shuffle
-      const validSongs = artistSongsData.filter(item => item.songs && item.songs.id);
+      const validSongs = artistSongsData.filter(item => item.songs && (item.songs as any).id);
       const shuffled = validSongs.sort(() => 0.5 - Math.random());
       const selectedSongs = shuffled.slice(0, 5);
 
       // Add songs to setlist
       for (let i = 0; i < selectedSongs.length; i++) {
-        const songData = selectedSongs[i].songs;
-        if (songData && songData.id) {
+        const songData = selectedSongs[i]?.songs as any;
+        if (songData?.id) {
           await supabase.from("setlist_songs").insert({
             setlist_id: setlist.id,
             song_id: songData.id,

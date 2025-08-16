@@ -167,7 +167,7 @@ class ProgressBusInstance extends EventEmitter {
 
       return {
         stage: status.stage,
-        progress: status.progress || 0,
+        progress: status.percentage || 0,
         message: status.message || 'Processing...',
         at: status.updatedAt.toISOString(),
         error: status.error || undefined,
@@ -253,12 +253,15 @@ class ProgressBusInstance extends EventEmitter {
     try {
       await db
         .insert(importStatus)
-        .values(data)
+        .values({
+          ...data,
+          percentage: data.progress
+        })
         .onConflictDoUpdate({
           target: importStatus.artistId,
           set: {
             stage: data.stage,
-            progress: data.progress,
+            percentage: data.progress,
             message: data.message,
             error: data.error,
             jobId: data.jobId,
@@ -350,7 +353,7 @@ class ProgressBusInstance extends EventEmitter {
       return activeStatuses.map(status => ({
         artistId: status.artistId,
         stage: status.stage,
-        progress: status.progress || 0,
+        progress: status.percentage || 0,
         message: status.message || 'Processing...',
         startedAt: status.startedAt || status.createdAt,
         artistName: status.artistName || undefined,

@@ -3,7 +3,7 @@ import postgres from "postgres";
 import * as schema from "./schema";
 
 // Get database URL from environment variables
-const databaseUrl = process.env.DATABASE_URL || process.env.DIRECT_URL;
+const databaseUrl = process.env['DATABASE_URL'] || process.env['DIRECT_URL'];
 
 // Ensure we have a database URL
 if (!databaseUrl) {

@@ -19,9 +19,8 @@ export async function GET(request: NextRequest) {
     // Authenticate admin request
     await requireCronAuth();
 
-    const cookieStore = await cookies();
     const supabase = createRouteHandlerClient({ 
-      cookies: () => cookieStore 
+      cookies: cookies
     });
 
     // Get autonomous sync status from database

@@ -72,17 +72,17 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Transform the response to match frontend expectations
     const transformedSongs = artistSongsList.map(song => ({
       id: song.id,
-      spotifyId: song.spotifyId,
+      spotifyId: song.spotify_id,
       title: song.title,
       artist: song.artist,
       album: song.album,
-      albumArtUrl: song.albumArtUrl,
-      durationMs: song.durationMs,
+      albumArtUrl: song.album_art_url,
+      durationMs: song.duration_ms,
       popularity: song.popularity,
-      previewUrl: song.previewUrl,
-      isExplicit: song.isExplicit,
-      releaseDate: song.releaseDate,
-      albumType: song.albumType,
+      previewUrl: song.preview_url,
+      isExplicit: song.is_explicit,
+      releaseDate: song.release_date,
+      albumType: song.album_type,
     }));
 
     return NextResponse.json({
