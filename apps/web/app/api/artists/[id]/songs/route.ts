@@ -69,8 +69,24 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       .innerJoin(songs, eq(artistSongs.songId, songs.id))
       .where(and(...conditions));
 
+    // Transform the response to match frontend expectations
+    const transformedSongs = artistSongsList.map(song => ({
+      id: song.id,
+      spotifyId: song.spotifyId,
+      title: song.title,
+      artist: song.artist,
+      album: song.album,
+      albumArtUrl: song.albumArtUrl,
+      durationMs: song.durationMs,
+      popularity: song.popularity,
+      previewUrl: song.previewUrl,
+      isExplicit: song.isExplicit,
+      releaseDate: song.releaseDate,
+      albumType: song.albumType,
+    }));
+
     return NextResponse.json({
-      songs: artistSongsList,
+      songs: transformedSongs,
       total: totalCount[0]?.count || 0,
       limit,
       offset,

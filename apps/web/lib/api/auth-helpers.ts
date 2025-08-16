@@ -11,6 +11,11 @@ export async function validateApiAuth(): Promise<{
   error?: NextResponse;
 }> {
   try {
+    // Allow local development without authentication
+    if (process.env.NODE_ENV === 'development') {
+      return { isValid: true };
+    }
+
     const headersList = await headers();
     const authHeader = headersList.get("authorization");
 

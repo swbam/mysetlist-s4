@@ -198,7 +198,7 @@ export const getServerCacheConfig = () => ({
 
 // Client-safe API configuration (only using client-side variables)
 export const apiConfig = {
-  baseUrl: env.NEXT_PUBLIC_API_URL || env.NEXT_PUBLIC_APP_URL,
+  baseUrl: env.NEXT_PUBLIC_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001'),
   timeout: isProduction ? 30000 : 60000, // 30s in prod, 60s in dev
   retries: isProduction ? 3 : 1,
 };
