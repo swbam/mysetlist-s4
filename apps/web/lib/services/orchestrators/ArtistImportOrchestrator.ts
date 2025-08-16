@@ -25,6 +25,9 @@ import {
 } from '../util/strings';
 import { setlistPreseeder } from '../ingest/SetlistPreseeder';
 import { invalidateArtistCache } from '../../cache';
+import { revalidateTag } from 'next/cache';
+import { CACHE_TAGS } from '../../cache';
+import { sql } from 'drizzle-orm';
 import { getAttraction } from '../adapters/TicketmasterClient';
 
 /**
@@ -556,6 +559,14 @@ export class ArtistImportOrchestrator {
 
       // Invalidate artist-related caches
       await invalidateArtistCache(artistId, artist?.slug);
+
+      // Step 3: Recalculate trending scores and revalidate trending cache
+      try {
+        await db.execute(sql`SELECT update_trending_scores()`);
+      } catch {}
+      try {
+        revalidateTag(CACHE_TAGS.trending);
+      } catch {}
 
       if (this.progressReporter) {
         await this.progressReporter.report('creating-setlists', 100, 'Wrap-up phase completed successfully');
