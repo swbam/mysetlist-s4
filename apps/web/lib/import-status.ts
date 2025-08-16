@@ -1,4 +1,14 @@
 import { createServiceClient } from "./supabase/server";
+import { Redis } from "ioredis";
+
+// Initialize Redis client with correct credentials
+const redis = new Redis({
+  username: 'default',
+  password: 'D0ph9gV9LPCbAq271oij61iRaoqnK3o6',
+  host: 'redis-15718.c44.us-east-1-2.ec2.redns.redis-cloud.com',
+  port: 15718,
+  retryStrategy: (times) => Math.min(times * 50, 2000),
+});
 
 export interface ImportStatus {
   stage: 
@@ -28,6 +38,26 @@ export async function updateImportStatus(
   status: Partial<ImportStatus>,
 ): Promise<void> {
   try {
+    // Update Redis cache and publish for real-time updates
+    const fullStatus = {
+      ...status,
+      updatedAt: new Date().toISOString(),
+    };
+    
+    // Store in Redis cache (expires after 5 minutes)
+    await redis.setex(
+      `import:status:${jobId}`,
+      300,
+      JSON.stringify(fullStatus)
+    );
+    
+    // Publish to Redis channel for SSE subscribers
+    await redis.publish(
+      `import:progress:${jobId}`,
+      JSON.stringify(fullStatus)
+    );
+    
+    // Also update database for persistence
     const supabase = createServiceClient();
 
     // First check if record exists
@@ -67,6 +97,13 @@ export async function updateImportStatus(
 
 export async function getImportStatus(jobId: string): Promise<ImportStatus | null> {
   try {
+    // Check Redis cache first
+    const cached = await redis.get(`import:status:${jobId}`);
+    if (cached) {
+      return JSON.parse(cached) as ImportStatus;
+    }
+    
+    // Fallback to database
     const supabase = createServiceClient();
 
     const { data, error } = await supabase
@@ -79,7 +116,7 @@ export async function getImportStatus(jobId: string): Promise<ImportStatus | nul
       return null;
     }
 
-    return {
+    const status: ImportStatus = {
       stage: data.stage,
       progress: data.percentage || 0,  // Map percentage to progress
       message: data.message || "",
@@ -93,6 +130,15 @@ export async function getImportStatus(jobId: string): Promise<ImportStatus | nul
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     };
+    
+    // Cache for next time (short TTL)
+    await redis.setex(
+      `import:status:${jobId}`,
+      60, // 1 minute cache
+      JSON.stringify(status)
+    );
+    
+    return status;
   } catch (error) {
     console.warn("[IMPORT STATUS] Failed to get import status (non-blocking):", error);
     // Fallback: don't let import status failures break the actual import
