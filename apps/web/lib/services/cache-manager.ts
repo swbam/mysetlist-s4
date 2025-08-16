@@ -3,7 +3,7 @@
  * Implements smart caching strategy with Redis fallback and performance optimization
  */
 
-import { cache as dbCache } from "@repo/database/src/cache-strategy";
+// Memory cache disabled for simplicity; rely on Redis or direct fetch.
 import { CacheClient, cacheKeys } from "../cache/redis";
 
 // Cache TTL Configuration (in seconds)
@@ -39,7 +39,7 @@ export class CacheManager {
   private static instance: CacheManager;
   private redisClient: CacheClient;
   private metrics: Map<string, CacheMetrics> = new Map();
-  private readonly fallbackToMemory = true;
+  private readonly fallbackToMemory = false; // disable in-memory layer for simplicity
 
   private constructor() {
     this.redisClient = CacheClient.getInstance();
@@ -111,25 +111,7 @@ export class CacheManager {
       }
 
       // Fallback to memory cache
-      if (useMemory && this.fallbackToMemory) {
-        const memoryResult = await dbCache.getCachedSearchResults({
-          query: key,
-          type: "generic",
-          limit: 1,
-          filters: {},
-        });
-        if (memoryResult !== null) {
-          this.recordMetric("memory", "hit", Date.now() - startTime);
-          // Store in Redis for next time
-          if (useRedis) {
-            await this.redisClient.set(key, memoryResult, {
-              ex: options.ttl || CACHE_TTL.API_RESPONSES,
-            });
-          }
-          return memoryResult as T;
-        }
-        this.recordMetric("memory", "miss");
-      }
+  // In-memory cache disabled
 
       return null;
     } catch (error) {
@@ -172,15 +154,7 @@ export class CacheManager {
       }
 
       // Set in memory cache
-      if (useMemory && this.fallbackToMemory) {
-        await dbCache.setCachedSearchResults(
-          { query: key, type: "generic", limit: 1, filters: {} },
-          value,
-          ttl * 1000, // Convert to ms
-        );
-        this.recordMetric("memory", "set");
-        success = true;
-      }
+  // In-memory cache disabled
 
       return success;
     } catch (error) {
@@ -198,9 +172,7 @@ export class CacheManager {
       const redisResult = await this.redisClient.del(key);
       this.recordMetric("redis", "delete");
 
-      // Also clear from memory cache
-      dbCache.invalidateSearchCache(key);
-      this.recordMetric("memory", "delete");
+  // In-memory cache disabled
 
       return redisResult > 0;
     } catch (error) {
@@ -215,8 +187,7 @@ export class CacheManager {
    */
   async invalidatePattern(pattern: string): Promise<void> {
     try {
-      await this.redisClient.invalidatePattern(pattern);
-      dbCache.invalidateSearchCache(); // Clear all memory cache for safety
+  await this.redisClient.invalidatePattern(pattern);
     } catch (error) {
       console.warn("Pattern invalidation error:", error);
     }
@@ -475,7 +446,6 @@ export class CacheManager {
   static clearMemoryCache(): number {
     try {
       const instance = CacheManager.getInstance();
-      dbCache.invalidateSearchCache(); // Clear all memory cache
       instance.resetMetrics(); // Reset metrics as well
       return 1; // Return number of operations completed
     } catch (error) {

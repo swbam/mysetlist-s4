@@ -1,4 +1,4 @@
-import { LRUCache } from "lru-cache";
+import { SimpleCache } from "./simple-cache";
 
 // Types for cache configuration
 interface CacheConfig {
@@ -57,19 +57,19 @@ const cacheConfigs: Record<string, CacheConfig> = {
 };
 
 // Create cache instances
-const caches = new Map<string, LRUCache<string, any>>();
+const caches = new Map<string, SimpleCache<string, any>>();
 
 // Get or create a cache instance for a specific type
-function getCache(type: string): LRUCache<string, any> {
+function getCache(type: string): SimpleCache<string, any> {
   if (!caches.has(type)) {
-    const config = cacheConfigs[type] || cacheConfigs.default;
+    const config = cacheConfigs[type] || cacheConfigs["default"];
     if (config) {
-      caches.set(type, new LRUCache(config));
+    caches.set(type, new SimpleCache(config));
     } else {
       throw new Error(`No cache config found for type: ${type}`);
     }
   }
-  return caches.get(type) ?? createLRUCache();
+  return caches.get(type)!;
 }
 
 // Generate a cache key from query parameters
@@ -105,10 +105,10 @@ export async function withCache<T>(
 
   // Check cache first unless force refresh is requested
   if (!options?.force) {
-    const cached = cache.get(cacheKey);
+  const cached = cache.get(cacheKey);
     if (cached !== undefined) {
       // Track cache hit for monitoring
-      if (process.env.NODE_ENV === "development") {
+  if (process.env["NODE_ENV"] === "development") {
       }
       return cached;
     }
@@ -119,20 +119,16 @@ export async function withCache<T>(
     const result = await queryFn();
 
     // Store in cache with custom TTL if provided
-    if (options?.ttl) {
-      cache.set(cacheKey, result, { ttl: options.ttl });
-    } else {
-      cache.set(cacheKey, result);
-    }
+  cache.set(cacheKey, result, options?.ttl ? { ttl: options.ttl } : undefined);
 
     // Track cache miss for monitoring
-    if (process.env.NODE_ENV === "development") {
+  if (process.env["NODE_ENV"] === "development") {
     }
 
     return result;
   } catch (error) {
     // On error, try to return stale data if available
-    const staleData = cache.get(cacheKey, { allowStale: true });
+  const staleData = cache.get(cacheKey, { allowStale: true } as any);
     if (staleData !== undefined) {
       return staleData;
     }

@@ -8,7 +8,7 @@
  * 4. Response Caching - CDN level caching with proper headers
  */
 
-import { LRUCache } from "lru-cache";
+import { SimpleCache } from "./simple-cache";
 
 // ===========================================
 // LAYER 1: IN-MEMORY CACHE (Node.js Process)
@@ -35,14 +35,14 @@ interface TrendingCacheKey {
 }
 
 // Hot data cache - Very fast, short TTL
-const hotCache = new LRUCache<string, CacheEntry<any>>({
+const hotCache = new SimpleCache<string, CacheEntry<any>>({
   max: 500, // Maximum 500 entries
   ttl: 30 * 1000, // 30 seconds TTL
   updateAgeOnGet: true,
 });
 
 // Search results cache - Slightly longer TTL for search results
-const searchCache = new LRUCache<string, CacheEntry<any>>({
+const searchCache = new SimpleCache<string, CacheEntry<any>>({
   max: 200, // Maximum 200 search queries
   ttl: 2 * 60 * 1000, // 2 minutes TTL
   updateAgeOnGet: true,
@@ -84,7 +84,7 @@ function generateShowCacheKey(showId: string): string {
 
 export function getCached<T>(
   key: string,
-  cache: LRUCache<string, CacheEntry<T>>,
+  cache: SimpleCache<string, CacheEntry<T>>,
 ): T | null {
   const entry = cache.get(key);
   if (!entry) return null;
@@ -101,7 +101,7 @@ export function getCached<T>(
 export function setCached<T>(
   key: string,
   data: T,
-  cache: LRUCache<string, CacheEntry<T>>,
+  cache: SimpleCache<string, CacheEntry<T>>,
   customTtl?: number,
 ): void {
   const ttl = customTtl || cache.ttl || 30000;
@@ -188,7 +188,7 @@ export function invalidateSearchCache(query?: string) {
   if (query) {
     // Invalidate specific query patterns
     const keysToDelete: string[] = [];
-    for (const [key] of searchCache.entries()) {
+  for (const [key] of searchCache.entries()) {
       if (key.includes(`search:${query}`)) {
         keysToDelete.push(key);
       }
@@ -308,7 +308,7 @@ export function withCache<T extends Record<string, any>>(
   fetcher: () => Promise<T>,
   options: {
     ttl?: number;
-    cache?: LRUCache<string, CacheEntry<T>>;
+  cache?: SimpleCache<string, CacheEntry<T>>;
     skipCache?: boolean;
   } = {},
 ) {
