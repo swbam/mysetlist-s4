@@ -151,6 +151,11 @@ export async function securityMiddleware(
     response.headers.set(key, value);
   });
 
+  // Disable additional checks and rate limiting in development to avoid 429s from double-invoked effects
+  if (process.env.NODE_ENV === "development") {
+    return response;
+  }
+
   // Detect suspicious activity
   if (detectSuspiciousActivity(request)) {
     console.warn(

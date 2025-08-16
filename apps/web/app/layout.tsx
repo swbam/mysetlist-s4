@@ -2,6 +2,7 @@ import { Toaster } from "@repo/design-system/components/ui/sonner";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import { ResponsiveHeader } from "../components/layout/responsive-header";
 import { ThemeProvider } from "../components/ui/theme-provider";
 import { AuthProvider } from "./providers/auth-provider";
@@ -48,6 +49,11 @@ export default function RootLayout({
         />
         <link rel="dns-prefetch" href="https://i.scdn.co" />
         <link rel="dns-prefetch" href="https://s1.ticketm.net" />
+        {process.env.NODE_ENV === 'development' ? (
+          <Script id="ce-guard" strategy="beforeInteractive">
+            {"(()=>{try{const _def=customElements.define.bind(customElements);customElements.define=function(n,c,o){try{if(!customElements.get(n)){_def(n,c,o)}}catch(e){}}}catch(e){}})();"}
+          </Script>
+        ) : null}
       </head>
       <body className={inter.className}>
         <ThemeProvider

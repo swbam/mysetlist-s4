@@ -98,10 +98,12 @@ function transformArtist(artist: any) {
 }
 
 export async function GET(request: NextRequest) {
-  // Apply rate limiting
-  const rateLimitResult = await rateLimitMiddleware(request);
-  if (rateLimitResult) {
-    return rateLimitResult;
+  // Apply rate limiting (skip in dev - handled by security middleware early return)
+  if (process.env.NODE_ENV !== "development") {
+    const rateLimitResult = await rateLimitMiddleware(request);
+    if (rateLimitResult) {
+      return rateLimitResult;
+    }
   }
 
   try {
