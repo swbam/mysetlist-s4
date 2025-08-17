@@ -142,7 +142,7 @@ export function UnifiedSearch({
       // Extract Ticketmaster ID
       const tmAttractionId = result.externalId || result.id.replace("tm_", "");
       
-      // Trigger artist import Phase 1 and wait for response
+      // Call optimized import endpoint - returns immediately with slug
       const importResponse = await fetch("/api/artists/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -150,25 +150,33 @@ export function UnifiedSearch({
       });
 
       if (!importResponse.ok) {
-        throw new Error("Failed to import artist");
+        const errorData = await importResponse.json();
+        throw new Error(errorData.error || "Failed to import artist");
       }
 
       const importData = await importResponse.json();
       
-      // Navigate to the actual slug returned by the import
+      // Navigate immediately to the artist page
       if (importData.slug) {
+        // Store job ID in sessionStorage for progress tracking on artist page
+        if (importData.jobId && !importData.isExisting) {
+          sessionStorage.setItem(`import-job-${importData.slug}`, importData.jobId);
+        }
+        
+        // Navigate to artist page
         router.push(`/artists/${importData.slug}`);
         
         // Clear search after successful navigation
         setQuery("");
         setResults([]);
         setIsOpen(false);
+        setIsLoading(false);
       } else {
         throw new Error("Import did not return a valid slug");
       }
     } catch (error) {
       console.error("Import/Navigation error:", error);
-      setError("Failed to import artist. Please try again.");
+      setError(error instanceof Error ? error.message : "Failed to import artist. Please try again.");
       setIsLoading(false);
       return;
     }
