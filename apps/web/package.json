@@ -16,7 +16,8 @@
     "test:performance": "tsx scripts/run-performance-tests.ts",
     "test:grok-validation": "npm run test:performance && echo '✅ GROK.md compliance validated'",
     "test:watch": "vitest --config vitest.performance.config.ts",
-    "test:coverage": "vitest run --config vitest.performance.config.ts --coverage"
+    "test:coverage": "vitest run --config vitest.performance.config.ts --coverage",
+    "worker": "tsx scripts/run-worker.ts"
   },
   "dependencies": {
     "@arcjet/next": "1.0.0-beta.8",

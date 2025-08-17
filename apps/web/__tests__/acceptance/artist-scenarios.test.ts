@@ -14,6 +14,18 @@ import { ArtistImportOrchestrator } from '../../lib/services/orchestrators/Artis
 import { PerformanceMonitor, SLO_TARGETS } from '../../lib/services/monitoring/PerformanceMonitor';
 import { testStudioFiltering } from '../../lib/services/ingest/SpotifyCatalogIngest';
 
+// Hoisted module stubs for Vitest (configure implementations per scenario later)
+vi.mock('../../lib/services/adapters/TicketmasterClient', () => ({
+  iterateEventsByAttraction: vi.fn(),
+}));
+vi.mock('../../lib/services/adapters/SpotifyClient', () => ({
+  getAccessToken: vi.fn(),
+  listAllAlbums: vi.fn(),
+  listAlbumTracks: vi.fn(),
+  getTracksDetails: vi.fn(),
+  getAudioFeatures: vi.fn(),
+}));
+
 // Artist type definitions for testing
 interface ArtistTestScenario {
   name: string;
@@ -238,36 +250,32 @@ describe('Acceptance Tests - Realistic Artist Scenarios', () => {
     const setupScenarioMocks = (scenario: ArtistTestScenario, data: any) => {
       const { shows, albums, tracks, audioFeatures } = data;
 
-      // Mock Ticketmaster with scenario-specific data
-      vi.mock('../../lib/services/adapters/TicketmasterClient', () => ({
-        iterateEventsByAttraction: vi.fn().mockImplementation(async function* () {
-          const pageSize = 200;
-          for (let i = 0; i < shows.length; i += pageSize) {
-            yield shows.slice(i, i + pageSize);
-            // Simulate realistic API delays
-            await new Promise(resolve => setTimeout(resolve, getAPIDelay(scenario.type)));
-          }
-        })
-      }));
+      const tm = require('../../lib/services/adapters/TicketmasterClient');
+      const sp = require('../../lib/services/adapters/SpotifyClient');
 
-      // Mock Spotify with scenario-specific data
-      vi.mock('../../lib/services/adapters/SpotifyClient', () => ({
-        getAccessToken: vi.fn().mockResolvedValue(`${scenario.type}_access_token`),
-        listAllAlbums: vi.fn().mockResolvedValue(albums),
-        listAlbumTracks: vi.fn().mockImplementation(async (albumId: string) => {
-          await new Promise(resolve => setTimeout(resolve, getAPIDelay(scenario.type) / 2));
-          return tracks[albumId] || [];
-        }),
-        getTracksDetails: vi.fn().mockImplementation(async (trackIds: string[]) => {
+      vi.mocked(tm.iterateEventsByAttraction).mockImplementation(async function* () {
+        const pageSize = 200;
+        for (let i = 0; i < shows.length; i += pageSize) {
+          yield shows.slice(i, i + pageSize);
           await new Promise(resolve => setTimeout(resolve, getAPIDelay(scenario.type)));
-          const allTracks = Object.values(tracks).flat();
-          return allTracks.filter((track: any) => trackIds.includes(track.id));
-        }),
-        getAudioFeatures: vi.fn().mockImplementation(async (trackIds: string[]) => {
-          await new Promise(resolve => setTimeout(resolve, getAPIDelay(scenario.type)));
-          return audioFeatures.filter((feature: any) => trackIds.includes(feature.id));
-        })
-      }));
+        }
+      });
+
+      vi.mocked(sp.getAccessToken).mockResolvedValue(`${scenario.type}_access_token`);
+      vi.mocked(sp.listAllAlbums).mockResolvedValue(albums);
+      vi.mocked(sp.listAlbumTracks).mockImplementation(async (albumId: string) => {
+        await new Promise(resolve => setTimeout(resolve, getAPIDelay(scenario.type) / 2));
+        return tracks[albumId] || [];
+      });
+      vi.mocked(sp.getTracksDetails).mockImplementation(async (trackIds: string[]) => {
+        await new Promise(resolve => setTimeout(resolve, getAPIDelay(scenario.type)));
+        const allTracks = Object.values(tracks).flat();
+        return allTracks.filter((track: any) => trackIds.includes(track.id));
+      });
+      vi.mocked(sp.getAudioFeatures).mockImplementation(async (trackIds: string[]) => {
+        await new Promise(resolve => setTimeout(resolve, getAPIDelay(scenario.type)));
+        return audioFeatures.filter((feature: any) => trackIds.includes(feature.id));
+      });
     };
 
     const getAPIDelay = (type: string) => {

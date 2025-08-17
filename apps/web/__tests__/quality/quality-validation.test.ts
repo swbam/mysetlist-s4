@@ -14,6 +14,18 @@ import { ArtistImportOrchestrator } from '../../lib/services/orchestrators/Artis
 import { SpotifyCatalogIngest } from '../../lib/services/ingest/SpotifyCatalogIngest';
 import { TicketmasterIngest } from '../../lib/services/ingest/TicketmasterIngest';
 
+// Hoisted stubs for adapters to satisfy Vitest's mocking hoist
+vi.mock('../../lib/services/adapters/TicketmasterClient', () => ({
+  iterateEventsByAttraction: vi.fn(),
+}));
+vi.mock('../../lib/services/adapters/SpotifyClient', () => ({
+  getAccessToken: vi.fn(),
+  listAllAlbums: vi.fn(),
+  listAlbumTracks: vi.fn(),
+  getTracksDetails: vi.fn(),
+  getAudioFeatures: vi.fn(),
+}));
+
 // Test data for validation
 const mockComprehensiveData = {
   // Realistic artist with multiple releases and duplicates
@@ -165,26 +177,23 @@ describe('Quality Validation Tests', () => {
   const setupQualityValidationMocks = () => {
     const { shows, albums, tracks, audioFeatures } = mockComprehensiveData;
 
-    // Mock Ticketmaster
-    vi.mock('../../lib/services/adapters/TicketmasterClient', () => ({
-      iterateEventsByAttraction: vi.fn().mockImplementation(async function* () {
-        yield shows;
-      })
-    }));
+    const tm = require('../../lib/services/adapters/TicketmasterClient');
+    const sp = require('../../lib/services/adapters/SpotifyClient');
 
-    // Mock Spotify
-    vi.mock('../../lib/services/adapters/SpotifyClient', () => ({
-      getAccessToken: vi.fn().mockResolvedValue('mock-token'),
-      listAllAlbums: vi.fn().mockResolvedValue(albums),
-      listAlbumTracks: vi.fn().mockImplementation(async (albumId: string) => {
-        return tracks[albumId as keyof typeof tracks] || [];
-      }),
-      getTracksDetails: vi.fn().mockImplementation(async (trackIds: string[]) => {
-        const allTracks = Object.values(tracks).flat();
-        return allTracks.filter(track => trackIds.includes(track.id));
-      }),
-      getAudioFeatures: vi.fn().mockResolvedValue(audioFeatures)
-    }));
+    vi.mocked(tm.iterateEventsByAttraction).mockImplementation(async function* () {
+      yield shows;
+    });
+
+    vi.mocked(sp.getAccessToken).mockResolvedValue('mock-token');
+    vi.mocked(sp.listAllAlbums).mockResolvedValue(albums);
+    vi.mocked(sp.listAlbumTracks).mockImplementation(async (albumId: string) => {
+      return tracks[albumId as keyof typeof tracks] || [];
+    });
+    vi.mocked(sp.getTracksDetails).mockImplementation(async (trackIds: string[]) => {
+      const allTracks = Object.values(tracks).flat();
+      return allTracks.filter(track => trackIds.includes(track.id));
+    });
+    vi.mocked(sp.getAudioFeatures).mockResolvedValue(audioFeatures);
   };
 
   const cleanupTestData = async (artistId: string) => {

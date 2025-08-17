@@ -13,6 +13,9 @@ export const env = createEnv({
     SPOTIFY_CLIENT_ID: z.string().optional(),
     SPOTIFY_CLIENT_SECRET: z.string().optional(),
 
+    // Queue/Redis
+    REDIS_URL: z.string().url().optional(),
+
     // Security/auth for internal jobs
     CRON_SECRET: z.string().optional(),
     SUPABASE_JWT_SECRET: z.string().optional(),
@@ -34,6 +37,7 @@ export const env = createEnv({
     TICKETMASTER_API_KEY: process.env.TICKETMASTER_API_KEY,
     SPOTIFY_CLIENT_ID: process.env.SPOTIFY_CLIENT_ID,
     SPOTIFY_CLIENT_SECRET: process.env.SPOTIFY_CLIENT_SECRET,
+    REDIS_URL: process.env.REDIS_URL,
     CRON_SECRET: process.env.CRON_SECRET,
     SUPABASE_JWT_SECRET: process.env.SUPABASE_JWT_SECRET,
 

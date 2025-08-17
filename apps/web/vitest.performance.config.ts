@@ -91,7 +91,7 @@ export default defineConfig({
     // Reporter configuration
     reporter: process.env.CI 
       ? ["verbose", "github-actions"]
-      : ["verbose", "html"],
+      : ["verbose"],
     
     outputFile: {
       html: "./test-results/performance-report.html",
