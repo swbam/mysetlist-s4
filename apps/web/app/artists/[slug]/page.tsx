@@ -120,6 +120,50 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
       getArtistStats(artist.id),
     ]);
 
+    // Fast path: if DB has no upcoming shows yet but we have a Ticketmaster ID, fetch first page directly
+    let fastUpcoming: Array<{ show: any; venue?: any; orderIndex: number; isHeadliner: boolean }> = [];
+    if ((results[0].status === "fulfilled" ? results[0].value : []).length === 0 && (artist as any).tmAttractionId) {
+      try {
+        const { TicketmasterClient } = await import("@repo/external-apis");
+        const tm = new TicketmasterClient({ apiKey: process.env.TICKETMASTER_API_KEY || "" });
+        const resp = await tm.searchEvents({
+          attractionId: (artist as any).tmAttractionId,
+          size: 100,
+          page: 0,
+          classificationName: 'Music',
+          sort: 'date,asc',
+        });
+        const events = (resp as any)?._embedded?.events || [];
+        fastUpcoming = events.slice(0, 12).map((ev: any) => {
+          const dateStr = ev?.dates?.start?.dateTime || ev?.dates?.start?.localDate;
+          const venue = ev?._embedded?.venues?.[0];
+          return {
+            show: {
+              id: ev.id,
+              name: ev.name || "Untitled Show",
+              slug: `${slug}-${ev.id}`,
+              date: dateStr || new Date().toISOString().slice(0, 10),
+              ticketUrl: ev.url || undefined,
+              status: "upcoming",
+            },
+            venue: venue
+              ? {
+                  id: venue.id,
+                  name: venue.name,
+                  city: venue.city?.name || "",
+                  state: venue.state?.stateCode,
+                  country: venue.country?.countryCode || "US",
+                }
+              : undefined,
+            orderIndex: 0,
+            isHeadliner: true,
+          };
+        });
+      } catch (_e) {
+        // ignore fast path errors
+      }
+    }
+
     // Handle results with better error logging
     const upcomingShows =
       results[0].status === "fulfilled" ? results[0].value : [];
@@ -159,12 +203,12 @@ const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
     };
 
     // Transform shows data to match component interfaces
-    const transformedUpcomingShows = upcomingShows.map(
+    const transformedUpcomingShows = ((fastUpcoming.length > 0 ? fastUpcoming : upcomingShows) as any[]).map(
       ({ show, venue, orderIndex, isHeadliner }) => ({
         show: {
           id: show.id,
           name: show.name || "Untitled Show",
-          slug: show.slug || "",
+          slug: show.slug || show.id,
           date: show.date || "",
           ticketUrl: show.ticketUrl,
           status: (show.status as "upcoming" | "ongoing" | "completed" | "cancelled") || "upcoming",

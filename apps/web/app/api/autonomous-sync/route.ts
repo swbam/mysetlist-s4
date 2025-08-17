@@ -235,19 +235,7 @@ async function handleMaintenancePipeline() {
       results.errors.push(`Health check failed: ${error}`);
     }
 
-    // 4. Cache cleanup
-    try {
-      const cacheResponse = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3001'}/api/admin/cache/cleanup`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.CRON_SECRET}`,
-        },
-      });
-      
-      if (cacheResponse.ok) results.cleanupOperations++;
-    } catch (error) {
-      results.errors.push(`Cache cleanup failed: ${error}`);
-    }
+    // 4. Cache cleanup (disabled in this build)
 
     // Log maintenance completion
     await supabase.rpc('log_autonomous_sync', {

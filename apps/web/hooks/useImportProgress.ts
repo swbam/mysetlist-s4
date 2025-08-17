@@ -118,7 +118,7 @@ export function useImportProgress(
 
         const data = await response.json();
         const progressData: ImportProgressData = {
-          stage: data.stage === "initializing" ? "identity" : data.stage,
+          stage: data.stage,
           progress: data.progress || data.percentage || 0,
           message: data.message,
           at: data.updatedAt || new Date().toISOString(),

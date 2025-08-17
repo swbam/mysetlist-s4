@@ -27,9 +27,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 export interface ImportProgressData {
   stage: 
     | "initializing"
-    | "identity" 
-    | "shows"
-    | "catalog"
+    | "syncing-identifiers" 
+    | "importing-shows"
+    | "importing-songs"
     | "completed"
     | "failed";
   progress: number;
@@ -67,7 +67,7 @@ const STAGE_CONFIG = {
     bgColor: "bg-blue-50",
     borderColor: "border-blue-200",
   },
-  identity: {
+  "syncing-identifiers": {
     label: "Identity Phase",
     description: "Creating artist record and fetching basic information...",
     icon: <Database className="h-4 w-4 animate-pulse" />,
@@ -75,7 +75,7 @@ const STAGE_CONFIG = {
     bgColor: "bg-purple-50",
     borderColor: "border-purple-200",
   },
-  shows: {
+  "importing-shows": {
     label: "Shows & Venues",
     description: "Importing shows and venue information from Ticketmaster...",
     icon: <MapPin className="h-4 w-4 animate-pulse" />,
@@ -83,7 +83,7 @@ const STAGE_CONFIG = {
     bgColor: "bg-orange-50",
     borderColor: "border-orange-200",
   },
-  catalog: {
+  "importing-songs": {
     label: "Song Catalog",
     description: "Importing studio-only tracks from Spotify (filtering out live versions)...",
     icon: <Music className="h-4 w-4 animate-pulse" />,
@@ -167,7 +167,7 @@ export function ImportProgress({
 
         const data = await response.json();
         const progressData: ImportProgressData = {
-          stage: data.stage === "initializing" ? "identity" : data.stage,
+          stage: data.stage,
           progress: data.progress || data.percentage || 0,
           message: data.message,
           at: data.updatedAt || new Date().toISOString(),

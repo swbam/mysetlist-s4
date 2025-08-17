@@ -38,6 +38,8 @@ export async function GET(
       progress: status.progress,
       message: status.message,
       updatedAt: status.at,
+      error: status.error,
+      metadata: status.metadata,
     };
 
     return NextResponse.json(response);

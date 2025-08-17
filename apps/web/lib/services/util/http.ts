@@ -241,7 +241,10 @@ function calculateDelay(attempt: number, baseDelay: number, maxDelay: number, ji
  * Sleep utility for delays
  */
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve => {
+    // Use globalThis.setTimeout so Vitest fake timers can control it
+    globalThis.setTimeout(resolve, ms);
+  });
 }
 
 /**

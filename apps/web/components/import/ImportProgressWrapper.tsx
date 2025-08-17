@@ -33,9 +33,10 @@ interface ImportProgressWrapperProps {
 
 const STAGE_LABELS = {
   initializing: "Setting up import...",
-  identity: "Creating artist profile...",
-  shows: "Loading shows & venues...",
-  catalog: "Building song catalog...",
+  "syncing-identifiers": "Creating artist profile...",
+  "importing-shows": "Loading shows & venues...",
+  "importing-songs": "Building song catalog...",
+  "creating-setlists": "Creating initial setlists...",
   completed: "Import complete!",
   failed: "Import failed",
 } as const;
@@ -201,21 +202,21 @@ export function ImportProgressWrapper({
                   <div className="flex items-center justify-center space-x-4 text-xs">
                     <div className={cn(
                       "flex items-center space-x-1",
-                      progress.stage === "identity" ? "text-purple-600" : "text-muted-foreground"
+                      progress.stage === "syncing-identifiers" ? "text-purple-600" : "text-muted-foreground"
                     )}>
                       <Database className="h-3 w-3" />
                       <span>Identity</span>
                     </div>
                     <div className={cn(
                       "flex items-center space-x-1",
-                      progress.stage === "shows" ? "text-orange-600" : "text-muted-foreground"
+                      progress.stage === "importing-shows" ? "text-orange-600" : "text-muted-foreground"
                     )}>
                       <MapPin className="h-3 w-3" />
                       <span>Shows</span>
                     </div>
                     <div className={cn(
                       "flex items-center space-x-1",
-                      progress.stage === "catalog" ? "text-green-600" : "text-muted-foreground"
+                      progress.stage === "importing-songs" ? "text-green-600" : "text-muted-foreground"
                     )}>
                       <Music className="h-3 w-3" />
                       <span>Catalog</span>

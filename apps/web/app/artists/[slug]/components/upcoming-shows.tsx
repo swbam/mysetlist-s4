@@ -113,11 +113,17 @@ export const UpcomingShows = React.memo(function UpcomingShows({
               <div className="space-y-3">
                 <div className="space-y-2">
                   <div className="flex items-start justify-between gap-2">
-                    <Link href={`/shows/${show.slug}`}>
-                      <h3 className="font-semibold hover:underline text-sm line-clamp-2">
+                    {show.slug ? (
+                      <Link href={`/shows/${show.slug}`}>
+                        <h3 className="font-semibold hover:underline text-sm line-clamp-2">
+                          {show.name}
+                        </h3>
+                      </Link>
+                    ) : (
+                      <h3 className="font-semibold text-sm line-clamp-2">
                         {show.name}
                       </h3>
-                    </Link>
+                    )}
                     {isHeadliner && <Badge variant="secondary" className="text-xs shrink-0">Headliner</Badge>}
                   </div>
 

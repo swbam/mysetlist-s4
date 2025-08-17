@@ -55,6 +55,8 @@
     "mdx-bundler": "^10.1.1",
     "nanoid": "^5.1.5",
     "next": "15.3.4",
+    "bullmq": "^5.58.0",
+    "ioredis": "^5.7.0",
     "otplib": "^12.0.1",
     "postgres": "^3.4.7",
     "qrcode": "^1.5.4",

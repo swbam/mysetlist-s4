@@ -13,7 +13,8 @@ export function createSlug(text: string): string {
     // map common leets/symbols
     .replace(/!/g, 'i')
     .replace(/\+/g, 't')
-    .replace(/&/g, 'and')
+    // replace ampersand with space so it collapses to a hyphen later
+    .replace(/&/g, ' ')
     .replace(/\//g, '')
     .replace(/[^\w\s-]/g, '') // Remove remaining special characters
     .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
@@ -43,14 +44,14 @@ export function cleanSongTitle(title: string): string {
     // Normalize smart quotes
     .replace(/[“”]/g, '"')
     .replace(/[‘’]/g, "'")
+    // Remove all straight double quotes
+    .replace(/"/g, '')
     // Remove common suffixes and qualifiers
     .replace(/\s*\(.*?\)\s*$/g, '') // Remove trailing parentheses
     .replace(/\s*\[.*?\]\s*$/g, '') // Remove trailing brackets
     .replace(/\s*-\s*(live|acoustic|remix|radio edit|single version|album version|remastered|remaster).*$/i, '')
     // Clean up whitespace
     .replace(/\s+/g, ' ')
-    // Remove surrounding quotes
-    .replace(/^"(.+)"$/g, '$1')
     .trim();
 }
 
@@ -61,7 +62,10 @@ export function isLikelyLiveTitle(title: string): boolean {
   const lowerTitle = title.toLowerCase();
   // Use word boundaries to avoid false positives like 'live' in 'Live Wire'
   const patterns = [
-    /\blive\b/,
+    /\(\s*live\s*\)/,
+    /\[\s*live\s*\]/,
+    /-\s*live\s*$/,
+    /\blive\s+(at|from|in|on)\b/,
     /\bunplugged\b/,
     /\bacoustic\b/,
     /\bconcert\b/,
@@ -71,7 +75,6 @@ export function isLikelyLiveTitle(title: string): boolean {
     /\bsession(s)?\b/,
     /\bradio\b/,
     /\bbbc\b/,
-    /live\s+(at|from|in|on)/,
   ];
   return patterns.some((re) => re.test(lowerTitle));
 }
@@ -82,7 +85,10 @@ export function isLikelyLiveTitle(title: string): boolean {
 export function isLikelyLiveAlbum(albumName: string): boolean {
   const lowerAlbum = albumName.toLowerCase();
   const patterns = [
-    /\blive\b/,
+    /\(\s*live\s*\)/,
+    /\[\s*live\s*\]/,
+    /-\s*live\s*$/,
+    /\blive\s+(at|from|in|on)\b/,
     /\bunplugged\b/,
     /\bconcert\b/,
     /\btour\b/,
@@ -90,7 +96,6 @@ export function isLikelyLiveAlbum(albumName: string): boolean {
     /\bsession(s)?\b/,
     /\bacoustic\b/,
     /\bmtv\b/,
-    /live\s+(at|from|in)/,
     /recorded\s+live/,
   ];
   return patterns.some((re) => re.test(lowerAlbum));

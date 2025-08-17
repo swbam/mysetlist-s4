@@ -144,6 +144,9 @@ importers:
       babel-plugin-react-compiler:
         specifier: 19.1.0-rc.2
         version: 19.1.0-rc.2
+      bullmq:
+        specifier: ^5.58.0
+        version: 5.58.0
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -168,6 +171,9 @@ importers:
       import-in-the-middle:
         specifier: ^1.13.2
         version: 1.14.2
+      ioredis:
+        specifier: ^5.7.0
+        version: 5.7.0
       lucide-react:
         specifier: ^0.511.0
         version: 0.511.0(react@19.1.0)
