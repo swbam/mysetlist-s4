@@ -1,5 +1,5 @@
 import { SpotifyClient } from "../clients/spotify";
-import { db, eq, sql, and, isNull } from "../database";
+import { db, eq, sql } from "../database";
 import { artists, songs, artistSongs } from "@repo/database";
 
 export interface CatalogSyncResult {
@@ -37,7 +37,7 @@ export interface TrackData {
 export class SpotifyCompleteCatalog {
   private spotifyClient: SpotifyClient;
   private processedAlbums = new Set<string>();
-  private processedTracks = new Map<string, TrackData>();
+  // private processedTracks = new Map<string, TrackData>(); // Unused variable
   private liveTrackPatterns = [
     /\(live\s*(at|from|in|@)?.*?\)/i,
     /\s-\s+live\s*(at|from|in|@)?/i,
@@ -165,14 +165,19 @@ export class SpotifyCompleteCatalog {
       while (hasMore) {
         try {
           const response = await this.spotifyClient.getArtistAlbums(artistId, {
-            album_type: albumType,
+            include_groups: albumType,
             limit: batchSize,
             offset,
             market: 'US',
           });
           
           if (response?.items && response.items.length > 0) {
-            allAlbums.push(...response.items);
+            allAlbums.push(...response.items.map(item => ({
+              ...item,
+              type: item.album_type || 'album',
+              releaseDate: item.release_date || '',
+              totalTracks: item.total_tracks || 0
+            } as AlbumData)));
             offset += response.items.length;
             hasMore = response.items.length === batchSize;
           } else {
@@ -222,7 +227,7 @@ export class SpotifyCompleteCatalog {
       const progress = 30 + (batchIndex / batches.length) * 30;
       options.onProgress?.(`Processing albums ${batchIndex * batchSize + 1}-${Math.min((batchIndex + 1) * batchSize, albums.length)} of ${albums.length}...`, progress);
       
-      const batchPromises = batch.map(async (album) => {
+      const batchPromises = batch?.map(async (album) => {
         try {
           const tracks = await this.getAlbumTracks(album.id);
           return tracks.map(track => ({
@@ -235,7 +240,7 @@ export class SpotifyCompleteCatalog {
         }
       });
       
-      const batchResults = await Promise.all(batchPromises);
+      const batchResults = await Promise.all(batchPromises || []);
       allTracks.push(...batchResults.flat());
       
       // Rate limiting between batches
@@ -454,7 +459,7 @@ export class SpotifyCompleteCatalog {
           set: {
             popularity: sql`GREATEST(${songs.popularity}, EXCLUDED.popularity)`,
             albumName: sql`COALESCE(EXCLUDED.album_name, ${songs.albumName})`,
-            albumArt: sql`COALESCE(EXCLUDED.album_art, ${songs.albumArt})`,
+            albumArtUrl: sql`COALESCE(EXCLUDED.album_art_url, ${songs.albumArtUrl})`,
             updatedAt: new Date(),
           },
         })
@@ -491,13 +496,14 @@ export class SpotifyCompleteCatalog {
         totalSongs: result.totalSongs,
         totalAlbums: result.totalAlbums,
         lastFullSyncAt: new Date(),
-        catalogMetadata: JSON.stringify({
-          studioTracks: result.studioTracks,
-          skippedLiveTracks: result.skippedLiveTracks,
-          deduplicatedTracks: result.deduplicatedTracks,
-          syncDuration: result.syncDuration,
-          lastSyncDate: new Date().toISOString(),
-        }),
+        // Store catalog metadata in a separate field if needed
+        // catalogMetadata: JSON.stringify({
+        //   studioTracks: result.studioTracks,
+        //   skippedLiveTracks: result.skippedLiveTracks,
+        //   deduplicatedTracks: result.deduplicatedTracks,
+        //   syncDuration: result.syncDuration,
+        //   lastSyncDate: new Date().toISOString(),
+        // }),
       })
       .where(eq(artists.spotifyId, spotifyArtistId));
   }

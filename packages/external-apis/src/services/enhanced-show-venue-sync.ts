@@ -1,5 +1,5 @@
 import { TicketmasterClient } from "../clients/ticketmaster";
-import { db, eq, sql, and, inArray } from "../database";
+import { db, eq, sql } from "../database";
 import { shows, venues, artists } from "@repo/database";
 
 export interface ShowSyncResult {
@@ -34,8 +34,8 @@ export interface ShowData {
   date: Date;
   venue?: VenueData;
   status: string;
-  priceMin?: number;
-  priceMax?: number;
+  minPrice?: number;
+  maxPrice?: number;
   ticketUrl?: string;
   images?: Array<{ url: string }>;
   seatmapUrl?: string;
@@ -50,7 +50,7 @@ export class EnhancedShowVenueSync {
   
   constructor() {
     this.ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env.TICKETMASTER_API_KEY || "",
+      apiKey: process.env['TICKETMASTER_API_KEY'] || "",
     });
   }
 
@@ -139,9 +139,9 @@ export class EnhancedShowVenueSync {
     retryCount = 0
   ): Promise<ShowData[]> {
     try {
-      const events = await this.ticketmasterClient.getAttractionEvents(tmAttractionId, {
+      const events = await this.ticketmasterClient.searchEvents({
+        attractionId: tmAttractionId,
         size: options.maxShows || 200,
-        includePast: options.includePast || false,
       });
       
       if (!events || !events._embedded?.events) {
@@ -167,7 +167,7 @@ export class EnhancedShowVenueSync {
    * Transform Ticketmaster events to our show format
    */
   private transformTicketmasterEvents(events: any[]): ShowData[] {
-    return events.map(event => {
+    const mappedShows = events.map(event => {
       const venue = event._embedded?.venues?.[0];
       
       return {
@@ -190,13 +190,14 @@ export class EnhancedShowVenueSync {
           capacity: venue.generalInfo?.generalRule,
         } : undefined,
         status: event.dates?.status?.code || 'scheduled',
-        priceMin: event.priceRanges?.[0]?.min,
-        priceMax: event.priceRanges?.[0]?.max,
+        minPrice: event.priceRanges?.[0]?.min,
+        maxPrice: event.priceRanges?.[0]?.max,
         ticketUrl: event.url,
         images: event.images,
         seatmapUrl: event.seatmap?.staticUrl,
       };
     });
+    return mappedShows.filter(show => show.venue !== undefined) as ShowData[];
   }
 
   /**
@@ -204,7 +205,7 @@ export class EnhancedShowVenueSync {
    */
   private async processVenuesInParallel(
     showsData: ShowData[],
-    options: any
+    _options: any
   ): Promise<{
     created: number;
     updated: number;
@@ -229,7 +230,7 @@ export class EnhancedShowVenueSync {
     const existingVenues = await db
       .select()
       .from(venues)
-      .where(inArray(venues.tmVenueId, tmVenueIds));
+      .where(sql`${venues.tmVenueId} = ANY(${tmVenueIds})`);
     
     const existingVenueIds = new Set(existingVenues.map(v => v.tmVenueId));
     existingVenues.forEach(v => {
@@ -306,9 +307,9 @@ export class EnhancedShowVenueSync {
           .update(venues)
           .set({
             name: venue.name,
-            city: venue.city || null,
-            state: venue.state || null,
-            country: venue.country || null,
+            city: venue.city || sql`NULL`,
+            state: venue.state || sql`NULL`,
+            country: venue.country || sql`NULL`,
             latitude: venue.latitude || null,
             longitude: venue.longitude || null,
             updatedAt: new Date(),
@@ -340,8 +341,8 @@ export class EnhancedShowVenueSync {
       venueId: show.venue ? venueMap.get(show.venue.id) || null : null,
       timezone: show.venue?.timezone || null,
       status: show.status,
-      priceMin: show.priceMin || null,
-      priceMax: show.priceMax || null,
+      minPrice: show.minPrice || null,
+      maxPrice: show.maxPrice || null,
       ticketUrl: show.ticketUrl || null,
       imageUrl: show.images?.[0]?.url || null,
       smallImageUrl: show.images?.[2]?.url || null,
@@ -364,8 +365,8 @@ export class EnhancedShowVenueSync {
               date: sql`EXCLUDED.date`,
               venueId: sql`EXCLUDED.venue_id`,
               status: sql`EXCLUDED.status`,
-              priceMin: sql`EXCLUDED.price_min`,
-              priceMax: sql`EXCLUDED.price_max`,
+              minPrice: sql`EXCLUDED.min_price`,
+              maxPrice: sql`EXCLUDED.max_price`,
               updatedAt: new Date(),
             },
           });
@@ -383,7 +384,7 @@ export class EnhancedShowVenueSync {
    * Create initial setlists for shows
    */
   private async createSetlistsForShows(
-    artistId: string,
+    _artistId: string,
     upcomingShows: ShowData[]
   ): Promise<void> {
     // This would be implemented to create setlists
