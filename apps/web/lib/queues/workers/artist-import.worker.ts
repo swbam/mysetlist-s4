@@ -1,4 +1,5 @@
 import { Job } from "bullmq";
+import { Redis } from "ioredis";
 import { 
   QueueName, 
   ArtistImportJob,
@@ -9,65 +10,143 @@ import {
   Priority,
   createWorker
 } from "../config";
-import { ArtistImportOrchestrator } from "../../services/artist-import-orchestrator";
+import { OptimizedImportOrchestrator } from "../../services/optimized-import-orchestrator";
 import { updateImportStatus } from "../../import-status";
 import { ImportLogger } from "../../import-logger";
 import { db, artists, eq } from "@repo/database";
 
-// Main artist import worker
+// Initialize Redis for real-time progress updates
+const redis = new Redis({
+  username: 'default',
+  password: 'D0ph9gV9LPCbAq271oij61iRaoqnK3o6',
+  host: 'redis-15718.c44.us-east-1-2.ec2.redns.redis-cloud.com',
+  port: 15718,
+});
+
+// Main artist import worker - handles background phases after Phase 1
 export const artistImportWorker = createWorker<ArtistImportJob>(
   QueueName.ARTIST_IMPORT,
   async (job: Job<ArtistImportJob>) => {
-    const { tmAttractionId, priority, adminImport, userId } = job.data;
+    const { 
+      tmAttractionId, 
+      artistId, 
+      priority, 
+      adminImport, 
+      userId,
+      phase1Complete,
+      syncOnly
+    } = job.data;
+    
     const jobId = job.id || `import_${tmAttractionId}_${Date.now()}`;
     
-    // Update job progress
-    const updateProgress = async (progress: number, message: string) => {
+    // Update job progress with Redis pub/sub
+    const updateProgress = async (progress: number, message: string, metrics?: any) => {
       await job.updateProgress(progress);
-      await updateImportStatus(jobId, {
+      
+      const progressData = {
         stage: getStageFromProgress(progress),
         progress,
         message,
-      });
+        artistId,
+        metrics,
+      };
+      
+      await updateImportStatus(artistId || jobId, progressData);
+      
+      // Publish to Redis for SSE
+      if (artistId) {
+        const channel = `import:progress:${jobId}`;
+        await redis.publish(channel, JSON.stringify(progressData));
+        await redis.setex(
+          `import:status:${jobId}`,
+          300,
+          JSON.stringify(progressData)
+        );
+      }
     };
     
     try {
-      await updateProgress(5, "Starting artist import...");
+      // If this is a sync-only job for existing artist
+      if (syncOnly && artistId) {
+        await updateProgress(10, "Syncing latest data for existing artist...");
+        
+        const orchestrator = new OptimizedImportOrchestrator(
+          async (progress) => {
+            await job.updateProgress(progress.progress);
+            await updateImportStatus(artistId, progress);
+            
+            // Publish to Redis
+            const channel = `import:progress:${jobId}`;
+            await redis.publish(channel, JSON.stringify(progress));
+          },
+          redis
+        );
+        
+        const result = await orchestrator.executeSmartImport(
+          tmAttractionId,
+          artistId,
+          jobId
+        );
+        
+        return result;
+      }
       
-      // Phase 1: Create artist immediately
-      const orchestrator = new ArtistImportOrchestrator(
-        async (progress) => {
-          await job.updateProgress(progress.progress);
-          await updateImportStatus(jobId, progress);
-        }
-      );
+      // Handle Phase 2 & 3 background import (Phase 1 already completed in API route)
+      if (phase1Complete && artistId) {
+        await updateProgress(25, "Starting background import phases...");
+        
+        const orchestrator = new OptimizedImportOrchestrator(
+          async (progress) => {
+            await job.updateProgress(progress.progress);
+            await updateImportStatus(artistId, progress);
+            
+            // Publish to Redis for SSE
+            const channel = `import:progress:${jobId}`;
+            await redis.publish(channel, JSON.stringify(progress));
+            await redis.setex(
+              `import:status:${jobId}`,
+              300,
+              JSON.stringify(progress)
+            );
+          },
+          redis
+        );
+        
+        const result = await orchestrator.executeSmartImport(
+          tmAttractionId,
+          artistId,
+          jobId
+        );
+        
+        await updateProgress(100, "Import completed successfully!", result.metrics);
+        
+        return result;
+      }
       
-      const result = await orchestrator.importArtist(tmAttractionId, adminImport);
-      
-      // Queue follow-up jobs for parallel processing
-      await queueFollowUpJobs(result.artistId, tmAttractionId, job.data.priority);
-      
-      await updateProgress(100, "Import completed successfully!");
-      
-      return {
-        success: true,
-        artistId: result.artistId,
-        slug: result.slug,
-        totalSongs: result.totalSongs,
-        totalShows: result.totalShows,
-        totalVenues: result.totalVenues,
-        importDuration: result.importDuration,
-      };
+      // Legacy full import path (shouldn't be used with new flow)
+      throw new Error("Full import should not be queued - Phase 1 must be executed synchronously");
       
     } catch (error) {
       console.error(`Artist import failed for ${tmAttractionId}:`, error);
       
-      await updateImportStatus(jobId, {
+      await updateImportStatus(artistId || jobId, {
         stage: "failed",
         progress: 0,
         message: "Import failed",
         error: error instanceof Error ? error.message : "Unknown error",
       });
+      
+      // Publish failure to Redis
+      if (artistId) {
+        const channel = `import:progress:${jobId}`;
+        await redis.publish(channel, JSON.stringify({
+          stage: "failed",
+          progress: 0,
+          message: "Import failed",
+          error: error instanceof Error ? error.message : "Unknown error",
+          artistId,
+        }));
+      }
       
       throw error;
     }

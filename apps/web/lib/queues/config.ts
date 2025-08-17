@@ -78,9 +78,12 @@ export const workerConcurrency = {
 // Job types
 export interface ArtistImportJob {
   tmAttractionId: string;
+  artistId?: string; // Artist ID if already created (Phase 1 complete)
   priority?: Priority;
   adminImport?: boolean;
   userId?: string;
+  phase1Complete?: boolean; // True if Phase 1 already executed
+  syncOnly?: boolean; // True if syncing existing artist
 }
 
 export interface SpotifySyncJob {

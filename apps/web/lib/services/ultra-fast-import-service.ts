@@ -620,7 +620,7 @@ export class UltraFastImportService {
         slug,
         imageUrl: spotifyData?.images?.[0]?.url || tmArtist.images?.[0]?.url || null,
         smallImageUrl: spotifyData?.images?.[2]?.url || null,
-        genres: JSON.stringify(spotifyData?.genres || tmArtist.classifications?.[0]?.genre?.name ? [tmArtist.classifications[.genre.name] : []),
+        genres: JSON.stringify(spotifyData?.genres || (tmArtist.classifications?.[0]?.genre?.name ? [tmArtist.classifications[0].genre.name] : [])),
         popularity: spotifyData?.popularity || 0,
         followers: spotifyData?.followers?.total || 0,
         externalUrls: JSON.stringify(spotifyData?.external_urls || {}),
