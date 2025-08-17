@@ -22,7 +22,12 @@ const getSupabaseServiceRoleKey = () => {
 };
 
 export const createSupabaseAdminClient = () => {
-  return createClient(getSupabaseUrl(), getSupabaseServiceRoleKey(), {
+  // Lazily get environment variables only when the function is called
+  // This prevents build-time errors when environment variables are not available
+  const url = getSupabaseUrl();
+  const key = getSupabaseServiceRoleKey();
+  
+  return createClient(url, key, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
