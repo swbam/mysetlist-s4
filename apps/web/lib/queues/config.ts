@@ -138,7 +138,7 @@ export interface ScheduledSyncJob {
 }
 
 // Queue factory
-export function createQueue<T>(name: QueueName): Queue<T> {
+export function createQueue<T = any>(name: QueueName): Queue<T> {
   return new Queue<T>(name, {
     connection: redisConnection,
     defaultJobOptions: {
@@ -179,7 +179,7 @@ export function createQueueEvents(name: QueueName): QueueEvents {
 // Singleton queue instances
 let queues: Map<QueueName, Queue<any>> | null = null;
 
-export function getQueue<T>(name: QueueName): Queue<T> {
+export function getQueue<T = any>(name: QueueName): Queue<T> {
   if (!queues) {
     queues = new Map();
   }
@@ -188,7 +188,7 @@ export function getQueue<T>(name: QueueName): Queue<T> {
     queues.set(name, createQueue<T>(name));
   }
   
-  return queues.get(name)!;
+  return queues.get(name) as Queue<T>;
 }
 
 // Cleanup function

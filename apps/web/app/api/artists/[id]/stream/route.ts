@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { runFullImport } from "~/lib/services/orchestrators/ArtistImportOrchestrator";
+import { ArtistImportOrchestrator } from "~/lib/services/artist-import-orchestrator";
 import { ProgressBus } from "~/lib/services/progress/ProgressBus";
 
 /**
@@ -126,7 +126,9 @@ export async function GET(
       // Start the full import process with error handling
       let result: any;
       try {
-        result = await runFullImport(artistId);
+        const orchestrator = new ArtistImportOrchestrator();
+        // Assuming artistId is the tmAttractionId for this route
+        result = await orchestrator.importArtist(artistId, false);
       } catch (importError) {
         console.error(`[SSE] Import error for artist ${artistId}:`, importError);
         result = {

@@ -5,11 +5,9 @@
 
 export {
   ArtistImportOrchestrator,
-  initiateImport,
-  runFullImport,
   type ImportResult,
-  type ImportConfig,
-} from './ArtistImportOrchestrator';
+  type ImportProgress,
+} from '../artist-import-orchestrator';
 
 // Default export for convenience
-export { ArtistImportOrchestrator as default } from './ArtistImportOrchestrator';
+export { ArtistImportOrchestrator as default } from '../artist-import-orchestrator';

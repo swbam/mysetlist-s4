@@ -207,14 +207,10 @@ export class ArtistImportOrchestrator {
 
       if (showsResult.status === "fulfilled") {
         showsData = showsResult.value;
-      } else {
-        console.error("Phase 2 (shows) failed:", showsResult.reason);
       }
 
       if (songsResult.status === "fulfilled") {
         songsData = songsResult.value;
-      } else {
-        console.error("Phase 3 (songs) failed:", songsResult.reason);
       }
 
       // ========================================
@@ -344,10 +340,6 @@ export class ArtistImportOrchestrator {
           }
         }
       } catch (spotifyError) {
-        console.warn(
-          "Spotify lookup failed in Phase 1, will retry in background:",
-          spotifyError,
-        );
         // Continue without Spotify data - will be filled in Phase 2
       }
 
@@ -395,7 +387,6 @@ export class ArtistImportOrchestrator {
       }
 
       const phase1Duration = Date.now() - phaseStartTime;
-      console.log(`Phase 1 completed in ${phase1Duration}ms`);
 
       return {
         artistId: newArtist.id,
@@ -410,7 +401,6 @@ export class ArtistImportOrchestrator {
       };
     } catch (error) {
       const phase1Duration = Date.now() - phaseStartTime;
-      console.error(`Phase 1 failed after ${phase1Duration}ms:`, error);
       throw error;
     }
   }
@@ -458,7 +448,6 @@ export class ArtistImportOrchestrator {
       const venueCount = await this.getUniqueVenueCount(artistId);
 
       const phase2Duration = Date.now() - phaseStartTime;
-      console.log(`Phase 2 completed in ${phase2Duration}ms`);
 
       return {
         totalShows: syncResult.upcomingShows,
@@ -468,7 +457,6 @@ export class ArtistImportOrchestrator {
       };
     } catch (error) {
       const phase2Duration = Date.now() - phaseStartTime;
-      console.error(`Phase 2 failed after ${phase2Duration}ms:`, error);
       throw new ImportError(
         "Phase 2 show sync failed",
         "importing-shows",
@@ -531,7 +519,6 @@ export class ArtistImportOrchestrator {
         .where(eq(artists.id, artistId));
 
       const phase3Duration = Date.now() - phaseStartTime;
-      console.log(`Phase 3 completed in ${phase3Duration}ms`);
 
       return {
         totalSongs: catalogResult.totalSongs,
@@ -542,7 +529,6 @@ export class ArtistImportOrchestrator {
       };
     } catch (error) {
       const phase3Duration = Date.now() - phaseStartTime;
-      console.error(`Phase 3 failed after ${phase3Duration}ms:`, error);
       throw new ImportError(
         "Phase 3 catalog sync failed",
         "importing-songs",
@@ -570,7 +556,6 @@ export class ArtistImportOrchestrator {
         .limit(30); // Get more songs for variety
 
       if (topSongs.length === 0) {
-        console.log("No songs found for setlist creation");
         return;
       }
 
@@ -622,7 +607,6 @@ export class ArtistImportOrchestrator {
         }
       }
     } catch (error) {
-      console.warn("Failed to create initial setlists:", error);
       // Don't throw - setlist creation is not critical for import success
     }
   }

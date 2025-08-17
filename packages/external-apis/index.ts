@@ -81,7 +81,6 @@ export { VenueSyncService } from "./src/services/venue-sync";
 export { ShowSyncService } from "./src/services/show-sync";
 export { SetlistSyncService } from "./src/services/setlist-sync";
 export { SyncScheduler } from "./src/services/sync-scheduler";
-export { ArtistImportOrchestrator } from "./src/services/artist-import-orchestrator";
 
 // Export commonly used types from sync services
 export type { SyncOptions } from "./src/services/sync-scheduler";

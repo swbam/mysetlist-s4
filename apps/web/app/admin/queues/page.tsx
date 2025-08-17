@@ -114,7 +114,7 @@ export default function QueuesPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4 mb-4">
-              <Badge variant={health.healthy ? "success" : "destructive"}>
+              <Badge variant={health.healthy ? "secondary" : "destructive"} className={health.healthy ? "bg-green-100 text-green-800" : ""}>
                 {health.healthy ? "All Healthy" : "Issues Detected"}
               </Badge>
               <span className="text-sm text-gray-600">
@@ -184,7 +184,7 @@ export default function QueuesPage() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">Completed</span>
-                  <Badge variant="success">{stat.completed}</Badge>
+                  <Badge variant="secondary" className="bg-green-100 text-green-800">{stat.completed}</Badge>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">Failed</span>

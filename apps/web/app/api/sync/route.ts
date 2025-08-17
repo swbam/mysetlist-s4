@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     const { type, data, artistId, tmAttractionId, spotifyId, options } = body;
 
     // Import the orchestration service directly to avoid internal API calls
-    const { ArtistImportOrchestrator } = await import("@repo/external-apis");
+    const { ArtistImportOrchestrator } = await import("~/lib/services/artist-import-orchestrator");
 
     switch (type) {
       case "artist":

@@ -41,7 +41,6 @@ export {
   VenueSyncService,
   SetlistSyncService,
   SyncScheduler,
-  ArtistImportOrchestrator,
 } from "./services";
 
 // Service index for convenience - avoid re-exporting conflicting types
