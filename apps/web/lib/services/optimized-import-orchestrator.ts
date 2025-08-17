@@ -3,7 +3,7 @@ import {
   artistSongs,
   db,
   eq,
-  setlistSongs,
+  setlistSongs as setlistSongsTable,
   setlists,
   shows,
   songs,
@@ -104,7 +104,7 @@ export class OptimizedImportOrchestrator {
         progress: 30,
         message: "Importing shows and venues...",
         artistId,
-      });
+      }, jobId);
 
       // Start all parallel tasks
       const [showsResult, topSongsResult] = await Promise.allSettled([
@@ -140,7 +140,7 @@ export class OptimizedImportOrchestrator {
           venuesCreated: showsData.venues,
           songsImported: topSongs.length,
         },
-      });
+      }, jobId);
 
       const setlistsCreated = await this.createSmartSetlists(
         artistId,
@@ -163,7 +163,7 @@ export class OptimizedImportOrchestrator {
           songsImported: topSongs.length,
           setlistsCreated,
         },
-      });
+      }, jobId);
 
       // Import remaining songs in background
       const fullCatalog = await this.importFullSongCatalog(artist);
@@ -184,7 +184,7 @@ export class OptimizedImportOrchestrator {
           songsImported: fullCatalog.totalSongs,
           setlistsCreated,
         },
-      });
+      }, jobId);
 
       const totalDuration = Date.now() - startTime;
       console.log(`Smart import completed in ${totalDuration}ms`);
@@ -211,7 +211,7 @@ export class OptimizedImportOrchestrator {
         error: error instanceof Error ? error.message : "Unknown error",
         artistId,
         completedAt: new Date().toISOString(),
-      });
+      }, jobId);
 
       throw error;
     }
@@ -337,20 +337,20 @@ export class OptimizedImportOrchestrator {
               .values({
                 spotifyId: track.id,
                 name: track.name,
-                artistIds: [artist.id],
+                artist: track.artists?.[0]?.name || artist.name, // Primary artist name
                 albumName: track.album.name,
                 albumId: track.album.id,
                 previewUrl: track.preview_url,
-                explicit: track.explicit,
+                isExplicit: track.explicit, // Changed from explicit to isExplicit
                 popularity: track.popularity,
                 durationMs: track.duration_ms,
                 isrc: track.external_ids?.isrc || null,
                 trackNumber: track.track_number,
                 releaseDate: track.album.release_date,
                 albumType: track.album.album_type,
-                albumImageUrl: track.album.images[0]?.url || null,
-                availableMarkets: JSON.stringify(track.available_markets || []),
+                albumArtUrl: track.album.images[0]?.url || null, // Changed from albumImageUrl to albumArtUrl
                 externalUrls: JSON.stringify(track.external_urls || {}),
+                spotifyUri: track.uri,
               })
               .returning({ id: songs.id });
 
@@ -423,9 +423,9 @@ export class OptimizedImportOrchestrator {
         }
 
         // Create smart setlist with variety
-        const setlistSongs = this.selectSmartSetlistSongs(availableSongs, 5, 15);
+        const selectedSongs = this.selectSmartSetlistSongs(availableSongs, 5, 15);
 
-        if (setlistSongs.length === 0) {
+        if (selectedSongs.length === 0) {
           continue;
         }
 
@@ -435,7 +435,7 @@ export class OptimizedImportOrchestrator {
           .values({
             showId: show.id,
             artistId: artistId,
-            type: "predicted",
+            type: "predicted" as const,
             name: `${show.name} - AI Predicted Setlist`,
             orderIndex: 0,
             isLocked: false,
@@ -445,14 +445,14 @@ export class OptimizedImportOrchestrator {
 
         if (newSetlist?.id) {
           // Add songs to setlist
-          const setlistSongData = setlistSongs.map((song, index) => ({
+          const setlistSongData = selectedSongs.map((song, index) => ({
             setlistId: newSetlist.id,
             songId: song.id,
             position: index + 1,
             upvotes: Math.floor(Math.random() * 10), // Seed with some initial votes for realism
           }));
 
-          await db.insert(setlistSongs).values(setlistSongData);
+          await db.insert(setlistSongsTable).values(setlistSongData);
           setlistsCreated++;
         }
       } catch (error) {
@@ -544,15 +544,16 @@ export class OptimizedImportOrchestrator {
   /**
    * Update progress with Redis pub/sub for real-time SSE
    */
-  private async updateProgress(progress: OptimizedImportProgress): Promise<void> {
+  private async updateProgress(progress: OptimizedImportProgress, jobId?: string): Promise<void> {
     // Update via callback if provided
     if (this.progressCallback) {
       await this.progressCallback(progress);
     }
 
     // Update via import status system
-    if (progress.artistId) {
-      await updateImportStatus(progress.artistId, {
+    const trackingId = jobId || progress.artistId;
+    if (trackingId) {
+      await updateImportStatus(trackingId, {
         stage: progress.stage,
         progress: progress.progress,
         message: progress.message,
@@ -562,13 +563,13 @@ export class OptimizedImportOrchestrator {
     }
 
     // Publish to Redis for SSE if available
-    if (this.redis && progress.artistId) {
-      const channel = `import:progress:${progress.artistId}`;
+    if (this.redis && trackingId) {
+      const channel = `import:progress:${trackingId}`;
       await this.redis.publish(channel, JSON.stringify(progress));
       
       // Also cache the latest status
       await this.redis.setex(
-        `import:status:${progress.artistId}`,
+        `import:status:${trackingId}`,
         300, // 5 minutes TTL
         JSON.stringify(progress)
       );

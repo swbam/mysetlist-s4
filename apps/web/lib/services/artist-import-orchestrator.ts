@@ -3,7 +3,7 @@ import {
   artists,
   db,
   eq,
-  setlistSongs,
+  setlistSongs as setlistSongsTable,
   setlists,
   shows,
   songs,
@@ -618,7 +618,7 @@ export class ArtistImportOrchestrator {
             upvotes: 0,
           }));
 
-          await db.insert(setlistSongs).values(setlistSongData as any);
+          await db.insert(setlistSongsTable).values(setlistSongData as any);
         }
       }
     } catch (error) {
