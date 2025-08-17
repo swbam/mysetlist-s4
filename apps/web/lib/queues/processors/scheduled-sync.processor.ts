@@ -58,7 +58,7 @@ export async function processScheduledSync(job: Job<ScheduledSyncJobData>) {
     }
     
     // Queue sync jobs for each artist
-    const jobs = [];
+    const jobs: Array<Promise<any>> = [];
     const priority = deep ? Priority.LOW : Priority.NORMAL;
     
     for (const artist of artistsToSync) {
@@ -191,7 +191,7 @@ async function getTrendingArtists(limit: number) {
       name: artists.name,
     })
     .from(artists)
-    .where(eq(artists.isTrending, true))
+    .where(sql`${artists.trendingScore} > 0`)
     .orderBy(desc(artists.trendingScore))
     .limit(limit);
 }

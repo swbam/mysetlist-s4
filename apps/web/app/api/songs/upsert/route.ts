@@ -71,7 +71,22 @@ export async function POST(request: NextRequest) {
         })
         .onConflictDoUpdate({
           target: songs.spotifyId,
-          set: updateSet,
+          set: {
+            name: name ?? sql`COALESCE(${songs.name}, ${name})`,
+            artist: artist ?? sql`COALESCE(${songs.artist}, ${artist})`,
+            albumName: album ?? sql`COALESCE(${songs.albumName}, ${album})`,
+            albumArtUrl: albumArtUrl ?? sql`COALESCE(${songs.albumArtUrl}, ${albumArtUrl})`,
+            durationMs: durMs ?? sql`COALESCE(${songs.durationMs}, ${durMs})`,
+            popularity: typeof popularity === "number" ? popularity : sql`${songs.popularity}`,
+            previewUrl: previewUrl ?? sql`COALESCE(${songs.previewUrl}, ${previewUrl})`,
+            isExplicit: typeof isExplicit === "boolean" ? isExplicit : sql`${songs.isExplicit}`,
+            releaseDate: releaseDate ?? sql`COALESCE(${songs.releaseDate}, ${releaseDate})`,
+            albumType: albumType ?? sql`COALESCE(${songs.albumType}, ${albumType})`,
+            externalUrls: externalUrls ?? sql`COALESCE(${songs.externalUrls}, ${externalUrls})`,
+            spotifyUri: spotifyUri ?? sql`COALESCE(${songs.spotifyUri}, ${spotifyUri})`,
+            updatedAt: new Date(),
+          },
+
         })
         .returning();
       upserted = row;

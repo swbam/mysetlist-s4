@@ -1,5 +1,5 @@
 import { SpotifyClient } from "../clients/spotify";
-import { db, eq, sql, and, isNull } from "../database";
+import { db, eq, sql } from "../database";
 import { artists, songs, artistSongs } from "@repo/database";
 
 export interface CatalogSyncResult {
@@ -37,7 +37,6 @@ export interface TrackData {
 export class SpotifyCompleteCatalog {
   private spotifyClient: SpotifyClient;
   private processedAlbums = new Set<string>();
-  private processedTracks = new Map<string, TrackData>();
   private liveTrackPatterns = [
     /\(live\s*(at|from|in|@)?.*?\)/i,
     /\s-\s+live\s*(at|from|in|@)?/i,
@@ -165,14 +164,23 @@ export class SpotifyCompleteCatalog {
       while (hasMore) {
         try {
           const response = await this.spotifyClient.getArtistAlbums(artistId, {
-            album_type: albumType,
+            include_groups: albumType,
             limit: batchSize,
             offset,
             market: 'US',
           });
           
           if (response?.items && response.items.length > 0) {
-            allAlbums.push(...response.items);
+            // Map Spotify albums to our AlbumData structure
+            const albumData: AlbumData[] = response.items.map(album => ({
+              id: album.id,
+              name: album.name,
+              type: album.album_type || 'album',
+              releaseDate: album.release_date,
+              totalTracks: album.total_tracks,
+              images: album.images,
+            }));
+            allAlbums.push(...albumData);
             offset += response.items.length;
             hasMore = response.items.length === batchSize;
           } else {
@@ -219,6 +227,8 @@ export class SpotifyCompleteCatalog {
     // Process each batch
     for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
       const batch = batches[batchIndex];
+      if (!batch) continue;
+      
       const progress = 30 + (batchIndex / batches.length) * 30;
       options.onProgress?.(`Processing albums ${batchIndex * batchSize + 1}-${Math.min((batchIndex + 1) * batchSize, albums.length)} of ${albums.length}...`, progress);
       
@@ -423,20 +433,20 @@ export class SpotifyCompleteCatalog {
     const songRecords = tracks.map(track => ({
       spotifyId: track.id,
       name: track.name,
-      duration: track.duration || null,
-      explicit: track.explicit || false,
+      durationMs: track.duration || null,
+      isExplicit: track.explicit || false,
       popularity: track.popularity || 0,
       previewUrl: track.previewUrl || null,
-      spotifyUrl: `https://open.spotify.com/track/${track.id}`,
+      externalUrls: JSON.stringify({ spotify: `https://open.spotify.com/track/${track.id}` }),
       albumId: track.album?.id || null,
       albumName: track.album?.name || null,
-      albumArt: track.album?.images?.[0]?.url || null,
-      releaseDate: track.album?.releaseDate || null,
-      artistIds: JSON.stringify(track.artists?.map(a => a.id) || []),
-      artistNames: JSON.stringify(track.artists?.map(a => a.name) || []),
+      albumArtUrl: track.album?.images?.[0]?.url || null,
+      releaseDate: track.album?.releaseDate ? new Date(track.album.releaseDate) : null,
+      artist: track.artists?.[0]?.name || 'Unknown Artist',
+      spotifyUri: `spotify:track:${track.id}`,
       trackNumber: track.trackNumber || null,
       discNumber: track.discNumber || null,
-      rawData: JSON.stringify(track),
+      albumType: track.album?.type || null,
     }));
     
     // Batch insert songs
@@ -454,7 +464,7 @@ export class SpotifyCompleteCatalog {
           set: {
             popularity: sql`GREATEST(${songs.popularity}, EXCLUDED.popularity)`,
             albumName: sql`COALESCE(EXCLUDED.album_name, ${songs.albumName})`,
-            albumArt: sql`COALESCE(EXCLUDED.album_art, ${songs.albumArt})`,
+            albumArtUrl: sql`COALESCE(EXCLUDED.album_art_url, ${songs.albumArtUrl})`,
             updatedAt: new Date(),
           },
         })
@@ -491,13 +501,6 @@ export class SpotifyCompleteCatalog {
         totalSongs: result.totalSongs,
         totalAlbums: result.totalAlbums,
         lastFullSyncAt: new Date(),
-        catalogMetadata: JSON.stringify({
-          studioTracks: result.studioTracks,
-          skippedLiveTracks: result.skippedLiveTracks,
-          deduplicatedTracks: result.deduplicatedTracks,
-          syncDuration: result.syncDuration,
-          lastSyncDate: new Date().toISOString(),
-        }),
       })
       .where(eq(artists.spotifyId, spotifyArtistId));
   }

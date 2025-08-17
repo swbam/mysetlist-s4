@@ -6,7 +6,7 @@ import {
   createSuccessResponse,
   requireCronAuth,
 } from "~/lib/api/auth-helpers";
-import { runFullImport } from "~/lib/services/orchestrators/ArtistImportOrchestrator";
+import { ArtistImportOrchestrator } from "~/lib/services/artist-import-orchestrator";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -145,8 +145,9 @@ export async function POST(request: NextRequest) {
       try {
         console.log(`[RESYNC] Starting full import for artist: ${artist.name} (${artist.id})`);
         
-        // Call runFullImport and await completion - NOT fire-and-forget
-        const importResult = await runFullImport(artist.id);
+        // Call importArtist and await completion - NOT fire-and-forget
+        const orchestrator = new ArtistImportOrchestrator();
+        const importResult = await orchestrator.importArtist(artist.tmAttractionId, false);
         
         const artistDuration = Date.now() - artistStartTime;
         

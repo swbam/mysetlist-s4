@@ -112,6 +112,7 @@ export {
   ilike,
   isNull,
   isNotNull,
+  inArray,
 } from "drizzle-orm";
 
 export type Database = ReturnType<typeof getDb>;

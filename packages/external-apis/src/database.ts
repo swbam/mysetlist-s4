@@ -10,4 +10,5 @@ export {
   ilike,
   isNull,
   isNotNull,
+  inArray,
 } from "@repo/database";

@@ -1,31 +1,31 @@
 import { Queue, Worker, QueueEvents, Job, JobsOptions, RepeatOptions } from "bullmq";
 import { bullMQConnection } from "./redis-config";
 
-// Queue names with purpose
+// Queue names with purpose (no colons allowed in BullMQ)
 export enum QueueName {
   // High priority import queues
-  ARTIST_IMPORT = "artist:import",
-  ARTIST_QUICK_SYNC = "artist:quick-sync",
+  ARTIST_IMPORT = "artist-import",
+  ARTIST_QUICK_SYNC = "artist-quick-sync",
   
   // Data sync queues
-  SPOTIFY_SYNC = "spotify:sync",
-  SPOTIFY_CATALOG = "spotify:catalog",
-  TICKETMASTER_SYNC = "ticketmaster:sync",
-  VENUE_SYNC = "venue:sync",
-  SETLIST_SYNC = "setlist:sync",
+  SPOTIFY_SYNC = "spotify-sync",
+  SPOTIFY_CATALOG = "spotify-catalog",
+  TICKETMASTER_SYNC = "ticketmaster-sync",
+  VENUE_SYNC = "venue-sync",
+  SETLIST_SYNC = "setlist-sync",
   
   // Background processing
-  IMAGE_PROCESSING = "image:processing",
-  TRENDING_CALC = "trending:calc",
-  CACHE_WARM = "cache:warm",
+  IMAGE_PROCESSING = "image-processing",
+  TRENDING_CALC = "trending-calc",
+  CACHE_WARM = "cache-warm",
   
   // Scheduled/recurring jobs
-  SCHEDULED_SYNC = "scheduled:sync",
-  CLEANUP = "cleanup:jobs",
+  SCHEDULED_SYNC = "scheduled-sync",
+  CLEANUP = "cleanup-jobs",
   
   // Notification/communication
-  PROGRESS_UPDATE = "progress:update",
-  WEBHOOK = "webhook:notify",
+  PROGRESS_UPDATE = "progress-update",
+  WEBHOOK = "webhook-notify",
 }
 
 // Job priorities (lower number = higher priority)
