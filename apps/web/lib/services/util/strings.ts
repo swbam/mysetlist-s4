@@ -7,12 +7,18 @@
  * Create URL-safe slug from text
  */
 export function createSlug(text: string): string {
-  return text
+  const normalized = text
     .toLowerCase()
     .trim()
-    .replace(/[^\w\s-]/g, '') // Remove special characters
+    // map common leets/symbols
+    .replace(/!/g, 'i')
+    .replace(/\+/g, 't')
+    .replace(/&/g, 'and')
+    .replace(/\//g, '')
+    .replace(/[^\w\s-]/g, '') // Remove remaining special characters
     .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
     .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+  return normalized;
 }
 
 /**
@@ -34,12 +40,17 @@ export function normalizeText(text: string): string {
 export function cleanSongTitle(title: string): string {
   return title
     .trim()
-    // Remove common suffixes
+    // Normalize smart quotes
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    // Remove common suffixes and qualifiers
     .replace(/\s*\(.*?\)\s*$/g, '') // Remove trailing parentheses
     .replace(/\s*\[.*?\]\s*$/g, '') // Remove trailing brackets
-    .replace(/\s*-\s*(live|acoustic|remix|radio edit|single version|album version).*$/i, '')
+    .replace(/\s*-\s*(live|acoustic|remix|radio edit|single version|album version|remastered|remaster).*$/i, '')
     // Clean up whitespace
     .replace(/\s+/g, ' ')
+    // Remove surrounding quotes
+    .replace(/^"(.+)"$/g, '$1')
     .trim();
 }
 
@@ -48,24 +59,21 @@ export function cleanSongTitle(title: string): string {
  */
 export function isLikelyLiveTitle(title: string): boolean {
   const lowerTitle = title.toLowerCase();
-  const liveIndicators = [
-    'live',
-    'unplugged',
-    'acoustic',
-    'concert',
-    'tour',
-    'festival',
-    'mtv',
-    'session',
-    'radio',
-    'bbc',
-    'live at',
-    'live from',
-    'live in',
-    'live on'
+  // Use word boundaries to avoid false positives like 'live' in 'Live Wire'
+  const patterns = [
+    /\blive\b/,
+    /\bunplugged\b/,
+    /\bacoustic\b/,
+    /\bconcert\b/,
+    /\btour\b/,
+    /\bfestival\b/,
+    /\bmtv\b/,
+    /\bsession(s)?\b/,
+    /\bradio\b/,
+    /\bbbc\b/,
+    /live\s+(at|from|in|on)/,
   ];
-  
-  return liveIndicators.some(indicator => lowerTitle.includes(indicator));
+  return patterns.some((re) => re.test(lowerTitle));
 }
 
 /**
@@ -73,22 +81,19 @@ export function isLikelyLiveTitle(title: string): boolean {
  */
 export function isLikelyLiveAlbum(albumName: string): boolean {
   const lowerAlbum = albumName.toLowerCase();
-  const liveIndicators = [
-    'live',
-    'unplugged',
-    'concert',
-    'tour',
-    'festival',
-    'sessions',
-    'acoustic',
-    'mtv',
-    'live at',
-    'live from',
-    'live in',
-    'recorded live'
+  const patterns = [
+    /\blive\b/,
+    /\bunplugged\b/,
+    /\bconcert\b/,
+    /\btour\b/,
+    /\bfestival\b/,
+    /\bsession(s)?\b/,
+    /\bacoustic\b/,
+    /\bmtv\b/,
+    /live\s+(at|from|in)/,
+    /recorded\s+live/,
   ];
-  
-  return liveIndicators.some(indicator => lowerAlbum.includes(indicator));
+  return patterns.some((re) => re.test(lowerAlbum));
 }
 
 /**

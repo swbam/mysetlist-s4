@@ -33,6 +33,7 @@ export function LiteSearch({
   const searchRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debouncedQuery = useDebounce(query, 300);
+  const prefetchedIdsRef = useRef<Set<string>>(new Set());
 
   // Handle search when debounced query changes
   useEffect(() => {
@@ -44,6 +45,31 @@ export function LiteSearch({
       setHasSearched(false);
     }
   }, [debouncedQuery]);
+
+  // Predictive prefetch: background import likely artists from Ticketmaster
+  useEffect(() => {
+    if (!results || results.length === 0) return;
+    // Pick top 3 likely results that require sync
+    const candidates = results
+      .filter((r) => r.type === "artist" && (r.requiresSync || r.source === "ticketmaster"))
+      .slice(0, 3);
+
+    if (candidates.length === 0) return;
+
+    candidates.forEach((cand) => {
+      const key = cand.externalId || cand.id;
+      if (!key || prefetchedIdsRef.current.has(key)) return;
+      prefetchedIdsRef.current.add(key);
+      // Fire-and-forget background auto-import
+      fetch("/api/artists/auto-import", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tmAttractionId: key }),
+      }).catch(() => {
+        /* ignore */
+      });
+    });
+  }, [results]);
 
   // Handle clicks outside to close dropdown
   useEffect(() => {

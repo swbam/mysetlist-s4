@@ -27,10 +27,10 @@ const PastShows = dynamic(
 );
 
 type ArtistPageProps = {
-  params: {
+  params: Promise<{
     slug: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
+  }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 // Configure ISR with revalidation
@@ -39,7 +39,7 @@ export const dynamicParams = true; // Allow dynamic params beyond generateStatic
 
 export const generateMetadata = async ({ params }: ArtistPageProps): Promise<Metadata> => {
   try {
-  const { slug } = params;
+  const { slug } = await params;
   const tmAttractionId = undefined as unknown as string; // no longer read from URL
 
     if (!slug) {
@@ -88,7 +88,7 @@ export const generateMetadata = async ({ params }: ArtistPageProps): Promise<Met
 
 const ArtistPage = async ({ params }: ArtistPageProps) => {
   try {
-  const { slug } = params;
+  const { slug } = await params;
   const tmAttractionId = undefined as unknown as string; // no longer read from URL
 
     // Validate slug parameter
