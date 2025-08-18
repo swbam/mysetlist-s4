@@ -28,3 +28,15 @@ export interface SetlistFmSetlist {
     }[];
   };
 }
+
+export interface SetlistFmVenue {
+  id: string;
+  name: string;
+  city: {
+    name: string;
+    stateCode?: string;
+    country: {
+      code: string;
+    };
+  };
+}

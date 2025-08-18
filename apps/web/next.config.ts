@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
 
   // Vercel deployment configuration
   output: "standalone",
+  
+  // PoweredByHeader
+  poweredByHeader: false,
 
   // Production optimization features
   experimental: {
@@ -43,7 +46,9 @@ const nextConfig: NextConfig = {
 
   // Production optimizations
   compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
+    removeConsole: process.env.NODE_ENV === "production" ? {
+      exclude: ["error", "warn"], // Keep error and warn logs in production
+    } : false,
   },
 
   // Image optimization

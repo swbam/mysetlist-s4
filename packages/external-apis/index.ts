@@ -68,7 +68,10 @@ export const setlistfm = new Proxy({} as SetlistFmClient, {
   },
 });
 
-// Export sync services
+// Export all sync services and orchestrators
+export * from "./src/services";
+
+// Additional exports for backwards compatibility
 export {
   initiateImport,
   runFullImport,

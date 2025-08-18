@@ -46,27 +46,43 @@
   "functions": {
     "apps/web/app/api/*/route.ts": {
       "maxDuration": 30,
-      "memory": 1024
+      "memory": 1024,
+      "runtime": "nodejs20.x"
     },
     "apps/web/app/api/sync/*/route.ts": {
       "maxDuration": 300,
-      "memory": 1024
+      "memory": 1024,
+      "runtime": "nodejs20.x"
     },
     "apps/web/app/api/scheduled/*/route.ts": {
       "maxDuration": 300,
-      "memory": 1024
+      "memory": 1024,
+      "runtime": "nodejs20.x"
     },
     "apps/web/app/api/autonomous-sync/*/route.ts": {
       "maxDuration": 300,
-      "memory": 1024
+      "memory": 1024,
+      "runtime": "nodejs20.x"
     },
     "apps/web/app/api/admin/*/route.ts": {
       "maxDuration": 60,
-      "memory": 512
+      "memory": 512,
+      "runtime": "nodejs20.x"
     },
     "apps/web/app/api/cron/*/route.ts": {
       "maxDuration": 300,
-      "memory": 1024
+      "memory": 1024,
+      "runtime": "nodejs20.x"
+    },
+    "apps/web/app/api/health/route.ts": {
+      "maxDuration": 10,
+      "memory": 512,
+      "runtime": "nodejs20.x"
+    },
+    "apps/web/app/api/artists/*/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024,
+      "runtime": "nodejs20.x"
     }
   },
   "redirects": [

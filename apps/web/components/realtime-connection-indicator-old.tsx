@@ -10,6 +10,7 @@ import { cn } from "@repo/design-system/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertCircle, Wifi, WifiOff } from "lucide-react";
 import { useRealtimeConnection } from "~/app/providers/realtime-provider";
+import { ClientOnly } from "./client-only";
 
 interface RealtimeConnectionIndicatorProps {
   variant?: "default" | "minimal" | "detailed";
@@ -17,7 +18,7 @@ interface RealtimeConnectionIndicatorProps {
   showLabel?: boolean;
 }
 
-export function RealtimeConnectionIndicator({
+function RealtimeIndicatorContent({
   variant = "default",
   className,
   showLabel = true,
@@ -130,5 +131,26 @@ export function RealtimeConnectionIndicator({
         </span>
       )}
     </div>
+  );
+}
+
+export function RealtimeConnectionIndicator(props: RealtimeConnectionIndicatorProps) {
+  return (
+    <ClientOnly fallback={
+      <div className={cn(
+        "flex items-center gap-1.5 rounded-full px-2 py-1 font-medium text-xs",
+        "bg-gray-500/10",
+        props.className,
+      )}>
+        <WifiOff className="h-3 w-3 text-gray-400" />
+        {props.showLabel !== false && (
+          <span className="hidden sm:inline-block text-gray-400">
+            Loading...
+          </span>
+        )}
+      </div>
+    }>
+      <RealtimeIndicatorContent {...props} />
+    </ClientOnly>
   );
 }

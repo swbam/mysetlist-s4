@@ -5,6 +5,8 @@ import { Inter } from "next/font/google";
 import { ResponsiveHeader } from "../components/layout/responsive-header";
 import { ThemeProvider } from "../components/ui/theme-provider";
 import { AuthProvider } from "./providers/auth-provider";
+import { LoadingProvider } from "../components/loading/loading-manager";
+import { GlobalLoadingIndicator } from "../components/loading/global-loading-indicator";
 // import { CacheManager } from "../components/cache-manager";
 import "@repo/design-system/styles/globals.css";
 
@@ -48,6 +50,32 @@ export default function RootLayout({
         />
         <link rel="dns-prefetch" href="https://i.scdn.co" />
         <link rel="dns-prefetch" href="https://s1.ticketm.net" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Initialize custom element safety early
+              if (typeof window !== 'undefined' && window.customElements) {
+                const registeredElements = new Set();
+                const originalDefine = window.customElements.define;
+                window.customElements.define = function(name, constructor, options) {
+                  try {
+                    if (window.customElements.get(name)) {
+                      console.warn('Custom element ' + name + ' already defined, skipping.');
+                      return;
+                    }
+                    originalDefine.call(this, name, constructor, options);
+                    registeredElements.add(name);
+                  } catch (error) {
+                    console.error('Error defining custom element ' + name + ':', error);
+                    if (error.message && error.message.includes('already been defined')) {
+                      registeredElements.add(name);
+                    }
+                  }
+                };
+              }
+            `,
+          }}
+        />
       </head>
       <body className={inter.className}>
         <ThemeProvider
@@ -55,14 +83,17 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            <div className="min-h-screen flex flex-col">
-              <ResponsiveHeader />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-            <Toaster />
-          </AuthProvider>
+          <LoadingProvider>
+            <GlobalLoadingIndicator />
+            <AuthProvider>
+              <div className="min-h-screen flex flex-col">
+                <ResponsiveHeader />
+                <main className="flex-1">{children}</main>
+                <Footer />
+              </div>
+              <Toaster />
+            </AuthProvider>
+          </LoadingProvider>
         </ThemeProvider>
       </body>
     </html>

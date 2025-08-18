@@ -27,7 +27,7 @@
     }
   },
   "scripts": {
-    "build": "tsc --build",
+    "build": "tsc --skipLibCheck",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",

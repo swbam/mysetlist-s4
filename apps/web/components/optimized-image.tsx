@@ -92,18 +92,29 @@ export function OptimizedImage({
 
   const handleError = useCallback(
     (error: any) => {
+      // Only log in development to prevent console spam
+      if (process.env.NODE_ENV === "development") {
+        console.warn("Image loading failed:", { src: currentSrc, error });
+      }
+      
       setIsLoading(false);
       setHasError(true);
 
-      // Try fallback source if available
+      // Try fallback source if available and not already tried
       if (fallbackSrc && currentSrc !== fallbackSrc) {
+        if (process.env.NODE_ENV === "development") {
+          console.log("Trying fallback image:", fallbackSrc);
+        }
         setCurrentSrc(fallbackSrc);
         setHasError(false);
         setIsLoading(true);
         return;
       }
 
-      onError?.(error);
+      // Silent error handling in production to prevent console spam
+      if (process.env.NODE_ENV === "development") {
+        onError?.(error);
+      }
     },
     [fallbackSrc, currentSrc, onError],
   );
@@ -228,6 +239,7 @@ export function ArtistImage(props: Omit<OptimizedImageProps, "aspectRatio">) {
       {...props}
       aspectRatio="square"
       sizes="(max-width: 768px) 100px, (max-width: 1200px) 150px, 200px"
+      fallbackSrc={props.fallbackSrc || "https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=200&h=200&fit=crop&crop=face"}
     />
   );
 }
