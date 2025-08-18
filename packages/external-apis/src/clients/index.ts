@@ -2,10 +2,7 @@
 export {
   BaseAPIClient,
   APIError,
-  AuthenticationError,
-  ServerError,
   RateLimitError,
-  TimeoutError,
   type APIClientConfig,
 } from "./base";
 
@@ -17,24 +14,15 @@ export { SetlistFmClient } from "./setlistfm";
 // Re-export types from specific clients for convenience
 export type {
   SpotifyArtist,
-  SpotifyAlbum,
   SpotifyTrack,
-  SpotifyAudioFeatures,
   SpotifySearchResult,
-  SpotifyAlbumsResponse,
-  SpotifyTracksResponse,
-} from "./spotify";
+} from "../types/spotify";
 
 export type {
   TicketmasterEvent,
   TicketmasterVenue,
-  TicketmasterAttraction,
-} from "./ticketmaster";
+} from "../types/ticketmaster";
 
 export type {
-  SetlistFmArtist,
-  SetlistFmVenue,
   SetlistFmSetlist,
-  SetlistFmSong,
-  SetlistFmSet,
-} from "./setlistfm";
+} from "../types/setlistfm";

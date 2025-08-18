@@ -17,13 +17,12 @@ export type {
   SpotifyArtist,
   SpotifyTrack,
   SpotifySearchResult,
-} from "./src/clients/spotify";
+} from "./src/types/spotify";
 
 export type {
   TicketmasterEvent,
   TicketmasterVenue,
-  TicketmasterAttraction,
-} from "./src/clients/ticketmaster";
+} from "./src/types/ticketmaster";
 
 export type {
   SetlistFmSetlist,
@@ -31,7 +30,7 @@ export type {
   SetlistFmVenue,
   SetlistFmSong,
   SetlistFmSet,
-} from "./src/clients/setlistfm";
+} from "./src/types/setlistfm";
 
 import { SetlistFmClient } from "./src/clients/setlistfm";
 // Export instantiated clients as lazy getters to avoid initialization errors

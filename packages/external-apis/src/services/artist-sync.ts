@@ -165,11 +165,7 @@ export class ArtistSyncService {
     try {
       const ticketmasterResult = await this.errorHandler.withRetry(
         () =>
-          this.ticketmasterClient.searchAttractions({
-            keyword: spotifyArtist.name,
-            size: 1,
-            classificationName: "music",
-          }),
+          this.ticketmasterClient.searchEvents({ keyword: spotifyArtist.name, size: 1 }),
         {
           service: "ArtistSyncService",
           operation: "searchAttractions",
@@ -321,24 +317,11 @@ export class ArtistSyncService {
     let hasMore = true;
 
     while (hasMore) {
-      const albumsResponse = await this.errorHandler.withRetry(
-        () =>
-          this.spotifyClient.getArtistAlbums(artistId, {
-            include_groups: "album,single,compilation",
-            market: "US",
-            limit,
-            offset,
-          }),
-        {
-          service: "ArtistSyncService",
-          operation: "getArtistAlbums",
-          context: { artistId, offset },
-        },
-      );
+      const albums = await this.spotifyClient.getArtistAlbums(artistId, { include_groups: "album,single", limit: 50 });
 
-      const albums = albumsResponse?.items || [];
+      const albumsResponse = albums?.items || [];
 
-      for (const album of albums) {
+      for (const album of albumsResponse) {
         // Skip duplicates (different markets can cause duplicates)
         if (processedAlbums.has(album.id)) {
           continue;

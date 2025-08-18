@@ -1,148 +1,12 @@
-import { type APIClientConfig, BaseAPIClient } from "./base";
-
-export interface TicketmasterEvent {
-  id: string;
-  name: string;
-  type: string;
-  url: string;
-  locale: string;
-  images?: Array<{
-    url: string;
-    width: number;
-    height: number;
-    ratio?: string;
-  }>;
-  dates: {
-    start: {
-      localDate: string;
-      localTime?: string;
-      dateTime?: string;
-    };
-    status: {
-      code: string;
-    };
-  };
-  priceRanges?: Array<{
-    type: string;
-    currency: string;
-    min: number;
-    max: number;
-  }>;
-  _embedded?: {
-    venues?: TicketmasterVenue[];
-    attractions?: Array<{
-      id: string;
-      name: string;
-      type: string;
-      url: string;
-    }>;
-  };
-}
-
-export interface TicketmasterVenue {
-  id: string;
-  name: string;
-  type: string;
-  url: string;
-  locale: string;
-  timezone?: string;
-  city?: {
-    name: string;
-  };
-  state?: {
-    name: string;
-    stateCode: string;
-  };
-  country?: {
-    name: string;
-    countryCode: string;
-  };
-  address?: {
-    line1: string;
-    line2?: string;
-  };
-  location?: {
-    longitude: string;
-    latitude: string;
-  };
-  postalCode?: string;
-  generalInfo?: {
-    generalRule?: string;
-    childRule?: string;
-  };
-  capacity?: number;
-  images?: Array<{
-    url: string;
-    width: number;
-    height: number;
-    ratio?: string;
-  }>;
-}
-
-export interface TicketmasterAttraction {
-  id: string;
-  name: string;
-  type: string;
-  url: string;
-  locale: string;
-  imageUrl?: string;
-  images?: Array<{
-    url: string;
-    width: number;
-    height: number;
-    ratio?: string;
-  }>;
-  genres?: string[];
-  externalLinks?: {
-    youtube?: Array<{ url: string }>;
-    twitter?: Array<{ url: string }>;
-    itunes?: Array<{ url: string }>;
-    lastfm?: Array<{ url: string }>;
-    spotify?: Array<{ url: string }>;
-    wiki?: Array<{ url: string }>;
-    facebook?: Array<{ url: string }>;
-    musicbrainz?: Array<{ id: string; url: string }>;
-    instagram?: Array<{ url: string }>;
-    homepage?: Array<{ url: string }>;
-  };
-  aliases?: string[];
-  classifications?: Array<{
-    primary?: boolean;
-    segment?: {
-      id: string;
-      name: string;
-    };
-    genre?: {
-      id: string;
-      name: string;
-    };
-    subGenre?: {
-      id: string;
-      name: string;
-    };
-    type?: {
-      id: string;
-      name: string;
-    };
-    subType?: {
-      id: string;
-      name: string;
-    };
-    family?: boolean;
-  }>;
-  upcomingEvents?: {
-    _total: number;
-    _filtered: number;
-  };
-}
+import { BaseAPIClient, APIClientConfig } from "./base";
+import type { TicketmasterEvent, TicketmasterVenue } from "../types/ticketmaster";
 
 export class TicketmasterClient extends BaseAPIClient {
   constructor(config: Omit<APIClientConfig, "baseURL">) {
     super({
       ...config,
       baseURL: "https://app.ticketmaster.com/discovery/v2",
-      // More conservative rate limiting - 200 requests per hour to avoid 429s
-      rateLimit: { requests: 200, window: 3600 }, // 200 requests per hour
+      rateLimit: { requests: 5000, window: 24 * 3600 }, // 5000 requests per day
       cache: { defaultTTL: 1800 }, // 30 minutes default cache
     });
   }
@@ -153,79 +17,8 @@ export class TicketmasterClient extends BaseAPIClient {
     };
   }
 
-  protected override async makeRequest<T>(
-    endpoint: string,
-    options: RequestInit = {},
-    cacheKey?: string,
-    cacheTtl?: number,
-  ): Promise<T> {
-    // Ensure we have an API key
-    if (!this.apiKey) {
-      throw new Error("Ticketmaster API key is required");
-    }
-
-    // Construct URL properly handling existing query parameters
-    let url: URL;
-
-    // Properly construct the URL by ensuring baseURL ends with / and concatenating endpoint
-    const normalizedBaseURL = this.baseURL.endsWith("/")
-      ? this.baseURL
-      : `${this.baseURL}/`;
-
-    if (endpoint.includes("?")) {
-      // If endpoint has parameters, construct the full URL and add apikey
-      const fullUrl = `${normalizedBaseURL}${endpoint}&apikey=${this.apiKey}`;
-      url = new URL(fullUrl);
-    } else {
-      // If no existing parameters, construct URL and add apikey as parameter
-      const fullUrl = `${normalizedBaseURL}${endpoint}`;
-      url = new URL(fullUrl);
-      url.searchParams.append("apikey", this.apiKey);
-    }
-
-    // Check cache first if key provided and cache is available
-    if (cacheKey && this.cache) {
-      try {
-        const cached = await this.cache.get(cacheKey);
-        if (cached) {
-          return JSON.parse(cached as string) as T;
-        }
-      } catch (_error) {
-        // Cache miss or error, continue with API call
-      }
-    }
-
-    // Rate limits are handled in the base class makeRequest method
-
-    const response = await fetch(url.toString(), {
-      ...options,
-      headers: {
-        "Content-Type": "application/json",
-        ...options.headers,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(
-        `Ticketmaster API request failed: ${response.status} ${response.statusText}`,
-      );
-    }
-
-    const data = (await response.json()) as T;
-
-    // Cache if key provided and cache is available
-    if (cacheKey && cacheTtl && this.cache) {
-      try {
-        await this.cache.set(cacheKey, data, cacheTtl);
-      } catch (_error) {}
-    }
-
-    return data;
-  }
-
   async searchEvents(options: {
     keyword?: string;
-    attractionId?: string;
     city?: string;
     stateCode?: string;
     countryCode?: string;
@@ -234,8 +27,6 @@ export class TicketmasterClient extends BaseAPIClient {
     endDateTime?: string;
     size?: number;
     page?: number;
-    classificationName?: string;
-    sort?: string;
   }): Promise<{ _embedded?: { events: TicketmasterEvent[] }; page: any }> {
     const params = new URLSearchParams();
 
@@ -246,7 +37,7 @@ export class TicketmasterClient extends BaseAPIClient {
     });
 
     return this.makeRequest(
-      `events.json?${params.toString()}`,
+      `/events.json?${params}`,
       {},
       `ticketmaster:events:${params.toString()}`,
       900, // 15 minutes cache
@@ -255,44 +46,10 @@ export class TicketmasterClient extends BaseAPIClient {
 
   async getEvent(eventId: string): Promise<TicketmasterEvent> {
     return this.makeRequest<TicketmasterEvent>(
-      `events/${eventId}.json`,
+      `/events/${eventId}.json`,
       {},
       `ticketmaster:event:${eventId}`,
       1800,
-    );
-  }
-
-  /**
-   * Search Ticketmaster attractions (artists).
-   * Mirrors the Ticketmaster Discovery API /attractions.json endpoint.
-   * Docs: https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/#search-attraction-v2
-   */
-  async searchAttractions(options: {
-    keyword?: string;
-    size?: number;
-    page?: number;
-    classificationName?: string;
-    sort?: string;
-  }): Promise<{ _embedded?: { attractions: any[] }; page: any }> {
-    const params = new URLSearchParams();
-
-    Object.entries(options).forEach(([key, value]) => {
-      if (value !== undefined) {
-        params.append(key, value.toString());
-      }
-    });
-
-    // Pass the endpoint without parameters, let makeRequest handle URL construction
-    const endpoint = "attractions.json";
-    const fullEndpoint = params.toString()
-      ? `${endpoint}?${params.toString()}`
-      : endpoint;
-
-    return this.makeRequest(
-      fullEndpoint,
-      {},
-      `ticketmaster:attractions:${params.toString()}`,
-      3600, // 1 hour cache
     );
   }
 
@@ -303,7 +60,6 @@ export class TicketmasterClient extends BaseAPIClient {
     countryCode?: string;
     size?: number;
     page?: number;
-    sort?: string;
   }): Promise<{ _embedded?: { venues: TicketmasterVenue[] }; page: any }> {
     const params = new URLSearchParams();
 
@@ -314,7 +70,7 @@ export class TicketmasterClient extends BaseAPIClient {
     });
 
     return this.makeRequest(
-      `venues.json?${params}`,
+      `/venues.json?${params}`,
       {},
       `ticketmaster:venues:${params.toString()}`,
       3600,
@@ -323,88 +79,10 @@ export class TicketmasterClient extends BaseAPIClient {
 
   async getVenue(venueId: string): Promise<TicketmasterVenue> {
     return this.makeRequest<TicketmasterVenue>(
-      `venues/${venueId}.json`,
+      `/venues/${venueId}.json`,
       {},
       `ticketmaster:venue:${venueId}`,
       3600,
     );
-  }
-
-  async getAttraction(attractionId: string): Promise<TicketmasterAttraction> {
-    return this.makeRequest<TicketmasterAttraction>(
-      `attractions/${attractionId}.json`,
-      {},
-      `ticketmaster:attraction:${attractionId}`,
-      3600,
-    );
-  }
-
-  async getUpcomingEvents(
-    artistName: string,
-    options: {
-      size?: number;
-      sort?: string;
-      startDateTime?: string;
-      endDateTime?: string;
-    } = {},
-  ): Promise<TicketmasterEvent[]> {
-    const result = await this.searchEvents({
-      keyword: artistName,
-      classificationName: "Music",
-      ...options,
-    });
-
-    return result._embedded?.events || [];
-  }
-
-  async getArtistDetails(attractionId: string): Promise<{
-    id: string;
-    name: string;
-    imageUrl?: string;
-    genres?: string[];
-    popularity?: number;
-  } | null> {
-    try {
-      const attraction = await this.getAttraction(attractionId);
-
-      if (!attraction || !attraction.name) {
-        return null;
-      }
-
-      // Extract image URL from images array - prefer larger images
-      const imageUrl =
-        attraction.images?.find((img) => img.width >= 300 && img.height >= 300)
-          ?.url || attraction.images?.[0]?.url;
-
-      // Extract genres from classifications
-      const genres: string[] = [];
-      if (attraction.classifications) {
-        attraction.classifications.forEach((classification) => {
-          if (classification.genre?.name) {
-            genres.push(classification.genre.name);
-          }
-          if (
-            classification.subGenre?.name &&
-            classification.subGenre.name !== classification.genre?.name
-          ) {
-            genres.push(classification.subGenre.name);
-          }
-        });
-      }
-
-      return {
-        id: attraction.id,
-        name: attraction.name,
-        ...(imageUrl && { imageUrl }),
-        genres: [...new Set(genres)], // Remove duplicates
-        popularity: attraction.upcomingEvents?._total || 0,
-      };
-    } catch (error) {
-      console.error(
-        `Error fetching artist details for ${attractionId}:`,
-        error,
-      );
-      return null;
-    }
   }
 }

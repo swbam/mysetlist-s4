@@ -92,10 +92,10 @@ export class ArtistImportOrchestrator {
 
       // Get artist from Ticketmaster
       const tmArtist = await this.errorHandler.withRetry(
-        () => this.ticketmasterClient.getAttraction(tmAttractionId),
+        () => this.ticketmasterClient.getEvent(tmAttractionId),
         {
           service: "ArtistImportOrchestrator",
-          operation: "getAttraction",
+          operation: "getEvent",
           context: { tmAttractionId },
         },
       );
@@ -104,7 +104,7 @@ export class ArtistImportOrchestrator {
         throw new SyncServiceError(
           `Artist not found on Ticketmaster: ${tmAttractionId}`,
           "ArtistImportOrchestrator",
-          "getAttraction",
+          "getEvent",
         );
       }
 
