@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { queueManager } from "~/lib/queues/queue-manager";
 import { getQueueStats, checkWorkerHealth } from "~/lib/queues/workers";
-import { createAdminClient } from "@supabase/supabase-js";
+import { createSupabaseAdminClient } from "@repo/database";
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";

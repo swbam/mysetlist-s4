@@ -94,25 +94,29 @@ async function syncAllVenues(job: Job) {
         .values({
           tmVenueId: venueData.id,
           name: venueData.name,
-          city: venueData.city?.name || null,
+          slug: venueData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          city: venueData.city?.name || 'Unknown',
           state: venueData.state?.stateCode || venueData.state?.name || null,
-          country: venueData.country?.countryCode || venueData.country?.name || null,
+          country: venueData.country?.countryCode || venueData.country?.name || 'US',
           address: venueData.address?.line1 || null,
           postalCode: venueData.postalCode || null,
           latitude: venueData.location?.latitude ? parseFloat(venueData.location.latitude) : null,
           longitude: venueData.location?.longitude ? parseFloat(venueData.location.longitude) : null,
-          timezone: venueData.timezone || null,
-          url: venueData.url || null,
+          timezone: venueData.timezone || 'America/New_York',
+          website: venueData.url || null,
           imageUrl: venueData.images?.[0]?.url || null,
-          capacity: venueData.generalInfo?.generalRule || null,
-          rawData: JSON.stringify(venueData),
+          capacity: parseInt(venueData.generalInfo?.generalRule) || null,
         } as any)
         .returning({ id: venues.id });
+      
+      if (!newVenue) {
+        throw new Error(`Failed to create venue: ${venueData.name}`);
+      }
       
       venueId = newVenue.id;
       created++;
     } else {
-      venueId = existing[0].id;
+      venueId = existing[0]!.id;
       updated++;
     }
     
@@ -154,6 +158,11 @@ async function syncSpecificVenues(tmVenueIds: string[], job: Job) {
   for (let i = 0; i < tmVenueIds.length; i++) {
     const tmVenueId = tmVenueIds[i];
     
+    if (!tmVenueId) {
+      await job.log(`Skipping undefined venue ID at index ${i}`);
+      continue;
+    }
+    
     try {
       // Check cache first
       const cacheKey = `venue:${tmVenueId}`;
@@ -177,7 +186,7 @@ async function syncSpecificVenues(tmVenueIds: string[], job: Job) {
       const existing = await db
         .select()
         .from(venues)
-        .where(eq(venues.tmVenueId, tmVenueId))
+        .where(eq(venues.tmVenueId, tmVenueId!))
         .limit(1);
       
       if (existing.length === 0) {
@@ -316,7 +325,6 @@ async function updateVenueDetails(venueIds: string[], job: Job) {
               city: venueData.city?.name || venue.city,
               state: venueData.state?.stateCode || venueData.state?.name || venue.state,
               imageUrl: venueData.images?.[0]?.url || venue.imageUrl,
-              rawData: JSON.stringify(venueData),
               updatedAt: new Date(),
             })
             .where(eq(venues.id, venue.id));

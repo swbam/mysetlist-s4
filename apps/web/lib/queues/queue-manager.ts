@@ -272,7 +272,16 @@ export class QueueManager {
     delayed: number;
   }> {
     const queue = this.getQueue(queueName);
-    return await queue.getJobCounts();
+    const counts = await queue.getJobCounts();
+    
+    // Map the BullMQ job counts to our expected structure
+    return {
+      waiting: counts.waiting || 0,
+      active: counts.active || 0,
+      completed: counts.completed || 0,
+      failed: counts.failed || 0,
+      delayed: counts.delayed || 0,
+    };
   }
   
   // Clean old jobs
@@ -351,7 +360,7 @@ export class QueueManager {
   
   // Get all metrics
   async getAllMetrics(): Promise<any[]> {
-    const metrics = [];
+    const metrics: any[] = [];
     for (const queueName of Object.values(QueueName)) {
       const metric = await this.getQueueMetrics(queueName as QueueName);
       metrics.push(metric);

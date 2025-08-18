@@ -116,7 +116,7 @@ export class OptimizedImportOrchestrator {
       ]);
 
       let showsData = { shows: [], venues: 0 };
-      let topSongs = [];
+      let topSongs: any[] = [];
 
       if (showsResult.status === "fulfilled") {
         showsData = showsResult.value;
@@ -228,15 +228,15 @@ export class OptimizedImportOrchestrator {
       }
 
       // Fetch shows from Ticketmaster
-      const events = await this.ticketmasterClient.searchEventsByAttraction(
-        artist.tmAttractionId,
-        {
-          size: 200, // Get all shows
-          sort: "date,asc",
-        }
-      );
+      const response = await this.ticketmasterClient.searchEvents({
+        attractionId: artist.tmAttractionId,
+        size: 200, // Get all shows
+        sort: "date,asc",
+      });
 
-      if (!events || events.length === 0) {
+      const events = response._embedded?.events || [];
+      
+      if (events.length === 0) {
         return { shows: [], venues: 0 };
       }
 
@@ -338,19 +338,19 @@ export class OptimizedImportOrchestrator {
                 spotifyId: track.id,
                 name: track.name,
                 artist: track.artists?.[0]?.name || artist.name, // Primary artist name
-                albumName: track.album.name,
-                albumId: track.album.id,
+                albumName: track.album?.name || null,
+                albumId: track.album?.id || null,
                 previewUrl: track.preview_url,
                 isExplicit: track.explicit, // Changed from explicit to isExplicit
                 popularity: track.popularity,
                 durationMs: track.duration_ms,
-                isrc: track.external_ids?.isrc || null,
+                isrc: (track as any).external_ids?.isrc || null,
                 trackNumber: track.track_number,
-                releaseDate: track.album.release_date,
-                albumType: track.album.album_type,
-                albumArtUrl: track.album.images[0]?.url || null, // Changed from albumImageUrl to albumArtUrl
-                externalUrls: JSON.stringify(track.external_urls || {}),
-                spotifyUri: track.uri,
+                releaseDate: track.album?.release_date || null,
+                albumType: (track.album as any)?.album_type || null,
+                albumArtUrl: track.album?.images?.[0]?.url || null, // Changed from albumImageUrl to albumArtUrl
+                externalUrls: JSON.stringify((track as any).external_urls || {}),
+                spotifyUri: (track as any).uri || null,
               })
               .returning({ id: songs.id });
 
@@ -554,7 +554,7 @@ export class OptimizedImportOrchestrator {
     const trackingId = jobId || progress.artistId;
     if (trackingId) {
       await updateImportStatus(trackingId, {
-        stage: progress.stage,
+        stage: progress.stage as "completed" | "failed" | "initializing" | "syncing-identifiers" | "importing-songs" | "importing-shows" | "creating-setlists" | undefined,
         progress: progress.progress,
         message: progress.message,
         error: progress.error,

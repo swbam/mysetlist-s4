@@ -85,9 +85,9 @@ async function syncShows(
   
   await job.updateProgress(30);
   
-  const events = await ticketmaster.getAttractionEvents(tmAttractionId, {
+  const events = await ticketmaster.searchEvents({
+    attractionId: tmAttractionId,
     size: options?.maxShows || 200,
-    includePast: options?.includePast || false,
   });
   
   if (!events || !events._embedded?.events) {
@@ -139,8 +139,8 @@ async function syncShows(
           name: sql`EXCLUDED.name`,
           date: sql`EXCLUDED.date`,
           status: sql`EXCLUDED.status`,
-          priceMin: sql`EXCLUDED.price_min`,
-          priceMax: sql`EXCLUDED.price_max`,
+          minPrice: sql`EXCLUDED.min_price`,
+          maxPrice: sql`EXCLUDED.max_price`,
           updatedAt: new Date(),
         },
       });
@@ -234,20 +234,24 @@ async function syncVenues(artistId: string, job: Job) {
         .values({
           tmVenueId: venueData.id,
           name: venueData.name,
-          city: venueData.city?.name || null,
+          slug: venueData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+          city: venueData.city?.name || 'Unknown',
           state: venueData.state?.stateCode || venueData.state?.name || null,
-          country: venueData.country?.countryCode || venueData.country?.name || null,
+          country: venueData.country?.countryCode || venueData.country?.name || 'US',
           address: venueData.address?.line1 || null,
           postalCode: venueData.postalCode || null,
           latitude: venueData.location?.latitude ? parseFloat(venueData.location.latitude) : null,
           longitude: venueData.location?.longitude ? parseFloat(venueData.location.longitude) : null,
-          timezone: venueData.timezone || null,
-          url: venueData.url || null,
+          timezone: venueData.timezone || 'America/New_York',
+          website: venueData.url || null,
           imageUrl: venueData.images?.[0]?.url || null,
-          capacity: venueData.generalInfo?.generalRule || null,
-          rawData: JSON.stringify(venueData),
+          capacity: parseInt(venueData.generalInfo?.generalRule) || null,
         } as any)
         .returning();
+      
+      if (!newVenue) {
+        throw new Error(`Failed to create venue: ${venueData.name}`);
+      }
       
       created++;
       

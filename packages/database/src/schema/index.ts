@@ -40,3 +40,6 @@ export { artistSongs } from "./artists";
 
 // User follows artists relationship (needed for artist pages)
 export { userFollowsArtists } from "./user-follows-artists";
+
+// Sync jobs tables for background processing
+export { syncJobs, syncProgress } from "./sync-jobs";

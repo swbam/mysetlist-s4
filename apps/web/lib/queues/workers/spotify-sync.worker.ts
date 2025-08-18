@@ -1,7 +1,7 @@
 import { Job } from "bullmq";
 import { QueueName, SpotifySyncJob, createWorker } from "../config";
 import { SpotifyCompleteCatalog } from "@repo/external-apis/src/services/spotify-complete-catalog";
-import { SpotifyClient } from "@repo/external-apis";
+import { SpotifyClient, type SpotifyAlbum } from "@repo/external-apis";
 import { db, artists, songs, artistSongs, eq, sql } from "@repo/database";
 import { updateImportStatus } from "../../import-status";
 
@@ -101,14 +101,14 @@ async function syncArtistAlbums(
   
   await job.updateProgress(20);
   
-  const albums = [];
+  const albums: SpotifyAlbum[] = [];
   let offset = 0;
   const limit = 50;
   let hasMore = true;
   
   while (hasMore) {
     const response = await spotify.getArtistAlbums(spotifyId, {
-      album_type: 'album,single',
+      include_groups: 'album,single',
       limit,
       offset,
       market: 'US',

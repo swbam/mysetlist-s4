@@ -171,7 +171,11 @@ export async function checkWorkerHealth(): Promise<{
     jobCount?: number;
   }>;
 }> {
-  const healthStatus = [];
+  const healthStatus: Array<{
+    name: QueueName;
+    running: boolean;
+    jobCount?: number;
+  }> = [];
   
   for (const [name, worker] of workers.entries()) {
     const isRunning = worker.isRunning();
@@ -194,7 +198,14 @@ export async function checkWorkerHealth(): Promise<{
 
 // Get queue statistics
 export async function getQueueStats() {
-  const stats = [];
+  const stats: Array<{
+    queue: QueueName;
+    waiting: number;
+    active: number;
+    completed: number;
+    failed: number;
+    delayed: number;
+  }> = [];
   
   for (const queueName of Object.values(QueueName)) {
     const counts = await queueManager.getJobCounts(queueName as QueueName);

@@ -73,7 +73,13 @@ export const artistImportWorker = createWorker<ArtistImportJob>(
         const orchestrator = new OptimizedImportOrchestrator(
           async (progress) => {
             await job.updateProgress(progress.progress);
-            await updateImportStatus(artistId, progress);
+            
+            // Transform the progress to have the correct stage type
+            const statusUpdate = {
+              ...progress,
+              stage: getStageFromProgress(progress.progress),
+            };
+            await updateImportStatus(artistId, statusUpdate);
             
             // Publish to Redis
             const channel = `import:progress:${jobId}`;
@@ -98,7 +104,13 @@ export const artistImportWorker = createWorker<ArtistImportJob>(
         const orchestrator = new OptimizedImportOrchestrator(
           async (progress) => {
             await job.updateProgress(progress.progress);
-            await updateImportStatus(artistId, progress);
+            
+            // Transform the progress to have the correct stage type
+            const statusUpdate = {
+              ...progress,
+              stage: getStageFromProgress(progress.progress),
+            };
+            await updateImportStatus(artistId, statusUpdate);
             
             // Publish to Redis for SSE
             const channel = `import:progress:${jobId}`;
@@ -174,7 +186,7 @@ async function queueFollowUpJobs(
   const ticketmasterQueue = getQueue<TicketmasterSyncJob>(QueueName.TICKETMASTER_SYNC);
   const catalogQueue = getQueue<CatalogSyncJob>(QueueName.CATALOG_SYNC);
   
-  const jobs = [];
+  const jobs: Promise<any>[] = [];
   
   // Queue Spotify sync if we have Spotify ID
   if (artist.spotifyId) {
@@ -232,14 +244,14 @@ async function queueFollowUpJobs(
 }
 
 // Helper to determine stage from progress
-function getStageFromProgress(progress: number): string {
+function getStageFromProgress(progress: number): "initializing" | "syncing-identifiers" | "importing-songs" | "importing-shows" | "creating-setlists" | "completed" | "failed" {
   if (progress < 10) return "initializing";
   if (progress < 30) return "syncing-identifiers";
   if (progress < 60) return "importing-shows";
   if (progress < 90) return "importing-songs";
   if (progress < 95) return "creating-setlists";
   if (progress >= 100) return "completed";
-  return "processing";
+  return "initializing"; // Default fallback
 }
 
 // Start the worker if this is the main module

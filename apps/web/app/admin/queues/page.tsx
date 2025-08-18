@@ -184,7 +184,7 @@ export default function QueuesPage() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">Completed</span>
-                  <Badge variant="success">{stat.completed}</Badge>
+                  <Badge variant="default">{stat.completed}</Badge>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-gray-600">Failed</span>

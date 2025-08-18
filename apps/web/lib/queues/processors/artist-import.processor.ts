@@ -124,6 +124,10 @@ export async function processArtistImport(job: Job<ArtistImportJobData>): Promis
       })
       .returning();
     
+    if (!artist) {
+      throw new Error(`Failed to create or update artist with TM ID: ${tmAttractionId}`);
+    }
+    
     const phase1Duration = Date.now() - phase1Start;
     
     await job.updateProgress(30);
@@ -193,7 +197,12 @@ async function queueFollowUpJobs(
   parentJobId: string
 ): Promise<string[]> {
   const jobIds: string[] = [];
-  const jobs = [];
+  const jobs: Array<{
+    queue: QueueName;
+    name: string;
+    data: any;
+    opts: any;
+  }> = [];
   
   // Queue Spotify sync if we have Spotify ID
   if (spotifyId) {
