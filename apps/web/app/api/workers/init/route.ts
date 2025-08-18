@@ -3,6 +3,7 @@ import { initializeWorkers, setupRecurringJobs } from "~/lib/queues/workers";
 
 // Force dynamic rendering
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 // Track initialization status
 let isInitialized = false;

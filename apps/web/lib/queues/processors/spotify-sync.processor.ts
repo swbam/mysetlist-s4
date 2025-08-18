@@ -128,7 +128,7 @@ async function syncAlbums(
 ) {
   await job.updateProgress(20);
   
-  const albums = [];
+  const albums: any[] = [];
   const albumTypes = ['album', 'single'];
   let processed = 0;
   
@@ -139,7 +139,7 @@ async function syncAlbums(
     
     while (hasMore) {
       const response = await spotify.getArtistAlbums(spotifyId, {
-        album_type: albumType,
+        include_groups: albumType as any,
         limit,
         offset,
         market: 'US',
@@ -167,7 +167,6 @@ async function syncAlbums(
     .update(artists)
     .set({
       totalAlbums: albums.length,
-      albumsData: JSON.stringify(albums.slice(0, 50)), // Store first 50 for reference
       lastSyncedAt: new Date(),
     })
     .where(eq(artists.id, artistId));

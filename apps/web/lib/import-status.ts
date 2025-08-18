@@ -1,14 +1,8 @@
 import { createServiceClient } from "./supabase/server";
-import { Redis } from "ioredis";
+import { createRedisClient } from "./queues/redis-config";
 
-// Initialize Redis client with correct credentials
-const redis = new Redis({
-  username: 'default',
-  password: 'D0ph9gV9LPCbAq271oij61iRaoqnK3o6',
-  host: 'redis-15718.c44.us-east-1-2.ec2.redns.redis-cloud.com',
-  port: 15718,
-  retryStrategy: (times) => Math.min(times * 50, 2000),
-});
+// Initialize Redis client (env-driven)
+const redis = createRedisClient();
 
 export interface ImportStatus {
   stage: 

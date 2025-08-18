@@ -131,15 +131,15 @@ export async function processArtistImport(job: Job<ArtistImportJobData>): Promis
       stage: "importing-shows",
       progress: 30,
       message: "Artist created! Queuing background sync...",
-      artistId: artist.id,
-      artistName: artist.name,
-      slug: artist.slug,
+      artistId: artist?.id || "",
+      artistName: artist?.name || tmArtist.name,
+      slug: artist?.slug || slug,
     });
     
     // Queue follow-up jobs for parallel processing
     const followUpJobs = await queueFollowUpJobs(
-      artist.id,
-      artist.spotifyId,
+      (artist?.id as string) || uuidv4(),
+      artist?.spotifyId || null,
       tmAttractionId,
       priority,
       jobId
@@ -148,10 +148,10 @@ export async function processArtistImport(job: Job<ArtistImportJobData>): Promis
     // Cache the result
     const result: ArtistImportResult = {
       success: true,
-      artistId: artist.id,
-      slug: artist.slug,
-      spotifyId: artist.spotifyId || undefined,
-      name: artist.name,
+      artistId: (artist?.id as string) || "",
+      slug: artist?.slug || slug,
+      spotifyId: artist?.spotifyId || undefined,
+      name: artist?.name || tmArtist.name,
       imageUrl: artistData.imageUrl || undefined,
       cached: false,
       phase1Duration,
@@ -165,7 +165,7 @@ export async function processArtistImport(job: Job<ArtistImportJobData>): Promis
       stage: "completed",
       progress: 100,
       message: "Import initiated successfully!",
-      artistId: artist.id,
+      artistId: (artist?.id as string) || "",
       completedAt: new Date().toISOString(),
     });
     
@@ -193,7 +193,12 @@ async function queueFollowUpJobs(
   parentJobId: string
 ): Promise<string[]> {
   const jobIds: string[] = [];
-  const jobs = [];
+  const jobs: Array<{
+    queue: QueueName;
+    name: string;
+    data: any;
+    opts?: any;
+  }> = [];
   
   // Queue Spotify sync if we have Spotify ID
   if (spotifyId) {

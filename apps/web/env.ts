@@ -45,7 +45,12 @@ export const env = createEnv({
     FLAGSMITH_ENVIRONMENT_KEY: z.string().min(1).optional(),
 
     // Redis/Caching
-    REDIS_URL: z.string().url().optional(),
+    REDIS_URL: z.string().optional(),
+    REDIS_HOST: z.string().optional(),
+    REDIS_PORT: z.string().optional(),
+    REDIS_USERNAME: z.string().optional(),
+    REDIS_PASSWORD: z.string().optional(),
+    REDIS_TLS: z.string().optional(),
     UPSTASH_REDIS_REST_URL: z.string().url().optional(),
     UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
 
@@ -143,6 +148,11 @@ export const env = createEnv({
     BETTERSTACK_URL: process.env.BETTERSTACK_URL,
     FLAGSMITH_ENVIRONMENT_KEY: process.env.FLAGSMITH_ENVIRONMENT_KEY,
     REDIS_URL: process.env.REDIS_URL,
+    REDIS_HOST: process.env.REDIS_HOST,
+    REDIS_PORT: process.env.REDIS_PORT,
+    REDIS_USERNAME: process.env.REDIS_USERNAME,
+    REDIS_PASSWORD: process.env.REDIS_PASSWORD,
+    REDIS_TLS: process.env.REDIS_TLS,
     UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL,
     UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN,
     EDGE_CONFIG: process.env.EDGE_CONFIG,

@@ -49,8 +49,8 @@ export async function processTicketmasterSync(job: Job<TicketmasterSyncJobData>)
       await updateImportStatus(parentJobId, {
         stage: "importing-shows",
         progress: 40,
-        message: `Show sync failed: ${error.message}`,
-        error: error.message,
+        message: `Show sync failed: ${(error as any).message}`,
+        error: (error as any).message,
       });
     }
     
@@ -85,12 +85,19 @@ async function syncShows(
   
   await job.updateProgress(30);
   
-  const events = await ticketmaster.getAttractionEvents(tmAttractionId, {
-    size: options?.maxShows || 200,
-    includePast: options?.includePast || false,
+  const size = options?.maxShows || 200;
+  const includePast = options?.includePast || false;
+
+  // Use searchEvents filtered by attractionId and optional time window
+  const page1 = await ticketmaster.searchEvents({
+    attractionId: tmAttractionId,
+    size,
+    sort: includePast ? "date,desc" : "date,asc",
   });
-  
-  if (!events || !events._embedded?.events) {
+
+  const showsData = page1._embedded?.events ?? [];
+
+  if (showsData.length === 0) {
     await job.log("No shows found for artist");
     return {
       success: true,
@@ -103,7 +110,6 @@ async function syncShows(
   
   await job.updateProgress(50);
   
-  const showsData = events._embedded.events;
   const now = new Date();
   
   // Save shows to database
@@ -112,14 +118,14 @@ async function syncShows(
     headlinerArtistId: artistId,
     name: show.name,
     date: new Date(show.dates?.start?.dateTime || show.dates?.start?.localDate),
-    timezone: show.dates?.timezone || null,
-    status: show.dates?.status?.code || 'scheduled',
-    priceMin: show.priceRanges?.[0]?.min || null,
-    priceMax: show.priceRanges?.[0]?.max || null,
+    timezone: (show as any).dates?.timezone || null,
+    status: (show as any).dates?.status?.code || 'upcoming',
+    minPrice: (show as any).priceRanges?.[0]?.min || null,
+    maxPrice: (show as any).priceRanges?.[0]?.max || null,
     ticketUrl: show.url || null,
     imageUrl: show.images?.[0]?.url || null,
     smallImageUrl: show.images?.[2]?.url || null,
-    seatmapUrl: show.seatmap?.staticUrl || null,
+    seatmapUrl: (show as any).seatmap?.staticUrl || null,
     rawData: JSON.stringify(show),
   }));
   
@@ -139,8 +145,8 @@ async function syncShows(
           name: sql`EXCLUDED.name`,
           date: sql`EXCLUDED.date`,
           status: sql`EXCLUDED.status`,
-          priceMin: sql`EXCLUDED.price_min`,
-          priceMax: sql`EXCLUDED.price_max`,
+          minPrice: sql`EXCLUDED.min_price`,
+          maxPrice: sql`EXCLUDED.max_price`,
           updatedAt: new Date(),
         },
       });
@@ -229,7 +235,7 @@ async function syncVenues(artistId: string, job: Job) {
     
     if (existing.length === 0) {
       // Create new venue
-      const [newVenue] = await db
+      const inserted = await db
         .insert(venues)
         .values({
           tmVenueId: venueData.id,
@@ -249,15 +255,17 @@ async function syncVenues(artistId: string, job: Job) {
         } as any)
         .returning();
       
-      created++;
-      
-      // Link venue to shows
-      await db.execute(sql`
-        UPDATE ${shows}
-        SET venue_id = ${newVenue.id}
-        WHERE raw_data::jsonb -> '_embedded' -> 'venues' -> 0 ->> 'id' = ${venueData.id}
-          AND venue_id IS NULL
-      `);
+      const newVenue = inserted?.[0];
+      if (newVenue?.id) {
+        created++;
+        // Link venue to shows
+        await db.execute(sql`
+          UPDATE ${shows}
+          SET venue_id = ${newVenue.id}
+          WHERE raw_data::jsonb -> '_embedded' -> 'venues' -> 0 ->> 'id' = ${venueData.id}
+            AND venue_id IS NULL
+        `);
+      }
     } else {
       updated++;
     }

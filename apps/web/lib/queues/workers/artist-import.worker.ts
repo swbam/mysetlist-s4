@@ -1,5 +1,5 @@
 import { Job } from "bullmq";
-import { Redis } from "ioredis";
+import { createRedisClient } from "../redis-config";
 import { 
   QueueName, 
   ArtistImportJob,
@@ -15,13 +15,8 @@ import { updateImportStatus } from "../../import-status";
 import { ImportLogger } from "../../import-logger";
 import { db, artists, eq } from "@repo/database";
 
-// Initialize Redis for real-time progress updates
-const redis = new Redis({
-  username: 'default',
-  password: 'D0ph9gV9LPCbAq271oij61iRaoqnK3o6',
-  host: 'redis-15718.c44.us-east-1-2.ec2.redns.redis-cloud.com',
-  port: 15718,
-});
+// Initialize Redis for real-time progress updates (env-driven)
+const redis = createRedisClient();
 
 // Main artist import worker - handles background phases after Phase 1
 export const artistImportWorker = createWorker<ArtistImportJob>(

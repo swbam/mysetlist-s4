@@ -771,48 +771,46 @@ export default function ArtistPage({ params }: { params: { slug: string } }) {
 
 **Connection:**
 ```ts
-// lib/queues/redis-config.ts
-import Redis from 'ioredis';
+// lib/queues/redis-config.ts (env-driven)
+import { Redis } from 'ioredis';
+import { ConnectionOptions } from 'bullmq';
 
-export const redisConnection = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
-  maxRetriesPerRequest: null,
+const { REDIS_URL, REDIS_HOST, REDIS_PORT, REDIS_USERNAME, REDIS_PASSWORD, REDIS_TLS } = process.env;
+
+const baseOptions = {
+  maxRetriesPerRequest: null as any,
   enableReadyCheck: false,
-  retryStrategy: (times) => Math.min(times * 50, 2000),
-});
+  retryStrategy: (times: number) => Math.min(times * 50, 2000),
+};
 
-// Cache layer with fallback
+export const createRedisClient = () =>
+  REDIS_URL
+    ? new Redis(REDIS_URL, baseOptions)
+    : new Redis({
+        host: REDIS_HOST || '127.0.0.1',
+        port: REDIS_PORT ? parseInt(REDIS_PORT, 10) : 6379,
+        username: REDIS_USERNAME,
+        password: REDIS_PASSWORD,
+        tls: REDIS_TLS === 'true' ? {} : undefined,
+        ...baseOptions,
+      } as any);
+
+export const bullMQConnection: ConnectionOptions = REDIS_URL
+  ? { url: REDIS_URL, ...baseOptions }
+  : ({
+      host: REDIS_HOST || '127.0.0.1',
+      port: REDIS_PORT ? parseInt(REDIS_PORT, 10) : 6379,
+      username: REDIS_USERNAME,
+      password: REDIS_PASSWORD,
+      tls: REDIS_TLS === 'true' ? {} : undefined,
+      ...baseOptions,
+    } as any);
+
 export class RedisCache {
-  private redis: Redis;
-  private memoryCache: Map<string, { value: any, expiry: number }>;
-  
-  constructor() {
-    this.redis = redisConnection;
-    this.memoryCache = new Map();
-  }
-  
-  async get<T>(key: string): Promise<T | null> {
-    try {
-      const cached = await this.redis.get(key);
-      if (cached) return JSON.parse(cached);
-    } catch (error) {
-      // Fallback to memory cache
-      const mem = this.memoryCache.get(key);
-      if (mem && mem.expiry > Date.now()) return mem.value;
-    }
-    return null;
-  }
-  
-  async set(key: string, value: any, ttl = 3600): Promise<void> {
-    try {
-      await this.redis.setex(key, ttl, JSON.stringify(value));
-    } catch (error) {
-      // Fallback to memory cache
-      this.memoryCache.set(key, {
-        value,
-        expiry: Date.now() + (ttl * 1000)
-      });
-    }
-  }
+  private client = createRedisClient();
+  async get<T>(key: string) { try { const v = await this.client.get(key); return v ? JSON.parse(v) : null; } catch { return null; } }
+  async set<T>(key: string, value: T, ttl?: number) { try { const s = JSON.stringify(value); return ttl ? this.client.setex(key, ttl, s) : this.client.set(key, s); } catch {} }
+  async del(key: string) { try { await this.client.del(key); } catch {} }
 }
 ```
 
@@ -1176,26 +1174,30 @@ export async function checkQueueHealth(): Promise<HealthStatus> {
 ### Environment Variables
 
 ```env
-# Redis
-REDIS_URL=redis://localhost:6379
-REDIS_MAX_RETRIES=3
-REDIS_RETRY_DELAY=2000
+# Redis (one of the following)
+REDIS_URL=rediss://:<password>@<host>:<port>   # preferred single URL
+# or discrete fields
+REDIS_HOST=<host>
+REDIS_PORT=<port>
+REDIS_USERNAME=default
+REDIS_PASSWORD=<password>
+REDIS_TLS=true
 
-# Queue Configuration
-QUEUE_CONCURRENCY_ARTIST_IMPORT=2
-QUEUE_CONCURRENCY_SPOTIFY_SYNC=5
-QUEUE_CONCURRENCY_VENUE_SYNC=3
+# Queue Configuration (optional overrides)
+QUEUE_CONCURRENCY_ARTIST_IMPORT=5
+QUEUE_CONCURRENCY_SPOTIFY_SYNC=3
+QUEUE_CONCURRENCY_VENUE_SYNC=10
 QUEUE_JOB_TIMEOUT=300000
 QUEUE_STALLED_INTERVAL=30000
 ```
 
 ### Deployment Considerations
 
-1. **Redis Persistence**: Use Redis with AOF or RDB persistence for job durability
-2. **Worker Scaling**: Deploy workers separately from web servers
-3. **Connection Pooling**: Use Redis connection pooling for high throughput
-4. **Graceful Shutdown**: Implement proper worker shutdown handlers
-5. **Memory Management**: Monitor Redis memory usage and set appropriate eviction policies
+1. Use a managed Redis (Upstash/Redis Cloud). Set `REDIS_URL` in Vercel project settings.
+2. For BullMQ workers on Vercel, pin API routes that touch BullMQ to `export const runtime = "nodejs"` and set `dynamic = "force-dynamic"`.
+3. Initialize workers on a single endpoint (`/api/workers/init`) and protect with an admin token for manual control.
+4. Ensure graceful shutdown in workers with `SIGTERM/SIGINT` handlers and close BullMQ resources.
+5. Avoid hardcoding credentials; use the env-driven config above.
 
 ### Advantages of BullMQ Implementation:
 

@@ -1,14 +1,26 @@
-import { Redis } from "ioredis";
 import { Queue, Worker, QueueEvents, ConnectionOptions } from "bullmq";
 
-// Redis connection configuration
-export const redisConnection: ConnectionOptions = {
-  host: "redis-15718.c44.us-east-1-2.ec2.redns.redis-cloud.com",
-  port: 15718,
-  password: "A2reh970cuqbqii4tm2r8v5uruyzpsoyzmjqbjs0kjzfiec2mq9",
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-};
+// Redis connection configuration (env-driven)
+const {
+  REDIS_URL: CFG_REDIS_URL,
+  REDIS_HOST: CFG_REDIS_HOST,
+  REDIS_PORT: CFG_REDIS_PORT,
+  REDIS_USERNAME: CFG_REDIS_USERNAME,
+  REDIS_PASSWORD: CFG_REDIS_PASSWORD,
+  REDIS_TLS: CFG_REDIS_TLS,
+} = process.env as Record<string, string | undefined>;
+
+export const redisConnection: ConnectionOptions = CFG_REDIS_URL
+  ? { url: CFG_REDIS_URL, maxRetriesPerRequest: null as any, enableReadyCheck: false }
+  : ({
+      host: CFG_REDIS_HOST || "127.0.0.1",
+      port: CFG_REDIS_PORT ? parseInt(CFG_REDIS_PORT, 10) : 6379,
+      username: CFG_REDIS_USERNAME,
+      password: CFG_REDIS_PASSWORD,
+      tls: CFG_REDIS_TLS === "true" ? {} : undefined,
+      maxRetriesPerRequest: null as any,
+      enableReadyCheck: false,
+    } as any);
 
 // Queue names
 export enum QueueName {
@@ -182,7 +194,7 @@ export function createQueueEvents(name: QueueName): QueueEvents {
 // Singleton queue instances
 let queues: Map<QueueName, Queue<any>> | null = null;
 
-export function getQueue<T>(name: QueueName): Queue<T> {
+export function getQueue<T = any>(name: QueueName): Queue<T> {
   if (!queues) {
     queues = new Map();
   }
@@ -191,7 +203,7 @@ export function getQueue<T>(name: QueueName): Queue<T> {
     queues.set(name, createQueue<T>(name));
   }
   
-  return queues.get(name)!;
+  return queues.get(name)! as unknown as Queue<T>;
 }
 
 // Cleanup function

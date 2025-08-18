@@ -1,34 +1,54 @@
 import { Redis } from "ioredis";
 import { ConnectionOptions } from "bullmq";
 
-// Redis connection configuration with your credentials
-export const redisConfig = {
-  username: 'default',
-  password: 'D0ph9gV9LPCbAq271oij61iRaoqnK3o6',
-  host: 'redis-15718.c44.us-east-1-2.ec2.redns.redis-cloud.com',
-  port: 15718,
-  maxRetriesPerRequest: null,
+// Build config from environment (supports standard REDIS_URL or discrete settings)
+const {
+  REDIS_URL,
+  REDIS_HOST,
+  REDIS_PORT,
+  REDIS_USERNAME,
+  REDIS_PASSWORD,
+  REDIS_TLS,
+} = process.env as Record<string, string | undefined>;
+
+const parsedPort = REDIS_PORT ? parseInt(REDIS_PORT, 10) : undefined;
+
+// Connection options helper
+const baseOptions = {
+  maxRetriesPerRequest: null as any,
   enableReadyCheck: false,
-  retryStrategy: (times: number) => {
-    const delay = Math.min(times * 50, 2000);
-    return delay;
-  },
+  retryStrategy: (times: number) => Math.min(times * 50, 2000),
 };
 
-// BullMQ connection configuration
-export const bullMQConnection: ConnectionOptions = {
-  username: 'default',
-  password: 'D0ph9gV9LPCbAq271oij61iRaoqnK3o6',
-  host: 'redis-15718.c44.us-east-1-2.ec2.redns.redis-cloud.com',
-  port: 15718,
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-};
-
-// Create Redis client for direct operations
+// ioredis-compatible factory
 export const createRedisClient = () => {
-  return new Redis(redisConfig);
+  if (REDIS_URL) {
+    return new Redis(REDIS_URL, baseOptions);
+  }
+
+  return new Redis(
+    {
+      host: REDIS_HOST || "127.0.0.1",
+      port: parsedPort || 6379,
+      username: REDIS_USERNAME || undefined,
+      password: REDIS_PASSWORD || undefined,
+      tls: REDIS_TLS === "true" ? {} : undefined,
+      ...baseOptions,
+    } as any,
+  );
 };
+
+// BullMQ connection configuration (derived from same env)
+export const bullMQConnection: ConnectionOptions = REDIS_URL
+  ? { url: REDIS_URL, ...baseOptions }
+  : {
+      host: REDIS_HOST || "127.0.0.1",
+      port: parsedPort || 6379,
+      username: REDIS_USERNAME,
+      password: REDIS_PASSWORD,
+      tls: REDIS_TLS === "true" ? {} : undefined,
+      ...baseOptions,
+    } as any;
 
 // Singleton Redis client for pub/sub
 let pubClient: Redis | null = null;
