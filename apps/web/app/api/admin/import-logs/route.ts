@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db, importLogs, artists, eq, desc, and, or } from "@repo/database";
+import { db, importLogs, artists } from "@repo/database";
+import { eq, desc, and, or } from "drizzle-orm";
 import { like } from "drizzle-orm";
 import { createClient } from "~/lib/supabase/server";
 

@@ -1,5 +1,6 @@
 import { Job } from "bullmq";
-import { db, artists, shows, eq, sql, desc } from "@repo/database";
+import { db, artists, shows } from "@repo/database";
+import { eq, sql, desc } from "drizzle-orm";
 import { queueManager, QueueName, Priority } from "../queue-manager";
 import { RedisCache } from "../redis-config";
 
@@ -58,7 +59,7 @@ export async function processScheduledSync(job: Job<ScheduledSyncJobData>) {
     }
     
     // Queue sync jobs for each artist
-    const jobs = [];
+    const jobs: Promise<any>[] = [];
     const priority = deep ? Priority.LOW : Priority.NORMAL;
     
     for (const artist of artistsToSync) {
@@ -191,7 +192,7 @@ async function getTrendingArtists(limit: number) {
       name: artists.name,
     })
     .from(artists)
-    .where(eq(artists.isTrending, true))
+    .where(sql`${artists.trendingScore} > 0`)
     .orderBy(desc(artists.trendingScore))
     .limit(limit);
 }

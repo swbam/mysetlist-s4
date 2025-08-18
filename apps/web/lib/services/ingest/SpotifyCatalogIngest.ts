@@ -10,7 +10,8 @@
  * - Robust error handling with comprehensive filtering
  */
 
-import { db, eq, songs, artistSongs, artists } from '@repo/database';
+import { db, songs, artistSongs, artists } from '@repo/database';
+import { eq } from 'drizzle-orm';
 import { ProgressBus } from '../progress/ProgressBus';
 import { 
   listAllAlbums, 

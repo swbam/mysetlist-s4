@@ -1,4 +1,5 @@
-import { artists, db, shows, setlists, sql } from "@repo/database";
+import { artists, db, shows, setlists } from "@repo/database";
+import { sql } from "drizzle-orm";
 import { 
   SetlistSyncService,
   ShowSyncService,

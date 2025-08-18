@@ -2,7 +2,8 @@ import { Job } from "bullmq";
 import { QueueName, SpotifySyncJob, createWorker } from "../config";
 import { SpotifyCompleteCatalog } from "@repo/external-apis/src/services/spotify-complete-catalog";
 import { SpotifyClient } from "@repo/external-apis";
-import { db, artists, songs, artistSongs, eq, sql } from "@repo/database";
+import { db, artists, songs, artistSongs } from "@repo/database";
+import { eq, sql } from "drizzle-orm";
 import { updateImportStatus } from "../../import-status";
 
 export const spotifySyncWorker = createWorker<SpotifySyncJob>(
@@ -101,14 +102,14 @@ async function syncArtistAlbums(
   
   await job.updateProgress(20);
   
-  const albums = [];
+  const albums: any[] = [];
   let offset = 0;
   const limit = 50;
   let hasMore = true;
   
   while (hasMore) {
     const response = await spotify.getArtistAlbums(spotifyId, {
-      album_type: 'album,single',
+      include_groups: 'album,single',
       limit,
       offset,
       market: 'US',

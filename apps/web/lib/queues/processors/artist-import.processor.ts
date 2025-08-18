@@ -1,7 +1,8 @@
 import { Job } from "bullmq";
 import { queueManager, QueueName, Priority } from "../queue-manager";
 import { RedisCache } from "../redis-config";
-import { db, artists, eq } from "@repo/database";
+import { db, artists } from "@repo/database";
+import { eq } from "drizzle-orm";
 import { TicketmasterClient, SpotifyClient } from "@repo/external-apis";
 import { updateImportStatus } from "../../import-status";
 import { v4 as uuidv4 } from "uuid";
@@ -124,6 +125,10 @@ export async function processArtistImport(job: Job<ArtistImportJobData>): Promis
       })
       .returning();
     
+    if (!artist) {
+      throw new Error("Failed to create or update artist");
+    }
+    
     const phase1Duration = Date.now() - phase1Start;
     
     await job.updateProgress(30);
@@ -193,7 +198,12 @@ async function queueFollowUpJobs(
   parentJobId: string
 ): Promise<string[]> {
   const jobIds: string[] = [];
-  const jobs = [];
+  const jobs: Array<{
+    queue: QueueName;
+    name: string;
+    data: any;
+    opts: any;
+  }> = [];
   
   // Queue Spotify sync if we have Spotify ID
   if (spotifyId) {
