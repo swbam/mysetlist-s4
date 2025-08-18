@@ -1,8 +1,8 @@
-import { artistSongs, artists, songs } from "@repo/database";
+import { db, artists, songs, artistSongs } from "@repo/database";
 import { SetlistFmClient } from "../clients/setlistfm";
 import { SpotifyClient } from "../clients/spotify";
 import { TicketmasterClient } from "../clients/ticketmaster";
-import { db, eq } from "../database";
+import { eq } from "drizzle-orm";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 
 // Helper function to normalize song titles for deduplication
@@ -22,7 +22,7 @@ export class ArtistSyncService {
   constructor() {
     this.spotifyClient = new SpotifyClient({});
     this.ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env['TICKETMASTER_API_KEY'] || "",
+      apiKey: process.env["TICKETMASTER_API_KEY"] || "",
     });
     this.errorHandler = new SyncErrorHandler({
       maxRetries: 3,
@@ -39,7 +39,7 @@ export class ArtistSyncService {
     ticketmasterAttractionId?: string;
   }): Promise<{ spotifyId?: string; tmAttractionId: string; mbid?: string }> {
     if (!params.ticketmasterAttractionId) {
-      throw new Error('ticketmasterAttractionId is required for syncIdentifiers');
+      throw new Error("ticketmasterAttractionId is required for syncIdentifiers");
     }
 
     const result: {
@@ -96,11 +96,13 @@ export class ArtistSyncService {
 
     // MBID via Setlist.fm (if available via name)
     try {
-      const s = new SetlistFmClient({});
+      const s = new SetlistFmClient({
+        apiKey: process.env["SETLISTFM_API_KEY"]!,
+      });
       const qName = name;
       if (qName) {
-        const sr = await s.searchArtists(qName, 1);
-        const mbid = sr.artist?.[0]?.mbid;
+        const sr = await s.searchSetlists({ artistName: qName, p: 1 });
+        const mbid = sr.setlist?.[0]?.artist?.mbid;
         if (mbid) {
           result.mbid = mbid;
           if (artistRecord) {
@@ -165,16 +167,22 @@ export class ArtistSyncService {
     try {
       const ticketmasterResult = await this.errorHandler.withRetry(
         () =>
-          this.ticketmasterClient.searchEvents({ keyword: spotifyArtist.name, size: 1 }),
+          this.ticketmasterClient.searchEvents({
+            keyword: spotifyArtist.name,
+            size: 1,
+          }),
         {
           service: "ArtistSyncService",
-          operation: "searchAttractions",
+          operation: "searchEvents",
           context: { artistName: spotifyArtist.name },
         },
       );
 
-      if (ticketmasterResult?._embedded?.attractions?.[0]) {
-        const attraction = ticketmasterResult._embedded.attractions[0];
+      if (
+        ticketmasterResult?._embedded?.events?.[0]?._embedded?.attractions?.[0]
+      ) {
+        const attraction =
+          ticketmasterResult._embedded.events[0]._embedded.attractions[0];
         if (this.isArtistNameMatch(spotifyArtist.name, attraction.name)) {
           tmAttractionId = attraction.id;
           console.log(
@@ -317,7 +325,10 @@ export class ArtistSyncService {
     let hasMore = true;
 
     while (hasMore) {
-      const albums = await this.spotifyClient.getArtistAlbums(artistId, { include_groups: "album,single", limit: 50 });
+      const albums = await this.spotifyClient.getArtistAlbums(artistId, {
+        include_groups: "album,single",
+        limit: 50,
+      });
 
       const albumsResponse = albums?.items || [];
 
@@ -336,7 +347,7 @@ export class ArtistSyncService {
         while (hasMoreTracks) {
           const tracksResponse = await this.errorHandler.withRetry(
             () =>
-              this.spotifyClient.getAlbumTracks(album.id, {
+              this.spotifyClient.getArtistAlbums(album.id, {
                 limit: 50,
                 offset: trackOffset,
               }),
@@ -526,15 +537,20 @@ export class ArtistSyncService {
   } | null> {
     try {
       // Get attraction details from Ticketmaster
-      const attraction = await this.errorHandler.withRetry(
-        () => this.ticketmasterClient.getAttraction(attractionId),
+      const event = await this.errorHandler.withRetry(
+        () => this.ticketmasterClient.getEvent(attractionId),
         {
           service: "ArtistSyncService",
-          operation: "getAttraction",
+          operation: "getEvent",
           context: { attractionId },
         },
       );
 
+      if (!event) {
+        return null;
+      }
+
+      const attraction = event._embedded?.attractions?.[0];
       if (!attraction) {
         return null;
       }

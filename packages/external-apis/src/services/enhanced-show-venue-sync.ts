@@ -1,6 +1,5 @@
 import { TicketmasterClient } from "../clients/ticketmaster";
-import { db, eq, sql } from "../database";
-import { shows, venues, artists } from "@repo/database";
+import { db, eq, sql, shows, venues, artists } from "@repo/database";
 
 export interface ShowSyncResult {
   totalShows: number;
@@ -140,7 +139,7 @@ export class EnhancedShowVenueSync {
   ): Promise<ShowData[]> {
     try {
       const events = await this.ticketmasterClient.searchEvents({
-        attractionId: tmAttractionId,
+        keyword: tmAttractionId,
         size: options.maxShows || 200,
       });
       

@@ -1,8 +1,18 @@
-import { boolean, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
+import { users } from "./users";
 
 export const apiKeys = pgTable("api_keys", {
-  id: text("id").primaryKey(),
-  userId: text("user_id").notNull(),
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   keyHash: text("key_hash").notNull().unique(),
   scopes: text("scopes").array().notNull().default([]),

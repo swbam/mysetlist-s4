@@ -170,12 +170,33 @@ TheSet-nextfor/
 │  ├── @repo/auth   ├── @repo/database   ├── @repo/ui         │
 │  ├── @repo/email  └── @repo/external-apis                   │
 ├─────────────────────────────────────────────────────────────┤
-│  Supabase          │  External APIs     │  Services         │
-│  ├── PostgreSQL   │  ├── Spotify       │  ├── Vercel       │
-│  ├── Auth         │  ├── Ticketmaster  │  ├── Upstash      │
-│  └── Real-time    │  └── Setlist.fm    │  └── Resend       │
+│  BullMQ / Redis    │  Supabase          │  External APIs     │
+│  ├── Job Queues   │  ├── PostgreSQL   │  ├── Spotify       │
+│  ├── Workers      │  ├── Auth         │  ├── Ticketmaster  │
+│  └── Scheduler    │  └── Real-time    │  └── Setlist.fm    │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+### Multi-Phase Import Flow
+
+The application uses a multi-phase import flow to provide a fast user experience while ingesting large amounts of data in the background.
+
+1.  **Phase 1: Instant Response (< 3s)**
+    *   Create a placeholder artist record.
+    *   Return the artist ID and slug to the client.
+    *   Navigate the user to the artist page with a loading skeleton.
+2.  **Phase 2: Priority Background (3-15s)**
+    *   Fetch upcoming and recent shows from Ticketmaster.
+    *   Create venue records.
+    *   Update the UI progressively via Server-Sent Events (SSE).
+3.  **Phase 3: Full Catalog (15-90s)**
+    *   Import the artist's full studio catalog from Spotify.
+    *   Filter out live and remix tracks.
+    *   Deduplicate tracks using ISRC.
+4.  **Phase 4: Ongoing Sync (Cron Jobs)**
+    *   Update active artists every 6 hours.
+    *   Import real setlists for past shows daily.
+    *   Refresh the full catalog weekly.
 
 ## Feature Set Overview
 

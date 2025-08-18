@@ -1,0 +1,133 @@
+# Page snapshot
+
+```yaml
+- alert
+- button "Open Next.js Dev Tools":
+  - img
+- banner:
+  - link "TheSet":
+    - /url: /
+  - navigation:
+    - link "Home":
+      - /url: /
+    - link "Artists":
+      - /url: /artists
+    - link "Shows":
+      - /url: /shows
+    - link "Venues":
+      - /url: /venues
+    - link "Trending":
+      - /url: /trending
+  - textbox "Search artists..."
+  - button "Switch to light theme":
+    - img
+  - link "Sign In":
+    - /url: /auth/sign-in
+  - link "Sign Up":
+    - /url: /auth/sign-up
+- main:
+  - banner "Homepage hero section":
+    - status "Live statistics": "Trending Now: 1.3k+ Active Shows"
+    - heading "Crowd-Curated Setlists" [level=1]
+    - paragraph: Vote on the songs you want to hear at upcoming concerts and see what other fans are predicting.
+    - searchbox "Search for artists"
+    - button "Search" [disabled]
+    - text: "Popular:"
+    - link "Billie Eilish":
+      - /url: /artists/billie-eilish
+    - link "Taylor Swift":
+      - /url: /artists/taylor-swift
+    - link "The Weeknd":
+      - /url: /artists/the-weeknd
+    - link "Drake":
+      - /url: /artists/drake
+    - link "Start Voting":
+      - /url: /artists
+    - link "Discover Music":
+      - /url: /discover
+    - region "Platform statistics": 1.8k+ Active Artists 0 Votes Cast 0 Music Fans
+  - heading "Trending Artists" [level=2]
+  - paragraph: Discover the hottest artists that fans are talking about
+  - link "Billie Eilish":
+    - /url: /artists/billie-eilish
+    - heading "Billie Eilish" [level=3]
+  - link "Taylor Swift":
+    - /url: /artists/taylor-swift
+    - heading "Taylor Swift" [level=3]
+  - link "The Weeknd":
+    - /url: /artists/the-weeknd
+    - heading "The Weeknd" [level=3]
+  - link "Drake":
+    - /url: /artists/drake
+    - heading "Drake" [level=3]
+  - link "View All Artists":
+    - /url: /artists
+  - heading "Trending Shows" [level=2]
+  - paragraph: Join the conversation about the most popular shows
+  - link "Show Taylor Swift":
+    - /url: /shows/taylor-swift-eras-tour-nyc
+    - text: Show
+    - heading [level=3]
+    - paragraph: Taylor Swift
+  - link "Show Metallica":
+    - /url: /shows/metallica-world-tour-2024
+    - text: Show
+    - heading [level=3]
+    - paragraph: Metallica
+  - link "Show The Weeknd":
+    - /url: /shows/the-weeknd-after-hours-tour
+    - text: Show
+    - heading [level=3]
+    - paragraph: The Weeknd
+  - link "Show Drake":
+    - /url: /shows/drake-nothing-was-the-same-anniversary
+    - text: Show
+    - heading [level=3]
+    - paragraph: Drake
+  - link "View All Shows":
+    - /url: /shows
+- contentinfo:
+  - heading "TheSet" [level=3]
+  - paragraph: Vote for your dream setlist and connect with fellow music fans.
+  - heading "Product" [level=4]
+  - list:
+    - listitem:
+      - link "Artists":
+        - /url: /artists
+    - listitem:
+      - link "Shows":
+        - /url: /shows
+    - listitem:
+      - link "Venues":
+        - /url: /venues
+    - listitem:
+      - link "Setlists":
+        - /url: /setlists
+  - heading "Company" [level=4]
+  - list:
+    - listitem:
+      - link "About":
+        - /url: /about
+    - listitem:
+      - link "Contact":
+        - /url: /contact
+    - listitem:
+      - link "Privacy":
+        - /url: /privacy
+    - listitem:
+      - link "Terms":
+        - /url: /terms
+  - heading "Connect" [level=4]
+  - list:
+    - listitem:
+      - link "Twitter":
+        - /url: https://twitter.com
+    - listitem:
+      - link "Instagram":
+        - /url: https://instagram.com
+    - listitem:
+      - link "Facebook":
+        - /url: https://facebook.com
+  - paragraph: © 2025 TheSet. All rights reserved.
+- region "Notifications alt+T"
+```

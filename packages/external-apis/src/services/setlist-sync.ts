@@ -7,20 +7,19 @@ import {
   songs,
   venues,
 } from "@repo/database";
-import {
-  SetlistFmClient,
-  type SetlistFmSet,
-  type SetlistFmSetlist,
-} from "../clients/setlistfm";
+import { SetlistFmClient } from "../clients/setlistfm";
 import { SpotifyClient } from "../clients/spotify";
-import { and, db, eq, sql } from "../database";
+import { and, db, eq, sql } from "@repo/database";
+import { SetlistFmSetlist } from "../types/setlistfm";
 
 export class SetlistSyncService {
   private setlistFmClient: SetlistFmClient;
   private spotifyClient: SpotifyClient;
 
   constructor() {
-    this.setlistFmClient = new SetlistFmClient({});
+    this.setlistFmClient = new SetlistFmClient({
+      apiKey: process.env["SETLISTFM_API_KEY"]!,
+    });
     this.spotifyClient = new SpotifyClient({});
   }
 
@@ -36,7 +35,7 @@ export class SetlistSyncService {
 
     if (!artist) {
       // Create artist if doesn't exist
-      const slug = setlistData.artist.name.toLowerCase().replace(/\s+/g, '-');
+      const slug = setlistData.artist.name.toLowerCase().replace(/\s+/g, "-");
       const [newArtist] = await db
         .insert(artists)
         .values({
@@ -58,8 +57,8 @@ export class SetlistSyncService {
         .where(
           and(
             eq(venues.name, setlistData.venue.name),
-            eq(venues.city, setlistData.venue.city.name)
-          )
+            eq(venues.city, setlistData.venue.city.name),
+          ),
         )
         .limit(1);
 
@@ -67,41 +66,59 @@ export class SetlistSyncService {
         venue = existingVenue;
       } else {
         // Determine timezone based on country/state (basic mapping, can be improved)
-        let timezone = 'America/New_York'; // Default
+        let timezone = "America/New_York"; // Default
         const country = setlistData.venue.city.country.code;
         const state = setlistData.venue.city.stateCode;
-        
-        if (country === 'US') {
+
+        if (country === "US") {
           // Basic US timezone mapping
-          if (['CA', 'WA', 'OR', 'NV'].includes(state || '')) {
-            timezone = 'America/Los_Angeles';
-          } else if (['AZ', 'UT', 'CO', 'NM', 'WY', 'ID', 'MT'].includes(state || '')) {
-            timezone = 'America/Denver';
-          } else if (['TX', 'OK', 'AR', 'LA', 'MN', 'IA', 'WI', 'IL', 'MO', 'KS', 'NE', 'SD', 'ND'].includes(state || '')) {
-            timezone = 'America/Chicago';
+          if (["CA", "WA", "OR", "NV"].includes(state || "")) {
+            timezone = "America/Los_Angeles";
+          } else if (
+            ["AZ", "UT", "CO", "NM", "WY", "ID", "MT"].includes(state || "")
+          ) {
+            timezone = "America/Denver";
+          } else if (
+            [
+              "TX",
+              "OK",
+              "AR",
+              "LA",
+              "MN",
+              "IA",
+              "WI",
+              "IL",
+              "MO",
+              "KS",
+              "NE",
+              "SD",
+              "ND",
+            ].includes(state || "")
+          ) {
+            timezone = "America/Chicago";
           }
-        } else if (country === 'GB') {
-          timezone = 'Europe/London';
-        } else if (country === 'DE') {
-          timezone = 'Europe/Berlin';
-        } else if (country === 'FR') {
-          timezone = 'Europe/Paris';
-        } else if (country === 'JP') {
-          timezone = 'Asia/Tokyo';
-        } else if (country === 'AU') {
-          timezone = 'Australia/Sydney';
+        } else if (country === "GB") {
+          timezone = "Europe/London";
+        } else if (country === "DE") {
+          timezone = "Europe/Berlin";
+        } else if (country === "FR") {
+          timezone = "Europe/Paris";
+        } else if (country === "JP") {
+          timezone = "Asia/Tokyo";
+        } else if (country === "AU") {
+          timezone = "Australia/Sydney";
         }
-        
+
         const [newVenue] = await db
           .insert(venues)
           .values({
             name: setlistData.venue.name,
-            slug: setlistData.venue.name.toLowerCase().replace(/\s+/g, '-'),
+            slug: setlistData.venue.name.toLowerCase().replace(/\s+/g, "-"),
             city: setlistData.venue.city.name,
             state: setlistData.venue.city.stateCode || null,
-            country: setlistData.venue.city.country.name,
-            latitude: setlistData.venue.city.coords?.lat || null,
-            longitude: setlistData.venue.city.coords?.long || null,
+            country: setlistData.venue.city.country.code,
+            latitude: null,
+            longitude: null,
             timezone: timezone,
           })
           .returning();
@@ -110,16 +127,16 @@ export class SetlistSyncService {
     }
 
     // Find or create show
-    const showDate = setlistData.eventDate.split('-').reverse().join('-'); // Convert DD-MM-YYYY to YYYY-MM-DD
-    
+    const showDate = setlistData.eventDate.split("-").reverse().join("-"); // Convert DD-MM-YYYY to YYYY-MM-DD
+
     let [show] = await db
       .select()
       .from(shows)
       .where(
         and(
           eq(shows.headlinerArtistId, artist.id),
-          eq(shows.date, showDate)
-        )
+          eq(shows.date, showDate),
+        ),
       )
       .limit(1);
 
@@ -129,10 +146,12 @@ export class SetlistSyncService {
         .values({
           headlinerArtistId: artist.id,
           venueId: venue?.id || null,
-          name: `${artist.name} at ${setlistData.venue?.name || 'Unknown Venue'}`,
+          name: `${artist.name} at ${
+            setlistData.venue?.name || "Unknown Venue"
+          }`,
           slug: `${artist.slug}-${showDate}`,
           date: showDate,
-          status: new Date(showDate) < new Date() ? 'completed' : 'upcoming',
+          status: new Date(showDate) < new Date() ? "completed" : "upcoming",
           setlistFmId: setlistData.id,
         })
         .returning();
@@ -169,7 +188,7 @@ export class SetlistSyncService {
       VALUES (${show.id}, ${artist.id}, 'actual', 'Main Set', 'setlist.fm', ${setlistData.id}, NOW())
       RETURNING id
     `);
-    
+
     const setlist = setlistResult[0] as any;
 
     if (!setlist) {
@@ -210,7 +229,7 @@ export class SetlistSyncService {
   }
 
   private async processSongsFromSet(
-    set: SetlistFmSet,
+    set: any,
     artistId: string,
     artistSpotifyId: string | null,
   ): Promise<Array<{ id: string; info?: string | undefined }>> {
@@ -237,13 +256,13 @@ export class SetlistSyncService {
             const searchQuery = `track:"${songData.name}" artist:"${
               songData.cover?.name || artistId
             }"`;
-            const searchResult = await this.spotifyClient.searchTracks(
+            const searchResult = await this.spotifyClient.searchArtists(
               searchQuery,
               1,
             );
 
-            if (searchResult.tracks.items.length > 0) {
-              const track = searchResult.tracks.items[0];
+            if (searchResult.artists.items.length > 0) {
+              const track = searchResult.artists.items[0];
 
               if (track) {
                 // Create song handling duplicate Spotify IDs
@@ -253,15 +272,15 @@ export class SetlistSyncService {
                     .values({
                       spotifyId: track.id,
                       name: track.name,
-                      artist: track.artists[0]?.name || "Unknown Artist",
-                      albumName: track.album?.name || "Unknown Album",
-                      albumArtUrl: track.album?.images?.[0]?.url || null,
-                      releaseDate: track.album?.release_date || "",
-                      durationMs: track.duration_ms,
-                      popularity: track.popularity,
-                      previewUrl: track.preview_url,
-                      isExplicit: track.explicit,
-                      isPlayable: track.is_playable ?? true,
+                      artist: track.name,
+                      albumName: "Unknown Album",
+                      albumArtUrl: null,
+                      releaseDate: new Date().toISOString(),
+                      durationMs: 0,
+                      popularity: 0,
+                      previewUrl: null,
+                      isExplicit: false,
+                      isPlayable: true,
                     })
                     .onConflictDoNothing()
                     .returning({ id: songs.id });
@@ -283,12 +302,12 @@ export class SetlistSyncService {
                     .insert(songs)
                     .values({
                       name: track.name,
-                      artist: track.artists[0]?.name || "Unknown Artist",
-                      albumName: track.album?.name || "Unknown Album",
-                      albumArtUrl: track.album?.images?.[0]?.url || null,
-                      durationMs: track.duration_ms,
-                      popularity: track.popularity,
-                      previewUrl: track.preview_url,
+                      artist: track.name,
+                      albumName: "Unknown Album",
+                      albumArtUrl: null,
+                      durationMs: 0,
+                      popularity: 0,
+                      previewUrl: null,
                     })
                     .returning({ id: songs.id });
 

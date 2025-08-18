@@ -1,6 +1,6 @@
 import { SpotifyClient } from "../clients/spotify";
-import { db, eq, sql } from "../database";
-import { artists, songs, artistSongs } from "@repo/database";
+import { db, eq, sql, artists, songs, artistSongs } from "@repo/database";
+import { SyncServiceError } from "../utils/error-handler";
 
 export interface CatalogSyncResult {
   totalSongs: number;
@@ -48,7 +48,7 @@ export class SpotifyCompleteCatalog {
     /mtv\s+live/i,
     /bbc\s+session/i,
   ];
-  
+
   private skipPatterns = [
     /remix/i,
     /acoustic\s+version/i,
@@ -79,7 +79,7 @@ export class SpotifyCompleteCatalog {
       skipLive?: boolean;
       skipRemixes?: boolean;
       onProgress?: (message: string, progress: number) => void;
-    } = {}
+    } = {},
   ): Promise<CatalogSyncResult> {
     const startTime = Date.now();
     const result: CatalogSyncResult = {
@@ -94,7 +94,7 @@ export class SpotifyCompleteCatalog {
 
     try {
       await this.spotifyClient.authenticate();
-      
+
       // Get artist details
       const artistDetails = await this.spotifyClient.getArtist(spotifyArtistId);
       if (!artistDetails) {
@@ -102,36 +102,40 @@ export class SpotifyCompleteCatalog {
       }
 
       // Fetch ALL albums in parallel
-      options.onProgress?.('Fetching albums...', 10);
+      options.onProgress?.("Fetching albums...", 10);
       const albums = await this.fetchAllAlbums(spotifyArtistId, options);
       result.totalAlbums = albums.length;
-      
+
       // Process albums in batches to get tracks
-      options.onProgress?.('Fetching tracks from albums...', 30);
+      options.onProgress?.("Fetching tracks from albums...", 30);
       const allTracks = await this.fetchAllTracksFromAlbums(albums, options);
-      
+
       // Filter and deduplicate tracks
-      options.onProgress?.('Filtering and deduplicating tracks...', 60);
-      const { studioTracks, liveTracksSkipped, duplicatesRemoved } = 
+      options.onProgress?.("Filtering and deduplicating tracks...", 60);
+      const { studioTracks, liveTracksSkipped, duplicatesRemoved } =
         await this.filterAndDeduplicateTracks(allTracks, options);
-      
+
       result.skippedLiveTracks = liveTracksSkipped;
       result.deduplicatedTracks = duplicatesRemoved;
       result.studioTracks = studioTracks.length;
-      
+
       // Store tracks in database
-      options.onProgress?.('Saving tracks to database...', 80);
-      const savedTracks = await this.saveTracksToDatabase(studioTracks, spotifyArtistId);
+      options.onProgress?.("Saving tracks to database...", 80);
+      const savedTracks = await this.saveTracksToDatabase(
+        studioTracks,
+        spotifyArtistId,
+      );
       result.totalSongs = savedTracks;
-      
+
       // Update artist catalog sync timestamp
       await this.updateArtistCatalogStatus(spotifyArtistId, result);
-      
-      options.onProgress?.('Catalog sync completed!', 100);
-      
+
+      options.onProgress?.("Catalog sync completed!", 100);
     } catch (error) {
-      console.error('Catalog sync failed:', error);
-      result.errors.push(error instanceof Error ? error.message : String(error));
+      console.error("Catalog sync failed:", error);
+      result.errors.push(
+        error instanceof Error ? error.message : String(error),
+      );
       throw error;
     } finally {
       result.syncDuration = Date.now() - startTime;
@@ -145,63 +149,71 @@ export class SpotifyCompleteCatalog {
    */
   private async fetchAllAlbums(
     artistId: string,
-    options: any
+    options: any,
   ): Promise<AlbumData[]> {
-    const albumTypes = ['album', 'single'];
+    const albumTypes = ["album", "single"];
     if (options.includeCompilations) {
-      albumTypes.push('compilation');
+      albumTypes.push("compilation");
     }
     if (options.includeAppearsOn) {
-      albumTypes.push('appears_on');
+      albumTypes.push("appears_on");
     }
 
     const allAlbums: AlbumData[] = [];
     const batchSize = 50; // Spotify max limit
-    
+
     for (const albumType of albumTypes) {
       let offset = 0;
       let hasMore = true;
-      
+
       while (hasMore) {
         try {
           const response = await this.spotifyClient.getArtistAlbums(artistId, {
             include_groups: albumType,
             limit: batchSize,
             offset,
-            market: 'US',
+            market: "US",
           });
-          
+
           if (response?.items && response.items.length > 0) {
-            allAlbums.push(...response.items.map(item => ({
-              ...item,
-              type: item.album_type || 'album',
-              releaseDate: item.release_date || '',
-              totalTracks: item.total_tracks || 0
-            } as AlbumData)));
+            allAlbums.push(
+              ...response.items.map(
+                (item: any) =>
+                  ({
+                    ...item,
+                    type: item.album_type || "album",
+                    releaseDate: item.release_date || "",
+                    totalTracks: item.total_tracks || 0,
+                  } as AlbumData),
+              ),
+            );
             offset += response.items.length;
             hasMore = response.items.length === batchSize;
           } else {
             hasMore = false;
           }
-          
+
           // Rate limiting
           await this.delay(100);
         } catch (error) {
-          console.warn(`Failed to fetch ${albumType} albums at offset ${offset}:`, error);
+          console.warn(
+            `Failed to fetch ${albumType} albums at offset ${offset}:`,
+            error,
+          );
           hasMore = false;
         }
       }
     }
-    
+
     // Remove duplicate albums by ID
     const uniqueAlbums = new Map<string, AlbumData>();
-    allAlbums.forEach(album => {
+    allAlbums.forEach((album) => {
       if (!uniqueAlbums.has(album.id)) {
         uniqueAlbums.set(album.id, album);
         this.processedAlbums.add(album.id);
       }
     });
-    
+
     return Array.from(uniqueAlbums.values());
   }
 
@@ -210,27 +222,33 @@ export class SpotifyCompleteCatalog {
    */
   private async fetchAllTracksFromAlbums(
     albums: AlbumData[],
-    options: any
+    options: any,
   ): Promise<TrackData[]> {
     const allTracks: TrackData[] = [];
     const batchSize = 10; // Process 10 albums at a time
-    
+
     // Create batches
     const batches: AlbumData[][] = [];
     for (let i = 0; i < albums.length; i += batchSize) {
       batches.push(albums.slice(i, i + batchSize));
     }
-    
+
     // Process each batch
     for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
       const batch = batches[batchIndex];
       const progress = 30 + (batchIndex / batches.length) * 30;
-      options.onProgress?.(`Processing albums ${batchIndex * batchSize + 1}-${Math.min((batchIndex + 1) * batchSize, albums.length)} of ${albums.length}...`, progress);
-      
+      options.onProgress?.(
+        `Processing albums ${batchIndex * batchSize + 1}-${Math.min(
+          (batchIndex + 1) * batchSize,
+          albums.length,
+        )} of ${albums.length}...`,
+        progress,
+      );
+
       const batchPromises = batch?.map(async (album) => {
         try {
           const tracks = await this.getAlbumTracks(album.id);
-          return tracks.map(track => ({
+          return tracks.map((track) => ({
             ...track,
             album: album,
           }));
@@ -239,16 +257,16 @@ export class SpotifyCompleteCatalog {
           return [];
         }
       });
-      
+
       const batchResults = await Promise.all(batchPromises || []);
       allTracks.push(...batchResults.flat());
-      
+
       // Rate limiting between batches
       if (batchIndex < batches.length - 1) {
         await this.delay(500);
       }
     }
-    
+
     return allTracks;
   }
 
@@ -260,15 +278,15 @@ export class SpotifyCompleteCatalog {
     let offset = 0;
     const limit = 50;
     let hasMore = true;
-    
+
     while (hasMore) {
       try {
-        const response = await this.spotifyClient.getAlbumTracks(albumId, {
+        const response = await this.spotifyClient.getArtistAlbums(albumId, {
           limit,
           offset,
-          market: 'US',
+          market: "US",
         });
-        
+
         if (response?.items && response.items.length > 0) {
           tracks.push(...response.items);
           offset += response.items.length;
@@ -281,7 +299,7 @@ export class SpotifyCompleteCatalog {
         hasMore = false;
       }
     }
-    
+
     return tracks;
   }
 
@@ -290,7 +308,7 @@ export class SpotifyCompleteCatalog {
    */
   private async filterAndDeduplicateTracks(
     tracks: TrackData[],
-    options: any
+    options: any,
   ): Promise<{
     studioTracks: TrackData[];
     liveTracksSkipped: number;
@@ -299,11 +317,11 @@ export class SpotifyCompleteCatalog {
     let liveTracksSkipped = 0;
     let duplicatesRemoved = 0;
     const trackMap = new Map<string, TrackData>();
-    
+
     for (const track of tracks) {
-      const trackName = track.name || '';
-      const albumName = track.album?.name || '';
-      
+      const trackName = track.name || "";
+      const albumName = track.album?.name || "";
+
       // Skip live tracks if requested
       if (options.skipLive !== false) {
         const isLive = this.isLiveTrack(trackName, albumName);
@@ -312,7 +330,7 @@ export class SpotifyCompleteCatalog {
           continue;
         }
       }
-      
+
       // Skip remixes and other versions if requested
       if (options.skipRemixes !== false) {
         const shouldSkip = this.shouldSkipTrack(trackName);
@@ -321,18 +339,18 @@ export class SpotifyCompleteCatalog {
           continue;
         }
       }
-      
+
       // Deduplicate by normalized name
       const normalizedName = this.normalizeTrackName(trackName);
-      
+
       if (trackMap.has(normalizedName)) {
         // Keep the version with higher popularity or from an album (not single)
         const existing = trackMap.get(normalizedName)!;
-        
-        const shouldReplace = 
+
+        const shouldReplace =
           track.popularity > existing.popularity ||
-          (track.album?.type === 'album' && existing.album?.type === 'single');
-        
+          (track.album?.type === "album" && existing.album?.type === "single");
+
         if (shouldReplace) {
           trackMap.set(normalizedName, track);
         }
@@ -341,7 +359,7 @@ export class SpotifyCompleteCatalog {
         trackMap.set(normalizedName, track);
       }
     }
-    
+
     return {
       studioTracks: Array.from(trackMap.values()),
       liveTracksSkipped,
@@ -354,22 +372,24 @@ export class SpotifyCompleteCatalog {
    */
   private isLiveTrack(trackName: string, albumName: string): boolean {
     const combinedText = `${trackName} ${albumName}`.toLowerCase();
-    
+
     // Check against live patterns
     for (const pattern of this.liveTrackPatterns) {
       if (pattern.test(combinedText)) {
         return true;
       }
     }
-    
+
     // Additional checks for common live album indicators
-    if (albumName.toLowerCase().includes('live at') ||
-        albumName.toLowerCase().includes('live from') ||
-        albumName.toLowerCase().includes('concert') ||
-        albumName.toLowerCase().includes('unplugged')) {
+    if (
+      albumName.toLowerCase().includes("live at") ||
+      albumName.toLowerCase().includes("live from") ||
+      albumName.toLowerCase().includes("concert") ||
+      albumName.toLowerCase().includes("unplugged")
+    ) {
       return true;
     }
-    
+
     return false;
   }
 
@@ -378,16 +398,16 @@ export class SpotifyCompleteCatalog {
    */
   private shouldSkipTrack(trackName: string): boolean {
     const name = trackName.toLowerCase();
-    
+
     for (const pattern of this.skipPatterns) {
       if (pattern.test(name)) {
         return true;
       }
     }
-    
+
     // Skip very short tracks (likely interludes/skits)
     // This would need duration info passed in
-    
+
     return false;
   }
 
@@ -397,10 +417,10 @@ export class SpotifyCompleteCatalog {
   private normalizeTrackName(name: string): string {
     return name
       .toLowerCase()
-      .replace(/\s*\([^)]*\)/g, '') // Remove parenthetical content
-      .replace(/\s*\[[^\]]*\]/g, '') // Remove bracketed content
-      .replace(/\s*-\s*.*/g, '') // Remove everything after dash
-      .replace(/[^a-z0-9]/g, '') // Remove special characters
+      .replace(/\s*\([^)]*\)/g, "") // Remove parenthetical content
+      .replace(/\s*\[[^\]]*\]/g, "") // Remove bracketed content
+      .replace(/\s*-\s*.*/g, "") // Remove everything after dash
+      .replace(/[^a-z0-9]/g, "") // Remove special characters
       .trim();
   }
 
@@ -409,48 +429,44 @@ export class SpotifyCompleteCatalog {
    */
   private async saveTracksToDatabase(
     tracks: TrackData[],
-    spotifyArtistId: string
+    spotifyArtistId: string,
   ): Promise<number> {
     if (tracks.length === 0) return 0;
-    
+
     // Get artist ID from database
     const [artist] = await db
       .select()
       .from(artists)
       .where(eq(artists.spotifyId, spotifyArtistId))
       .limit(1);
-    
+
     if (!artist) {
       throw new Error(`Artist not found in database: ${spotifyArtistId}`);
     }
-    
+
     // Prepare song records
-    const songRecords = tracks.map(track => ({
+    const songRecords = tracks.map((track) => ({
       spotifyId: track.id,
       name: track.name,
-      duration: track.duration || null,
+      durationMs: track.duration || null,
       explicit: track.explicit || false,
       popularity: track.popularity || 0,
       previewUrl: track.previewUrl || null,
-      spotifyUrl: `https://open.spotify.com/track/${track.id}`,
-      albumId: track.album?.id || null,
       albumName: track.album?.name || null,
-      albumArt: track.album?.images?.[0]?.url || null,
+      albumArtUrl: track.album?.images?.[0]?.url || null,
       releaseDate: track.album?.releaseDate || null,
-      artistIds: JSON.stringify(track.artists?.map(a => a.id) || []),
-      artistNames: JSON.stringify(track.artists?.map(a => a.name) || []),
+      artist: track.artists?.map((a) => a.name).join(", ") || "",
       trackNumber: track.trackNumber || null,
       discNumber: track.discNumber || null,
-      rawData: JSON.stringify(track),
     }));
-    
+
     // Batch insert songs
     const batchSize = 100;
     let totalInserted = 0;
-    
+
     for (let i = 0; i < songRecords.length; i += batchSize) {
       const batch = songRecords.slice(i, i + batchSize);
-      
+
       const insertedSongs = await db
         .insert(songs)
         .values(batch as any)
@@ -464,21 +480,21 @@ export class SpotifyCompleteCatalog {
           },
         })
         .returning({ id: songs.id, spotifyId: songs.spotifyId });
-      
+
       // Link songs to artist
-      const artistSongRecords = insertedSongs.map(song => ({
+      const artistSongRecords = insertedSongs.map((song) => ({
         artistId: artist.id,
         songId: song.id,
       }));
-      
+
       await db
         .insert(artistSongs)
         .values(artistSongRecords)
         .onConflictDoNothing();
-      
+
       totalInserted += insertedSongs.length;
     }
-    
+
     return totalInserted;
   }
 
@@ -487,7 +503,7 @@ export class SpotifyCompleteCatalog {
    */
   private async updateArtistCatalogStatus(
     spotifyArtistId: string,
-    result: CatalogSyncResult
+    result: CatalogSyncResult,
   ): Promise<void> {
     await db
       .update(artists)
@@ -512,7 +528,7 @@ export class SpotifyCompleteCatalog {
    * Utility delay function for rate limiting
    */
   private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   /**
@@ -533,7 +549,7 @@ export class SpotifyCompleteCatalog {
       .from(artists)
       .where(eq(artists.spotifyId, spotifyArtistId))
       .limit(1);
-    
+
     if (!artist) {
       return {
         synced: false,
@@ -542,11 +558,12 @@ export class SpotifyCompleteCatalog {
         needsUpdate: true,
       };
     }
-    
+
     const daysSinceSync = artist.songCatalogSyncedAt
-      ? (Date.now() - artist.songCatalogSyncedAt.getTime()) / (1000 * 60 * 60 * 24)
+      ? (Date.now() - artist.songCatalogSyncedAt.getTime()) /
+        (1000 * 60 * 60 * 24)
       : Infinity;
-    
+
     return {
       synced: !!artist.songCatalogSyncedAt,
       lastSyncedAt: artist.songCatalogSyncedAt,

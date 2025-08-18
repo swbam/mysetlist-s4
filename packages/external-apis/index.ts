@@ -24,13 +24,7 @@ export type {
   TicketmasterVenue,
 } from "./src/types/ticketmaster";
 
-export type {
-  SetlistFmSetlist,
-  SetlistFmArtist,
-  SetlistFmVenue,
-  SetlistFmSong,
-  SetlistFmSet,
-} from "./src/types/setlistfm";
+export type { SetlistFmSetlist } from "./src/types/setlistfm";
 
 import { SetlistFmClient } from "./src/clients/setlistfm";
 // Export instantiated clients as lazy getters to avoid initialization errors
@@ -75,12 +69,7 @@ export const setlistfm = new Proxy({} as SetlistFmClient, {
 });
 
 // Export sync services
-export { ArtistSyncService } from "./src/services/artist-sync";
-export { VenueSyncService } from "./src/services/venue-sync";
-export { ShowSyncService } from "./src/services/show-sync";
-export { SetlistSyncService } from "./src/services/setlist-sync";
-export { SyncScheduler } from "./src/services/sync-scheduler";
-export { ArtistImportOrchestrator } from "./src/services/artist-import-orchestrator";
-
-// Export commonly used types from sync services
-export type { SyncOptions } from "./src/services/sync-scheduler";
+export {
+  initiateImport,
+  runFullImport,
+} from "./src/services/orchestrators/ArtistImportOrchestrator";

@@ -1,10 +1,9 @@
-import { venues } from "@repo/database";
-import { SetlistFmClient, type SetlistFmVenue } from "../clients/setlistfm";
-import {
-  TicketmasterClient,
-  type TicketmasterVenue,
-} from "../clients/ticketmaster";
-import { db } from "../database";
+import { venues, db } from "@repo/database";
+import { SetlistFmClient } from "../clients/setlistfm";
+import { TicketmasterClient } from "../clients/ticketmaster";
+import { SetlistFmVenue } from "../types/setlistfm";
+import { TicketmasterVenue } from "../types/ticketmaster";
+import { eq } from "drizzle-orm";
 
 export class VenueSyncService {
   private ticketmasterClient: TicketmasterClient;
@@ -12,9 +11,11 @@ export class VenueSyncService {
 
   constructor() {
     this.ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env['TICKETMASTER_API_KEY'] || "",
+      apiKey: process.env["TICKETMASTER_API_KEY"] || "",
     });
-    this.setlistFmClient = new SetlistFmClient({});
+    this.setlistFmClient = new SetlistFmClient({
+      apiKey: process.env["SETLISTFM_API_KEY"] || "",
+    });
   }
 
   async syncVenueFromTicketmaster(
@@ -25,17 +26,11 @@ export class VenueSyncService {
       .values({
         name: ticketmasterVenue.name,
         slug: this.generateSlug(ticketmasterVenue.name),
-        ...(ticketmasterVenue.address?.line1 && {
-          address: ticketmasterVenue.address.line1,
-        }),
+        address: ticketmasterVenue.address?.line1,
         city: ticketmasterVenue.city?.name || "",
-        ...(ticketmasterVenue.state?.name && {
-          state: ticketmasterVenue.state.name,
-        }),
-        country: ticketmasterVenue.country?.name || "",
-        ...(ticketmasterVenue.postalCode && {
-          postalCode: ticketmasterVenue.postalCode,
-        }),
+        state: ticketmasterVenue.state?.stateCode,
+        country: ticketmasterVenue.country?.countryCode || "",
+        postalCode: ticketmasterVenue.postalCode,
         latitude: ticketmasterVenue.location?.latitude
           ? Number.parseFloat(ticketmasterVenue.location.latitude)
           : null,
@@ -43,38 +38,24 @@ export class VenueSyncService {
           ? Number.parseFloat(ticketmasterVenue.location.longitude)
           : null,
         timezone: ticketmasterVenue.timezone || "America/New_York",
-        ...(ticketmasterVenue.capacity && {
-          capacity: ticketmasterVenue.capacity,
-        }),
-        venueType: ticketmasterVenue.type,
-        ...(ticketmasterVenue.images?.[0]?.url && {
-          imageUrl: ticketmasterVenue.images[0].url,
-        }),
-        amenities: JSON.stringify(ticketmasterVenue.generalInfo || {}),
+        capacity: ticketmasterVenue.capacity,
+        tmVenueId: ticketmasterVenue.id,
       })
       .onConflictDoUpdate({
         target: venues.slug,
         set: {
-          ...(ticketmasterVenue.address?.line1 && {
-            address: ticketmasterVenue.address.line1,
-          }),
+          address: ticketmasterVenue.address?.line1,
           city: ticketmasterVenue.city?.name || "",
-          ...(ticketmasterVenue.state?.name && {
-            state: ticketmasterVenue.state.name,
-          }),
-          country: ticketmasterVenue.country?.name || "",
-          ...(ticketmasterVenue.postalCode && {
-            postalCode: ticketmasterVenue.postalCode,
-          }),
+          state: ticketmasterVenue.state?.stateCode,
+          country: ticketmasterVenue.country?.countryCode || "",
+          postalCode: ticketmasterVenue.postalCode,
           latitude: ticketmasterVenue.location?.latitude
             ? Number.parseFloat(ticketmasterVenue.location.latitude)
             : null,
           longitude: ticketmasterVenue.location?.longitude
             ? Number.parseFloat(ticketmasterVenue.location.longitude)
             : null,
-          ...(ticketmasterVenue.capacity && {
-            capacity: ticketmasterVenue.capacity,
-          }),
+          capacity: ticketmasterVenue.capacity,
           updatedAt: new Date(),
         },
       });
@@ -87,10 +68,10 @@ export class VenueSyncService {
         name: setlistFmVenue.name,
         slug: this.generateSlug(setlistFmVenue.name),
         city: setlistFmVenue.city.name,
-        state: setlistFmVenue.city.state ?? null,
-        country: setlistFmVenue.city.country.name,
-        latitude: setlistFmVenue.city.coords.lat,
-        longitude: setlistFmVenue.city.coords.long,
+        state: setlistFmVenue.city.stateCode ?? null,
+        country: setlistFmVenue.city.country.code,
+        latitude: setlistFmVenue.city.coords?.lat,
+        longitude: setlistFmVenue.city.coords?.long,
         timezone: this.getTimezone(
           setlistFmVenue.city.country.code,
           setlistFmVenue.city.stateCode,
@@ -100,10 +81,10 @@ export class VenueSyncService {
         target: venues.slug,
         set: {
           city: setlistFmVenue.city.name,
-          state: setlistFmVenue.city.state ?? null,
-          country: setlistFmVenue.city.country.name,
-          latitude: setlistFmVenue.city.coords.lat,
-          longitude: setlistFmVenue.city.coords.long,
+          state: setlistFmVenue.city.stateCode ?? null,
+          country: setlistFmVenue.city.country.code,
+          latitude: setlistFmVenue.city.coords?.lat,
+          longitude: setlistFmVenue.city.coords?.long,
           updatedAt: new Date(),
         },
       });
@@ -138,7 +119,7 @@ export class VenueSyncService {
    */
   private async syncGenericVenue(venueData: any): Promise<void> {
     const slug = this.generateSlug(venueData.name || "unknown-venue");
-    
+
     await db
       .insert(venues)
       .values({
@@ -148,10 +129,16 @@ export class VenueSyncService {
         state: venueData.state || null,
         country: venueData.country || "US",
         address: venueData.address || null,
-        latitude: venueData.latitude ? Number.parseFloat(venueData.latitude.toString()) : null,
-        longitude: venueData.longitude ? Number.parseFloat(venueData.longitude.toString()) : null,
+        latitude: venueData.latitude
+          ? Number.parseFloat(venueData.latitude.toString())
+          : null,
+        longitude: venueData.longitude
+          ? Number.parseFloat(venueData.longitude.toString())
+          : null,
         timezone: venueData.timezone || "America/New_York",
-        capacity: venueData.capacity ? Number.parseInt(venueData.capacity.toString()) : null,
+        capacity: venueData.capacity
+          ? Number.parseInt(venueData.capacity.toString())
+          : null,
         venueType: venueData.type || venueData.venueType || null,
         imageUrl: venueData.imageUrl || null,
         website: venueData.website || null,
@@ -189,15 +176,13 @@ export class VenueSyncService {
     }
 
     // Sync from Setlist.fm
-    const setlistFmResult = await this.setlistFmClient.searchVenues({
+    const setlistFmResult = await this.setlistFmClient.searchSetlists({
       cityName: city,
-      ...(stateCode && { stateCode }),
-      countryCode,
     });
 
-    if (setlistFmResult.venue) {
-      for (const venue of setlistFmResult.venue) {
-        await this.syncVenueFromSetlistFm(venue);
+    if (setlistFmResult.setlist) {
+      for (const setlist of setlistFmResult.setlist) {
+        await this.syncVenueFromSetlistFm(setlist.venue);
       }
     }
   }

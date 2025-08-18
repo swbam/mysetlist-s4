@@ -1,12 +1,11 @@
 import { artists, showArtists, shows, venues } from "@repo/database";
-import { SetlistFmClient, type SetlistFmSetlist } from "../clients/setlistfm";
+import { SetlistFmClient } from "../clients/setlistfm";
 import { SpotifyClient } from "../clients/spotify";
-import {
-  TicketmasterClient,
-  type TicketmasterEvent,
-} from "../clients/ticketmaster";
-import { and, db, eq } from "../database";
+import { TicketmasterClient } from "../clients/ticketmaster";
+import { and, db, eq } from "@repo/database";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
+import { TicketmasterEvent } from "../types/ticketmaster";
+import { SetlistFmSetlist } from "../types/setlistfm";
 import { VenueSyncService } from "./venue-sync";
 import { SetlistSyncService } from "./setlist-sync";
 
@@ -20,10 +19,10 @@ export class ShowSyncService {
 
   constructor() {
     this.ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env['TICKETMASTER_API_KEY'] || "",
+      apiKey: process.env["TICKETMASTER_API_KEY"] || "",
     });
     this.setlistFmClient = new SetlistFmClient({
-      apiKey: process.env['SETLISTFM_API_KEY'] || "",
+      apiKey: process.env["SETLISTFM_API_KEY"] || "",
     });
     this.spotifyClient = new SpotifyClient({}); // SpotifyClient reads credentials from env in authenticate()
     this.venueSyncService = new VenueSyncService();
@@ -37,7 +36,9 @@ export class ShowSyncService {
     });
   }
 
-  async syncShowFromTicketmaster(event: TicketmasterEvent): Promise<{ isNew: boolean; isUpdated: boolean }> {
+  async syncShowFromTicketmaster(
+    event: TicketmasterEvent,
+  ): Promise<{ isNew: boolean; isUpdated: boolean }> {
     // Find or create venue using VenueSyncService
     let venueId: string | null = null;
     if (event._embedded?.venues?.[0]) {
@@ -103,7 +104,9 @@ export class ShowSyncService {
         );
 
         if (!searchResult) {
-          console.warn(`No Spotify search result for attraction: ${attraction.name}`);
+          console.warn(
+            `No Spotify search result for attraction: ${attraction.name}`,
+          );
           // Continue without artist data - still create the show
         } else if (searchResult.artists.items.length > 0) {
           const spotifyArtist = searchResult.artists.items[0];
@@ -175,13 +178,18 @@ export class ShowSyncService {
           console.log(`Created placeholder artist with ID: ${artistId}`);
         }
       } catch (error) {
-        console.error(`Failed to create placeholder artist for ${attraction.name}:`, error);
+        console.error(
+          `Failed to create placeholder artist for ${attraction.name}:`,
+          error,
+        );
       }
     }
 
     // If we STILL don't have an artist, skip this show
     if (!artistId) {
-      console.warn(`Skipping show "${event.name}" - no artist found or created`);
+      console.warn(
+        `Skipping show "${event.name}" - no artist found or created`,
+      );
       return { isNew: false, isUpdated: false };
     }
 
@@ -191,7 +199,7 @@ export class ShowSyncService {
       .from(shows)
       .where(eq(shows.tmEventId, event.id))
       .limit(1);
-    
+
     const showExisted = existingShowCheck.length > 0;
 
     // Create or update show
@@ -304,23 +312,29 @@ export class ShowSyncService {
       try {
         const showDate = new Date(event.dates.start.localDate);
         const isUpcoming = showDate > new Date();
-        
+
         if (isUpcoming) {
           console.log(`Creating initial setlist for new show: ${event.name}`);
-          const setlistResult = await this.setlistSyncService.ensureInitialSetlists(show.id, {
-            songCount: 5,
-            weightByPopularity: true,
-            excludeLive: true,
-          });
-          
+          const setlistResult =
+            await this.setlistSyncService.ensureInitialSetlists(show.id, {
+              songCount: 5,
+              weightByPopularity: true,
+              excludeLive: true,
+            });
+
           if (setlistResult.created) {
-            console.log(`Created initial setlist with ${setlistResult.songCount} songs (skipped ${setlistResult.skippedLive} live tracks)`);
+            console.log(
+              `Created initial setlist with ${setlistResult.songCount} songs (skipped ${setlistResult.skippedLive} live tracks)`,
+            );
           } else {
             console.log("Initial setlist already exists for this show");
           }
         }
       } catch (error) {
-        console.error(`Failed to create initial setlist for show ${show.id}:`, error);
+        console.error(
+          `Failed to create initial setlist for show ${show.id}:`,
+          error,
+        );
         // Don't fail the entire show sync if setlist creation fails
       }
     }
@@ -390,7 +404,6 @@ export class ShowSyncService {
         this.ticketmasterClient.searchEvents({
           ...options,
           size: 200,
-          sort: "date,asc",
         }),
       {
         service: "ShowSyncService",
@@ -434,7 +447,12 @@ export class ShowSyncService {
 
   async syncArtistShows(
     artistDbId: string,
-  ): Promise<{ upcomingShows: number; pastShows: number; newShows: number; updatedShows: number }> {
+  ): Promise<{
+    upcomingShows: number;
+    pastShows: number;
+    newShows: number;
+    updatedShows: number;
+  }> {
     // Get artist info from database
     const [artist] = await db
       .select()
@@ -466,9 +484,8 @@ export class ShowSyncService {
         const artistEventsResult = await this.errorHandler.withRetry(
           () =>
             this.ticketmasterClient.searchEvents({
-              attractionId: artist.tmAttractionId!,
+              keyword: artist.tmAttractionId!,
               size: 200,
-              sort: "date,asc",
             }),
           {
             service: "ShowSyncService",
@@ -497,7 +514,6 @@ export class ShowSyncService {
           this.ticketmasterClient.searchEvents({
             keyword: artist.name,
             size: 200,
-            sort: "date,asc",
             classificationName: "Music", // Focus on music events
           }),
         {
@@ -605,13 +621,15 @@ export class ShowSyncService {
   }
 
   async syncHistoricalSetlists(artistName: string): Promise<void> {
-    const searchResult = await this.setlistFmClient.searchArtists(artistName);
+    const searchResult = await this.setlistFmClient.searchSetlists({
+      artistName,
+    });
 
-    if (searchResult.artist.length === 0) {
+    if (searchResult.setlist.length === 0) {
       return;
     }
 
-    const artist = searchResult.artist[0];
+    const artist = searchResult.setlist[0].artist;
     if (!artist) {
       return;
     }
