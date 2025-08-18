@@ -18,8 +18,21 @@ const getSupabaseConfig = () => {
   }
 
   if (!supabaseUrl || !supabaseAnonKey) {
+    const missingVars = [];
+    if (!supabaseUrl) missingVars.push("NEXT_PUBLIC_SUPABASE_URL");
+    if (!supabaseAnonKey) missingVars.push("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+    
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      `🔴 Missing required Supabase environment variables: ${missingVars.join(", ")}. ` +
+      `Please check your .env.local file and ensure these are set to valid Supabase values.`
+    );
+  }
+  
+  // Check for placeholder values
+  if (supabaseUrl.includes("your_supabase") || supabaseAnonKey.includes("your_supabase")) {
+    throw new Error(
+      "🔴 Supabase environment variables contain placeholder values. " +
+      "Please replace 'your_supabase_project_url' and 'your_supabase_anon_key' with actual values from your Supabase project."
     );
   }
 
