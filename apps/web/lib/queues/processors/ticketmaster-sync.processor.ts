@@ -86,7 +86,6 @@ async function syncShows(
   
   await job.updateProgress(30);
   
-<<<<<<< HEAD
   const size = options?.maxShows || 200;
   const includePast = options?.includePast || false;
 
@@ -100,17 +99,6 @@ async function syncShows(
   const showsData = page1._embedded?.events ?? [];
 
   if (showsData.length === 0) {
-=======
-  const result = await ticketmaster.searchEvents({
-    attractionId: tmAttractionId,
-    size: options?.maxShows || 200,
-    classificationName: "Music",
-  });
-  
-  const events = result._embedded?.events || [];
-  
-  if (!events || events.length === 0) {
->>>>>>> 69298ab10d2daa951cf0a99e0314185dbc0f1de3
     await job.log("No shows found for artist");
     return {
       success: true,
@@ -123,10 +111,6 @@ async function syncShows(
   
   await job.updateProgress(50);
   
-<<<<<<< HEAD
-=======
-  const showsData = events;
->>>>>>> 69298ab10d2daa951cf0a99e0314185dbc0f1de3
   const now = new Date();
   
   // Save shows to database
@@ -135,17 +119,10 @@ async function syncShows(
     headlinerArtistId: artistId,
     name: show.name,
     date: new Date(show.dates?.start?.dateTime || show.dates?.start?.localDate),
-<<<<<<< HEAD
     timezone: (show as any).dates?.timezone || null,
     status: (show as any).dates?.status?.code || 'upcoming',
     minPrice: (show as any).priceRanges?.[0]?.min || null,
     maxPrice: (show as any).priceRanges?.[0]?.max || null,
-=======
-    timezone: show.dates?.timezone || null,
-    status: show.dates?.status?.code || 'scheduled',
-    minPrice: show.priceRanges?.[0]?.min || null,
-    maxPrice: show.priceRanges?.[0]?.max || null,
->>>>>>> 69298ab10d2daa951cf0a99e0314185dbc0f1de3
     ticketUrl: show.url || null,
     imageUrl: show.images?.[0]?.url || null,
     smallImageUrl: show.images?.[2]?.url || null,
@@ -278,34 +255,20 @@ async function syncVenues(artistId: string, job: Job) {
           rawData: JSON.stringify(venueData),
         } as any)
         .returning();
-      
-<<<<<<< HEAD
-      const newVenue = inserted?.[0];
-      if (newVenue?.id) {
-        created++;
-        // Link venue to shows
-        await db.execute(sql`
-          UPDATE ${shows}
-          SET venue_id = ${newVenue.id}
-          WHERE raw_data::jsonb -> '_embedded' -> 'venues' -> 0 ->> 'id' = ${venueData.id}
-            AND venue_id IS NULL
-        `);
-      }
-=======
-      if (!newVenue) {
-        throw new Error(`Failed to create venue: ${venueData.name}`);
-      }
-      
-      created++;
-      
-      // Link venue to shows
-      await db.execute(sql`
-        UPDATE ${shows}
-        SET venue_id = ${newVenue.id}
-        WHERE raw_data::jsonb -> '_embedded' -> 'venues' -> 0 ->> 'id' = ${venueData.id}
-          AND venue_id IS NULL
-      `);
->>>>>>> 69298ab10d2daa951cf0a99e0314185dbc0f1de3
+        
+        const newVenue = inserted?.[0];
+        if (newVenue?.id) {
+          created++;
+          // Link venue to shows
+          await db.execute(sql`
+            UPDATE ${shows}
+            SET venue_id = ${newVenue.id}
+            WHERE raw_data::jsonb -> '_embedded' -> 'venues' -> 0 ->> 'id' = ${venueData.id}
+              AND venue_id IS NULL
+          `);
+        } else {
+          throw new Error(`Failed to create venue: ${venueData.name}`);
+        }
     } else {
       updated++;
     }

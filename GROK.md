@@ -24,7 +24,6 @@ This document provides comprehensive documentation for TheSet's production-grade
 
 **TheSet** utilizes **Redis Cloud** for maximum reliability and performance:
 
-<<<<<<< HEAD
 * **Completeness:** All Ticketmaster pages ingested (pagination).
 * **Correctness:** **ISRC dedupe** + **liveness filter**; **no live tracks** in DB.
 * **Idempotency:** Re-running import never duplicates rows.
@@ -814,197 +813,6 @@ export class RedisCache {
   async get<T>(key: string) { try { const v = await this.client.get(key); return v ? JSON.parse(v) : null; } catch { return null; } }
   async set<T>(key: string, value: T, ttl?: number) { try { const s = JSON.stringify(value); return ttl ? this.client.setex(key, ttl, s) : this.client.set(key, s); } catch {} }
   async del(key: string) { try { await this.client.del(key); } catch {} }
-=======
-```typescript
-// Production Redis Configuration
-export const redisConfig = {
-  host: 'redis-15718.c44.us-east-1-2.ec2.redns.redis-cloud.com',
-  port: 15718,
-  password: '[SECURE]',
-  maxRetriesPerRequest: null,
-  enableReadyCheck: false,
-  retryStrategy: (times: number) => Math.min(times * 50, 2000),
-};
-```
-
-### **Multi-Layer Caching System**
-- **L1 Cache**: Redis primary with 99.9% uptime
-- **L2 Cache**: In-memory LRU fallback for network interruptions
-- **TTL Strategy**: Dynamic expiration based on data volatility
-- **Cache Invalidation**: Smart tag-based invalidation on data updates
-
----
-
-## BullMQ Queue Architecture
-
-### **14 Specialized Queues for Ultimate Performance**
-
-| Queue Name | Purpose | Concurrency | Rate Limit | Priority |
-|------------|---------|-------------|------------|----------|
-| `ARTIST_IMPORT` | Phase 1 artist creation (< 3s) | 5 | None | CRITICAL |
-| `ARTIST_QUICK_SYNC` | Fast profile updates | 10 | None | HIGH |
-| `SPOTIFY_SYNC` | Artist profile synchronization | 3 | 30/sec | HIGH |
-| `SPOTIFY_CATALOG` | Deep discography import | 2 | 20/sec | LOW |
-| `TICKETMASTER_SYNC` | Shows and venues data | 3 | 20/sec | NORMAL |
-| `VENUE_SYNC` | Venue details enhancement | 10 | None | NORMAL |
-| `SETLIST_SYNC` | Historical setlists | 2 | 10/sec | LOW |
-| `IMAGE_PROCESSING` | Artist/venue images | 5 | None | BACKGROUND |
-| `TRENDING_CALC` | Real-time trending scores | 1 | None | BACKGROUND |
-| `CACHE_WARM` | Proactive cache warming | 5 | None | BACKGROUND |
-| `SCHEDULED_SYNC` | Recurring data refresh | 3 | None | NORMAL |
-| `CLEANUP` | Job maintenance | 1 | None | BACKGROUND |
-| `PROGRESS_UPDATE` | SSE progress events | 20 | None | HIGH |
-| `WEBHOOK` | External notifications | 5 | None | NORMAL |
-
----
-
-## 📊 Performance SLOs & Metrics
-
-| Area | SLO (P99) | How we measure |
-|------|-----------|----------------|
-| Import kickoff → artist visible | < **200 ms** | API response time |
-| Shows & venues phase (1k events) | < **30 s** | Phase completion timer |
-| Catalog phase (2k+ tracks) | < **45 s** | Full sync with audio features |
-| Search API response | < **300 ms** | API timing logs |
-| Page load to skeleton | < **800 ms** | Core Web Vitals |
-| Import failure rate | < **1%** | Success/failure ratio |
-
-### **Quality Standards**
-- ✅ **Completeness**: All external API pages fully ingested
-- ✅ **Correctness**: ISRC deduplication + liveness filtering (no live tracks)
-- ✅ **Idempotency**: Multiple import runs never create duplicates
-- ✅ **Observability**: Real-time SSE progress + persistent status tracking
-
----
-
-# 🚀 The Genius Multi-Phase Import System
-
-## Phase 1: Lightning-Fast Artist Creation (< 3 seconds)
-
-```typescript
-// Artist Import Processor - Phase 1
-export async function processArtistImport(job: Job<ArtistImportJobData>) {
-  const { tmAttractionId, userId, adminImport } = job.data;
-  
-  // 1. Quick Ticketmaster lookup (2s timeout)
-  const tmArtist = await withTimeout(
-    ticketmaster.getAttraction(tmAttractionId),
-    2000,
-    "Ticketmaster timeout"
-  );
-  
-  // 2. Fast Spotify search (1s timeout)
-  const spotifyData = await withTimeout(
-    spotify.searchArtists(tmArtist.name, 1),
-    1000,
-    "Spotify timeout"
-  );
-  
-  // 3. Create artist record immediately
-  const artist = await db.insert(artists).values({
-    tmAttractionId,
-    spotifyId: spotifyData?.id,
-    name: spotifyData?.name || tmArtist.name,
-    slug: generateSlug(spotifyData?.name || tmArtist.name),
-    imageUrl: spotifyData?.images?.[0]?.url,
-    // ... other fields
-  }).returning();
-  
-  // 4. Queue background jobs for parallel processing
-  await queueFollowUpJobs(artist.id, artist.spotifyId, tmAttractionId);
-  
-  return { artistId: artist.id, slug: artist.slug, phase1Duration };
-}
-```
-
-## Phase 2: Background Data Enrichment
-
-### **Parallel Job Orchestration**
-
-```typescript
-async function queueFollowUpJobs(artistId, spotifyId, tmAttractionId) {
-  const jobs = [];
-  
-  // Spotify profile sync (immediate)
-  if (spotifyId) {
-    jobs.push({
-      queue: QueueName.SPOTIFY_SYNC,
-      data: { artistId, spotifyId, syncType: 'profile' },
-      opts: { priority: Priority.HIGH }
-    });
-    
-    // Deep catalog sync (delayed, lower priority)
-    jobs.push({
-      queue: QueueName.SPOTIFY_CATALOG,
-      data: { artistId, spotifyId, deep: true },
-      opts: { priority: Priority.LOW, delay: 5000 }
-    });
-  }
-  
-  // Ticketmaster shows sync
-  jobs.push({
-    queue: QueueName.TICKETMASTER_SYNC,
-    data: { artistId, tmAttractionId, syncType: 'shows' },
-    opts: { priority: Priority.NORMAL }
-  });
-  
-  // Venue enhancement (after shows)
-  jobs.push({
-    queue: QueueName.VENUE_SYNC,
-    data: { artistId },
-    opts: { priority: Priority.NORMAL, delay: 10000 }
-  });
-  
-  // Add all jobs in bulk
-  await queueManager.addBulkJobs(jobs);
-}
-```
-
----
-
-# 🎵 Studio-Only Catalog System: The Ultimate Spotify Integration
-
-## Smart Track Filtering Pipeline
-
-Our Spotify integration employs multiple layers of filtering to ensure **zero live tracks** enter the database:
-
-### **Layer 1: Album-Level Filtering**
-```typescript
-const albums = await listAllAlbums(spotifyId);
-const studioAlbums = albums.filter(album => 
-  !isLikelyLiveAlbum(album.name) // "Live at", "Unplugged", etc.
-);
-```
-
-### **Layer 2: Track Title Filtering** 
-```typescript
-const tracks = await getAllTracks(studioAlbums);
-const filteredTracks = tracks.filter(track =>
-  !isLikelyLiveTitle(track.name) // "(Live)", "- Live", etc.
-);
-```
-
-### **Layer 3: Audio Features Analysis**
-```typescript
-const features = await getAudioFeatures(trackIds);
-const studioTracks = tracks.filter((track, i) => {
-  const feature = features[i];
-  return feature && feature.liveness <= 0.8; // < 80% liveness threshold
-});
-```
-
-### **Layer 4: ISRC Deduplication**
-```typescript
-const byKey = new Map();
-for (const track of studioTracks) {
-  const key = track.external_ids?.isrc || 
-    `t:${track.name.toLowerCase()}:d:${Math.round(track.duration_ms/1000)}`;
-  
-  const existing = byKey.get(key);
-  if (!existing || track.popularity > existing.popularity) {
-    byKey.set(key, track); // Keep highest popularity version
-  }
->>>>>>> 69298ab10d2daa951cf0a99e0314185dbc0f1de3
 }
 ```
 
@@ -1405,7 +1213,6 @@ export async function checkWorkerHealth(): Promise<{
 
 ## Queue Statistics
 
-<<<<<<< HEAD
 ```env
 # Redis (one of the following)
 REDIS_URL=rediss://:<password>@<host>:<port>   # preferred single URL
@@ -1444,28 +1251,6 @@ QUEUE_STALLED_INTERVAL=30000
 * **Persistence** across server restarts
 * **Admin UI** via Bull Board integration
 
-=======
-```typescript
-export async function getQueueStats() {
-  const stats = [];
-  
-  for (const queueName of Object.values(QueueName)) {
-    const counts = await queueManager.getJobCounts(queueName);
-    stats.push({
-      queue: queueName,
-      waiting: counts.waiting,
-      active: counts.active,
-      completed: counts.completed,
-      failed: counts.failed,
-      delayed: counts.delayed,
-    });
-  }
-  
-  return stats;
-}
-```
-
->>>>>>> 69298ab10d2daa951cf0a99e0314185dbc0f1de3
 ---
 
 # 🚨 Error Handling & Recovery

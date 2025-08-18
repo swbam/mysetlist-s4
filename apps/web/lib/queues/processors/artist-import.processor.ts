@@ -202,11 +202,8 @@ async function queueFollowUpJobs(
     queue: QueueName;
     name: string;
     data: any;
-<<<<<<< HEAD
     opts?: any;
-=======
-    opts: any;
->>>>>>> 69298ab10d2daa951cf0a99e0314185dbc0f1de3
+
   }> = [];
   
   // Queue Spotify sync if we have Spotify ID
