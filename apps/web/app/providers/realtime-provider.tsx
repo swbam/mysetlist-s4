@@ -63,12 +63,19 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
     try {
       const supabase = createClient();
 
-      // Check if we're using placeholder Supabase config
+      // Check if we have valid Supabase config
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-      if (url.includes("placeholder") || !url) {
-        console.warn("Realtime disabled: Invalid Supabase configuration");
-        setConnectionStatus("disabled");
-        setIsRealtimeEnabled(false);
+      const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+      
+      if (!url || !anonKey || url.includes("your_supabase") || anonKey.includes("your_supabase")) {
+        console.error("🔴 Real-time disabled: Missing or invalid Supabase configuration", {
+          hasUrl: !!url,
+          hasKey: !!anonKey,
+          urlIsPlaceholder: url.includes("your_supabase"),
+          keyIsPlaceholder: anonKey.includes("your_supabase")
+        });
+        setConnectionStatus("error");
+        setError(new Error("Missing Supabase configuration - check environment variables"));
         return undefined;
       }
 
@@ -90,11 +97,9 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
       // Set a timeout for the connection attempt
       connectionTimeout = setTimeout(() => {
         if (connectionStatus === "connecting") {
-          console.warn(
-            "Realtime connection timeout - continuing without realtime",
-          );
-          setConnectionStatus("disconnected");
-          setIsRealtimeEnabled(false);
+          console.error("🔴 Real-time connection timeout after 10 seconds");
+          setConnectionStatus("error");
+          setError(new Error("Connection timeout - check network and Supabase status"));
           try {
             supabase.removeChannel(presenceChannel);
           } catch (err) {
@@ -106,31 +111,37 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
       presenceChannel
         .on("presence", { event: "sync" }, () => {
           clearTimeout(connectionTimeout);
+          console.log("🟢 Real-time connection established successfully");
           setConnectionStatus("connected");
           setRetryCount(0);
         })
         .subscribe((status) => {
           if (status === "SUBSCRIBED") {
             clearTimeout(connectionTimeout);
+            console.log("🟢 Real-time subscription active");
             setConnectionStatus("connected");
             setRetryCount(0);
           } else if (status === "CHANNEL_ERROR") {
             clearTimeout(connectionTimeout);
+            console.error("🔴 Real-time channel error", status);
             setConnectionStatus("error");
             setError(new Error("Failed to connect to realtime channel"));
 
             // Disable realtime after 3 retries
-            if (retryCount >= 3) {
+            if (retryCount >= 2) {
+              console.error("🔴 Too many retry attempts, disabling real-time");
               setIsRealtimeEnabled(false);
               setConnectionStatus("disabled");
             }
           } else if (status === "CLOSED") {
             clearTimeout(connectionTimeout);
+            console.warn("🟡 Real-time connection closed");
             setConnectionStatus("disconnected");
           } else if (status === "TIMED_OUT") {
             clearTimeout(connectionTimeout);
-            setConnectionStatus("disconnected");
-            setIsRealtimeEnabled(false);
+            console.error("🔴 Real-time connection timed out");
+            setConnectionStatus("error");
+            setError(new Error("Connection timed out"));
           }
         });
 
@@ -143,14 +154,14 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
         }
       };
     } catch (err) {
-      console.error("Error in RealtimeProvider:", err);
+      console.error("🔴 Critical error in RealtimeProvider:", err);
       setConnectionStatus("error");
-      setError(
-        err instanceof Error ? err : new Error("Unknown error occurred"),
-      );
+      const error = err instanceof Error ? err : new Error("Unknown real-time error occurred");
+      setError(error);
 
       // Disable realtime on critical errors
-      if (err instanceof Error && err.message.includes("WebSocket")) {
+      if (error.message.includes("WebSocket") || error.message.includes("Missing")) {
+        console.error("🔴 Disabling real-time due to critical error:", error.message);
         setIsRealtimeEnabled(false);
         setConnectionStatus("disabled");
       }
@@ -167,8 +178,12 @@ export function RealtimeProvider({ children }: RealtimeProviderProps) {
 
   const retry = useCallback(() => {
     if (retryCount < 3) {
+      console.log(`🔄 Retrying real-time connection (attempt ${retryCount + 1}/3)`);
       setRetryCount((prev) => prev + 1);
       setIsRealtimeEnabled(true);
+      setError(undefined);
+    } else {
+      console.error("🔴 Maximum retry attempts reached");
     }
   }, [retryCount]);
 

@@ -7,10 +7,10 @@ export const env = createEnv({
     DATABASE_URL: z.string().url(),
     DIRECT_URL: z.string().url().optional(),
 
-    // Supabase
-    SUPABASE_URL: z.string().url().optional(),
-    SUPABASE_ANON_KEY: z.string().optional(),
-    SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+    // Supabase (required for real-time functionality)
+    SUPABASE_URL: z.string().url(),
+    SUPABASE_ANON_KEY: z.string().min(1),
+    SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
     SUPABASE_JWT_SECRET: z.string().optional(),
 
     // External APIs
@@ -45,8 +45,8 @@ export const env = createEnv({
     NEXT_PUBLIC_WEB_URL: z.string().url().optional(),
     NEXT_PUBLIC_API_URL: z.string().url().optional(),
     NEXT_PUBLIC_DOCS_URL: z.string().url().optional(),
-    NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
+    NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
     NEXT_PUBLIC_SPOTIFY_CLIENT_ID: z.string().optional(),
     NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
     NEXT_PUBLIC_POSTHOG_HOST: z.string().url().optional(),
