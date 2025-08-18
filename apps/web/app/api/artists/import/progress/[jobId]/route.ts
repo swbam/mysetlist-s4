@@ -1,18 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getImportStatus } from "~/lib/import-status";
 import { Redis } from "ioredis";
+import { createRedisClient } from "~/lib/queues/redis-config";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
 
-// Initialize Redis client with correct credentials
-const redis = new Redis({
-  username: 'default',
-  password: 'D0ph9gV9LPCbAq271oij61iRaoqnK3o6',
-  host: 'redis-15718.c44.us-east-1-2.ec2.redns.redis-cloud.com',
-  port: 15718,
-  retryStrategy: (times) => Math.min(times * 50, 2000),
-});
+// Lazy-init Redis client via centralized config to avoid hardcoded secrets
+let _redis: Redis | null = null;
+function getRedis(): Redis {
+  if (!_redis) {
+    _redis = createRedisClient();
+  }
+  return _redis;
+}
 
 export async function GET(
   request: NextRequest,
@@ -36,12 +37,7 @@ export async function GET(
     const stream = new ReadableStream({
       async start(controller) {
         // Create a Redis subscriber for real-time updates
-        const subscriber = new Redis({
-          username: 'default',
-          password: 'D0ph9gV9LPCbAq271oij61iRaoqnK3o6',
-          host: 'redis-15718.c44.us-east-1-2.ec2.redns.redis-cloud.com',
-          port: 15718,
-        });
+        const subscriber = createRedisClient();
         
         const channelName = `import:progress:${jobId}`;
         let heartbeatInterval: NodeJS.Timeout;
@@ -57,7 +53,7 @@ export async function GET(
           );
           
           // Check for cached progress immediately
-          const cachedProgress = await redis.get(`import:status:${jobId}`);
+          const cachedProgress = await getRedis().get(`import:status:${jobId}`);
           if (cachedProgress) {
             const progress = JSON.parse(cachedProgress);
             controller.enqueue(
@@ -118,7 +114,7 @@ export async function GET(
           // Fallback: Check cache every 2 seconds in case pub/sub misses
           checkCacheInterval = setInterval(async () => {
             try {
-              const cached = await redis.get(`import:status:${jobId}`);
+              const cached = await getRedis().get(`import:status:${jobId}`);
               if (cached) {
                 const progress = JSON.parse(cached);
                 if (progress.stage === "completed" || progress.stage === "failed") {
