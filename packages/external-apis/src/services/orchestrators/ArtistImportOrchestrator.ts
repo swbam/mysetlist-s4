@@ -24,39 +24,55 @@ export async function initiateImport(tmAttractionId: string) {
 }
 
 export async function runFullImport(artistId: string) {
-  try {
-    await report(artistId, "importing-shows", 25, "Syncing shows & venues…");
-    const artist = await db.query.artists.findFirst({
-      where: eq(artists.id, artistId),
-    });
-    if (!artist || !artist.tmAttractionId) {
-      throw new Error("Artist or Ticketmaster attraction ID not found");
-    }
-    const ticketmasterIngest = new TicketmasterIngestService();
-    await ticketmasterIngest.ingestShowsAndVenues(
-      artistId,
-      artist.tmAttractionId,
-    );
-    await db
-      .update(artists)
-      .set({ showsSyncedAt: new Date() })
-      .where(eq(artists.id, artistId));
-    await report(artistId, "importing-shows", 70, "Shows & venues updated.");
+  let artist = await db.query.artists.findFirst({
+    where: eq(artists.id, artistId),
+  });
 
-    await report(
-      artistId,
-      "importing-songs",
-      75,
-      "Importing studio-only catalog…",
-    );
-    const updatedArtist = await db.query.artists.findFirst({
+  if (!artist) {
+    await report(artistId, "failed", 0, "Artist not found.");
+    return;
+  }
+
+  try {
+    // Phase 2: Ingest shows and venues from Ticketmaster
+    if (artist.tmAttractionId) {
+      await report(artistId, "importing-shows", 25, "Syncing shows & venues…");
+      const ticketmasterIngest = new TicketmasterIngestService();
+      await ticketmasterIngest.ingestShowsAndVenues(
+        artistId,
+        artist.tmAttractionId,
+      );
+      await db
+        .update(artists)
+        .set({ showsSyncedAt: new Date() })
+        .where(eq(artists.id, artistId));
+      await report(artistId, "importing-shows", 70, "Shows & venues updated.");
+    } else {
+      await report(
+        artistId,
+        "importing-shows",
+        70,
+        "Skipped show import (no Ticketmaster ID).",
+      );
+    }
+
+    // Re-fetch artist to get any updates from show ingest
+    artist = await db.query.artists.findFirst({
       where: eq(artists.id, artistId),
     });
-    if (updatedArtist?.spotifyId) {
+
+    // Phase 3: Ingest studio catalog from Spotify
+    if (artist?.spotifyId) {
+      await report(
+        artistId,
+        "importing-songs",
+        75,
+        "Importing studio-only catalog…",
+      );
       const spotifyCatalogIngest = new SpotifyCatalogIngestService();
       await spotifyCatalogIngest.ingestStudioCatalog(
         artistId,
-        updatedArtist.spotifyId,
+        artist.spotifyId,
       );
       await db
         .update(artists)
@@ -72,12 +88,14 @@ export async function runFullImport(artistId: string) {
       );
     }
 
+    // Phase 4: Finalize import
     await db
       .update(artists)
-      .set({ importStatus: "complete" })
+      .set({ importStatus: "complete", lastFullSyncAt: new Date() })
       .where(eq(artists.id, artistId));
     await report(artistId, "completed", 100, "Import complete!");
   } catch (e: any) {
+    console.error(`Import failed for artist ${artistId}:`, e);
     await db
       .update(artists)
       .set({ importStatus: "failed" })
