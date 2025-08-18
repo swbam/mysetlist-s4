@@ -7,7 +7,12 @@ import { TicketmasterClient, SpotifyClient } from "@repo/external-apis";
 import { updateImportStatus } from "../../import-status";
 import { v4 as uuidv4 } from "uuid";
 
-const cache = new RedisCache();
+// Lazy cache instance to avoid connecting during import-time
+let _cache: RedisCache | null = null;
+function getCache() {
+  if (!_cache) _cache = new RedisCache();
+  return _cache;
+}
 
 export interface ArtistImportJobData {
   tmAttractionId: string;
@@ -44,7 +49,7 @@ export async function processArtistImport(job: Job<ArtistImportJobData>): Promis
     
     // Check cache first
     const cacheKey = `artist:import:${tmAttractionId}`;
-    const cachedResult = await cache.get<ArtistImportResult>(cacheKey);
+    const cachedResult = await getCache().get<ArtistImportResult>(cacheKey);
     if (cachedResult && !adminImport) {
       await job.updateProgress(100);
       return { ...cachedResult, cached: true };
@@ -163,7 +168,7 @@ export async function processArtistImport(job: Job<ArtistImportJobData>): Promis
       followUpJobs,
     };
     
-    await cache.set(cacheKey, result, 300); // Cache for 5 minutes
+    await getCache().set(cacheKey, result, 300); // Cache for 5 minutes
     
     await job.updateProgress(100);
     await updateImportStatus(jobId, {

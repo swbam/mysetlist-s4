@@ -18,12 +18,14 @@ const baseOptions = {
   maxRetriesPerRequest: null as any,
   enableReadyCheck: false,
   retryStrategy: (times: number) => Math.min(times * 50, 2000),
+  // Prevent eager connection attempts during build; connect on first command
+  lazyConnect: true as any,
 };
 
 // ioredis-compatible factory
 export const createRedisClient = () => {
   if (REDIS_URL) {
-    return new Redis(REDIS_URL, baseOptions);
+    return new Redis(REDIS_URL, baseOptions as any);
   }
 
   return new Redis(
@@ -40,14 +42,14 @@ export const createRedisClient = () => {
 
 // BullMQ connection configuration (derived from same env)
 export const bullMQConnection: ConnectionOptions = REDIS_URL
-  ? { url: REDIS_URL, ...baseOptions }
+  ? { url: REDIS_URL, ...(baseOptions as any) }
   : {
       host: REDIS_HOST || "127.0.0.1",
       port: parsedPort || 6379,
       username: REDIS_USERNAME,
       password: REDIS_PASSWORD,
       tls: REDIS_TLS === "true" ? {} : undefined,
-      ...baseOptions,
+      ...(baseOptions as any),
     } as any;
 
 // Singleton Redis client for pub/sub

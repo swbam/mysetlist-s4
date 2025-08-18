@@ -6,7 +6,11 @@ import { eq, sql } from "drizzle-orm";
 import { updateImportStatus } from "../../import-status";
 import { RedisCache } from "../redis-config";
 
-const cache = new RedisCache();
+let _cache: RedisCache | null = null;
+function getCache() {
+  if (!_cache) _cache = new RedisCache();
+  return _cache;
+}
 
 export interface SpotifySyncJobData {
   artistId: string;
@@ -75,7 +79,7 @@ async function syncProfile(
   
   // Check cache
   const cacheKey = `spotify:profile:${spotifyId}`;
-  let artistData = await cache.get<any>(cacheKey);
+  let artistData = await getCache().get<any>(cacheKey);
   
   if (!artistData) {
     artistData = await spotify.getArtist(spotifyId);
@@ -85,7 +89,7 @@ async function syncProfile(
     }
     
     // Cache for 1 hour
-    await cache.set(cacheKey, artistData, 3600);
+    await getCache().set(cacheKey, artistData, 3600);
   }
   
   await job.updateProgress(60);

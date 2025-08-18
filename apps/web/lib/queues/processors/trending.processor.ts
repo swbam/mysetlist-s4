@@ -3,7 +3,11 @@ import { db, artists, shows, votes } from "@repo/database";
 import { sql } from "drizzle-orm";
 import { RedisCache } from "../redis-config";
 
-const cache = new RedisCache();
+let _cache: RedisCache | null = null;
+function getCache(): RedisCache {
+  if (!_cache) _cache = new RedisCache();
+  return _cache;
+}
 
 export interface TrendingCalcJobData {
   timeframe: 'hourly' | 'daily' | 'weekly' | 'monthly';
@@ -111,12 +115,12 @@ export async function processTrendingCalc(job: Job<TrendingCalcJobData>) {
     
     // Store in cache
     const cacheKey = `trending:${timeframe}`;
-    await cache.set(cacheKey, trendingArtists, getCacheTTL(timeframe));
+    await getCache().set(cacheKey, trendingArtists, getCacheTTL(timeframe));
     
     // Store individual artist trending data
     for (const artist of trendingArtists) {
       const artistCacheKey = `trending:artist:${artist.id}:${timeframe}`;
-      await cache.set(artistCacheKey, {
+      await getCache().set(artistCacheKey, {
         score: artist.trending_score,
         rank: trendingArtists.indexOf(artist) + 1,
         metrics: {
