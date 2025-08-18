@@ -141,8 +141,8 @@ validatePackage("@repo/external-apis", () => {
       "TICKETMASTER_API_KEY not set - Ticketmaster API will not work",
     );
   }
-  if (!process.env.SETLIST_FM_API_KEY) {
-    warnings.push("SETLIST_FM_API_KEY not set - SetlistFM API will not work");
+  if (!process.env.SETLISTFM_API_KEY) {
+    warnings.push("SETLISTFM_API_KEY not set - SetlistFM API will not work");
   }
 
   return { errors, warnings };

@@ -69,7 +69,7 @@ add_env_var "SPOTIFY_CLIENT_SECRET" "feaf0fc901124b839b11e02f97d18a8d" true
 add_env_var "NEXT_PUBLIC_SPOTIFY_CLIENT_ID" "2946864dc822469b9c672292ead45f43"
 add_env_var "TICKETMASTER_API_KEY" "k8GrSAkbFaN0w7qDxGl7ohr8LwdAQm9b" true
 add_env_var "SETLISTFM_API_KEY" "xkutflW-aRy_Df9rF4OkJyCsHBYN88V37EBL" true
-add_env_var "SETLIST_FM_API_KEY" "xkutflW-aRy_Df9rF4OkJyCsHBYN88V37EBL" true
+add_env_var "SETLISTFM_API_KEY" "xkutflW-aRy_Df9rF4OkJyCsHBYN88V37EBL" true
 
 echo ""
 echo "🔒 Adding Security Configuration..."

@@ -50,7 +50,7 @@ async function fetchSetlistFmSetlists(params: {
   year?: string;
   p?: number;
 }): Promise<SetlistFmSetlist[]> {
-  const apiKey = Deno.env.get("SETLIST_FM_API_KEY");
+  const apiKey = Deno.env.get("SETLISTFM_API_KEY");
 
   if (!apiKey) {
     throw new Error("Setlist.fm API key not configured");
@@ -82,7 +82,7 @@ async function fetchSetlistFmSetlists(params: {
 }
 
 async function fetchSetlistById(setlistId: string): Promise<SetlistFmSetlist> {
-  const apiKey = Deno.env.get("SETLIST_FM_API_KEY");
+  const apiKey = Deno.env.get("SETLISTFM_API_KEY");
 
   if (!apiKey) {
     throw new Error("Setlist.fm API key not configured");

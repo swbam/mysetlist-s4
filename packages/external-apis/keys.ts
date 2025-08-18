@@ -6,7 +6,7 @@ export const keys = () =>
     server: {
       SPOTIFY_CLIENT_SECRET: z.string().min(1).optional(),
       TICKETMASTER_API_KEY: z.string().min(1).optional(),
-      SETLIST_FM_API_KEY: z.string().min(1).optional(),
+      SETLISTFM_API_KEY: z.string().min(1).optional(),
     },
     client: {
       NEXT_PUBLIC_SPOTIFY_CLIENT_ID: z.string().min(1).optional(),
@@ -15,6 +15,6 @@ export const keys = () =>
       SPOTIFY_CLIENT_SECRET: process.env['SPOTIFY_CLIENT_SECRET'],
       NEXT_PUBLIC_SPOTIFY_CLIENT_ID: process.env['NEXT_PUBLIC_SPOTIFY_CLIENT_ID'],
       TICKETMASTER_API_KEY: process.env['TICKETMASTER_API_KEY'],
-      SETLIST_FM_API_KEY: process.env['SETLIST_FM_API_KEY'],
+      SETLISTFM_API_KEY: process.env['SETLISTFM_API_KEY'],
     },
   });

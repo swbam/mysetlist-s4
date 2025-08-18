@@ -144,7 +144,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
     }
 
     // Test Setlist.fm API
-    const setlistFmApiKey = Deno.env.get("SETLIST_FM_API_KEY");
+    const setlistFmApiKey = Deno.env.get("SETLISTFM_API_KEY");
 
     if (setlistFmApiKey) {
       try {

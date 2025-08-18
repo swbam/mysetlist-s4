@@ -84,7 +84,7 @@ class SetlistFmAPI {
 
     const response = await axios.get(url, {
       headers: {
-        "x-api-key": env.SETLIST_FM_API_KEY,
+        "x-api-key": env.SETLISTFM_API_KEY,
         Accept: "application/json",
       },
       params,

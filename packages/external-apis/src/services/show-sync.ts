@@ -23,7 +23,7 @@ export class ShowSyncService {
       apiKey: process.env['TICKETMASTER_API_KEY'] || "",
     });
     this.setlistFmClient = new SetlistFmClient({
-      apiKey: process.env['SETLIST_FM_API_KEY'] || "",
+      apiKey: process.env['SETLISTFM_API_KEY'] || "",
     });
     this.spotifyClient = new SpotifyClient({}); // SpotifyClient reads credentials from env in authenticate()
     this.venueSyncService = new VenueSyncService();

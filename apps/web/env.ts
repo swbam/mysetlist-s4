@@ -15,7 +15,7 @@ export const env = createEnv({
     // External APIs
     TICKETMASTER_API_KEY: z.string().min(1),
     SETLISTFM_API_KEY: z.string().min(1).optional(),
-    SETLIST_FM_API_KEY: z.string().min(1).optional(), // Handle both naming conventions
+    SETLISTFM_API_KEY: z.string().min(1).optional(), // Handle both naming conventions
 
     // Security
     CRON_SECRET: z.string().min(1).optional(),
@@ -131,7 +131,7 @@ export const env = createEnv({
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     TICKETMASTER_API_KEY: process.env.TICKETMASTER_API_KEY,
     SETLISTFM_API_KEY: process.env.SETLISTFM_API_KEY,
-    SETLIST_FM_API_KEY: process.env.SETLIST_FM_API_KEY,
+    SETLISTFM_API_KEY: process.env.SETLISTFM_API_KEY,
     CRON_SECRET: process.env.CRON_SECRET,
     CSRF_SECRET: process.env.CSRF_SECRET,
     ADMIN_API_KEY: process.env.ADMIN_API_KEY,

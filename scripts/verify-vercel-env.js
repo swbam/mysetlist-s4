@@ -23,7 +23,7 @@ const requiredEnvVars = [
   "NEXT_PUBLIC_SPOTIFY_CLIENT_ID",
   "TICKETMASTER_API_KEY",
   "SETLISTFM_API_KEY",
-  "SETLIST_FM_API_KEY",
+  "SETLISTFM_API_KEY",
 
   // Security
   "CRON_SECRET",
