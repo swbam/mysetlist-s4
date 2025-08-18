@@ -114,7 +114,7 @@ export default function QueuesPage() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4 mb-4">
-              <Badge variant={health.healthy ? "success" : "destructive"}>
+              <Badge variant={health.healthy ? "default" : "destructive"}>
                 {health.healthy ? "All Healthy" : "Issues Detected"}
               </Badge>
               <span className="text-sm text-gray-600">

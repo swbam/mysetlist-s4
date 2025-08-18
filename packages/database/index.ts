@@ -11,6 +11,7 @@ export {
   ilike,
   isNull,
   isNotNull,
+  inArray,
 } from "./src/client";
 export type { Database } from "./src/client";
 
