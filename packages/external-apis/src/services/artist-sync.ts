@@ -2,7 +2,7 @@ import { db, artists, songs, artistSongs } from "@repo/database";
 import { SetlistFmClient } from "../clients/setlistfm";
 import { SpotifyClient } from "../clients/spotify";
 import { TicketmasterClient } from "../clients/ticketmaster";
-import { eq } from "drizzle-orm";
+import { eq } from "@repo/database";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 
 // Helper function to normalize song titles for deduplication

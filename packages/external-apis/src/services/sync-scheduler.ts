@@ -1,6 +1,6 @@
-import { artists } from "@repo/database";
+import { artists, db, eq } from "@repo/database";
 import { SpotifyClient } from "../clients/spotify";
-import { db, eq } from "../database";
+// Use @repo/database exports for db and helpers
 import { ArtistSyncService } from "./artist-sync";
 import { SetlistSyncService } from "./setlist-sync";
 import { ShowSyncService } from "./show-sync";
@@ -79,7 +79,6 @@ export class SyncScheduler {
       await this.showSync.syncUpcomingShows({
         city,
         stateCode,
-        classificationName: "Music",
       });
       // Rate limit between cities
       await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -94,7 +93,6 @@ export class SyncScheduler {
     const endDateTime = endDate.toISOString();
 
     await this.showSync.syncUpcomingShows({
-      classificationName: "Music",
       startDateTime,
       endDateTime,
     });
@@ -108,7 +106,6 @@ export class SyncScheduler {
     await this.showSync.syncUpcomingShows({
       city,
       ...(stateCode && { stateCode }),
-      classificationName: "Music",
     });
   }
 
@@ -158,7 +155,6 @@ export class SyncScheduler {
         ...(options.stateCode && { stateCode: options.stateCode }),
         ...(options.startDate && { startDateTime: options.startDate }),
         ...(options.endDate && { endDateTime: options.endDate }),
-        classificationName: "Music",
       });
     }
 

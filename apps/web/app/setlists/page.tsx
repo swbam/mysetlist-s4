@@ -282,7 +282,7 @@ async function SetlistsContent({ search }: { search?: string }) {
 export default function SetlistsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string }>;
+  searchParams: { search?: string };
 }) {
   return (
     <div className="container mx-auto px-4 py-8">

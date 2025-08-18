@@ -13,15 +13,15 @@ import Link from "next/link";
 export const dynamic = "force-dynamic";
 
 interface UnsubscribeSuccessPageProps {
-  searchParams: Promise<{
+  searchParams: {
     type?: string;
-  }>;
+  };
 }
 
 export default async function UnsubscribeSuccessPage({
   searchParams,
 }: UnsubscribeSuccessPageProps) {
-  const { type } = await searchParams;
+  const { type } = searchParams;
 
   const getEmailTypeDisplay = (emailType?: string) => {
     switch (emailType) {
