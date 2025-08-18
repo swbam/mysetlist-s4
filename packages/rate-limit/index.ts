@@ -1,4 +1,5 @@
-import { and, db, eq, rateLimits, sql } from "@repo/database";
+import { db, rateLimits } from "@repo/database";
+import { and, eq, sql } from "drizzle-orm";
 import { type SupabaseClient, createClient } from "@supabase/supabase-js";
 import { keys } from "./keys";
 

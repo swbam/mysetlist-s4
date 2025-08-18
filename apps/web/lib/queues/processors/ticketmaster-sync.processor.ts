@@ -1,7 +1,8 @@
 import { Job } from "bullmq";
 import { EnhancedShowVenueSync } from "@repo/external-apis/src/services/enhanced-show-venue-sync";
 import { TicketmasterClient } from "@repo/external-apis";
-import { db, artists, shows, venues, eq, sql } from "@repo/database";
+import { db, artists, shows, venues } from "@repo/database";
+import { eq, sql } from "drizzle-orm";
 import { updateImportStatus } from "../../import-status";
 import { RedisCache } from "../redis-config";
 import { queueManager, QueueName } from "../queue-manager";
@@ -85,12 +86,15 @@ async function syncShows(
   
   await job.updateProgress(30);
   
-  const events = await ticketmaster.getAttractionEvents(tmAttractionId, {
+  const result = await ticketmaster.searchEvents({
+    attractionId: tmAttractionId,
     size: options?.maxShows || 200,
-    includePast: options?.includePast || false,
+    classificationName: "Music",
   });
   
-  if (!events || !events._embedded?.events) {
+  const events = result._embedded?.events || [];
+  
+  if (!events || events.length === 0) {
     await job.log("No shows found for artist");
     return {
       success: true,
@@ -103,7 +107,7 @@ async function syncShows(
   
   await job.updateProgress(50);
   
-  const showsData = events._embedded.events;
+  const showsData = events;
   const now = new Date();
   
   // Save shows to database
@@ -114,8 +118,8 @@ async function syncShows(
     date: new Date(show.dates?.start?.dateTime || show.dates?.start?.localDate),
     timezone: show.dates?.timezone || null,
     status: show.dates?.status?.code || 'scheduled',
-    priceMin: show.priceRanges?.[0]?.min || null,
-    priceMax: show.priceRanges?.[0]?.max || null,
+    minPrice: show.priceRanges?.[0]?.min || null,
+    maxPrice: show.priceRanges?.[0]?.max || null,
     ticketUrl: show.url || null,
     imageUrl: show.images?.[0]?.url || null,
     smallImageUrl: show.images?.[2]?.url || null,
@@ -139,8 +143,8 @@ async function syncShows(
           name: sql`EXCLUDED.name`,
           date: sql`EXCLUDED.date`,
           status: sql`EXCLUDED.status`,
-          priceMin: sql`EXCLUDED.price_min`,
-          priceMax: sql`EXCLUDED.price_max`,
+          minPrice: sql`EXCLUDED.min_price`,
+          maxPrice: sql`EXCLUDED.max_price`,
           updatedAt: new Date(),
         },
       });
@@ -248,6 +252,10 @@ async function syncVenues(artistId: string, job: Job) {
           rawData: JSON.stringify(venueData),
         } as any)
         .returning();
+      
+      if (!newVenue) {
+        throw new Error(`Failed to create venue: ${venueData.name}`);
+      }
       
       created++;
       

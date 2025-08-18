@@ -1,5 +1,6 @@
 import { Job } from "bullmq";
-import { db, artists, shows, votes, sql } from "@repo/database";
+import { db, artists, shows, votes } from "@repo/database";
+import { sql } from "drizzle-orm";
 import { RedisCache } from "../redis-config";
 
 const cache = new RedisCache();
