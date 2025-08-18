@@ -13,7 +13,8 @@ import {
 import { OptimizedImportOrchestrator } from "../../services/optimized-import-orchestrator";
 import { updateImportStatus } from "../../import-status";
 import { ImportLogger } from "../../import-logger";
-import { db, artists, eq } from "@repo/database";
+import { db, artists } from "@repo/database";
+import { eq } from "drizzle-orm";
 
 // Initialize Redis for real-time progress updates (env-driven)
 const redis = createRedisClient();
@@ -68,7 +69,10 @@ export const artistImportWorker = createWorker<ArtistImportJob>(
         const orchestrator = new OptimizedImportOrchestrator(
           async (progress) => {
             await job.updateProgress(progress.progress);
-            await updateImportStatus(artistId, progress);
+            await updateImportStatus(artistId, {
+              ...progress,
+              stage: progress.stage as "initializing" | "syncing-identifiers" | "importing-shows" | "importing-songs" | "creating-setlists" | "completed" | "failed"
+            });
             
             // Publish to Redis
             const channel = `import:progress:${jobId}`;
@@ -93,7 +97,10 @@ export const artistImportWorker = createWorker<ArtistImportJob>(
         const orchestrator = new OptimizedImportOrchestrator(
           async (progress) => {
             await job.updateProgress(progress.progress);
-            await updateImportStatus(artistId, progress);
+            await updateImportStatus(artistId, {
+              ...progress,
+              stage: progress.stage as "initializing" | "syncing-identifiers" | "importing-shows" | "importing-songs" | "creating-setlists" | "completed" | "failed"
+            });
             
             // Publish to Redis for SSE
             const channel = `import:progress:${jobId}`;
@@ -169,7 +176,7 @@ async function queueFollowUpJobs(
   const ticketmasterQueue = getQueue<TicketmasterSyncJob>(QueueName.TICKETMASTER_SYNC);
   const catalogQueue = getQueue<CatalogSyncJob>(QueueName.CATALOG_SYNC);
   
-  const jobs = [];
+  const jobs: Promise<any>[] = [];
   
   // Queue Spotify sync if we have Spotify ID
   if (artist.spotifyId) {
@@ -227,14 +234,14 @@ async function queueFollowUpJobs(
 }
 
 // Helper to determine stage from progress
-function getStageFromProgress(progress: number): string {
+function getStageFromProgress(progress: number): "initializing" | "syncing-identifiers" | "importing-shows" | "importing-songs" | "creating-setlists" | "completed" {
   if (progress < 10) return "initializing";
   if (progress < 30) return "syncing-identifiers";
   if (progress < 60) return "importing-shows";
   if (progress < 90) return "importing-songs";
   if (progress < 95) return "creating-setlists";
   if (progress >= 100) return "completed";
-  return "processing";
+  return "importing-shows"; // Default fallback to a valid stage
 }
 
 // Start the worker if this is the main module

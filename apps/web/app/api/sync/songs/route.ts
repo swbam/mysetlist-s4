@@ -1,4 +1,5 @@
-import { artistSongs, artists, db, eq, songs } from "@repo/database";
+import { artistSongs, artists, db, songs } from "@repo/database";
+import { eq } from "drizzle-orm";
 import { ArtistSyncService } from "@repo/external-apis";
 import { sql } from "drizzle-orm";
 import { headers } from "next/headers";

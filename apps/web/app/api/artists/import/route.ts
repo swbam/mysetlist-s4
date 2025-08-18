@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { queueManager, QueueName, Priority } from "~/lib/queues/queue-manager";
 import { ArtistImportOrchestrator } from "~/lib/services/artist-import-orchestrator";
-import { db, artists, eq } from "@repo/database";
+import { db, artists } from "@repo/database";
+import { eq } from "drizzle-orm";
 
 /**
  * POST /api/artists/import - Smart artist import endpoint

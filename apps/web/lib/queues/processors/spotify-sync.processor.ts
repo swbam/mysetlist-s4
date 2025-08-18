@@ -1,7 +1,8 @@
 import { Job } from "bullmq";
 import { SpotifyCompleteCatalog } from "@repo/external-apis/src/services/spotify-complete-catalog";
 import { SpotifyClient } from "@repo/external-apis";
-import { db, artists, songs, artistSongs, eq, sql } from "@repo/database";
+import { db, artists, songs, artistSongs } from "@repo/database";
+import { eq, sql } from "drizzle-orm";
 import { updateImportStatus } from "../../import-status";
 import { RedisCache } from "../redis-config";
 
@@ -139,7 +140,11 @@ async function syncAlbums(
     
     while (hasMore) {
       const response = await spotify.getArtistAlbums(spotifyId, {
+<<<<<<< HEAD
         include_groups: albumType as any,
+=======
+        include_groups: albumType,
+>>>>>>> 69298ab10d2daa951cf0a99e0314185dbc0f1de3
         limit,
         offset,
         market: 'US',

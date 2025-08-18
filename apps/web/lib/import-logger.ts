@@ -1,4 +1,5 @@
-import { db, importLogs, eq, type InsertImportLog } from "@repo/database";
+import { db, importLogs, type InsertImportLog } from "@repo/database";
+import { eq } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 
 export type LogLevel = "info" | "warning" | "error" | "success" | "debug";

@@ -3,7 +3,7 @@
  * Comprehensive system validation before deployment
  */
 
-import { sql } from "@repo/database";
+import { sql } from "drizzle-orm";
 import {
   type DatabasePerformanceReport,
   databasePerformanceTester,

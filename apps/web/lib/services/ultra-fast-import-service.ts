@@ -2,16 +2,13 @@ import {
   artists,
   artistSongs,
   db,
-  eq,
   shows,
   songs,
-  sql,
   venues,
-  syncJobs,
-  syncProgress,
   setlists,
   setlistSongs,
 } from "@repo/database";
+import { eq, sql } from "drizzle-orm";
 import { 
   SpotifyClient, 
   TicketmasterClient,
@@ -130,7 +127,7 @@ class WorkerPool {
       if (task.retryCount < task.maxRetries) {
         task.retryCount++;
         // Exponential backoff
-        await new Promise(resolve => setTimeout(resolve, Math.pow(2, task.retryCount) * 1000));
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, task.retryCount || 0) * 1000));
         this.taskQueue.push(task);
       } else {
         this.results.set(task.id, { error: error.message });
@@ -181,7 +178,7 @@ class WorkerPool {
     const results = await Promise.all(
       albumTypes.map(type => 
         spotify.getArtistAlbums(artistId, { 
-          album_type: type, 
+          include_groups: type, 
           limit: 50,
           market: 'US'
         })
@@ -193,7 +190,7 @@ class WorkerPool {
 
   private async fetchAllTracks(spotify: SpotifyClient, albums: any[]) {
     const chunks = this.chunkArray(albums, 10);
-    const allTracks = [];
+    const allTracks: any[] = [];
     
     for (const chunk of chunks) {
       const tracks = await Promise.all(
@@ -240,8 +237,12 @@ class WorkerPool {
   }
 
   private async fetchShows(ticketmaster: TicketmasterClient, attractionId: string) {
-    const events = await ticketmaster.getAttractionEvents(attractionId);
-    return events || [];
+    const result = await ticketmaster.searchEvents({
+      attractionId,
+      classificationName: "Music",
+      size: 200,
+    });
+    return result._embedded?.events || [];
   }
 
   private async fetchVenues(shows: any[]) {
@@ -305,7 +306,8 @@ class PredictiveCache {
     });
     
     try {
-      const results = await ticketmaster.searchAttractions(query, {
+      const results = await ticketmaster.searchAttractions({
+        keyword: query,
         size: 3,
         classificationName: 'music'
       });
@@ -351,7 +353,7 @@ class PredictiveCache {
 
 export class UltraFastImportService {
   private workers = new WorkerPool(10);
-  private cache = new CacheManager();
+  private cache = CacheManager.getInstance();
   private predictiveCache = new PredictiveCache();
   private progressCallbacks = new Map<string, (progress: ImportProgress) => void>();
   private logger?: ImportLogger;
@@ -393,22 +395,7 @@ export class UltraFastImportService {
     });
     
     try {
-      // Create sync job record
-      const [syncJob] = await db
-        .insert(syncJobs)
-        .values({
-          entityType: 'artist',
-          entityId: tmAttractionId,
-          ticketmasterId: tmAttractionId,
-          status: 'in_progress',
-          priority: options.priority === 'high' ? 1 : options.priority === 'low' ? 3 : 2,
-          jobType: 'full_sync',
-          totalSteps: 3,
-          completedSteps: 0,
-          currentStep: 'phase1',
-          startedAt: new Date(),
-        })
-        .returning();
+      // Sync job tracking removed - using progress callbacks instead
       
       // Phase 1: Create placeholder immediately (< 100ms)
       const phase1Start = Date.now();
@@ -507,15 +494,7 @@ export class UltraFastImportService {
           }
         }
         
-        // Update sync job as completed
-        await db
-          .update(syncJobs)
-          .set({
-            status: 'completed',
-            completedSteps: 3,
-            completedAt: new Date(),
-          })
-          .where(eq(syncJobs.id, syncJob.id));
+        // Sync job tracking removed
         
         await this.updateProgress(jobId, {
           stage: 'completed',
@@ -527,13 +506,7 @@ export class UltraFastImportService {
       }).catch(async (error) => {
         console.error('Background import failed:', error);
         
-        await db
-          .update(syncJobs)
-          .set({
-            status: 'failed',
-            error: error.message,
-          })
-          .where(eq(syncJobs.id, syncJob.id));
+        // Sync job tracking removed
       });
       
       const totalDuration = Date.now() - startTime;
@@ -786,7 +759,7 @@ export class UltraFastImportService {
     // Update import status
     if (progress.artistId) {
       await updateImportStatus(progress.artistId, {
-        stage: progress.stage,
+        stage: progress.stage as "initializing" | "syncing-identifiers" | "importing-shows" | "importing-songs" | "creating-setlists" | "completed" | "failed",
         progress: progress.progress,
         message: progress.message,
         error: progress.error,

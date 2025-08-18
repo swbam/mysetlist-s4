@@ -10,7 +10,8 @@
  * - Robust error handling with graceful degradation
  */
 
-import { db, eq, venues, shows, artists } from '@repo/database';
+import { db, venues, shows, artists } from '@repo/database';
+import { eq } from 'drizzle-orm';
 import { ProgressBus } from '../progress/ProgressBus';
 import { iterateEventsByAttraction, type TicketmasterEvent, type TicketmasterVenue } from '../adapters/TicketmasterClient';
 import { pLimit, processBatch } from '../util/concurrency';

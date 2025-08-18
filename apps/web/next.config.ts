@@ -85,6 +85,15 @@ const nextConfig: NextConfig = {
           module: /@supabase\/auth-helpers-nextjs/,
           message: /Critical dependency/,
         },
+        // Suppress BullMQ critical dependency warnings
+        {
+          module: /bullmq/,
+          message: /Critical dependency/,
+        },
+        {
+          module: /@bull-board/,
+          message: /Critical dependency/,
+        },
         // Suppress process.version warnings
         {
           module: /@supabase\/supabase-js/,

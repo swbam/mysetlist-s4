@@ -1,5 +1,6 @@
 import { Job } from "bullmq";
-import { db, artists, shows, eq, sql, desc } from "@repo/database";
+import { db, artists, shows } from "@repo/database";
+import { eq, sql, desc } from "drizzle-orm";
 import { queueManager, QueueName, Priority } from "../queue-manager";
 import { RedisCache } from "../redis-config";
 
@@ -191,6 +192,10 @@ async function getTrendingArtists(limit: number) {
       name: artists.name,
     })
     .from(artists)
+<<<<<<< HEAD
+=======
+    .where(sql`${artists.trendingScore} > 0`)
+>>>>>>> 69298ab10d2daa951cf0a99e0314185dbc0f1de3
     .orderBy(desc(artists.trendingScore))
     .limit(limit);
 }

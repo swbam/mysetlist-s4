@@ -192,9 +192,13 @@ export function createQueueEvents(name: QueueName): QueueEvents {
 }
 
 // Singleton queue instances
-let queues: Map<QueueName, Queue<any>> | null = null;
+let queues: Map<QueueName, Queue<any, any, string>> | null = null;
 
+<<<<<<< HEAD
 export function getQueue<T = any>(name: QueueName): Queue<T> {
+=======
+export function getQueue<T>(name: QueueName): Queue<T, any, string> {
+>>>>>>> 69298ab10d2daa951cf0a99e0314185dbc0f1de3
   if (!queues) {
     queues = new Map();
   }
@@ -203,7 +207,11 @@ export function getQueue<T = any>(name: QueueName): Queue<T> {
     queues.set(name, createQueue<T>(name));
   }
   
+<<<<<<< HEAD
   return queues.get(name)! as unknown as Queue<T>;
+=======
+  return queues.get(name)! as Queue<T, any, string>;
+>>>>>>> 69298ab10d2daa951cf0a99e0314185dbc0f1de3
 }
 
 // Cleanup function

@@ -1,5 +1,6 @@
 import { Job } from "bullmq";
-import { db, venues, shows, eq, sql, inArray } from "@repo/database";
+import { db, venues, shows } from "@repo/database";
+import { eq, sql, inArray } from "drizzle-orm";
 import { TicketmasterClient } from "@repo/external-apis";
 import { RedisCache } from "../redis-config";
 
@@ -105,13 +106,19 @@ async function syncAllVenues(job: Job) {
           url: venueData.url || null,
           imageUrl: venueData.images?.[0]?.url || null,
           capacity: venueData.generalInfo?.generalRule || null,
-          rawData: JSON.stringify(venueData),
         } as any)
         .returning({ id: venues.id });
+      
+      if (!newVenue) {
+        throw new Error(`Failed to create venue: ${venueData.name}`);
+      }
       
       venueId = newVenue.id;
       created++;
     } else {
+      if (!existing[0]) {
+        throw new Error(`Failed to find existing venue: ${venueData.name}`);
+      }
       venueId = existing[0].id;
       updated++;
     }
@@ -153,6 +160,10 @@ async function syncSpecificVenues(tmVenueIds: string[], job: Job) {
   
   for (let i = 0; i < tmVenueIds.length; i++) {
     const tmVenueId = tmVenueIds[i];
+    
+    if (!tmVenueId) {
+      continue;
+    }
     
     try {
       // Check cache first
@@ -198,8 +209,7 @@ async function syncSpecificVenues(tmVenueIds: string[], job: Job) {
             url: venueData.url || null,
             imageUrl: venueData.images?.[0]?.url || null,
             capacity: venueData.boxOfficeInfo?.phoneNumberDetail || null,
-            rawData: JSON.stringify(venueData),
-          } as any);
+            } as any);
         
         created++;
       } else {
@@ -316,7 +326,6 @@ async function updateVenueDetails(venueIds: string[], job: Job) {
               city: venueData.city?.name || venue.city,
               state: venueData.state?.stateCode || venueData.state?.name || venue.state,
               imageUrl: venueData.images?.[0]?.url || venue.imageUrl,
-              rawData: JSON.stringify(venueData),
               updatedAt: new Date(),
             })
             .where(eq(venues.id, venue.id));
