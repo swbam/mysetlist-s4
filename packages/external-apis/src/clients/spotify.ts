@@ -150,4 +150,26 @@ export class SpotifyClient extends BaseAPIClient {
       3600,
     );
   }
+
+  async getAlbumTracks(
+    albumId: string,
+    options: {
+      market?: string;
+      limit?: number;
+      offset?: number;
+    } = {},
+  ): Promise<{ items: SpotifyTrack[] }> {
+    const params = new URLSearchParams({
+      market: options.market || "US",
+      limit: (options.limit || 50).toString(),
+      offset: (options.offset || 0).toString(),
+    });
+
+    return this.makeRequest<{ items: SpotifyTrack[] }>(
+      `/albums/${albumId}/tracks?${params}`,
+      {},
+      `spotify:album:${albumId}:tracks:${params.toString()}`,
+      1800, // 30 minutes cache
+    );
+  }
 }

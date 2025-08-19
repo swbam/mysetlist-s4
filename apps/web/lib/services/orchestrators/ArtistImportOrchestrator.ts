@@ -28,7 +28,7 @@ import { invalidateArtistCache } from '../../cache';
 import { revalidateTag } from 'next/cache';
 import { CACHE_TAGS } from '../../cache';
 import { sql } from 'drizzle-orm';
-import { getAttraction } from '../adapters/TicketmasterClient';
+import { TicketmasterClient } from '@repo/external-apis';
 
 /**
  * Core orchestrator interface
@@ -102,9 +102,13 @@ const DEFAULT_CONFIG: ImportConfig = {
 export class ArtistImportOrchestrator {
   private config: ImportConfig;
   private progressReporter?: ReturnType<typeof ProgressBus.createReporter>;
+  private ticketmasterClient: TicketmasterClient;
 
   constructor(config: Partial<ImportConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
+    this.ticketmasterClient = new TicketmasterClient({
+      apiKey: this.config.ticketmasterApiKey!,
+    });
   }
 
   /**
@@ -116,7 +120,7 @@ export class ArtistImportOrchestrator {
     
     try {
       // Fetch artist details from Ticketmaster
-      const attraction = await getAttraction(tmAttractionId, this.config.ticketmasterApiKey);
+      const attraction = await this.ticketmasterClient.getAttraction(tmAttractionId);
       
       if (!attraction) {
         throw new Error(`Attraction ${tmAttractionId} not found in Ticketmaster`);

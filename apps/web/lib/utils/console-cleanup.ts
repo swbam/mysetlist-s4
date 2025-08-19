@@ -9,6 +9,7 @@ const originalConsole = {
   info: console.info,
   warn: console.warn,
   debug: console.debug,
+  error: console.error,
   trace: console.trace,
   group: console.group,
   groupCollapsed: console.groupCollapsed,

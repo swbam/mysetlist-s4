@@ -25,7 +25,13 @@ interface VenuesPageProps {
   }>;
 }
 
-const VenuesContent = async ({ searchParams }: { searchParams: any }) => {
+const VenuesContent = async ({ searchParams }: { searchParams: {
+  q?: string;
+  types?: string;
+  capacity?: string;
+  lat?: string;
+  lng?: string;
+} }) => {
   const venues = await getVenues({
     ...(searchParams.q && { search: searchParams.q }),
     ...(searchParams.types && {

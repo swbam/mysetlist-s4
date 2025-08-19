@@ -13,6 +13,7 @@ import { eq, count, sql, inArray } from 'drizzle-orm';
 import { ArtistImportOrchestrator } from '../../lib/services/orchestrators/ArtistImportOrchestrator';
 import { SpotifyCatalogIngest } from '../../lib/services/ingest/SpotifyCatalogIngest';
 import { TicketmasterIngest } from '../../lib/services/ingest/TicketmasterIngest';
+import { ProgressBus } from '../../lib/services/progress/ProgressBus';
 
 // Test data for validation
 const mockComprehensiveData = {
@@ -458,7 +459,7 @@ describe('Quality Validation Tests', () => {
       await orchestrator.runFullImport(testArtistId);
 
       // Get all songs for this artist
-      const artistSongs = await db
+      const artistSongRecords = await db
         .select({
           songId: artistSongs.songId,
           song: songs
@@ -469,7 +470,7 @@ describe('Quality Validation Tests', () => {
 
       // Group by ISRC
       const isrcGroups = new Map<string, any[]>();
-      artistSongs.forEach(({ song }) => {
+      artistSongRecords.forEach(({ song }) => {
         if (song.isrc) {
           if (!isrcGroups.has(song.isrc)) {
             isrcGroups.set(song.isrc, []);
@@ -624,13 +625,13 @@ describe('Quality Validation Tests', () => {
   }
 
   async function getShowsState(artistId: string) {
-    const shows = await db
+    const showRecords = await db
       .select()
       .from(shows)
       .where(eq(shows.headlinerArtistId, artistId))
       .orderBy(shows.tmEventId);
 
-    return shows.map(show => ({
+    return showRecords.map(show => ({
       ...show,
       createdAt: show.createdAt?.getTime(),
       updatedAt: show.updatedAt?.getTime()
@@ -638,7 +639,7 @@ describe('Quality Validation Tests', () => {
   }
 
   async function getSongsState(artistId: string) {
-    const artistSongs = await db
+    const artistSongRecords = await db
       .select({
         artistSong: artistSongs,
         song: songs
@@ -648,7 +649,7 @@ describe('Quality Validation Tests', () => {
       .where(eq(artistSongs.artistId, artistId))
       .orderBy(songs.spotifyId);
 
-    return artistSongs.map(({ artistSong, song }) => ({
+    return artistSongRecords.map(({ artistSong, song }) => ({
       artistSong: {
         ...artistSong,
         createdAt: artistSong.createdAt?.getTime(),

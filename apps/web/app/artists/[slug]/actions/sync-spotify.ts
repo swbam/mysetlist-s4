@@ -2,7 +2,7 @@
 
 import { db } from "@repo/database";
 import { artists } from "@repo/database/src/schema";
-import { spotify } from "@repo/external-apis";
+import { SpotifyClient } from "@repo/external-apis";
 import { eq } from "drizzle-orm";
 
 export async function syncArtistWithSpotify(artistId: string) {
@@ -19,7 +19,9 @@ export async function syncArtistWithSpotify(artistId: string) {
 
   try {
     // Fetch latest data from Spotify
-    const spotifyArtist = await spotify.getArtist(artist.spotifyId);
+    const spotifyClient = new SpotifyClient({});
+    await spotifyClient.authenticate();
+    const spotifyArtist = await spotifyClient.getArtist(artist.spotifyId);
 
     // Update artist in database
     await db

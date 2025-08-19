@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { db } from "@repo/database";
+import { db, artists } from "@repo/database";
 import { runFullImport } from "@repo/external-apis";
 import { sql } from "drizzle-orm";
 
@@ -9,10 +9,7 @@ export async function GET(request: Request) {
     return new Response("Unauthorized", { status: 401 });
   }
 
-  const activeArtists = await db.query.artists.findMany({
-    where: sql`last_synced_at > NOW() - INTERVAL '30 days'`,
-    limit: 100,
-  });
+  const activeArtists = await db.select().from(artists).where(sql`last_synced_at > NOW() - INTERVAL '30 days'`).limit(100);
 
   for (const artist of activeArtists) {
     await runFullImport(artist.id);

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { NextRequest } from "next/server";
 import {
   ANONYMOUS_LIMITS,
   canPerformAnonymousAction,
@@ -18,11 +19,37 @@ vi.mock("next/headers", () => ({
   })),
 }));
 
-// Type for mock Request
-interface MockRequest {
-  method: string;
-  headers: Headers;
-  clone?: () => MockRequest;
+// Create a mock NextRequest that satisfies the interface
+function createMockNextRequest(overrides: Partial<NextRequest> = {}): NextRequest {
+  const defaultRequest = {
+    method: "GET",
+    headers: new Headers(),
+    cookies: {},
+    nextUrl: { pathname: "/", search: "", hash: "" },
+    page: {},
+    ua: {},
+    geo: {},
+    url: "http://localhost",
+    bodyUsed: false,
+    cache: "default" as RequestCache,
+    credentials: "same-origin" as RequestCredentials,
+    destination: "" as RequestDestination,
+    integrity: "",
+    keepalive: false,
+    mode: "cors" as RequestMode,
+    redirect: "follow" as RequestRedirect,
+    referrer: "",
+    referrerPolicy: "" as ReferrerPolicy,
+    signal: new AbortController().signal,
+    arrayBuffer: async () => new ArrayBuffer(0),
+    blob: async () => new Blob(),
+    formData: async () => new FormData(),
+    json: async () => ({}),
+    text: async () => "",
+    clone: function() { return this; }
+  };
+  
+  return Object.assign(defaultRequest, overrides) as NextRequest;
 }
 
 describe("CSRF Protection", () => {
@@ -33,13 +60,12 @@ describe("CSRF Protection", () => {
   });
 
   it("should validate matching CSRF tokens", async () => {
-    const mockRequest = {
+    const mockRequest = createMockNextRequest({
       method: "POST",
       headers: new Headers({
         "x-csrf-token": "test-token",
       }),
-      clone: () => mockRequest,
-    } as MockRequest;
+    });
 
     // Mock cookie store
     const { cookies } = await import("next/headers");
@@ -53,13 +79,12 @@ describe("CSRF Protection", () => {
   });
 
   it("should reject mismatched CSRF tokens", async () => {
-    const mockRequest = {
+    const mockRequest = createMockNextRequest({
       method: "POST",
       headers: new Headers({
         "x-csrf-token": "wrong-token",
       }),
-      clone: () => mockRequest,
-    } as MockRequest;
+    });
 
     // Mock cookie store
     const { cookies } = await import("next/headers");
@@ -73,10 +98,10 @@ describe("CSRF Protection", () => {
   });
 
   it("should skip CSRF validation for GET requests", async () => {
-    const mockRequest = {
+    const mockRequest = createMockNextRequest({
       method: "GET",
       headers: new Headers(),
-    } as MockRequest;
+    });
 
     const isValid = await validateCSRFToken(mockRequest);
     expect(isValid).toBe(true);
@@ -165,34 +190,34 @@ describe("Anonymous User Limits", () => {
 
 describe("Rate Limiting", () => {
   it("should extract IP from request headers", () => {
-    const mockRequest = {
+    const mockRequest = createMockNextRequest({
       headers: new Headers({
         "x-forwarded-for": "192.168.1.1, 10.0.0.1",
         "x-real-ip": "192.168.1.2",
       }),
-    } as MockRequest;
+    });
 
     const ip = getIdentifier(mockRequest);
     expect(ip).toBe("192.168.1.1");
   });
 
   it("should use fallback IPs when x-forwarded-for is not available", () => {
-    const mockRequest = {
+    const mockRequest = createMockNextRequest({
       headers: new Headers({
         "x-real-ip": "192.168.1.2",
       }),
-    } as MockRequest;
+    });
 
     const ip = getIdentifier(mockRequest);
     expect(ip).toBe("192.168.1.2");
   });
 
   it("should use cloudflare IP when available", () => {
-    const mockRequest = {
+    const mockRequest = createMockNextRequest({
       headers: new Headers({
         "cf-connecting-ip": "192.168.1.3",
       }),
-    } as MockRequest;
+    });
 
     const ip = getIdentifier(mockRequest);
     expect(ip).toBe("192.168.1.3");

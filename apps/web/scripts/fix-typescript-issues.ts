@@ -64,14 +64,16 @@ class TypeScriptFixer {
       
       if (match) {
         const [, file, lineNum, column, severity, code, message] = match;
-        issues.push({
-          file: file.trim(),
-          line: parseInt(lineNum, 10),
-          column: parseInt(column, 10),
-          message: message.trim(),
-          code: `TS${code}`,
-          severity: severity as 'error' | 'warning'
-        });
+        if (file && lineNum && column && message && code) {
+          issues.push({
+            file: file.trim(),
+            line: parseInt(lineNum, 10),
+            column: parseInt(column, 10),
+            message: message.trim(),
+            code: `TS${code}`,
+            severity: (severity || 'error') as 'error' | 'warning'
+          });
+        }
       }
     }
 
@@ -119,15 +121,15 @@ class TypeScriptFixer {
 
     for (const issue of this.issues) {
       if (issue.message.includes('params') && issue.message.includes('await')) {
-        groups['Async Params Issues'].push(issue);
+        groups['Async Params Issues']?.push(issue);
       } else if (issue.message.includes('any') || issue.code === 'TS7006') {
-        groups['Type Assertion Issues'].push(issue);
+        groups['Type Assertion Issues']?.push(issue);
       } else if (issue.code === 'TS2532' || issue.code === 'TS2531' || issue.code === 'TS2339') {
-        groups['Strict Mode Issues'].push(issue);
+        groups['Strict Mode Issues']?.push(issue);
       } else if (issue.code === 'TS2307' || issue.code === 'TS1192') {
-        groups['Import/Export Issues'].push(issue);
+        groups['Import/Export Issues']?.push(issue);
       } else {
-        groups['Other Issues'].push(issue);
+        groups['Other Issues']?.push(issue);
       }
     }
 

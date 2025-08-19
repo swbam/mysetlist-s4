@@ -17,6 +17,6 @@ export type {
 } from "./sync-scheduler";
 
 export type {
-  ImportProgress,
+  ArtistImportProgress,
   ImportResult,
 } from "./artist-import-orchestrator";

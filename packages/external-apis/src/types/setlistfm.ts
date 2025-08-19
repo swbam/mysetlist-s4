@@ -29,6 +29,7 @@ export interface SetlistFmSetlist {
         };
         info?: string;
       }[];
+      encore?: number; // 1 if encore set, 0 or undefined otherwise
     }[];
   };
 }

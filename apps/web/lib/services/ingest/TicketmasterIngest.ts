@@ -13,7 +13,7 @@
 import { db, venues, shows, artists } from '@repo/database';
 import { eq } from 'drizzle-orm';
 import { ProgressBus } from '../progress/ProgressBus';
-import { iterateEventsByAttraction, type TicketmasterEvent, type TicketmasterVenue } from '../adapters/TicketmasterClient';
+import { TicketmasterClient, type TicketmasterEvent, type TicketmasterVenue } from '@repo/external-apis';
 import { pLimit, processBatch } from '../util/concurrency';
 import { createSlug } from '../util/slug';
 
@@ -22,6 +22,7 @@ export interface TicketmasterIngestOptions {
   tmAttractionId: string;
   progressReporter?: ReturnType<typeof ProgressBus.createReporter>;
   concurrency?: number;
+  apiKey?: string;
 }
 
 export interface IngestResult {
@@ -39,10 +40,18 @@ export interface IngestResult {
 export class TicketmasterIngest {
   private limit: ReturnType<typeof pLimit>;
   private progressReporter?: ReturnType<typeof ProgressBus.createReporter>;
+  private ticketmasterClient: TicketmasterClient;
   
-  constructor(options: { concurrency?: number; progressReporter?: ReturnType<typeof ProgressBus.createReporter> } = {}) {
+  constructor(options: { 
+    concurrency?: number; 
+    progressReporter?: ReturnType<typeof ProgressBus.createReporter>;
+    apiKey?: string;
+  } = {}) {
     this.limit = pLimit(options.concurrency || 5);
     this.progressReporter = options.progressReporter;
+    this.ticketmasterClient = new TicketmasterClient({
+      apiKey: options.apiKey || process.env.TICKETMASTER_API_KEY!,
+    });
   }
 
   /**
@@ -67,7 +76,7 @@ export class TicketmasterIngest {
       const allEvents: TicketmasterEvent[] = [];
       let pageCount = 0;
 
-      for await (const eventBatch of iterateEventsByAttraction(tmAttractionId)) {
+      for await (const eventBatch of this.ticketmasterClient.iterateEventsByAttraction(tmAttractionId)) {
         allEvents.push(...eventBatch);
         pageCount++;
         

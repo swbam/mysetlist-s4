@@ -197,6 +197,6 @@ export function withStableProps<P extends Record<string, any>>(
       return { ...stable, ...dynamic };
     }, [props]);
 
-    return <Component {...memoizedProps} ref={ref} />;
+    return <Component {...(memoizedProps as any)} ref={ref} />;
   });
 }

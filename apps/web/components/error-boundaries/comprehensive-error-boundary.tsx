@@ -47,7 +47,7 @@ export class ComprehensiveErrorBoundary extends React.Component<Props, State> {
     };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Silent error logging in production to prevent console spam
     if (process.env.NODE_ENV === "development") {
       console.error("Error caught by boundary:", error);
@@ -74,7 +74,7 @@ export class ComprehensiveErrorBoundary extends React.Component<Props, State> {
     }
   }
 
-  componentWillUnmount() {
+  override componentWillUnmount() {
     if (this.retryTimeoutId) {
       clearTimeout(this.retryTimeoutId);
     }
@@ -103,7 +103,7 @@ export class ComprehensiveErrorBoundary extends React.Component<Props, State> {
     }
   };
 
-  render() {
+  override render() {
     if (this.state.hasError) {
       // Use custom fallback if provided
       if (this.props.fallback) {
@@ -275,7 +275,7 @@ export function withErrorBoundary<P extends Record<string, any>>(
 ) {
   const WrappedComponent = React.forwardRef<any, P>((props, ref) => (
     <ComprehensiveErrorBoundary {...errorBoundaryProps}>
-      <Component {...props} ref={ref} />
+      <Component {...(props as any)} ref={ref} />
     </ComprehensiveErrorBoundary>
   ));
 
