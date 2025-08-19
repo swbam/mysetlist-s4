@@ -73,9 +73,6 @@ export async function GET(request: NextRequest) {
 
       const ticketmasterResponse = await ticketmaster.searchAttractions({
         keyword: query,
-        size: limit,
-        classificationName: "music",
-        sort: "relevance,desc",
       });
 
       const attractions = ticketmasterResponse._embedded?.attractions || [];

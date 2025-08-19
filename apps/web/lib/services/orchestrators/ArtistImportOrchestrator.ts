@@ -103,8 +103,35 @@ export class ArtistImportOrchestrator {
   private config: ImportConfig;
   private progressReporter?: ReturnType<typeof ProgressBus.createReporter>;
 
-  constructor(config: Partial<ImportConfig> = {}) {
+  constructor(progressCallback?: (progress: any) => Promise<void>, config: Partial<ImportConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
+    this.progressCallback = progressCallback;
+  }
+
+  private progressCallback?: (progress: any) => Promise<void>;
+
+  /**
+   * Complete artist import (combines all phases)
+   * This is the main method called by the auto-import API
+   */
+  async importArtist(tmAttractionId: string): Promise<ImportResult> {
+    try {
+      // Phase 1: Initialize artist record
+      const initResult = await this.initiateImport(tmAttractionId);
+      
+      // Phase 2-4: Run full import
+      const fullResult = await this.runFullImport(initResult.artistId);
+      
+      return fullResult;
+    } catch (error) {
+      console.error('Complete artist import failed:', error);
+      return {
+        artistId: '',
+        slug: '',
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
   }
 
   /**
@@ -196,6 +223,15 @@ export class ArtistImportOrchestrator {
           10,
           `Artist record created in ${duration}ms`
         );
+      }
+
+      // Report progress via callback if provided
+      if (this.progressCallback) {
+        await this.progressCallback({
+          stage: 'initializing',
+          progress: 10,
+          message: `Artist record created in ${duration}ms`,
+        });
       }
 
       return {

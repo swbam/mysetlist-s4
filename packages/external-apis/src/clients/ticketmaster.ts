@@ -12,9 +12,20 @@ export class TicketmasterClient extends BaseAPIClient {
   }
 
   protected getAuthHeaders(): Record<string, string> {
-    return {
-      apikey: this.apiKey!,
-    };
+    return {};
+  }
+
+  protected async makeRequest<T>(
+    endpoint: string,
+    options: RequestInit = {},
+    cacheKey?: string,
+    cacheTTL?: number,
+  ): Promise<T> {
+    // Add apikey as query parameter for Ticketmaster
+    const separator = endpoint.includes('?') ? '&' : '?';
+    const modifiedEndpoint = `${endpoint}${separator}apikey=${this.apiKey!}`;
+    
+    return super.makeRequest(modifiedEndpoint, options, cacheKey, cacheTTL);
   }
 
   async searchEvents(options: {
@@ -90,6 +101,7 @@ export class TicketmasterClient extends BaseAPIClient {
     keyword?: string;
     size?: number;
     classificationName?: string;
+    sort?: string;
   }): Promise<{ _embedded?: { attractions: any[] }; page: any }> {
     const params = new URLSearchParams();
 
@@ -99,12 +111,19 @@ export class TicketmasterClient extends BaseAPIClient {
       }
     });
 
-    return this.makeRequest(
-      `/attractions.json?${params}`,
-      {},
-      `ticketmaster:attractions:${params.toString()}`,
-      3600,
-    );
+    // Add API key to params
+    params.append('apikey', this.apiKey!);
+
+    const url = `${this.baseURL}/attractions.json?${params}`;
+    console.log('Ticketmaster search URL:', url);
+    
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+    
+    return await response.json();
   }
 
   async *iterateEventsByAttraction(attractionId: string): AsyncGenerator<TicketmasterEvent[], void, unknown> {
