@@ -28,8 +28,7 @@ export async function exportUserData() {
       *,
       user_profiles (*),
       votes (*),
-      setlists (*),
-      venue_photos (*)
+      setlists (*)
     `);
 
   if (error) {

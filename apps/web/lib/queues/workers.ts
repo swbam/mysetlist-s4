@@ -5,6 +5,12 @@ import { processTicketmasterSync } from "./processors/ticketmaster-sync.processo
 import { processVenueSync } from "./processors/venue-sync.processor";
 import { processTrendingCalc } from "./processors/trending.processor";
 import { processScheduledSync } from "./processors/scheduled-sync.processor";
+import { processSetlistSync } from "./processors/setlist-sync.processor";
+import { processImageProcessing } from "./processors/image-processing.processor";
+import { processProgressUpdate } from "./processors/progress-update.processor";
+import { processWebhook } from "./processors/webhook.processor";
+import { processCacheWarm } from "./processors/cache-warm.processor";
+import { processCleanup } from "./processors/cleanup.processor";
 import { Worker } from "bullmq";
 
 // Worker registry
@@ -29,6 +35,18 @@ export async function initializeWorkers() {
   });
   
   workers.set(QueueName.ARTIST_IMPORT, artistImportWorker);
+  
+  // Artist Quick Sync Worker (for lightweight artist updates)
+  const artistQuickSyncWorker = queueManager.createWorker(
+    QueueName.ARTIST_QUICK_SYNC,
+    processArtistImport // Reuse the same processor but with different priority
+  );
+  
+  artistQuickSyncWorker.on("completed", (job) => {
+    console.log(`✅ Artist quick sync completed: ${job.id}`);
+  });
+  
+  workers.set(QueueName.ARTIST_QUICK_SYNC, artistQuickSyncWorker);
   
   // Spotify Sync Worker
   const spotifySyncWorker = queueManager.createWorker(
@@ -81,6 +99,54 @@ export async function initializeWorkers() {
   );
   
   workers.set(QueueName.SCHEDULED_SYNC, scheduledWorker);
+  
+  // Setlist Sync Worker
+  const setlistSyncWorker = queueManager.createWorker(
+    QueueName.SETLIST_SYNC,
+    processSetlistSync
+  );
+  
+  workers.set(QueueName.SETLIST_SYNC, setlistSyncWorker);
+  
+  // Image Processing Worker
+  const imageProcessingWorker = queueManager.createWorker(
+    QueueName.IMAGE_PROCESSING,
+    processImageProcessing
+  );
+  
+  workers.set(QueueName.IMAGE_PROCESSING, imageProcessingWorker);
+  
+  // Progress Update Worker
+  const progressUpdateWorker = queueManager.createWorker(
+    QueueName.PROGRESS_UPDATE,
+    processProgressUpdate
+  );
+  
+  workers.set(QueueName.PROGRESS_UPDATE, progressUpdateWorker);
+  
+  // Webhook Worker
+  const webhookWorker = queueManager.createWorker(
+    QueueName.WEBHOOK,
+    processWebhook
+  );
+  
+  workers.set(QueueName.WEBHOOK, webhookWorker);
+  
+  // Cache Warm Worker
+  const cacheWarmWorker = queueManager.createWorker(
+    QueueName.CACHE_WARM,
+    processCacheWarm
+  );
+  
+  workers.set(QueueName.CACHE_WARM, cacheWarmWorker);
+  
+  // Cleanup Worker
+  const cleanupWorker = queueManager.createWorker(
+    QueueName.CLEANUP,
+    processCleanup
+  );
+  
+  workers.set(QueueName.CLEANUP, cleanupWorker);
   
   console.log(`✅ Initialized ${workers.size} workers`);
   

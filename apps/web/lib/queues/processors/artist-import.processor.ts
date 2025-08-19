@@ -3,7 +3,7 @@ import { queueManager, QueueName, Priority } from "../queue-manager";
 import { RedisCache } from "../redis-config";
 import { db, artists } from "@repo/database";
 import { eq } from "drizzle-orm";
-import { TicketmasterClient, SpotifyClient } from "@repo/external-apis";
+import { TicketmasterClient, SpotifyClient, runFullImport } from "@repo/external-apis";
 import { updateImportStatus } from "../../import-status";
 import { v4 as uuidv4 } from "uuid";
 
@@ -15,7 +15,10 @@ function getCache() {
 }
 
 export interface ArtistImportJobData {
-  tmAttractionId: string;
+  artistId?: string;
+  tmAttractionId?: string;
+  spotifyArtistId?: string;
+  artistName?: string;
   userId?: string;
   adminImport?: boolean;
   priority?: Priority;
@@ -34,21 +37,74 @@ export interface ArtistImportResult {
 }
 
 export async function processArtistImport(job: Job<ArtistImportJobData>): Promise<ArtistImportResult> {
-  const { tmAttractionId, userId, adminImport, priority = Priority.NORMAL } = job.data;
-  const jobId = job.id || `import_${tmAttractionId}_${Date.now()}`;
+  const { artistId, tmAttractionId, spotifyArtistId, artistName, userId, adminImport, priority = Priority.NORMAL } = job.data;
+  
+  // Support both new job structure (from initiateImport) and legacy structure
+  const actualArtistId = artistId;
+  const actualTmAttractionId = tmAttractionId;
+  const jobId = job.id || `import_${actualArtistId || actualTmAttractionId}_${Date.now()}`;
   const startTime = Date.now();
   
   try {
-    // Update initial progress
     await job.updateProgress(5);
     await updateImportStatus(jobId, {
       stage: "initializing",
       progress: 5,
-      message: "Starting artist import...",
+      message: "Starting full artist import...",
+      artistId: actualArtistId,
+      artistName: artistName || "Loading...",
     });
     
-    // Check cache first
-    const cacheKey = `artist:import:${tmAttractionId}`;
+    // For new job structure from initiateImport, directly call runFullImport
+    if (actualArtistId) {
+      await job.updateProgress(10);
+      await job.log(`Running full import for artist ${actualArtistId}`);
+      
+      // Call the orchestrator's runFullImport function
+      await runFullImport(actualArtistId);
+      
+      // Get final artist data
+      const [artist] = await db
+        .select()
+        .from(artists)
+        .where(eq(artists.id, actualArtistId))
+        .limit(1);
+      
+      if (!artist) {
+        throw new Error(`Artist not found after import: ${actualArtistId}`);
+      }
+      
+      const result: ArtistImportResult = {
+        success: true,
+        artistId: artist.id,
+        slug: artist.slug,
+        spotifyId: artist.spotifyId || undefined,
+        name: artist.name,
+        imageUrl: artist.imageUrl || undefined,
+        cached: false,
+        phase1Duration: Date.now() - startTime,
+        followUpJobs: [],
+      };
+      
+      await job.updateProgress(100);
+      await updateImportStatus(jobId, {
+        stage: "completed",
+        progress: 100,
+        message: "Full import completed successfully!",
+        artistId: artist.id,
+        completedAt: new Date().toISOString(),
+      });
+      
+      return result;
+    }
+    
+    // Legacy processing for backward compatibility
+    if (!actualTmAttractionId) {
+      throw new Error("Either artistId or tmAttractionId is required");
+    }
+    
+    // Check cache first for legacy processing
+    const cacheKey = `artist:import:${actualTmAttractionId}`;
     const cachedResult = await getCache().get<ArtistImportResult>(cacheKey);
     if (cachedResult && !adminImport) {
       await job.updateProgress(100);
@@ -65,13 +121,13 @@ export async function processArtistImport(job: Job<ArtistImportJobData>): Promis
     });
     
     const tmArtist = await withTimeout(
-      ticketmaster.getAttraction(tmAttractionId),
+      ticketmaster.getAttraction(actualTmAttractionId),
       2000,
       "Ticketmaster timeout"
     );
     
     if (!tmArtist || !tmArtist.name) {
-      throw new Error(`Artist not found on Ticketmaster: ${tmAttractionId}`);
+      throw new Error(`Artist not found on Ticketmaster: ${actualTmAttractionId}`);
     }
     
     await job.updateProgress(20);
@@ -104,7 +160,7 @@ export async function processArtistImport(job: Job<ArtistImportJobData>): Promis
     const slug = generateSlug(spotifyData?.name || tmArtist.name);
     
     const artistData = {
-      tmAttractionId,
+      tmAttractionId: actualTmAttractionId,
       spotifyId: spotifyData?.id || null,
       name: spotifyData?.name || tmArtist.name,
       slug,
@@ -140,20 +196,14 @@ export async function processArtistImport(job: Job<ArtistImportJobData>): Promis
     await updateImportStatus(jobId, {
       stage: "importing-shows",
       progress: 30,
-      message: "Artist created! Queuing background sync...",
+      message: "Artist created! Running full import...",
       artistId: artist?.id || "",
       artistName: artist?.name || tmArtist.name,
       slug: artist?.slug || slug,
     });
     
-    // Queue follow-up jobs for parallel processing
-    const followUpJobs = await queueFollowUpJobs(
-      (artist?.id as string) || uuidv4(),
-      artist?.spotifyId || null,
-      tmAttractionId,
-      priority,
-      jobId
-    );
+    // Run full import using orchestrator
+    await runFullImport(artist.id);
     
     // Cache the result
     const result: ArtistImportResult = {
@@ -165,7 +215,7 @@ export async function processArtistImport(job: Job<ArtistImportJobData>): Promis
       imageUrl: artistData.imageUrl || undefined,
       cached: false,
       phase1Duration,
-      followUpJobs,
+      followUpJobs: [],
     };
     
     await getCache().set(cacheKey, result, 300); // Cache for 5 minutes
@@ -174,7 +224,7 @@ export async function processArtistImport(job: Job<ArtistImportJobData>): Promis
     await updateImportStatus(jobId, {
       stage: "completed",
       progress: 100,
-      message: "Import initiated successfully!",
+      message: "Import completed successfully!",
       artistId: (artist?.id as string) || "",
       completedAt: new Date().toISOString(),
     });
@@ -182,7 +232,7 @@ export async function processArtistImport(job: Job<ArtistImportJobData>): Promis
     return result;
     
   } catch (error) {
-    console.error(`Artist import failed for ${tmAttractionId}:`, error);
+    console.error(`Artist import failed:`, error);
     
     await updateImportStatus(jobId, {
       stage: "failed",

@@ -117,19 +117,12 @@ export default function ReportItem({
           });
 
           // Delete the actual content
-          const table =
-            report.content_type === "setlist"
-              ? "setlists"
-              : report.content_type === "review"
-                ? "venue_reviews"
-                : report.content_type === "photo"
-                  ? "venue_photos"
-                  : "venue_insider_tips";
-
-          await supabase
-            .from(table)
-            .update({ moderation_status: "deleted" })
-            .eq("id", report.content_id);
+          if (report.content_type === "setlist") {
+            await supabase
+              .from("setlists")
+              .update({ moderation_status: "deleted" })
+              .eq("id", report.content_id);
+          }
           break;
         }
 

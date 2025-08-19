@@ -45,9 +45,7 @@ export default async function UsersPage() {
         is_public
       ),
       _count:votes(count),
-      _setlists:setlists(count),
-      _reviews:venue_reviews(count),
-      _photos:venue_photos(count)
+      _setlists:setlists(count)
     `,
     )
     .order("created_at", { ascending: false })
@@ -201,8 +199,7 @@ export default async function UsersPage() {
                       <div className="text-sm">
                         <p>{user._setlists?.[0]?.count ?? 0} setlists</p>
                         <p className="text-muted-foreground">
-                          {user._reviews?.[0]?.count ?? 0} reviews,{" "}
-                          {user._photos?.[0]?.count ?? 0} photos
+                          {user._count?.[0]?.count ?? 0} votes
                         </p>
                       </div>
                     </TableCell>

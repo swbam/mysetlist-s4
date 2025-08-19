@@ -310,7 +310,7 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
               User Content
             </CardTitle>
             <CardDescription>
-              Manage user-generated content and reviews
+              Manage user-generated content
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -608,9 +608,9 @@ export default function ContentClient({ artists, venues, shows, locale }: Conten
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            <p>{venue._reviews?.[0]?.count ?? 0} reviews</p>
+                            <p>{venue.total_shows ?? 0} total shows</p>
                             <p className="text-muted-foreground">
-                              {venue._photos?.[0]?.count ?? 0} photos
+                              {venue.upcoming_shows ?? 0} upcoming
                             </p>
                           </div>
                         </TableCell>

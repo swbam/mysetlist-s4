@@ -24,10 +24,7 @@ export async function VenueGridServer({ searchParams }: VenueGridServerProps) {
 
   return (
     <VenueGridClient
-      venues={venues.map((venue) => ({
-        ...venue,
-        avgRating: venue.avgRating ?? 0,
-      }))}
+      venues={venues}
     />
   );
 }

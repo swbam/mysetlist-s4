@@ -33,7 +33,6 @@ export const venues = pgTable("venues", {
   totalShows: integer("total_shows").default(0),
   upcomingShows: integer("upcoming_shows").default(0),
   totalAttendance: integer("total_attendance").default(0),
-  averageRating: doublePrecision("average_rating"),
 
   // Historical tracking for real growth calculations
   previousTotalShows: integer("previous_total_shows"),

@@ -9,20 +9,9 @@ export async function ingestShowsAndVenues(artistId: string, tmAttractionId: str
     apiKey: process.env['TICKETMASTER_API_KEY']!,
   });
 
-  let page = 0;
-  let totalPages = 1;
-
-  while (page < totalPages) {
-    const response = await ticketmasterClient.searchEvents({
-      attractionId: tmAttractionId,
-      page,
-    } as any);
-
-    const events = response._embedded?.events || [];
-    totalPages = response.page?.totalPages || 0;
-
+  for await (const events of ticketmasterClient.iterateEventsByAttraction(tmAttractionId)) {
     if (events.length === 0) {
-      break;
+      continue;
     }
 
     const venuesMap = new Map<string, TicketmasterVenue>();
@@ -95,8 +84,6 @@ export async function ingestShowsAndVenues(artistId: string, tmAttractionId: str
     if (newShows.length > 0) {
       await db.insert(shows).values(newShows as any[]);
     }
-
-    page++;
   }
 }
 

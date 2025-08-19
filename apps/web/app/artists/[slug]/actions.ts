@@ -305,17 +305,48 @@ const _getArtistShows = async (artistId: string, type: "upcoming" | "past") => {
       .orderBy(type === "upcoming" ? shows.date : desc(shows.date))
       .limit(type === "upcoming" ? 15 : 25); // Increased limits for better UX
 
-    // If no shows found and we're looking for upcoming shows, log for monitoring
-    if ((!artistShows || artistShows.length === 0) && type === "upcoming") {
-      console.log(
-        `No ${type} shows found for artist ${artistId}. Real-time sync may be needed.`,
-      );
-      // Return empty results - no fake data
-      return [];
-    }
-
-    // Enhanced validation and data transformation
+    // Enhanced logging and monitoring for empty results
     if (!artistShows || artistShows.length === 0) {
+      console.log(
+        `No ${type} shows found for artist ${artistId}. Query may need adjustment or data sync required.`,
+      );
+      console.log(`Query details: type=${type}, artistId=${artistId}, limit=${type === "upcoming" ? 15 : 25}`);
+      
+      // For debugging - let's check if artist actually exists and has any shows at all
+      try {
+        const artistExists = await db
+          .select({ id: artists.id, name: artists.name })
+          .from(artists)
+          .where(eq(artists.id, artistId))
+          .limit(1);
+        
+        if (artistExists.length === 0) {
+          console.log(`Artist ${artistId} does not exist in database`);
+        } else {
+          console.log(`Artist exists: ${artistExists[0].name}`);
+          
+          // Check for any shows for this artist (regardless of date)
+          const anyShows = await db
+            .select({ id: shows.id, date: shows.date, status: shows.status })
+            .from(shows)
+            .leftJoin(showArtists, eq(shows.id, showArtists.showId))
+            .where(
+              or(
+                eq(shows.headlinerArtistId, artistId),
+                eq(showArtists.artistId, artistId),
+              ),
+            )
+            .limit(5);
+          
+          console.log(`Total shows for artist: ${anyShows.length}`);
+          if (anyShows.length > 0) {
+            console.log('Sample shows:', anyShows.map(s => ({ id: s.id, date: s.date, status: s.status })));
+          }
+        }
+      } catch (debugError) {
+        console.error('Debug query failed:', debugError);
+      }
+      
       return [];
     }
 

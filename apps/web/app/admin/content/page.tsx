@@ -22,7 +22,7 @@ export default async function ContentPage({
         .limit(20),
       supabase
         .from("venues")
-        .select("*, _reviews:venue_reviews(count), _photos:venue_photos(count)")
+        .select("*")
         .order("created_at", { ascending: false })
         .limit(20),
       supabase

@@ -1,23 +1,27 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import { db, importStatus } from "@repo/database";
+import { eq } from "drizzle-orm";
+import { ProgressBus } from "~/lib/services/progress/ProgressBus";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 /**
  * Calculate estimated time remaining based on current progress and elapsed time
  */
-function calculateEstimatedTime(importStatus: any): number | null {
+function calculateEstimatedTime(status: any): number | null {
   if (
-    !importStatus.created_at ||
-    importStatus.stage === "completed" ||
-    importStatus.stage === "failed"
+    !status.startedAt ||
+    status.stage === "completed" ||
+    status.stage === "failed"
   ) {
     return null;
   }
 
-  const startTime = new Date(importStatus.created_at).getTime();
+  const startTime = new Date(status.startedAt).getTime();
   const currentTime = Date.now();
   const elapsedTime = currentTime - startTime;
-  const progress = importStatus.percentage || 0;
+  const progress = status.progress || 0;
 
   if (progress <= 0 || progress >= 100) {
     return null;
@@ -35,7 +39,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const { id: artistId } = params;
+  const artistId = params.id;
 
   if (!artistId) {
     return NextResponse.json(
@@ -45,70 +49,91 @@ export async function GET(
   }
 
   try {
-    const cookieStore = await cookies();
-    const supabase = createRouteHandlerClient({
-      cookies: () => Promise.resolve(cookieStore),
+    console.log(`[Import Status API] Getting status for artist ${artistId}`);
+
+    // First try to get status from ProgressBus (real-time)
+    const liveStatus = await ProgressBus.getStatus(artistId);
+    
+    if (liveStatus) {
+      console.log(`[Import Status API] Found live status for ${artistId}:`, liveStatus);
+      const status = {
+        stage: liveStatus.stage,
+        percentage: liveStatus.progress || 0,
+        progress: liveStatus.progress || 0, // Alias for compatibility
+        message: liveStatus.message,
+        error: liveStatus.error,
+        startedAt: liveStatus.at,
+        updatedAt: liveStatus.at,
+        completedAt: liveStatus.stage === 'completed' ? liveStatus.at : null,
+        isComplete: liveStatus.stage === "completed",
+        hasError: liveStatus.stage === "failed" || !!liveStatus.error,
+        errorMessage: liveStatus.error,
+        artistId,
+        estimatedTimeRemaining: calculateEstimatedTime({
+          startedAt: liveStatus.at,
+          stage: liveStatus.stage,
+          progress: liveStatus.progress
+        }),
+      };
+
+      return NextResponse.json(status);
+    }
+
+    // Fallback to database query for import status
+    const dbStatus = await db.query.importStatus.findFirst({
+      where: eq(importStatus.artistId, artistId),
     });
 
-    // Get the most recent import status for this artist
-    const { data: importStatus, error } = await supabase
-      .from("import_status")
-      .select("*")
-      .eq("artist_id", artistId)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .single();
+    if (dbStatus) {
+      console.log(`[Import Status API] Found database status for ${artistId}:`, dbStatus);
+      const status = {
+        stage: dbStatus.stage,
+        percentage: dbStatus.percentage || 0,
+        progress: dbStatus.percentage || 0, // Alias for compatibility
+        message: dbStatus.message || "Processing...",
+        error: dbStatus.error,
+        startedAt: dbStatus.startedAt?.toISOString() || dbStatus.createdAt.toISOString(),
+        updatedAt: dbStatus.updatedAt.toISOString(),
+        completedAt: dbStatus.completedAt?.toISOString() || null,
+        isComplete: dbStatus.stage === "completed",
+        hasError: dbStatus.stage === "failed",
+        errorMessage: dbStatus.error,
+        artistId: dbStatus.artistId,
+        estimatedTimeRemaining: calculateEstimatedTime({
+          startedAt: dbStatus.startedAt?.toISOString() || dbStatus.createdAt.toISOString(),
+          stage: dbStatus.stage,
+          progress: dbStatus.percentage || 0
+        }),
+      };
 
-    if (error && error.code !== "PGRST116") {
-      // PGRST116 = no rows returned
-      console.error("Error fetching import status:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch import status", details: error.message },
-        { status: 500 },
-      );
+      return NextResponse.json(status);
     }
 
-    if (!importStatus) {
-      // Return a default "waiting" status if no import status exists yet
-      return NextResponse.json({
-        stage: "initializing",
-        percentage: 0,
-        progress: 0,
-        message: "Waiting for import to start...",
-        error: null,
-        startedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        completedAt: null,
-        isComplete: false,
-        hasError: false,
-        errorMessage: null,
-        artistId: artistId,
-        estimatedTimeRemaining: null,
-      });
-    }
+    // No status found anywhere, return waiting status
+    console.log(`[Import Status API] No status found for ${artistId}, returning waiting state`);
+    return NextResponse.json({
+      stage: "initializing",
+      percentage: 0,
+      progress: 0,
+      message: "Waiting for import to start...",
+      error: null,
+      startedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      completedAt: null,
+      isComplete: false,
+      hasError: false,
+      errorMessage: null,
+      artistId,
+      estimatedTimeRemaining: null,
+    });
 
-    // Transform to match the expected ImportStatus interface
-    const status = {
-      stage: importStatus.stage,
-      percentage: importStatus.percentage || 0,
-      progress: importStatus.percentage || 0, // Alias for compatibility
-      message: importStatus.message,
-      error: importStatus.error,
-      startedAt: importStatus.created_at,
-      updatedAt: importStatus.updated_at,
-      completedAt: importStatus.completed_at,
-      isComplete: importStatus.stage === "completed",
-      hasError: importStatus.stage === "failed",
-      errorMessage: importStatus.error,
-      artistId: importStatus.artist_id,
-      estimatedTimeRemaining: calculateEstimatedTime(importStatus),
-    };
-
-    return NextResponse.json(status);
   } catch (error) {
-    console.error("Error fetching import status:", error);
+    console.error(`[Import Status API] Error fetching import status for ${artistId}:`, error);
     return NextResponse.json(
-      { error: "Failed to fetch import status" },
+      { 
+        error: "Failed to fetch import status",
+        details: error instanceof Error ? error.message : "Unknown error"
+      },
       { status: 500 },
     );
   }

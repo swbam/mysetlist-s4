@@ -45,7 +45,7 @@
           },
           {
             "title": "Venue Maps & Info",
-            "description": "Interactive venue maps, parking info, and insider tips from the community."
+            "description": "Interactive venue maps, parking info, and essential venue details."
           },
           {
             "title": "Concert History",
@@ -112,7 +112,7 @@
           },
           {
             "title": "Venue info on point",
-            "description": "The venue maps and parking tips saved me so much stress. Plus finding out about the secret entrance was clutch!",
+            "description": "The venue maps and parking info saved me so much stress. Getting directions and venue details was super helpful!",
             "author": {
               "name": "Jamie Park",
               "image": "https://github.com/pontusab.png"

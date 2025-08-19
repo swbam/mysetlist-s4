@@ -36,7 +36,7 @@ import {
 import { createClient } from "~/lib/supabase/client";
 
 interface ModerationItemProps {
-  type: "setlist" | "review" | "photo" | "tip";
+  type: "setlist";
   item: any;
 }
 
@@ -135,14 +135,7 @@ export default function ModerationItem({ type, item }: ModerationItemProps) {
   const handleApprove = async () => {
     setLoading(true);
     try {
-      const table =
-        type === "setlist"
-          ? "setlists"
-          : type === "review"
-            ? "venue_reviews"
-            : type === "photo"
-              ? "venue_photos"
-              : "venue_insider_tips";
+      const table = "setlists";
 
       // Update moderation status
       const { error } = await supabase
@@ -187,14 +180,7 @@ export default function ModerationItem({ type, item }: ModerationItemProps) {
   const handleReject = async () => {
     setLoading(true);
     try {
-      const table =
-        type === "setlist"
-          ? "setlists"
-          : type === "review"
-            ? "venue_reviews"
-            : type === "photo"
-              ? "venue_photos"
-              : "venue_insider_tips";
+      const table = "setlists";
 
       // Update moderation status
       const { error } = await supabase
@@ -294,10 +280,7 @@ export default function ModerationItem({ type, item }: ModerationItemProps) {
                       setLoading(true);
                       
                       // Update moderation status to flagged
-                      const table = type === "setlist" ? "setlists" 
-                        : type === "review" ? "venue_reviews" 
-                        : type === "photo" ? "venue_photos" 
-                        : "venue_insider_tips";
+                      const table = "setlists";
 
                       const { error } = await supabase
                         .from(table)

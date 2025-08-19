@@ -48,8 +48,6 @@ export async function DELETE(
       (await supabase.from("shows").select("id").eq("venue_id", venueId)).data?.map(s => s.id) || []
     );
     await supabase.from("shows").delete().eq("venue_id", venueId);
-    await supabase.from("venue_reviews").delete().eq("venue_id", venueId);
-    await supabase.from("venue_photos").delete().eq("venue_id", venueId);
 
     // Delete the venue
     const { error } = await supabase

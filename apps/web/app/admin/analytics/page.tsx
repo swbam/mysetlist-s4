@@ -119,7 +119,6 @@ export default async function AnalyticsPage() {
         city,
         state,
         capacity,
-        venue_reviews (rating),
         shows (count)
       `,
       )
@@ -365,13 +364,6 @@ export default async function AnalyticsPage() {
               <CardContent>
                 <div className="space-y-4">
                   {topVenues?.slice(0, 8).map((venue, index) => {
-                    const avgRating =
-                      venue.venue_reviews?.length > 0
-                        ? venue.venue_reviews.reduce(
-                            (sum: number, review: any) => sum + review.rating,
-                            0,
-                          ) / venue.venue_reviews.length
-                        : 0;
                     const showCount = venue.shows?.[0]?.count || 0;
 
                     return (
@@ -393,12 +385,6 @@ export default async function AnalyticsPage() {
                             <Calendar className="h-3 w-3" />
                             <span>{showCount} shows</span>
                           </div>
-                          {avgRating > 0 && (
-                            <div className="mt-1 flex items-center gap-1">
-                              <Star className="h-3 w-3" />
-                              <span>{avgRating.toFixed(1)}</span>
-                            </div>
-                          )}
                         </div>
                       </div>
                     );

@@ -106,4 +106,33 @@ export class TicketmasterClient extends BaseAPIClient {
       3600,
     );
   }
+
+  async *iterateEventsByAttraction(attractionId: string): AsyncGenerator<TicketmasterEvent[], void, unknown> {
+    let page = 0;
+    let totalPages = 1;
+
+    while (page < totalPages) {
+      const params = new URLSearchParams({
+        attractionId: attractionId,
+        size: "200",
+        page: page.toString(),
+      });
+
+      const response = await this.makeRequest<{ _embedded?: { events: TicketmasterEvent[] }; page: any }>(
+        `/events.json?${params}`,
+        {},
+        `ticketmaster:events:attraction:${attractionId}:${page}`,
+        900, // 15 minutes cache
+      );
+
+      totalPages = response.page?.totalPages ?? 0;
+      const events = response._embedded?.events ?? [];
+      
+      if (events.length > 0) {
+        yield events;
+      }
+      
+      page++;
+    }
+  }
 }

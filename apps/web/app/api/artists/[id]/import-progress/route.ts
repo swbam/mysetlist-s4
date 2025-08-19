@@ -1,14 +1,14 @@
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
+import { ProgressBus, onProgress, offProgress } from "~/lib/services/progress/ProgressBus";
 
+export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } },
 ) {
-  const { id: artistId } = params;
+  const artistId = params.id;
 
   if (!artistId) {
     return NextResponse.json(
@@ -17,95 +17,22 @@ export async function GET(
     );
   }
 
+  console.log(`[SSE Import Progress] Starting real-time stream for artist ${artistId}`);
+
   // Create a readable stream for Server-Sent Events
+  const encoder = new TextEncoder();
+  let progressListener: ((event: any) => void) | null = null;
+  let keepAliveInterval: NodeJS.Timeout | null = null;
+
   const stream = new ReadableStream({
     start(controller) {
       // Function to send SSE formatted data
       const sendEvent = (eventType: string, data: any) => {
-        const eventData = `event: ${eventType}\ndata: ${JSON.stringify(data)}\n\n`;
-        controller.enqueue(new TextEncoder().encode(eventData));
-      };
-
-      // Function to check import status and send updates
-      const checkStatus = async () => {
         try {
-          const supabase = createRouteHandlerClient({
-            cookies: () =>
-              ({
-                get: () => undefined,
-                has: () => false,
-                set: () => {},
-                delete: () => {},
-                getAll: () => [],
-                [Symbol.iterator]: function* () {},
-              }) as any,
-          });
-
-          // Get the most recent import status for this artist
-          const { data: importStatus, error } = await supabase
-            .from("import_status")
-            .select("*")
-            .eq("artist_id", artistId)
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .single();
-
-          if (error && error.code !== "PGRST116") {
-            // PGRST116 = no rows returned
-            console.error("SSE: Error fetching import status:", error);
-            sendEvent("error", {
-              message: "Failed to fetch import status",
-              details: error.message,
-            });
-            return false; // Continue polling
-          }
-
-          if (!importStatus) {
-            // No status found yet, send waiting message
-            sendEvent("waiting", {
-              stage: "initializing",
-              progress: 0,
-              message: "Waiting for import to start...",
-              timestamp: new Date().toISOString(),
-            });
-            return true; // Continue polling
-          }
-
-          // Transform status to match expected format
-          const progressData = {
-            stage: importStatus.stage,
-            progress: importStatus.percentage || 0,
-            message: importStatus.message || "Processing...",
-            timestamp: importStatus.updated_at,
-            artistId: importStatus.artist_id,
-            isComplete: importStatus.stage === "completed",
-            hasError: importStatus.stage === "failed",
-            errorMessage: importStatus.error,
-            startedAt: importStatus.created_at,
-            completedAt: importStatus.completed_at,
-          };
-
-          // Send progress update
-          sendEvent("progress", progressData);
-
-          // Check if we should stop polling
-          if (progressData.isComplete || progressData.hasError) {
-            // Send final event and close stream
-            sendEvent(
-              progressData.isComplete ? "complete" : "error",
-              progressData,
-            );
-            return false; // Stop polling
-          }
-
-          return true; // Continue polling
-        } catch (error) {
-          console.error("SSE: Status check failed:", error);
-          sendEvent("error", {
-            message: "Failed to check import status",
-            details: error instanceof Error ? error.message : "Unknown error",
-          });
-          return true; // Continue polling despite error
+          const eventData = `event: ${eventType}\ndata: ${JSON.stringify(data)}\n\n`;
+          controller.enqueue(encoder.encode(eventData));
+        } catch (err) {
+          console.error(`[SSE Import Progress] Error sending ${eventType} event:`, err);
         }
       };
 
@@ -113,59 +40,123 @@ export async function GET(
       sendEvent("connected", {
         artistId,
         timestamp: new Date().toISOString(),
-        message: "Connected to import progress stream",
+        message: "Connected to real-time import progress stream",
       });
 
-      // Start polling
-      let pollInterval: NodeJS.Timeout;
-      let pollCount = 0;
-      const maxPolls = 300; // 5 minutes max (300 * 1 second)
-
-      const startPolling = () => {
-        pollInterval = setInterval(async () => {
-          pollCount++;
-
-          // Safety: Stop after max polls to prevent infinite streaming
-          if (pollCount >= maxPolls) {
-            sendEvent("timeout", {
-              message: "Import progress monitoring timed out",
-              timestamp: new Date().toISOString(),
+      // Set up real-time progress listener
+      progressListener = (event: any) => {
+        try {
+          console.log(`[SSE Import Progress] Real-time progress event for ${artistId}:`, event);
+          
+          // Format progress event to match what the frontend expects
+          const progressData = {
+            artistId,
+            stage: event.stage,
+            progress: event.progress,
+            message: event.message,
+            timestamp: event.at || new Date().toISOString(),
+            isComplete: event.stage === 'completed',
+            hasError: event.stage === 'failed' || !!event.error,
+            errorMessage: event.error,
+            startedAt: event.startedAt,
+            completedAt: event.completedAt,
+            totalSongs: event.metadata?.totalSongs,
+            totalShows: event.metadata?.totalShows,
+            totalVenues: event.metadata?.totalVenues,
+          };
+          
+          // Send progress update
+          sendEvent("progress", progressData);
+          
+          // Send completion or error events
+          if (event.stage === 'completed') {
+            sendEvent("complete", {
+              ...progressData,
+              isComplete: true,
+              progress: 100
             });
-            clearInterval(pollInterval);
-            controller.close();
-            return;
+          } else if (event.stage === 'failed' || event.error) {
+            sendEvent("error", {
+              ...progressData,
+              hasError: true,
+              errorMessage: event.error || event.message
+            });
           }
-
-          const shouldContinue = await checkStatus();
-          if (!shouldContinue) {
-            clearInterval(pollInterval);
-            controller.close();
-          }
-        }, 1000); // Poll every 1 second
+        } catch (err) {
+          console.error(`[SSE Import Progress] Error handling progress event for ${artistId}:`, err);
+        }
       };
 
-      // Initial status check
-      checkStatus().then((shouldContinue) => {
-        if (shouldContinue) {
-          startPolling();
-        } else {
-          controller.close();
+      // Register the real-time listener
+      onProgress(artistId, progressListener);
+
+      // Get current status first
+      queueMicrotask(async () => {
+        try {
+          const currentStatus = await ProgressBus.getStatus(artistId);
+          if (currentStatus) {
+            console.log(`[SSE Import Progress] Sending current status for ${artistId}:`, currentStatus);
+            sendEvent("progress", {
+              artistId,
+              stage: currentStatus.stage,
+              progress: currentStatus.progress,
+              message: currentStatus.message,
+              timestamp: currentStatus.at,
+              isComplete: currentStatus.stage === 'completed',
+              hasError: currentStatus.stage === 'failed' || !!currentStatus.error,
+              errorMessage: currentStatus.error,
+            });
+          } else {
+            // No status found yet, send waiting message
+            sendEvent("waiting", {
+              stage: "initializing",
+              progress: 0,
+              message: "Waiting for import to start...",
+              timestamp: new Date().toISOString(),
+              artistId,
+            });
+          }
+        } catch (error) {
+          console.error(`[SSE Import Progress] Error getting current status for ${artistId}:`, error);
+          sendEvent("error", {
+            message: "Failed to get initial status",
+            details: error instanceof Error ? error.message : "Unknown error",
+            timestamp: new Date().toISOString(),
+            artistId,
+          });
         }
       });
 
-      // Cleanup function
-      return () => {
-        if (pollInterval) {
-          clearInterval(pollInterval);
+      // Send keep-alive ping every 30 seconds
+      keepAliveInterval = setInterval(() => {
+        try {
+          sendEvent("ping", {
+            timestamp: new Date().toISOString()
+          });
+        } catch (err) {
+          console.error(`[SSE Import Progress] Error sending keep-alive for ${artistId}:`, err);
+        }
+      }, 30000);
+
+      // Store cleanup function
+      (controller as any)._cleanup = () => {
+        console.log(`[SSE Import Progress] Cleaning up stream for artist ${artistId}`);
+        if (progressListener) {
+          offProgress(artistId, progressListener);
+          progressListener = null;
+        }
+        if (keepAliveInterval) {
+          clearInterval(keepAliveInterval);
+          keepAliveInterval = null;
         }
       };
     },
 
     cancel() {
-      // Client disconnected, clean up
-      console.log(
-        `SSE: Client disconnected from import progress stream for artist ${artistId}`,
-      );
+      console.log(`[SSE Import Progress] Stream cancelled for artist ${artistId}`);
+      if ((this as any)._cleanup) {
+        (this as any)._cleanup();
+      }
     },
   });
 
@@ -173,8 +164,8 @@ export async function GET(
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
+      "Cache-Control": "no-cache, no-store, must-revalidate",
+      "Connection": "keep-alive",
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET",
       "Access-Control-Allow-Headers": "Cache-Control",

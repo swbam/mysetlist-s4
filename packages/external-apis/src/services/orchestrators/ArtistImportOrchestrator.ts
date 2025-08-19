@@ -3,7 +3,6 @@ import { report } from "../progress/ProgressBus";
 import { ingestShowsAndVenues } from "../ingest/TicketmasterIngest";
 import { ingestStudioCatalog } from "../ingest/SpotifyCatalogIngest";
 import { eq } from "drizzle-orm";
-import { queueManager, QueueName, Priority } from "apps/web/lib/queues/queue-manager";
 
 export async function initiateImport(tmAttractionId: string) {
   const artist = await db
@@ -20,24 +19,16 @@ export async function initiateImport(tmAttractionId: string) {
     })
     .returning();
 
-    await report(artist[0].id, "initializing", 10, "Starting import…");
+  await report(artist[0].id, "initializing", 10, "Starting import…");
 
-    await queueManager.addJob(
-        QueueName.ARTIST_IMPORT,
-        "import-artist",
-        {
-            artistId: artist[0].id,
-            tmAttractionId,
-            spotifyArtistId: artist[0].spotifyId,
-            artistName: artist[0].name,
-        },
-        {
-            priority: Priority.CRITICAL,
-            jobId: `import-${artist[0].id}`,
-        }
-    );
-
-  return { artistId: artist[0].id, slug: artist[0].slug };
+  // Return artist info and let the caller handle queue job creation
+  return { 
+    artistId: artist[0].id, 
+    slug: artist[0].slug,
+    tmAttractionId,
+    spotifyArtistId: artist[0].spotifyId,
+    artistName: artist[0].name,
+  };
 }
 
 export async function runFullImport(artistId: string) {

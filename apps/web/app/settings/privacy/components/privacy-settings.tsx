@@ -120,7 +120,6 @@ export function PrivacySettings({
         attended_shows: shows,
         followed_artists: artists,
         votes,
-        venue_reviews: reviews,
         exported_at: new Date().toISOString(),
       };
 

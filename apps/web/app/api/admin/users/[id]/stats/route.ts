@@ -29,21 +29,15 @@ export async function GET(
     // Get user statistics
     const [
       setlistsResult,
-      reviewsResult,
-      votesResult,
-      photosResult
+      votesResult
     ] = await Promise.all([
       supabase.from("setlists").select("id", { count: "exact" }).eq("user_id", userId),
-      supabase.from("venue_reviews").select("id", { count: "exact" }).eq("user_id", userId),
-      supabase.from("votes").select("id", { count: "exact" }).eq("user_id", userId),
-      supabase.from("venue_photos").select("id", { count: "exact" }).eq("user_id", userId)
+      supabase.from("votes").select("id", { count: "exact" }).eq("user_id", userId)
     ]);
 
     const stats = {
       setlists_created: setlistsResult.count || 0,
-      reviews_written: reviewsResult.count || 0,
       votes_cast: votesResult.count || 0,
-      photos_uploaded: photosResult.count || 0,
     };
 
     return NextResponse.json(stats);

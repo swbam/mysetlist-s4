@@ -11,7 +11,7 @@ export const generateMetadata = async (): Promise<Metadata> => {
   return createMetadata({
     title: "Venues",
     description:
-      "Explore concert venues, get insider tips, and plan your perfect show experience",
+      "Explore concert venues, get parking info, and plan your perfect show experience",
   });
 };
 
@@ -59,8 +59,8 @@ const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
                 Discover Venues
               </h1>
               <p className="max-w-2xl text-lg text-muted-foreground">
-                Find the best concert venues near you with insider tips, parking
-                info, and more
+                Find the best concert venues near you with parking info, venue
+                details, and more
               </p>
             </div>
 
