@@ -2,32 +2,32 @@
   "name": "@repo/external-apis",
   "version": "0.0.0",
   "description": "External API clients and sync services for TheSet",
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./clients": {
-      "types": "./src/clients/index.ts",
-      "default": "./src/clients/index.ts"
+      "types": "./dist/src/clients/index.d.ts",
+      "default": "./dist/src/clients/index.js"
     },
     "./services": {
-      "types": "./src/services/index.ts",
-      "default": "./src/services/index.ts"
+      "types": "./dist/src/services/index.d.ts",
+      "default": "./dist/src/services/index.js"
     },
     "./utils": {
-      "types": "./src/utils/index.ts",
-      "default": "./src/utils/index.ts"
+      "types": "./dist/src/utils/index.d.ts",
+      "default": "./dist/src/utils/index.js"
     },
     "./types": {
-      "types": "./src/types/index.ts",
-      "default": "./src/types/index.ts"
+      "types": "./dist/src/types/index.d.ts",
+      "default": "./dist/src/types/index.js"
     }
   },
   "scripts": {
-    "build": "tsc --build",
+    "build": "tsc --skipLibCheck",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
@@ -42,7 +42,6 @@
     "@t3-oss/env-nextjs": "^0.13.4",
     "@upstash/redis": "^1.28.0",
     "commander": "^11.1.0",
-    "drizzle-orm": "^0.29.3",
     "postgres": "^3.4.7",
     "server-only": "^0.0.1",
     "zod": "^3.25.28"

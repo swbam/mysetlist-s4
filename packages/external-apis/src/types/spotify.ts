@@ -12,11 +12,22 @@ export interface SpotifyArtist {
   };
 }
 
+export interface SpotifyAlbum {
+  id: string;
+  name: string;
+  artists: { name: string }[];
+  images: { url: string }[];
+  release_date: string;
+  total_tracks: number;
+  album_type: string;
+}
+
 export interface SpotifyTrack {
   id: string;
   name: string;
   artists: { name: string }[];
   album: {
+    id: string;
     name: string;
     images: { url: string }[];
     release_date: string;
@@ -26,8 +37,13 @@ export interface SpotifyTrack {
   preview_url: string | null;
   explicit: boolean;
   is_playable: boolean;
+  track_number?: number;
+  disc_number?: number;
   external_ids?: {
     isrc?: string;
+  };
+  external_urls?: {
+    spotify: string;
   };
 }
 

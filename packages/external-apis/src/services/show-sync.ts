@@ -153,7 +153,7 @@ export class ShowSyncService {
 
     // If we still don't have an artist, create a placeholder one based on the Ticketmaster data
     if (!artistId && event._embedded?.attractions?.[0]) {
-      const attraction = event._embedded.attractions[0];
+      const attraction = event._embedded.attractions[0] as { id: string; name: string };
       try {
         console.log(`Creating placeholder artist for: ${attraction.name}`);
         const [placeholderArtist] = await db
@@ -629,7 +629,12 @@ export class ShowSyncService {
       return;
     }
 
-    const artist = searchResult.setlist[0].artist;
+    const firstSetlist = searchResult.setlist[0];
+    if (!firstSetlist) {
+      return;
+    }
+
+    const artist = firstSetlist.artist;
     if (!artist) {
       return;
     }

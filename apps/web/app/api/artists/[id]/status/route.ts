@@ -4,12 +4,12 @@ import { eq } from "drizzle-orm";
 
 export async function GET(
   _: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const status = await db.query.syncProgress.findFirst({
-    where: eq(syncProgress.jobId, params.id),
-  });
+  const { id } = await params;
+  const status = await db.select().from(syncProgress).where(eq(syncProgress.jobId, id)).limit(1);
+  const result = status[0];
   return NextResponse.json(
-    status ?? { stage: "unknown", progress: 0, message: "No status" },
+    result ?? { stage: "unknown", progress: 0, message: "No status" },
   );
 }

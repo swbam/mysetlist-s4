@@ -16,7 +16,7 @@ import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 import { ArtistSyncService } from "./artist-sync";
 import { ShowSyncService } from "./show-sync";
 
-export interface ImportProgress {
+export interface ArtistImportProgress {
   stage:
     | "initializing"
     | "syncing-identifiers"
@@ -43,7 +43,7 @@ export interface ImportResult {
   totalShows: number;
   totalVenues: number;
   importDuration: number;
-  stages: ImportProgress[];
+  stages: ArtistImportProgress[];
 }
 
 export class ArtistImportOrchestrator {
@@ -53,10 +53,10 @@ export class ArtistImportOrchestrator {
   private showSyncService: ShowSyncService;
   private errorHandler: SyncErrorHandler;
   private progressCallback:
-    | ((progress: ImportProgress) => Promise<void>)
+    | ((progress: ArtistImportProgress) => Promise<void>)
     | undefined;
 
-  constructor(progressCallback?: (progress: ImportProgress) => Promise<void>) {
+  constructor(progressCallback?: (progress: ArtistImportProgress) => Promise<void>) {
     this.spotifyClient = new SpotifyClient({});
     this.ticketmasterClient = new TicketmasterClient({
       apiKey: process.env['TICKETMASTER_API_KEY'] || "",
@@ -78,7 +78,7 @@ export class ArtistImportOrchestrator {
    */
   async importArtist(tmAttractionId: string): Promise<ImportResult> {
     const startTime = Date.now();
-    const stages: ImportProgress[] = [];
+    const stages: ArtistImportProgress[] = [];
     let artistId = "";
     let slug = "";
 
@@ -342,7 +342,7 @@ export class ArtistImportOrchestrator {
     try {
       const tmShows = await this.ticketmasterClient.searchEvents({
         keyword: artistName,
-        classificationName: "music",
+        classificationName: "Music",
         size: 50,
         sort: "date,asc",
       });
@@ -527,9 +527,9 @@ export class ArtistImportOrchestrator {
    * Update import progress
    */
   private async updateProgress(
-    progress: Partial<ImportProgress>,
+    progress: Partial<ArtistImportProgress>,
   ): Promise<void> {
-    const fullProgress: ImportProgress = {
+    const fullProgress: ArtistImportProgress = {
       stage: "initializing",
       progress: 0,
       message: "",

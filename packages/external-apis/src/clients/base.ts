@@ -2,14 +2,14 @@ import { Redis } from "@upstash/redis";
 
 export interface APIClientConfig {
   baseURL: string;
-  apiKey?: string | undefined;
+  apiKey?: string;
   rateLimit?: {
     requests: number;
     window: number; // seconds
-  } | undefined;
+  };
   cache?: {
     defaultTTL: number; // seconds
-  } | undefined;
+  };
 }
 
 export abstract class BaseAPIClient {
@@ -20,8 +20,8 @@ export abstract class BaseAPIClient {
 
   constructor(config: APIClientConfig) {
     this.baseURL = config.baseURL;
-    this.apiKey = config.apiKey;
-    this.rateLimit = config.rateLimit;
+    this.apiKey = config.apiKey ?? undefined;
+    this.rateLimit = config.rateLimit ?? undefined;
     this.cache = new Redis({
       url: process.env["UPSTASH_REDIS_REST_URL"]!,
       token: process.env["UPSTASH_REDIS_REST_TOKEN"]!,

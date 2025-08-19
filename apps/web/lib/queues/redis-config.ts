@@ -20,6 +20,11 @@ const baseOptions = {
   retryStrategy: (times: number) => Math.min(times * 50, 2000),
   // Prevent eager connection attempts during build; connect on first command
   lazyConnect: true as any,
+  // Handle TLS properly for Redis Cloud/Upstash
+  family: 4, // Use IPv4
+  keepAlive: true,
+  connectTimeout: 10000,
+  commandTimeout: 5000,
 };
 
 // ioredis-compatible factory

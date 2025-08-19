@@ -494,9 +494,7 @@ export const PRODUCTION_CHECKLIST: ProductionReadinessCheck[] = [
     automated: true,
     testFunction: async (): Promise<CheckResult> => {
       try {
-        const { TicketmasterClient } = await import(
-          "@repo/external-apis/src/clients/ticketmaster"
-        );
+        const { TicketmasterClient } = await import("@repo/external-apis");
         const client = new TicketmasterClient({
           apiKey: process.env.TICKETMASTER_API_KEY || "",
         });

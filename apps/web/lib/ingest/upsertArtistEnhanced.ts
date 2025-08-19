@@ -54,6 +54,11 @@ export async function upsertArtistEnhanced(tmId: string) {
 
   // Fetch artist data from Ticketmaster
   const attraction = await fetchAttraction(tmId);
+  
+  if (!attraction) {
+    throw new Error(`Artist with Ticketmaster ID ${tmId} not found`);
+  }
+  
   console.log(`Fetched Ticketmaster data for: ${attraction.name}`);
 
   // Fetch additional data from Spotify

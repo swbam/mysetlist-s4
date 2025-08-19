@@ -5,6 +5,9 @@ import { Inter } from "next/font/google";
 import { ResponsiveHeader } from "../components/layout/responsive-header";
 import { ThemeProvider } from "../components/ui/theme-provider";
 import { AuthProvider } from "./providers/auth-provider";
+import { LoadingProvider } from "../components/loading/loading-manager";
+import { GlobalLoadingIndicator } from "../components/loading/global-loading-indicator";
+import { PageErrorBoundary } from "../components/error-boundaries/comprehensive-error-boundary";
 // import { CacheManager } from "../components/cache-manager";
 import "@repo/design-system/styles/globals.css";
 
@@ -48,6 +51,61 @@ export default function RootLayout({
         />
         <link rel="dns-prefetch" href="https://i.scdn.co" />
         <link rel="dns-prefetch" href="https://s1.ticketm.net" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Initialize custom element safety early
+              if (typeof window !== 'undefined' && window.customElements && !window.__customElementSafetyInitialized) {
+                const registeredElements = new Set();
+                const originalDefine = window.customElements.define;
+                window.customElements.define = function(name, constructor, options) {
+                  try {
+                    if (window.customElements.get(name)) {
+                      // Silent in production, only warn in development
+                      if ('${process.env.NODE_ENV}' === 'development') {
+                        console.warn('Custom element ' + name + ' already defined, skipping.');
+                      }
+                      registeredElements.add(name);
+                      return;
+                    }
+                    originalDefine.call(this, name, constructor, options);
+                    registeredElements.add(name);
+                  } catch (error) {
+                    // Silent error handling in production
+                    if ('${process.env.NODE_ENV}' === 'development') {
+                      console.error('Error defining custom element ' + name + ':', error);
+                    }
+                    if (error.message && error.message.includes('already been defined')) {
+                      registeredElements.add(name);
+                    }
+                  }
+                };
+                window.__customElementSafetyInitialized = true;
+              }
+
+              // Production console cleanup
+              if ('${process.env.NODE_ENV}' === 'production') {
+                const noop = function() {};
+                const originalError = console.error;
+                console.log = noop;
+                console.info = noop;
+                console.warn = noop;
+                console.debug = noop;
+                console.trace = noop;
+                console.group = noop;
+                console.groupCollapsed = noop;
+                console.groupEnd = noop;
+                console.table = noop;
+                console.time = noop;
+                console.timeEnd = noop;
+                console.count = noop;
+                console.clear = noop;
+                // Keep console.error for critical errors
+                console.error = originalError;
+              }
+            `,
+          }}
+        />
       </head>
       <body className={inter.className}>
         <ThemeProvider
@@ -55,14 +113,19 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider>
-            <div className="min-h-screen flex flex-col">
-              <ResponsiveHeader />
-              <main className="flex-1">{children}</main>
-              <Footer />
-            </div>
-            <Toaster />
-          </AuthProvider>
+          <LoadingProvider>
+            <GlobalLoadingIndicator />
+            <PageErrorBoundary name="RootLayout">
+              <AuthProvider>
+                <div className="min-h-screen flex flex-col">
+                  <ResponsiveHeader />
+                  <main className="flex-1">{children}</main>
+                  <Footer />
+                </div>
+                <Toaster />
+              </AuthProvider>
+            </PageErrorBoundary>
+          </LoadingProvider>
         </ThemeProvider>
       </body>
     </html>

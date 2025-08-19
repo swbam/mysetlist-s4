@@ -12,7 +12,7 @@ import { eq, inArray } from 'drizzle-orm';
 // Import services
 import { TicketmasterIngest } from '../../lib/services/ingest/TicketmasterIngest';
 import { SpotifyCatalogIngest } from '../../lib/services/ingest/SpotifyCatalogIngest';
-import { iterateEventsByAttraction } from '../../lib/services/adapters/TicketmasterClient';
+import { TicketmasterClient } from '@repo/external-apis';
 import { 
   getAccessToken,
   listAllAlbums,
@@ -47,7 +47,7 @@ const mockTicketmasterEvents = [
       }]
     },
     url: 'https://www.ticketmaster.com/event1',
-    priceRanges: [{ min: 50.00, max: 200.00, currency: 'USD' }]
+    priceRanges: [{ type: 'standard', min: 50.00, max: 200.00, currency: 'USD' }]
   },
   {
     id: 'event2',
@@ -73,7 +73,7 @@ const mockTicketmasterEvents = [
       }]
     },
     url: 'https://www.ticketmaster.com/event2',
-    priceRanges: [{ min: 75.00, max: 250.00, currency: 'USD' }]
+    priceRanges: [{ type: 'standard', min: 75.00, max: 250.00, currency: 'USD' }]
   }
 ];
 

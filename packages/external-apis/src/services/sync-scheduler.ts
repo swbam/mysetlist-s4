@@ -1,6 +1,5 @@
-import { artists } from "@repo/database";
+import { artists, db, eq } from "@repo/database";
 import { SpotifyClient } from "../clients/spotify";
-import { db, eq } from "../database";
 import { ArtistSyncService } from "./artist-sync";
 import { SetlistSyncService } from "./setlist-sync";
 import { ShowSyncService } from "./show-sync";

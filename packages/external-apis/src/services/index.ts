@@ -5,6 +5,9 @@ export { ShowSyncService } from "./show-sync";
 export { SetlistSyncService } from "./setlist-sync";
 export { SyncScheduler } from "./sync-scheduler";
 
+// Export progress functions
+export { onProgress, offProgress, report } from "./progress/ProgressBus";
+
 // Export types
 export type {
   SyncOptions,
@@ -14,6 +17,6 @@ export type {
 } from "./sync-scheduler";
 
 export type {
-  ImportProgress,
+  ArtistImportProgress,
   ImportResult,
 } from "./artist-import-orchestrator";

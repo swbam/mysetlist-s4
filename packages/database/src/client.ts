@@ -1,12 +1,12 @@
 // Remove server-only import to allow client usage
 // import 'server-only';
 import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import postgres, { type Sql } from "postgres";
 import * as schema from "./schema";
 
 // Lazy initialization to avoid errors during build time
 let _db: ReturnType<typeof drizzle> | null = null;
-let _client: postgres.Sql | null = null;
+let _client: Sql | null = null;
 
 // Get database URL from environment variables
 function getDatabaseUrl(): string {
@@ -83,9 +83,9 @@ export const db = new Proxy({} as ReturnType<typeof drizzle>, {
 });
 
 // Migration client with lazy init
-let _migrationClient: postgres.Sql | null = null;
+let _migrationClient: Sql | null = null;
 
-export const migrationClient = new Proxy({} as postgres.Sql, {
+export const migrationClient = new Proxy({} as Sql, {
   get(_target, prop) {
     if (!_migrationClient) {
       const connectionString = getDatabaseUrl();

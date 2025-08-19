@@ -1,5 +1,4 @@
 import { db, syncProgress } from "@repo/database";
-import { eq } from "drizzle-orm";
 import { EventEmitter } from "events";
 import { ImportStage } from "../../types/common";
 

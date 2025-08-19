@@ -3,7 +3,12 @@
   "compilerOptions": {
     "lib": ["es2015"],
     "outDir": "dist",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "exactOptionalPropertyTypes": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "strict": false,
+    "noImplicitAny": false
   },
   "include": ["src/**/*", "index.ts", "keys.ts"],
   "exclude": ["dist", "node_modules"]

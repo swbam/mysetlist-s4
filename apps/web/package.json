@@ -16,7 +16,9 @@
     "test:performance": "tsx scripts/run-performance-tests.ts",
     "test:grok-validation": "npm run test:performance && echo '✅ GROK.md compliance validated'",
     "test:watch": "vitest --config vitest.performance.config.ts",
-    "test:coverage": "vitest run --config vitest.performance.config.ts --coverage"
+    "test:coverage": "vitest run --config vitest.performance.config.ts --coverage",
+    "validate-env": "tsx scripts/validate-env.ts",
+    "check-config": "npm run validate-env && npm run typecheck"
   },
   "dependencies": {
     "@arcjet/next": "1.0.0-beta.8",
@@ -96,13 +98,14 @@
     "lighthouse": "^12.0.0",
     "node-fetch": "^3.3.2",
     "tailwindcss": "^4.1.7",
+    "tsx": "^4.6.0",
     "typescript": "^5.8.3",
     "vitest": "^3.1.4",
     "wait-on": "^7.2.0",
     "webpack-bundle-analyzer": "^4.10.2"
   },
   "engines": {
-    "node": "20.x"
+    "node": ">=18.17.0"
   },
   "packageManager": "pnpm@10.13.1"
 }

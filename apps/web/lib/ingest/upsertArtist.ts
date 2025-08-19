@@ -15,6 +15,10 @@ export async function upsertArtist(tmId: string) {
   // Fetch artist data from Ticketmaster
   const attraction = await fetchAttraction(tmId);
 
+  if (!attraction) {
+    throw new Error(`Artist with Ticketmaster ID ${tmId} not found`);
+  }
+
   // Check if artist already exists by Ticketmaster ID
   const existingArtist = await db
     .select()

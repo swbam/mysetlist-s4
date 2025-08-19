@@ -15,12 +15,14 @@ export { SetlistFmClient } from "./setlistfm";
 export type {
   SpotifyArtist,
   SpotifyTrack,
+  SpotifyAlbum,
   SpotifySearchResult,
 } from "../types/spotify";
 
 export type {
   TicketmasterEvent,
   TicketmasterVenue,
+  TicketmasterAttraction,
 } from "../types/ticketmaster";
 
 export type {

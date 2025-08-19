@@ -61,7 +61,7 @@ const generateMockShows = (count: number = 1000) => {
       }]
     },
     url: `https://www.ticketmaster.com/event${i}`,
-    priceRanges: [{ min: 50 + (i % 50), max: 200 + (i % 100), currency: 'USD' }]
+    priceRanges: [{ type: 'standard', min: 50 + (i % 50), max: 200 + (i % 100), currency: 'USD' }]
   }));
 };
 

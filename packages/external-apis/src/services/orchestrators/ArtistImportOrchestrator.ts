@@ -1,8 +1,7 @@
-import { db, artists } from "@repo/database";
+import { db, artists, eq } from "@repo/database";
 import { report } from "../progress/ProgressBus";
 import { TicketmasterIngestService } from "../ingest/TicketmasterIngest";
 import { SpotifyCatalogIngestService } from "../ingest/SpotifyCatalogIngest";
-import { eq } from "drizzle-orm";
 
 export async function initiateImport(tmAttractionId: string) {
   const artist = await db
@@ -19,14 +18,21 @@ export async function initiateImport(tmAttractionId: string) {
     })
     .returning();
 
+  if (!artist[0]) {
+    throw new Error("Failed to create artist");
+  }
+
   await report(artist[0].id, "initializing", 10, "Starting import…");
   return { artistId: artist[0].id, slug: artist[0].slug };
 }
 
 export async function runFullImport(artistId: string) {
-  let artist = await db.query.artists.findFirst({
-    where: eq(artists.id, artistId),
-  });
+  const artistResults = await db
+    .select()
+    .from(artists)
+    .where(eq(artists.id, artistId))
+    .limit(1);
+  let artist = artistResults[0];
 
   if (!artist) {
     await report(artistId, "failed", 0, "Artist not found.");
@@ -57,9 +63,12 @@ export async function runFullImport(artistId: string) {
     }
 
     // Re-fetch artist to get any updates from show ingest
-    artist = await db.query.artists.findFirst({
-      where: eq(artists.id, artistId),
-    });
+    const refetchResults = await db
+      .select()
+      .from(artists)
+      .where(eq(artists.id, artistId))
+      .limit(1);
+    artist = refetchResults[0];
 
     // Phase 3: Ingest studio catalog from Spotify
     if (artist?.spotifyId) {
