@@ -30,7 +30,7 @@ type ArtistPageProps = {
   params: Promise<{
     slug: string;
   }>;
-  searchParams: { [key: string]: string | string[] | undefined };
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 // Configure ISR with revalidation

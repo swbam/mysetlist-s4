@@ -1,7 +1,6 @@
-import { db, shows, venues } from "@repo/database";
+import { db, shows, venues, inArray } from "@repo/database";
 import { TicketmasterClient } from "../../clients/ticketmaster";
 import { TicketmasterEvent, TicketmasterVenue } from "../../types/ticketmaster";
-import { inArray } from "drizzle-orm";
 
 export class TicketmasterIngestService {
   private ticketmasterClient: TicketmasterClient;
@@ -29,24 +28,7 @@ export class TicketmasterIngestService {
         const mappedVenues = Array.from(venuesMap.values()).map((v) => this.mapVenue(v));
 
         if (mappedVenues.length > 0) {
-          await tx.insert(venues).values(mappedVenues).onConflictDoUpdate({
-            target: venues.tmVenueId,
-            set: {
-              name: mappedVenues[0].name,
-              slug: mappedVenues[0].slug,
-              address: mappedVenues[0].address,
-              city: mappedVenues[0].city,
-              state: mappedVenues[0].state,
-              country: mappedVenues[0].country,
-              postalCode: mappedVenues[0].postalCode,
-              latitude: mappedVenues[0].latitude,
-              longitude: mappedVenues[0].longitude,
-              timezone: mappedVenues[0].timezone,
-              capacity: mappedVenues[0].capacity,
-              website: mappedVenues[0].website,
-              updatedAt: new Date(),
-            },
-          });
+          await tx.insert(venues).values(mappedVenues).onConflictDoNothing();
         }
 
         const dbVenues = await tx
@@ -65,21 +47,7 @@ export class TicketmasterIngestService {
           .filter((s): s is NonNullable<typeof s> => s !== null);
 
         if (showsToInsert.length > 0) {
-          await tx.insert(shows).values(showsToInsert).onConflictDoUpdate({
-            target: shows.tmEventId,
-            set: {
-              name: showsToInsert[0].name,
-              slug: showsToInsert[0].slug,
-              date: showsToInsert[0].date,
-              startTime: showsToInsert[0].startTime,
-              status: showsToInsert[0].status,
-              ticketUrl: showsToInsert[0].ticketUrl,
-              minPrice: showsToInsert[0].minPrice,
-              maxPrice: showsToInsert[0].maxPrice,
-              currency: showsToInsert[0].currency,
-              updatedAt: new Date(),
-            },
-          });
+          await tx.insert(shows).values(showsToInsert).onConflictDoNothing();
         }
       });
     }
@@ -106,17 +74,17 @@ export class TicketmasterIngestService {
       name: tmVenue.name,
       slug: this.generateSlug(tmVenue.name),
       address: tmVenue.address?.line1 ?? null,
-      city: tmVenue.city?.name ?? "",
+      city: tmVenue.city?.name ?? "Unknown",
       state: tmVenue.state?.stateCode ?? null,
-      country: tmVenue.country?.countryCode ?? "",
-      postalCode: tmVenue.postalCode,
+      country: tmVenue.country?.countryCode ?? "US",
+      postalCode: tmVenue.postalCode ?? null,
       latitude: tmVenue.location?.latitude
         ? parseFloat(tmVenue.location.latitude)
         : null,
       longitude: tmVenue.location?.longitude
         ? parseFloat(tmVenue.location.longitude)
         : null,
-      timezone: tmVenue.timezone ?? "",
+      timezone: tmVenue.timezone ?? "America/New_York",
       capacity: tmVenue.capacity ?? null,
       website: tmVenue.url ?? null,
     };

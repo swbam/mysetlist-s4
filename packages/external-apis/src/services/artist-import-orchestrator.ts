@@ -342,7 +342,7 @@ export class ArtistImportOrchestrator {
     try {
       const tmShows = await this.ticketmasterClient.searchEvents({
         keyword: artistName,
-        classificationName: "music",
+        classificationName: "Music",
         size: 50,
         sort: "date,asc",
       });

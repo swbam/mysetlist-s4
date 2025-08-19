@@ -1,7 +1,6 @@
-import { db, songs, artistSongs } from "@repo/database";
+import { db, songs, artistSongs, eq } from "@repo/database";
 import { SpotifyClient } from "../../clients/spotify";
 import { SpotifyTrack } from "../../types/spotify";
-import { eq } from "drizzle-orm";
 import { pLimit } from "../../utils/concurrency";
 import { report } from "../progress/ProgressBus";
 
@@ -93,10 +92,13 @@ export class SpotifyCatalogIngestService {
           })
           .returning();
 
-        await tx
-          .insert(artistSongs)
-          .values({ artistId, songId: song[0].id })
-          .onConflictDoNothing();
+        const insertedSong = song[0];
+        if (insertedSong?.id) {
+          await tx
+            .insert(artistSongs)
+            .values({ artistId, songId: insertedSong.id })
+            .onConflictDoNothing();
+        }
       }
     });
   }
@@ -105,10 +107,10 @@ export class SpotifyCatalogIngestService {
     return {
       spotifyId: track.id,
       name: track.name,
-      albumName: track.album.name,
-      artist: track.artists[0].name,
-      albumArtUrl: track.album.images[0]?.url ?? null,
-      releaseDate: new Date(track.album.release_date).toISOString(),
+      albumName: track.album?.name ?? "Unknown Album",
+      artist: track.artists?.[0]?.name ?? 'Unknown Artist',
+      albumArtUrl: track.album?.images?.[0]?.url ?? null,
+      releaseDate: track.album?.release_date ? new Date(track.album.release_date).toISOString() : null,
       durationMs: track.duration_ms,
       popularity: track.popularity,
       previewUrl: track.preview_url,

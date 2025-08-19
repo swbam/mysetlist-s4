@@ -92,19 +92,13 @@ export function OptimizedImage({
 
   const handleError = useCallback(
     (error: any) => {
-      // Only log in development to prevent console spam
-      if (process.env.NODE_ENV === "development") {
-        console.warn("Image loading failed:", { src: currentSrc, error });
-      }
+      // Silent error handling to prevent console spam
       
       setIsLoading(false);
       setHasError(true);
 
       // Try fallback source if available and not already tried
       if (fallbackSrc && currentSrc !== fallbackSrc) {
-        if (process.env.NODE_ENV === "development") {
-          console.log("Trying fallback image:", fallbackSrc);
-        }
         setCurrentSrc(fallbackSrc);
         setHasError(false);
         setIsLoading(true);

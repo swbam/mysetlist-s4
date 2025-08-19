@@ -27,6 +27,8 @@ export class TicketmasterClient extends BaseAPIClient {
     endDateTime?: string;
     size?: number;
     page?: number;
+    classificationName?: string;
+    sort?: string;
   }): Promise<{ _embedded?: { events: TicketmasterEvent[] }; page: any }> {
     const params = new URLSearchParams();
 

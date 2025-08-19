@@ -117,7 +117,7 @@ export function useComponentLoading(componentId: string) {
 export function useApiLoading() {
   const { setLoading, isLoading } = useLoading();
   
-  const withLoading = useCallback(async <T>(
+  const withLoading = useCallback(async <T,>(
     key: string,
     apiCall: () => Promise<T>
   ): Promise<T> => {

@@ -89,6 +89,11 @@ export function initCustomElementSafety(): void {
     return;
   }
 
+  // Check if we've already initialized to prevent double setup
+  if ((window as any).__customElementSafetyInitialized) {
+    return;
+  }
+
   // Override the original define method to add safety
   const originalDefine = window.customElements.define;
   
@@ -100,15 +105,18 @@ export function initCustomElementSafety(): void {
     try {
       // Check if already defined
       if (window.customElements.get(name)) {
+        // Silent handling in production, warn only in development
         if (process.env.NODE_ENV === "development") {
           console.warn(`Custom element '${name}' is already defined, skipping.`);
         }
+        registeredElements.add(name);
         return;
       }
       
       originalDefine.call(this, name, constructor, options);
       registeredElements.add(name);
     } catch (error) {
+      // Silent error handling in production to prevent console spam
       if (process.env.NODE_ENV === "development") {
         console.error(`Error defining custom element '${name}':`, error);
       }
@@ -119,6 +127,9 @@ export function initCustomElementSafety(): void {
       }
     }
   };
+
+  // Mark as initialized
+  (window as any).__customElementSafetyInitialized = true;
 }
 
 // Auto-initialize if running in browser

@@ -8,8 +8,9 @@ import {
 
 export async function GET(
   _: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const { readable, writable } = new TransformStream();
   const writer = writable.getWriter();
   const enc = new TextEncoder();
@@ -17,15 +18,15 @@ export async function GET(
     writer.write(enc.encode(`data: ${JSON.stringify(o)}\n\n`));
 
   const listener = (p: any) => write(p);
-  onProgress(params.id, listener);
+  onProgress(id, listener);
 
   queueMicrotask(async () => {
     try {
-      await runFullImport(params.id);
+      await runFullImport(id);
     } catch {}
   });
 
-  await report(params.id, "initializing", 0, "Streaming progress…");
+  await report(id, "initializing", 0, "Streaming progress…");
 
   return new Response(readable, {
     headers: {

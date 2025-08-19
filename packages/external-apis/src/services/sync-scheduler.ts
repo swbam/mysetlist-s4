@@ -1,5 +1,4 @@
-import { artists, db } from "@repo/database";
-import { eq } from "drizzle-orm";
+import { artists, db, eq } from "@repo/database";
 import { SpotifyClient } from "../clients/spotify";
 import { ArtistSyncService } from "./artist-sync";
 import { SetlistSyncService } from "./setlist-sync";

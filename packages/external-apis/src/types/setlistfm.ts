@@ -13,6 +13,10 @@ export interface SetlistFmSetlist {
       country: {
         code: string;
       };
+      coords?: {
+        lat: number;
+        long: number;
+      };
     };
   };
   eventDate: string;
@@ -37,6 +41,10 @@ export interface SetlistFmVenue {
     stateCode?: string;
     country: {
       code: string;
+    };
+    coords?: {
+      lat: number;
+      long: number;
     };
   };
 }
