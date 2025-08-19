@@ -60,3 +60,4 @@ export async function testConnection() {
 
 export * from "./schema";
 export * from "./utils/growth-calculation";
+export * from "./schema/admin";

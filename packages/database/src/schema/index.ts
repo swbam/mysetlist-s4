@@ -16,18 +16,7 @@ export * from "./api-keys";
 export * from "./rate-limits";
 
 // Essential admin/monitoring tables
-export { 
-  userActivityLog, 
-  importStatus, 
-  importLogs, 
-  reports,
-  contentModeration,
-  moderationLogs,
-  platformStats,
-  type ImportStatus, 
-  type ImportLog,
-  type InsertImportLog 
-} from "./admin";
+export * from "./admin";
 
 // User bans table (referenced by admin pages)
 export { userBans } from "./search";

@@ -1,162 +1,120 @@
-import { db, shows, venues, sql } from "@repo/database";
+import { db } from "@repo/database";
+import { shows, venues, artists } from "@repo/database";
 import { TicketmasterClient } from "../../clients/ticketmaster";
-import { TicketmasterEvent, TicketmasterVenue } from "../../types/ticketmaster";
-import { inArray } from "@repo/database";
+import { eq } from "drizzle-orm";
+import type { TicketmasterEvent, TicketmasterVenue } from "../../types/ticketmaster";
 
-export class TicketmasterIngestService {
-  private ticketmasterClient: TicketmasterClient;
+export async function ingestShowsAndVenues(artistId: string, tmAttractionId: string) {
+  const ticketmasterClient = new TicketmasterClient({
+    apiKey: process.env['TICKETMASTER_API_KEY']!,
+  });
 
-  constructor() {
-    this.ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env["TICKETMASTER_API_KEY"]!,
-    });
-  }
+  let page = 0;
+  let totalPages = 1;
 
-  async ingestShowsAndVenues(artistId: string, tmAttractionId: string) {
-    for await (const events of this.iterateEventsByAttraction(tmAttractionId)) {
-      if (!events || events.length === 0) continue;
+  while (page < totalPages) {
+    const response = await ticketmasterClient.searchEvents({
+      attractionId: tmAttractionId,
+      page,
+    } as any);
 
-      const venuesMap = new Map<string, TicketmasterVenue>();
-      for (const ev of events) {
-        const v = ev?._embedded?.venues?.[0];
-        if (v?.id) venuesMap.set(v.id, v);
+    const events = response._embedded?.events || [];
+    totalPages = response.page?.totalPages || 0;
+
+    if (events.length === 0) {
+      break;
+    }
+
+    const venuesMap = new Map<string, TicketmasterVenue>();
+    for (const event of events) {
+      const venue = event._embedded?.venues?.[0];
+      if (venue?.id) {
+        venuesMap.set(venue.id, venue);
       }
+    }
 
-      if (venuesMap.size === 0) continue;
-
-      await db.transaction(async (tx) => {
-        const venueTmIds = Array.from(venuesMap.keys());
-        const mappedVenues = Array.from(venuesMap.values()).map((v) => this.mapVenue(v));
-
-        if (mappedVenues.length > 0) {
-          await tx.insert(venues).values(mappedVenues).onConflictDoUpdate({
-            target: venues.tmVenueId,
-            set: {
-              name: sql`${venues.name}`,
-              slug: sql`${venues.slug}`,
-              address: sql`${venues.address}`,
-              city: sql`${venues.city}`,
-              state: sql`${venues.state}`,
-              country: sql`${venues.country}`,
-              postalCode: sql`${venues.postalCode}`,
-              latitude: sql`${venues.latitude}`,
-              longitude: sql`${venues.longitude}`,
-              timezone: sql`${venues.timezone}`,
-              capacity: sql`${venues.capacity}`,
-              website: sql`${venues.website}`,
-              updatedAt: new Date(),
-            },
-          });
-        }
-
-        const dbVenues = await tx
-          .select()
-          .from(venues)
-          .where(inArray(venues.tmVenueId, venueTmIds));
-        const vmap = new Map(dbVenues.map((v) => [v.tmVenueId!, v.id]));
-
-        const showsToInsert = events
-          .map((ev) => {
-            const tmVenue = ev?._embedded?.venues?.[0];
-            const venueId = tmVenue?.id ? vmap.get(tmVenue.id) : undefined;
-            if (!ev.id || !venueId || !ev.dates?.start?.localDate) return null;
-            return this.mapShow(ev, artistId, venueId);
-          })
-          .filter((s): s is NonNullable<typeof s> => s !== null);
-
-        if (showsToInsert.length > 0) {
-          await tx.insert(shows).values(showsToInsert).onConflictDoUpdate({
-            target: shows.tmEventId,
-            set: {
-              name: showsToInsert[0].name,
-              slug: showsToInsert[0].slug,
-              date: showsToInsert[0].date,
-              startTime: showsToInsert[0].startTime,
-              status: showsToInsert[0].status,
-              ticketUrl: showsToInsert[0].ticketUrl,
-              minPrice: showsToInsert[0].minPrice,
-              maxPrice: showsToInsert[0].maxPrice,
-              currency: showsToInsert[0].currency,
-              updatedAt: new Date(),
-            },
-          });
-        }
+    if (venuesMap.size > 0) {
+      const venueTmids = Array.from(venuesMap.keys());
+      const existingVenues = await db.query.venues.findMany({
+        where: (venues, { inArray }) => inArray(venues.tmVenueId, venueTmids),
       });
+
+      const existingVenueIds = new Set(existingVenues.map((v) => v.tmVenueId));
+      const newVenues = venueTmids
+        .filter((id) => !existingVenueIds.has(id))
+        .map((id) => venuesMap.get(id)!)
+        .map((venue) => ({
+          tmVenueId: venue.id,
+          name: venue.name,
+          slug: generateSlug(venue.name),
+          address: venue.address?.line1,
+          city: venue.city?.name ?? "Unknown",
+          state: venue.state?.stateCode,
+          country: venue.country?.countryCode ?? "Unknown",
+          postalCode: venue.postalCode,
+          latitude: venue.location ? parseFloat(venue.location.latitude) : undefined,
+          longitude: venue.location ? parseFloat(venue.location.longitude) : undefined,
+          timezone: venue.timezone ?? "UTC",
+        }));
+
+      if (newVenues.length > 0) {
+        await db.insert(venues).values(newVenues as any);
+      }
     }
-  }
 
-  private async *iterateEventsByAttraction(attractionId: string) {
-    let page = 0;
-    let totalPages = 1;
-    while (page < totalPages) {
-      const data = await this.ticketmasterClient.searchEvents({
-        keyword: attractionId,
-        size: 200,
-        page,
-      });
-      totalPages = data?.page?.totalPages ?? 0;
-      yield data?._embedded?.events ?? [];
-      page++;
+    const dbVenues = await db.query.venues.findMany({
+      where: (venues, { inArray }) => inArray(venues.tmVenueId, Array.from(venuesMap.keys())),
+    });
+    const venueIdMap = new Map(dbVenues.map((v) => [v.tmVenueId, v.id]));
+
+    const showTmIds = events.map((e) => e.id);
+    const existingShows = await db.query.shows.findMany({
+        where: (shows, { inArray }) => inArray(shows.tmEventId, showTmIds),
+    });
+    const existingShowIds = new Set(existingShows.map((s) => s.tmEventId));
+
+    const newShows = events
+      .filter((event) => !existingShowIds.has(event.id))
+      .map((event) => {
+        const venueId = event._embedded?.venues?.[0]?.id ? venueIdMap.get(event._embedded.venues[0].id) : undefined;
+        if (!venueId) return null;
+        return {
+          tmEventId: event.id,
+          headlinerArtistId: artistId,
+          venueId: venueId,
+          name: event.name,
+          slug: generateSlug(event.name),
+          date: new Date(event.dates.start.localDate),
+          startTime: event.dates.start.localTime,
+          status: mapEventStatus(event.dates.status.code),
+          ticketUrl: event.url,
+        };
+      })
+      .filter(Boolean);
+
+    if (newShows.length > 0) {
+      await db.insert(shows).values(newShows as any[]);
     }
-  }
 
-  private mapVenue(tmVenue: TicketmasterVenue) {
-    return {
-      tmVenueId: tmVenue.id,
-      name: tmVenue.name,
-      slug: this.generateSlug(tmVenue.name),
-      address: tmVenue.address?.line1 ?? null,
-      city: tmVenue.city?.name ?? "",
-      state: tmVenue.state?.stateCode ?? null,
-      country: tmVenue.country?.countryCode ?? "",
-      postalCode: tmVenue.postalCode,
-      latitude: tmVenue.location?.latitude
-        ? parseFloat(tmVenue.location.latitude)
-        : null,
-      longitude: tmVenue.location?.longitude
-        ? parseFloat(tmVenue.location.longitude)
-        : null,
-      timezone: tmVenue.timezone ?? "",
-      capacity: tmVenue.capacity ?? null,
-      website: tmVenue.url ?? null,
-    };
+    page++;
   }
+}
 
-  private mapShow(tmEvent: TicketmasterEvent, artistId: string, venueId: string) {
-    return {
-      tmEventId: tmEvent.id,
-      headlinerArtistId: artistId,
-      venueId: venueId,
-      name: tmEvent.name,
-      slug: this.generateSlug(tmEvent.name),
-      date: new Date(tmEvent.dates.start.localDate).toISOString(),
-      startTime: tmEvent.dates.start.localTime ?? null,
-      status: this.mapEventStatus(tmEvent.dates.status.code),
-      ticketUrl: tmEvent.url,
-      minPrice: tmEvent.priceRanges?.[0]?.min ?? null,
-      maxPrice: tmEvent.priceRanges?.[0]?.max ?? null,
-      currency: tmEvent.priceRanges?.[0]?.currency || "USD",
-    };
-  }
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
 
-  private mapEventStatus(
-    statusCode: string,
-  ): "upcoming" | "cancelled" | "completed" {
-    switch (statusCode) {
-      case "onsale":
-      case "offsale":
-        return "upcoming";
-      case "cancelled":
-        return "cancelled";
-      default:
-        return "upcoming";
-    }
-  }
-
-  private generateSlug(name: string): string {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "");
+function mapEventStatus(statusCode: string): "upcoming" | "cancelled" | "completed" {
+  switch (statusCode) {
+    case "onsale":
+    case "offsale":
+      return "upcoming";
+    case "cancelled":
+      return "cancelled";
+    default:
+      return "upcoming";
   }
 }

@@ -1,43 +1,40 @@
-import { db, syncProgress } from "@repo/database";
+import { db } from "@repo/database";
+import { importStatus, ImportStatus, importStageEnum } from "@repo/database";
+import { eq } from "drizzle-orm";
 import { EventEmitter } from "events";
-import { ImportStage } from "../../types/common";
 
 const bus = new EventEmitter();
 
-export function onProgress(jobId: string, fn: (p: any) => void) {
-  bus.on(jobId, fn);
+export function onProgress(artistId: string, fn: (p: any) => void) {
+  bus.on(artistId, fn);
 }
-export function offProgress(jobId: string, fn: (p: any) => void) {
-  bus.off(jobId, fn);
+
+export function offProgress(artistId: string, fn: (p: any) => void) {
+  bus.off(artistId, fn);
 }
 
 export async function report(
-  jobId: string,
-  stage: ImportStage,
+  artistId: string,
+  stage: typeof importStageEnum.enumValues[number],
   progress: number,
-  message: string,
+  message: string
 ) {
   const payload = {
-    jobId,
-    step: stage,
-    status: "in_progress",
-    progress,
+    stage,
+    percentage: progress,
     message,
-    updatedAt: new Date(),
   };
 
   await db
-    .insert(syncProgress)
-    .values(payload)
+    .insert(importStatus)
+    .values({
+      artistId,
+      ...payload,
+    })
     .onConflictDoUpdate({
-      target: [syncProgress.jobId, syncProgress.step],
-      set: {
-        status: "in_progress",
-        progress: payload.progress,
-        message: payload.message,
-        updatedAt: payload.updatedAt,
-      },
+      target: importStatus.artistId,
+      set: payload,
     });
 
-  bus.emit(jobId, payload);
+  bus.emit(artistId, payload);
 }

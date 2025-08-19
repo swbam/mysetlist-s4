@@ -1,8 +1,9 @@
 import { db, artists } from "@repo/database";
 import { report } from "../progress/ProgressBus";
-import { TicketmasterIngestService } from "../ingest/TicketmasterIngest";
-import { SpotifyCatalogIngestService } from "../ingest/SpotifyCatalogIngest";
+import { ingestShowsAndVenues } from "../ingest/TicketmasterIngest";
+import { ingestStudioCatalog } from "../ingest/SpotifyCatalogIngest";
 import { eq } from "drizzle-orm";
+import { queueManager, QueueName, Priority } from "apps/web/lib/queues/queue-manager";
 
 export async function initiateImport(tmAttractionId: string) {
   const artist = await db
@@ -19,7 +20,23 @@ export async function initiateImport(tmAttractionId: string) {
     })
     .returning();
 
-  await report(artist[0].id, "initializing", 10, "Starting import…");
+    await report(artist[0].id, "initializing", 10, "Starting import…");
+
+    await queueManager.addJob(
+        QueueName.ARTIST_IMPORT,
+        "import-artist",
+        {
+            artistId: artist[0].id,
+            tmAttractionId,
+            spotifyArtistId: artist[0].spotifyId,
+            artistName: artist[0].name,
+        },
+        {
+            priority: Priority.CRITICAL,
+            jobId: `import-${artist[0].id}`,
+        }
+    );
+
   return { artistId: artist[0].id, slug: artist[0].slug };
 }
 
@@ -37,8 +54,7 @@ export async function runFullImport(artistId: string) {
     // Phase 2: Ingest shows and venues from Ticketmaster
     if (artist.tmAttractionId) {
       await report(artistId, "importing-shows", 25, "Syncing shows & venues…");
-      const ticketmasterIngest = new TicketmasterIngestService();
-      await ticketmasterIngest.ingestShowsAndVenues(
+      await ingestShowsAndVenues(
         artistId,
         artist.tmAttractionId,
       );
@@ -69,8 +85,7 @@ export async function runFullImport(artistId: string) {
         75,
         "Importing studio-only catalog…",
       );
-      const spotifyCatalogIngest = new SpotifyCatalogIngestService();
-      await spotifyCatalogIngest.ingestStudioCatalog(
+      await ingestStudioCatalog(
         artistId,
         artist.spotifyId,
       );

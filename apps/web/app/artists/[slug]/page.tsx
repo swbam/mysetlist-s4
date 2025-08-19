@@ -6,9 +6,8 @@ import { notFound } from "next/navigation";
 import React, { Suspense } from "react";
 import { BreadcrumbNavigation } from "~/components/breadcrumb-navigation";
 import { ArtistErrorBoundary } from "~/components/error-boundaries/artist-error-boundary";
-import { ImportProgressWrapper } from "~/components/import/ImportProgressWrapper";
 import { createArtistMetadata } from "~/lib/seo-metadata";
-import { getArtist, getArtistShows, getArtistStats } from "./actions";
+import { getArtist, getArtistShows, getArtistStats, importArtist } from "./actions";
 import { ArtistHeader } from "./components/artist-header";
 import { ArtistImportLoading } from "./components/artist-import-loading";
 import { ArtistPageWrapper } from "./components/artist-page-wrapper";
@@ -86,10 +85,10 @@ export const generateMetadata = async ({ params }: ArtistPageProps): Promise<Met
   }
 };
 
-const ArtistPage = async ({ params }: ArtistPageProps) => {
+const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
   try {
   const { slug } = params;
-  const tmAttractionId = undefined as unknown as string; // no longer read from URL
+  const tmAttractionId = searchParams?.tmAttractionId as string;
 
     // Validate slug parameter
     if (!slug || typeof slug !== "string") {
@@ -105,6 +104,9 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
 
     // If artist not found, show not found page
     if (!artist) {
+        if (tmAttractionId) {
+            await importArtist(tmAttractionId);
+        }
       notFound();
     }
 
@@ -208,11 +210,6 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
 
     return (
       <ArtistErrorBoundary artistName={artist.name || "Unknown Artist"}>
-        <ImportProgressWrapper
-          artistId={artist.id}
-          artistName={artist.name || "Unknown Artist"}
-          initialImportStatus={(artist as any).importStatus}
-        >
           <ArtistPageWrapper
             artistId={artist.id}
             artistName={artist.name || "Unknown Artist"}
@@ -277,7 +274,6 @@ const ArtistPage = async ({ params }: ArtistPageProps) => {
               </Tabs>
             </div>
           </ArtistPageWrapper>
-        </ImportProgressWrapper>
       </ArtistErrorBoundary>
     );
   } catch (error) {

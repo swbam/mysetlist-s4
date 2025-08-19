@@ -10,16 +10,10 @@ import {
   unique,
   uuid,
 } from "drizzle-orm/pg-core";
+import { moderationStatusEnum } from "./admin";
 import { artists } from "./artists";
 import { shows } from "./shows";
 import { users } from "./users";
-
-export const moderationStatusEnum = pgEnum("moderation_status", [
-  "pending",
-  "approved",
-  "rejected",
-  "flagged",
-]);
 
 export const songs = pgTable("songs", {
   id: uuid("id").primaryKey().defaultRandom(),

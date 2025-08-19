@@ -11,11 +11,16 @@ import {
   songs,
   venues,
 } from "@repo/database";
-import { spotify, SpotifyClient, TicketmasterClient } from "@repo/external-apis";
+import { SpotifyClient, TicketmasterClient } from "@repo/external-apis";
 import { and, desc, sql as drizzleSql, eq, or } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { CACHE_TAGS, REVALIDATION_TIMES } from "~/lib/cache";
 import { absoluteUrl } from "~/lib/absolute-url";
+import { initiateImport } from "@repo/external-apis/src/services/orchestrators/ArtistImportOrchestrator";
+
+export async function importArtist(tmAttractionId: string) {
+  return await initiateImport(tmAttractionId);
+}
 
 const _getArtist = async (slug: string) => {
   try {

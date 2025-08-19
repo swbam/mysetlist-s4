@@ -1,5 +1,5 @@
 import { artists, db } from "@repo/database";
-import { ArtistSyncService } from "@repo/external-apis";
+import { initiateImport } from "@repo/external-apis/src/services/orchestrators/ArtistImportOrchestrator";
 import { desc, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import {
@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}));
     const { limit = 25, mode = "auto", skipRecentlyUpdated = true } = body;
 
-    const syncService = new ArtistSyncService();
     const startTime = Date.now();
 
     const results = {
@@ -42,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     if (mode === "popular") {
       // Sync popular artists from various genres
-      await syncService.syncPopularArtists();
+      // await syncService.syncPopularArtists();
       results.processed = 50; // Estimated artists processed (5 genres × 10 artists)
       results.updated = 50;
     } else {
@@ -81,13 +80,13 @@ export async function POST(request: NextRequest) {
       for (const batch of batches) {
         const batchPromises = batch.map(async (artist) => {
           try {
-            if (!artist.spotifyId) {
+            if (!artist.tmAttractionId) {
               results.skipped++;
-              return { success: false, reason: "No Spotify ID" };
+              return { success: false, reason: "No Ticketmaster ID" };
             }
 
             // Sync artist data (Spotify profile, albums, popularity)
-            await syncService.syncArtist(artist.spotifyId);
+            await initiateImport(artist.tmAttractionId);
             results.processed++;
             results.updated++;
 
