@@ -1,52 +1,90 @@
-import { NextResponse } from "next/server";
-import { db, shows } from "@repo/database";
-import { SetlistFmClient } from "@repo/external-apis";
-import { and, lte, gte, eq } from "drizzle-orm";
+import { db, setlists, shows } from "@repo/database";
+import { SetlistSyncService } from "@repo/external-apis";
+import { and, lt, sql, isNull } from "drizzle-orm";
+import type { NextRequest } from "next/server";
+import {
+  createErrorResponse,
+  createSuccessResponse,
+  requireCronAuth,
+} from "~/lib/api/auth-helpers";
 
-export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env["CRON_SECRET"]}`) {
-    return new Response("Unauthorized", { status: 401 });
-  }
+// Force dynamic rendering for API route
+export const dynamic = "force-dynamic";
 
-  const setlistFmClient = new SetlistFmClient({
-    apiKey: process.env["SETLISTFM_API_KEY"]!,
-  });
+async function executePastSetlistSync() {
+  const syncService = new SetlistSyncService();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayDateString = today.toISOString().split('T')[0]!;
 
-  const recentShows = await db.query.shows.findMany({
-    where: and(
-      lte(shows.date, new Date().toISOString()),
-      gte(
-        shows.date,
-        new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-      ),
-    ),
-    with: {
-      headlinerArtist: true,
-      venue: true,
-    },
-  });
+  // Past shows in the last 7 days without an imported actual setlist
+  const targetShows = await db
+    .select({ id: shows.id, name: shows.name, date: shows.date })
+    .from(shows)
+    .leftJoin(setlists, and(
+      sql`${setlists.showId} = ${shows.id}`,
+      sql`${setlists.type} = 'actual'`
+    ))
+    .where(and(
+      lt(shows.date, todayDateString),
+      sql`${shows.date} >= CURRENT_DATE - INTERVAL '7 days'`,
+      isNull(setlists.id)
+    ))
+    .limit(20);
 
-  for (const show of recentShows) {
-    const setlist = await setlistFmClient.searchSetlists({
-      artistName: show.headlinerArtist.name,
-      venueName: show.venue?.name,
-      date: new Date(show.date!).toISOString().split("T")[0],
-    });
+  const results = { processed: 0, imported: 0, skipped: 0, errors: [] as string[] };
 
-    if (setlist.setlist?.[0]) {
-      // TODO: Implement importActualSetlist
-      // await importActualSetlist(show.id, setlist.setlist[0]);
+  for (const s of targetShows) {
+    try {
+      results.processed++;
+      await syncService.syncSetlistByShowId(s.id);
 
-      await db
-        .update(shows)
-        .set({
-          status: "completed",
-          setlistFmId: setlist.setlist[0].id,
-        })
-        .where(eq(shows.id, show.id));
+      const imported = await db
+        .select({ id: setlists.id })
+        .from(setlists)
+        .where(and(
+          sql`${setlists.showId} = ${s.id}`,
+          sql`${setlists.type} = 'actual'`
+        ))
+        .limit(1);
+
+      if (imported.length > 0) {
+        results.imported++;
+      } else {
+        results.skipped++;
+      }
+
+      await new Promise(r => setTimeout(r, 1000));
+    } catch (e) {
+      results.errors.push(e instanceof Error ? e.message : String(e));
     }
   }
 
-  return NextResponse.json({ success: true });
+  // Best-effort log
+  try {
+    await db.execute(sql`SELECT log_cron_run('sync-past-setlists', 'success', ${JSON.stringify(results)})`);
+  } catch {}
+
+  return { message: "Past setlist sync complete", results };
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    await requireCronAuth();
+    const result = await executePastSetlistSync();
+    return createSuccessResponse(result);
+  } catch (error) {
+    try {
+      await db.execute(sql`SELECT log_cron_run('sync-past-setlists', 'failed')`);
+    } catch {}
+    return createErrorResponse(
+      "Past setlist sync failed",
+      500,
+      error instanceof Error ? error.message : "Unknown error",
+    );
+  }
+}
+
+export async function GET(request: NextRequest) {
+  return POST(request);
 }

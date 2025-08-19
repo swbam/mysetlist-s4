@@ -1,51 +1,35 @@
 -- Vote count aggregation triggers for real-time updates
 -- This ensures vote counts are always up-to-date and triggers real-time notifications
 
--- Function to update setlist song vote counts
 CREATE OR REPLACE FUNCTION update_setlist_song_votes()
 RETURNS TRIGGER AS $$
 DECLARE
-  vote_change INTEGER;
   new_upvotes INTEGER;
-  new_downvotes INTEGER;
-  new_net_votes INTEGER;
 BEGIN
-  -- Determine the change in votes
+  -- Recalculate upvotes for the affected setlist song
   IF TG_OP = 'INSERT' THEN
-    -- New vote
-    vote_change := CASE WHEN NEW.vote_type = 'up' THEN 1 ELSE -1 END;
-    
-    -- Calculate new vote counts
-    SELECT 
-      COALESCE(SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE 0 END), 0),
-      COALESCE(SUM(CASE WHEN vote_type = 'down' THEN 1 ELSE 0 END), 0)
-    INTO new_upvotes, new_downvotes
+    SELECT COALESCE(COUNT(*), 0)
+    INTO new_upvotes
     FROM votes 
     WHERE setlist_song_id = NEW.setlist_song_id;
-    
-    new_net_votes := new_upvotes - new_downvotes;
-    
-    -- Update setlist_songs table
+
     UPDATE setlist_songs 
     SET 
       upvotes = new_upvotes,
-      downvotes = new_downvotes,
-      net_votes = new_net_votes,
       updated_at = NOW()
     WHERE id = NEW.setlist_song_id;
-    
-    -- Update vote count on parent setlist
+
+    -- Update parent aggregations
     UPDATE setlists 
     SET 
       total_votes = (
-        SELECT COALESCE(SUM(upvotes + downvotes), 0)
+        SELECT COALESCE(SUM(upvotes), 0)
         FROM setlist_songs 
         WHERE setlist_id = (SELECT setlist_id FROM setlist_songs WHERE id = NEW.setlist_song_id)
       ),
       updated_at = NOW()
     WHERE id = (SELECT setlist_id FROM setlist_songs WHERE id = NEW.setlist_song_id);
-    
-    -- Update vote count on parent show
+
     UPDATE shows 
     SET 
       vote_count = (
@@ -65,97 +49,31 @@ BEGIN
       INNER JOIN setlist_songs ss ON sl.id = ss.setlist_id 
       WHERE ss.id = NEW.setlist_song_id
     );
-    
+
     RETURN NEW;
-    
-  ELSIF TG_OP = 'UPDATE' THEN
-    -- Vote type changed
-    IF OLD.vote_type != NEW.vote_type THEN
-      -- Recalculate vote counts
-      SELECT 
-        COALESCE(SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE 0 END), 0),
-        COALESCE(SUM(CASE WHEN vote_type = 'down' THEN 1 ELSE 0 END), 0)
-      INTO new_upvotes, new_downvotes
-      FROM votes 
-      WHERE setlist_song_id = NEW.setlist_song_id;
-      
-      new_net_votes := new_upvotes - new_downvotes;
-      
-      -- Update setlist_songs table
-      UPDATE setlist_songs 
-      SET 
-        upvotes = new_upvotes,
-        downvotes = new_downvotes,
-        net_votes = new_net_votes,
-        updated_at = NOW()
-      WHERE id = NEW.setlist_song_id;
-      
-      -- Update parent counts (same as INSERT)
-      UPDATE setlists 
-      SET 
-        total_votes = (
-          SELECT COALESCE(SUM(upvotes + downvotes), 0)
-          FROM setlist_songs 
-          WHERE setlist_id = (SELECT setlist_id FROM setlist_songs WHERE id = NEW.setlist_song_id)
-        ),
-        updated_at = NOW()
-      WHERE id = (SELECT setlist_id FROM setlist_songs WHERE id = NEW.setlist_song_id);
-      
-      UPDATE shows 
-      SET 
-        vote_count = (
-          SELECT COALESCE(SUM(s.total_votes), 0)
-          FROM setlists s 
-          WHERE s.show_id = (
-            SELECT sl.show_id 
-            FROM setlists sl 
-            INNER JOIN setlist_songs ss ON sl.id = ss.setlist_id 
-            WHERE ss.id = NEW.setlist_song_id
-          )
-        ),
-        updated_at = NOW()
-      WHERE id = (
-        SELECT sl.show_id 
-        FROM setlists sl 
-        INNER JOIN setlist_songs ss ON sl.id = ss.setlist_id 
-        WHERE ss.id = NEW.setlist_song_id
-      );
-    END IF;
-    
-    RETURN NEW;
-    
+
   ELSIF TG_OP = 'DELETE' THEN
-    -- Vote removed
-    -- Recalculate vote counts
-    SELECT 
-      COALESCE(SUM(CASE WHEN vote_type = 'up' THEN 1 ELSE 0 END), 0),
-      COALESCE(SUM(CASE WHEN vote_type = 'down' THEN 1 ELSE 0 END), 0)
-    INTO new_upvotes, new_downvotes
+    SELECT COALESCE(COUNT(*), 0)
+    INTO new_upvotes
     FROM votes 
     WHERE setlist_song_id = OLD.setlist_song_id;
-    
-    new_net_votes := new_upvotes - new_downvotes;
-    
-    -- Update setlist_songs table
+
     UPDATE setlist_songs 
     SET 
       upvotes = new_upvotes,
-      downvotes = new_downvotes,
-      net_votes = new_net_votes,
       updated_at = NOW()
     WHERE id = OLD.setlist_song_id;
-    
-    -- Update parent counts
+
     UPDATE setlists 
     SET 
       total_votes = (
-        SELECT COALESCE(SUM(upvotes + downvotes), 0)
+        SELECT COALESCE(SUM(upvotes), 0)
         FROM setlist_songs 
         WHERE setlist_id = (SELECT setlist_id FROM setlist_songs WHERE id = OLD.setlist_song_id)
       ),
       updated_at = NOW()
     WHERE id = (SELECT setlist_id FROM setlist_songs WHERE id = OLD.setlist_song_id);
-    
+
     UPDATE shows 
     SET 
       vote_count = (
@@ -175,10 +93,10 @@ BEGIN
       INNER JOIN setlist_songs ss ON sl.id = ss.setlist_id 
       WHERE ss.id = OLD.setlist_song_id
     );
-    
+
     RETURN OLD;
   END IF;
-  
+
   RETURN NULL;
 END;
 $$ LANGUAGE plpgsql;
@@ -388,8 +306,9 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_votes_setlist_song_user
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_votes_created_at 
   ON votes (created_at DESC);
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_setlist_songs_votes 
-  ON setlist_songs (net_votes DESC, upvotes DESC);
+-- Simplified index for upvote sorting (no net_votes column in schema)
+CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_setlist_songs_upvotes 
+  ON setlist_songs (upvotes DESC);
 
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_shows_trending 
   ON shows (trending_score DESC, date DESC) 
