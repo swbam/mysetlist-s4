@@ -36,11 +36,11 @@ export class VenueSyncService {
       .values({
         name: ticketmasterVenue.name,
         slug: this.generateSlug(ticketmasterVenue.name),
-        address: ticketmasterVenue.address?.line1,
+        address: ticketmasterVenue.address?.line1 ?? null,
         city: ticketmasterVenue.city?.name || "",
-        state: ticketmasterVenue.state?.stateCode,
+        state: ticketmasterVenue.state?.stateCode ?? null,
         country: ticketmasterVenue.country?.countryCode || "",
-        postalCode: ticketmasterVenue.postalCode,
+        postalCode: ticketmasterVenue.postalCode ?? null,
         latitude: ticketmasterVenue.location?.latitude
           ? Number.parseFloat(ticketmasterVenue.location.latitude)
           : null,
@@ -48,24 +48,24 @@ export class VenueSyncService {
           ? Number.parseFloat(ticketmasterVenue.location.longitude)
           : null,
         timezone: ticketmasterVenue.timezone || "America/New_York",
-        capacity: ticketmasterVenue.capacity,
+        capacity: ticketmasterVenue.capacity ?? null,
         tmVenueId: ticketmasterVenue.id,
       })
       .onConflictDoUpdate({
         target: venues.slug,
         set: {
-          address: ticketmasterVenue.address?.line1,
+          address: ticketmasterVenue.address?.line1 ?? null,
           city: ticketmasterVenue.city?.name || "",
-          state: ticketmasterVenue.state?.stateCode,
+          state: ticketmasterVenue.state?.stateCode ?? null,
           country: ticketmasterVenue.country?.countryCode || "",
-          postalCode: ticketmasterVenue.postalCode,
+          postalCode: ticketmasterVenue.postalCode ?? null,
           latitude: ticketmasterVenue.location?.latitude
             ? Number.parseFloat(ticketmasterVenue.location.latitude)
             : null,
           longitude: ticketmasterVenue.location?.longitude
             ? Number.parseFloat(ticketmasterVenue.location.longitude)
             : null,
-          capacity: ticketmasterVenue.capacity,
+          capacity: ticketmasterVenue.capacity ?? null,
           updatedAt: new Date(),
         },
       });
@@ -80,8 +80,8 @@ export class VenueSyncService {
         city: setlistFmVenue.city.name,
         state: setlistFmVenue.city.stateCode ?? null,
         country: setlistFmVenue.city.country.code,
-        latitude: setlistFmVenue.city.coords?.lat,
-        longitude: setlistFmVenue.city.coords?.long,
+        latitude: setlistFmVenue.city.coords?.lat ?? null,
+        longitude: setlistFmVenue.city.coords?.long ?? null,
         timezone: this.getTimezone(
           setlistFmVenue.city.country.code,
           setlistFmVenue.city.stateCode,
@@ -93,8 +93,8 @@ export class VenueSyncService {
           city: setlistFmVenue.city.name,
           state: setlistFmVenue.city.stateCode ?? null,
           country: setlistFmVenue.city.country.code,
-          latitude: setlistFmVenue.city.coords?.lat,
-          longitude: setlistFmVenue.city.coords?.long,
+          latitude: setlistFmVenue.city.coords?.lat ?? null,
+          longitude: setlistFmVenue.city.coords?.long ?? null,
           updatedAt: new Date(),
         },
       });

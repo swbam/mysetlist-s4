@@ -61,7 +61,7 @@ export const shows = pgTable("shows", {
 
   // External integrations
   tmEventId: text("tm_event_id").unique(), // Ticketmaster Event ID
-  setlistFmId: text("setlistfm_id"),
+  setlistFmId: text("setlist_fm_id"),
   setlistReady: boolean("setlist_ready").default(false),
 
   createdAt: timestamp("created_at").defaultNow(),

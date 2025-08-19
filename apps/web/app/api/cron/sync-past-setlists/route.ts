@@ -15,10 +15,10 @@ export async function GET(request: Request) {
 
   const recentShows = await db.query.shows.findMany({
     where: and(
-      lte(shows.date, new Date().toISOString()),
+      lte(shows.date, new Date()),
       gte(
         shows.date,
-        new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        new Date(Date.now() - 7 * 86_400_000),
       ),
     ),
     with: {
@@ -35,8 +35,10 @@ export async function GET(request: Request) {
     });
 
     if (setlist.setlist?.[0]) {
-      // TODO: Implement importActualSetlist
-      // await importActualSetlist(show.id, setlist.setlist[0]);
+      // Import actual setlist for the show
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { importActualSetlist } = await import("~/lib/import-actual-setlist");
+      await importActualSetlist(show.id, setlist.setlist[0] as any);
 
       await db
         .update(shows)

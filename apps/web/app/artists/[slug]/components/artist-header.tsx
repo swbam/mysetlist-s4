@@ -25,20 +25,18 @@ export const ArtistHeader: React.FC<ArtistHeaderProps> = ({ artist }) => {
   return (
     <div className="flex items-center gap-6" data-testid="artist-header">
       <div className="relative h-24 w-24 overflow-hidden rounded-md bg-muted">
-        {artist.imageUrl ? (
-          <Image
-            src={artist.imageUrl}
-            alt={artist.name}
-            fill
-            className="object-cover"
-            sizes="96px"
-            priority
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-            {artist.name.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <Image
+          src={artist.imageUrl ?? "/img/artist-placeholder.svg"}
+          alt={artist.name}
+          fill
+          className="object-cover"
+          sizes="96px"
+          priority
+          onError={(e) => {
+            const target = e.currentTarget as HTMLImageElement;
+            target.src = "/img/artist-placeholder.svg";
+          }}
+        />
       </div>
 
       <div className="min-w-0">

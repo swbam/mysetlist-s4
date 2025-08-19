@@ -1,6 +1,6 @@
 import { SpotifyClient } from "../clients/spotify";
 import { db, eq, sql, artists, songs, artistSongs } from "@repo/database";
-import { SyncServiceError } from "../utils/error-handler";
+// import { SyncServiceError } from "../utils/error-handler";
 
 export interface CatalogSyncResult {
   totalSongs: number;

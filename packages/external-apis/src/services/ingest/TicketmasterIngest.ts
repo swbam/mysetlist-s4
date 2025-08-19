@@ -29,21 +29,21 @@ export class TicketmasterIngestService {
         const mappedVenues = Array.from(venuesMap.values()).map((v) => this.mapVenue(v));
 
         if (mappedVenues.length > 0) {
-          await tx.insert(venues).values(mappedVenues).onConflictDoUpdate({
+          await tx.insert(venues).values(mappedVenues as any).onConflictDoUpdate({
             target: venues.tmVenueId,
             set: {
-              name: sql`${venues.name}`,
-              slug: sql`${venues.slug}`,
-              address: sql`${venues.address}`,
-              city: sql`${venues.city}`,
-              state: sql`${venues.state}`,
-              country: sql`${venues.country}`,
-              postalCode: sql`${venues.postalCode}`,
-              latitude: sql`${venues.latitude}`,
-              longitude: sql`${venues.longitude}`,
-              timezone: sql`${venues.timezone}`,
-              capacity: sql`${venues.capacity}`,
-              website: sql`${venues.website}`,
+              name: venues.name,
+              slug: venues.slug,
+              address: venues.address,
+              city: venues.city,
+              state: venues.state,
+              country: venues.country,
+              postalCode: venues.postalCode,
+              latitude: venues.latitude,
+              longitude: venues.longitude,
+              timezone: venues.timezone,
+              capacity: venues.capacity,
+              website: venues.website,
               updatedAt: new Date(),
             },
           });

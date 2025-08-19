@@ -8,6 +8,8 @@ export * from "./artists";
 export * from "./venues";
 export * from "./shows";
 export * from "./setlists";
+// show_votes table for trending calculations
+export * from "./votes-trending";
 export * from "./email-preferences";
 export * from "./relations";
 

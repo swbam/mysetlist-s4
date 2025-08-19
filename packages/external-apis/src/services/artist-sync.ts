@@ -195,7 +195,7 @@ export class ArtistSyncService {
       .insert(artists)
       .values({
         spotifyId: spotifyArtist.id,
-        tmAttractionId,
+        tmAttractionId: tmAttractionId ?? null,
         name: spotifyArtist.name,
         slug: this.generateSlug(spotifyArtist.name),
         imageUrl: spotifyArtist.images[0]?.url || null,
@@ -209,7 +209,7 @@ export class ArtistSyncService {
       .onConflictDoUpdate({
         target: artists.spotifyId,
         set: {
-          tmAttractionId,
+          tmAttractionId: tmAttractionId ?? null,
           name: spotifyArtist.name,
           imageUrl: spotifyArtist.images[0]?.url || null,
           smallImageUrl: spotifyArtist.images[2]?.url || null,
