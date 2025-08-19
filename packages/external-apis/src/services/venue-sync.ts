@@ -1,9 +1,19 @@
 import { venues, db } from "@repo/database";
 import { SetlistFmClient } from "../clients/setlistfm";
 import { TicketmasterClient } from "../clients/ticketmaster";
-import { SetlistFmVenue } from "../types/setlistfm";
+// Define a minimal SetlistFmVenue type here to avoid missing export issues
+type SetlistFmVenue = {
+  id: string;
+  name: string;
+  city: {
+    name: string;
+    stateCode?: string;
+    country: { code: string; name?: string };
+    coords?: { lat: number | null; long: number | null };
+  };
+};
 import { TicketmasterVenue } from "../types/ticketmaster";
-import { eq } from "drizzle-orm";
+import { eq } from "@repo/database";
 
 export class VenueSyncService {
   private ticketmasterClient: TicketmasterClient;

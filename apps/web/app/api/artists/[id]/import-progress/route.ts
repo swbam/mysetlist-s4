@@ -6,9 +6,9 @@ export const runtime = "nodejs";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: { id: string } },
 ) {
-  const { id: artistId } = await params;
+  const { id: artistId } = params;
 
   if (!artistId) {
     return NextResponse.json(

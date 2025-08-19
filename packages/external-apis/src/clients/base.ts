@@ -14,14 +14,14 @@ export interface APIClientConfig {
 
 export abstract class BaseAPIClient {
   protected baseURL: string;
-  protected apiKey?: string;
-  protected rateLimit?: { requests: number; window: number };
+  protected apiKey: string | undefined;
+  protected rateLimit: { requests: number; window: number } | undefined;
   protected cache: Redis;
 
   constructor(config: APIClientConfig) {
     this.baseURL = config.baseURL;
-    this.apiKey = config.apiKey;
-    this.rateLimit = config.rateLimit;
+    this.apiKey = config.apiKey ?? undefined;
+    this.rateLimit = config.rateLimit ?? undefined;
     this.cache = new Redis({
       url: process.env["UPSTASH_REDIS_REST_URL"]!,
       token: process.env["UPSTASH_REDIS_REST_TOKEN"]!,

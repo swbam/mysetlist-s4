@@ -1,7 +1,7 @@
-import { db, shows, venues } from "@repo/database";
+import { db, shows, venues, sql } from "@repo/database";
 import { TicketmasterClient } from "../../clients/ticketmaster";
 import { TicketmasterEvent, TicketmasterVenue } from "../../types/ticketmaster";
-import { inArray } from "drizzle-orm";
+import { inArray } from "@repo/database";
 
 export class TicketmasterIngestService {
   private ticketmasterClient: TicketmasterClient;
@@ -32,18 +32,18 @@ export class TicketmasterIngestService {
           await tx.insert(venues).values(mappedVenues).onConflictDoUpdate({
             target: venues.tmVenueId,
             set: {
-              name: mappedVenues[0].name,
-              slug: mappedVenues[0].slug,
-              address: mappedVenues[0].address,
-              city: mappedVenues[0].city,
-              state: mappedVenues[0].state,
-              country: mappedVenues[0].country,
-              postalCode: mappedVenues[0].postalCode,
-              latitude: mappedVenues[0].latitude,
-              longitude: mappedVenues[0].longitude,
-              timezone: mappedVenues[0].timezone,
-              capacity: mappedVenues[0].capacity,
-              website: mappedVenues[0].website,
+              name: sql`${venues.name}`,
+              slug: sql`${venues.slug}`,
+              address: sql`${venues.address}`,
+              city: sql`${venues.city}`,
+              state: sql`${venues.state}`,
+              country: sql`${venues.country}`,
+              postalCode: sql`${venues.postalCode}`,
+              latitude: sql`${venues.latitude}`,
+              longitude: sql`${venues.longitude}`,
+              timezone: sql`${venues.timezone}`,
+              capacity: sql`${venues.capacity}`,
+              website: sql`${venues.website}`,
               updatedAt: new Date(),
             },
           });
