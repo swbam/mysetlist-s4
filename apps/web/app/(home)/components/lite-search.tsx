@@ -224,8 +224,8 @@ export function LiteSearch({
           size="sm"
           className="absolute top-1/2 right-1 -translate-y-1/2 h-10 sm:h-12"
           onClick={() => {
-            if (query.trim() && results.length > 0 && results[0]) {
-              handleResultSelect(results[0]);
+            if (query.trim()) {
+              performSearch(query);
             }
           }}
           disabled={!query.trim() || isLoading}

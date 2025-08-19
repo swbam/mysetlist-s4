@@ -421,7 +421,9 @@ export const getSimilarArtists = unstable_cache(
 
 export async function getArtistTopTracks(spotifyId: string) {
   try {
-    const tracks = await spotify.getArtistTopTracks(spotifyId);
+    const spotifyClient = new SpotifyClient({});
+    await spotifyClient.authenticate();
+    const tracks = await spotifyClient.getArtistTopTracks(spotifyId);
     return tracks;
   } catch (_error) {
     return [];
