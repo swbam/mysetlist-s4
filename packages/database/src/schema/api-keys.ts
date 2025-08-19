@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
   jsonb,
@@ -15,7 +16,8 @@ export const apiKeys = pgTable("api_keys", {
     .references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   keyHash: text("key_hash").notNull().unique(),
-  scopes: text("scopes").array().notNull().default([]),
+  // Use an explicit Postgres default for text[] to avoid invalid SQL generation
+  scopes: text("scopes").array().notNull().default(sql`'{}'::text[]`),
   rateLimit: jsonb("rate_limit")
     .notNull()
     .default({ requests: 1000, window: 3600 }),

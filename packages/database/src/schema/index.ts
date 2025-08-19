@@ -29,8 +29,8 @@ export {
   type InsertImportLog 
 } from "./admin";
 
-// Venue reviews and related tables (referenced by admin pages)
-export { venueReviews, venuePhotos, venueInsiderTips } from "./venue-reviews";
+// Venue photos only (drop reviews and insider tips)
+export { venuePhotos } from "./venue-reviews";
 
 // User bans table (referenced by admin pages)
 export { userBans } from "./search";
