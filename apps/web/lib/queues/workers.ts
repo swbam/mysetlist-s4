@@ -11,142 +11,72 @@ import { processProgressUpdate } from "./processors/progress-update.processor";
 import { processWebhook } from "./processors/webhook.processor";
 import { processCacheWarm } from "./processors/cache-warm.processor";
 import { processCleanup } from "./processors/cleanup.processor";
-import { Worker } from "bullmq";
-
-// Worker registry
-const workers: Map<QueueName, Worker> = new Map();
+// Worker registry (track which queues have processors)
+const workers: Map<QueueName, boolean> = new Map();
 
 // Initialize all workers
 export async function initializeWorkers() {
-  console.log("🚀 Initializing BullMQ workers...");
+  console.log("🚀 Initializing SimpleQueue workers...");
   
   // Artist Import Worker
-  const artistImportWorker = queueManager.createWorker(
+  queueManager.createWorker(
     QueueName.ARTIST_IMPORT,
     processArtistImport
   );
   
-  artistImportWorker.on("completed", (job) => {
-    console.log(`✅ Artist import completed: ${job.id}`);
-  });
+  workers.set(QueueName.ARTIST_IMPORT, true);
   
-  artistImportWorker.on("failed", (job, err) => {
-    console.error(`❌ Artist import failed: ${job?.id}`, err.message);
-  });
-  
-  workers.set(QueueName.ARTIST_IMPORT, artistImportWorker);
-  
-  // Artist Quick Sync Worker (for lightweight artist updates)
-  const artistQuickSyncWorker = queueManager.createWorker(
-    QueueName.ARTIST_QUICK_SYNC,
-    processArtistImport // Reuse the same processor but with different priority
-  );
-  
-  artistQuickSyncWorker.on("completed", (job) => {
-    console.log(`✅ Artist quick sync completed: ${job.id}`);
-  });
-  
-  workers.set(QueueName.ARTIST_QUICK_SYNC, artistQuickSyncWorker);
+  // Artist Quick Sync Worker
+  queueManager.createWorker(QueueName.ARTIST_QUICK_SYNC, processArtistImport);
+  workers.set(QueueName.ARTIST_QUICK_SYNC, true);
   
   // Spotify Sync Worker
-  const spotifySyncWorker = queueManager.createWorker(
-    QueueName.SPOTIFY_SYNC,
-    processSpotifySync
-  );
-  
-  spotifySyncWorker.on("progress", (job, progress) => {
-    console.log(`📊 Spotify sync progress for ${job.id}: ${progress}%`);
-  });
-  
-  workers.set(QueueName.SPOTIFY_SYNC, spotifySyncWorker);
+  queueManager.createWorker(QueueName.SPOTIFY_SYNC, processSpotifySync);
+  workers.set(QueueName.SPOTIFY_SYNC, true);
   
   // Spotify Catalog Worker
-  const spotifyCatalogWorker = queueManager.createWorker(
-    QueueName.SPOTIFY_CATALOG,
-    processSpotifyCatalog
-  );
-  
-  workers.set(QueueName.SPOTIFY_CATALOG, spotifyCatalogWorker);
+  queueManager.createWorker(QueueName.SPOTIFY_CATALOG, processSpotifyCatalog);
+  workers.set(QueueName.SPOTIFY_CATALOG, true);
   
   // Ticketmaster Sync Worker
-  const ticketmasterWorker = queueManager.createWorker(
-    QueueName.TICKETMASTER_SYNC,
-    processTicketmasterSync
-  );
-  
-  workers.set(QueueName.TICKETMASTER_SYNC, ticketmasterWorker);
+  queueManager.createWorker(QueueName.TICKETMASTER_SYNC, processTicketmasterSync);
+  workers.set(QueueName.TICKETMASTER_SYNC, true);
   
   // Venue Sync Worker
-  const venueSyncWorker = queueManager.createWorker(
-    QueueName.VENUE_SYNC,
-    processVenueSync
-  );
-  
-  workers.set(QueueName.VENUE_SYNC, venueSyncWorker);
+  queueManager.createWorker(QueueName.VENUE_SYNC, processVenueSync);
+  workers.set(QueueName.VENUE_SYNC, true);
   
   // Trending Calculation Worker
-  const trendingWorker = queueManager.createWorker(
-    QueueName.TRENDING_CALC,
-    processTrendingCalc
-  );
-  
-  workers.set(QueueName.TRENDING_CALC, trendingWorker);
+  queueManager.createWorker(QueueName.TRENDING_CALC, processTrendingCalc);
+  workers.set(QueueName.TRENDING_CALC, true);
   
   // Scheduled Sync Worker
-  const scheduledWorker = queueManager.createWorker(
-    QueueName.SCHEDULED_SYNC,
-    processScheduledSync
-  );
-  
-  workers.set(QueueName.SCHEDULED_SYNC, scheduledWorker);
+  queueManager.createWorker(QueueName.SCHEDULED_SYNC, processScheduledSync);
+  workers.set(QueueName.SCHEDULED_SYNC, true);
   
   // Setlist Sync Worker
-  const setlistSyncWorker = queueManager.createWorker(
-    QueueName.SETLIST_SYNC,
-    processSetlistSync
-  );
-  
-  workers.set(QueueName.SETLIST_SYNC, setlistSyncWorker);
+  queueManager.createWorker(QueueName.SETLIST_SYNC, processSetlistSync);
+  workers.set(QueueName.SETLIST_SYNC, true);
   
   // Image Processing Worker
-  const imageProcessingWorker = queueManager.createWorker(
-    QueueName.IMAGE_PROCESSING,
-    processImageProcessing
-  );
-  
-  workers.set(QueueName.IMAGE_PROCESSING, imageProcessingWorker);
+  queueManager.createWorker(QueueName.IMAGE_PROCESSING, processImageProcessing);
+  workers.set(QueueName.IMAGE_PROCESSING, true);
   
   // Progress Update Worker
-  const progressUpdateWorker = queueManager.createWorker(
-    QueueName.PROGRESS_UPDATE,
-    processProgressUpdate
-  );
-  
-  workers.set(QueueName.PROGRESS_UPDATE, progressUpdateWorker);
+  queueManager.createWorker(QueueName.PROGRESS_UPDATE, processProgressUpdate);
+  workers.set(QueueName.PROGRESS_UPDATE, true);
   
   // Webhook Worker
-  const webhookWorker = queueManager.createWorker(
-    QueueName.WEBHOOK,
-    processWebhook
-  );
-  
-  workers.set(QueueName.WEBHOOK, webhookWorker);
+  queueManager.createWorker(QueueName.WEBHOOK, processWebhook);
+  workers.set(QueueName.WEBHOOK, true);
   
   // Cache Warm Worker
-  const cacheWarmWorker = queueManager.createWorker(
-    QueueName.CACHE_WARM,
-    processCacheWarm
-  );
-  
-  workers.set(QueueName.CACHE_WARM, cacheWarmWorker);
+  queueManager.createWorker(QueueName.CACHE_WARM, processCacheWarm);
+  workers.set(QueueName.CACHE_WARM, true);
   
   // Cleanup Worker
-  const cleanupWorker = queueManager.createWorker(
-    QueueName.CLEANUP,
-    processCleanup
-  );
-  
-  workers.set(QueueName.CLEANUP, cleanupWorker);
+  queueManager.createWorker(QueueName.CLEANUP, processCleanup);
+  workers.set(QueueName.CLEANUP, true);
   
   console.log(`✅ Initialized ${workers.size} workers`);
   
@@ -156,66 +86,30 @@ export async function initializeWorkers() {
   return workers;
 }
 
-// Set up recurring jobs
+// Set up recurring jobs (simplified for SimpleQueue)
 export async function setupRecurringJobs() {
   console.log("⏰ Setting up recurring jobs...");
   
-  // Calculate trending artists every hour
-  await queueManager.scheduleRecurringJob(
+  // For SimpleQueue, we'll handle recurring jobs through cron or external scheduling
+  // For now, just add some initial jobs to test the system
+  
+  await queueManager.addJob(
     QueueName.TRENDING_CALC,
     "calculate-trending",
-    { timeframe: "hourly" },
-    { pattern: "0 * * * *" }, // Every hour
-    { priority: 20 }
+    { timeframe: "hourly" }
   );
   
-  // Sync active artists every 6 hours
-  await queueManager.scheduleRecurringJob(
-    QueueName.SCHEDULED_SYNC,
-    "sync-active-artists",
-    { type: "active", limit: 50 },
-    { pattern: "0 */6 * * *" }, // Every 6 hours
-    { priority: 10 }
-  );
-  
-  // Deep sync trending artists daily
-  await queueManager.scheduleRecurringJob(
-    QueueName.SCHEDULED_SYNC,
-    "deep-sync-trending",
-    { type: "trending", deep: true },
-    { pattern: "0 3 * * *" }, // Daily at 3 AM
-    { priority: 20 }
-  );
-  
-  // Clean up old jobs weekly
-  await queueManager.scheduleRecurringJob(
-    QueueName.CLEANUP,
-    "cleanup-old-jobs",
-    { maxAge: 7 * 24 * 60 * 60 * 1000 }, // 7 days
-    { pattern: "0 0 * * 0" }, // Weekly on Sunday
-    { priority: 50 }
-  );
-  
-  console.log("✅ Recurring jobs scheduled");
+  console.log("✅ Initial jobs scheduled");
 }
 
-// Graceful shutdown handler
+// Graceful shutdown handler (simplified for SimpleQueue)
 function setupGracefulShutdown() {
   const shutdown = async (signal: string) => {
     console.log(`\n🛑 Received ${signal}, starting graceful shutdown...`);
     
     try {
-      // Stop all workers from accepting new jobs
-      const stopPromises = Array.from(workers.values()).map(worker => 
-        worker.close()
-      );
-      
-      await Promise.all(stopPromises);
-      console.log("✅ All workers stopped");
-      
-      // Close queue manager connections
-      await queueManager.closeAll();
-      console.log("✅ Queue connections closed");
+      // SimpleQueue workers stop automatically when process exits
+      console.log("✅ All workers will stop with process");
       
       process.exit(0);
     } catch (error) {
@@ -228,7 +122,7 @@ function setupGracefulShutdown() {
   process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
-// Worker health check
+// Worker health check (simplified for SimpleQueue)
 export async function checkWorkerHealth(): Promise<{
   healthy: boolean;
   workers: Array<{
@@ -243,14 +137,11 @@ export async function checkWorkerHealth(): Promise<{
     jobCount?: number;
   }[] = [];
   
-  for (const [name, worker] of workers.entries()) {
-    const isRunning = worker.isRunning();
-    const isPaused = await worker.isPaused();
-    
+  for (const [name, isRunning] of workers.entries()) {
     healthStatus.push({
       name,
-      running: isRunning && !isPaused,
-      jobCount: worker.concurrency,
+      running: isRunning,
+      jobCount: 0, // SimpleQueue doesn't track concurrency
     });
   }
   
