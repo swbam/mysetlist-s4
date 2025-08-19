@@ -14,7 +14,7 @@ import { SpotifyClient } from "../clients/spotify";
 import { TicketmasterClient } from "../clients/ticketmaster";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 import { ArtistSyncService } from "./artist-sync";
-import { ShowSyncService } from "./show-sync";
+import { EnhancedShowVenueSync } from "./enhanced-show-venue-sync";
 
 export interface ImportProgress {
   stage:

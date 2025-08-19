@@ -1,4 +1,4 @@
-import { db, shows, venues, sql } from "@repo/database";
+import { db, shows, venues } from "@repo/database";
 import { TicketmasterClient } from "../../clients/ticketmaster";
 import { TicketmasterEvent, TicketmasterVenue } from "../../types/ticketmaster";
 import { inArray } from "@repo/database";
@@ -29,24 +29,10 @@ export class TicketmasterIngestService {
         const mappedVenues = Array.from(venuesMap.values()).map((v) => this.mapVenue(v));
 
         if (mappedVenues.length > 0) {
-          await tx.insert(venues).values(mappedVenues as any).onConflictDoUpdate({
-            target: venues.tmVenueId,
-            set: {
-              name: venues.name,
-              slug: venues.slug,
-              address: venues.address,
-              city: venues.city,
-              state: venues.state,
-              country: venues.country,
-              postalCode: venues.postalCode,
-              latitude: venues.latitude,
-              longitude: venues.longitude,
-              timezone: venues.timezone,
-              capacity: venues.capacity,
-              website: venues.website,
-              updatedAt: new Date(),
-            },
-          });
+          await tx
+            .insert(venues)
+            .values(mappedVenues as any)
+            .onConflictDoNothing();
         }
 
         const dbVenues = await tx
@@ -65,21 +51,10 @@ export class TicketmasterIngestService {
           .filter((s): s is NonNullable<typeof s> => s !== null);
 
         if (showsToInsert.length > 0) {
-          await tx.insert(shows).values(showsToInsert).onConflictDoUpdate({
-            target: shows.tmEventId,
-            set: {
-              name: showsToInsert[0].name,
-              slug: showsToInsert[0].slug,
-              date: showsToInsert[0].date,
-              startTime: showsToInsert[0].startTime,
-              status: showsToInsert[0].status,
-              ticketUrl: showsToInsert[0].ticketUrl,
-              minPrice: showsToInsert[0].minPrice,
-              maxPrice: showsToInsert[0].maxPrice,
-              currency: showsToInsert[0].currency,
-              updatedAt: new Date(),
-            },
-          });
+          await tx
+            .insert(shows)
+            .values(showsToInsert as any)
+            .onConflictDoNothing();
         }
       });
     }

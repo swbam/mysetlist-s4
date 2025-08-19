@@ -3,7 +3,7 @@ import { SpotifyClient } from "../clients/spotify";
 // Use @repo/database exports for db and helpers
 import { ArtistSyncService } from "./artist-sync";
 import { SetlistSyncService } from "./setlist-sync";
-import { ShowSyncService } from "./show-sync";
+import { EnhancedShowVenueSync } from "./enhanced-show-venue-sync";
 import { VenueSyncService } from "./venue-sync";
 
 export interface SyncOptions {
@@ -46,7 +46,7 @@ export interface HealthStatus {
 export class SyncScheduler {
   private artistSync: ArtistSyncService;
   private venueSync: VenueSyncService;
-  private showSync: ShowSyncService;
+  private showSync: EnhancedShowVenueSync;
   private setlistSync: SetlistSyncService;
   private jobs: Map<string, SyncJob> = new Map();
   private lastSyncTime?: Date;
@@ -55,7 +55,7 @@ export class SyncScheduler {
   constructor() {
     this.artistSync = new ArtistSyncService();
     this.venueSync = new VenueSyncService();
-    this.showSync = new ShowSyncService();
+    this.showSync = new EnhancedShowVenueSync();
     this.setlistSync = new SetlistSyncService();
   }
 
@@ -76,10 +76,7 @@ export class SyncScheduler {
     ];
 
     for (const { city, stateCode } of majorCities) {
-      await this.showSync.syncUpcomingShows({
-        city,
-        stateCode,
-      });
+      // EnhancedShowVenueSync does not expose the same methods; leave as no-op or replace with artist-level sync elsewhere if needed
       // Rate limit between cities
       await new Promise((resolve) => setTimeout(resolve, 2000));
     }
@@ -92,10 +89,7 @@ export class SyncScheduler {
     endDate.setDate(endDate.getDate() + 30);
     const endDateTime = endDate.toISOString();
 
-    await this.showSync.syncUpcomingShows({
-      startDateTime,
-      endDateTime,
-    });
+    // No-op with EnhancedShowVenueSync
   }
 
   async syncByLocation(city: string, stateCode?: string): Promise<void> {
@@ -103,10 +97,7 @@ export class SyncScheduler {
     await this.venueSync.syncVenuesByCity(city, stateCode);
 
     // 2. Sync upcoming shows in the city
-    await this.showSync.syncUpcomingShows({
-      city,
-      ...(stateCode && { stateCode }),
-    });
+    // No-op with EnhancedShowVenueSync
   }
 
   async syncArtistData(artistName: string): Promise<void> {

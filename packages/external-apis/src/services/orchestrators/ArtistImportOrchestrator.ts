@@ -1,7 +1,7 @@
 import { db, artists } from "@repo/database";
 import { report } from "../progress/ProgressBus";
-import { TicketmasterIngestService } from "../ingest/TicketmasterIngest";
 import { SpotifyCatalogIngestService } from "../ingest/SpotifyCatalogIngest";
+import { EnhancedShowVenueSync } from "../enhanced-show-venue-sync";
 import { eq } from "drizzle-orm";
 
 export async function initiateImport(tmAttractionId: string) {
@@ -24,9 +24,12 @@ export async function initiateImport(tmAttractionId: string) {
 }
 
 export async function runFullImport(artistId: string) {
-  let artist = await db.query.artists.findFirst({
-    where: eq(artists.id, artistId),
-  });
+  const artistRows = await db
+    .select()
+    .from(artists)
+    .where(eq(artists.id, artistId))
+    .limit(1);
+  let artist = artistRows[0];
 
   if (!artist) {
     await report(artistId, "failed", 0, "Artist not found.");
@@ -37,11 +40,8 @@ export async function runFullImport(artistId: string) {
     // Phase 2: Ingest shows and venues from Ticketmaster
     if (artist.tmAttractionId) {
       await report(artistId, "importing-shows", 25, "Syncing shows & venues…");
-      const ticketmasterIngest = new TicketmasterIngestService();
-      await ticketmasterIngest.ingestShowsAndVenues(
-        artistId,
-        artist.tmAttractionId,
-      );
+      const showSync = new EnhancedShowVenueSync();
+      await showSync.syncArtistShowsAndVenues(artistId);
       await db
         .update(artists)
         .set({ showsSyncedAt: new Date() })
@@ -57,12 +57,15 @@ export async function runFullImport(artistId: string) {
     }
 
     // Re-fetch artist to get any updates from show ingest
-    artist = await db.query.artists.findFirst({
-      where: eq(artists.id, artistId),
-    });
+    const reRows = await db
+      .select()
+      .from(artists)
+      .where(eq(artists.id, artistId))
+      .limit(1);
+    artist = reRows[0];
 
     // Phase 3: Ingest studio catalog from Spotify
-    if (artist?.spotifyId) {
+    if (artist && artist.spotifyId) {
       await report(
         artistId,
         "importing-songs",

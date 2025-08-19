@@ -177,7 +177,7 @@ export class ArtistSyncService {
         const attraction =
           ticketmasterResult._embedded.events[0]._embedded.attractions[0];
         if (this.isArtistNameMatch(spotifyArtist.name, attraction?.name || "")) {
-          tmAttractionId = attraction.id;
+          tmAttractionId = attraction.id ?? null;
           console.log(
             `Found Ticketmaster ID ${tmAttractionId} for ${spotifyArtist.name}`,
           );
@@ -282,7 +282,7 @@ export class ArtistSyncService {
   /**
    * Fetches full Spotify catalog excluding "live" tracks with deduplication
    */
-  async syncCatalog(artistId: string): Promise<{
+  async syncCatalog(_artistId: string): Promise<{
     totalSongs: number;
     totalAlbums: number;
     processedAlbums: number;
