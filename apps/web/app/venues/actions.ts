@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@repo/database";
-import { shows, venueReviews, venues } from "@repo/database/src/schema";
+import { shows, venues } from "@repo/database/src/schema";
 import { and, eq, gte, ilike, inArray, lte, or, sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 
@@ -111,15 +111,6 @@ export const getVenues = unstable_cache(
     // Get additional data for each venue
     const venuesWithStats = await Promise.all(
       results.map(async (venue) => {
-        // Get average rating and review count
-        const reviewStats = await db
-          .select({
-            avgRating: sql<number>`AVG(${venueReviews.rating})`,
-            reviewCount: sql<number>`COUNT(${venueReviews.id})`,
-          })
-          .from(venueReviews)
-          .where(eq(venueReviews.venueId, venue.id));
-
         // Get upcoming show count
         const now = new Date().toISOString().split("T")[0]!; // Format as YYYY-MM-DD
         const [showCount] = await db
@@ -131,8 +122,8 @@ export const getVenues = unstable_cache(
 
         return {
           ...venue,
-          avgRating: reviewStats[0]?.avgRating || null,
-          reviewCount: reviewStats[0]?.reviewCount || 0,
+          avgRating: null,
+          reviewCount: 0,
           upcomingShowCount: showCount?.count || 0,
         };
       }),
