@@ -19,7 +19,7 @@ export interface TicketmasterEvent {
   }[];
   _embedded?: {
     venues: TicketmasterVenue[];
-    attractions?: { name: string }[];
+    attractions?: { name: string; id?: string }[];
   };
 }
 

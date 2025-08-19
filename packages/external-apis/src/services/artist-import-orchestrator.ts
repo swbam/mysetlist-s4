@@ -293,7 +293,7 @@ export class ArtistImportOrchestrator {
     await this.updateProgress({
       stage: "importing-songs",
       progress: 70,
-      message: `Imported ${catalogResult.totalSongs} studio songs (filtered ${catalogResult.skippedLiveTracks} live tracks)`,
+      message: `Imported ${catalogResult.totalSongs} studio songs`,
     });
 
     return catalogResult.totalSongs;
@@ -343,7 +343,6 @@ export class ArtistImportOrchestrator {
       const tmShows = await this.ticketmasterClient.searchEvents({
         keyword: artistName,
         size: 50,
-        sort: "date,asc",
       });
 
       if (tmShows?._embedded?.events) {

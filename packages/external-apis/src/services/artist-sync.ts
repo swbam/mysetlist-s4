@@ -5,14 +5,7 @@ import { TicketmasterClient } from "../clients/ticketmaster";
 import { eq } from "@repo/database";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 
-// Helper function to normalize song titles for deduplication
-function normalizeTitle(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^\w\s]/g, "") // Remove punctuation
-    .replace(/\s+/g, " ") // Normalize whitespace
-    .trim();
-}
+// (removed unused normalizeTitle helper)
 
 export class ArtistSyncService {
   private spotifyClient: SpotifyClient;
@@ -296,6 +289,11 @@ export class ArtistSyncService {
   }> {
     // implementation continues...
     return { totalSongs: 0, totalAlbums: 0, processedAlbums: 0 } as any;
+  }
+
+  // Minimal placeholder to satisfy scheduler references; can be expanded later
+  async syncPopularArtists(): Promise<void> {
+    return;
   }
 
   private generateSlug(name: string): string {

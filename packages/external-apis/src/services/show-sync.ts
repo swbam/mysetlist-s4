@@ -84,7 +84,7 @@ export class ShowSyncService {
     // Find or create artist
     let artistId: string | null = null;
     if (event._embedded?.attractions?.[0]) {
-      const attraction = event._embedded.attractions[0];
+      const attraction = event._embedded.attractions[0] as { name?: string; id?: string };
       try {
         await this.spotifyClient.authenticate();
       } catch (error) {
@@ -95,17 +95,17 @@ export class ShowSyncService {
       try {
         // Search for artist on Spotify with retry
         const searchResult = await this.errorHandler.withRetry(
-          () => this.spotifyClient.searchArtists(attraction.name, 1),
+          () => this.spotifyClient.searchArtists(attraction?.name ?? "", 1),
           {
             service: "ShowSyncService",
             operation: "searchArtists",
-            context: { attractionName: attraction.name },
+            context: { attractionName: attraction?.name ?? "" },
           },
         );
 
         if (!searchResult) {
           console.warn(
-            `No Spotify search result for attraction: ${attraction.name}`,
+            `No Spotify search result for attraction: ${attraction?.name ?? ""}}`,
           );
           // Continue without artist data - still create the show
         } else if (searchResult.artists.items.length > 0) {
@@ -146,28 +146,28 @@ export class ShowSyncService {
           }
         }
       } catch (error) {
-        console.error(`Failed to sync artist ${attraction.name}:`, error);
+        console.error(`Failed to sync artist ${attraction?.name ?? ""}:`, error);
         // Continue without artist data
       }
     }
 
     // If we still don't have an artist, create a placeholder one based on the Ticketmaster data
     if (!artistId && event._embedded?.attractions?.[0]) {
-      const attraction = event._embedded.attractions[0];
+      const attraction = event._embedded.attractions[0] as { name?: string; id?: string };
       try {
-        console.log(`Creating placeholder artist for: ${attraction.name}`);
+        console.log(`Creating placeholder artist for: ${attraction?.name ?? ""}`);
         const [placeholderArtist] = await db
           .insert(artists)
           .values({
-            name: attraction.name,
-            slug: this.generateSlug(attraction.name),
-            tmAttractionId: attraction.id,
+            name: attraction?.name ?? "Unknown Artist",
+            slug: this.generateSlug(attraction?.name ?? "Unknown Artist"),
+            tmAttractionId: attraction?.id,
             lastSyncedAt: new Date(),
           })
           .onConflictDoUpdate({
             target: artists.tmAttractionId,
             set: {
-              name: attraction.name,
+              name: attraction?.name ?? "Unknown Artist",
               lastSyncedAt: new Date(),
             },
           })
@@ -179,7 +179,7 @@ export class ShowSyncService {
         }
       } catch (error) {
         console.error(
-          `Failed to create placeholder artist for ${attraction.name}:`,
+          `Failed to create placeholder artist for ${attraction?.name ?? ""}:`,
           error,
         );
       }
@@ -255,13 +255,13 @@ export class ShowSyncService {
       event._embedded.attractions.length > 1
     ) {
       for (let i = 1; i < event._embedded.attractions.length; i++) {
-        const attraction = event._embedded.attractions[i];
+        const attraction = event._embedded.attractions[i] as { name?: string } | undefined;
 
         if (!attraction) continue;
 
         try {
           const searchResult = await this.spotifyClient.searchArtists(
-            attraction.name,
+            attraction?.name ?? "",
             1,
           );
           if (searchResult.artists.items.length > 0) {
@@ -514,7 +514,6 @@ export class ShowSyncService {
           this.ticketmasterClient.searchEvents({
             keyword: artist.name,
             size: 200,
-            classificationName: "Music", // Focus on music events
           }),
         {
           service: "ShowSyncService",
