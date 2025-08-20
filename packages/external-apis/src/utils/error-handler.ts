@@ -1,7 +1,7 @@
 export class SyncServiceError extends Error {
   public service: string;
   public operation: string;
-  public override cause?: Error;
+  public cause?: Error;
   
   constructor(
     message: string,
