@@ -133,7 +133,7 @@ export const Cases = () => {
           </div>
           <Carousel setApi={setApi} className="w-full">
             <CarouselContent>
-              {artists.map((artist, index) => (
+              {artists.map((artist) => (
                 <CarouselItem
                   className="basis-1/3 md:basis-1/4 lg:basis-1/6"
                   key={artist.id}
