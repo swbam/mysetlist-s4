@@ -395,7 +395,7 @@ class EmailNotificationProcessor implements JobProcessor {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "TheSet <notifications@mysetlist.app>",
+        from: "TheSet <notifications@theset.live>",
         to,
         subject,
         html: html || `<p>${subject}</p>`,

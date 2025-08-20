@@ -7,24 +7,10 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system/components/ui/tabs";
 import { format } from "date-fns";
-import {
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  Info,
-  Search,
-  AlertTriangle,
-  Activity,
-  Music,
-  MapPin,
-  Calendar,
-} from "lucide-react";
+import { AlertCircle, CheckCircle, Clock, Activity, Music, MapPin, Calendar } from "lucide-react";
 import { AdminSearchBar } from "./components/admin-search-bar";
-import { ImportLogsDisplay } from "./components/import-logs-display";
-import { createClient } from "~/lib/supabase/server";
-import { db, importStatus, importLogs, eq, desc, and, sql } from "@repo/database";
+import { db, importStatus, importLogs, desc, sql } from "@repo/database";
 
 export const dynamic = "force-dynamic";
 
@@ -126,7 +112,7 @@ export default async function ImportLogsPage({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  const { locale } = await params;
+  await params;
   const summaries = await getImportSummaries();
   const recentLogs = await getRecentLogs();
 

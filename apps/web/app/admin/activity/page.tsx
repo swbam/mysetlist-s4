@@ -11,23 +11,7 @@ import {
   User,
   XCircle,
 } from "lucide-react";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-  Badge,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui-exports";
+import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from "~/components/ui-exports";
 import { createClient } from "~/lib/supabase/server";
 
 // Force dynamic rendering due to user-specific data fetching
