@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import type { SimpleJob } from "../types";
 import { db, artists, shows } from "@repo/database";
 import { eq, sql, desc } from "drizzle-orm";
 import { queueManager, QueueName, Priority } from "../queue-manager";
@@ -13,7 +13,7 @@ export interface ScheduledSyncJobData {
   options?: any;
 }
 
-export async function processScheduledSync(job: Job<ScheduledSyncJobData>) {
+export async function processScheduledSync(job: SimpleJob<ScheduledSyncJobData>) {
   const { type, limit = 50, deep = false, options } = job.data;
   
   try {

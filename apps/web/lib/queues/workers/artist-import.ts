@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import type { SimpleJob } from "../types";
 import { ingestShowsAndVenues } from "@repo/external-apis/src/services/ingest/TicketmasterIngest";
 import { ingestStudioCatalog } from "@repo/external-apis/src/services/ingest/SpotifyCatalogIngest";
 import { db } from "@repo/database";
@@ -12,7 +12,7 @@ interface ArtistImportJobData {
   artistName: string;
 }
 
-export const artistImportWorker = async (job: Job<ArtistImportJobData>) => {
+export const artistImportWorker = async (job: SimpleJob<ArtistImportJobData>) => {
   const { artistId, tmAttractionId, spotifyArtistId, artistName } = job.data;
 
   try {

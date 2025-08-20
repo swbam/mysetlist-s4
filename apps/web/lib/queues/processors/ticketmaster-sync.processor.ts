@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import type { SimpleJob } from "../types";
 import { EnhancedShowVenueSync } from "@repo/external-apis/src/services/enhanced-show-venue-sync";
 import { TicketmasterClient } from "@repo/external-apis";
 import { db, artists, shows, venues } from "@repo/database";
@@ -20,7 +20,7 @@ export interface TicketmasterSyncJobData {
   };
 }
 
-export async function processTicketmasterSync(job: Job<TicketmasterSyncJobData>) {
+export async function processTicketmasterSync(job: SimpleJob<TicketmasterSyncJobData>) {
   const { artistId, tmAttractionId, syncType, parentJobId, options } = job.data;
   
   try {

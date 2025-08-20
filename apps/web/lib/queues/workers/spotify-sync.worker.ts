@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import type { SimpleJob } from "../types";
 import { QueueName, SpotifySyncJob, createWorker } from "../config";
 import { SpotifyCompleteCatalog } from "@repo/external-apis/src/services/spotify-complete-catalog";
 import { SpotifyClient } from "@repo/external-apis";
@@ -8,7 +8,7 @@ import { updateImportStatus } from "../../import-status";
 
 export const spotifySyncWorker = createWorker<SpotifySyncJob>(
   QueueName.SPOTIFY_SYNC,
-  async (job: Job<SpotifySyncJob>) => {
+  async (job: SimpleJob<SpotifySyncJob>) => {
     const { artistId, spotifyId, syncType, options } = job.data;
     const jobId = `spotify_${artistId}_${Date.now()}`;
     

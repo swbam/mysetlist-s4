@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import type { SimpleJob } from "../types";
 import { SetlistFmClient } from "@repo/external-apis";
 import { db, artists, setlists, setlistSongs, songs } from "@repo/database";
 import { eq, sql } from "drizzle-orm";
@@ -15,7 +15,7 @@ export interface SetlistSyncJobData {
   parentJobId?: string;
 }
 
-export async function processSetlistSync(job: Job<SetlistSyncJobData>) {
+export async function processSetlistSync(job: SimpleJob<SetlistSyncJobData>) {
   const { artistId, setlistFmMbid, artistName, maxSetlists = 50, parentJobId } = job.data;
   
   try {

@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import type { SimpleJob } from "../types";
 import { queueManager, QueueName, Priority } from "../queue-manager";
 import { RedisCache } from "../redis-config";
 import { db, artists } from "@repo/database";
@@ -36,7 +36,7 @@ export interface ArtistImportResult {
   followUpJobs: string[];
 }
 
-export async function processArtistImport(job: Job<ArtistImportJobData>): Promise<ArtistImportResult> {
+export async function processArtistImport(job: SimpleJob<ArtistImportJobData>): Promise<ArtistImportResult> {
   const { artistId, tmAttractionId, spotifyArtistId, artistName, userId, adminImport, priority = Priority.NORMAL } = job.data;
   
   // Support both new job structure (from initiateImport) and legacy structure

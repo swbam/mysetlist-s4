@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import type { SimpleJob } from "../types";
 import { SpotifyCompleteCatalog } from "@repo/external-apis/src/services/spotify-complete-catalog";
 import { SpotifyClient } from "@repo/external-apis";
 import { db, artists, songs, artistSongs } from "@repo/database";
@@ -25,7 +25,7 @@ export interface SpotifySyncJobData {
   };
 }
 
-export async function processSpotifySync(job: Job<SpotifySyncJobData>) {
+export async function processSpotifySync(job: SimpleJob<SpotifySyncJobData>) {
   const { artistId, spotifyId, syncType, parentJobId, options } = job.data;
   const jobId = job.id || `spotify_${artistId}_${Date.now()}`;
   
@@ -265,7 +265,7 @@ async function syncFull(
   };
 }
 
-export async function processSpotifyCatalog(job: Job<{
+export async function processSpotifyCatalog(job: SimpleJob<{
   artistId: string;
   spotifyId: string;
   deep?: boolean;

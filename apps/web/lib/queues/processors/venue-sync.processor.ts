@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import type { SimpleJob } from "../types";
 import { db, venues, shows } from "@repo/database";
 import { eq, sql, inArray } from "drizzle-orm";
 import { TicketmasterClient } from "@repo/external-apis";
@@ -14,7 +14,7 @@ export interface VenueSyncJobData {
   parentJobId?: string;
 }
 
-export async function processVenueSync(job: Job<VenueSyncJobData>) {
+export async function processVenueSync(job: SimpleJob<VenueSyncJobData>) {
   const { artistId, venueIds, tmVenueIds, syncAll, parentJobId } = job.data;
   
   try {

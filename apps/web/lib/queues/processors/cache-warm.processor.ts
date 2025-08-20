@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import type { SimpleJob } from "../types";
 import { db, artists, shows, songs } from "@repo/database";
 import { sql, desc, eq } from "drizzle-orm";
 import { RedisCache } from "../redis-config";
@@ -12,7 +12,7 @@ export interface CacheWarmJobData {
   limit?: number;
 }
 
-export async function processCacheWarm(job: Job<CacheWarmJobData>) {
+export async function processCacheWarm(job: SimpleJob<CacheWarmJobData>) {
   const { type, entityId, query, limit = 50 } = job.data;
   
   try {

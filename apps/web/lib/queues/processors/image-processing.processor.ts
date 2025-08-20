@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import type { SimpleJob } from "../types";
 import { db, artists, shows, venues } from "@repo/database";
 import { eq } from "drizzle-orm";
 import { RedisCache } from "../redis-config";
@@ -17,7 +17,7 @@ export interface ImageProcessingJobData {
   };
 }
 
-export async function processImageProcessing(job: Job<ImageProcessingJobData>) {
+export async function processImageProcessing(job: SimpleJob<ImageProcessingJobData>) {
   const { type, entityId, imageUrl, operations } = job.data;
   
   try {

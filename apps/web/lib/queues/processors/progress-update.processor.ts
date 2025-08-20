@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import type { SimpleJob } from "../types";
 import { updateImportStatus } from "../../import-status";
 import { getRedisPubClient } from "../redis-config";
 
@@ -13,7 +13,7 @@ export interface ProgressUpdateJobData {
   metadata?: Record<string, any>;
 }
 
-export async function processProgressUpdate(job: Job<ProgressUpdateJobData>) {
+export async function processProgressUpdate(job: SimpleJob<ProgressUpdateJobData>) {
   const { jobId, stage, progress, message, artistId, artistName, error, metadata } = job.data;
   
   try {

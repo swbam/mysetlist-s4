@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import type { SimpleJob } from "../types";
 import { createRedisClient } from "../redis-config";
 import { 
   QueueName, 
@@ -22,7 +22,7 @@ const redis = createRedisClient();
 // Main artist import worker - handles background phases after Phase 1
 export const artistImportWorker = createWorker<ArtistImportJob>(
   QueueName.ARTIST_IMPORT,
-  async (job: Job<ArtistImportJob>) => {
+  async (job: SimpleJob<ArtistImportJob>) => {
     const { 
       tmAttractionId, 
       artistId, 

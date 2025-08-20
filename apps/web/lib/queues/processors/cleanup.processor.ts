@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import type { SimpleJob } from "../types";
 import { db, importStatus } from "@repo/database";
 import { sql } from "drizzle-orm";
 import { queueManager, QueueName } from "../queue-manager";
@@ -12,7 +12,7 @@ export interface CleanupJobData {
   batchSize?: number;
 }
 
-export async function processCleanup(job: Job<CleanupJobData>) {
+export async function processCleanup(job: SimpleJob<CleanupJobData>) {
   const { type, maxAge = 7 * 24 * 60 * 60 * 1000, batchSize = 1000 } = job.data; // Default 7 days
   
   try {

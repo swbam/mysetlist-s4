@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import type { SimpleJob } from "../types";
 import { db, artists, shows, votes } from "@repo/database";
 import { sql } from "drizzle-orm";
 import { RedisCache } from "../redis-config";
@@ -14,7 +14,7 @@ export interface TrendingCalcJobData {
   limit?: number;
 }
 
-export async function processTrendingCalc(job: Job<TrendingCalcJobData>) {
+export async function processTrendingCalc(job: SimpleJob<TrendingCalcJobData>) {
   const { timeframe, limit = 50 } = job.data;
   
   try {

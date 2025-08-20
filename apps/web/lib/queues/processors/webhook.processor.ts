@@ -1,4 +1,4 @@
-import { Job } from "bullmq";
+import type { SimpleJob } from "../types";
 import { RedisCache } from "../redis-config";
 
 const cache = new RedisCache();
@@ -13,7 +13,7 @@ export interface WebhookJobData {
   event?: string;
 }
 
-export async function processWebhook(job: Job<WebhookJobData>) {
+export async function processWebhook(job: SimpleJob<WebhookJobData>) {
   const { url, method = 'POST', payload, headers = {}, timeout = 10000, event } = job.data;
   
   try {
