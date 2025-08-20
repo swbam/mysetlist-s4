@@ -1,12 +1,14 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "~/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
-    
+
     // Check if user is admin
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -45,7 +47,7 @@ export async function GET(request: NextRequest) {
     // Convert to CSV
     const csvHeaders = [
       "ID",
-      "Title", 
+      "Title",
       "Artist",
       "Venue",
       "City",
@@ -54,22 +56,27 @@ export async function GET(request: NextRequest) {
       "Time",
       "Status",
       "Ticket URL",
-      "Created At"
+      "Created At",
     ].join(",");
 
-    const csvRows = shows?.map(show => [
-      show.id,
-      show.title,
-      show.artist?.[0]?.name || "",
-      show.venue?.[0]?.name || "",
-      show.venue?.[0]?.city || "",
-      show.venue?.[0]?.state || "",
-      show.date,
-      show.time || "",
-      show.status,
-      show.ticket_url || "",
-      show.created_at
-    ].map(field => `"${String(field).replace(/"/g, '""')}"`).join(",")) || [];
+    const csvRows =
+      shows?.map((show) =>
+        [
+          show.id,
+          show.title,
+          show.artist?.[0]?.name || "",
+          show.venue?.[0]?.name || "",
+          show.venue?.[0]?.city || "",
+          show.venue?.[0]?.state || "",
+          show.date,
+          show.time || "",
+          show.status,
+          show.ticket_url || "",
+          show.created_at,
+        ]
+          .map((field) => `"${String(field).replace(/"/g, '""')}"`)
+          .join(","),
+      ) || [];
 
     const csvContent = [csvHeaders, ...csvRows].join("\n");
 
@@ -77,14 +84,14 @@ export async function GET(request: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "text/csv",
-        "Content-Disposition": `attachment; filename="shows-export-${new Date().toISOString().split('T')[0]}.csv"`,
+        "Content-Disposition": `attachment; filename="shows-export-${new Date().toISOString().split("T")[0]}.csv"`,
       },
     });
   } catch (error) {
     console.error("Error exporting shows:", error);
     return NextResponse.json(
       { error: "Failed to export shows" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

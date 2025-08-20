@@ -35,7 +35,7 @@ export async function searchArtists(
   options: {
     limit?: number;
     signal?: AbortSignal;
-  } = {}
+  } = {},
 ): Promise<SearchResponse> {
   const { limit = 10, signal } = options;
 
@@ -69,10 +69,10 @@ export async function searchArtists(
     const data = await response.json();
     return data;
   } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
+    if (error instanceof Error && error.name === "AbortError") {
       throw error; // Re-throw abort errors
     }
-    
+
     console.error("Search failed:", error);
     return {
       query,
@@ -93,8 +93,13 @@ export async function preWarmArtist(
   options: {
     signal?: AbortSignal;
     silent?: boolean;
-  } = {}
-): Promise<{ success: boolean; artistId?: string; slug?: string; error?: string }> {
+  } = {},
+): Promise<{
+  success: boolean;
+  artistId?: string;
+  slug?: string;
+  error?: string;
+}> {
   const { signal, silent = true } = options;
 
   try {
@@ -121,16 +126,17 @@ export async function preWarmArtist(
       slug: data.slug,
     };
   } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
+    if (error instanceof Error && error.name === "AbortError") {
       throw error; // Re-throw abort errors
     }
 
-    const errorMessage = error instanceof Error ? error.message : "Pre-warm failed";
-    
+    const errorMessage =
+      error instanceof Error ? error.message : "Pre-warm failed";
+
     if (!silent) {
       console.error("Pre-warm failed:", error);
     }
-    
+
     return {
       success: false,
       error: errorMessage,
@@ -144,8 +150,11 @@ export async function preWarmArtist(
 export function getArtistUrl(result: SearchResult): string {
   const slug =
     result.metadata?.slug ||
-    result.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-  
+    result.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+
   return `/artists/${slug}`;
 }
 
@@ -154,7 +163,7 @@ export function getArtistUrl(result: SearchResult): string {
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  delay: number
+  delay: number,
 ): (...args: Parameters<T>) => void {
   let timeoutId: NodeJS.Timeout;
 
@@ -167,9 +176,12 @@ export function debounce<T extends (...args: any[]) => any>(
 /**
  * Search result sorting and relevance scoring
  */
-export function sortSearchResults(results: SearchResult[], query: string): SearchResult[] {
+export function sortSearchResults(
+  results: SearchResult[],
+  query: string,
+): SearchResult[] {
   const queryLower = query.toLowerCase();
-  
+
   return results.sort((a, b) => {
     const aNameLower = a.name.toLowerCase();
     const bNameLower = b.name.toLowerCase();
@@ -198,28 +210,32 @@ export function sortSearchResults(results: SearchResult[], query: string): Searc
  * Cache for search results to reduce API calls
  */
 class SearchCache {
-  private cache = new Map<string, { data: SearchResponse; timestamp: number }>();
+  private cache = new Map<
+    string,
+    { data: SearchResponse; timestamp: number }
+  >();
   private ttl = 60000; // 1 minute
   private maxSize = 100;
 
   get(key: string): SearchResponse | null {
     const entry = this.cache.get(key);
     if (!entry) return null;
-    
+
     if (Date.now() - entry.timestamp > this.ttl) {
       this.cache.delete(key);
       return null;
     }
-    
+
     return entry.data;
   }
 
   set(key: string, data: SearchResponse): void {
     // Clean up old entries if cache is full
     if (this.cache.size >= this.maxSize) {
-      const oldest = Array.from(this.cache.entries())
-        .sort(([, a], [, b]) => a.timestamp - b.timestamp)[0];
-      
+      const oldest = Array.from(this.cache.entries()).sort(
+        ([, a], [, b]) => a.timestamp - b.timestamp,
+      )[0];
+
       if (oldest) {
         this.cache.delete(oldest[0]);
       }
@@ -247,12 +263,12 @@ export async function searchArtistsCached(
     limit?: number;
     signal?: AbortSignal;
     bypassCache?: boolean;
-  } = {}
+  } = {},
 ): Promise<SearchResponse> {
   const { limit = 10, signal, bypassCache = false } = options;
-  
+
   const cacheKey = `${query}:${limit}`;
-  
+
   // Check cache first (unless bypassed)
   if (!bypassCache) {
     const cached = searchCache.get(cacheKey);
@@ -260,15 +276,15 @@ export async function searchArtistsCached(
       return cached;
     }
   }
-  
+
   // Perform search
   const result = await searchArtists(query, { limit, signal });
-  
+
   // Cache successful results
   if (!result.error && result.results.length > 0) {
     searchCache.set(cacheKey, result);
   }
-  
+
   return result;
 }
 

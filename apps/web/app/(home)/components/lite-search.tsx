@@ -51,7 +51,11 @@ export function LiteSearch({
     if (!results || results.length === 0) return;
     // Pick top 3 likely results that require sync
     const candidates = results
-      .filter((r) => r.type === "artist" && (r.requiresSync || r.source === "ticketmaster"))
+      .filter(
+        (r) =>
+          r.type === "artist" &&
+          (r.requiresSync || r.source === "ticketmaster"),
+      )
       .slice(0, 3);
 
     if (candidates.length === 0) return;
@@ -103,7 +107,6 @@ export function LiteSearch({
 
       // Transform API response to SearchResultItem format
       const searchResults: SearchResultItem[] = (data.results || []).map(
-        // biome-ignore lint/suspicious/noExplicitAny: API response type
         (result: any) => ({
           id: result.id,
           type: "artist" as const,

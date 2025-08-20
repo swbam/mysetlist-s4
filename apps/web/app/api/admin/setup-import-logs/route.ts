@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
 import { db } from "@repo/database";
 import { sql } from "drizzle-orm";
+import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
@@ -35,30 +35,54 @@ export async function GET() {
     `);
 
     // Create indexes
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_import_logs_artist_id ON import_logs(artist_id)`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_import_logs_job_id ON import_logs(job_id)`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_import_logs_created_at ON import_logs(created_at DESC)`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_import_logs_level ON import_logs(level)`);
-    await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_import_logs_artist_name ON import_logs(artist_name)`);
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS idx_import_logs_artist_id ON import_logs(artist_id)`,
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS idx_import_logs_job_id ON import_logs(job_id)`,
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS idx_import_logs_created_at ON import_logs(created_at DESC)`,
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS idx_import_logs_level ON import_logs(level)`,
+    );
+    await db.execute(
+      sql`CREATE INDEX IF NOT EXISTS idx_import_logs_artist_name ON import_logs(artist_name)`,
+    );
 
     // Update import_status table
-    await db.execute(sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS job_id VARCHAR(255)`);
-    await db.execute(sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS total_songs INTEGER DEFAULT 0`);
-    await db.execute(sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS total_shows INTEGER DEFAULT 0`);
-    await db.execute(sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS total_venues INTEGER DEFAULT 0`);
-    await db.execute(sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS artist_name VARCHAR(255)`);
-    await db.execute(sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS started_at TIMESTAMP WITH TIME ZONE`);
-    await db.execute(sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS phase_timings JSONB`);
+    await db.execute(
+      sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS job_id VARCHAR(255)`,
+    );
+    await db.execute(
+      sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS total_songs INTEGER DEFAULT 0`,
+    );
+    await db.execute(
+      sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS total_shows INTEGER DEFAULT 0`,
+    );
+    await db.execute(
+      sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS total_venues INTEGER DEFAULT 0`,
+    );
+    await db.execute(
+      sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS artist_name VARCHAR(255)`,
+    );
+    await db.execute(
+      sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS started_at TIMESTAMP WITH TIME ZONE`,
+    );
+    await db.execute(
+      sql`ALTER TABLE import_status ADD COLUMN IF NOT EXISTS phase_timings JSONB`,
+    );
 
-    return NextResponse.json({ 
-      success: true, 
-      message: "Import logs tables created successfully" 
+    return NextResponse.json({
+      success: true,
+      message: "Import logs tables created successfully",
     });
   } catch (error: any) {
     console.error("Failed to setup import logs:", error);
     return NextResponse.json(
       { error: "Failed to setup import logs", details: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

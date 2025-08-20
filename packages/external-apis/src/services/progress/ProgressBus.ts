@@ -1,7 +1,6 @@
+import { EventEmitter } from "node:events";
 import { db } from "@repo/database";
-import { importStatus, ImportStatus, importStageEnum } from "@repo/database";
-import { eq } from "drizzle-orm";
-import { EventEmitter } from "events";
+import { type importStageEnum, importStatus } from "@repo/database";
 
 const bus = new EventEmitter();
 
@@ -15,9 +14,9 @@ export function offProgress(artistId: string, fn: (p: any) => void) {
 
 export async function report(
   artistId: string,
-  stage: typeof importStageEnum.enumValues[number],
+  stage: (typeof importStageEnum.enumValues)[number],
   progress: number,
-  message: string
+  message: string,
 ) {
   const payload = {
     stage,

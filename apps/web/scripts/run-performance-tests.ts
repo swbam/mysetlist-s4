@@ -4,9 +4,9 @@
  * Validates 100% GROK.md compliance with detailed reporting
  */
 
-import { execSync, spawn } from 'child_process';
-import fs from 'fs/promises';
-import path from 'path';
+import { execSync, spawn } from "node:child_process";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 interface TestSuiteResult {
   name: string;
@@ -37,12 +37,12 @@ class PerformanceTestRunner {
 
   constructor() {
     this.startTime = Date.now();
-    this.reportDir = path.join(process.cwd(), 'test-results', 'performance');
+    this.reportDir = path.join(process.cwd(), "test-results", "performance");
   }
 
   async run(): Promise<void> {
-    console.log('🚀 Starting GROK.md Performance & Testing Validation Suite');
-    console.log('=' .repeat(80));
+    console.log("🚀 Starting GROK.md Performance & Testing Validation Suite");
+    console.log("=".repeat(80));
 
     await this.setupReportDirectory();
 
@@ -56,12 +56,11 @@ class PerformanceTestRunner {
 
       // Generate comprehensive report
       await this.generateComprehensiveReport();
-      
+
       // Validate GROK.md compliance
       await this.validateGROKCompliance();
-
     } catch (error) {
-      console.error('❌ Test suite failed:', error);
+      console.error("❌ Test suite failed:", error);
       process.exit(1);
     }
   }
@@ -72,122 +71,122 @@ class PerformanceTestRunner {
   }
 
   private async runUnitTests(): Promise<void> {
-    console.log('\n🧪 Running Unit Tests...');
-    console.log('-'.repeat(50));
+    console.log("\n🧪 Running Unit Tests...");
+    console.log("-".repeat(50));
 
     const result = await this.runVitest({
-      config: 'vitest.performance.config.ts',
-      include: ['__tests__/unit/**/*.test.ts'],
+      config: "vitest.performance.config.ts",
+      include: ["__tests__/unit/**/*.test.ts"],
       coverage: true,
       timeout: 10000,
     });
 
     this.results.push({
-      name: 'Unit Tests',
+      name: "Unit Tests",
       ...result,
     });
 
     if (result.passed) {
-      console.log('✅ Unit tests passed');
+      console.log("✅ Unit tests passed");
     } else {
-      console.log('❌ Unit tests failed');
-      throw new Error('Unit tests failed');
+      console.log("❌ Unit tests failed");
+      throw new Error("Unit tests failed");
     }
   }
 
   private async runIntegrationTests(): Promise<void> {
-    console.log('\n🔗 Running Integration Tests...');
-    console.log('-'.repeat(50));
+    console.log("\n🔗 Running Integration Tests...");
+    console.log("-".repeat(50));
 
     const result = await this.runVitest({
-      config: 'vitest.performance.config.ts',
-      include: ['__tests__/integration/**/*.test.ts'],
+      config: "vitest.performance.config.ts",
+      include: ["__tests__/integration/**/*.test.ts"],
       coverage: true,
       timeout: 30000,
     });
 
     this.results.push({
-      name: 'Integration Tests',
+      name: "Integration Tests",
       ...result,
     });
 
     if (result.passed) {
-      console.log('✅ Integration tests passed');
+      console.log("✅ Integration tests passed");
     } else {
-      console.log('❌ Integration tests failed');
-      throw new Error('Integration tests failed');
+      console.log("❌ Integration tests failed");
+      throw new Error("Integration tests failed");
     }
   }
 
   private async runQualityValidationTests(): Promise<void> {
-    console.log('\n🎯 Running Quality Validation Tests...');
-    console.log('-'.repeat(50));
+    console.log("\n🎯 Running Quality Validation Tests...");
+    console.log("-".repeat(50));
 
     const result = await this.runVitest({
-      config: 'vitest.performance.config.ts',
-      include: ['__tests__/quality/**/*.test.ts'],
+      config: "vitest.performance.config.ts",
+      include: ["__tests__/quality/**/*.test.ts"],
       coverage: true,
       timeout: 45000,
     });
 
     this.results.push({
-      name: 'Quality Validation Tests',
+      name: "Quality Validation Tests",
       ...result,
     });
 
     if (result.passed) {
-      console.log('✅ Quality validation tests passed');
+      console.log("✅ Quality validation tests passed");
     } else {
-      console.log('❌ Quality validation tests failed');
-      throw new Error('Quality validation tests failed');
+      console.log("❌ Quality validation tests failed");
+      throw new Error("Quality validation tests failed");
     }
   }
 
   private async runE2ETests(): Promise<void> {
-    console.log('\n🌐 Running End-to-End Tests...');
-    console.log('-'.repeat(50));
+    console.log("\n🌐 Running End-to-End Tests...");
+    console.log("-".repeat(50));
 
     const result = await this.runVitest({
-      config: 'vitest.performance.config.ts',
-      include: ['__tests__/e2e/**/*.test.ts'],
+      config: "vitest.performance.config.ts",
+      include: ["__tests__/e2e/**/*.test.ts"],
       coverage: false, // E2E tests don't contribute to coverage meaningfully
       timeout: 120000, // 2 minutes for complex flows
     });
 
     this.results.push({
-      name: 'End-to-End Tests',
+      name: "End-to-End Tests",
       ...result,
     });
 
     if (result.passed) {
-      console.log('✅ End-to-end tests passed');
+      console.log("✅ End-to-end tests passed");
     } else {
-      console.log('❌ End-to-end tests failed');
-      throw new Error('End-to-end tests failed');
+      console.log("❌ End-to-end tests failed");
+      throw new Error("End-to-end tests failed");
     }
   }
 
   private async runAcceptanceTests(): Promise<void> {
-    console.log('\n🏆 Running Acceptance Tests...');
-    console.log('-'.repeat(50));
+    console.log("\n🏆 Running Acceptance Tests...");
+    console.log("-".repeat(50));
 
     const result = await this.runVitest({
-      config: 'vitest.performance.config.ts',
-      include: ['__tests__/acceptance/**/*.test.ts'],
+      config: "vitest.performance.config.ts",
+      include: ["__tests__/acceptance/**/*.test.ts"],
       coverage: false,
       timeout: 180000, // 3 minutes for complex artist scenarios
     });
 
     this.results.push({
-      name: 'Acceptance Tests',
+      name: "Acceptance Tests",
       ...result,
     });
 
     if (result.passed) {
-      console.log('✅ Acceptance tests passed');
+      console.log("✅ Acceptance tests passed");
     } else {
-      console.log('❌ Acceptance tests failed');
-      throw new Error('Acceptance tests failed');
+      console.log("❌ Acceptance tests failed");
+      throw new Error("Acceptance tests failed");
     }
   }
 
@@ -196,26 +195,26 @@ class PerformanceTestRunner {
     include: string[];
     coverage: boolean;
     timeout: number;
-  }): Promise<Omit<TestSuiteResult, 'name'>> {
+  }): Promise<Omit<TestSuiteResult, "name">> {
     const startTime = Date.now();
 
     try {
       const args = [
-        'vitest',
-        'run',
+        "vitest",
+        "run",
         `--config=${options.config}`,
         `--testTimeout=${options.timeout}`,
-        ...options.include.map(pattern => `--include=${pattern}`),
+        ...options.include.map((pattern) => `--include=${pattern}`),
       ];
 
       if (options.coverage) {
-        args.push('--coverage');
+        args.push("--coverage");
       }
 
-      const result = execSync(`npx ${args.join(' ')}`, {
+      const result = execSync(`npx ${args.join(" ")}`, {
         cwd: process.cwd(),
-        encoding: 'utf8',
-        stdio: 'pipe',
+        encoding: "utf8",
+        stdio: "pipe",
       });
 
       const duration = Date.now() - startTime;
@@ -227,7 +226,7 @@ class PerformanceTestRunner {
           const coverageData = await this.parseCoverageReport();
           coverage = coverageData;
         } catch (error) {
-          console.warn('⚠️  Could not parse coverage data:', error);
+          console.warn("⚠️  Could not parse coverage data:", error);
         }
       }
 
@@ -240,10 +239,10 @@ class PerformanceTestRunner {
         coverage,
         sloResults,
       };
-
     } catch (error) {
       const duration = Date.now() - startTime;
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
 
       return {
         passed: false,
@@ -253,11 +252,15 @@ class PerformanceTestRunner {
     }
   }
 
-  private async parseCoverageReport(): Promise<TestSuiteResult['coverage']> {
+  private async parseCoverageReport(): Promise<TestSuiteResult["coverage"]> {
     try {
-      const coveragePath = path.join(process.cwd(), 'coverage', 'coverage-summary.json');
-      const coverageData = JSON.parse(await fs.readFile(coveragePath, 'utf8'));
-      
+      const coveragePath = path.join(
+        process.cwd(),
+        "coverage",
+        "coverage-summary.json",
+      );
+      const coverageData = JSON.parse(await fs.readFile(coveragePath, "utf8"));
+
       return {
         lines: coverageData.total.lines.pct,
         functions: coverageData.total.functions.pct,
@@ -269,7 +272,7 @@ class PerformanceTestRunner {
     }
   }
 
-  private parseSLOResults(output: string): TestSuiteResult['sloResults'] {
+  private parseSLOResults(output: string): TestSuiteResult["sloResults"] {
     // Extract SLO validation results from test output
     const sloPattern = /SLO_VALIDATION:(.+?)END_SLO_VALIDATION/gs;
     const matches = Array.from(output.matchAll(sloPattern));
@@ -300,7 +303,7 @@ class PerformanceTestRunner {
           });
         }
       } catch (error) {
-        console.warn('Could not parse SLO data:', error);
+        console.warn("Could not parse SLO data:", error);
       }
     }
 
@@ -308,11 +311,11 @@ class PerformanceTestRunner {
   }
 
   private async generateComprehensiveReport(): Promise<void> {
-    console.log('\n📊 Generating Comprehensive Report...');
-    console.log('-'.repeat(50));
+    console.log("\n📊 Generating Comprehensive Report...");
+    console.log("-".repeat(50));
 
     const totalDuration = Date.now() - this.startTime;
-    const passedSuites = this.results.filter(r => r.passed).length;
+    const passedSuites = this.results.filter((r) => r.passed).length;
     const totalSuites = this.results.length;
 
     const report = {
@@ -330,18 +333,18 @@ class PerformanceTestRunner {
     };
 
     // Save JSON report
-    const jsonReportPath = path.join(this.reportDir, 'performance-report.json');
+    const jsonReportPath = path.join(this.reportDir, "performance-report.json");
     await fs.writeFile(jsonReportPath, JSON.stringify(report, null, 2));
 
     // Generate HTML report
-    const htmlReportPath = path.join(this.reportDir, 'performance-report.html');
+    const htmlReportPath = path.join(this.reportDir, "performance-report.html");
     await this.generateHTMLReport(report, htmlReportPath);
 
     // Generate markdown summary
-    const mdReportPath = path.join(this.reportDir, 'PERFORMANCE_SUMMARY.md');
+    const mdReportPath = path.join(this.reportDir, "PERFORMANCE_SUMMARY.md");
     await this.generateMarkdownSummary(report, mdReportPath);
 
-    console.log(`📄 Reports generated:`);
+    console.log("📄 Reports generated:");
     console.log(`   JSON: ${jsonReportPath}`);
     console.log(`   HTML: ${htmlReportPath}`);
     console.log(`   Markdown: ${mdReportPath}`);
@@ -349,15 +352,16 @@ class PerformanceTestRunner {
 
   private generateSLOSummary() {
     const allSLOResults = this.results
-      .map(r => r.sloResults)
+      .map((r) => r.sloResults)
       .filter((slo): slo is NonNullable<typeof slo> => Boolean(slo));
 
-    const totalViolations = allSLOResults
-      .flatMap(slo => slo.violations || []);
+    const totalViolations = allSLOResults.flatMap(
+      (slo) => slo.violations || [],
+    );
 
     return {
       totalSLOs: allSLOResults.length,
-      passedSLOs: allSLOResults.filter(slo => slo.allPassed).length,
+      passedSLOs: allSLOResults.filter((slo) => slo.allPassed).length,
       violations: totalViolations,
       grokCompliant: totalViolations.length === 0,
     };
@@ -365,7 +369,7 @@ class PerformanceTestRunner {
 
   private generateCoverageSummary() {
     const coverageResults = this.results
-      .map(r => r.coverage)
+      .map((r) => r.coverage)
       .filter((cov): cov is NonNullable<typeof cov> => Boolean(cov));
 
     if (coverageResults.length === 0) {
@@ -373,12 +377,15 @@ class PerformanceTestRunner {
     }
 
     // Calculate weighted average coverage
-    const totalCoverage = coverageResults.reduce((sum, cov) => ({
-      lines: sum.lines + cov.lines,
-      functions: sum.functions + cov.functions,
-      branches: sum.branches + cov.branches,
-      statements: sum.statements + cov.statements,
-    }), { lines: 0, functions: 0, branches: 0, statements: 0 });
+    const totalCoverage = coverageResults.reduce(
+      (sum, cov) => ({
+        lines: sum.lines + cov.lines,
+        functions: sum.functions + cov.functions,
+        branches: sum.branches + cov.branches,
+        statements: sum.statements + cov.statements,
+      }),
+      { lines: 0, functions: 0, branches: 0, statements: 0 },
+    );
 
     const count = coverageResults.length;
 
@@ -387,11 +394,14 @@ class PerformanceTestRunner {
       functions: totalCoverage.functions / count,
       branches: totalCoverage.branches / count,
       statements: totalCoverage.statements / count,
-      meetsThreshold: (totalCoverage.lines / count) >= 80,
+      meetsThreshold: totalCoverage.lines / count >= 80,
     };
   }
 
-  private async generateHTMLReport(report: any, filePath: string): Promise<void> {
+  private async generateHTMLReport(
+    report: any,
+    filePath: string,
+  ): Promise<void> {
     const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -425,10 +435,10 @@ class PerformanceTestRunner {
         <h1>🚀 GROK.md Performance & Testing Report</h1>
         
         <div class="summary">
-            <div class="stat-card ${report.summary.grokCompliant ? 'success' : 'danger'}">
+            <div class="stat-card ${report.summary.grokCompliant ? "success" : "danger"}">
                 <h3>GROK.md Compliance</h3>
-                <div style="font-size: 2em; font-weight: bold;">${report.summary.grokCompliant ? '✅' : '❌'}</div>
-                <div>${report.summary.grokCompliant ? 'COMPLIANT' : 'NON-COMPLIANT'}</div>
+                <div style="font-size: 2em; font-weight: bold;">${report.summary.grokCompliant ? "✅" : "❌"}</div>
+                <div>${report.summary.grokCompliant ? "COMPLIANT" : "NON-COMPLIANT"}</div>
             </div>
             <div class="stat-card">
                 <h3>Test Suites</h3>
@@ -440,46 +450,66 @@ class PerformanceTestRunner {
                 <div style="font-size: 2em; font-weight: bold;">${Math.round(report.summary.totalDuration / 1000)}s</div>
                 <div>Total Time</div>
             </div>
-            <div class="stat-card ${report.coverageSummary?.meetsThreshold ? 'success' : 'warning'}">
+            <div class="stat-card ${report.coverageSummary?.meetsThreshold ? "success" : "warning"}">
                 <h3>Coverage</h3>
-                <div style="font-size: 2em; font-weight: bold;">${report.coverageSummary ? Math.round(report.coverageSummary.lines) : 'N/A'}%</div>
+                <div style="font-size: 2em; font-weight: bold;">${report.coverageSummary ? Math.round(report.coverageSummary.lines) : "N/A"}%</div>
                 <div>Line Coverage</div>
             </div>
         </div>
 
         <h2>📋 Test Suite Results</h2>
-        ${report.suites.map((suite: any) => `
-            <div class="suite ${suite.passed ? 'passed' : 'failed'}">
-                <h3>${suite.name} <span class="badge ${suite.passed ? 'success' : 'danger'}">${suite.passed ? 'PASSED' : 'FAILED'}</span></h3>
+        ${report.suites
+          .map(
+            (suite: any) => `
+            <div class="suite ${suite.passed ? "passed" : "failed"}">
+                <h3>${suite.name} <span class="badge ${suite.passed ? "success" : "danger"}">${suite.passed ? "PASSED" : "FAILED"}</span></h3>
                 <p><strong>Duration:</strong> ${suite.duration}ms</p>
-                ${suite.coverage ? `
+                ${
+                  suite.coverage
+                    ? `
                     <p><strong>Coverage:</strong> 
                        Lines: ${suite.coverage.lines.toFixed(1)}%, 
                        Functions: ${suite.coverage.functions.toFixed(1)}%, 
                        Branches: ${suite.coverage.branches.toFixed(1)}%
                     </p>
-                ` : ''}
-                ${suite.errors ? `
+                `
+                    : ""
+                }
+                ${
+                  suite.errors
+                    ? `
                     <div class="violation">
                         <strong>Errors:</strong>
-                        <ul>${suite.errors.map((error: string) => `<li>${error}</li>`).join('')}</ul>
+                        <ul>${suite.errors.map((error: string) => `<li>${error}</li>`).join("")}</ul>
                     </div>
-                ` : ''}
+                `
+                    : ""
+                }
             </div>
-        `).join('')}
+        `,
+          )
+          .join("")}
 
         <h2>🎯 SLO Compliance Summary</h2>
-        <p><strong>Status:</strong> ${report.sloSummary.grokCompliant ? '✅ All SLOs Met' : '❌ SLO Violations Detected'}</p>
-        ${report.sloSummary.violations.length > 0 ? `
+        <p><strong>Status:</strong> ${report.sloSummary.grokCompliant ? "✅ All SLOs Met" : "❌ SLO Violations Detected"}</p>
+        ${
+          report.sloSummary.violations.length > 0
+            ? `
             <h3>Violations:</h3>
-            ${report.sloSummary.violations.map((violation: any) => `
+            ${report.sloSummary.violations
+              .map(
+                (violation: any) => `
                 <div class="violation">
                     <strong>${violation.sloKey}:</strong> 
                     ${violation.actualValue}ms (threshold: ${violation.threshold}ms, 
                     over by ${Math.abs(violation.margin)}ms)
                 </div>
-            `).join('')}
-        ` : '<p>✅ No SLO violations detected</p>'}
+            `,
+              )
+              .join("")}
+        `
+            : "<p>✅ No SLO violations detected</p>"
+        }
 
         <footer style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; text-align: center;">
             Generated on ${new Date(report.summary.timestamp).toLocaleString()}
@@ -491,38 +521,52 @@ class PerformanceTestRunner {
     await fs.writeFile(filePath, html);
   }
 
-  private async generateMarkdownSummary(report: any, filePath: string): Promise<void> {
+  private async generateMarkdownSummary(
+    report: any,
+    filePath: string,
+  ): Promise<void> {
     const md = `# GROK.md Performance & Testing Report
 
 ## Summary
 
-- **GROK.md Compliance:** ${report.summary.grokCompliant ? '✅ COMPLIANT' : '❌ NON-COMPLIANT'}
+- **GROK.md Compliance:** ${report.summary.grokCompliant ? "✅ COMPLIANT" : "❌ NON-COMPLIANT"}
 - **Test Suites:** ${report.summary.passedSuites}/${report.summary.totalSuites} passed
 - **Total Duration:** ${Math.round(report.summary.totalDuration / 1000)}s
-- **Coverage:** ${report.coverageSummary ? Math.round(report.coverageSummary.lines) + '%' : 'N/A'}
+- **Coverage:** ${report.coverageSummary ? `${Math.round(report.coverageSummary.lines)}%` : "N/A"}
 
 ## Test Suite Results
 
-${report.suites.map((suite: any) => `
-### ${suite.name} ${suite.passed ? '✅' : '❌'}
+${report.suites
+  .map(
+    (suite: any) => `
+### ${suite.name} ${suite.passed ? "✅" : "❌"}
 
-- **Status:** ${suite.passed ? 'PASSED' : 'FAILED'}
+- **Status:** ${suite.passed ? "PASSED" : "FAILED"}
 - **Duration:** ${suite.duration}ms
-${suite.coverage ? `- **Coverage:** Lines: ${suite.coverage.lines.toFixed(1)}%, Functions: ${suite.coverage.functions.toFixed(1)}%, Branches: ${suite.coverage.branches.toFixed(1)}%` : ''}
-${suite.errors ? `\n**Errors:**\n${suite.errors.map((error: string) => `- ${error}`).join('\n')}` : ''}
-`).join('')}
+${suite.coverage ? `- **Coverage:** Lines: ${suite.coverage.lines.toFixed(1)}%, Functions: ${suite.coverage.functions.toFixed(1)}%, Branches: ${suite.coverage.branches.toFixed(1)}%` : ""}
+${suite.errors ? `\n**Errors:**\n${suite.errors.map((error: string) => `- ${error}`).join("\n")}` : ""}
+`,
+  )
+  .join("")}
 
 ## SLO Compliance
 
-**Status:** ${report.sloSummary.grokCompliant ? '✅ All SLOs Met' : '❌ SLO Violations Detected'}
+**Status:** ${report.sloSummary.grokCompliant ? "✅ All SLOs Met" : "❌ SLO Violations Detected"}
 
-${report.sloSummary.violations.length > 0 ? `
+${
+  report.sloSummary.violations.length > 0
+    ? `
 ### Violations:
 
-${report.sloSummary.violations.map((violation: any) => 
-  `- **${violation.sloKey}:** ${violation.actualValue}ms (threshold: ${violation.threshold}ms, over by ${Math.abs(violation.margin)}ms)`
-).join('\n')}
-` : '✅ No SLO violations detected'}
+${report.sloSummary.violations
+  .map(
+    (violation: any) =>
+      `- **${violation.sloKey}:** ${violation.actualValue}ms (threshold: ${violation.threshold}ms, over by ${Math.abs(violation.margin)}ms)`,
+  )
+  .join("\n")}
+`
+    : "✅ No SLO violations detected"
+}
 
 ---
 *Generated on ${new Date(report.summary.timestamp).toLocaleString()}*`;
@@ -531,33 +575,39 @@ ${report.sloSummary.violations.map((violation: any) =>
   }
 
   private async validateGROKCompliance(): Promise<void> {
-    console.log('\n🔍 Validating GROK.md Compliance...');
-    console.log('-'.repeat(50));
+    console.log("\n🔍 Validating GROK.md Compliance...");
+    console.log("-".repeat(50));
 
-    const failedSuites = this.results.filter(r => !r.passed);
-    const sloViolations = this.results.flatMap(r => r.sloResults?.violations || []);
+    const failedSuites = this.results.filter((r) => !r.passed);
+    const sloViolations = this.results.flatMap(
+      (r) => r.sloResults?.violations || [],
+    );
 
     if (failedSuites.length > 0) {
-      console.log('❌ GROK.md Compliance FAILED - Test failures detected:');
-      failedSuites.forEach(suite => {
-        console.log(`   - ${suite.name}: ${suite.errors?.join(', ')}`);
+      console.log("❌ GROK.md Compliance FAILED - Test failures detected:");
+      failedSuites.forEach((suite) => {
+        console.log(`   - ${suite.name}: ${suite.errors?.join(", ")}`);
       });
-      throw new Error('GROK.md compliance validation failed');
+      throw new Error("GROK.md compliance validation failed");
     }
 
     if (sloViolations.length > 0) {
-      console.log('❌ GROK.md Compliance FAILED - SLO violations detected:');
-      sloViolations.forEach(violation => {
-        console.log(`   - ${violation.sloKey}: ${violation.actualValue}ms > ${violation.threshold}ms`);
+      console.log("❌ GROK.md Compliance FAILED - SLO violations detected:");
+      sloViolations.forEach((violation) => {
+        console.log(
+          `   - ${violation.sloKey}: ${violation.actualValue}ms > ${violation.threshold}ms`,
+        );
       });
-      throw new Error('GROK.md SLO compliance validation failed');
+      throw new Error("GROK.md SLO compliance validation failed");
     }
 
-    console.log('✅ GROK.md Compliance VALIDATED - All requirements met!');
-    console.log('\n🎉 Performance & Testing Suite Complete!');
-    console.log(`   Total time: ${Math.round((Date.now() - this.startTime) / 1000)}s`);
+    console.log("✅ GROK.md Compliance VALIDATED - All requirements met!");
+    console.log("\n🎉 Performance & Testing Suite Complete!");
+    console.log(
+      `   Total time: ${Math.round((Date.now() - this.startTime) / 1000)}s`,
+    );
     console.log(`   All ${this.results.length} test suites passed`);
-    console.log(`   0 SLO violations detected`);
+    console.log("   0 SLO violations detected");
     console.log(`   Report available at: ${this.reportDir}`);
   }
 }
@@ -566,7 +616,7 @@ ${report.sloSummary.violations.map((violation: any) =>
 if (require.main === module) {
   const runner = new PerformanceTestRunner();
   runner.run().catch((error) => {
-    console.error('❌ Performance test runner failed:', error);
+    console.error("❌ Performance test runner failed:", error);
     process.exit(1);
   });
 }

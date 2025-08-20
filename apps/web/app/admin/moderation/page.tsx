@@ -22,10 +22,7 @@ export default async function ModerationPage() {
   const supabase = await createClient();
 
   // Fetch pending content for moderation
-  const [
-    { data: pendingSetlists },
-    { data: pendingPhotos },
-  ] = await Promise.all([
+  const [{ data: pendingSetlists }] = await Promise.all([
     supabase
       .from("setlists")
       .select(
@@ -39,23 +36,9 @@ export default async function ModerationPage() {
       .eq("moderation_status", "pending")
       .order("created_at", { ascending: false })
       .limit(20),
-    supabase
-      .from("venue_photos")
-      .select(
-        `
-        *,
-        venue:venues(name),
-        user:users(display_name, email)
-      `,
-      )
-      .eq("moderation_status", "pending")
-      .order("created_at", { ascending: false })
-      .limit(20),
   ]);
 
-  const totalPending =
-    (pendingSetlists?.length ?? 0) +
-    (pendingPhotos?.length ?? 0);
+  const totalPending = pendingSetlists?.length ?? 0;
 
   return (
     <div className="space-y-6">
@@ -68,7 +51,7 @@ export default async function ModerationPage() {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="font-medium text-sm">Total Pending</CardTitle>
@@ -95,23 +78,7 @@ export default async function ModerationPage() {
           </CardContent>
         </Card>
 
-  {/* Reviews removed from scope */}
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="font-medium text-sm">Photos</CardTitle>
-            <Image
-              className="h-4 w-4 text-muted-foreground"
-              aria-hidden="true"
-            />
-          </CardHeader>
-          <CardContent>
-            <div className="font-bold text-2xl">
-              {pendingPhotos?.length ?? 0}
-            </div>
-            <p className="text-muted-foreground text-xs">to moderate</p>
-          </CardContent>
-        </Card>
+        {/* Reviews removed from scope */}
       </div>
 
       {/* Moderation Queue */}
@@ -124,13 +91,10 @@ export default async function ModerationPage() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="all" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="all">All ({totalPending})</TabsTrigger>
               <TabsTrigger value="setlists">
                 Setlists ({pendingSetlists?.length ?? 0})
-              </TabsTrigger>
-              <TabsTrigger value="photos">
-                Photos ({pendingPhotos?.length ?? 0})
               </TabsTrigger>
             </TabsList>
 
@@ -152,9 +116,6 @@ export default async function ModerationPage() {
                       item={setlist}
                     />
                   ))}
-                  {pendingPhotos?.map((photo) => (
-                    <ModerationItem key={photo.id} type="photo" item={photo} />
-                  ))}
                 </div>
               )}
             </TabsContent>
@@ -172,22 +133,6 @@ export default async function ModerationPage() {
                     type="setlist"
                     item={setlist}
                   />
-                ))
-              )}
-            </TabsContent>
-
-            <TabsContent value="photos" className="mt-6 space-y-4">
-              {pendingPhotos?.length === 0 ? (
-                <div className="py-12 text-center">
-                  <Image
-                    className="mx-auto mb-4 h-12 w-12 text-muted-foreground"
-                    aria-hidden="true"
-                  />
-                  <p className="text-muted-foreground">No pending photos</p>
-                </div>
-              ) : (
-                pendingPhotos?.map((photo) => (
-                  <ModerationItem key={photo.id} type="photo" item={photo} />
                 ))
               )}
             </TabsContent>

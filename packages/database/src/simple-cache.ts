@@ -21,7 +21,11 @@ export class SimpleCache<K, V> {
   readonly ttl: number; // default ttl in ms
   private readonly updateAgeOnGet: boolean;
 
-  constructor(options?: { max?: number; ttl?: number; updateAgeOnGet?: boolean }) {
+  constructor(options?: {
+    max?: number;
+    ttl?: number;
+    updateAgeOnGet?: boolean;
+  }) {
     this.max = options?.max ?? 200;
     this.ttl = options?.ttl ?? 30_000;
     this.updateAgeOnGet = options?.updateAgeOnGet ?? true;

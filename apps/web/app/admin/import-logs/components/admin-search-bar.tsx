@@ -1,16 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { SearchBar } from "~/components/search-bar";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@repo/design-system/components/ui/dialog";
-import { ImportLogsDisplay } from "./import-logs-display";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { SearchBar } from "~/components/search-bar";
 import type { SearchResultItem } from "~/components/search/search-results-dropdown";
+import { ImportLogsDisplay } from "./import-logs-display";
 
 export function AdminSearchBar() {
   const router = useRouter();
-  const [selectedArtist, setSelectedArtist] = useState<SearchResultItem | null>(null);
+  const [selectedArtist, setSelectedArtist] = useState<SearchResultItem | null>(
+    null,
+  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleArtistSelect = async (result: SearchResultItem) => {

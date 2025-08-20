@@ -1,6 +1,6 @@
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -19,13 +19,14 @@ export async function GET(request: NextRequest) {
     // Authenticate admin request
     await requireCronAuth();
 
-    const supabase = createRouteHandlerClient({ 
-      cookies: cookies
+    const supabase = createRouteHandlerClient({
+      cookies: cookies,
     });
 
     // Get autonomous sync status from database
-    const { data: syncStatus, error: syncError } = await supabase
-      .rpc('get_autonomous_sync_status');
+    const { data: syncStatus, error: syncError } = await supabase.rpc(
+      "get_autonomous_sync_status",
+    );
 
     if (syncError) {
       throw new Error(`Failed to get sync status: ${syncError.message}`);
@@ -33,8 +34,8 @@ export async function GET(request: NextRequest) {
 
     // Get autonomous sync health view
     const { data: healthStatus, error: healthError } = await supabase
-      .from('autonomous_sync_health')
-      .select('*');
+      .from("autonomous_sync_health")
+      .select("*");
 
     if (healthError) {
       throw new Error(`Failed to get health status: ${healthError.message}`);
@@ -44,9 +45,13 @@ export async function GET(request: NextRequest) {
     const overallHealth = calculateOverallHealth(syncStatus, healthStatus);
 
     // Check if all required pipelines are present
-    const requiredPipelines = ['trending', 'sync', 'maintenance'];
-    const activePipelines = (syncStatus || []).map((status: any) => status.pipeline);
-    const missingPipelines = requiredPipelines.filter(p => !activePipelines.includes(p));
+    const requiredPipelines = ["trending", "sync", "maintenance"];
+    const activePipelines = (syncStatus || []).map(
+      (status: any) => status.pipeline,
+    );
+    const missingPipelines = requiredPipelines.filter(
+      (p) => !activePipelines.includes(p),
+    );
 
     return createSuccessResponse({
       systemStatus: overallHealth,
@@ -66,56 +71,67 @@ export async function GET(request: NextRequest) {
       },
       timestamp: new Date().toISOString(),
     });
-
   } catch (error) {
     console.error("Autonomous status check error:", error);
     return createErrorResponse(
       "Failed to get autonomous status",
       500,
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
   }
 }
 
-function calculateOverallHealth(syncStatus: any[], healthStatus: any[]): string {
+function calculateOverallHealth(
+  syncStatus: any[],
+  healthStatus: any[],
+): string {
   if (!syncStatus || syncStatus.length === 0) {
-    return 'unknown';
+    return "unknown";
   }
 
-  const recentFailures = syncStatus.filter((status: any) => 
-    status.status === 'failed' && status.success_rate < 80
+  const recentFailures = syncStatus.filter(
+    (status: any) => status.status === "failed" && status.success_rate < 80,
   );
 
-  const staleJobs = healthStatus?.filter((health: any) => 
-    health.health_status === 'stale'
-  ) || [];
+  const staleJobs =
+    healthStatus?.filter((health: any) => health.health_status === "stale") ||
+    [];
 
   if (recentFailures.length > 0) {
-    return 'unhealthy';
+    return "unhealthy";
   }
 
   if (staleJobs.length > 0) {
-    return 'degraded';
+    return "degraded";
   }
 
-  return 'healthy';
+  return "healthy";
 }
 
-function calculateGrokComplianceScore(syncStatus: any[], missingPipelines: string[]): number {
+function calculateGrokComplianceScore(
+  syncStatus: any[],
+  missingPipelines: string[],
+): number {
   const baseScore = 85; // Current implementation level
-  
+
   // Deduct points for missing pipelines
   const pipelinePenalty = missingPipelines.length * 5;
-  
+
   // Add points for active pipelines with good success rates
-  const activePipelineBonus = (syncStatus || [])
-    .filter((status: any) => status.success_rate >= 90)
-    .length * 2;
-  
+  const activePipelineBonus =
+    (syncStatus || []).filter((status: any) => status.success_rate >= 90)
+      .length * 2;
+
   // Add bonus for full autonomous operation
   const autonomousBonus = missingPipelines.length === 0 ? 10 : 0;
-  
-  return Math.min(100, Math.max(0, baseScore - pipelinePenalty + activePipelineBonus + autonomousBonus));
+
+  return Math.min(
+    100,
+    Math.max(
+      0,
+      baseScore - pipelinePenalty + activePipelineBonus + autonomousBonus,
+    ),
+  );
 }
 
 // Support POST for manual health checks

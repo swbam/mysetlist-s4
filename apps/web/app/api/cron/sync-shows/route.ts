@@ -24,11 +24,11 @@ export async function POST(request: NextRequest) {
     await requireCronAuth();
 
     const body = await request.json().catch(() => ({}));
-    const { 
-      limit = 50, 
+    const {
+      limit = 50,
       daysAhead = 90,
       syncMode = "upcoming", // "upcoming", "active_artists", "all"
-      includePastShows = false
+      includePastShows = false,
     } = body;
 
     const showSyncService = new ShowSyncService();
@@ -47,11 +47,11 @@ export async function POST(request: NextRequest) {
 
     // Determine which artists to sync shows for
     switch (syncMode) {
-      case "active_artists":
+      case "active_artists": {
         // Sync shows for artists with recent activity
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        
+
         artistsToProcess = await db
           .select({
             id: artists.id,
@@ -75,6 +75,7 @@ export async function POST(request: NextRequest) {
           .orderBy(desc(artists.popularity))
           .limit(limit);
         break;
+      }
 
       case "all":
         // Sync shows for all artists with Ticketmaster IDs
@@ -90,22 +91,22 @@ export async function POST(request: NextRequest) {
           .orderBy(desc(artists.popularity))
           .limit(limit);
         break;
-
-      case "upcoming":
       default:
         // Use general upcoming shows sync
         try {
           const upcomingResult = await showSyncService.syncUpcomingShows({
             classificationName: "Music",
             startDateTime: new Date().toISOString(),
-            endDateTime: new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000).toISOString(),
+            endDateTime: new Date(
+              Date.now() + daysAhead * 24 * 60 * 60 * 1000,
+            ).toISOString(),
           });
-          
+
           results.newShowsAdded = upcomingResult?.newShows || 0;
           results.existingShowsUpdated = upcomingResult?.updatedShows || 0;
         } catch (error) {
           results.errors.push(
-            `Upcoming shows sync failed: ${error instanceof Error ? error.message : String(error)}`
+            `Upcoming shows sync failed: ${error instanceof Error ? error.message : String(error)}`,
           );
         }
         break;
@@ -130,11 +131,14 @@ export async function POST(request: NextRequest) {
             }
 
             // Sync shows for this specific artist
-            const artistShowResult = await showSyncService.syncArtistShows(artist.id);
-            
+            const artistShowResult = await showSyncService.syncArtistShows(
+              artist.id,
+            );
+
             if (artistShowResult) {
               results.newShowsAdded += artistShowResult.newShows || 0;
-              results.existingShowsUpdated += artistShowResult.updatedShows || 0;
+              results.existingShowsUpdated +=
+                artistShowResult.updatedShows || 0;
             }
 
             return { success: true, artistName: artist.name };

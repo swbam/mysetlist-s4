@@ -1,13 +1,15 @@
-import { createClient } from "~/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
 import { addDays } from "date-fns";
+import { type NextRequest, NextResponse } from "next/server";
+import { createClient } from "~/lib/supabase/server";
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    
+
     // Check if user is admin
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -27,9 +29,10 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case "ban": {
-        const bannedUntil = banType === "temporary" 
-          ? addDays(new Date(), Number.parseInt(banDays)).toISOString()
-          : null;
+        const bannedUntil =
+          banType === "temporary"
+            ? addDays(new Date(), Number.parseInt(banDays)).toISOString()
+            : null;
 
         // Create ban record
         const { error: banError } = await supabase.from("user_bans").insert({
@@ -61,7 +64,10 @@ export async function POST(request: NextRequest) {
           target_type: "user",
           target_id: userId,
           reason,
-          metadata: { ban_type: banType, ban_days: banType === "temporary" ? banDays : null },
+          metadata: {
+            ban_type: banType,
+            ban_days: banType === "temporary" ? banDays : null,
+          },
         });
 
         break;
@@ -160,7 +166,7 @@ export async function POST(request: NextRequest) {
     console.error("Error performing user action:", error);
     return NextResponse.json(
       { error: "Failed to perform action" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

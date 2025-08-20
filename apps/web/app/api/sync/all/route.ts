@@ -1,13 +1,13 @@
-import { artists, db, shows, setlists } from "@repo/database";
-import { sql } from "drizzle-orm";
-import { 
+import { artists, db, setlists, shows } from "@repo/database";
+import {
+  SetlistFmClient,
   SetlistSyncService,
   ShowSyncService,
   SpotifyClient,
   TicketmasterClient,
-  SetlistFmClient
 } from "@repo/external-apis";
-import { eq, isNull, and, desc, isNotNull } from "drizzle-orm";
+import { sql } from "drizzle-orm";
+import { and, desc, eq, isNotNull, isNull } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -42,8 +42,8 @@ export async function POST(request: NextRequest) {
     await spotifyClient.authenticate();
 
     // Get artists to sync based on mode
-    let artistsToSync: typeof artists.$inferSelect[] = [];
-    
+    let artistsToSync: (typeof artists.$inferSelect)[] = [];
+
     if (mode === "specific" && artistId) {
       artistsToSync = await db
         .select()
@@ -56,10 +56,7 @@ export async function POST(request: NextRequest) {
         .select()
         .from(artists)
         .where(
-          and(
-            isNotNull(artists.spotifyId),
-            isNull(artists.tmAttractionId)
-          )
+          and(isNotNull(artists.spotifyId), isNull(artists.tmAttractionId)),
         )
         .limit(limit);
     } else if (mode === "all") {
@@ -74,7 +71,7 @@ export async function POST(request: NextRequest) {
         .select()
         .from(artists)
         .orderBy(
-          sql`${artists.trendingScore} DESC NULLS LAST, ${artists.popularity} DESC NULLS LAST`
+          sql`${artists.trendingScore} DESC NULLS LAST, ${artists.popularity} DESC NULLS LAST`,
         )
         .limit(limit);
     }
@@ -96,43 +93,52 @@ export async function POST(request: NextRequest) {
 
         // 1. Update artist data if missing
         let dataUpdated = false;
-        
+
         // Get Spotify data if missing
         if (!artist.spotifyId && artist.name) {
           try {
-            const spotifyResults = await spotifyClient.searchArtists(artist.name, 1);
+            const spotifyResults = await spotifyClient.searchArtists(
+              artist.name,
+              1,
+            );
             if (spotifyResults.artists.items.length > 0) {
               const spotifyArtist = spotifyResults.artists.items[0];
-              
+
               // Check for name similarity
               if (spotifyArtist) {
-                const nameSimilar = spotifyArtist.name.toLowerCase().includes(artist.name.toLowerCase()) ||
-                                  artist.name.toLowerCase().includes(spotifyArtist.name.toLowerCase());
-                
+                const nameSimilar =
+                  spotifyArtist.name
+                    .toLowerCase()
+                    .includes(artist.name.toLowerCase()) ||
+                  artist.name
+                    .toLowerCase()
+                    .includes(spotifyArtist.name.toLowerCase());
+
                 if (nameSimilar) {
-                await db
-                  .update(artists)
-                  .set({
-                    spotifyId: spotifyArtist.id,
-                    imageUrl: spotifyArtist.images[0]?.url || artist.imageUrl,
-                    smallImageUrl: spotifyArtist.images[2]?.url || artist.smallImageUrl,
-                    genres: JSON.stringify(spotifyArtist.genres),
-                    popularity: spotifyArtist.popularity,
-                    followers: spotifyArtist.followers.total,
-                    updatedAt: new Date(),
-                  })
-                  .where(eq(artists.id, artist.id));
-                artist.spotifyId = spotifyArtist.id;
-                dataUpdated = true;
+                  await db
+                    .update(artists)
+                    .set({
+                      spotifyId: spotifyArtist.id,
+                      imageUrl: spotifyArtist.images[0]?.url || artist.imageUrl,
+                      smallImageUrl:
+                        spotifyArtist.images[2]?.url || artist.smallImageUrl,
+                      genres: JSON.stringify(spotifyArtist.genres),
+                      popularity: spotifyArtist.popularity,
+                      followers: spotifyArtist.followers.total,
+                      updatedAt: new Date(),
+                    })
+                    .where(eq(artists.id, artist.id));
+                  artist.spotifyId = spotifyArtist.id;
+                  dataUpdated = true;
                 }
               }
             }
           } catch (error: any) {
             artistResult.errors.push(`Spotify update: ${error.message}`);
           }
-          
+
           // Rate limit
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise((resolve) => setTimeout(resolve, 300));
         }
 
         // Get Ticketmaster data if missing
@@ -142,14 +148,19 @@ export async function POST(request: NextRequest) {
               keyword: artist.name,
               size: 1,
             });
-            
+
             if (tmResults._embedded?.attractions?.[0]) {
               const attraction = tmResults._embedded.attractions[0];
-              
+
               // Check for name similarity
-              const nameSimilar = attraction.name.toLowerCase().includes(artist.name.toLowerCase()) ||
-                                artist.name.toLowerCase().includes(attraction.name.toLowerCase());
-              
+              const nameSimilar =
+                attraction.name
+                  .toLowerCase()
+                  .includes(artist.name.toLowerCase()) ||
+                artist.name
+                  .toLowerCase()
+                  .includes(attraction.name.toLowerCase());
+
               if (nameSimilar) {
                 await db
                   .update(artists)
@@ -167,9 +178,9 @@ export async function POST(request: NextRequest) {
               artistResult.errors.push(`Ticketmaster update: ${error.message}`);
             }
           }
-          
+
           // Rate limit
-          await new Promise(resolve => setTimeout(resolve, 500));
+          await new Promise((resolve) => setTimeout(resolve, 500));
         }
 
         // 2. Sync shows from Ticketmaster if we have the ID
@@ -177,9 +188,9 @@ export async function POST(request: NextRequest) {
           try {
             const showsResult = await showSync.syncArtistShows(artist.id);
             artistResult.shows = showsResult.newShows;
-            
+
             // Rate limit
-            await new Promise(resolve => setTimeout(resolve, 300));
+            await new Promise((resolve) => setTimeout(resolve, 300));
           } catch (error: any) {
             if (!error.message.includes("No events found")) {
               artistResult.errors.push(`Show sync: ${error.message}`);
@@ -196,7 +207,10 @@ export async function POST(request: NextRequest) {
 
             for (const setlistData of setlistResults.setlist) {
               // Only sync setlists with songs
-              const songCount = setlistData.sets.set.reduce((acc, set) => acc + set.song.length, 0);
+              const songCount = setlistData.sets.set.reduce(
+                (acc, set) => acc + set.song.length,
+                0,
+              );
               if (songCount > 0) {
                 try {
                   await setlistSync.syncSetlistFromSetlistFm(setlistData);
@@ -209,9 +223,9 @@ export async function POST(request: NextRequest) {
           } catch (error: any) {
             // SetlistFM errors are not critical
           }
-          
+
           // Rate limit
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise((resolve) => setTimeout(resolve, 300));
         }
 
         // 4. Create initial setlists for upcoming shows without setlists
@@ -221,18 +235,21 @@ export async function POST(request: NextRequest) {
           .where(
             and(
               eq(shows.headlinerArtistId, artist.id),
-              sql`${shows.date} >= CURRENT_DATE`
-            )
+              sql`${shows.date} >= CURRENT_DATE`,
+            ),
           )
           .limit(10);
 
         for (const show of upcomingShows) {
           try {
-            const setlistResult = await setlistSync.ensureInitialSetlists(show.id, {
-              songCount: 5,
-              weightByPopularity: true,
-              excludeLive: true,
-            });
+            const setlistResult = await setlistSync.ensureInitialSetlists(
+              show.id,
+              {
+                songCount: 5,
+                weightByPopularity: true,
+                excludeLive: true,
+              },
+            );
             if (setlistResult.created) {
               artistResult.setlists++;
             }
@@ -249,7 +266,8 @@ export async function POST(request: NextRequest) {
         `);
         artistResult.songs = (songCount[0] as any).count || 0;
 
-        artistResult.status = artistResult.errors.length === 0 ? "success" : "partial";
+        artistResult.status =
+          artistResult.errors.length === 0 ? "success" : "partial";
         if (artistResult.status === "success") results.success++;
       } catch (error: any) {
         artistResult.status = "error";
@@ -282,12 +300,12 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Sync error:", error);
     return NextResponse.json(
-      { 
+      {
         success: false,
-        error: "Sync failed", 
-        details: error instanceof Error ? error.message : "Unknown error" 
+        error: "Sync failed",
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -335,7 +353,7 @@ export async function GET(request: NextRequest) {
     console.error("Stats error:", error);
     return NextResponse.json(
       { error: "Failed to get sync status" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

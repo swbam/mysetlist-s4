@@ -1,15 +1,23 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "~/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
+
+type RouteParams = {
+  params: Promise<{
+    id: string;
+  }>;
+};
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
     const supabase = await createClient();
-    
+
     // Check if user is admin
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -24,7 +32,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const venueId = params.id;
+    const { id: venueId } = await params;
 
     // Get venue details for logging
     const { data: venue } = await supabase
@@ -38,24 +46,37 @@ export async function DELETE(
     }
 
     // Delete related records first
-    await supabase.from("setlist_songs").delete().in("show_id", 
-      (await supabase.from("shows").select("id").eq("venue_id", venueId)).data?.map(s => s.id) || []
-    );
-    await supabase.from("setlists").delete().in("show_id", 
-      (await supabase.from("shows").select("id").eq("venue_id", venueId)).data?.map(s => s.id) || []
-    );
-    await supabase.from("votes").delete().in("show_id", 
-      (await supabase.from("shows").select("id").eq("venue_id", venueId)).data?.map(s => s.id) || []
-    );
+    await supabase
+      .from("setlist_songs")
+      .delete()
+      .in(
+        "show_id",
+        (
+          await supabase.from("shows").select("id").eq("venue_id", venueId)
+        ).data?.map((s) => s.id) || [],
+      );
+    await supabase
+      .from("setlists")
+      .delete()
+      .in(
+        "show_id",
+        (
+          await supabase.from("shows").select("id").eq("venue_id", venueId)
+        ).data?.map((s) => s.id) || [],
+      );
+    await supabase
+      .from("votes")
+      .delete()
+      .in(
+        "show_id",
+        (
+          await supabase.from("shows").select("id").eq("venue_id", venueId)
+        ).data?.map((s) => s.id) || [],
+      );
     await supabase.from("shows").delete().eq("venue_id", venueId);
-    await supabase.from("venue_reviews").delete().eq("venue_id", venueId);
-    await supabase.from("venue_photos").delete().eq("venue_id", venueId);
 
     // Delete the venue
-    const { error } = await supabase
-      .from("venues")
-      .delete()
-      .eq("id", venueId);
+    const { error } = await supabase.from("venues").delete().eq("id", venueId);
 
     if (error) {
       throw error;
@@ -70,7 +91,7 @@ export async function DELETE(
       reason: "Admin deletion",
       metadata: {
         venue_name: venue.name,
-        venue_location: `${venue.city}, ${venue.state}`
+        venue_location: `${venue.city}, ${venue.state}`,
       },
     });
 
@@ -79,7 +100,7 @@ export async function DELETE(
     console.error("Error deleting venue:", error);
     return NextResponse.json(
       { error: "Failed to delete venue" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

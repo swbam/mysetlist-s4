@@ -1,18 +1,19 @@
-import { db, artists, songs, artistSongs } from "@repo/database";
+import { artistSongs, artists, db, songs } from "@repo/database";
+import { eq } from "@repo/database";
 import { SetlistFmClient } from "../clients/setlistfm";
 import { SpotifyClient } from "../clients/spotify";
 import { TicketmasterClient } from "../clients/ticketmaster";
-import { eq } from "@repo/database";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 
 // Helper function to normalize song titles for deduplication
-function normalizeTitle(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^\w\s]/g, "") // Remove punctuation
-    .replace(/\s+/g, " ") // Normalize whitespace
-    .trim();
-}
+// Currently unused but kept for future use
+// function normalizeTitle(title: string): string {
+//   return title
+//     .toLowerCase()
+//     .replace(/[^\w\s]/g, "") // Remove punctuation
+//     .replace(/\s+/g, " ") // Normalize whitespace
+//     .trim();
+// }
 
 export class ArtistSyncService {
   private spotifyClient: SpotifyClient;
@@ -39,7 +40,9 @@ export class ArtistSyncService {
     ticketmasterAttractionId?: string;
   }): Promise<{ spotifyId?: string; tmAttractionId: string; mbid?: string }> {
     if (!params.ticketmasterAttractionId) {
-      throw new Error("ticketmasterAttractionId is required for syncIdentifiers");
+      throw new Error(
+        "ticketmasterAttractionId is required for syncIdentifiers",
+      );
     }
 
     const result: {
@@ -183,7 +186,9 @@ export class ArtistSyncService {
       ) {
         const attraction =
           ticketmasterResult._embedded.events[0]._embedded.attractions[0];
-        if (this.isArtistNameMatch(spotifyArtist.name, attraction?.name || "")) {
+        if (
+          this.isArtistNameMatch(spotifyArtist.name, attraction?.name || "")
+        ) {
           tmAttractionId = attraction.id;
           console.log(
             `Found Ticketmaster ID ${tmAttractionId} for ${spotifyArtist.name}`,
@@ -289,7 +294,7 @@ export class ArtistSyncService {
   /**
    * Fetches full Spotify catalog excluding "live" tracks with deduplication
    */
-  async syncCatalog(artistId: string): Promise<{
+  async syncCatalog(_artistId: string): Promise<{
     totalSongs: number;
     totalAlbums: number;
     processedAlbums: number;

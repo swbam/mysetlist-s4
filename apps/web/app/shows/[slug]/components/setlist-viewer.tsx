@@ -146,9 +146,11 @@ export function SetlistViewer({
                 ...item,
                 upvotes: item.votes?.length || 0, // Simplified: presence = upvote
                 downvotes: 0, // No downvotes in simplified system
-                userVote:
-                  item.votes?.find((v: any) => v.user_id === currentUser?.id)
-                    ? "up" : null,
+                userVote: item.votes?.find(
+                  (v: any) => v.user_id === currentUser?.id,
+                )
+                  ? "up"
+                  : null,
               })),
             };
             setSetlistData(processedData);

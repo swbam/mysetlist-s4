@@ -1,8 +1,12 @@
 import { artists, db } from "@repo/database";
+import {
+  Priority,
+  QueueName,
+  queueManager,
+} from "../../../../apps/web/lib/queues/queue-manager";
 import { SpotifyClient } from "../clients/spotify";
 import { TicketmasterClient } from "../clients/ticketmaster";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
-import { queueManager, QueueName, Priority } from "apps/web/lib/queues/queue-manager";
 
 export interface ImportProgress {
   stage:
@@ -45,7 +49,7 @@ export class ArtistImportOrchestrator {
   constructor(progressCallback?: (progress: ImportProgress) => Promise<void>) {
     this.spotifyClient = new SpotifyClient({});
     this.ticketmasterClient = new TicketmasterClient({
-      apiKey: process.env['TICKETMASTER_API_KEY'] || "",
+      apiKey: process.env["TICKETMASTER_API_KEY"] || "",
     });
     this.progressCallback = progressCallback ?? undefined;
     this.errorHandler = new SyncErrorHandler({
@@ -192,8 +196,7 @@ export class ArtistImportOrchestrator {
         },
         {
           priority: Priority.CRITICAL,
-          jobId: `import-${artistId}`,
-        }
+        },
       );
 
       const importDuration = Date.now() - startTime;

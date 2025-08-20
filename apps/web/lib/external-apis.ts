@@ -3,8 +3,7 @@ import { SpotifyClient, TicketmasterClient } from "@repo/external-apis";
 // Create singleton instances
 export const spotify = new SpotifyClient({});
 export const ticketmaster = new TicketmasterClient({
-  apiKey:
-    process.env.TICKETMASTER_API_KEY || "k8GrSAkbFaN0w7qDxGl7ohr8LwdAQm9b",
+  apiKey: process.env.TICKETMASTER_API_KEY || "",
 });
 
 // External API utilities

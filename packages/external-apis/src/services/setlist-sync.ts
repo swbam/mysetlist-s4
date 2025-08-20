@@ -7,10 +7,10 @@ import {
   songs,
   venues,
 } from "@repo/database";
+import { and, db, eq, sql } from "@repo/database";
 import { SetlistFmClient } from "../clients/setlistfm";
 import { SpotifyClient } from "../clients/spotify";
-import { and, db, eq, sql } from "@repo/database";
-import { SetlistFmSetlist } from "../types/setlistfm";
+import type { SetlistFmSetlist } from "../types/setlistfm";
 
 export class SetlistSyncService {
   private setlistFmClient: SetlistFmClient;
@@ -133,10 +133,7 @@ export class SetlistSyncService {
       .select()
       .from(shows)
       .where(
-        and(
-          eq(shows.headlinerArtistId, artist.id),
-          eq(shows.date, showDate),
-        ),
+        and(eq(shows.headlinerArtistId, artist.id), eq(shows.date, showDate)),
       )
       .limit(1);
 

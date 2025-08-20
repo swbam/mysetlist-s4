@@ -30,14 +30,14 @@ export async function GET(request: NextRequest) {
       or(
         ilike(songs.name, `%${trimmedQuery}%`),
         ilike(songs.artist, `%${trimmedQuery}%`),
-        ilike(songs.albumName, `%${trimmedQuery}%`)
+        ilike(songs.albumName, `%${trimmedQuery}%`),
       ),
     ];
 
     // If artistId is provided, we'll prioritize songs by that artist in ordering
     let orderByConditions = [
       sql`${songs.popularity} DESC NULLS LAST`,
-      sql`${songs.name} ASC`
+      sql`${songs.name} ASC`,
     ];
 
     if (artistId) {
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
       orderByConditions = [
         sql`CASE WHEN ${songs.artist} ILIKE (SELECT name FROM artists WHERE id = ${artistId}) THEN 0 ELSE 1 END`,
         sql`${songs.popularity} DESC NULLS LAST`,
-        sql`${songs.name} ASC`
+        sql`${songs.name} ASC`,
       ];
     }
 
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest) {
         error: "Failed to search songs",
         message: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

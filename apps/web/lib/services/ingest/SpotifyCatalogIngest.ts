@@ -1,7 +1,7 @@
 /**
  * Spotify Catalog Ingest Service
  * Implements GROK.md specifications for studio-only catalog with liveness filtering and ISRC deduplication
- * 
+ *
  * Key features:
  * - Studio-only catalog: Filter out live tracks using liveness > 0.8 threshold + name patterns
  * - ISRC deduplication: Prefer highest popularity for same ISRC
@@ -10,19 +10,19 @@
  * - Robust error handling with comprehensive filtering
  */
 
-import { db, songs, artistSongs, artists } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { ProgressBus } from '../progress/ProgressBus';
-import { 
-  listAllAlbums, 
-  listAlbumTracks, 
-  getTracksDetails, 
+import { artistSongs, artists, db, songs } from "@repo/database";
+import { eq } from "drizzle-orm";
+import {
+  type SpotifyAlbum,
+  type SpotifyAudioFeatures,
+  type SpotifyTrack,
   getAudioFeatures,
-  type SpotifyAlbum, 
-  type SpotifyTrack, 
-  type SpotifyAudioFeatures 
-} from '../adapters/SpotifyClient';
-import { pLimit, processBatch } from '../util/concurrency';
+  getTracksDetails,
+  listAlbumTracks,
+  listAllAlbums,
+} from "../adapters/SpotifyClient";
+import type { ProgressBus } from "../progress/ProgressBus";
+import { pLimit, processBatch } from "../util/concurrency";
 
 export interface SpotifyIngestOptions {
   artistId: string;
@@ -72,8 +72,13 @@ const LIVE_ALBUM_PATTERNS = [
 export class SpotifyCatalogIngest {
   private limit: ReturnType<typeof pLimit>;
   private progressReporter?: ReturnType<typeof ProgressBus.createReporter>;
-  
-  constructor(options: { concurrency?: number; progressReporter?: ReturnType<typeof ProgressBus.createReporter> } = {}) {
+
+  constructor(
+    options: {
+      concurrency?: number;
+      progressReporter?: ReturnType<typeof ProgressBus.createReporter>;
+    } = {},
+  ) {
     this.limit = pLimit(options.concurrency || 8);
     this.progressReporter = options.progressReporter;
   }
@@ -96,28 +101,40 @@ export class SpotifyCatalogIngest {
     };
 
     try {
-      reporter?.report('importing-songs', 5, 'Fetching Spotify albums...');
+      reporter?.report("importing-songs", 5, "Fetching Spotify albums...");
 
       // Step 1: Get all albums for the artist
       const albums = await listAllAlbums(spotifyId);
-      console.log(`SpotifyCatalogIngest: Found ${albums.length} albums for artist ${artistId}`);
+      console.log(
+        `SpotifyCatalogIngest: Found ${albums.length} albums for artist ${artistId}`,
+      );
 
       if (albums.length === 0) {
-        reporter?.report('importing-songs', 40, 'No albums found for this artist');
+        reporter?.report(
+          "importing-songs",
+          40,
+          "No albums found for this artist",
+        );
         return result;
       }
 
       // Step 2: Filter out live albums
-      const studioAlbums = albums.filter(album => this.isStudioAlbum(album));
+      const studioAlbums = albums.filter((album) => this.isStudioAlbum(album));
       const liveAlbumsFiltered = albums.length - studioAlbums.length;
 
-      console.log(`SpotifyCatalogIngest: Filtered to ${studioAlbums.length} studio albums (removed ${liveAlbumsFiltered} live albums)`);
+      console.log(
+        `SpotifyCatalogIngest: Filtered to ${studioAlbums.length} studio albums (removed ${liveAlbumsFiltered} live albums)`,
+      );
 
-      reporter?.report('importing-songs', 15, `Processing ${studioAlbums.length} studio albums...`);
+      reporter?.report(
+        "importing-songs",
+        15,
+        `Processing ${studioAlbums.length} studio albums...`,
+      );
 
       // Step 3: Collect all tracks from studio albums
       const allTracks: SpotifyTrack[] = [];
-      
+
       await processBatch(
         studioAlbums,
         async (album) => {
@@ -132,54 +149,82 @@ export class SpotifyCatalogIngest {
           onProgress: (completed, total) => {
             const progress = 15 + Math.floor((completed / total) * 20); // 15% to 35%
             reporter?.report(
-              'importing-songs',
+              "importing-songs",
               Math.min(35, progress),
-              `Collected tracks from ${completed}/${total} albums (${allTracks.length} total tracks)`
+              `Collected tracks from ${completed}/${total} albums (${allTracks.length} total tracks)`,
             );
           },
           onError: (error, album) => {
             result.errors.push({
-              type: 'album_tracks_fetch',
+              type: "album_tracks_fetch",
               message: error.message,
               item: { albumId: album.id, name: album.name },
             });
           },
-        }
+        },
       );
 
-      console.log(`SpotifyCatalogIngest: Collected ${allTracks.length} tracks from studio albums`);
+      console.log(
+        `SpotifyCatalogIngest: Collected ${allTracks.length} tracks from studio albums`,
+      );
 
-      reporter?.report('importing-songs', 40, `Getting detailed track information...`);
+      reporter?.report(
+        "importing-songs",
+        40,
+        "Getting detailed track information...",
+      );
 
       // Step 4: Get detailed track information in batches
-      const trackIds = allTracks.map(track => track.id);
+      const trackIds = allTracks.map((track) => track.id);
       const detailedTracks = await getTracksDetails(trackIds);
-      
-      console.log(`SpotifyCatalogIngest: Retrieved details for ${detailedTracks.length} tracks`);
 
-      reporter?.report('importing-songs', 55, `Getting audio features for liveness filtering...`);
+      console.log(
+        `SpotifyCatalogIngest: Retrieved details for ${detailedTracks.length} tracks`,
+      );
+
+      reporter?.report(
+        "importing-songs",
+        55,
+        "Getting audio features for liveness filtering...",
+      );
 
       // Step 5: Get audio features for liveness filtering
       const audioFeatures = await getAudioFeatures(trackIds);
       const audioFeaturesMap = new Map<string, SpotifyAudioFeatures>();
-      
+
       for (const features of audioFeatures) {
         if (features?.id) {
           audioFeaturesMap.set(features.id, features);
         }
       }
 
-      console.log(`SpotifyCatalogIngest: Retrieved audio features for ${audioFeatures.length} tracks`);
+      console.log(
+        `SpotifyCatalogIngest: Retrieved audio features for ${audioFeatures.length} tracks`,
+      );
 
-      reporter?.report('importing-songs', 70, `Filtering studio tracks and deduplicating...`);
+      reporter?.report(
+        "importing-songs",
+        70,
+        "Filtering studio tracks and deduplicating...",
+      );
 
       // Step 6: Apply studio-only filtering and ISRC deduplication
-      const studioTracks = this.filterStudioTracks(detailedTracks, audioFeaturesMap, result);
+      const studioTracks = this.filterStudioTracks(
+        detailedTracks,
+        audioFeaturesMap,
+        result,
+      );
       const deduplicatedTracks = this.deduplicateByISRC(studioTracks, result);
 
-      console.log(`SpotifyCatalogIngest: Final catalog: ${deduplicatedTracks.length} studio tracks`);
+      console.log(
+        `SpotifyCatalogIngest: Final catalog: ${deduplicatedTracks.length} studio tracks`,
+      );
 
-      reporter?.report('importing-songs', 80, `Ingesting ${deduplicatedTracks.length} studio tracks...`);
+      reporter?.report(
+        "importing-songs",
+        80,
+        `Ingesting ${deduplicatedTracks.length} studio tracks...`,
+      );
 
       // Step 7: Ingest tracks into database
       await processBatch(
@@ -191,37 +236,39 @@ export class SpotifyCatalogIngest {
           onProgress: (completed, total) => {
             const progress = 80 + Math.floor((completed / total) * 15); // 80% to 95%
             reporter?.report(
-              'importing-songs',
+              "importing-songs",
               Math.min(95, progress),
-              `Ingested ${completed}/${total} studio tracks`
+              `Ingested ${completed}/${total} studio tracks`,
             );
           },
           onError: (error, track) => {
             result.errors.push({
-              type: 'track_ingestion',
+              type: "track_ingestion",
               message: error.message,
               item: { trackId: track.id, name: track.name },
             });
           },
-        }
+        },
       );
 
-      reporter?.report('importing-songs', 100, 
-        `Catalog completed: ${result.studioTracksIngested} studio tracks ingested (${result.errors.length} errors)`
+      reporter?.report(
+        "importing-songs",
+        100,
+        `Catalog completed: ${result.studioTracksIngested} studio tracks ingested (${result.errors.length} errors)`,
       );
 
       return result;
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error('SpotifyCatalogIngest: Fatal error:', error);
-      
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("SpotifyCatalogIngest: Fatal error:", error);
+
       result.errors.push({
-        type: 'fatal_error',
+        type: "fatal_error",
         message: errorMessage,
       });
 
-      reporter?.reportError(error as Error, 'importing-songs');
+      reporter?.reportError(error as Error, "importing-songs");
       throw error;
     }
   }
@@ -236,9 +283,12 @@ export class SpotifyCatalogIngest {
         return false;
       }
     }
-    
+
     // Live albums are typically marked as 'compilation' or have specific album_group
-    if (album.album_type === 'compilation' && album.album_group === 'appears_on') {
+    if (
+      album.album_type === "compilation" &&
+      album.album_group === "appears_on"
+    ) {
       // This could be a live compilation, check name more strictly
       if (/\b(live|concert)\b/i.test(album.name)) {
         return false;
@@ -253,9 +303,9 @@ export class SpotifyCatalogIngest {
    * Gracefully handles missing audio features by relying on name-based filtering
    */
   private filterStudioTracks(
-    tracks: SpotifyTrack[], 
+    tracks: SpotifyTrack[],
     audioFeaturesMap: Map<string, SpotifyAudioFeatures>,
-    result: CatalogIngestResult
+    result: CatalogIngestResult,
   ): SpotifyTrack[] {
     const studioTracks: SpotifyTrack[] = [];
 
@@ -267,12 +317,16 @@ export class SpotifyCatalogIngest {
       if (features) {
         if (features.liveness > LIVENESS_THRESHOLD) {
           result.liveFeaturesFiltered++;
-          console.log(`SpotifyCatalogIngest: Filtered live track by audio features: ${track.name} (liveness: ${features.liveness})`);
+          console.log(
+            `SpotifyCatalogIngest: Filtered live track by audio features: ${track.name} (liveness: ${features.liveness})`,
+          );
           continue;
         }
       } else {
         // No audio features available - rely on name-based filtering only
-        console.log(`SpotifyCatalogIngest: No audio features for ${track.name}, using name-based filtering only`);
+        console.log(
+          `SpotifyCatalogIngest: No audio features for ${track.name}, using name-based filtering only`,
+        );
       }
 
       // Filter by track name patterns
@@ -281,7 +335,9 @@ export class SpotifyCatalogIngest {
         if (pattern.test(track.name)) {
           isLiveTrack = true;
           result.liveNameFiltered++;
-          console.log(`SpotifyCatalogIngest: Filtered live track by name: ${track.name}`);
+          console.log(
+            `SpotifyCatalogIngest: Filtered live track by name: ${track.name}`,
+          );
           break;
         }
       }
@@ -293,20 +349,25 @@ export class SpotifyCatalogIngest {
 
     const audioFeaturesCount = audioFeaturesMap.size;
     const totalTracks = tracks.length;
-    console.log(`SpotifyCatalogIngest: Studio filtering: ${studioTracks.length} studio tracks from ${totalTracks} total (${audioFeaturesCount}/${totalTracks} had audio features)`);
+    console.log(
+      `SpotifyCatalogIngest: Studio filtering: ${studioTracks.length} studio tracks from ${totalTracks} total (${audioFeaturesCount}/${totalTracks} had audio features)`,
+    );
     return studioTracks;
   }
 
   /**
    * Deduplicate tracks by ISRC, preferring tracks with highest popularity
    */
-  private deduplicateByISRC(tracks: SpotifyTrack[], result: CatalogIngestResult): SpotifyTrack[] {
+  private deduplicateByISRC(
+    tracks: SpotifyTrack[],
+    result: CatalogIngestResult,
+  ): SpotifyTrack[] {
     const isrcMap = new Map<string, SpotifyTrack>();
     const tracksWithoutISRC: SpotifyTrack[] = [];
 
     for (const track of tracks) {
       const isrc = track.external_ids?.isrc;
-      
+
       if (!isrc) {
         // Keep tracks without ISRC
         tracksWithoutISRC.push(track);
@@ -320,25 +381,38 @@ export class SpotifyCatalogIngest {
       } else {
         // Duplicate ISRC found - keep the one with higher popularity
         if (track.popularity > existingTrack.popularity) {
-          console.log(`SpotifyCatalogIngest: ISRC dedup: Replacing "${existingTrack.name}" (pop: ${existingTrack.popularity}) with "${track.name}" (pop: ${track.popularity})`);
+          console.log(
+            `SpotifyCatalogIngest: ISRC dedup: Replacing "${existingTrack.name}" (pop: ${existingTrack.popularity}) with "${track.name}" (pop: ${track.popularity})`,
+          );
           isrcMap.set(isrc, track);
         } else {
-          console.log(`SpotifyCatalogIngest: ISRC dedup: Keeping "${existingTrack.name}" (pop: ${existingTrack.popularity}) over "${track.name}" (pop: ${track.popularity})`);
+          console.log(
+            `SpotifyCatalogIngest: ISRC dedup: Keeping "${existingTrack.name}" (pop: ${existingTrack.popularity}) over "${track.name}" (pop: ${track.popularity})`,
+          );
         }
         result.duplicatesFiltered++;
       }
     }
 
-    const deduplicatedTracks = [...Array.from(isrcMap.values()), ...tracksWithoutISRC];
-    
-    console.log(`SpotifyCatalogIngest: ISRC deduplication: ${deduplicatedTracks.length} unique tracks from ${tracks.length} (${result.duplicatesFiltered} duplicates removed)`);
+    const deduplicatedTracks = [
+      ...Array.from(isrcMap.values()),
+      ...tracksWithoutISRC,
+    ];
+
+    console.log(
+      `SpotifyCatalogIngest: ISRC deduplication: ${deduplicatedTracks.length} unique tracks from ${tracks.length} (${result.duplicatesFiltered} duplicates removed)`,
+    );
     return deduplicatedTracks;
   }
 
   /**
    * Ingest a single track into the database
    */
-  private async ingestTrack(track: SpotifyTrack, artistId: string, result: CatalogIngestResult): Promise<void> {
+  private async ingestTrack(
+    track: SpotifyTrack,
+    artistId: string,
+    result: CatalogIngestResult,
+  ): Promise<void> {
     try {
       // Prepare song data
       const songData = {
@@ -346,7 +420,7 @@ export class SpotifyCatalogIngest {
         isrc: track.external_ids?.isrc || null,
         name: track.name,
         albumName: track.album?.name || null,
-        artist: track.artists[0]?.name || 'Unknown',
+        artist: track.artists[0]?.name || "Unknown",
         albumId: track.album?.id || null,
         trackNumber: track.track_number,
         discNumber: track.disc_number || 1,
@@ -398,13 +472,19 @@ export class SpotifyCatalogIngest {
 
         result.studioTracksIngested++;
 
-        console.log(`SpotifyCatalogIngest: Ingested studio track: ${track.name} (${track.id} -> ${upsertedSong.id})`);
+        console.log(
+          `SpotifyCatalogIngest: Ingested studio track: ${track.name} (${track.id} -> ${upsertedSong.id})`,
+        );
       } else {
-        console.error(`SpotifyCatalogIngest: Failed to upsert song: ${track.name}`);
+        console.error(
+          `SpotifyCatalogIngest: Failed to upsert song: ${track.name}`,
+        );
       }
-
     } catch (error) {
-      console.error(`SpotifyCatalogIngest: Error ingesting track ${track.id}:`, error);
+      console.error(
+        `SpotifyCatalogIngest: Error ingesting track ${track.id}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -412,12 +492,14 @@ export class SpotifyCatalogIngest {
   /**
    * Static method to create and run ingest in one call
    */
-  static async ingestForArtist(options: SpotifyIngestOptions): Promise<CatalogIngestResult> {
+  static async ingestForArtist(
+    options: SpotifyIngestOptions,
+  ): Promise<CatalogIngestResult> {
     const ingest = new SpotifyCatalogIngest({
       concurrency: options.concurrency,
       progressReporter: options.progressReporter,
     });
-    
+
     return await ingest.ingest(options);
   }
 }
@@ -431,7 +513,7 @@ export async function ingestSpotifyCatalog(
   options: {
     concurrency?: number;
     progressReporter?: ReturnType<typeof ProgressBus.createReporter>;
-  } = {}
+  } = {},
 ): Promise<CatalogIngestResult> {
   return SpotifyCatalogIngest.ingestForArtist({
     artistId,
@@ -443,30 +525,33 @@ export async function ingestSpotifyCatalog(
 /**
  * Utility function to test studio filtering on a sample of tracks
  */
-export async function testStudioFiltering(spotifyId: string, limit: number = 50): Promise<{
+export async function testStudioFiltering(
+  spotifyId: string,
+  limit = 50,
+): Promise<{
   totalTracks: number;
   studioTracks: number;
   liveTracksFiltered: number;
   filteringAccuracy: number;
 }> {
   console.log(`Testing studio filtering for Spotify artist: ${spotifyId}`);
-  
+
   const albums = await listAllAlbums(spotifyId);
   const sampleAlbums = albums.slice(0, Math.ceil(limit / 10)); // ~10 tracks per album
-  
+
   const allTracks: SpotifyTrack[] = [];
   for (const album of sampleAlbums) {
     const tracks = await listAlbumTracks(album.id);
     allTracks.push(...tracks.slice(0, 10)); // Limit tracks per album
   }
-  
-  const trackIds = allTracks.map(t => t.id);
+
+  const trackIds = allTracks.map((t) => t.id);
   const detailedTracks = await getTracksDetails(trackIds);
   const audioFeatures = await getAudioFeatures(trackIds);
-  
+
   const audioFeaturesMap = new Map<string, SpotifyAudioFeatures>();
-  audioFeatures.forEach(f => f && audioFeaturesMap.set(f.id, f));
-  
+  audioFeatures.forEach((f) => f && audioFeaturesMap.set(f.id, f));
+
   const ingest = new SpotifyCatalogIngest();
   const result: CatalogIngestResult = {
     albumsProcessed: 0,
@@ -477,14 +562,20 @@ export async function testStudioFiltering(spotifyId: string, limit: number = 50)
     duplicatesFiltered: 0,
     errors: [],
   };
-  
-  const studioTracks = (ingest as any).filterStudioTracks(detailedTracks, audioFeaturesMap, result);
-  const liveTracksFiltered = result.liveFeaturesFiltered + result.liveNameFiltered;
-  
+
+  const studioTracks = (ingest as any).filterStudioTracks(
+    detailedTracks,
+    audioFeaturesMap,
+    result,
+  );
+  const liveTracksFiltered =
+    result.liveFeaturesFiltered + result.liveNameFiltered;
+
   return {
     totalTracks: detailedTracks.length,
     studioTracks: studioTracks.length,
     liveTracksFiltered,
-    filteringAccuracy: liveTracksFiltered > 0 ? (liveTracksFiltered / detailedTracks.length) : 1.0,
+    filteringAccuracy:
+      liveTracksFiltered > 0 ? liveTracksFiltered / detailedTracks.length : 1.0,
   };
 }

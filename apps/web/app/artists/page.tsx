@@ -31,10 +31,7 @@ export default function ArtistsPage() {
                 <h1 className="font-regular text-4xl tracking-tighter md:text-6xl">
                   Discover Artists
                 </h1>
-                <ImportButton
-                  showDropdown
-                  className="hidden sm:flex"
-                />
+                <ImportButton showDropdown className="hidden sm:flex" />
               </div>
               <p className="max-w-2xl text-lg text-muted-foreground">
                 Search for your favorite artists to discover their upcoming
@@ -46,10 +43,7 @@ export default function ArtistsPage() {
               <div className="flex-1">
                 <ArtistSearch />
               </div>
-              <ImportButton
-                className="sm:hidden"
-                compact
-              />
+              <ImportButton className="sm:hidden" compact />
             </div>
 
             {/* Trending Artists Section */}

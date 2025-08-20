@@ -21,8 +21,6 @@ interface Venue {
   state: string | null;
   country: string | null;
   capacity: number | null;
-  rating?: number;
-  reviewCount?: number;
   upcomingShows: number;
   website?: string | null;
   latitude?: number | null;
@@ -169,17 +167,6 @@ export const VenueGrid = () => {
                     `, ${venue.country}`}
                 </span>
               </div>
-              {venue.rating && (
-                <div className="flex items-center gap-1">
-                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                  <span className="font-medium">{venue.rating.toFixed(1)}</span>
-                  {venue.reviewCount && (
-                    <span className="text-muted-foreground text-sm">
-                      ({venue.reviewCount})
-                    </span>
-                  )}
-                </div>
-              )}
             </div>
 
             <div className="flex gap-4 text-sm">

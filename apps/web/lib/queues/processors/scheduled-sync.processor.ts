@@ -1,55 +1,57 @@
-import { Job } from "bullmq";
-import { db, artists, shows } from "@repo/database";
-import { eq, sql, desc } from "drizzle-orm";
-import { queueManager, QueueName, Priority } from "../queue-manager";
+import { artists, db, shows } from "@repo/database";
+import { desc, eq, sql } from "drizzle-orm";
+import { Priority, QueueName, queueManager } from "../queue-manager";
 import { RedisCache } from "../redis-config";
+import type { SimpleJob } from "../types";
 
 const cache = new RedisCache();
 
 export interface ScheduledSyncJobData {
-  type: 'active' | 'trending' | 'stale' | 'new' | 'all';
+  type: "active" | "trending" | "stale" | "new" | "all";
   limit?: number;
   deep?: boolean;
   options?: any;
 }
 
-export async function processScheduledSync(job: Job<ScheduledSyncJobData>) {
+export async function processScheduledSync(
+  job: SimpleJob<ScheduledSyncJobData>,
+) {
   const { type, limit = 50, deep = false, options } = job.data;
-  
+
   try {
     await job.log(`Starting scheduled ${type} sync...`);
     await job.updateProgress(10);
-    
+
     let artistsToSync: any[] = [];
-    
+
     switch (type) {
-      case 'active':
+      case "active":
         artistsToSync = await getActiveArtists(limit);
         break;
-      
-      case 'trending':
+
+      case "trending":
         artistsToSync = await getTrendingArtists(limit);
         break;
-      
-      case 'stale':
+
+      case "stale":
         artistsToSync = await getStaleArtists(limit);
         break;
-      
-      case 'new':
+
+      case "new":
         artistsToSync = await getNewArtists(limit);
         break;
-      
-      case 'all':
+
+      case "all":
         artistsToSync = await getAllArtists(limit);
         break;
-      
+
       default:
         throw new Error(`Unknown sync type: ${type}`);
     }
-    
+
     await job.updateProgress(30);
     await job.log(`Found ${artistsToSync.length} artists to sync`);
-    
+
     if (artistsToSync.length === 0) {
       return {
         success: true,
@@ -57,11 +59,11 @@ export async function processScheduledSync(job: Job<ScheduledSyncJobData>) {
         artistCount: 0,
       };
     }
-    
+
     // Queue sync jobs for each artist
     const jobs: Promise<any>[] = [];
     const priority = deep ? Priority.LOW : Priority.NORMAL;
-    
+
     for (const artist of artistsToSync) {
       // Queue Spotify sync if we have Spotify ID
       if (artist.spotifyId) {
@@ -72,13 +74,13 @@ export async function processScheduledSync(job: Job<ScheduledSyncJobData>) {
             {
               artistId: artist.id,
               spotifyId: artist.spotifyId,
-              syncType: deep ? 'full' : 'profile',
+              syncType: deep ? "full" : "profile",
             },
-            { priority, delay: Math.random() * 10000 } // Random delay up to 10s
-          )
+            { priority, delay: Math.random() * 10000 }, // Random delay up to 10s
+          ),
         );
       }
-      
+
       // Queue Ticketmaster sync if we have TM ID
       if (artist.tmAttractionId) {
         jobs.push(
@@ -88,15 +90,15 @@ export async function processScheduledSync(job: Job<ScheduledSyncJobData>) {
             {
               artistId: artist.id,
               tmAttractionId: artist.tmAttractionId,
-              syncType: 'shows',
+              syncType: "shows",
             },
-            { priority, delay: Math.random() * 10000 }
-          )
+            { priority, delay: Math.random() * 10000 },
+          ),
         );
       }
-      
+
       // Queue deep catalog sync for trending artists
-      if (type === 'trending' && deep && artist.spotifyId) {
+      if (type === "trending" && deep && artist.spotifyId) {
         jobs.push(
           queueManager.addJob(
             QueueName.SPOTIFY_CATALOG,
@@ -106,34 +108,36 @@ export async function processScheduledSync(job: Job<ScheduledSyncJobData>) {
               spotifyId: artist.spotifyId,
               deep: true,
             },
-            { priority: Priority.BACKGROUND, delay: 30000 + Math.random() * 30000 }
-          )
+            {
+              priority: Priority.BACKGROUND,
+              delay: 30000 + Math.random() * 30000,
+            },
+          ),
         );
       }
     }
-    
+
     await Promise.all(jobs);
-    
+
     await job.updateProgress(90);
-    
+
     // Update last sync timestamp
-    const artistIds = artistsToSync.map(a => a.id);
+    const artistIds = artistsToSync.map((a) => a.id);
     await db.execute(sql`
       UPDATE ${artists}
       SET scheduled_sync_at = CURRENT_TIMESTAMP
       WHERE id IN (SELECT unnest(${artistIds}::uuid[]))
     `);
-    
+
     await job.updateProgress(100);
     await job.log(`Scheduled sync completed: ${jobs.length} jobs queued`);
-    
+
     return {
       success: true,
       type,
       artistCount: artistsToSync.length,
       jobsQueued: jobs.length,
     };
-    
   } catch (error) {
     console.error("Scheduled sync failed:", error);
     throw error;
@@ -159,17 +163,17 @@ async function getActiveArtists(limit: number) {
     ORDER BY upcoming_show_count DESC, next_show_date ASC
     LIMIT ${limit}
   `);
-  
+
   return (result as any).rows || [];
 }
 
 async function getTrendingArtists(limit: number) {
   // Get trending artists from cache first
-  const cached = await cache.get<any[]>('trending:daily');
-  
+  const cached = await cache.get<any[]>("trending:daily");
+
   if (cached && cached.length > 0) {
-    const artistIds = cached.slice(0, limit).map(a => a.id);
-    
+    const artistIds = cached.slice(0, limit).map((a) => a.id);
+
     const result = await db
       .select({
         id: artists.id,
@@ -179,10 +183,10 @@ async function getTrendingArtists(limit: number) {
       })
       .from(artists)
       .where(sql`${artists.id} IN (SELECT unnest(${artistIds}::uuid[]))`);
-    
+
     return result;
   }
-  
+
   // Fallback to database query
   return await db
     .select({
@@ -219,7 +223,7 @@ async function getStaleArtists(limit: number) {
       popularity DESC
     LIMIT ${limit}
   `);
-  
+
   return (result as any).rows || [];
 }
 
@@ -243,7 +247,7 @@ async function getNewArtists(limit: number) {
     ORDER BY created_at DESC
     LIMIT ${limit}
   `);
-  
+
   return (result as any).rows || [];
 }
 
@@ -295,6 +299,6 @@ async function getAllArtists(limit: number) {
       last_synced_at ASC NULLS FIRST
     LIMIT ${limit}
   `);
-  
+
   return (result as any).rows || [];
 }

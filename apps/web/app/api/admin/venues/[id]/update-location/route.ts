@@ -1,15 +1,17 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "~/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const supabase = await createClient();
-    
+
     // Check if user is admin
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -39,28 +41,33 @@ export async function POST(
 
     // Implement real geocoding using a geocoding service
     let coordinates: { latitude: number; longitude: number } | null = null;
-    
+
     try {
       // Construct address string for geocoding
-      const addressString = [venue.address, venue.city, venue.state, venue.country]
+      const addressString = [
+        venue.address,
+        venue.city,
+        venue.state,
+        venue.country,
+      ]
         .filter(Boolean)
-        .join(', ');
+        .join(", ");
 
       if (!addressString) {
         return NextResponse.json(
-          { error: "Insufficient address information for geocoding" }, 
-          { status: 400 }
+          { error: "Insufficient address information for geocoding" },
+          { status: 400 },
         );
       }
 
       // Use OpenStreetMap Nominatim API (free alternative to Google Maps)
       // In production, consider using Google Maps Geocoding API for better accuracy
       const geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressString)}&limit=1`;
-      
+
       const geocodeResponse = await fetch(geocodeUrl, {
         headers: {
-          'User-Agent': 'TheSet-Concert-App/1.0'
-        }
+          "User-Agent": "TheSet-Concert-App/1.0",
+        },
       });
 
       if (!geocodeResponse.ok) {
@@ -68,24 +75,24 @@ export async function POST(
       }
 
       const geocodeData = await geocodeResponse.json();
-      
+
       if (geocodeData && geocodeData.length > 0) {
         const location = geocodeData[0];
         coordinates = {
-          latitude: parseFloat(location.lat),
-          longitude: parseFloat(location.lon),
+          latitude: Number.parseFloat(location.lat),
+          longitude: Number.parseFloat(location.lon),
         };
       } else {
         return NextResponse.json(
-          { error: "Could not geocode the provided address" }, 
-          { status: 422 }
+          { error: "Could not geocode the provided address" },
+          { status: 422 },
         );
       }
     } catch (geocodeError) {
       console.error("Geocoding failed:", geocodeError);
       return NextResponse.json(
-        { error: "Geocoding service unavailable" }, 
-        { status: 503 }
+        { error: "Geocoding service unavailable" },
+        { status: 503 },
       );
     }
 
@@ -115,20 +122,20 @@ export async function POST(
         address: `${venue.address}, ${venue.city}, ${venue.state}`,
         coordinates: coordinates,
         geocoding_service: "OpenStreetMap Nominatim",
-        updated_at: new Date().toISOString()
+        updated_at: new Date().toISOString(),
       },
     });
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: "Location updated successfully",
-      coordinates: coordinates
+      coordinates: coordinates,
     });
   } catch (error) {
     console.error("Error updating venue location:", error);
     return NextResponse.json(
       { error: "Failed to update venue location" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

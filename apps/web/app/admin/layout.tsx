@@ -60,7 +60,11 @@ export default async function AdminLayout({
     },
     { name: "Shows", href: `/${locale}/admin/shows`, icon: Calendar },
     { name: "Venues", href: `/${locale}/admin/venues`, icon: MapPin },
-    { name: "Import Logs", href: `/${locale}/admin/import-logs`, icon: Database },
+    {
+      name: "Import Logs",
+      href: `/${locale}/admin/import-logs`,
+      icon: Database,
+    },
     { name: "Moderation", href: `/${locale}/admin/moderation`, icon: Shield },
     { name: "Reports", href: `/${locale}/admin/reports`, icon: Flag },
     {

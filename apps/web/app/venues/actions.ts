@@ -122,8 +122,6 @@ export const getVenues = unstable_cache(
 
         return {
           ...venue,
-          avgRating: null,
-          reviewCount: 0,
           upcomingShowCount: showCount?.count || 0,
         };
       }),

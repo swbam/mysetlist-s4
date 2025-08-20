@@ -6,7 +6,11 @@ import {
   songs as songsTable,
   sql,
 } from "@repo/database";
-import { SpotifyClient, type SpotifyAlbum, type SpotifyTrack } from "@repo/external-apis";
+import {
+  type SpotifyAlbum,
+  SpotifyClient,
+  type SpotifyTrack,
+} from "@repo/external-apis";
 
 // Using SpotifyAlbum and SpotifyTrack types from @repo/external-apis
 

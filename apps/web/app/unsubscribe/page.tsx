@@ -19,14 +19,14 @@ import { handleUnsubscribe } from "~/actions/email-notifications";
 export const dynamic = "force-dynamic";
 
 interface UnsubscribePageProps {
-  searchParams: {
+  searchParams: Promise<{
     token?: string;
     type?: string;
-  };
+  }>;
 }
 
 async function UnsubscribeContent({ searchParams }: UnsubscribePageProps) {
-  const { token, type } = searchParams;
+  const { token, type } = await searchParams;
 
   if (!token) {
     return (

@@ -12,7 +12,6 @@ import {
   Heart,
   MapPin,
   Music,
-  Star,
   Users,
   Wifi,
 } from "lucide-react";
@@ -37,8 +36,6 @@ interface VenueCardProps {
     country: string;
     capacity?: number | null;
     venueType?: string | null;
-    avgRating?: number | null;
-    reviewCount?: number | null;
     upcomingShowCount?: number;
     distance?: number;
     amenities?: string | null;
@@ -166,22 +163,6 @@ export function VenueCard({
                 className="bg-black/50 text-white hover:bg-black/60"
               >
                 {formatDistance(venue.distance)} away
-              </Badge>
-            </div>
-          )}
-
-          {/* Rating Badge */}
-          {venue.avgRating && venue.avgRating > 0 && (
-            <div className="absolute top-3 left-3">
-              <Badge
-                variant="secondary"
-                className="gap-1 bg-black/50 text-white hover:bg-black/60"
-              >
-                <Star
-                  className="h-3 w-3 fill-yellow-400 text-yellow-400"
-                  aria-hidden="true"
-                />
-                {venue.avgRating.toFixed(1)}
               </Badge>
             </div>
           )}

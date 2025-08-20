@@ -1,13 +1,13 @@
 import { artists, showArtists, shows, venues } from "@repo/database";
+import { and, db, eq } from "@repo/database";
 import { SetlistFmClient } from "../clients/setlistfm";
 import { SpotifyClient } from "../clients/spotify";
 import { TicketmasterClient } from "../clients/ticketmaster";
-import { and, db, eq } from "@repo/database";
+import type { SetlistFmSetlist } from "../types/setlistfm";
+import type { TicketmasterEvent } from "../types/ticketmaster";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
-import { TicketmasterEvent } from "../types/ticketmaster";
-import { SetlistFmSetlist } from "../types/setlistfm";
-import { VenueSyncService } from "./venue-sync";
 import { SetlistSyncService } from "./setlist-sync";
+import { VenueSyncService } from "./venue-sync";
 
 export class ShowSyncService {
   private ticketmasterClient: TicketmasterClient;
@@ -445,9 +445,7 @@ export class ShowSyncService {
     return { newShows, updatedShows };
   }
 
-  async syncArtistShows(
-    artistDbId: string,
-  ): Promise<{
+  async syncArtistShows(artistDbId: string): Promise<{
     upcomingShows: number;
     pastShows: number;
     newShows: number;
@@ -514,7 +512,6 @@ export class ShowSyncService {
           this.ticketmasterClient.searchEvents({
             keyword: artist.name,
             size: 200,
-            classificationName: "Music", // Focus on music events
           }),
         {
           service: "ShowSyncService",
@@ -629,7 +626,7 @@ export class ShowSyncService {
       return;
     }
 
-    const artist = searchResult.setlist[0].artist;
+    const artist = searchResult.setlist[0]?.artist;
     if (!artist) {
       return;
     }

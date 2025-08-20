@@ -1,12 +1,14 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "~/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    
+
     // Check if user is admin
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -23,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     // Get all artists that need syncing (haven't been synced recently)
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    
+
     const { data: artists, error } = await supabase
       .from("artists")
       .select("id, name, spotify_id")
@@ -61,20 +63,20 @@ export async function POST(request: NextRequest) {
       reason: "Bulk artist sync initiated from admin panel",
       metadata: {
         artists_synced: syncedCount,
-        sync_timestamp: new Date().toISOString()
+        sync_timestamp: new Date().toISOString(),
       },
     });
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: "Artists sync completed",
-      count: syncedCount
+      count: syncedCount,
     });
   } catch (error) {
     console.error("Error syncing artists:", error);
     return NextResponse.json(
       { error: "Failed to sync artists" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

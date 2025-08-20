@@ -8,43 +8,46 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-export const venues = pgTable("venues", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
-  slug: text("slug").unique().notNull(),
-  tmVenueId: text("tm_venue_id").unique(), // Ticketmaster Venue ID
-  address: text("address"),
-  city: text("city").notNull(),
-  state: text("state"),
-  country: text("country").notNull(),
-  postalCode: text("postal_code"),
-  latitude: doublePrecision("latitude"),
-  longitude: doublePrecision("longitude"),
-  timezone: text("timezone").notNull(),
-  capacity: integer("capacity"),
-  venueType: text("venue_type"), // arena, theater, club, etc.
-  phoneNumber: text("phone_number"),
-  website: text("website"),
-  imageUrl: text("image_url"),
-  description: text("description"),
-  amenities: text("amenities"), // JSON array
+export const venues = pgTable(
+  "venues",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    name: text("name").notNull(),
+    slug: text("slug").unique().notNull(),
+    tmVenueId: text("tm_venue_id").unique(), // Ticketmaster Venue ID
+    address: text("address"),
+    city: text("city").notNull(),
+    state: text("state"),
+    country: text("country").notNull(),
+    postalCode: text("postal_code"),
+    latitude: doublePrecision("latitude"),
+    longitude: doublePrecision("longitude"),
+    timezone: text("timezone").notNull(),
+    capacity: integer("capacity"),
+    venueType: text("venue_type"), // arena, theater, club, etc.
+    phoneNumber: text("phone_number"),
+    website: text("website"),
+    imageUrl: text("image_url"),
+    description: text("description"),
+    amenities: text("amenities"), // JSON array
 
-  // Analytics fields
-  totalShows: integer("total_shows").default(0),
-  upcomingShows: integer("upcoming_shows").default(0),
-  totalAttendance: integer("total_attendance").default(0),
-  averageRating: doublePrecision("average_rating"),
+    // Analytics fields
+    totalShows: integer("total_shows").default(0),
+    upcomingShows: integer("upcoming_shows").default(0),
+    totalAttendance: integer("total_attendance").default(0),
 
-  // Historical tracking for real growth calculations
-  previousTotalShows: integer("previous_total_shows"),
-  previousUpcomingShows: integer("previous_upcoming_shows"),
-  previousTotalAttendance: integer("previous_total_attendance"),
-  lastGrowthCalculated: timestamp("last_growth_calculated"),
+    // Historical tracking for real growth calculations
+    previousTotalShows: integer("previous_total_shows"),
+    previousUpcomingShows: integer("previous_upcoming_shows"),
+    previousTotalAttendance: integer("previous_total_attendance"),
+    lastGrowthCalculated: timestamp("last_growth_calculated"),
 
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-}, (table) => ({
-  tmVenueIdIdx: index("idx_venue_tm").on(table.tmVenueId),
-}));
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    tmVenueIdIdx: index("idx_venue_tm").on(table.tmVenueId),
+  }),
+);
 
 // Removed venueTips table and venueTipCategoryEnum - not part of core MVP requirements

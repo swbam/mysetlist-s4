@@ -1,15 +1,23 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "~/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
+
+type RouteParams = {
+  params: Promise<{
+    id: string;
+  }>;
+};
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
     const supabase = await createClient();
-    
+
     // Check if user is admin
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -24,26 +32,23 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const userId = params.id;
+    const { id: userId } = await params;
 
     // Get user statistics
-    const [
-      setlistsResult,
-      reviewsResult,
-      votesResult,
-      photosResult
-    ] = await Promise.all([
-      supabase.from("setlists").select("id", { count: "exact" }).eq("user_id", userId),
-      supabase.from("venue_reviews").select("id", { count: "exact" }).eq("user_id", userId),
-      supabase.from("votes").select("id", { count: "exact" }).eq("user_id", userId),
-      supabase.from("venue_photos").select("id", { count: "exact" }).eq("user_id", userId)
+    const [setlistsResult, votesResult] = await Promise.all([
+      supabase
+        .from("setlists")
+        .select("id", { count: "exact" })
+        .eq("user_id", userId),
+      supabase
+        .from("votes")
+        .select("id", { count: "exact" })
+        .eq("user_id", userId),
     ]);
 
     const stats = {
       setlists_created: setlistsResult.count || 0,
-      reviews_written: reviewsResult.count || 0,
       votes_cast: votesResult.count || 0,
-      photos_uploaded: photosResult.count || 0,
     };
 
     return NextResponse.json(stats);
@@ -51,7 +56,7 @@ export async function GET(
     console.error("Error fetching user stats:", error);
     return NextResponse.json(
       { error: "Failed to fetch user stats" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

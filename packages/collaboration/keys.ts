@@ -7,6 +7,6 @@ export const keys = () =>
       LIVEBLOCKS_SECRET: z.string().startsWith("sk_").optional(),
     },
     runtimeEnv: {
-      LIVEBLOCKS_SECRET: process.env['LIVEBLOCKS_SECRET'],
+      LIVEBLOCKS_SECRET: process.env["LIVEBLOCKS_SECRET"],
     },
   });

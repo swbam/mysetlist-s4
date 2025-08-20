@@ -23,7 +23,7 @@ export class CacheManager {
   constructor(options: CacheOptions = {}) {
     this.options = {
       defaultTTL: 3600, // 1 hour default
-      keyPrefix: '',
+      keyPrefix: "",
       maxMemorySize: 1000,
       lruEnabled: true,
       ...options,
@@ -31,12 +31,12 @@ export class CacheManager {
 
     // Initialize Redis if environment variables are available
     if (
-      process.env['UPSTASH_REDIS_REST_URL'] &&
-      process.env['UPSTASH_REDIS_REST_TOKEN']
+      process.env["UPSTASH_REDIS_REST_URL"] &&
+      process.env["UPSTASH_REDIS_REST_TOKEN"]
     ) {
       this.redis = new Redis({
-        url: process.env['UPSTASH_REDIS_REST_URL'],
-        token: process.env['UPSTASH_REDIS_REST_TOKEN'],
+        url: process.env["UPSTASH_REDIS_REST_URL"],
+        token: process.env["UPSTASH_REDIS_REST_TOKEN"],
       });
     } else {
       this.redis = null;
@@ -81,7 +81,7 @@ export class CacheManager {
       // Update access tracking for LRU
       memoryCached.lastAccessed = now;
       memoryCached.accessCount++;
-      
+
       // Move to end (most recently used) if using LRU
       if (this.options.lruEnabled) {
         this.memoryCache.delete(prefixedKey);

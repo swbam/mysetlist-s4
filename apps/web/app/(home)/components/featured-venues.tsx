@@ -64,7 +64,6 @@ export async function FeaturedVenues() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {/* biome-ignore lint/suspicious/noExplicitAny: Database query result */}
           {featuredVenues.map((venue: any) => (
             <Card
               key={venue.id}

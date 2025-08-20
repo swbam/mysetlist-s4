@@ -16,7 +16,7 @@ export interface PLimit {
  */
 export function pLimit(concurrency: number): PLimit {
   if (!Number.isInteger(concurrency) || concurrency < 1) {
-    throw new TypeError('Expected `concurrency` to be a positive integer');
+    throw new TypeError("Expected `concurrency` to be a positive integer");
   }
 
   const queue: Array<() => void> = [];
@@ -24,16 +24,20 @@ export function pLimit(concurrency: number): PLimit {
 
   const next = () => {
     activeCount--;
-    
+
     if (queue.length > 0) {
       const nextTask = queue.shift()!;
       nextTask();
     }
   };
 
-  const run = <T>(fn: () => Promise<T>, resolve: (value: T) => void, reject: (reason?: any) => void) => {
+  const run = <T>(
+    fn: () => Promise<T>,
+    resolve: (value: T) => void,
+    reject: (reason?: any) => void,
+  ) => {
     activeCount++;
-    
+
     const result = (async () => {
       try {
         const value = await fn();
@@ -46,7 +50,11 @@ export function pLimit(concurrency: number): PLimit {
     })();
   };
 
-  const enqueue = <T>(fn: () => Promise<T>, resolve: (value: T) => void, reject: (reason?: any) => void) => {
+  const enqueue = <T>(
+    fn: () => Promise<T>,
+    resolve: (value: T) => void,
+    reject: (reason?: any) => void,
+  ) => {
     queue.push(() => run(fn, resolve, reject));
   };
 
@@ -87,7 +95,7 @@ export async function processBatch<T, R>(
     onProgress?: (completed: number, total: number, result?: R) => void;
     onError?: (error: Error, item: T, index: number) => void;
     continueOnError?: boolean;
-  } = {}
+  } = {},
 ): Promise<R[]> {
   const {
     concurrency = 5,
@@ -115,10 +123,10 @@ export async function processBatch<T, R>(
       const err = error instanceof Error ? error : new Error(String(error));
       errors.push(err);
       completed++;
-      
+
       onError?.(err, item, index);
       onProgress?.(completed, items.length);
-      
+
       if (!continueOnError) {
         throw err;
       }
@@ -126,13 +134,15 @@ export async function processBatch<T, R>(
   };
 
   const promises = items.map((item, index) =>
-    limit(() => processItem(item, index))
+    limit(() => processItem(item, index)),
   );
 
   await Promise.all(promises);
 
   if (errors.length > 0 && !continueOnError) {
-    throw new Error(`Batch processing failed with ${errors.length} errors. First error: ${errors[0]?.message || 'Unknown error'}`);
+    throw new Error(
+      `Batch processing failed with ${errors.length} errors. First error: ${errors[0]?.message || "Unknown error"}`,
+    );
   }
 
   return results;
@@ -148,10 +158,12 @@ export class TaskQueue<T = any> {
   private activeCount = 0;
   private onProgress?: (completed: number, total: number) => void;
 
-  constructor(options: {
-    concurrency?: number;
-    onProgress?: (completed: number, total: number) => void;
-  } = {}) {
+  constructor(
+    options: {
+      concurrency?: number;
+      onProgress?: (completed: number, total: number) => void;
+    } = {},
+  ) {
     this.concurrency = options.concurrency || 3;
     this.onProgress = options.onProgress;
   }
@@ -182,7 +194,7 @@ export class TaskQueue<T = any> {
    * Add multiple tasks to the queue
    */
   addBatch(tasks: Array<() => Promise<T>>): Promise<T[]> {
-    const promises = tasks.map(task => this.add(task));
+    const promises = tasks.map((task) => this.add(task));
     return Promise.all(promises);
   }
 
@@ -204,7 +216,7 @@ export class TaskQueue<T = any> {
         if (!task) continue;
 
         this.activeCount++;
-        
+
         try {
           await task();
         } catch (error) {
@@ -218,7 +230,7 @@ export class TaskQueue<T = any> {
 
       if (this.queue.length > 0) {
         // Wait a bit and continue processing
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await new Promise((resolve) => setTimeout(resolve, 10));
         await processNext();
       }
     };
@@ -256,12 +268,10 @@ export class TaskQueue<T = any> {
 export async function parallelMap<T, R>(
   items: T[],
   mapper: (item: T, index: number) => Promise<R>,
-  concurrency = 5
+  concurrency = 5,
 ): Promise<R[]> {
   const limit = pLimit(concurrency);
-  const promises = items.map((item, index) =>
-    limit(() => mapper(item, index))
-  );
+  const promises = items.map((item, index) => limit(() => mapper(item, index)));
   return Promise.all(promises);
 }
 
@@ -271,19 +281,19 @@ export async function parallelMap<T, R>(
 export async function parallelFilter<T>(
   items: T[],
   predicate: (item: T, index: number) => Promise<boolean>,
-  concurrency = 5
+  concurrency = 5,
 ): Promise<T[]> {
   const limit = pLimit(concurrency);
   const results = await Promise.all(
     items.map(async (item, index) => {
       const shouldInclude = await limit(() => predicate(item, index));
       return { item, shouldInclude };
-    })
+    }),
   );
-  
+
   return results
-    .filter(result => result.shouldInclude)
-    .map(result => result.item);
+    .filter((result) => result.shouldInclude)
+    .map((result) => result.item);
 }
 
 /**
@@ -296,13 +306,9 @@ export async function processInChunks<T, R>(
     chunkSize?: number;
     concurrency?: number;
     onProgress?: (processedItems: number, totalItems: number) => void;
-  } = {}
+  } = {},
 ): Promise<R[]> {
-  const {
-    chunkSize = 50,
-    concurrency = 3,
-    onProgress,
-  } = options;
+  const { chunkSize = 50, concurrency = 3, onProgress } = options;
 
   const chunks: T[][] = [];
   for (let i = 0; i < items.length; i += chunkSize) {
@@ -321,7 +327,7 @@ export async function processInChunks<T, R>(
   };
 
   const allResults = await Promise.all(
-    chunks.map(chunk => limit(() => processChunk(chunk)))
+    chunks.map((chunk) => limit(() => processChunk(chunk))),
   );
 
   return allResults.flat();

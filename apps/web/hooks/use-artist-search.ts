@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { useDebounce } from "~/hooks/use-debounce";
 
 interface SearchResult {
@@ -40,7 +40,7 @@ export function useArtistSearch({
   autoNavigate = true,
 }: UseArtistSearchOptions = {}) {
   const router = useRouter();
-  
+
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -69,7 +69,7 @@ export function useArtistSearch({
           headers: {
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       if (!response.ok) {
@@ -77,7 +77,7 @@ export function useArtistSearch({
       }
 
       const data: SearchResponse = await response.json();
-      
+
       setResults(data.results || []);
       setHasSearched(true);
     } catch (err) {
@@ -91,72 +91,78 @@ export function useArtistSearch({
   }, []);
 
   // Pre-warming function - POST to /import on hover/focus
-  const preWarmArtist = useCallback(async (tmAttractionId: string) => {
-    if (!enablePreWarming) return;
+  const preWarmArtist = useCallback(
+    async (tmAttractionId: string) => {
+      if (!enablePreWarming) return;
 
-    try {
-      // Fire and forget - don't wait for completion
-      fetch("/api/artists/import", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          tmAttractionId,
-        }),
-      }).catch(() => {
+      try {
+        // Fire and forget - don't wait for completion
+        fetch("/api/artists/import", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            tmAttractionId,
+          }),
+        }).catch(() => {
+          // Silently handle pre-warming errors
+        });
+      } catch {
         // Silently handle pre-warming errors
-      });
-    } catch {
-      // Silently handle pre-warming errors
-    }
-  }, [enablePreWarming]);
+      }
+    },
+    [enablePreWarming],
+  );
 
   // Artist selection handler
-  const selectArtist = useCallback(async (artist: SearchResult) => {
-    if (onArtistSelect) {
-      onArtistSelect(artist);
-      return;
-    }
-
-    if (!autoNavigate) return;
-
-    try {
-      setIsLoading(true);
-
-      // Import artist to get proper database slug
-      const importResponse = await fetch("/api/artists/import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tmAttractionId: artist.metadata?.externalId,
-        }),
-      });
-
-      if (importResponse.ok) {
-        const importData = await importResponse.json();
-        const slug = importData.slug || artist.metadata?.slug;
-        
-        if (slug) {
-          router.push(`/artists/${slug}`);
-          return;
-        }
+  const selectArtist = useCallback(
+    async (artist: SearchResult) => {
+      if (onArtistSelect) {
+        onArtistSelect(artist);
+        return;
       }
 
-      // Fallback to generated slug
-      const fallbackSlug = artist.name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
-      
-      router.push(`/artists/${fallbackSlug}`);
-    } catch (error) {
-      console.error("Failed to navigate to artist:", error);
-      setError("Failed to navigate to artist");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [onArtistSelect, autoNavigate, router]);
+      if (!autoNavigate) return;
+
+      try {
+        setIsLoading(true);
+
+        // Import artist to get proper database slug
+        const importResponse = await fetch("/api/artists/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tmAttractionId: artist.metadata?.externalId,
+          }),
+        });
+
+        if (importResponse.ok) {
+          const importData = await importResponse.json();
+          const slug = importData.slug || artist.metadata?.slug;
+
+          if (slug) {
+            router.push(`/artists/${slug}`);
+            return;
+          }
+        }
+
+        // Fallback to generated slug
+        const fallbackSlug = artist.name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+
+        router.push(`/artists/${fallbackSlug}`);
+      } catch (error) {
+        console.error("Failed to navigate to artist:", error);
+        setError("Failed to navigate to artist");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [onArtistSelect, autoNavigate, router],
+  );
 
   // Effect to trigger search on debounced query change
   useEffect(() => {
@@ -184,14 +190,14 @@ export function useArtistSearch({
     isLoading,
     hasSearched,
     error,
-    
+
     // Actions
     setQuery,
     selectArtist,
     preWarmArtist,
     clearSearch,
     performSearch,
-    
+
     // Computed
     hasResults: results.length > 0,
     showNoResults: hasSearched && results.length === 0 && !isLoading,

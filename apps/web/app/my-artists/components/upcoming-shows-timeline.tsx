@@ -104,7 +104,9 @@ export async function UpcomingShowsTimeline({
                 <div className="text-sm uppercase">
                   {format(new Date(show.date || new Date()), "MMM")}
                 </div>
-                <div className="mt-1 text-xs">{getDateLabel(show.date || new Date().toISOString())}</div>
+                <div className="mt-1 text-xs">
+                  {getDateLabel(show.date || new Date().toISOString())}
+                </div>
               </div>
 
               {/* Show Details */}

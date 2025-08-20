@@ -1,15 +1,23 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "~/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
+
+type RouteParams = {
+  params: Promise<{
+    id: string;
+  }>;
+};
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
     const supabase = await createClient();
-    
+
     // Check if user is admin
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -24,7 +32,7 @@ export async function POST(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const venueId = params.id;
+    const { id: venueId } = await params;
 
     // Get venue details
     const { data: venue } = await supabase
@@ -38,7 +46,10 @@ export async function POST(
     }
 
     if (venue.verified) {
-      return NextResponse.json({ error: "Venue is already verified" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Venue is already verified" },
+        { status: 400 },
+      );
     }
 
     // Mark venue as verified
@@ -63,19 +74,19 @@ export async function POST(
       reason: "Manual verification by admin",
       metadata: {
         venue_name: venue.name,
-        verified_at: new Date().toISOString()
+        verified_at: new Date().toISOString(),
       },
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      message: "Venue verified successfully" 
+    return NextResponse.json({
+      success: true,
+      message: "Venue verified successfully",
     });
   } catch (error) {
     console.error("Error verifying venue:", error);
     return NextResponse.json(
       { error: "Failed to verify venue" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

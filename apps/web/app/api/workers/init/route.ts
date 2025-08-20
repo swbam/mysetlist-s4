@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { initializeWorkers, setupRecurringJobs } from "~/lib/queues/workers";
 
 // Force dynamic rendering
@@ -37,10 +37,10 @@ export async function GET(request: NextRequest) {
     // Start initialization
     initializationPromise = initializeWorkers();
     const workers = await initializationPromise;
-    
+
     // Setup recurring jobs
     await setupRecurringJobs();
-    
+
     isInitialized = true;
     initializationPromise = null;
 
@@ -50,17 +50,16 @@ export async function GET(request: NextRequest) {
       workerCount: workers.size,
       initialized: true,
     });
-    
   } catch (error) {
     console.error("Failed to initialize workers:", error);
     initializationPromise = null;
-    
+
     return NextResponse.json(
-      { 
+      {
         error: "Failed to initialize workers",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -74,10 +73,7 @@ export async function POST(request: NextRequest) {
     // Check authorization
     const authHeader = request.headers.get("authorization");
     if (!authHeader?.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Close existing workers if initialized
@@ -90,7 +86,7 @@ export async function POST(request: NextRequest) {
     // Re-initialize
     const workers = await initializeWorkers();
     await setupRecurringJobs();
-    
+
     isInitialized = true;
 
     return NextResponse.json({
@@ -98,16 +94,15 @@ export async function POST(request: NextRequest) {
       message: "Workers re-initialized successfully",
       workerCount: workers.size,
     });
-    
   } catch (error) {
     console.error("Failed to re-initialize workers:", error);
-    
+
     return NextResponse.json(
-      { 
+      {
         error: "Failed to re-initialize workers",
-        details: error instanceof Error ? error.message : "Unknown error"
+        details: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

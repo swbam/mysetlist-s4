@@ -6,8 +6,7 @@ import { rateLimitMiddleware } from "~/middleware/rate-limit";
 export const dynamic = "force-dynamic";
 
 const ticketmaster = new TicketmasterClient({
-  apiKey:
-    process.env.TICKETMASTER_API_KEY || "k8GrSAkbFaN0w7qDxGl7ohr8LwdAQm9b",
+  apiKey: process.env.TICKETMASTER_API_KEY || "",
 });
 
 interface InlineSearchResult {
@@ -73,9 +72,6 @@ export async function GET(request: NextRequest) {
 
       const ticketmasterResponse = await ticketmaster.searchAttractions({
         keyword: query,
-        size: limit,
-        classificationName: "music",
-        sort: "relevance,desc",
       });
 
       const attractions = ticketmasterResponse._embedded?.attractions || [];

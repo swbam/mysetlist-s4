@@ -18,10 +18,6 @@ BEGIN
         new_artists,
         total_venues,
         new_venues,
-        total_reviews,
-        new_reviews,
-        total_photos,
-        new_photos,
         total_votes,
         new_votes
     )
@@ -38,10 +34,6 @@ BEGIN
         (SELECT COUNT(*) FROM artists WHERE DATE(created_at) = CURRENT_DATE),
         (SELECT COUNT(*) FROM venues),
         (SELECT COUNT(*) FROM venues WHERE DATE(created_at) = CURRENT_DATE),
-    0,
-    0,
-        (SELECT COUNT(*) FROM venue_photos),
-        (SELECT COUNT(*) FROM venue_photos WHERE DATE(created_at) = CURRENT_DATE),
         (SELECT COUNT(*) FROM votes),
         (SELECT COUNT(*) FROM votes WHERE DATE(created_at) = CURRENT_DATE)
     ON CONFLICT (stat_date) DO UPDATE SET
@@ -56,10 +48,6 @@ BEGIN
         new_artists = EXCLUDED.new_artists,
         total_venues = EXCLUDED.total_venues,
         new_venues = EXCLUDED.new_venues,
-        total_reviews = EXCLUDED.total_reviews,
-        new_reviews = EXCLUDED.new_reviews,
-        total_photos = EXCLUDED.total_photos,
-        new_photos = EXCLUDED.new_photos,
         total_votes = EXCLUDED.total_votes,
         new_votes = EXCLUDED.new_votes;
 END;

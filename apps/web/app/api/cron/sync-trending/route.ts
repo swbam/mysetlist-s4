@@ -1,6 +1,6 @@
 import { db } from "@repo/database";
 import { sql } from "drizzle-orm";
-import { type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import {
   createErrorResponse,
   createSuccessResponse,
@@ -52,14 +52,16 @@ export async function POST(request: NextRequest) {
     // Phase 2: Refresh trending data and get stats
     const phase2Start = Date.now();
     try {
-      const refreshResult = await db.execute(sql`SELECT refresh_trending_data() as result`);
+      const refreshResult = await db.execute(
+        sql`SELECT refresh_trending_data() as result`,
+      );
       const result = (refreshResult as any)[0]?.result;
-      
-      if (result && typeof result === 'object') {
+
+      if (result && typeof result === "object") {
         results.artistsUpdated = result.artists_updated || 0;
         results.showsUpdated = result.shows_updated || 0;
       }
-      
+
       results.phases.refreshData.completed = true;
       results.phases.refreshData.duration = Date.now() - phase2Start;
     } catch (error) {
@@ -86,10 +88,11 @@ export async function POST(request: NextRequest) {
             (SELECT COUNT(*) FROM deleted_artists) as artists_deleted,
             (SELECT COUNT(*) FROM deleted_shows) as shows_deleted
         `);
-        
+
         const cleanupStats = (cleanupResult as any)[0];
-        results.oldRecordsRemoved = 
-          (cleanupStats?.artists_deleted || 0) + (cleanupStats?.shows_deleted || 0);
+        results.oldRecordsRemoved =
+          (cleanupStats?.artists_deleted || 0) +
+          (cleanupStats?.shows_deleted || 0);
 
         results.phases.cleanup.completed = true;
         results.phases.cleanup.duration = Date.now() - phase3Start;

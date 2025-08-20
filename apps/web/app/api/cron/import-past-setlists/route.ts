@@ -1,6 +1,6 @@
-import { db, shows, setlists } from "@repo/database";
+import { db, setlists, shows } from "@repo/database";
 import { SetlistSyncService } from "@repo/external-apis";
-import { and, lt, sql, isNull, isNotNull, or } from "drizzle-orm";
+import { and, isNotNull, isNull, lt, or, sql } from "drizzle-orm";
 import type { NextRequest } from "next/server";
 import {
   createErrorResponse,
@@ -15,7 +15,7 @@ async function executePastSetlistImport() {
   const syncService = new SetlistSyncService();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const todayDateString = today.toISOString().split('T')[0]!;
+  const todayDateString = today.toISOString().split("T")[0]!;
 
   // Find shows that occurred (date < today) without actual setlists
   const pastShowsWithoutSetlists = await db
@@ -28,22 +28,22 @@ async function executePastSetlistImport() {
       setlistFmId: shows.setlistFmId,
     })
     .from(shows)
-    .leftJoin(setlists, and(
-      sql`${setlists.showId} = ${shows.id}`,
-      sql`${setlists.type} = 'actual'`
-    ))
+    .leftJoin(
+      setlists,
+      and(
+        sql`${setlists.showId} = ${shows.id}`,
+        sql`${setlists.type} = 'actual'`,
+      ),
+    )
     .where(
       and(
-        and(
-          isNotNull(shows.date),
-          lt(shows.date, todayDateString)
-        ), // Past shows only
+        and(isNotNull(shows.date), lt(shows.date, todayDateString)), // Past shows only
         isNull(setlists.id), // No actual setlist exists
         or(
           isNull(shows.setlistFmId), // No setlist.fm ID yet
-          sql`${shows.setlistFmId} IS NOT NULL` // Or has ID but no imported setlist
-        )
-      )
+          sql`${shows.setlistFmId} IS NOT NULL`, // Or has ID but no imported setlist
+        ),
+      ),
     )
     .limit(20); // Process max 20 shows per run to avoid timeouts
 
@@ -67,24 +67,27 @@ async function executePastSetlistImport() {
       const importedSetlist = await db
         .select({ id: setlists.id })
         .from(setlists)
-        .where(and(
-          sql`${setlists.showId} = ${show.id}`,
-          sql`${setlists.type} = 'actual'`,
-          sql`${setlists.importedFrom} = 'setlist.fm'`
-        ))
+        .where(
+          and(
+            sql`${setlists.showId} = ${show.id}`,
+            sql`${setlists.type} = 'actual'`,
+            sql`${setlists.importedFrom} = 'setlist.fm'`,
+          ),
+        )
         .limit(1);
 
       if (importedSetlist.length > 0) {
         results.imported++;
-        console.log(`✅ Imported setlist for show: ${show.name} (${show.date})`);
+        console.log(
+          `✅ Imported setlist for show: ${show.name} (${show.date})`,
+        );
       } else {
         results.skipped++;
         console.log(`⏭️ No setlist found for show: ${show.name} (${show.date})`);
       }
 
       // Rate limiting - pause between requests
-      await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
-
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // 1 second delay
     } catch (error) {
       const errorMsg = `Failed to import setlist for show ${show.name}: ${
         error instanceof Error ? error.message : String(error)
@@ -135,7 +138,7 @@ export async function POST(request: NextRequest) {
     return createErrorResponse(
       "Past setlist import failed",
       500,
-      error instanceof Error ? error.message : "Unknown error"
+      error instanceof Error ? error.message : "Unknown error",
     );
   }
 }

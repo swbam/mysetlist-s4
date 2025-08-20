@@ -1,15 +1,23 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "~/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
+
+type RouteParams = {
+  params: Promise<{
+    id: string;
+  }>;
+};
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
     const supabase = await createClient();
-    
+
     // Check if user is admin
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -24,7 +32,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { id: showId } = params;
+    const { id: showId } = await params;
 
     // Get show details for logging
     const { data: show } = await supabase
@@ -39,10 +47,7 @@ export async function DELETE(
     await supabase.from("votes").delete().eq("show_id", showId);
 
     // Delete the show
-    const { error } = await supabase
-      .from("shows")
-      .delete()
-      .eq("id", showId);
+    const { error } = await supabase.from("shows").delete().eq("id", showId);
 
     if (error) {
       throw error;
@@ -57,7 +62,7 @@ export async function DELETE(
       reason: "Admin deletion",
       metadata: {
         show_title: show?.title,
-        artist_name: show?.artist?.[0]?.name
+        artist_name: show?.artist?.[0]?.name,
       },
     });
 
@@ -66,7 +71,7 @@ export async function DELETE(
     console.error("Error deleting show:", error);
     return NextResponse.json(
       { error: "Failed to delete show" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,6 +1,6 @@
 import { artistSongs, artists, db, songs } from "@repo/database";
-import { eq } from "drizzle-orm";
 import { ArtistSyncService } from "@repo/external-apis";
+import { eq } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 import { headers } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";

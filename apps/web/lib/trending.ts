@@ -120,8 +120,8 @@ export async function getTrendingArtists(
   try {
     const supabase = createServiceClient();
 
-    // Get artists with highest trending scores
-    const { data: artists, error } = await supabase
+    // First try to get artists with trending scores > 0
+    let { data: artists, error } = await supabase
       .from("artists")
       .select(
         `
@@ -141,8 +141,37 @@ export async function getTrendingArtists(
       .order("trending_score", { ascending: false })
       .limit(config.limit);
 
-    if (error || !artists) {
-      return [];
+    // If no artists have trending_score > 0, fall back to popularity-based sorting
+    if (error || !artists || artists.length === 0) {
+      console.log(
+        "No artists with trending_score > 0, falling back to popularity",
+      );
+      const fallbackQuery = await supabase
+        .from("artists")
+        .select(
+          `
+          id,
+          name,
+          slug,
+          image_url,
+          popularity,
+          followers,
+          follower_count,
+          trending_score,
+          created_at,
+          updated_at
+        `,
+        )
+        .or("popularity.gt.0,follower_count.gt.0,trending_score.gt.0")
+        .order("popularity", { ascending: false })
+        .limit(config.limit);
+
+      if (fallbackQuery.error || !fallbackQuery.data) {
+        console.error("Error in fallback query:", fallbackQuery.error);
+        return [];
+      }
+
+      artists = fallbackQuery.data;
     }
 
     // Transform artists to trending items
@@ -150,12 +179,13 @@ export async function getTrendingArtists(
       // Use real metrics from database only (no mathematical scaling)
       const votes = artist.popularity || 0; // Direct popularity value from Spotify
       const attendees = artist.follower_count || 0; // App followers
+      const score = artist.trending_score || artist.popularity || 0; // Use trending_score if available, otherwise popularity
 
       return {
         id: artist.id,
         type: "artist" as const,
         name: artist.name,
-        score: artist.trending_score || 0,
+        score,
         votes,
         attendees,
         recent_activity: votes + attendees,
@@ -166,6 +196,7 @@ export async function getTrendingArtists(
 
     return trendingArtists;
   } catch (_error) {
+    console.error("Error in getTrendingArtists:", _error);
     return [];
   }
 }

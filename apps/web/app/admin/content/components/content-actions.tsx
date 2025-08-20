@@ -239,10 +239,14 @@ export default function ContentActions({
         )}
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem 
+        <DropdownMenuItem
           className="text-red-600"
           onClick={() => {
-            if (confirm(`Are you sure you want to delete this ${type}? This action cannot be undone.`)) {
+            if (
+              confirm(
+                `Are you sure you want to delete this ${type}? This action cannot be undone.`,
+              )
+            ) {
               toast({
                 title: "Feature coming soon",
                 description: `Delete ${type} functionality will be available soon.`,

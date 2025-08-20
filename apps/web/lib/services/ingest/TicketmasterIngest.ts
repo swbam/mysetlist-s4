@@ -1,7 +1,7 @@
 /**
  * Ticketmaster Ingest Service
  * Implements GROK.md specifications for paginated venue/show ingestion with proper FK mapping
- * 
+ *
  * Key features:
  * - Paginated event fetching using iterateEventsByAttraction
  * - Proper FK mapping: Upsert venues first, then map tmVenueId → DB venueId
@@ -10,12 +10,16 @@
  * - Robust error handling with graceful degradation
  */
 
-import { db, venues, shows, artists } from '@repo/database';
-import { eq } from 'drizzle-orm';
-import { ProgressBus } from '../progress/ProgressBus';
-import { iterateEventsByAttraction, type TicketmasterEvent, type TicketmasterVenue } from '../adapters/TicketmasterClient';
-import { pLimit, processBatch } from '../util/concurrency';
-import { createSlug } from '../util/slug';
+import { artists, db, shows, venues } from "@repo/database";
+import { eq } from "drizzle-orm";
+import {
+  type TicketmasterEvent,
+  type TicketmasterVenue,
+  iterateEventsByAttraction,
+} from "../adapters/TicketmasterClient";
+import type { ProgressBus } from "../progress/ProgressBus";
+import { pLimit, processBatch } from "../util/concurrency";
+import { createSlug } from "../util/slug";
 
 export interface TicketmasterIngestOptions {
   artistId: string;
@@ -39,8 +43,13 @@ export interface IngestResult {
 export class TicketmasterIngest {
   private limit: ReturnType<typeof pLimit>;
   private progressReporter?: ReturnType<typeof ProgressBus.createReporter>;
-  
-  constructor(options: { concurrency?: number; progressReporter?: ReturnType<typeof ProgressBus.createReporter> } = {}) {
+
+  constructor(
+    options: {
+      concurrency?: number;
+      progressReporter?: ReturnType<typeof ProgressBus.createReporter>;
+    } = {},
+  ) {
     this.limit = pLimit(options.concurrency || 5);
     this.progressReporter = options.progressReporter;
   }
@@ -61,27 +70,35 @@ export class TicketmasterIngest {
     };
 
     try {
-      reporter?.report('importing-shows', 5, 'Fetching Ticketmaster events...');
+      reporter?.report("importing-shows", 5, "Fetching Ticketmaster events...");
 
       // Step 1: Collect all events from paginated API
       const allEvents: TicketmasterEvent[] = [];
       let pageCount = 0;
 
-      for await (const eventBatch of iterateEventsByAttraction(tmAttractionId)) {
+      for await (const eventBatch of iterateEventsByAttraction(
+        tmAttractionId,
+      )) {
         allEvents.push(...eventBatch);
         pageCount++;
-        
+
         reporter?.report(
-          'importing-shows',
-          Math.min(30, 5 + (pageCount * 5)), // Progress from 5% to ~30%
-          `Fetched ${allEvents.length} events from ${pageCount} page(s)...`
+          "importing-shows",
+          Math.min(30, 5 + pageCount * 5), // Progress from 5% to ~30%
+          `Fetched ${allEvents.length} events from ${pageCount} page(s)...`,
         );
       }
 
-      console.log(`TicketmasterIngest: Collected ${allEvents.length} events for artist ${artistId}`);
+      console.log(
+        `TicketmasterIngest: Collected ${allEvents.length} events for artist ${artistId}`,
+      );
 
       if (allEvents.length === 0) {
-        reporter?.report('importing-shows', 40, 'No events found for this artist');
+        reporter?.report(
+          "importing-shows",
+          40,
+          "No events found for this artist",
+        );
         return result;
       }
 
@@ -97,13 +114,19 @@ export class TicketmasterIngest {
       }
 
       const uniqueVenues = Array.from(venueMap.values());
-      console.log(`TicketmasterIngest: Found ${uniqueVenues.length} unique venues`);
+      console.log(
+        `TicketmasterIngest: Found ${uniqueVenues.length} unique venues`,
+      );
 
-      reporter?.report('importing-shows', 35, `Processing ${uniqueVenues.length} venues...`);
+      reporter?.report(
+        "importing-shows",
+        35,
+        `Processing ${uniqueVenues.length} venues...`,
+      );
 
       // Step 3: Process venues first (with FK mapping)
       const venueIdMap = new Map<string, string>(); // tmVenueId -> dbVenueId
-      
+
       await processBatch(
         uniqueVenues,
         async (venue) => await this.processVenue(venue, venueIdMap, result),
@@ -113,64 +136,71 @@ export class TicketmasterIngest {
           onProgress: (completed, total) => {
             const progress = 35 + Math.floor((completed / total) * 15); // 35% to 50%
             reporter?.report(
-              'importing-shows',
+              "importing-shows",
               Math.min(50, progress),
-              `Processed ${completed}/${total} venues (${result.newVenues} new)`
+              `Processed ${completed}/${total} venues (${result.newVenues} new)`,
             );
           },
           onError: (error, venue) => {
             result.errors.push({
-              type: 'venue_processing',
+              type: "venue_processing",
               message: error.message,
               item: { tmVenueId: venue.id, name: venue.name },
             });
           },
-        }
+        },
       );
 
-      reporter?.report('importing-shows', 55, `Processing ${allEvents.length} shows...`);
+      reporter?.report(
+        "importing-shows",
+        55,
+        `Processing ${allEvents.length} shows...`,
+      );
 
       // Step 4: Process shows with proper venue FK mapping
       await processBatch(
         allEvents,
-        async (event) => await this.processShow(event, artistId, venueIdMap, result),
+        async (event) =>
+          await this.processShow(event, artistId, venueIdMap, result),
         {
           concurrency: options.concurrency || 5,
           continueOnError: true,
           onProgress: (completed, total) => {
             const progress = 55 + Math.floor((completed / total) * 40); // 55% to 95%
             reporter?.report(
-              'importing-shows',
+              "importing-shows",
               Math.min(95, progress),
-              `Processed ${completed}/${total} shows (${result.newShows} new)`
+              `Processed ${completed}/${total} shows (${result.newShows} new)`,
             );
           },
           onError: (error, event) => {
             result.errors.push({
-              type: 'show_processing',
+              type: "show_processing",
               message: error.message,
               item: { tmEventId: event.id, name: event.name },
             });
           },
-        }
+        },
       );
 
-      reporter?.report('importing-shows', 100, 
-        `Import completed: ${result.newVenues} venues, ${result.newShows} shows (${result.errors.length} errors)`
+      reporter?.report(
+        "importing-shows",
+        100,
+        `Import completed: ${result.newVenues} venues, ${result.newShows} shows (${result.errors.length} errors)`,
       );
 
       return result;
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error('TicketmasterIngest: Fatal error:', error);
-      
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("TicketmasterIngest: Fatal error:", error);
+
       result.errors.push({
-        type: 'fatal_error',
+        type: "fatal_error",
         message: errorMessage,
       });
 
-      reporter?.reportError(error as Error, 'importing-shows');
+      reporter?.reportError(error as Error, "importing-shows");
       throw error;
     }
   }
@@ -181,7 +211,7 @@ export class TicketmasterIngest {
   private async processVenue(
     venue: TicketmasterVenue,
     venueIdMap: Map<string, string>,
-    result: IngestResult
+    result: IngestResult,
   ): Promise<void> {
     try {
       result.venuesProcessed++;
@@ -192,13 +222,17 @@ export class TicketmasterIngest {
         name: venue.name,
         slug: createSlug(venue.name),
         address: venue.address?.line1 || null,
-        city: venue.city?.name || 'Unknown',
+        city: venue.city?.name || "Unknown",
         state: venue.state?.name || null,
-        country: venue.country?.name || 'US',
+        country: venue.country?.name || "US",
         postalCode: venue.postalCode || null,
-        latitude: venue.location?.latitude ? parseFloat(venue.location.latitude) : null,
-        longitude: venue.location?.longitude ? parseFloat(venue.location.longitude) : null,
-        timezone: venue.timezone || 'America/New_York',
+        latitude: venue.location?.latitude
+          ? Number.parseFloat(venue.location.latitude)
+          : null,
+        longitude: venue.location?.longitude
+          ? Number.parseFloat(venue.location.longitude)
+          : null,
+        timezone: venue.timezone || "America/New_York",
         updatedAt: new Date(),
       };
 
@@ -229,18 +263,25 @@ export class TicketmasterIngest {
         venueIdMap.set(venue.id, upsertedVenue.id);
 
         // Check if this was a new venue (simple heuristic based on timing)
-        const wasNew = (new Date().getTime() - new Date(venueData.updatedAt).getTime()) < 1000;
+        const wasNew =
+          new Date().getTime() - new Date(venueData.updatedAt).getTime() < 1000;
         if (wasNew) {
           result.newVenues++;
         }
 
-        console.log(`TicketmasterIngest: Processed venue ${venue.name} (${venue.id} -> ${upsertedVenue.id})`);
+        console.log(
+          `TicketmasterIngest: Processed venue ${venue.name} (${venue.id} -> ${upsertedVenue.id})`,
+        );
       } else {
-        console.error(`TicketmasterIngest: Failed to upsert venue: ${venue.name}`);
+        console.error(
+          `TicketmasterIngest: Failed to upsert venue: ${venue.name}`,
+        );
       }
-
     } catch (error) {
-      console.error(`TicketmasterIngest: Error processing venue ${venue.id}:`, error);
+      console.error(
+        `TicketmasterIngest: Error processing venue ${venue.id}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -252,7 +293,7 @@ export class TicketmasterIngest {
     event: TicketmasterEvent,
     artistId: string,
     venueIdMap: Map<string, string>,
-    result: IngestResult
+    result: IngestResult,
   ): Promise<void> {
     try {
       result.showsProcessed++;
@@ -267,8 +308,12 @@ export class TicketmasterIngest {
 
       // Extract price range
       const priceRange = event.priceRanges?.[0];
-      const minPrice = priceRange?.min ? Math.round(priceRange.min * 100) : null; // Store as cents
-      const maxPrice = priceRange?.max ? Math.round(priceRange.max * 100) : null;
+      const minPrice = priceRange?.min
+        ? Math.round(priceRange.min * 100)
+        : null; // Store as cents
+      const maxPrice = priceRange?.max
+        ? Math.round(priceRange.max * 100)
+        : null;
 
       const showData = {
         headlinerArtistId: artistId,
@@ -278,11 +323,11 @@ export class TicketmasterIngest {
         slug: event.name ? createSlug(event.name) : null,
         date: showDate,
         startTime: showTime,
-        status: 'upcoming' as const,
+        status: "upcoming" as const,
         ticketUrl: event.url || null,
         minPrice,
         maxPrice,
-        currency: priceRange?.currency || 'USD',
+        currency: priceRange?.currency || "USD",
         updatedAt: new Date(),
       };
 
@@ -309,18 +354,25 @@ export class TicketmasterIngest {
 
       if (upsertedShow) {
         // Simple heuristic to detect new shows
-        const wasNew = (new Date().getTime() - new Date(showData.updatedAt).getTime()) < 1000;
+        const wasNew =
+          new Date().getTime() - new Date(showData.updatedAt).getTime() < 1000;
         if (wasNew) {
           result.newShows++;
         }
 
-        console.log(`TicketmasterIngest: Processed show ${event.name || event.id} (${event.id} -> ${upsertedShow.id})`);
+        console.log(
+          `TicketmasterIngest: Processed show ${event.name || event.id} (${event.id} -> ${upsertedShow.id})`,
+        );
       } else {
-        console.error(`TicketmasterIngest: Failed to upsert show: ${event.name || event.id}`);
+        console.error(
+          `TicketmasterIngest: Failed to upsert show: ${event.name || event.id}`,
+        );
       }
-
     } catch (error) {
-      console.error(`TicketmasterIngest: Error processing show ${event.id}:`, error);
+      console.error(
+        `TicketmasterIngest: Error processing show ${event.id}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -328,12 +380,14 @@ export class TicketmasterIngest {
   /**
    * Static method to create and run ingest in one call
    */
-  static async ingestForArtist(options: TicketmasterIngestOptions): Promise<IngestResult> {
+  static async ingestForArtist(
+    options: TicketmasterIngestOptions,
+  ): Promise<IngestResult> {
     const ingest = new TicketmasterIngest({
       concurrency: options.concurrency,
       progressReporter: options.progressReporter,
     });
-    
+
     return await ingest.ingest(options);
   }
 }
@@ -347,7 +401,7 @@ export async function ingestTicketmasterShows(
   options: {
     concurrency?: number;
     progressReporter?: ReturnType<typeof ProgressBus.createReporter>;
-  } = {}
+  } = {},
 ): Promise<IngestResult> {
   return TicketmasterIngest.ingestForArtist({
     artistId,

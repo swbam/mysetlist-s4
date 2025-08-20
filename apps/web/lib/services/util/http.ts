@@ -23,11 +23,11 @@ export class HttpError extends Error {
     message: string,
     status?: number,
     response?: Response,
-    isNetworkError: boolean = false,
-    isTimeout: boolean = false
+    isNetworkError = false,
+    isTimeout = false,
   ) {
     super(message);
-    this.name = 'HttpError';
+    this.name = "HttpError";
     this.status = status;
     this.response = response;
     this.isNetworkError = isNetworkError;
@@ -42,7 +42,7 @@ export class HttpError extends Error {
 export async function fetchJson<T = any>(
   url: string,
   init: RequestInit = {},
-  options: FetchRetryOptions = {}
+  options: FetchRetryOptions = {},
 ): Promise<T> {
   const {
     tries = 3,
@@ -55,42 +55,53 @@ export async function fetchJson<T = any>(
   } = options;
 
   let lastError: HttpError | undefined;
-  
+
   for (let attempt = 0; attempt < tries; attempt++) {
     try {
       // Create controller for timeout
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
-      
+
       const finalInit: RequestInit = {
         ...init,
         signal: controller.signal,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...init.headers,
         },
       };
 
       let response: Response;
-      
+
       try {
         response = await fetch(url, finalInit);
         clearTimeout(timeoutId);
       } catch (error: any) {
         clearTimeout(timeoutId);
-        
-        if (error.name === 'AbortError') {
-          throw new HttpError(`Request timeout after ${timeout}ms`, undefined, undefined, false, true);
+
+        if (error.name === "AbortError") {
+          throw new HttpError(
+            `Request timeout after ${timeout}ms`,
+            undefined,
+            undefined,
+            false,
+            true,
+          );
         }
-        
+
         // Network error - retry if enabled
         if (retryOnNetworkError && attempt < tries - 1) {
           const delay = calculateDelay(attempt, baseDelay, maxDelay, jitter);
           await sleep(delay);
           continue;
         }
-        
-        throw new HttpError(`Network error: ${error.message}`, undefined, undefined, true);
+
+        throw new HttpError(
+          `Network error: ${error.message}`,
+          undefined,
+          undefined,
+          true,
+        );
       }
 
       // Check if we should retry based on status
@@ -116,29 +127,31 @@ export async function fetchJson<T = any>(
       try {
         return await response.json();
       } catch (error) {
-        throw new HttpError('Invalid JSON response', response.status, response);
+        throw new HttpError("Invalid JSON response", response.status, response);
       }
-
     } catch (error: any) {
-      lastError = error instanceof HttpError ? error : new HttpError(error.message);
-      
+      lastError =
+        error instanceof HttpError ? error : new HttpError(error.message);
+
       // Don't retry on the last attempt
       if (attempt === tries - 1) {
         break;
       }
-      
+
       // Don't retry certain errors
-      if (error instanceof HttpError && 
-          error.status && 
-          error.status >= 400 && 
-          error.status < 500 && 
-          error.status !== 429) {
+      if (
+        error instanceof HttpError &&
+        error.status &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        error.status !== 429
+      ) {
         break;
       }
     }
   }
 
-  throw lastError || new HttpError('Unknown error occurred');
+  throw lastError || new HttpError("Unknown error occurred");
 }
 
 /**
@@ -147,7 +160,7 @@ export async function fetchJson<T = any>(
 export async function fetchWithRetry(
   url: string,
   init: RequestInit = {},
-  options: FetchRetryOptions = {}
+  options: FetchRetryOptions = {},
 ): Promise<Response> {
   const {
     tries = 3,
@@ -160,36 +173,47 @@ export async function fetchWithRetry(
   } = options;
 
   let lastError: HttpError | undefined;
-  
+
   for (let attempt = 0; attempt < tries; attempt++) {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
-      
+
       const finalInit: RequestInit = {
         ...init,
         signal: controller.signal,
       };
 
       let response: Response;
-      
+
       try {
         response = await fetch(url, finalInit);
         clearTimeout(timeoutId);
       } catch (error: any) {
         clearTimeout(timeoutId);
-        
-        if (error.name === 'AbortError') {
-          throw new HttpError(`Request timeout after ${timeout}ms`, undefined, undefined, false, true);
+
+        if (error.name === "AbortError") {
+          throw new HttpError(
+            `Request timeout after ${timeout}ms`,
+            undefined,
+            undefined,
+            false,
+            true,
+          );
         }
-        
+
         if (retryOnNetworkError && attempt < tries - 1) {
           const delay = calculateDelay(attempt, baseDelay, maxDelay, jitter);
           await sleep(delay);
           continue;
         }
-        
-        throw new HttpError(`Network error: ${error.message}`, undefined, undefined, true);
+
+        throw new HttpError(
+          `Network error: ${error.message}`,
+          undefined,
+          undefined,
+          true,
+        );
       }
 
       // Check if we should retry based on status
@@ -200,40 +224,47 @@ export async function fetchWithRetry(
       }
 
       return response;
-
     } catch (error: any) {
-      lastError = error instanceof HttpError ? error : new HttpError(error.message);
-      
+      lastError =
+        error instanceof HttpError ? error : new HttpError(error.message);
+
       if (attempt === tries - 1) {
         break;
       }
-      
-      if (error instanceof HttpError && 
-          error.status && 
-          error.status >= 400 && 
-          error.status < 500 && 
-          error.status !== 429) {
+
+      if (
+        error instanceof HttpError &&
+        error.status &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        error.status !== 429
+      ) {
         break;
       }
     }
   }
 
-  throw lastError || new HttpError('Unknown error occurred');
+  throw lastError || new HttpError("Unknown error occurred");
 }
 
 /**
  * Calculate exponential backoff delay with optional jitter
  */
-function calculateDelay(attempt: number, baseDelay: number, maxDelay: number, jitter: boolean): number {
-  const exponentialDelay = baseDelay * Math.pow(2, attempt);
+function calculateDelay(
+  attempt: number,
+  baseDelay: number,
+  maxDelay: number,
+  jitter: boolean,
+): number {
+  const exponentialDelay = baseDelay * 2 ** attempt;
   const cappedDelay = Math.min(exponentialDelay, maxDelay);
-  
+
   if (jitter) {
     // Add random jitter up to 25% of the delay
     const jitterAmount = cappedDelay * 0.25 * Math.random();
     return cappedDelay + jitterAmount;
   }
-  
+
   return cappedDelay;
 }
 
@@ -241,7 +272,7 @@ function calculateDelay(attempt: number, baseDelay: number, maxDelay: number, ji
  * Sleep utility for delays
  */
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -253,7 +284,7 @@ export async function fetchWithRateLimit<T = any>(
   rateLimitConfig?: {
     requestsPerSecond?: number;
     burstSize?: number;
-  }
+  },
 ): Promise<T> {
   // Implementation would include rate limiting logic
   // For now, delegate to fetchJson with appropriate retry config
@@ -273,14 +304,14 @@ export async function batchFetch<T = any>(
   options: {
     concurrency?: number;
     retryOptions?: FetchRetryOptions;
-  } = {}
+  } = {},
 ): Promise<Array<T | Error>> {
   const { concurrency = 5, retryOptions } = options;
-  
+
   // This would use the concurrency utility we'll implement next
   // For now, basic implementation
   const results: Array<T | Error> = [];
-  
+
   for (let i = 0; i < requests.length; i += concurrency) {
     const batch = requests.slice(i, i + concurrency);
     const batchPromises = batch.map(async ({ url, init }) => {
@@ -290,10 +321,10 @@ export async function batchFetch<T = any>(
         return error as Error;
       }
     });
-    
+
     const batchResults = await Promise.all(batchPromises);
     results.push(...batchResults);
   }
-  
+
   return results;
 }

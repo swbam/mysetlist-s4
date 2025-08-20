@@ -9,7 +9,7 @@ export {
   runFullImport,
   type ImportResult,
   type ImportConfig,
-} from './ArtistImportOrchestrator';
+} from "./ArtistImportOrchestrator";
 
 // Default export for convenience
-export { ArtistImportOrchestrator as default } from './ArtistImportOrchestrator';
+export { ArtistImportOrchestrator as default } from "./ArtistImportOrchestrator";

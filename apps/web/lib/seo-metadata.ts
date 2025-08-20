@@ -103,7 +103,7 @@ export function createVenueMetadata(venue: {
 
   const description =
     venue.description ||
-    `Concert venue in ${location}. ${venue.capacity ? `Capacity: ${venue.capacity.toLocaleString()}. ` : ""}${venue.upcomingShowCount ? `${venue.upcomingShowCount} upcoming shows. ` : ""}Get insider tips, parking info, and plan your perfect show experience.`;
+    `Concert venue in ${location}. ${venue.capacity ? `Capacity: ${venue.capacity.toLocaleString()}. ` : ""}${venue.upcomingShowCount ? `${venue.upcomingShowCount} upcoming shows. ` : ""}Get parking info, venue details, and plan your perfect show experience.`;
 
   return createPageMetadata({
     title: `${venue.name} - ${location} | TheSet`,

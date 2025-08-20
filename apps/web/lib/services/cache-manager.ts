@@ -111,7 +111,7 @@ export class CacheManager {
       }
 
       // Fallback to memory cache
-  // In-memory cache disabled
+      // In-memory cache disabled
 
       return null;
     } catch (error) {
@@ -154,7 +154,7 @@ export class CacheManager {
       }
 
       // Set in memory cache
-  // In-memory cache disabled
+      // In-memory cache disabled
 
       return success;
     } catch (error) {
@@ -172,7 +172,7 @@ export class CacheManager {
       const redisResult = await this.redisClient.del(key);
       this.recordMetric("redis", "delete");
 
-  // In-memory cache disabled
+      // In-memory cache disabled
 
       return redisResult > 0;
     } catch (error) {
@@ -187,7 +187,7 @@ export class CacheManager {
    */
   async invalidatePattern(pattern: string): Promise<void> {
     try {
-  await this.redisClient.invalidatePattern(pattern);
+      await this.redisClient.invalidatePattern(pattern);
     } catch (error) {
       console.warn("Pattern invalidation error:", error);
     }
@@ -417,7 +417,7 @@ export class CacheManager {
   /**
    * Administrative cache cleanup methods for autonomous maintenance
    */
-  
+
   /**
    * Clear expired cache entries
    */
@@ -425,14 +425,14 @@ export class CacheManager {
     try {
       const instance = CacheManager.getInstance();
       // Redis automatically handles expired keys, but we can manually clean up patterns
-      const patterns = ['artists:*', 'shows:*', 'trending:*', 'search:*'];
+      const patterns = ["artists:*", "shows:*", "trending:*", "search:*"];
       let clearedKeys = 0;
-      
+
       for (const pattern of patterns) {
         await instance.invalidatePattern(pattern);
         clearedKeys++;
       }
-      
+
       return clearedKeys;
     } catch (error) {
       console.warn("Clear expired cache error:", error);
@@ -460,14 +460,14 @@ export class CacheManager {
   static async optimizeCachePatterns(): Promise<void> {
     try {
       const instance = CacheManager.getInstance();
-      
+
       // Reorganize cache patterns for better performance
-      const patterns = ['artists:*', 'shows:*', 'trending:*', 'search:*'];
-      
+      const patterns = ["artists:*", "shows:*", "trending:*", "search:*"];
+
       for (const pattern of patterns) {
         await instance.invalidatePattern(pattern);
       }
-      
+
       // Could add more optimization logic here
       console.log("Cache patterns optimized");
     } catch (error) {
@@ -478,18 +478,21 @@ export class CacheManager {
   /**
    * Clear stale cache entries older than specified age
    */
-  static async clearStalePatterns(patterns: string[], maxAgeMs: number): Promise<number> {
+  static async clearStalePatterns(
+    patterns: string[],
+    maxAgeMs: number,
+  ): Promise<number> {
     try {
       const instance = CacheManager.getInstance();
       let clearedKeys = 0;
-      
+
       for (const pattern of patterns) {
         // This would require Redis SCAN with TTL checking
         // For now, just invalidate the pattern
         await instance.invalidatePattern(pattern);
         clearedKeys += 1;
       }
-      
+
       return clearedKeys;
     } catch (error) {
       console.warn("Clear stale patterns error:", error);

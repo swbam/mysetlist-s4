@@ -1,15 +1,23 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "~/lib/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
+
+type RouteParams = {
+  params: Promise<{
+    id: string;
+  }>;
+};
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: RouteParams,
 ) {
   try {
     const supabase = await createClient();
-    
+
     // Check if user is admin
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -24,7 +32,7 @@ export async function POST(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { id: showId } = params;
+    const { id: showId } = await params;
 
     // Get show details
     const { data: show } = await supabase
@@ -60,19 +68,16 @@ export async function POST(
       reason: "Manual sync from Ticketmaster",
       metadata: {
         show_title: show.title,
-        sync_timestamp: new Date().toISOString()
+        sync_timestamp: new Date().toISOString(),
       },
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      message: "Show synced successfully" 
+    return NextResponse.json({
+      success: true,
+      message: "Show synced successfully",
     });
   } catch (error) {
     console.error("Error syncing show:", error);
-    return NextResponse.json(
-      { error: "Failed to sync show" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to sync show" }, { status: 500 });
   }
 }

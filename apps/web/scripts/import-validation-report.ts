@@ -6,9 +6,9 @@
  */
 
 console.log(`
-${'='.repeat(80)}
+${"=".repeat(80)}
 🎵 IMPORT ORCHESTRATION VALIDATION REPORT
-${'='.repeat(80)}
+${"=".repeat(80)}
 
 📊 TESTING SUMMARY
 This validation demonstrates that the complete 4-phase import orchestration 
@@ -157,9 +157,9 @@ The only "failures" encountered were expected database constraint conflicts
 in the test environment, which demonstrates the system's data integrity 
 protections are working correctly.
 
-${'='.repeat(80)}
+${"=".repeat(80)}
 🎯 IMPORT ORCHESTRATION: VALIDATED AND PRODUCTION READY ✅
-${'='.repeat(80)}
+${"=".repeat(80)}
 `);
 
 process.exit(0);

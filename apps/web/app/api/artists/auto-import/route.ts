@@ -4,7 +4,7 @@ import { eq, or } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 import { type NextRequest, NextResponse } from "next/server";
 import { CACHE_TAGS } from "~/lib/cache";
-import { updateImportStatus, getImportStatus } from "~/lib/import-status";
+import { getImportStatus, updateImportStatus } from "~/lib/import-status";
 
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
@@ -17,7 +17,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { tmAttractionId, spotifyId, artistName, retryOnFailure = true } = body;
+    const {
+      tmAttractionId,
+      spotifyId,
+      artistName,
+      retryOnFailure = true,
+    } = body;
 
     // Require at least one identifier
     if (!tmAttractionId && !spotifyId && !artistName) {
@@ -49,7 +54,7 @@ export async function POST(request: NextRequest) {
         .where(eq(artists.tmAttractionId, tmAttractionId))
         .limit(1);
     }
-    
+
     // If not found by TM ID, check by Spotify ID
     if (existingArtist.length === 0 && spotifyId) {
       existingArtist = await db
@@ -58,7 +63,7 @@ export async function POST(request: NextRequest) {
         .where(eq(artists.spotifyId, spotifyId))
         .limit(1);
     }
-    
+
     // If not found by IDs, check by name (fuzzy match)
     if (existingArtist.length === 0 && artistName) {
       existingArtist = await db
@@ -101,11 +106,19 @@ export async function POST(request: NextRequest) {
 
     // Check for ongoing imports to prevent concurrent imports
     const ongoingImportKey = tmAttractionId || spotifyId || artistName;
-    const ongoingImportStatus = await getImportStatus(`tmp_${ongoingImportKey}`);
-    
-    if (ongoingImportStatus && ongoingImportStatus.stage !== "completed" && ongoingImportStatus.stage !== "failed") {
-      console.log(`[AUTO-IMPORT] Import already in progress for: ${ongoingImportKey}`);
-      
+    const ongoingImportStatus = await getImportStatus(
+      `tmp_${ongoingImportKey}`,
+    );
+
+    if (
+      ongoingImportStatus &&
+      ongoingImportStatus.stage !== "completed" &&
+      ongoingImportStatus.stage !== "failed"
+    ) {
+      console.log(
+        `[AUTO-IMPORT] Import already in progress for: ${ongoingImportKey}`,
+      );
+
       return NextResponse.json(
         {
           success: true,
@@ -155,12 +168,12 @@ export async function POST(request: NextRequest) {
       );
 
       // Use proper URL construction for production
-      const baseUrl = process.env.VERCEL_URL 
+      const baseUrl = process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : process.env.NEXT_PUBLIC_APP_URL
-        ? process.env.NEXT_PUBLIC_APP_URL
-        : request.nextUrl.origin;
-        
+          ? process.env.NEXT_PUBLIC_APP_URL
+          : request.nextUrl.origin;
+
       const orchestrationResponse = await fetch(
         `${baseUrl}/api/sync/orchestration`,
         {
@@ -169,7 +182,7 @@ export async function POST(request: NextRequest) {
             "Content-Type": "application/json",
             // Add authorization for internal API calls
             ...(process.env.CRON_SECRET && {
-              "Authorization": `Bearer ${process.env.CRON_SECRET}`
+              Authorization: `Bearer ${process.env.CRON_SECRET}`,
             }),
           },
           body: JSON.stringify({

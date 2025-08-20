@@ -100,12 +100,12 @@ export interface Show extends BaseEntity {
 }
 
 export enum ShowStatus {
-  ANNOUNCED = 'announced',
-  ON_SALE = 'on_sale',
-  SOLD_OUT = 'sold_out',
-  CANCELLED = 'cancelled',
-  POSTPONED = 'postponed',
-  COMPLETED = 'completed',
+  ANNOUNCED = "announced",
+  ON_SALE = "on_sale",
+  SOLD_OUT = "sold_out",
+  CANCELLED = "cancelled",
+  POSTPONED = "postponed",
+  COMPLETED = "completed",
 }
 
 // Setlist-related types
@@ -393,28 +393,28 @@ export interface ImportJob {
 }
 
 export enum ImportJobType {
-  ARTIST_BASIC = 'artist_basic',
-  ARTIST_SONGS = 'artist_songs',
-  ARTIST_SHOWS = 'artist_shows',
-  VENUE_SYNC = 'venue_sync',
-  SETLIST_SYNC = 'setlist_sync',
-  FULL_SYNC = 'full_sync',
+  ARTIST_BASIC = "artist_basic",
+  ARTIST_SONGS = "artist_songs",
+  ARTIST_SHOWS = "artist_shows",
+  VENUE_SYNC = "venue_sync",
+  SETLIST_SYNC = "setlist_sync",
+  FULL_SYNC = "full_sync",
 }
 
 export enum ImportJobStatus {
-  PENDING = 'pending',
-  IN_PROGRESS = 'in_progress',
-  COMPLETED = 'completed',
-  FAILED = 'failed',
-  CANCELLED = 'cancelled',
+  PENDING = "pending",
+  IN_PROGRESS = "in_progress",
+  COMPLETED = "completed",
+  FAILED = "failed",
+  CANCELLED = "cancelled",
 }
 
 export enum EntityType {
-  ARTIST = 'artist',
-  VENUE = 'venue',
-  SHOW = 'show',
-  SONG = 'song',
-  SETLIST = 'setlist',
+  ARTIST = "artist",
+  VENUE = "venue",
+  SHOW = "show",
+  SONG = "song",
+  SETLIST = "setlist",
 }
 
 export interface ImportProgress {
@@ -428,15 +428,15 @@ export interface ImportProgress {
 }
 
 export enum ImportPhase {
-  INITIALIZING = 'initializing',
-  FETCHING_BASIC_DATA = 'fetching_basic_data',
-  FETCHING_SONGS = 'fetching_songs',
-  FETCHING_SHOWS = 'fetching_shows',
-  FETCHING_VENUES = 'fetching_venues',
-  PROCESSING_DATA = 'processing_data',
-  SAVING_TO_DATABASE = 'saving_to_database',
-  FINALIZING = 'finalizing',
-  COMPLETED = 'completed',
+  INITIALIZING = "initializing",
+  FETCHING_BASIC_DATA = "fetching_basic_data",
+  FETCHING_SONGS = "fetching_songs",
+  FETCHING_SHOWS = "fetching_shows",
+  FETCHING_VENUES = "fetching_venues",
+  PROCESSING_DATA = "processing_data",
+  SAVING_TO_DATABASE = "saving_to_database",
+  FINALIZING = "finalizing",
+  COMPLETED = "completed",
 }
 
 // Cache-related types
@@ -509,4 +509,5 @@ export type DeepPartial<T> = {
 
 export type RequiredKeys<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
-export type OptionalKeys<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type OptionalKeys<T, K extends keyof T> = Omit<T, K> &
+  Partial<Pick<T, K>>;

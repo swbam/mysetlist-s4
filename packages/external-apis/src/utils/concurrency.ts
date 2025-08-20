@@ -10,8 +10,14 @@ export function pLimit(max: number) {
       const run = () => {
         active++;
         fn().then(
-          (v) => (resolve(v), next()),
-          (e) => (reject(e), next()),
+          (v) => {
+            resolve(v);
+            next();
+          },
+          (e) => {
+            reject(e);
+            next();
+          },
         );
       };
       active < max ? run() : queue.push(run);

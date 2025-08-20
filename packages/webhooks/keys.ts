@@ -9,6 +9,6 @@ export const keys = () =>
         .optional(),
     },
     runtimeEnv: {
-      SVIX_TOKEN: process.env['SVIX_TOKEN'],
+      SVIX_TOKEN: process.env.SVIX_TOKEN,
     },
   });

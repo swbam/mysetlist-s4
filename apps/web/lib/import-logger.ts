@@ -1,6 +1,6 @@
-import { db, importLogs, type InsertImportLog } from "@repo/database";
-import { eq } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
+import { type InsertImportLog, db, importLogs } from "@repo/database";
+import { eq } from "drizzle-orm";
 
 export type LogLevel = "info" | "warning" | "error" | "success" | "debug";
 
@@ -68,7 +68,7 @@ export class ImportLogger {
           durationMs: log.durationMs,
           errorCode: log.errorCode,
           errorStack: log.errorStack,
-        }))
+        })),
       );
     } catch (error) {
       console.error("Failed to flush import logs:", error);
@@ -82,7 +82,12 @@ export class ImportLogger {
     this.flushTimer = setTimeout(() => this.flush(), 1000);
   }
 
-  private async log(entry: Omit<ImportLogEntry, "artistId" | "artistName" | "tmAttractionId" | "spotifyId" | "jobId">) {
+  private async log(
+    entry: Omit<
+      ImportLogEntry,
+      "artistId" | "artistName" | "tmAttractionId" | "spotifyId" | "jobId"
+    >,
+  ) {
     const logEntry: ImportLogEntry = {
       ...entry,
       artistId: this.artistId,
@@ -102,8 +107,16 @@ export class ImportLogger {
     }
 
     // Also log to console for debugging
-    const consoleMethod = entry.level === "error" ? "error" : entry.level === "warning" ? "warn" : "log";
-    console[consoleMethod](`[${entry.stage}] ${entry.message}`, entry.details || "");
+    const consoleMethod =
+      entry.level === "error"
+        ? "error"
+        : entry.level === "warning"
+          ? "warn"
+          : "log";
+    console[consoleMethod](
+      `[${entry.stage}] ${entry.message}`,
+      entry.details || "",
+    );
   }
 
   async info(stage: string, message: string, details?: any) {
@@ -135,7 +148,13 @@ export class ImportLogger {
     }
   }
 
-  async progress(stage: string, message: string, itemsProcessed: number, itemsTotal: number, durationMs?: number) {
+  async progress(
+    stage: string,
+    message: string,
+    itemsProcessed: number,
+    itemsTotal: number,
+    durationMs?: number,
+  ) {
     await this.log({
       level: "info",
       stage,
@@ -161,27 +180,38 @@ export class ImportLogger {
   updateArtistId(newArtistId: string) {
     const oldArtistId = this.artistId;
     this.artistId = newArtistId;
-    
+
     // Also update any existing logs in the database
     this.updateExistingLogsArtistId(oldArtistId, newArtistId);
   }
 
-  private async updateExistingLogsArtistId(oldArtistId: string, newArtistId: string) {
+  private async updateExistingLogsArtistId(
+    oldArtistId: string,
+    newArtistId: string,
+  ) {
     try {
       // Update logs in database that match the old artist ID
-      const result = await db.update(importLogs)
+      const result = await db
+        .update(importLogs)
         .set({ artistId: newArtistId })
         .where(eq(importLogs.artistId, oldArtistId));
-      
-      console.log(`[LOGGER] Updated existing logs from ${oldArtistId} to ${newArtistId}`);
+
+      console.log(
+        `[LOGGER] Updated existing logs from ${oldArtistId} to ${newArtistId}`,
+      );
     } catch (error) {
-      console.error('Failed to update existing logs artist ID:', error);
+      console.error("Failed to update existing logs artist ID:", error);
     }
   }
 }
 
 // Static methods for quick logging without creating an instance
-export async function logImportInfo(artistId: string, stage: string, message: string, details?: any) {
+export async function logImportInfo(
+  artistId: string,
+  stage: string,
+  message: string,
+  details?: any,
+) {
   try {
     await db.insert(importLogs).values({
       artistId,
@@ -195,7 +225,12 @@ export async function logImportInfo(artistId: string, stage: string, message: st
   }
 }
 
-export async function logImportError(artistId: string, stage: string, message: string, error?: Error | any) {
+export async function logImportError(
+  artistId: string,
+  stage: string,
+  message: string,
+  error?: Error | any,
+) {
   try {
     await db.insert(importLogs).values({
       artistId,
@@ -211,7 +246,12 @@ export async function logImportError(artistId: string, stage: string, message: s
   }
 }
 
-export async function logImportSuccess(artistId: string, stage: string, message: string, details?: any) {
+export async function logImportSuccess(
+  artistId: string,
+  stage: string,
+  message: string,
+  details?: any,
+) {
   try {
     await db.insert(importLogs).values({
       artistId,

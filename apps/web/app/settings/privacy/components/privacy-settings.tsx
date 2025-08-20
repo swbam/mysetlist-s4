@@ -112,7 +112,7 @@ export function PrivacySettings({
           .select("*, artists(*)")
           .eq("user_id", userId),
         supabase.from("song_votes").select("*, songs(*)").eq("user_id", userId),
-    Promise.resolve({ data: [] }),
+        Promise.resolve({ data: [] }),
       ]);
 
       const userData = {
@@ -120,7 +120,6 @@ export function PrivacySettings({
         attended_shows: shows,
         followed_artists: artists,
         votes,
-        venue_reviews: reviews,
         exported_at: new Date().toISOString(),
       };
 

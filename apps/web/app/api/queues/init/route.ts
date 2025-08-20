@@ -9,7 +9,7 @@ export async function GET() {
     console.error("Failed to initialize workers:", error);
     return NextResponse.json(
       { error: "Failed to initialize workers" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

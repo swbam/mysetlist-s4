@@ -17,8 +17,6 @@ interface Venue {
   capacity: number | null;
   latitude: number | null;
   longitude: number | null;
-  avgRating?: number | null;
-  reviewCount?: number;
   upcomingShowCount?: number;
   distance?: number;
   amenities: string | null;
@@ -64,8 +62,6 @@ export function VenueGridClient({ venues }: VenueGridClientProps) {
               capacity: venue.capacity,
               venueType: venue.venueType,
               imageUrl: venue.imageUrl,
-              avgRating: venue.avgRating,
-              reviewCount: venue.reviewCount,
               upcomingShowCount: venue.upcomingShowCount,
               distance: venue.distance,
               amenities: venue.amenities,

@@ -1,11 +1,11 @@
-import { createServiceClient } from "./supabase/server";
 import { createRedisClient } from "./queues/redis-config";
+import { createServiceClient } from "./supabase/server";
 
 // Initialize Redis client (env-driven)
 const redis = createRedisClient();
 
 export interface ImportStatus {
-  stage: 
+  stage:
     | "initializing"
     | "syncing-identifiers"
     | "importing-songs"
@@ -37,20 +37,17 @@ export async function updateImportStatus(
       ...status,
       updatedAt: new Date().toISOString(),
     };
-    
+
     // Store in Redis cache (expires after 5 minutes)
     await redis.setex(
       `import:status:${jobId}`,
       300,
-      JSON.stringify(fullStatus)
+      JSON.stringify(fullStatus),
     );
-    
+
     // Publish to Redis channel for SSE subscribers
-    await redis.publish(
-      `import:progress:${jobId}`,
-      JSON.stringify(fullStatus)
-    );
-    
+    await redis.publish(`import:progress:${jobId}`, JSON.stringify(fullStatus));
+
     // Also update database for persistence
     const supabase = createServiceClient();
 
@@ -62,11 +59,11 @@ export async function updateImportStatus(
       .single();
 
     const now = new Date().toISOString();
-    
+
     const updateData = {
       job_id: jobId,
       stage: status.stage,
-      percentage: status.progress || 0,  // Map progress to percentage
+      percentage: status.progress || 0, // Map progress to percentage
       message: status.message || "",
       error: status.error || null,
       artist_id: status.artistId || null,
@@ -80,23 +77,28 @@ export async function updateImportStatus(
     };
 
     const { error } = await supabase.from("import_status").upsert(updateData);
-    
+
     if (error) {
-      console.error(`[IMPORT STATUS] Failed to update status for ${jobId}:`, error);
+      console.error(
+        `[IMPORT STATUS] Failed to update status for ${jobId}:`,
+        error,
+      );
     }
   } catch (error) {
     console.error("Failed to update import status:", error);
   }
 }
 
-export async function getImportStatus(jobId: string): Promise<ImportStatus | null> {
+export async function getImportStatus(
+  jobId: string,
+): Promise<ImportStatus | null> {
   try {
     // Check Redis cache first
     const cached = await redis.get(`import:status:${jobId}`);
     if (cached) {
       return JSON.parse(cached) as ImportStatus;
     }
-    
+
     // Fallback to database
     const supabase = createServiceClient();
 
@@ -112,7 +114,7 @@ export async function getImportStatus(jobId: string): Promise<ImportStatus | nul
 
     const status: ImportStatus = {
       stage: data.stage,
-      progress: data.percentage || 0,  // Map percentage to progress
+      progress: data.percentage || 0, // Map percentage to progress
       message: data.message || "",
       error: data.error,
       artistId: data.artist_id,
@@ -124,17 +126,20 @@ export async function getImportStatus(jobId: string): Promise<ImportStatus | nul
       createdAt: data.created_at,
       updatedAt: data.updated_at,
     };
-    
+
     // Cache for next time (short TTL)
     await redis.setex(
       `import:status:${jobId}`,
       60, // 1 minute cache
-      JSON.stringify(status)
+      JSON.stringify(status),
     );
-    
+
     return status;
   } catch (error) {
-    console.warn("[IMPORT STATUS] Failed to get import status (non-blocking):", error);
+    console.warn(
+      "[IMPORT STATUS] Failed to get import status (non-blocking):",
+      error,
+    );
     // Fallback: don't let import status failures break the actual import
     return null;
   }

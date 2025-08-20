@@ -1,9 +1,9 @@
-import { Job } from "bullmq";
-import { ingestShowsAndVenues } from "@repo/external-apis/src/services/ingest/TicketmasterIngest";
-import { ingestStudioCatalog } from "@repo/external-apis/src/services/ingest/SpotifyCatalogIngest";
 import { db } from "@repo/database";
 import { artists } from "@repo/database";
+import { ingestStudioCatalog } from "@repo/external-apis/src/services/ingest/SpotifyCatalogIngest";
+import { ingestShowsAndVenues } from "@repo/external-apis/src/services/ingest/TicketmasterIngest";
 import { eq } from "drizzle-orm";
+import type { SimpleJob } from "../types";
 
 interface ArtistImportJobData {
   artistId: string;
@@ -12,7 +12,9 @@ interface ArtistImportJobData {
   artistName: string;
 }
 
-export const artistImportWorker = async (job: Job<ArtistImportJobData>) => {
+export const artistImportWorker = async (
+  job: SimpleJob<ArtistImportJobData>,
+) => {
   const { artistId, tmAttractionId, spotifyArtistId, artistName } = job.data;
 
   try {

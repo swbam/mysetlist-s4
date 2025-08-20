@@ -1,4 +1,4 @@
-import { db, artists } from "@repo/database";
+import { artists, db } from "@repo/database";
 import { SpotifyClient } from "@repo/external-apis";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import type { NextRequest } from "next/server";
@@ -16,7 +16,11 @@ async function executeArtistImageSync() {
 
   // Find artists missing images but with a spotifyId
   const targets = await db
-    .select({ id: artists.id, spotifyId: artists.spotifyId, name: artists.name })
+    .select({
+      id: artists.id,
+      spotifyId: artists.spotifyId,
+      name: artists.name,
+    })
     .from(artists)
     .where(and(isNull(artists.imageUrl), isNull(artists.smallImageUrl)))
     .limit(50);
@@ -61,7 +65,9 @@ export async function POST(request: NextRequest) {
     return createSuccessResponse(result);
   } catch (error) {
     try {
-      await db.execute(sql`SELECT log_cron_run('sync-artist-images', 'failed')`);
+      await db.execute(
+        sql`SELECT log_cron_run('sync-artist-images', 'failed')`,
+      );
     } catch {}
     return createErrorResponse(
       "Artist image sync failed",

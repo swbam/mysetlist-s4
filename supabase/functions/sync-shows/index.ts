@@ -121,7 +121,6 @@ serve(async (req) => {
       size: 50,
     });
 
-    // biome-ignore lint/suspicious/noExplicitAny: Complex API response structure
     const syncedShows = [] as any[];
 
     for (const event of events) {
@@ -150,7 +149,6 @@ serve(async (req) => {
           : null,
         timezone: venue.timezone,
         address: venue.address?.line1 || null,
-        // biome-ignore lint/suspicious/noExplicitAny: Database insert type
       } as unknown;
 
       const { data: dbVenue } = await supabase

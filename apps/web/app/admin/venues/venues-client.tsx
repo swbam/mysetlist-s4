@@ -53,8 +53,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { createClient } from "~/lib/supabase/client";
 import { toast } from "sonner";
+import { createClient } from "~/lib/supabase/client";
 
 interface Venue {
   id: string;
@@ -86,7 +86,10 @@ interface VenuesClientProps {
   };
 }
 
-export default function VenuesClient({ initialVenues, initialStats }: VenuesClientProps) {
+export default function VenuesClient({
+  initialVenues,
+  initialStats,
+}: VenuesClientProps) {
   const [venues, setVenues] = useState<Venue[]>(initialVenues);
   const [filteredVenues, setFilteredVenues] = useState<Venue[]>(initialVenues);
   const [stats, setStats] = useState(initialStats);
@@ -102,11 +105,12 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter(venue =>
-        venue.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        venue.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        venue.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        venue.state.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        (venue) =>
+          venue.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          venue.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          venue.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          venue.state.toLowerCase().includes(searchTerm.toLowerCase()),
       );
     }
 
@@ -114,17 +118,17 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
     if (statusFilter !== "all") {
       switch (statusFilter) {
         case "verified":
-          filtered = filtered.filter(venue => venue.verified);
+          filtered = filtered.filter((venue) => venue.verified);
           break;
         case "unverified":
-          filtered = filtered.filter(venue => !venue.verified);
+          filtered = filtered.filter((venue) => !venue.verified);
           break;
         case "with_shows":
-          filtered = filtered.filter(venue => venue.shows_count > 0);
+          filtered = filtered.filter((venue) => venue.shows_count > 0);
           break;
         case "incomplete":
-          filtered = filtered.filter(venue => 
-            !venue.capacity || !venue.latitude || !venue.longitude
+          filtered = filtered.filter(
+            (venue) => !venue.capacity || !venue.latitude || !venue.longitude,
           );
           break;
       }
@@ -135,89 +139,96 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
 
   const handleExportVenues = async () => {
     try {
-      const response = await fetch('/api/admin/venues/export');
+      const response = await fetch("/api/admin/venues/export");
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = `venues-export-${new Date().toISOString().split('T')[0]}.csv`;
+        a.download = `venues-export-${new Date().toISOString().split("T")[0]}.csv`;
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        toast.success('Venues exported successfully');
+        toast.success("Venues exported successfully");
       } else {
-        toast.error('Export failed');
+        toast.error("Export failed");
       }
     } catch (error) {
-      console.error('Export error:', error);
-      toast.error('Export error');
+      console.error("Export error:", error);
+      toast.error("Export error");
     }
   };
 
   const handleVerifyVenue = async (venueId: string, venueName: string) => {
     try {
       const response = await fetch(`/api/admin/venues/${venueId}/verify`, {
-        method: 'POST',
+        method: "POST",
       });
 
       if (response.ok) {
         // Update local state
-        setVenues(venues.map(venue => 
-          venue.id === venueId 
-            ? { ...venue, verified: true }
-            : venue
-        ));
+        setVenues(
+          venues.map((venue) =>
+            venue.id === venueId ? { ...venue, verified: true } : venue,
+          ),
+        );
         toast.success(`${venueName} marked as verified`);
       } else {
-        toast.error('Failed to verify venue');
+        toast.error("Failed to verify venue");
       }
     } catch (error) {
-      console.error('Verify error:', error);
-      toast.error('Error verifying venue');
+      console.error("Verify error:", error);
+      toast.error("Error verifying venue");
     }
   };
 
   const handleDeleteVenue = async (venueId: string, venueName: string) => {
-    if (!confirm(`Are you sure you want to delete "${venueName}"? This action cannot be undone and will also delete all associated shows.`)) {
+    if (
+      !confirm(
+        `Are you sure you want to delete "${venueName}"? This action cannot be undone and will also delete all associated shows.`,
+      )
+    ) {
       return;
     }
 
     try {
       const response = await fetch(`/api/admin/venues/${venueId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (response.ok) {
         // Remove from local state
-        setVenues(venues.filter(venue => venue.id !== venueId));
-        toast.success('Venue deleted successfully');
+        setVenues(venues.filter((venue) => venue.id !== venueId));
+        toast.success("Venue deleted successfully");
       } else {
-        toast.error('Failed to delete venue');
+        toast.error("Failed to delete venue");
       }
     } catch (error) {
-      console.error('Delete error:', error);
-      toast.error('Error deleting venue');
+      console.error("Delete error:", error);
+      toast.error("Error deleting venue");
     }
   };
 
   const handleUpdateLocation = async (venueId: string, venueName: string) => {
     try {
-      const response = await fetch(`/api/admin/venues/${venueId}/update-location`, {
-        method: 'POST',
-      });
+      const response = await fetch(
+        `/api/admin/venues/${venueId}/update-location`,
+        {
+          method: "POST",
+        },
+      );
 
       if (response.ok) {
         toast.success(`Location updated for ${venueName}`);
         // Refresh the venues data
         window.location.reload();
       } else {
-        toast.error('Failed to update location');
+        toast.error("Failed to update location");
       }
     } catch (error) {
-      console.error('Update location error:', error);
-      toast.error('Error updating location');
+      console.error("Update location error:", error);
+      toast.error("Error updating location");
     }
   };
 
@@ -232,11 +243,18 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
           </p>
         </div>
         <div className="flex flex-col gap-2 sm:flex-row sm:gap-2">
-          <Button variant="outline" className="w-full sm:w-auto" onClick={handleExportVenues}>
+          <Button
+            variant="outline"
+            className="w-full sm:w-auto"
+            onClick={handleExportVenues}
+          >
             <Download className="mr-2 h-4 w-4" />
             Export Venues
           </Button>
-          <Button className="w-full sm:w-auto" onClick={() => toast.info('Add venue feature coming soon')}>
+          <Button
+            className="w-full sm:w-auto"
+            onClick={() => toast.info("Add venue feature coming soon")}
+          >
             <Plus className="mr-2 h-4 w-4" />
             Add Venue
           </Button>
@@ -377,7 +395,8 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
                         </p>
                         {venue.latitude && venue.longitude && (
                           <p className="mt-1 text-muted-foreground text-xs">
-                            {venue.latitude.toFixed(4)}, {venue.longitude.toFixed(4)}
+                            {venue.latitude.toFixed(4)},{" "}
+                            {venue.longitude.toFixed(4)}
                           </p>
                         )}
                       </div>
@@ -394,7 +413,9 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
-                        <Badge variant={venue.verified ? "default" : "secondary"}>
+                        <Badge
+                          variant={venue.verified ? "default" : "secondary"}
+                        >
                           {venue.verified ? (
                             <>
                               <CheckCircle className="mr-1 h-3 w-3" />
@@ -407,7 +428,9 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
                             </>
                           )}
                         </Badge>
-                        {(!venue.capacity || !venue.latitude || !venue.longitude) && (
+                        {(!venue.capacity ||
+                          !venue.latitude ||
+                          !venue.longitude) && (
                           <Badge variant="outline" className="text-orange-600">
                             Incomplete
                           </Badge>
@@ -468,25 +491,39 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
                               View Venue Page
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => toast.info('Edit venue feature coming soon')}>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              toast.info("Edit venue feature coming soon")
+                            }
+                          >
                             <Edit className="mr-2 h-4 w-4" />
                             Edit Venue
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           {!venue.verified && (
-                            <DropdownMenuItem onClick={() => handleVerifyVenue(venue.id, venue.name)}>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleVerifyVenue(venue.id, venue.name)
+                              }
+                            >
                               <CheckCircle className="mr-2 h-4 w-4" />
                               Mark as Verified
                             </DropdownMenuItem>
                           )}
-                          <DropdownMenuItem onClick={() => handleUpdateLocation(venue.id, venue.name)}>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleUpdateLocation(venue.id, venue.name)
+                            }
+                          >
                             <MapPin className="mr-2 h-4 w-4" />
                             Update Location
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             className="text-destructive"
-                            onClick={() => handleDeleteVenue(venue.id, venue.name)}
+                            onClick={() =>
+                              handleDeleteVenue(venue.id, venue.name)
+                            }
                           >
                             <Trash2 className="mr-2 h-4 w-4" />
                             Delete Venue

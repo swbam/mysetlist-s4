@@ -1,74 +1,90 @@
-import { NextRequest, NextResponse } from "next/server";
-import { db, importLogs, artists } from "@repo/database";
-import { eq, desc, and, or } from "drizzle-orm";
+import { artists, db, importLogs } from "@repo/database";
+import { and, desc, eq, or } from "drizzle-orm";
 import { like } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "~/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
   try {
     // Check admin authorization
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    // For now, allow all authenticated users (you can add admin check later)
-    // if (!user) {
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    // }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check admin authorization
+    const { data: userProfile } = await supabase
+      .from("user_profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
+
+    if (userProfile?.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const searchParams = request.nextUrl.searchParams;
     const artistId = searchParams.get("artistId");
     const artistName = searchParams.get("artistName");
     const level = searchParams.get("level");
     const stage = searchParams.get("stage");
-    const limit = parseInt(searchParams.get("limit") || "1000");
+    const limit = Number.parseInt(searchParams.get("limit") || "1000");
 
     // Build query conditions
     const conditions: any[] = [];
-    
+
     if (artistId) {
       // First, try to find the artist by internal ID or ticketmaster ID
       let possibleArtistIds = [artistId]; // Start with the provided ID
-      
+
       // If it's a UUID (internal ID), look up the ticketmaster ID
-      if (artistId.length === 36 && artistId.includes('-')) {
+      if (artistId.length === 36 && artistId.includes("-")) {
         try {
           const artist = await db
             .select({ tmAttractionId: artists.tmAttractionId })
             .from(artists)
             .where(eq(artists.id, artistId))
             .limit(1);
-          
+
           if (artist[0]?.tmAttractionId) {
             possibleArtistIds.push(artist[0].tmAttractionId);
           }
         } catch (error) {
-          console.warn('Failed to lookup ticketmaster ID for artist:', artistId);
+          console.warn(
+            "Failed to lookup ticketmaster ID for artist:",
+            artistId,
+          );
         }
       }
-      
+
       // Add temp ID pattern
       possibleArtistIds.push(`tmp_${artistId}`);
-      
+
       // Build condition to match any of the possible IDs
-      const orConditions = possibleArtistIds.map(id => eq(importLogs.artistId, id));
+      const orConditions = possibleArtistIds.map((id) =>
+        eq(importLogs.artistId, id),
+      );
       if (orConditions.length > 0) {
-        const orCondition = orConditions.length === 1 
-          ? orConditions[0] 
-          : or(...orConditions);
+        const orCondition =
+          orConditions.length === 1 ? orConditions[0] : or(...orConditions);
         if (orCondition) {
           conditions.push(orCondition);
         }
       }
     }
-    
+
     if (artistName) {
       conditions.push(like(importLogs.artistName, `%${artistName}%`));
     }
-    
+
     if (level) {
       conditions.push(eq(importLogs.level, level as any));
     }
-    
+
     if (stage) {
       conditions.push(eq(importLogs.stage, stage));
     }
@@ -81,11 +97,12 @@ export async function GET(request: NextRequest) {
       .limit(limit);
 
     // Apply conditions if any
-    const logs = conditions.length > 0 
-      ? await query.where(and(...conditions))
-      : await query;
+    const logs =
+      conditions.length > 0
+        ? await query.where(and(...conditions))
+        : await query;
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       logs,
       count: logs.length,
     });
@@ -93,7 +110,7 @@ export async function GET(request: NextRequest) {
     console.error("Failed to fetch import logs:", error);
     return NextResponse.json(
       { error: "Failed to fetch import logs" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

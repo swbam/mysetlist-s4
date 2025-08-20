@@ -55,11 +55,16 @@ export const RealtimeStatus = React.memo(function RealtimeStatus() {
           <div
             className={cn(
               "flex items-center gap-1.5 rounded-full px-2 py-1 font-medium text-xs transition-all duration-300",
-              connectionStatus === "connected" && "bg-green-500/10 border border-green-200/50",
-              connectionStatus === "connecting" && "bg-yellow-500/10 border border-yellow-200/50",
-              connectionStatus === "disconnected" && "bg-orange-500/10 border border-orange-200/50",
-              connectionStatus === "error" && "bg-red-500/10 border border-red-200/50",
-              connectionStatus === "disabled" && "bg-gray-500/10 border border-gray-200/50",
+              connectionStatus === "connected" &&
+                "bg-green-500/10 border border-green-200/50",
+              connectionStatus === "connecting" &&
+                "bg-yellow-500/10 border border-yellow-200/50",
+              connectionStatus === "disconnected" &&
+                "bg-orange-500/10 border border-orange-200/50",
+              connectionStatus === "error" &&
+                "bg-red-500/10 border border-red-200/50",
+              connectionStatus === "disabled" &&
+                "bg-gray-500/10 border border-gray-200/50",
             )}
           >
             <Icon className={cn("h-3 w-3", config.className)} />
@@ -83,7 +88,9 @@ export const RealtimeStatus = React.memo(function RealtimeStatus() {
               <p>❌ Configuration error. Check console for details.</p>
             )}
             {connectionStatus === "disabled" && (
-              <p>⚠️ Real-time features unavailable. Refresh to see latest changes.</p>
+              <p>
+                ⚠️ Real-time features unavailable. Refresh to see latest changes.
+              </p>
             )}
           </div>
         </TooltipContent>

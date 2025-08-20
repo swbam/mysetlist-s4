@@ -117,19 +117,12 @@ export default function ReportItem({
           });
 
           // Delete the actual content
-          const table =
-            report.content_type === "setlist"
-              ? "setlists"
-              : report.content_type === "review"
-                ? "venue_reviews"
-                : report.content_type === "photo"
-                  ? "venue_photos"
-                  : "venue_insider_tips";
-
-          await supabase
-            .from(table)
-            .update({ moderation_status: "deleted" })
-            .eq("id", report.content_id);
+          if (report.content_type === "setlist") {
+            await supabase
+              .from("setlists")
+              .update({ moderation_status: "deleted" })
+              .eq("id", report.content_id);
+          }
           break;
         }
 
@@ -302,23 +295,23 @@ export default function ReportItem({
                   )}
                 </div>
               </div>
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 variant="outline"
                 onClick={() => {
                   // Generate URL based on content type
-                  let url = '';
+                  let url = "";
                   switch (report.content_type) {
-                    case 'setlist':
+                    case "setlist":
                       url = `/setlists/${report.content_id}`;
                       break;
-                    case 'review':
+                    case "review":
                       url = `/admin/content/reviews/${report.content_id}`;
                       break;
-                    case 'photo':
+                    case "photo":
                       url = `/admin/content/photos/${report.content_id}`;
                       break;
-                    case 'tip':
+                    case "tip":
                       url = `/admin/content/tips/${report.content_id}`;
                       break;
                     default:
@@ -329,7 +322,7 @@ export default function ReportItem({
                       });
                       return;
                   }
-                  window.open(url, '_blank');
+                  window.open(url, "_blank");
                 }}
               >
                 <Eye className="mr-1 h-4 w-4" />
