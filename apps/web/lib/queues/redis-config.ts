@@ -1,5 +1,4 @@
 import { Redis as UpstashRedis } from "@upstash/redis";
-import type { ConnectionOptions } from "bullmq";
 import { Redis } from "ioredis";
 
 // Build config from environment (supports standard REDIS_URL or discrete settings)
@@ -39,28 +38,7 @@ export const createRedisClient = () => {
   } as any);
 };
 
-// BullMQ connection configuration (derived from same env)
-export const bullMQConnection: ConnectionOptions = REDIS_URL
-  ? {
-      host: process.env["REDIS_HOST"] || "127.0.0.1",
-      port: parsedPort || 6379,
-      password: process.env["REDIS_PASSWORD"],
-      tls: REDIS_TLS === "true" ? {} : undefined,
-      connectTimeout: 30000,
-      lazyConnect: true,
-      keepAlive: 10000,
-      maxRetriesPerRequest: null,
-      enableReadyCheck: false,
-      retryStrategy: (times: number) => Math.min(times * 50, 2000),
-    }
-  : ({
-      host: REDIS_HOST || "127.0.0.1",
-      port: parsedPort || 6379,
-      username: REDIS_USERNAME,
-      password: REDIS_PASSWORD,
-      tls: REDIS_TLS === "true" ? {} : undefined,
-      ...(baseOptions as any),
-    } as any);
+// BullMQ connection configuration removed - using SimpleQueue with Upstash Redis instead
 
 // Singleton Redis client for pub/sub
 let pubClient: Redis | null = null;

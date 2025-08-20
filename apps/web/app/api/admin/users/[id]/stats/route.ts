@@ -1,9 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "~/lib/supabase/server";
 
+type RouteParams = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: RouteParams,
 ) {
   try {
     const supabase = await createClient();
@@ -26,7 +32,7 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const userId = params.id;
+    const { id: userId } = await params;
 
     // Get user statistics
     const [setlistsResult, votesResult] = await Promise.all([

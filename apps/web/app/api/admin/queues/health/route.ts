@@ -37,13 +37,23 @@ export async function GET(request: NextRequest) {
       Object.values(QueueName).map(async (queueName) => {
         try {
           const queue = queueManager.getQueue(queueName);
-          const counts = await queue.getJobCounts();
-          const isPaused = await queue.isPaused();
-
-          // Get sample of waiting jobs
-          const waitingJobs = await queue.getWaiting(0, 5);
-          const activeJobs = await queue.getActive(0, 5);
-          const failedJobs = await queue.getFailed(0, 5);
+          // SimpleQueue only has basic count method
+          const waitingCount = await queue.getWaiting();
+          
+          // SimpleQueue doesn't support detailed job counts or job sampling
+          const counts = {
+            waiting: waitingCount,
+            active: 0, // SimpleQueue processes immediately
+            completed: 0, // Not tracked in SimpleQueue
+            failed: 0, // Not tracked in SimpleQueue
+            delayed: 0, // Not tracked in SimpleQueue
+          };
+          const isPaused = false; // SimpleQueue doesn't support pause/resume
+          
+          // SimpleQueue doesn't expose job details
+          const waitingJobs: any[] = [];
+          const activeJobs: any[] = [];
+          const failedJobs: any[] = [];
 
           return {
             name: queueName,
@@ -134,7 +144,7 @@ export async function GET(request: NextRequest) {
     try {
       // Try to create a simple queue operation to test Redis
       const testQueue = queueManager.getQueue(QueueName.ARTIST_IMPORT);
-      const isPaused = await testQueue.isPaused();
+      await testQueue.count(); // Use count() instead of isPaused()
       redisHealth = "connected";
     } catch (error) {
       redisHealth = "disconnected";

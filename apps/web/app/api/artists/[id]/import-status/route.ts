@@ -6,6 +6,12 @@ import { ProgressBus } from "~/lib/services/progress/ProgressBus";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+type RouteParams = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
 /**
  * Calculate estimated time remaining based on current progress and elapsed time
  */
@@ -37,9 +43,9 @@ function calculateEstimatedTime(status: any): number | null {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: RouteParams,
 ) {
-  const artistId = params.id;
+  const { id: artistId } = await params;
 
   if (!artistId) {
     return NextResponse.json(

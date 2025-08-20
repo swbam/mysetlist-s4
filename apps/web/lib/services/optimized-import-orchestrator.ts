@@ -17,7 +17,7 @@ import {
   TicketmasterClient,
   VenueSyncService,
 } from "@repo/external-apis";
-import type { Redis } from "ioredis";
+// Redis type import removed - using SimpleQueue instead
 import { updateImportStatus } from "~/lib/import-status";
 
 // ================================

@@ -10,11 +10,17 @@ import {
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+type RouteParams = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: RouteParams,
 ) {
-  const artistId = params.id;
+  const { id: artistId } = await params;
 
   // Create a ReadableStream for SSE
   const encoder = new TextEncoder();

@@ -13,15 +13,15 @@ import { signIn, signInWithProvider } from "../actions";
 export const dynamic = "force-dynamic";
 
 interface SignInPageProps {
-  searchParams: {
+  searchParams: Promise<{
     message?: string;
     error?: string;
     returnUrl?: string;
-  };
+  }>;
 }
 
 export default async function SignInPage({ searchParams }: SignInPageProps) {
-  const params = searchParams;
+  const params = await searchParams;
 
   const handleSpotifySignIn = async () => {
     "use server";

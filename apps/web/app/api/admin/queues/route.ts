@@ -58,25 +58,29 @@ export async function POST(request: NextRequest) {
 
     switch (action) {
       case "pause":
-        await queueManager.pauseQueue(queueName);
-        return NextResponse.json({ success: true, action: "paused" });
+        // SimpleQueue doesn't support pause/resume operations
+        return NextResponse.json({ 
+          success: false, 
+          error: "Pause operation not supported by SimpleQueue",
+          message: "SimpleQueue processes jobs immediately and cannot be paused"
+        });
 
       case "resume":
-        await queueManager.resumeQueue(queueName);
-        return NextResponse.json({ success: true, action: "resumed" });
+        // SimpleQueue doesn't support pause/resume operations
+        return NextResponse.json({ 
+          success: false, 
+          error: "Resume operation not supported by SimpleQueue",
+          message: "SimpleQueue is always running and cannot be resumed"
+        });
 
       case "clean": {
-        const { grace = 0, limit = 1000, status } = options || {};
-        const cleaned = await queueManager.cleanQueue(
-          queueName,
-          grace,
-          limit,
-          status,
-        );
+        // SimpleQueue's cleanQueue method only accepts queueName
+        await queueManager.cleanQueue(queueName);
+        const cleaned = 0; // SimpleQueue obliterates everything, no count returned
         return NextResponse.json({
           success: true,
           action: "cleaned",
-          jobsCleaned: cleaned.length,
+          jobsCleaned: cleaned,
         });
       }
 

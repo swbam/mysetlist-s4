@@ -8,11 +8,17 @@ import {
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+type RouteParams = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } },
+  { params }: RouteParams,
 ) {
-  const artistId = params.id;
+  const { id: artistId } = await params;
 
   if (!artistId) {
     return NextResponse.json(

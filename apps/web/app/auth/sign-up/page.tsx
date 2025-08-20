@@ -14,9 +14,9 @@ export const dynamic = "force-dynamic";
 export default async function SignUpPage({
   searchParams,
 }: {
-  searchParams: { message?: string; error?: string };
+  searchParams: Promise<{ message?: string; error?: string }>;
 }) {
-  const params = searchParams;
+  const params = await searchParams;
   const handleSpotifySignIn = async () => {
     "use server";
     await signInWithProvider("spotify");

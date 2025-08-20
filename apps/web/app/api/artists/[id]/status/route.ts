@@ -6,8 +6,14 @@ import { ProgressBus } from "~/lib/services/progress/ProgressBus";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
-  const artistId = params.id;
+type RouteParams = {
+  params: Promise<{
+    id: string;
+  }>;
+};
+
+export async function GET(_: Request, { params }: RouteParams) {
+  const { id: artistId } = await params;
 
   try {
     // First try to get status from ProgressBus (real-time)

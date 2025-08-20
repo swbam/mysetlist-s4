@@ -5,14 +5,14 @@ import { type NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id: artistId } = params;
+    const { id: artistId } = await params;
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
     const limit = Math.min(Number(searchParams.get("limit")) || 50, 100);
