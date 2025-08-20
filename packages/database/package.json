@@ -8,7 +8,8 @@
     ".": "./index.ts",
     "./client": "./src/supabase-client.ts",
     "./server": "./src/supabase.ts",
-    "./admin": "./src/supabase-admin.ts"
+    "./admin": "./src/supabase-admin.ts",
+    "./schema": "./src/schema/index.ts"
   },
   "scripts": {
     "push": "drizzle-kit push:pg",

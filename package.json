@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "engines": {
-    "node": "20.x",
+    "node": ">=18.0.0",
     "pnpm": ">=9.0.0"
   },
   "scripts": {
@@ -18,7 +18,7 @@
     "format": "biome check . --write",
     "format:check": "biome check .",
     "db:generate": "cd packages/database && npx drizzle-kit generate",
-    "db:migrate": "cd packages/database && npx drizzle-kit migrate", 
+    "db:migrate": "cd packages/database && npx drizzle-kit migrate",
     "db:push": "cd packages/database && npx drizzle-kit push",
     "db:studio": "cd packages/database && npx drizzle-kit studio",
     "db:pull": "cd packages/database && npx drizzle-kit pull",
@@ -42,5 +42,8 @@
     "@repo/typescript-config": "workspace:*",
     "turbo": "^2.3.3",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1"
   }
 }

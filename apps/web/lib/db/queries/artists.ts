@@ -14,7 +14,9 @@ import {
   setlists,
   songs,
   showArtists,
-  syncJobs
+  syncJobs,
+  importStatus,
+  importLogs
 } from "@repo/database/schema";
 import { 
   eq, 
@@ -685,6 +687,136 @@ export class ArtistQueries {
       return result;
     });
   }
+
+  /**
+   * Get comprehensive import status for an artist
+   */
+  static async getArtistImportStatus(artistId: string) {
+    return withPerformanceTracking('getArtistImportStatus', async () => {
+      const result = await db
+        .select({
+          importStatus: importStatus,
+          artist: {
+            id: artists.id,
+            name: artists.name,
+            slug: artists.slug
+          }
+        })
+        .from(importStatus)
+        .leftJoin(artists, eq(importStatus.artistId, artists.id))
+        .where(eq(importStatus.artistId, artistId))
+        .limit(1);
+
+      return result[0] || null;
+    });
+  }
+
+  /**
+   * Get import logs for an artist with pagination and filtering
+   */
+  static async getArtistImportLogs(
+    artistId: string,
+    options: {
+      limit?: number;
+      offset?: number;
+      level?: 'info' | 'warning' | 'error' | 'success' | 'debug';
+      stage?: string;
+      jobId?: string;
+    } = {}
+  ) {
+    const {
+      limit = 50,
+      offset = 0,
+      level,
+      stage,
+      jobId
+    } = options;
+
+    return withPerformanceTracking('getArtistImportLogs', async () => {
+      // Add additional filters
+      const conditions = [eq(importLogs.artistId, artistId)];
+      
+      if (level) {
+        conditions.push(eq(importLogs.level, level));
+      }
+      
+      if (stage) {
+        conditions.push(eq(importLogs.stage, stage));
+      }
+      
+      if (jobId) {
+        conditions.push(eq(importLogs.jobId, jobId));
+      }
+
+      const result = await db
+        .select({
+          log: importLogs
+        })
+        .from(importLogs)
+        .where(and(...conditions))
+        .orderBy(desc(importLogs.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+      return result.map(r => r.log);
+    });
+  }
+
+  /**
+   * Create or update import status (upsert)
+   */
+  static async upsertImportStatus(
+    artistId: string,
+    data: {
+      stage: string;
+      percentage?: number;
+      message?: string;
+      error?: string;
+      jobId?: string;
+      totalSongs?: number;
+      totalShows?: number;
+      totalVenues?: number;
+      artistName?: string;
+      startedAt?: Date;
+      phaseTimings?: object;
+    }
+  ) {
+    return withPerformanceTracking('upsertImportStatus', async () => {
+      // Try to find existing status
+      const existing = await db
+        .select()
+        .from(importStatus)
+        .where(eq(importStatus.artistId, artistId))
+        .limit(1);
+
+      const statusData = {
+        artistId,
+        ...data,
+        updatedAt: new Date(),
+        ...(data.stage === 'completed' ? { completedAt: new Date() } : {})
+      };
+
+      if (existing.length > 0) {
+        // Update existing
+        const result = await db
+          .update(importStatus)
+          .set(statusData)
+          .where(eq(importStatus.artistId, artistId))
+          .returning();
+        return result[0];
+      } else {
+        // Create new
+        const result = await db
+          .insert(importStatus)
+          .values({
+            ...statusData,
+            createdAt: new Date()
+          })
+          .returning();
+        return result[0];
+      }
+    });
+  }
 }
 
 /**
@@ -719,6 +851,12 @@ export const CachedArtistQueries = {
     ArtistQueries.getArtistBySlug,
     (slug) => `artist:slug:${slug}`,
     900 // 15 minutes
+  ),
+
+  getArtistImportStatus: withCache(
+    ArtistQueries.getArtistImportStatus,
+    (artistId) => `artist:import:${artistId}`,
+    60 // 1 minute - short cache for real-time updates
   )
 };
 

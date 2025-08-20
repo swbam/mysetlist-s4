@@ -1,6 +1,6 @@
 "use client";
 
-import { createSupabaseBrowserClient, realtimeManager } from "@repo/database";
+import { createClient } from "@supabase/supabase-js";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface ArtistRealtimeData {
@@ -12,6 +12,19 @@ export interface ArtistRealtimeData {
   isLoading: boolean;
   error?: string;
 }
+
+// Client-side Supabase client creation
+const createSupabaseClient = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn("Supabase environment variables not found, realtime features disabled");
+    return null;
+  }
+  
+  return createClient(supabaseUrl, supabaseAnonKey);
+};
 
 export function useArtistRealtime(
   artistId: string,
@@ -69,32 +82,48 @@ export function useArtistRealtime(
 
   // Subscribe to artist updates
   useEffect(() => {
-    // Subscribe to artist table changes
-    const artistChannel = realtimeManager.subscribeToArtistFollowers(
-      artistId,
-      (payload) => {
-        if (payload.eventType === "UPDATE" && payload.new) {
-          setData((prev) => ({
-            ...prev,
-            artist: { ...prev.artist, ...payload.new },
-            followers: payload.new.followerCount || prev.followers,
-          }));
-        } else if (payload.eventType === "INSERT") {
-          // New data imported, refresh everything
-          refreshArtistData();
-          setSyncProgress((prev) => ({
-            ...prev,
-            isImporting: false,
-            stage: "completed",
-          }));
-        }
-      },
-    );
+    const supabase = createSupabaseClient();
+    
+    // If no supabase client, skip realtime features
+    if (!supabase) {
+      console.warn("Realtime features disabled - missing Supabase configuration");
+      return;
+    }
+
+    // Subscribe to artist followers updates
+    const artistFollowersChannelName = `artist_followers:${artistId}`;
+    const artistFollowersChannel = supabase
+      .channel(artistFollowersChannelName)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "user_follows_artists",
+          filter: `artist_id=eq.${artistId}`,
+        },
+        (payload: any) => {
+          if (payload.eventType === "UPDATE" && payload.new) {
+            setData((prev) => ({
+              ...prev,
+              artist: { ...prev.artist, ...payload.new },
+              followers: payload.new.followerCount || prev.followers,
+            }));
+          } else if (payload.eventType === "INSERT") {
+            // New data imported, refresh everything
+            refreshArtistData();
+            setSyncProgress((prev) => ({
+              ...prev,
+              isImporting: false,
+              stage: "completed",
+            }));
+          }
+        },
+      )
+      .subscribe();
 
     // Subscribe to shows updates for this artist
     const showsChannelName = `artist_shows:${artistId}`;
-    const supabase = createSupabaseBrowserClient();
-
     const showsChannel = supabase
       .channel(showsChannelName)
       .on(
@@ -145,10 +174,10 @@ export function useArtistRealtime(
         const response = await fetch(`/api/sync/status?artistId=${artistId}`);
         if (response.ok) {
           const syncData = await response.json();
-          if (syncData.isActive) {
+          if (syncData.isActive || syncData.isImporting) {
             setSyncProgress({
               isImporting: true,
-              stage: syncData.currentStage || "importing",
+              stage: syncData.stage || syncData.currentStage || "importing",
               progress: syncData.progress || 0,
             });
           }
@@ -162,8 +191,10 @@ export function useArtistRealtime(
 
     // Cleanup subscriptions
     return () => {
-      realtimeManager.unsubscribe(`artist_followers:${artistId}`);
-      supabase.removeChannel(showsChannel);
+      if (supabase) {
+        supabase.removeChannel(artistFollowersChannel);
+        supabase.removeChannel(showsChannel);
+      }
     };
   }, [artistId, refreshArtistData]);
 
@@ -204,6 +235,6 @@ export function useArtistRealtime(
     data,
     syncProgress,
     refreshData: refreshArtistData,
-    isConnected: realtimeManager.getConnectionStatus() === "connected",
+    isConnected: true, // Simplified for now, could check supabase connection if needed
   };
 }

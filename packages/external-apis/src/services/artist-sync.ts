@@ -5,14 +5,6 @@ import { TicketmasterClient } from "../clients/ticketmaster";
 import { eq } from "@repo/database";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
 
-// Helper function to normalize song titles for deduplication
-function normalizeTitle(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^\w\s]/g, "") // Remove punctuation
-    .replace(/\s+/g, " ") // Normalize whitespace
-    .trim();
-}
 
 export class ArtistSyncService {
   private spotifyClient: SpotifyClient;
@@ -298,7 +290,7 @@ export class ArtistSyncService {
     return { totalSongs: 0, totalAlbums: 0, processedAlbums: 0 } as any;
   }
 
-  private generateSlug(name: string): string {
+  private generateSlug(name: string, id?: string): string {
     return name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
@@ -306,7 +298,7 @@ export class ArtistSyncService {
   }
 
   private isArtistNameMatch(name1: string, name2: string): boolean {
-    const normalize = (name: string) =>
+    const normalize = (name: string, id?: string) =>
       name.toLowerCase().replace(/[^a-z0-9]/g, "");
 
     const normalized1 = normalize(name1);

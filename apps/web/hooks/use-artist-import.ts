@@ -153,7 +153,15 @@ export function useArtistImport(
         }
       } catch (err) {
         console.error("[useArtistImport] Polling failed:", err);
-        // Don't set error state for polling failures, just continue trying
+        
+        // Check if it's a network error
+        if (err instanceof TypeError && err.message.includes('fetch')) {
+          console.log("[useArtistImport] Network error detected, will retry polling");
+          // Don't set error state for network failures, just continue trying
+        } else {
+          // For other errors, continue but log them
+          console.warn("[useArtistImport] Polling error (continuing):", err);
+        }
       }
     }, pollingInterval);
   }, [pollingInterval, updateEstimatedTime]);

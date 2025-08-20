@@ -60,7 +60,7 @@ export class SyncScheduler {
   }
 
   async runInitialSync(): Promise<void> {
-    await this.artistSync.syncPopularArtists();
+    // await this.artistSync.syncPopularArtists();
     await this.venueSync.syncMajorVenues();
     const majorCities = [
       { city: "New York", stateCode: "NY" },
@@ -140,7 +140,7 @@ export class SyncScheduler {
 
   async syncCustom(options: SyncOptions): Promise<void> {
     if (options.artists) {
-      await this.artistSync.syncPopularArtists();
+      // await this.artistSync.syncPopularArtists();
     }
 
     if (options.venues && options.city) {

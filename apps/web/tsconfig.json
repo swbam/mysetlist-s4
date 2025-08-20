@@ -9,6 +9,12 @@
       "@/lib/*": ["./lib/*"],
       "@/app/*": ["./app/*"],
       "@/hooks/*": ["./hooks/*"],
+      "~/*": ["./*"],
+      "~/components/*": ["./components/*"],
+      "~/lib/*": ["./lib/*"],
+      "~/app/*": ["./app/*"],
+      "~/hooks/*": ["./hooks/*"],
+      "~/types/*": ["./types/*"],
       "@repo/*": ["../../packages/*"]
     }
   },

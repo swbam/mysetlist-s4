@@ -1,5 +1,5 @@
 import { Queue, Worker, QueueEvents, Job, JobsOptions, RepeatOptions } from "bullmq";
-import { bullMQConnection } from "./redis-config.js";
+import { bullMQConnection } from "./redis-config";
 
 // Queue names with purpose
 export enum QueueName {

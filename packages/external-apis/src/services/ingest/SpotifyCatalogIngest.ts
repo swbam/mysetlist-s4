@@ -1,7 +1,6 @@
 import { db } from "@repo/database";
 import { songs, artistSongs } from "@repo/database";
 import { SpotifyClient } from "../../clients/spotify";
-import { eq } from "drizzle-orm";
 import type { SpotifyTrack } from "../../types/spotify";
 
 const LIVENESS_THRESHOLD = 0.8; // > 0.8 considered likely-live

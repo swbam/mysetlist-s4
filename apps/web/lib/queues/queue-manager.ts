@@ -160,7 +160,7 @@ export class QueueManager {
   private constructor() {}
 
   static getInstance(): QueueManager {
-    if (\!QueueManager.instance) {
+    if (!QueueManager.instance) {
       QueueManager.instance = new QueueManager();
     }
     return QueueManager.instance;
@@ -168,7 +168,7 @@ export class QueueManager {
 
   // Get or create a queue
   getQueue(name: QueueName): Queue {
-    if (\!this.queues.has(name)) {
+    if (!this.queues.has(name)) {
       const config = queueConfigs[name];
       const queue = new Queue(name, {
         connection: bullMQConnection,
@@ -181,7 +181,7 @@ export class QueueManager {
       });
       this.queues.set(name, queue);
     }
-    return this.queues.get(name)\!;
+    return this.queues.get(name)!;
   }
 
   // Create a worker for a queue
@@ -191,7 +191,7 @@ export class QueueManager {
   ): Worker {
     if (this.workers.has(name)) {
       console.warn(`Worker for queue ${name} already exists`);
-      return this.workers.get(name)\!;
+      return this.workers.get(name)!;
     }
 
     const config = queueConfigs[name];
@@ -219,13 +219,13 @@ export class QueueManager {
 
   // Get queue events for monitoring
   getQueueEvents(name: QueueName): QueueEvents {
-    if (\!this.events.has(name)) {
+    if (!this.events.has(name)) {
       const events = new QueueEvents(name, {
         connection: bullMQConnection,
       });
       this.events.set(name, events);
     }
-    return this.events.get(name)\!;
+    return this.events.get(name)!;
   }
 
   // Add a job to a queue

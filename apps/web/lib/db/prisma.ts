@@ -14,9 +14,11 @@ import type {
   UserFollowsArtists,
   Setlists,
   SyncJobs,
-  UserProfiles 
+  UserProfiles,
+  ImportStatus,
+  ImportLog 
 } from "@repo/database/schema";
-import { artists, shows, venues, users, userFollowsArtists, setlists, syncJobs, userProfiles } from "@repo/database/schema";
+import { artists, shows, venues, users, userFollowsArtists, setlists, syncJobs, userProfiles, importStatus, importLogs } from "@repo/database/schema";
 import { eq, and, desc, asc, sql, ilike, count, or } from "drizzle-orm";
 
 /**
@@ -444,6 +446,197 @@ class PrismaClient {
         .where(eq(syncJobs.id, params.where.id))
         .returning();
       return results[0];
+    }
+  };
+
+  /**
+   * Import status operations for progress tracking
+   */
+  importStatus = {
+    findUnique: async (params: { where: { id?: string; artistId?: string } }) => {
+      const { where } = params;
+      let query = this._db.select().from(importStatus);
+      
+      if (where.id) {
+        query = query.where(eq(importStatus.id, where.id));
+      } else if (where.artistId) {
+        query = query.where(eq(importStatus.artistId, where.artistId));
+      }
+      
+      const results = await query.limit(1);
+      return results[0] || null;
+    },
+
+    findMany: async (params?: {
+      where?: Partial<ImportStatus>;
+      orderBy?: { [K in keyof ImportStatus]?: 'asc' | 'desc' };
+      take?: number;
+      skip?: number;
+    }) => {
+      let query = this._db.select().from(importStatus);
+      
+      if (params?.where) {
+        const conditions = Object.entries(params.where)
+          .filter(([_, value]) => value !== undefined)
+          .map(([key, value]) => eq(importStatus[key as keyof ImportStatus], value));
+        
+        if (conditions.length > 0) {
+          query = query.where(and(...conditions));
+        }
+      }
+      
+      if (params?.orderBy) {
+        const orderByEntries = Object.entries(params.orderBy);
+        if (orderByEntries.length > 0) {
+          const [field, direction] = orderByEntries[0];
+          query = query.orderBy(
+            direction === 'desc' 
+              ? desc(importStatus[field as keyof ImportStatus])
+              : asc(importStatus[field as keyof ImportStatus])
+          );
+        }
+      }
+      
+      if (params?.skip) {
+        query = query.offset(params.skip);
+      }
+      
+      if (params?.take) {
+        query = query.limit(params.take);
+      }
+      
+      return query;
+    },
+
+    create: async (params: { data: Omit<ImportStatus, 'id' | 'createdAt' | 'updatedAt'> }) => {
+      const results = await this._db.insert(importStatus).values(params.data).returning();
+      return results[0];
+    },
+
+    update: async (params: {
+      where: { id?: string; artistId?: string };
+      data: Partial<Omit<ImportStatus, 'id' | 'createdAt'>>;
+    }) => {
+      const { where, data } = params;
+      let query = this._db.update(importStatus).set({ ...data, updatedAt: new Date() });
+      
+      if (where.id) {
+        query = query.where(eq(importStatus.id, where.id));
+      } else if (where.artistId) {
+        query = query.where(eq(importStatus.artistId, where.artistId));
+      }
+      
+      const results = await query.returning();
+      return results[0];
+    },
+
+    upsert: async (params: {
+      where: { artistId: string };
+      create: Omit<ImportStatus, 'id' | 'createdAt' | 'updatedAt'>;
+      update: Partial<Omit<ImportStatus, 'id' | 'createdAt' | 'artistId'>>;
+    }) => {
+      // Try to find existing record
+      const existing = await this.importStatus.findUnique({ where: { artistId: params.where.artistId } });
+      
+      if (existing) {
+        // Update existing record
+        return this.importStatus.update({
+          where: { id: existing.id },
+          data: params.update
+        });
+      } else {
+        // Create new record
+        return this.importStatus.create({ data: params.create });
+      }
+    },
+
+    delete: async (params: { where: { id?: string; artistId?: string } }) => {
+      const { where } = params;
+      let query = this._db.delete(importStatus);
+      
+      if (where.id) {
+        query = query.where(eq(importStatus.id, where.id));
+      } else if (where.artistId) {
+        query = query.where(eq(importStatus.artistId, where.artistId));
+      }
+      
+      const results = await query.returning();
+      return results[0];
+    }
+  };
+
+  /**
+   * Import logs operations for detailed tracking
+   */
+  importLog = {
+    findMany: async (params?: {
+      where?: Partial<ImportLog>;
+      orderBy?: { [K in keyof ImportLog]?: 'asc' | 'desc' };
+      take?: number;
+      skip?: number;
+    }) => {
+      let query = this._db.select().from(importLogs);
+      
+      if (params?.where) {
+        const conditions = Object.entries(params.where)
+          .filter(([_, value]) => value !== undefined)
+          .map(([key, value]) => eq(importLogs[key as keyof ImportLog], value));
+        
+        if (conditions.length > 0) {
+          query = query.where(and(...conditions));
+        }
+      }
+      
+      if (params?.orderBy) {
+        const orderByEntries = Object.entries(params.orderBy);
+        if (orderByEntries.length > 0) {
+          const [field, direction] = orderByEntries[0];
+          query = query.orderBy(
+            direction === 'desc' 
+              ? desc(importLogs[field as keyof ImportLog])
+              : asc(importLogs[field as keyof ImportLog])
+          );
+        }
+      }
+      
+      if (params?.skip) {
+        query = query.offset(params.skip);
+      }
+      
+      if (params?.take) {
+        query = query.limit(params.take);
+      }
+      
+      return query;
+    },
+
+    create: async (params: { data: Omit<ImportLog, 'id' | 'createdAt'> }) => {
+      const results = await this._db.insert(importLogs).values(params.data).returning();
+      return results[0];
+    },
+
+    createMany: async (params: { data: Omit<ImportLog, 'id' | 'createdAt'>[] }) => {
+      const results = await this._db.insert(importLogs).values(params.data).returning();
+      return results;
+    },
+
+    deleteMany: async (params: { where: { artistId?: string; jobId?: string } }) => {
+      const { where } = params;
+      let query = this._db.delete(importLogs);
+      
+      const conditions = [];
+      if (where.artistId) {
+        conditions.push(eq(importLogs.artistId, where.artistId));
+      }
+      if (where.jobId) {
+        conditions.push(eq(importLogs.jobId, where.jobId));
+      }
+      
+      if (conditions.length > 0) {
+        query = query.where(and(...conditions));
+      }
+      
+      return query;
     }
   };
 
