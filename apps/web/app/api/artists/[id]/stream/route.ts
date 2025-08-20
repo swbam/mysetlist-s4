@@ -6,7 +6,19 @@ export async function GET(_: Request, { params }: any) {
   const { readable, writable } = new TransformStream();
   const writer = writable.getWriter();
   const enc = new TextEncoder();
-  const write = (o: any) => writer.write(enc.encode(`data: ${JSON.stringify(o)}\n\n`));
+  
+  // Transform the payload to match ImportProgressData format
+  const write = (payload: any) => {
+    const transformedPayload = {
+      stage: payload.stage,
+      progress: payload.percentage || payload.progress || 0,
+      message: payload.message,
+      at: new Date().toISOString(),
+      error: payload.error,
+      metadata: payload.metadata,
+    };
+    writer.write(enc.encode(`data: ${JSON.stringify(transformedPayload)}\n\n`));
+  };
 
   const listener = (p: any) => write(p);
   onProgress(params.id, listener);
@@ -15,7 +27,13 @@ export async function GET(_: Request, { params }: any) {
   queueMicrotask(async () => {
     try {
       await runFullImport(params.id);
-    } catch {}
+    } catch (error) {
+      // Report error through the progress bus
+      await report(params.id, "failed", 0, `Import failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      // Clean up the listener when import is done
+      offProgress(params.id, listener);
+    }
   });
 
   // Send initial hello
