@@ -12,15 +12,7 @@ import Link from "next/link";
 // Force dynamic rendering due to searchParams usage
 export const dynamic = "force-dynamic";
 
-interface UnsubscribeSuccessPageProps {
-  searchParams: {
-    type?: string;
-  };
-}
-
-export default async function UnsubscribeSuccessPage({
-  searchParams,
-}: UnsubscribeSuccessPageProps) {
+export default async function UnsubscribeSuccessPage({ searchParams }: any) {
   const { type } = searchParams;
 
   const getEmailTypeDisplay = (emailType?: string) => {

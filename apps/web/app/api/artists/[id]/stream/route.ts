@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { onProgress, offProgress, report } from "@repo/external-apis/src/services/progress/ProgressBus";
 import { runFullImport } from "@repo/external-apis/src/services/orchestrators/ArtistImportOrchestrator";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(_: Request, { params }: any) {
   const { readable, writable } = new TransformStream();
   const writer = writable.getWriter();
   const enc = new TextEncoder();

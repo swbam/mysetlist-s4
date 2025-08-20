@@ -1,49 +1,22 @@
 {
-  "extends": ["../../packages/typescript-config/nextjs.json"],
+  "extends": "@repo/typescript-config/nextjs.json",
   "compilerOptions": {
+    "plugins": [{ "name": "next" }],
     "baseUrl": ".",
-    "jsx": "preserve",
-    "lib": ["DOM", "DOM.Iterable", "ES2015", "ES2022"],
-    "moduleResolution": "bundler",
-    "module": "ESNext",
-    "moduleDetection": "force",
-    "experimentalDecorators": false,
-    "emitDecoratorMetadata": false,
-    "noImplicitAny": false,
-    "strict": false,
-    "skipLibCheck": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noImplicitReturns": false,
-    "noPropertyAccessFromIndexSignature": false,
-    "exactOptionalPropertyTypes": false,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "forceConsistentCasingInFileNames": true,
     "paths": {
-      "~/*": ["./*"],
+      "@/*": ["./*"],
+      "@/components/*": ["./components/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/app/*": ["./app/*"],
+      "@/hooks/*": ["./hooks/*"],
       "@repo/*": ["../../packages/*"]
     }
   },
   "include": [
     "next-env.d.ts",
-    "next.config.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    "vitest-env.d.ts",
-    "tests/types/**/*.d.ts"
+    ".next/types/**/*.ts"
   ],
-  "exclude": [
-    "__tests__",
-    "cypress",
-    "supabase",
-    "test-utils",
-    "*.setup.ts",
-    "vitest.*",
-    "../test-*.ts",
-    "../../test-*.ts"
-  ]
+  "exclude": ["node_modules"]
 }

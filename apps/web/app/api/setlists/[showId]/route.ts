@@ -6,13 +6,7 @@ import { type NextRequest, NextResponse } from "next/server";
 // Force dynamic rendering for API route
 export const dynamic = "force-dynamic";
 
-type RouteParams = {
-  params: Promise<{
-    showId: string;
-  }>;
-};
-
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: any) {
   try {
     const { showId } = await params;
     if (!showId) {

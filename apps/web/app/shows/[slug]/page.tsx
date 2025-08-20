@@ -9,10 +9,10 @@ import { getShowDetails } from "./actions";
 import { ShowPageContent } from "./components/show-page-content";
 
 type ShowPageProps = {
-  params: Promise<{
-    locale: string;
+  params: {
+    locale?: string;
     slug: string;
-  }>;
+  };
 };
 
 // Configure ISR with different revalidation based on show date
@@ -43,8 +43,8 @@ export const generateMetadata = async ({
   });
 };
 
-const ShowPage = async ({ params }: ShowPageProps) => {
-  const { slug } = await params;
+const ShowPage = async ({ params }: any) => {
+  const { slug } = params?.slug ? params : { slug: params?.slug };
 
   // Use unstable_cache for better caching control
   const getCachedShowDetails = unstable_cache(

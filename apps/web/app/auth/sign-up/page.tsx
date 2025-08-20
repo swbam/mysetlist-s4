@@ -13,9 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function SignUpPage({
   searchParams,
-}: {
-  searchParams: { message?: string; error?: string };
-}) {
+}: any) {
   const params = searchParams;
   const handleSpotifySignIn = async () => {
     "use server";

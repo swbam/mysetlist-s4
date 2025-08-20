@@ -18,14 +18,7 @@ import { handleUnsubscribe } from "~/actions/email-notifications";
 // Force dynamic rendering due to searchParams usage
 export const dynamic = "force-dynamic";
 
-interface UnsubscribePageProps {
-  searchParams: {
-    token?: string;
-    type?: string;
-  };
-}
-
-async function UnsubscribeContent({ searchParams }: UnsubscribePageProps) {
+async function UnsubscribeContent({ searchParams }: any) {
   const { token, type } = searchParams;
 
   if (!token) {
@@ -120,7 +113,7 @@ async function UnsubscribeContent({ searchParams }: UnsubscribePageProps) {
   );
 }
 
-export default function UnsubscribePage(props: UnsubscribePageProps) {
+export default function UnsubscribePage(props: any) {
   return React.createElement(
     Suspense as any,
     {

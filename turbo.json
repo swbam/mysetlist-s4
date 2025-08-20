@@ -1,96 +1,76 @@
 {
-  "$schema": "https://turborepo.com/schema.json",
-  "globalDependencies": ["**/.env.*local", "tsconfig.json"],
+  "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "envMode": "loose",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        ".basehub/**",
-        "**/generated/**",
-        "storybook-static/**",
-        ".react-email/**",
-        "dist/**",
-        "build/**"
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env.production.local",
+        ".env.local",
+        ".env.production",
+        ".env"
       ],
-      "cache": true,
-      "env": ["NODE_ENV", "NEXT_PUBLIC_*", "DATABASE_URL", "ANALYZE"]
-    },
-    "test": {
-      "dependsOn": ["^build"],
-      "outputs": ["coverage/**"],
-      "cache": true,
-      "inputs": [
-        "src/**",
-        "app/**",
-        "lib/**",
-        "components/**",
-        "*.config.*",
-        "**/*.test.*",
-        "**/*.spec.*"
-      ]
-    },
-    "lint": {
-      "outputs": [],
-      "cache": true,
-      "inputs": [
-        "**/*.ts",
-        "**/*.tsx",
-        "**/*.js",
-        "**/*.jsx",
-        "**/*.mjs",
-        "**/*.cjs",
-        ".eslintrc.*",
-        ".biome.json"
-      ]
-    },
-    "typecheck": {
-      "dependsOn": ["^typecheck"],
-      "outputs": ["*.tsbuildinfo"],
-      "cache": true,
-      "inputs": ["**/*.ts", "**/*.tsx", "**/tsconfig.json"]
-    },
-    "analyze": {
-      "dependsOn": ["build"],
-      "outputs": [".next/analyze/**"],
-      "cache": false,
-      "env": ["ANALYZE"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {
       "cache": false,
-      "persistent": true,
-      "dependsOn": [],
-      "env": ["NODE_ENV", "NEXT_PUBLIC_*", "DATABASE_URL"]
+      "persistent": true
     },
     "start": {
-      "dependsOn": ["build"],
-      "cache": false
+      "cache": false,
+      "persistent": true
     },
-    "translate": {
-      "dependsOn": ["^translate"],
-      "cache": false
+    "lint": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".eslintrc.js",
+        ".eslintrc.json",
+        "eslint.config.js",
+        "eslint.config.mjs"
+      ]
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "tsconfig.json"]
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "vitest.config.ts",
+        "vitest.config.js"
+      ]
+    },
+    "test:watch": {
+      "cache": false,
+      "persistent": true
     },
     "clean": {
       "cache": false
     },
-    "//#clean": {
+    "db:generate": {
       "cache": false
     },
-    "db:generate": {
-      "cache": false,
-      "inputs": ["packages/database/src/schema/**"],
-      "outputs": ["packages/database/migrations/**"]
+    "db:migrate": {
+      "cache": false
     },
     "db:push": {
-      "cache": false,
-      "dependsOn": ["db:generate"]
+      "cache": false
     },
-    "db:migrate": {
+    "db:studio": {
       "cache": false,
-      "dependsOn": ["db:generate"]
+      "persistent": true
     }
-  }
+  },
+  "globalDependencies": [
+    "**/.env",
+    "**/.env.local",
+    "**/.env.production",
+    "**/.env.production.local",
+    "turbo.json",
+    "package.json",
+    "pnpm-lock.yaml"
+  ]
 }

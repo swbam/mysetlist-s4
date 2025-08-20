@@ -1,66 +1,44 @@
 {
-  "name": "theset",
-  "version": "1.0.0",
+  "name": "mysetlist",
   "private": true,
+  "packageManager": "pnpm@10.13.1",
+  "engines": {
+    "node": "20.x",
+    "pnpm": ">=9.0.0"
+  },
   "scripts": {
-    "_commentDev": "DEVELOPMENT",
-    "dev": "turbo dev",
     "build": "turbo build",
-    "start": "cd apps/web && pnpm start",
-    "_commentQuality": "CODE QUALITY",
-    "lint": "biome check --diagnostic-level=warn",
-    "lint:fix": "biome check --write",
+    "dev": "turbo dev",
+    "start": "turbo start",
+    "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
-    "_commentDatabase": "DATABASE",
-    "db:push": "cd packages/database && pnpm push",
-    "db:generate": "cd packages/database && pnpm generate",
-    "db:migrate": "cd packages/database && pnpm migrate",
-    "db:studio": "cd packages/database && pnpm studio",
-    "db:seed": "tsx scripts/seed-top-artists-direct.ts",
-    "_commentDataSync": "DATA SYNC",
-    "sync:artists": "tsx scripts/sync-trending-artists.ts",
-    "sync:popular": "tsx scripts/sync-popular-artists.ts",
-    "sync:trending": "tsx scripts/initialize-trending-data.ts",
-    "_commentDeployment": "DEPLOYMENT",
-    "deploy": "tsx scripts/deploy-all.ts",
-    "deploy:preview": "vercel",
-    "deploy:prod": "vercel --prod",
-    "_commentUtilities": "UTILITIES",
-    "clean": "git clean -xdf node_modules .turbo .next",
-    "check:env": "tsx scripts/check-env.ts",
-    "analyze": "cd apps/web && ANALYZE=true pnpm build"
+    "test:watch": "turbo test:watch",
+    "clean": "turbo clean",
+    "format": "biome check . --write",
+    "format:check": "biome check .",
+    "db:generate": "cd packages/database && npx drizzle-kit generate",
+    "db:migrate": "cd packages/database && npx drizzle-kit migrate", 
+    "db:push": "cd packages/database && npx drizzle-kit push",
+    "db:studio": "cd packages/database && npx drizzle-kit studio",
+    "db:pull": "cd packages/database && npx drizzle-kit pull",
+    "boundaries": "pnpm dlx @repo/boundaries check",
+    "bump-deps": "pnpm dlx @repo/bump-deps"
   },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
+    "@biomejs/biome": "^1.9.4",
     "@repo/typescript-config": "workspace:*",
-    "@supabase/supabase-js": "^2.52.1",
-    "@types/node": "^24.0.10",
-    "@types/react": "^19.1.5",
-    "@types/react-dom": "^19.1.5",
-    "dotenv": "^16.6.1",
-    "node-fetch": "^2.7.0",
-    "tsx": "^4.20.3",
-    "turbo": "^2.5.3",
-    "typescript": "^5.8.3",
-    "vercel": "^44.5.0"
+    "turbo": "^2.3.3",
+    "typescript": "^5.8.3"
   },
-  "engines": {
-    "node": "20.x"
-  },
-  "packageManager": "pnpm@10.14.0",
-  "dependencies": {
-    "@bull-board/api": "^6.12.0",
-    "@bull-board/express": "^6.12.0",
-    "@paralleldrive/cuid2": "^2.2.2",
-    "@react-email/components": "^0.5.0",
-    "@types/eventsource": "^3.0.0",
-    "@types/uuid": "^10.0.0",
-    "bull-board": "^2.1.3",
-    "bullmq": "^5.58.0",
-    "eventsource": "^4.0.0",
-    "pg": "^8.16.3",
-    "postgres": "^3.4.7",
-    "uuid": "^11.1.0"
+  "pnpm": {
+    "overrides": {
+      "@types/react": "catalog:react19",
+      "@types/react-dom": "catalog:react19"
+    }
   }
 }

@@ -32,8 +32,8 @@ function calculateEstimatedTime(importStatus: any): number | null {
 }
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } },
+  _request: Request,
+  { params }: any,
 ) {
   const { id: artistId } = params;
 

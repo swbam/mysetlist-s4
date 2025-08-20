@@ -5,9 +5,9 @@ import { type NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } },
-) {
+  _request: Request,
+  { params }: any,
+): Promise<Response> {
   const { id: artistId } = params;
 
   if (!artistId) {

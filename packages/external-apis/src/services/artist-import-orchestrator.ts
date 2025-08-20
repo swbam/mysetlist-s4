@@ -2,7 +2,7 @@ import { artists, db } from "@repo/database";
 import { SpotifyClient } from "../clients/spotify";
 import { TicketmasterClient } from "../clients/ticketmaster";
 import { SyncErrorHandler, SyncServiceError } from "../utils/error-handler";
-import { queueManager, QueueName, Priority } from "apps/web/lib/queues/queue-manager";
+import { queueManager, QueueName, Priority } from "../../../../apps/web/lib/queues/queue-manager";
 
 export interface ImportProgress {
   stage:

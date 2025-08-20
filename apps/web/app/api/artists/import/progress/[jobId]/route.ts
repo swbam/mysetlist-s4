@@ -17,7 +17,7 @@ function getRedis(): Redis {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ jobId: string }> }
+  { params }: any,
 ) {
   const { jobId } = await params;
 

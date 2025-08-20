@@ -15,16 +15,6 @@ export const generateMetadata = async (): Promise<Metadata> => {
   });
 };
 
-interface VenuesPageProps {
-  searchParams?: Promise<{
-    q?: string;
-    types?: string;
-    capacity?: string;
-    lat?: string;
-    lng?: string;
-  }>;
-}
-
 const VenuesContent = async ({ searchParams }: { searchParams: any }) => {
   const venues = await getVenues({
     ...(searchParams.q && { search: searchParams.q }),
@@ -46,8 +36,8 @@ const VenuesContent = async ({ searchParams }: { searchParams: any }) => {
   );
 };
 
-const VenuesPage = async ({ searchParams }: VenuesPageProps) => {
-  const resolvedSearchParams = (await searchParams) || {};
+const VenuesPage = async ({ searchParams }: any) => {
+  const resolvedSearchParams = (await searchParams) || searchParams || {};
 
   return (
     <ErrorBoundaryWrapper>

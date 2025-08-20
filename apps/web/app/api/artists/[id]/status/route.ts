@@ -3,8 +3,8 @@ import { db, syncProgress } from "@repo/database";
 import { eq } from "drizzle-orm";
 
 export async function GET(
-  _: Request,
-  { params }: { params: { id: string } },
+  _request: Request,
+  { params }: any,
 ) {
   const status = await db.query.syncProgress.findFirst({
     where: eq(syncProgress.jobId, params.id),

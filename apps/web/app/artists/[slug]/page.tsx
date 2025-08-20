@@ -25,20 +25,13 @@ const PastShows = dynamic(
   },
 );
 
-type ArtistPageProps = {
-  params: {
-    slug: string;
-  };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
-
 // Configure ISR with revalidation
 export const revalidate = 3600; // Revalidate every hour
 export const dynamicParams = true; // Allow dynamic params beyond generateStaticParams
 
-export const generateMetadata = async ({ params }: ArtistPageProps): Promise<Metadata> => {
+export const generateMetadata = async ({ params }: any): Promise<Metadata> => {
   try {
-  const { slug } = params;
+  const { slug } = await params;
   const tmAttractionId = undefined as unknown as string; // no longer read from URL
 
     if (!slug) {
@@ -85,9 +78,9 @@ export const generateMetadata = async ({ params }: ArtistPageProps): Promise<Met
   }
 };
 
-const ArtistPage = async ({ params, searchParams }: ArtistPageProps) => {
+const ArtistPage = async ({ params, searchParams }: any) => {
   try {
-  const { slug } = params;
+  const { slug } = await params;
   const tmAttractionId = searchParams?.tmAttractionId as string;
 
     // Validate slug parameter
