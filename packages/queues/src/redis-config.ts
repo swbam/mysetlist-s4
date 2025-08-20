@@ -73,11 +73,11 @@ export const getRedisSubClient = (): Redis => {
 // Cache operations with TTL
 export class RedisCache {
   private client: Redis;
-  
+
   constructor() {
     this.client = createRedisClient();
   }
-  
+
   async get<T>(key: string): Promise<T | null> {
     try {
       const value = await this.client.get(key);
@@ -87,7 +87,7 @@ export class RedisCache {
       return null;
     }
   }
-  
+
   async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
     try {
       const serialized = JSON.stringify(value);
@@ -100,7 +100,7 @@ export class RedisCache {
       console.error(`Redis cache set error for key ${key}:`, error);
     }
   }
-  
+
   async del(key: string): Promise<void> {
     try {
       await this.client.del(key);
@@ -108,7 +108,7 @@ export class RedisCache {
       console.error(`Redis cache delete error for key ${key}:`, error);
     }
   }
-  
+
   async exists(key: string): Promise<boolean> {
     try {
       const result = await this.client.exists(key);
@@ -118,7 +118,7 @@ export class RedisCache {
       return false;
     }
   }
-  
+
   async increment(key: string, by: number = 1): Promise<number> {
     try {
       return await this.client.incrby(key, by);
@@ -127,7 +127,7 @@ export class RedisCache {
       return 0;
     }
   }
-  
+
   async expire(key: string, ttlSeconds: number): Promise<void> {
     try {
       await this.client.expire(key, ttlSeconds);
@@ -135,7 +135,7 @@ export class RedisCache {
       console.error(`Redis cache expire error for key ${key}:`, error);
     }
   }
-  
+
   async close(): Promise<void> {
     await this.client.quit();
   }
@@ -149,11 +149,11 @@ export async function closeRedisConnections(): Promise<void> {
     promises.push(pubClient.quit());
     pubClient = null;
   }
-  
+
   if (subClient) {
     promises.push(subClient.quit());
     subClient = null;
   }
-  
+
   await Promise.all(promises);
 }

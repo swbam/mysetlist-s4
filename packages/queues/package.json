@@ -1,0 +1,24 @@
+{
+  "name": "@repo/queues",
+  "version": "0.0.0",
+  "description": "Shared queue management for TheSet",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "tsc --build",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "dependencies": {
+    "bullmq": "^5.0.0",
+    "ioredis": "^5.4.1",
+    "@repo/env": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "24.0.10",
+    "typescript": "^5.8.3"
+  }
+}
