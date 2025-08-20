@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Initialize Ticketmaster client
-    const ticketmasterApiKey = process.env.TICKETMASTER_API_KEY;
+    const ticketmasterApiKey = process.env['TICKETMASTER_API_KEY'];
     if (!ticketmasterApiKey) {
       return NextResponse.json(
         { error: "Ticketmaster API key not configured" },
@@ -53,9 +53,7 @@ export async function POST(request: NextRequest) {
       // Search for events using real Ticketmaster API
       const eventsResponse = await ticketmaster.searchEvents({
         keyword: artistName,
-        classificationName: "music",
         size: limit,
-        sort: "date,asc",
       });
 
       const events = eventsResponse._embedded?.events || [];
@@ -103,7 +101,7 @@ export async function POST(request: NextRequest) {
           }
 
           // Import show
-          const showDate = event.dates?.start?.dateTime || event.dates?.start?.localDate;
+          const showDate = event.dates?.start?.localDate || null;
           const { error: showError } = await supabase
             .from("shows")
             .insert({

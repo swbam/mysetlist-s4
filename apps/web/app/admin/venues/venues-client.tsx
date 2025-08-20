@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
 import { Input } from "@repo/design-system/components/ui/input";
+import { toast } from "@repo/design-system";
 import {
   Select,
   SelectContent,
@@ -40,7 +41,6 @@ import {
   Download,
   Edit,
   Eye,
-  Filter,
   Globe,
   Mail,
   MapPin,
@@ -53,8 +53,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { createClient } from "~/lib/supabase/client";
-import { toast } from "sonner";
 
 interface Venue {
   id: string;
@@ -89,12 +87,9 @@ interface VenuesClientProps {
 export default function VenuesClient({ initialVenues, initialStats }: VenuesClientProps) {
   const [venues, setVenues] = useState<Venue[]>(initialVenues);
   const [filteredVenues, setFilteredVenues] = useState<Venue[]>(initialVenues);
-  const [stats, setStats] = useState(initialStats);
-  const [loading, setLoading] = useState(false);
+  const [stats, _setStats] = useState(initialStats);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-
-  const supabase = createClient();
+  const [statusFilter, _setStatusFilter] = useState("all");
 
   useEffect(() => {
     // Filter venues based on search term and status filter
@@ -146,13 +141,13 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
         a.click();
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        toast.success('Venues exported successfully');
+        toast({ title: 'Venues exported successfully' });
       } else {
-        toast.error('Export failed');
+        toast({ title: 'Export failed', variant: 'destructive' });
       }
     } catch (error) {
       console.error('Export error:', error);
-      toast.error('Export error');
+      toast({ title: 'Export error', variant: 'destructive' });
     }
   };
 
@@ -169,13 +164,13 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
             ? { ...venue, verified: true }
             : venue
         ));
-        toast.success(`${venueName} marked as verified`);
+        toast({ title: `${venueName} marked as verified` });
       } else {
-        toast.error('Failed to verify venue');
+        toast({ title: 'Failed to verify venue', variant: 'destructive' });
       }
     } catch (error) {
       console.error('Verify error:', error);
-      toast.error('Error verifying venue');
+      toast({ title: 'Error verifying venue', variant: 'destructive' });
     }
   };
 
@@ -192,13 +187,13 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
       if (response.ok) {
         // Remove from local state
         setVenues(venues.filter(venue => venue.id !== venueId));
-        toast.success('Venue deleted successfully');
+        toast({ title: 'Venue deleted successfully' });
       } else {
-        toast.error('Failed to delete venue');
+        toast({ title: 'Failed to delete venue', variant: 'destructive' });
       }
     } catch (error) {
       console.error('Delete error:', error);
-      toast.error('Error deleting venue');
+      toast({ title: 'Error deleting venue', variant: 'destructive' });
     }
   };
 
@@ -209,15 +204,15 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
       });
 
       if (response.ok) {
-        toast.success(`Location updated for ${venueName}`);
+        toast({ title: `Location updated for ${venueName}` });
         // Refresh the venues data
         window.location.reload();
       } else {
-        toast.error('Failed to update location');
+        toast({ title: 'Failed to update location', variant: 'destructive' });
       }
     } catch (error) {
       console.error('Update location error:', error);
-      toast.error('Error updating location');
+      toast({ title: 'Error updating location', variant: 'destructive' });
     }
   };
 
@@ -236,7 +231,7 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
             <Download className="mr-2 h-4 w-4" />
             Export Venues
           </Button>
-          <Button className="w-full sm:w-auto" onClick={() => toast.info('Add venue feature coming soon')}>
+          <Button className="w-full sm:w-auto" onClick={() => toast({ title: 'Add venue feature coming soon' })}>
             <Plus className="mr-2 h-4 w-4" />
             Add Venue
           </Button>
@@ -318,7 +313,7 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={_setStatusFilter}>
               <SelectTrigger className="w-full sm:w-[180px]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
@@ -468,7 +463,7 @@ export default function VenuesClient({ initialVenues, initialStats }: VenuesClie
                               View Venue Page
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => toast.info('Edit venue feature coming soon')}>
+                          <DropdownMenuItem onClick={() => toast({ title: 'Edit venue feature coming soon' })}>
                             <Edit className="mr-2 h-4 w-4" />
                             Edit Venue
                           </DropdownMenuItem>
