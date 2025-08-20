@@ -48,7 +48,7 @@ export const WeeklyDigestTemplate = ({
   <Tailwind>
     <Html>
       <Head />
-      <Preview>Your weekly music digest - {weekOf}</Preview>
+      <Preview>{`Your weekly music digest - ${weekOf}`}</Preview>
       <Body className="bg-zinc-50 font-sans">
         <Container className="mx-auto py-12">
           <Section className="mt-8 rounded-md bg-zinc-200 p-px">

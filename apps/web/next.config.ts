@@ -14,6 +14,7 @@ const nextConfig = {
     '@repo/internationalization',
     '@repo/next-config',
     '@repo/observability',
+    '@repo/queues',
     '@repo/rate-limit',
     '@repo/security',
     '@repo/seo',
@@ -24,6 +25,37 @@ const nextConfig = {
     if (isServer) {
       // Add any server-side externals if needed
       config.externals = config.externals || [];
+    } else {
+      // Client-side: externalize Node.js built-ins and server-only packages
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+        crypto: false,
+        path: false,
+        os: false,
+        stream: false,
+        util: false,
+        url: false,
+        assert: false,
+        http: false,
+        https: false,
+        'perf_hooks': false,
+        'child_process': false,
+        'server-only': false,
+        'node:crypto': false,
+        'node:stream': false,
+        'node:path': false,
+        'node:url': false,
+        'node:util': false,
+        'node:os': false,
+        'node:fs': false,
+        'node:net': false,
+        'node:tls': false,
+        'node:http': false,
+        'node:https': false,
+      };
     }
 
     // Handle SVG imports
@@ -32,19 +64,11 @@ const nextConfig = {
       use: ['@svgr/webpack'],
     });
 
-    // Add Node.js core module fallbacks for browser build
-    config.resolve = config.resolve || {};
-    config.resolve.fallback = {
-      ...(config.resolve.fallback || {}),
-      crypto: false,
-      net: false,
-      tls: false,
-      fs: false,
-      perf_hooks: false,
-    };
-
+    // Add path aliases to match TypeScript paths
     config.resolve.alias = {
-      ...(config.resolve.alias || {}),
+      ...config.resolve.alias,
+      '~': __dirname,
+      '@': __dirname,
       "node:crypto": false,
       "node:fs": false,
       "node:net": false,

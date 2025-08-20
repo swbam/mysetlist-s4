@@ -13,6 +13,7 @@ import { ArtistImportLoading } from "./components/artist-import-loading";
 import { ArtistPageWrapper } from "./components/artist-page-wrapper";
 import { ArtistStats } from "./components/artist-stats";
 import { UpcomingShows } from "./components/upcoming-shows";
+import { ImportProgress } from "~/components/import/ImportProgress";
 
 // Dynamic imports for the two main tabs only
 const PastShows = dynamic(
@@ -95,11 +96,40 @@ const ArtistPage = async ({ params, searchParams }: any) => {
     // Fetch artist data with error handling
     const artist = await getArtist(slug);
 
-    // If artist not found, show not found page
+    // If artist not found but has tmAttractionId, show import progress
+    if (!artist && tmAttractionId) {
+      const importResult = await importArtist(tmAttractionId);
+      
+      return (
+        <div className="container mx-auto py-8">
+          <div className="max-w-2xl mx-auto">
+            <div className="mb-6">
+              <h1 className="text-3xl font-bold">Importing Artist</h1>
+              <p className="text-muted-foreground mt-2">
+                We're importing this artist from Ticketmaster. This usually takes 1-2 minutes.
+              </p>
+            </div>
+            
+            <ImportProgress
+              artistId={importResult.artistId}
+              onComplete={(data) => {
+                // Redirect to artist page after completion
+                window.location.href = `/artists/${importResult.slug}`;
+              }}
+              onError={(error) => {
+                console.error('Import failed:', error);
+              }}
+              showTitle={true}
+              showEstimatedTime={true}
+              autoRetry={true}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // If artist not found and no tmAttractionId, show not found page
     if (!artist) {
-        if (tmAttractionId) {
-            await importArtist(tmAttractionId);
-        }
       notFound();
     }
 

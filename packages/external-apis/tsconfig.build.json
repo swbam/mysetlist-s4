@@ -1,0 +1,21 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "lib": ["es2015"],
+    "outDir": "dist",
+    "skipLibCheck": true,
+    "strict": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": false,
+    "paths": {
+      "@repo/*": ["../../packages/*"]
+    }
+  },
+  "include": ["src/**/*", "index.ts", "keys.ts"],
+  "exclude": [
+    "dist", 
+    "node_modules"
+  ]
+}

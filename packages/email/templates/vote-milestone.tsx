@@ -48,7 +48,7 @@ export const VoteMilestoneTemplate = ({
     <Html>
       <Head />
       <Preview>
-        🎵 "{song.title}" just hit {milestone.toString()} votes!
+        {`🎵 "${song.title}" just hit ${milestone.toString()} votes!`}
       </Preview>
       <Body className="bg-zinc-50 font-sans">
         <Container className="mx-auto py-12">

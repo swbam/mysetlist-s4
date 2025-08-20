@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.13.1",
   "engines": {
-    "node": "20.x",
+    "node": ">=18.0.0",
     "pnpm": ">=9.0.0"
   },
   "scripts": {
@@ -44,6 +44,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "dotenv": "^17.2.1",
     "@react-email/components": "0.0.3"
   }
 }

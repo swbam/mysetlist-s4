@@ -1,7 +1,7 @@
 import { createClient } from "../../client";
 import { EmailService } from "../services/email-service";
 import { SpotifyService } from "../services/spotify-service";
-import { UserService } from "../services/user-service";
+import { UserServiceClient } from "../services/user-service.client";
 import type {
   AuthError,
   AuthSession,
@@ -17,7 +17,7 @@ import type {
 export class UnifiedAuthProvider {
   private supabase = createClient();
   private spotifyService = new SpotifyService();
-  public userService = new UserService(); // Make public for access from provider
+  public userService = new UserServiceClient(); // Make public for access from provider
   private emailService = new EmailService();
 
   /**

@@ -1,9 +1,8 @@
 // @ts-nocheck
 import { db } from "@repo/database";
-import { shows, venues, artists } from "@repo/database";
+import { shows, venues } from "@repo/database";
+import { eq, inArray } from "@repo/database";
 import { TicketmasterClient } from "../../clients/ticketmaster";
-import { eq } from "drizzle-orm";
-import type { TicketmasterEvent, TicketmasterVenue } from "../../types/ticketmaster";
 
 export async function ingestShowsAndVenues(artistId: string, tmAttractionId: string) {
   const ticketmasterClient = new TicketmasterClient({
@@ -26,7 +25,7 @@ export async function ingestShowsAndVenues(artistId: string, tmAttractionId: str
       break;
     }
 
-    const venuesMap = new Map<string, TicketmasterVenue>();
+    const venuesMap = new Map<string, any>();
     for (const event of events) {
       const venue = event._embedded?.venues?.[0];
       if (venue?.id) {
@@ -36,9 +35,8 @@ export async function ingestShowsAndVenues(artistId: string, tmAttractionId: str
 
     if (venuesMap.size > 0) {
       const venueTmids = Array.from(venuesMap.keys());
-      const existingVenues = await db.query.venues.findMany({
-        where: (venues, { inArray }) => inArray(venues.tmVenueId, venueTmids),
-      });
+      const existingVenues = await db.select().from(venues)
+        .where(inArray(venues.tmVenueId, venueTmids));
 
       const existingVenueIds = new Set(existingVenues.map((v) => v.tmVenueId));
       const newVenues = venueTmids
@@ -63,15 +61,13 @@ export async function ingestShowsAndVenues(artistId: string, tmAttractionId: str
       }
     }
 
-    const dbVenues = await db.query.venues.findMany({
-      where: (venues, { inArray }) => inArray(venues.tmVenueId, Array.from(venuesMap.keys())),
-    });
+    const dbVenues = await db.select().from(venues)
+      .where(inArray(venues.tmVenueId, Array.from(venuesMap.keys())));
     const venueIdMap = new Map(dbVenues.map((v) => [v.tmVenueId, v.id]));
 
     const showTmIds = events.map((e) => e.id);
-    const existingShows = await db.query.shows.findMany({
-        where: (shows, { inArray }) => inArray(shows.tmEventId, showTmIds),
-    });
+    const existingShows = await db.select().from(shows)
+        .where(inArray(shows.tmEventId, showTmIds));
     const existingShowIds = new Set(existingShows.map((s) => s.tmEventId));
 
     const newShows = events

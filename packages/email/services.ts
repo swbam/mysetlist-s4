@@ -402,11 +402,11 @@ export async function sendBatchEmails<T extends Record<string, any>>({
 // Artist follow notification email
 export async function sendArtistFollowNotificationEmail({
   to,
-  userName,
-  artist,
+  userName: _userName,
+  artist: _artist,
   followerName,
   isFirstFollow = false,
-  appUrl = "https://TheSet.app",
+  appUrl: _appUrl = "https://TheSet.app",
 }: {
   to: EmailAddress[];
   userName: string;

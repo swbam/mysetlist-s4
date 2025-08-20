@@ -396,7 +396,6 @@ export class ShowSyncService {
     city?: string;
     stateCode?: string;
     keyword?: string;
-    classificationName?: string;
     startDateTime?: string;
     endDateTime?: string;
   }): Promise<{ newShows: number; updatedShows: number }> {
@@ -515,7 +514,6 @@ export class ShowSyncService {
           this.ticketmasterClient.searchEvents({
             keyword: artist.name,
             size: 200,
-            classificationName: "Music", // Focus on music events
           }),
         {
           service: "ShowSyncService",
@@ -661,14 +659,14 @@ export class ShowSyncService {
     }
   }
 
-  private generateSlug(name: string): string {
+  private generateSlug(name: string, id?: string): string {
     return name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/(^-|-$)/g, "");
   }
 
-  private generateShowSlug(name: string, date: Date): string {
+  private generateShowSlug(name: string, id?: string, date: Date): string {
     const dateStr = date.toISOString().split("T")[0];
     return `${this.generateSlug(name)}-${dateStr}`;
   }
@@ -677,7 +675,7 @@ export class ShowSyncService {
     dbArtistName: string,
     ticketmasterArtistName: string,
   ): boolean {
-    const normalize = (name: string) =>
+    const normalize = (name: string, id?: string) =>
       name.toLowerCase().replace(/[^a-z0-9]/g, "");
 
     const normalizedDb = normalize(dbArtistName);

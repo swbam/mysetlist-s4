@@ -20,7 +20,31 @@ import {
   ChevronDown,
   ChevronRight,
 } from "lucide-react";
-import type { ImportLog, ImportStatus } from "@repo/database";
+// Define types locally to avoid database import
+interface ImportLog {
+  id: string;
+  level: string;
+  stage: string;
+  message: string;
+  createdAt: string;
+  durationMs?: number;
+  itemsProcessed?: number | null;
+  itemsTotal?: number | null;
+  details?: any;
+  errorStack?: string;
+}
+
+interface ImportStatus {
+  stage: string;
+  percentage?: number;
+  message?: string;
+  error?: string;
+  totalSongs?: number;
+  totalShows?: number;
+  totalVenues?: number;
+  startedAt?: string;
+  completedAt?: string;
+}
 
 interface ImportLogsDisplayProps {
   artistId: string;

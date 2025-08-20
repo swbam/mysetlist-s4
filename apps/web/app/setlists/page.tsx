@@ -279,11 +279,12 @@ async function SetlistsContent({ search }: { search?: string }) {
   );
 }
 
-export default function SetlistsPage({
+export default async function SetlistsPage({
   searchParams,
 }: {
-  searchParams: { search?: string };
+  searchParams: Promise<{ search?: string }>;
 }) {
+  const { search } = await searchParams;
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="space-y-8">
@@ -343,7 +344,7 @@ export default function SetlistsPage({
 
         {/* Setlists Grid */}
         <Suspense fallback={<SetlistsSkeleton />}>
-          <SetlistsContent />
+          <SetlistsContent search={search} />
         </Suspense>
 
         {/* Call to Action */}

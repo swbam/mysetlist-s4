@@ -2,6 +2,8 @@ import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { EnhancedSearch } from "~/app/components/enhanced-search";
+import { TicketmasterArtistSearch } from "~/components/search/ticketmaster-artist-search";
+import { ImportButton } from "~/components/import/ImportButton";
 
 export const generateMetadata = (): Metadata => {
   return createMetadata({
@@ -33,7 +35,39 @@ export default function SearchPage() {
             </div>
           }
         >
-          <EnhancedSearch showFilters={false} />
+          <div className="space-y-8">
+            {/* Database Search */}
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">Search Existing Artists</h2>
+              <p className="text-sm text-muted-foreground">
+                Search artists already in our database
+              </p>
+              <EnhancedSearch showFilters={false} />
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">or</span>
+              </div>
+            </div>
+
+            {/* Ticketmaster Search & Import */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-2">
+                  <h2 className="text-xl font-semibold">Import New Artist</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Search Ticketmaster to import a new artist to the platform
+                  </p>
+                </div>
+                <ImportButton />
+              </div>
+              <TicketmasterArtistSearch />
+            </div>
+          </div>
         </Suspense>
       </div>
     </div>
